@@ -34,3 +34,5 @@ export interface PatchTransaction {
   validation: ValidationStep[];
   affectedPaths: string[];
 }
+
+export type PatchTransactionInput = Omit<PatchTransaction, "id" | "affectedPaths">;

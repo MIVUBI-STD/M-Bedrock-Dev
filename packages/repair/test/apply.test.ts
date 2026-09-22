@@ -32,14 +32,51 @@ describe("applyPatchTransaction", () => {
       }],
       preconditions: [{ kind: "source-fingerprint", expected: "fixture" }],
       validation: [{ kind: "topology-compare", target: "arena4" }],
-      affectedPaths: ["functions/a.mcfunction"],
     });
 
-    const result = await applyPatchTransaction(tx, { sourceRoot, workingRoot });
+    const result = await applyPatchTransaction(
+      tx,
+      { sourceRoot, workingRoot },
+      { currentSourceFingerprint: "fixture" },
+    );
     expect(result.ok).toBe(true);
     expect(await readFile(join(workingRoot, "functions/a.mcfunction"), "utf8"))
       .toBe("fill 300 0 0 303 2 3 stone\n");
     expect(await readFile(join(sourceRoot, "functions/a.mcfunction"), "utf8")).toBe(original);
+  });
+
+  it("fails closed on independently supplied source fingerprint mismatch", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-dev-"));
+    const sourceRoot = join(root, "source");
+    const workingRoot = join(root, "working");
+    await mkdir(join(workingRoot, "functions"), { recursive: true });
+    await writeFile(join(workingRoot, "functions/a.mcfunction"), "say old\n");
+
+    const tx = createPatchTransaction({
+      title: "stale source",
+      sourceFingerprint: "expected",
+      operations: [{
+        kind: "replace-command",
+        source: {
+          artifactId: "fixture",
+          relativePath: "functions/a.mcfunction",
+          range: { lineStart: 1, lineEnd: 1 },
+        },
+        expected: "say old",
+        replacement: "say new",
+      }],
+      preconditions: [{ kind: "source-fingerprint", expected: "expected" }],
+      validation: [],
+    });
+
+    const result = await applyPatchTransaction(
+      tx,
+      { sourceRoot, workingRoot },
+      { currentSourceFingerprint: "actual" },
+    );
+    expect(result.ok).toBe(false);
+    expect(result.failure).toBe("PRECONDITION_FAILED");
+    expect(await readFile(join(workingRoot, "functions/a.mcfunction"), "utf8")).toBe("say old\n");
   });
 
   it("fails closed when a command line changed", async () => {
@@ -64,10 +101,13 @@ describe("applyPatchTransaction", () => {
       }],
       preconditions: [{ kind: "source-fingerprint", expected: "fixture" }],
       validation: [],
-      affectedPaths: ["functions/a.mcfunction"],
     });
 
-    const result = await applyPatchTransaction(tx, { sourceRoot, workingRoot });
+    const result = await applyPatchTransaction(
+      tx,
+      { sourceRoot, workingRoot },
+      { currentSourceFingerprint: "fixture" },
+    );
     expect(result.ok).toBe(false);
     expect(await readFile(join(workingRoot, "functions/a.mcfunction"), "utf8")).toBe("say changed\n");
   });

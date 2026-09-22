@@ -9,11 +9,16 @@ export interface AppliedFileRollback {
   previousText: string;
 }
 
+export interface ApplyTransactionContext {
+  currentSourceFingerprint: string;
+}
+
 export interface ApplyTransactionResult {
   ok: boolean;
   appliedOperations: number;
   rollback: AppliedFileRollback[];
   failure?: string;
+  rollbackFailure?: string;
 }
 
 function replaceCommandLine(
@@ -23,6 +28,9 @@ function replaceCommandLine(
   const line = operation.source.range?.lineStart;
   if (!line || line < 1) {
     throw new Error("replace-command requires a 1-based source line.");
+  }
+  if (/\r|\n/.test(operation.replacement)) {
+    throw new Error("replace-command replacement must remain a single logical line.");
   }
 
   const newline = text.includes("\r\n") ? "\r\n" : "\n";
@@ -52,12 +60,13 @@ function applyOperation(text: string, operation: PatchOperation): string {
 export async function applyPatchTransaction(
   transaction: PatchTransaction,
   workspace: MutationWorkspace,
+  context: ApplyTransactionContext,
 ): Promise<ApplyTransactionResult> {
   const readWorkingText = async (relativePath: string) =>
     await readFile(resolveWorkingPath(workspace, relativePath), "utf8");
 
   const preconditions = await verifyPreconditions(transaction.preconditions, {
-    sourceFingerprint: transaction.sourceFingerprint,
+    sourceFingerprint: context.currentSourceFingerprint,
     readText: readWorkingText,
   });
 
@@ -91,14 +100,24 @@ export async function applyPatchTransaction(
       await atomicWriteText(target, nextText);
     }
   } catch (error) {
-    for (const entry of rollback.reverse()) {
-      await atomicWriteText(resolveWorkingPath(workspace, entry.relativePath), entry.previousText);
+    let rollbackFailure: string | undefined;
+    for (const entry of [...rollback].reverse()) {
+      try {
+        await atomicWriteText(resolveWorkingPath(workspace, entry.relativePath), entry.previousText);
+      } catch (rollbackError) {
+        rollbackFailure = rollbackError instanceof Error
+          ? rollbackError.message
+          : "ROLLBACK_FAILED";
+        break;
+      }
     }
+
     return {
       ok: false,
       appliedOperations: 0,
       rollback: [],
-      failure: error instanceof Error ? error.message : "TRANSACTION_FAILED",
+      failure: rollbackFailure ? "ROLLBACK_FAILED" : (error instanceof Error ? error.message : "TRANSACTION_FAILED"),
+      ...(rollbackFailure ? { rollbackFailure } : {}),
     };
   }
 

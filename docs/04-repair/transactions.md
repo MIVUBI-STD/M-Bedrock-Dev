@@ -1,33 +1,32 @@
-# Patch Transactions
+# Repair Transactions
 
-Repair must be explicit and fail closed.
+A repair is represented as an explicit PatchTransaction.
 
-A PatchTransaction contains:
+## Authority
 
-- source artifact fingerprint;
-- typed operations;
-- preconditions;
-- affected paths;
-- validation steps.
+PatchTransaction owns intended mutation, not current source truth.
 
-Initial operations are intentionally narrow: replace text and replace command. Coordinate-aware mutation can be added once source rewriting semantics are proven.
+The current source fingerprint must be supplied independently by the artifact/session owner at application time.
+
+## Derived fields
+
+`affectedPaths` is derived from transaction operations. Callers do not author it separately.
 
 ## Preconditions
 
-Before mutation, the transaction may require:
+Supported preconditions include:
 
-- exact source artifact fingerprint;
-- exact current source text.
+- source-fingerprint;
+- exact text equality.
 
-A mismatch returns precondition failure rather than attempting a best-effort patch.
+Replace-command operations additionally require exact line content equality during application.
 
-## Validation
+## Safety
 
-A transaction declares post-mutation validation such as:
-
-- reparse;
-- rebuild graph;
-- rerun diagnostic;
-- topology comparison.
-
-The transaction model does not itself claim Minecraft runtime success.
+- original source remains immutable;
+- mutation targets working copy only;
+- replacement command must remain one logical line;
+- ambiguous text replacement fails closed;
+- transaction failure triggers rollback of already-written files;
+- rollback failure is surfaced separately;
+- validation steps describe the proof required after mutation.
