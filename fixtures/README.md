@@ -1,5 +1,16 @@
 # Fixtures
 
-Fixtures provide minimal valid, invalid and regression cases.
+Minimal reproducible evidence for tests.
 
-Real project artifacts should be reduced to the smallest reproducible case before inclusion whenever possible.
+## Categories
+
+```text
+synthetic/    generated small inputs
+valid/        known structurally valid examples
+invalid/      intentionally malformed/security cases
+regression/   reduced forms of reproduced defects
+```
+
+Existing regression fixtures may keep their current paths while the repository is young; new fixtures should use the clearest applicable category without churn for its own sake.
+
+Never commit a private/proprietary production world. Reduce or synthesize first.

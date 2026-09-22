@@ -1,5 +1,19 @@
 # Workspace
 
-Local artifact work happens under ignored `workspace/active/` or `workspace/saved/` locations.
+Ignored local continuity for artifact work.
 
-Original source artifacts remain immutable. Working copies, patches, reports and packaged outputs are separated by the future workspace model.
+Canonical runtime shape:
+
+```text
+workspace/active/<project-id>/
+├── source/     immutable extracted/source representation
+├── working/    transaction mutation target
+├── output/     packaged outputs
+├── reports/    diagnostics/evidence reports
+├── patches/    explicit patch transactions/history
+└── state/      rebuildable derived indexes/cache
+```
+
+`workspace/saved/` may retain user-selected local project continuity.
+
+Nothing under normal artifact workspace paths is repository source authority.

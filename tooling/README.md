@@ -1,5 +1,12 @@
 # Tooling
 
-Repository-owned developer and verification tooling belongs here.
+Repository-owned developer/build/verification control plane.
 
-Tooling may orchestrate checks but must not duplicate semantic ownership from `packages/`.
+```text
+windows-toolchain/  normal Windows developer routing
+repository/         repository-structure/policy checks
+```
+
+`DEV.cmd` is the sole root developer entrypoint.
+
+Tooling may invoke canonical owners but must not duplicate Bedrock semantic logic.

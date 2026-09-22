@@ -1,5 +1,20 @@
 # Adapters
 
-Adapters translate Bedrock/Education source formats to and from canonical engine representations.
+Format-boundary translation for Bedrock/Education content.
 
-Adapters must not become owners of diagnostics, repair policy or compatibility decisions.
+## Purpose
+
+Adapters translate external representations to/from canonical engine models without becoming semantic-policy owners.
+
+Expected specialized adapters may include:
+
+```text
+mcworld / pack container handoff
+mcstructure / NBT
+LevelDB world database
+other specialized binary formats
+```
+
+Generic ZIP transport remains in `packages/archive/`.
+
+No adapter should be added until a concrete format boundary is implemented.

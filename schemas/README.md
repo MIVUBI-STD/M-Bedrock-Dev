@@ -1,5 +1,13 @@
 # Schemas
 
-Schema material used for structural validation and internal contracts.
+Structural schemas for internal persisted contracts or supported external formats.
 
-External schemas should retain provenance/version metadata rather than being copied without context.
+Schemas answer **shape**, not gameplay meaning.
+
+Requirements:
+
+- identify owner/consumer;
+- identify schema/version applicability;
+- preserve provenance for external schemas;
+- avoid large copied schema catalogs without active use;
+- preserve unknown fields when forward-compatible behavior requires it.

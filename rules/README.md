@@ -1,5 +1,13 @@
 # Rules
 
-Versioned Bedrock and Minecraft Education rules belong here when they cannot be represented directly by schemas or canonical engine contracts.
+Versioned compatibility/capability rules for Minecraft Bedrock and Minecraft Education.
 
-Rules must identify their edition/version applicability.
+Rules answer questions such as:
+
+- is a capability available in this edition/version?
+- is behavior stable, preview/beta, experimental, or Education-specific?
+- which parser/validator semantics apply?
+
+Rules do not own file transport or gameplay diagnostics.
+
+Every durable rule requires edition/version scope and provenance.
