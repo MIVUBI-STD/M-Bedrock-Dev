@@ -41,6 +41,22 @@ Every extracted reference retains line-level `SourceRef` evidence.
 
 This parser is not a complete Minecraft command grammar. Unsupported commands remain preserved as command text and can be expanded by evidence-driven analyzers later.
 
+## Structure identifiers
+
+For Add-On structures stored as:
+
+```text
+structures/<namespace>/<path>.mcstructure
+```
+
+the normalized command identifier is:
+
+```text
+<namespace>:<path>
+```
+
+This follows Bedrock's pack convention where the namespace is the folder containing the structure under `structures/`. Root-level structure files are retained as unnamespaced candidates rather than assigned an invented namespace.
+
 ## Reference resolution
 
 Reference resolution emits one of:

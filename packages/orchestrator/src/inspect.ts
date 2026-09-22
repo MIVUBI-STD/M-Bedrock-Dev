@@ -30,12 +30,21 @@ function functionIdentifier(path: string): string | undefined {
   return normalized.slice(index + marker.length, -".mcfunction".length);
 }
 
-function structureIdentifier(path: string): string | undefined {
+export function structureIdentifier(path: string): string | undefined {
   const marker = "/structures/";
   const normalized = "/" + path.replaceAll("\\", "/");
   const index = normalized.lastIndexOf(marker);
   if (index < 0 || !normalized.endsWith(".mcstructure")) return undefined;
-  return normalized.slice(index + marker.length, -".mcstructure".length);
+
+  const relative = normalized.slice(index + marker.length, -".mcstructure".length);
+  const slash = relative.indexOf("/");
+  if (slash < 0) return relative;
+
+  const namespace = relative.slice(0, slash);
+  const name = relative.slice(slash + 1);
+  if (!namespace || !name) return undefined;
+
+  return `${namespace}:${name}`;
 }
 
 export async function inspectDirectory(

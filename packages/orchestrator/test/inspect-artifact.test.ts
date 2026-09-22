@@ -9,7 +9,7 @@ import { inspectArtifact } from "../src/inspect-artifact.js";
 async function createSyntheticWorldTree(root: string): Promise<void> {
   const pack = join(root, "behavior_packs/demo");
   await mkdir(join(pack, "functions"), { recursive: true });
-  await mkdir(join(pack, "structures"), { recursive: true });
+  await mkdir(join(pack, "structures/demo"), { recursive: true });
 
   await writeFile(join(root, "levelname.txt"), "M-Bedrock-Dev Synthetic Fixture\n");
   await writeFile(join(pack, "manifest.json"), JSON.stringify({
@@ -36,7 +36,7 @@ async function createSyntheticWorldTree(root: string): Promise<void> {
     ].join("\n") + "\n",
   );
 
-  await writeFile(join(pack, "structures/test.mcstructure"), "opaque-fixture");
+  await writeFile(join(pack, "structures/demo/test.mcstructure"), "opaque-fixture");
 }
 
 describe("inspectArtifact", () => {
