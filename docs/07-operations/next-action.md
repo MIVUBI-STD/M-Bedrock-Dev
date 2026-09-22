@@ -1,16 +1,21 @@
 # Next Action
 
-Map Compatibility Fingerprint is now derived automatically from integrated inspection facts.
+Map-specific retest planning is now directly available from artifact or directory inspection.
 
-Current reliability sequence:
+Implemented reliability flow:
 
-1. automatic map fingerprint derivation — implemented;
-2. Invariant Registry — implemented;
-3. Regression Corpus model — implemented;
-4. Update Delta model — implemented;
-5. risk-based Retest Planner — implemented;
-6. connect inspectArtifact + update delta directly to a retest-plan API — next;
-7. add repository-owned validated regression/update catalogs;
-8. begin Phase B generative/state-machine testing only after catalog integration.
+1. inspect map;
+2. derive semantic compatibility fingerprint;
+3. combine with Minecraft Update Delta;
+4. combine with Regression Corpus;
+5. combine with Blindspot Coverage;
+6. emit RetestPlan with priority/reasons/domains/lanes.
 
-Do not infer runtime-sensitive capability tags without evidence.
+Next high-value work:
+
+1. repository-owned JSON catalog files for regressions, coverage and update deltas;
+2. loader + schema validation;
+3. official/curated update-delta ingestion;
+4. Phase B generative/state-machine test model.
+
+Keep retest planning separate from runtime execution.
