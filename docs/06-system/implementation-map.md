@@ -11,6 +11,7 @@ Use this before broad repository search.
 | Semantic dependency graph/invalidation | packages/graph/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Validation step/result contracts | packages/validation/ |
+| Reliability invariants/fingerprint/update delta/retest planning | packages/reliability/ |
 | Compatibility engine/version/track contracts | packages/compatibility/ |
 | Education edition/feature profile | packages/compatibility/education* |
 | Repair transactions/preconditions/application | packages/repair/ |
@@ -27,6 +28,7 @@ Use this before broad repository search.
 | Reference resolution | analyzers/references/ |
 | Derived diagnostics | analyzers/diagnostics/ |
 | Coordinate/topology derivation | analyzers/topology/ |
+| Regression fixtures | fixtures/regressions/ |
 | Versioned Bedrock/Education capability data | rules/ |
 | Structural/internal schemas | schemas/ |
 | Thin user interfaces | apps/ |

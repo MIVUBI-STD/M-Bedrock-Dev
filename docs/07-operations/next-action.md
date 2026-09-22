@@ -1,16 +1,21 @@
 # Next Action
 
-Planned topology repairs now have executable post-mutation validation.
+Blindspot Defense Phase A is now represented as first-class source contracts.
 
-Current high-value sequence:
+Implemented foundation:
 
-1. integrated diagnostics — implemented;
-2. conservative state/topology diagnostics — implemented;
-3. deterministic topology PatchTransaction planning — implemented;
-4. fingerprint + exact-line guarded working-copy apply — implemented;
-5. executable repair validation — implemented;
-6. explicit apply orchestration with automatic rollback on validation failure — next;
-7. package/reopen validation after accepted mutation;
-8. expand repair classes only from reproduced map bugs.
+1. Invariant Registry;
+2. Regression Corpus model;
+3. Map Compatibility Fingerprint;
+4. Minecraft Update Delta model;
+5. Blindspot Coverage states;
+6. Risk-based Retest Planner.
 
-A successful filesystem write is not an accepted repair unless validation passes.
+Next high-value integration:
+
+1. derive map fingerprints automatically from integrated inspection instead of manual fact input;
+2. add a repository-owned regression catalog format and validation;
+3. add update-delta ingestion adapters from curated/official evidence;
+4. only then start Phase B generative/state-machine testing.
+
+Do not build runtime fuzzing before the planner can reliably identify which invariant/domain/capability it is exercising.
