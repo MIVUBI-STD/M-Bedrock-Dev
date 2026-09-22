@@ -15,4 +15,5 @@ export * from "./source-mutation-campaign.js";
 export * from "./source-mutations.js";
 export * from "./state-identity.js";
 export * from "./state-mutations.js";
+export * from "./timing-mutations.js";
 export * from "./types.js";

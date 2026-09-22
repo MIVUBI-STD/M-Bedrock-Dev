@@ -32,7 +32,6 @@ export function mutateSelectorScope(command: string): SourceMutation[] {
 
     if (dangerousFilters.length === 0) continue;
 
-    const mutatedSelector = `@${selectorType}`;
     mutations.push({
       descriptor: {
         id: `selector-broaden-${match.index ?? 0}`,
@@ -43,7 +42,43 @@ export function mutateSelectorScope(command: string): SourceMutation[] {
       original: command,
       mutated:
         command.slice(0, match.index) +
-        mutatedSelector +
+        `@${selectorType}` +
+        command.slice((match.index ?? 0) + full.length),
+    });
+  }
+
+  return unique(mutations);
+}
+
+export function mutateTagFilterOmission(command: string): SourceMutation[] {
+  const mutations: SourceMutation[] = [];
+  const selectorPattern = /@(a|e|p|r|s)\[([^\]]+)\]/g;
+
+  for (const match of command.matchAll(selectorPattern)) {
+    const full = match[0];
+    const selectorType = match[1]!;
+    const args = (match[2] ?? "")
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+    const filtered = args.filter((part) => !part.startsWith("tag="));
+    if (filtered.length === args.length) continue;
+
+    const replacement = filtered.length > 0
+      ? `@${selectorType}[${filtered.join(",")}]`
+      : `@${selectorType}`;
+
+    mutations.push({
+      descriptor: {
+        id: `tag-filter-omit-${match.index ?? 0}`,
+        operator: "tag-filter-omit",
+        domain: "command-selector",
+        description: `Remove tag filter from selector ${full}.`,
+      },
+      original: command,
+      mutated:
+        command.slice(0, match.index) +
+        replacement +
         command.slice((match.index ?? 0) + full.length),
     });
   }
@@ -108,10 +143,63 @@ export function mutateStructureReference(command: string): SourceMutation[] {
   }];
 }
 
+export function mutateFunctionReference(command: string): SourceMutation[] {
+  const match = command.match(/^\s*function\s+(\S+)/i);
+  if (!match) return [];
+
+  const target = match[1]!;
+  return [{
+    descriptor: {
+      id: "function-reference-redirect",
+      operator: "function-reference-redirect",
+      domain: "command-reference",
+      description: `Redirect function reference ${target} to a non-canonical identifier.`,
+    },
+    original: command,
+    mutated: command.replace(target, `__mutation_missing__/${target}`),
+  }];
+}
+
+export function mutateScoreboardObjective(command: string): SourceMutation[] {
+  const tokens = command.trim().split(/\s+/);
+  if (tokens[0]?.toLowerCase() !== "scoreboard" || tokens[1]?.toLowerCase() !== "players") {
+    return [];
+  }
+
+  // Bedrock player operations place the first objective after the target.
+  const operation = tokens[2]?.toLowerCase();
+  if (!operation) return [];
+  const objectiveIndex =
+    ["set", "add", "remove", "test", "random", "reset"].includes(operation)
+      ? 4
+      : operation === "operation"
+        ? 4
+        : undefined;
+
+  if (objectiveIndex === undefined || !tokens[objectiveIndex]) return [];
+  const originalObjective = tokens[objectiveIndex]!;
+  const copy = [...tokens];
+  copy[objectiveIndex] = `__mutation_missing__${originalObjective}`;
+
+  return [{
+    descriptor: {
+      id: "scoreboard-objective-substitution",
+      operator: "scoreboard-objective-substitution",
+      domain: "command-reference",
+      description: `Substitute scoreboard objective ${originalObjective}.`,
+    },
+    original: command,
+    mutated: copy.join(" "),
+  }];
+}
+
 export function mutateCommandSource(command: string): SourceMutation[] {
   return unique([
     ...mutateSelectorScope(command),
+    ...mutateTagFilterOmission(command),
     ...mutateAbsoluteCoordinates(command),
     ...mutateStructureReference(command),
+    ...mutateFunctionReference(command),
+    ...mutateScoreboardObjective(command),
   ]);
 }
