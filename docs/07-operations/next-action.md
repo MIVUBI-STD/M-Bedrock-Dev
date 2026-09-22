@@ -1,21 +1,16 @@
 # Next Action
 
-Blindspot Defense Phase A is now represented as first-class source contracts.
+Map Compatibility Fingerprint is now derived automatically from integrated inspection facts.
 
-Implemented foundation:
+Current reliability sequence:
 
-1. Invariant Registry;
-2. Regression Corpus model;
-3. Map Compatibility Fingerprint;
-4. Minecraft Update Delta model;
-5. Blindspot Coverage states;
-6. Risk-based Retest Planner.
+1. automatic map fingerprint derivation — implemented;
+2. Invariant Registry — implemented;
+3. Regression Corpus model — implemented;
+4. Update Delta model — implemented;
+5. risk-based Retest Planner — implemented;
+6. connect inspectArtifact + update delta directly to a retest-plan API — next;
+7. add repository-owned validated regression/update catalogs;
+8. begin Phase B generative/state-machine testing only after catalog integration.
 
-Next high-value integration:
-
-1. derive map fingerprints automatically from integrated inspection instead of manual fact input;
-2. add a repository-owned regression catalog format and validation;
-3. add update-delta ingestion adapters from curated/official evidence;
-4. only then start Phase B generative/state-machine testing.
-
-Do not build runtime fuzzing before the planner can reliably identify which invariant/domain/capability it is exercising.
+Do not infer runtime-sensitive capability tags without evidence.

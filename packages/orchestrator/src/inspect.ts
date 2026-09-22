@@ -31,6 +31,7 @@ import type {
 } from "./types.js";
 import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { planInspectionRepairs } from "./repair-planning.js";
+import { deriveReliabilityFingerprint } from "./reliability-fingerprint.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -297,6 +298,22 @@ export async function inspectDirectory(
     return normalized.includes("/db/");
   });
 
+  const reliability = deriveReliabilityFingerprint({
+    mapId: artifactId,
+    ...(sourceFingerprint ? { artifactFingerprint: sourceFingerprint } : {}),
+    packs,
+    functions: parsedFunctions.map((item) => item.parsed),
+    scripts: parsedScripts.map((item) => item.parsed),
+    structures: nodes.filter((node) => node.kind === "structure").length,
+    parsedStructures,
+    worldDatabasePresent: dbFiles.length > 0,
+    stateAccesses: topology.stateAccesses.length,
+    broadStateWrites: topology.broadWrites,
+    repeatedTopologyCandidates: topology.candidates.length,
+    diagnostics,
+    target,
+  });
+
   return {
     files: files.length,
     packs,
@@ -316,6 +333,10 @@ export async function inspectDirectory(
       resolvedSpatialEffects: topology.resolvedSpatialEffects.length,
       repeatedCandidates: topology.candidates.length,
       linearOutliers: topology.linearOutliers.length,
+    },
+    reliability: {
+      fingerprintId: reliability.id,
+      fingerprint: reliability.fingerprint,
     },
     repairCandidates: planInspectionRepairs(topology, sourceFingerprint),
     targetCompatibility: {

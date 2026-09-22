@@ -1,6 +1,7 @@
 import type { MinecraftEdition } from "../../compatibility/src/types.js";
 import type { EducationFeatureState } from "../../compatibility/src/education.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { MapCompatibilityFingerprint } from "../../reliability/src/types.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 
 export interface InspectTargetProfile {
@@ -42,6 +43,10 @@ export interface InspectDirectoryResult {
     resolvedSpatialEffects: number;
     repeatedCandidates: number;
     linearOutliers: number;
+  };
+  reliability: {
+    fingerprintId: string;
+    fingerprint: MapCompatibilityFingerprint;
   };
   repairCandidates: InspectionRepairCandidate[];
   targetCompatibility: {
