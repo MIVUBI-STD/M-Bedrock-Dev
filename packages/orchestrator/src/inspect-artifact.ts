@@ -1,10 +1,11 @@
 import { mkdtemp, mkdir, cp, rm } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { NORMAL_EXTRACTION_BUDGET } from "../../archive/src/budgets.js";
 import { extractZipSafely, inventoryZip } from "../../archive/src/zip-transport.js";
 import { sha256File, artifactIdFromFingerprint } from "../../artifact/src/fingerprint.js";
-import { inspectDirectory, type InspectDirectoryResult } from "./inspect.js";
+import { inspectDirectory } from "./inspect.js";
+import type { InspectDirectoryResult, InspectTargetProfile } from "./types.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -12,7 +13,10 @@ export interface InspectArtifactResult extends InspectDirectoryResult {
   archiveEntries: number;
 }
 
-export async function inspectArtifact(path: string): Promise<InspectArtifactResult> {
+export async function inspectArtifact(
+  path: string,
+  target: InspectTargetProfile = {},
+): Promise<InspectArtifactResult> {
   const fingerprint = await sha256File(path);
   const artifactId = artifactIdFromFingerprint(fingerprint);
   const sessionRoot = await mkdtemp(join(tmpdir(), "m-bedrock-inspect-"));
@@ -26,7 +30,7 @@ export async function inspectArtifact(path: string): Promise<InspectArtifactResu
     await extractZipSafely(path, sourceRoot, NORMAL_EXTRACTION_BUDGET);
     await cp(sourceRoot, workingRoot, { recursive: true });
 
-    const result = await inspectDirectory(workingRoot, artifactId);
+    const result = await inspectDirectory(workingRoot, artifactId, target);
     return {
       artifactId,
       fingerprint,
