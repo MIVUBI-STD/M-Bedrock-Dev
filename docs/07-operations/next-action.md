@@ -1,21 +1,21 @@
 # Next Action
 
-Phase B generative reliability testing has started with multiplayer/session lifecycle.
+Phase B now has a shared Runtime Observation Contract.
 
 Implemented:
 
-1. pure multiplayer session state model;
-2. join/assign/start/play/progress/complete/disconnect/reconnect/reset actions;
-3. reusable session invariant checker;
-4. fast-check property-based sequence generation and shrinking;
-5. concurrent-arena cutscene behavior modeled as independent;
-6. disconnect/reconnect reset semantics modeled.
+1. pure multiplayer/session model;
+2. generative action sequences;
+3. reusable invariants;
+4. runtime player/arena/entity/chunk observation schema;
+5. normalization with explicit unknown evidence;
+6. expected-model vs runtime divergence reporting.
 
 Next:
 
-1. add model-based runtime observation contract so Minecraft state snapshots can be compared with this model;
-2. add targeted concurrency scenarios and timing perturbations;
-3. add regression-specific generators for known cutscene/session failures;
-4. only then connect to GameTest/live Minecraft automation.
+1. targeted concurrency/timing perturbation scenarios;
+2. regression-specific generators for the known cutscene/session isolation bug;
+3. observation adapters for scoreboard/tag-driven Bedrock state;
+4. only then connect a GameTest/live Minecraft runner.
 
-The generative model is expected behavior, not runtime proof.
+Runtime adapters must emit evidence; they must not duplicate correctness rules.
