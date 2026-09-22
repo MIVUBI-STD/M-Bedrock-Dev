@@ -1,22 +1,28 @@
 # Current Validation
 
-Status: FOUNDATION ONLY
+Status: FOUNDATION + ARTIFACT/ARCHIVE CONTRACT
 
 Verified remotely on 2026-09-22:
 
 - repository exists;
 - `main` contains the initialization commit;
-- `Local` exists as active development authority;
-- foundation architecture and documentation are being established on `Local`.
+- `Local` is active development authority;
+- artifact identity/fingerprint contracts exist;
+- extension hints are separated from detected truth;
+- archive path safety policy exists;
+- archive inventory resource-budget validation exists;
+- workspace/session contracts separate source, working, output, reports, patches and state;
+- focused Vitest regression tests are present for path safety and inventory rejection.
 
-Not yet proven:
+Not yet proven in this execution context:
 
 - dependency installation;
 - TypeScript compilation;
-- tests;
-- archive safety;
-- Bedrock parsing;
+- Vitest execution;
+- ZIP transport/extraction;
+- deterministic repackaging;
+- Bedrock content discovery;
 - world/package roundtrip;
 - Minecraft runtime behavior.
 
-Do not report implementation readiness above this boundary.
+Proof level remains source/static inspection only until CI or local execution confirms the code.
