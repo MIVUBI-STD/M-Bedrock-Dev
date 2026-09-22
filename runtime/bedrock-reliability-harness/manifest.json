@@ -1,0 +1,25 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "M-Bedrock Reliability Harness",
+    "description": "Development-only runtime evidence emitter for M-Bedrock-Dev",
+    "uuid": "4ecf62c0-95c7-4ddc-a2ca-e9dd7ad3aa22",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 26, 40]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "b54bcb3e-39f7-47f7-a759-fbddb786872a",
+      "version": [0, 1, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.9.0"
+    }
+  ]
+}

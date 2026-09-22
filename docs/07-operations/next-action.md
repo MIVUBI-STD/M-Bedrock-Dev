@@ -1,23 +1,23 @@
 # Next Action
 
-Phase B now has a Script API/GameTest-compatible runtime evidence emitter.
+Phase B now has a deployable live Bedrock evidence harness and offline log ingestion.
 
 Implemented:
 
-1. player capture through tags + selected scoreboard objectives;
-2. arena score capture through configured scoreboard participants;
-3. selected entity capture by dimension query;
-4. server tick capture;
-5. optional version/artifact provenance;
-6. capture failures preserved as explicit issues;
-7. raw capture → semantic observation pipeline;
-8. no direct @minecraft/server dependency in reusable core.
+1. Script API development behavior-pack harness;
+2. scheduled evidence capture with system.runInterval;
+3. player tags/scores capture;
+4. arena scoreboard capture;
+5. selected entity evidence capture;
+6. structured console transport with [M-BEDROCK-OBS] prefix;
+7. offline content-log parser;
+8. correctness remains outside the runtime pack.
 
 Next:
 
-1. create a deployable thin Script API harness/example pack that passes real world/system objects into the emitter;
-2. define output transport for snapshots (script event / console / persisted capture);
-3. run the historical cutscene concurrency scenario in live Minecraft;
-4. compare captured snapshots against the deterministic expected model.
+1. build live regression runner that aligns a timed scenario with captured ticks;
+2. compare observed snapshots against the expected session model at checkpoints;
+3. produce a compact incident bundle on first divergence;
+4. first target: historical multi-arena cutscene queue regression.
 
-The runtime harness must remain transport-only; correctness stays in packages/reliability.
+The harness is development instrumentation, not production gameplay code.
