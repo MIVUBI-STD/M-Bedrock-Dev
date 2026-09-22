@@ -4,6 +4,7 @@ Use this before broad repository search.
 
 | Responsibility | Canonical owner |
 |---|---|
+| Shared dependency-neutral primitives | `packages/common/` |
 | Artifact kind/identity/fingerprint | `packages/artifact/` |
 | ZIP/archive safety, inventory, package transport | `packages/archive/` |
 | Workspace/session/file inventory | `packages/project-model/` |
@@ -23,6 +24,7 @@ Use this before broad repository search.
 | Structural/internal schemas | `schemas/` |
 | Thin user interfaces | `apps/` |
 | Root developer routing | `DEV.cmd` → `tooling/windows-toolchain/dev.ps1` |
+| Repository/source boundary verification | `tooling/repository/` |
 | Stable project facts | `CONTEXT.md` |
 | GitHub execution | `GITHUB_RULES.md` |
 | Current continuation | `docs/07-operations/next-action.md` |
@@ -40,5 +42,7 @@ canonical packages + analyzers
         ↓
 adapters / rules / schemas
 ```
+
+Use `architecture.md` for the enforceable import-boundary detail.
 
 No interface may become a second owner of Bedrock semantics.

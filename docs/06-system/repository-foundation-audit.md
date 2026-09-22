@@ -13,6 +13,7 @@ This document records which mature repository patterns are adopted into M-Bedroc
 |---|---|
 | Local working authority / main stable authority | same branch model |
 | Root AGENTS routing | Bedrock execution contexts + task classes |
+| Nearest-owner instructions | scoped AGENTS under apps/packages/analyzers/adapters/rules/schemas/fixtures/tooling/workspace |
 | Dedicated GITHUB_RULES | exact-ref, GitHub-first, atomic delivery, failure/STOP policy |
 | Stable CONTEXT owner | Bedrock product/architecture facts only |
 | Single docs router | seven Bedrock-specific documentation domains |
@@ -29,6 +30,7 @@ This document records which mature repository patterns are adopted into M-Bedroc
 | Categorized logical commits | same commit discipline |
 | Security trust-boundary policy | archive/script/NBT/LevelDB/filesystem focus |
 | Targeted + integrated verification lanes | repository policy lane + integrated Verify |
+| Enforced architecture boundary | static import-direction verifier |
 
 ## Deliberately not copied
 
@@ -59,6 +61,7 @@ developer ergonomics
 proof discipline
 context efficiency
 maintenance discipline
+enforced dependency direction
 STOP behavior
 ```
 

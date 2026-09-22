@@ -1,5 +1,4 @@
-import type { WorldPosition } from "../../../analyzers/topology/src/coordinate-context.js";
-import type { Translation3 } from "../../../analyzers/topology/src/signature.js";
+import type { Translation3, WorldPosition } from "../../common/src/spatial.js";
 
 export function translateWorldPosition(
   position: WorldPosition,

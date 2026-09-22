@@ -1,10 +1,7 @@
 import type { Coordinate3, CoordinateValue } from "../../commands/src/coordinates.js";
+import type { WorldPosition } from "../../../packages/common/src/spatial.js";
 
-export interface WorldPosition {
-  x: number;
-  y: number;
-  z: number;
-}
+export type { WorldPosition } from "../../../packages/common/src/spatial.js";
 
 export interface CoordinateContext {
   origin: WorldPosition;

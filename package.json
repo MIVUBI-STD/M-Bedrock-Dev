@@ -9,7 +9,8 @@
   },
   "scripts": {
     "check": "npm run verify:full",
-    "verify:repository": "node tooling/repository/verify.mjs",
+    "verify:repository": "node tooling/repository/verify.mjs && node tooling/repository/verify-boundaries.mjs",
+    "verify:boundaries": "node tooling/repository/verify-boundaries.mjs",
     "verify:source": "npm run typecheck && npm test",
     "verify:full": "npm run verify:repository && npm run verify:source",
     "typecheck": "tsc --noEmit",

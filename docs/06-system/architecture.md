@@ -1,72 +1,56 @@
 # Architecture
 
-## Dependency direction
+M-Bedrock-Dev uses semantic ownership and one-way dependency direction.
+
+## High-level flow
 
 ```text
 apps / future interfaces
         ↓
-canonical packages
+packages/orchestrator
         ↓
-adapters / analyzers / rules / schemas
+packages/* + analyzers/*
+        ↓
+adapters / rules / schemas
 ```
 
-Interfaces must not become owners of Bedrock semantics.
-
-## Planned canonical modules
+More precisely:
 
 ```text
-packages/artifact         artifact identity, fingerprints, immutable source boundary
-packages/archive          safe container extraction/repack primitives
-packages/project-model    normalized content model
-packages/graph            semantic references and dependency graph
-packages/diagnostics      typed findings and diagnostic contracts
-packages/repair           patch plan + transactional mutations
-packages/validation       static/package/runtime evidence contracts
-packages/compatibility    edition/version capability profiles
-packages/report           machine + human-readable reporting
-packages/common           truly shared low-level primitives only
+artifact + archive
+        ↓
+project-model
+        ↓
+analyzers
+        ↓
+graph + diagnostics
+        ↓
+repair
+        ↓
+orchestrator composition
+        ↓
+apps/interfaces
 ```
 
-## Format adapters
+The arrows express semantic flow, not permission for every source module to import every layer.
 
-Adapters translate source formats into canonical representations and back. They do not own policy.
+## Import boundaries
 
-Initial adapter lanes:
+- `apps/` must not import analyzers directly; use orchestrator/core APIs.
+- reusable `packages/*` must not import `apps/`.
+- only `packages/orchestrator` may directly compose analyzers.
+- analyzers must not depend on repair or orchestrator.
+- adapters must not depend on presentation, repair policy, or orchestration.
+- genuinely shared dependency-neutral primitives belong in `packages/common`, not in a generic utils dumping ground.
 
-```text
-mcworld
-mcpack
-mcaddon
-behavior-pack
-resource-pack
-leveldb
-structure
-```
+These constraints are checked by `tooling/repository/verify-boundaries.mjs`.
 
-## Analyzer lanes
+## Semantic boundaries
 
-Analyzers derive semantic facts and findings without mutating source:
+Artifact graph, physical inventory, normalized project model, semantic graph, diagnostics, patch transactions, and runtime proof are separate authorities.
 
-```text
-manifests
-functions / commands
-scripting
-entities
-structures
-references
-multiplayer / arena
-world
-```
+Do not collapse these into one global project state object.
 
-## Anti-patterns
+## Interface rule
 
-Do not introduce:
-
-- one giant Bedrock manager;
-- MCP-only business logic;
-- duplicate file/reference registries;
-- analyzer-side mutation;
-- scattered edition/version checks;
-- silent source overwrite;
-- repair logic that cannot describe its affected scope;
-- broad compatibility fallbacks without evidence.
+CLI, future MCP, future desktop, CI, and automation are clients of the same deterministic engine. No interface gets a private implementation of Bedrock semantics.
