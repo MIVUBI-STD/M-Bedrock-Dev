@@ -1,22 +1,24 @@
 # Next Action
 
-Phase B now has a bounded runtime-control protocol.
+Phase B now has a complete evidence/report chain for end-to-end regression sessions.
 
 Implemented:
 
-1. generic runtime control plan from timed session scenarios;
-2. small action vocabulary: assign/start/disconnect-request/reconnect/reset;
-3. exact-tick queue in the development Script API harness;
-4. scriptevent transport for control messages;
-5. acknowledgement records for executed/failed actions;
-6. no arbitrary command-execution surface;
-7. explicit limitation: real network disconnect still needs an external client driver.
+1. bounded runtime control protocol;
+2. control acknowledgement parser;
+3. runtime observation capture/parser;
+4. explicit tick anchoring;
+5. expected-vs-observed comparison;
+6. incident bundle;
+7. unified regression session report;
+8. verdict separation: pass, runtime-divergence, control-failure, incomplete-evidence.
 
 Next:
 
-1. add project-specific control mappings/functions instead of direct tag conventions;
-2. add acknowledgement parser and merge control evidence with observation evidence;
-3. produce one end-to-end regression session report;
-4. then local Minecraft validation of the multi-arena cutscene scenario.
+1. project-specific control mappings for a real target map;
+2. package/install the development harness into that map;
+3. run the 0/1/2-tick multi-arena cutscene scenario locally;
+4. feed the resulting content log into the report pipeline;
+5. convert any first live divergence into a regression fixture.
 
-The runtime-control layer is orchestration only, not gameplay authority.
+No live proof is claimed until the local Minecraft run is performed.
