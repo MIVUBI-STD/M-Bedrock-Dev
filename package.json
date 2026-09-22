@@ -1,6 +1,6 @@
 {
   "name": "m-bedrock-dev",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Minecraft Bedrock and Minecraft Education content-engineering workspace",
@@ -8,7 +8,10 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "check": "npm run typecheck && npm run test",
+    "check": "npm run verify:full",
+    "verify:repository": "node tooling/repository/verify.mjs",
+    "verify:source": "npm run typecheck && npm test",
+    "verify:full": "npm run verify:repository && npm run verify:source",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "cli": "tsx apps/cli/src/main.ts"

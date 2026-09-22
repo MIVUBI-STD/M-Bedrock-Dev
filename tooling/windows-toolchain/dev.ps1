@@ -16,9 +16,7 @@ try {
             npm install --no-audit --no-fund
         }
         "check" {
-            npm run typecheck
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            npm test
+            npm run verify:full
         }
         "test" {
             npm test -- @Arguments
@@ -30,9 +28,7 @@ try {
             npm run cli -- inspect $Arguments[0]
         }
         "finalize-local" {
-            npm run typecheck
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            npm test
+            npm run verify:full
         }
         default {
             Write-Host "M-Bedrock-Dev"
@@ -43,6 +39,7 @@ try {
             Write-Host "  DEV.cmd finalize-local"
         }
     }
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 finally {
     Pop-Location

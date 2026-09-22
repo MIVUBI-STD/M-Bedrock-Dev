@@ -1,18 +1,21 @@
 name: Verify
 
 on:
-  push:
-    branches:
-      - Local
-      - main
+  workflow_dispatch:
   pull_request:
     branches:
       - Local
       - main
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
@@ -30,6 +33,9 @@ jobs:
 
       - name: Install
         run: npm install --no-audit --no-fund
+
+      - name: Repository policy
+        run: npm run verify:repository
 
       - name: Typecheck
         run: npm run typecheck
