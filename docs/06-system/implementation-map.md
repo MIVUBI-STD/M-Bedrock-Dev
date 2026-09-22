@@ -13,6 +13,8 @@ Use this before broad repository search.
 | Compatibility engine/version/track contracts | `packages/compatibility/` |
 | Repair transactions/preconditions/application | `packages/repair/` |
 | Cross-owner inspect orchestration | `packages/orchestrator/` |
+| Generic Bedrock NBT transport | `adapters/nbt/` |
+| mcstructure semantic normalization | `adapters/mcstructure/` |
 | File/path discovery | `analyzers/discovery/` |
 | Manifest semantics + compatibility fact extraction | `analyzers/manifest/` |
 | Function source/reference extraction | `analyzers/functions/` |
@@ -20,7 +22,6 @@ Use this before broad repository search.
 | Reference resolution | `analyzers/references/` |
 | Derived diagnostics | `analyzers/diagnostics/` |
 | Coordinate/topology derivation | `analyzers/topology/` |
-| Format-specific future adapters | `adapters/` |
 | Versioned Bedrock/Education capability data | `rules/` |
 | Structural/internal schemas | `schemas/` |
 | Thin user interfaces | `apps/` |
