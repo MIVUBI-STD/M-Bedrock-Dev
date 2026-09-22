@@ -1,14 +1,12 @@
 # Next Action
 
-Current phase: CI verification has been introduced.
-
 Immediate sequence:
 
-1. observe the first Verify workflow on Local;
-2. inspect failing job logs if any;
-3. repair compile/test defects at their exact owners;
-4. repeat until the exact Local head is green;
-5. then add a minimized valid Bedrock mcworld fixture and deterministic repackage/reopen test;
-6. only after executable package proof, run the pipeline against a real project map.
+1. obtain exact-head CI proof for synthetic archive package/inspect and deterministic-output tests;
+2. repair any transport defects exposed by that run;
+3. add a minimized genuine Bedrock mcworld fixture or locally supplied known-good world;
+4. verify inspect → repackage → reopen against that real Bedrock artifact;
+5. then run inspect against a real project map;
+6. only after package proof, extend CLI toward diagnose/repair/package commands.
 
-MCP remains deferred until the core pipeline has executable proof.
+Do not equate synthetic ZIP success with Minecraft runtime compatibility.

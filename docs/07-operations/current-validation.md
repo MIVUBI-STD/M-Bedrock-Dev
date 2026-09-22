@@ -1,20 +1,25 @@
 # Current Validation
 
-Status: CI TYPECHECK REMEDIATION
+Status: CI GREEN; PACKAGE PIPELINE EXPANSION PENDING EXACT-HEAD PROOF
 
-Observed on GitHub Actions, 2026-09-22:
+GitHub Actions proof on 2026-09-22:
 
-- Verify workflow is active on Local;
-- Node.js 24 setup succeeds;
-- dependency installation succeeds;
-- first typecheck run exposed exactOptionalPropertyTypes and module-mode defects;
-- those defects have been remediated at their canonical owners;
-- a new exact-head CI run is required before claiming typecheck/test success.
+- exact commit 27852249e008c6f178db68d3f7ff566ead4a02c8 completed Verify successfully;
+- Node.js 24 setup succeeded;
+- dependency installation succeeded;
+- TypeScript strict typecheck succeeded;
+- all then-current Vitest tests succeeded.
 
-Pending proof:
+The next head adds executable tests for:
 
-- TypeScript typecheck on remediation head;
-- Vitest execution;
-- minimized valid mcworld fixture;
-- deterministic repackage/reopen;
+- synthetic mcworld-shaped archive packaging and inspection;
+- byte-identical deterministic packaging for identical source trees.
+
+These new tests require their own exact-head CI result before package-pipeline proof is promoted.
+
+Still not proven:
+
+- a genuine Minecraft-loadable mcworld fixture;
+- Minecraft package import/load acceptance;
+- production-map analysis;
 - Minecraft runtime behavior.
