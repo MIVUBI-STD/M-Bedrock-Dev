@@ -3,6 +3,7 @@ export * from "./catalogs.js";
 export * from "./coverage.js";
 export * from "./fingerprint.js";
 export * from "./invariants.js";
+export * from "./portfolio-planner.js";
 export * from "./regressions.js";
 export * from "./retest-planner.js";
 export * from "./types.js";

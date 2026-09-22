@@ -1,18 +1,21 @@
 # Next Action
 
-Persistent reliability catalogs and initial update intelligence are now connected.
+Reliability intelligence now supports portfolio-level Minecraft update impact planning.
 
 Implemented:
 
-1. regression and blindspot coverage catalogs;
-2. versioned Minecraft update-delta catalog;
-3. evidence/provenance model for update ingestion;
-4. curated 1.26.40 high-value reliability delta from official Creator notes;
-5. catalog-backed artifact/directory retest planning.
+1. persistent regression and coverage catalogs;
+2. sourced Minecraft update deltas;
+3. automatic per-map compatibility fingerprints;
+4. per-map retest planning;
+5. multi-map priority grouping for one update;
+6. optional stored fingerprint cache lane.
 
 Next high-value step:
 
-1. multi-map impact planner: one Minecraft update → prioritized portfolio of maps;
-2. then Phase B generative/state-machine testing targeted by each map's affected invariants/domains.
+1. Phase B generative/state-machine testing;
+2. start with multiplayer/session lifecycle because historical regression and coverage gaps already justify it;
+3. model join/start/disconnect/reconnect/reset/concurrent-start sequences;
+4. keep runtime execution separate until the generated state model and invariants are deterministic.
 
-Do not expand update catalogs into full changelog mirrors; keep only reliability-relevant semantic changes.
+Do not treat P3 as proof of safety.
