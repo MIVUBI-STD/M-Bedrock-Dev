@@ -36,11 +36,12 @@ export function analyzeCommand(command: string, source: SourceRef): CommandAnaly
     const to = parseCoordinate3(tokens, 4);
     const block = tokens[7];
     if (from && to && block) {
+      const mode = tokens[8];
       effects.push({
         kind: "fill",
         region: { from, to },
         block,
-        mode: tokens[8],
+        ...(mode ? { mode } : {}),
         source,
       });
       return { command, effects };
@@ -51,11 +52,12 @@ export function analyzeCommand(command: string, source: SourceRef): CommandAnaly
     const position = parseCoordinate3(tokens, 1);
     const block = tokens[4];
     if (position && block) {
+      const mode = tokens[5];
       effects.push({
         kind: "setblock",
         position,
         block,
-        mode: tokens[5],
+        ...(mode ? { mode } : {}),
         source,
       });
       return { command, effects };
@@ -67,11 +69,12 @@ export function analyzeCommand(command: string, source: SourceRef): CommandAnaly
     const to = parseCoordinate3(tokens, 4);
     const destination = parseCoordinate3(tokens, 7);
     if (from && to && destination) {
+      const mode = tokens[10];
       effects.push({
         kind: "clone",
         sourceRegion: { from, to },
         destination,
-        mode: tokens[10],
+        ...(mode ? { mode } : {}),
         source,
       });
       return { command, effects };

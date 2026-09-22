@@ -1,20 +1,20 @@
 # Current Validation
 
-Status: CI VERIFICATION ENABLED
+Status: CI TYPECHECK REMEDIATION
 
-Verified remotely on 2026-09-22:
+Observed on GitHub Actions, 2026-09-22:
 
-- prior artifact, graph, analyzer, topology, repair, archive transport and orchestration source remains present;
-- GitHub Actions verification is configured for Local, main, pull requests and manual dispatch;
-- CI installs dependencies under Node.js 24, runs TypeScript typecheck, then Vitest;
-- the verification workflow uses read-only repository contents permission.
+- Verify workflow is active on Local;
+- Node.js 24 setup succeeds;
+- dependency installation succeeds;
+- first typecheck run exposed exactOptionalPropertyTypes and module-mode defects;
+- those defects have been remediated at their canonical owners;
+- a new exact-head CI run is required before claiming typecheck/test success.
 
-Pending executable proof:
+Pending proof:
 
-- first workflow completion on the new CI commit;
-- any compile/test fixes revealed by that run;
+- TypeScript typecheck on remediation head;
+- Vitest execution;
 - minimized valid mcworld fixture;
-- deterministic repackage and reopen verification;
+- deterministic repackage/reopen;
 - Minecraft runtime behavior.
-
-Do not promote proof above the latest completed CI result.

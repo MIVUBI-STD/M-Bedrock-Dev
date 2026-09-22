@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { join, posix } from "node:path";
+import { join } from "node:path";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
 import { discoverPackCandidates } from "../../../analyzers/discovery/src/pack-discovery.js";
 import { analyzeManifest, classifyPackFromManifest } from "../../../analyzers/manifest/src/analyze.js";
@@ -45,17 +45,19 @@ export async function inspectDirectory(
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
 
-  const packs = [];
+  const packs: InspectDirectoryResult["packs"] = [];
   const manifests = [];
   for (const pack of discoverPackCandidates(files)) {
     const raw = JSON.parse(await readFile(join(root, pack.manifestPath), "utf8")) as unknown;
     const manifest = analyzeManifest(raw, { artifactId, relativePath: pack.manifestPath });
     manifests.push(manifest);
-    packs.push({
+
+    const normalizedPack: InspectDirectoryResult["packs"][number] = {
       root: pack.root,
       type: classifyPackFromManifest(manifest),
-      uuid: manifest.headerUuid,
-    });
+    };
+    if (manifest.headerUuid) normalizedPack.uuid = manifest.headerUuid;
+    packs.push(normalizedPack);
   }
 
   const graph = new SemanticGraph();

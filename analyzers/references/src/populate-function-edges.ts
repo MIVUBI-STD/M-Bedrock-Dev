@@ -1,6 +1,6 @@
 import type { ParsedFunction } from "../../functions/src/types.js";
 import { SemanticGraph } from "../../../packages/graph/src/graph.js";
-import type { SemanticNode, EdgeType } from "../../../packages/graph/src/types.js";
+import type { SemanticNode, EdgeType, SemanticEdge } from "../../../packages/graph/src/types.js";
 import { resolveByIdentifier } from "./resolve.js";
 
 function edgeTypeForReference(kind: ParsedFunction["references"][number]["kind"]): EdgeType {
@@ -34,15 +34,17 @@ export function populateFunctionEdges(
     });
 
     const resolution = resolveByIdentifier(compatible, identifier);
-
-    graph.addEdge({
+    const edge: Omit<SemanticEdge, "id"> = {
       from: sourceNode.id,
       type: edgeTypeForReference(ref.kind),
       targetIdentifier: identifier,
       status: resolution.status,
-      to: resolution.to,
-      candidates: resolution.candidates,
       evidence: { source: ref.source },
-    });
+    };
+
+    if (resolution.to) edge.to = resolution.to;
+    if (resolution.candidates) edge.candidates = resolution.candidates;
+
+    graph.addEdge(edge);
   }
 }

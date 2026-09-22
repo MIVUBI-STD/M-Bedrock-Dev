@@ -2,6 +2,7 @@
   "name": "m-bedrock-dev",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Minecraft Bedrock and Minecraft Education content-engineering workspace",
   "engines": {
     "node": ">=24 <25"
