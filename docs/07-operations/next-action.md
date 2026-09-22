@@ -1,23 +1,22 @@
 # Next Action
 
-Phase B now has an offline live-regression runner over captured Minecraft evidence.
+Phase B now has a bounded runtime-control protocol.
 
 Implemented:
 
-1. deployable Script API evidence harness;
-2. content-log snapshot ingestion;
-3. explicit runtime tick anchor;
-4. expected state reconstruction per captured tick;
-5. runtime/model comparison at checkpoints;
-6. first-divergence incident bundle;
-7. nearby snapshot context;
-8. 0/1/2-tick multi-arena cutscene regression scenarios.
+1. generic runtime control plan from timed session scenarios;
+2. small action vocabulary: assign/start/disconnect-request/reconnect/reset;
+3. exact-tick queue in the development Script API harness;
+4. scriptevent transport for control messages;
+5. acknowledgement records for executed/failed actions;
+6. no arbitrary command-execution surface;
+7. explicit limitation: real network disconnect still needs an external client driver.
 
 Next:
 
-1. add a thin runtime-control protocol for triggering named test actions at exact ticks;
-2. keep action execution separate from evidence capture;
-3. implement only the small action vocabulary required by session regressions;
-4. then run the cutscene scenario end-to-end in a local Minecraft environment.
+1. add project-specific control mappings/functions instead of direct tag conventions;
+2. add acknowledgement parser and merge control evidence with observation evidence;
+3. produce one end-to-end regression session report;
+4. then local Minecraft validation of the multi-arena cutscene scenario.
 
-Do not infer scenario start ticks from logs.
+The runtime-control layer is orchestration only, not gameplay authority.
