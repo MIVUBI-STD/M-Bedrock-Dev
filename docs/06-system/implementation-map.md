@@ -17,6 +17,7 @@ Use this before broad repository search.
 | mcstructure semantic normalization | adapters/mcstructure/ |
 | Bedrock LevelDB snapshot/transport | adapters/leveldb/ |
 | World DB semantic decoding | analyzers/world-db/ |
+| Script source/module/capability analysis | analyzers/scripts/ |
 | File/path discovery | analyzers/discovery/ |
 | Manifest semantics + compatibility fact extraction | analyzers/manifest/ |
 | Function source/reference extraction | analyzers/functions/ |

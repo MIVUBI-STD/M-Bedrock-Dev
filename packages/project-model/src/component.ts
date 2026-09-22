@@ -1,7 +1,6 @@
 import type { SourceRef } from "./source-ref.js";
 
 export type ComponentKind =
-  | "world"
   | "pack"
   | "manifest"
   | "function"
@@ -19,19 +18,21 @@ export type ComponentKind =
   | "script_file"
   | "scoreboard_objective"
   | "tag"
+  | "world"
   | "unknown";
 
 export interface ComponentIdentity {
-  id: string;
   kind: ComponentKind;
-  namespace?: string;
+  scope: string;
   identifier: string;
 }
 
 export interface ProjectComponent {
+  id: string;
   identity: ComponentIdentity;
   source: SourceRef;
   contentHash?: string;
   semanticHash?: string;
   parserVersion?: string;
+  data?: unknown;
 }

@@ -1,19 +1,10 @@
-import type { ComponentKind } from "../../project-model/src/component.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
-
-export type NodeId = string;
-
-export interface SemanticNode {
-  id: NodeId;
-  kind: ComponentKind;
-  identifier: string;
-  source: SourceRef;
-  metadata?: Readonly<Record<string, unknown>>;
-}
+import type { ProjectComponent } from "../../project-model/src/component.js";
 
 export type EdgeType =
-  | "CONTAINS"
   | "CALLS"
+  | "IMPORTS_SCRIPT"
+  | "IMPORTS_MINECRAFT_MODULE"
   | "LOADS_STRUCTURE"
   | "REFERENCES_ENTITY"
   | "USES_ANIMATION"
@@ -26,22 +17,25 @@ export type EdgeType =
   | "REMOVES_TAG"
   | "TELEPORTS_TO"
   | "MODIFIES_REGION"
-  | "REFERENCES";
+  | "REFERENCES"
+  | "CONTAINS";
 
 export type ReferenceStatus = "resolved" | "unresolved" | "ambiguous";
 
-export interface EdgeEvidence {
-  source: SourceRef;
-  excerpt?: string;
+export interface SemanticNode extends ProjectComponent {
+  kind: ProjectComponent["identity"]["kind"];
+  identifier: string;
 }
 
 export interface SemanticEdge {
   id: string;
-  from: NodeId;
+  from: string;
   type: EdgeType;
   targetIdentifier: string;
   status: ReferenceStatus;
-  to?: NodeId;
-  candidates?: readonly NodeId[];
-  evidence: EdgeEvidence;
+  to?: string;
+  candidates?: readonly string[];
+  evidence: {
+    source: SourceRef;
+  };
 }
