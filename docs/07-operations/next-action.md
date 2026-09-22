@@ -1,23 +1,23 @@
 # Next Action
 
-Phase B now has a deployable live Bedrock evidence harness and offline log ingestion.
+Phase B now has an offline live-regression runner over captured Minecraft evidence.
 
 Implemented:
 
-1. Script API development behavior-pack harness;
-2. scheduled evidence capture with system.runInterval;
-3. player tags/scores capture;
-4. arena scoreboard capture;
-5. selected entity evidence capture;
-6. structured console transport with [M-BEDROCK-OBS] prefix;
-7. offline content-log parser;
-8. correctness remains outside the runtime pack.
+1. deployable Script API evidence harness;
+2. content-log snapshot ingestion;
+3. explicit runtime tick anchor;
+4. expected state reconstruction per captured tick;
+5. runtime/model comparison at checkpoints;
+6. first-divergence incident bundle;
+7. nearby snapshot context;
+8. 0/1/2-tick multi-arena cutscene regression scenarios.
 
 Next:
 
-1. build live regression runner that aligns a timed scenario with captured ticks;
-2. compare observed snapshots against the expected session model at checkpoints;
-3. produce a compact incident bundle on first divergence;
-4. first target: historical multi-arena cutscene queue regression.
+1. add a thin runtime-control protocol for triggering named test actions at exact ticks;
+2. keep action execution separate from evidence capture;
+3. implement only the small action vocabulary required by session regressions;
+4. then run the cutscene scenario end-to-end in a local Minecraft environment.
 
-The harness is development instrumentation, not production gameplay code.
+Do not infer scenario start ticks from logs.
