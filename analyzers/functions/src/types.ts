@@ -1,4 +1,5 @@
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { CommandAnalysis } from "../../commands/src/effects.js";
 
 export type FunctionReference =
   | {
@@ -22,9 +23,15 @@ export type FunctionReference =
       source: SourceRef;
     };
 
+export interface ParsedFunctionCommand {
+  raw: string;
+  source: SourceRef;
+  analysis: CommandAnalysis;
+}
+
 export interface ParsedFunction {
   identifier: string;
   source: SourceRef;
-  commands: string[];
+  commands: ParsedFunctionCommand[];
   references: FunctionReference[];
 }

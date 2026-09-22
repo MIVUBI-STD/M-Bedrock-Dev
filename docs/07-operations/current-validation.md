@@ -1,31 +1,33 @@
 # Current Validation
 
-Status: FOUNDATION + FIRST BEDROCK ANALYZERS
+Status: FOUNDATION + FIRST BEDROCK ANALYZERS + TYPED COMMAND EFFECTS
 
 Verified remotely on 2026-09-22:
 
 - artifact/archive safety contracts exist;
 - normalized project and semantic graph contracts exist;
-- cheap path-based content classification exists;
-- pack candidate discovery from manifest paths exists;
-- manifest normalization preserves raw data and recognizes module categories;
-- `.mcfunction` parsing extracts direct function calls, structure loads, scoreboard reads/writes and tag mutations with line evidence;
-- identifier resolution preserves resolved/unresolved/ambiguous states;
-- function-derived references can populate typed semantic graph edges;
-- source tests exist for manifest analysis, function parsing and reference resolution.
-
-The manifest model follows current Creator documentation where module types distinguish data, resources and script content, while the parser remains conservative for unknown future values.
+- Bedrock content discovery and manifest normalization exist;
+- function references populate semantic graph relationships;
+- typed command analysis exists for fill, setblock, clone, teleport, scoreboard writes and tag mutations;
+- absolute, relative and local coordinates remain distinct;
+- `execute ... run` nested commands are recursively analyzed;
+- unknown commands are preserved rather than discarded;
+- diagnostics have stable typed IDs and source provenance;
+- unresolved/ambiguous graph references can become diagnostics;
+- duplicate manifest UUID diagnostics exist;
+- relative/local region mutation can be surfaced as context-dependent analysis;
+- source tests exist for typed effects and diagnostics.
 
 Not yet proven in this execution context:
 
 - dependency installation;
 - TypeScript compilation;
 - Vitest execution;
-- ZIP transport/extraction;
-- actual filesystem inventory generation;
-- complete command grammar;
-- full pack dependency resolution;
+- full Bedrock command grammar;
+- execution-context resolution for relative/local coordinates;
+- actual archive/file transport;
 - structure NBT parsing;
+- patch transactions;
 - world/package roundtrip;
 - Minecraft runtime behavior.
 
