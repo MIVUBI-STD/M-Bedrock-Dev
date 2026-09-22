@@ -1,12 +1,12 @@
 # M-Bedrock-Dev Stable Context
 
-Last verified stable facts: 2026-09-22
+Last verified stable design facts: 2026-09-22
 
 This file owns stable product and architecture facts only.
 
 ## Product
 
-M-Bedrock-Dev is a content-engineering workspace for Minecraft Bedrock and Minecraft Education.
+M-Bedrock-Dev is a modular Minecraft Bedrock and Minecraft Education content-engineering workspace.
 
 Primary lifecycle:
 
@@ -16,72 +16,109 @@ Inspect
 → Diagnose
 → Repair / Modify
 → Validate
-→ Repackage
+→ Package
 → Report
 ```
 
-The product must support both one-off forensic analysis and repeatable development workflows without coupling core logic to a single AI client.
+The same deterministic core must support CLI, CI, future MCP, future desktop tooling, and direct library use.
 
-## Core architecture
+## Repository authority
+
+```text
+Local = active development / source authority
+main  = stable / release authority
+```
+
+## Architecture
 
 ```text
 Artifact
-→ safe extraction / ingest
-→ content discovery
+→ safe ingest/archive boundary
+→ physical file inventory
 → normalized project model
 → semantic dependency graph
 → analyzers / diagnostics
 → patch transaction
+→ working-copy mutation
 → validation
-→ package output
+→ deterministic package output
 → evidence report
 ```
+
+## Repository organization
+
+```text
+DEV.cmd        sole repository-level developer entrypoint
+apps/          user-facing surfaces only
+packages/      reusable deterministic engine owners
+adapters/      external/source format adapters
+analyzers/     semantic derivation and diagnostics
+rules/         versioned Bedrock/Education rules
+schemas/       structural/internal schemas
+fixtures/      minimized reproducible evidence
+docs/          canonical product/system/operations docs
+scripts/       repository/runtime verification utilities
+tooling/       repository-owned developer/build control plane
+workspace/     ignored local artifact continuity
+Experimental/  bounded research only
+```
+
+The root is reserved for repository policy, version/toolchain authority, command entrypoints, and canonical documentation entrypoints.
 
 ## Engineering invariants
 
 - one semantic owner per responsibility;
 - one primary execution path per behavior;
-- original user artifacts are immutable inputs;
-- mutation occurs through explicit patch transactions;
-- analyzers do not directly mutate source content;
-- compatibility is represented as a capability/profile concern;
-- Bedrock and Education share one engine with edition-specific profiles;
-- AI may select, explain and orchestrate operations, but core mutations should be deterministic;
-- source/static proof is distinct from package and live-game proof;
-- reusable real-world failures should become regression fixtures;
-- new abstractions require a repeated proven responsibility.
+- one persisted fact has one authority;
+- source artifacts are immutable;
+- working-copy mutation is transactional and preconditioned;
+- analyzers are read-only;
+- unknown content is preserved;
+- compatibility is a versioned capability concern;
+- Bedrock and Education share one core with explicit edition-specific rules;
+- artifact graph and semantic graph are different authorities;
+- source/static/package/live proof remain separate;
+- regression fixtures protect material recurring behavior;
+- deletion/reuse/native capability precede new abstractions;
+- no background subsystem or persistent registry without a concrete repeated need.
 
-## Initial implementation language
+## Toolchain
 
-Initial core implementation target:
+Canonical supported policy lives in `toolchain.json`.
+
+Current initial implementation lane:
 
 ```text
+Windows 10/11 x64 primary developer target
 Node.js 24 LTS
+npm lockfile authority once generated
 TypeScript strict mode
 Vitest
-JSON Schema where appropriate
+PowerShell 7-compatible repository tooling
 ```
 
-Additional native languages are added only when measured requirements justify them.
+Rust, Python, databases, desktop frameworks, and MCP infrastructure are not mandatory dependencies until a proven requirement owns them.
 
-## Repository map
+## Semantic owners
 
 ```text
-apps/           user-facing command/application surfaces
-packages/       canonical reusable engine modules
-adapters/       Bedrock file/container format adapters
-analyzers/      semantic inspectors and diagnostic analyzers
-rules/          versioned Bedrock/Education compatibility and diagnostic rules
-schemas/        internal and external schema material
-fixtures/       valid, invalid and regression fixtures
-workspace/      ignored local active project data
-tooling/        repository-owned build/verification tooling
-docs/           canonical product/system/operations documentation
+artifact identity/fingerprint      → packages/artifact
+archive safety/transport           → packages/archive
+normalized project state           → packages/project-model
+dependency graph                   → packages/graph
+diagnostic contracts               → packages/diagnostics
+repair transactions                → packages/repair
+orchestration                      → packages/orchestrator
+Bedrock content parsing            → analyzers/*
+format adaptation                  → adapters/*
+compatibility/version policy       → rules/* + future packages/compatibility
+interface presentation             → apps/*
 ```
 
 ## Current phase
 
-Foundation/bootstrap only.
+Repository foundation and core source architecture exist.
 
-Current next action is owned by `docs/07-operations/next-action.md`.
-Current proof state is owned by `docs/07-operations/current-validation.md`.
+Current continuation: `docs/07-operations/next-action.md`.
+Current proof state: `docs/07-operations/current-validation.md`.
+Implementation ownership: `docs/06-system/implementation-map.md`.

@@ -1,0 +1,53 @@
+# Development Operations
+
+## Command authority
+
+`DEV.cmd` is the sole repository-level developer command surface.
+
+```text
+DEV.cmd setup
+DEV.cmd check
+DEV.cmd test
+DEV.cmd inspect <artifact>
+DEV.cmd finalize-local
+```
+
+It delegates to `tooling/windows-toolchain/dev.ps1`. Internal package scripts remain implementation details.
+
+## Toolchain authority
+
+`toolchain.json` owns supported developer-tool policy.
+
+Do not require global TypeScript/Vitest/build tools when package-managed versions are sufficient.
+
+## Verification lanes
+
+Use targeted proof during development. Integrated repository verification is a checkpoint, not an inner-loop substitute.
+
+```text
+policy/docs change      → structural review
+TypeScript owner        → typecheck + targeted test
+archive/repair owner    → targeted fixture tests
+cross-owner checkpoint  → integrated Verify
+real artifact behavior  → LOCAL_ARTIFACT
+Minecraft import/open   → LOCAL_MINECRAFT
+gameplay/runtime        → LIVE_MINECRAFT
+```
+
+## Distribution boundary
+
+Build/package commands may produce artifacts only in ignored/generated output locations. They must not overwrite original user artifacts.
+
+Release/promotion to `main` is separate from ordinary development.
+
+## CI principles
+
+- read-only permissions by default;
+- bounded timeout;
+- pinned major/trusted actions;
+- exact-head evidence;
+- no commit-back;
+- no secrets for ordinary verification;
+- no full expensive workflow on every trivial Local edit unless a specific invariant requires it.
+
+Focused workflows are evidence tools, not parallel readiness authorities.

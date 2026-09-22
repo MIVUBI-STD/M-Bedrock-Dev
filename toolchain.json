@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "package": "M-Bedrock-Dev Toolchain",
+  "target": {
+    "developerOs": ["Windows 10 x64", "Windows 11 x64"],
+    "runtimeOs": ["Windows 10 x64", "Windows 11 x64", "Linux CI x64"],
+    "architecture": "x86_64"
+  },
+  "policy": {
+    "nodeMajorPinned": true,
+    "lockfileRequiredAfterBootstrap": true,
+    "pythonMandatory": false,
+    "rustMandatory": false,
+    "globalBuildToolsRequired": false,
+    "endUserToolchainRequired": false
+  },
+  "node": {
+    "major": 24,
+    "channel": "LTS",
+    "scope": ["developer-build", "cli-runtime"],
+    "pinPolicy": "major-locked to 24.x"
+  },
+  "npm": {
+    "source": "bundled-with-node",
+    "lockfile": "package-lock.json",
+    "scope": ["developer-build"]
+  },
+  "typescript": {
+    "source": "package-lock.json",
+    "strict": true
+  },
+  "powershell": {
+    "minimumMajor": 7,
+    "scope": ["windows-developer-routing"]
+  }
+}
