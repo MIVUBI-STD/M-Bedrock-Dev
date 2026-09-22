@@ -1,15 +1,15 @@
 # Next Action
 
-Integrated inspection now supports deterministic planning for a narrow repair class.
+Integrated artifact inspection now emits repair planning output without auto-apply.
 
 Current high-value sequence:
 
 1. integrated diagnostics — implemented;
 2. conservative state/topology diagnostics — implemented;
-3. linear absolute fill/setblock outlier → PatchTransaction planning — implemented;
-4. transaction application hardening with independent fingerprint authority — implemented;
-5. orchestrated diagnose → plan output without auto-apply — next;
-6. validation executor for reparse/topology/rerun-diagnostic;
-7. expand repair classes only from reproduced map bugs.
+3. deterministic linear absolute fill/setblock repair planning — implemented;
+4. artifact fingerprint-bound PatchTransaction output — implemented;
+5. nested execute repair remains diagnostic-only by design;
+6. validation executor for planned transactions — next;
+7. explicit apply orchestration only after validation contracts are executable.
 
-Broad state-scope findings remain diagnostic-only until session/isolation intent is explicitly established.
+Do not add automatic state-scope repair until isolation intent is established from stronger project/session evidence.

@@ -30,7 +30,7 @@ export async function inspectArtifact(
     await extractZipSafely(path, sourceRoot, NORMAL_EXTRACTION_BUDGET);
     await cp(sourceRoot, workingRoot, { recursive: true });
 
-    const result = await inspectDirectory(workingRoot, artifactId, target);
+    const result = await inspectDirectory(workingRoot, artifactId, target, fingerprint);
     return {
       artifactId,
       fingerprint,

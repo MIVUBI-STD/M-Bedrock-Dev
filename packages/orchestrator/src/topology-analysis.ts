@@ -17,6 +17,7 @@ export interface SpatialEffectRecord {
   effect: CommandEffect;
   resolved: ResolvedEffect;
   rawCommand: string;
+  directTopLevel: boolean;
 }
 
 export interface RepairableTopologyCandidate {
@@ -38,6 +39,7 @@ export function analyzeFunctionTopology(
     for (const command of fn.commands) {
       const flattened = flattenCommandEffects(command.analysis);
       effects.push(...flattened);
+      const directEffects = new Set(command.analysis.effects);
 
       for (const effect of flattened) {
         if (!effectUsesOnlyAbsoluteCoordinates(effect)) continue;
@@ -47,6 +49,7 @@ export function analyzeFunctionTopology(
           effect,
           resolved,
           rawCommand: command.raw,
+          directTopLevel: directEffects.has(effect),
         });
       }
     }
@@ -65,7 +68,10 @@ export function analyzeFunctionTopology(
       outlier,
       record: spatialRecords[outlier.effectIndex]!,
     }))
-    .filter(({ record }) => record.effect.kind === "fill" || record.effect.kind === "setblock");
+    .filter(({ record }) =>
+      record.directTopLevel &&
+      (record.effect.kind === "fill" || record.effect.kind === "setblock")
+    );
 
   return {
     stateAccesses,

@@ -14,17 +14,13 @@ export type TopologyRepairPlanResult =
   | { status: "unsupported"; reason: string };
 
 function formatNumber(value: number): string {
-  return Number.isInteger(value) ? String(value) : String(value);
+  return String(value);
 }
 
 function absoluteValue(
   coordinate: { mode: "absolute" | "relative" | "local"; value: number },
 ): number | undefined {
   return coordinate.mode === "absolute" ? coordinate.value : undefined;
-}
-
-function shifted(value: number, axisValue: number, delta: number): number {
-  return value === axisValue ? value + delta : value;
 }
 
 function planFillReplacement(

@@ -29,6 +29,8 @@ import type {
   InspectedPack,
   InspectTargetProfile,
 } from "./types.js";
+import { analyzeFunctionTopology } from "./topology-analysis.js";
+import { planInspectionRepairs } from "./repair-planning.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -82,6 +84,7 @@ export async function inspectDirectory(
   root: string,
   artifactId = "art_working",
   target: InspectTargetProfile = {},
+  sourceFingerprint?: string,
 ): Promise<InspectDirectoryResult> {
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
@@ -274,7 +277,10 @@ export async function inspectDirectory(
     ]),
   );
 
-  const topology = analyzeFunctionTopology(parsedFunctions.map((item) => item.parsed));\n  diagnostics.push(...topology.stateDiagnostics, ...topology.topologyDiagnostics);\n\n  const educationMetadata = manifests.some(
+  const topology = analyzeFunctionTopology(parsedFunctions.map((item) => item.parsed));
+  diagnostics.push(...topology.stateDiagnostics, ...topology.topologyDiagnostics);
+
+  const educationMetadata = manifests.some(
     ({ manifest }) => manifest.hasEducationMetadata === true,
   );
   const targetEducation = deriveEducationProfile({
@@ -302,7 +308,17 @@ export async function inspectDirectory(
       present: dbFiles.length > 0,
       fileCount: dbFiles.length,
     },
-    stateAnalysis: {\n      accesses: topology.stateAccesses.length,\n      broadWrites: topology.broadWrites,\n    },\n    topologyAnalysis: {\n      resolvedSpatialEffects: topology.resolvedSpatialEffects.length,\n      repeatedCandidates: topology.candidates.length,\n      linearOutliers: topology.linearOutliers.length,\n    },\n    targetCompatibility: {
+    stateAnalysis: {
+      accesses: topology.stateAccesses.length,
+      broadWrites: topology.broadWrites,
+    },
+    topologyAnalysis: {
+      resolvedSpatialEffects: topology.resolvedSpatialEffects.length,
+      repeatedCandidates: topology.candidates.length,
+      linearOutliers: topology.linearOutliers.length,
+    },
+    repairCandidates: planInspectionRepairs(topology, sourceFingerprint),
+    targetCompatibility: {
       edition: target.edition ?? "unknown",
       educationFeatures: target.edition === undefined && target.educationFeatures === undefined
         ? "unknown"

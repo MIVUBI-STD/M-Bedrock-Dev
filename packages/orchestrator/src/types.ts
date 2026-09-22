@@ -1,6 +1,7 @@
 import type { MinecraftEdition } from "../../compatibility/src/types.js";
 import type { EducationFeatureState } from "../../compatibility/src/education.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { InspectionRepairCandidate } from "./repair-planning.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -42,6 +43,7 @@ export interface InspectDirectoryResult {
     repeatedCandidates: number;
     linearOutliers: number;
   };
+  repairCandidates: InspectionRepairCandidate[];
   targetCompatibility: {
     edition: MinecraftEdition | "unknown";
     educationFeatures: EducationFeatureState;
