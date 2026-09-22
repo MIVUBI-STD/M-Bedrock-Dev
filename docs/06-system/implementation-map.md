@@ -10,10 +10,11 @@ Use this before broad repository search.
 | Workspace/session/file inventory | packages/project-model/ |
 | Semantic dependency graph/invalidation | packages/graph/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
+| Validation step/result contracts | packages/validation/ |
 | Compatibility engine/version/track contracts | packages/compatibility/ |
 | Education edition/feature profile | packages/compatibility/education* |
 | Repair transactions/preconditions/application | packages/repair/ |
-| Cross-owner inspect orchestration | packages/orchestrator/ |
+| Cross-owner inspect/repair-validation orchestration | packages/orchestrator/ |
 | Generic Bedrock NBT transport | adapters/nbt/ |
 | mcstructure semantic normalization | adapters/mcstructure/ |
 | Bedrock LevelDB snapshot/transport | adapters/leveldb/ |

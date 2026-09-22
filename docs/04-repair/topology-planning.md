@@ -16,6 +16,7 @@ Unsupported automatically:
 - relative/local coordinates;
 - clone;
 - teleport;
+- nested execute spatial effects;
 - non-linear topology;
 - broad state-scope findings;
 - ambiguous or multi-line source.
@@ -29,15 +30,13 @@ topology diagnostic
 → derive replacement
 → PatchTransaction
 → independent source fingerprint precondition
-→ exact source line precondition at apply
+→ exact source line check at apply
 → working-copy mutation
-→ reparse
-→ topology compare
-→ rerun diagnostic
+→ executable validation
+    ├── reparse exact source
+    ├── topology compare at exact source
+    └── rerun exact diagnostic at source
+→ accepted / rejected
 ```
 
-Planning is not application. A patch transaction can exist without mutating the artifact.
-
-## Source fingerprint
-
-The transaction stores the expected source fingerprint. Application receives the independently observed current source fingerprint from the artifact/session owner. Comparing a transaction to its own stored fingerprint is not valid evidence.
+Planning, application, and validation are separate stages.

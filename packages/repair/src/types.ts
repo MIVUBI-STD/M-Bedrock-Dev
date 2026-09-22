@@ -1,4 +1,5 @@
 import type { SourceRef } from "../../project-model/src/source-ref.js";
+import type { ValidationStep } from "../../validation/src/types.js";
 
 export type PatchOperation =
   | {
@@ -18,11 +19,6 @@ export interface PatchPrecondition {
   kind: "source-fingerprint" | "text-equals";
   source?: SourceRef;
   expected: string;
-}
-
-export interface ValidationStep {
-  kind: "reparse" | "rebuild-graph" | "rerun-diagnostic" | "topology-compare";
-  target?: string;
 }
 
 export interface PatchTransaction {

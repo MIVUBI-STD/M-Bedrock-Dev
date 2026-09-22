@@ -119,9 +119,18 @@ export function planLinearTopologyRepair(
         expected: sourceFingerprint,
       }],
       validation: [
-        { kind: "reparse", target: effect.source.relativePath },
-        { kind: "topology-compare", target: outlier.sourcePath },
-        { kind: "rerun-diagnostic", target: "TOPOLOGY_TRANSLATION_OUTLIER" },
+        { kind: "reparse", source: effect.source },
+        {
+          kind: "topology-compare",
+          source: effect.source,
+          expectation: "outlier-absent",
+        },
+        {
+          kind: "rerun-diagnostic",
+          code: "TOPOLOGY_TRANSLATION_OUTLIER",
+          source: effect.source,
+          expectation: "absent",
+        },
       ],
     }),
   };
