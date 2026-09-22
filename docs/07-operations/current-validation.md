@@ -1,18 +1,22 @@
 # Current Validation
 
-Status: FOUNDATION + ARTIFACT/ARCHIVE CONTRACT
+Status: FOUNDATION + ARTIFACT/ARCHIVE + PROJECT GRAPH CONTRACT
 
 Verified remotely on 2026-09-22:
 
-- repository exists;
-- `main` contains the initialization commit;
-- `Local` is active development authority;
+- repository and branch authority exist;
 - artifact identity/fingerprint contracts exist;
-- extension hints are separated from detected truth;
-- archive path safety policy exists;
-- archive inventory resource-budget validation exists;
-- workspace/session contracts separate source, working, output, reports, patches and state;
-- focused Vitest regression tests are present for path safety and inventory rejection.
+- archive path and resource-budget safety contracts exist;
+- source/working/output workspace boundaries exist;
+- normalized project model separates file inventory from semantic components;
+- semantic component identity helpers exist;
+- `SourceRef` supports artifact/path/range/JSON Pointer evidence;
+- semantic graph supports typed nodes and edges;
+- resolved, unresolved and ambiguous reference states are represented;
+- graph maintains outgoing, incoming and kind indexes;
+- dependency/dependent queries and reverse impact tracing exist;
+- change-scoped invalidation contract exists;
+- focused Vitest source tests cover graph resolution and invalidation behavior.
 
 Not yet proven in this execution context:
 
@@ -20,8 +24,8 @@ Not yet proven in this execution context:
 - TypeScript compilation;
 - Vitest execution;
 - ZIP transport/extraction;
-- deterministic repackaging;
-- Bedrock content discovery;
+- Bedrock-specific parser behavior;
+- serialized index persistence;
 - world/package roundtrip;
 - Minecraft runtime behavior.
 
