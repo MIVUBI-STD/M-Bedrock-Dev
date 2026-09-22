@@ -1,0 +1,28 @@
+node_modules/
+dist/
+coverage/
+.tmp/
+.cache/
+*.log
+
+# Local artifact workspaces
+workspace/active/*
+workspace/saved/*
+!workspace/active/.gitkeep
+!workspace/saved/.gitkeep
+
+# Extracted / packaged Bedrock content
+*.mcworld
+*.mcpack
+*.mcaddon
+
+# Local Minecraft data
+com.mojang/
+development_behavior_packs/
+development_resource_packs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
