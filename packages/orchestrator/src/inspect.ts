@@ -274,7 +274,7 @@ export async function inspectDirectory(
     ]),
   );
 
-  const educationMetadata = manifests.some(
+  const topology = analyzeFunctionTopology(parsedFunctions.map((item) => item.parsed));\n  diagnostics.push(...topology.stateDiagnostics, ...topology.topologyDiagnostics);\n\n  const educationMetadata = manifests.some(
     ({ manifest }) => manifest.hasEducationMetadata === true,
   );
   const targetEducation = deriveEducationProfile({
@@ -302,7 +302,7 @@ export async function inspectDirectory(
       present: dbFiles.length > 0,
       fileCount: dbFiles.length,
     },
-    targetCompatibility: {
+    stateAnalysis: {\n      accesses: topology.stateAccesses.length,\n      broadWrites: topology.broadWrites,\n    },\n    topologyAnalysis: {\n      resolvedSpatialEffects: topology.resolvedSpatialEffects.length,\n      repeatedCandidates: topology.candidates.length,\n      linearOutliers: topology.linearOutliers.length,\n    },\n    targetCompatibility: {
       edition: target.edition ?? "unknown",
       educationFeatures: target.edition === undefined && target.educationFeatures === undefined
         ? "unknown"

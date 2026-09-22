@@ -1,5 +1,6 @@
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import type { LinearTopologyOutlier } from "../../topology/src/linear-outliers.js";
 import type { StateAccess } from "../../topology/src/state-scope.js";
 import { likelyGlobalAccess } from "../../topology/src/state-scope.js";
 
@@ -21,4 +22,24 @@ export function stateScopeDiagnostics(accesses: readonly StateAccess[]): Diagnos
     }
   }
   return findings;
+}
+
+export function linearTopologyOutlierDiagnostics(
+  outliers: readonly LinearTopologyOutlier[],
+): DiagnosticFinding[] {
+  return outliers.map((outlier) =>
+    createDiagnostic({
+      code: "TOPOLOGY_TRANSLATION_OUTLIER",
+      severity: "medium",
+      message: "Repeated spatial effect deviates from a strongly repeated linear translation pattern.",
+      data: {
+        effectIndex: outlier.effectIndex,
+        axis: outlier.axis,
+        expectedCoordinate: outlier.expectedCoordinate,
+        actualCoordinate: outlier.actualCoordinate,
+        step: outlier.step,
+        sourcePath: outlier.sourcePath,
+      },
+    }),
+  );
 }

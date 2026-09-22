@@ -33,6 +33,15 @@ export interface InspectDirectoryResult {
     present: boolean;
     fileCount: number;
   };
+  stateAnalysis: {
+    accesses: number;
+    broadWrites: number;
+  };
+  topologyAnalysis: {
+    resolvedSpatialEffects: number;
+    repeatedCandidates: number;
+    linearOutliers: number;
+  };
   targetCompatibility: {
     edition: MinecraftEdition | "unknown";
     educationFeatures: EducationFeatureState;
