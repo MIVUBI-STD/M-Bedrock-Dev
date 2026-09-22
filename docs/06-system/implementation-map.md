@@ -11,6 +11,7 @@ Use this before broad repository search.
 | Semantic dependency graph/invalidation | packages/graph/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Compatibility engine/version/track contracts | packages/compatibility/ |
+| Education edition/feature profile | packages/compatibility/education* |
 | Repair transactions/preconditions/application | packages/repair/ |
 | Cross-owner inspect orchestration | packages/orchestrator/ |
 | Generic Bedrock NBT transport | adapters/nbt/ |
