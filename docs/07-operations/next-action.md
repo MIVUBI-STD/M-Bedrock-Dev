@@ -1,21 +1,20 @@
 # Next Action
 
-Map-specific retest planning is now directly available from artifact or directory inspection.
+Persistent reliability catalogs are now first-class repository knowledge.
 
-Implemented reliability flow:
+Implemented:
 
-1. inspect map;
-2. derive semantic compatibility fingerprint;
-3. combine with Minecraft Update Delta;
-4. combine with Regression Corpus;
-5. combine with Blindspot Coverage;
-6. emit RetestPlan with priority/reasons/domains/lanes.
+1. repository-owned regression catalog;
+2. conservative blindspot coverage catalog;
+3. versioned Minecraft update-delta catalog lane;
+4. runtime catalog loaders and validation;
+5. repository verification for catalog integrity;
+6. catalog-backed artifact/directory retest-plan APIs.
 
-Next high-value work:
+Next high-value step:
 
-1. repository-owned JSON catalog files for regressions, coverage and update deltas;
-2. loader + schema validation;
-3. official/curated update-delta ingestion;
-4. Phase B generative/state-machine test model.
+1. update-delta ingestion pipeline from authoritative/curated Minecraft release evidence;
+2. normalize source provenance and confidence;
+3. then Phase B generative/state-machine testing driven by invariant + retest-plan targets.
 
-Keep retest planning separate from runtime execution.
+Do not fill update catalogs speculatively.

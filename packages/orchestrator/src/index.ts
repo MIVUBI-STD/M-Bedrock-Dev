@@ -3,6 +3,7 @@ export * from "./inspect.js";
 export * from "./reliability-fingerprint.js";
 export * from "./repair-planning.js";
 export * from "./repair-validation.js";
+export * from "./retest-catalog.js";
 export * from "./retest-plan-directory.js";
 export * from "./retest-plan.js";
 export * from "./topology-analysis.js";

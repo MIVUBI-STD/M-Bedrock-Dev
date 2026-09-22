@@ -1,3 +1,4 @@
+export * from "./catalog-loader.js";
 export * from "./catalogs.js";
 export * from "./coverage.js";
 export * from "./fingerprint.js";

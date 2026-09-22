@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "coverage": [
+    {
+      "domain": "commands",
+      "lane": "static",
+      "state": "partial",
+      "evidence": "High-value command grammar, selectors, state access and topology effects are covered; the full Bedrock command surface is not."
+    },
+    {
+      "domain": "structures",
+      "lane": "static",
+      "state": "partial",
+      "evidence": "mcstructure NBT, palette/index normalization and layer-length invariants are covered; full block/entity semantics are not."
+    },
+    {
+      "domain": "scripts",
+      "lane": "static",
+      "state": "partial",
+      "evidence": "Imports, module usage, events and dynamic-property calls are statically extracted without code execution."
+    },
+    {
+      "domain": "world-db",
+      "lane": "static",
+      "state": "partial",
+      "evidence": "Database presence and transport boundaries exist; most record families remain opaque."
+    },
+    {
+      "domain": "entities",
+      "lane": "static",
+      "state": "unknown",
+      "evidence": "No complete entity behavior/event lifecycle analyzer exists yet."
+    },
+    {
+      "domain": "entities",
+      "lane": "runtime",
+      "state": "unknown",
+      "evidence": "No generic automated entity runtime harness is integrated yet."
+    },
+    {
+      "domain": "multiplayer",
+      "lane": "static",
+      "state": "partial",
+      "evidence": "Broad scoreboard/tag writes are detected as cross-scope risk; session intent is not fully inferred."
+    },
+    {
+      "domain": "multiplayer",
+      "lane": "generative",
+      "state": "unknown",
+      "evidence": "State-machine/concurrency sequence generation is not implemented yet."
+    },
+    {
+      "domain": "multiplayer",
+      "lane": "runtime",
+      "state": "unknown",
+      "evidence": "Automated multi-client runtime scenarios are not integrated yet."
+    },
+    {
+      "domain": "chunks",
+      "lane": "runtime",
+      "state": "unknown",
+      "evidence": "Chunk lifecycle chaos/runtime coverage is not integrated yet."
+    },
+    {
+      "domain": "compatibility",
+      "lane": "differential",
+      "state": "unknown",
+      "evidence": "Old-versus-new Minecraft runtime differential execution is not integrated yet."
+    }
+  ]
+}

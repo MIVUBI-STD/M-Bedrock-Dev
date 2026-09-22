@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "regressions": [
+    {
+      "id": "reg_capture_run_gate_blocked",
+      "title": "Capture Run extract gate blocked by unintended fill",
+      "domain": "commands",
+      "discoveredBy": "manual",
+      "invariantIds": ["topology.repeated-layout-consistency"],
+      "triggerTags": ["gameplay", "structure-adjacent", "arena"],
+      "capabilityTags": ["command:fill", "structure-load", "repeated-topology"],
+      "reproduction": [
+        "Start Capture Run Tier 1",
+        "Approach the extract-zone entrance",
+        "Observe the entrance region before extraction"
+      ],
+      "expected": "The extract-zone entrance remains traversable.",
+      "observed": "A spruce-wood fill blocks the entrance and prevents entry."
+    },
+    {
+      "id": "reg_loadout_entity_wall_not_broken",
+      "title": "Loadout Trial entity fails to break expected wall",
+      "domain": "entities",
+      "discoveredBy": "manual",
+      "invariantIds": [],
+      "triggerTags": ["minecraft-update", "entity-lifecycle", "gameplay"],
+      "capabilityTags": ["entity-ai", "entity-event", "world-mutation"],
+      "reproduction": [
+        "Start Loadout Trial level 1",
+        "Reach the sequence where the entity should break the wall",
+        "Observe entity action and resulting wall state"
+      ],
+      "expected": "The scripted/entity sequence breaks the wall and gameplay can continue.",
+      "observed": "The entity does not break the wall and progression is blocked."
+    },
+    {
+      "id": "reg_multi_arena_cutscene_queue",
+      "title": "Concurrent arena starts serialize cutscenes across sessions",
+      "domain": "multiplayer",
+      "discoveredBy": "manual",
+      "invariantIds": ["multiplayer.state-isolation"],
+      "triggerTags": ["multiplayer", "concurrency", "cutscene"],
+      "capabilityTags": ["gameplay-state", "multiplayer-concurrency"],
+      "reproduction": [
+        "Assign players to separate arenas",
+        "Start both arenas at nearly the same time",
+        "Observe each arena cutscene lifecycle"
+      ],
+      "expected": "Each arena can start its own cutscene independently.",
+      "observed": "Cutscenes behave like a shared queue, leaving one arena apparently unable to start."
+    }
+  ]
+}
