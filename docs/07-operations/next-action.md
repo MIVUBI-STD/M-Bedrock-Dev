@@ -1,18 +1,17 @@
 # Next Action
 
-Current phase: source-level safe transaction application and first regression fixture exist.
+Current phase: archive transport and first inspect orchestration exist at source level.
 
-Next architecture topic: **Archive Transport + Real Project Orchestration**.
+Next priority: **CI proof + real minimized mcworld fixture**.
 
 Recommended next work:
 
-1. choose and isolate a ZIP transport implementation behind the existing archive safety policy;
-2. inventory entries before extraction and enforce budgets before writing;
-3. extract only into working/source workspace locations owned by the artifact session;
-4. build physical file inventory from extracted content;
-5. orchestrate discovery → manifest/function analysis → graph → diagnostics;
-6. package deterministic output and immediately reopen/validate the archive;
-7. add a CLI-level inspect command as the first thin interface;
-8. run the pipeline against a minimized real mcworld fixture before large production maps.
+1. add GitHub Actions for install, typecheck and Vitest;
+2. fix any compile/test defects exposed by CI;
+3. create a minimized valid Bedrock mcworld fixture with manifest/functions/structure references;
+4. run inspect against the packaged fixture in CI;
+5. add deterministic repackage → reopen verification;
+6. then run inspect against one real project map locally;
+7. only after that extend CLI to diagnose/repair/package commands.
 
-Do not add MCP yet. The CLI/orchestrator should prove the core engine boundary first.
+MCP remains deferred until the core pipeline has executable proof.

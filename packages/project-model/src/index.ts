@@ -1,4 +1,5 @@
 export * from "./component.js";
+export * from "./filesystem-inventory.js";
 export * from "./identity.js";
 export * from "./project.js";
 export * from "./session.js";
