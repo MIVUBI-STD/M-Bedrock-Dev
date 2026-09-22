@@ -1,21 +1,21 @@
 # Next Action
 
-Reliability intelligence now supports portfolio-level Minecraft update impact planning.
+Phase B generative reliability testing has started with multiplayer/session lifecycle.
 
 Implemented:
 
-1. persistent regression and coverage catalogs;
-2. sourced Minecraft update deltas;
-3. automatic per-map compatibility fingerprints;
-4. per-map retest planning;
-5. multi-map priority grouping for one update;
-6. optional stored fingerprint cache lane.
+1. pure multiplayer session state model;
+2. join/assign/start/play/progress/complete/disconnect/reconnect/reset actions;
+3. reusable session invariant checker;
+4. fast-check property-based sequence generation and shrinking;
+5. concurrent-arena cutscene behavior modeled as independent;
+6. disconnect/reconnect reset semantics modeled.
 
-Next high-value step:
+Next:
 
-1. Phase B generative/state-machine testing;
-2. start with multiplayer/session lifecycle because historical regression and coverage gaps already justify it;
-3. model join/start/disconnect/reconnect/reset/concurrent-start sequences;
-4. keep runtime execution separate until the generated state model and invariants are deterministic.
+1. add model-based runtime observation contract so Minecraft state snapshots can be compared with this model;
+2. add targeted concurrency scenarios and timing perturbations;
+3. add regression-specific generators for known cutscene/session failures;
+4. only then connect to GameTest/live Minecraft automation.
 
-Do not treat P3 as proof of safety.
+The generative model is expected behavior, not runtime proof.
