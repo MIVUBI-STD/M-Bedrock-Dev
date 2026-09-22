@@ -1,3 +1,5 @@
+export * from "./bedrock-runtime-emitter.js";
+export * from "./bedrock-runtime-pipeline.js";
 export * from "./bedrock-state-adapter.js";
 export * from "./bedrock-state-mapping.js";
 export * from "./catalog-loader.js";
