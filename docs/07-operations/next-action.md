@@ -1,24 +1,26 @@
 # Next Action
 
-Reliability Search now combines coverage-guided exploration with bounded model exploration and runtime feedback.
+Reliability Search now includes Bedrock-specific mutation testing.
 
 Implemented:
 
-1. semantic coverage-guided corpus search;
-2. systematic interleaving exploration;
-3. ddmin failure minimization;
-4. deterministic BFS bounded state explorer;
-5. canonical session state hashing;
-6. explicit state/depth budgets and truncation;
-7. runtime divergence semantic signatures;
-8. dedicated runtime-divergence corpus.
+1. selector-scope broadening mutations;
+2. absolute coordinate ±1 mutations;
+3. structure-reference redirect mutations;
+4. reset/disconnect progress-preservation mutations;
+5. phase-skip mutation;
+6. shared cutscene-lock mutation;
+7. source mutation campaign interface;
+8. session mutation campaign;
+9. killed/survived/invalid classification;
+10. global and per-domain mutation scores.
 
 Next high-value work:
 
-1. domain-specific minimizers for timed/session failures;
-2. Bedrock mutation operators and mutation-score reporting;
-3. use surviving mutations to identify detector blindspots;
-4. add bounded model exploration coverage summaries;
-5. defer dynamic invariant mining until known-good trace volume is sufficient.
+1. connect source mutations to real command/graph/topology detectors so source mutants receive actual kill evidence;
+2. add mutation operators for function redirect, scoreboard objective substitution, tag omission, event drop/duplicate and timing shift;
+3. prioritize survived mutants as blindspot backlog;
+4. add domain-specific failure minimization for surviving/killed cases;
+5. only after that begin dynamic invariant mining from known-good traces.
 
-Coverage and bounded exploration remain evidence within declared bounds, not proof of global correctness.
+Do not optimize for a single mutation-score number; inspect survived classes by domain.
