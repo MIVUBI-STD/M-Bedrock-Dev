@@ -1,20 +1,18 @@
 # Next Action
 
-Persistent reliability catalogs are now first-class repository knowledge.
+Persistent reliability catalogs and initial update intelligence are now connected.
 
 Implemented:
 
-1. repository-owned regression catalog;
-2. conservative blindspot coverage catalog;
-3. versioned Minecraft update-delta catalog lane;
-4. runtime catalog loaders and validation;
-5. repository verification for catalog integrity;
-6. catalog-backed artifact/directory retest-plan APIs.
+1. regression and blindspot coverage catalogs;
+2. versioned Minecraft update-delta catalog;
+3. evidence/provenance model for update ingestion;
+4. curated 1.26.40 high-value reliability delta from official Creator notes;
+5. catalog-backed artifact/directory retest planning.
 
 Next high-value step:
 
-1. update-delta ingestion pipeline from authoritative/curated Minecraft release evidence;
-2. normalize source provenance and confidence;
-3. then Phase B generative/state-machine testing driven by invariant + retest-plan targets.
+1. multi-map impact planner: one Minecraft update → prioritized portfolio of maps;
+2. then Phase B generative/state-machine testing targeted by each map's affected invariants/domains.
 
-Do not fill update catalogs speculatively.
+Do not expand update catalogs into full changelog mirrors; keep only reliability-relevant semantic changes.

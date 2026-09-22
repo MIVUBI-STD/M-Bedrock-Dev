@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "delta": {
+    "fromVersion": "1.26.30",
+    "toVersion": "1.26.40",
+    "entries": [
+      {
+        "id": "1.26.40-entity-json-validation-tightened",
+        "kind": "validation-tightened",
+        "domain": "entities",
+        "capabilityTags": ["entity-ai", "entity-json", "format-version"],
+        "affectedIdentifiers": [
+          "minecraft:behavior.ranged_attack",
+          "minecraft:behavior.summon_entity",
+          "minecraft:behavior.stalk_and_pounce_on_target"
+        ],
+        "summary": "Entity definitions using format_version 1.26.40 or later use stricter validation for multiple components and AI goals.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.40?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.40-entity-on-kill-behavior-corrected",
+        "kind": "behavior-changed",
+        "domain": "entities",
+        "capabilityTags": ["entity-ai", "entity-event", "combat"],
+        "affectedIdentifiers": [
+          "minecraft:behavior.delayed_attack",
+          "minecraft:behavior.melee_attack",
+          "minecraft:behavior.melee_box_attack",
+          "minecraft:behavior.stomp_attack",
+          "minecraft:behavior.use_kinetic_weapon"
+        ],
+        "summary": "on_kill event mapping was corrected for several attack goals when using format_version 1.26.40 or later.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.40?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.40-clone-partial-bed-behavior",
+        "kind": "behavior-changed",
+        "domain": "commands",
+        "capabilityTags": ["command:clone", "world-mutation"],
+        "affectedIdentifiers": ["/clone"],
+        "summary": "The clone command no longer clones partial beds; both bed parts must be inside the clone volume.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.40?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.40-fill-multi-block-support",
+        "kind": "changed",
+        "domain": "commands",
+        "capabilityTags": ["command:fill", "world-mutation"],
+        "affectedIdentifiers": ["/fill", "minecraft:multi_block"],
+        "summary": "The fill command now supports blocks using minecraft:multi_block.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.40?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.40-structure-saved-tick-fix",
+        "kind": "behavior-changed",
+        "domain": "structures",
+        "capabilityTags": ["structures", "structure-load", "block-tick"],
+        "affectedIdentifiers": ["minecraft:tick"],
+        "summary": "Custom blocks with minecraft:tick no longer tick more often than expected when placed from a structure containing saved tick data.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.40?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.40-server-api-2.9.0",
+        "kind": "changed",
+        "domain": "scripts",
+        "capabilityTags": ["script-module:@minecraft/server", "script-stable"],
+        "affectedIdentifiers": ["@minecraft/server@2.9.0"],
+        "summary": "Minecraft Bedrock 1.26.40 ships @minecraft/server v2.9.0 and promotes multiple APIs from beta to stable.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.40?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.40-nbt-nesting-limit",
+        "kind": "validation-tightened",
+        "domain": "world-db",
+        "capabilityTags": ["world-db", "nbt"],
+        "affectedIdentifiers": ["NBT list", "NBT compound"],
+        "summary": "Dedicated Server adds an NBT nesting limit of 512 entries for list and compound tags.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.40?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      }
+    ]
+  }
+}
