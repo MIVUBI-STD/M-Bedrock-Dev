@@ -2,6 +2,9 @@ export type MutationDomain =
   | "command-selector"
   | "command-coordinate"
   | "command-reference"
+  | "script-event"
+  | "script-dynamic-property"
+  | "graph-reference"
   | "state-reset"
   | "state-phase"
   | "state-concurrency";

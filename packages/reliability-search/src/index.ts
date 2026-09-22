@@ -1,3 +1,4 @@
+export * from "./blindspot-tasks.js";
 export * from "./bounded-explorer.js";
 export * from "./corpus.js";
 export * from "./coverage.js";
@@ -8,6 +9,7 @@ export * from "./mutation-runner.js";
 export * from "./mutation-types.js";
 export * from "./runtime-corpus.js";
 export * from "./runtime-coverage.js";
+export * from "./script-mutations.js";
 export * from "./session-bounded-domain.js";
 export * from "./session-domain.js";
 export * from "./session-footprints.js";

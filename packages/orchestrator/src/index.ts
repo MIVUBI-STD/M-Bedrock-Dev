@@ -1,4 +1,5 @@
 export * from "./catalog-retest-plan.js";
+export * from "./function-graph-mutation.js";
 export * from "./inspect-artifact.js";
 export * from "./inspect.js";
 export * from "./mutation-campaign.js";
@@ -8,6 +9,7 @@ export * from "./repair-planning.js";
 export * from "./repair-validation.js";
 export * from "./retest-plan-directory.js";
 export * from "./retest-plan.js";
+export * from "./script-mutation-detection.js";
 export * from "./source-mutation-detection.js";
 export * from "./topology-analysis.js";
 export * from "./types.js";

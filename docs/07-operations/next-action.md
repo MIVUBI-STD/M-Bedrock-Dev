@@ -1,26 +1,25 @@
 # Next Action
 
-Bedrock source mutations are now connected to real M-Bedrock-Dev analyzers.
+Mutation testing now feeds an actionable blindspot backlog.
 
 Implemented:
 
-1. source mutation generation;
-2. selector broadening + tag-filter omission;
-3. coordinate ±1;
-4. structure/function reference redirects;
-5. scoreboard objective substitution;
-6. timing ±1 mutation;
-7. real state-scope kill evidence;
-8. real known-reference kill evidence;
-9. real topology-outlier kill evidence;
-10. survived-operator backlog output.
+1. Script API event drop mutation;
+2. event rename mutation;
+3. duplicate event subscription mutation;
+4. dynamic-property id substitution;
+5. AST-based script event/property detector comparison;
+6. multi-function graph mutation using the real SemanticGraph;
+7. automatic BlindspotTask generation from survived mutants;
+8. strategy suggestions and P0/P1/P2 backlog priority;
+9. command mutation campaign now returns blindspotTasks;
+10. script mutation campaign now returns blindspotTasks.
 
 Next high-value work:
 
-1. add Script API event drop/duplicate mutations and detect capability/event graph changes;
-2. add function-graph mutation fixtures spanning multiple functions, not only one function body;
-3. add domain-specific minimization for killed/survived source mutants;
-4. automatically convert survived operator classes into targeted search tasks;
-5. after detector gaps are reduced, begin dynamic invariant mining from known-good traces.
+1. domain-specific minimization for surviving source/script/timing mutations;
+2. aggregate blindspot tasks across campaigns and deduplicate by operator/domain/evidence;
+3. add mutation operator effectiveness history so low-value operators do not waste search budget;
+4. add dynamic invariant mining only after known-good trace corpus and campaign history are large enough.
 
-A survived coordinate mutation in a non-repeated context is expected evidence of insufficient oracle context, not a framework failure.
+Survived mutants are detector-gap evidence, not automatic proof of a real gameplay bug.
