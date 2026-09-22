@@ -1,21 +1,23 @@
 # Next Action
 
-Phase B now has a shared Runtime Observation Contract.
+Phase B now includes targeted concurrency and timing perturbation for multiplayer/session lifecycle.
 
 Implemented:
 
-1. pure multiplayer/session model;
-2. generative action sequences;
-3. reusable invariants;
-4. runtime player/arena/entity/chunk observation schema;
-5. normalization with explicit unknown evidence;
-6. expected-model vs runtime divergence reporting.
+1. pure multiplayer state model;
+2. generic generated action sequences;
+3. runtime observation contract;
+4. deterministic tick-ordered scenarios;
+5. 0–2 tick concurrent arena-start perturbation;
+6. disconnect/reset disturbances around arena start;
+7. regression-specific cutscene queue generator;
+8. independent-arena cutscene oracle.
 
 Next:
 
-1. targeted concurrency/timing perturbation scenarios;
-2. regression-specific generators for the known cutscene/session isolation bug;
-3. observation adapters for scoreboard/tag-driven Bedrock state;
-4. only then connect a GameTest/live Minecraft runner.
+1. scoreboard/tag observation adapter;
+2. mapping rules from real Bedrock scoreboard/tag conventions into player/arena observations;
+3. capture ambiguity as unknown evidence rather than guessing;
+4. then GameTest/Script API runtime emitter.
 
-Runtime adapters must emit evidence; they must not duplicate correctness rules.
+The timing model is deterministic evidence generation, not live Minecraft proof.
