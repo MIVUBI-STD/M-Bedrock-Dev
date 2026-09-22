@@ -1,19 +1,18 @@
 # Next Action
 
-Current phase: coordinate-context and first derived-topology primitives exist.
+Current phase: derived topology candidates and patch transaction contracts exist.
 
-Next architecture topic: **Derived Arena Candidates + Patch Transactions**.
+Next architecture topic: **Safe Transaction Application + Regression Fixture**.
 
 Recommended next work:
 
-1. group repeated effects by consistent translation vectors across multiple commands;
-2. define topology confidence/evidence instead of binary arena detection;
-3. derive candidate groups with anchors, bounds and member source evidence;
-4. map scoreboard/tag state accesses to candidate groups;
-5. identify outlier commands whose translation differs from their group pattern;
-6. define typed patch transaction/precondition contracts;
-7. implement coordinate translation patches only against explicit source evidence;
-8. create regression fixtures for one base group + multiple translated copies + one broken outlier;
-9. then connect real mcworld extraction and analyze an actual map end-to-end.
+1. add working-copy-only transaction application;
+2. guarantee original source paths cannot be mutation targets;
+3. implement atomic file replacement and rollback metadata;
+4. add command-line-aware replacement rather than blind whole-file replacement;
+5. add coordinate translation helper for absolute typed effects;
+6. build a minimal regression fixture with repeated arena-like command groups and one outlier;
+7. prove diagnose → patch plan → apply → reparse → topology validate on that fixture;
+8. only then connect real archive extraction and run the same pipeline on an actual mcworld.
 
-ArenaModel should only become a named derived view after topology evidence crosses an explicit threshold.
+Runtime/game verification remains a separate proof layer.

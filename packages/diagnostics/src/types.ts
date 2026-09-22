@@ -8,7 +8,8 @@ export type DiagnosticCode =
   | "DUPLICATE_MANIFEST_UUID"
   | "SUSPICIOUS_REGION_MUTATION"
   | "UNKNOWN_COMMAND_EFFECT"
-  | "CROSS_SCOPE_STATE_RISK";
+  | "CROSS_SCOPE_STATE_RISK"
+  | "TOPOLOGY_TRANSLATION_OUTLIER";
 
 export interface DiagnosticFinding {
   id: string;
