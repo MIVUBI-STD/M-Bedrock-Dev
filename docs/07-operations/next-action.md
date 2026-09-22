@@ -1,23 +1,24 @@
 # Next Action
 
-High-end bug-finder search foundations are now first-class.
+Reliability Search now combines coverage-guided exploration with bounded model exploration and runtime feedback.
 
 Implemented:
 
-1. semantic coverage features for session state, transition, action-pair and multi-arena interaction;
-2. novelty-retaining corpus;
-3. deterministic coverage-guided mutation loop;
-4. systematic interleaving exploration;
-5. resource read/write independence model;
-6. canonical equivalent-trace reduction;
-7. deterministic ddmin failure minimizer with 1-minimal pass.
+1. semantic coverage-guided corpus search;
+2. systematic interleaving exploration;
+3. ddmin failure minimization;
+4. deterministic BFS bounded state explorer;
+5. canonical session state hashing;
+6. explicit state/depth budgets and truncation;
+7. runtime divergence semantic signatures;
+8. dedicated runtime-divergence corpus.
 
 Next high-value work:
 
-1. bounded exhaustive state explorer with canonical state hashing;
-2. runtime-divergence coverage features so live incidents feed the same corpus;
-3. domain-specific minimizers for timed scenarios and command/topology failures;
-4. mutation-testing layer to measure which bug classes survive detection;
-5. dynamic invariant mining only after enough known-good traces exist.
+1. domain-specific minimizers for timed/session failures;
+2. Bedrock mutation operators and mutation-score reporting;
+3. use surviving mutations to identify detector blindspots;
+4. add bounded model exploration coverage summaries;
+5. defer dynamic invariant mining until known-good trace volume is sufficient.
 
-Do not interpret semantic coverage percentage as proof of correctness.
+Coverage and bounded exploration remain evidence within declared bounds, not proof of global correctness.
