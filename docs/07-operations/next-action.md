@@ -1,19 +1,19 @@
 # Next Action
 
-Current phase: typed command effects and first diagnostics exist.
+Current phase: coordinate-context and first derived-topology primitives exist.
 
-Next architecture topic: **Coordinate Context + Arena/Topology Analysis**.
+Next architecture topic: **Derived Arena Candidates + Patch Transactions**.
 
 Recommended next work:
 
-1. model execution coordinate context separately from raw coordinate tokens;
-2. represent absolute world-space regions only when context is provable;
-3. add typed `fill/setblock/clone` region queries;
-4. identify repeated translated command/structure patterns without declaring them arenas yet;
-5. derive candidate topology groups from coordinate offsets + function/structure similarity;
-6. add state-scope analysis for selectors, scoreboards and tags;
-7. detect likely cross-group/global state collisions;
-8. introduce explicit ArenaModel only as a derived view when evidence supports it;
-9. then design patch transactions for safe coordinate replication.
+1. group repeated effects by consistent translation vectors across multiple commands;
+2. define topology confidence/evidence instead of binary arena detection;
+3. derive candidate groups with anchors, bounds and member source evidence;
+4. map scoreboard/tag state accesses to candidate groups;
+5. identify outlier commands whose translation differs from their group pattern;
+6. define typed patch transaction/precondition contracts;
+7. implement coordinate translation patches only against explicit source evidence;
+8. create regression fixtures for one base group + multiple translated copies + one broken outlier;
+9. then connect real mcworld extraction and analyze an actual map end-to-end.
 
-This keeps arena support generic enough for non-arena maps while directly supporting the multi-arena defects seen in real projects.
+ArenaModel should only become a named derived view after topology evidence crosses an explicit threshold.

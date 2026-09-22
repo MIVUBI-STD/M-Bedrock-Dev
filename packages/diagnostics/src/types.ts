@@ -7,7 +7,8 @@ export type DiagnosticCode =
   | "AMBIGUOUS_REFERENCE"
   | "DUPLICATE_MANIFEST_UUID"
   | "SUSPICIOUS_REGION_MUTATION"
-  | "UNKNOWN_COMMAND_EFFECT";
+  | "UNKNOWN_COMMAND_EFFECT"
+  | "CROSS_SCOPE_STATE_RISK";
 
 export interface DiagnosticFinding {
   id: string;
