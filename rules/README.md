@@ -11,3 +11,12 @@ Rules answer questions such as:
 Rules do not own file transport or gameplay diagnostics.
 
 Every durable rule requires edition/version scope and provenance.
+
+Current rule lane:
+
+```text
+capabilities/
+  core.ts     small, evidence-backed baseline rules
+```
+
+Do not turn `rules/` into an unverified compatibility dump. Add rules only when a real analyzer/validator/runtime decision consumes them.

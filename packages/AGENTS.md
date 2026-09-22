@@ -20,11 +20,13 @@ Packages own stable reusable behavior. They must not depend on CLI presentation,
 ## Package ownership
 
 ```text
+common         → dependency-neutral shared primitives only
 artifact       → identity / fingerprint / source classification
 archive        → archive policy / inventory / extraction / packaging transport
 project-model  → normalized project/workspace/session/file inventory
 graph          → semantic graph / edges / invalidation
 diagnostics    → diagnostic contract and stable identifiers
+compatibility  → edition/version/capability evaluation
 repair         → patch transactions / preconditions / working-copy mutation
 orchestrator   → composition only; no duplicated parser/repair semantics
 ```

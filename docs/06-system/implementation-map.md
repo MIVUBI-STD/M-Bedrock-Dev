@@ -10,17 +10,18 @@ Use this before broad repository search.
 | Workspace/session/file inventory | `packages/project-model/` |
 | Semantic dependency graph/invalidation | `packages/graph/` |
 | Diagnostic contract/IDs | `packages/diagnostics/` |
+| Compatibility engine/version/track contracts | `packages/compatibility/` |
 | Repair transactions/preconditions/application | `packages/repair/` |
 | Cross-owner inspect orchestration | `packages/orchestrator/` |
 | File/path discovery | `analyzers/discovery/` |
-| Manifest semantics | `analyzers/manifest/` |
+| Manifest semantics + compatibility fact extraction | `analyzers/manifest/` |
 | Function source/reference extraction | `analyzers/functions/` |
 | Command semantics/effects | `analyzers/commands/` |
 | Reference resolution | `analyzers/references/` |
 | Derived diagnostics | `analyzers/diagnostics/` |
 | Coordinate/topology derivation | `analyzers/topology/` |
 | Format-specific future adapters | `adapters/` |
-| Versioned Bedrock/Education rules | `rules/` |
+| Versioned Bedrock/Education capability data | `rules/` |
 | Structural/internal schemas | `schemas/` |
 | Thin user interfaces | `apps/` |
 | Root developer routing | `DEV.cmd` → `tooling/windows-toolchain/dev.ps1` |
@@ -31,18 +32,4 @@ Use this before broad repository search.
 | Current proof | `docs/07-operations/current-validation.md` |
 | Research | `Experimental/` |
 
-## Dependency direction
-
-```text
-apps / future interfaces
-        ↓
-packages/orchestrator
-        ↓
-canonical packages + analyzers
-        ↓
-adapters / rules / schemas
-```
-
-Use `architecture.md` for the enforceable import-boundary detail.
-
-No interface may become a second owner of Bedrock semantics.
+Use `architecture.md` for enforceable dependency direction.

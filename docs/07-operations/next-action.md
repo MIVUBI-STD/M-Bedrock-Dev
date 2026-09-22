@@ -1,12 +1,15 @@
 # Next Action
 
-Immediate sequence:
+Current foundation parity with M-LazyDesigner and M-LazyBuilder-Plugin is established.
 
-1. obtain exact-head CI proof for synthetic archive package/inspect and deterministic-output tests;
-2. repair any transport defects exposed by that run;
-3. add a minimized genuine Bedrock mcworld fixture or locally supplied known-good world;
-4. verify inspect → repackage → reopen against that real Bedrock artifact;
-5. then run inspect against a real project map;
-6. only after package proof, extend CLI toward diagnose/repair/package commands.
+Current domain capability sequence:
 
-Do not equate synthetic ZIP success with Minecraft runtime compatibility.
+1. compatibility/edition/version authority — initial core implemented;
+2. specialized mcstructure/NBT adapter;
+3. LevelDB/world database adapter;
+4. deeper Script API dependency/source analysis;
+5. broader Bedrock command grammar/effects;
+6. Education-specific capability rules;
+7. interface expansion only after core owners remain stable.
+
+Do not grow a speculative full historical compatibility matrix. Add rules only when an active analyzer/validator decision consumes them.
