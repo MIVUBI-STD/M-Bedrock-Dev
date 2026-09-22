@@ -1,5 +1,8 @@
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type { BlockRegion, Coordinate3 } from "./coordinates.js";
+import type { ParsedSelector } from "./selectors.js";
+
+export type ScoreboardAccessMode = "read" | "write" | "read-write";
 
 export type CommandEffect =
   | {
@@ -30,10 +33,29 @@ export type CommandEffect =
       source: SourceRef;
     }
   | {
-      kind: "scoreboard-write";
+      kind: "function-call";
+      target: string;
+      source: SourceRef;
+    }
+  | {
+      kind: "structure-load";
+      target: string;
+      position?: Coordinate3;
+      source: SourceRef;
+    }
+  | {
+      kind: "scoreboard-access";
       operation: string;
       target: string;
       objective: string;
+      access: ScoreboardAccessMode;
+      otherTarget?: string;
+      otherObjective?: string;
+      source: SourceRef;
+    }
+  | {
+      kind: "selector-read";
+      selector: ParsedSelector;
       source: SourceRef;
     }
   | {

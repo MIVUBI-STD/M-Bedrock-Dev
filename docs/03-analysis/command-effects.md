@@ -1,37 +1,48 @@
 # Typed Command Effects
 
-Command analysis separates raw syntax from semantic effects.
+Command analysis separates tokenization, selector facts, command semantics, and downstream effects.
 
-```text
-raw command
-→ command analysis
-→ typed effects
-→ graph / diagnostics / topology analyzers
-```
+Current high-value grammar covers:
 
-Initial typed effects:
-
-- fill region mutation;
-- setblock mutation;
-- clone region mutation;
-- teleport;
-- scoreboard write;
+- function calls;
+- structure load;
+- fill;
+- setblock;
+- clone;
+- teleport/tp;
+- scoreboard players operations;
 - tag mutation;
-- recursive `execute ... run` nesting;
-- unknown preserved command.
+- selectors with scores/tag filters;
+- recursive modern execute ... run nesting.
 
-Coordinates preserve Bedrock coordinate mode:
+## Selector reads
 
-```text
-absolute  10
-relative  ~10
-local     ^10
+Selectors are semantic reads.
+
+Example:
+
+```mcfunction
+@a[tag=arena1,scores={stage=1..}]
 ```
 
-This distinction is mandatory. Relative/local coordinates cannot be treated as world-space positions until execution context is known.
+produces read facts for:
 
-## Recursive execute
+- tag `arena1`;
+- scoreboard objective `stage`.
 
-`execute ... run <command>` is treated as a wrapper plus nested command analysis. Downstream analyzers may flatten nested effects while still retaining wrapper evidence.
+This matters for multi-arena state-scope analysis because reads hidden in selector filters are part of gameplay state dependencies.
 
-This is intentionally not yet a full command AST. The model captures high-value semantic effects first and expands only when real analysis requires more syntax.
+## Scoreboard operation
+
+`scoreboard players operation` is modeled as:
+
+- target objective: read + write;
+- source objective: read.
+
+Other mutating operations write their target objective. `test` is read-only.
+
+## Execute
+
+Modern `execute ... run <command>` preserves the outer execute wrapper and recursively analyzes the nested command. Selector facts from both wrapper and nested command remain visible after flattening.
+
+This is still intentionally not a complete grammar for every Bedrock command. Unsupported syntax is preserved as unknown rather than guessed.

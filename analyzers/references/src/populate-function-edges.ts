@@ -9,8 +9,8 @@ function edgeTypeForReference(kind: ParsedFunction["references"][number]["kind"]
     case "structure": return "LOADS_STRUCTURE";
     case "scoreboard-read": return "READS_SCOREBOARD";
     case "scoreboard-write": return "WRITES_SCOREBOARD";
-    case "tag-add": return "ADDS_TAG";
-    case "tag-remove": return "REMOVES_TAG";
+    case "tag-read": return "READS_TAG";
+    case "tag-write": return "WRITES_TAG";
   }
 }
 

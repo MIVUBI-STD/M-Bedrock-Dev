@@ -1,50 +1,39 @@
 import type { ParsedFunction, FunctionReference } from "./types.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import { analyzeCommand } from "../../commands/src/parse.js";
+import { flattenCommandEffects } from "../../commands/src/flatten.js";
+import { scoreboardAccesses, tagAccesses } from "../../commands/src/state-access.js";
 
 function lineSource(source: SourceRef, line: number): SourceRef {
   return { ...source, range: { lineStart: line, lineEnd: line } };
 }
 
-function parseReference(command: string, source: SourceRef): FunctionReference[] {
-  const trimmed = command.trim();
+function referencesFromAnalysis(command: string, source: SourceRef): FunctionReference[] {
+  const analysis = analyzeCommand(command, source);
+  const effects = flattenCommandEffects(analysis);
   const refs: FunctionReference[] = [];
 
-  const functionMatch = /(?:^|\brun\s+)function\s+([^\s#]+)/i.exec(trimmed);
-  if (functionMatch?.[1]) {
-    refs.push({ kind: "function", target: functionMatch[1], source });
+  for (const effect of effects) {
+    if (effect.kind === "function-call") {
+      refs.push({ kind: "function", target: effect.target, source: effect.source });
+    }
+    if (effect.kind === "structure-load") {
+      refs.push({ kind: "structure", target: effect.target, source: effect.source });
+    }
   }
 
-  const structureMatch = /(?:^|\brun\s+)structure\s+load\s+([^\s#]+)/i.exec(trimmed);
-  if (structureMatch?.[1]) {
-    refs.push({ kind: "structure", target: structureMatch[1], source });
-  }
-
-  const scoreboardMatch = /(?:^|\brun\s+)scoreboard\s+players\s+(set|add|remove|operation|random|reset|test)\s+\S+\s+([^\s#]+)/i.exec(trimmed);
-  if (scoreboardMatch?.[2]) {
-    const operation = scoreboardMatch[1]?.toLowerCase();
+  for (const access of scoreboardAccesses(effects)) {
     refs.push({
-      kind: operation === "test" ? "scoreboard-read" : "scoreboard-write",
-      objective: scoreboardMatch[2],
+      kind: access.access === "read" ? "scoreboard-read" : "scoreboard-write",
+      objective: access.objective,
       source,
     });
   }
 
-  for (const match of trimmed.matchAll(/scores=\{([^}]*)\}/gi)) {
-    const body = match[1] ?? "";
-    for (const entry of body.split(",")) {
-      const [objective] = entry.split("=");
-      if (objective?.trim()) {
-        refs.push({ kind: "scoreboard-read", objective: objective.trim(), source });
-      }
-    }
-  }
-
-  const tagMatch = /(?:^|\brun\s+)tag\s+\S+\s+(add|remove)\s+([^\s#]+)/i.exec(trimmed);
-  if (tagMatch?.[1] && tagMatch[2]) {
+  for (const access of tagAccesses(effects)) {
     refs.push({
-      kind: tagMatch[1].toLowerCase() === "add" ? "tag-add" : "tag-remove",
-      tag: tagMatch[2],
+      kind: access.access === "read" ? "tag-read" : "tag-write",
+      tag: access.tag,
       source,
     });
   }
@@ -65,12 +54,15 @@ export function parseMcFunction(
     if (!trimmed || trimmed.startsWith("#")) return;
 
     const commandSource = lineSource(source, index + 1);
+    const analysis = analyzeCommand(trimmed, commandSource);
+
     commands.push({
       raw: trimmed,
       source: commandSource,
-      analysis: analyzeCommand(trimmed, commandSource),
+      analysis,
     });
-    references.push(...parseReference(trimmed, commandSource));
+
+    references.push(...referencesFromAnalysis(trimmed, commandSource));
   });
 
   return { identifier, source, commands, references };
