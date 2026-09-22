@@ -1,22 +1,20 @@
 # Current Validation
 
-Status: FOUNDATION + ARTIFACT/ARCHIVE + PROJECT GRAPH CONTRACT
+Status: FOUNDATION + FIRST BEDROCK ANALYZERS
 
 Verified remotely on 2026-09-22:
 
-- repository and branch authority exist;
-- artifact identity/fingerprint contracts exist;
-- archive path and resource-budget safety contracts exist;
-- source/working/output workspace boundaries exist;
-- normalized project model separates file inventory from semantic components;
-- semantic component identity helpers exist;
-- `SourceRef` supports artifact/path/range/JSON Pointer evidence;
-- semantic graph supports typed nodes and edges;
-- resolved, unresolved and ambiguous reference states are represented;
-- graph maintains outgoing, incoming and kind indexes;
-- dependency/dependent queries and reverse impact tracing exist;
-- change-scoped invalidation contract exists;
-- focused Vitest source tests cover graph resolution and invalidation behavior.
+- artifact/archive safety contracts exist;
+- normalized project and semantic graph contracts exist;
+- cheap path-based content classification exists;
+- pack candidate discovery from manifest paths exists;
+- manifest normalization preserves raw data and recognizes module categories;
+- `.mcfunction` parsing extracts direct function calls, structure loads, scoreboard reads/writes and tag mutations with line evidence;
+- identifier resolution preserves resolved/unresolved/ambiguous states;
+- function-derived references can populate typed semantic graph edges;
+- source tests exist for manifest analysis, function parsing and reference resolution.
+
+The manifest model follows current Creator documentation where module types distinguish data, resources and script content, while the parser remains conservative for unknown future values.
 
 Not yet proven in this execution context:
 
@@ -24,8 +22,10 @@ Not yet proven in this execution context:
 - TypeScript compilation;
 - Vitest execution;
 - ZIP transport/extraction;
-- Bedrock-specific parser behavior;
-- serialized index persistence;
+- actual filesystem inventory generation;
+- complete command grammar;
+- full pack dependency resolution;
+- structure NBT parsing;
 - world/package roundtrip;
 - Minecraft runtime behavior.
 
