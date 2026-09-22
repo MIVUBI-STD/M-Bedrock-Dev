@@ -1,17 +1,14 @@
 # Next Action
 
-Current phase: archive transport and first inspect orchestration exist at source level.
+Current phase: CI verification has been introduced.
 
-Next priority: **CI proof + real minimized mcworld fixture**.
+Immediate sequence:
 
-Recommended next work:
-
-1. add GitHub Actions for install, typecheck and Vitest;
-2. fix any compile/test defects exposed by CI;
-3. create a minimized valid Bedrock mcworld fixture with manifest/functions/structure references;
-4. run inspect against the packaged fixture in CI;
-5. add deterministic repackage → reopen verification;
-6. then run inspect against one real project map locally;
-7. only after that extend CLI to diagnose/repair/package commands.
+1. observe the first Verify workflow on Local;
+2. inspect failing job logs if any;
+3. repair compile/test defects at their exact owners;
+4. repeat until the exact Local head is green;
+5. then add a minimized valid Bedrock mcworld fixture and deterministic repackage/reopen test;
+6. only after executable package proof, run the pipeline against a real project map.
 
 MCP remains deferred until the core pipeline has executable proof.
