@@ -1,3 +1,5 @@
+export * from "./bedrock-state-adapter.js";
+export * from "./bedrock-state-mapping.js";
 export * from "./catalog-loader.js";
 export * from "./catalogs.js";
 export * from "./concurrency-oracles.js";
