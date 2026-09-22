@@ -1,18 +1,18 @@
 # Next Action
 
-Current phase: derived topology candidates and patch transaction contracts exist.
+Current phase: source-level safe transaction application and first regression fixture exist.
 
-Next architecture topic: **Safe Transaction Application + Regression Fixture**.
+Next architecture topic: **Archive Transport + Real Project Orchestration**.
 
 Recommended next work:
 
-1. add working-copy-only transaction application;
-2. guarantee original source paths cannot be mutation targets;
-3. implement atomic file replacement and rollback metadata;
-4. add command-line-aware replacement rather than blind whole-file replacement;
-5. add coordinate translation helper for absolute typed effects;
-6. build a minimal regression fixture with repeated arena-like command groups and one outlier;
-7. prove diagnose → patch plan → apply → reparse → topology validate on that fixture;
-8. only then connect real archive extraction and run the same pipeline on an actual mcworld.
+1. choose and isolate a ZIP transport implementation behind the existing archive safety policy;
+2. inventory entries before extraction and enforce budgets before writing;
+3. extract only into working/source workspace locations owned by the artifact session;
+4. build physical file inventory from extracted content;
+5. orchestrate discovery → manifest/function analysis → graph → diagnostics;
+6. package deterministic output and immediately reopen/validate the archive;
+7. add a CLI-level inspect command as the first thin interface;
+8. run the pipeline against a minimized real mcworld fixture before large production maps.
 
-Runtime/game verification remains a separate proof layer.
+Do not add MCP yet. The CLI/orchestrator should prove the core engine boundary first.
