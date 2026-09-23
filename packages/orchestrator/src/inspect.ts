@@ -63,6 +63,10 @@ import {
 import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
 import { structureRuntimeEvidence } from "./structure-runtime-evidence.js";
 import { derivePlacementProofs } from "./structure-proof-analysis.js";
+import {
+  correlateScriptStructureLoads,
+  scriptStructureRuntimeEvidence,
+} from "./script-structure-correlation.js";
 import { areaLoadedBlockWriteEvidence } from "./area-loaded-proof.js";
 import {
   analyzeMutationTransactionOrdering,
@@ -527,14 +531,19 @@ export async function inspectDirectory(
   );
 
   const parsedFunctionModels = parsedFunctions.map((item) => item.parsed);
+  const parsedStructureSummaries = parsedStructureModels.map((item) => ({
+    identifier: item.identifier,
+    relativePath: item.node.source.relativePath,
+    ...(item.size ? { size: item.size } : {}),
+    semantics: item.semantics,
+  }));
   const structureRuntime = analyzeStructureAndChunkRuntime(
     parsedFunctionModels,
-    parsedStructureModels.map((item) => ({
-      identifier: item.identifier,
-      relativePath: item.node.source.relativePath,
-      ...(item.size ? { size: item.size } : {}),
-      semantics: item.semantics,
-    })),
+    parsedStructureSummaries,
+  );
+  const scriptStructureLoads = correlateScriptStructureLoads(
+    parsedScripts.map((item) => item.parsed),
+    parsedStructureSummaries,
   );
   const sourceByFunction = new Map(
     parsedFunctions.map((item) => [item.parsed.identifier, item.node.source]),
@@ -618,6 +627,7 @@ export async function inspectDirectory(
       ...scriptMutationTransactionRuntimeEvidence(
         scriptMutationTransactions,
       ),
+      ...scriptStructureRuntimeEvidence(scriptStructureLoads),
     ],
     parsedScripts.map((item) => item.parsed),
     parsedEntities.map((item) => ({
