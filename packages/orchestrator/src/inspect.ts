@@ -728,6 +728,7 @@ export async function inspectDirectory(
     repairCandidates: planInspectionRepairs(topology, sourceFingerprint),
     targetCompatibility: {
       edition: target.edition ?? "unknown",
+      ...(target.version !== undefined ? { version: target.version } : {}),
       educationFeatures: target.edition === undefined && target.educationFeatures === undefined
         ? "unknown"
         : targetEducation.educationFeatures,
