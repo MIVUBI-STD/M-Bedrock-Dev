@@ -1,0 +1,333 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-physics-policy-v1",
+      "title": "MIVUBI Movement Velocity Knockback and Physics State Policy v1",
+      "url": "project://knowledge/physics-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "physics-policy.physics-state-contract",
+      "domain": "physics",
+      "subject": "player/entity physics state",
+      "statement": "Critical transitions should declare expected physics state covering velocity policy, grounded/airborne expectation where relevant, knockback/impulse ownership, movement/input lock interaction, fall/void recovery, and arena spatial bounds.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "physics-state",
+        "contract"
+      ],
+      "riskSurfaces": [
+        "residual-motion",
+        "fall-after-teleport"
+      ]
+    },
+    {
+      "id": "physics-policy.teleport-velocity-explicit",
+      "domain": "physics",
+      "subject": "teleport transition",
+      "statement": "Every critical teleport must explicitly choose whether velocity is preserved, cleared, or replaced by a known vector; leaving this implicit is prohibited when residual motion could violate spatial safety or life-state semantics.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "velocity-policy"
+      ],
+      "riskSurfaces": [
+        "post-teleport-fall",
+        "old-knockback"
+      ]
+    },
+    {
+      "id": "physics-policy.recovery-clears-dangerous-motion",
+      "domain": "physics",
+      "subject": "void/fall recovery",
+      "statement": "Anti-void and out-of-bounds recovery should clear or intentionally normalize dangerous downward/horizontal momentum before or during safe return unless mode design explicitly preserves it; recovery is incomplete until post-teleport velocity is verified.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "void-recovery",
+        "velocity"
+      ],
+      "riskSurfaces": [
+        "repeat-fall",
+        "recovery-loop"
+      ]
+    },
+    {
+      "id": "physics-policy.knockback-owner",
+      "domain": "physics",
+      "subject": "gameplay knockback",
+      "statement": "Scripted knockback/impulse should have an owning combat or gameplay operation plus arenaGeneration and entity/player generation. Stale knockback callbacks must not affect replacement entities or later rounds.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "knockback",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-knockback",
+        "cross-round-motion"
+      ]
+    },
+    {
+      "id": "physics-policy.cross-arena-knockback",
+      "domain": "physics",
+      "subject": "arena boundary knockback",
+      "statement": "Knockback that can move an entity/player outside its arena containment volume must be treated as a spatial-containment risk and validated against combat scope and boundary policy.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "knockback",
+        "spatial-containment"
+      ],
+      "riskSurfaces": [
+        "cross-arena-motion",
+        "escape"
+      ]
+    },
+    {
+      "id": "physics-policy.stuck-diagnosis-checks-velocity",
+      "domain": "physics",
+      "subject": "stuck detection",
+      "statement": "Before classifying an entity as navigation-stuck, inspect velocity/physics context. Low displacement during active knockback, airborne motion, collision pushing, or forced movement is not equivalent to pathfinding deadlock.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "navigation",
+        "velocity"
+      ],
+      "riskSurfaces": [
+        "false-stuck",
+        "premature-recovery"
+      ]
+    },
+    {
+      "id": "physics-policy.input-lock-not-physics-lock",
+      "domain": "physics",
+      "subject": "player movement restriction",
+      "statement": "Disabling movement input does not imply zero physical velocity. Input locks and physics state are separate surfaces; cutscene/downed/setup flows that require a stationary player must verify or normalize velocity independently.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "input-permission",
+        "velocity"
+      ],
+      "riskSurfaces": [
+        "drift-during-lock",
+        "cutscene-desync"
+      ]
+    },
+    {
+      "id": "physics-policy.revive-respawn-motion-baseline",
+      "domain": "physics",
+      "subject": "revive/respawn physics",
+      "statement": "Revive and respawn flows must define a motion baseline. Health/life restoration does not prove momentum, airborne/fall context, or knockback state is safe for resumed gameplay.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "revive",
+        "respawn",
+        "velocity"
+      ],
+      "riskSurfaces": [
+        "revive-then-fall",
+        "respawn-drift"
+      ]
+    },
+    {
+      "id": "physics-policy.vehicle-mount-transition",
+      "domain": "physics",
+      "subject": "mounted movement",
+      "statement": "If gameplay supports mounts/vehicles, teleport/recovery/reset must explicitly define rider-vehicle handling and ownership; moving only one side of the relationship can leave inconsistent location or control state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "mount",
+        "vehicle"
+      ],
+      "riskSurfaces": [
+        "rider-desync",
+        "orphan-vehicle"
+      ]
+    },
+    {
+      "id": "physics-policy.version-profile",
+      "domain": "physics",
+      "subject": "knockback compatibility",
+      "statement": "Knockback/pushability diagnostics must consult the effective runtime/format profile because recent component semantics changed across 1.26.x; behavior regressions after update should not be attributed solely to arena logic.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "compatibility",
+        "physics"
+      ],
+      "riskSurfaces": [
+        "update-regression",
+        "wrong-root-cause"
+      ]
+    },
+    {
+      "id": "physics-policy.post-transition-verify",
+      "domain": "physics",
+      "subject": "physics transition commit",
+      "statement": "After critical teleport, recovery, revive, scripted impulse, or reset, verify current location, containment, and velocity satisfy the transition contract before dependent gameplay commits.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ],
+      "capabilityTags": [
+        "verification",
+        "physics"
+      ],
+      "riskSurfaces": [
+        "false-success",
+        "residual-motion"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "physics-policy.relation-safe-velocity-gates-commit",
+      "domain": "physics",
+      "subject": "verified-physics-state",
+      "kind": "gates",
+      "object": "dependent-gameplay-resume",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ]
+    },
+    {
+      "id": "physics-policy.relation-boundary-validates-knockback",
+      "domain": "physics",
+      "subject": "arena-boundary-policy",
+      "kind": "validates",
+      "object": "knockback-or-impulse-eligibility",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ]
+    },
+    {
+      "id": "physics-policy.relation-reset-restores-motion",
+      "domain": "physics",
+      "subject": "arena-cleanup",
+      "kind": "restores",
+      "object": "declared-physics-baseline",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-physics-policy-v1"
+      ]
+    }
+  ]
+}
