@@ -20,6 +20,7 @@ export type EdgeType =
   | "TELEPORTS_TO"
   | "MODIFIES_REGION"
   | "REFERENCES"
+  | "REFERENCES_DIALOGUE_SCENE"
   | "CONTAINS";
 
 export type ReferenceStatus = "resolved" | "unresolved" | "ambiguous";

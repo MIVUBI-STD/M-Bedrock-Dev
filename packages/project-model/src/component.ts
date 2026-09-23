@@ -16,6 +16,7 @@ export type ComponentKind =
   | "recipe"
   | "script_module"
   | "script_file"
+  | "dialogue_scene"
   | "scoreboard_objective"
   | "tag"
   | "world"

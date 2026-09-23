@@ -7,6 +7,7 @@ import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/sr
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
 import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
+import { parseDialogueDocument } from "../../../analyzers/dialogue/src/parse.js";
 import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/entity-knowledge-findings.js";
 import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/entity-transition-findings.js";
 import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/reachability.js";
@@ -45,8 +46,10 @@ import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
 import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
+import { dialogueDocumentDiagnostics } from "../../../analyzers/diagnostics/src/dialogue-findings.js";
 import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.js";
 import { embeddedCommandStateIdentifiers, populateEmbeddedStructureCommandGraph } from "./embedded-structure-graph.js";
+import { createDialogueSceneNodes, dialogueStateIdentifiers, populateDialogueCommandGraph, type DialogueGraphDocument } from "./dialogue-graph.js";
 import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
 
 function functionIdentifier(path: string): string | undefined {
@@ -134,6 +137,7 @@ export async function inspectDirectory(
   const parsedFunctions = [];
   const parsedScripts: Array<{ node: SemanticNode; parsed: ParsedScriptFile }> = [];
   const parsedEntities: Array<{ node: SemanticNode; parsed: ReturnType<typeof parseEntityDefinition> }> = [];
+  const parsedDialogueDocuments: ReturnType<typeof parseDialogueDocument>[] = [];
   const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; size?: { x: number; y: number; z: number }; semantics: ReturnType<typeof deriveMcStructureSemantics>; embeddedCommands: ReturnType<typeof analyzeEmbeddedStructureCommands>; queuedTickPositions: number }> = [];
   const diagnostics: DiagnosticFinding[] = [];
   let parsedStructures = 0;
@@ -211,6 +215,25 @@ export async function inspectDirectory(
       continue;
     }
 
+    if (normalizedPath.endsWith(".json")) {
+      try {
+        const raw = JSON.parse(
+          await readFile(join(root, file.relativePath), "utf8"),
+        ) as unknown;
+        const dialogue = parseDialogueDocument(raw, {
+          artifactId,
+          relativePath: file.relativePath,
+        });
+        if (dialogue) {
+          parsedDialogueDocuments.push(dialogue);
+          diagnostics.push(...dialogueDocumentDiagnostics(dialogue));
+          continue;
+        }
+      } catch {
+        // Generic malformed JSON handling remains outside dialogue diagnostics.
+      }
+    }
+
     const structureId = structureIdentifier(file.relativePath);
     if (structureId) {
       const node: SemanticNode = {
@@ -263,8 +286,16 @@ export async function inspectDirectory(
     }
   }
 
+  const dialogueGraphDocuments: DialogueGraphDocument[] = parsedDialogueDocuments
+    .filter((item): item is NonNullable<typeof item> => item !== undefined)
+    .map((document) => createDialogueSceneNodes(graph, document, nodes));
+
   const scoreboardIds = new Set<string>();
   const tagIds = new Set<string>();
+
+  const dialogueIds = dialogueStateIdentifiers(dialogueGraphDocuments);
+  for (const objective of dialogueIds.scoreboardObjectives) scoreboardIds.add(objective);
+  for (const tag of dialogueIds.tags) tagIds.add(tag);
   for (const structure of parsedStructureModels) {
     const identifiers = embeddedCommandStateIdentifiers(structure.embeddedCommands);
     for (const objective of identifiers.scoreboardObjectives) scoreboardIds.add(objective);
@@ -303,6 +334,10 @@ export async function inspectDirectory(
 
   for (const item of parsedFunctions) {
     populateFunctionEdges(graph, item.node, item.parsed, nodes);
+  }
+
+  for (const dialogue of dialogueGraphDocuments) {
+    populateDialogueCommandGraph(graph, dialogue, nodes);
   }
 
   for (const structure of parsedStructureModels) {

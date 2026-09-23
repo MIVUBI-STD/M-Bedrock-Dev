@@ -1,3 +1,4 @@
+export * from "./dialogue-findings.js";
 export * from "./command-chain-findings.js";
 export * from "./embedded-structure-command-findings.js";
 export * from "./structure-runtime-findings.js";

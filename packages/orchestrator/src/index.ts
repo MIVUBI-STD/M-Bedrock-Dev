@@ -23,3 +23,5 @@ export * from "./embedded-native-correlation.js";
 export * from "./world-db-diff.js";
 export * from "./compare-artifacts.js";
 export * from "./version-aware-comparison.js";
+export * from "./command-effect-graph.js";
+export * from "./dialogue-graph.js";
