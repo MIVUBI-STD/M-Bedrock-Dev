@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-validation-policy-v1",
+      "title": "MIVUBI Automated Validation and GameTest Policy v1",
+      "url": "project://knowledge/validation-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "validation-policy.no-live-test-yet",
+      "domain": "validation",
+      "subject": "current project phase",
+      "statement": "During knowledge-enrichment phase, define tests and invariants without requiring live execution. Test plans become executable only when the project explicitly enters validation phase.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-validation-policy-v1"
+      ],
+      "capabilityTags": [
+        "phase",
+        "test-plan"
+      ],
+      "riskSurfaces": [
+        "premature-live-testing"
+      ]
+    },
+    {
+      "id": "validation-policy.invariant-to-test",
+      "domain": "validation",
+      "subject": "knowledge diagnostic",
+      "statement": "Each high-value diagnostic should map to at least one static check, runtime invariant, repeatability scenario, or future GameTest/manual validation case so knowledge remains executable rather than documentation-only.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-validation-policy-v1"
+      ],
+      "capabilityTags": [
+        "diagnostic",
+        "testability"
+      ],
+      "riskSurfaces": [
+        "dead-knowledge"
+      ]
+    },
+    {
+      "id": "validation-policy.repeat-run-suite",
+      "domain": "validation",
+      "subject": "arena repeatability",
+      "statement": "Future arena validation must include repeated-run scenarios, simultaneous multi-arena scenarios, disconnect/reconnect, reset/restart, stale callback, and update-profile scenarios—not only happy-path first runs.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-validation-policy-v1"
+      ],
+      "capabilityTags": [
+        "regression",
+        "repeatability"
+      ],
+      "riskSurfaces": [
+        "nth-run-bug",
+        "concurrency-gap"
+      ]
+    },
+    {
+      "id": "validation-policy.version-pinned-harness",
+      "domain": "validation",
+      "subject": "test runtime",
+      "statement": "GameTest/test harness manifests and module versions must be pinned to an explicit runtime profile and kept separate from production compatibility assumptions because the framework is experimental.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-validation-policy-v1"
+      ],
+      "capabilityTags": [
+        "compatibility",
+        "gametest"
+      ],
+      "riskSurfaces": [
+        "harness-regression"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "validation-policy.relation-diagnostic-produces-testcase",
+      "domain": "validation",
+      "subject": "high-value-diagnostic",
+      "kind": "produces",
+      "object": "validation-case-definition",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-validation-policy-v1"
+      ]
+    }
+  ]
+}
