@@ -4,6 +4,22 @@ import { analyzeCommand, commandRuntimeEvidence } from "../src/index.js";
 const source = { artifactId: "a", relativePath: "functions/test.mcfunction" };
 
 describe("command runtime evidence", () => {
+  it("emits entity spawn request evidence", () => {
+    const records = commandRuntimeEvidence(
+      analyzeCommand(
+        "summon minecraft:zombie 1 64 2",
+        { artifactId: "a", relativePath: "functions/test.mcfunction" },
+      ),
+    );
+
+    expect(records).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        predicate: "entity-spawn-request",
+        state: "present",
+      }),
+    ]));
+  });
+
   it("emits structure mutation predicates conservatively", () => {
     const analysis = analyzeCommand(
       "structure load arena 0 64 0 0_degrees none layer_by_layer 2 true true false 50",
