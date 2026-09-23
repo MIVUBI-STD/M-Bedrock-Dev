@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-inventory-policy-v1",
+      "title": "MIVUBI Inventory Equipment and Item Transaction Policy v1",
+      "url": "project://knowledge/inventory-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "inventory-policy.loadout-transaction",
+      "domain": "inventory",
+      "subject": "kit/loadout apply",
+      "statement": "Treat kit/loadout changes as generation-scoped transactions with SNAPSHOT/PLAN, CLEAR_OR_REPLACE, APPLY, VERIFY, and COMMIT phases. Selecting a new kit is not committed until old scoped inventory/equipment state is removed or intentionally preserved and the new loadout is verified.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "loadout",
+        "transaction"
+      ],
+      "riskSurfaces": [
+        "old-item-leak",
+        "partial-reset",
+        "duplicate-kit"
+      ]
+    },
+    {
+      "id": "inventory-policy.inventory-and-equipment-separate",
+      "domain": "inventory",
+      "subject": "loadout surfaces",
+      "statement": "A complete loadout reset must explicitly reconcile both inventory container slots and equippable slots. Clearing one surface does not imply the other is clean.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "equipment",
+        "inventory"
+      ],
+      "riskSurfaces": [
+        "equipment-leak",
+        "loadout-reset"
+      ]
+    },
+    {
+      "id": "inventory-policy.operation-idempotency",
+      "domain": "inventory",
+      "subject": "grant/reward transaction",
+      "statement": "Item grants, rewards, purchases, and upgrades must carry an operation token or equivalent idempotency guard so retries, duplicate form responses, reconnect recovery, or duplicate terminal events cannot grant the same logical item twice.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "item-grant"
+      ],
+      "riskSurfaces": [
+        "duplicate-item",
+        "duplicate-reward"
+      ]
+    },
+    {
+      "id": "inventory-policy.verify-after-write",
+      "domain": "inventory",
+      "subject": "inventory mutation verification",
+      "statement": "After critical clear/set/add/equip operations, re-read current inventory/equipment state and verify expected slot/content signatures before committing gameplay state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "verification",
+        "inventory-write"
+      ],
+      "riskSurfaces": [
+        "partial-write",
+        "silent-failure"
+      ]
+    },
+    {
+      "id": "inventory-policy.copy-writeback-required",
+      "domain": "inventory",
+      "subject": "ItemStack copy mutation",
+      "statement": "When gameplay mutates an ItemStack copy returned from a slot read, the modified stack must be explicitly written back to the intended current slot after slot/session/generation revalidation.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "ItemStack",
+        "writeback"
+      ],
+      "riskSurfaces": [
+        "lost-update",
+        "stale-slot"
+      ]
+    },
+    {
+      "id": "inventory-policy.respawn-single-restore-owner",
+      "domain": "inventory",
+      "subject": "respawn inventory restore",
+      "statement": "Exactly one generation-scoped subsystem may own respawn inventory restoration for a life generation. Death cleanup, respawn handler, reconnect recovery, and arena reset must not each independently re-grant the same loadout.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "respawn",
+        "restore-owner"
+      ],
+      "riskSurfaces": [
+        "double-restore",
+        "duplicate-kit"
+      ]
+    },
+    {
+      "id": "inventory-policy.shop-two-phase-commit",
+      "domain": "inventory",
+      "subject": "shop/purchase",
+      "statement": "Shop and upgrade flows must verify eligibility/currency, reserve or commit payment according to a defined transaction order, apply item/equipment change, verify result, and compensate on partial failure. Payment success with grant failure is not an acceptable committed state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "shop",
+        "transaction"
+      ],
+      "riskSurfaces": [
+        "paid-no-item",
+        "free-item",
+        "partial-commit"
+      ]
+    },
+    {
+      "id": "inventory-policy.item-identity-signature",
+      "domain": "inventory",
+      "subject": "item identity",
+      "statement": "For special gameplay items, define an identity signature beyond typeId where needed, including amount, durability, name/lore, dynamic properties, enchantments/components, or project token so deduplication and verification do not merge semantically different items.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "item-signature",
+        "deduplication"
+      ],
+      "riskSurfaces": [
+        "wrong-item-match",
+        "duplicate-detection"
+      ]
+    },
+    {
+      "id": "inventory-policy.scope-owned-items",
+      "domain": "inventory",
+      "subject": "item ownership scope",
+      "statement": "Items granted by arena/round systems should carry or map to scope ownership where feasible so reset can remove only items owned by the ending scope without deleting unrelated durable player inventory.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "scope",
+        "cleanup"
+      ],
+      "riskSurfaces": [
+        "over-clear",
+        "old-item-leak"
+      ]
+    },
+    {
+      "id": "inventory-policy.stale-handle-reacquire",
+      "domain": "inventory",
+      "subject": "container and slot handles",
+      "statement": "After respawn, reconnect, entity replacement, deferred callbacks, or generation changes, reacquire the current inventory/equipment component and slot handles rather than trusting cached references.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "handle-validity",
+        "reacquire"
+      ],
+      "riskSurfaces": [
+        "stale-reference",
+        "invalid-slot"
+      ]
+    },
+    {
+      "id": "inventory-policy.reset-authority-map",
+      "domain": "inventory",
+      "subject": "inventory reset authority",
+      "statement": "Define one authoritative reset owner for each transition such as lobby return, kit switch, round reset, death, respawn, and disconnect. Overlapping reset owners must coordinate by generation and scope.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ],
+      "capabilityTags": [
+        "reset",
+        "authority"
+      ],
+      "riskSurfaces": [
+        "double-clear",
+        "double-grant",
+        "race-condition"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "inventory-policy.relation-clear-apply-verify",
+      "domain": "inventory",
+      "subject": "loadout-apply",
+      "kind": "gates",
+      "object": "verified-loadout-commit",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ]
+    },
+    {
+      "id": "inventory-policy.relation-payment-requires-grant-verify",
+      "domain": "inventory",
+      "subject": "purchase-commit",
+      "kind": "requires",
+      "object": "verified-item-or-equipment-result",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-inventory-policy-v1"
+      ]
+    }
+  ]
+}
