@@ -18,6 +18,8 @@ export type CandidateInvariantStatus =
 export interface InvariantSupport {
   observations: number;
   distinctStates: number;
+  distinctCoverageBuckets: number;
+  distinctMaps: number;
   distinctVersions: number;
   antecedentMatches: number;
   satisfied: number;
@@ -31,6 +33,7 @@ export interface MinedInvariantCandidate {
   description: string;
   parameters?: Readonly<Record<string, string | number | boolean>>;
   minecraftVersions: string[];
+  mapIds: string[];
   support: InvariantSupport;
   status: CandidateInvariantStatus;
   evidence: string[];
@@ -55,6 +58,8 @@ export interface InvariantMiningOptions {
   minAntecedentMatches: number;
   minConfidence: number;
   minDistinctStates?: number;
+  minDistinctCoverageBuckets?: number;
+  minDistinctMaps?: number;
   tagScoreRelations?: readonly TagScoreRelation[];
   arenaRegions?: readonly ArenaRegion[];
 }
@@ -62,6 +67,8 @@ export interface InvariantMiningOptions {
 export interface InvariantMiningResult {
   observations: number;
   distinctStates: number;
+  distinctCoverageBuckets: number;
+  distinctMaps: number;
   minecraftVersions: string[];
   candidates: MinedInvariantCandidate[];
   rejected: MinedInvariantCandidate[];

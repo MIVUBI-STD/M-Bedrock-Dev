@@ -36,3 +36,8 @@ export * from "./state-mutations.js";
 export * from "./targeted-search-tasks.js";
 export * from "./timing-mutations.js";
 export * from "./types.js";
+
+export * from "./invariant-coverage.js";
+export * from "./invariant-cross-map.js";
+export * from "./invariant-evidence-miner.js";
+export * from "./invariant-revalidation.js";

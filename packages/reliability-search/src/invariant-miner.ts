@@ -335,9 +335,12 @@ function finalize(
     description: acc.description,
     ...(acc.parameters ? { parameters: acc.parameters } : {}),
     minecraftVersions: [...acc.versions].sort(),
+    mapIds: [],
     support: {
       observations: acc.observations,
       distinctStates: acc.distinctStates.size,
+      distinctCoverageBuckets: 0,
+      distinctMaps: 0,
       distinctVersions: acc.versions.size,
       antecedentMatches: acc.antecedentMatches,
       satisfied: acc.satisfied,
@@ -379,6 +382,8 @@ export function mineRuntimeInvariants(
   return {
     observations: knownGoodSnapshots.length,
     distinctStates: distinctRuntimeStates(knownGoodSnapshots),
+    distinctCoverageBuckets: 0,
+    distinctMaps: 0,
     minecraftVersions: runtimeVersions(knownGoodSnapshots),
     candidates: candidates.filter((item) => item.status !== "rejected"),
     rejected: candidates.filter((item) => item.status === "rejected"),
