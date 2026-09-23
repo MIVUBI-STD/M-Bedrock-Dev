@@ -27,6 +27,7 @@ export function stateAccessesFromEffects(
       access: access.access,
       selector: access.target,
       selectorScope: classifySelector(access.target),
+      ...(access.source ? { source: access.source } : {}),
     });
   }
 
