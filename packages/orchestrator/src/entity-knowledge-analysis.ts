@@ -39,6 +39,7 @@ export function analyzeEntityWithKnowledge(
   entity: ParsedEntityDefinition,
   catalog: KnowledgeCatalog,
   profile: EffectiveKnowledgeProfile,
+  externalRootEvents: readonly string[] = [],
 ): EntityKnowledgeAnalysis {
   const graph = deriveEntityStateGraph(entity);
   const findings: EntityStateKnowledgeFinding[] = [];
@@ -83,7 +84,9 @@ export function analyzeEntityWithKnowledge(
     }
   }
 
-  const reachability = analyzeEntityTransitionReachability(entity);
+  const reachability = analyzeEntityTransitionReachability(entity, {
+    externalRootEvents,
+  });
   const brokenTransitions =
     reachability.undefinedSensorEvents.length +
     reachability.undefinedTriggeredEvents.length +

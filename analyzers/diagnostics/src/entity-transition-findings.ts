@@ -49,7 +49,7 @@ export function entityTransitionDiagnostics(
     });
   }
 
-  for (const event of reachability.internallyUnreachedEvents) {
+  for (const event of reachability.unresolvedReachabilityEvents) {
     findings.push({
       id: idFor(source, `internal-unreached:${event}`),
       code: "ENTITY_EVENT_INTERNAL_REACHABILITY_UNKNOWN",
@@ -58,7 +58,7 @@ export function entityTransitionDiagnostics(
       source,
       data: {
         event,
-        limitation: "command/animation/engine/external trigger may exist",
+        limitation: "no internal, engine, or project external trigger evidence observed",
       },
     });
   }

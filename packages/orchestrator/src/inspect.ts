@@ -66,6 +66,10 @@ import { embeddedCommandStateIdentifiers, populateEmbeddedStructureCommandGraph 
 import { createDialogueSceneNodes, dialogueStateIdentifiers, populateDialogueCommandGraph, type DialogueGraphDocument } from "./dialogue-graph.js";
 import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
 import { deriveScriptApiUsage } from "./script-api-usage.js";
+import {
+  deriveEntityEventExternalEvidence,
+  externalEventRootsForEntity,
+} from "./entity-event-evidence.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -451,6 +455,11 @@ export async function inspectDirectory(
     ));
   }
 
+  const entityEventEvidence = deriveEntityEventExternalEvidence(
+    parsedFunctions.map((item) => item.parsed),
+    parsedScripts.map((item) => item.parsed),
+  );
+
   let entityStates = 0;
   let entityKnowledgeGaps = 0;
   let entityStaticLimits = 0;
@@ -461,13 +470,24 @@ export async function inspectDirectory(
         ...(item.parsed.formatVersion ? { formatVersion: item.parsed.formatVersion } : {}),
         ...(target.experiments ? { experiments: target.experiments } : {}),
       };
-      const analysis = analyzeEntityWithKnowledge(item.parsed, knowledgeCatalog, profile);
+      const externalRootEvents = externalEventRootsForEntity(
+        item.parsed,
+        entityEventEvidence,
+      );
+      const analysis = analyzeEntityWithKnowledge(
+        item.parsed,
+        knowledgeCatalog,
+        profile,
+        externalRootEvents,
+      );
       entityStates += analysis.states;
       entityKnowledgeGaps += analysis.findings.length;
       entityStaticLimits += analysis.staticAnalysisLimits.length;
       diagnostics.push(...entityKnowledgeDiagnostics(analysis, item.node.source));
       diagnostics.push(...entityTransitionDiagnostics(
-        analyzeEntityTransitionReachability(item.parsed),
+        analyzeEntityTransitionReachability(item.parsed, {
+          externalRootEvents,
+        }),
         item.node.source,
       ));
     }

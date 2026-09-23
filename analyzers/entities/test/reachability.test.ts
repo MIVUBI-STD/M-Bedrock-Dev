@@ -52,5 +52,36 @@ describe("entity transition reachability", () => {
 
     expect(result.reachableEvents).toEqual(["demo:combat", "demo:start"]);
     expect(result.internallyUnreachedEvents).toEqual(["demo:external_only"]);
+    expect(result.unresolvedReachabilityEvents).toEqual(["demo:external_only"]);
+  });
+
+  it("separates external roots from unresolved reachability", () => {
+    const entity = parseEntityDefinition({
+      "minecraft:entity": {
+        events: {
+          "minecraft:entity_spawned": { trigger: "demo:spawn_ready" },
+          "demo:spawn_ready": {},
+          "demo:external": { trigger: "demo:external_next" },
+          "demo:external_next": {},
+          "demo:unknown": {},
+        },
+      },
+    }, { artifactId: "fixture", relativePath: "entities/demo.json" });
+
+    const result = analyzeEntityTransitionReachability(entity, {
+      externalRootEvents: ["demo:external"],
+    });
+
+    expect(result.externalRootEvents).toEqual([
+      "demo:external",
+      "minecraft:entity_spawned",
+    ]);
+    expect(result.externallyReachableEvents).toEqual([
+      "demo:external",
+      "demo:external_next",
+      "demo:spawn_ready",
+      "minecraft:entity_spawned",
+    ]);
+    expect(result.unresolvedReachabilityEvents).toEqual(["demo:unknown"]);
   });
 });
