@@ -31,7 +31,15 @@ describe("applyPatchTransaction", () => {
         replacement: "fill 300 0 0 303 2 3 stone",
       }],
       preconditions: [{ kind: "source-fingerprint", expected: "fixture" }],
-      validation: [{ kind: "topology-compare", target: "arena4" }],
+      validation: [{
+        kind: "topology-compare",
+        source: {
+          artifactId: "fixture",
+          relativePath: "functions/a.mcfunction",
+          range: { lineStart: 1, lineEnd: 1 },
+        },
+        expectation: "outlier-absent",
+      }],
     });
 
     const result = await applyPatchTransaction(

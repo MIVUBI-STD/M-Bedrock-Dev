@@ -23,7 +23,7 @@ export async function planArtifactRetestFromCatalogs(
     updateDelta,
     regressions,
     coverage,
-    target: input.target,
+    ...(input.target ? { target: input.target } : {}),
   });
 }
 
@@ -43,6 +43,6 @@ export async function planDirectoryRetestFromCatalogs(
     updateDelta,
     regressions,
     coverage,
-    target: input.target,
+    ...(input.target ? { target: input.target } : {}),
   });
 }

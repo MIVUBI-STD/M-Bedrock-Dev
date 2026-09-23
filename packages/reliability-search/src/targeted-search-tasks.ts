@@ -34,6 +34,12 @@ function objectiveFor(blindspot: AggregatedBlindspot): string {
   return `Add a detector or invariant capable of distinguishing ${blindspot.operator} from baseline behavior.`;
 }
 
+function isTargetedPriority(
+  item: AggregatedBlindspot,
+): item is AggregatedBlindspot & { priority: "P0" | "P1" } {
+  return item.priority === "P0" || item.priority === "P1";
+}
+
 export function createTargetedSearchTasks(
   blindspots: BlindspotAggregateReport,
   budget: SearchBudgetPlan,
@@ -43,7 +49,7 @@ export function createTargetedSearchTasks(
   );
 
   return blindspots.items
-    .filter((item) => item.priority === "P0" || item.priority === "P1")
+    .filter(isTargetedPriority)
     .map((item) => ({
       id: `search:${item.key}`,
       blindspotKey: item.key,

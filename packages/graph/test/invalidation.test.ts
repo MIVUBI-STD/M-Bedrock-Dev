@@ -7,8 +7,15 @@ describe("buildInvalidationPlan", () => {
     const graph = new SemanticGraph();
     const source = { artifactId: "art_demo", relativePath: "demo" };
 
-    for (const id of ["function:p:a", "function:p:b", "function:p:unrelated"]) {
-      graph.addNode({ id, kind: "function", identifier: id, source });
+    for (const identifier of ["a", "b", "unrelated"]) {
+      const id = `function:p:${identifier}`;
+      graph.addNode({
+        id,
+        identity: { kind: "function", scope: "p", identifier },
+        kind: "function",
+        identifier,
+        source,
+      });
     }
 
     graph.addEdge({

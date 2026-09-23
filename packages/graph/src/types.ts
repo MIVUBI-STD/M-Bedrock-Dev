@@ -1,6 +1,8 @@
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 import type { ProjectComponent } from "../../project-model/src/component.js";
 
+export type NodeId = string;
+
 export type EdgeType =
   | "CALLS"
   | "IMPORTS_SCRIPT"

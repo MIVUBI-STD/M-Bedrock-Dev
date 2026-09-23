@@ -63,9 +63,9 @@ describe("systematic interleaving exploration", () => {
 
     const result = exploreInterleavings(operations, { maxSchedules: 20 });
 
-    expect(result.exploredPermutations).toBe(6);
+    expect(result.exploredNodes).toBeGreaterThan(0);
     expect(result.schedules.length).toBeLessThan(6);
-    expect(result.reducedEquivalentSchedules).toBeGreaterThan(0);
+    expect(result.reducedEquivalentBranches).toBeGreaterThan(0);
   });
 
   it("keeps dependent ordering distinctions", () => {

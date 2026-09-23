@@ -40,6 +40,6 @@ describe("blindspot portfolio", () => {
       maps: ["map-a", "map-b"],
       priority: "P1",
     });
-    expect(snapshot.budget.recommendations[0].action).toBe("increase");
+    expect(snapshot.budget.recommendations[0]?.action).toBe("increase");
   });
 });

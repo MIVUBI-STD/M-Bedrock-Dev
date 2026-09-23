@@ -43,6 +43,14 @@ export function planInspectionRepairs(
       };
     }
 
+    if (record.effect.kind !== "fill" && record.effect.kind !== "setblock") {
+      return {
+        ...base,
+        status: "unsupported" as const,
+        reason: "Only fill and setblock topology effects are eligible for automatic repair.",
+      };
+    }
+
     const plan = planLinearTopologyRepair({
       outlier,
       effect: record.effect,

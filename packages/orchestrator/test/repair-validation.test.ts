@@ -36,6 +36,13 @@ describe("repair validation executor", () => {
     const candidate = topology.repairableTopologyCandidates[0];
     if (!candidate) throw new Error("expected repairable candidate");
 
+    if (
+      candidate.record.effect.kind !== "fill" &&
+      candidate.record.effect.kind !== "setblock"
+    ) {
+      throw new Error("expected fill/setblock repair effect");
+    }
+
     const plan = planLinearTopologyRepair({
       outlier: candidate.outlier,
       effect: candidate.record.effect,

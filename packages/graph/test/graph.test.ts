@@ -1,31 +1,33 @@
 import { describe, expect, it } from "vitest";
 import { SemanticGraph } from "../src/graph.js";
+import type { ComponentKind } from "../../project-model/src/component.js";
 
 const source = {
   artifactId: "art_demo",
   relativePath: "functions/start.mcfunction",
 };
 
+function node(id: string, kind: ComponentKind, identifier: string, nodeSource = source) {
+  return {
+    id,
+    identity: { kind, scope: "pack", identifier },
+    kind,
+    identifier,
+    source: nodeSource,
+  };
+}
+
 describe("SemanticGraph", () => {
   it("indexes resolved dependencies in both directions", () => {
     const graph = new SemanticGraph();
 
-    graph.addNode({
-      id: "function:pack:start",
-      kind: "function",
-      identifier: "start",
-      source,
-    });
-
-    graph.addNode({
-      id: "structure:pack:arena",
-      kind: "structure",
-      identifier: "arena",
-      source: {
-        artifactId: "art_demo",
-        relativePath: "structures/arena.mcstructure",
-      },
-    });
+    graph.addNode(node("function:pack:start", "function", "start"));
+    graph.addNode(node(
+      "structure:pack:arena",
+      "structure",
+      "arena",
+      { artifactId: "art_demo", relativePath: "structures/arena.mcstructure" },
+    ));
 
     graph.addEdge({
       from: "function:pack:start",
@@ -36,24 +38,17 @@ describe("SemanticGraph", () => {
       evidence: { source },
     });
 
-    expect(graph.dependenciesOf("function:pack:start").map((node) => node.id)).toEqual([
+    expect(graph.dependenciesOf("function:pack:start").map((item) => item.id)).toEqual([
       "structure:pack:arena",
     ]);
-
-    expect(graph.dependentsOf("structure:pack:arena").map((node) => node.id)).toEqual([
+    expect(graph.dependentsOf("structure:pack:arena").map((item) => item.id)).toEqual([
       "function:pack:start",
     ]);
   });
 
   it("retains unresolved references", () => {
     const graph = new SemanticGraph();
-
-    graph.addNode({
-      id: "function:pack:start",
-      kind: "function",
-      identifier: "start",
-      source,
-    });
+    graph.addNode(node("function:pack:start", "function", "start"));
 
     graph.addEdge({
       from: "function:pack:start",
@@ -69,14 +64,9 @@ describe("SemanticGraph", () => {
   it("traces reverse impact through dependents", () => {
     const graph = new SemanticGraph();
 
-    for (const id of ["function:pack:a", "function:pack:b", "structure:pack:c"]) {
-      graph.addNode({
-        id,
-        kind: id.startsWith("structure") ? "structure" : "function",
-        identifier: id,
-        source,
-      });
-    }
+    graph.addNode(node("function:pack:a", "function", "a"));
+    graph.addNode(node("function:pack:b", "function", "b"));
+    graph.addNode(node("structure:pack:c", "structure", "c"));
 
     graph.addEdge({
       from: "function:pack:a",
@@ -86,7 +76,6 @@ describe("SemanticGraph", () => {
       to: "function:pack:b",
       evidence: { source },
     });
-
     graph.addEdge({
       from: "function:pack:b",
       type: "LOADS_STRUCTURE",

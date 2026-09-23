@@ -29,9 +29,13 @@ export function buildInvariantIntelligence(input: InvariantIntelligenceInput) {
   const evidence = input.evidence ?? (input.knownGoodSnapshots ?? []).map((snapshot) => ({ snapshot }));
   const mined = mineInvariantEvidence(evidence, input.options);
   const challenged = challengeMinedInvariants(mined.candidates, {
-    historicalFailures: input.historicalFailureSnapshots,
-    campaignHistory: input.campaignHistory,
-    currentMinecraftVersion: input.currentMinecraftVersion,
+    ...(input.historicalFailureSnapshots
+      ? { historicalFailures: input.historicalFailureSnapshots }
+      : {}),
+    ...(input.campaignHistory ? { campaignHistory: input.campaignHistory } : {}),
+    ...(input.currentMinecraftVersion
+      ? { currentMinecraftVersion: input.currentMinecraftVersion }
+      : {}),
   });
 
   return {
