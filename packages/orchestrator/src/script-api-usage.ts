@@ -210,9 +210,9 @@ export function aggregateScriptApiUsage(
         (current.item.boundedOccurrences ?? 0) + (symbol.boundedOccurrences ?? 0);
       if (current.item.knowledge === "unclassified" && symbol.knowledge === "known") {
         current.item.knowledge = "known";
-        current.item.ruleId = symbol.ruleId;
-        current.item.stability = symbol.stability;
-        current.item.introducedIn = symbol.introducedIn;
+        if (symbol.ruleId) current.item.ruleId = symbol.ruleId;
+        if (symbol.stability) current.item.stability = symbol.stability;
+        if (symbol.introducedIn) current.item.introducedIn = symbol.introducedIn;
       }
     }
   }
