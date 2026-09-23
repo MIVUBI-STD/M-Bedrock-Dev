@@ -38,6 +38,15 @@ export type ScriptApiReceiverType =
   | "ScoreboardObjective"
   | "PlayerInputPermissions";
 
+export type ScriptMethodResultUse =
+  | "ignored"
+  | "assigned"
+  | "returned"
+  | "dereferenced"
+  | "optional-dereferenced"
+  | "non-null-asserted"
+  | "other";
+
 export interface ScriptMethodCall {
   receiverType: ScriptApiReceiverType;
   root?: "world" | "system";
@@ -47,6 +56,7 @@ export interface ScriptMethodCall {
   argumentCount: number;
   argumentKinds: ScriptArgumentKind[];
   hasSpreadArgument: boolean;
+  resultUse: ScriptMethodResultUse;
   source: SourceRef;
 }
 

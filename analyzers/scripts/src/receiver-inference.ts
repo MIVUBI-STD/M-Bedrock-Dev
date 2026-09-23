@@ -3,6 +3,7 @@ import type { SourceRef } from "../../../packages/project-model/src/source-ref.j
 import type {
   ScriptApiReceiverType,
   ScriptMethodCall,
+  ScriptMethodResultUse,
   ScriptPropertyAccess,
 } from "./types.js";
 import type { ScriptArgumentKind } from "../../../packages/compatibility/src/script-signature-matrix.js";
@@ -134,6 +135,22 @@ function methodReturnType(
     return "ScoreboardObjective";
   }
   return undefined;
+}
+
+function methodResultUse(call: ts.CallExpression): ScriptMethodResultUse {
+  const parent = call.parent;
+
+  if (ts.isPropertyAccessExpression(parent) && parent.expression === call) {
+    return parent.questionDotToken ? "optional-dereferenced" : "dereferenced";
+  }
+  if (ts.isElementAccessExpression(parent) && parent.expression === call) {
+    return parent.questionDotToken ? "optional-dereferenced" : "dereferenced";
+  }
+  if (ts.isNonNullExpression(parent)) return "non-null-asserted";
+  if (ts.isVariableDeclaration(parent) && parent.initializer === call) return "assigned";
+  if (ts.isReturnStatement(parent) && parent.expression === call) return "returned";
+  if (ts.isExpressionStatement(parent)) return "ignored";
+  return "other";
 }
 
 function argumentKind(node: ts.Expression): ScriptArgumentKind {
@@ -286,6 +303,7 @@ export function inferScriptMethodCalls(
       argumentCount: call.arguments.length,
       argumentKinds: call.arguments.map((argument) => argumentKind(argument)),
       hasSpreadArgument: call.arguments.some(ts.isSpreadElement),
+      resultUse: methodResultUse(call),
       source: lineSource(file, call, source),
     });
   };
