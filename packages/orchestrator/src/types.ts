@@ -5,6 +5,7 @@ import type { MapCompatibilityFingerprint } from "../../reliability/src/types.js
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { ScriptApiUsageInventory } from "./script-api-usage.js";
 import type { RouteCorridorContract } from "../../project-model/src/route-corridor.js";
+import type { MutationDependentActionContract } from "../../project-model/src/mutation-dependent-action.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -13,6 +14,7 @@ export interface InspectTargetProfile {
   eduLevel?: number;
   experiments?: readonly string[];
   routeCorridors?: readonly RouteCorridorContract[];
+  mutationDependentActions?: readonly MutationDependentActionContract[];
   staticExecutionDimension?: string;
 }
 
