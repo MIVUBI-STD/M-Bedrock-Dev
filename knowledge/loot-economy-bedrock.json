@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-loot-table",
+      "title": "Loot Tables Documentation - minecraft:loot_table",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/loottablereference/examples/loottablecomponents/loot_table?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-loot-entity-component",
+      "title": "Entity Documentation - minecraft:loot",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_loot?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-loot-overloads",
+      "title": "Loot Overloads",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/lootoverloads?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-loot-pickup-event",
+      "title": "EntityItemPickupAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityitempickupafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-loot-world-events",
+      "title": "WorldAfterEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-loot-events-guide",
+      "title": "Working With Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/events?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "loot.table-multipool-conditional",
+      "domain": "loot-economy",
+      "subject": "loot tables",
+      "statement": "Loot tables can contain multiple independently rolled pools, weighted entries, bonus rolls, and conditions, so one source event may legitimately generate multiple items and outcomes.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-table"
+      ],
+      "capabilityTags": [
+        "loot-table",
+        "conditional"
+      ],
+      "riskSurfaces": [
+        "unexpected-multiplicity",
+        "reward-count"
+      ]
+    },
+    {
+      "id": "loot.entity-death-table",
+      "domain": "loot-economy",
+      "subject": "minecraft:loot",
+      "statement": "The minecraft:loot entity component assigns a loot table used when the entity dies, creating an engine-driven reward path independent of any scripted reward handler.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-entity-component"
+      ],
+      "capabilityTags": [
+        "entity-death",
+        "loot-table"
+      ],
+      "riskSurfaces": [
+        "duplicate-reward-path",
+        "hidden-drop"
+      ]
+    },
+    {
+      "id": "loot.command-can-spawn-or-inject",
+      "domain": "loot-economy",
+      "subject": "/loot",
+      "statement": "The loot command can spawn loot into the world or place loot into inventories/entities, providing reward paths distinct from natural death drops and direct scripted inventory grants.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-overloads"
+      ],
+      "capabilityTags": [
+        "loot-command",
+        "world-drop",
+        "inventory-grant"
+      ],
+      "riskSurfaces": [
+        "duplicate-reward-path",
+        "partial-transfer"
+      ]
+    },
+    {
+      "id": "loot.spawn-requires-loaded-location",
+      "domain": "loot-economy",
+      "subject": "/loot spawn",
+      "statement": "Loot spawning into the world can fail if the target position is outside the world or not loaded, so reward generation success depends on spatial readiness.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-overloads"
+      ],
+      "capabilityTags": [
+        "loot-spawn",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "reward-loss",
+        "unloaded-location"
+      ]
+    },
+    {
+      "id": "loot.pickup-after-event",
+      "domain": "loot-economy",
+      "subject": "entityItemPickup",
+      "statement": "EntityItemPickupAfterEvent reports the entity that picked up items and the ItemStack values picked up, providing post-transfer evidence that an item left the world pickup path and entered an entity pickup flow.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-pickup-event",
+        "ms-loot-world-events"
+      ],
+      "capabilityTags": [
+        "item-pickup",
+        "after-event"
+      ],
+      "riskSurfaces": [
+        "pickup-attribution",
+        "cross-arena-pickup"
+      ]
+    },
+    {
+      "id": "loot.drop-and-inventory-change-events-separate",
+      "domain": "loot-economy",
+      "subject": "drop and inventory events",
+      "statement": "World after-events expose item drop, item pickup, and player inventory item-change events as separate signals, so drop creation, pickup, and resulting inventory state are distinct lifecycle stages.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-world-events"
+      ],
+      "capabilityTags": [
+        "item-drop",
+        "item-pickup",
+        "inventory-change"
+      ],
+      "riskSurfaces": [
+        "partial-transfer",
+        "double-accounting"
+      ]
+    },
+    {
+      "id": "loot.before-pickup-restricted-mutation",
+      "domain": "loot-economy",
+      "subject": "pickup before-event",
+      "statement": "World before-events can fire before item pickup, but gameplay-state mutation is restricted in before-event listeners, so cancellation/inspection paths and post-pickup mutation paths have different execution privileges.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-events-guide"
+      ],
+      "capabilityTags": [
+        "before-event",
+        "execution-privilege"
+      ],
+      "riskSurfaces": [
+        "invalid-mutation-phase",
+        "pickup-filtering"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "loot.relation-death-can-produce-engine-loot",
+      "domain": "loot-economy",
+      "subject": "entity-death",
+      "kind": "produces",
+      "object": "loot-table-item-drop",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-entity-component",
+        "ms-loot-table"
+      ]
+    },
+    {
+      "id": "loot.relation-pickup-validates-transfer",
+      "domain": "loot-economy",
+      "subject": "entityItemPickup",
+      "kind": "validates",
+      "object": "world-drop-to-picker-transfer",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-loot-pickup-event"
+      ]
+    }
+  ]
+}
