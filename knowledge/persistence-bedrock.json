@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-persist-multiplayer",
+      "title": "Building Multiplayer-Aware Scripts",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/multiplayer-scripts?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-persist-world",
+      "title": "World Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/world?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-persist-events",
+      "title": "Working With Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/events?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-persist-system-before",
+      "title": "SystemBeforeEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/systembeforeevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-persist-v2",
+      "title": "Scripting V2 Overview",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/v2-overview?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "persistence.dynamic-properties-survive-restart",
+      "domain": "persistence",
+      "subject": "dynamic properties",
+      "statement": "Dynamic properties are retained with the world across server restarts and play sessions, so they can persist durable state beyond a single runtime process.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-persist-multiplayer", "ms-persist-world"],
+      "capabilityTags": ["dynamic-properties", "durable-state"],
+      "riskSurfaces": ["stale-persistence", "restart-recovery"]
+    },
+    {
+      "id": "persistence.worldload-is-recovery-entry",
+      "domain": "persistence",
+      "subject": "worldLoad",
+      "statement": "World state, players, entities, and blocks should be reconciled after the worldLoad/default-execution boundary rather than during early startup.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-persist-v2"],
+      "capabilityTags": ["worldLoad", "recovery-entry"],
+      "riskSurfaces": ["early-execution", "recovery-order"]
+    },
+    {
+      "id": "persistence.shutdown-restricted",
+      "domain": "persistence",
+      "subject": "system.beforeEvents.shutdown",
+      "statement": "Shutdown is exposed through SystemBeforeEvents, where gameplay-state mutation is restricted, so shutdown should not be the sole place that durable recovery state is written or world cleanup is performed.",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-persist-events", "ms-persist-system-before"],
+      "capabilityTags": ["shutdown", "restricted-execution"],
+      "riskSurfaces": ["lost-cleanup", "crash-recovery"]
+    },
+    {
+      "id": "persistence.watchdog-can-terminate-runtime",
+      "domain": "persistence",
+      "subject": "watchdog termination",
+      "statement": "The scripting watchdog can terminate the server for excessive memory use or hangs, meaning normal completion and shutdown cleanup paths cannot be assumed to run.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-persist-system-before"],
+      "capabilityTags": ["watchdog", "abrupt-termination"],
+      "riskSurfaces": ["partial-commit", "orphan-state", "lost-cleanup"]
+    },
+    {
+      "id": "persistence.root-state-not-world-ready",
+      "domain": "persistence",
+      "subject": "script reload/startup",
+      "statement": "Scripting V2 root/startup execution occurs before full world readiness, so recovery code that inspects persisted world state must defer until worldLoad or later.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-persist-v2"],
+      "capabilityTags": ["startup", "worldLoad"],
+      "riskSurfaces": ["half-loaded-world", "recovery-order"]
+    },
+    {
+      "id": "persistence.dynamic-property-absence-distinct",
+      "domain": "persistence",
+      "subject": "durable property absence",
+      "statement": "Dynamic-property reads can be absent/undefined and properties can be deleted, so recovery must distinguish never-written, explicitly-cleared, migrated, and stale values.",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-persist-world"],
+      "capabilityTags": ["dynamic-properties", "schema-migration"],
+      "riskSurfaces": ["default-confusion", "migration"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "persistence.relation-worldload-gates-reconcile",
+      "domain": "persistence",
+      "subject": "worldLoad",
+      "kind": "gates",
+      "object": "durable-state-reconciliation",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-persist-v2"]
+    },
+    {
+      "id": "persistence.relation-watchdog-requires-journal",
+      "domain": "persistence",
+      "subject": "abrupt-runtime-termination",
+      "kind": "requires",
+      "object": "continuous-durable-journal",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-persist-system-before"]
+    }
+  ]
+}
