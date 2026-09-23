@@ -27,6 +27,24 @@ describe("multiplayer session model", () => {
     expect(result.finalModel.arenas.arena2?.cutsceneActive).toBe(true);
   });
 
+  it("reconciles cutscene ownership when a starting player moves arenas", () => {
+    const result = runSessionSequence(
+      ["arena1", "arena2"],
+      [
+        { kind: "assign", playerId: "p1", arenaId: "arena1" },
+        { kind: "start", playerId: "p1" },
+        { kind: "assign", playerId: "p1", arenaId: "arena2" },
+      ],
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.finalModel.arenas.arena1?.cutsceneActive).toBe(false);
+    expect(result.finalModel.players.p1).toMatchObject({
+      arenaId: "arena2",
+      phase: "assigned",
+    });
+  });
+
   it("disconnect resets progress but retains assignment for reconnect", () => {
     const result = runSessionSequence(
       ["arena1"],

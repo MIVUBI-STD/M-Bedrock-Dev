@@ -80,6 +80,19 @@ function withPlayer(
   };
 }
 
+function reconcileCutsceneOwnership(
+  model: MultiplayerSessionModel,
+): MultiplayerSessionModel {
+  const arenas: Record<string, ArenaSessionState> = {};
+  for (const [arenaId, arena] of Object.entries(model.arenas)) {
+    const cutsceneActive = arena.activePlayerIds.some((playerId) =>
+      model.players[playerId]?.phase === "starting"
+    );
+    arenas[arenaId] = { ...arena, cutsceneActive };
+  }
+  return { ...model, arenas };
+}
+
 function removeFromAllArenas(
   model: MultiplayerSessionModel,
   playerId: string,
@@ -91,7 +104,7 @@ function removeFromAllArenas(
       activePlayerIds: arena.activePlayerIds.filter((id) => id !== playerId),
     };
   }
-  return { ...model, arenas };
+  return reconcileCutsceneOwnership({ ...model, arenas });
 }
 
 export function applySessionAction(
@@ -112,20 +125,7 @@ export function applySessionAction(
     const arena = next.arenas[current.arenaId];
     if (!arena) return next;
 
-    const hasStartingPlayer = arena.activePlayerIds.some((playerId) =>
-      next.players[playerId]?.phase === "starting"
-    );
-
-    return {
-      ...next,
-      arenas: {
-        ...next.arenas,
-        [current.arenaId]: {
-          ...arena,
-          cutsceneActive: hasStartingPlayer,
-        },
-      },
-    };
+    return reconcileCutsceneOwnership(next);
   }
 
   if (action.kind === "assign") {
@@ -140,20 +140,16 @@ export function applySessionAction(
       progress: 0,
     });
     const arena = next.arenas[action.arenaId]!;
-    const otherStartingPlayer = arena.activePlayerIds.some((playerId) =>
-      next.players[playerId]?.phase === "starting"
-    );
-    return {
+    return reconcileCutsceneOwnership({
       ...next,
       arenas: {
         ...next.arenas,
         [action.arenaId]: {
           ...arena,
           activePlayerIds: [...new Set([...arena.activePlayerIds, action.playerId])],
-          cutsceneActive: otherStartingPlayer,
         },
       },
-    };
+    });
   }
 
   if (action.kind === "start") {
@@ -173,13 +169,9 @@ export function applySessionAction(
     if (!current.connected || !current.arenaId || current.phase !== "starting") return model;
     const arena = model.arenas[current.arenaId];
     if (!arena) return model;
-    return {
-      ...withPlayer(model, { ...current, phase: "playing" }),
-      arenas: {
-        ...model.arenas,
-        [current.arenaId]: { ...arena, cutsceneActive: false },
-      },
-    };
+    return reconcileCutsceneOwnership(
+      withPlayer(model, { ...current, phase: "playing" }),
+    );
   }
 
   if (action.kind === "progress") {
@@ -205,13 +197,7 @@ export function applySessionAction(
     if (!current.arenaId) return next;
     const arena = next.arenas[current.arenaId];
     if (!arena) return next;
-    return {
-      ...next,
-      arenas: {
-        ...next.arenas,
-        [current.arenaId]: { ...arena, cutsceneActive: false },
-      },
-    };
+    return reconcileCutsceneOwnership(next);
   }
 
   if (action.kind === "reconnect") {
@@ -226,20 +212,7 @@ export function applySessionAction(
     const arena = next.arenas[current.arenaId];
     if (!arena) return next;
 
-    const hasStartingPlayer = arena.activePlayerIds.some((playerId) =>
-      next.players[playerId]?.phase === "starting"
-    );
-
-    return {
-      ...next,
-      arenas: {
-        ...next.arenas,
-        [current.arenaId]: {
-          ...arena,
-          cutsceneActive: hasStartingPlayer,
-        },
-      },
-    };
+    return reconcileCutsceneOwnership(next);
   }
 
   const arena = model.arenas[action.arenaId];
