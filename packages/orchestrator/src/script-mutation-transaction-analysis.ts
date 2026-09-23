@@ -74,7 +74,10 @@ function isVerification(call: ScriptMethodCall): boolean {
 }
 
 function isDependent(call: ScriptMethodCall): boolean {
-  return call.receiverType === "Entity" && call.method === "teleport";
+  return (
+    (call.receiverType === "Entity" || call.receiverType === "Player") &&
+    call.method === "teleport"
+  );
 }
 
 export function analyzeScriptMutationTransactions(
