@@ -5,6 +5,25 @@ import { flattenCommandEffects } from "../src/flatten.js";
 const source = { artifactId: "art_demo", relativePath: "functions/demo.mcfunction" };
 
 describe("command analyzer", () => {
+  it("parses summon as an entity-spawn effect even without a spawn event", () => {
+    const result = analyzeCommand(
+      "summon minecraft:zombie 1 64 2",
+      { artifactId: "a", relativePath: "functions/test.mcfunction" },
+    );
+
+    expect(result.effects).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "entity-spawn",
+        entityIdentifier: "minecraft:zombie",
+        position: {
+          x: { mode: "absolute", value: 1 },
+          y: { mode: "absolute", value: 64 },
+          z: { mode: "absolute", value: 2 },
+        },
+      }),
+    ]));
+  });
+
   it("parses fill into a typed region effect", () => {
     const result = analyzeCommand("fill 8 -47 1 4 -50 1 spruce_wood", source);
     const effect = result.effects[0];
