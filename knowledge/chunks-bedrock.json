@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-simulation-ticking",
+      "title": "Simulation Distance, Render Distance, and Ticking Areas",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/simulationrenderdistanceguide?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-tickingarea-command",
+      "title": "tickingarea Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/commandsreference/examples/commands/tickingarea?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-tickingarea-guide",
+      "title": "Introduction to Ticking Areas",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/tickingareacommand?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "chunks.simulation-distance-ticks",
+      "domain": "chunks",
+      "subject": "simulation-distance",
+      "statement": "Gameplay systems that require ticking are generally active around players within simulation distance; outside it, many tick-driven systems stop updating.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking",
+        "ms-tickingarea-guide"
+      ],
+      "capabilityTags": [
+        "chunk-lifecycle"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "entity-ai",
+        "command-block-runtime"
+      ]
+    },
+    {
+      "id": "chunks.tickingarea-exception",
+      "domain": "chunks",
+      "subject": "tickingarea",
+      "statement": "Ticking areas remain active regardless of player proximity and are an exception to normal simulation-distance activity.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking"
+      ],
+      "capabilityTags": [
+        "tickingarea"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.tickingarea-preload-order",
+      "domain": "chunks",
+      "subject": "tickingarea-preload",
+      "statement": "Preloaded ticking areas can load earlier during world startup and are useful when load ordering matters.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-tickingarea-guide"
+      ],
+      "capabilityTags": [
+        "tickingarea"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.schedule-on-area-loaded",
+      "domain": "chunks",
+      "subject": "schedule-on-area-loaded",
+      "statement": "schedule on_area_loaded can defer function execution until an area or ticking area has loaded.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-tickingarea-guide"
+      ],
+      "capabilityTags": [
+        "command:schedule",
+        "tickingarea"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.tickingarea-limits",
+      "domain": "chunks",
+      "subject": "tickingarea-limits",
+      "statement": "A world can have up to 10 ticking areas; documented ticking areas may contain up to 100 chunks, and circle radius is limited to 0–4 chunks.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking",
+        "ms-tickingarea-command"
+      ],
+      "capabilityTags": [
+        "tickingarea"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "chunk-lifecycle"
+      ]
+    }
+  ]
+}

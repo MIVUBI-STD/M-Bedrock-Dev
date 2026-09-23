@@ -1,28 +1,23 @@
 # Next Action
 
-Entity knowledge now includes conservative internal event reachability.
+Structure and chunk/ticking knowledge foundations are now being connected to inspection.
 
 Implemented:
 
-1. sensor-root event discovery;
-2. sensor → event reachability traversal;
-3. chained event trigger traversal;
-4. undefined sensor event diagnostics;
-5. undefined event-trigger diagnostics;
-6. undefined component-group add/remove diagnostics;
-7. informational reporting for events not internally reachable.
+1. /structure load option parsing;
+2. rotation/mirror/animation/include/integrity/seed semantics;
+3. mcstructure content summaries;
+4. tickingarea command parsing;
+5. simulation-distance/ticking-area knowledge catalogs;
+6. preload/load-order knowledge;
+7. structure/chunk runtime summary.
 
 Next priority:
 
-1. connect reachable event states to specific combat/navigation state requirements;
-2. detect transitions that are defined but cannot produce the required component set;
-3. expand projectile/fire_at_target semantics;
-4. then begin structure/.mcstructure knowledge;
-5. follow with chunk/ticking lifecycle knowledge.
+1. connect structure-load records to the actual referenced mcstructure model;
+2. compare includeEntities/includeBlocks intent against structure contents;
+3. add schedule on_area_loaded semantics;
+4. detect remote runtime logic with no observable chunk-lifecycle protection;
+5. add conservative diagnostics for probable load-order/chunk-lifecycle risks.
 
-The key distinction is preserved:
-
-```text
-internally broken transition = diagnostic
-not internally reachable = uncertainty, not automatic bug
-```
+Do not claim chunk runtime failure from static analysis alone.
