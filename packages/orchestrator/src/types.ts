@@ -4,6 +4,7 @@ import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/types.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { ScriptApiUsageInventory } from "./script-api-usage.js";
+import type { RouteCorridorContract } from "../../project-model/src/route-corridor.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -11,6 +12,8 @@ export interface InspectTargetProfile {
   educationFeatures?: Exclude<EducationFeatureState, "unknown">;
   eduLevel?: number;
   experiments?: readonly string[];
+  routeCorridors?: readonly RouteCorridorContract[];
+  staticExecutionDimension?: string;
 }
 
 export interface InspectedPack {
@@ -149,6 +152,11 @@ export interface InspectDirectoryResult {
     resolvedSpatialEffects: number;
     repeatedCandidates: number;
     linearOutliers: number;
+  };
+  routeAnalysis: {
+    contracts: number;
+    overlaps: number;
+    dimensionUnresolved: number;
   };
   reliability: {
     fingerprintId: string;
