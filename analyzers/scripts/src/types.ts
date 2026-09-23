@@ -69,6 +69,8 @@ export interface ScriptMethodCall {
   method: string;
   symbol: string;
   inference: "direct" | "bounded";
+  receiverHint?: string;
+  executionRegion?: string;
   argumentCount: number;
   argumentKinds: ScriptArgumentKind[];
   hasSpreadArgument: boolean;
