@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-perm-player-level",
+      "title": "PlayerPermissionLevel Enumeration",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playerpermissionlevel?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-perm-command-level",
+      "title": "CommandPermissionLevel Enumeration",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/commandpermissionlevel?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-perm-gamemode",
+      "title": "gamemode Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/commandsreference/examples/commands/gamemode?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-perm-player",
+      "title": "Player Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/player?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-perm-input",
+      "title": "PlayerInputPermissions Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playerinputpermissions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-perm-execution",
+      "title": "Scripting Execution Privilege",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/execution-privilege?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-perm-command-intro",
+      "title": "Introduction to Commands",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/commandsintroduction?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "permissions.player-level-semantics",
+      "domain": "permissions",
+      "subject": "PlayerPermissionLevel",
+      "statement": "Player permission levels distinguish Visitor, Member, Operator, and Custom; Operators can teleport and use commands while Visitors are observation-only and Members can interact/build/attack.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-player-level"
+      ],
+      "capabilityTags": [
+        "player-permission",
+        "operator"
+      ],
+      "riskSurfaces": [
+        "privilege-leak",
+        "visitor-interaction"
+      ]
+    },
+    {
+      "id": "permissions.command-level-separate",
+      "domain": "permissions",
+      "subject": "CommandPermissionLevel",
+      "statement": "Custom command permission levels distinguish Any, GameDirectors, Admin, Host, and Owner, with different eligibility for operators, command blocks, hosts, and dedicated-server owners.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-command-level"
+      ],
+      "capabilityTags": [
+        "command-permission",
+        "custom-command"
+      ],
+      "riskSurfaces": [
+        "dev-command-exposure",
+        "command-block-access"
+      ]
+    },
+    {
+      "id": "permissions.gamemode-mutates-player",
+      "domain": "permissions",
+      "subject": "gamemode",
+      "statement": "The gamemode command changes a player's current game mode and supports target selectors; creative, adventure, survival, and spectator have materially different interaction and movement capabilities.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-gamemode"
+      ],
+      "capabilityTags": [
+        "gamemode",
+        "player-state"
+      ],
+      "riskSurfaces": [
+        "gamemode-leak",
+        "spectator-counted-active"
+      ]
+    },
+    {
+      "id": "permissions.command-permission-level-runtime",
+      "domain": "permissions",
+      "subject": "Player.commandPermissionLevel",
+      "statement": "Player exposes commandPermissionLevel as mutable runtime state, and changes are disallowed in restricted-execution mode.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-player",
+        "ms-perm-execution"
+      ],
+      "capabilityTags": [
+        "command-permission",
+        "runtime-state"
+      ],
+      "riskSurfaces": [
+        "privilege-escalation",
+        "restricted-execution"
+      ]
+    },
+    {
+      "id": "permissions.input-permissions-independent",
+      "domain": "permissions",
+      "subject": "PlayerInputPermissions",
+      "statement": "Input permissions can independently enable or disable movement and camera/input categories; these controls are separate from gamemode and player permission level.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-input"
+      ],
+      "capabilityTags": [
+        "input-permission",
+        "player-control"
+      ],
+      "riskSurfaces": [
+        "control-leak",
+        "gamemode-assumption"
+      ]
+    },
+    {
+      "id": "permissions.operator-needed-for-commands",
+      "domain": "permissions",
+      "subject": "operator commands",
+      "statement": "Operator command permission is required for players to use chat commands and access command blocks in typical creator workflows, making operator status a powerful development capability rather than ordinary gameplay state.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-command-intro"
+      ],
+      "capabilityTags": [
+        "operator",
+        "command-access"
+      ],
+      "riskSurfaces": [
+        "dev-access",
+        "production-exposure"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "permissions.relation-command-level-gates-dev-command",
+      "domain": "permissions",
+      "subject": "command-permission-level",
+      "kind": "gates",
+      "object": "custom-dev-command-execution",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-command-level"
+      ]
+    },
+    {
+      "id": "permissions.relation-gamemode-not-input-authority",
+      "domain": "permissions",
+      "subject": "gamemode",
+      "kind": "requires",
+      "object": "separate-input-permission-reconciliation",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-perm-gamemode",
+        "ms-perm-input"
+      ]
+    }
+  ]
+}
