@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-bedrock-world-format",
+      "title": "Differences between Minecraft Bedrock Edition and Minecraft Java Edition",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/differencesbetweenbedrockandjava?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-actor-storage",
+      "title": "Actor Storage in Minecraft - Bedrock Edition",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/actorstorage?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-world-data-validation",
+      "title": "World Data Validation Rules",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/mctoolsvalreference/worlddata?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "leveldb.world-storage-format",
+      "domain": "chunks",
+      "subject": "leveldb",
+      "statement": "Bedrock worlds use LevelDB for world storage.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-bedrock-world-format"
+      ],
+      "capabilityTags": [
+        "world-db"
+      ],
+      "riskSurfaces": [
+        "world-db-native"
+      ]
+    },
+    {
+      "id": "leveldb.actor-keyspace",
+      "domain": "chunks",
+      "subject": "actor-storage",
+      "statement": "Modern actor data uses actorprefix<ActorUniqueID> keys, while chunk actor digests use a dedicated digest keyspace.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-actor-storage"
+      ],
+      "capabilityTags": [
+        "world-db",
+        "entity-storage"
+      ],
+      "riskSurfaces": [
+        "entity-runtime",
+        "world-db-native"
+      ]
+    },
+    {
+      "id": "leveldb.chunk-key-tags",
+      "domain": "chunks",
+      "subject": "chunk-storage",
+      "statement": "Chunk keys prefix multiple non-actor data records identified by tag bytes including block entities, pending ticks, random ticks, finalized state and generation data.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-actor-storage"
+      ],
+      "capabilityTags": [
+        "world-db",
+        "chunk-lifecycle"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "block-entity-runtime",
+        "tick-state"
+      ]
+    },
+    {
+      "id": "leveldb.worlddata-commandblocks",
+      "domain": "chunks",
+      "subject": "world-data-validation",
+      "statement": "Official world-data validation treats LevelDB chunks and saved command blocks as analyzable world runtime data.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-data-validation"
+      ],
+      "capabilityTags": [
+        "world-db",
+        "command-block"
+      ],
+      "riskSurfaces": [
+        "command-block-runtime",
+        "world-db-native"
+      ]
+    }
+  ]
+}

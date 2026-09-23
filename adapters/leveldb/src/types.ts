@@ -8,6 +8,12 @@ export interface LevelDbEntryMetadata {
   valueBytes: number;
   keyHex: string;
   keyPreview?: string;
+  keyFamily?: "actor" | "actor-digest" | "chunk-data" | "unknown";
+  chunkDataKind?: string;
+  chunkX?: number;
+  chunkZ?: number;
+  dimensionId?: number;
+  subChunkIndex?: number;
 }
 
 export interface LevelDbScanBudget {
@@ -21,6 +27,8 @@ export interface LevelDbScanResult {
   totalValueBytes: number;
   truncated: boolean;
   metadata: LevelDbEntryMetadata[];
+  keyFamilies: Record<string, number>;
+  chunkDataKinds: Record<string, number>;
 }
 
 export interface LevelDbSnapshot {

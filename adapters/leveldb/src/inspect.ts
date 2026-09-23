@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { classifyBedrockLevelDbKey } from "./keyspace.js";
 import type {
   BedrockLevelDbReader,
   LevelDbEntryMetadata,
@@ -33,6 +34,14 @@ export function describeLevelDbEntry(
   const preview = printableAscii(key);
   if (preview) result.keyPreview = preview;
 
+  const classified = classifyBedrockLevelDbKey(key);
+  result.keyFamily = classified.family;
+  if (classified.chunkDataKind) result.chunkDataKind = classified.chunkDataKind;
+  if (classified.chunkX !== undefined) result.chunkX = classified.chunkX;
+  if (classified.chunkZ !== undefined) result.chunkZ = classified.chunkZ;
+  if (classified.dimensionId !== undefined) result.dimensionId = classified.dimensionId;
+  if (classified.subChunkIndex !== undefined) result.subChunkIndex = classified.subChunkIndex;
+
   return result;
 }
 
@@ -44,6 +53,8 @@ export async function scanLevelDbMetadata(
   let entriesScanned = 0;
   let totalValueBytes = 0;
   let truncated = false;
+  const keyFamilies: Record<string, number> = {};
+  const chunkDataKinds: Record<string, number> = {};
 
   for await (const entry of reader.entries()) {
     if (entriesScanned >= budget.maxEntries) {
@@ -61,7 +72,14 @@ export async function scanLevelDbMetadata(
       break;
     }
 
-    metadata.push(describeLevelDbEntry(entry.key, entry.value));
+    const described = describeLevelDbEntry(entry.key, entry.value);
+    metadata.push(described);
+    if (described.keyFamily) {
+      keyFamilies[described.keyFamily] = (keyFamilies[described.keyFamily] ?? 0) + 1;
+    }
+    if (described.chunkDataKind) {
+      chunkDataKinds[described.chunkDataKind] = (chunkDataKinds[described.chunkDataKind] ?? 0) + 1;
+    }
     entriesScanned += 1;
     totalValueBytes += entry.value.byteLength;
   }
@@ -71,6 +89,8 @@ export async function scanLevelDbMetadata(
     totalValueBytes,
     truncated,
     metadata,
+    keyFamilies,
+    chunkDataKinds,
   };
 }
 

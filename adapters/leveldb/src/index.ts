@@ -1,3 +1,4 @@
+export * from "./keyspace.js";
 export * from "./inspect.js";
 export * from "./native-reader.js";
 export * from "./snapshot.js";
