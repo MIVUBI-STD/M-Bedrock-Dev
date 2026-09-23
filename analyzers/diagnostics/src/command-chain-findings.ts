@@ -25,6 +25,6 @@ export function commandChainDiagnostics(
         ? "Chain command block has no detected predecessor in local structure topology."
         : "Command block facing direction could not be derived from structure palette state.",
     source,
-    data: issue,
+    data: { kind: issue.kind, flatIndex: issue.flatIndex },
   }));
 }
