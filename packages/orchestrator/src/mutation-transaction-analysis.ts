@@ -8,6 +8,10 @@ import type { Coordinate3 } from "../../../analyzers/commands/src/coordinates.js
 import type { derivePlacementProofs, PlacementBounds } from "./structure-proof-analysis.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import {
+  mutationDependentActionLabel,
+  type MutationDependentActionContract,
+} from "../../project-model/src/mutation-dependent-action.js";
 
 export type MutationTransactionStepKind =
   | "apply"
@@ -120,9 +124,96 @@ function directMutationBounds(
   return undefined;
 }
 
+function matchingDependentContract(
+  effect: ReturnType<typeof flattenCommandEffects>[number],
+  contracts: readonly MutationDependentActionContract[],
+): MutationDependentActionContract | undefined {
+  return contracts.find((contract) => {
+    if (
+      contract.kind === "function-call" &&
+      effect.kind === "function-call"
+    ) {
+      return contract.functionTarget === effect.target;
+    }
+
+    if (
+      contract.kind === "scoreboard-write" &&
+      effect.kind === "scoreboard-access" &&
+      (
+        effect.access === "write" ||
+        effect.access === "read-write"
+      )
+    ) {
+      return contract.objective === effect.objective;
+    }
+
+    if (
+      contract.kind === "tag-write" &&
+      effect.kind === "tag-mutation"
+    ) {
+      return contract.tag === effect.tag;
+    }
+
+    if (
+      contract.kind === "entity-event" &&
+      effect.kind === "entity-event-trigger"
+    ) {
+      return contract.event === effect.event;
+    }
+
+    if (
+      contract.kind === "dialogue" &&
+      effect.kind === "dialogue"
+    ) {
+      return contract.dialogueScene === effect.sceneName;
+    }
+
+    return false;
+  });
+}
+
+function dependentAction(
+  effects: readonly ReturnType<typeof flattenCommandEffects>[number][],
+  contracts: readonly MutationDependentActionContract[],
+): {
+  detail: string;
+  contract?: MutationDependentActionContract;
+} | undefined {
+  if (effects.some((effect) => effect.kind === "teleport")) {
+    return { detail: "teleport" };
+  }
+  if (effects.some((effect) => effect.kind === "entity-spawn")) {
+    return { detail: "entity-spawn" };
+  }
+
+  for (const effect of effects) {
+    const contract = matchingDependentContract(effect, contracts);
+    if (contract) {
+      return {
+        detail: mutationDependentActionLabel(contract),
+        contract,
+      };
+    }
+  }
+
+  return undefined;
+}
+
+function isDependentFunctionTarget(
+  target: string,
+  contracts: readonly MutationDependentActionContract[],
+): boolean {
+  return contracts.some(
+    (contract) =>
+      contract.kind === "function-call" &&
+      contract.functionTarget === target,
+  );
+}
+
 function commandSteps(
   functionId: string,
   command: ParsedFunctionCommand,
+  dependentContracts: readonly MutationDependentActionContract[],
 ): MutationTransactionStep[] {
   const output: MutationTransactionStep[] = [];
   const verification = parseBlockVerificationSemantics(command.raw);
@@ -158,20 +249,17 @@ function commandSteps(
     });
   }
 
-  const dependentEffect = effects.find((effect) =>
-    effect.kind === "teleport" ||
-    effect.kind === "entity-spawn"
+  const dependent = dependentAction(
+    effects,
+    dependentContracts,
   );
-  const hasDependentAction = dependentEffect !== undefined;
-  if (hasDependentAction) {
+  if (dependent) {
     output.push({
       kind: "dependent-action",
       functionId,
       source: command.source,
       command: command.raw,
-      detail: dependentEffect?.kind === "entity-spawn"
-        ? "entity-spawn"
-        : "teleport",
+      detail: dependent.detail,
     });
   }
 
@@ -184,6 +272,7 @@ function expandFunctionTimeline(
   stack: readonly string[],
   depth: number,
   maxDepth: number,
+  dependentContracts: readonly MutationDependentActionContract[],
 ): MutationTransactionStep[] {
   const fn = functions.get(functionId);
   if (!fn) return [];
@@ -193,7 +282,11 @@ function expandFunctionTimeline(
 
   for (const command of fn.commands) {
     const verification = parseBlockVerificationSemantics(command.raw);
-    const steps = commandSteps(functionId, command);
+    const steps = commandSteps(
+      functionId,
+      command,
+      dependentContracts,
+    );
 
     // For a gated execute command, verification must happen before the nested
     // function/teleport. Emit only the verify phase now.
@@ -205,6 +298,14 @@ function expandFunctionTimeline(
 
     const targets = directFunctionTargets(command);
     for (const target of targets) {
+      if (
+        isDependentFunctionTarget(
+          target,
+          dependentContracts,
+        )
+      ) {
+        continue;
+      }
       if (stack.includes(target) || target === functionId) {
         output.push({
           kind: "recursive-call",
@@ -233,6 +334,7 @@ function expandFunctionTimeline(
         [...stack, functionId],
         depth + 1,
         maxDepth,
+        dependentContracts,
       ));
     }
 
@@ -323,17 +425,36 @@ function rootFunctions(functions: readonly ParsedFunction[]): string[] {
 export function analyzeMutationTransactionOrdering(
   functions: readonly ParsedFunction[],
   proofs?: StructurePlacementProofs,
+  dependentContractsOrMaxDepth:
+    | readonly MutationDependentActionContract[]
+    | number = [],
   maxDepth = 16,
 ): {
   timelines: ReadonlyMap<string, readonly MutationTransactionStep[]>;
   assessments: MutationTransactionAssessment[];
 } {
+  const dependentContracts =
+    typeof dependentContractsOrMaxDepth === "number"
+      ? []
+      : dependentContractsOrMaxDepth;
+  const effectiveMaxDepth =
+    typeof dependentContractsOrMaxDepth === "number"
+      ? dependentContractsOrMaxDepth
+      : maxDepth;
+
   const map = new Map(functions.map((fn) => [fn.identifier, fn]));
   const timelines = new Map<string, readonly MutationTransactionStep[]>();
   const assessments: MutationTransactionAssessment[] = [];
 
   for (const root of rootFunctions(functions)) {
-    const timeline = expandFunctionTimeline(root, map, [], 0, maxDepth);
+    const timeline = expandFunctionTimeline(
+      root,
+      map,
+      [],
+      0,
+      effectiveMaxDepth,
+      dependentContracts,
+    );
     timelines.set(root, timeline);
 
     for (let index = 0; index < timeline.length; index += 1) {
