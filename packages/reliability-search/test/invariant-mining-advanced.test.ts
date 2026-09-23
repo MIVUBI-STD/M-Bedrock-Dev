@@ -62,6 +62,7 @@ describe("advanced invariant mining", () => {
       snapshot(2, "starting", 0),
       snapshot(3, "playing", 1),
       snapshot(4, "playing", 2),
+      snapshot(5, "playing", 3),
     ];
 
     const result = mineRuntimeInvariants(snapshots, {

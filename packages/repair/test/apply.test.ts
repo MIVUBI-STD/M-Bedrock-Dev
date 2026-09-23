@@ -57,6 +57,7 @@ describe("applyPatchTransaction", () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-dev-"));
     const sourceRoot = join(root, "source");
     const workingRoot = join(root, "working");
+    await mkdir(sourceRoot, { recursive: true });
     await mkdir(join(workingRoot, "functions"), { recursive: true });
     await writeFile(join(workingRoot, "functions/a.mcfunction"), "say old\n");
 

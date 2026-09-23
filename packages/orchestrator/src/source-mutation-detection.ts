@@ -147,6 +147,21 @@ export function detectSourceMutation(
         evidence: "Topology detector introduced a new linear translation outlier.",
       };
     }
+
+    const baselineEvidence = Math.max(
+      0,
+      ...baselineTopology.candidates.map((candidate) => candidate.evidenceCount),
+    );
+    const mutatedEvidence = Math.max(
+      0,
+      ...mutatedTopology.candidates.map((candidate) => candidate.evidenceCount),
+    );
+    if (baselineEvidence >= 4 && mutatedEvidence < baselineEvidence) {
+      return {
+        killed: true,
+        evidence: `Repeated-topology membership weakened from ${baselineEvidence} to ${mutatedEvidence} matching effects.`,
+      };
+    }
   }
 
   return {

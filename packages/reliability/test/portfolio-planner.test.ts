@@ -40,7 +40,7 @@ describe("portfolio retest planner", () => {
     );
 
     expect(result.totalMaps).toBe(2);
-    expect(result.groups.P0.map((item) => item.mapId)).toContain("entity-heavy");
+    expect(result.groups.P1.map((item) => item.mapId)).toContain("entity-heavy");
     expect(result.groups.P3.map((item) => item.mapId)).toContain("static-gallery");
   });
 });

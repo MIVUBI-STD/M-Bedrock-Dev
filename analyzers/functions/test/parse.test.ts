@@ -23,7 +23,7 @@ describe("parseMcFunction", () => {
       "structure",
       "scoreboard-write",
       "scoreboard-read",
-      "tag-add",
+      "tag-write",
     ]);
     expect(parsed.references[0]?.source.range?.lineStart).toBe(2);
   });

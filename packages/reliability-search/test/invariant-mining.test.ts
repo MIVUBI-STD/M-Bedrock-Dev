@@ -36,6 +36,7 @@ describe("dynamic invariant mining", () => {
       {
         minAntecedentMatches: 20,
         minConfidence: 1,
+        minDistinctStates: 1,
       },
     );
 
@@ -70,7 +71,7 @@ describe("dynamic invariant mining", () => {
 
     const result = mineRuntimeInvariants(
       snapshots,
-      { minAntecedentMatches: 1, minConfidence: 1 },
+      { minAntecedentMatches: 1, minConfidence: 1, minDistinctStates: 1 },
     );
 
     expect(result.rejected.some((item) =>
@@ -81,7 +82,7 @@ describe("dynamic invariant mining", () => {
   it("challenges supported candidates using historical failures and mutation survivors", () => {
     const mined = mineRuntimeInvariants(
       Array.from({ length: 3 }, (_, index) => goodSnapshot(index)),
-      { minAntecedentMatches: 1, minConfidence: 1 },
+      { minAntecedentMatches: 1, minConfidence: 1, minDistinctStates: 1 },
     );
 
     const challenged = challengeMinedInvariants(

@@ -27,7 +27,7 @@ describe("command analyzer", () => {
 
   it("preserves coordinate modes", () => {
     const result = analyzeCommand("tp @s ~1 ~ ^2", source);
-    const effect = result.effects[0];
+    const effect = result.effects.find((item) => item.kind === "teleport");
     expect(effect?.kind).toBe("teleport");
     if (effect?.kind === "teleport") {
       expect(effect.destination.x.mode).toBe("relative");

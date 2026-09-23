@@ -121,6 +121,9 @@ export function applySessionAction(
       progress: 0,
     });
     const arena = next.arenas[action.arenaId]!;
+    const otherStartingPlayer = arena.activePlayerIds.some((playerId) =>
+      next.players[playerId]?.phase === "starting"
+    );
     return {
       ...next,
       arenas: {
@@ -128,6 +131,7 @@ export function applySessionAction(
         [action.arenaId]: {
           ...arena,
           activePlayerIds: [...new Set([...arena.activePlayerIds, action.playerId])],
+          cutsceneActive: otherStartingPlayer,
         },
       },
     };

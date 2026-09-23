@@ -43,6 +43,7 @@ describe("invariant intelligence orchestration", () => {
       options: {
         minAntecedentMatches: 3,
         minConfidence: 1,
+        minDistinctStates: 1,
       },
     });
 
