@@ -5,8 +5,12 @@ import { flattenCommandEffects } from "./flatten.js";
 import { parseStructureLoadSemantics } from "./structure-semantics.js";
 
 function operationId(source: SourceRef): string {
-  const line = source.range?.lineStart ?? 0;
-  return source.artifactId + ":" + source.relativePath + ":" + line;
+  return [
+    source.artifactId,
+    source.relativePath,
+    source.range?.lineStart ?? 0,
+    source.range?.columnStart ?? 0,
+  ].join(":");
 }
 
 function observed(
