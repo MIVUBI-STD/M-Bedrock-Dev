@@ -463,6 +463,37 @@ const entry = {
     ]);
   });
 
+  it("tracks lifecycle member exposure even when receiver typing is incomplete", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const player = world.getAllPlayers()[0];
+player.runCommandAsync("say typed");
+customRuntime.runCommandAsync("say lexical");
+player.isValid();
+`,
+      source,
+    );
+
+    expect(parsed.lifecycleMemberExposures).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        member: "runCommandAsync",
+        evidence: "exact-symbol",
+        exactSymbol: "Entity.runCommandAsync",
+      }),
+      expect.objectContaining({
+        member: "runCommandAsync",
+        evidence: "lexical-only",
+      }),
+      expect.objectContaining({
+        member: "isValid",
+        evidence: "exact-symbol",
+        exactSymbol: "Entity.isValid",
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

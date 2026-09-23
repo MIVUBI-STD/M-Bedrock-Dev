@@ -19,6 +19,7 @@ import {
   inferScriptPropertyWrites,
 } from "./receiver-inference.js";
 import { findScriptExecutionPrivilegeRule } from "../../../packages/compatibility/src/script-execution-privilege-matrix.js";
+import { inferScriptLifecycleMemberExposures } from "./lifecycle-exposure.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -410,6 +411,11 @@ export function parseScriptFile(
   const propertyWrites = inferScriptPropertyWrites(file, source);
   const entityEventTriggers: ScriptEntityEventTrigger[] = [];
   const commandLiterals: ScriptCommandLiteral[] = [];
+  const lifecycleMemberExposures = inferScriptLifecycleMemberExposures(
+    file,
+    source,
+    methodCalls,
+  );
   const moduleMemberAccesses: ScriptModuleMemberAccess[] = [];
   const importedSymbols: ScriptImportedSymbol[] = [];
   const enumValueComparisons: ScriptEnumValueComparison[] = [];
@@ -770,6 +776,7 @@ export function parseScriptFile(
     propertyWrites,
     entityEventTriggers,
     commandLiterals,
+    lifecycleMemberExposures,
     moduleMemberAccesses,
     importedSymbols,
     enumValueComparisons,

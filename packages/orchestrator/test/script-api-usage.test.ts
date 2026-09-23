@@ -289,6 +289,36 @@ describe("Script API usage inventory", () => {
     expect(usage.symbols.some((item) => item.symbol.startsWith("unknown."))).toBe(false);
   });
 
+  it("summarizes lifecycle exposure without turning lexical-only calls into diagnostics", () => {
+    const usage = deriveScriptApiUsage([
+      parse("legacy/scripts/main.js", `
+        import { world } from "@minecraft/server";
+        const player = world.getAllPlayers()[0];
+        player.runCommandAsync("say typed");
+        runtime.runCommandAsync("say lexical");
+        player.isValid();
+      `),
+    ]);
+
+    expect(usage.lifecycleMemberExposures).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        member: "runCommandAsync",
+        occurrences: 2,
+        exactSymbolOccurrences: 1,
+        lexicalOnlyOccurrences: 1,
+        candidateSymbols: expect.arrayContaining([
+          "Dimension.runCommandAsync",
+          "Entity.runCommandAsync",
+        ]),
+      }),
+      expect.objectContaining({
+        member: "isValid",
+        occurrences: 1,
+        exactSymbolOccurrences: 1,
+      }),
+    ]));
+  });
+
   it("ranks portfolio promotion candidates by real map coverage before raw frequency", () => {
     const mapA = deriveScriptApiUsage([
       parse("a/scripts/main.js", `

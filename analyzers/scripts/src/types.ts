@@ -103,6 +103,14 @@ export interface ScriptCommandLiteral {
   source: SourceRef;
 }
 
+export interface ScriptLifecycleMemberExposure {
+  member: string;
+  candidateSymbols: string[];
+  evidence: "exact-symbol" | "lexical-only";
+  exactSymbol?: string;
+  source: SourceRef;
+}
+
 export interface ScriptImportedSymbol {
   module: string;
   importedName: string;
@@ -161,6 +169,7 @@ export interface ParsedScriptFile {
   propertyWrites: ScriptPropertyWrite[];
   entityEventTriggers: ScriptEntityEventTrigger[];
   commandLiterals: ScriptCommandLiteral[];
+  lifecycleMemberExposures: ScriptLifecycleMemberExposure[];
   moduleMemberAccesses: ScriptModuleMemberAccess[];
   importedSymbols: ScriptImportedSymbol[];
   enumValueComparisons: ScriptEnumValueComparison[];

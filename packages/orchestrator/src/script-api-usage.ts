@@ -61,12 +61,22 @@ export interface ScriptApiUsageSymbol {
   literalComparisons?: ScriptEnumLiteralUsage[];
 }
 
+export interface ScriptLifecycleExposureSummary {
+  member: string;
+  candidateSymbols: string[];
+  occurrences: number;
+  exactSymbolOccurrences: number;
+  lexicalOnlyOccurrences: number;
+  files: string[];
+}
+
 export interface ScriptApiUsageInventory {
   totalOccurrences: number;
   uniqueSymbols: number;
   knownSymbols: number;
   unclassifiedSymbols: number;
   symbols: ScriptApiUsageSymbol[];
+  lifecycleMemberExposures: ScriptLifecycleExposureSummary[];
 }
 
 export interface ScriptApiUsageMapEntry {
@@ -89,6 +99,10 @@ export interface ScriptApiUsagePortfolio {
   unclassifiedSymbols: number;
   symbols: ScriptApiPortfolioSymbol[];
   promotionCandidates: ScriptApiPortfolioSymbol[];
+  lifecycleMemberExposures: Array<ScriptLifecycleExposureSummary & {
+    mapCount: number;
+    maps: string[];
+  }>;
 }
 
 interface MutableUsage {
@@ -428,6 +442,14 @@ export function deriveScriptApiUsage(
   scripts: readonly ParsedScriptFile[],
 ): ScriptApiUsageInventory {
   const bySymbol = new Map<string, MutableUsage>();
+  const exposureByMember = new Map<string, {
+    member: string;
+    candidateSymbols: Set<string>;
+    occurrences: number;
+    exactSymbolOccurrences: number;
+    lexicalOnlyOccurrences: number;
+    files: Set<string>;
+  }>();
 
   const getOrCreate = (
     kind: ScriptApiUsageKind,
@@ -473,6 +495,31 @@ export function deriveScriptApiUsage(
 
   for (const script of scripts) {
     const file = script.source.relativePath;
+
+    for (const exposure of script.lifecycleMemberExposures) {
+      let summary = exposureByMember.get(exposure.member);
+      if (!summary) {
+        summary = {
+          member: exposure.member,
+          candidateSymbols: new Set<string>(),
+          occurrences: 0,
+          exactSymbolOccurrences: 0,
+          lexicalOnlyOccurrences: 0,
+          files: new Set<string>(),
+        };
+        exposureByMember.set(exposure.member, summary);
+      }
+      summary.occurrences += 1;
+      summary.files.add(file);
+      for (const symbol of exposure.candidateSymbols) {
+        summary.candidateSymbols.add(symbol);
+      }
+      if (exposure.evidence === "exact-symbol") {
+        summary.exactSymbolOccurrences += 1;
+      } else {
+        summary.lexicalOnlyOccurrences += 1;
+      }
+    }
 
     for (const event of script.events) {
       const symbol = scriptEventSymbol(event.root, event.phase, event.event);
@@ -567,12 +614,27 @@ export function deriveScriptApiUsage(
   }
 
   const symbols = [...bySymbol.values()].map(materialize).sort(compareUsage);
+  const lifecycleMemberExposures = [...exposureByMember.values()]
+    .map((item) => ({
+      member: item.member,
+      candidateSymbols: [...item.candidateSymbols].sort(),
+      occurrences: item.occurrences,
+      exactSymbolOccurrences: item.exactSymbolOccurrences,
+      lexicalOnlyOccurrences: item.lexicalOnlyOccurrences,
+      files: [...item.files].sort(),
+    }))
+    .sort((a, b) =>
+      b.occurrences - a.occurrences ||
+      a.member.localeCompare(b.member)
+    );
+
   return {
     totalOccurrences: symbols.reduce((sum, item) => sum + item.occurrences, 0),
     uniqueSymbols: symbols.length,
     knownSymbols: symbols.filter((item) => item.knowledge === "known").length,
     unclassifiedSymbols: symbols.filter((item) => item.knowledge === "unclassified").length,
     symbols,
+    lifecycleMemberExposures,
   };
 }
 
@@ -585,8 +647,39 @@ export function aggregateScriptApiUsage(
     receiverTypes: Set<string>;
     maps: Set<string>;
   }>();
+  const exposureByMember = new Map<string, {
+    member: string;
+    candidateSymbols: Set<string>;
+    occurrences: number;
+    exactSymbolOccurrences: number;
+    lexicalOnlyOccurrences: number;
+    files: Set<string>;
+    maps: Set<string>;
+  }>();
 
   for (const entry of entries) {
+    for (const exposure of entry.usage.lifecycleMemberExposures) {
+      let summary = exposureByMember.get(exposure.member);
+      if (!summary) {
+        summary = {
+          member: exposure.member,
+          candidateSymbols: new Set<string>(),
+          occurrences: 0,
+          exactSymbolOccurrences: 0,
+          lexicalOnlyOccurrences: 0,
+          files: new Set<string>(),
+          maps: new Set<string>(),
+        };
+        exposureByMember.set(exposure.member, summary);
+      }
+      summary.occurrences += exposure.occurrences;
+      summary.exactSymbolOccurrences += exposure.exactSymbolOccurrences;
+      summary.lexicalOnlyOccurrences += exposure.lexicalOnlyOccurrences;
+      summary.maps.add(entry.mapId);
+      for (const file of exposure.files) summary.files.add(file);
+      for (const symbol of exposure.candidateSymbols) summary.candidateSymbols.add(symbol);
+    }
+
     for (const symbol of entry.usage.symbols) {
       const key = usageKey(symbol.kind, symbol.symbol);
       const current = bySymbol.get(key);
@@ -671,6 +764,23 @@ export function aggregateScriptApiUsage(
       left.symbol.localeCompare(right.symbol)
     );
 
+  const lifecycleMemberExposures = [...exposureByMember.values()]
+    .map((item) => ({
+      member: item.member,
+      candidateSymbols: [...item.candidateSymbols].sort(),
+      occurrences: item.occurrences,
+      exactSymbolOccurrences: item.exactSymbolOccurrences,
+      lexicalOnlyOccurrences: item.lexicalOnlyOccurrences,
+      files: [...item.files].sort(),
+      mapCount: item.maps.size,
+      maps: [...item.maps].sort(),
+    }))
+    .sort((a, b) =>
+      b.mapCount - a.mapCount ||
+      b.occurrences - a.occurrences ||
+      a.member.localeCompare(b.member)
+    );
+
   return {
     schemaVersion: 1,
     maps: entries.map((entry) => ({
@@ -683,5 +793,6 @@ export function aggregateScriptApiUsage(
     unclassifiedSymbols: symbols.filter((item) => item.knowledge === "unclassified").length,
     symbols,
     promotionCandidates,
+    lifecycleMemberExposures,
   };
 }
