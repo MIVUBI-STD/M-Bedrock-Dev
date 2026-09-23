@@ -1,7 +1,13 @@
 import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/runtime-evidence.js";
+import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type { CommandAnalysis, CommandEffect } from "./effects.js";
 import { flattenCommandEffects } from "./flatten.js";
 import { parseStructureLoadSemantics } from "./structure-semantics.js";
+
+function operationId(source: SourceRef): string {
+  const line = source.range?.lineStart ?? 0;
+  return source.artifactId + ":" + source.relativePath + ":" + line;
+}
 
 function observed(
   predicate: string,
@@ -12,6 +18,7 @@ function observed(
     predicate,
     state: "present",
     confidence: "observed",
+    scope: { operationId: operationId(effect.source) },
     sourceRefs: [effect.source],
     ...(note === undefined ? {} : { note }),
   };
@@ -94,6 +101,7 @@ export function commandRuntimeEvidence(
           predicate: "structure-entities-included",
           state: "absent",
           confidence: "observed",
+          scope: { operationId: operationId(structureEffect.source) },
           sourceRefs: [structureEffect.source],
         });
       }
