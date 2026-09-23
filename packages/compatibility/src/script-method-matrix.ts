@@ -1,5 +1,6 @@
 import { compareVersions } from "../../knowledge/src/version.js";
 import type { ScriptApiTrack } from "./script-api.js";
+import type { ScriptSymbolLifecycle } from "./script-lifecycle.js";
 
 export type ScriptMethodStability = "stable" | "pre-release";
 
@@ -9,6 +10,7 @@ export interface ScriptMethodSymbolRule {
   symbol: string;
   stability: ScriptMethodStability;
   introducedIn?: string;
+  lifecycle?: ScriptSymbolLifecycle;
   sourceIds: readonly string[];
 }
 
@@ -67,6 +69,69 @@ export const SCRIPT_METHOD_SYMBOL_RULES: readonly ScriptMethodSymbolRule[] = [
     symbol: "Entity.removeTag",
     stability: "stable",
     introducedIn: "1.2.0",
+    sourceIds: ["ms-server-changelog"],
+  },
+  {
+    id: "script-method.world.play-sound-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "world.playSound",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      replacement: "Dimension.playSound",
+      sourceIds: ["ms-world-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-world-1xx", "ms-server-changelog"],
+  },
+  {
+    id: "script-method.dimension.run-command-async-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "Dimension.runCommandAsync",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      sourceIds: ["ms-dimension-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-dimension-1xx", "ms-server-changelog"],
+  },
+  {
+    id: "script-method.entity.run-command-async-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "Entity.runCommandAsync",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      sourceIds: ["ms-entity-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-entity-1xx", "ms-server-changelog"],
+  },
+  {
+    id: "script-method.entity.is-valid-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "Entity.isValid",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      replacement: "Entity.isValid (property)",
+      sourceIds: ["ms-entity-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-entity-1xx", "ms-server-changelog"],
+  },
+  {
+    id: "script-method.scoreboard-objective.is-valid-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "ScoreboardObjective.isValid",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      replacement: "ScoreboardObjective.isValid (property)",
+      sourceIds: ["ms-server-changelog"],
+    },
     sourceIds: ["ms-server-changelog"],
   },
 ];

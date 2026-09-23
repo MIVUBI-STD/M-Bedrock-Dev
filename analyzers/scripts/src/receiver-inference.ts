@@ -28,6 +28,8 @@ const ENTITY_INHERITED_METHODS = new Set([
   "getTags",
   "hasTag",
   "removeTag",
+  "runCommandAsync",
+  "isValid",
 ]);
 
 function lineSource(

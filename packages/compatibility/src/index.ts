@@ -7,3 +7,4 @@ export * from "./version.js";
 export * from "./script-api-matrix.js";
 export * from "./script-event-matrix.js";
 export * from "./script-method-matrix.js";
+export * from "./script-lifecycle.js";

@@ -1,3 +1,5 @@
+import type { ScriptSymbolLifecycle } from "./script-lifecycle.js";
+
 export type ScriptEventStability = "stable" | "pre-release";
 
 export interface ScriptEventSymbolRule {
@@ -6,6 +8,7 @@ export interface ScriptEventSymbolRule {
   symbol: string;
   stability: ScriptEventStability;
   introducedIn?: string;
+  lifecycle?: ScriptSymbolLifecycle;
   sourceIds: readonly string[];
 }
 
@@ -69,6 +72,68 @@ export const SCRIPT_EVENT_SYMBOL_RULES: readonly ScriptEventSymbolRule[] = [
     stability: "pre-release",
     introducedIn: "2.12.0-beta.1.26.60-preview.23",
     sourceIds: ["ms-server-changelog", "ms-system-before-events"],
+  },
+  {
+    id: "script-event.world-before-world-initialize-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "world.beforeEvents.worldInitialize",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      sourceIds: ["ms-world-before-events-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-world-before-events-1xx", "ms-server-changelog"],
+  },
+  {
+    id: "script-event.world-after-world-initialize-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "world.afterEvents.worldInitialize",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],
+  },
+  {
+    id: "script-event.world-before-item-use-on-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "world.beforeEvents.itemUseOn",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      replacement: "world.beforeEvents.playerInteractWithBlock",
+      sourceIds: ["ms-world-before-events-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-world-before-events-1xx", "ms-server-changelog"],
+  },
+  {
+    id: "script-event.world-after-item-use-on-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "world.afterEvents.itemUseOn",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      replacement: "world.afterEvents.playerInteractWithBlock",
+      sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],
+  },
+  {
+    id: "script-event.world-after-entity-hurt-legacy",
+    moduleName: "@minecraft/server",
+    symbol: "world.afterEvents.entityHurt",
+    stability: "stable",
+    lifecycle: {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],
+    },
+    sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],
   },
 ];
 
