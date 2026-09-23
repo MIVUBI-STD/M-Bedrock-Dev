@@ -157,13 +157,19 @@ function callbackNode(call: ts.CallExpression): ts.Node | undefined {
 }
 
 function sourceInside(inner: SourceRef, outer: SourceRef): boolean {
-  const a = inner.range;
-  const b = outer.range;
-  return Boolean(
-    a && b &&
-    a.lineStart >= b.lineStart &&
-    a.lineEnd <= b.lineEnd
-  );
+  const innerStart = inner.range?.lineStart;
+  const innerEnd = inner.range?.lineEnd;
+  const outerStart = outer.range?.lineStart;
+  const outerEnd = outer.range?.lineEnd;
+  if (
+    innerStart === undefined ||
+    innerEnd === undefined ||
+    outerStart === undefined ||
+    outerEnd === undefined
+  ) {
+    return false;
+  }
+  return innerStart >= outerStart && innerEnd <= outerEnd;
 }
 
 function contextualCallSymbol(node: ts.CallExpression): string | undefined {
@@ -216,8 +222,8 @@ function scanRestrictedMutations(
   event: string,
   file: ts.SourceFile,
   source: SourceRef,
-  methodCalls: readonly ParsedScriptFile["methodCalls"],
-  propertyWrites: readonly ParsedScriptFile["propertyWrites"],
+  methodCalls: ReadonlyArray<ParsedScriptFile["methodCalls"][number]>,
+  propertyWrites: ReadonlyArray<ParsedScriptFile["propertyWrites"][number]>,
 ): RestrictedExecutionMutation[] {
   const output: RestrictedExecutionMutation[] = [];
   const callbackSource = lineSource(file, callback, source);
