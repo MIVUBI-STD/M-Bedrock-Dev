@@ -63,6 +63,7 @@ import {
 import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
 import { structureRuntimeEvidence } from "./structure-runtime-evidence.js";
 import { derivePlacementProofs } from "./structure-proof-analysis.js";
+import { areaLoadedBlockWriteEvidence } from "./area-loaded-proof.js";
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
@@ -581,6 +582,10 @@ export async function inspectDirectory(
         structureProofs,
       ),
       ...topologyRuntimeEvidence(topology),
+      ...areaLoadedBlockWriteEvidence(
+        structureRuntime,
+        parsedFunctionModels,
+      ),
     ],
     parsedScripts.map((item) => item.parsed),
     parsedEntities.map((item) => ({
