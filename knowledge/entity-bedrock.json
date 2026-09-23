@@ -1,0 +1,474 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-entity-events",
+      "title": "Entity Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entityevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-components",
+      "title": "Entity Components Guide",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitycomponentsguide?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-ai",
+      "title": "Entity Behavior (AI) Components",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitybehaviorcomponents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-move-target",
+      "title": "minecraft:behavior.move_towards_target",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitygoals/minecraftbehavior_move_towards_target?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-open-door",
+      "title": "minecraft:behavior.open_door",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitygoals/minecraftbehavior_open_door?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-break-door",
+      "title": "minecraft:behavior.break_door",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitygoals/minecraftbehavior_break_door?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-environment-sensor",
+      "title": "minecraft:environment_sensor",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_environment_sensor?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-sensor",
+      "title": "minecraft:entity_sensor",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_entity_sensor?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-stalk-pounce",
+      "title": "minecraft:behavior.stalk_and_pounce_on_target",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitygoals/minecraftbehavior_stalk_and_pounce_on_target?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-unique-behaviors",
+      "title": "Unique Entity Behaviors",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/uniqueentitybehaviors?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "entity.event.effects-deferred-to-tick",
+      "domain": "entity-events",
+      "subject": "event-execution",
+      "statement": "Event effects are determined immediately but component changes are applied when the entity ticks server-side; later sequence filters do not observe pending changes from earlier entries.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-events"
+      ],
+      "capabilityTags": [
+        "entity-events"
+      ],
+      "riskSurfaces": [
+        "event-ordering",
+        "tick-ordering"
+      ],
+      "diagnosticHints": [
+        "Do not assume add/remove component-group effects are visible to later filters in the same event sequence."
+      ]
+    },
+    {
+      "id": "entity.event.cross-entity-tick-order",
+      "domain": "entity-events",
+      "subject": "cross-entity-event",
+      "statement": "When one entity sends an event to another, the effect can occur on the same or next game tick depending on target update order.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-events"
+      ],
+      "capabilityTags": [
+        "entity-events"
+      ],
+      "riskSurfaces": [
+        "tick-ordering",
+        "cross-entity-events",
+        "multiplayer-concurrency"
+      ]
+    },
+    {
+      "id": "entity.environment-sensor-fires-events",
+      "domain": "entity-events",
+      "subject": "minecraft:environment_sensor",
+      "statement": "Environment sensor triggers entity events when its configured environmental filter conditions match.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-environment-sensor"
+      ],
+      "capabilityTags": [
+        "entity-events",
+        "environment-sensor"
+      ],
+      "riskSurfaces": [
+        "environment-dependent-state",
+        "event-lifecycle"
+      ]
+    },
+    {
+      "id": "entity.entity-sensor-fires-events",
+      "domain": "entity-events",
+      "subject": "minecraft:entity_sensor",
+      "statement": "Entity sensor subsensors detect nearby entities matching conditions and emit configured events.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-sensor"
+      ],
+      "capabilityTags": [
+        "entity-events",
+        "entity-sensor"
+      ],
+      "riskSurfaces": [
+        "target-detection",
+        "range",
+        "event-lifecycle"
+      ]
+    },
+    {
+      "id": "entity.open-door-needs-path-through-door",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.open_door",
+      "statement": "Open-door behavior requires the mob to be able to path through doors; otherwise it will not attempt to open them.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-open-door"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "entity-navigation"
+      ],
+      "riskSurfaces": [
+        "navigation",
+        "doors",
+        "entity-stuck"
+      ],
+      "diagnosticHints": [
+        "If an entity stops at a door, inspect navigation door-path capability before blaming the open-door goal."
+      ]
+    },
+    {
+      "id": "entity.break-door-navigation-owned",
+      "domain": "navigation",
+      "subject": "door-breaking",
+      "statement": "minecraft:behavior.break_door is not currently used by Bedrock entities; door breaking is represented by the can_break_doors navigation parameter.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-break-door"
+      ],
+      "capabilityTags": [
+        "entity-navigation"
+      ],
+      "riskSurfaces": [
+        "navigation",
+        "doors",
+        "behavior-version-drift"
+      ],
+      "diagnosticHints": [
+        "Prefer navigation can_break_doors knowledge over expecting a break_door goal."
+      ]
+    },
+    {
+      "id": "entity.move-target-needs-target",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.move_towards_target",
+      "statement": "move_towards_target requires an existing target; target-providing behaviors include nearest_attackable_target and hurt_by_target.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-move-target"
+      ],
+      "capabilityTags": [
+        "entity-ai"
+      ],
+      "riskSurfaces": [
+        "target-acquisition",
+        "navigation",
+        "entity-stuck"
+      ]
+    },
+    {
+      "id": "entity.stalk-pounce-needs-target-attack",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.stalk_and_pounce_on_target",
+      "statement": "stalk_and_pounce_on_target requires a target and the minecraft:attack component to work properly.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-stalk-pounce"
+      ],
+      "capabilityTags": [
+        "entity-ai"
+      ],
+      "riskSurfaces": [
+        "target-acquisition",
+        "attack-state",
+        "entity-stuck"
+      ]
+    },
+    {
+      "id": "entity.runtime-identifier-built-in-behavior",
+      "domain": "entities",
+      "subject": "runtime_identifier",
+      "statement": "Some entity identifiers/runtime_identifiers can receive built-in behavior from game code beyond JSON-defined components.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-unique-behaviors"
+      ],
+      "capabilityTags": [
+        "entity-runtime-identifier"
+      ],
+      "riskSurfaces": [
+        "built-in-behavior",
+        "static-analysis-limit"
+      ],
+      "diagnosticHints": [
+        "Static JSON analysis cannot fully explain entities with built-in identifier-specific behavior."
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel.move-target.target-provider",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.move_towards_target",
+      "kind": "requires-any",
+      "object": "minecraft:behavior.nearest_attackable_target|minecraft:behavior.hurt_by_target",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-move-target"
+      ],
+      "diagnosticHint": "move_towards_target is active but no documented target-producing behavior is available."
+    },
+    {
+      "id": "rel.stalk-pounce.target-provider",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.stalk_and_pounce_on_target",
+      "kind": "requires-any",
+      "object": "minecraft:behavior.nearest_attackable_target|minecraft:behavior.hurt_by_target",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-stalk-pounce"
+      ],
+      "diagnosticHint": "stalk_and_pounce_on_target has no documented target provider."
+    },
+    {
+      "id": "rel.stalk-pounce.attack",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.stalk_and_pounce_on_target",
+      "kind": "requires",
+      "object": "minecraft:attack",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-stalk-pounce"
+      ],
+      "diagnosticHint": "stalk_and_pounce_on_target requires minecraft:attack."
+    },
+    {
+      "id": "rel.open-door.path-through-doors",
+      "domain": "navigation",
+      "subject": "minecraft:behavior.open_door",
+      "kind": "requires",
+      "object": "navigation:path-through-doors",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-open-door"
+      ],
+      "diagnosticHint": "open_door is present but path-through-doors capability is absent."
+    },
+    {
+      "id": "rel.break-door.superseded",
+      "domain": "navigation",
+      "subject": "minecraft:behavior.break_door",
+      "kind": "supersedes",
+      "object": "navigation:can_break_doors",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-break-door"
+      ],
+      "diagnosticHint": "Door breaking should be evaluated through navigation can_break_doors semantics."
+    },
+    {
+      "id": "rel.environment-sensor.event",
+      "domain": "entity-events",
+      "subject": "minecraft:environment_sensor",
+      "kind": "produces",
+      "object": "entity:event",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-environment-sensor"
+      ]
+    },
+    {
+      "id": "rel.entity-sensor.event",
+      "domain": "entity-events",
+      "subject": "minecraft:entity_sensor",
+      "kind": "produces",
+      "object": "entity:event",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-sensor"
+      ]
+    },
+    {
+      "id": "rel.event.component-groups",
+      "domain": "entity-events",
+      "subject": "entity:event",
+      "kind": "activates",
+      "object": "component-group",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-events"
+      ]
+    },
+    {
+      "id": "rel.event.tick-delay",
+      "domain": "entity-events",
+      "subject": "entity:event",
+      "kind": "delayed-until-tick",
+      "object": "component-group-change",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-events"
+      ],
+      "diagnosticHint": "Event component changes are pending until the server-side entity tick applies them."
+    },
+    {
+      "id": "rel.runtime-identifier.builtin",
+      "domain": "entities",
+      "subject": "runtime_identifier",
+      "kind": "runtime-built-in",
+      "object": "engine-code-behavior",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-unique-behaviors"
+      ]
+    }
+  ]
+}

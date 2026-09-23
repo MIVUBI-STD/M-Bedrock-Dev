@@ -26,6 +26,17 @@ export type KnowledgeDomain =
   | "chunks"
   | "education";
 
+export type KnowledgeRelationKind =
+  | "requires"
+  | "requires-any"
+  | "produces"
+  | "activates"
+  | "deactivates"
+  | "gates"
+  | "supersedes"
+  | "delayed-until-tick"
+  | "runtime-built-in";
+
 export interface KnowledgeSource {
   id: string;
   title: string;
@@ -63,10 +74,22 @@ export interface KnowledgeFact {
   diagnosticHints?: readonly string[];
 }
 
+export interface KnowledgeRelation {
+  id: string;
+  domain: KnowledgeDomain;
+  subject: string;
+  kind: KnowledgeRelationKind;
+  object: string;
+  applicability: KnowledgeApplicability;
+  sourceIds: readonly string[];
+  diagnosticHint?: string;
+}
+
 export interface KnowledgeCatalog {
   schemaVersion: 1;
   sources: readonly KnowledgeSource[];
   facts: readonly KnowledgeFact[];
+  relations?: readonly KnowledgeRelation[];
 }
 
 export interface EffectiveKnowledgeProfile {

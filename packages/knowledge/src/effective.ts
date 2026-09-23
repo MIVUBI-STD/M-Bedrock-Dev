@@ -2,6 +2,7 @@ import type {
   EffectiveKnowledgeProfile,
   KnowledgeCatalog,
   KnowledgeFact,
+  KnowledgeRelation,
   VersionScope,
 } from "./types.js";
 import { compareVersions } from "./version.js";
@@ -48,17 +49,31 @@ function versionMatches(
   return true;
 }
 
+function applicabilityMatches(
+  applicability: KnowledgeFact["applicability"],
+  profile: EffectiveKnowledgeProfile,
+): boolean {
+  if (!applicability.editions.includes(profile.edition)) return false;
+
+  for (const experiment of applicability.experiments ?? []) {
+    if (!profile.experiments?.includes(experiment)) return false;
+  }
+
+  return versionMatches(profile, applicability.versions);
+}
+
 export function knowledgeFactApplies(
   fact: KnowledgeFact,
   profile: EffectiveKnowledgeProfile,
 ): boolean {
-  if (!fact.applicability.editions.includes(profile.edition)) return false;
+  return applicabilityMatches(fact.applicability, profile);
+}
 
-  for (const experiment of fact.applicability.experiments ?? []) {
-    if (!profile.experiments?.includes(experiment)) return false;
-  }
-
-  return versionMatches(profile, fact.applicability.versions);
+export function knowledgeRelationApplies(
+  relation: KnowledgeRelation,
+  profile: EffectiveKnowledgeProfile,
+): boolean {
+  return applicabilityMatches(relation.applicability, profile);
 }
 
 export function effectiveKnowledge(
@@ -67,5 +82,14 @@ export function effectiveKnowledge(
 ): KnowledgeFact[] {
   return catalog.facts
     .filter((fact) => knowledgeFactApplies(fact, profile))
+    .sort((a, b) => a.domain.localeCompare(b.domain) || a.id.localeCompare(b.id));
+}
+
+export function effectiveRelations(
+  catalog: KnowledgeCatalog,
+  profile: EffectiveKnowledgeProfile,
+): KnowledgeRelation[] {
+  return (catalog.relations ?? [])
+    .filter((relation) => knowledgeRelationApplies(relation, profile))
     .sort((a, b) => a.domain.localeCompare(b.domain) || a.id.localeCompare(b.id));
 }

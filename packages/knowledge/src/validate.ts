@@ -28,5 +28,24 @@ export function validateKnowledgeCatalog(
     }
   }
 
+  const relationIds = new Set<string>();
+  for (const relation of catalog.relations ?? []) {
+    if (relationIds.has(relation.id)) {
+      errors.push(`Duplicate knowledge relation id: ${relation.id}`);
+    }
+    relationIds.add(relation.id);
+    if (!relation.subject.trim() || !relation.object.trim()) {
+      errors.push(`Knowledge relation requires subject/object: ${relation.id}`);
+    }
+    if (relation.sourceIds.length === 0) {
+      errors.push(`Knowledge relation has no source: ${relation.id}`);
+    }
+    for (const sourceId of relation.sourceIds) {
+      if (!sourceIds.has(sourceId)) {
+        errors.push(`Knowledge relation ${relation.id} references missing source ${sourceId}`);
+      }
+    }
+  }
+
   return errors;
 }
