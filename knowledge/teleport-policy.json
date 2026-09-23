@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-teleport-policy-v1",
+      "title": "MIVUBI Teleport Dimension Transfer and Spawn Safety Policy v1",
+      "url": "project://knowledge/teleport-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "teleport-policy.destination-contract",
+      "domain": "teleport",
+      "subject": "teleport destination",
+      "statement": "Every gameplay teleport destination must declare dimension, position, orientation policy, collision policy, chunk-readiness policy, arena ownership, and expected post-teleport state. Raw coordinates alone are insufficient.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "destination-contract",
+        "spatial-validity"
+      ],
+      "riskSurfaces": [
+        "unsafe-destination",
+        "wrong-dimension",
+        "wrong-arena"
+      ]
+    },
+    {
+      "id": "teleport-policy.single-owner",
+      "domain": "teleport",
+      "subject": "teleport ownership",
+      "statement": "A player/entity may have at most one accepted critical teleport owner per transition purpose/generation. Competing lobby, respawn, cutscene, arena-start, recovery, and knockback-return teleports must arbitrate ownership rather than overwrite each other.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "teleport-owner",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "teleport-tug-of-war",
+        "stale-teleport",
+        "race-condition"
+      ]
+    },
+    {
+      "id": "teleport-policy.generation-envelope",
+      "domain": "teleport",
+      "subject": "deferred teleport",
+      "statement": "Deferred teleport work must capture player/entity identity, connection/entity validity, arenaGeneration, participation/life generation where relevant, teleportGeneration, and destination contract version; all are revalidated immediately before teleport.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-teleport",
+        "cross-round-state"
+      ]
+    },
+    {
+      "id": "teleport-policy.preflight-before-cross-dimension",
+      "domain": "teleport",
+      "subject": "cross-dimension transfer",
+      "statement": "For cross-dimension gameplay transfer, destination dimension and target area must be resolved and made ready before moving the player. World mutation/structure setup that defines the destination must VERIFY before teleport begins.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "dimension-transfer",
+        "preflight"
+      ],
+      "riskSurfaces": [
+        "unloaded-destination",
+        "early-arrival",
+        "missing-structure"
+      ]
+    },
+    {
+      "id": "teleport-policy.tryteleport-preferred-for-safety-probe",
+      "domain": "teleport",
+      "subject": "collision-sensitive teleport",
+      "statement": "When placement safety matters, use a collision-aware teleport path such as tryTeleport/checkForBlocks or an equivalent explicit occupancy validation, and treat failure as a recoverable routing result rather than silently forcing success.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "tryTeleport",
+        "collision"
+      ],
+      "riskSurfaces": [
+        "inside-block",
+        "suffocation",
+        "failed-teleport"
+      ]
+    },
+    {
+      "id": "teleport-policy.post-teleport-verify",
+      "domain": "teleport",
+      "subject": "teleport commit",
+      "statement": "A critical teleport is committed only after verifying the entity/player remains valid and its current dimension/location satisfy the destination contract within tolerance. API call completion alone is APPLY evidence.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "verification"
+      ],
+      "riskSurfaces": [
+        "false-success",
+        "wrong-location",
+        "wrong-dimension"
+      ]
+    },
+    {
+      "id": "teleport-policy.spawnpoint-authority-separated",
+      "domain": "teleport",
+      "subject": "respawn routing",
+      "statement": "Respawn-point authority and immediate teleport authority must be tracked separately. Setting a spawn point must not be used as proof that the player has already moved, and teleporting a player must not silently redefine future respawn policy unless explicitly intended.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "spawnpoint",
+        "respawn"
+      ],
+      "riskSurfaces": [
+        "respawn-drift",
+        "wrong-return-location"
+      ]
+    },
+    {
+      "id": "teleport-policy.safe-volume-not-single-block",
+      "domain": "teleport",
+      "subject": "spawn safety volume",
+      "statement": "Destination safety should validate the entity/player occupancy volume and nearby support/fall hazards where gameplay requires it, not merely inspect a single destination block coordinate.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "collision-volume",
+        "spawn-safety"
+      ],
+      "riskSurfaces": [
+        "suffocation",
+        "fall-hazard",
+        "partial-collision"
+      ]
+    },
+    {
+      "id": "teleport-policy.fallback-destination-chain",
+      "domain": "teleport",
+      "subject": "teleport recovery",
+      "statement": "Critical player routing should define an ordered fallback chain such as exact target, validated nearby safe point, arena fallback, and lobby/safe recovery point. Failed primary teleport must not leave gameplay state committed as if transfer succeeded.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "fallback",
+        "recovery"
+      ],
+      "riskSurfaces": [
+        "stranded-player",
+        "state-location-divergence"
+      ]
+    },
+    {
+      "id": "teleport-policy.state-commit-after-location",
+      "domain": "teleport",
+      "subject": "state and spatial ordering",
+      "statement": "For transitions where location defines membership/phase, do not commit target gameplay state before the destination transfer is verified unless the transition protocol explicitly supports compensating rollback. Prevent state saying ARENA_ACTIVE while the player remains in lobby.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "state-authority",
+        "teleport"
+      ],
+      "riskSurfaces": [
+        "state-location-divergence",
+        "partial-transition"
+      ]
+    },
+    {
+      "id": "teleport-policy.group-transfer-barrier",
+      "domain": "teleport",
+      "subject": "multi-player arena transfer",
+      "statement": "When multiple players must enter an arena together, define a transfer barrier: track each participant result, handle individual failures, and commit group start only when the game mode's required transfer quorum is satisfied.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ],
+      "capabilityTags": [
+        "multiplayer",
+        "teleport-barrier"
+      ],
+      "riskSurfaces": [
+        "split-party",
+        "partial-arena-start"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "teleport-policy.relation-preflight-gates-apply",
+      "domain": "teleport",
+      "subject": "destination-preflight",
+      "kind": "gates",
+      "object": "teleport-apply",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ]
+    },
+    {
+      "id": "teleport-policy.relation-verify-gates-state-commit",
+      "domain": "teleport",
+      "subject": "verified-location",
+      "kind": "gates",
+      "object": "destination-gameplay-state-commit",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ]
+    },
+    {
+      "id": "teleport-policy.relation-failure-fallbacks-safe-destination",
+      "domain": "teleport",
+      "subject": "teleport-failure",
+      "kind": "fallbacks-to",
+      "object": "validated-safe-fallback-chain",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-teleport-policy-v1"
+      ]
+    }
+  ]
+}
