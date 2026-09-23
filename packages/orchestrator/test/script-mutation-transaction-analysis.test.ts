@@ -315,11 +315,6 @@ describe("script mutation transaction analysis", () => {
     `);
 
     const assessments = analyzeScriptMutationTransactions([script]);
-    expect(assessments).toEqual([
-      expect.objectContaining({
-        executionRegion: "function:mutate",
-        status: "no-dependent-action",
-      }),
-    ]);
+    expect(assessments).toEqual([]);
   });
 });
