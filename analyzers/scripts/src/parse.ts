@@ -35,6 +35,8 @@ function lineSource(sourceFile: ts.SourceFile, node: ts.Node, source: SourceRef)
     range: {
       lineStart: start.line + 1,
       lineEnd: end.line + 1,
+      columnStart: start.character + 1,
+      columnEnd: end.character + 1,
     },
   };
 }
@@ -180,19 +182,47 @@ function customCommandCallback(
 }
 
 function sourceInside(inner: SourceRef, outer: SourceRef): boolean {
-  const innerStart = inner.range?.lineStart;
-  const innerEnd = inner.range?.lineEnd;
-  const outerStart = outer.range?.lineStart;
-  const outerEnd = outer.range?.lineEnd;
+  const innerStartLine = inner.range?.lineStart;
+  const innerEndLine = inner.range?.lineEnd;
+  const outerStartLine = outer.range?.lineStart;
+  const outerEndLine = outer.range?.lineEnd;
   if (
-    innerStart === undefined ||
-    innerEnd === undefined ||
-    outerStart === undefined ||
-    outerEnd === undefined
+    innerStartLine === undefined ||
+    innerEndLine === undefined ||
+    outerStartLine === undefined ||
+    outerEndLine === undefined
   ) {
     return false;
   }
-  return innerStart >= outerStart && innerEnd <= outerEnd;
+
+  const innerStartColumn = inner.range?.columnStart;
+  const innerEndColumn = inner.range?.columnEnd;
+  const outerStartColumn = outer.range?.columnStart;
+  const outerEndColumn = outer.range?.columnEnd;
+
+  const startsAfterOuter =
+    innerStartLine > outerStartLine ||
+    (
+      innerStartLine === outerStartLine &&
+      (
+        outerStartColumn === undefined ||
+        innerStartColumn === undefined ||
+        innerStartColumn >= outerStartColumn
+      )
+    );
+
+  const endsBeforeOuter =
+    innerEndLine < outerEndLine ||
+    (
+      innerEndLine === outerEndLine &&
+      (
+        outerEndColumn === undefined ||
+        innerEndColumn === undefined ||
+        innerEndColumn <= outerEndColumn
+      )
+    );
+
+  return startsAfterOuter && endsBeforeOuter;
 }
 
 function contextualCallSymbol(node: ts.CallExpression): string | undefined {

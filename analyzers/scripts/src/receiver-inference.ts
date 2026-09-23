@@ -61,6 +61,8 @@ function lineSource(
     range: {
       lineStart: start.line + 1,
       lineEnd: end.line + 1,
+      columnStart: start.character + 1,
+      columnEnd: end.character + 1,
     },
   };
 }
@@ -241,6 +243,15 @@ function isPositiveGuard(node: ts.Expression, name: string): boolean {
   if (ts.isParenthesizedExpression(node)) return isPositiveGuard(node.expression, name);
   if (
     ts.isBinaryExpression(node) &&
+    node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+  ) {
+    return (
+      isPositiveGuard(node.left, name) ||
+      isPositiveGuard(node.right, name)
+    );
+  }
+  if (
+    ts.isBinaryExpression(node) &&
     ts.isIdentifier(node.left) &&
     node.left.text === name &&
     (
@@ -300,6 +311,15 @@ function identifierDereferenceState(
     if (ts.isIfStatement(current) && isPositiveGuard(current.expression, name)) {
       visit(current.thenStatement, true);
       if (current.elseStatement) visit(current.elseStatement, currentGuarded);
+      return;
+    }
+
+    if (
+      ts.isConditionalExpression(current) &&
+      isPositiveGuard(current.condition, name)
+    ) {
+      visit(current.whenTrue, true);
+      visit(current.whenFalse, currentGuarded);
       return;
     }
 

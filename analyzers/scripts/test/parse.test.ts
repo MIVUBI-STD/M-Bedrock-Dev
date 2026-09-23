@@ -288,6 +288,34 @@ const assigned = entity.getComponent("minecraft:health");
     ]));
   });
 
+  it("recognizes logical-and and ternary guards for optional results", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const entity = world.getDimension("overworld").getEntities()[0];
+
+const withAnd = entity.getComponent("minecraft:health");
+if (withAnd && entity.isValid) {
+  withAnd.currentValue;
+}
+
+const withTernary = entity.getComponent("minecraft:health");
+const text = withTernary ? withTernary.currentValue : 0;
+`,
+      source,
+    );
+
+    const componentCalls = parsed.methodCalls.filter(
+      (item) => item.symbol === "Entity.getComponent",
+    );
+    expect(componentCalls).toHaveLength(2);
+    expect(componentCalls).toEqual([
+      expect.objectContaining({ resultUse: "guarded-assigned" }),
+      expect.objectContaining({ resultUse: "guarded-assigned" }),
+    ]);
+  });
+
   it("classifies bounded local guards for assigned optional results", () => {
     const parsed = parseScriptFile(
       "scripts/main",

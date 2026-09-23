@@ -131,6 +131,25 @@ describe("script execution privilege analysis", () => {
     ]));
   });
 
+  it("does not correlate mutations elsewhere on the same minified line", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      'import { world } from "@minecraft/server"; world.beforeEvents.playerBreakBlock.subscribe((event) => { event.cancel = true; }); const player = world.getAllPlayers()[0]; player.removeTag("outside"); player.remove();',
+      source,
+    );
+
+    expect(parsed.restrictedMutations).toEqual([]);
+    const callback = parsed.events.find(
+      (item) => item.event === "playerBreakBlock",
+    );
+    expect(callback?.source.range).toEqual(expect.objectContaining({
+      lineStart: 1,
+      lineEnd: 1,
+      columnStart: expect.any(Number),
+      columnEnd: expect.any(Number),
+    }));
+  });
+
   it("does not flag unrestricted reads", () => {
     const parsed = parseScriptFile(
       "scripts/main",
