@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-cleanup-world-after",
+      "title": "WorldAfterEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-cleanup-entity-remove",
+      "title": "EntityRemoveAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityremoveafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-cleanup-system",
+      "title": "System Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/system?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-cleanup-scoreboard",
+      "title": "Scoreboard Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/scoreboard?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-cleanup-entity",
+      "title": "Entity Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "cleanup.entity-remove-not-terminal-cause",
+      "domain": "arena-cleanup",
+      "subject": "entityRemove",
+      "statement": "entityRemove can represent unloading or removal and therefore cannot by itself prove that an arena-owned entity was intentionally cleaned up.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-cleanup-entity-remove",
+        "ms-cleanup-world-after"
+      ],
+      "capabilityTags": [
+        "entity-cleanup",
+        "residency"
+      ],
+      "riskSurfaces": [
+        "false-cleanup-proof",
+        "entity-residue"
+      ]
+    },
+    {
+      "id": "cleanup.scheduled-callbacks-persist-until-cleared",
+      "domain": "arena-cleanup",
+      "subject": "scheduled callbacks",
+      "statement": "Intervals and scheduled callbacks remain active until they execute, are cleared, or their owning runtime ends, so arena reset must invalidate or clear generation-owned scheduled work.",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-cleanup-system"
+      ],
+      "capabilityTags": [
+        "timer",
+        "callback"
+      ],
+      "riskSurfaces": [
+        "stale-callback",
+        "second-run-failure"
+      ]
+    },
+    {
+      "id": "cleanup.scoreboard-state-can-outlive-round",
+      "domain": "arena-cleanup",
+      "subject": "scoreboard state",
+      "statement": "Scoreboard objectives and participant values are independent runtime state surfaces and can remain after an arena round unless explicitly reset or reconciled.",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-cleanup-scoreboard"
+      ],
+      "capabilityTags": [
+        "scoreboard",
+        "reset"
+      ],
+      "riskSurfaces": [
+        "ghost-score",
+        "round-state-leak"
+      ]
+    },
+    {
+      "id": "cleanup.entity-tags-persist-on-entity",
+      "domain": "arena-cleanup",
+      "subject": "entity tags",
+      "statement": "Entity tags remain attached to the entity until removed, so reused players or entities can carry stale arena or role tags into later generations.",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-cleanup-entity"
+      ],
+      "capabilityTags": [
+        "tags",
+        "reset"
+      ],
+      "riskSurfaces": [
+        "stale-tag",
+        "cross-round-state"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "cleanup.relation-reset-requires-multi-surface",
+      "domain": "arena-cleanup",
+      "subject": "arena-reset",
+      "kind": "requires",
+      "object": "all-owned-runtime-surfaces-reconciled",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-cleanup-system",
+        "ms-cleanup-scoreboard",
+        "ms-cleanup-entity"
+      ]
+    },
+    {
+      "id": "cleanup.relation-remove-event-not-proof",
+      "domain": "arena-cleanup",
+      "subject": "entityRemove",
+      "kind": "requires",
+      "object": "stronger-cleanup-ownership-evidence",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-cleanup-entity-remove"
+      ]
+    }
+  ]
+}
