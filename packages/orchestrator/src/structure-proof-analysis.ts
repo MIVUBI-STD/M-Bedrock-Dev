@@ -58,17 +58,21 @@ function blockToChunk(value: number): number {
   return Math.floor(value / 16);
 }
 
-function placementBounds(
-  correlation: StructureLoadCorrelation,
+export function deriveStructurePlacementBounds(
+  load: {
+    position?: Coordinate3;
+    rotation?: string;
+    mirror?: string;
+  },
+  size: StructureSize | undefined,
 ): PlacementBounds | undefined {
-  if (correlation.status !== "resolved") return undefined;
-  const structure = correlation.candidates[0];
-  const size = structure?.size;
-  const origin = absolute(correlation.load.semantics.position);
-  if (!size || !origin || size.x <= 0 || size.y <= 0 || size.z <= 0) return undefined;
+  const origin = absolute(load.position);
+  if (!size || !origin || size.x <= 0 || size.y <= 0 || size.z <= 0) {
+    return undefined;
+  }
 
-  const rotation = (correlation.load.semantics.rotation ?? "0_degrees") as StructureRotation;
-  const mirror = (correlation.load.semantics.mirror ?? "none") as StructureMirror;
+  const rotation = (load.rotation ?? "0_degrees") as StructureRotation;
+  const mirror = (load.mirror ?? "none") as StructureMirror;
   const xs = [0, size.x - 1];
   const ys = [0, size.y - 1];
   const zs = [0, size.z - 1];
@@ -108,6 +112,16 @@ function placementBounds(
     minChunkZ: blockToChunk(min.z),
     maxChunkZ: blockToChunk(max.z),
   };
+}
+
+function placementBounds(
+  correlation: StructureLoadCorrelation,
+): PlacementBounds | undefined {
+  if (correlation.status !== "resolved") return undefined;
+  return deriveStructurePlacementBounds(
+    correlation.load.semantics,
+    correlation.candidates[0]?.size,
+  );
 }
 
 function inside(bounds: PlacementBounds, position: StructureCoordinate): boolean {
