@@ -175,6 +175,12 @@ export interface InspectDirectoryResult {
     verificationUnresolved: number;
     noDependentAction: number;
   };
+  scriptCommandTransactions: {
+    assessed: number;
+    verifiedBeforeDependent: number;
+    verificationUnresolved: number;
+    noDependentAction: number;
+  };
   reliability: {
     fingerprintId: string;
     fingerprint: MapCompatibilityFingerprint;
