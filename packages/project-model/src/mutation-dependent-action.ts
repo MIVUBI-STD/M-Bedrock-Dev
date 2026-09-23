@@ -4,7 +4,8 @@ export type MutationDependentActionKind =
   | "tag-write"
   | "entity-event"
   | "dialogue"
-  | "script-method";
+  | "script-method"
+  | "dynamic-property-write";
 
 export interface MutationDependentActionContract {
   id: string;
@@ -15,6 +16,7 @@ export interface MutationDependentActionContract {
   event?: string;
   dialogueScene?: string;
   scriptSymbol?: string;
+  dynamicPropertyId?: string;
   purpose?: string;
 }
 
