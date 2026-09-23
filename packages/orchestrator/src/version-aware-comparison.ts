@@ -71,10 +71,15 @@ export async function compareArtifactsForUpdate(
   target: InspectTargetProfile = {},
   knowledgeCatalog?: KnowledgeCatalog,
 ): Promise<VersionAwareComparisonResult> {
+  const versionedTarget: InspectTargetProfile = {
+    ...target,
+    version: targetVersion,
+  };
+
   const [comparison, before, after, delta, regressions, coverage] = await Promise.all([
-    compareArtifacts(beforePath, afterPath, target, knowledgeCatalog),
-    inspectArtifact(beforePath, target, knowledgeCatalog),
-    inspectArtifact(afterPath, target, knowledgeCatalog),
+    compareArtifacts(beforePath, afterPath, versionedTarget, knowledgeCatalog),
+    inspectArtifact(beforePath, versionedTarget, knowledgeCatalog),
+    inspectArtifact(afterPath, versionedTarget, knowledgeCatalog),
     loadUpdateDeltaCatalog(reliabilityCatalogRoot, targetVersion),
     loadRegressionCatalog(reliabilityCatalogRoot),
     loadCoverageCatalog(reliabilityCatalogRoot),
