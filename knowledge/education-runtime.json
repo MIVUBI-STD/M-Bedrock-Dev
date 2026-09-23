@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "edu-2026-update",
+      "title": "Copper, Collaborate, and Compete Update",
+      "url": "https://education.minecraft.net/en-us/blog/copper-collaborate-and-compete",
+      "authority": "official",
+      "confidence": "documented",
+      "publishedDate": "2026-02-17",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "edu-2025-update",
+      "title": "Chase the Clouds Update",
+      "url": "https://education.minecraft.net/en-us/blog/chase-the-clouds-update",
+      "authority": "official",
+      "confidence": "documented",
+      "publishedDate": "2025-07-22",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "edu-design-guide",
+      "title": "Minecraft Education Edition Design Guide",
+      "url": "https://education.minecraft.net/content/dam/education-edition/software-downloads/Minecraft_Education_Edition_Design_Guide_June_2021.pdf",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "edu-agent-guide",
+      "title": "Minecraft Education Agent Coding Guidance",
+      "url": "https://education.minecraft.net/content/dam/education-edition/learning-experiences/coding-tutorials/Educator%20Guide%20Sequencing%20.pdf",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "education.version-track-distinct",
+      "domain": "education-runtime",
+      "subject": "Minecraft Education version line",
+      "statement": "Minecraft Education has its own release/version track and incorporates selected Bedrock features on its own schedule; current Education releases therefore must not be assumed identical to current retail Bedrock.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "edu-2026-update",
+        "edu-2025-update"
+      ],
+      "capabilityTags": [
+        "education",
+        "version-track"
+      ],
+      "riskSurfaces": [
+        "edition-drift",
+        "feature-assumption"
+      ]
+    },
+    {
+      "id": "education.dedicated-server-2026",
+      "domain": "education-runtime",
+      "subject": "Education Dedicated Servers",
+      "statement": "Minecraft Education's February 2026 1.21.13x update added Dedicated Servers and expanded multiplayer scale/management, creating runtime/deployment conditions that differ from older Education worlds.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "edu-2026-update"
+      ],
+      "capabilityTags": [
+        "dedicated-server",
+        "multiplayer"
+      ],
+      "riskSurfaces": [
+        "deployment-difference",
+        "scale"
+      ]
+    },
+    {
+      "id": "education.code-builder-agent",
+      "domain": "education-runtime",
+      "subject": "Code Builder Agent",
+      "statement": "Minecraft Education includes Code Builder/MakeCode workflows and the Agent, which can be spawned and controlled through coding activities and can move/place/destroy blocks independently of ordinary player interactions.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "edu-design-guide",
+        "edu-agent-guide",
+        "edu-2026-update"
+      ],
+      "capabilityTags": [
+        "agent",
+        "code-builder"
+      ],
+      "riskSurfaces": [
+        "external-world-mutation",
+        "student-code"
+      ]
+    },
+    {
+      "id": "education.classroom-controls",
+      "domain": "education-runtime",
+      "subject": "Classroom/admin controls",
+      "statement": "Minecraft Education includes classroom/admin management capabilities such as global pause, player management, world settings, chat controls, and server administration that can alter runtime conditions outside pack-owned gameplay logic.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "edu-design-guide",
+        "edu-2026-update"
+      ],
+      "capabilityTags": [
+        "classroom",
+        "admin"
+      ],
+      "riskSurfaces": [
+        "external-state-change",
+        "pause-control"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "education.relation-profile-gates-shared-fact",
+      "domain": "education-runtime",
+      "subject": "education-runtime-profile",
+      "kind": "gates",
+      "object": "reuse-of-bedrock-engine-assumptions",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "edu-2026-update",
+        "edu-2025-update"
+      ]
+    }
+  ]
+}
