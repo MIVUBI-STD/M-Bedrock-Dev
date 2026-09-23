@@ -1,29 +1,30 @@
 # Next Action
 
-The Bedrock entity knowledge path now covers target acquisition as well as navigation prerequisites.
+The entity knowledge path now covers target acquisition, navigation, attack execution and sensor-driven transitions.
 
 Implemented:
 
-1. target-provider semantic extraction;
-2. nested is_family filter extraction;
-3. max distance / visibility / reachability / radius semantics;
-4. configured-target capability generation;
-5. navigation variant identity;
-6. state-scoped combination of targeting and navigation capabilities;
-7. knowledge diagnostics for unconfigured target providers.
+1. target/filter semantic extraction;
+2. navigation variant + capability extraction;
+3. melee/ranged attack semantic extraction;
+4. shooter/damage-component prerequisites;
+5. environment/entity sensor event extraction;
+6. filter-presence evidence for sensors;
+7. state-scoped knowledge evaluation across targeting/navigation/attack/sensors.
 
 Next priority:
 
-1. encode target/filter facts into the official entity knowledge catalog;
-2. add family/component matching semantics beyond is_family;
-3. add melee/ranged attack execution prerequisites;
-4. model sensor/environment-triggered transitions;
-5. then move to structure and chunk/ticking knowledge.
+1. connect sensor-emitted events directly to event/component-group reachability;
+2. detect unreachable or orphan event transitions;
+3. expand attack prerequisites for fire_at_target/projectile definitions;
+4. then move into structure/.mcstructure semantics and chunk/ticking lifecycle.
 
-A stuck entity should now be classified across three distinct questions:
+The diagnostic model should now distinguish:
 
 ```text
-Was a valid target configured?
-Can a target actually be acquired?
-Can navigation execute a path to it?
+no target
+target filtered out
+target unreachable
+attack behavior missing prerequisite
+sensor transition never configured
 ```

@@ -120,6 +120,46 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ranged-attack",
+      "title": "minecraft:behavior.ranged_attack",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitygoals/minecraftbehavior_ranged_attack?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-shooter",
+      "title": "minecraft:shooter",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_shooter?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ai-components",
+      "title": "Entity Behavior (AI) Components",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitybehaviorcomponents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-env-sensor",
+      "title": "minecraft:environment_sensor",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_environment_sensor?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-sensor-detail",
+      "title": "minecraft:entity_sensor",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_entity_sensor?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -479,6 +519,99 @@
         "environment-compatibility",
         "entity-stuck"
       ]
+    },
+    {
+      "id": "entity.attack.ranged-requires-shooter",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.ranged_attack",
+      "statement": "ranged_attack uses minecraft:shooter to determine projectile behavior.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ranged-attack",
+        "ms-shooter"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "ranged-attack"
+      ],
+      "riskSurfaces": [
+        "attack-execution",
+        "projectile"
+      ]
+    },
+    {
+      "id": "entity.attack.melee-damage-component",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.melee_attack",
+      "statement": "Typical melee combat combines melee attack behavior with minecraft:attack damage configuration.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-components"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "melee-attack"
+      ],
+      "riskSurfaces": [
+        "attack-execution"
+      ]
+    },
+    {
+      "id": "entity.sensor.environment-conditional-event",
+      "domain": "entity-events",
+      "subject": "minecraft:environment_sensor",
+      "statement": "environment_sensor fires configured events when environment filter conditions match.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-env-sensor"
+      ],
+      "capabilityTags": [
+        "entity-events",
+        "environment-sensor"
+      ],
+      "riskSurfaces": [
+        "event-lifecycle",
+        "environment-dependent-state"
+      ]
+    },
+    {
+      "id": "entity.sensor.entity-conditional-event",
+      "domain": "entity-events",
+      "subject": "minecraft:entity_sensor",
+      "statement": "entity_sensor subsensors fire events when nearby entities satisfy configured conditions within range.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-sensor-detail"
+      ],
+      "capabilityTags": [
+        "entity-events",
+        "entity-sensor"
+      ],
+      "riskSurfaces": [
+        "event-lifecycle",
+        "target-detection",
+        "range"
+      ]
     }
   ],
   "relations": [
@@ -681,6 +814,75 @@
         "ms-nearest-prioritized-target"
       ],
       "diagnosticHint": "nearest_prioritized_attackable_target is active but entity_types contains no configured valid target entries."
+    },
+    {
+      "id": "rel.ranged-attack.shooter",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.ranged_attack",
+      "kind": "requires",
+      "object": "attack:shooter",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ranged-attack",
+        "ms-shooter"
+      ],
+      "diagnosticHint": "ranged_attack is active but minecraft:shooter is not active in the same state."
+    },
+    {
+      "id": "rel.melee-attack.damage",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.melee_attack",
+      "kind": "requires",
+      "object": "attack:damage-component",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-components"
+      ],
+      "diagnosticHint": "melee_attack is active but minecraft:attack damage component is not active in the same state."
+    },
+    {
+      "id": "rel.environment-sensor.configured-event",
+      "domain": "entity-events",
+      "subject": "minecraft:environment_sensor",
+      "kind": "requires",
+      "object": "sensor:configured-event",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-env-sensor"
+      ],
+      "diagnosticHint": "environment_sensor is active but no event trigger is configured."
+    },
+    {
+      "id": "rel.entity-sensor.configured-event",
+      "domain": "entity-events",
+      "subject": "minecraft:entity_sensor",
+      "kind": "requires",
+      "object": "sensor:configured-event",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-sensor-detail"
+      ],
+      "diagnosticHint": "entity_sensor is active but no subsensor event is configured."
     }
   ]
 }

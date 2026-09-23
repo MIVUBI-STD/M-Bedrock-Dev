@@ -8,6 +8,8 @@ import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/typ
 import { deriveEntityStateGraph } from "../../../analyzers/entities/src/state-graph.js";
 import { extractNavigationCapabilities } from "../../../analyzers/entities/src/navigation.js";
 import { extractTargetingSemantics } from "../../../analyzers/entities/src/targeting.js";
+import { extractAttackSemantics } from "../../../analyzers/entities/src/attack.js";
+import { extractSensorSemantics } from "../../../analyzers/entities/src/sensors.js";
 
 export interface EntityStateKnowledgeFinding extends EntityKnowledgeFinding {
   stateId: string;
@@ -22,6 +24,9 @@ export interface EntityKnowledgeAnalysis {
   eventEdges: number;
   targetingProviders: number;
   configuredTargetProviders: number;
+  attackBehaviors: number;
+  sensors: number;
+  configuredSensorEvents: number;
   findings: EntityStateKnowledgeFinding[];
   staticAnalysisLimits: string[];
 }
@@ -35,6 +40,9 @@ export function analyzeEntityWithKnowledge(
   const findings: EntityStateKnowledgeFinding[] = [];
   let targetingProviders = 0;
   let configuredTargetProviders = 0;
+  let attackBehaviors = 0;
+  let sensors = 0;
+  let configuredSensorEvents = 0;
 
   for (const state of graph.candidates) {
     const navigation = extractNavigationCapabilities(state);
@@ -45,12 +53,21 @@ export function analyzeEntityWithKnowledge(
     ).length;
 
     const targetingCapabilities = targeting.flatMap((item) => item.capabilities);
+    const attacks = extractAttackSemantics(state);
+    const sensorSemantics = extractSensorSemantics(state);
+    attackBehaviors += attacks.length;
+    sensors += sensorSemantics.length;
+    configuredSensorEvents += sensorSemantics.filter((item) => item.emittedEvents.length > 0).length;
+    const attackCapabilities = attacks.flatMap((item) => item.capabilities);
+    const sensorCapabilities = sensorSemantics.flatMap((item) => item.capabilities);
 
     for (const finding of assessEntityKnowledge(catalog, profile, {
       activeComponents: state.activeComponents,
       availableCapabilities: [
         ...navigation.capabilities,
         ...targetingCapabilities,
+        ...attackCapabilities,
+        ...sensorCapabilities,
       ],
     })) {
       findings.push({
@@ -76,6 +93,9 @@ export function analyzeEntityWithKnowledge(
     eventEdges: graph.eventEdges.length,
     targetingProviders,
     configuredTargetProviders,
+    attackBehaviors,
+    sensors,
+    configuredSensorEvents,
     findings,
     staticAnalysisLimits,
   };
