@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-obs-debugging",
+      "title": "Debugging Scripts in Minecraft",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/debugging-scripts?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-obs-debug-tools",
+      "title": "Building Debug Tools",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/casual/debugtools?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-obs-script-command",
+      "title": "script Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/commandsreference/examples/commands/script?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-obs-debug-utils",
+      "title": "minecraft/debug-utilities Module",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/debug-utilities/minecraft-debug-utilities",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-obs-events",
+      "title": "Working With Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/events?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "observability.content-log-debugger-profiler",
+      "domain": "observability",
+      "subject": "debug tooling",
+      "statement": "Minecraft provides content logging, script debugging, diagnostics capture, profiling, and visual debug utilities, allowing runtime evidence to be collected beyond static code inspection.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-obs-debugging",
+        "ms-obs-script-command",
+        "ms-obs-debug-utils"
+      ],
+      "capabilityTags": [
+        "logging",
+        "debugger",
+        "profiler"
+      ],
+      "riskSurfaces": [
+        "missing-runtime-evidence"
+      ]
+    },
+    {
+      "id": "observability.script-events-cross-system",
+      "domain": "observability",
+      "subject": "scriptEventReceive",
+      "statement": "Script events can be sent by players, scripts, NPCs, command blocks, or server commands and received by script, creating a useful but multi-origin control/diagnostic channel that requires sender/context attribution.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-obs-events"
+      ],
+      "capabilityTags": [
+        "scriptevent",
+        "message"
+      ],
+      "riskSurfaces": [
+        "unattributed-trigger",
+        "debug-control-leak"
+      ]
+    },
+    {
+      "id": "observability.visual-debug-spatial",
+      "domain": "observability",
+      "subject": "debug drawing",
+      "statement": "Debug utilities can visualize boxes, paths, vectors, trigger areas, and runtime stats, making spatial and performance diagnostics observable without altering gameplay state.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-obs-debugging",
+        "ms-obs-debug-utils"
+      ],
+      "capabilityTags": [
+        "visual-debug",
+        "runtime-stats"
+      ],
+      "riskSurfaces": [
+        "hidden-spatial-bug"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "observability.relation-profiler-validates-performance",
+      "domain": "observability",
+      "subject": "runtime-profile-capture",
+      "kind": "validates",
+      "object": "performance-diagnostic",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-obs-debugging"
+      ]
+    }
+  ]
+}
