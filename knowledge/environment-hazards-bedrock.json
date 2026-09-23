@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-env-explosion-after",
+      "title": "ExplosionAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/explosionafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-env-explosion-before",
+      "title": "ExplosionBeforeEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/explosionbeforeevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-env-hurt-condition",
+      "title": "minecraft:hurt_on_condition",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_hurt_on_condition?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-env-damage-sensor",
+      "title": "minecraft:damage_sensor",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_damage_sensor?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-env-events",
+      "title": "Working With Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/events?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "environment.explosion-source-and-blocks",
+      "domain": "environment-hazards",
+      "subject": "explosion event",
+      "statement": "Explosion events expose the dimension, optional source entity, and impacted blocks, so explosion damage and world mutation can be attributed separately from generic combat damage.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-env-explosion-after"
+      ],
+      "capabilityTags": [
+        "explosion",
+        "world-mutation"
+      ],
+      "riskSurfaces": [
+        "cross-arena-explosion",
+        "block-destruction"
+      ]
+    },
+    {
+      "id": "environment.explosion-before-can-cancel-or-filter-blocks",
+      "domain": "environment-hazards",
+      "subject": "ExplosionBeforeEvent",
+      "statement": "ExplosionBeforeEvent can cancel an explosion or replace the impacted-block set, providing a pre-mutation control surface distinct from post-explosion handling.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-env-explosion-before"
+      ],
+      "capabilityTags": [
+        "explosion",
+        "before-event"
+      ],
+      "riskSurfaces": [
+        "invalid-filtering",
+        "partial-protection"
+      ]
+    },
+    {
+      "id": "environment.hurt-condition-per-tick",
+      "domain": "environment-hazards",
+      "subject": "minecraft:hurt_on_condition",
+      "statement": "hurt_on_condition can apply configured damage per tick when filters such as in_lava or water contact match, making environmental damage a repeated stateful process rather than one isolated hit.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-env-hurt-condition"
+      ],
+      "capabilityTags": [
+        "lava",
+        "water",
+        "damage-over-time"
+      ],
+      "riskSurfaces": [
+        "repeat-damage",
+        "recovery-loop"
+      ]
+    },
+    {
+      "id": "environment.damage-sensor-can-suppress-or-modify",
+      "domain": "environment-hazards",
+      "subject": "minecraft:damage_sensor",
+      "statement": "damage_sensor can suppress, modify, multiply, or trigger events from specific damage causes, so observed health changes may differ from raw environmental/combat input.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-env-damage-sensor"
+      ],
+      "capabilityTags": [
+        "damage-sensor",
+        "damage-policy"
+      ],
+      "riskSurfaces": [
+        "hidden-immunity",
+        "event-sideeffect"
+      ]
+    },
+    {
+      "id": "environment.before-events-restricted",
+      "domain": "environment-hazards",
+      "subject": "hazard before-events",
+      "statement": "Before-event listeners can inspect/cancel relevant actions but cannot freely mutate gameplay state, so prevention and recovery paths have separate execution-phase constraints.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-env-events"
+      ],
+      "capabilityTags": [
+        "before-event",
+        "execution-privilege"
+      ],
+      "riskSurfaces": [
+        "illegal-mutation",
+        "partial-protection"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "environment.relation-explosion-produces-world-mutation",
+      "domain": "environment-hazards",
+      "subject": "explosion",
+      "kind": "produces",
+      "object": "damage-and-impacted-block-mutation",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-env-explosion-after"
+      ]
+    }
+  ]
+}
