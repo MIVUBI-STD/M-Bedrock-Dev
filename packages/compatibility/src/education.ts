@@ -1,7 +1,7 @@
 import type { MinecraftEdition } from "./types.js";
 
 export interface EducationSignals {
-  edition: MinecraftEdition;
+  edition: MinecraftEdition | "unknown";
   manifestEducationMetadata?: boolean;
   worldEducationFeatures?: boolean;
   eduLevel?: number;
@@ -10,7 +10,7 @@ export interface EducationSignals {
 export type EducationFeatureState = "enabled" | "disabled" | "unknown";
 
 export interface EducationProfile {
-  edition: MinecraftEdition;
+  edition: MinecraftEdition | "unknown";
   educationFeatures: EducationFeatureState;
   manifestEducationMetadata: boolean | "unknown";
   eduLevel?: number;
