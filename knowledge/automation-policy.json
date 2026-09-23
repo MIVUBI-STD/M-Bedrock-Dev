@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-automation-policy-v1",
+      "title": "MIVUBI Redstone Command Block and Block Automation Policy v1",
+      "url": "project://knowledge/automation-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "automation-policy.graph-model",
+      "domain": "automation",
+      "subject": "block-driven automation",
+      "statement": "Model command blocks, redstone triggers, physical triggers, custom block events, scheduled block ticks, and script callbacks as one automation graph with explicit trigger, condition, side effect, downstream dependency, arena scope, and generation ownership.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "automation-graph",
+        "hybrid-system"
+      ],
+      "riskSurfaces": [
+        "hidden-trigger",
+        "duplicate-authority",
+        "cross-arena-effect"
+      ]
+    },
+    {
+      "id": "automation-policy.commandblock-context",
+      "domain": "automation",
+      "subject": "command block execution context",
+      "statement": "Every command-block node must record dimension, block position, block type/mode, conditional state, redstone/always-active state, delay, first-tick behavior, and downstream facing/chain adjacency so selector and relative-coordinate semantics can be evaluated correctly.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "command-context",
+        "command-block"
+      ],
+      "riskSurfaces": [
+        "wrong-origin",
+        "broken-chain",
+        "wrong-dimension"
+      ]
+    },
+    {
+      "id": "automation-policy.no-dual-authority",
+      "domain": "automation",
+      "subject": "script and redstone hybrid authority",
+      "statement": "A gameplay concept must not be independently finalized by both script and redstone/command-block logic unless an explicit arbitration contract exists. Hybrid systems may provide evidence or mirrors but require one terminal authority.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "state-authority",
+        "hybrid"
+      ],
+      "riskSurfaces": [
+        "double-trigger",
+        "split-brain"
+      ]
+    },
+    {
+      "id": "automation-policy.debounce-physical-triggers",
+      "domain": "automation",
+      "subject": "physical trigger",
+      "statement": "Pressure plates, buttons, step events, redstone edges, and repeated command blocks that represent a single logical gameplay action require debounce, edge semantics, or idempotent operation tokens so sustained activation cannot commit repeated side effects.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "debounce",
+        "physical-trigger"
+      ],
+      "riskSurfaces": [
+        "double-submit",
+        "repeat-reward",
+        "duplicate-start"
+      ]
+    },
+    {
+      "id": "automation-policy.chain-postcondition",
+      "domain": "automation",
+      "subject": "command block chain",
+      "statement": "Critical command-block chains should define expected terminal postconditions rather than assuming downstream conditional blocks executed because the upstream trigger fired.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "command-chain",
+        "verification"
+      ],
+      "riskSurfaces": [
+        "partial-chain",
+        "silent-failure"
+      ]
+    },
+    {
+      "id": "automation-policy.world-mutation-invalidates-graph",
+      "domain": "automation",
+      "subject": "automation geometry",
+      "statement": "Structure loads, fill/setblock operations, arena reset, and other world mutation that can replace command blocks, redstone wiring, observers, doors, or trigger blocks invalidate prior automation-graph assumptions and require re-verification before gameplay starts.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "world-mutation",
+        "automation-graph"
+      ],
+      "riskSurfaces": [
+        "broken-wiring",
+        "replaced-command-block",
+        "stale-graph"
+      ]
+    },
+    {
+      "id": "automation-policy.tick-generation-bound",
+      "domain": "automation",
+      "subject": "block tick side effect",
+      "statement": "Arena-owned block-tick and custom-component side effects must validate arena/automation generation before changing gameplay state; a physical block that survives reset must not keep mutating a newer generation using stale logical ownership.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "block-tick",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "residual-tick",
+        "cross-round-state"
+      ]
+    },
+    {
+      "id": "automation-policy.reset-disarms-automation",
+      "domain": "automation",
+      "subject": "arena cleanup",
+      "statement": "Reset must explicitly disarm or baseline all arena-owned automation sources including repeating command blocks, redstone power sources, scheduled/ticking custom blocks, trigger plates, and script registrations or generation ownership before the arena is reusable.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "automation"
+      ],
+      "riskSurfaces": [
+        "second-run-trigger",
+        "ghost-automation"
+      ]
+    },
+    {
+      "id": "automation-policy.command-result-sensitive",
+      "domain": "automation",
+      "subject": "conditional command flow",
+      "statement": "Where downstream chain behavior depends on command success, analyzer must track command success semantics and selector no-match behavior rather than only parse command text. A syntactically valid command can still halt a conditional chain.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "command-result",
+        "conditional-chain"
+      ],
+      "riskSurfaces": [
+        "chain-short-circuit",
+        "hidden-no-match"
+      ]
+    },
+    {
+      "id": "automation-policy.delay-race-analysis",
+      "domain": "automation",
+      "subject": "delayed automation",
+      "statement": "Command-block delay, block tick interval, script timer, and world event timing must be analyzed as concurrent schedulers when they can affect the same state. Delay values do not imply exclusive ownership or serialization.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "scheduler",
+        "event-ordering"
+      ],
+      "riskSurfaces": [
+        "timing-race",
+        "duplicate-transition"
+      ]
+    },
+    {
+      "id": "automation-policy.legacy-tick-compat",
+      "domain": "automation",
+      "subject": "legacy queued ticking",
+      "statement": "Legacy queued-ticking content must be flagged against the effective runtime profile and migrated or guarded according to supported versions; deprecated automation primitives are compatibility findings, not generic gameplay failures.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ],
+      "capabilityTags": [
+        "deprecated",
+        "compatibility"
+      ],
+      "riskSurfaces": [
+        "legacy-regression",
+        "unsupported-runtime"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "automation-policy.relation-trigger-gates-sideeffect",
+      "domain": "automation",
+      "subject": "validated-automation-trigger",
+      "kind": "gates",
+      "object": "arena-automation-sideeffect",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ]
+    },
+    {
+      "id": "automation-policy.relation-mutation-deactivates-graph",
+      "domain": "automation",
+      "subject": "automation-affecting-world-mutation",
+      "kind": "deactivates",
+      "object": "cached-automation-graph-validity",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ]
+    },
+    {
+      "id": "automation-policy.relation-reset-deactivates-old-automation",
+      "domain": "automation",
+      "subject": "arena-generation-reset",
+      "kind": "deactivates",
+      "object": "old-generation-automation-sideeffects",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-automation-policy-v1"
+      ]
+    }
+  ]
+}
