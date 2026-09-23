@@ -7,6 +7,7 @@ import type { ScriptApiUsageInventory } from "./script-api-usage.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
+  version?: string;
   educationFeatures?: Exclude<EducationFeatureState, "unknown">;
   eduLevel?: number;
   experiments?: readonly string[];
