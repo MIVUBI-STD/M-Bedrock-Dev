@@ -485,6 +485,7 @@ export async function inspectDirectory(
         (sum, item) => sum + item.queuedTickPositions,
         0,
       ),
+      absoluteLoadDestinations: structureRuntime.absoluteLoadDestinations,
     },
     topologyAnalysis: {
       resolvedSpatialEffects: topology.resolvedSpatialEffects.length,

@@ -55,6 +55,13 @@ export interface InspectDirectoryResult {
       subChunkRecords: number;
       dimensions: number[];
       chunksObserved: number;
+      chunkSignals: Array<{
+        chunkX: number;
+        chunkZ: number;
+        dimensionId: number;
+        kinds: string[];
+      }>;
+      chunkSignalsTruncated: boolean;
       failure?: string;
     };
   };
@@ -74,6 +81,22 @@ export interface InspectDirectoryResult {
     embeddedCommandBlocks: number;
     unknownEmbeddedCommandEffects: number;
     queuedTickPositions: number;
+    absoluteLoadDestinations: Array<{
+      target: string;
+      chunkX: number;
+      chunkZ: number;
+      functionId: string;
+      line?: number;
+    }>;
+    nativeChunkCorrelations?: Array<{
+      target: string;
+      chunkX: number;
+      chunkZ: number;
+      matches: Array<{
+        dimensionId: number;
+        kinds: string[];
+      }>;
+    }>;
   };
   topologyAnalysis: {
     resolvedSpatialEffects: number;

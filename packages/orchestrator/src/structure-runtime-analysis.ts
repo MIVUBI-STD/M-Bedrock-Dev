@@ -4,6 +4,33 @@ import { parseTickingAreaSemantics } from "../../../analyzers/commands/src/ticki
 import { parseScheduleAreaLoadedSemantics } from "../../../analyzers/commands/src/schedule-semantics.js";
 import type { McStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
 
+function absoluteBlockPosition(
+  position: ReturnType<typeof parseStructureLoadSemantics> extends infer T
+    ? T extends { position?: infer P } ? P : never
+    : never,
+): { x: number; y: number; z: number } | undefined {
+  if (!position) return undefined;
+  const candidate = position as {
+    x: { mode: string; value: number };
+    y: { mode: string; value: number };
+    z: { mode: string; value: number };
+  };
+  if (
+    candidate.x.mode !== "absolute" ||
+    candidate.y.mode !== "absolute" ||
+    candidate.z.mode !== "absolute"
+  ) return undefined;
+  return {
+    x: candidate.x.value,
+    y: candidate.y.value,
+    z: candidate.z.value,
+  };
+}
+
+function blockToChunk(value: number): number {
+  return Math.floor(value / 16);
+}
+
 export interface StructureLoadRecord {
   functionId: string;
   line?: number;
@@ -143,6 +170,17 @@ export function analyzeStructureAndChunkRuntime(
   const correlations = structureLoads.map((load) =>
     correlateStructureLoad(load, structures)
   );
+  const absoluteLoadDestinations = structureLoads.flatMap((load) => {
+    const block = absoluteBlockPosition(load.semantics.position);
+    if (!block) return [];
+    return [{
+      target: load.semantics.name,
+      chunkX: blockToChunk(block.x),
+      chunkZ: blockToChunk(block.z),
+      functionId: load.functionId,
+      ...(load.line !== undefined ? { line: load.line } : {}),
+    }];
+  });
 
   return {
     structureLoads,
@@ -168,6 +206,7 @@ export function analyzeStructureAndChunkRuntime(
     runtimeLogicStructureLoads: correlations.filter(
       (item) => item.findings.includes("runtime-logic-content"),
     ).length,
+    absoluteLoadDestinations,
     chunkLifecycleEvidence: {
       tickingAreas: tickingAreas.length,
       preloadedTickingAreas: tickingAreas.filter(

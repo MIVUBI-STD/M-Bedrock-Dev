@@ -25,6 +25,13 @@ export interface WorldDbNativeSummary {
   subChunkRecords: number;
   dimensions: number[];
   chunksObserved: number;
+  chunkSignals: Array<{
+    chunkX: number;
+    chunkZ: number;
+    dimensionId: number;
+    kinds: string[];
+  }>;
+  chunkSignalsTruncated: boolean;
   failure?: string;
 }
 
@@ -55,6 +62,8 @@ export async function analyzeWorldDbNative(
       subChunkRecords: 0,
       dimensions: [],
       chunksObserved: 0,
+      chunkSignals: [],
+      chunkSignalsTruncated: false,
     };
   }
 
@@ -69,6 +78,7 @@ export async function analyzeWorldDbNative(
       const scan = await scanLevelDbMetadata(reader, INSPECTION_LEVELDB_BUDGET);
       const dimensions = new Set<number>();
       const chunks = new Set<string>();
+      const chunkKinds = new Map<string, Set<string>>();
 
       for (const entry of scan.metadata) {
         if (entry.dimensionId !== undefined) dimensions.add(entry.dimensionId);
@@ -77,9 +87,26 @@ export async function analyzeWorldDbNative(
           entry.chunkX !== undefined &&
           entry.chunkZ !== undefined
         ) {
-          chunks.add(`${entry.dimensionId ?? 0}:${entry.chunkX}:${entry.chunkZ}`);
+          const dimensionId = entry.dimensionId ?? 0;
+          const chunkKey = `${dimensionId}:${entry.chunkX}:${entry.chunkZ}`;
+          chunks.add(chunkKey);
+          const kinds = chunkKinds.get(chunkKey) ?? new Set<string>();
+          if (entry.chunkDataKind) kinds.add(entry.chunkDataKind);
+          chunkKinds.set(chunkKey, kinds);
         }
       }
+
+      const chunkSignals = [...chunkKinds.entries()]
+        .slice(0, 1024)
+        .map(([key, kinds]) => {
+          const [dimensionText, xText, zText] = key.split(":");
+          return {
+            dimensionId: Number(dimensionText),
+            chunkX: Number(xText),
+            chunkZ: Number(zText),
+            kinds: [...kinds].sort(),
+          };
+        });
 
       return {
         status: "scanned",
@@ -95,6 +122,8 @@ export async function analyzeWorldDbNative(
         subChunkRecords: scan.chunkDataKinds.SubChunkPrefix ?? 0,
         dimensions: [...dimensions].sort((a, b) => a - b),
         chunksObserved: chunks.size,
+        chunkSignals,
+        chunkSignalsTruncated: chunkKinds.size > chunkSignals.length,
       };
     } finally {
       await reader.close();
@@ -114,6 +143,8 @@ export async function analyzeWorldDbNative(
       subChunkRecords: 0,
       dimensions: [],
       chunksObserved: 0,
+      chunkSignals: [],
+      chunkSignalsTruncated: false,
       failure: error instanceof Error ? error.message : String(error),
     };
   } finally {

@@ -35,6 +35,22 @@ export async function inspectArtifact(
 
     const result = await inspectDirectory(workingRoot, artifactId, target, fingerprint, knowledgeCatalog);
     const nativeWorldDb = await analyzeWorldDbNative(workingRoot);
+    const nativeChunkCorrelations = result.structureRuntime.absoluteLoadDestinations.map(
+      (destination) => ({
+        target: destination.target,
+        chunkX: destination.chunkX,
+        chunkZ: destination.chunkZ,
+        matches: nativeWorldDb.chunkSignals
+          .filter((chunk) =>
+            chunk.chunkX === destination.chunkX &&
+            chunk.chunkZ === destination.chunkZ
+          )
+          .map((chunk) => ({
+            dimensionId: chunk.dimensionId,
+            kinds: chunk.kinds,
+          })),
+      }),
+    );
     return {
       artifactId,
       fingerprint,
@@ -43,6 +59,10 @@ export async function inspectArtifact(
       worldDatabase: {
         ...result.worldDatabase,
         nativeScan: nativeWorldDb,
+      },
+      structureRuntime: {
+        ...result.structureRuntime,
+        nativeChunkCorrelations,
       },
     };
   } finally {
