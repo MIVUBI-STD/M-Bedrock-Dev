@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-interaction-policy-v1",
+      "title": "MIVUBI UI Input and Interaction Lifecycle Policy v1",
+      "url": "project://knowledge/interaction-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "interaction-policy.form-ownership-envelope",
+      "domain": "interaction",
+      "subject": "form ownership",
+      "statement": "Every gameplay-relevant form must capture playerKey, connectionGeneration, arenaId/arenaGeneration where applicable, interactionGeneration, and formGeneration; the response is valid only if the ownership envelope is still current when the Promise resolves.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "form",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-form-response",
+        "cross-round-state"
+      ]
+    },
+    {
+      "id": "interaction-policy.single-active-form-purpose",
+      "domain": "interaction",
+      "subject": "form concurrency",
+      "statement": "For a given player and logical form purpose, allow at most one active form owner per generation. Duplicate opens should coalesce, replace explicitly, or be rejected rather than creating competing response paths.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "form",
+        "concurrency"
+      ],
+      "riskSurfaces": [
+        "double-submit",
+        "duplicate-form",
+        "race-condition"
+      ]
+    },
+    {
+      "id": "interaction-policy.form-response-revalidate-state",
+      "domain": "interaction",
+      "subject": "form completion",
+      "statement": "On form completion, re-read current authoritative gameplay state and validate player/session/arena ownership before applying the selected action. State captured when the form opened is advisory only.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "form-response",
+        "state-authority"
+      ],
+      "riskSurfaces": [
+        "stale-state",
+        "stale-response"
+      ]
+    },
+    {
+      "id": "interaction-policy.cancel-is-terminal-nonaction",
+      "domain": "interaction",
+      "subject": "form cancellation",
+      "statement": "Canceled forms, undefined selection, invalid response values, disconnects, and replaced form generations must resolve to an explicit non-action or recovery path; they must not fall through to a default gameplay action.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "form-cancel",
+        "fail-closed"
+      ],
+      "riskSurfaces": [
+        "false-submit",
+        "default-action-bug"
+      ]
+    },
+    {
+      "id": "interaction-policy.input-lock-lease",
+      "domain": "interaction",
+      "subject": "input permission ownership",
+      "statement": "Movement/camera/input restrictions must be owned by a scoped lease with reason, player session generation, arena generation, and restore policy. Direct fire-and-forget disable/enable calls are insufficient when multiple systems can lock the same input category.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "input-lock",
+        "lease"
+      ],
+      "riskSurfaces": [
+        "stuck-player",
+        "premature-unlock",
+        "lock-conflict"
+      ]
+    },
+    {
+      "id": "interaction-policy.input-lock-reference-count-or-owner-set",
+      "domain": "interaction",
+      "subject": "overlapping control locks",
+      "statement": "If multiple systems may disable the same input category, restoration must use an owner set/reference count or equivalent authority model; one subsystem ending must not re-enable input while another valid lock remains.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "input-lock",
+        "ownership"
+      ],
+      "riskSurfaces": [
+        "premature-unlock",
+        "cutscene-bypass"
+      ]
+    },
+    {
+      "id": "interaction-policy.restore-on-lifecycle-boundary",
+      "domain": "interaction",
+      "subject": "input restoration",
+      "statement": "Disconnect, respawn, arena reset, cutscene abort, world recovery, and session-generation change must reconcile input-lock leases and restore or intentionally reapply permissions according to the current authoritative state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "input-lock",
+        "reconciliation"
+      ],
+      "riskSurfaces": [
+        "movement-lock-leak",
+        "camera-lock-leak",
+        "respawn-state-leak"
+      ]
+    },
+    {
+      "id": "interaction-policy.first-event-for-single-action",
+      "domain": "interaction",
+      "subject": "held interaction",
+      "statement": "Gameplay interactions intended as one action per press must require isFirstEvent where available or implement explicit debounce/idempotency; repeated held-input events must not create duplicate purchases, revive ticks, starts, or claims.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "interaction",
+        "debounce"
+      ],
+      "riskSurfaces": [
+        "double-submit",
+        "revive-spam",
+        "duplicate-purchase"
+      ]
+    },
+    {
+      "id": "interaction-policy.actor-target-scope-proof",
+      "domain": "interaction",
+      "subject": "interaction actor and target",
+      "statement": "Before applying a gameplay interaction, validate both actor and target against current session/arena/round ownership. Physical proximity or an interaction event alone is not proof that actor and target belong to the same gameplay transaction.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "interaction",
+        "arena-isolation"
+      ],
+      "riskSurfaces": [
+        "cross-arena-interaction",
+        "wrong-target"
+      ]
+    },
+    {
+      "id": "interaction-policy.interaction-idempotent",
+      "domain": "interaction",
+      "subject": "gameplay action submission",
+      "statement": "High-value interaction side effects such as purchase, claim, ready, start, revive completion, upgrade, or objective activation must be idempotent or guarded by an operation token so duplicate events/responses cannot apply twice.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "interaction"
+      ],
+      "riskSurfaces": [
+        "duplicate-sideeffect",
+        "double-submit"
+      ]
+    },
+    {
+      "id": "interaction-policy.ui-not-authority",
+      "domain": "interaction",
+      "subject": "UI state",
+      "statement": "Visible form/button state is a presentation snapshot, not authoritative gameplay state. A button being visible/enabled when the form opened does not guarantee the action remains legal when the player responds.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ],
+      "capabilityTags": [
+        "ui",
+        "state-authority"
+      ],
+      "riskSurfaces": [
+        "stale-ui",
+        "invalid-action"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "interaction-policy.relation-current-form-generation-gates-response",
+      "domain": "interaction",
+      "subject": "form-response",
+      "kind": "gates",
+      "object": "gameplay-form-side-effect",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ]
+    },
+    {
+      "id": "interaction-policy.relation-input-owner-set-gates-restore",
+      "domain": "interaction",
+      "subject": "input-permission-restore",
+      "kind": "gates",
+      "object": "re-enable-input-category",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ]
+    },
+    {
+      "id": "interaction-policy.relation-firstevent-gates-singlepress",
+      "domain": "interaction",
+      "subject": "initial-interaction-event",
+      "kind": "gates",
+      "object": "single-press-gameplay-action",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interaction-policy-v1"
+      ]
+    }
+  ]
+}
