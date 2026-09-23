@@ -5,6 +5,10 @@ import type {
 } from "../../../analyzers/scripts/src/types.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
+import {
+  mutationDependentActionLabel,
+  type MutationDependentActionContract,
+} from "../../project-model/src/mutation-dependent-action.js";
 
 export type ScriptMutationOrderingStatus =
   | "verified-before-dependent"
@@ -39,6 +43,7 @@ export interface ScriptMutationTransactionAssessment {
   receiver: string;
   applyCall: ScriptMethodCall;
   dependentCall?: ScriptMethodCall;
+  dependentLabel?: string;
   verificationCall?: ScriptMethodCall;
   status: ScriptMutationOrderingStatus;
   barriers: readonly ScriptTimelineEntry[];
@@ -163,17 +168,38 @@ function isVerification(call: ScriptMethodCall): boolean {
   );
 }
 
-function isDependent(call: ScriptMethodCall): boolean {
-  return (
-    (
-      (call.receiverType === "Entity" || call.receiverType === "Player") &&
-      call.method === "teleport"
-    ) ||
-    (
-      call.receiverType === "Dimension" &&
-      call.method === "spawnEntity"
-    )
+function dependentLabel(
+  call: ScriptMethodCall,
+  contracts: readonly MutationDependentActionContract[],
+): string | undefined {
+  if (
+    (call.receiverType === "Entity" || call.receiverType === "Player") &&
+    call.method === "teleport"
+  ) {
+    return "teleport";
+  }
+  if (
+    call.receiverType === "Dimension" &&
+    call.method === "spawnEntity"
+  ) {
+    return "entity-spawn";
+  }
+
+  const contract = contracts.find(
+    (item) =>
+      item.kind === "script-method" &&
+      item.scriptSymbol === call.symbol,
   );
+  return contract
+    ? mutationDependentActionLabel(contract)
+    : undefined;
+}
+
+function isDependent(
+  call: ScriptMethodCall,
+  contracts: readonly MutationDependentActionContract[],
+): boolean {
+  return dependentLabel(call, contracts) !== undefined;
 }
 
 function rootsForScript(script: ParsedScriptFile): string[] {
@@ -275,8 +301,20 @@ function expandRegion(
 
 export function analyzeScriptMutationTransactions(
   scripts: readonly ParsedScriptFile[],
+  dependentContractsOrMaxDepth:
+    | readonly MutationDependentActionContract[]
+    | number = [],
   maxDepth = 16,
 ): ScriptMutationTransactionAssessment[] {
+  const dependentContracts =
+    typeof dependentContractsOrMaxDepth === "number"
+      ? []
+      : dependentContractsOrMaxDepth;
+  const effectiveMaxDepth =
+    typeof dependentContractsOrMaxDepth === "number"
+      ? dependentContractsOrMaxDepth
+      : maxDepth;
+
   const output: ScriptMutationTransactionAssessment[] = [];
 
   for (const script of scripts) {
@@ -286,7 +324,7 @@ export function analyzeScriptMutationTransactions(
         rootRegion,
         [],
         0,
-        maxDepth,
+        effectiveMaxDepth,
       );
 
       for (let index = 0; index < timeline.length; index += 1) {
@@ -315,7 +353,11 @@ export function analyzeScriptMutationTransactions(
         }
 
         const dependentIndex = segment.findIndex((candidate) =>
-          candidate.kind === "method" && isDependent(candidate.call)
+          candidate.kind === "method" &&
+          isDependent(
+            candidate.call,
+            dependentContracts,
+          )
         );
         const dependentEntry = dependentIndex >= 0
           ? segment[dependentIndex]
@@ -399,6 +441,11 @@ export function analyzeScriptMutationTransactions(
           receiver,
           applyCall: apply,
           dependentCall: dependent,
+          dependentLabel:
+            dependentLabel(
+              dependent,
+              dependentContracts,
+            ) ?? "unknown",
           ...(verificationCall === undefined
             ? {}
             : { verificationCall }),
@@ -433,7 +480,7 @@ export function scriptMutationTransactionRuntimeEvidence(
       note:
         item.receiver +
         " mutation precedes " +
-        item.dependentCall.symbol +
+        (item.dependentLabel ?? item.dependentCall.symbol) +
         " from " +
         item.executionRegion,
     });
