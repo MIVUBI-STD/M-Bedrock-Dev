@@ -181,6 +181,35 @@ player.applyKnockback({ x: 0, z: 1 }, 0.4);
     ]));
   });
 
+  it("classifies direct method result-use safety shapes", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const entity = world.getDimension("overworld").getEntities()[0];
+entity.getComponent("minecraft:health").currentValue;
+entity.getComponent("minecraft:health")?.currentValue;
+const assigned = entity.getComponent("minecraft:health");
+`,
+      source,
+    );
+
+    expect(parsed.methodCalls).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "Entity.getComponent",
+        resultUse: "dereferenced",
+      }),
+      expect.objectContaining({
+        symbol: "Entity.getComponent",
+        resultUse: "optional-dereferenced",
+      }),
+      expect.objectContaining({
+        symbol: "Entity.getComponent",
+        resultUse: "assigned",
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

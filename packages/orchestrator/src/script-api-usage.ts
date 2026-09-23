@@ -14,6 +14,7 @@ import {
   findScriptSignatureRule,
   type ScriptArgumentKind,
 } from "../../compatibility/src/script-signature-matrix.js";
+import { findScriptReturnContractRule } from "../../compatibility/src/script-return-contract-matrix.js";
 
 export type ScriptApiUsageKind = "event" | "method" | "property" | "enum";
 export type ScriptApiKnowledgeState = "known" | "unclassified";
@@ -40,6 +41,11 @@ export interface ScriptApiUsageSymbol {
   boundedOccurrences?: number;
   receiverTypes?: string[];
   callShapes?: ScriptCallShapeUsage[];
+  resultUses?: Array<{
+    use: "ignored" | "assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
+    occurrences: number;
+    files: string[];
+  }>;
 }
 
 export interface ScriptApiUsageInventory {
@@ -89,6 +95,11 @@ interface MutableUsage {
     argumentCount: number;
     argumentKinds: ScriptArgumentKind[];
     hasSpreadArgument: boolean;
+    occurrences: number;
+    files: Set<string>;
+  }>;
+  resultUses: Map<string, {
+    use: "ignored" | "assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
     occurrences: number;
     files: Set<string>;
   }>;
@@ -209,6 +220,73 @@ function mergeCallShapes(
     );
 }
 
+function recordResultUse(
+  item: MutableUsage,
+  file: string,
+  use: "ignored" | "assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other",
+): void {
+  const current = item.resultUses.get(use);
+  if (current) {
+    current.occurrences += 1;
+    current.files.add(file);
+    return;
+  }
+  item.resultUses.set(use, {
+    use,
+    occurrences: 1,
+    files: new Set([file]),
+  });
+}
+
+function materializeResultUses(item: MutableUsage) {
+  return [...item.resultUses.values()]
+    .map((entry) => ({
+      use: entry.use,
+      occurrences: entry.occurrences,
+      files: [...entry.files].sort(),
+    }))
+    .sort((a, b) =>
+      b.occurrences - a.occurrences ||
+      a.use.localeCompare(b.use)
+    );
+}
+
+function mergeResultUses(
+  left: NonNullable<ScriptApiUsageSymbol["resultUses"]>,
+  right: NonNullable<ScriptApiUsageSymbol["resultUses"]>,
+) {
+  const merged = new Map<string, {
+    use: NonNullable<ScriptApiUsageSymbol["resultUses"]>[number]["use"];
+    occurrences: number;
+    files: Set<string>;
+  }>();
+
+  for (const entry of [...left, ...right]) {
+    const current = merged.get(entry.use);
+    if (current) {
+      current.occurrences += entry.occurrences;
+      for (const file of entry.files) current.files.add(file);
+      continue;
+    }
+    merged.set(entry.use, {
+      use: entry.use,
+      occurrences: entry.occurrences,
+      files: new Set(entry.files),
+    });
+  }
+
+  return [...merged.values()]
+    .map((entry) => ({
+      use: entry.use,
+      occurrences: entry.occurrences,
+      files: [...entry.files].sort(),
+    }))
+    .sort((a, b) =>
+      b.occurrences - a.occurrences ||
+      a.use.localeCompare(b.use)
+    );
+}
+
 function materialize(item: MutableUsage): ScriptApiUsageSymbol {
   return {
     kind: item.kind,
@@ -226,7 +304,10 @@ function materialize(item: MutableUsage): ScriptApiUsageSymbol {
           boundedOccurrences: item.boundedOccurrences,
           receiverTypes: [...item.receiverTypes].sort(),
           ...(item.kind === "method"
-            ? { callShapes: materializeCallShapes(item) }
+            ? {
+                callShapes: materializeCallShapes(item),
+                resultUses: materializeResultUses(item),
+              }
             : {}),
         }
       : {}),
@@ -271,6 +352,7 @@ export function deriveScriptApiUsage(
       boundedOccurrences: 0,
       receiverTypes: new Set<string>(),
       callShapes: new Map(),
+      resultUses: new Map(),
     };
     bySymbol.set(key, created);
     return created;
@@ -288,12 +370,16 @@ export function deriveScriptApiUsage(
     for (const method of script.methodCalls) {
       const methodRule = findScriptMethodRule(method.symbol);
       const signatureRule = findScriptSignatureRule(method.symbol);
-      const rule = methodRule ?? (signatureRule ? { id: signatureRule.id } : undefined);
+      const returnRule = findScriptReturnContractRule(method.symbol);
+      const rule = methodRule ??
+        (signatureRule ? { id: signatureRule.id } : undefined) ??
+        (returnRule ? { id: returnRule.id } : undefined);
       const item = getOrCreate("method", method.symbol, file, rule);
       if (method.inference === "direct") item.directOccurrences += 1;
       else item.boundedOccurrences += 1;
       item.receiverTypes.add(method.receiverType);
       recordCallShape(item, file, method);
+      recordResultUse(item, file, method.resultUse);
     }
 
     for (const property of script.propertyAccesses) {
@@ -369,6 +455,10 @@ export function aggregateScriptApiUsage(
         current.item.callShapes = mergeCallShapes(
           current.item.callShapes ?? [],
           symbol.callShapes ?? [],
+        );
+        current.item.resultUses = mergeResultUses(
+          current.item.resultUses ?? [],
+          symbol.resultUses ?? [],
         );
       }
       if (current.item.knowledge === "unclassified" && symbol.knowledge === "known") {

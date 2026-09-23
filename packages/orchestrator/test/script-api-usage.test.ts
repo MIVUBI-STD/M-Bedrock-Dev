@@ -177,6 +177,28 @@ describe("Script API usage inventory", () => {
     });
   });
 
+  it("retains method result-use distributions for return-contract analysis", () => {
+    const usage = deriveScriptApiUsage([
+      parse("return/scripts/main.js", `
+        import { world } from "@minecraft/server";
+        const entity = world.getDimension("overworld").getEntities()[0];
+        entity.getComponent("minecraft:health").currentValue;
+        entity.getComponent("minecraft:health")?.currentValue;
+      `),
+    ]);
+
+    expect(usage.symbols).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "Entity.getComponent",
+        knowledge: "known",
+        resultUses: expect.arrayContaining([
+          expect.objectContaining({ use: "dereferenced", occurrences: 1 }),
+          expect.objectContaining({ use: "optional-dereferenced", occurrences: 1 }),
+        ]),
+      }),
+    ]));
+  });
+
   it("ranks portfolio promotion candidates by real map coverage before raw frequency", () => {
     const mapA = deriveScriptApiUsage([
       parse("a/scripts/main.js", `
