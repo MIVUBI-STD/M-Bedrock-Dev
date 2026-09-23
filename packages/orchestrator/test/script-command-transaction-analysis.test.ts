@@ -230,7 +230,7 @@ describe("script literal command mutation transactions", () => {
     ]));
   });
 
-  it("keeps summon before verification unresolved", () => {
+  it("detects summon before a later matching verification", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
       const dimension = world.getDimension("overworld");
@@ -242,9 +242,24 @@ describe("script literal command mutation transactions", () => {
       );
     `);
 
-    expect(
-      analyzeScriptCommandMutationTransactions([script])[0]?.status,
-    ).toBe("verification-unresolved");
+    const assessment = analyzeScriptCommandMutationTransactions([script])[0];
+    expect(assessment?.status).toBe("dependent-before-verification");
+    expect(assessment?.verificationLiteral).toEqual(
+      expect.objectContaining({
+        command: expect.stringContaining("execute if block"),
+      }),
+    );
+
+    const reasoning = analyzeKnowledgeRuntime(
+      catalog,
+      { edition: "bedrock" },
+      [],
+      [],
+      scriptCommandMutationRuntimeEvidence([assessment!]),
+      [script],
+    );
+    expect(reasoning.violations).toBe(1);
+    expect(reasoning.evidenceGaps).toBe(0);
   });
 
   it("supports project-defined function handoff in literal commands", () => {
