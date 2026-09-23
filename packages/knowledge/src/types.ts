@@ -28,6 +28,7 @@ export type KnowledgeDomain =
   | "chunks"
   | "player-session"
   | "multiplayer"
+  | "event-ordering"
   | "education";
 
 export type KnowledgeRelationKind =
