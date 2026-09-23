@@ -4,6 +4,7 @@ import {
   KNOWLEDGE_CONFIDENCE_SET,
   KNOWLEDGE_DOMAIN_SET,
   KNOWLEDGE_EDITION_SET,
+  KNOWLEDGE_DIAGNOSTIC_SEVERITY_SET,
   KNOWLEDGE_RELATION_KIND_SET,
 } from "./registry.js";
 import type { KnowledgeCatalog, KnowledgeSource } from "./types.js";
@@ -191,6 +192,14 @@ export function validateKnowledgeCatalog(
     ) {
       errors.push(
         `Knowledge relation ${relation.id} has unknown classification: ${relation.classification}`,
+      );
+    }
+    if (
+      relation.diagnosticSeverity !== undefined &&
+      !KNOWLEDGE_DIAGNOSTIC_SEVERITY_SET.has(relation.diagnosticSeverity)
+    ) {
+      errors.push(
+        `Knowledge relation ${relation.id} has unknown diagnosticSeverity: ${relation.diagnosticSeverity}`,
       );
     }
     if (
