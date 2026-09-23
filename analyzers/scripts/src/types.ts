@@ -1,4 +1,5 @@
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { ScriptArgumentKind } from "../../../packages/compatibility/src/script-signature-matrix.js";
 
 export interface ScriptImport {
   module: string;
@@ -36,20 +37,6 @@ export type ScriptApiReceiverType =
   | "Scoreboard"
   | "ScoreboardObjective"
   | "PlayerInputPermissions";
-
-export type ScriptArgumentKind =
-  | "number"
-  | "string"
-  | "boolean"
-  | "object"
-  | "array"
-  | "identifier"
-  | "call"
-  | "property"
-  | "function"
-  | "null"
-  | "spread"
-  | "other";
 
 export interface ScriptMethodCall {
   receiverType: ScriptApiReceiverType;

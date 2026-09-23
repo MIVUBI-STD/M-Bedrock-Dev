@@ -1,20 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { checkScriptMethodSignature } from "../src/script-signature-matrix.js";
-import type { ScriptMethodCall } from "../../../analyzers/scripts/src/types.js";
+import {
+  checkScriptMethodSignature,
+  type ScriptArgumentKind,
+  type ScriptMethodCallShapeObservation,
+} from "../src/script-signature-matrix.js";
 
 function call(
   symbol: string,
-  argumentKinds: ScriptMethodCall["argumentKinds"],
-): ScriptMethodCall {
+  argumentKinds: ScriptArgumentKind[],
+): ScriptMethodCallShapeObservation {
   return {
-    receiverType: symbol.startsWith("Dimension.") ? "Dimension" : "Entity",
-    method: symbol.split(".").at(-1) ?? symbol,
     symbol,
-    inference: "bounded",
     argumentCount: argumentKinds.length,
     argumentKinds,
     hasSpreadArgument: argumentKinds.includes("spread"),
-    source: { artifactId: "fixture", relativePath: "scripts/main.ts" },
   };
 }
 

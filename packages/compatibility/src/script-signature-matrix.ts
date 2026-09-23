@@ -1,6 +1,26 @@
 import { compareVersions } from "../../knowledge/src/version.js";
 import type { ScriptApiTrack } from "./script-api.js";
-import type { ScriptArgumentKind, ScriptMethodCall } from "../../../analyzers/scripts/src/types.js";
+
+export type ScriptArgumentKind =
+  | "number"
+  | "string"
+  | "boolean"
+  | "object"
+  | "array"
+  | "identifier"
+  | "call"
+  | "property"
+  | "function"
+  | "null"
+  | "spread"
+  | "other";
+
+export interface ScriptMethodCallShapeObservation {
+  symbol: string;
+  argumentCount: number;
+  argumentKinds: readonly ScriptArgumentKind[];
+  hasSpreadArgument: boolean;
+}
 
 export interface ScriptCallShape {
   minArgs: number;
@@ -92,7 +112,7 @@ export function findScriptSignatureRule(
 }
 
 function shapeMatches(
-  call: Pick<ScriptMethodCall, "argumentCount" | "argumentKinds" | "hasSpreadArgument">,
+  call: Pick<ScriptMethodCallShapeObservation, "argumentCount" | "argumentKinds" | "hasSpreadArgument">,
   shape: ScriptCallShape,
 ): boolean | "unknown" {
   if (call.hasSpreadArgument) return "unknown";
@@ -113,7 +133,7 @@ function shapeMatches(
 }
 
 export function checkScriptMethodSignature(
-  call: ScriptMethodCall,
+  call: ScriptMethodCallShapeObservation,
   moduleVersion: string,
   moduleTrack: ScriptApiTrack,
 ): ScriptSignatureCheck {
