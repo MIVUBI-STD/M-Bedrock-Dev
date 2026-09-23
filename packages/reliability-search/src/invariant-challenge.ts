@@ -37,6 +37,23 @@ function mutationOperatorsForCandidate(
   }
 }
 
+function insideCandidateRegion(
+  candidate: MinedInvariantCandidate,
+  position: { x: number; y: number; z: number },
+): boolean | undefined {
+  const p = candidate.parameters;
+  if (!p) return undefined;
+  const required = ["minX", "minY", "minZ", "maxX", "maxY", "maxZ"] as const;
+  if (!required.every((key) => typeof p[key] === "number")) return undefined;
+
+  return position.x >= Math.min(Number(p.minX), Number(p.maxX)) &&
+    position.x <= Math.max(Number(p.minX), Number(p.maxX)) &&
+    position.y >= Math.min(Number(p.minY), Number(p.maxY)) &&
+    position.y <= Math.max(Number(p.minY), Number(p.maxY)) &&
+    position.z >= Math.min(Number(p.minZ), Number(p.maxZ)) &&
+    position.z <= Math.max(Number(p.minZ), Number(p.maxZ));
+}
+
 function snapshotContradicts(
   candidate: MinedInvariantCandidate,
   snapshot: RuntimeObservationSnapshot,
@@ -81,6 +98,82 @@ function snapshotContradicts(
     }
   }
 
+  if (candidate.kind === "player-tag-implies-score") {
+    const tag = candidate.parameters?.tag;
+    const objective = candidate.parameters?.objective;
+    const relation = candidate.parameters?.relation;
+    if (typeof tag === "string" && typeof objective === "string") {
+      for (const player of snapshot.players) {
+        if (!player.tags?.includes(tag)) continue;
+        const value = player.scores?.[objective];
+        const satisfied = relation === "nonzero"
+          ? value !== undefined && value !== 0
+          : value !== undefined;
+        if (!satisfied) {
+          evidence.push(`tick=${snapshot.tick ?? "?"},player=${player.playerId},tag=${tag},objective=${objective}`);
+        }
+      }
+    }
+  }
+
+  if (candidate.kind === "entity-arena-tag-consistency") {
+    for (const entity of snapshot.entities ?? []) {
+      if (
+        entity.arenaId &&
+        entity.tags &&
+        !entity.tags.includes(`arena:${entity.arenaId}`)
+      ) {
+        evidence.push(`tick=${snapshot.tick ?? "?"},entity=${entity.entityId},arena=${entity.arenaId}`);
+      }
+    }
+  }
+
+  if (candidate.kind === "entity-within-arena-region") {
+    const arenaId = candidate.parameters?.arenaId;
+    if (typeof arenaId === "string") {
+      for (const entity of snapshot.entities ?? []) {
+        if (entity.arenaId !== arenaId || !entity.position) continue;
+        const inside = insideCandidateRegion(candidate, entity.position);
+        if (inside === false) {
+          evidence.push(`tick=${snapshot.tick ?? "?"},entity=${entity.entityId},arena=${arenaId}`);
+        }
+      }
+    }
+  }
+
+  return evidence;
+}
+
+function transitionContradictions(
+  candidate: MinedInvariantCandidate,
+  snapshots: readonly RuntimeObservationSnapshot[],
+): string[] {
+  if (candidate.kind !== "playing-progress-nondecreasing") return [];
+
+  const evidence: string[] = [];
+  const ordered = [...snapshots]
+    .filter((snapshot) => snapshot.tick !== undefined)
+    .sort((a, b) => a.tick! - b.tick!);
+
+  for (let index = 1; index < ordered.length; index += 1) {
+    const previous = ordered[index - 1]!;
+    const current = ordered[index]!;
+    for (const player of current.players) {
+      const before = previous.players.find((item) => item.playerId === player.playerId);
+      if (
+        player.phase === "playing" &&
+        before?.phase === "playing" &&
+        player.progress !== undefined &&
+        before.progress !== undefined &&
+        player.progress < before.progress
+      ) {
+        evidence.push(
+          `ticks=${previous.tick}->${current.tick},player=${player.playerId},progress=${before.progress}->${player.progress}`,
+        );
+      }
+    }
+  }
+
   return evidence;
 }
 
@@ -90,11 +183,15 @@ export function challengeMinedInvariants(
 ): MinedInvariantCandidate[] {
   return candidates.map((candidate) => {
     const challenges: string[] = [...candidate.challengeEvidence];
+    const failures = input.historicalFailures ?? [];
 
-    for (const snapshot of input.historicalFailures ?? []) {
+    for (const snapshot of failures) {
       for (const evidence of snapshotContradicts(candidate, snapshot)) {
         challenges.push(`historical-failure:${evidence}`);
       }
+    }
+    for (const evidence of transitionContradictions(candidate, failures)) {
+      challenges.push(`historical-failure:${evidence}`);
     }
 
     const relevantOperators = new Set(mutationOperatorsForCandidate(candidate));

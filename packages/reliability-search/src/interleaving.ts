@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto";
-
 export interface OperationFootprint {
   reads: readonly string[];
   writes: readonly string[];
@@ -13,12 +11,13 @@ export interface ScheduledOperation<T> {
 
 export interface InterleavingOptions {
   maxSchedules: number;
+  maxExploredNodes?: number;
 }
 
 export interface InterleavingResult<T> {
   schedules: ScheduledOperation<T>[][];
-  exploredPermutations: number;
-  reducedEquivalentSchedules: number;
+  exploredNodes: number;
+  reducedEquivalentBranches: number;
   truncated: boolean;
 }
 
@@ -38,71 +37,86 @@ export function operationsIndependent<T>(
     !intersects(b.footprint.writes, aWrites);
 }
 
-function canonicalTraceKey<T>(
-  schedule: readonly ScheduledOperation<T>[],
-): string {
-  const ids = schedule.map((operation) => operation.id);
+function assertUniqueOperationIds<T>(
+  operations: readonly ScheduledOperation<T>[],
+): void {
+  const seen = new Set<string>();
+  for (const operation of operations) {
+    if (seen.has(operation.id)) {
+      throw new Error(`Interleaving operation ids must be unique: ${operation.id}`);
+    }
+    seen.add(operation.id);
+  }
+}
 
-  // Bubble independent adjacent operations into stable id order.
-  // Equivalent schedules under declared commutativity collapse to one trace.
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (let index = 0; index + 1 < ids.length; index += 1) {
-      const leftId = ids[index]!;
-      const rightId = ids[index + 1]!;
-      const left = schedule.find((item) => item.id === leftId)!;
-      const right = schedule.find((item) => item.id === rightId)!;
-      if (operationsIndependent(left, right) && leftId.localeCompare(rightId) > 0) {
-        ids[index] = rightId;
-        ids[index + 1] = leftId;
-        changed = true;
-      }
+function branchIsEquivalentToEarlierChoice<T>(
+  remaining: readonly ScheduledOperation<T>[],
+  index: number,
+): boolean {
+  const candidate = remaining[index]!;
+  for (let earlierIndex = 0; earlierIndex < index; earlierIndex += 1) {
+    const earlier = remaining[earlierIndex]!;
+    if (
+      earlier.id.localeCompare(candidate.id) < 0 &&
+      operationsIndependent(earlier, candidate)
+    ) {
+      return true;
     }
   }
-
-  return createHash("sha256").update(ids.join("\u0000")).digest("hex");
+  return false;
 }
 
 export function exploreInterleavings<T>(
   operations: readonly ScheduledOperation<T>[],
   options: InterleavingOptions,
 ): InterleavingResult<T> {
+  if (!Number.isInteger(options.maxSchedules) || options.maxSchedules < 1) {
+    throw new Error("maxSchedules must be a positive integer.");
+  }
+  const maxExploredNodes = options.maxExploredNodes ?? 100_000;
+  if (!Number.isInteger(maxExploredNodes) || maxExploredNodes < 1) {
+    throw new Error("maxExploredNodes must be a positive integer.");
+  }
+
+  assertUniqueOperationIds(operations);
+
   const schedules: ScheduledOperation<T>[][] = [];
-  const canonical = new Set<string>();
-  let exploredPermutations = 0;
-  let reducedEquivalentSchedules = 0;
+  let exploredNodes = 0;
+  let reducedEquivalentBranches = 0;
   let truncated = false;
 
   const visit = (
     prefix: ScheduledOperation<T>[],
     remaining: ScheduledOperation<T>[],
-  ) => {
-    if (schedules.length >= options.maxSchedules) {
-      truncated = remaining.length > 0 || prefix.length < operations.length;
+  ): void => {
+    if (schedules.length >= options.maxSchedules || exploredNodes >= maxExploredNodes) {
+      truncated = remaining.length > 0;
       return;
     }
 
+    exploredNodes += 1;
+
     if (remaining.length === 0) {
-      exploredPermutations += 1;
-      const key = canonicalTraceKey(prefix);
-      if (canonical.has(key)) {
-        reducedEquivalentSchedules += 1;
-        return;
-      }
-      canonical.add(key);
       schedules.push([...prefix]);
       return;
     }
 
-    for (let index = 0; index < remaining.length; index += 1) {
-      const next = remaining[index]!;
+    const ordered = [...remaining].sort((a, b) => a.id.localeCompare(b.id));
+
+    for (let index = 0; index < ordered.length; index += 1) {
+      if (branchIsEquivalentToEarlierChoice(ordered, index)) {
+        reducedEquivalentBranches += 1;
+        continue;
+      }
+
+      const next = ordered[index]!;
       visit(
         [...prefix, next],
-        remaining.filter((_, itemIndex) => itemIndex !== index),
+        ordered.filter((_, itemIndex) => itemIndex !== index),
       );
-      if (schedules.length >= options.maxSchedules) {
-        truncated = index + 1 < remaining.length || truncated;
+
+      if (schedules.length >= options.maxSchedules || exploredNodes >= maxExploredNodes) {
+        truncated = index + 1 < ordered.length || truncated;
         break;
       }
     }
@@ -112,8 +126,8 @@ export function exploreInterleavings<T>(
 
   return {
     schedules,
-    exploredPermutations,
-    reducedEquivalentSchedules,
+    exploredNodes,
+    reducedEquivalentBranches,
     truncated,
   };
 }

@@ -1,6 +1,5 @@
 import type { RuntimeObservationSnapshot } from "../../reliability/src/index.js";
 import type { SemanticCoverageSignature } from "./types.js";
-import { runtimeSnapshotSemanticKey } from "./invariant-diversity.js";
 
 export interface SnapshotCoverageEvidence {
   snapshot: RuntimeObservationSnapshot;
@@ -13,9 +12,15 @@ export function coverageBucketKey(item: SnapshotCoverageEvidence): string {
     .map((feature) => `${feature.dimension}:${feature.key}`)
     .sort();
 
+  if (features.length === 0) {
+    return JSON.stringify({
+      mapId: item.mapId ?? null,
+      coverage: "unknown",
+    });
+  }
+
   return JSON.stringify({
     mapId: item.mapId ?? null,
-    state: runtimeSnapshotSemanticKey(item.snapshot),
     features,
   });
 }

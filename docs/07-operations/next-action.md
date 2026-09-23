@@ -1,28 +1,20 @@
 # Next Action
 
-The broad high-end bug-finder framework is now complete enough to stop adding generic architecture.
+A reliability-focused implementation audit found and corrected false-confidence and search-efficiency issues.
 
-Implemented:
+Fixed:
 
-1. semantic coverage-guided search;
-2. systematic interleaving and bounded model exploration;
-3. failure minimization;
-4. Bedrock-specific mutation testing against real detectors;
-5. blindspot aggregation and adaptive search budget;
-6. persistent campaign history;
-7. conservative dynamic invariant mining;
-8. semantic-state and coverage-bucket diversity;
-9. cross-map invariant evidence;
-10. Minecraft-update-driven invariant revalidation queue.
+1. branch-level interleaving reduction instead of post-factorial canonicalization;
+2. explicit interleaving explored-node budget;
+3. duplicate operation-id rejection;
+4. semantic coverage buckets no longer inflate from state diversity alone;
+5. advanced invariant candidates are challenged against historical failure evidence;
+6. transition-progress historical contradictions are now recognized.
 
-Future improvement must be evidence-driven:
+No new general framework layer should be added.
 
-```text
-survived mutant / historical regression / runtime divergence
-→ targeted search task
-→ detector or oracle improvement
-→ mutation/replay challenge
-→ campaign history
-```
+Remaining work should be evidence-driven, with one important engineering hardening item still open before broad repair use:
 
-Do not add another general-purpose framework layer without a demonstrated detector gap.
+- repair workspace realpath/symlink/root-overlap protection and collision-safe atomic writes.
+
+Exact-head CI and local Minecraft runtime proof remain deferred until the user chooses to test.
