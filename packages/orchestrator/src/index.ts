@@ -30,3 +30,6 @@ export * from "./script-update-correlation.js";
 export * from "./entity-event-evidence.js";
 
 export * from "./knowledge-runtime-analysis.js";
+
+export * from "./structure-runtime-evidence.js";
+export * from "./topology-runtime-evidence.js";
