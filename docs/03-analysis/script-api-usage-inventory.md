@@ -119,3 +119,20 @@ Each distinct shape records:
 - files containing that shape.
 
 Signature-matrix symbols are treated as known even when they do not need a separate introduction/lifecycle rule. This prevents methods such as `Entity.applyKnockback` from appearing as false promotion candidates while still preserving their real-world call forms.
+
+
+## Return-use evidence
+
+Method inventory also retains direct result-use distributions:
+
+```text
+ignored
+assigned
+returned
+dereferenced
+optional-dereferenced
+non-null-asserted
+other
+```
+
+Return-contract rules can therefore distinguish a direct unsafe-looking dereference from optional chaining without requiring full program-wide type flow. Assigned/returned results remain conservative because downstream guards are not inferred yet.

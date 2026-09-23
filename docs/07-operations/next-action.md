@@ -1,27 +1,27 @@
 # Next Action
 
-Script API intelligence now includes deterministic signature/call-shape migration analysis.
+Script API intelligence now includes bounded return-contract migration analysis.
 
 Implemented:
 
-1. method call observations now retain argument count and coarse argument kinds;
-2. spread arguments are explicitly represented and remain unknown for deterministic arity checks;
-3. analyzer-independent signature compatibility matrix;
-4. `Entity.applyKnockback` 1.x four-number → 2.x VectorXZ + verticalStrength transition;
-5. `Dimension.spawnEntity` optional third options argument transition;
-6. `SCRIPT_API_SIGNATURE_INCOMPATIBLE` diagnostics;
-7. signature incompatibility feeds reliability capability/risk surfaces;
-8. per-map and portfolio usage inventory retain call-shape distributions;
-9. signature-rule-only methods are treated as known usage rather than promotion gaps;
-10. repository boundaries remain one-way: compatibility does not depend on analyzers.
+1. deterministic method result-use classification;
+2. analyzer-independent return-contract compatibility matrix;
+3. `Entity.getComponent` optional-return transition at `@minecraft/server 1.18.0`;
+4. `SCRIPT_API_RETURN_CONTRACT_RISK` for direct dereference after the transition;
+5. optional chaining and non-null assertion recognized separately;
+6. assigned/returned results remain unknown rather than being guessed unsafe;
+7. return-contract findings feed reliability capability/risk surfaces;
+8. real-map usage inventory retains result-use distributions;
+9. return-contract-only methods are treated as known usage;
+10. official provenance is stored in the Script API knowledge catalog.
 
 Next priority:
 
-1. add return-shape/type-contract migrations where official evidence and static usage make them observable;
-2. model options-object field migrations only when real maps use the affected APIs and field access can be proven safely;
-3. expand signature rules from production-map call-shape frequency, not broad API enumeration;
-4. correlate incompatible call shapes with Minecraft update regression evidence;
-5. continue execution-privilege checks for inferred receiver methods/properties;
-6. keep semantic behavior changes with identical syntax in a separate runtime/differential evidence lane.
+1. add bounded guarded-flow analysis for locally assigned optional results only when null/undefined guards are structurally obvious;
+2. model options-object field migrations where real map usage and official changelog evidence justify it;
+3. add type-only/imported type lifecycle intelligence for removed classes/interfaces/aliases;
+4. expand return-contract rules from production-map usage frequency rather than broad API enumeration;
+5. correlate return-contract exposure with Minecraft update regression evidence;
+6. keep semantic behavior changes with identical syntax in runtime/differential lanes.
 
-Call-shape migration is source-verified. Return-shape and deep options-object contract migration are now the largest Script API static-analysis blindspots.
+Direct return-contract analysis is source-verified. Deep guarded-flow and object-shape migration remain the largest Script API static-analysis blindspots.

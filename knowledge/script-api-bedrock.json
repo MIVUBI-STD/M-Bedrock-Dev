@@ -833,6 +833,34 @@
         "script-signature",
         "script-version"
       ]
+    },
+    {
+      "id": "script.return.entity-get-component-optional-1.18",
+      "domain": "script-api",
+      "subject": "Entity.getComponent",
+      "statement": "In @minecraft/server 1.18.0, Entity.getComponent changed from EntityComponent to EntityComponentReturnType<T> | undefined, so direct dereference without a guard can be unsafe.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.18.0"
+        }
+      },
+      "sourceIds": [
+        "ms-server-changelog",
+        "ms-entity-current"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-return-contract"
+      ],
+      "riskSurfaces": [
+        "script-return-optional",
+        "script-version"
+      ]
     }
   ]
 }
