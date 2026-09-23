@@ -165,8 +165,14 @@ function isVerification(call: ScriptMethodCall): boolean {
 
 function isDependent(call: ScriptMethodCall): boolean {
   return (
-    (call.receiverType === "Entity" || call.receiverType === "Player") &&
-    call.method === "teleport"
+    (
+      (call.receiverType === "Entity" || call.receiverType === "Player") &&
+      call.method === "teleport"
+    ) ||
+    (
+      call.receiverType === "Dimension" &&
+      call.method === "spawnEntity"
+    )
   );
 }
 
