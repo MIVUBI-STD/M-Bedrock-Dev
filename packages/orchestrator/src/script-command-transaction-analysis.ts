@@ -23,6 +23,7 @@ import {
 
 export type ScriptCommandMutationOrderingStatus =
   | "verified-before-dependent"
+  | "dependent-before-verification"
   | "verification-unresolved"
   | "no-dependent-action";
 
@@ -52,6 +53,7 @@ export interface ScriptCommandMutationAssessment {
   applyLiteral: ScriptCommandLiteral;
   dependentLiteral?: ScriptCommandLiteral;
   dependentLabel?: string;
+  verificationLiteral?: ScriptCommandLiteral;
   status: ScriptCommandMutationOrderingStatus;
   barriers: readonly TimelineEntry[];
 }
@@ -317,6 +319,23 @@ function dependentIsGatedVerification(
   return point !== undefined && inside(bounds, point);
 }
 
+function verificationMatchesApply(
+  apply: ScriptCommandLiteral,
+  candidate: ScriptCommandLiteral,
+  structures: readonly ParsedStructureSummary[],
+): boolean {
+  const bounds = mutationBounds(apply, structures);
+  if (!bounds) return false;
+
+  const verification = parseBlockVerificationSemantics(
+    candidate.command,
+  );
+  if (!verification?.gatesDependentCommand) return false;
+
+  const point = absolute(verification.position);
+  return point !== undefined && inside(bounds, point);
+}
+
 function executableCommandLiterals(
   script: ParsedScriptFile,
 ): ScriptCommandLiteral[] {
@@ -528,6 +547,27 @@ export function analyzeScriptCommandMutationTransactions(
             structures,
           );
 
+        let lateVerification: ScriptCommandLiteral | undefined;
+        if (!verified) {
+          const afterDependent = segment.slice(dependentIndex + 1);
+          for (let offset = 0; offset < afterDependent.length; offset += 1) {
+            const candidate = afterDependent[offset]!;
+            const prior = afterDependent.slice(0, offset);
+            if (prior.some((item) => item.kind !== "command")) break;
+            if (
+              candidate.kind === "command" &&
+              verificationMatchesApply(
+                applyEntry.literal,
+                candidate.literal,
+                structures,
+              )
+            ) {
+              lateVerification = candidate.literal;
+              break;
+            }
+          }
+        }
+
         output.push({
           id,
           scriptId: script.identifier,
@@ -539,9 +579,14 @@ export function analyzeScriptCommandMutationTransactions(
               dependent,
               dependentContracts,
             ) ?? "unknown",
+          ...(lateVerification === undefined
+            ? {}
+            : { verificationLiteral: lateVerification }),
           status: verified
             ? "verified-before-dependent"
-            : "verification-unresolved",
+            : lateVerification
+              ? "dependent-before-verification"
+              : "verification-unresolved",
           barriers,
         });
       }
@@ -587,6 +632,23 @@ export function scriptCommandMutationRuntimeEvidence(
         ],
         note:
           "The dependent action is inside a gated block verification command.",
+      });
+    } else if (
+      item.status === "dependent-before-verification" &&
+      item.verificationLiteral
+    ) {
+      records.push({
+        predicate: "script-verification-before-dependent-action",
+        state: "absent",
+        confidence: "derived",
+        scope,
+        sourceRefs: [
+          item.applyLiteral.source,
+          item.dependentLiteral.source,
+          item.verificationLiteral.source,
+        ],
+        note:
+          "A matching gated block verification occurs only after the dependent action.",
       });
     }
   }
