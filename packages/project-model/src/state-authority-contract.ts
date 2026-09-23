@@ -25,3 +25,14 @@ export interface StateAuthorityContract {
 export function stateSurfaceKey(surface: StateSurfaceRef): string {
   return surface.kind + ":" + surface.key;
 }
+
+
+export type StateObservedValue = string | number | boolean | null;
+
+export interface StateValueObservation {
+  surface: StateSurfaceRef;
+  scopeKey: string;
+  value: StateObservedValue;
+  revision?: number;
+  sourceRefs?: readonly SourceRef[];
+}
