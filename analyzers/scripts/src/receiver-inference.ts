@@ -225,6 +225,7 @@ function methodReturnType(
   if (receiver === "World" && method === "getDimension") return "Dimension";
   if (receiver === "Dimension" && method === "getEntities") return "Entity[]";
   if (receiver === "Dimension" && method === "getPlayers") return "Player[]";
+  if (receiver === "Dimension" && method === "getBlock") return "Block";
   if (receiver === "Scoreboard" && method === "getObjective") {
     return "ScoreboardObjective";
   }
@@ -404,7 +405,70 @@ function assignedResultUse(
   return safe ? "guarded-assigned" : "assigned";
 }
 
+function callIsGuardCondition(call: ts.CallExpression): boolean {
+  let current: ts.Node = call;
+  let parent = current.parent;
+
+  while (
+    parent &&
+    (
+      ts.isParenthesizedExpression(parent) ||
+      ts.isPrefixUnaryExpression(parent) ||
+      ts.isBinaryExpression(parent)
+    )
+  ) {
+    current = parent;
+    parent = parent.parent;
+  }
+
+  if (parent && ts.isIfStatement(parent) && parent.expression === current) {
+    return true;
+  }
+  if (
+    parent &&
+    ts.isConditionalExpression(parent) &&
+    parent.condition === current
+  ) {
+    return true;
+  }
+  if (
+    parent &&
+    (ts.isWhileStatement(parent) || ts.isDoStatement(parent)) &&
+    parent.expression === current
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function executionRegionId(
+  node: ts.Node,
+  file: ts.SourceFile,
+): string {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (ts.isFunctionDeclaration(current)) {
+      return current.name
+        ? "function:" + current.name.text
+        : "function@" + lineSource(file, current, {
+            artifactId: "",
+            relativePath: file.fileName,
+          }).range?.lineStart;
+    }
+    if (
+      ts.isArrowFunction(current) ||
+      ts.isFunctionExpression(current)
+    ) {
+      const start = file.getLineAndCharacterOfPosition(current.getStart(file));
+      return "callback@" + (start.line + 1) + ":" + (start.character + 1);
+    }
+    current = current.parent;
+  }
+  return "module";
+}
+
 function methodResultUse(call: ts.CallExpression): ScriptMethodResultUse {
+  if (callIsGuardCondition(call)) return "guard-condition";
   const parent = call.parent;
 
   if (ts.isPropertyAccessExpression(parent) && parent.expression === call) {
@@ -571,6 +635,8 @@ export function inferScriptMethodCalls(
       method,
       symbol: canonicalMethodSymbol(receiver, method),
       inference: direct ? "direct" : "bounded",
+      receiverHint: receiverExpression.getText(file),
+      executionRegion: executionRegionId(call, file),
       argumentCount: call.arguments.length,
       argumentKinds: call.arguments.map((argument) => argumentKind(argument)),
       hasSpreadArgument: call.arguments.some(ts.isSpreadElement),
