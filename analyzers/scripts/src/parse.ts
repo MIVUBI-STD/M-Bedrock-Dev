@@ -301,6 +301,7 @@ function scanRestrictedMutations(
         if (rule && !occupied.has(key)) {
           output.push({
             root,
+            context,
             event,
             method,
             symbol,
@@ -324,6 +325,7 @@ function scanRestrictedMutations(
         if (rule && !occupied.has(key)) {
           output.push({
             root,
+            context,
             event,
             method,
             symbol,
