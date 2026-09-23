@@ -75,6 +75,44 @@ describe("script runtime evidence", () => {
     )).toBe(false);
   });
 
+  it("bridges literal runCommand commands into command evidence", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+        import { world } from "@minecraft/server";
+        const dimension = world.getDimension("overworld");
+        const player = world.getAllPlayers()[0];
+        dimension.runCommand("fill 0 64 0 1 65 1 minecraft:stone");
+        player.runCommandAsync("tp @s 5 65 5");
+      `,
+      source,
+    );
+
+    const records = scriptRuntimeEvidence(parsed);
+    expect(records).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        predicate: "script-command-execution-request",
+        state: "present",
+      }),
+      expect.objectContaining({
+        predicate: "block-write",
+        state: "present",
+      }),
+      expect.objectContaining({
+        predicate: "world-mutation-request",
+        state: "present",
+      }),
+      expect.objectContaining({
+        predicate: "teleport-apply",
+        state: "present",
+      }),
+    ]));
+
+    const block = records.find((item) => item.predicate === "block-write");
+    const teleport = records.find((item) => item.predicate === "teleport-apply");
+    expect(block?.scope?.operationId).not.toBe(teleport?.scope?.operationId);
+  });
+
   it("emits durable-state and deferred-work evidence without claiming completion", () => {
     const parsed = parseScriptFile(
       "scripts/main",
