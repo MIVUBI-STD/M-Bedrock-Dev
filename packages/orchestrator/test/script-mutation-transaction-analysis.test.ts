@@ -89,7 +89,7 @@ describe("script mutation transaction analysis", () => {
     expect(reasoning.violations).toBe(0);
   });
 
-  it("keeps teleport before a later same-block guard as an informational evidence gap", () => {
+  it("promotes teleport before a later same-block guard to a proven ordering violation", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
       const dimension = world.getDimension("overworld");
@@ -113,9 +113,9 @@ describe("script mutation transaction analysis", () => {
       scriptMutationTransactionRuntimeEvidence(assessments),
       [script],
     );
-    expect(reasoning.violations).toBe(0);
-    expect(reasoning.evidenceGaps).toBe(1);
-    expect(reasoning.diagnostics[0]?.severity).toBe("info");
+    expect(reasoning.violations).toBe(1);
+    expect(reasoning.evidenceGaps).toBe(0);
+    expect(reasoning.diagnostics[0]?.severity).toBe("medium");
   });
 
   it("treats Dimension.spawnEntity as dependent work gated by the same block verification", () => {
@@ -140,7 +140,7 @@ describe("script mutation transaction analysis", () => {
     }));
   });
 
-  it("keeps spawnEntity before a later verification unresolved rather than inventing a hard failure", () => {
+  it("classifies spawnEntity before a later verification as a late-verification candidate", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
       const dimension = world.getDimension("overworld");
