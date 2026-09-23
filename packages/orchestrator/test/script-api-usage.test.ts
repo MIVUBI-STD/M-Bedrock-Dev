@@ -249,6 +249,27 @@ describe("Script API usage inventory", () => {
     });
   });
 
+  it("keeps bundled singleton aliases canonical in usage inventory", () => {
+    const usage = deriveScriptApiUsage([
+      parse("bundle/scripts/main.js", `
+        import { world as world13, system as system8 } from "@minecraft/server";
+        world13.afterEvents.playerSpawn.subscribe(() => {});
+        system8.afterEvents.scriptEventReceive.subscribe(() => {});
+        world13.getDimension("overworld");
+      `),
+    ]);
+
+    expect(usage.symbols).toEqual(expect.arrayContaining([
+      expect.objectContaining({ symbol: "world.afterEvents.playerSpawn" }),
+      expect.objectContaining({ symbol: "system.afterEvents.scriptEventReceive" }),
+      expect.objectContaining({
+        symbol: "world.getDimension",
+        directOccurrences: 1,
+      }),
+    ]));
+    expect(usage.symbols.some((item) => item.symbol.startsWith("unknown."))).toBe(false);
+  });
+
   it("ranks portfolio promotion candidates by real map coverage before raw frequency", () => {
     const mapA = deriveScriptApiUsage([
       parse("a/scripts/main.js", `

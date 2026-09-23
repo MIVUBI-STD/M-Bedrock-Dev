@@ -60,6 +60,45 @@ function childScope(parent?: Scope): Scope {
     : { values: new Map<string, ReceiverValueType>() };
 }
 
+function minecraftSingletonBindings(
+  file: ts.SourceFile,
+): Map<string, ScriptApiReceiverType> {
+  const output = new Map<string, ScriptApiReceiverType>([
+    ["world", "World"],
+    ["system", "System"],
+  ]);
+
+  for (const statement of file.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteralLike(statement.moduleSpecifier) ||
+      statement.moduleSpecifier.text !== "@minecraft/server"
+    ) {
+      continue;
+    }
+
+    const named = statement.importClause?.namedBindings;
+    if (!named || !ts.isNamedImports(named)) continue;
+
+    for (const element of named.elements) {
+      const importedName = element.propertyName?.text ?? element.name.text;
+      if (importedName === "world") output.set(element.name.text, "World");
+      if (importedName === "system") output.set(element.name.text, "System");
+    }
+  }
+
+  return output;
+}
+
+function seedMinecraftSingletons(
+  scope: Scope,
+  bindings: ReadonlyMap<string, ScriptApiReceiverType>,
+): void {
+  for (const [localName, receiver] of bindings) {
+    scope.values.set(localName, receiver);
+  }
+}
+
 function lookup(scope: Scope, name: string): ReceiverValueType | undefined {
   let current: Scope | undefined = scope;
   while (current) {
@@ -454,6 +493,7 @@ function inferFunctionReturns(
 ): Map<string, ReceiverValueType> {
   const output = new Map<string, ReceiverValueType>();
   const root = childScope();
+  seedMinecraftSingletons(root, minecraftSingletonBindings(file));
 
   for (const statement of file.statements) {
     if (!ts.isFunctionDeclaration(statement) || !statement.name) continue;
@@ -472,7 +512,9 @@ export function inferScriptMethodCalls(
 ): ScriptMethodCall[] {
   const calls: ScriptMethodCall[] = [];
   const functionReturns = inferFunctionReturns(file);
+  const singletonBindings = minecraftSingletonBindings(file);
   const rootScope = childScope();
+  seedMinecraftSingletons(rootScope, singletonBindings);
 
   const recordCall = (
     call: ts.CallExpression,
@@ -488,8 +530,7 @@ export function inferScriptMethodCalls(
     const method = call.expression.name.text;
     const direct =
       ts.isIdentifier(receiverExpression) &&
-      ((receiverExpression.text === "world" && receiver === "World") ||
-        (receiverExpression.text === "system" && receiver === "System"));
+      singletonBindings.get(receiverExpression.text) === receiver;
 
     calls.push({
       receiverType: receiver,
@@ -623,7 +664,9 @@ export function inferScriptPropertyAccesses(
 ): ScriptPropertyAccess[] {
   const accesses: ScriptPropertyAccess[] = [];
   const functionReturns = inferFunctionReturns(file);
+  const singletonBindings = minecraftSingletonBindings(file);
   const rootScope = childScope();
+  seedMinecraftSingletons(rootScope, singletonBindings);
 
   const recordProperty = (
     node: ts.PropertyAccessExpression,
@@ -649,8 +692,7 @@ export function inferScriptPropertyAccesses(
 
     const direct =
       ts.isIdentifier(receiverExpression) &&
-      ((receiverExpression.text === "world" && receiver === "World") ||
-        (receiverExpression.text === "system" && receiver === "System"));
+      singletonBindings.get(receiverExpression.text) === receiver;
 
     accesses.push({
       receiverType: receiver,
@@ -794,7 +836,9 @@ export function inferScriptPropertyWrites(
 ): ScriptPropertyWrite[] {
   const writes: ScriptPropertyWrite[] = [];
   const functionReturns = inferFunctionReturns(file);
+  const singletonBindings = minecraftSingletonBindings(file);
   const rootScope = childScope();
+  seedMinecraftSingletons(rootScope, singletonBindings);
 
   const record = (
     access: ts.PropertyAccessExpression,

@@ -602,9 +602,17 @@ export function parseScriptFile(
         const root = chain[0];
         const phase = chain[1];
         const event = chain[2];
+        const rootBinding = root ? namedMinecraftBindings.get(root) : undefined;
+        const canonicalRoot =
+          rootBinding &&
+          (rootBinding.importedName === "world" || rootBinding.importedName === "system")
+            ? rootBinding.importedName
+            : root;
 
         const normalizedRoot: ScriptEventSubscription["root"] =
-          root === "world" || root === "system" ? root : "unknown";
+          canonicalRoot === "world" || canonicalRoot === "system"
+            ? canonicalRoot
+            : "unknown";
         const normalizedPhase: ScriptEventSubscription["phase"] =
           phase === "beforeEvents" || phase === "afterEvents" ? phase : "unknown";
 

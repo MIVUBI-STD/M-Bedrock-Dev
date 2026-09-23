@@ -43,6 +43,56 @@ system.afterEvents.scriptEventReceive.subscribe(() => {});
     ]));
   });
 
+  it("canonicalizes aliased world/system imports used by bundled scripts", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world as world8, system as system5 } from "@minecraft/server";
+
+world8.afterEvents.playerSpawn.subscribe(() => {});
+system5.afterEvents.scriptEventReceive.subscribe(() => {});
+world8.getDimension("overworld");
+system5.runInterval(() => {}, 1);
+const board = world8.scoreboard;
+`,
+      source,
+    );
+
+    expect(parsed.events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        root: "world",
+        phase: "afterEvents",
+        event: "playerSpawn",
+      }),
+      expect.objectContaining({
+        root: "system",
+        phase: "afterEvents",
+        event: "scriptEventReceive",
+      }),
+    ]));
+
+    expect(parsed.methodCalls).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "world.getDimension",
+        inference: "direct",
+        root: "world",
+      }),
+      expect.objectContaining({
+        symbol: "system.runInterval",
+        inference: "direct",
+        root: "system",
+      }),
+    ]));
+
+    expect(parsed.propertyAccesses).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "world.scoreboard",
+        inference: "direct",
+        root: "world",
+      }),
+    ]));
+  });
+
   it("extracts direct world and system method symbols without guessing nested receiver types", () => {
     const parsed = parseScriptFile(
       "scripts/main",
