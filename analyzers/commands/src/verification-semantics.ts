@@ -6,6 +6,7 @@ export interface BlockVerificationSemantics {
   position: Coordinate3;
   expectedBlock: string;
   mechanism: "testforblock" | "execute-if-block";
+  gatesDependentCommand: boolean;
 }
 
 export function parseBlockVerificationSemantics(
@@ -23,6 +24,7 @@ export function parseBlockVerificationSemantics(
         position,
         expectedBlock,
         mechanism: "testforblock",
+        gatesDependentCommand: false,
       };
     }
     return undefined;
@@ -38,10 +40,15 @@ export function parseBlockVerificationSemantics(
   const expectedBlock = tokens[ifIndex + 5];
   if (!position || !expectedBlock) return undefined;
 
+  const runIndex = tokens.findIndex(
+    (token, index) => index > ifIndex + 5 && token.toLowerCase() === "run",
+  );
+
   return {
     kind: "block",
     position,
     expectedBlock,
     mechanism: "execute-if-block",
+    gatesDependentCommand: runIndex >= 0 && runIndex < tokens.length - 1,
   };
 }
