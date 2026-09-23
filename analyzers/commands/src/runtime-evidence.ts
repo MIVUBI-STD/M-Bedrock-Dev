@@ -48,6 +48,14 @@ function evidenceFromEffect(effect: CommandEffect): RuntimeEvidenceRecord[] {
         observed("teleport-apply-request", effect),
         observed("teleport-apply", effect),
       ];
+    case "entity-spawn":
+      return [
+        observed(
+          "entity-spawn-request",
+          effect,
+          "Entity: " + effect.entityIdentifier,
+        ),
+      ];
     case "function-call":
       return [observed("function-call", effect, "Function target: " + effect.target)];
     case "dialogue":
