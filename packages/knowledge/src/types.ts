@@ -31,6 +31,7 @@ export type KnowledgeDomain =
   | "event-ordering"
   | "state-authority"
   | "player-life"
+  | "command-context"
   | "education";
 
 export type KnowledgeRelationKind =
