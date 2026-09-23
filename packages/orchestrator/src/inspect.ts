@@ -56,6 +56,7 @@ import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.
 import { embeddedCommandStateIdentifiers, populateEmbeddedStructureCommandGraph } from "./embedded-structure-graph.js";
 import { createDialogueSceneNodes, dialogueStateIdentifiers, populateDialogueCommandGraph, type DialogueGraphDocument } from "./dialogue-graph.js";
 import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
+import { deriveScriptApiUsage } from "./script-api-usage.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -542,6 +543,10 @@ export async function inspectDirectory(
     return normalized.includes("/db/");
   });
 
+  const scriptApiUsage = deriveScriptApiUsage(
+    parsedScripts.map((item) => item.parsed),
+  );
+
   const reliability = deriveReliabilityFingerprint({
     mapId: artifactId,
     ...(sourceFingerprint ? { artifactFingerprint: sourceFingerprint } : {}),
@@ -565,6 +570,7 @@ export async function inspectDirectory(
     packs,
     functions: nodes.filter((node) => node.kind === "function").length,
     scripts: nodes.filter((node) => node.kind === "script_file").length,
+    scriptApiUsage,
     structures: nodes.filter((node) => node.kind === "structure").length,
     parsedStructures,
     entities: parsedEntities.length,

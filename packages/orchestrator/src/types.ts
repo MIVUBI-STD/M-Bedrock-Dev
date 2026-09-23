@@ -3,6 +3,7 @@ import type { EducationFeatureState } from "../../compatibility/src/education.js
 import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/types.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
+import type { ScriptApiUsageInventory } from "./script-api-usage.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -29,6 +30,7 @@ export interface InspectDirectoryResult {
   packs: InspectedPack[];
   functions: number;
   scripts: number;
+  scriptApiUsage: ScriptApiUsageInventory;
   structures: number;
   parsedStructures: number;
   entities: number;

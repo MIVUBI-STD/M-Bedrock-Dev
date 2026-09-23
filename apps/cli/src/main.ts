@@ -3,9 +3,11 @@ import { compareArtifacts } from "../../../packages/orchestrator/src/compare-art
 import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/version-aware-comparison.js";
 import { inspectArtifact } from "../../../packages/orchestrator/src/inspect-artifact.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/load.js";
+import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/script-api-usage.js";
 
 async function main(): Promise<void> {
-  const [, , command, input, secondInput, thirdInput] = process.argv;
+  const [, , command, ...args] = process.argv;
+  const [input, secondInput, thirdInput] = args;
   const knowledge = await loadKnowledgeDirectory(resolve("knowledge"));
 
   if (command === "inspect" && input) {
@@ -15,6 +17,20 @@ async function main(): Promise<void> {
     if (result.diagnostics.some((finding) => finding.severity === "critical")) {
       process.exitCode = 1;
     }
+    return;
+  }
+
+  if (command === "script-usage" && args.length > 0) {
+    const maps = [];
+    for (const artifactPath of args) {
+      const result = await inspectArtifact(resolve(artifactPath), {}, knowledge);
+      maps.push({
+        mapId: result.artifactId,
+        label: artifactPath,
+        usage: result.scriptApiUsage,
+      });
+    }
+    console.log(JSON.stringify(aggregateScriptApiUsage(maps), null, 2));
     return;
   }
 
@@ -45,6 +61,7 @@ async function main(): Promise<void> {
   console.error([
     "Usage:",
     "  npm run cli -- inspect <path-to-mcworld-or-zip>",
+    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...]",
     "  npm run cli -- compare <before-mcworld> <after-mcworld>",
     "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version>",
   ].join("\n"));
