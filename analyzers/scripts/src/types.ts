@@ -37,12 +37,29 @@ export type ScriptApiReceiverType =
   | "ScoreboardObjective"
   | "PlayerInputPermissions";
 
+export type ScriptArgumentKind =
+  | "number"
+  | "string"
+  | "boolean"
+  | "object"
+  | "array"
+  | "identifier"
+  | "call"
+  | "property"
+  | "function"
+  | "null"
+  | "spread"
+  | "other";
+
 export interface ScriptMethodCall {
   receiverType: ScriptApiReceiverType;
   root?: "world" | "system";
   method: string;
   symbol: string;
   inference: "direct" | "bounded";
+  argumentCount: number;
+  argumentKinds: ScriptArgumentKind[];
+  hasSpreadArgument: boolean;
   source: SourceRef;
 }
 

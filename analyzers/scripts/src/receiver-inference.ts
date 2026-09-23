@@ -2,6 +2,7 @@ import ts from "typescript";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type {
   ScriptApiReceiverType,
+  ScriptArgumentKind,
   ScriptMethodCall,
   ScriptPropertyAccess,
 } from "./types.js";
@@ -134,6 +135,27 @@ function methodReturnType(
   return undefined;
 }
 
+function argumentKind(node: ts.Expression): ScriptArgumentKind {
+  if (ts.isNumericLiteral(node)) return "number";
+  if (ts.isStringLiteralLike(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    return "string";
+  }
+  if (node.kind === ts.SyntaxKind.TrueKeyword || node.kind === ts.SyntaxKind.FalseKeyword) {
+    return "boolean";
+  }
+  if (node.kind === ts.SyntaxKind.NullKeyword) return "null";
+  if (ts.isObjectLiteralExpression(node)) return "object";
+  if (ts.isArrayLiteralExpression(node)) return "array";
+  if (ts.isIdentifier(node)) return "identifier";
+  if (ts.isCallExpression(node)) return "call";
+  if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
+    return "property";
+  }
+  if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) return "function";
+  if (ts.isSpreadElement(node)) return "spread";
+  return "other";
+}
+
 function canonicalMethodSymbol(
   receiver: ScriptApiReceiverType,
   method: string,
@@ -260,6 +282,9 @@ export function inferScriptMethodCalls(
       method,
       symbol: canonicalMethodSymbol(receiver, method),
       inference: direct ? "direct" : "bounded",
+      argumentCount: call.arguments.length,
+      argumentKinds: call.arguments.map((argument) => argumentKind(argument)),
+      hasSpreadArgument: call.arguments.some(ts.isSpreadElement),
       source: lineSource(file, call, source),
     });
   };

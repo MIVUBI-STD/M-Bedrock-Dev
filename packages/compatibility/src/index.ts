@@ -10,3 +10,4 @@ export * from "./script-method-matrix.js";
 export * from "./script-lifecycle.js";
 export * from "./script-property-matrix.js";
 export * from "./script-enum-matrix.js";
+export * from "./script-signature-matrix.js";
