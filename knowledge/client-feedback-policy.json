@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-client-feedback-policy-v1",
+      "title": "MIVUBI Client Feedback and Presentation Lifecycle Policy v1",
+      "url": "project://knowledge/client-feedback-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "feedback-policy.presentation-is-mirror",
+      "domain": "client-feedback",
+      "subject": "visual/audio feedback authority",
+      "statement": "Titles, actionbars, particles, sounds, music, animations, render-state indicators, and lobby visual markers are presentation mirrors, not gameplay authority. Gameplay logic must not infer authoritative arena state solely from whether feedback is visible or playing.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "presentation",
+        "state-authority"
+      ],
+      "riskSurfaces": [
+        "visual-as-authority",
+        "client-desync"
+      ]
+    },
+    {
+      "id": "feedback-policy.feedback-owner",
+      "domain": "client-feedback",
+      "subject": "feedback ownership",
+      "statement": "Gameplay-relevant feedback should be owned by player/session or arena generation plus feedbackGeneration and purpose, so stale callbacks cannot overwrite newer titles, music, particles, animations, or status indicators.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "generation-token",
+        "feedback"
+      ],
+      "riskSurfaces": [
+        "stale-feedback",
+        "cross-round-visual"
+      ]
+    },
+    {
+      "id": "feedback-policy.status-indicator-derived",
+      "domain": "client-feedback",
+      "subject": "arena status indicator",
+      "statement": "Lobby indicators such as empty/connecting/occupied colors must be derived from authoritative arena state and updated through a single renderer/mirror path. Visual blocks/entities must not independently decide the arena state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "lobby-status",
+        "mirror"
+      ],
+      "riskSurfaces": [
+        "missing-indicator",
+        "wrong-color",
+        "split-brain"
+      ]
+    },
+    {
+      "id": "feedback-policy.renderer-reconcile",
+      "domain": "client-feedback",
+      "subject": "feedback reconciliation",
+      "statement": "When authoritative state changes, feedback should converge through an idempotent renderer that can repair missing or stale presentation without mutating the underlying gameplay authority.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "renderer",
+        "reconciliation"
+      ],
+      "riskSurfaces": [
+        "visual-drift",
+        "duplicate-feedback"
+      ]
+    },
+    {
+      "id": "feedback-policy.animation-condition-matches-authority",
+      "domain": "client-feedback",
+      "subject": "animation controller transitions",
+      "statement": "Animation-controller conditions and Molang queries used for gameplay-significant visual states must map to current authoritative or intentionally mirrored entity properties. A visual controller should not encode an independent second state machine that can diverge from gameplay.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "animation-controller",
+        "state-mirror"
+      ],
+      "riskSurfaces": [
+        "animation-state-drift",
+        "dual-authority"
+      ]
+    },
+    {
+      "id": "feedback-policy.loop-stop-contract",
+      "domain": "client-feedback",
+      "subject": "looping audio/animation feedback",
+      "statement": "Looping or long-lived feedback requires an explicit stop/reset contract for arena end, player disconnect, cinematic abort, respawn, and generation replacement. Start-without-stop is a lifecycle defect.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "loop",
+        "cleanup"
+      ],
+      "riskSurfaces": [
+        "sound-leak",
+        "animation-leak"
+      ]
+    },
+    {
+      "id": "feedback-policy.title-purpose-arbitration",
+      "domain": "client-feedback",
+      "subject": "title/actionbar ownership",
+      "statement": "If multiple systems can write title/actionbar feedback, use purpose/priority arbitration or dedicated channels where possible; unrelated systems must not silently overwrite critical gameplay messages.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "title",
+        "arbitration"
+      ],
+      "riskSurfaces": [
+        "message-overwrite",
+        "lost-warning"
+      ]
+    },
+    {
+      "id": "feedback-policy.scope-targeting",
+      "domain": "client-feedback",
+      "subject": "feedback audience",
+      "statement": "Arena-specific feedback must target the current participant/audience set explicitly. Broad @a sound/title/particle/camera-adjacent feedback is prohibited unless intentionally global.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "selector-scope",
+        "audience"
+      ],
+      "riskSurfaces": [
+        "cross-arena-feedback",
+        "privacy-of-state"
+      ]
+    },
+    {
+      "id": "feedback-policy.visual-postcondition",
+      "domain": "client-feedback",
+      "subject": "feedback verification",
+      "statement": "For gameplay-critical presentation such as lobby occupancy markers, ready indicators, objective markers, or cinematic cues, define observable postconditions and repair paths so server-state success is not assumed to imply presentation success.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "verification",
+        "presentation"
+      ],
+      "riskSurfaces": [
+        "missing-visual",
+        "client-mirror-failure"
+      ]
+    },
+    {
+      "id": "feedback-policy.world-mutation-rebuilds-indicators",
+      "domain": "client-feedback",
+      "subject": "world-based visual indicators",
+      "statement": "If status indicators are implemented using blocks/entities restored by structures, world mutation/reset must rebuild and re-render their current authoritative state afterward rather than assuming restored visuals are already correct.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "world-mutation",
+        "visual-indicator"
+      ],
+      "riskSurfaces": [
+        "indicator-reset-to-default",
+        "wrong-lobby-state"
+      ]
+    },
+    {
+      "id": "feedback-policy.client-load-reconstruct",
+      "domain": "client-feedback",
+      "subject": "late join/reload visual reconstruction",
+      "statement": "Feedback systems should support reconstruction when a client joins, reloads, or newly observes an entity. Long-lived visual state must be derivable from current authority/mirrors rather than depending only on a one-time historical event.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "late-join",
+        "reconstruct"
+      ],
+      "riskSurfaces": [
+        "join-missing-indicator",
+        "animation-default-stuck"
+      ]
+    },
+    {
+      "id": "feedback-policy.version-sensitive-animation",
+      "domain": "client-feedback",
+      "subject": "animation compatibility",
+      "statement": "Animation/Molang/controller behavior that depends on format/platform semantics must be linked to the compatibility runtime profile and revalidated after Minecraft updates before visual regressions are blamed solely on gameplay logic.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ],
+      "capabilityTags": [
+        "compatibility",
+        "animation"
+      ],
+      "riskSurfaces": [
+        "update-visual-regression",
+        "wrong-root-cause"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "feedback-policy.relation-authority-produces-feedback",
+      "domain": "client-feedback",
+      "subject": "authoritative-gameplay-state",
+      "kind": "produces",
+      "object": "presentation-mirror-state",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ]
+    },
+    {
+      "id": "feedback-policy.relation-reset-restores-feedback-baseline",
+      "domain": "client-feedback",
+      "subject": "arena-cleanup",
+      "kind": "restores",
+      "object": "presentation-baseline",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ]
+    },
+    {
+      "id": "feedback-policy.relation-world-mutation-requires-rerender",
+      "domain": "client-feedback",
+      "subject": "indicator-affecting-world-mutation",
+      "kind": "requires",
+      "object": "presentation-rerender-from-authority",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-client-feedback-policy-v1"
+      ]
+    }
+  ]
+}
