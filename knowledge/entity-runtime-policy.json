@@ -375,6 +375,24 @@
       "sourceIds": [
         "mivubi-entity-runtime-policy-v1"
       ]
+    },
+    {
+      "id": "ai-policy.relation-route-mutation-requires-revalidation",
+      "domain": "entity-runtime",
+      "subject": "route-affecting-world-mutation",
+      "kind": "requires",
+      "object": "route-revalidation",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-runtime-policy-v1"
+      ],
+      "diagnosticSeverity": "medium"
     }
   ]
 }
