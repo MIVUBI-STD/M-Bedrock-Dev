@@ -603,6 +603,7 @@ export async function inspectDirectory(
   const mutationTransactions = analyzeMutationTransactionOrdering(
     parsedFunctionModels,
     structureProofs,
+    target.mutationDependentActions ?? [],
   );
   const scriptMutationTransactions = analyzeScriptMutationTransactions(
     parsedScripts.map((item) => item.parsed),
