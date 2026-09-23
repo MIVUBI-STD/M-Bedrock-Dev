@@ -465,6 +465,26 @@ export function scriptMutationTransactionRuntimeEvidence(
   const records: RuntimeEvidenceRecord[] = [];
 
   for (const item of assessments) {
+    if (
+      item.status === "verification-unresolved" &&
+      item.barriers.length > 0
+    ) {
+      records.push({
+        predicate: "transaction-order-proof-incomplete",
+        state: "present",
+        confidence: "derived",
+        scope: { operationId: item.id },
+        sourceRefs: [
+          item.applyCall.source,
+          ...item.barriers.map((barrier) =>
+            barrier.kind === "method" ? barrier.call.source : barrier.source
+          ),
+        ],
+        note:
+          "Script mutation ordering is blocked by recursive or depth-limited local calls.",
+      });
+    }
+
     if (!item.dependentCall) continue;
     const scope = { operationId: item.id };
 
