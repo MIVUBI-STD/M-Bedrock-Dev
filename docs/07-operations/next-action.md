@@ -1,25 +1,23 @@
 # Next Action
 
-Mutation testing now feeds an actionable blindspot backlog.
+Reliability Search now has portfolio-level blindspot aggregation and adaptive operator budgeting.
 
 Implemented:
 
-1. Script API event drop mutation;
-2. event rename mutation;
-3. duplicate event subscription mutation;
-4. dynamic-property id substitution;
-5. AST-based script event/property detector comparison;
-6. multi-function graph mutation using the real SemanticGraph;
-7. automatic BlindspotTask generation from survived mutants;
-8. strategy suggestions and P0/P1/P2 backlog priority;
-9. command mutation campaign now returns blindspotTasks;
-10. script mutation campaign now returns blindspotTasks.
+1. operator effectiveness across campaigns/maps;
+2. per-domain kill/survival history;
+3. deduplicated blindspot aggregation;
+4. recurrence counts and map spread;
+5. adaptive increase/maintain/decrease search-budget recommendations;
+6. bounded operator weights;
+7. reliability-search history snapshot model;
+8. orchestrated portfolio builder.
 
 Next high-value work:
 
-1. domain-specific minimization for surviving source/script/timing mutations;
-2. aggregate blindspot tasks across campaigns and deduplicate by operator/domain/evidence;
-3. add mutation operator effectiveness history so low-value operators do not waste search budget;
-4. add dynamic invariant mining only after known-good trace corpus and campaign history are large enough.
+1. persist campaign history as append-only evidence records;
+2. domain-specific minimization for source/script/timing failures;
+3. automatic targeted-search task generation from high-priority aggregated blindspots;
+4. only then start dynamic invariant mining from known-good traces and compare mined candidates against mutation-survival history.
 
-Survived mutants are detector-gap evidence, not automatic proof of a real gameplay bug.
+Do not delete high-kill operators entirely; retain low-frequency sentinel mutations to detect future regressions in the detector itself.

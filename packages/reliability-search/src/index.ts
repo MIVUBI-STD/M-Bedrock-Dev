@@ -1,3 +1,5 @@
+export * from "./blindspot-aggregate.js";
+export * from "./blindspot-history.js";
 export * from "./blindspot-tasks.js";
 export * from "./bounded-explorer.js";
 export * from "./corpus.js";
@@ -7,9 +9,11 @@ export * from "./interleaving.js";
 export * from "./minimize.js";
 export * from "./mutation-runner.js";
 export * from "./mutation-types.js";
+export * from "./operator-effectiveness.js";
 export * from "./runtime-corpus.js";
 export * from "./runtime-coverage.js";
 export * from "./script-mutations.js";
+export * from "./search-budget.js";
 export * from "./session-bounded-domain.js";
 export * from "./session-domain.js";
 export * from "./session-footprints.js";
