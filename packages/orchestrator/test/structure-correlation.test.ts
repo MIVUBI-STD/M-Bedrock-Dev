@@ -20,6 +20,8 @@ describe("structure load correlation", () => {
         hasBlockPositionData: true,
         commandBlockPaletteEntries: 1,
         containerPaletteEntries: 1,
+        embeddedCommandBlocks: 1,
+        queuedTickPositions: 0,
       },
     }]);
 
