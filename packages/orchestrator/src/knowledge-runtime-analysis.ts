@@ -45,6 +45,7 @@ export function resolveInspectionKnowledgeProfile(
 ): InspectionKnowledgeProfileResolution {
   const conflicts: string[] = [];
   const modules = new Map<string, string>();
+  const conflictedModules = new Set<string>();
   let educationMetadata = false;
 
   for (const manifest of manifests) {
@@ -58,9 +59,11 @@ export function resolveInspectionKnowledgeProfile(
         conflicts.push(
           "Conflicting script module versions for " + name + ": " + existing + " vs " + version,
         );
+        conflictedModules.add(name);
+        modules.delete(name);
         continue;
       }
-      modules.set(name, version);
+      if (!conflictedModules.has(name)) modules.set(name, version);
     }
   }
 
@@ -95,21 +98,19 @@ function validationCasesForSnapshot(
   snapshot: RuntimeEvidenceSnapshot,
 ): ValidationCase[] {
   const cases: ValidationCase[] = [];
-  for (const records of groupRuntimeEvidenceByScope(snapshot).values()) {
+  for (const [scopeKey, records] of groupRuntimeEvidenceByScope(snapshot)) {
     const { map } = mergeRuntimeEvidenceRecords(records);
-    cases.push(...validationPlanFromAssessments(
+    for (const item of validationPlanFromAssessments(
       assessKnowledgeRelations(catalog, profile, map),
-    ));
-  }
-
-  const deduped = new Map<string, ValidationCase>();
-  for (const item of cases) {
-    const existing = deduped.get(item.id);
-    if (!existing || (existing.priority !== "high" && item.priority === "high")) {
-      deduped.set(item.id, item);
+    )) {
+      cases.push({
+        ...item,
+        id: item.id + "::" + scopeKey,
+      });
     }
   }
-  return [...deduped.values()].sort((a, b) => a.id.localeCompare(b.id));
+
+  return cases.sort((a, b) => a.id.localeCompare(b.id));
 }
 
 export function analyzeKnowledgeRuntime(
