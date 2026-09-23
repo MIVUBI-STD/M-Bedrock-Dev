@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-events-guide",
+      "title": "Working With Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/events?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-system-run-guide",
+      "title": "Game Loops and Timed Callbacks - a system.run Guide",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/system-run-guide?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-system-current",
+      "title": "System Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/system?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-system-before-events-current",
+      "title": "SystemBeforeEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/systembeforeevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-execution-privilege-current",
+      "title": "Scripting Execution Privilege",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/execution-privilege?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-events-current",
+      "title": "Entity Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entityevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-properties-current",
+      "title": "Introduction to Entity Properties",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/introductiontoentityproperties?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-scripting-v2-current",
+      "title": "Scripting V2 Overview",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/v2-overview?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "tick.before-events-restricted",
+      "domain": "event-ordering",
+      "subject": "beforeEvents execution privilege",
+      "statement": "Before-event handlers run before the underlying action and generally use restricted execution, so gameplay-state mutation APIs may fail or be unavailable there.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-system-before-events-current", "ms-execution-privilege-current"],
+      "capabilityTags": ["before-events", "restricted-execution"],
+      "riskSurfaces": ["execution-privilege", "event-ordering", "mutation-timing"]
+    },
+    {
+      "id": "tick.system-run-context-dependent",
+      "domain": "event-ordering",
+      "subject": "system.run scheduling",
+      "statement": "system.run schedules work for the next available future time. From an event handler it commonly executes near the end of that tick, while from an existing system.run callback it is queued for a following tick; exact same-tick versus next-tick timing is not guaranteed under load.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-system-current", "ms-system-run-guide"],
+      "capabilityTags": ["system.run", "deferred-callback"],
+      "riskSurfaces": ["timing-assumption", "tick-ordering", "race-condition"]
+    },
+    {
+      "id": "tick.runinterval-zero-is-next-tick-cadence",
+      "domain": "event-ordering",
+      "subject": "system.runInterval",
+      "statement": "system.runInterval with tick interval 0 behaves effectively like interval 1; it does not create an infinitely re-entrant same-tick callback loop.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-system-run-guide"],
+      "capabilityTags": ["system.runInterval"],
+      "riskSurfaces": ["scheduler-semantics", "performance"]
+    },
+    {
+      "id": "tick.runjob-not-event-deferral",
+      "domain": "event-ordering",
+      "subject": "system.runJob",
+      "statement": "system.runJob is intended for long-running cooperative work spread over ticks and is not an event-deferral primitive with a precise completion tick.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-system-run-guide"],
+      "capabilityTags": ["system.runJob", "cooperative-work"],
+      "riskSurfaces": ["timing-assumption", "partial-progress", "watchdog"]
+    },
+    {
+      "id": "tick.entity-event-apply-on-entity-tick",
+      "domain": "event-ordering",
+      "subject": "entity event mutation visibility",
+      "statement": "Entity event effects are determined when the event is received but component-group/property changes are applied when that entity next ticks server-side, so immediate reads may observe the pre-event state.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-entity-events-current", "ms-entity-properties-current"],
+      "capabilityTags": ["entity-events", "entity-properties"],
+      "riskSurfaces": ["read-after-write", "tick-ordering", "state-observability"]
+    },
+    {
+      "id": "tick.entity-sequence-does-not-see-pending-change",
+      "domain": "event-ordering",
+      "subject": "entity event sequence",
+      "statement": "Later filters or entries in the same entity event sequence do not necessarily observe component/property changes queued by earlier entries in that sequence.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-entity-events-current", "ms-entity-properties-current"],
+      "capabilityTags": ["entity-event-sequence"],
+      "riskSurfaces": ["same-event-read-after-write", "state-observability"]
+    },
+    {
+      "id": "tick.cross-entity-event-order-variable",
+      "domain": "event-ordering",
+      "subject": "cross-entity event",
+      "statement": "When one entity sends an event to another, the target effect may occur in the same game tick or the next depending on target update order.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-entity-events-current"],
+      "capabilityTags": ["cross-entity-event"],
+      "riskSurfaces": ["cross-entity-ordering", "timing-assumption", "multiplayer-concurrency"]
+    },
+    {
+      "id": "tick.worldload-boundary-for-root-state",
+      "domain": "event-ordering",
+      "subject": "worldLoad boundary",
+      "statement": "Scripting V2 requires APIs unavailable in early execution/root context to be deferred until worldLoad or later; module/root evaluation is not equivalent to world-ready execution.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-scripting-v2-current"],
+      "capabilityTags": ["worldLoad", "early-execution"],
+      "riskSurfaces": ["load-order", "startup-race"]
+    },
+    {
+      "id": "tick.currentTick-is-observation-not-transaction",
+      "domain": "event-ordering",
+      "subject": "system.currentTick",
+      "statement": "system.currentTick identifies the current world tick, but matching tick numbers do not imply two callbacks share a single atomic transaction or observe identical mutable state.",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-system-current", "ms-system-run-guide"],
+      "capabilityTags": ["system.currentTick", "transaction-boundary"],
+      "riskSurfaces": ["false-atomicity", "multiplayer-concurrency"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "tick.relation.before-event-requires-deferral-for-mutation",
+      "domain": "event-ordering",
+      "subject": "restricted-before-event-mutation",
+      "kind": "fallbacks-to",
+      "object": "deferred-default-execution",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-execution-privilege-current", "ms-events-guide"]
+    },
+    {
+      "id": "tick.relation.entity-event-delayed-until-entity-tick",
+      "domain": "event-ordering",
+      "subject": "entity-event-effect",
+      "kind": "delayed-until-tick",
+      "object": "target-entity-server-tick",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-entity-events-current", "ms-entity-properties-current"]
+    },
+    {
+      "id": "tick.relation-worldload-gates-world-state",
+      "domain": "event-ordering",
+      "subject": "world-ready-state-access",
+      "kind": "gates",
+      "object": "worldLoad-or-later",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-scripting-v2-current"]
+    }
+  ]
+}
