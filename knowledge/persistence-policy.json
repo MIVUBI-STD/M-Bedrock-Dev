@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-persistence-policy-v1",
+      "title": "MIVUBI Persistence and Crash Recovery Policy v1",
+      "url": "project://knowledge/persistence-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "persistence-policy.journal-before-sideeffect",
+      "domain": "persistence",
+      "subject": "durable transaction journal",
+      "statement": "For critical persistent/world mutations, write a durable intent/journal record before non-idempotent side effects and advance the journal phase as work progresses so recovery can distinguish PREPARED, APPLYING, VERIFIED, COMMITTED, and RECOVERING states.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["journal", "transaction-recovery"],
+      "riskSurfaces": ["half-commit", "crash-recovery"]
+    },
+    {
+      "id": "persistence-policy.committed-state-minimal",
+      "domain": "persistence",
+      "subject": "durable state scope",
+      "statement": "Persist only state that must survive runtime loss. Transient session state, timers, Player references, pending callbacks, active forms, and reviver handles must be reconstructed or invalidated rather than serialized as live authority.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["durability-scope", "transient-state"],
+      "riskSurfaces": ["stale-session", "invalid-handle", "state-resurrection"]
+    },
+    {
+      "id": "persistence-policy.schema-version",
+      "domain": "persistence",
+      "subject": "persistent schema",
+      "statement": "Every durable record set must carry a schemaVersion and, where needed, migrationVersion so recovery never interprets old serialized state with new runtime semantics silently.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["schema-version", "migration"],
+      "riskSurfaces": ["upgrade-regression", "misread-state"]
+    },
+    {
+      "id": "persistence-policy.boot-generation",
+      "domain": "persistence",
+      "subject": "runtime boot identity",
+      "statement": "Each world/script recovery cycle should create a new bootGeneration. Durable records from prior boots are treated as recovery evidence, not current in-memory ownership.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["boot-generation", "ownership"],
+      "riskSurfaces": ["stale-owner", "orphan-operation"]
+    },
+    {
+      "id": "persistence-policy.reconcile-not-resume",
+      "domain": "persistence",
+      "subject": "recovery semantics",
+      "statement": "After worldLoad, recover by reconciling durable intent with actual world/entity/player state. Do not blindly resume timers, callbacks, countdowns, revive transactions, or structure mutations from serialized transient progress.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["reconciliation", "restart"],
+      "riskSurfaces": ["double-apply", "stale-callback", "duplicate-countdown"]
+    },
+    {
+      "id": "persistence-policy.idempotent-recovery",
+      "domain": "persistence",
+      "subject": "recovery action",
+      "statement": "Recovery actions must be idempotent or generation-guarded because worldLoad/reload recovery may be retried. Re-running recovery must converge rather than duplicate entities, rewards, structures, or state transitions.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["idempotency", "recovery"],
+      "riskSurfaces": ["duplicate-entity", "duplicate-reward", "double-apply"]
+    },
+    {
+      "id": "persistence-policy.world-vs-player-scope",
+      "domain": "persistence",
+      "subject": "durable scope",
+      "statement": "World-durable, player-durable, arena-durable, and transaction-journal records must use distinct keyspaces/scopes. Player reconnect recovery must not infer arena authority from unrelated world-global durable state.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["scope", "keyspace"],
+      "riskSurfaces": ["cross-player-state", "cross-arena-state"]
+    },
+    {
+      "id": "persistence-policy.commit-marker-last",
+      "domain": "persistence",
+      "subject": "commit marker",
+      "statement": "A durable COMMITTED marker must be written only after required world/state verification succeeds. Writing COMMITTED before verification creates false recovery certainty after a crash.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["commit-marker", "verification"],
+      "riskSurfaces": ["false-commit", "half-commit"]
+    },
+    {
+      "id": "persistence-policy.orphan-reconciliation",
+      "domain": "persistence",
+      "subject": "orphan resource recovery",
+      "statement": "On worldLoad, enumerate pack-owned temporary resources and runtime artifacts such as ticking-area leases, arena mutation journals, critical entity registries, and pending cleanup markers; adopt valid current state, remove stale state, and repair accounting.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["orphan-recovery", "worldLoad"],
+      "riskSurfaces": ["orphan-lease", "duplicate-entity", "resource-leak"]
+    },
+    {
+      "id": "persistence-policy.player-reconnect-durable-filter",
+      "domain": "persistence",
+      "subject": "player reconnect",
+      "statement": "Reconnect recovery may restore durable progression/configuration but must explicitly discard or reconcile stale round/session fields such as ready, downed, revive, pending teleport, UI ownership, and countdown participation.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["reconnect", "durability-filter"],
+      "riskSurfaces": ["ghost-ready", "revive-leak", "stale-teleport"]
+    },
+    {
+      "id": "persistence-policy.recovery-budget",
+      "domain": "persistence",
+      "subject": "recovery scheduler",
+      "statement": "Recovery loops must be bounded by attempt/time/work budgets with explicit terminal diagnostics. Crash recovery must not create a new watchdog failure through unbounded scans or retries.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"],
+      "capabilityTags": ["watchdog", "bounded-recovery"],
+      "riskSurfaces": ["recovery-loop", "watchdog"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "persistence-policy.relation-journal-gates-sideeffect",
+      "domain": "persistence",
+      "subject": "durable-intent-record",
+      "kind": "gates",
+      "object": "non-idempotent-side-effect",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"]
+    },
+    {
+      "id": "persistence-policy.relation-worldload-activates-recovery",
+      "domain": "persistence",
+      "subject": "worldLoad",
+      "kind": "activates",
+      "object": "recovery-reconciliation",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"]
+    },
+    {
+      "id": "persistence-policy.relation-verify-gates-commit-marker",
+      "domain": "persistence",
+      "subject": "verified-recovered-state",
+      "kind": "gates",
+      "object": "durable-COMMITTED-marker",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-persistence-policy-v1"]
+    }
+  ]
+}
