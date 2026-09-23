@@ -1,44 +1,37 @@
 # Current Validation
 
-Status: SOURCE VERIFICATION GREEN; PRODUCTION MAP EVIDENCE PENDING
+Status: REMOTE STATIC SOURCE GREEN; PRODUCTION/RUNTIME PROOF PENDING
 
 Latest source-bearing verification on 2026-09-23:
 
-- commit `37245a16d8cee5aa5053bbad8875420063a10e5f` completed the full Verify workflow successfully;
-- repository policy and source-boundary verification passed;
+- commit `605299ae72052c53ef8a202beebafbb32054367d` completed the full Verify workflow successfully;
+- repository policy passed;
+- source boundaries passed;
 - TypeScript `tsc --noEmit` passed;
 - the full Vitest suite passed.
 
-Recently proven source capabilities include:
-
-- event/method/property/enum Script API intelligence;
-- deprecated/removed lifecycle diagnostics;
-- call-shape/signature migration diagnostics;
-- method result-use classification;
-- version-aware optional return-contract analysis;
-- lifecycle/call-shape/result-use distributions in real-map usage inventory;
-- Script API ↔ Minecraft update correlation;
-- analyzer-independent compatibility contracts.
-
-Current source proof:
+Source-verified Script API capabilities now include lifecycle, type/namespace imports, signature migration, return contracts with local guards, property mutability writes, enum backing-value migration, receiver-aware restricted execution, usage/portfolio intelligence, and update correlation.
 
 ```text
 repository policy   VERIFIED
 source boundaries   VERIFIED
 typecheck           VERIFIED
 Vitest              VERIFIED
-source-bearing head 37245a16d8cee5aa5053bbad8875420063a10e5f
+source-bearing head 605299ae72052c53ef8a202beebafbb32054367d
 ```
 
-Still not proven:
+Documentation/provenance-only commits after the source-bearing head are validated independently to avoid self-referential SHA churn.
 
-- guarded downstream optional-result flow;
-- deep options-object field migrations;
-- type-only symbol lifecycle coverage;
-- representative production-map return-contract exposure;
-- genuine Minecraft-loadable mcworld acceptance;
-- production-map diagnosis quality;
-- local Minecraft runtime behavior;
-- live multiplayer/runtime behavior.
+## Remaining proof lanes
 
-These remain separate static-analysis, production-artifact, LOCAL GAME, and LIVE GAME proof lanes.
+These are not unfinished remote-static architecture tasks:
+
+- representative production-map coverage and diagnosis quality;
+- genuine Minecraft `.mcworld` import/load acceptance;
+- target-build runtime behavior;
+- entity AI/event timing;
+- chunk/load/saved-tick behavior;
+- live multiplayer/session interleavings;
+- update-specific semantic changes with identical source syntax.
+
+They require production artifacts, local game execution, or controlled runtime/differential evidence.

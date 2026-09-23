@@ -208,6 +208,54 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-block-current",
+      "title": "Block Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/block?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-item-stack-current",
+      "title": "ItemStack Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemstack?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-block-permutation-current",
+      "title": "BlockPermutation Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/blockpermutation?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-player-input-permissions-current",
+      "title": "PlayerInputPermissions Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playerinputpermissions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-camera-default-options-1xx",
+      "title": "CameraDefaultOptions Interface (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/cameradefaultoptions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-camera-ease-options-1xx",
+      "title": "CameraEaseOptions Interface (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/cameraeaseoptions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -860,6 +908,148 @@
       "riskSurfaces": [
         "script-return-optional",
         "script-version"
+      ]
+    },
+    {
+      "id": "script.return.component-getters-optional-1.18",
+      "domain": "script-api",
+      "subject": "Block.getComponent / ItemStack.getComponent / BlockPermutation.getState",
+      "statement": "The @minecraft/server 1.18.0 changelog changes Block.getComponent, ItemStack.getComponent, and BlockPermutation.getState to return values that may be undefined.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.18.0"
+        }
+      },
+      "sourceIds": [
+        "ms-server-changelog",
+        "ms-block-current",
+        "ms-item-stack-current",
+        "ms-block-permutation-current"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-return-contract"
+      ],
+      "riskSurfaces": [
+        "script-return-optional",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle.legacy-types-removed-2.0",
+      "domain": "script-api",
+      "subject": "legacy @minecraft/server imported types",
+      "statement": "The @minecraft/server 2.0.0 migration removes multiple legacy event, signal, camera option, component, and dimension type symbols; prior 1.x documentation provides legacy declarations where available.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.0.0"
+        }
+      },
+      "sourceIds": [
+        "ms-server-changelog",
+        "ms-camera-default-options-1xx",
+        "ms-camera-ease-options-1xx"
+      ],
+      "capabilityTags": [
+        "script-type",
+        "script-deprecated",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.property.component-values-readonly-2.0",
+      "domain": "script-api",
+      "subject": "entity component value mutability",
+      "statement": "The @minecraft/server 2.0.0 changelog makes several entity component value properties read-only, including friction modifier, mark variant, push through, scale, and skin id component values.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.0.0"
+        }
+      },
+      "sourceIds": [
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-property",
+        "script-property-mutability"
+      ],
+      "riskSurfaces": [
+        "script-readonly-write",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.enum.block-component-fluid-container-value-2.0",
+      "domain": "script-api",
+      "subject": "BlockComponentTypes.FluidContainer",
+      "statement": "The @minecraft/server 2.0.0 changelog changes the BlockComponentTypes.FluidContainer backing value from minecraft:fluidContainer to minecraft:fluid_container.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.0.0"
+        }
+      },
+      "sourceIds": [
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-enum",
+        "script-enum-value-migration"
+      ],
+      "riskSurfaces": [
+        "script-enum-backing-value",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.execution.receiver-restricted-operations",
+      "domain": "script-api",
+      "subject": "restricted-execution receiver operations",
+      "statement": "Current @minecraft/server documentation marks multiple World, Dimension, Entity, Player, and PlayerInputPermissions mutating operations as unavailable in restricted-execution contexts.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-script-execution-privilege",
+        "ms-world-current",
+        "ms-dimension-current",
+        "ms-entity-current",
+        "ms-player-current",
+        "ms-player-input-permissions-current"
+      ],
+      "capabilityTags": [
+        "script-restricted-execution",
+        "script-method",
+        "script-property"
+      ],
+      "riskSurfaces": [
+        "script-execution-privilege"
       ]
     }
   ]

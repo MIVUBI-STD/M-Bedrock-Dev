@@ -1,27 +1,29 @@
 # Next Action
 
-Script API intelligence now includes bounded return-contract migration analysis.
+Remote static `@minecraft/server` compatibility architecture is source-complete for the current evidence-backed migration set.
 
-Implemented:
+Completed:
 
-1. deterministic method result-use classification;
-2. analyzer-independent return-contract compatibility matrix;
-3. `Entity.getComponent` optional-return transition at `@minecraft/server 1.18.0`;
-4. `SCRIPT_API_RETURN_CONTRACT_RISK` for direct dereference after the transition;
-5. optional chaining and non-null assertion recognized separately;
-6. assigned/returned results remain unknown rather than being guessed unsafe;
-7. return-contract findings feed reliability capability/risk surfaces;
-8. real-map usage inventory retains result-use distributions;
-9. return-contract-only methods are treated as known usage;
-10. official provenance is stored in the Script API knowledge catalog.
+1. module/version and prerelease compatibility;
+2. method/event/property/enum/type lifecycle;
+3. bounded receiver, named-import, and namespace-import inference;
+4. method signature/call-shape migration;
+5. optional return contracts plus bounded local guard flow;
+6. property mutability/write migration;
+7. enum backing-value migration;
+8. receiver-aware restricted execution, including restricted custom-command callbacks;
+9. real-map usage and cross-map portfolio distributions;
+10. Minecraft update/regression correlation.
 
-Next priority:
+Do not add another generalized static subsystem without new evidence.
 
-1. add bounded guarded-flow analysis for locally assigned optional results only when null/undefined guards are structurally obvious;
-2. model options-object field migrations where real map usage and official changelog evidence justify it;
-3. add type-only/imported type lifecycle intelligence for removed classes/interfaces/aliases;
-4. expand return-contract rules from production-map usage frequency rather than broad API enumeration;
-5. correlate return-contract exposure with Minecraft update regression evidence;
-6. keep semantic behavior changes with identical syntax in runtime/differential lanes.
+Next phase:
 
-Direct return-contract analysis is source-verified. Deep guarded-flow and object-shape migration remain the largest Script API static-analysis blindspots.
+1. run `script-usage` over representative production maps and retain distributions;
+2. run version-aware comparison on real pre/post-update artifacts;
+3. promote only observed unclassified symbols with official provenance;
+4. add object-field rules only when production usage plus official field-level evidence exists;
+5. validate real `.mcworld` import/load behavior;
+6. validate entity/chunk/timing/multiplayer/runtime behavior in separate local/live proof lanes.
+
+The next work is production validation and evidence ingestion, not speculative static expansion.
