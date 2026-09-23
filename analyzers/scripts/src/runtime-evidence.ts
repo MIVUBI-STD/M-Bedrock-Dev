@@ -29,6 +29,7 @@ function methodEvidence(call: ScriptMethodCall): RuntimeEvidenceRecord[] {
 
   if (call.receiverType === "Entity" && call.method === "teleport") {
     records.push(observed("teleport-apply-request", call.source, call.symbol));
+    records.push(observed("teleport-apply", call.source, call.symbol));
   }
   if (call.receiverType === "Entity" && call.method === "applyKnockback") {
     records.push(observed("gameplay-knockback-request", call.source, call.symbol));
