@@ -11,6 +11,7 @@ export interface InvariantIntelligenceInput {
   knownGoodSnapshots: readonly RuntimeObservationSnapshot[];
   historicalFailureSnapshots?: readonly RuntimeObservationSnapshot[];
   campaignHistory?: readonly CampaignHistoryRecord[];
+  currentMinecraftVersion?: string;
   options?: InvariantMiningOptions;
 }
 
@@ -26,17 +27,18 @@ export function buildInvariantIntelligence(
     {
       historicalFailures: input.historicalFailureSnapshots,
       campaignHistory: input.campaignHistory,
+      currentMinecraftVersion: input.currentMinecraftVersion,
     },
   );
 
-  const candidates = challenged.map((candidate) => ({
-    candidate,
-    promotion: draftInvariantPromotion(candidate),
-  }));
-
   return {
     observations: mined.observations,
-    candidates,
+    distinctStates: mined.distinctStates,
+    minecraftVersions: mined.minecraftVersions,
+    candidates: challenged.map((candidate) => ({
+      candidate,
+      promotion: draftInvariantPromotion(candidate),
+    })),
     rejected: mined.rejected,
   };
 }

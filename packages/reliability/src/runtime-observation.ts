@@ -23,6 +23,7 @@ export interface ArenaObservation {
 export interface EntityObservation {
   entityId: string;
   typeId: string;
+  dimension?: string;
   tags?: readonly string[];
   position?: { x: number; y: number; z: number };
   alive?: boolean;
@@ -46,5 +47,5 @@ export interface RuntimeObservationSnapshot {
   arenas: readonly ArenaObservation[];
   entities?: readonly EntityObservation[];
   chunks?: readonly ChunkObservation[];
-  metadata?: Readonly<Record<string, string | number | boolean>>;
+  metadata?: Readonly<Record<string, unknown>>;
 }

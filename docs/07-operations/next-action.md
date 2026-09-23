@@ -1,25 +1,24 @@
 # Next Action
 
-Dynamic invariant mining is now available as a conservative candidate-generation layer.
+Invariant mining is now diversity-aware, transition-aware, entity-aware and Minecraft-version scoped.
 
 Implemented:
 
-1. mining from known-good RuntimeObservationSnapshot traces;
-2. support/antecedent/counterexample accounting;
-3. confidence calculation;
-4. immediate rejection on known-good counterexample;
-5. historical-failure challenge;
-6. mutation-survivor challenge;
-7. candidate/supported/challenged/rejected lifecycle;
-8. promotion drafts only for unchallenged supported candidates;
-9. no automatic writes to the durable Invariant Registry.
+1. semantic snapshot diversity hashing;
+2. distinct-state support threshold;
+3. player tag → scoreboard relation mining;
+4. playing-progress transition mining;
+5. entity arena-tag consistency mining;
+6. configured entity-in-arena spatial relation mining;
+7. Minecraft-version evidence tracking;
+8. stale status when a supported candidate lacks evidence on the current Minecraft version;
+9. promotion blocked for stale/challenged candidates.
 
 Next high-value work:
 
-1. extend invariant mining to score/tag/entity spatial relations;
-2. add trace diversity metrics so repeated identical snapshots do not create misleading support;
-3. correlate candidate invariants with semantic coverage buckets;
-4. mine transition invariants, not only state relations;
-5. add candidate aging/version scoping so Minecraft updates can invalidate stale mined assumptions.
+1. add semantic-coverage correlation so candidates must be supported across meaningful coverage buckets, not only diverse raw states;
+2. add cross-map support/contradiction tracking for project-generic candidates;
+3. add candidate aging and revalidation policy after update deltas touch related capabilities;
+4. then stop expanding framework breadth and focus future work on detector gaps revealed by real campaign evidence.
 
-Do not auto-promote mined invariants.
+Do not infer arena geometry; spatial invariant mining requires explicit configured regions.

@@ -218,22 +218,16 @@ export function captureBedrockRuntimeState(
     }
 
     for (const entity of found) {
-      const tags = safeTags(
-        entity.id,
-        () => entity.getTags(),
-        issues,
-        "entity-tags-failed",
-      );
-
+      const tags = safeTags(entity.id, () => entity.getTags(), issues, "entity-tags-failed");
+      const arenaId = arenaFromTags(tags, query.arenaTagPrefix);
       entities.push({
         entityId: entity.id,
         typeId: entity.typeId,
+        dimension: query.dimension,
         tags,
         ...(entity.location ? { position: { ...entity.location } } : {}),
         alive: true,
-        ...(arenaFromTags(tags, query.arenaTagPrefix)
-          ? { arenaId: arenaFromTags(tags, query.arenaTagPrefix) }
-          : {}),
+        ...(arenaId ? { arenaId } : {}),
       });
     }
   }
@@ -244,9 +238,7 @@ export function captureBedrockRuntimeState(
     entities,
     tick: system.currentTick,
     ...(config.minecraftVersion ? { minecraftVersion: config.minecraftVersion } : {}),
-    ...(config.artifactFingerprint
-      ? { artifactFingerprint: config.artifactFingerprint }
-      : {}),
+    ...(config.artifactFingerprint ? { artifactFingerprint: config.artifactFingerprint } : {}),
     issues,
   };
 }
@@ -257,9 +249,7 @@ export function rawCaptureMetadata(
   return {
     tick: capture.tick,
     ...(capture.minecraftVersion ? { minecraftVersion: capture.minecraftVersion } : {}),
-    ...(capture.artifactFingerprint
-      ? { artifactFingerprint: capture.artifactFingerprint }
-      : {}),
+    ...(capture.artifactFingerprint ? { artifactFingerprint: capture.artifactFingerprint } : {}),
     ...(capture.entities.length > 0 ? { entities: capture.entities } : {}),
     metadata: {
       captureIssueCount: capture.issues.length,

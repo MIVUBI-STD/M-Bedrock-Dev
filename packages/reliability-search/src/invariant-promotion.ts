@@ -26,58 +26,23 @@ export function draftInvariantPromotion(
     source: "project" as const,
   };
 
-  switch (candidate.kind) {
-    case "player-phase-implies-connected":
-      return {
-        candidateId: candidate.id,
-        eligible: true,
-        reason: "Candidate is supported and unchallenged.",
-        invariant: {
-          ...base,
-          id: "candidate.player-phase-implies-connected",
-          title: "Active session phase implies connected player",
-          description: candidate.description,
-          tags: ["candidate", "player", "connection", "phase"],
-        },
-      };
-    case "player-phase-implies-arena":
-      return {
-        candidateId: candidate.id,
-        eligible: true,
-        reason: "Candidate is supported and unchallenged.",
-        invariant: {
-          ...base,
-          id: "candidate.player-phase-implies-arena",
-          title: "Active session phase implies arena assignment",
-          description: candidate.description,
-          tags: ["candidate", "player", "arena", "phase"],
-        },
-      };
-    case "arena-cutscene-implies-starting-player":
-      return {
-        candidateId: candidate.id,
-        eligible: true,
-        reason: "Candidate is supported and unchallenged.",
-        invariant: {
-          ...base,
-          id: "candidate.arena-cutscene-implies-starting-player",
-          title: "Arena cutscene implies starting player",
-          description: candidate.description,
-          tags: ["candidate", "arena", "cutscene", "starting"],
-        },
-      };
-    case "disconnected-implies-zero-progress":
-      return {
-        candidateId: candidate.id,
-        eligible: true,
-        reason: "Candidate is supported and unchallenged.",
-        invariant: {
-          ...base,
-          id: "candidate.disconnected-implies-zero-progress",
-          title: "Disconnected player has zero active progress",
-          description: candidate.description,
-          tags: ["candidate", "disconnect", "progress"],
-        },
-      };
-  }
+  const id = `candidate.${candidate.kind}.${candidate.id.slice(-8)}`;
+  return {
+    candidateId: candidate.id,
+    eligible: true,
+    reason: "Candidate is supported, diverse enough, version-current, and unchallenged.",
+    invariant: {
+      ...base,
+      id,
+      title: candidate.description,
+      description: candidate.description,
+      tags: [
+        "candidate",
+        candidate.kind,
+        ...Object.entries(candidate.parameters ?? {}).map(([key, value]) =>
+          `${key}=${String(value)}`,
+        ),
+      ],
+    },
+  };
 }

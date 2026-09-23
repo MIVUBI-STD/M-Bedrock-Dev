@@ -11,6 +11,7 @@ import type {
 export interface InvariantChallengeInput {
   historicalFailures?: readonly RuntimeObservationSnapshot[];
   campaignHistory?: readonly CampaignHistoryRecord[];
+  currentMinecraftVersion?: string;
 }
 
 function mutationOperatorsForCandidate(
@@ -25,6 +26,14 @@ function mutationOperatorsForCandidate(
       return ["shared-cutscene-lock", "phase-skip", "timing-shift"];
     case "disconnected-implies-zero-progress":
       return ["disconnect-preserve-progress", "reset-preserve-progress"];
+    case "player-tag-implies-score":
+      return ["tag-filter-omit", "scoreboard-objective-substitution"];
+    case "playing-progress-nondecreasing":
+      return ["reset-preserve-progress", "timing-shift"];
+    case "entity-arena-tag-consistency":
+      return ["tag-filter-omit"];
+    case "entity-within-arena-region":
+      return ["coordinate-shift", "timing-shift"];
   }
 }
 
@@ -40,9 +49,7 @@ function snapshotContradicts(
         player.phase &&
         ["assigned", "starting", "playing", "completed"].includes(player.phase) &&
         !player.connected
-      ) {
-        evidence.push(`tick=${snapshot.tick ?? "?"},player=${player.playerId}`);
-      }
+      ) evidence.push(`tick=${snapshot.tick ?? "?"},player=${player.playerId}`);
     }
   }
 
@@ -52,9 +59,7 @@ function snapshotContradicts(
         player.phase &&
         ["assigned", "starting", "playing", "completed"].includes(player.phase) &&
         !player.arenaId
-      ) {
-        evidence.push(`tick=${snapshot.tick ?? "?"},player=${player.playerId}`);
-      }
+      ) evidence.push(`tick=${snapshot.tick ?? "?"},player=${player.playerId}`);
     }
   }
 
@@ -107,6 +112,22 @@ export function challengeMinedInvariants(
     }
 
     const uniqueChallenges = [...new Set(challenges)].sort();
+
+    if (
+      input.currentMinecraftVersion &&
+      candidate.minecraftVersions.length > 0 &&
+      !candidate.minecraftVersions.includes(input.currentMinecraftVersion)
+    ) {
+      return {
+        ...candidate,
+        status: candidate.status === "supported" ? "stale" : candidate.status,
+        challengeEvidence: [
+          ...uniqueChallenges,
+          `version-stale:mined=${candidate.minecraftVersions.join(",")}:current=${input.currentMinecraftVersion}`,
+        ].sort(),
+      };
+    }
+
     return {
       ...candidate,
       status: uniqueChallenges.length > 0 && candidate.status === "supported"

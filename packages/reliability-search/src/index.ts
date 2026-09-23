@@ -11,6 +11,7 @@ export * from "./history-log.js";
 export * from "./history-storage.js";
 export * from "./interleaving.js";
 export * from "./invariant-challenge.js";
+export * from "./invariant-diversity.js";
 export * from "./invariant-miner.js";
 export * from "./invariant-mining-types.js";
 export * from "./invariant-promotion.js";
