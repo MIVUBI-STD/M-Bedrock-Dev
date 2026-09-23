@@ -46,6 +46,7 @@ export type KnowledgeDomain =
   | "automation"
   | "entity-population"
   | "effects"
+  | "cinematic"
   | "education";
 
 export type KnowledgeRelationKind =
