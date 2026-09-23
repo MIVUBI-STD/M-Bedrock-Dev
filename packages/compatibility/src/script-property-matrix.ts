@@ -10,6 +10,12 @@ export interface ScriptPropertySymbolRule {
 
 export const SCRIPT_PROPERTY_SYMBOL_RULES: readonly ScriptPropertySymbolRule[] = [
   {
+    id: "script-property.player-input-permissions",
+    moduleName: "@minecraft/server",
+    symbol: "Player.inputPermissions",
+    sourceIds: ["ms-player-current"],
+  },
+  {
     id: "script-property.player-input-camera-enabled-legacy",
     moduleName: "@minecraft/server",
     symbol: "PlayerInputPermissions.cameraEnabled",

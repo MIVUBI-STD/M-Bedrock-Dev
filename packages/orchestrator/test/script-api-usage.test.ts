@@ -27,7 +27,7 @@ describe("Script API usage inventory", () => {
       `),
     ]);
 
-    expect(usage.totalOccurrences).toBe(5);
+    expect(usage.totalOccurrences).toBe(6);
     expect(usage.symbols).toEqual(expect.arrayContaining([
       expect.objectContaining({
         symbol: "world.getDimension",
@@ -75,6 +75,41 @@ describe("Script API usage inventory", () => {
         lifecycle: expect.objectContaining({
           removedIn: "2.0.0",
         }),
+      }),
+    ]));
+  });
+
+  it("inventories property and enum lifecycle symbols without losing replacements", () => {
+    const usage = deriveScriptApiUsage([
+      parse("legacy/scripts/main.js", `
+        import { world, GameMode as GM } from "@minecraft/server";
+        const player = world.getAllPlayers()[0];
+        player.inputPermissions.cameraEnabled;
+        const oldMode = GM.adventure;
+        const newMode = GM.Adventure;
+      `),
+    ]);
+
+    expect(usage.symbols).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "property",
+        symbol: "PlayerInputPermissions.cameraEnabled",
+        knowledge: "known",
+        lifecycle: expect.objectContaining({ removedIn: "2.0.0" }),
+      }),
+      expect.objectContaining({
+        kind: "enum",
+        symbol: "GameMode.adventure",
+        knowledge: "known",
+        lifecycle: expect.objectContaining({
+          removedIn: "2.0.0",
+          replacement: "GameMode.Adventure",
+        }),
+      }),
+      expect.objectContaining({
+        kind: "enum",
+        symbol: "GameMode.Adventure",
+        knowledge: "known",
       }),
     ]));
   });

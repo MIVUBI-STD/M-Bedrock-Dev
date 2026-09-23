@@ -30,6 +30,20 @@ describe("Script API symbol lifecycle", () => {
     ).state).toBe("removed");
   });
 
+  it("supports removed-without-prior-deprecation transitions", () => {
+    expect(evaluateScriptSymbolLifecycle({
+      removedIn: "2.0.0",
+      replacement: "GameMode.Adventure",
+      sourceIds: ["official"],
+    }, "1.19.0", "stable").state).toBe("active");
+
+    expect(evaluateScriptSymbolLifecycle({
+      removedIn: "2.0.0",
+      replacement: "GameMode.Adventure",
+      sourceIds: ["official"],
+    }, "2.0.0", "stable").state).toBe("removed");
+  });
+
   it("does not guess when the module track is unknown", () => {
     expect(evaluateScriptSymbolLifecycle(
       lifecycle,

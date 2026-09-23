@@ -12,6 +12,38 @@ export interface ScriptEnumMemberRule {
 
 export const SCRIPT_ENUM_MEMBER_RULES: readonly ScriptEnumMemberRule[] = [
   {
+    id: "script-enum-gamemode-adventure",
+    moduleName: "@minecraft/server",
+    enumName: "GameMode",
+    member: "Adventure",
+    symbol: "GameMode.Adventure",
+    sourceIds: ["ms-server-changelog"],
+  },
+  {
+    id: "script-enum-gamemode-creative",
+    moduleName: "@minecraft/server",
+    enumName: "GameMode",
+    member: "Creative",
+    symbol: "GameMode.Creative",
+    sourceIds: ["ms-server-changelog"],
+  },
+  {
+    id: "script-enum-gamemode-spectator",
+    moduleName: "@minecraft/server",
+    enumName: "GameMode",
+    member: "Spectator",
+    symbol: "GameMode.Spectator",
+    sourceIds: ["ms-server-changelog"],
+  },
+  {
+    id: "script-enum-gamemode-survival",
+    moduleName: "@minecraft/server",
+    enumName: "GameMode",
+    member: "Survival",
+    symbol: "GameMode.Survival",
+    sourceIds: ["ms-server-changelog"],
+  },
+  {
     id: "script-enum-gamemode-adventure-legacy",
     moduleName: "@minecraft/server",
     enumName: "GameMode",

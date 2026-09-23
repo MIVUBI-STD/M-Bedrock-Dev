@@ -6,6 +6,7 @@ import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/s
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { ScriptApiTrack } from "../../../packages/compatibility/src/script-api.js";
 
 function serverModule(
   compatibility: ManifestCompatibilityFacts,
@@ -27,9 +28,7 @@ function lifecycleFinding(input: {
     sourceIds: readonly string[];
   };
   moduleVersion: string;
-  moduleTrack: ReturnType<typeof serverModule> extends infer T
-    ? T extends { track: infer U } ? U : never
-    : never;
+  moduleTrack: ScriptApiTrack;
 }): DiagnosticFinding | undefined {
   const lifecycle = evaluateScriptSymbolLifecycle(
     input.lifecycle,

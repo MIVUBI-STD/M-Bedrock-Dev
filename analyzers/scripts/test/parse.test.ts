@@ -118,6 +118,41 @@ player?.addTag("session:assigned");
     ]));
   });
 
+  it("extracts bounded property symbols and aliased module-member symbols", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world, GameMode as GM } from "@minecraft/server";
+
+const player = world.getAllPlayers()[0];
+const cameraEnabled = player.inputPermissions.cameraEnabled;
+const legacyMode = GM.adventure;
+`,
+      source,
+    );
+
+    expect(parsed.propertyAccesses).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "Player.inputPermissions",
+        receiverType: "Player",
+      }),
+      expect.objectContaining({
+        symbol: "PlayerInputPermissions.cameraEnabled",
+        receiverType: "PlayerInputPermissions",
+      }),
+    ]));
+
+    expect(parsed.moduleMemberAccesses).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        module: "@minecraft/server",
+        importedName: "GameMode",
+        localName: "GM",
+        member: "adventure",
+        symbol: "GameMode.adventure",
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",
