@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
-import type { ReturnTypeOfStructureRuntime } from "./structure-runtime-types.js";
+import type { StructureRuntimeDiagnosticInput } from "./structure-runtime-types.js";
 
 function idFor(source: SourceRef, suffix: string): string {
   return "diag_" + createHash("sha256")
@@ -11,7 +11,7 @@ function idFor(source: SourceRef, suffix: string): string {
 }
 
 export function structureRuntimeDiagnostics(
-  analysis: ReturnTypeOfStructureRuntime,
+  analysis: StructureRuntimeDiagnosticInput,
   sourceByFunction: ReadonlyMap<string, SourceRef>,
 ): DiagnosticFinding[] {
   const findings: DiagnosticFinding[] = [];
