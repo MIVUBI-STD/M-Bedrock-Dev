@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-input-startuseon",
+      "title": "ItemStartUseOnAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemstartuseonafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-input-world-after",
+      "title": "WorldAfterEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-input-stopuse",
+      "title": "ItemStopUseAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemstopuseafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-input-releaseuse",
+      "title": "ItemReleaseUseAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemreleaseuseafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-input-itemuse",
+      "title": "ItemUseAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemuseafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-input-itemusebefore",
+      "title": "ItemUseBeforeEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemusebeforeevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-input-cooldown",
+      "title": "ItemCooldownComponent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemcooldowncomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-input-item-components",
+      "title": "Items Documentation - minecraft:item",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/itemreference/examples/itemcomponents/minecraft_item?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "input.start-stop-release-distinct",
+      "domain": "input-gesture",
+      "subject": "item use lifecycle",
+      "statement": "Bedrock exposes distinct item-use lifecycle signals for start use, stop use, release use, successful use, and use-on-block; these events represent different phases and must not be treated as interchangeable button presses.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-world-after",
+        "ms-input-stopuse",
+        "ms-input-releaseuse",
+        "ms-input-itemuse"
+      ],
+      "capabilityTags": [
+        "item-use",
+        "gesture-lifecycle"
+      ],
+      "riskSurfaces": [
+        "double-trigger",
+        "wrong-phase"
+      ]
+    },
+    {
+      "id": "input.start-use-on-first-block",
+      "domain": "input-gesture",
+      "subject": "itemStartUseOn",
+      "statement": "itemStartUseOn fires when the player presses Use Item / Place Block for the first successfully interacted block in a build action, so it is closer to gesture start than to every repeated block interaction.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-startuseon"
+      ],
+      "capabilityTags": [
+        "item-use-on",
+        "press"
+      ],
+      "riskSurfaces": [
+        "repeat-assumption",
+        "build-action-confusion"
+      ]
+    },
+    {
+      "id": "input.stop-use-can-fire-on-dimension-change",
+      "domain": "input-gesture",
+      "subject": "itemStopUse",
+      "statement": "itemStopUse may fire when a player teleports to a different dimension and its itemStack may be undefined, so stop-use does not always mean a normal intentional player release with a valid held item.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-stopuse"
+      ],
+      "capabilityTags": [
+        "stop-use",
+        "dimension-transfer"
+      ],
+      "riskSurfaces": [
+        "false-release",
+        "undefined-item"
+      ]
+    },
+    {
+      "id": "input.release-use-carries-duration",
+      "domain": "input-gesture",
+      "subject": "itemReleaseUse",
+      "statement": "itemReleaseUse reports the player, optional item stack, and remaining useDuration for a chargeable item when the use action is released, allowing charge-state logic to distinguish release timing from generic item use.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-releaseuse"
+      ],
+      "capabilityTags": [
+        "charge",
+        "release"
+      ],
+      "riskSurfaces": [
+        "charge-miscalculation",
+        "early-release"
+      ]
+    },
+    {
+      "id": "input.before-use-can-cancel",
+      "domain": "input-gesture",
+      "subject": "itemUseBeforeEvent",
+      "statement": "ItemUseBeforeEvent can cancel item use before it occurs, so preventive input policy belongs in a before-event path while gameplay mutations generally belong in allowed later phases.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-itemusebefore"
+      ],
+      "capabilityTags": [
+        "before-event",
+        "cancel"
+      ],
+      "riskSurfaces": [
+        "invalid-mutation-phase",
+        "late-blocking"
+      ]
+    },
+    {
+      "id": "input.cooldown-category-shared",
+      "domain": "input-gesture",
+      "subject": "minecraft:cooldown",
+      "statement": "Item cooldowns are grouped by cooldown category; using an item can place all items in the same category into cooldown for the configured duration, so cooldown is not necessarily isolated to one exact stack.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-cooldown",
+        "ms-input-item-components"
+      ],
+      "capabilityTags": [
+        "cooldown",
+        "category"
+      ],
+      "riskSurfaces": [
+        "shared-cooldown",
+        "unexpected-block"
+      ]
+    },
+    {
+      "id": "input.cooldown-runtime-query",
+      "domain": "input-gesture",
+      "subject": "ItemCooldownComponent",
+      "statement": "ItemCooldownComponent exposes remaining cooldown and startCooldown operations, allowing scripts to verify actual player cooldown state rather than infer it from UI or elapsed local timers.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-cooldown"
+      ],
+      "capabilityTags": [
+        "cooldown",
+        "runtime-query"
+      ],
+      "riskSurfaces": [
+        "visual-only-cooldown",
+        "duplicate-action"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "input.relation-before-gates-use",
+      "domain": "input-gesture",
+      "subject": "item-use-before-event",
+      "kind": "gates",
+      "object": "successful-item-use",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-itemusebefore"
+      ]
+    },
+    {
+      "id": "input.relation-cooldown-gates-action",
+      "domain": "input-gesture",
+      "subject": "active-cooldown-category",
+      "kind": "gates",
+      "object": "item-action-eligibility",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-cooldown",
+        "ms-input-item-components"
+      ]
+    }
+  ]
+}
