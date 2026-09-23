@@ -247,6 +247,57 @@ describe("script literal command mutation transactions", () => {
     ).toBe("verification-unresolved");
   });
 
+  it("supports project-defined function handoff in literal commands", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+
+      dimension.runCommand("fill 0 64 0 15 70 15 minecraft:stone");
+      dimension.runCommand(
+        "execute if block 1 64 1 minecraft:stone run function arena/start"
+      );
+    `);
+
+    const assessments = analyzeScriptCommandMutationTransactions(
+      [script],
+      [],
+      [{
+        id: "arena-start",
+        kind: "function-call",
+        functionTarget: "arena/start",
+        purpose: "arena gameplay start",
+      }],
+    );
+
+    expect(assessments[0]).toEqual(expect.objectContaining({
+      status: "verified-before-dependent",
+    }));
+  });
+
+  it("keeps project-defined scoreboard activation unresolved without a gated check", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+
+      dimension.runCommand("fill 0 64 0 15 70 15 minecraft:stone");
+      dimension.runCommand("scoreboard players set #arena phase 1");
+    `);
+
+    const assessments = analyzeScriptCommandMutationTransactions(
+      [script],
+      [],
+      [{
+        id: "phase-activation",
+        kind: "scoreboard-write",
+        objective: "phase",
+      }],
+    );
+
+    expect(assessments[0]).toEqual(expect.objectContaining({
+      status: "verification-unresolved",
+    }));
+  });
+
   it("also proves fill/setblock mutation bounds without structure inventory", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
