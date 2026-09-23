@@ -40,6 +40,7 @@ export type KnowledgeDomain =
   | "teleport"
   | "entity-runtime"
   | "combat"
+  | "round-integrity"
   | "education";
 
 export type KnowledgeRelationKind =
