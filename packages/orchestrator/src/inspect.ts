@@ -571,6 +571,14 @@ export async function inspectDirectory(
       ...structureRuntimeEvidence(structureRuntime, sourceByFunction),
       ...topologyRuntimeEvidence(topology),
     ],
+    parsedScripts.map((item) => item.parsed),
+    parsedEntities.map((item) => ({
+      entity: item.parsed,
+      externalRootEvents: externalEventRootsForEntity(
+        item.parsed,
+        entityEventEvidence,
+      ),
+    })),
   );
   diagnostics.push(...knowledgeRuntime.diagnostics);
 
