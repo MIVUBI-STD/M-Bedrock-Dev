@@ -1,6 +1,24 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+function stringRegistry(constantName) {
+  const source = readFileSync("packages/knowledge/src/registry.ts", "utf8");
+  const match = source.match(
+    new RegExp(
+      `export const ${constantName} = \\[([\\s\\S]*?)\\] as const`,
+    ),
+  );
+  if (!match) throw new Error(`Unable to read ${constantName} from knowledge registry`);
+  return new Set([...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]));
+}
+
+const domains = stringRegistry("KNOWLEDGE_DOMAINS");
+const relationKinds = stringRegistry("KNOWLEDGE_RELATION_KINDS");
+const classifications = stringRegistry("KNOWLEDGE_CLASSIFICATIONS");
+const authorities = stringRegistry("KNOWLEDGE_AUTHORITIES");
+const confidences = stringRegistry("KNOWLEDGE_CONFIDENCES");
+const editions = stringRegistry("KNOWLEDGE_EDITIONS");
+
 const directory = "knowledge";
 const files = readdirSync(directory)
   .filter((name) => name.endsWith(".json"))
@@ -12,19 +30,53 @@ const factIdsGlobal = new Map();
 const relationIdsGlobal = new Map();
 
 function validUrl(source) {
+  if (typeof source.url !== "string") return false;
   if (source.authority === "project-policy") {
-    return source.url?.startsWith("project://") || source.url?.startsWith("https://");
+    return source.url.startsWith("project://") || source.url.startsWith("https://");
   }
-  return source.url?.startsWith("https://");
+  return source.url.startsWith("https://");
+}
+
+function validateApplicability(path, id, applicability) {
+  if (!Array.isArray(applicability?.editions) || applicability.editions.length === 0) {
+    throw new Error(`${path}: ${id} lacks editions`);
+  }
+  for (const edition of applicability.editions) {
+    if (!editions.has(edition)) {
+      throw new Error(`${path}: ${id} uses unknown edition ${edition}`);
+    }
+  }
+  if (
+    applicability.experiments !== undefined &&
+    !Array.isArray(applicability.experiments)
+  ) {
+    throw new Error(`${path}: ${id} experiments must be an array`);
+  }
+  if (
+    applicability.versions?.scriptModuleVersion &&
+    !applicability.versions?.scriptModule
+  ) {
+    throw new Error(`${path}: ${id} has scriptModuleVersion without scriptModule`);
+  }
 }
 
 for (const path of files) {
   const catalog = JSON.parse(readFileSync(path, "utf8"));
   if (catalog.schemaVersion !== 1) throw new Error(`${path}: schemaVersion must be 1`);
+  if (!Array.isArray(catalog.sources)) throw new Error(`${path}: sources must be an array`);
+  if (!Array.isArray(catalog.facts)) throw new Error(`${path}: facts must be an array`);
+  if (catalog.relations !== undefined && !Array.isArray(catalog.relations)) {
+    throw new Error(`${path}: relations must be an array`);
+  }
 
   const sources = new Set();
-  for (const source of catalog.sources ?? []) {
-    if (!source.id || !validUrl(source)) {
+  for (const source of catalog.sources) {
+    if (
+      !source.id ||
+      !validUrl(source) ||
+      !authorities.has(source.authority) ||
+      !confidences.has(source.confidence)
+    ) {
       throw new Error(`${path}: invalid source ${source.id ?? "<missing>"}`);
     }
     if (sources.has(source.id)) throw new Error(`${path}: duplicate source ${source.id}`);
@@ -45,7 +97,7 @@ for (const path of files) {
   }
 
   const ids = new Set();
-  for (const fact of catalog.facts ?? []) {
+  for (const fact of catalog.facts) {
     if (!fact.id || ids.has(fact.id)) throw new Error(`${path}: invalid/duplicate fact id`);
     ids.add(fact.id);
 
@@ -53,12 +105,19 @@ for (const path of files) {
     if (previous) throw new Error(`${path}: fact ${fact.id} duplicates ${previous}`);
     factIdsGlobal.set(fact.id, path);
 
-    if (!fact.domain || !fact.subject || !fact.statement) {
-      throw new Error(`${path}: fact ${fact.id} lacks domain/subject/statement`);
+    if (!domains.has(fact.domain)) {
+      throw new Error(`${path}: fact ${fact.id} has unknown domain ${fact.domain}`);
     }
-    if (!Array.isArray(fact.applicability?.editions) || fact.applicability.editions.length === 0) {
-      throw new Error(`${path}: fact ${fact.id} lacks editions`);
+    if (!fact.subject || !fact.statement) {
+      throw new Error(`${path}: fact ${fact.id} lacks subject/statement`);
     }
+    if (fact.classification !== undefined && !classifications.has(fact.classification)) {
+      throw new Error(
+        `${path}: fact ${fact.id} has unknown classification ${fact.classification}`,
+      );
+    }
+    validateApplicability(path, fact.id, fact.applicability);
+
     if (!Array.isArray(fact.sourceIds) || fact.sourceIds.length === 0) {
       throw new Error(`${path}: fact ${fact.id} has no provenance`);
     }
@@ -68,7 +127,7 @@ for (const path of files) {
     if (
       fact.classification === "project-policy" &&
       !fact.sourceIds.some((sourceId) =>
-        (catalog.sources ?? []).some(
+        catalog.sources.some(
           (source) => source.id === sourceId && source.authority === "project-policy",
         )
       )
@@ -88,14 +147,46 @@ for (const path of files) {
     if (previous) throw new Error(`${path}: relation ${relation.id} duplicates ${previous}`);
     relationIdsGlobal.set(relation.id, path);
 
-    if (!relation.domain || !relation.kind || !relation.subject || !relation.object) {
-      throw new Error(`${path}: relation ${relation.id} lacks domain/kind/subject/object`);
+    if (!domains.has(relation.domain)) {
+      throw new Error(
+        `${path}: relation ${relation.id} has unknown domain ${relation.domain}`,
+      );
     }
+    if (!relationKinds.has(relation.kind)) {
+      throw new Error(
+        `${path}: relation ${relation.id} has unknown kind ${relation.kind}`,
+      );
+    }
+    if (
+      relation.classification !== undefined &&
+      !classifications.has(relation.classification)
+    ) {
+      throw new Error(
+        `${path}: relation ${relation.id} has unknown classification ${relation.classification}`,
+      );
+    }
+    if (!relation.subject || !relation.object) {
+      throw new Error(`${path}: relation ${relation.id} lacks subject/object`);
+    }
+    validateApplicability(path, relation.id, relation.applicability);
+
     if (!Array.isArray(relation.sourceIds) || relation.sourceIds.length === 0) {
       throw new Error(`${path}: relation ${relation.id} has no provenance`);
     }
     for (const sourceId of relation.sourceIds) {
       if (!sources.has(sourceId)) throw new Error(`${path}: missing relation source ${sourceId}`);
+    }
+    if (
+      relation.classification === "project-policy" &&
+      !relation.sourceIds.some((sourceId) =>
+        catalog.sources.some(
+          (source) => source.id === sourceId && source.authority === "project-policy",
+        )
+      )
+    ) {
+      throw new Error(
+        `${path}: project-policy relation ${relation.id} lacks project-policy source`,
+      );
     }
   }
 }
