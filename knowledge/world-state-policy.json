@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-world-state-policy-v1",
+      "title": "MIVUBI Global World State Isolation Policy v1",
+      "url": "project://knowledge/world-state-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "worldstate-policy.global-resource-registry",
+      "domain": "world-state",
+      "subject": "global world resource",
+      "statement": "Track gamerules, difficulty, time/daylight, weather, command-block enablement, world spawn, and other world-global settings in an explicit global-resource registry. These are shared resources, not arena-local state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "global-resource",
+        "registry"
+      ],
+      "riskSurfaces": [
+        "hidden-global-state",
+        "cross-arena-effect"
+      ]
+    },
+    {
+      "id": "worldstate-policy.no-arena-local-assumption",
+      "domain": "world-state",
+      "subject": "arena use of gamerules",
+      "statement": "Arena code must not treat a gamerule or world setting as local to that arena. Any temporary change requires a global conflict check and ownership policy.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-isolation",
+        "global-state"
+      ],
+      "riskSurfaces": [
+        "multi-arena-conflict"
+      ]
+    },
+    {
+      "id": "worldstate-policy.global-lease",
+      "domain": "world-state",
+      "subject": "temporary global setting",
+      "statement": "Temporary world-level changes use a scoped global lease containing setting name, previous value, requested value, owner arena/system, generation, priority, compatibility constraints, and restore condition.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "lease",
+        "global-state"
+      ],
+      "riskSurfaces": [
+        "restore-race",
+        "setting-leak"
+      ]
+    },
+    {
+      "id": "worldstate-policy.conflict-arbitration",
+      "domain": "world-state",
+      "subject": "conflicting global leases",
+      "statement": "If two active arenas require incompatible values for the same global setting, do not let last-write-wins decide behavior. Reject, serialize, emulate locally, or choose an explicitly supported shared policy.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "conflict",
+        "arbitration"
+      ],
+      "riskSurfaces": [
+        "last-write-wins",
+        "arena-interference"
+      ]
+    },
+    {
+      "id": "worldstate-policy.prefer-local-emulation",
+      "domain": "world-state",
+      "subject": "arena-specific rule",
+      "statement": "Prefer arena-scoped script/filter logic over changing world-global gamerules when simultaneous arenas may require different behavior; examples include friendly-fire filtering, inventory retention, damage suppression, and spawn control.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "local-emulation",
+        "arena-isolation"
+      ],
+      "riskSurfaces": [
+        "global-policy-conflict"
+      ]
+    },
+    {
+      "id": "worldstate-policy.restore-compare-and-swap",
+      "domain": "world-state",
+      "subject": "global setting restore",
+      "statement": "Restoring a global setting should verify the current owner/value before writing the previous value. A stale arena cleanup must not overwrite a newer valid lease from another arena/system.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "restore",
+        "compare-and-swap"
+      ],
+      "riskSurfaces": [
+        "stale-restore",
+        "new-owner-overwrite"
+      ]
+    },
+    {
+      "id": "worldstate-policy.baseline-declared",
+      "domain": "world-state",
+      "subject": "world baseline",
+      "statement": "Project runtime must declare expected baseline values for critical global settings and verify them at worldLoad/recovery and after cleanup when no active lease remains.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "baseline",
+        "recovery"
+      ],
+      "riskSurfaces": [
+        "world-drift",
+        "restart-inconsistent"
+      ]
+    },
+    {
+      "id": "worldstate-policy.difficulty-not-arena-local",
+      "domain": "world-state",
+      "subject": "difficulty policy",
+      "statement": "Arena-specific difficulty scaling should prefer entity stats/AI/wave configuration where feasible rather than changing world difficulty during concurrent sessions; world difficulty changes require global arbitration.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "difficulty",
+        "arena-isolation"
+      ],
+      "riskSurfaces": [
+        "cross-arena-difficulty"
+      ]
+    },
+    {
+      "id": "worldstate-policy.time-weather-cinematic-guard",
+      "domain": "world-state",
+      "subject": "cinematic time/weather",
+      "statement": "Cinematics that alter world time or weather must be marked global-impact. Independent per-arena cinematics should prefer local camera/visual techniques where possible instead of modifying the shared environment.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "cinematic",
+        "weather",
+        "time"
+      ],
+      "riskSurfaces": [
+        "cross-arena-visual-state"
+      ]
+    },
+    {
+      "id": "worldstate-policy.commandblock-rule-protected",
+      "domain": "world-state",
+      "subject": "commandblocksenabled",
+      "statement": "commandblocksenabled is a protected global automation switch. Arena-specific logic must never toggle it casually because disabling it can break unrelated automation graphs across the entire world.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "command-block",
+        "protected-global"
+      ],
+      "riskSurfaces": [
+        "worldwide-automation-outage"
+      ]
+    },
+    {
+      "id": "worldstate-policy.audit-global-mutations",
+      "domain": "world-state",
+      "subject": "global mutation audit",
+      "statement": "High-impact global setting changes should emit audit evidence with actor/system, setting, previous value, requested value, owner/generation, conflict result, and restore result.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ],
+      "capabilityTags": [
+        "audit",
+        "global-state"
+      ],
+      "riskSurfaces": [
+        "unattributed-world-drift",
+        "debugging-confusion"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "worldstate-policy.relation-lease-gates-global-change",
+      "domain": "world-state",
+      "subject": "validated-global-lease",
+      "kind": "gates",
+      "object": "temporary-world-setting-change",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ]
+    },
+    {
+      "id": "worldstate-policy.relation-no-lease-restores-baseline",
+      "domain": "world-state",
+      "subject": "no-active-global-lease",
+      "kind": "restores",
+      "object": "declared-world-baseline",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ]
+    },
+    {
+      "id": "worldstate-policy.relation-conflict-queues-or-rejects",
+      "domain": "world-state",
+      "subject": "incompatible-global-setting-request",
+      "kind": "queues-behind",
+      "object": "current-compatible-owner-or-explicit-serialization",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-state-policy-v1"
+      ]
+    }
+  ]
+}
