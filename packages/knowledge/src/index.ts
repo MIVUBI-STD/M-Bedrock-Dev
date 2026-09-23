@@ -9,3 +9,5 @@ export * from "./version.js";
 export * from "./diagnostics.js";
 export * from "./graph.js";
 export * from "./registry.js";
+export * from "./evaluate.js";
+export * from "./validation-plan.js";
