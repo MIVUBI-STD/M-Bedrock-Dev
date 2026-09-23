@@ -1,6 +1,8 @@
 import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/runtime-evidence.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type { ParsedScriptFile, ScriptMethodCall } from "./types.js";
+import { analyzeCommand } from "../../commands/src/parse.js";
+import { commandRuntimeEvidence } from "../../commands/src/runtime-evidence.js";
 
 function operationId(source: SourceRef): string {
   return [
@@ -129,6 +131,20 @@ export function scriptRuntimeEvidence(
       command.source,
       command.command,
     ));
+
+    if (
+      command.mechanism === "runCommand" ||
+      command.mechanism === "runCommandAsync"
+    ) {
+      records.push(observed(
+        "script-command-execution-request",
+        command.source,
+        command.mechanism,
+      ));
+      records.push(...commandRuntimeEvidence(
+        analyzeCommand(command.command, command.source),
+      ));
+    }
   }
 
   return records;
