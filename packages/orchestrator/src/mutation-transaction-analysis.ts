@@ -1,6 +1,11 @@
 import type { ParsedFunction, ParsedFunctionCommand } from "../../../analyzers/functions/src/types.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
-import { parseBlockVerificationSemantics } from "../../../analyzers/commands/src/verification-semantics.js";
+import {
+  parseBlockVerificationSemantics,
+  type BlockVerificationSemantics,
+} from "../../../analyzers/commands/src/verification-semantics.js";
+import type { Coordinate3 } from "../../../analyzers/commands/src/coordinates.js";
+import type { derivePlacementProofs, PlacementBounds } from "./structure-proof-analysis.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 
@@ -17,6 +22,7 @@ export interface MutationTransactionStep {
   source: SourceRef;
   command: string;
   detail?: string;
+  verification?: BlockVerificationSemantics;
 }
 
 export type MutationOrderingStatus =
@@ -69,6 +75,7 @@ function commandSteps(
       source: command.source,
       command: command.raw,
       detail: verification.expectedBlock,
+      verification,
     });
   }
 
@@ -174,6 +181,53 @@ function expandFunctionTimeline(
   return output;
 }
 
+function absolutePosition(
+  coordinate: Coordinate3 | undefined,
+): { x: number; y: number; z: number } | undefined {
+  if (!coordinate) return undefined;
+  if (
+    coordinate.x.mode !== "absolute" ||
+    coordinate.y.mode !== "absolute" ||
+    coordinate.z.mode !== "absolute"
+  ) return undefined;
+  return {
+    x: coordinate.x.value,
+    y: coordinate.y.value,
+    z: coordinate.z.value,
+  };
+}
+
+function insideBounds(
+  bounds: PlacementBounds,
+  position: { x: number; y: number; z: number },
+): boolean {
+  return (
+    position.x >= bounds.min.x &&
+    position.x <= bounds.max.x &&
+    position.y >= bounds.min.y &&
+    position.y <= bounds.max.y &&
+    position.z >= bounds.min.z &&
+    position.z <= bounds.max.z
+  );
+}
+
+type StructurePlacementProofs = ReturnType<typeof derivePlacementProofs>;
+
+function trustedVerification(
+  apply: MutationTransactionStep,
+  candidate: MutationTransactionStep,
+  proofs: StructurePlacementProofs | undefined,
+): boolean {
+  if (candidate.kind !== "verify" || !candidate.verification) return false;
+  const line = apply.source.range?.lineStart;
+  if (line === undefined) return false;
+  const bounds = proofs?.bounds.get(apply.functionId + ":" + line);
+  if (!bounds) return false;
+
+  const position = absolutePosition(candidate.verification.position);
+  return position !== undefined && insideBounds(bounds, position);
+}
+
 function rootFunctions(functions: readonly ParsedFunction[]): string[] {
   const ids = new Set(functions.map((fn) => fn.identifier));
   const called = new Set<string>();
@@ -199,6 +253,7 @@ function rootFunctions(functions: readonly ParsedFunction[]): string[] {
 
 export function analyzeMutationTransactionOrdering(
   functions: readonly ParsedFunction[],
+  proofs?: StructurePlacementProofs,
   maxDepth = 16,
 ): {
   timelines: ReadonlyMap<string, readonly MutationTransactionStep[]>;
@@ -250,11 +305,11 @@ export function analyzeMutationTransactionOrdering(
         step.kind === "recursive-call"
       );
       const verifyBefore = beforeDependent.find(
-        (step) => step.kind === "verify",
+        (step) => trustedVerification(apply, step, proofs),
       );
       const verifyAfter = segment
         .slice(dependentIndex + 1)
-        .find((step) => step.kind === "verify");
+        .find((step) => trustedVerification(apply, step, proofs));
 
       let status: MutationOrderingStatus = "verification-unresolved";
       let verificationStep: MutationTransactionStep | undefined;
