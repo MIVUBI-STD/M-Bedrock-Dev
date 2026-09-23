@@ -40,6 +40,30 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "edu-specialty-blocks",
+      "title": "Specialty Blocks (Allow, Deny, Border, Structure)",
+      "url": "https://edusupport.minecraft.net/hc/en-us/articles/360047116852-Specialty-Blocks-Allow-Deny-Border-Structure",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "edu-classroom-settings",
+      "title": "Classroom Settings",
+      "url": "https://edusupport.minecraft.net/hc/en-us/articles/360061369132-Classroom-Settings",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-vanilla-block-list",
+      "title": "Default Minecraft Block Listings",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/vanillalistingsreference/blocks?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -209,6 +233,93 @@
       "riskSurfaces": [
         "education-profile",
         "agent-runtime"
+      ]
+    },
+    {
+      "id": "education.allow.build-permission",
+      "domain": "education",
+      "subject": "minecraft:allow",
+      "statement": "Allow blocks permit players without World Builder permission to place or destroy blocks above the allow area, including use in otherwise immutable worlds.",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "edu-specialty-blocks"
+      ],
+      "capabilityTags": [
+        "education:allow",
+        "education:permission-block"
+      ],
+      "riskSurfaces": [
+        "build-permission",
+        "immutable-world"
+      ]
+    },
+    {
+      "id": "education.deny.build-restriction",
+      "domain": "education",
+      "subject": "minecraft:deny",
+      "statement": "Deny blocks prevent players without World Builder permission from placing or destroying blocks above the deny area while still allowing normal interaction with usable blocks.",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "edu-specialty-blocks"
+      ],
+      "capabilityTags": [
+        "education:deny",
+        "education:permission-block"
+      ],
+      "riskSurfaces": [
+        "build-permission"
+      ]
+    },
+    {
+      "id": "education.border.force-field",
+      "domain": "education",
+      "subject": "minecraft:border_block",
+      "statement": "Border blocks form a permission-based barrier extending vertically that blocks traversal/building for players without World Builder permission.",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "edu-specialty-blocks",
+        "edu-classroom-settings"
+      ],
+      "capabilityTags": [
+        "education:border",
+        "education:permission-block"
+      ],
+      "riskSurfaces": [
+        "player-traversal",
+        "build-permission"
+      ]
+    },
+    {
+      "id": "education.specialty-block-identifiers",
+      "domain": "education",
+      "subject": "education-specialty-blocks",
+      "statement": "Current Bedrock block listings include minecraft:allow, minecraft:deny, and minecraft:border_block identifiers.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-vanilla-block-list"
+      ],
+      "capabilityTags": [
+        "education:permission-block"
+      ],
+      "riskSurfaces": [
+        "education-profile"
       ]
     }
   ]

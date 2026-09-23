@@ -24,6 +24,7 @@ import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/se
 import { extractStructureRuntimeContent } from "../../../adapters/mcstructure/src/runtime-content.js";
 import { analyzeCommandBlockChains } from "../../../adapters/mcstructure/src/command-chain.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
+import { educationRequirementDiagnostic } from "../../../analyzers/diagnostics/src/education-findings.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";
 import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";
@@ -486,6 +487,38 @@ export async function inspectDirectory(
     ...(target.eduLevel !== undefined ? { eduLevel: target.eduLevel } : {}),
   });
 
+  const educationSpecialtyBlocks = {
+    allow: parsedStructureModels.reduce(
+      (sum, item) => sum + item.semantics.educationAllowEntries,
+      0,
+    ),
+    deny: parsedStructureModels.reduce(
+      (sum, item) => sum + item.semantics.educationDenyEntries,
+      0,
+    ),
+    border: parsedStructureModels.reduce(
+      (sum, item) => sum + item.semantics.educationBorderEntries,
+      0,
+    ),
+  };
+  const educationSpecialtyCount =
+    educationSpecialtyBlocks.allow +
+    educationSpecialtyBlocks.deny +
+    educationSpecialtyBlocks.border;
+
+  if (educationSpecialtyCount > 0) {
+    const finding = educationRequirementDiagnostic(targetEducation);
+    if (finding) {
+      diagnostics.push({
+        ...finding,
+        data: {
+          ...(finding.data ?? {}),
+          educationSpecialtyBlocks,
+        },
+      });
+    }
+  }
+
   const dbFiles = files.filter((file) => {
     const normalized = "/" + file.relativePath.replaceAll("\\", "/");
     return normalized.includes("/db/");
@@ -555,6 +588,7 @@ export async function inspectDirectory(
         (sum, item) => sum + item.queuedTickPositions,
         0,
       ),
+      educationSpecialtyBlocks,
       absoluteLoadDestinations: structureRuntime.absoluteLoadDestinations,
       placedEmbeddedCommands,
     },

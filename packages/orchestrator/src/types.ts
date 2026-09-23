@@ -81,6 +81,11 @@ export interface InspectDirectoryResult {
     embeddedCommandBlocks: number;
     unknownEmbeddedCommandEffects: number;
     queuedTickPositions: number;
+    educationSpecialtyBlocks: {
+      allow: number;
+      deny: number;
+      border: number;
+    };
     absoluteLoadDestinations: Array<{
       target: string;
       chunkX: number;

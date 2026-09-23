@@ -10,6 +10,9 @@ export interface McStructureSemantics {
   containerPaletteEntries: number;
   embeddedCommandBlocks: number;
   queuedTickPositions: number;
+  educationAllowEntries: number;
+  educationDenyEntries: number;
+  educationBorderEntries: number;
 }
 
 const COMMAND_BLOCK_NAMES = new Set([
@@ -33,6 +36,9 @@ export function deriveMcStructureSemantics(
 ): McStructureSemantics {
   let commandBlockPaletteEntries = 0;
   let containerPaletteEntries = 0;
+  let educationAllowEntries = 0;
+  let educationDenyEntries = 0;
+  let educationBorderEntries = 0;
 
   for (const entry of structure.palette) {
     const name = entry.name ?? "";
@@ -40,6 +46,9 @@ export function deriveMcStructureSemantics(
     if (CONTAINER_HINTS.some((hint) => name.includes(hint))) {
       containerPaletteEntries += 1;
     }
+    if (name === "minecraft:allow") educationAllowEntries += 1;
+    if (name === "minecraft:deny") educationDenyEntries += 1;
+    if (name === "minecraft:border_block") educationBorderEntries += 1;
   }
 
   const runtime = extractStructureRuntimeContent(structure);
@@ -53,5 +62,8 @@ export function deriveMcStructureSemantics(
     containerPaletteEntries,
     embeddedCommandBlocks: runtime.commandBlocks.length,
     queuedTickPositions: runtime.queuedTickPositions,
+    educationAllowEntries,
+    educationDenyEntries,
+    educationBorderEntries,
   };
 }
