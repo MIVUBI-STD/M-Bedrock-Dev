@@ -16,8 +16,8 @@ export function mineInvariantEvidence(
     evidence.map((item) => item.mapId).filter((value): value is string => Boolean(value)),
   )].sort();
   const coverageBuckets = distinctCoverageBuckets(evidence);
-  const minBuckets = options?.minDistinctCoverageBuckets ?? 3;
-  const minMaps = options?.minDistinctMaps ?? 1;
+  const minBuckets = options?.minDistinctCoverageBuckets;
+  const minMaps = options?.minDistinctMaps;
 
   const revise = (candidate: InvariantMiningResult["candidates"][number]) => ({
     ...candidate,
@@ -29,7 +29,10 @@ export function mineInvariantEvidence(
     },
     status:
       candidate.status === "supported" &&
-      (coverageBuckets < minBuckets || mapIds.length < minMaps)
+      (
+        (minBuckets !== undefined && coverageBuckets < minBuckets) ||
+        (minMaps !== undefined && mapIds.length < minMaps)
+      )
         ? "candidate" as const
         : candidate.status,
   });

@@ -101,12 +101,31 @@ export function applySessionAction(
   const current = ensurePlayer(model, "playerId" in action ? action.playerId : "");
 
   if (action.kind === "join") {
-    return withPlayer(model, {
+    const next = withPlayer(model, {
       ...current,
       connected: true,
       phase: current.arenaId ? "assigned" : "lobby",
       progress: 0,
     });
+
+    if (!current.arenaId) return next;
+    const arena = next.arenas[current.arenaId];
+    if (!arena) return next;
+
+    const hasStartingPlayer = arena.activePlayerIds.some((playerId) =>
+      next.players[playerId]?.phase === "starting"
+    );
+
+    return {
+      ...next,
+      arenas: {
+        ...next.arenas,
+        [current.arenaId]: {
+          ...arena,
+          cutsceneActive: hasStartingPlayer,
+        },
+      },
+    };
   }
 
   if (action.kind === "assign") {

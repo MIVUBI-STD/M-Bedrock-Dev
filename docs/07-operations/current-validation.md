@@ -5,12 +5,12 @@ Status: EXACT-HEAD VERIFY REMEDIATION ACTIVE
 GitHub Actions evidence:
 
 - `8fa9043c9e5b9c72c114507399481ec98534f3a9` enabled full Verify on pushes to `Local`;
-- that run exposed analyzer-boundary violations before typecheck;
 - `5fc2dfe1e826544d48d15ac084592f7c2f6190e7` fixed the repair/analyzer ownership boundary;
-- `c3e5d8876a0ddbd5f41b2b547c5eb9133fb0a7e3` reached successful repository policy **and successful TypeScript typecheck**;
-- its Vitest run exposed stale fixtures plus two real logic defects: session re-assignment could leave orphaned cutscene state, and coordinate mutants could weaken repeated-topology membership without producing a linear outlier.
+- `c3e5d8876a0ddbd5f41b2b547c5eb9133fb0a7e3` proved repository policy and TypeScript typecheck green, then exposed test/logic drift;
+- `ea0646a88a76a7c4b05b1482a2446f4b7c5b23c2` reduced the suite to two remaining failures while keeping repository policy and typecheck green;
+- the remaining defects were an orphaned cutscene after a repeated join during starting phase, and an invariant-evidence policy that incorrectly treated absent optional coverage metadata as a failed default threshold.
 
-Those issues are now remediated and require the next exact-head Verify run for full proof.
+Both are remediated in the next exact-head candidate.
 
 Still not proven:
 
