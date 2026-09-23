@@ -51,6 +51,7 @@ export type KnowledgeDomain =
   | "loot-economy"
   | "permissions"
   | "world-state"
+  | "spatial-containment"
   | "education";
 
 export type KnowledgeRelationKind =
