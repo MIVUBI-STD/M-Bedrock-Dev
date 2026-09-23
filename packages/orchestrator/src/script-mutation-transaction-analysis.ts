@@ -70,6 +70,67 @@ function operationId(source: SourceRef): string {
   ].join(":");
 }
 
+function sourceInside(inner: SourceRef, outer: SourceRef): boolean {
+  const innerStartLine = inner.range?.lineStart;
+  const innerEndLine = inner.range?.lineEnd;
+  const outerStartLine = outer.range?.lineStart;
+  const outerEndLine = outer.range?.lineEnd;
+  if (
+    innerStartLine === undefined ||
+    innerEndLine === undefined ||
+    outerStartLine === undefined ||
+    outerEndLine === undefined
+  ) return false;
+
+  const innerStartColumn = inner.range?.columnStart ?? 0;
+  const innerEndColumn = inner.range?.columnEnd ?? Number.MAX_SAFE_INTEGER;
+  const outerStartColumn = outer.range?.columnStart ?? 0;
+  const outerEndColumn = outer.range?.columnEnd ?? Number.MAX_SAFE_INTEGER;
+
+  const startsInside =
+    innerStartLine > outerStartLine ||
+    (
+      innerStartLine === outerStartLine &&
+      innerStartColumn >= outerStartColumn
+    );
+  const endsInside =
+    innerEndLine < outerEndLine ||
+    (
+      innerEndLine === outerEndLine &&
+      innerEndColumn <= outerEndColumn
+    );
+  return startsInside && endsInside;
+}
+
+function normalizedGuardReceiver(
+  receiverType: "Block" | "BlockPermutation",
+  receiverHint: string,
+): string {
+  if (
+    receiverType === "BlockPermutation" &&
+    receiverHint.endsWith(".permutation")
+  ) {
+    return receiverHint.slice(0, -".permutation".length);
+  }
+  return receiverHint;
+}
+
+function verificationGuardsDependent(
+  script: ParsedScriptFile,
+  verification: ScriptMethodCall,
+  dependent: ScriptMethodCall,
+  receiver: string,
+): boolean {
+  return script.blockMatchGuards.some((guard) =>
+    normalizedGuardReceiver(
+      guard.receiverType,
+      guard.receiverHint,
+    ) === receiver &&
+    sourceInside(verification.source, guard.conditionSource) &&
+    sourceInside(dependent.source, guard.guardedSource)
+  );
+}
+
 function normalizedReceiver(call: ScriptMethodCall): string | undefined {
   const receiver = call.receiverHint?.trim();
   if (!receiver) return undefined;
@@ -292,7 +353,16 @@ export function analyzeScriptMutationTransactions(
           isVerification(candidate.call) &&
           normalizedReceiver(candidate.call) === receiver;
 
-        const verifyBeforeEntry = beforeDependent.find(matchesReceiver);
+        const verifyBeforeEntry = beforeDependent.find((candidate) =>
+          matchesReceiver(candidate) &&
+          candidate.kind === "method" &&
+          verificationGuardsDependent(
+            script,
+            candidate.call,
+            dependent,
+            receiver,
+          )
+        );
         const verifyAfterEntry = segment
           .slice(dependentIndex + 1)
           .find(matchesReceiver);
