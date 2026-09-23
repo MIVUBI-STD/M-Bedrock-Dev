@@ -28,7 +28,7 @@ function parseExecuteNested(command: string, source: SourceRef): CommandEffect |
 }
 
 function scoreboardAccessForOperation(operation: string): ScoreboardAccessMode {
-  if (operation === "test") return "read";
+  if (operation === "test" || operation === "get") return "read";
   if (operation === "operation") return "read-write";
   return "write";
 }
