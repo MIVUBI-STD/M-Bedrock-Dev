@@ -7,6 +7,7 @@ import type {
   ScriptCapabilityUse,
   ScriptEventSubscription,
   ScriptEntityEventTrigger,
+  ScriptDeferredCallback,
   ScriptCommandLiteral,
   ScriptImport,
   ScriptImportedSymbol,
@@ -160,6 +161,78 @@ function callbackNode(call: ts.CallExpression): ts.Node | undefined {
     return candidate;
   }
   return undefined;
+}
+
+const GENERATION_GUARD_PATTERN =
+  /(?:generation|epoch|revision|rev|token|operationId|sessionId|roundId|lifeId|entityId)/i;
+
+function deferredScheduler(
+  call: ts.CallExpression,
+  namedBindings: ReadonlyMap<string, { module: string; importedName: string }>,
+): ScriptDeferredCallback["scheduler"] | undefined {
+  if (!ts.isPropertyAccessExpression(call.expression)) return undefined;
+  const chain = propertyAccessChain(call.expression);
+  if (chain.length !== 2) return undefined;
+
+  const root = chain[0];
+  const method = chain[1];
+  const binding = root ? namedBindings.get(root) : undefined;
+  const canonicalRoot = binding?.importedName ?? root;
+  if (canonicalRoot !== "system") return undefined;
+
+  if (
+    method === "run" ||
+    method === "runTimeout" ||
+    method === "runInterval" ||
+    method === "runJob"
+  ) {
+    return method;
+  }
+  return undefined;
+}
+
+function generationGuardIdentifiers(node: ts.Node): string[] {
+  const identifiers = new Set<string>();
+
+  const collectGuardNames = (candidate: ts.Node): string[] => {
+    const names = new Set<string>();
+    const visit = (inner: ts.Node): void => {
+      if (ts.isIdentifier(inner) && GENERATION_GUARD_PATTERN.test(inner.text)) {
+        names.add(inner.text);
+      }
+      if (
+        ts.isPropertyAccessExpression(inner) &&
+        GENERATION_GUARD_PATTERN.test(inner.name.text)
+      ) {
+        names.add(inner.name.text);
+      }
+      ts.forEachChild(inner, visit);
+    };
+    visit(candidate);
+    return [...names];
+  };
+
+  const visit = (inner: ts.Node): void => {
+    if (ts.isBinaryExpression(inner)) {
+      const comparison = new Set([
+        ts.SyntaxKind.EqualsEqualsToken,
+        ts.SyntaxKind.EqualsEqualsEqualsToken,
+        ts.SyntaxKind.ExclamationEqualsToken,
+        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+        ts.SyntaxKind.LessThanToken,
+        ts.SyntaxKind.LessThanEqualsToken,
+        ts.SyntaxKind.GreaterThanToken,
+        ts.SyntaxKind.GreaterThanEqualsToken,
+      ]);
+      if (comparison.has(inner.operatorToken.kind)) {
+        for (const name of collectGuardNames(inner)) identifiers.add(name);
+      }
+    }
+    ts.forEachChild(inner, visit);
+  };
+
+  visit(node);
+  return [...identifiers].sort();
 }
 
 function customCommandCallback(
@@ -406,6 +479,7 @@ export function parseScriptFile(
   const events: ScriptEventSubscription[] = [];
   const dynamicProperties: DynamicPropertyAccess[] = [];
   const restrictedMutations: RestrictedExecutionMutation[] = [];
+  const deferredCallbacks: ScriptDeferredCallback[] = [];
   const methodCalls = inferScriptMethodCalls(file, source);
   const propertyAccesses = inferScriptPropertyAccesses(file, source);
   const propertyWrites = inferScriptPropertyWrites(file, source);
@@ -634,6 +708,25 @@ export function parseScriptFile(
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const chain = propertyAccessChain(node.expression);
 
+      const scheduler = deferredScheduler(node, namedMinecraftBindings);
+      if (scheduler) {
+        const callback = callbackNode(node);
+        const guardIdentifiers = callback
+          ? generationGuardIdentifiers(callback)
+          : [];
+        deferredCallbacks.push({
+          scheduler,
+          source: lineSource(file, node, source),
+          ...(callback
+            ? { callbackSource: lineSource(file, callback, source) }
+            : {}),
+          guardEvidence: guardIdentifiers.length > 0
+            ? "explicit-generation-check"
+            : "unresolved",
+          guardIdentifiers,
+        });
+      }
+
       if (node.expression.name.text === "triggerEvent") {
         const eventArg = node.arguments[0];
         if (eventArg && ts.isStringLiteralLike(eventArg)) {
@@ -771,6 +864,7 @@ export function parseScriptFile(
     events,
     dynamicProperties,
     restrictedMutations,
+    deferredCallbacks,
     methodCalls,
     propertyAccesses,
     propertyWrites,
