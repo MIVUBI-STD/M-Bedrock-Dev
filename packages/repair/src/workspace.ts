@@ -87,7 +87,7 @@ async function assertNotHardlinkedToSource(
 
     if (
       sourceInfo.dev === targetInfo.dev &&
-      sourceInfo.ino !== 0n &&
+      sourceInfo.ino !== 0 &&
       sourceInfo.ino === targetInfo.ino
     ) {
       throw new Error("Mutation target is hardlinked to immutable source content.");
@@ -136,19 +136,4 @@ export async function resolveWorkingPathSecure(
   }
 
   return lexicalTarget;
-}
-
-/**
- * Lexical-only compatibility helper.
- * Mutation application must use prepareMutationWorkspace + resolveWorkingPathSecure.
- */
-export function resolveWorkingPath(
-  workspace: MutationWorkspace,
-  relativePath: string,
-): string {
-  const target = resolve(workspace.workingRoot, relativePath);
-  if (!isWithin(resolve(workspace.workingRoot), target)) {
-    throw new Error("Mutation target escapes working root.");
-  }
-  return target;
 }

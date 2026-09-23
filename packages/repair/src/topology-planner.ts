@@ -1,11 +1,40 @@
-import type { CommandEffect } from "../../../analyzers/commands/src/effects.js";
-import type { LinearTopologyOutlier } from "../../../analyzers/topology/src/linear-outliers.js";
+import type { SourceRef } from "../../project-model/src/source-ref.js";
 import { createPatchTransaction } from "./create.js";
 import type { PatchTransaction } from "./types.js";
 
+export interface RepairCoordinate {
+  mode: "absolute" | "relative" | "local";
+  value: number;
+}
+
+export interface TopologyOutlierEvidence {
+  axis: "x" | "z";
+  expectedCoordinate: number;
+  actualCoordinate: number;
+}
+
+export type TopologyRepairEffect =
+  | {
+      kind: "fill";
+      region: {
+        from: { x: RepairCoordinate; y: RepairCoordinate; z: RepairCoordinate };
+        to: { x: RepairCoordinate; y: RepairCoordinate; z: RepairCoordinate };
+      };
+      block: string;
+      mode?: string;
+      source: SourceRef;
+    }
+  | {
+      kind: "setblock";
+      position: { x: RepairCoordinate; y: RepairCoordinate; z: RepairCoordinate };
+      block: string;
+      mode?: string;
+      source: SourceRef;
+    };
+
 export interface TopologyRepairCandidate {
-  outlier: LinearTopologyOutlier;
-  effect: CommandEffect;
+  outlier: TopologyOutlierEvidence;
+  effect: TopologyRepairEffect;
   rawCommand: string;
 }
 
@@ -13,19 +42,13 @@ export type TopologyRepairPlanResult =
   | { status: "planned"; transaction: PatchTransaction }
   | { status: "unsupported"; reason: string };
 
-function formatNumber(value: number): string {
-  return String(value);
-}
-
-function absoluteValue(
-  coordinate: { mode: "absolute" | "relative" | "local"; value: number },
-): number | undefined {
+function absoluteValue(coordinate: RepairCoordinate): number | undefined {
   return coordinate.mode === "absolute" ? coordinate.value : undefined;
 }
 
 function planFillReplacement(
-  effect: Extract<CommandEffect, { kind: "fill" }>,
-  outlier: LinearTopologyOutlier,
+  effect: Extract<TopologyRepairEffect, { kind: "fill" }>,
+  outlier: TopologyOutlierEvidence,
 ): string | undefined {
   const fromX = absoluteValue(effect.region.from.x);
   const fromY = absoluteValue(effect.region.from.y);
@@ -33,28 +56,21 @@ function planFillReplacement(
   const toX = absoluteValue(effect.region.to.x);
   const toY = absoluteValue(effect.region.to.y);
   const toZ = absoluteValue(effect.region.to.z);
-  if ([fromX, fromY, fromZ, toX, toY, toZ].some((value) => value === undefined)) {
-    return undefined;
-  }
+  if ([fromX, fromY, fromZ, toX, toY, toZ].some((value) => value === undefined)) return undefined;
 
   const delta = outlier.expectedCoordinate - outlier.actualCoordinate;
-  const nextFromX = outlier.axis === "x" ? fromX! + delta : fromX!;
-  const nextToX = outlier.axis === "x" ? toX! + delta : toX!;
-  const nextFromZ = outlier.axis === "z" ? fromZ! + delta : fromZ!;
-  const nextToZ = outlier.axis === "z" ? toZ! + delta : toZ!;
-
   return [
     "fill",
-    formatNumber(nextFromX), formatNumber(fromY!), formatNumber(nextFromZ),
-    formatNumber(nextToX), formatNumber(toY!), formatNumber(nextToZ),
+    String(outlier.axis === "x" ? fromX! + delta : fromX!), String(fromY!), String(outlier.axis === "z" ? fromZ! + delta : fromZ!),
+    String(outlier.axis === "x" ? toX! + delta : toX!), String(toY!), String(outlier.axis === "z" ? toZ! + delta : toZ!),
     effect.block,
     ...(effect.mode ? [effect.mode] : []),
   ].join(" ");
 }
 
 function planSetblockReplacement(
-  effect: Extract<CommandEffect, { kind: "setblock" }>,
-  outlier: LinearTopologyOutlier,
+  effect: Extract<TopologyRepairEffect, { kind: "setblock" }>,
+  outlier: TopologyOutlierEvidence,
 ): string | undefined {
   const x = absoluteValue(effect.position.x);
   const y = absoluteValue(effect.position.y);
@@ -64,9 +80,9 @@ function planSetblockReplacement(
   const delta = outlier.expectedCoordinate - outlier.actualCoordinate;
   return [
     "setblock",
-    formatNumber(outlier.axis === "x" ? x + delta : x),
-    formatNumber(y),
-    formatNumber(outlier.axis === "z" ? z + delta : z),
+    String(outlier.axis === "x" ? x + delta : x),
+    String(y),
+    String(outlier.axis === "z" ? z + delta : z),
     effect.block,
     ...(effect.mode ? [effect.mode] : []),
   ].join(" ");
@@ -78,18 +94,8 @@ export function planLinearTopologyRepair(
 ): TopologyRepairPlanResult {
   const { effect, outlier, rawCommand } = candidate;
 
-  if (effect.kind !== "fill" && effect.kind !== "setblock") {
-    return {
-      status: "unsupported",
-      reason: "Only absolute fill and setblock outliers are currently eligible for automatic topology repair.",
-    };
-  }
-
   if (!effect.source.range?.lineStart || effect.source.range.lineStart !== effect.source.range.lineEnd) {
-    return {
-      status: "unsupported",
-      reason: "Topology repair requires exact single-line source evidence.",
-    };
+    return { status: "unsupported", reason: "Topology repair requires exact single-line source evidence." };
   }
 
   const replacement = effect.kind === "fill"
@@ -97,10 +103,7 @@ export function planLinearTopologyRepair(
     : planSetblockReplacement(effect, outlier);
 
   if (!replacement || replacement === rawCommand) {
-    return {
-      status: "unsupported",
-      reason: "A deterministic absolute-coordinate replacement could not be constructed.",
-    };
+    return { status: "unsupported", reason: "A deterministic absolute-coordinate replacement could not be constructed." };
   }
 
   return {
@@ -108,29 +111,12 @@ export function planLinearTopologyRepair(
     transaction: createPatchTransaction({
       title: "repair linear topology coordinate outlier",
       sourceFingerprint,
-      operations: [{
-        kind: "replace-command",
-        source: effect.source,
-        expected: rawCommand,
-        replacement,
-      }],
-      preconditions: [{
-        kind: "source-fingerprint",
-        expected: sourceFingerprint,
-      }],
+      operations: [{ kind: "replace-command", source: effect.source, expected: rawCommand, replacement }],
+      preconditions: [{ kind: "source-fingerprint", expected: sourceFingerprint }],
       validation: [
         { kind: "reparse", source: effect.source },
-        {
-          kind: "topology-compare",
-          source: effect.source,
-          expectation: "outlier-absent",
-        },
-        {
-          kind: "rerun-diagnostic",
-          code: "TOPOLOGY_TRANSLATION_OUTLIER",
-          source: effect.source,
-          expectation: "absent",
-        },
+        { kind: "topology-compare", source: effect.source, expectation: "outlier-absent" },
+        { kind: "rerun-diagnostic", code: "TOPOLOGY_TRANSLATION_OUTLIER", source: effect.source, expectation: "absent" },
       ],
     }),
   };

@@ -6,7 +6,7 @@ const MAX_TEMP_ATTEMPTS = 8;
 
 async function existingMode(path: string): Promise<number | undefined> {
   try {
-    return (await stat(path)).mode;
+    return (await stat(path)).mode & 0o777;
   } catch (error) {
     const code = typeof error === "object" && error !== null && "code" in error
       ? String((error as { code?: unknown }).code)
