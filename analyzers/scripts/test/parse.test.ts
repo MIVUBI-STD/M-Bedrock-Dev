@@ -244,6 +244,39 @@ unsafe.currentValue;
     ]));
   });
 
+  it("tracks type-only symbols and bounded namespace members", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import type { WorldInitializeBeforeEvent } from "@minecraft/server";
+import * as mc from "@minecraft/server";
+
+const legacy = mc.GameMode.adventure;
+type Init = mc.WorldInitializeAfterEvent;
+`,
+      source,
+    );
+
+    expect(parsed.importedSymbols).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        importedName: "WorldInitializeBeforeEvent",
+        typeOnly: true,
+      }),
+      expect.objectContaining({
+        importedName: "WorldInitializeAfterEvent",
+        typeOnly: true,
+      }),
+    ]));
+
+    expect(parsed.moduleMemberAccesses).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        importedName: "GameMode",
+        member: "adventure",
+        symbol: "GameMode.adventure",
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

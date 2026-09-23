@@ -15,8 +15,9 @@ import {
   type ScriptArgumentKind,
 } from "../../compatibility/src/script-signature-matrix.js";
 import { findScriptReturnContractRule } from "../../compatibility/src/script-return-contract-matrix.js";
+import { findScriptTypeRule } from "../../compatibility/src/script-type-matrix.js";
 
-export type ScriptApiUsageKind = "event" | "method" | "property" | "enum";
+export type ScriptApiUsageKind = "event" | "method" | "property" | "enum" | "type";
 export type ScriptApiKnowledgeState = "known" | "unclassified";
 
 export interface ScriptCallShapeUsage {
@@ -388,6 +389,13 @@ export function deriveScriptApiUsage(
       if (property.inference === "direct") item.directOccurrences += 1;
       else item.boundedOccurrences += 1;
       item.receiverTypes.add(property.receiverType);
+    }
+
+    for (const imported of script.importedSymbols) {
+      if (imported.module !== "@minecraft/server") continue;
+      const rule = findScriptTypeRule(imported.importedName);
+      if (!rule) continue;
+      getOrCreate("type", imported.importedName, file, rule);
     }
 
     for (const member of script.moduleMemberAccesses) {

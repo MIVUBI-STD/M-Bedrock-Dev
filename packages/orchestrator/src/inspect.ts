@@ -25,6 +25,7 @@ import {
 } from "../../../analyzers/diagnostics/src/script-member-findings.js";
 import { scriptSignatureDiagnostics } from "../../../analyzers/diagnostics/src/script-signature-findings.js";
 import { scriptReturnContractDiagnostics } from "../../../analyzers/diagnostics/src/script-return-contract-findings.js";
+import { scriptImportedTypeLifecycleDiagnostics } from "../../../analyzers/diagnostics/src/script-type-findings.js";
 import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
@@ -431,6 +432,10 @@ export async function inspectDirectory(
       scripts,
     ));
     diagnostics.push(...scriptReturnContractDiagnostics(
+      scriptCompatibility,
+      scripts,
+    ));
+    diagnostics.push(...scriptImportedTypeLifecycleDiagnostics(
       scriptCompatibility,
       scripts,
     ));
