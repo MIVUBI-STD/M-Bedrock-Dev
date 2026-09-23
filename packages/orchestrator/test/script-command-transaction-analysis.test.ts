@@ -207,6 +207,46 @@ describe("script literal command mutation transactions", () => {
     ]);
   });
 
+  it("proves a gated summon after fill mutation", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+
+      dimension.runCommand("fill 0 64 0 15 70 15 minecraft:stone");
+      dimension.runCommand(
+        "execute if block 1 64 1 minecraft:stone run summon minecraft:zombie 5 65 5"
+      );
+    `);
+
+    const assessment = analyzeScriptCommandMutationTransactions([script])[0];
+    expect(assessment?.status).toBe("verified-before-dependent");
+
+    const evidence = scriptCommandMutationRuntimeEvidence([assessment!]);
+    expect(evidence).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        predicate: "script-verification-before-dependent-action",
+        state: "present",
+      }),
+    ]));
+  });
+
+  it("keeps summon before verification unresolved", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+
+      dimension.runCommand("fill 0 64 0 15 70 15 minecraft:stone");
+      dimension.runCommand("summon minecraft:zombie 5 65 5");
+      dimension.runCommand(
+        "execute if block 1 64 1 minecraft:stone run function demo:done"
+      );
+    `);
+
+    expect(
+      analyzeScriptCommandMutationTransactions([script])[0]?.status,
+    ).toBe("verification-unresolved");
+  });
+
   it("also proves fill/setblock mutation bounds without structure inventory", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
