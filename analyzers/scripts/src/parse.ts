@@ -9,6 +9,7 @@ import type {
   ScriptEntityEventTrigger,
   ScriptDeferredCallback,
   ScriptLocalFunctionCall,
+  ScriptBlockMatchGuard,
   ScriptCommandLiteral,
   ScriptImport,
   ScriptImportedSymbol,
@@ -283,6 +284,92 @@ function localExecutionRegionId(
   return "module";
 }
 
+function requiredTrueCalls(
+  expression: ts.Expression,
+): ts.CallExpression[] {
+  if (ts.isParenthesizedExpression(expression)) {
+    return requiredTrueCalls(expression.expression);
+  }
+  if (ts.isCallExpression(expression)) return [expression];
+
+  if (ts.isBinaryExpression(expression)) {
+    if (expression.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) {
+      return [
+        ...requiredTrueCalls(expression.left),
+        ...requiredTrueCalls(expression.right),
+      ];
+    }
+
+    const equality =
+      expression.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken ||
+      expression.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken;
+    const inequality =
+      expression.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsToken ||
+      expression.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken;
+
+    if (equality || inequality) {
+      const leftTrue = expression.left.kind === ts.SyntaxKind.TrueKeyword;
+      const rightTrue = expression.right.kind === ts.SyntaxKind.TrueKeyword;
+      const leftFalse = expression.left.kind === ts.SyntaxKind.FalseKeyword;
+      const rightFalse = expression.right.kind === ts.SyntaxKind.FalseKeyword;
+
+      if ((equality && leftTrue) || (inequality && leftFalse)) {
+        return requiredTrueCalls(expression.right);
+      }
+      if ((equality && rightTrue) || (inequality && rightFalse)) {
+        return requiredTrueCalls(expression.left);
+      }
+    }
+  }
+
+  return [];
+}
+
+function sameStart(a: SourceRef, b: SourceRef): boolean {
+  return (
+    a.relativePath === b.relativePath &&
+    a.range?.lineStart === b.range?.lineStart &&
+    a.range?.columnStart === b.range?.columnStart
+  );
+}
+
+function inferBlockMatchGuards(
+  file: ts.SourceFile,
+  source: SourceRef,
+  methodCalls: readonly ParsedScriptFile["methodCalls"][number][],
+): ScriptBlockMatchGuard[] {
+  const output: ScriptBlockMatchGuard[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isIfStatement(node)) {
+      for (const callNode of requiredTrueCalls(node.expression)) {
+        const callSource = lineSource(file, callNode, source);
+        const call = methodCalls.find((item) =>
+          sameStart(item.source, callSource) &&
+          item.method === "matches" &&
+          (
+            item.receiverType === "Block" ||
+            item.receiverType === "BlockPermutation"
+          )
+        );
+        if (!call?.receiverHint) continue;
+
+        output.push({
+          receiverHint: call.receiverHint,
+          receiverType: call.receiverType,
+          conditionSource: lineSource(file, node.expression, source),
+          guardedSource: lineSource(file, node.thenStatement, source),
+          executionRegion: localExecutionRegionId(node, file),
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+  return output;
+}
+
 function customCommandCallback(
   call: ts.CallExpression,
 ): ts.ArrowFunction | ts.FunctionExpression | undefined {
@@ -535,6 +622,11 @@ export function parseScriptFile(
   const deferredCallbacks: ScriptDeferredCallback[] = [];
   const localFunctionCalls: ScriptLocalFunctionCall[] = [];
   const methodCalls = inferScriptMethodCalls(file, source);
+  const blockMatchGuards = inferBlockMatchGuards(
+    file,
+    source,
+    methodCalls,
+  );
   const propertyAccesses = inferScriptPropertyAccesses(file, source);
   const propertyWrites = inferScriptPropertyWrites(file, source);
   const entityEventTriggers: ScriptEntityEventTrigger[] = [];
@@ -957,6 +1049,7 @@ export function parseScriptFile(
     restrictedMutations,
     deferredCallbacks,
     localFunctionCalls,
+    blockMatchGuards,
     methodCalls,
     propertyAccesses,
     propertyWrites,
