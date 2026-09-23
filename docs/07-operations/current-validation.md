@@ -1,49 +1,68 @@
 # Current Validation
 
-Status: REMOTE STATIC SOURCE COMPLETE AND GREEN; PRODUCTION/RUNTIME PROOF PENDING
+Status: REMOTE STATIC SOURCE + REPRESENTATIVE PRODUCTION PORTFOLIO GREEN; RUNTIME PROOF PENDING
 
-Latest source-bearing verification on 2026-09-23:
+Latest source-bearing compatibility work on 2026-09-23 includes:
 
-- commit `dc15e91919d62a32907fe54f5240c1ab5e34dafb` completed the full Verify workflow successfully;
-- repository policy passed;
-- source boundaries passed;
-- TypeScript `tsc --noEmit` passed;
-- the full Vitest suite passed.
-
-Source-verified Script API capabilities now include:
-
-- module/version and prerelease compatibility;
-- event/method/property/enum/imported-type lifecycle;
-- bounded receiver and namespace inference;
-- signature/call-shape migration;
-- return-contract migration with bounded local guards;
-- property mutability and incompatible writes;
+- bundled `world` / `system` alias canonicalization;
+- production-observed current-stable knowledge promotion;
+- imported type/namespace lifecycle;
+- guarded optional-return flow;
+- property mutability;
 - enum backing-value migration;
-- receiver-aware restricted execution and custom-command callback handling;
-- per-map and portfolio distributions for symbols, call shapes, result uses, property writes, and enum literal comparisons;
-- Minecraft update/regression correlation.
+- receiver-aware restricted execution;
+- entity-event external-trigger evidence and project-level correlation.
+
+The current branch has passed:
 
 ```text
-repository policy   VERIFIED
+Repository Policy   VERIFIED
 source boundaries   VERIFIED
-typecheck           VERIFIED
-Vitest              VERIFIED
-source-bearing head dc15e91919d62a32907fe54f5240c1ab5e34dafb
+TypeScript           VERIFIED
+Vitest               VERIFIED
 ```
 
-Documentation-only commits after this source-bearing head are verified independently to avoid self-referential SHA churn.
+## Representative production proof
+
+Two real production `.mcworld` artifacts were analyzed with the portable workspace using Node `v24.20.0`.
+
+Combined Script API result:
+
+```text
+maps                  2
+occurrences         570
+unique symbols       82
+known symbols        82
+unclassified          0
+promotion candidates  0
+unknown.* symbols     0
+```
+
+Artifact-level Script API coverage:
+
+```text
+Defense V1   67 / 67 known, 0 unclassified
+Defense V2   66 / 66 known, 0 unclassified
+```
+
+Both artifacts also report zero unresolved semantic references.
+
+Remaining diagnostics are either genuine map findings or explicit static-analysis limits:
+
+- restricted-execution mutations;
+- deprecated Script API usage;
+- optional-return contract risks;
+- informational entity-event reachability limits without observed trigger evidence.
 
 ## Remaining proof lanes
 
-These are not unfinished remote-static architecture tasks:
+These are not unfinished static architecture work:
 
-- representative production-map coverage and diagnosis quality;
-- genuine Minecraft `.mcworld` import/load acceptance;
+- genuine Minecraft import/load acceptance;
 - target-build runtime behavior;
-- entity AI/event timing;
+- entity AI and event timing;
 - chunk/load/saved-tick behavior;
 - live multiplayer/session interleavings;
-- semantic behavior changes with identical source syntax;
-- newly introduced official Script API changes not yet observed in real map usage.
+- semantic behavior changes with identical source syntax.
 
-They require production artifacts, local game execution, or controlled runtime/differential evidence.
+Those require local Minecraft or controlled runtime/differential evidence.

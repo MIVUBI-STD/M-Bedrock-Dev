@@ -1,31 +1,28 @@
 # Next Action
 
-Remote static `@minecraft/server` compatibility architecture is complete for the current evidence-backed migration set.
+The current remote-static compatibility architecture is complete and now validated against a representative production portfolio.
 
-Completed:
+Production proof:
 
-1. module/version and stable/beta/internal track compatibility;
-2. event, method, property, enum, and imported-type lifecycle;
-3. bounded receiver, property, named-import, namespace-import, and local guarded-flow inference;
-4. method signature/call-shape migration;
-5. optional return-contract migration;
-6. property mutability/read-only migration;
-7. enum member removal and enum backing-value migration;
-8. receiver-aware restricted execution for before-events and custom-command callbacks, with startup kept in the distinct early-execution lane;
-9. real-map usage distributions for symbols, call shapes, result uses, property writes, and enum literal comparisons;
-10. cross-map portfolio aggregation and usage-driven knowledge promotion;
-11. Script API ↔ Minecraft update/regression correlation;
-12. repository architecture boundaries remain one-way and verified.
+```text
+2 production mcworld artifacts
+570 Script API occurrences
+82 unique symbols
+82 known
+0 unclassified
+0 promotion candidates
+0 unknown singleton-root symbols
+0 unresolved references
+```
 
-Do not add another generalized static subsystem without new production evidence.
+Do not add another generalized static subsystem without new evidence.
 
-Next proof phase:
+Next work should follow one of these lanes:
 
-1. run `script-usage` over representative production `.mcworld` artifacts;
-2. run `compare-update` against real pre/post-update artifacts;
-3. promote only observed unclassified symbols with official provenance;
-4. add field-level/object-shape rules only when real map usage plus official field-level evidence exists;
-5. validate genuine Minecraft import/load acceptance;
-6. validate entity AI, chunks, saved ticks, timing, multiplayer, and semantic behavior in local/live runtime lanes.
+1. **Map repair** — act on real findings already surfaced by production analysis, such as deprecated Script API use, optional `getComponent` return risks, or restricted-execution calls.
+2. **Runtime proof** — import/load the map in the target Minecraft build and validate entity AI, timing, chunks, saved ticks, and multiplayer interleavings.
+3. **Update differential** — run `compare-update` on real before/after Minecraft-update artifacts.
+4. **Knowledge expansion** — only when a real map exposes an unclassified symbol or Microsoft publishes a new documented API transition.
+5. **Entity-event proof** — supply runtime or additional content evidence for events that remain informationally unreachable from internal/engine/project trigger roots.
 
-Further source expansion is triggered by evidence from production maps or new official API changes, not by broad API enumeration.
+Remote static work is not the current bottleneck. Production/runtime evidence is.
