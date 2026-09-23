@@ -55,6 +55,8 @@ export type KnowledgeDomain =
   | "interactive-blocks"
   | "input-gesture"
   | "physics"
+  | "mounts"
+  | "npc-dialogue"
   | "education";
 
 export type KnowledgeRelationKind =
