@@ -10,6 +10,7 @@ import { extractNavigationCapabilities } from "../../../analyzers/entities/src/n
 import { extractTargetingSemantics } from "../../../analyzers/entities/src/targeting.js";
 import { extractAttackSemantics } from "../../../analyzers/entities/src/attack.js";
 import { extractSensorSemantics } from "../../../analyzers/entities/src/sensors.js";
+import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/reachability.js";
 
 export interface EntityStateKnowledgeFinding extends EntityKnowledgeFinding {
   stateId: string;
@@ -27,6 +28,9 @@ export interface EntityKnowledgeAnalysis {
   attackBehaviors: number;
   sensors: number;
   configuredSensorEvents: number;
+  reachableEvents: number;
+  brokenTransitions: number;
+  internallyUnreachedEvents: number;
   findings: EntityStateKnowledgeFinding[];
   staticAnalysisLimits: string[];
 }
@@ -79,6 +83,12 @@ export function analyzeEntityWithKnowledge(
     }
   }
 
+  const reachability = analyzeEntityTransitionReachability(entity);
+  const brokenTransitions =
+    reachability.undefinedSensorEvents.length +
+    reachability.undefinedTriggeredEvents.length +
+    reachability.missingComponentGroups.length;
+
   const staticAnalysisLimits: string[] = [];
   if (entity.runtimeIdentifier) {
     staticAnalysisLimits.push(
@@ -96,6 +106,9 @@ export function analyzeEntityWithKnowledge(
     attackBehaviors,
     sensors,
     configuredSensorEvents,
+    reachableEvents: reachability.reachableEvents.length,
+    brokenTransitions,
+    internallyUnreachedEvents: reachability.internallyUnreachedEvents.length,
     findings,
     staticAnalysisLimits,
   };

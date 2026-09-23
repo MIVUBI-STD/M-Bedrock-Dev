@@ -8,6 +8,8 @@ import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
 import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
 import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/entity-knowledge-findings.js";
+import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/entity-transition-findings.js";
+import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/reachability.js";
 import { resolveScriptImports } from "../../../analyzers/scripts/src/resolve.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
@@ -319,6 +321,10 @@ export async function inspectDirectory(
       entityKnowledgeGaps += analysis.findings.length;
       entityStaticLimits += analysis.staticAnalysisLimits.length;
       diagnostics.push(...entityKnowledgeDiagnostics(analysis, item.node.source));
+      diagnostics.push(...entityTransitionDiagnostics(
+        analyzeEntityTransitionReachability(item.parsed),
+        item.node.source,
+      ));
     }
   }
 

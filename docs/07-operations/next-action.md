@@ -1,30 +1,28 @@
 # Next Action
 
-The entity knowledge path now covers target acquisition, navigation, attack execution and sensor-driven transitions.
+Entity knowledge now includes conservative internal event reachability.
 
 Implemented:
 
-1. target/filter semantic extraction;
-2. navigation variant + capability extraction;
-3. melee/ranged attack semantic extraction;
-4. shooter/damage-component prerequisites;
-5. environment/entity sensor event extraction;
-6. filter-presence evidence for sensors;
-7. state-scoped knowledge evaluation across targeting/navigation/attack/sensors.
+1. sensor-root event discovery;
+2. sensor → event reachability traversal;
+3. chained event trigger traversal;
+4. undefined sensor event diagnostics;
+5. undefined event-trigger diagnostics;
+6. undefined component-group add/remove diagnostics;
+7. informational reporting for events not internally reachable.
 
 Next priority:
 
-1. connect sensor-emitted events directly to event/component-group reachability;
-2. detect unreachable or orphan event transitions;
-3. expand attack prerequisites for fire_at_target/projectile definitions;
-4. then move into structure/.mcstructure semantics and chunk/ticking lifecycle.
+1. connect reachable event states to specific combat/navigation state requirements;
+2. detect transitions that are defined but cannot produce the required component set;
+3. expand projectile/fire_at_target semantics;
+4. then begin structure/.mcstructure knowledge;
+5. follow with chunk/ticking lifecycle knowledge.
 
-The diagnostic model should now distinguish:
+The key distinction is preserved:
 
 ```text
-no target
-target filtered out
-target unreachable
-attack behavior missing prerequisite
-sensor transition never configured
+internally broken transition = diagnostic
+not internally reachable = uncertainty, not automatic bug
 ```
