@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-mount-rideable",
+      "title": "EntityRideableComponent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityrideablecomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-mount-rideable-json",
+      "title": "minecraft:rideable",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_rideable?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-mount-components",
+      "title": "Entity Components Guide",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitycomponentsguide?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "mount.rideable-seat-model",
+      "domain": "mounts",
+      "subject": "minecraft:rideable",
+      "statement": "Rideable entities define seat_count, seat definitions, controlling seat, rider family constraints, and dismount behavior; rider state therefore includes seat and control semantics rather than only a parent-child relation.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-mount-rideable",
+        "ms-mount-rideable-json"
+      ],
+      "capabilityTags": [
+        "rideable",
+        "seat"
+      ],
+      "riskSurfaces": [
+        "seat-conflict",
+        "wrong-controller"
+      ]
+    },
+    {
+      "id": "mount.add-remove-rider-runtime",
+      "domain": "mounts",
+      "subject": "EntityRideableComponent",
+      "statement": "The Rideable component exposes runtime rider management and inspection, allowing scripts to add/remove riders and inspect current riders/seats; these relationships can change independently of arena state.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-mount-rideable"
+      ],
+      "capabilityTags": [
+        "rider",
+        "runtime"
+      ],
+      "riskSurfaces": [
+        "orphan-rider",
+        "stale-passenger"
+      ]
+    },
+    {
+      "id": "mount.dismount-placement-policy",
+      "domain": "mounts",
+      "subject": "dismount_mode",
+      "statement": "Rideable entities define dismount placement behavior, so dismount can move riders to positions that may violate arena containment if not considered by gameplay design.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-mount-rideable-json"
+      ],
+      "capabilityTags": [
+        "dismount",
+        "position"
+      ],
+      "riskSurfaces": [
+        "out-of-bounds",
+        "unsafe-dismount"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "mount.relation-seat-gates-control",
+      "domain": "mounts",
+      "subject": "controlling-seat",
+      "kind": "gates",
+      "object": "vehicle-control",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-mount-rideable",
+        "ms-mount-rideable-json"
+      ]
+    }
+  ]
+}
