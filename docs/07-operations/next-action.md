@@ -1,22 +1,22 @@
 # Next Action
 
-Native-world evidence now supports both spatial correlation and differential comparison.
+Native-world differential analysis now has a direct artifact comparison entrypoint.
 
 Implemented:
 
-1. embedded command world/chunk placement correlation contract;
-2. native BlockEntity/PendingTicks/RandomTicks evidence annotation;
-3. native summary count deltas;
-4. bounded added/removed/changed chunk-signal diffs;
-5. non-comparable state when either native scan failed;
-6. explicit truncation semantics.
+1. compare two mcworld/zip artifacts through the same inspection pipeline;
+2. reuse the same knowledge catalog for both sides;
+3. compare fingerprints and diagnostic counts;
+4. compare native LevelDB summaries using bounded world-state diffs;
+5. CLI entrypoint:
+   `npm run cli -- compare <before.mcworld> <after.mcworld>`.
 
-Next priority:
+Recommended next proof work:
 
-1. expose placed embedded commands directly from structure inspection;
-2. correlate each transformed command block with native chunk signals in inspectArtifact;
-3. add a CLI/API comparison entrypoint for two mcworld artifacts;
-4. use update-version fingerprints alongside native-world diffs;
-5. then parse NPC dialogue scene JSON and Education-specific world mechanics.
+1. use the same real map before/after a Minecraft update;
+2. compare native chunk signals around known runtime-sensitive structures;
+3. record which native changes correlate with known regressions;
+4. promote only repeatable correlations into regression knowledge;
+5. continue Education scene/NPC graph support separately.
 
-Differential evidence must remain descriptive until a regression invariant or runtime observation explains the change.
+The comparison tool reports differences; it does not label a native change as a bug without additional evidence.
