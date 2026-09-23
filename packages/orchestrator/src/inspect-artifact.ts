@@ -8,6 +8,7 @@ import { inspectDirectory } from "./inspect.js";
 import type { InspectDirectoryResult, InspectTargetProfile } from "./types.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { analyzeWorldDbNative } from "./world-db-analysis.js";
+import { worldDbRuntimeEvidence } from "./world-db-runtime-evidence.js";
 import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
@@ -34,8 +35,15 @@ export async function inspectArtifact(
     await extractZipSafely(path, sourceRoot, NORMAL_EXTRACTION_BUDGET);
     await cp(sourceRoot, workingRoot, { recursive: true });
 
-    const result = await inspectDirectory(workingRoot, artifactId, target, fingerprint, knowledgeCatalog);
     const nativeWorldDb = await analyzeWorldDbNative(workingRoot);
+    const result = await inspectDirectory(
+      workingRoot,
+      artifactId,
+      target,
+      fingerprint,
+      knowledgeCatalog,
+      worldDbRuntimeEvidence(nativeWorldDb),
+    );
     const embeddedCommandNativeCorrelations =
       correlateEmbeddedCommandsWithNativeChunks(
         result.structureRuntime.placedEmbeddedCommands,
