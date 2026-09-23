@@ -51,6 +51,9 @@ function methodEvidence(call: ScriptMethodCall): RuntimeEvidenceRecord[] {
   if (isEntityLike(call) && call.method === "clearVelocity") {
     records.push(observed("velocity-normalization", call.source, call.symbol));
   }
+  if (call.receiverType === "Dimension" && call.method === "spawnEntity") {
+    records.push(observed("entity-spawn-request", call.source, call.symbol));
+  }
   if (call.receiverType === "Block" && (call.method === "setPermutation" || call.method === "setType")) {
     records.push(observed("block-write", call.source, call.symbol));
     records.push(observed("world-mutation-request", call.source, call.symbol));
