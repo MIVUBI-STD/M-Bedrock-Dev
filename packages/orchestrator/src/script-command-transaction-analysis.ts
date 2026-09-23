@@ -51,6 +51,7 @@ export interface ScriptCommandMutationAssessment {
   executionRegion: string;
   applyLiteral: ScriptCommandLiteral;
   dependentLiteral?: ScriptCommandLiteral;
+  dependentLabel?: string;
   status: ScriptCommandMutationOrderingStatus;
   barriers: readonly TimelineEntry[];
 }
@@ -332,18 +333,16 @@ function rootsForScript(script: ParsedScriptFile): string[] {
     ...script.localFunctionCalls.map((call) => call.callerRegion),
     ...script.localFunctionCalls.map((call) => call.targetRegion),
   ]);
-  const calledTargets = new Set(
-    script.localFunctionCalls.map((call) => call.targetRegion),
-  );
-
-  const roots = [...regions].filter((region) =>
-    region === "module" ||
-    region.startsWith("callback@") ||
-    !calledTargets.has(region)
-  );
-  return roots.length > 0
-    ? roots.sort()
-    : [...regions].sort();
+  // Named functions are not assumed runtime entrypoints merely because
+  // nothing in this file calls them; they may be dead code or externally
+  // exported. Module execution and engine/callback regions are the only
+  // statically justified roots here.
+  return [...regions]
+    .filter((region) =>
+      region === "module" ||
+      region.startsWith("callback@")
+    )
+    .sort();
 }
 
 function regionEvents(
@@ -535,6 +534,11 @@ export function analyzeScriptCommandMutationTransactions(
           executionRegion: root,
           applyLiteral: applyEntry.literal,
           dependentLiteral: dependent,
+          dependentLabel:
+            dependentKind(
+              dependent,
+              dependentContracts,
+            ) ?? "unknown",
           status: verified
             ? "verified-before-dependent"
             : "verification-unresolved",
@@ -567,12 +571,7 @@ export function scriptCommandMutationRuntimeEvidence(
       ],
       note:
         "Literal command mutation precedes dependent action: " +
-        (
-          dependentKind(
-            item.dependentLiteral,
-            dependentContracts,
-          ) ?? "unknown"
-        ) +
+        (item.dependentLabel ?? "unknown") +
         ".",
     });
 
