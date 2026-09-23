@@ -13,6 +13,10 @@ import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evid
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 import type { ParsedStructureSummary } from "./structure-runtime-analysis.js";
 import {
+  mutationDependentActionLabel,
+  type MutationDependentActionContract,
+} from "../../project-model/src/mutation-dependent-action.js";
+import {
   deriveStructurePlacementBounds,
   type PlacementBounds,
 } from "./structure-proof-analysis.js";
@@ -200,9 +204,62 @@ function isApply(
   );
 }
 
+function matchingDependentContract(
+  literal: ScriptCommandLiteral,
+  contracts: readonly MutationDependentActionContract[],
+): MutationDependentActionContract | undefined {
+  const effects = flattenCommandEffects(
+    analyzeCommand(literal.command, literal.source),
+  );
+
+  for (const effect of effects) {
+    const match = contracts.find((contract) => {
+      if (
+        contract.kind === "function-call" &&
+        effect.kind === "function-call"
+      ) {
+        return contract.functionTarget === effect.target;
+      }
+      if (
+        contract.kind === "scoreboard-write" &&
+        effect.kind === "scoreboard-access" &&
+        (
+          effect.access === "write" ||
+          effect.access === "read-write"
+        )
+      ) {
+        return contract.objective === effect.objective;
+      }
+      if (
+        contract.kind === "tag-write" &&
+        effect.kind === "tag-mutation"
+      ) {
+        return contract.tag === effect.tag;
+      }
+      if (
+        contract.kind === "entity-event" &&
+        effect.kind === "entity-event-trigger"
+      ) {
+        return contract.event === effect.event;
+      }
+      if (
+        contract.kind === "dialogue" &&
+        effect.kind === "dialogue"
+      ) {
+        return contract.dialogueScene === effect.sceneName;
+      }
+      return false;
+    });
+    if (match) return match;
+  }
+
+  return undefined;
+}
+
 function dependentKind(
   literal: ScriptCommandLiteral,
-): "teleport" | "entity-spawn" | undefined {
+  contracts: readonly MutationDependentActionContract[] = [],
+): string | undefined {
   const effects = flattenCommandEffects(
     analyzeCommand(literal.command, literal.source),
   );
@@ -212,13 +269,20 @@ function dependentKind(
   if (effects.some((effect) => effect.kind === "entity-spawn")) {
     return "entity-spawn";
   }
-  return undefined;
+  const contract = matchingDependentContract(
+    literal,
+    contracts,
+  );
+  return contract
+    ? mutationDependentActionLabel(contract)
+    : undefined;
 }
 
 function isDependent(
   literal: ScriptCommandLiteral,
+  contracts: readonly MutationDependentActionContract[] = [],
 ): boolean {
-  return dependentKind(literal) !== undefined;
+  return dependentKind(literal, contracts) !== undefined;
 }
 
 function inside(
@@ -373,13 +437,31 @@ function expandRegion(
 export function analyzeScriptCommandMutationTransactions(
   scripts: readonly ParsedScriptFile[],
   structures: readonly ParsedStructureSummary[] = [],
+  dependentContractsOrMaxDepth:
+    | readonly MutationDependentActionContract[]
+    | number = [],
   maxDepth = 16,
 ): ScriptCommandMutationAssessment[] {
+  const dependentContracts =
+    typeof dependentContractsOrMaxDepth === "number"
+      ? []
+      : dependentContractsOrMaxDepth;
+  const effectiveMaxDepth =
+    typeof dependentContractsOrMaxDepth === "number"
+      ? dependentContractsOrMaxDepth
+      : maxDepth;
+
   const output: ScriptCommandMutationAssessment[] = [];
 
   for (const script of scripts) {
     for (const root of rootsForScript(script)) {
-      const timeline = expandRegion(script, root, [], 0, maxDepth);
+      const timeline = expandRegion(
+        script,
+        root,
+        [],
+        0,
+        effectiveMaxDepth,
+      );
 
       for (let index = 0; index < timeline.length; index += 1) {
         const applyEntry = timeline[index];
@@ -403,7 +485,10 @@ export function analyzeScriptCommandMutationTransactions(
         const dependentIndex = segment.findIndex(
           (item) =>
             item.kind === "command" &&
-            isDependent(item.literal),
+            isDependent(
+              item.literal,
+              dependentContracts,
+            ),
         );
         const dependentEntry = dependentIndex >= 0
           ? segment[dependentIndex]
@@ -482,7 +567,12 @@ export function scriptCommandMutationRuntimeEvidence(
       ],
       note:
         "Literal command mutation precedes dependent action: " +
-        (dependentKind(item.dependentLiteral) ?? "unknown") +
+        (
+          dependentKind(
+            item.dependentLiteral,
+            dependentContracts,
+          ) ?? "unknown"
+        ) +
         ".",
     });
 
