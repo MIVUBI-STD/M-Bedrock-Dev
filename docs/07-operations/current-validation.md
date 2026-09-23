@@ -1,39 +1,39 @@
 # Current Validation
 
-Status: EXACT-HEAD SOURCE VERIFICATION GREEN
+Status: SOURCE VERIFICATION GREEN; PRODUCTION MAP EVIDENCE PENDING
 
-GitHub Actions proof on 2026-09-23:
+Latest source-bearing verification on 2026-09-23:
 
-- exact commit `b8d3178d32d48714bca4dd621d193bb8997ec20f` completed the full Verify workflow successfully;
+- commit `a6c551fcbecad41f3dd431f74ef2db6d3e8d0036` completed the full Verify workflow successfully;
 - repository policy verification passed;
 - TypeScript `tsc --noEmit` passed;
-- the full Vitest suite passed;
-- the separate Repository Policy workflow also passed for the same exact commit.
+- the full Vitest suite passed.
 
-The verification cycle exposed and remediated:
+Recently proven source capabilities include:
 
-- repair/analyzer ownership violations;
-- stale graph identity fixtures and strict optional-property contract drift;
-- stale parser/reference/interleaving assertions;
-- repeated-topology mutation blindspots;
-- session-model cutscene ownership defects found by property-based testing;
-- optional coverage metadata being treated as mandatory invariant evidence.
+- usage-driven event-symbol compatibility;
+- method-symbol version compatibility;
+- bounded receiver-type inference;
+- inferred Entity/Dimension compatibility diagnostics;
+- per-map Script API usage inventory;
+- multi-map usage aggregation and unclassified-symbol promotion candidates.
 
-Current remote/source proof:
+Current source proof:
 
 ```text
 repository policy  VERIFIED
 typecheck          VERIFIED
 Vitest             VERIFIED
-exact Local head   VERIFIED at b8d3178d32d48714bca4dd621d193bb8997ec20f
+source-bearing head a6c551fcbecad41f3dd431f74ef2db6d3e8d0036
 ```
 
 Still not proven:
 
+- representative production-map Script API symbol distribution;
 - genuine Minecraft-loadable mcworld acceptance;
 - production-map diagnosis quality;
 - Minecraft package import/load acceptance;
 - local Minecraft runtime behavior;
 - live multiplayer/runtime behavior.
 
-These remain separate LOCAL GAME / LIVE GAME proof lanes.
+These remain separate production-artifact, LOCAL GAME, and LIVE GAME proof lanes.
