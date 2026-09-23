@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-event-order-policy-v1",
+      "title": "MIVUBI Event Ordering and Tick Semantics Policy v1",
+      "url": "project://knowledge/event-order-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "event-policy.separate-event-from-observable-state",
+      "domain": "event-ordering",
+      "subject": "state observability",
+      "statement": "Never infer that an event having fired means all resulting gameplay state is already observable. Model EVENT_RECEIVED, MUTATION_QUEUED, MUTATION_APPLIED, and STATE_VERIFIED as separate evidence stages.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"],
+      "capabilityTags": ["observability", "evidence-stage"],
+      "riskSurfaces": ["read-after-write", "false-readiness", "tick-ordering"]
+    },
+    {
+      "id": "event-policy.no-same-tick-read-after-write-assumption",
+      "domain": "event-ordering",
+      "subject": "read-after-write",
+      "statement": "Analyzer should flag logic that mutates entity/component/property state and immediately branches on the new value in the same event/tick without an API-specific observability guarantee.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"],
+      "capabilityTags": ["read-after-write", "same-tick"],
+      "riskSurfaces": ["state-observability", "branching-bug"]
+    },
+    {
+      "id": "event-policy.deferred-generation-envelope",
+      "domain": "event-ordering",
+      "subject": "deferred callback ownership",
+      "statement": "Every deferred callback that can mutate player, arena, entity, or round state must capture an ownership envelope and revalidate it at execution time; scheduling time validity is insufficient.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"],
+      "capabilityTags": ["generation-token", "deferred-callback"],
+      "riskSurfaces": ["stale-callback", "cross-round-state", "async-race"]
+    },
+    {
+      "id": "event-policy.run-is-not-transaction-lock",
+      "domain": "event-ordering",
+      "subject": "system.run semantics",
+      "statement": "Using system.run to defer work does not create mutual exclusion, serialization ownership, or an atomic arena transaction. Concurrency guards are still required.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"],
+      "capabilityTags": ["system.run", "transaction"],
+      "riskSurfaces": ["double-start", "race-condition", "false-serialization"]
+    },
+    {
+      "id": "event-policy.phase-tag-observation",
+      "domain": "event-ordering",
+      "subject": "diagnostic event trace",
+      "statement": "High-value runtime traces should record currentTick, event phase, logical operation id, arena/session generation, and evidence stage so analyzer can distinguish ordering bugs from missing-state bugs.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"],
+      "capabilityTags": ["runtime-trace", "event-phase"],
+      "riskSurfaces": ["diagnostic-ambiguity", "non-reproducible-bug"]
+    },
+    {
+      "id": "event-policy.bounded-observability-retry",
+      "domain": "event-ordering",
+      "subject": "state verification retry",
+      "statement": "If mutation visibility is delayed, verify with bounded tick-based retries and a terminal diagnostic. Do not convert uncertain visibility into infinite polling or silently assume success.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"],
+      "capabilityTags": ["bounded-retry", "state-verification"],
+      "riskSurfaces": ["infinite-loop", "false-success", "watchdog"]
+    },
+    {
+      "id": "event-policy.after-event-not-global-consistency-barrier",
+      "domain": "event-ordering",
+      "subject": "after event semantics",
+      "statement": "Treat after-events as notification that an engine action reached its after-event stage, not as a universal barrier proving all unrelated entities, scripts, scoreboards, UI, or deferred callbacks are globally synchronized.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"],
+      "capabilityTags": ["after-events", "consistency-boundary"],
+      "riskSurfaces": ["false-readiness", "cross-system-ordering"]
+    },
+    {
+      "id": "event-policy.command-callback-state-recheck",
+      "domain": "event-ordering",
+      "subject": "command/deferred completion",
+      "statement": "Any command result, Promise resolution, timer, job continuation, or deferred form response that triggers gameplay mutation must re-read current authoritative state instead of trusting state captured when the operation was initiated.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"],
+      "capabilityTags": ["deferred-result", "authoritative-state"],
+      "riskSurfaces": ["stale-state", "async-race"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "event-policy.relation-event-to-verification",
+      "domain": "event-ordering",
+      "subject": "event-received",
+      "kind": "produces",
+      "object": "mutation-or-observation-intent",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"]
+    },
+    {
+      "id": "event-policy.relation-applied-state-gates-dependent-branch",
+      "domain": "event-ordering",
+      "subject": "verified-state",
+      "kind": "gates",
+      "object": "dependent-gameplay-branch",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-event-order-policy-v1"]
+    }
+  ]
+}
