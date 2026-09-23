@@ -1022,6 +1022,8 @@ export function parseScriptFile(
       ) {
         const access: DynamicPropertyAccess = {
           operation: dynamicPropertyOperation(method),
+          receiverHint: node.expression.expression.getText(file),
+          executionRegion: localExecutionRegionId(node, file),
           source: lineSource(file, node, source),
         };
         const propertyId = stringArgument(node);
