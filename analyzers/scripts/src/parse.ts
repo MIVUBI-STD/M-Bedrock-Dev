@@ -8,6 +8,7 @@ import type {
   ScriptEventSubscription,
   ScriptEntityEventTrigger,
   ScriptDeferredCallback,
+  ScriptLocalFunctionCall,
   ScriptCommandLiteral,
   ScriptImport,
   ScriptImportedSymbol,
@@ -233,6 +234,29 @@ function generationGuardIdentifiers(node: ts.Node): string[] {
 
   visit(node);
   return [...identifiers].sort();
+}
+
+function localExecutionRegionId(
+  node: ts.Node,
+  file: ts.SourceFile,
+): string {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (ts.isFunctionDeclaration(current)) {
+      return current.name
+        ? "function:" + current.name.text
+        : "anonymous-function";
+    }
+    if (
+      ts.isArrowFunction(current) ||
+      ts.isFunctionExpression(current)
+    ) {
+      const start = file.getLineAndCharacterOfPosition(current.getStart(file));
+      return "callback@" + (start.line + 1) + ":" + (start.character + 1);
+    }
+    current = current.parent;
+  }
+  return "module";
 }
 
 function customCommandCallback(
@@ -474,12 +498,18 @@ export function parseScriptFile(
     true,
     scriptKind(source.relativePath),
   );
+  const topLevelFunctionNames = new Set(
+    file.statements
+      .filter(ts.isFunctionDeclaration)
+      .flatMap((statement) => statement.name ? [statement.name.text] : []),
+  );
 
   const imports: ScriptImport[] = [];
   const events: ScriptEventSubscription[] = [];
   const dynamicProperties: DynamicPropertyAccess[] = [];
   const restrictedMutations: RestrictedExecutionMutation[] = [];
   const deferredCallbacks: ScriptDeferredCallback[] = [];
+  const localFunctionCalls: ScriptLocalFunctionCall[] = [];
   const methodCalls = inferScriptMethodCalls(file, source);
   const propertyAccesses = inferScriptPropertyAccesses(file, source);
   const propertyWrites = inferScriptPropertyWrites(file, source);
@@ -705,6 +735,19 @@ export function parseScriptFile(
       });
     }
 
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      topLevelFunctionNames.has(node.expression.text)
+    ) {
+      localFunctionCalls.push({
+        callerRegion: localExecutionRegionId(node, file),
+        targetRegion: "function:" + node.expression.text,
+        targetName: node.expression.text,
+        source: lineSource(file, node, source),
+      });
+    }
+
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const chain = propertyAccessChain(node.expression);
 
@@ -865,6 +908,7 @@ export function parseScriptFile(
     dynamicProperties,
     restrictedMutations,
     deferredCallbacks,
+    localFunctionCalls,
     methodCalls,
     propertyAccesses,
     propertyWrites,
