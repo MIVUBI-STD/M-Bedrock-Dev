@@ -375,6 +375,9 @@ export function analyzeScriptMutationTransactions(
           operationId(apply.source);
 
         if (!dependent) {
+          const barriers = segment.filter((candidate) =>
+            candidate.kind !== "method"
+          );
           output.push({
             id,
             scriptId: script.identifier,
@@ -382,10 +385,10 @@ export function analyzeScriptMutationTransactions(
             applyRegion: entry.region,
             receiver,
             applyCall: apply,
-            status: "no-dependent-action",
-            barriers: segment.filter((candidate) =>
-              candidate.kind !== "method"
-            ),
+            status: barriers.length > 0
+              ? "verification-unresolved"
+              : "no-dependent-action",
+            barriers,
           });
           continue;
         }
