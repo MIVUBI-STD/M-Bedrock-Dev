@@ -188,6 +188,70 @@ describe("mutation transaction ordering", () => {
     );
   });
 
+  it("supports project-defined function handoff as a dependent action", () => {
+    const fn = parseMcFunction(
+      "demo:start",
+      [
+        "fill 0 64 0 15 70 15 minecraft:stone",
+        "execute if block 1 64 1 minecraft:stone run function arena/start",
+      ].join("\n"),
+      { artifactId: "a", relativePath: "functions/start.mcfunction" },
+    );
+
+    const runtime = analyzeStructureAndChunkRuntime([fn], []);
+    const proofs = derivePlacementProofs(runtime, [fn]);
+    const result = analyzeMutationTransactionOrdering(
+      [fn],
+      proofs,
+      [{
+        id: "arena-start",
+        kind: "function-call",
+        functionTarget: "arena/start",
+        purpose: "arena gameplay start",
+      }],
+    );
+
+    expect(result.assessments).toEqual([
+      expect.objectContaining({
+        status: "verified-before-dependent",
+        dependentStep: expect.objectContaining({
+          detail: "arena gameplay start",
+        }),
+      }),
+    ]);
+  });
+
+  it("detects project-defined scoreboard activation before later verification", () => {
+    const fn = parseMcFunction(
+      "demo:start",
+      [
+        "fill 0 64 0 15 70 15 minecraft:stone",
+        "scoreboard players set #arena phase 1",
+        "execute if block 1 64 1 minecraft:stone run function demo:done",
+      ].join("\n"),
+      { artifactId: "a", relativePath: "functions/start.mcfunction" },
+    );
+
+    const runtime = analyzeStructureAndChunkRuntime([fn], []);
+    const proofs = derivePlacementProofs(runtime, [fn]);
+    const result = analyzeMutationTransactionOrdering(
+      [fn],
+      proofs,
+      [{
+        id: "phase-activation",
+        kind: "scoreboard-write",
+        objective: "phase",
+      }],
+    );
+
+    expect(result.assessments[0]).toEqual(expect.objectContaining({
+      status: "dependent-before-verification",
+      dependentStep: expect.objectContaining({
+        detail: "phase-activation",
+      }),
+    }));
+  });
+
   it("keeps unrelated verification or unresolved calls as unknown", () => {
     const unrelated = parseMcFunction(
       "demo:unrelated",
