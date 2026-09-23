@@ -24,6 +24,22 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-command-block-state-map",
+      "title": "Aux Value to Block State Map",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/blockreference/examples/auxvaluetoblockstatemap?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-command-chain-example",
+      "title": "Create an In-World Game with Commands",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/createaninworldgame?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -155,6 +171,52 @@
       ],
       "riskSurfaces": [
         "entity-spawn"
+      ]
+    },
+    {
+      "id": "structure.command-block-facing-state",
+      "domain": "structures",
+      "subject": "command-block-chain",
+      "statement": "Command block palette states encode facing_direction and conditional_bit, which determine local chain orientation and conditional behavior.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-command-block-state-map"
+      ],
+      "capabilityTags": [
+        "command-block",
+        "structure-runtime"
+      ],
+      "riskSurfaces": [
+        "command-chain",
+        "orientation"
+      ]
+    },
+    {
+      "id": "structure.command-chain-directional",
+      "domain": "structures",
+      "subject": "command-block-chain",
+      "statement": "Command block chains depend on directional adjacency, with chain blocks arranged in the execution direction and conditional chain blocks depending on predecessor success.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-command-chain-example"
+      ],
+      "capabilityTags": [
+        "command-block",
+        "structure-runtime"
+      ],
+      "riskSurfaces": [
+        "command-chain",
+        "conditional-execution"
       ]
     }
   ]

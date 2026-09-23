@@ -24,6 +24,8 @@ export interface EmbeddedCommandBlock {
   flatIndex: number;
   coordinate?: StructureCoordinate;
   paletteName?: string;
+  paletteStates?: Readonly<Record<string, unknown>>;
+  facingDirection?: number;
   blockEntityId?: string;
   command: string;
   customName?: string;
@@ -40,14 +42,14 @@ export interface StructureRuntimeContent {
   queuedTickPositions: number;
 }
 
-function paletteNameAt(
+function paletteEntryAt(
   structure: McStructureModel,
   flatIndex: number,
-): string | undefined {
+) {
   const layer = structure.blockIndexLayers.find((item) => item.layer === 0);
   const paletteIndex = layer?.indices[flatIndex];
   if (paletteIndex === undefined || paletteIndex < 0) return undefined;
-  return structure.palette[paletteIndex]?.name;
+  return structure.palette[paletteIndex];
 }
 
 function isCommandBlockPalette(name: string | undefined): boolean {
@@ -84,7 +86,12 @@ export function extractStructureRuntimeContent(
     const blockEntity = asRecord(positionRecord.block_entity_data);
     if (!blockEntity || typeof blockEntity.Command !== "string") continue;
 
-    const paletteName = paletteNameAt(structure, flatIndex);
+    const paletteEntry = paletteEntryAt(structure, flatIndex);
+    const paletteName = paletteEntry?.name;
+    const paletteStates = paletteEntry?.states;
+    const facingDirection = typeof paletteStates?.facing_direction === "number"
+      ? paletteStates.facing_direction
+      : undefined;
     const blockEntityId =
       typeof blockEntity.id === "string" ? blockEntity.id : undefined;
 
@@ -98,6 +105,9 @@ export function extractStructureRuntimeContent(
       : undefined;
     const auto = boolish(blockEntity.auto);
     const conditional =
+      (typeof paletteStates?.conditional_bit === "boolean"
+        ? paletteStates.conditional_bit
+        : undefined) ??
       boolish(blockEntity.LPConditionalMode) ??
       boolish(blockEntity.conditionalMode);
     const powered = boolish(blockEntity.powered);
@@ -109,6 +119,8 @@ export function extractStructureRuntimeContent(
       flatIndex,
       ...(coordinate ? { coordinate } : {}),
       ...(paletteName ? { paletteName } : {}),
+      ...(paletteStates ? { paletteStates } : {}),
+      ...(facingDirection !== undefined ? { facingDirection } : {}),
       ...(blockEntityId ? { blockEntityId } : {}),
       command: blockEntity.Command,
       ...(typeof blockEntity.CustomName === "string"

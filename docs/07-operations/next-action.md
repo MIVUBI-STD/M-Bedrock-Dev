@@ -1,23 +1,22 @@
 # Next Action
 
-Embedded command blocks inside mcstructure are now entering the semantic dependency graph.
+Structure analysis now covers command-block chain topology and inferred placement transforms.
 
 Implemented:
 
-1. command nodes scoped to their containing structure;
-2. structure CONTAINS command edges;
-3. embedded function-call edges;
-4. embedded structure-load edges;
-5. embedded scoreboard read/write edges;
-6. embedded tag-write edges;
-7. scoreboard/tag state identifiers derived from embedded commands;
-8. normal unresolved-reference diagnostics now cover embedded command logic.
+1. command-block facing_direction extraction;
+2. conditional_bit extraction from palette states;
+3. local chain adjacency;
+4. conditional/orphan chain topology diagnostics;
+5. local-to-world command-block placement for absolute structure loads;
+6. explicit inferred-transform confidence boundary.
 
 Next priority:
 
-1. carry structure-load rotation/mirror/placement context into embedded command coordinate reasoning;
-2. reconstruct command-block chain adjacency/facing from palette states;
-3. model conditional/always-active/delay execution constraints;
-4. then deepen LevelDB/chunk runtime observation knowledge.
+1. connect transformed embedded command coordinates to spatial command effects;
+2. model always-active/redstone activation and delay constraints;
+3. identify chain cycles and broken continuations;
+4. then deepen LevelDB/chunk runtime observations;
+5. expand Education-specific command/block knowledge after core Bedrock lifecycle coverage.
 
-This closes the static gap where executable logic existed only inside a loaded structure.
+Do not promote inferred transform coordinates to runtime proof without local game evidence.

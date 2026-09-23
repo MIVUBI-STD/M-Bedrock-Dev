@@ -21,6 +21,7 @@ import {
 import { parseMcStructure } from "../../../adapters/mcstructure/src/parse.js";
 import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
 import { extractStructureRuntimeContent } from "../../../adapters/mcstructure/src/runtime-content.js";
+import { analyzeCommandBlockChains } from "../../../adapters/mcstructure/src/command-chain.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";
@@ -43,6 +44,7 @@ import { analyzeEntityWithKnowledge } from "./entity-knowledge-analysis.js";
 import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
+import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
 import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.js";
 import { embeddedCommandStateIdentifiers, populateEmbeddedStructureCommandGraph } from "./embedded-structure-graph.js";
 
@@ -246,6 +248,10 @@ export async function inspectDirectory(
             ...(item.block.tickDelay !== undefined ? { tickDelay: item.block.tickDelay } : {}),
             unknownEffects: item.unknownEffects,
           })),
+          node.source,
+        ));
+        diagnostics.push(...commandChainDiagnostics(
+          analyzeCommandBlockChains(runtimeContent.commandBlocks).issues,
           node.source,
         ));
         diagnostics.push(...structureInvariantDiagnostics(structure, node.source));
