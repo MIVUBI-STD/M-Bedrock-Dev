@@ -1,26 +1,27 @@
 # Next Action
 
-Deprecated and removed Script API lifecycle intelligence is now implemented for observable method and event symbols.
+Script API lifecycle intelligence now covers methods, events, properties, and enum members.
 
 Implemented:
 
 1. version-aware lifecycle states: active, deprecated, removed, unknown;
-2. documented 1.x deprecation → 2.0.0 removal transitions;
-3. `SCRIPT_API_DEPRECATED_SYMBOL` minor diagnostics;
-4. `SCRIPT_API_REMOVED_SYMBOL` critical diagnostics;
-5. official replacement metadata where Microsoft documents a replacement;
-6. inherited Player legacy methods canonicalized to Entity symbols;
-7. lifecycle metadata retained in Script API usage inventory;
-8. lifecycle findings feed reliability risk surfaces;
-9. official provenance for the initial legacy method/event seed.
+2. method/event legacy migration detection;
+3. bounded property receiver inference;
+4. `PlayerInputPermissions.cameraEnabled/movementEnabled` deprecation/removal detection;
+5. named-import enum member extraction with alias support;
+6. lowercase `GameMode` 2.0.0 removal and uppercase replacement knowledge;
+7. documented removal rules for `EntityDamageCause.suicide` and `EntityComponentTypes.GroundOffset`;
+8. property/enum symbols included in real-map usage inventory and portfolio aggregation;
+9. event-container scaffolding excluded from property promotion noise;
+10. lifecycle diagnostics continue feeding reliability risk surfaces.
 
 Next priority:
 
-1. add deterministic property-access symbol extraction so removed properties such as PlayerInputPermissions.cameraEnabled/movementEnabled can be detected;
-2. add enum/member lifecycle intelligence for documented removals such as lowercase GameMode values without guessing dynamic values;
-3. run lifecycle analysis against representative production maps to learn which legacy surfaces are actually present;
-4. expand lifecycle rules only from observed map usage plus official evidence;
-5. continue execution-privilege enrichment for inferred receiver methods;
-6. keep type/signature migration analysis separate from simple removed-symbol detection.
+1. add type-only/imported type symbol lifecycle intelligence for removed classes, interfaces, and aliases;
+2. model method/function signature migrations where the symbol survives but parameter or return contracts change;
+3. model enum backing-value changes separately from member removal;
+4. add bounded namespace-import support only if production-map evidence shows meaningful usage;
+5. run lifecycle inventory against representative production maps and promote only observed high-value gaps;
+6. continue execution-privilege enrichment for inferred receiver methods/properties where restrictions are explicit.
 
-Method/event lifecycle coverage is source-verified. Property, enum, and argument-shape lifecycle coverage remains an explicit blindspot.
+Method/event/property/enum lifecycle coverage is source-verified. Type/signature/value-shape migration remains the largest static Script API blindspot.

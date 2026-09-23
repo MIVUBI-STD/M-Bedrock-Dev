@@ -152,6 +152,46 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-player-input-permissions-1xx",
+      "title": "PlayerInputPermissions Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/playerinputpermissions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-player-current",
+      "title": "Player Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/player?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-gamemode-1xx",
+      "title": "GameMode Enumeration (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/gamemode?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-component-types-1xx",
+      "title": "EntityComponentTypes Enumeration (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/entitycomponenttypes?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-world-current",
+      "title": "World Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/world?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -628,6 +668,102 @@
       ],
       "riskSurfaces": [
         "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle-player-input-permissions-properties-removed-2.0",
+      "domain": "script-api",
+      "subject": "PlayerInputPermissions.cameraEnabled / movementEnabled",
+      "statement": "The prior 1.x PlayerInputPermissions API marks cameraEnabled and movementEnabled deprecated and scheduled for removal in @minecraft/server 2.0.0; the current class exposes category-based permission methods instead.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-player-input-permissions-1xx",
+        "ms-player-current",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-property",
+        "script-deprecated",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle-gamemode-lowercase-removed-2.0",
+      "domain": "script-api",
+      "subject": "GameMode.adventure / creative / spectator / survival",
+      "statement": "The @minecraft/server 2.0.0 changelog removes lowercase GameMode members and adds the corresponding Adventure, Creative, Spectator, and Survival members.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-gamemode-1xx",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-enum",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle-removed-enum-members-2.0",
+      "domain": "script-api",
+      "subject": "EntityDamageCause.suicide / EntityComponentTypes.GroundOffset",
+      "statement": "The @minecraft/server 2.0.0 changelog removes EntityDamageCause.suicide and EntityComponentTypes.GroundOffset.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-component-types-1xx",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-enum",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.property-world-scoreboard-current",
+      "domain": "script-api",
+      "subject": "world.scoreboard",
+      "statement": "The current World API exposes scoreboard as a read-only Scoreboard property.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-current"
+      ],
+      "capabilityTags": [
+        "script-property",
+        "script-stable"
+      ],
+      "riskSurfaces": [
         "script-version"
       ]
     }

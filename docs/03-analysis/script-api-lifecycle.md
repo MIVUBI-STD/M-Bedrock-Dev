@@ -7,17 +7,83 @@ M-Bedrock-Dev tracks evidence-backed Script API lifecycle transitions separately
 A registered symbol can resolve to:
 
 - `active` — no lifecycle transition applies to the declared module version;
-- `deprecated` — Microsoft 1.x documentation explicitly marks the symbol deprecated and scheduled for removal;
+- `deprecated` — Microsoft documentation explicitly marks the symbol deprecated for the relevant prior API line;
 - `removed` — the manifest declares a module version at or beyond the documented removal version;
 - `unknown` — the module version/track cannot be classified safely.
 
-The current lifecycle boundary is version-aware:
+A lifecycle rule may have a removal without a prior deprecation state. This matters for enum migrations such as lowercase `GameMode` members:
 
 ```text
-@minecraft/server 1.x  + registered legacy symbol → deprecated
-@minecraft/server 2.x  + symbol removed in 2.0.0 → removed
-unknown module track                         → unknown
+GameMode.adventure + @minecraft/server 1.x → active
+GameMode.adventure + @minecraft/server 2.x → removed
 ```
+
+The analyzer does not invent a deprecation phase when Microsoft only documents removal.
+
+## Observable symbol kinds
+
+Lifecycle coverage now includes:
+
+- methods;
+- event properties;
+- ordinary receiver properties;
+- imported enum members.
+
+All four kinds flow into the same evidence-backed lifecycle diagnostics and usage inventory.
+
+## Property inference
+
+Property access uses the same bounded receiver flow as methods.
+
+Example:
+
+```text
+world.getAllPlayers()[0]
+        ↓
+      Player
+        ↓
+inputPermissions
+        ↓
+PlayerInputPermissions
+        ↓
+cameraEnabled
+```
+
+This allows exact detection of:
+
+- `PlayerInputPermissions.cameraEnabled`;
+- `PlayerInputPermissions.movementEnabled`.
+
+Both are marked deprecated in the prior 1.x documentation and scheduled for removal in 2.0.0.
+
+Scaffolding properties such as `world.beforeEvents` and `world.afterEvents` are excluded from generic property inventory because event subscriptions already own that semantic surface.
+
+## Enum binding inference
+
+Named imports from `@minecraft/server` are tracked by imported and local binding name.
+
+Both forms resolve identically:
+
+```ts
+import { GameMode } from "@minecraft/server";
+GameMode.adventure;
+
+import { GameMode as GM } from "@minecraft/server";
+GM.adventure;
+```
+
+The canonical symbol is `GameMode.adventure`.
+
+Initial enum lifecycle rules cover:
+
+- `GameMode.adventure` → `GameMode.Adventure`;
+- `GameMode.creative` → `GameMode.Creative`;
+- `GameMode.spectator` → `GameMode.Spectator`;
+- `GameMode.survival` → `GameMode.Survival`;
+- `EntityDamageCause.suicide`;
+- `EntityComponentTypes.GroundOffset`.
+
+The replacement uppercase `GameMode` members are represented as known active members so they do not become false knowledge gaps.
 
 ## Diagnostics
 
@@ -25,40 +91,35 @@ Deprecated usage emits:
 
 `SCRIPT_API_DEPRECATED_SYMBOL`
 
-with minor severity. It is migration debt, not proof that the current 1.x map is broken.
+with minor severity.
 
 Removed usage emits:
 
 `SCRIPT_API_REMOVED_SYMBOL`
 
-with critical severity because the manifest targets an API line where Microsoft documents that symbol as removed.
+with critical severity when the declared module line is at or beyond the documented removal version.
 
-Lifecycle findings record the exact symbol, declared version/track, removal version, rule id, and replacement when an official replacement is documented.
+Each finding records:
 
-## Initial evidence-backed seed
-
-Methods:
-
-- `world.playSound` → deprecated in documented 1.x, removed in 2.0.0; use `Dimension.playSound`;
-- `Dimension.runCommandAsync` → deprecated in 1.x, removed in 2.0.0;
-- `Entity.runCommandAsync` → deprecated in 1.x, removed in 2.0.0;
-- `Entity.isValid()` → method removed in 2.0.0 in favor of the `isValid` property;
-- `ScoreboardObjective.isValid()` → method removed in 2.0.0 in favor of the property form.
-
-Events:
-
-- `world.beforeEvents.worldInitialize`;
-- `world.afterEvents.worldInitialize`;
-- `world.beforeEvents.itemUseOn` → use `playerInteractWithBlock`;
-- `world.afterEvents.itemUseOn` → use `playerInteractWithBlock`;
-- `world.afterEvents.entityHurt`.
-
-These event properties are documented in the prior 1.x API and recorded as removed in 2.0.0.
+- exact symbol;
+- `symbolKind` (`method`, `event`, `property`, or `enum`);
+- declared module version/track;
+- lifecycle state;
+- removal version;
+- rule id;
+- official replacement when documented.
 
 ## Evidence boundary
 
-The prior documentation is a 1.x family view rather than a precise deprecation-introduction changelog. Therefore the analyzer intentionally models "deprecated in documented 1.x" rather than inventing an exact deprecation start version.
+The prior 1.x documentation is a family view rather than a precise deprecation-introduction timeline. The analyzer therefore says "deprecated in documented 1.x" when that is the strongest official claim available.
 
-Removed properties, enum values, type aliases, argument-shape changes, and other non-call symbols are not yet covered by the method/event parser. They remain a separate static-analysis blindspot until the parser can observe them deterministically.
+Current explicit blindspots:
+
+- namespace imports such as `import * as mc` for enum-member inference;
+- type-only symbols and removed interfaces/classes;
+- changed enum backing values where the member itself remains present;
+- function/method signature changes;
+- argument-shape and return-shape migrations;
+- dynamic computed property/member access.
 
 Unknown lifecycle is never treated as removed.

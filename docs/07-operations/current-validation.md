@@ -4,20 +4,20 @@ Status: SOURCE VERIFICATION GREEN; PRODUCTION MAP EVIDENCE PENDING
 
 Latest source-bearing verification on 2026-09-23:
 
-- commit `172fa3e68ce4be0ddd767089afb69da2e2e688a7` completed the full Verify workflow successfully;
-- repository policy verification passed;
-- TypeScript `tsc --noEmit` passed;
-- the full Vitest suite passed.
+- commit `b49aa53abecea671176a06be047ac64bc0fc07cc` completed repository policy verification, TypeScript `tsc --noEmit`, and the full Vitest suite successfully;
+- the suite contains 114 test files and 246 passing tests.
 
 Recently proven source capabilities include:
 
-- event and method symbol version compatibility;
+- event and method symbol compatibility;
 - bounded receiver inference;
 - per-map and portfolio Script API usage inventory;
 - Script API ↔ Minecraft update correlation;
-- deprecated/removed Script API lifecycle evaluation;
-- critical removed-symbol and minor deprecated-symbol diagnostics;
-- lifecycle metadata in inventory and reliability risk fingerprints.
+- deprecated/removed lifecycle for methods and events;
+- bounded property lifecycle extraction;
+- named-import enum member lifecycle extraction with alias support;
+- critical removed-symbol and minor deprecated-symbol diagnostics across method/event/property/enum kinds;
+- lifecycle metadata in usage inventory and reliability risk fingerprints.
 
 Current source proof:
 
@@ -25,16 +25,18 @@ Current source proof:
 repository policy  VERIFIED
 typecheck          VERIFIED
 Vitest             VERIFIED
-source-bearing head 172fa3e68ce4be0ddd767089afb69da2e2e688a7
+source-bearing head b49aa53abecea671176a06be047ac64bc0fc07cc
+tests               246 passed / 114 files
 ```
 
 Still not proven:
 
-- property/enum/signature lifecycle coverage;
+- type-only symbol lifecycle coverage;
+- signature/argument/return-shape migration coverage;
+- enum backing-value migration coverage;
 - representative production-map lifecycle exposure;
 - genuine Minecraft-loadable mcworld acceptance;
 - production-map diagnosis quality;
-- Minecraft package import/load acceptance;
 - local Minecraft runtime behavior;
 - live multiplayer/runtime behavior.
 
