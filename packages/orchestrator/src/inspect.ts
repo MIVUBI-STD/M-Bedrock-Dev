@@ -411,9 +411,15 @@ export async function inspectDirectory(
     if (!parsed) return [];
     return derivePlacedEmbeddedCommands(
       {
-        position: correlation.load.semantics.position,
-        rotation: correlation.load.semantics.rotation,
-        mirror: correlation.load.semantics.mirror,
+        ...(correlation.load.semantics.position
+          ? { position: correlation.load.semantics.position }
+          : {}),
+        ...(correlation.load.semantics.rotation
+          ? { rotation: correlation.load.semantics.rotation }
+          : {}),
+        ...(correlation.load.semantics.mirror
+          ? { mirror: correlation.load.semantics.mirror }
+          : {}),
       },
       parsed.size,
       parsed.embeddedCommands.map((item) => item.block),
