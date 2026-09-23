@@ -158,6 +158,13 @@ export interface InspectDirectoryResult {
     overlaps: number;
     dimensionUnresolved: number;
   };
+  mutationTransactions: {
+    assessed: number;
+    verifiedBeforeDependent: number;
+    dependentBeforeVerification: number;
+    verificationUnresolved: number;
+    noDependentAction: number;
+  };
   reliability: {
     fingerprintId: string;
     fingerprint: MapCompatibilityFingerprint;
