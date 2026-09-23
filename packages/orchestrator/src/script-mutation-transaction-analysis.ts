@@ -499,6 +499,19 @@ export function scriptMutationTransactionRuntimeEvidence(
       });
     } else if (item.status === "late-verification-candidate") {
       records.push({
+        predicate: "script-verification-before-dependent-action",
+        state: "absent",
+        confidence: "derived",
+        scope,
+        sourceRefs: [
+          item.applyCall.source,
+          item.dependentCall.source,
+          item.verificationCall!.source,
+        ],
+        note:
+          "Verification on the same mutation receiver occurs only after the dependent action.",
+      });
+      records.push({
         predicate: "script-late-verification-candidate",
         state: "present",
         confidence: "derived",
@@ -508,8 +521,6 @@ export function scriptMutationTransactionRuntimeEvidence(
           item.dependentCall.source,
           item.verificationCall!.source,
         ],
-        note:
-          "A guard on the same block receiver appears only after the dependent action.",
       });
     }
   }
