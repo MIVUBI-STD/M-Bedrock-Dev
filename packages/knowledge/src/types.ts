@@ -44,6 +44,7 @@ export type KnowledgeDomain =
   | "arena-cleanup"
   | "compatibility"
   | "automation"
+  | "entity-population"
   | "education";
 
 export type KnowledgeRelationKind =
