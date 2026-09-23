@@ -612,6 +612,7 @@ export async function inspectDirectory(
     analyzeScriptCommandMutationTransactions(
       parsedScripts.map((item) => item.parsed),
       parsedStructureSummaries,
+      target.mutationDependentActions ?? [],
     );
 
   const knowledgeRuntime = analyzeKnowledgeRuntime(
