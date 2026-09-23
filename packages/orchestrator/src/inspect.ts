@@ -585,6 +585,7 @@ export async function inspectDirectory(
   );
   const mutationTransactions = analyzeMutationTransactionOrdering(
     parsedFunctionModels,
+    structureProofs,
   );
 
   const knowledgeRuntime = analyzeKnowledgeRuntime(
