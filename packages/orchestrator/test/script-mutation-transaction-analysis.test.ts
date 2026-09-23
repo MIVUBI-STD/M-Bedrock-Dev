@@ -118,6 +118,45 @@ describe("script mutation transaction analysis", () => {
     expect(reasoning.diagnostics[0]?.severity).toBe("info");
   });
 
+  it("treats Dimension.spawnEntity as dependent work gated by the same block verification", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+
+      block.setType("minecraft:stone");
+      if (block.matches("minecraft:stone")) {
+        dimension.spawnEntity("minecraft:zombie", { x: 5, y: 65, z: 5 });
+      }
+    `);
+
+    const assessment = analyzeScriptMutationTransactions([script])[0];
+    expect(assessment).toEqual(expect.objectContaining({
+      status: "verified-before-dependent",
+      dependentCall: expect.objectContaining({
+        receiverType: "Dimension",
+        method: "spawnEntity",
+      }),
+    }));
+  });
+
+  it("keeps spawnEntity before a later verification unresolved rather than inventing a hard failure", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+
+      block.setType("minecraft:stone");
+      dimension.spawnEntity("minecraft:zombie", { x: 5, y: 65, z: 5 });
+      if (block.matches("minecraft:stone")) {
+        block.addTag;
+      }
+    `);
+
+    const assessment = analyzeScriptMutationTransactions([script])[0];
+    expect(assessment?.status).toBe("late-verification-candidate");
+  });
+
   it("does not treat an unrelated earlier guard as proof for a later teleport", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
