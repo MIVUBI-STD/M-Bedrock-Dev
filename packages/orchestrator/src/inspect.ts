@@ -607,6 +607,7 @@ export async function inspectDirectory(
   );
   const scriptMutationTransactions = analyzeScriptMutationTransactions(
     parsedScripts.map((item) => item.parsed),
+    target.mutationDependentActions ?? [],
   );
   const scriptCommandTransactions =
     analyzeScriptCommandMutationTransactions(
