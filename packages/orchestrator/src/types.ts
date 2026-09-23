@@ -163,14 +163,6 @@ export interface InspectDirectoryResult {
     overlaps: number;
     dimensionUnresolved: number;
   };
-  transactionOrdering: {
-    traces: number;
-    applySteps: number;
-    orderingDefects: number;
-    unresolvedCalls: number;
-    cycles: number;
-    depthLimitedTraces: number;
-  };
   mutationTransactions: {
     assessed: number;
     verifiedBeforeDependent: number;
