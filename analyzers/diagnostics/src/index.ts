@@ -26,3 +26,5 @@ export * from "./script-enum-value-findings.js";
 export * from "./knowledge-runtime-findings.js";
 
 export * from "./function-knowledge-runtime-findings.js";
+
+export * from "./runtime-evidence-merge.js";
