@@ -17,10 +17,24 @@
       "subject": "arena world mutation",
       "statement": "Treat structure loads, fills, block writes, marker changes, and entity restoration as a generation-scoped world-mutation transaction with PREPARE, APPLY, VERIFY, COMMIT, and RECOVER/ABORT phases.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["transaction", "world-mutation"],
-      "riskSurfaces": ["partial-write", "stale-generation", "arena-corruption"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "transaction",
+        "world-mutation"
+      ],
+      "riskSurfaces": [
+        "partial-write",
+        "stale-generation",
+        "arena-corruption"
+      ]
     },
     {
       "id": "world-policy.region-lock",
@@ -28,10 +42,23 @@
       "subject": "mutation region ownership",
       "statement": "A world region that can be mutated by structure/fill/block operations must have one current arena-generation owner. Overlapping concurrent mutations from different operations or generations are rejected or serialized.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["region-lock", "arena-isolation"],
-      "riskSurfaces": ["concurrent-structure-load", "cross-arena-corruption"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "region-lock",
+        "arena-isolation"
+      ],
+      "riskSurfaces": [
+        "concurrent-structure-load",
+        "cross-arena-corruption"
+      ]
     },
     {
       "id": "world-policy.prepare-chunk-coverage",
@@ -39,10 +66,23 @@
       "subject": "mutation preparation",
       "statement": "PREPARE must prove destination chunk readiness/coverage for all required mutation bounds before direct block writes and before declaring structure placement safe for immediate dependent work.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["chunk-readiness", "mutation-bounds"],
-      "riskSurfaces": ["unloaded-chunk", "false-readiness"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-readiness",
+        "mutation-bounds"
+      ],
+      "riskSurfaces": [
+        "unloaded-chunk",
+        "false-readiness"
+      ]
     },
     {
       "id": "world-policy.structure-request-not-commit",
@@ -50,10 +90,24 @@
       "subject": "structure placement request",
       "statement": "A successful structure-load command or StructureManager.place call is APPLY-stage evidence only. COMMIT requires post-placement verification of required blocks, markers, critical entities, and generation ownership.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["structure-load", "verification"],
-      "riskSurfaces": ["false-success", "queued-placement", "missing-marker"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "structure-load",
+        "verification"
+      ],
+      "riskSurfaces": [
+        "false-success",
+        "queued-placement",
+        "missing-marker"
+      ]
     },
     {
       "id": "world-policy.entity-inclusion-declared",
@@ -61,10 +115,23 @@
       "subject": "structure entity inclusion",
       "statement": "Every gameplay structure must explicitly declare whether entities are included. If entities are included, the transaction must define duplicate-detection and identity reconciliation before placement can commit.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["structure-entities", "entity-registry"],
-      "riskSurfaces": ["duplicate-entity", "identity-collision"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "structure-entities",
+        "entity-registry"
+      ],
+      "riskSurfaces": [
+        "duplicate-entity",
+        "identity-collision"
+      ]
     },
     {
       "id": "world-policy.marker-contract",
@@ -72,10 +139,23 @@
       "subject": "post-load marker verification",
       "statement": "Structures used for gameplay must expose a verification contract such as sentinel blocks, marker entities, expected block signatures, or region hashes so the analyzer can distinguish requested placement from verified placement.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["sentinel", "verification-contract"],
-      "riskSurfaces": ["silent-partial-load", "wrong-structure"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "sentinel",
+        "verification-contract"
+      ],
+      "riskSurfaces": [
+        "silent-partial-load",
+        "wrong-structure"
+      ]
     },
     {
       "id": "world-policy.no-dependent-work-before-verify",
@@ -83,10 +163,24 @@
       "subject": "dependent gameplay after mutation",
       "statement": "Spawns, teleports, pathfinding activation, arena start, scoring activation, and selector queries that depend on mutated world state must wait until VERIFY succeeds for the current mutation generation.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["readiness-gate", "dependent-work"],
-      "riskSurfaces": ["race-condition", "path-blocked", "spawn-failure"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "readiness-gate",
+        "dependent-work"
+      ],
+      "riskSurfaces": [
+        "race-condition",
+        "path-blocked",
+        "spawn-failure"
+      ]
     },
     {
       "id": "world-policy.rollback-is-compensation",
@@ -94,10 +188,24 @@
       "subject": "world mutation rollback",
       "statement": "Do not assume Bedrock world mutation is inherently atomic. Recovery should use explicit compensating actions or a known baseline structure/snapshot, and recovery itself must be generation-scoped and verified.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["rollback", "compensation"],
-      "riskSurfaces": ["partial-write", "failed-rollback", "state-corruption"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "rollback",
+        "compensation"
+      ],
+      "riskSurfaces": [
+        "partial-write",
+        "failed-rollback",
+        "state-corruption"
+      ]
     },
     {
       "id": "world-policy.stale-mutation-cancel",
@@ -105,10 +213,23 @@
       "subject": "stale generation mutation",
       "statement": "After any await/deferred callback and before APPLY/VERIFY/COMMIT/RECOVER work, revalidate arenaGeneration and mutationGeneration. Old generations must never mutate or repair a newer round.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["generation-token", "stale-mutation"],
-      "riskSurfaces": ["cross-round-state", "stale-callback"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "generation-token",
+        "stale-mutation"
+      ],
+      "riskSurfaces": [
+        "cross-round-state",
+        "stale-callback"
+      ]
     },
     {
       "id": "world-policy.transform-aware-bounds",
@@ -116,10 +237,25 @@
       "subject": "rotation and mirror bounds",
       "statement": "Mutation bounds, sentinel locations, path checks, and overlap locks must be computed after applying structure rotation/mirror transforms, not from untransformed source coordinates.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["rotation", "mirror", "bounds"],
-      "riskSurfaces": ["wrong-bounds", "region-overlap", "missing-sentinel"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "rotation",
+        "mirror",
+        "bounds"
+      ],
+      "riskSurfaces": [
+        "wrong-bounds",
+        "region-overlap",
+        "missing-sentinel"
+      ]
     },
     {
       "id": "world-policy.animated-structure-not-immediate",
@@ -127,10 +263,23 @@
       "subject": "animated structure load",
       "statement": "If structure animation is enabled, the transaction must remain APPLYING until animation completion plus verification; gameplay must not treat command return as a completed load.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"],
-      "capabilityTags": ["structure-animation", "transaction-phase"],
-      "riskSurfaces": ["early-start", "partial-world-state"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "capabilityTags": [
+        "structure-animation",
+        "transaction-phase"
+      ],
+      "riskSurfaces": [
+        "early-start",
+        "partial-world-state"
+      ]
     }
   ],
   "relations": [
@@ -141,8 +290,15 @@
       "kind": "gates",
       "object": "APPLY",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ]
     },
     {
       "id": "world-policy.relation-verify-gates-commit",
@@ -151,8 +307,16 @@
       "kind": "gates",
       "object": "COMMIT",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "diagnosticSeverity": "critical"
     },
     {
       "id": "world-policy.relation-failure-fallbacks-recover",
@@ -161,8 +325,15 @@
       "kind": "fallbacks-to",
       "object": "RECOVER_OR_ABORT",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-world-mutation-policy-v1"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ]
     }
   ]
 }
