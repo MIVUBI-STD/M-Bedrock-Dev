@@ -26,6 +26,8 @@ export type KnowledgeDomain =
   | "structures"
   | "script-api"
   | "chunks"
+  | "player-session"
+  | "multiplayer"
   | "education";
 
 export type KnowledgeRelationKind =
