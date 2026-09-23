@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-compat-manifest",
+      "title": "Add-Ons Reference: manifest.json",
+      "url": "https://learn.microsoft.com/minecraft/creator/reference/content/addonsreference/packmanifest?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-compat-platform-guidance",
+      "title": "Latest Platform Version Guidance",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/practices/latestplatformversion?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-compat-experiments",
+      "title": "Experimental Features in Minecraft: Bedrock Edition",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/experimentalfeaturestoggle?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-compat-server-module",
+      "title": "@minecraft/server Module",
+      "url": "https://learn.microsoft.com/id-id/minecraft/creator/scriptapi/minecraft/server/minecraft-server?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-compat-gametest-beta",
+      "title": "Building your first GameTest",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/gametestbuildyourfirstgametest?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "compat.manifest-defines-load-contract",
+      "domain": "compatibility",
+      "subject": "manifest.json",
+      "statement": "Behavior/resource packs declare identity, modules, dependencies, minimum engine version, capabilities, and script entrypoints through manifest.json; these fields are part of the pack load/runtime contract.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-manifest"
+      ],
+      "capabilityTags": [
+        "manifest",
+        "pack-load"
+      ],
+      "riskSurfaces": [
+        "pack-not-loaded",
+        "wrong-module",
+        "dependency-mismatch"
+      ]
+    },
+    {
+      "id": "compat.dependencies-require-version-match",
+      "domain": "compatibility",
+      "subject": "manifest dependencies",
+      "statement": "Pack dependencies reference exact UUID/version pairs for other packs or module_name/version pairs for built-in Script API modules, so dependency drift can change availability or prevent expected content from loading.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-manifest"
+      ],
+      "capabilityTags": [
+        "dependencies",
+        "script-module"
+      ],
+      "riskSurfaces": [
+        "version-drift",
+        "missing-module"
+      ]
+    },
+    {
+      "id": "compat.min-engine-affects-semantics",
+      "domain": "compatibility",
+      "subject": "min_engine_version",
+      "statement": "min_engine_version influences compatibility behavior including command/function and behavior interpretation, so two packs with identical logic but different engine-version declarations can execute under different compatibility semantics.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-platform-guidance",
+        "ms-compat-manifest"
+      ],
+      "capabilityTags": [
+        "min-engine-version",
+        "compatibility"
+      ],
+      "riskSurfaces": [
+        "command-regression",
+        "behavior-regression"
+      ]
+    },
+    {
+      "id": "compat.script-major-can-break",
+      "domain": "compatibility",
+      "subject": "Script API major version",
+      "statement": "Minecraft Script API major versions may change for backwards-compatibility-impacting changes, while minor versions are generally additive, so major-version drift must be treated as a compatibility boundary.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-platform-guidance",
+        "ms-compat-server-module"
+      ],
+      "capabilityTags": [
+        "script-api",
+        "semver"
+      ],
+      "riskSurfaces": [
+        "api-breakage",
+        "compile-runtime-mismatch"
+      ]
+    },
+    {
+      "id": "compat.beta-requires-experiment",
+      "domain": "compatibility",
+      "subject": "Beta APIs",
+      "statement": "Beta Script API usage depends on beta module versions and the Beta APIs experiment; beta APIs may change across builds without advance notice.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-experiments",
+        "ms-compat-gametest-beta"
+      ],
+      "capabilityTags": [
+        "beta-api",
+        "experiment"
+      ],
+      "riskSurfaces": [
+        "world-experiment-mismatch",
+        "preview-regression"
+      ]
+    },
+    {
+      "id": "compat.experiments-change-over-time",
+      "domain": "compatibility",
+      "subject": "world experiments",
+      "statement": "Available experimental feature toggles change over time and differ between retail and Preview builds, so experiment names/presence cannot be assumed stable across versions.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-experiments"
+      ],
+      "capabilityTags": [
+        "experiments",
+        "retail-preview"
+      ],
+      "riskSurfaces": [
+        "experiment-drift",
+        "world-config-mismatch"
+      ]
+    },
+    {
+      "id": "compat.latest-platform-needs-revalidation",
+      "domain": "compatibility",
+      "subject": "game update",
+      "statement": "Microsoft guidance recommends validating worlds when upgrading platform/base-game versions because new engine/content behavior can introduce gameplay regressions even without project code changes.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-platform-guidance"
+      ],
+      "capabilityTags": [
+        "update",
+        "regression"
+      ],
+      "riskSurfaces": [
+        "update-induced-bug",
+        "behavior-change"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "compat.relation-beta-requires-toggle",
+      "domain": "compatibility",
+      "subject": "beta-script-module",
+      "kind": "requires",
+      "object": "Beta-APIs-experiment",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-experiments",
+        "ms-compat-gametest-beta"
+      ]
+    },
+    {
+      "id": "compat.relation-engine-version-validates-runtime",
+      "domain": "compatibility",
+      "subject": "min_engine_version",
+      "kind": "validates",
+      "object": "expected-compatibility-semantics",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-compat-platform-guidance"
+      ]
+    }
+  ]
+}
