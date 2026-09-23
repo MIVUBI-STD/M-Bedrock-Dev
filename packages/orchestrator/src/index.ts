@@ -36,3 +36,5 @@ export * from "./topology-runtime-evidence.js";
 export * from "./world-db-runtime-evidence.js";
 
 export * from "./structure-proof-analysis.js";
+
+export * from "./area-loaded-proof.js";
