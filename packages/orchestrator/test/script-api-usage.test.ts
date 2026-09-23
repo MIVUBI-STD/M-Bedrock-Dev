@@ -114,6 +114,25 @@ describe("Script API usage inventory", () => {
     ]));
   });
 
+  it("merges inherited Player properties into Entity usage symbols", () => {
+    const usage = deriveScriptApiUsage([
+      parse("bundle/scripts/main.js", `
+        import { world } from "@minecraft/server";
+        const player = world.getAllPlayers()[0];
+        player.id;
+        player.location;
+        player.scoreboardIdentity;
+      `),
+    ]);
+
+    expect(usage.symbols).toEqual(expect.arrayContaining([
+      expect.objectContaining({ symbol: "Entity.id", receiverTypes: ["Player"] }),
+      expect.objectContaining({ symbol: "Entity.location", receiverTypes: ["Player"] }),
+      expect.objectContaining({ symbol: "Entity.scoreboardIdentity", receiverTypes: ["Player"] }),
+    ]));
+    expect(usage.symbols.some((item) => item.symbol === "Player.id")).toBe(false);
+  });
+
   it("retains method call-shape distributions and signature knowledge", () => {
     const usage = deriveScriptApiUsage([
       parse("signature/scripts/main.js", `

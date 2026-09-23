@@ -38,6 +38,17 @@ const ENTITY_INHERITED_METHODS = new Set([
   "applyKnockback",
 ]);
 
+const ENTITY_INHERITED_PROPERTIES = new Set([
+  "dimension",
+  "id",
+  "isSneaking",
+  "isValid",
+  "location",
+  "nameTag",
+  "scoreboardIdentity",
+  "typeId",
+]);
+
 function lineSource(
   sourceFile: ts.SourceFile,
   node: ts.Node,
@@ -655,6 +666,9 @@ function canonicalPropertySymbol(
 ): string {
   if (receiver === "World") return `world.${property}`;
   if (receiver === "System") return `system.${property}`;
+  if (receiver === "Player" && ENTITY_INHERITED_PROPERTIES.has(property)) {
+    return `Entity.${property}`;
+  }
   return `${receiver}.${property}`;
 }
 
@@ -813,6 +827,9 @@ function canonicalPropertyWriteSymbol(
 ): string {
   if (receiver === "World") return `world.${property}`;
   if (receiver === "System") return `system.${property}`;
+  if (receiver === "Player" && ENTITY_INHERITED_PROPERTIES.has(property)) {
+    return `Entity.${property}`;
+  }
   return `${receiver}.${property}`;
 }
 

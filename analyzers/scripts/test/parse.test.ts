@@ -203,6 +203,34 @@ const legacyMode = GM.adventure;
     ]));
   });
 
+  it("canonicalizes inherited Player properties to Entity symbols", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const player = world.getAllPlayers()[0];
+const id = player.id;
+const location = player.location;
+const dimension = player.dimension;
+const scoreboardIdentity = player.scoreboardIdentity;
+const playerName = player.name;
+`,
+      source,
+    );
+
+    expect(parsed.propertyAccesses).toEqual(expect.arrayContaining([
+      expect.objectContaining({ symbol: "Entity.id", receiverType: "Player" }),
+      expect.objectContaining({ symbol: "Entity.location", receiverType: "Player" }),
+      expect.objectContaining({ symbol: "Entity.dimension", receiverType: "Player" }),
+      expect.objectContaining({ symbol: "Entity.scoreboardIdentity", receiverType: "Player" }),
+      expect.objectContaining({ symbol: "Player.name", receiverType: "Player" }),
+    ]));
+
+    expect(parsed.propertyAccesses.some(
+      (item) => item.symbol === "Player.id" || item.symbol === "Player.location",
+    )).toBe(false);
+  });
+
   it("records bounded method call shape evidence", () => {
     const parsed = parseScriptFile(
       "scripts/main",
