@@ -10,6 +10,12 @@ export interface ScriptPropertySymbolRule {
 
 export const SCRIPT_PROPERTY_SYMBOL_RULES: readonly ScriptPropertySymbolRule[] = [
   {
+    id: "script-property.world-scoreboard",
+    moduleName: "@minecraft/server",
+    symbol: "world.scoreboard",
+    sourceIds: ["ms-world-current"],
+  },
+  {
     id: "script-property.player-input-permissions",
     moduleName: "@minecraft/server",
     symbol: "Player.inputPermissions",
