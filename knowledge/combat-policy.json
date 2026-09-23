@@ -1,0 +1,334 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-combat-policy-v1",
+      "title": "MIVUBI Damage Combat and Attribution Policy v1",
+      "url": "project://knowledge/combat-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "combat-policy.attribution-envelope",
+      "domain": "combat",
+      "subject": "damage transaction",
+      "statement": "Every gameplay-relevant damage event should resolve an attribution envelope containing victim identity/generation, cause, direct damagingEntity if any, damagingProjectile if any, projectile owner if resolvable, arena/team ownership, and combatGeneration.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "damage-attribution",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "wrong-attacker",
+        "stale-projectile",
+        "cross-arena-damage"
+      ]
+    },
+    {
+      "id": "combat-policy.friendly-fire-explicit",
+      "domain": "combat",
+      "subject": "friendly fire",
+      "statement": "Friendly-fire policy must be explicit per gameplay mode and arena generation. Do not rely on global pvp gamerule alone when simultaneous arenas may require different PvP behavior.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "friendly-fire",
+        "arena-policy"
+      ],
+      "riskSurfaces": [
+        "same-team-damage",
+        "multi-arena-conflict"
+      ]
+    },
+    {
+      "id": "combat-policy.same-arena-proof",
+      "domain": "combat",
+      "subject": "damage eligibility",
+      "statement": "Player or entity damage that affects arena gameplay must prove victim and attacker or projectile owner belong to compatible current arena/team scopes. Physical proximity or valid engine damage alone is insufficient.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-isolation",
+        "team-scope"
+      ],
+      "riskSurfaces": [
+        "cross-arena-damage",
+        "wrong-team"
+      ]
+    },
+    {
+      "id": "combat-policy.projectile-generation-bound",
+      "domain": "combat",
+      "subject": "projectile lifecycle",
+      "statement": "Gameplay projectiles should carry or be correlated with shooter identity, shooter connection/entity generation, arenaGeneration, round/combatGeneration, and projectileGeneration. Hits from stale generations are ignored for gameplay effects.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "projectile",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-projectile-hit",
+        "cross-round-damage"
+      ]
+    },
+    {
+      "id": "combat-policy.environmental-damage-no-attacker",
+      "domain": "combat",
+      "subject": "environmental damage",
+      "statement": "Damage sources without a valid damagingEntity or projectile owner must remain unattributed or environment-attributed; do not manufacture a player attacker for score or assist logic.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "environmental-damage",
+        "attribution"
+      ],
+      "riskSurfaces": [
+        "wrong-score",
+        "wrong-kill-credit"
+      ]
+    },
+    {
+      "id": "combat-policy.hurt-vs-death-separated",
+      "domain": "combat",
+      "subject": "damage and death lifecycle",
+      "statement": "Damage application, hurt events, downed transitions, death confirmation, and score/reward commit are separate stages. Kill credit is committed only after terminal death/life-state evidence and current attribution validation.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "hurt",
+        "death",
+        "score"
+      ],
+      "riskSurfaces": [
+        "premature-kill-credit",
+        "double-score"
+      ]
+    },
+    {
+      "id": "combat-policy.damage-idempotency",
+      "domain": "combat",
+      "subject": "combat side effects",
+      "statement": "Score, assist, reward, objective progress, and elimination side effects must be idempotent per victim lifeGeneration/combatGeneration so repeated or correlated hurt/death events cannot commit twice.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "combat"
+      ],
+      "riskSurfaces": [
+        "duplicate-score",
+        "duplicate-reward"
+      ]
+    },
+    {
+      "id": "combat-policy.damage-filter-before-sideeffects",
+      "domain": "combat",
+      "subject": "friendly-fire and cross-arena filtering",
+      "statement": "Any script-side suppression or correction must evaluate arena/team/generation policy before applying secondary combat side effects such as knockback, score, revive interruption, objective credit, or UI feedback.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "damage-filter",
+        "sideeffects"
+      ],
+      "riskSurfaces": [
+        "damage-blocked-score-counted",
+        "knockback-leak"
+      ]
+    },
+    {
+      "id": "combat-policy.projectile-cleanup-on-generation-end",
+      "domain": "combat",
+      "subject": "projectile cleanup",
+      "statement": "On round or arena generation end, reconcile or remove gameplay projectiles whose future collisions could affect the next generation. Do not assume projectiles disappear exactly when logical combat ends.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "projectile-cleanup",
+        "round-reset"
+      ],
+      "riskSurfaces": [
+        "stale-projectile-hit",
+        "cross-round-state"
+      ]
+    },
+    {
+      "id": "combat-policy.knockback-separate-from-damage",
+      "domain": "combat",
+      "subject": "combat motion side effects",
+      "statement": "Treat knockback, impulse, status effects, ignition, and other combat-adjacent side effects as separate from health damage. Preventing or ignoring damage does not automatically prove these secondary effects were prevented.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "knockback",
+        "secondary-effect"
+      ],
+      "riskSurfaces": [
+        "friendly-knockback",
+        "cross-arena-effect"
+      ]
+    },
+    {
+      "id": "combat-policy.assist-window-generation-bound",
+      "domain": "combat",
+      "subject": "assist attribution",
+      "statement": "Assist windows must be bounded by time or ticks and victim lifeGeneration/combatGeneration. Damage from a previous life or round must not contribute assists to a later elimination.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ],
+      "capabilityTags": [
+        "assist",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-assist",
+        "wrong-score"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "combat-policy.relation-scope-gates-damage-sideeffects",
+      "domain": "combat",
+      "subject": "valid-combat-scope",
+      "kind": "gates",
+      "object": "gameplay-combat-sideeffects",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ]
+    },
+    {
+      "id": "combat-policy.relation-death-gates-kill-credit",
+      "domain": "combat",
+      "subject": "terminal-death-evidence",
+      "kind": "gates",
+      "object": "kill-score-reward-commit",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ]
+    },
+    {
+      "id": "combat-policy.relation-stale-projectile-deactivates",
+      "domain": "combat",
+      "subject": "stale-projectile-generation",
+      "kind": "deactivates",
+      "object": "gameplay-damage-attribution",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-combat-policy-v1"
+      ]
+    }
+  ]
+}
