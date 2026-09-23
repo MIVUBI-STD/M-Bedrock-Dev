@@ -37,7 +37,11 @@ export type KnowledgeRelationKind =
   | "gates"
   | "supersedes"
   | "delayed-until-tick"
-  | "runtime-built-in";
+  | "runtime-built-in"
+  | "validates"
+  | "fallbacks-to"
+  | "restores"
+  | "queues-behind";
 
 export interface KnowledgeSource {
   id: string;

@@ -45,3 +45,16 @@ The analyzer recognizes:
 Knowledge distinguishes ordinary simulation-distance activity from persistent ticking areas.
 
 A function that depends on remote command blocks/entities may therefore require chunk-lifecycle reasoning even when its commands are syntactically correct.
+
+
+## Arena setup and runtime recovery
+
+Chunk knowledge now distinguishes:
+
+- player-driven pre-game coverage loading;
+- explicit chunk-readiness evidence;
+- temporary runtime recovery loading;
+- command-backed ticking areas;
+- pack-scoped Script API `TickingAreaManager` capacity.
+
+See `chunk-runtime-loading.md` for the operational state machine and MIVUBI policy layer.

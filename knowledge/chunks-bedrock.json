@@ -24,6 +24,54 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-dimension-current",
+      "title": "Dimension Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/dimension?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-world-current",
+      "title": "World Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/world?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-tickingarea-manager",
+      "title": "TickingAreaManager Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/tickingareamanager?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-tickingarea-interface",
+      "title": "TickingArea Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/tickingarea?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-server-changelog",
+      "title": "@minecraft/server Changelog",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/changelog?view=minecraft-bedrock-experimental",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-custom-dimension-tutorial",
+      "title": "Building with the Custom Dimension API",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/custom-dimension-api-tutorial?view=minecraft-bedrock-stable",
+      "authority": "official-sample",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -138,6 +186,367 @@
       "riskSurfaces": [
         "resource-limit",
         "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.chunk-size-horizontal",
+      "domain": "chunks",
+      "subject": "chunk-coordinate-system",
+      "statement": "A Minecraft chunk is 16 blocks wide by 16 blocks long, so chunk-space X/Z can be derived from block coordinates using floor(x/16) and floor(z/16).",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-tickingarea-guide"
+      ],
+      "capabilityTags": [
+        "chunk-lifecycle",
+        "chunk-coordinate"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.player-simulation-distance-configurable",
+      "domain": "chunks",
+      "subject": "player-simulation-distance",
+      "statement": "Simulation distance is measured from players in chunks; the documented default is 4 chunks and supported values may be higher, up to 12 depending on device/runtime.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking"
+      ],
+      "capabilityTags": [
+        "chunk-lifecycle",
+        "player-driven-loading"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "entity-ai",
+        "load-order"
+      ],
+      "diagnosticHints": [
+        "Do not treat a project planning radius of 4 chunks as proof that every target chunk is already loaded; verify readiness explicitly."
+      ]
+    },
+    {
+      "id": "chunks.dimension-is-chunk-loaded",
+      "domain": "chunks",
+      "subject": "Dimension.isChunkLoaded",
+      "statement": "Dimension.isChunkLoaded(location) reports whether the chunk containing a location is loaded and valid for scripting.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.3.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-dimension-current",
+        "ms-chunks-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-method:Dimension.isChunkLoaded",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "load-order"
+      ]
+    },
+    {
+      "id": "chunks.spawn-entity-unloaded-chunk-error",
+      "domain": "chunks",
+      "subject": "Dimension.spawnEntity",
+      "statement": "Dimension.spawnEntity can throw LocationInUnloadedChunkError when the target location is in an unloaded chunk.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-dimension-current"
+      ],
+      "capabilityTags": [
+        "script-method:Dimension.spawnEntity",
+        "chunk-recovery"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "entity-lifecycle"
+      ],
+      "diagnosticHints": [
+        "A LocationInUnloadedChunkError is evidence for chunk recovery; unrelated spawn errors must not be reclassified as chunk failures."
+      ]
+    },
+    {
+      "id": "chunks.script-tickingarea-manager-added",
+      "domain": "chunks",
+      "subject": "world.tickingAreaManager",
+      "statement": "@minecraft/server 2.6.0 added TickingAreaManager and the World.tickingAreaManager property.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-server-changelog",
+        "ms-chunks-world-current"
+      ],
+      "capabilityTags": [
+        "script-tickingarea-manager",
+        "chunk-recovery"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "chunks.script-tickingarea-manager-pack-scoped",
+      "domain": "chunks",
+      "subject": "TickingAreaManager",
+      "statement": "TickingAreaManager manages temporary pack-specific ticking areas with a chunk-capacity limit independent of command ticking-area limits, and it cannot query or modify ticking areas created by other packs or commands.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-tickingarea-manager"
+      ],
+      "capabilityTags": [
+        "script-tickingarea-manager",
+        "chunk-capacity"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Use manager.maxChunkCount/hasCapacity for Script API capacity; do not apply the command 10-area limit to this backend."
+      ]
+    },
+    {
+      "id": "chunks.script-tickingarea-create-readiness",
+      "domain": "chunks",
+      "subject": "TickingAreaManager.createTickingArea",
+      "statement": "createTickingArea returns a Promise that resolves when all chunks in the requested temporary area are loaded and ticking.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-tickingarea-manager",
+        "ms-chunks-custom-dimension-tutorial"
+      ],
+      "capabilityTags": [
+        "script-tickingarea-manager",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.script-tickingarea-capacity",
+      "domain": "chunks",
+      "subject": "TickingAreaManager capacity",
+      "statement": "TickingAreaManager exposes chunkCount, maxChunkCount, and hasCapacity(options); overlapping chunks count toward capacity.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-tickingarea-manager"
+      ],
+      "capabilityTags": [
+        "script-tickingarea-manager",
+        "chunk-capacity"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.script-tickingarea-fully-loaded",
+      "domain": "chunks",
+      "subject": "TickingArea.isFullyLoaded",
+      "statement": "A Script API TickingArea exposes isFullyLoaded to report whether all chunks in the area are loaded and ticking.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-tickingarea-interface"
+      ],
+      "capabilityTags": [
+        "script-tickingarea-manager",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.command-tickingarea-global-world-limit",
+      "domain": "chunks",
+      "subject": "command-tickingarea-capacity",
+      "statement": "The command ticking-area system allows up to 10 separate ticking areas in a world, with documented areas up to 100 chunks; circle radius is limited to 0–4 chunks.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking",
+        "ms-tickingarea-command"
+      ],
+      "capabilityTags": [
+        "command:tickingarea",
+        "chunk-capacity"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "This 10-area limit applies to the command/world ticking-area system, not to pack-specific TickingAreaManager capacity."
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "chunks.relation.player-proximity-activates-simulation",
+      "domain": "chunks",
+      "subject": "player-presence",
+      "kind": "activates",
+      "object": "simulation-distance-activity",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking"
+      ]
+    },
+    {
+      "id": "chunks.relation.is-chunk-loaded-validates-readiness",
+      "domain": "chunks",
+      "subject": "Dimension.isChunkLoaded",
+      "kind": "validates",
+      "object": "chunk-loaded-and-script-valid",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.3.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-dimension-current",
+        "ms-chunks-server-changelog"
+      ]
+    },
+    {
+      "id": "chunks.relation.spawn-entity-requires-loaded-chunk",
+      "domain": "chunks",
+      "subject": "Dimension.spawnEntity",
+      "kind": "requires",
+      "object": "target-chunk-loaded",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-dimension-current"
+      ],
+      "diagnosticHint": "LocationInUnloadedChunkError should route to chunk recovery, not to generic entity-missing logic."
+    },
+    {
+      "id": "chunks.relation.tickingarea-create-produces-ready-area",
+      "domain": "chunks",
+      "subject": "TickingAreaManager.createTickingArea",
+      "kind": "produces",
+      "object": "loaded-and-ticking-area",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-tickingarea-manager",
+        "ms-chunks-custom-dimension-tutorial"
       ]
     }
   ]

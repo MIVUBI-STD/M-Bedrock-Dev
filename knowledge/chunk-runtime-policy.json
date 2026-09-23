@@ -1,0 +1,671 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-chunk-runtime-policy-v1",
+      "title": "MIVUBI Chunk Runtime Loading Policy",
+      "url": "https://github.com/MIVUBI-STD/M-Bedrock-Dev/blob/Local/docs/03-analysis/chunk-runtime-loading.md",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "chunk-policy.setup-original-target-registry",
+      "domain": "chunks",
+      "subject": "arena-setup-target-registry",
+      "statement": "Before gameplay, build an explicit setup target registry from the original pack covering every entity, spawner, and location required by arena setup; original-pack coordinates and gameplay semantics remain authoritative.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "chunk-coverage",
+        "original-pack-preservation"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "entity-lifecycle",
+        "load-order"
+      ],
+      "diagnosticHints": [
+        "Missing registry coverage is a setup-plan error, not permission to silently skip the target."
+      ]
+    },
+    {
+      "id": "chunk-policy.coverage-initial-three",
+      "domain": "chunks",
+      "subject": "coverage-point-planner",
+      "statement": "Plan three initial coverage points per arena/dimension from the distribution of original setup targets, then add deterministic extra points when required to cover outliers.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "chunk-coverage"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "load-order"
+      ]
+    },
+    {
+      "id": "chunk-policy.coverage-radius-four",
+      "domain": "chunks",
+      "subject": "coverage-radius",
+      "statement": "Use a maximum planning distance of 4 chunks from a coverage point to an assigned target, measured in chunk space; this is a project safety envelope and not proof that the target chunk is loaded.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "chunk-coverage"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Any uncovered target must create a new coverage point or fail planning explicitly."
+      ]
+    },
+    {
+      "id": "chunk-policy.coverage-per-dimension",
+      "domain": "chunks",
+      "subject": "coverage-dimension-isolation",
+      "statement": "Coverage planning is dimension-local: targets from different dimensions must never share a coverage point or readiness result.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "chunk-coverage"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "cross-dimension"
+      ]
+    },
+    {
+      "id": "chunk-policy.setup-player-loader-lease",
+      "domain": "chunks",
+      "subject": "loader-player-lease",
+      "statement": "Normal arena setup uses a temporary loader-player lease: snapshot the chosen player's dimension, location, rotation, and game mode; switch to Spectator; teleport through coverage points; always restore the snapshot when setup ends or aborts.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "player-driven-loading"
+      ],
+      "riskSurfaces": [
+        "player-state",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "A disconnect or failed restore must produce an explicit setup failure/cleanup path."
+      ]
+    },
+    {
+      "id": "chunk-policy.setup-no-normal-tickingarea",
+      "domain": "chunks",
+      "subject": "arena-setup-loading-backend",
+      "statement": "Normal pre-game arena setup must not create ticking areas; coverage loading is player-driven so the original arena is not kept persistently active.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "player-driven-loading"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "resource-limit"
+      ]
+    },
+    {
+      "id": "chunk-policy.setup-readiness-evidence",
+      "domain": "chunks",
+      "subject": "coverage-readiness",
+      "statement": "After teleporting the loader player, wait for explicit chunk-readiness evidence for every unique assigned target chunk; fixed tick delays alone are not sufficient readiness proof.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Prefer Dimension.isChunkLoaded where the target Script API supports it; otherwise use a project-supported area-loaded readiness mechanism or fail closed."
+      ]
+    },
+    {
+      "id": "chunk-policy.setup-fail-closed",
+      "domain": "chunks",
+      "subject": "arena-setup-failure-semantics",
+      "statement": "Coverage gaps, readiness timeouts, ambiguous entity resolution, missing critical targets, or player-state restore failures must be explicit setup failures; gameplay must not start with silently skipped setup targets.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "fail-closed"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "load-order",
+        "gameplay-state"
+      ],
+      "diagnosticHints": [
+        "ARENA_SETUP_COVERAGE_GAP",
+        "ARENA_SETUP_CHUNK_TIMEOUT",
+        "ARENA_SETUP_TARGET_MISSING",
+        "ARENA_SETUP_TARGET_AMBIGUOUS",
+        "ARENA_SETUP_RESTORE_FAILED"
+      ]
+    },
+    {
+      "id": "chunk-policy.setup-idempotent-ledger",
+      "domain": "chunks",
+      "subject": "arena-setup-ledger",
+      "statement": "Every setup target must have an idempotent processing ledger keyed by arena setup session/generation so retries cannot double-apply initialization and stale async work cannot start gameplay.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "idempotency"
+      ],
+      "riskSurfaces": [
+        "gameplay-state",
+        "multiplayer-concurrency"
+      ]
+    },
+    {
+      "id": "chunk-policy.setup-final-verification",
+      "domain": "chunks",
+      "subject": "arena-setup-completion",
+      "statement": "Arena start is gated on final verification that every critical original-pack setup target is processed successfully and the loader player has been restored to the intended gameplay state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-setup",
+        "fail-closed"
+      ],
+      "riskSurfaces": [
+        "gameplay-state",
+        "entity-lifecycle"
+      ]
+    },
+    {
+      "id": "chunk-policy.runtime-fallback-only",
+      "domain": "chunks",
+      "subject": "runtime-tickingarea-policy",
+      "statement": "Temporary ticking areas are runtime recovery tools for chunk-related entity operations, not permanent arena loaders and not a default dependency for every arena.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "temporary-tickingarea"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunk-policy.spawn-retry-specific-error",
+      "domain": "chunks",
+      "subject": "spawnEntity-recovery",
+      "statement": "Only unloaded-chunk evidence such as LocationInUnloadedChunkError should route spawnEntity into chunk recovery; validation, identifier, boundary, or other spawn errors must preserve their original error classification.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "spawn-retry"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunk-policy.persistent-entity-registry",
+      "domain": "chunks",
+      "subject": "persistent-entity-registry",
+      "statement": "Critical persistent entities such as spawners must retain at least entity id, dimension, and last known location; type/tag/role identity should also be retained when available to detect stale or ambiguous resolution.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "chunk-recovery"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunk-policy.get-entity-not-immediately-lost",
+      "domain": "chunks",
+      "subject": "getEntity-recovery",
+      "statement": "If a critical persistent entity lookup returns undefined, do not immediately classify the entity as lost when a last known location exists; first prove the known chunk is loaded, perform temporary recovery loading if required, and retry the lookup.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "chunk-recovery"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "If no trustworthy last known location exists, fail explicitly with CHUNK_RECOVERY_LOCATION_UNKNOWN rather than loading arbitrary chunks."
+      ]
+    },
+    {
+      "id": "chunk-policy.runtime-backend-selection",
+      "domain": "chunks",
+      "subject": "chunk-recovery-backend",
+      "statement": "Prefer world.tickingAreaManager when the declared @minecraft/server line exposes it; use /tickingarea command as a compatibility fallback for older targets.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "temporary-tickingarea"
+      ],
+      "riskSurfaces": [
+        "script-version",
+        "resource-limit"
+      ]
+    },
+    {
+      "id": "chunk-policy.script-manager-capacity-queue",
+      "domain": "chunks",
+      "subject": "script-tickingarea-capacity",
+      "statement": "For the Script API TickingAreaManager backend, queue requests by hasCapacity/maxChunkCount rather than imposing the command system's fixed 10-area limit.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "chunk-capacity",
+        "request-queue"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "multiplayer-concurrency"
+      ]
+    },
+    {
+      "id": "chunk-policy.command-manager-ten-slot-queue",
+      "domain": "chunks",
+      "subject": "command-tickingarea-capacity",
+      "statement": "For the /tickingarea compatibility backend, one central manager owns leases and queues new requests when the world-level 10-area command limit would be exceeded.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "command:tickingarea",
+        "request-queue"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "multiplayer-concurrency"
+      ]
+    },
+    {
+      "id": "chunk-policy.tickingarea-lease-cleanup",
+      "domain": "chunks",
+      "subject": "temporary-tickingarea-lease",
+      "statement": "Every temporary ticking-area request is a lease with unique id, owning arena/session, reason, bounds, timeout, and cleanup in a finally-equivalent path; leaked leases are diagnosable failures.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "temporary-tickingarea",
+        "lease"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "TICKING_AREA_LEAK"
+      ]
+    },
+    {
+      "id": "chunk-policy.recovery-coalesce-priority",
+      "domain": "chunks",
+      "subject": "chunk-recovery-scheduler",
+      "statement": "Coalesce compatible requests for the same dimension/chunk region, prioritize critical persistent-entity recovery over non-critical work, preserve FIFO within priority, and use aging to prevent starvation.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "request-queue",
+        "deduplication"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "multiplayer-concurrency"
+      ]
+    },
+    {
+      "id": "chunk-policy.recovery-bounded-retry",
+      "domain": "chunks",
+      "subject": "chunk-recovery-retry",
+      "statement": "Chunk recovery retries must be bounded and observable: after readiness is proven, retry the original operation using a configured retry budget; repeated failure transitions to a real operation/entity error instead of infinite reload loops.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "bounded-retry"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "CHUNK_RECOVERY_RETRY_FAILED"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "chunk-policy.relation.countdown-to-setup",
+      "domain": "chunks",
+      "subject": "countdown-complete",
+      "kind": "activates",
+      "object": "arena-setup-phase",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ]
+    },
+    {
+      "id": "chunk-policy.relation.coverage-plan-validates-registry",
+      "domain": "chunks",
+      "subject": "coverage-plan",
+      "kind": "validates",
+      "object": "arena-setup-target-registry",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ]
+    },
+    {
+      "id": "chunk-policy.relation.chunk-ready-gates-target-setup",
+      "domain": "chunks",
+      "subject": "coverage-chunks-ready",
+      "kind": "gates",
+      "object": "setup-target-processing",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ]
+    },
+    {
+      "id": "chunk-policy.relation.final-verification-gates-arena",
+      "domain": "chunks",
+      "subject": "all-critical-targets-processed",
+      "kind": "gates",
+      "object": "arena-gameplay-start",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ]
+    },
+    {
+      "id": "chunk-policy.relation.setup-restores-player",
+      "domain": "chunks",
+      "subject": "arena-setup-finalization",
+      "kind": "restores",
+      "object": "loader-player-state-snapshot",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ]
+    },
+    {
+      "id": "chunk-policy.relation.spawn-unloaded-fallback",
+      "domain": "chunks",
+      "subject": "spawnEntity-unloaded-chunk-failure",
+      "kind": "fallbacks-to",
+      "object": "temporary-chunk-recovery-manager",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ]
+    },
+    {
+      "id": "chunk-policy.relation.recovery-queues-capacity",
+      "domain": "chunks",
+      "subject": "chunk-recovery-request",
+      "kind": "queues-behind",
+      "object": "backend-capacity",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ]
+    },
+    {
+      "id": "chunk-policy.relation.lease-removal-deactivates",
+      "domain": "chunks",
+      "subject": "temporary-tickingarea-lease-removal",
+      "kind": "deactivates",
+      "object": "temporary-loaded-area",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ]
+    }
+  ]
+}

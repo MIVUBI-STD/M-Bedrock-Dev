@@ -28,3 +28,14 @@ Lower tiers may add evidence but must not silently override stronger authority.
 - `education.json`: Education-specific profile knowledge.
 
 This is deliberately a seed, not a claim of complete Minecraft coverage.
+
+
+## Fact classification
+
+Knowledge now separates provenance-sensitive classes:
+
+- `engine-fact`: documented or observed Minecraft behavior;
+- `derived-rule`: a bounded reasoning rule derived from evidence;
+- `project-policy`: MIVUBI operational design that must not be presented as a Minecraft engine guarantee.
+
+Project-policy facts require an explicit `project-policy` source. This prevents values such as the arena coverage radius or retry policy from silently becoming engine facts.
