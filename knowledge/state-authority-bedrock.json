@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-state-scoreboard",
+      "title": "Scoreboard Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/scoreboard?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-state-scoreboard-identity",
+      "title": "ScoreboardIdentity Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/scoreboardidentity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-state-scoreboard-identity-type",
+      "title": "ScoreboardIdentityType Enumeration",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/scoreboardidentitytype?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-state-entity",
+      "title": "Entity Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-state-world-dynamic",
+      "title": "World Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/world?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-state-container-slot",
+      "title": "ContainerSlot Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/containerslot?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "state.scoreboard-participants-not-online-player-set",
+      "domain": "state-authority",
+      "subject": "scoreboard participants",
+      "statement": "Scoreboard participants can include Player, Entity, and FakePlayer identities, so scoreboard membership is not equivalent to the set of currently online players.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-scoreboard", "ms-state-scoreboard-identity", "ms-state-scoreboard-identity-type"],
+      "capabilityTags": ["scoreboard", "identity"],
+      "riskSurfaces": ["stale-participant", "identity-aliasing", "ghost-state"]
+    },
+    {
+      "id": "state.scoreboard-identity-can-be-invalid",
+      "domain": "state-authority",
+      "subject": "ScoreboardIdentity.isValid",
+      "statement": "ScoreboardIdentity exposes isValid and optional entity resolution, so cached scoreboard identity references can become invalid or fail to resolve to a live entity/player.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-scoreboard-identity"],
+      "capabilityTags": ["scoreboard-identity", "validity"],
+      "riskSurfaces": ["stale-reference", "identity-aliasing"]
+    },
+    {
+      "id": "state.dynamic-property-undefined-means-not-set",
+      "domain": "state-authority",
+      "subject": "dynamic properties",
+      "statement": "Dynamic-property reads can return undefined when a property is not set, so absence must be distinguished from explicit false, zero, empty string, or a separately defined default.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-world-dynamic"],
+      "capabilityTags": ["dynamic-properties", "tri-state"],
+      "riskSurfaces": ["default-value-confusion", "migration", "state-reconciliation"]
+    },
+    {
+      "id": "state.dynamic-property-can-be-deleted",
+      "domain": "state-authority",
+      "subject": "dynamic property deletion",
+      "statement": "Setting a dynamic property to an absent/null value removes it, so deletion is a distinct state transition from writing a gameplay value.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-world-dynamic"],
+      "capabilityTags": ["dynamic-properties", "state-deletion"],
+      "riskSurfaces": ["state-loss", "migration", "reconciliation"]
+    },
+    {
+      "id": "state.entity-tags-independent-state-surface",
+      "domain": "state-authority",
+      "subject": "entity tags",
+      "statement": "Entity tags are an independent string-based state/query surface exposed by Entity tag methods; their presence does not intrinsically synchronize scoreboard, dynamic-property, or script-memory state.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-entity"],
+      "capabilityTags": ["entity-tags", "query-surface"],
+      "riskSurfaces": ["duplicated-state", "cross-system-drift"]
+    },
+    {
+      "id": "state.inventory-slot-has-own-validity",
+      "domain": "state-authority",
+      "subject": "ContainerSlot",
+      "statement": "ContainerSlot has its own validity and may throw when invalid, so a previously captured inventory slot/reference is not durable proof of current inventory state.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-container-slot"],
+      "capabilityTags": ["inventory", "container-slot", "validity"],
+      "riskSurfaces": ["stale-reference", "inventory-state"]
+    },
+    {
+      "id": "state.scoreboard-objective-reference-validity",
+      "domain": "state-authority",
+      "subject": "ScoreboardObjective validity",
+      "statement": "Scoreboard objectives and identities expose validity semantics, so cached scoreboard references must be treated as runtime handles rather than permanent authority.",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-scoreboard", "ms-state-scoreboard-identity"],
+      "capabilityTags": ["scoreboard", "runtime-handle"],
+      "riskSurfaces": ["stale-reference", "state-authority"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "state.relation-scoreboard-identity-validates-handle",
+      "domain": "state-authority",
+      "subject": "scoreboard-identity-reference",
+      "kind": "requires",
+      "object": "valid-scoreboard-identity",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-scoreboard-identity"]
+    },
+    {
+      "id": "state.relation-tag-does-not-supersede-authority",
+      "domain": "state-authority",
+      "subject": "entity-tag",
+      "kind": "requires-any",
+      "object": "project-owned-authority-or-reconciliation",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-state-entity"]
+    }
+  ]
+}
