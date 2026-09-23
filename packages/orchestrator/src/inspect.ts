@@ -43,6 +43,7 @@ import type { SemanticNode } from "../../graph/src/types.js";
 import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";
 import { semanticNodeId } from "../../project-model/src/identity.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { populateFunctionEdges } from "../../../analyzers/references/src/populate-function-edges.js";
 import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
@@ -153,6 +154,7 @@ export async function inspectDirectory(
   target: InspectTargetProfile = {},
   sourceFingerprint?: string,
   knowledgeCatalog?: KnowledgeCatalog,
+  externalEvidence: readonly RuntimeEvidenceRecord[] = [],
 ): Promise<InspectDirectoryResult> {
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
@@ -643,6 +645,7 @@ export async function inspectDirectory(
       ...scriptCommandMutationRuntimeEvidence(
         scriptCommandTransactions,
       ),
+      ...externalEvidence,
     ],
     parsedScripts.map((item) => item.parsed),
     parsedEntities.map((item) => ({
