@@ -92,6 +92,17 @@ export interface ScriptPropertyAccess {
   source: SourceRef;
 }
 
+export interface ScriptEntityEventTrigger {
+  event: string;
+  receiverHint?: string;
+  source: SourceRef;
+}
+
+export interface ScriptCommandLiteral {
+  command: string;
+  source: SourceRef;
+}
+
 export interface ScriptImportedSymbol {
   module: string;
   importedName: string;
@@ -148,6 +159,8 @@ export interface ParsedScriptFile {
   methodCalls: ScriptMethodCall[];
   propertyAccesses: ScriptPropertyAccess[];
   propertyWrites: ScriptPropertyWrite[];
+  entityEventTriggers: ScriptEntityEventTrigger[];
+  commandLiterals: ScriptCommandLiteral[];
   moduleMemberAccesses: ScriptModuleMemberAccess[];
   importedSymbols: ScriptImportedSymbol[];
   enumValueComparisons: ScriptEnumValueComparison[];

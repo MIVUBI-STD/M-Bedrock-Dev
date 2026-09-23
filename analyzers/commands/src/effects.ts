@@ -74,6 +74,14 @@ export type CommandEffect =
       source: SourceRef;
     }
   | {
+      kind: "entity-event-trigger";
+      mechanism: "summon" | "event-command";
+      event: string;
+      entityIdentifier?: string;
+      target?: string;
+      source: SourceRef;
+    }
+  | {
       kind: "nested-command";
       wrapper: "execute";
       source: SourceRef;

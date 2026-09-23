@@ -408,6 +408,33 @@ const b = "minecraft:fluid_container" !== mc.BlockComponentTypes.FluidContainer;
     ]));
   });
 
+  it("extracts literal entity-event triggers and embedded command strings", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const player = world.getAllPlayers()[0];
+player.triggerEvent("daigon:recover");
+const entry = {
+  command: "/summon daigon:path 1 2 3 0 0 daigon:set_path_0",
+};
+`,
+      source,
+    );
+
+    expect(parsed.entityEventTriggers).toEqual([
+      expect.objectContaining({
+        event: "daigon:recover",
+        receiverHint: "player",
+      }),
+    ]);
+    expect(parsed.commandLiterals).toEqual([
+      expect.objectContaining({
+        command: "/summon daigon:path 1 2 3 0 0 daigon:set_path_0",
+      }),
+    ]);
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

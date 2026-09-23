@@ -6,6 +6,8 @@ import type {
   RestrictedExecutionMutation,
   ScriptCapabilityUse,
   ScriptEventSubscription,
+  ScriptEntityEventTrigger,
+  ScriptCommandLiteral,
   ScriptImport,
   ScriptImportedSymbol,
   ScriptModuleMemberAccess,
@@ -376,6 +378,8 @@ export function parseScriptFile(
   const methodCalls = inferScriptMethodCalls(file, source);
   const propertyAccesses = inferScriptPropertyAccesses(file, source);
   const propertyWrites = inferScriptPropertyWrites(file, source);
+  const entityEventTriggers: ScriptEntityEventTrigger[] = [];
+  const commandLiterals: ScriptCommandLiteral[] = [];
   const moduleMemberAccesses: ScriptModuleMemberAccess[] = [];
   const importedSymbols: ScriptImportedSymbol[] = [];
   const enumValueComparisons: ScriptEnumValueComparison[] = [];
@@ -433,6 +437,18 @@ export function parseScriptFile(
   ];
 
   const visit = (node: ts.Node): void => {
+    if (ts.isStringLiteralLike(node)) {
+      const command = node.text.trim();
+      if (
+        /^\/?(?:summon|event)\s+/i.test(command)
+      ) {
+        commandLiterals.push({
+          command,
+          source: lineSource(file, node, source),
+        });
+      }
+    }
+
     if (ts.isImportDeclaration(node) && ts.isStringLiteralLike(node.moduleSpecifier)) {
       const module = node.moduleSpecifier.text;
       imports.push({
@@ -582,6 +598,17 @@ export function parseScriptFile(
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const chain = propertyAccessChain(node.expression);
 
+      if (node.expression.name.text === "triggerEvent") {
+        const eventArg = node.arguments[0];
+        if (eventArg && ts.isStringLiteralLike(eventArg)) {
+          entityEventTriggers.push({
+            event: eventArg.text,
+            receiverHint: node.expression.expression.getText(file),
+            source: lineSource(file, node, source),
+          });
+        }
+      }
+
       const commandCallback = customCommandCallback(node);
       if (commandCallback) {
         restrictedMutations.push(
@@ -711,6 +738,8 @@ export function parseScriptFile(
     methodCalls,
     propertyAccesses,
     propertyWrites,
+    entityEventTriggers,
+    commandLiterals,
     moduleMemberAccesses,
     importedSymbols,
     enumValueComparisons,

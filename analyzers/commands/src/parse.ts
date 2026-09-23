@@ -34,7 +34,9 @@ function scoreboardAccessForOperation(operation: string): ScoreboardAccessMode {
 }
 
 export function analyzeCommand(command: string, source: SourceRef): CommandAnalysis {
-  const tokens = tokenizeCommand(command);
+  const trimmed = command.trimStart();
+  const normalizedCommand = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed;
+  const tokens = tokenizeCommand(normalizedCommand);
   const effects: CommandEffect[] = [];
   if (tokens.length === 0) return { command, effects };
 
@@ -72,6 +74,36 @@ export function analyzeCommand(command: string, source: SourceRef): CommandAnaly
       });
       return { command, effects };
     }
+  }
+
+  if (verb === "summon" && tokens[1]) {
+    const spawnEvent = tokens[7];
+    if (spawnEvent) {
+      effects.push({
+        kind: "entity-event-trigger",
+        mechanism: "summon",
+        entityIdentifier: tokens[1],
+        event: spawnEvent,
+        source,
+      });
+      return { command, effects };
+    }
+  }
+
+  if (
+    verb === "event" &&
+    tokens[1]?.toLowerCase() === "entity" &&
+    tokens[2] &&
+    tokens[3]
+  ) {
+    effects.push({
+      kind: "entity-event-trigger",
+      mechanism: "event-command",
+      target: tokens[2],
+      event: tokens[3],
+      source,
+    });
+    return { command, effects };
   }
 
   if (verb === "function" && tokens[1]) {

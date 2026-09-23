@@ -25,6 +25,32 @@ describe("command analyzer", () => {
     expect(flat.some((effect) => effect.kind === "fill")).toBe(true);
   });
 
+  it("extracts summon spawn events and event-command triggers", () => {
+    expect(analyzeCommand(
+      "summon daigon:path -17.5 -28.5 -110.51 0 0 daigon:set_path_0",
+      source,
+    ).effects).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "entity-event-trigger",
+        mechanism: "summon",
+        entityIdentifier: "daigon:path",
+        event: "daigon:set_path_0",
+      }),
+    ]));
+
+    expect(analyzeCommand(
+      "/event entity @e[type=daigon:path] daigon:next_path",
+      source,
+    ).effects).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "entity-event-trigger",
+        mechanism: "event-command",
+        target: "@e[type=daigon:path]",
+        event: "daigon:next_path",
+      }),
+    ]));
+  });
+
   it("preserves coordinate modes", () => {
     const result = analyzeCommand("tp @s ~1 ~ ^2", source);
     const effect = result.effects.find((item) => item.kind === "teleport");
