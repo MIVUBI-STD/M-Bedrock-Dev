@@ -78,6 +78,32 @@ describe("knowledge catalog", () => {
     ]);
   });
 
+  it("accepts open assumptions as explicit non-guarantees", () => {
+    const assumptionCatalog: KnowledgeCatalog = {
+      schemaVersion: 1,
+      sources: [{
+        id: "official",
+        title: "Official",
+        url: "https://learn.microsoft.com/example",
+        authority: "official",
+        confidence: "documented",
+        retrievedDate: "2026-09-23",
+      }],
+      facts: [{
+        id: "assumption",
+        domain: "chunks",
+        subject: "spectator-loading",
+        statement: "Runtime proof required.",
+        classification: "open-assumption",
+        applicability: { editions: ["bedrock"] },
+        sourceIds: ["official"],
+        capabilityTags: ["runtime-proof"],
+        riskSurfaces: ["chunk-lifecycle"],
+      }],
+    };
+    expect(validateKnowledgeCatalog(assumptionCatalog)).toEqual([]);
+  });
+
   it("builds edition-specific effective knowledge", () => {
     expect(effectiveKnowledge(catalog, { edition: "bedrock" }).map((fact) => fact.id))
       .toEqual(["bedrock-only"]);

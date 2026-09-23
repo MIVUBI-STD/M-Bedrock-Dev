@@ -72,6 +72,70 @@
       "authority": "official-sample",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-entity-current",
+      "title": "Entity Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-execution-privilege",
+      "title": "Scripting Execution Privilege",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/execution-privilege?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-system-run",
+      "title": "Game Loops and Timed Callbacks - a system.run Guide",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/system-run-guide?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-tickingarea-errors",
+      "title": "TickingAreaErrorReason Enumeration",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/tickingareaerrorreason?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-persistent",
+      "title": "minecraft:persistent Entity Component",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_persistent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-despawn",
+      "title": "minecraft:despawn Entity Component",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_despawn?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-component-list",
+      "title": "Entity Components",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/componentlist?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-world-dimension-api",
+      "title": "World and Dimension APIs",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/world-apis?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -466,6 +530,361 @@
       ],
       "diagnosticHints": [
         "This 10-area limit applies to the command/world ticking-area system, not to pack-specific TickingAreaManager capacity."
+      ]
+    },
+    {
+      "id": "chunks.try-teleport-unloaded-destination",
+      "domain": "chunks",
+      "subject": "Entity.tryTeleport",
+      "statement": "Entity.tryTeleport can fail when the destination chunk is unloaded, so teleporting a loader player cannot be assumed to bootstrap an arbitrary unloaded coverage anchor.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-entity-current"
+      ],
+      "capabilityTags": [
+        "player-driven-loading",
+        "teleport-bootstrap"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "load-order"
+      ],
+      "diagnosticHints": [
+        "A player-driven coverage planner needs an explicit bootstrap path for an unloaded destination chunk."
+      ]
+    },
+    {
+      "id": "chunks.tickingarea-does-not-create-player-spawn-context",
+      "domain": "chunks",
+      "subject": "tickingarea-player-presence",
+      "statement": "Ticking areas keep chunks active without nearby players, but mobs do not spawn there unless a player is present within simulation distance.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking"
+      ],
+      "capabilityTags": [
+        "tickingarea",
+        "player-presence-required"
+      ],
+      "riskSurfaces": [
+        "mob-spawning",
+        "gameplay-semantics"
+      ],
+      "diagnosticHints": [
+        "Do not use ticking-area readiness as a substitute for player-presence semantics."
+      ]
+    },
+    {
+      "id": "chunks.tickingarea-does-not-prevent-all-despawn",
+      "domain": "chunks",
+      "subject": "tickingarea-entity-despawn",
+      "statement": "Entities may still despawn inside ticking areas; ticking only guarantees activity, not entity persistence.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking",
+        "ms-chunks-despawn"
+      ],
+      "capabilityTags": [
+        "tickingarea",
+        "entity-persistence"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.entity-persistent-component",
+      "domain": "chunks",
+      "subject": "minecraft:persistent",
+      "statement": "The minecraft:persistent component marks an entity as persistent in the game world and is the documented mechanism for preventing distance/unload-driven persistence loss in applicable entity designs.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-persistent",
+        "ms-simulation-ticking"
+      ],
+      "capabilityTags": [
+        "entity-persistence"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.entity-transient-never-persists",
+      "domain": "chunks",
+      "subject": "minecraft:transient",
+      "statement": "An entity with minecraft:transient never persists and disappears when unloaded.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-component-list"
+      ],
+      "capabilityTags": [
+        "entity-persistence",
+        "entity-transient"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "A critical entity expected to survive unloading is incompatible with a transient persistence profile."
+      ]
+    },
+    {
+      "id": "chunks.entity-despawn-rules-independent-lifecycle",
+      "domain": "chunks",
+      "subject": "minecraft:despawn",
+      "statement": "Entity despawn rules can remove actors based on distance, inactivity, simulation-edge behavior, chance, or filters; chunk readiness alone cannot prove a missing entity is a chunk-loading failure.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-despawn"
+      ],
+      "capabilityTags": [
+        "entity-persistence",
+        "entity-despawn"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Persistent-entity recovery must inspect the entity definition's persistence/despawn profile before classifying loss."
+      ]
+    },
+    {
+      "id": "chunks.entity-id-world-instance-scope",
+      "domain": "chunks",
+      "subject": "Entity.id",
+      "statement": "Entity.id is intended to remain consistent across loads of a world instance, but its value must not be parsed or interpreted; use a logical project identity in addition to the engine id.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-entity-current"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "entity-identity"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "state-identity"
+      ]
+    },
+    {
+      "id": "chunks.tickingarea-manager-restricted-execution",
+      "domain": "chunks",
+      "subject": "TickingAreaManager execution privilege",
+      "statement": "TickingAreaManager create/query/remove operations documented on the manager cannot be called from restricted-execution mode.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-tickingarea-manager",
+        "ms-chunks-execution-privilege"
+      ],
+      "capabilityTags": [
+        "script-tickingarea-manager",
+        "execution-privilege"
+      ],
+      "riskSurfaces": [
+        "script-execution-privilege",
+        "chunk-recovery"
+      ]
+    },
+    {
+      "id": "chunks.tickingarea-manager-error-reasons",
+      "domain": "chunks",
+      "subject": "TickingAreaErrorReason",
+      "statement": "TickingAreaManager can report IdentifierAlreadyExists, OverChunkLimit, SideLengthExceeded, and UnknownIdentifier; these errors represent different recovery actions and must not share one generic retry path.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-tickingarea-errors"
+      ],
+      "capabilityTags": [
+        "script-tickingarea-manager",
+        "chunk-recovery-errors"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "IdentifierAlreadyExists requires ownership/reconciliation.",
+        "OverChunkLimit is capacity pressure and may be queued.",
+        "SideLengthExceeded is an invalid request shape and must not be queued forever.",
+        "UnknownIdentifier during cleanup may indicate stale local lease state."
+      ]
+    },
+    {
+      "id": "chunks.command-tickingarea-requires-cheats",
+      "domain": "chunks",
+      "subject": "/tickingarea permission",
+      "statement": "The /tickingarea command requires Game Director permission and cheats, so command-backed recovery is not universally available in every target world.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-tickingarea-command"
+      ],
+      "capabilityTags": [
+        "command:tickingarea",
+        "permission-requirement"
+      ],
+      "riskSurfaces": [
+        "permission",
+        "chunk-recovery"
+      ],
+      "diagnosticHints": [
+        "Older Script API targets without TickingAreaManager need an explicit capability check before relying on the command backend."
+      ]
+    },
+    {
+      "id": "chunks.spectator-simulation-loading-unproven",
+      "domain": "chunks",
+      "subject": "spectator-player-loading",
+      "statement": "The official simulation-distance guide defines simulation around players, but the cited documentation does not provide a specific guarantee that Spectator mode has identical chunk-loading/simulation behavior for this setup pattern.",
+      "classification": "open-assumption",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking"
+      ],
+      "capabilityTags": [
+        "player-driven-loading",
+        "runtime-proof"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "setup-bootstrap"
+      ],
+      "diagnosticHints": [
+        "Never use Spectator state itself as readiness evidence; rely on explicit chunk probes and keep a fallback backend."
+      ]
+    },
+    {
+      "id": "chunks.loaded-not-semantic-quiescence",
+      "domain": "chunks",
+      "subject": "chunk-loaded-vs-semantic-readiness",
+      "statement": "Dimension.isChunkLoaded documents that a chunk is loaded and valid for scripting; the cited API does not define same-tick semantic quiescence for every entity query, component state, or event-driven setup dependency.",
+      "classification": "open-assumption",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.3.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-dimension-current"
+      ],
+      "capabilityTags": [
+        "chunk-readiness",
+        "runtime-proof"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "entity-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Treat chunk-loaded and target-ready as separate gates; validate the actual target contract after chunk readiness."
+      ]
+    },
+    {
+      "id": "chunks.entity-query-unloaded-coverage-unspecified",
+      "domain": "chunks",
+      "subject": "Dimension.getEntities loaded-area semantics",
+      "statement": "Dimension.getEntities is documented as an entity query but the cited documentation does not expose a per-result loaded-chunk completeness guarantee suitable for proving that an absent critical entity is permanently missing.",
+      "classification": "open-assumption",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-dimension-current",
+        "ms-chunks-world-dimension-api"
+      ],
+      "capabilityTags": [
+        "entity-query",
+        "runtime-proof"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Absence from getEntities is not a sufficient permanent-loss proof without target-chunk readiness and identity/lifecycle checks."
       ]
     }
   ],

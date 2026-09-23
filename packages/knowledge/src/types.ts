@@ -71,7 +71,8 @@ export interface KnowledgeApplicability {
 export type KnowledgeClassification =
   | "engine-fact"
   | "derived-rule"
-  | "project-policy";
+  | "project-policy"
+  | "open-assumption";
 
 export interface KnowledgeFact {
   id: string;

@@ -615,3 +615,346 @@ This system must not:
 The central principle is:
 
 > **Load only what must be proven ready, prove readiness explicitly, execute the operation, then release the loading resource.**
+
+
+---
+
+# 19. Deep blindspots and mandatory mitigations
+
+## 19.1 Teleport bootstrap paradox
+
+Player-driven loading has a circular failure mode:
+
+```text
+need player near remote chunk
+        ↓
+try to teleport player there
+        ↓
+destination chunk is unloaded
+        ↓
+tryTeleport can fail
+        ↓
+player never reaches the place that would load the chunk
+```
+
+Therefore a coverage point has a bootstrap state:
+
+```text
+READY_ANCHOR
+BOOTSTRAP_REQUIRED
+UNSAFE_ANCHOR
+```
+
+If the anchor is already loaded, relocate normally.
+
+If the anchor is unloaded, use the smallest exceptional bootstrap lease supported by the target environment, wait for readiness, move the player, prove player-driven coverage, then release that bootstrap lease.
+
+This does not turn ticking areas into the normal setup backend.
+
+## 19.2 Spectator is isolation, not proof
+
+Spectator is useful because the player cannot normally interact with blocks/mobs and is visually isolated.
+
+However, the setup design must not derive chunk readiness from `GameMode.Spectator` itself.
+
+```text
+Spectator
+  = interaction policy
+
+Dimension.isChunkLoaded / target validation
+  = readiness evidence
+```
+
+A target runtime still needs local validation that Spectator behaves acceptably for its loading pattern.
+
+## 19.3 Control-plane self-unload
+
+Moving the only nearby player can unload/deactivate systems at the source area.
+
+This is dangerous when countdown/setup control depends on:
+
+- command blocks;
+- redstone;
+- local entity AI;
+- scheduled mechanics tied to an area.
+
+Before using a player loader, classify:
+
+```text
+CONTROL_PLANE_SCRIPT_ONLY
+CONTROL_PLANE_PLAYER_PROXIMITY_DEPENDENT
+CONTROL_PLANE_UNKNOWN
+```
+
+A player-proximity-dependent or unknown control plane cannot safely surrender its last activating player without another liveness mechanism.
+
+## 19.4 Loader side effects on the original pack
+
+Changing game mode, position, or dimension may trigger original-pack logic such as:
+
+- `playerGameModeChange`;
+- `playerDimensionChange`;
+- zone/location checks;
+- proximity triggers;
+- score/tag transitions;
+- cutscene systems.
+
+A high-end planner therefore has a **loader side-effect scan**.
+
+If original logic cannot distinguish setup relocation from gameplay relocation, player-driven setup is unsafe for that arena and the loader backend should change.
+
+## 19.5 Loaded chunk is not target-complete
+
+Chunk readiness and target readiness are separate.
+
+```text
+Gate A:
+chunk loaded + script valid
+
+Gate B:
+expected target contract satisfied
+```
+
+Examples of Gate B:
+
+- expected persistent entity exists and identity matches;
+- expected spawner exists;
+- expected tags/components are visible;
+- setup location query returns the expected cardinality;
+- command/setup source has reached its intended state.
+
+The ledger becomes `processed` only after both gates.
+
+## 19.6 Coverage drain barrier
+
+Do not teleport the loader to the next point while operations from the current point still hold entity handles or unresolved asynchronous work.
+
+```text
+PROCESS_TARGETS
+      ↓
+WAIT_TERMINAL_LEDGER
+      ↓
+DRAIN_ASYNC_DEPENDENCIES
+      ↓
+MOVE_LOADER
+```
+
+Entity handles are ephemeral runtime references, not registry identities.
+
+## 19.7 Persistence profile blindspot
+
+A ticking chunk does not imply a critical entity will survive.
+
+Before relying on recovery, classify the entity definition:
+
+```text
+PERSISTENT
+TRANSIENT
+DESPAWN_CAPABLE
+UNKNOWN
+```
+
+A transient entity is fundamentally incompatible with a requirement to survive unloading.
+
+A despawn-capable entity may be legitimately absent even when the chunk is loaded.
+
+For such entities, the setup target may need to validate spawn configuration instead of insisting an instance exist before gameplay.
+
+## 19.8 Pre-created entity can disappear before gameplay
+
+Coverage setup can successfully create an entity and then immediately remove the player that made the surrounding simulation active.
+
+If that entity is not guaranteed persistent, setup success can become false minutes/ticks later.
+
+Therefore:
+
+```text
+entity must survive unloaded interval?
+  YES → prove persistence contract
+  NO  → defer instance creation until gameplay activation
+```
+
+## 19.9 Ticking area is not player presence
+
+Ticking areas keep chunks active, but they do not reproduce every gameplay semantic associated with a nearby player.
+
+Classify operations:
+
+```text
+LOAD_ONLY
+PLAYER_PRESENCE_REQUIRED
+```
+
+Examples of player-presence-sensitive systems include natural spawn rules.
+
+A `PLAYER_PRESENCE_REQUIRED` recovery must not be satisfied with a ticking area alone.
+
+## 19.10 Capacity TOCTOU
+
+This sequence is unsafe under concurrency:
+
+```text
+request A → hasCapacity = true
+request B → hasCapacity = true
+A creates
+B creates → OverChunkLimit
+```
+
+Therefore:
+
+- capacity check and create are serialized through one allocator;
+- `hasCapacity` is advisory;
+- `createTickingArea` result/error is authoritative;
+- `OverChunkLimit` returns the request to capacity scheduling.
+
+## 19.11 Error reason routing
+
+```text
+IdentifierAlreadyExists
+  → reconcile owner/generation/bounds
+
+OverChunkLimit
+  → queue/backpressure
+
+SideLengthExceeded
+  → invalid planner request
+  → DO NOT queue forever
+
+UnknownIdentifier
+  → reconcile stale cleanup state
+
+EngineError
+  → preserve engine failure
+```
+
+## 19.12 Restricted execution
+
+A chunk recovery request can be discovered inside a before-event or custom command callback.
+
+The request may be recorded there.
+
+The allocation itself must be deferred to default execution because TickingAreaManager methods are not available in restricted execution.
+
+Use the system job queue rather than attempting world mutation immediately.
+
+## 19.13 Orphan leases after reload/crash
+
+In-memory lease state is insufficient.
+
+At manager initialization:
+
+1. read current generation/session metadata;
+2. enumerate pack-owned ticking areas;
+3. match namespaced identifiers to persisted/current lease ownership;
+4. adopt valid leases;
+5. remove stale orphaned leases;
+6. rebuild capacity accounting.
+
+Do not call `removeAllTickingAreas()` indiscriminately during a live session.
+
+## 19.14 Command backend global contention
+
+The command backend is world-global.
+
+Other content can consume the documented 10-area budget.
+
+Therefore:
+
+```text
+configured max = 10
+available-to-us != automatically 10
+```
+
+The manager must treat command add failure as authoritative and use namespaced identifiers to avoid destructive collisions.
+
+If cheats/permissions are unavailable, the command backend is unavailable—not merely busy.
+
+## 19.15 Exactly-once spawn blindspot
+
+Retrying a spawn is not automatically idempotent.
+
+Before retrying a critical spawn:
+
+1. load the target region;
+2. query for the logical role identity;
+3. if exactly one expected entity already exists, adopt it;
+4. if multiple exist, fail as duplicate/ambiguous;
+5. only if none exists, retry spawn.
+
+This prevents chunk recovery from duplicating spawners or critical mobs.
+
+## 19.16 Global setup pressure
+
+Multiple arenas can finish countdown simultaneously.
+
+If each arena moves a loader through several regions, the world can suddenly activate many entities and AI systems.
+
+Use:
+
+- global loader lease count;
+- global coverage concurrency;
+- estimated active-chunk budget;
+- per-arena fairness.
+
+The planner is allowed to queue setup. It is not allowed to overload the server merely to preserve simultaneous countdown completion.
+
+## 19.17 Minimal recovery footprint
+
+The setup coverage radius and runtime ticking-area footprint are different concepts.
+
+```text
+coverage radius = planning envelope
+
+recovery footprint = smallest chunks required by one operation
+```
+
+A one-chunk entity lookup should not automatically consume a 4-chunk-radius ticking area.
+
+---
+
+# 20. Revised backend decision tree
+
+```text
+PRE-GAME SETUP
+│
+├─ source control plane safe to move loader?
+│      NO → non-player bootstrap/setup backend
+│
+├─ player relocation side effects isolated?
+│      NO → non-player bootstrap/setup backend
+│
+├─ coverage anchor loaded?
+│      YES → move loader
+│      NO  → exceptional bootstrap lease
+│
+├─ target chunks loaded?
+│      NO → wait/prove readiness
+│
+├─ target-specific contract ready?
+│      NO → bounded target recovery / fail
+│
+└─ process → drain → next coverage
+
+
+RUNTIME RECOVERY
+│
+├─ failure explicitly chunk-related?
+│      NO → preserve original error
+│
+├─ operation needs nearby player semantics?
+│      YES → player-presence recovery
+│      NO  → temporary ticking-area recovery
+│
+├─ backend available?
+│      NO → CHUNK_RECOVERY_BACKEND_UNAVAILABLE
+│
+├─ serialized capacity allocation
+│
+├─ create/adopt lease
+│
+├─ retry idempotently
+│
+└─ cleanup + reconcile
+```
+
+The architecture now treats chunk loading as a resource-and-state coordination problem, not merely a teleport or ticking-area command problem.
