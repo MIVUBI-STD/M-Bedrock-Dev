@@ -89,6 +89,9 @@ export interface InspectDirectoryResult {
     loads: number;
     resolvedLoads: number;
     unresolvedLoads: number;
+    scriptLoads: number;
+    resolvedScriptLoads: number;
+    unresolvedScriptLoads: number;
     probabilisticLoads: number;
     runtimeLogicLoads: number;
     tickingAreas: number;
