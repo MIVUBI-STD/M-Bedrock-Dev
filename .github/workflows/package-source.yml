@@ -1,0 +1,29 @@
+name: Package Source Snapshot
+
+on:
+  push:
+    branches:
+      - Local
+    paths:
+      - ".github/workflows/package-source.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: m-bedrock-dev-source
+          path: |
+            .
+            !.git
+          include-hidden-files: true
+          retention-days: 1
