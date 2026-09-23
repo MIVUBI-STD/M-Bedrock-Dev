@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-arena-cleanup-policy-v1",
+      "title": "MIVUBI Arena Reset Cleanup and Reusability Policy v1",
+      "url": "project://knowledge/arena-cleanup-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "cleanup-policy.reset-is-transaction",
+      "domain": "arena-cleanup",
+      "subject": "arena reset",
+      "statement": "Treat arena reset as a generation-scoped transaction with FREEZE, INVALIDATE, CLEAN, RESTORE_BASELINE, VERIFY_EMPTY, and READY_FOR_NEXT_GENERATION phases.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "reset",
+        "transaction"
+      ],
+      "riskSurfaces": [
+        "partial-cleanup",
+        "second-run-failure"
+      ]
+    },
+    {
+      "id": "cleanup-policy.invalidate-first",
+      "domain": "arena-cleanup",
+      "subject": "reset ordering",
+      "statement": "Before destructive cleanup begins, invalidate the ending arena generation so late callbacks, projectiles, revive timers, forms, AI recovery, and objective events cannot create new state while cleanup is running.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "generation-token",
+        "reset"
+      ],
+      "riskSurfaces": [
+        "cleanup-race",
+        "state-resurrection"
+      ]
+    },
+    {
+      "id": "cleanup-policy.surface-inventory",
+      "domain": "arena-cleanup",
+      "subject": "cleanup surface registry",
+      "statement": "Each arena type must declare all owned cleanup surfaces: entities, projectiles, dropped items, inventories and equipment, effects, tags, scoreboard mirrors, dynamic properties, structures and blocks, timers, forms, input locks, teleport and recovery callbacks, AI monitors, objective state, and spectator state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup-registry",
+        "ownership"
+      ],
+      "riskSurfaces": [
+        "forgotten-surface",
+        "ghost-state"
+      ]
+    },
+    {
+      "id": "cleanup-policy.scope-delete-not-global-clear",
+      "domain": "arena-cleanup",
+      "subject": "scoped cleanup",
+      "statement": "Cleanup must target state owned by the ending arena or round generation and avoid broad global clears that can destroy unrelated arenas or durable player state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "scope",
+        "arena-isolation"
+      ],
+      "riskSurfaces": [
+        "cross-arena-cleanup",
+        "over-clear"
+      ]
+    },
+    {
+      "id": "cleanup-policy.baseline-restore-verified",
+      "domain": "arena-cleanup",
+      "subject": "world baseline restore",
+      "statement": "If reset restores blocks or structures, baseline restoration is a world-mutation transaction and must be verified before the arena is marked reusable.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "baseline",
+        "world-mutation"
+      ],
+      "riskSurfaces": [
+        "broken-second-run",
+        "partial-reset"
+      ]
+    },
+    {
+      "id": "cleanup-policy.entity-dedup-after-reset",
+      "domain": "arena-cleanup",
+      "subject": "entity cleanup",
+      "statement": "After cleanup and baseline restore, verify that no arena-owned entity or projectile from the previous generation remains and no duplicate critical entity was reintroduced by structure restoration.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "deduplication"
+      ],
+      "riskSurfaces": [
+        "duplicate-entity",
+        "stale-projectile"
+      ]
+    },
+    {
+      "id": "cleanup-policy.player-normal-form",
+      "domain": "arena-cleanup",
+      "subject": "player post-reset state",
+      "statement": "Players leaving an arena must converge to a declared normal-form state covering gamemode, location, inventory and equipment policy, effects, input permissions, UI ownership, ready state, life state, and arena or session membership.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "player-normal-form",
+        "reset"
+      ],
+      "riskSurfaces": [
+        "spectator-leak",
+        "inventory-leak",
+        "input-lock-leak"
+      ]
+    },
+    {
+      "id": "cleanup-policy.verify-empty-before-ready",
+      "domain": "arena-cleanup",
+      "subject": "arena reusable gate",
+      "statement": "READY_FOR_NEXT_GENERATION requires explicit verification that terminal callbacks are invalidated, critical transient registries are empty, owned entities and projectiles are cleared, mirrors are reset, world baseline is valid, and no player still carries ending-generation ownership.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "verification",
+        "reuse-gate"
+      ],
+      "riskSurfaces": [
+        "dirty-reuse",
+        "second-run-failure"
+      ]
+    },
+    {
+      "id": "cleanup-policy.cleanup-idempotent",
+      "domain": "arena-cleanup",
+      "subject": "reset idempotency",
+      "statement": "Arena cleanup must be idempotent: retrying the same cleanup generation after error or recovery must converge to the same empty or baseline state rather than deleting new-generation state or duplicating restore operations.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "recovery"
+      ],
+      "riskSurfaces": [
+        "double-cleanup",
+        "cross-generation-damage"
+      ]
+    },
+    {
+      "id": "cleanup-policy.new-generation-after-verify",
+      "domain": "arena-cleanup",
+      "subject": "generation advance",
+      "statement": "Do not expose or start the next arena generation until reset verification succeeds. New-generation setup running concurrently with old-generation cleanup is prohibited unless the arena explicitly partitions non-overlapping resources.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "generation",
+        "reuse"
+      ],
+      "riskSurfaces": [
+        "generation-overlap",
+        "state-race"
+      ]
+    },
+    {
+      "id": "cleanup-policy.dirty-arena-quarantine",
+      "domain": "arena-cleanup",
+      "subject": "cleanup failure",
+      "statement": "If cleanup cannot prove baseline or empty state within its bounded recovery budget, quarantine the arena from new joins and emit a terminal cleanup diagnostic instead of reopening a dirty arena.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "quarantine",
+        "fail-closed"
+      ],
+      "riskSurfaces": [
+        "corrupt-reuse",
+        "cascading-failure"
+      ]
+    },
+    {
+      "id": "cleanup-policy.repeatability-proof",
+      "domain": "arena-cleanup",
+      "subject": "arena reusability evidence",
+      "statement": "Static analysis should treat explicit reset symmetry and cleanup ownership as repeatability evidence; live validation should eventually compare first-run and repeated-run state snapshots to detect accumulative leaks.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "capabilityTags": [
+        "repeatability",
+        "snapshot"
+      ],
+      "riskSurfaces": [
+        "accumulative-leak",
+        "nth-run-regression"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "cleanup-policy.relation-invalidate-gates-clean",
+      "domain": "arena-cleanup",
+      "subject": "ending-generation-invalidated",
+      "kind": "gates",
+      "object": "destructive-cleanup",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ]
+    },
+    {
+      "id": "cleanup-policy.relation-verify-gates-reuse",
+      "domain": "arena-cleanup",
+      "subject": "VERIFY_EMPTY",
+      "kind": "gates",
+      "object": "READY_FOR_NEXT_GENERATION",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ]
+    },
+    {
+      "id": "cleanup-policy.relation-failed-reset-deactivates-arena",
+      "domain": "arena-cleanup",
+      "subject": "unverified-reset",
+      "kind": "deactivates",
+      "object": "arena-join-and-start-eligibility",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ]
+    }
+  ]
+}
