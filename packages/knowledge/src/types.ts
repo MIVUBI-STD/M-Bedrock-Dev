@@ -30,6 +30,7 @@ export type KnowledgeDomain =
   | "multiplayer"
   | "event-ordering"
   | "state-authority"
+  | "player-life"
   | "education";
 
 export type KnowledgeRelationKind =
