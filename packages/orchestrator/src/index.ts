@@ -33,3 +33,4 @@ export * from "./knowledge-runtime-analysis.js";
 
 export * from "./structure-runtime-evidence.js";
 export * from "./topology-runtime-evidence.js";
+export * from "./world-db-runtime-evidence.js";
