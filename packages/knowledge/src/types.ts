@@ -50,6 +50,7 @@ export type KnowledgeDomain =
   | "client-feedback"
   | "loot-economy"
   | "permissions"
+  | "world-state"
   | "education";
 
 export type KnowledgeRelationKind =
