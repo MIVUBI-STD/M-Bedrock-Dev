@@ -25,8 +25,58 @@ describe("script execution privilege analysis", () => {
         root: "world",
         event: "playerBreakBlock",
         method: "setGameMode",
+        symbol: "Player.setGameMode",
+        evidence: "contextual-fallback",
       }),
     ]);
+  });
+
+  it("uses exact inferred receiver symbols for restricted operations", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+        import { world } from "@minecraft/server";
+        const dimension = world.getDimension("overworld");
+        const player = world.getAllPlayers()[0];
+
+        world.beforeEvents.playerBreakBlock.subscribe(() => {
+          world.setDifficulty("hard");
+          dimension.spawnEntity("minecraft:zombie", { x: 0, y: 0, z: 0 });
+          player.applyKnockback({ x: 1, z: 0 }, 0.4);
+        });
+      `,
+      source,
+    );
+
+    expect(parsed.restrictedMutations).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "world.setDifficulty",
+        evidence: "exact-symbol",
+      }),
+      expect.objectContaining({
+        symbol: "Dimension.spawnEntity",
+        evidence: "exact-symbol",
+      }),
+      expect.objectContaining({
+        symbol: "Entity.applyKnockback",
+        evidence: "exact-symbol",
+      }),
+    ]));
+  });
+
+  it("does not flag unrestricted reads", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+        import { world } from "@minecraft/server";
+        world.beforeEvents.playerBreakBlock.subscribe(() => {
+          world.getAllPlayers();
+          const difficulty = world.getDifficulty();
+        });
+      `,
+      source,
+    );
+    expect(parsed.restrictedMutations).toEqual([]);
   });
 
   it("marks startup before-event as early execution", () => {

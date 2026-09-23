@@ -25,6 +25,10 @@ export interface RestrictedExecutionMutation {
   root: "world" | "system" | "unknown";
   event: string;
   method: string;
+  symbol: string;
+  operation: "call" | "write";
+  evidence: "exact-symbol" | "contextual-fallback";
+  ruleId: string;
   source: SourceRef;
 }
 

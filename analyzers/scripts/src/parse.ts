@@ -15,6 +15,7 @@ import {
   inferScriptPropertyAccesses,
   inferScriptPropertyWrites,
 } from "./receiver-inference.js";
+import { findScriptExecutionPrivilegeRule } from "../../../packages/compatibility/src/script-execution-privilege-matrix.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -144,13 +145,6 @@ function dynamicPropertyOperation(name: string): DynamicPropertyAccess["operatio
   return "unknown";
 }
 
-const RESTRICTED_MUTATORS = new Set([
-  "setGameMode",
-  "spawnEntity",
-  "setDynamicProperty",
-  "clearDynamicProperties",
-]);
-
 function callbackNode(call: ts.CallExpression): ts.Node | undefined {
   const candidate = call.arguments[0];
   if (
@@ -162,32 +156,172 @@ function callbackNode(call: ts.CallExpression): ts.Node | undefined {
   return undefined;
 }
 
+function sourceInside(inner: SourceRef, outer: SourceRef): boolean {
+  const a = inner.range;
+  const b = outer.range;
+  return Boolean(
+    a && b &&
+    a.lineStart >= b.lineStart &&
+    a.lineEnd <= b.lineEnd
+  );
+}
+
+function contextualCallSymbol(node: ts.CallExpression): string | undefined {
+  if (!ts.isPropertyAccessExpression(node.expression)) return undefined;
+  const method = node.expression.name.text;
+  const receiver = node.expression.expression;
+
+  if (
+    ts.isPropertyAccessExpression(receiver) &&
+    (receiver.name.text === "player" || receiver.name.text === "entity")
+  ) {
+    if (method === "setGameMode" || method === "setSpawnPoint") {
+      return `Player.${method}`;
+    }
+    if (
+      method === "addTag" ||
+      method === "removeTag" ||
+      method === "applyKnockback" ||
+      method === "setProperty" ||
+      method === "teleport"
+    ) {
+      return `Entity.${method}`;
+    }
+  }
+
+  return undefined;
+}
+
+function contextualWriteSymbol(node: ts.BinaryExpression): string | undefined {
+  if (node.operatorToken.kind !== ts.SyntaxKind.EqualsToken) return undefined;
+  if (!ts.isPropertyAccessExpression(node.left)) return undefined;
+
+  const property = node.left.name.text;
+  const receiver = node.left.expression;
+  if (
+    ts.isPropertyAccessExpression(receiver) &&
+    receiver.name.text === "player"
+  ) {
+    if (property === "commandPermissionLevel") return "Player.commandPermissionLevel";
+    if (property === "nameTag" || property === "isSneaking") {
+      return `Entity.${property}`;
+    }
+  }
+  return undefined;
+}
+
 function scanRestrictedMutations(
   callback: ts.Node,
   root: RestrictedExecutionMutation["root"],
   event: string,
   file: ts.SourceFile,
   source: SourceRef,
+  methodCalls: readonly ParsedScriptFile["methodCalls"],
+  propertyWrites: readonly ParsedScriptFile["propertyWrites"],
 ): RestrictedExecutionMutation[] {
   const output: RestrictedExecutionMutation[] = [];
+  const callbackSource = lineSource(file, callback, source);
+  const occupied = new Set<string>();
+
+  for (const call of methodCalls) {
+    if (!sourceInside(call.source, callbackSource)) continue;
+    const rule = findScriptExecutionPrivilegeRule(call.symbol, "call");
+    if (!rule) continue;
+    const line = call.source.range?.lineStart ?? 0;
+    occupied.add(`${line}\0call\0${call.method}`);
+    output.push({
+      root,
+      event,
+      method: call.method,
+      symbol: call.symbol,
+      operation: "call",
+      evidence: "exact-symbol",
+      ruleId: rule.id,
+      source: call.source,
+    });
+  }
+
+  for (const write of propertyWrites) {
+    if (!sourceInside(write.source, callbackSource)) continue;
+    const rule = findScriptExecutionPrivilegeRule(write.symbol, "write");
+    if (!rule) continue;
+    const line = write.source.range?.lineStart ?? 0;
+    occupied.add(`${line}\0write\0${write.property}`);
+    output.push({
+      root,
+      event,
+      method: write.property,
+      symbol: write.symbol,
+      operation: "write",
+      evidence: "exact-symbol",
+      ruleId: rule.id,
+      source: write.source,
+    });
+  }
 
   const visit = (node: ts.Node): void => {
-    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
-      const method = node.expression.name.text;
-      if (RESTRICTED_MUTATORS.has(method)) {
-        output.push({
-          root,
-          event,
-          method,
-          source: lineSource(file, node, source),
-        });
+    if (ts.isCallExpression(node)) {
+      const symbol = contextualCallSymbol(node);
+      if (symbol && ts.isPropertyAccessExpression(node.expression)) {
+        const rule = findScriptExecutionPrivilegeRule(symbol, "call");
+        const nodeSource = lineSource(file, node, source);
+        const line = nodeSource.range?.lineStart ?? 0;
+        const method = node.expression.name.text;
+        const key = `${line}\0call\0${method}`;
+        if (rule && !occupied.has(key)) {
+          output.push({
+            root,
+            event,
+            method,
+            symbol,
+            operation: "call",
+            evidence: "contextual-fallback",
+            ruleId: rule.id,
+            source: nodeSource,
+          });
+        }
       }
     }
+
+    if (ts.isBinaryExpression(node)) {
+      const symbol = contextualWriteSymbol(node);
+      if (symbol && ts.isPropertyAccessExpression(node.left)) {
+        const rule = findScriptExecutionPrivilegeRule(symbol, "write");
+        const nodeSource = lineSource(file, node.left, source);
+        const line = nodeSource.range?.lineStart ?? 0;
+        const method = node.left.name.text;
+        const key = `${line}\0write\0${method}`;
+        if (rule && !occupied.has(key)) {
+          output.push({
+            root,
+            event,
+            method,
+            symbol,
+            operation: "write",
+            evidence: "contextual-fallback",
+            ruleId: rule.id,
+            source: nodeSource,
+          });
+        }
+      }
+    }
+
     ts.forEachChild(node, visit);
   };
 
   visit(callback);
-  return output;
+
+  const seen = new Set<string>();
+  return output.filter((item) => {
+    const key = [
+      item.source.range?.lineStart ?? 0,
+      item.symbol,
+      item.operation,
+    ].join("\0");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export function parseScriptFile(
@@ -394,6 +528,8 @@ export function parseScriptFile(
                   event,
                   file,
                   source,
+                  methodCalls,
+                  propertyWrites,
                 ),
               );
             }
