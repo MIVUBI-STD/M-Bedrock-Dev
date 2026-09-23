@@ -3,6 +3,12 @@ import { tokenizeCommand } from "./tokenize.js";
 
 export type ScheduleAreaLoadedSemantics =
   | {
+      kind: "rectangle";
+      from: Coordinate3;
+      to: Coordinate3;
+      functionName: string;
+    }
+  | {
       kind: "position";
       position: Coordinate3;
       functionName: string;
@@ -39,10 +45,27 @@ export function parseScheduleAreaLoadedSemantics(
       return undefined;
     }
 
+    const from = parseCoordinate3(tokens, 3);
+    const to = parseCoordinate3(tokens, 6);
+    const rectangleFunctionName = tokens[9];
+    if (from && to && rectangleFunctionName) {
+      return {
+        kind: "rectangle",
+        from,
+        to,
+        functionName: rectangleFunctionName,
+      };
+    }
+
+    // Legacy/older authored form retained for compatibility with existing maps.
     const position = parseCoordinate3(tokens, 3);
-    const functionName = tokens[6];
-    if (position && functionName) {
-      return { kind: "position", position, functionName };
+    const positionFunctionName = tokens[6];
+    if (position && positionFunctionName) {
+      return {
+        kind: "position",
+        position,
+        functionName: positionFunctionName,
+      };
     }
     return undefined;
   }
