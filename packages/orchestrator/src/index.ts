@@ -38,3 +38,5 @@ export * from "./world-db-runtime-evidence.js";
 export * from "./structure-proof-analysis.js";
 
 export * from "./area-loaded-proof.js";
+
+export * from "./route-mutation-analysis.js";
