@@ -5,25 +5,18 @@ import { parseScheduleAreaLoadedSemantics } from "../../../analyzers/commands/sr
 import type { McStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
 
 function absoluteBlockPosition(
-  position: ReturnType<typeof parseStructureLoadSemantics> extends infer T
-    ? T extends { position?: infer P } ? P : never
-    : never,
+  position: NonNullable<ReturnType<typeof parseStructureLoadSemantics>>["position"],
 ): { x: number; y: number; z: number } | undefined {
   if (!position) return undefined;
-  const candidate = position as {
-    x: { mode: string; value: number };
-    y: { mode: string; value: number };
-    z: { mode: string; value: number };
-  };
   if (
-    candidate.x.mode !== "absolute" ||
-    candidate.y.mode !== "absolute" ||
-    candidate.z.mode !== "absolute"
+    position.x.mode !== "absolute" ||
+    position.y.mode !== "absolute" ||
+    position.z.mode !== "absolute"
   ) return undefined;
   return {
-    x: candidate.x.value,
-    y: candidate.y.value,
-    z: candidate.z.value,
+    x: position.x.value,
+    y: position.y.value,
+    z: position.z.value,
   };
 }
 

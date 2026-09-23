@@ -1,7 +1,9 @@
+import { parseCoordinate3, type Coordinate3 } from "./coordinates.js";
 import { tokenizeCommand } from "./tokenize.js";
 
 export interface StructureLoadSemantics {
   name: string;
+  position?: Coordinate3;
   rotation?: string;
   mirror?: string;
   animationMode?: string;
@@ -40,7 +42,11 @@ export function parseStructureLoadSemantics(
   ) return undefined;
 
   let index = 6;
-  const result: StructureLoadSemantics = { name: tokens[2] };
+  const position = parseCoordinate3(tokens, 3);
+  const result: StructureLoadSemantics = {
+    name: tokens[2],
+    ...(position ? { position } : {}),
+  };
 
   if (ROTATIONS.has(tokens[index] ?? "")) result.rotation = tokens[index++]!;
   if (MIRRORS.has(tokens[index] ?? "")) result.mirror = tokens[index++]!;

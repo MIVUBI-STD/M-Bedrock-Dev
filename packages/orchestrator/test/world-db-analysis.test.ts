@@ -17,6 +17,8 @@ describe("world DB native summary contract", () => {
       subChunkRecords: 50,
       dimensions: [0, 1],
       chunksObserved: 12,
+      chunkSignals: [],
+      chunkSignalsTruncated: false,
     };
 
     expect(summary.status).toBe("scanned");
