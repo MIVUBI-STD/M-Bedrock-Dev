@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-perf-system-run-guide",
+      "title": "Game Loops and Timed Callbacks - a system.run Guide",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/system-run-guide?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-perf-system",
+      "title": "System Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/system?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-perf-debugging",
+      "title": "Debugging Scripts in Minecraft",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/debugging-scripts?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-perf-system-before",
+      "title": "SystemBeforeEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/systembeforeevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-perf-watchdog-event",
+      "title": "WatchdogTerminateBeforeEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/watchdogterminatebeforeevent?view=minecraft-bedrock-experimental",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "performance.runjob-timesliced",
+      "domain": "performance",
+      "subject": "system.runJob",
+      "statement": "system.runJob time-slices generator work across ticks based on available script time and is intended for long-running work that does not need to finish on a specific tick.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-system-run-guide", "ms-perf-system"],
+      "capabilityTags": ["system.runJob", "time-slicing"],
+      "riskSurfaces": ["long-running-work", "tick-budget"]
+    },
+    {
+      "id": "performance.runjob-one-iteration-minimum",
+      "domain": "performance",
+      "subject": "runJob generator iteration",
+      "statement": "The job system guarantees each active generator at least one iteration per tick, so a single generator iteration must itself be small enough not to exceed the available script-frame budget.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-system-run-guide"],
+      "capabilityTags": ["system.runJob", "generator-granularity"],
+      "riskSurfaces": ["watchdog", "slow-device", "tick-spike"]
+    },
+    {
+      "id": "performance.hardware-dependent-budget",
+      "domain": "performance",
+      "subject": "device performance variance",
+      "statement": "The amount of work safely executable in a tick varies by hardware and current load; a workload that is acceptable on a fast PC may be slow or watchdog-prone on mobile or console.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-system-run-guide"],
+      "capabilityTags": ["device-variance", "tick-budget"],
+      "riskSurfaces": ["mobile-performance", "console-performance", "watchdog"]
+    },
+    {
+      "id": "performance.runinterval-keeps-calling",
+      "domain": "performance",
+      "subject": "system.runInterval",
+      "statement": "system.runInterval re-queues its callback until cleared, so expensive polling continues at the configured cadence even when the watched condition rarely changes.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-system-run-guide", "ms-perf-system"],
+      "capabilityTags": ["system.runInterval", "polling"],
+      "riskSurfaces": ["unnecessary-work", "scheduler-load"]
+    },
+    {
+      "id": "performance.entity-query-filtering-preferred",
+      "domain": "performance",
+      "subject": "Dimension.getEntities",
+      "statement": "Microsoft performance guidance recommends filtering entity queries at the API call and reducing query frequency rather than scanning all entities every tick and filtering in script.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-debugging"],
+      "capabilityTags": ["getEntities", "query-filter"],
+      "riskSurfaces": ["query-fanout", "tick-spike", "entity-scan"]
+    },
+    {
+      "id": "performance.profiler-identifies-hotpaths",
+      "domain": "performance",
+      "subject": "script profiler",
+      "statement": "Minecraft script profiling exposes function self time, total time, and call counts, which can identify unexpectedly frequent or expensive runtime paths.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-debugging"],
+      "capabilityTags": ["profiler", "hot-path"],
+      "riskSurfaces": ["performance-regression", "unexpected-call-frequency"]
+    },
+    {
+      "id": "performance.watchdog-termination-surface",
+      "domain": "performance",
+      "subject": "watchdog termination",
+      "statement": "The script watchdog may terminate the server/runtime due to excessive memory usage, significant slowdown, or hangs, making resource pressure a correctness risk rather than only a performance concern.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-system-before", "ms-perf-watchdog-event"],
+      "capabilityTags": ["watchdog", "resource-pressure"],
+      "riskSurfaces": ["server-termination", "crash-recovery"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "performance.relation-long-work-fallbacks-runjob",
+      "domain": "performance",
+      "subject": "large-non-urgent-workload",
+      "kind": "fallbacks-to",
+      "object": "system.runJob-or-bounded-batching",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-system-run-guide"]
+    },
+    {
+      "id": "performance.relation-profiler-validates-hotpath",
+      "domain": "performance",
+      "subject": "suspected-hot-path",
+      "kind": "validates",
+      "object": "measured-script-profile",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-perf-debugging"]
+    }
+  ]
+}
