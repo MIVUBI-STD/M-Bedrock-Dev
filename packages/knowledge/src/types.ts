@@ -52,6 +52,7 @@ export type KnowledgeDomain =
   | "permissions"
   | "world-state"
   | "spatial-containment"
+  | "interactive-blocks"
   | "education";
 
 export type KnowledgeRelationKind =
