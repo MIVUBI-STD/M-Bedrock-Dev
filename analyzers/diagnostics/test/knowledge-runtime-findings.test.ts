@@ -44,7 +44,34 @@ describe("knowledge runtime diagnostics", () => {
           scope: { arenaId: "arena-1", arenaGeneration: 3 },
         }],
       },
-      it("honors critical severity only for explicit violations", () => {
+    });
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.code).toBe("KNOWLEDGE_RELATION_VIOLATION");
+    expect(findings[0]?.severity).toBe("medium");
+  });
+
+  it("does not treat missing evidence as explicit absence", () => {
+    const findings = knowledgeRuntimeDiagnostics({
+      catalog,
+      profile: { edition: "bedrock" },
+      snapshot: {
+        schemaVersion: 1,
+        records: [{
+          predicate: "committed",
+          state: "present",
+          confidence: "observed",
+          scope: { arenaId: "arena-1", arenaGeneration: 4 },
+        }],
+      },
+    });
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.code).toBe("KNOWLEDGE_EVIDENCE_GAP");
+    expect(findings[0]?.severity).toBe("info");
+  });
+
+  it("honors critical severity only for explicit violations", () => {
     const criticalCatalog: KnowledgeCatalog = {
       ...catalog,
       relations: [{
@@ -84,31 +111,5 @@ describe("knowledge runtime diagnostics", () => {
       },
     });
     expect(unknown[0]?.severity).toBe("info");
-  });
-});
-
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.code).toBe("KNOWLEDGE_RELATION_VIOLATION");
-    expect(findings[0]?.severity).toBe("medium");
-  });
-
-  it("does not treat missing evidence as explicit absence", () => {
-    const findings = knowledgeRuntimeDiagnostics({
-      catalog,
-      profile: { edition: "bedrock" },
-      snapshot: {
-        schemaVersion: 1,
-        records: [{
-          predicate: "committed",
-          state: "present",
-          confidence: "observed",
-          scope: { arenaId: "arena-1", arenaGeneration: 4 },
-        }],
-      },
-    });
-
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.code).toBe("KNOWLEDGE_EVIDENCE_GAP");
-    expect(findings[0]?.severity).toBe("info");
   });
 });
