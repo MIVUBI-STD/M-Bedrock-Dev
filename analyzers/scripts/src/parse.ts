@@ -5,6 +5,7 @@ import type {
   ParsedScriptFile,
   RestrictedExecutionMutation,
   ScriptCapabilityUse,
+  ScriptMethodCall,
   ScriptEventSubscription,
   ScriptImport,
 } from "./types.js";
@@ -141,6 +142,7 @@ export function parseScriptFile(
   const events: ScriptEventSubscription[] = [];
   const dynamicProperties: DynamicPropertyAccess[] = [];
   const restrictedMutations: RestrictedExecutionMutation[] = [];
+  const methodCalls: ScriptMethodCall[] = [];
   const capabilities: ScriptCapabilityUse[] = [];
 
   const visit = (node: ts.Node): void => {
@@ -163,6 +165,27 @@ export function parseScriptFile(
 
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const chain = propertyAccessChain(node.expression);
+
+      if (
+        chain.length === 2 &&
+        (chain[0] === "world" || chain[0] === "system") &&
+        chain[1]
+      ) {
+        const root = chain[0];
+        const method = chain[1];
+        const methodSource = lineSource(file, node, source);
+        methodCalls.push({
+          root,
+          method,
+          symbol: `${root}.${method}`,
+          source: methodSource,
+        });
+        capabilities.push({
+          capability: "api-method",
+          detail: `${root}.${method}`,
+          source: methodSource,
+        });
+      }
 
       if (chain.at(-1) === "subscribe") {
         const root = chain[0];
@@ -261,6 +284,7 @@ export function parseScriptFile(
     events,
     dynamicProperties,
     restrictedMutations,
+    methodCalls,
     capabilities,
   };
 }

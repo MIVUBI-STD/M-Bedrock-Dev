@@ -27,6 +27,13 @@ export interface RestrictedExecutionMutation {
   source: SourceRef;
 }
 
+export interface ScriptMethodCall {
+  root: "world" | "system";
+  method: string;
+  symbol: string;
+  source: SourceRef;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
@@ -36,6 +43,7 @@ export interface ScriptCapabilityUse {
     | "script-event"
     | "restricted-execution"
     | "early-execution"
+    | "api-method"
     | "unknown";
   detail?: string;
   source: SourceRef;
@@ -48,5 +56,6 @@ export interface ParsedScriptFile {
   events: ScriptEventSubscription[];
   dynamicProperties: DynamicPropertyAccess[];
   restrictedMutations: RestrictedExecutionMutation[];
+  methodCalls: ScriptMethodCall[];
   capabilities: ScriptCapabilityUse[];
 }

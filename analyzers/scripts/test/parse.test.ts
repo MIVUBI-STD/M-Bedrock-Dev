@@ -43,6 +43,27 @@ system.afterEvents.scriptEventReceive.subscribe(() => {});
     ]));
   });
 
+  it("extracts direct world and system method symbols without guessing nested receiver types", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world, system } from "@minecraft/server";
+
+world.getAllPlayers();
+world.getDimension("overworld");
+system.runInterval(() => {}, 1);
+world.scoreboard.getObjective("round");
+`,
+      source,
+    );
+
+    expect(parsed.methodCalls).toEqual([
+      expect.objectContaining({ symbol: "world.getAllPlayers" }),
+      expect.objectContaining({ symbol: "world.getDimension" }),
+      expect.objectContaining({ symbol: "system.runInterval" }),
+    ]);
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",
