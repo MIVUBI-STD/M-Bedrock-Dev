@@ -368,7 +368,8 @@
       },
       "sourceIds": [
         "mivubi-world-mutation-policy-v1"
-      ]
+      ],
+      "diagnosticSeverity": "critical"
     }
   ]
 }
