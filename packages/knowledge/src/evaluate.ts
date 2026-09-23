@@ -24,6 +24,7 @@ export interface KnowledgeRelationAssessment {
   message: string;
   knowledgeSourceIds: readonly string[];
   evidenceSourceIds: readonly string[];
+  diagnosticSeverity?: "info" | "minor" | "medium" | "critical";
 }
 
 function evidenceFor(
@@ -71,6 +72,9 @@ export function assessKnowledgeRelations(
           : `${relation.from} requirement ${relation.to} is satisfied.`,
         knowledgeSourceIds: relation.sourceIds,
         evidenceSourceIds: [...evidenceIds],
+        ...(relation.diagnosticSeverity === undefined
+          ? {}
+          : { diagnosticSeverity: relation.diagnosticSeverity }),
       });
       continue;
     }
@@ -95,6 +99,9 @@ export function assessKnowledgeRelations(
           : `${relation.from} has a satisfied alternative requirement.`,
         knowledgeSourceIds: relation.sourceIds,
         evidenceSourceIds: [...evidenceIds],
+        ...(relation.diagnosticSeverity === undefined
+          ? {}
+          : { diagnosticSeverity: relation.diagnosticSeverity }),
       });
       continue;
     }
@@ -117,6 +124,9 @@ export function assessKnowledgeRelations(
           : `${relation.to} is backed by gate ${relation.from}.`,
         knowledgeSourceIds: relation.sourceIds,
         evidenceSourceIds: [...evidenceIds],
+        ...(relation.diagnosticSeverity === undefined
+          ? {}
+          : { diagnosticSeverity: relation.diagnosticSeverity }),
       });
       continue;
     }
@@ -135,6 +145,9 @@ export function assessKnowledgeRelations(
           : `${relation.from} deactivation of ${relation.to} is reflected in evidence.`,
         knowledgeSourceIds: relation.sourceIds,
         evidenceSourceIds: [...evidenceIds],
+        ...(relation.diagnosticSeverity === undefined
+          ? {}
+          : { diagnosticSeverity: relation.diagnosticSeverity }),
       });
       continue;
     }
@@ -157,6 +170,9 @@ export function assessKnowledgeRelations(
           : `${relation.from} restoration of ${relation.to} is satisfied.`,
         knowledgeSourceIds: relation.sourceIds,
         evidenceSourceIds: [...evidenceIds],
+        ...(relation.diagnosticSeverity === undefined
+          ? {}
+          : { diagnosticSeverity: relation.diagnosticSeverity }),
       });
     }
   }
