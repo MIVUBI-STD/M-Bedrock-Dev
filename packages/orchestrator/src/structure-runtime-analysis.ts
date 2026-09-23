@@ -3,6 +3,7 @@ import { parseStructureLoadSemantics } from "../../../analyzers/commands/src/str
 import { parseTickingAreaSemantics } from "../../../analyzers/commands/src/tickingarea-semantics.js";
 import { parseScheduleAreaLoadedSemantics } from "../../../analyzers/commands/src/schedule-semantics.js";
 import type { McStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
+import type { StructureSize } from "../../../adapters/mcstructure/src/types.js";
 
 function absoluteBlockPosition(
   position: NonNullable<ReturnType<typeof parseStructureLoadSemantics>>["position"],
@@ -45,6 +46,7 @@ export interface AreaLoadedScheduleRecord {
 export interface ParsedStructureSummary {
   identifier: string;
   relativePath: string;
+  size?: StructureSize;
   semantics: McStructureSemantics;
 }
 
