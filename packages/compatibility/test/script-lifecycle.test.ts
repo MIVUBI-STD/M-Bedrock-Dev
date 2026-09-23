@@ -30,6 +30,41 @@ describe("Script API symbol lifecycle", () => {
     ).state).toBe("removed");
   });
 
+  it("supports remove-and-reintroduce lifecycles", () => {
+    const reintroduced = {
+      deprecatedInMajor: 1,
+      removedIn: "2.0.0",
+      reintroducedIn: "2.6.0",
+      sourceIds: ["official"],
+    } as const;
+
+    expect(evaluateScriptSymbolLifecycle(
+      reintroduced,
+      "1.19.0",
+      "stable",
+    ).state).toBe("deprecated");
+    expect(evaluateScriptSymbolLifecycle(
+      reintroduced,
+      "2.0.0",
+      "stable",
+    ).state).toBe("removed");
+    expect(evaluateScriptSymbolLifecycle(
+      reintroduced,
+      "2.5.0",
+      "stable",
+    ).state).toBe("removed");
+    expect(evaluateScriptSymbolLifecycle(
+      reintroduced,
+      "2.6.0",
+      "stable",
+    ).state).toBe("active");
+    expect(evaluateScriptSymbolLifecycle(
+      reintroduced,
+      "2.12.0-beta.1.26.60-preview.25",
+      "beta",
+    ).state).toBe("active");
+  });
+
   it("supports removed-without-prior-deprecation transitions", () => {
     expect(evaluateScriptSymbolLifecycle({
       removedIn: "2.0.0",

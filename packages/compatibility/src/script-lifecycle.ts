@@ -4,6 +4,7 @@ import type { ScriptApiTrack } from "./script-api.js";
 export interface ScriptSymbolLifecycle {
   deprecatedInMajor?: number;
   removedIn: string;
+  reintroducedIn?: string;
   replacement?: string;
   sourceIds: readonly string[];
 }
@@ -43,6 +44,19 @@ export function evaluateScriptSymbolLifecycle(
     return {
       state: "unknown",
       reason: "The manifest Script API major version cannot be parsed.",
+    };
+  }
+
+  if (
+    lifecycle.reintroducedIn !== undefined &&
+    compareVersions(moduleVersion, lifecycle.reintroducedIn) >= 0
+  ) {
+    return {
+      state: "active",
+      reason:
+        "The symbol was reintroduced in @minecraft/server " +
+        lifecycle.reintroducedIn +
+        " after an earlier removal.",
     };
   }
 

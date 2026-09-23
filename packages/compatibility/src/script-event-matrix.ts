@@ -144,6 +144,7 @@ export const SCRIPT_EVENT_SYMBOL_RULES: readonly ScriptEventSymbolRule[] = [
     lifecycle: {
       deprecatedInMajor: 1,
       removedIn: "2.0.0",
+      reintroducedIn: "2.6.0",
       sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],
     },
     sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],

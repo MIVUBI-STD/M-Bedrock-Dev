@@ -68,7 +68,17 @@ export const SCRIPT_TYPE_SYMBOL_RULES: readonly ScriptTypeSymbolRule[] = [
   deprecatedRemoved("script-type.item-use-on-after-signal", "ItemUseOnAfterEventSignal", ["ms-item-use-on-after-signal-1xx", "ms-server-changelog"]),
   removed("script-type.block-component-player-destroy-event", "BlockComponentPlayerDestroyEvent", ["ms-server-changelog"]),
   removed("script-type.entity-ground-offset-component", "EntityGroundOffsetComponent", ["ms-server-changelog"]),
-  removed("script-type.entity-hurt-after-signal", "EntityHurtAfterEventSignal", ["ms-server-changelog"]),
+  {
+    id: "script-type.entity-hurt-after-signal",
+    moduleName: "@minecraft/server",
+    symbol: "EntityHurtAfterEventSignal",
+    lifecycle: {
+      removedIn: "2.0.0",
+      reintroducedIn: "2.6.0",
+      sourceIds: ["ms-server-changelog"],
+    },
+    sourceIds: ["ms-server-changelog"],
+  },
   removed("script-type.ibutton-push-after-signal", "IButtonPushAfterEventSignal", ["ms-server-changelog"]),
   removed("script-type.ilever-action-after-signal", "ILeverActionAfterEventSignal", ["ms-server-changelog"]),
   removed("script-type.iplayer-join-after-signal", "IPlayerJoinAfterEventSignal", ["ms-server-changelog"]),
