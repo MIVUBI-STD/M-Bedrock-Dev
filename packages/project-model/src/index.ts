@@ -7,3 +7,5 @@ export * from "./source-ref.js";
 export * from "./workspace.js";
 
 export * from "./runtime-evidence.js";
+
+export * from "./route-corridor.js";
