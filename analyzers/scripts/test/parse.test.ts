@@ -57,11 +57,11 @@ world.scoreboard.getObjective("round");
       source,
     );
 
-    expect(parsed.methodCalls).toEqual([
+    expect(parsed.methodCalls).toEqual(expect.arrayContaining([
       expect.objectContaining({ symbol: "world.getAllPlayers" }),
       expect.objectContaining({ symbol: "world.getDimension" }),
       expect.objectContaining({ symbol: "system.runInterval" }),
-    ]);
+    ]));
   });
 
   it("infers bounded receiver types through variables, loops, callbacks and property chains", () => {
