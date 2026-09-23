@@ -14,6 +14,10 @@ import type {
 import { compareArtifacts, type ArtifactComparisonResult } from "./compare-artifacts.js";
 import { inspectArtifact } from "./inspect-artifact.js";
 import type { InspectTargetProfile } from "./types.js";
+import {
+  correlateScriptUsageWithUpdate,
+  type ScriptUpdateCorrelation,
+} from "./script-update-correlation.js";
 
 export interface VersionAwareEvidenceLink {
   updateEntryId: string;
@@ -24,6 +28,7 @@ export interface VersionAwareEvidenceLink {
     countDeltas: string[];
     changedChunkSignals: number;
   };
+  scriptEvidence?: ScriptUpdateCorrelation;
 }
 
 export interface VersionAwareComparisonResult {
@@ -107,6 +112,14 @@ export async function compareArtifactsForUpdate(
 
       if (overlappingCapabilities.length === 0 && !domainOverlap) return [];
 
+      const scriptEvidence = entry.domain === "scripts"
+        ? correlateScriptUsageWithUpdate(
+            entry,
+            before.scriptApiUsage,
+            after.scriptApiUsage,
+          )
+        : undefined;
+
       return [{
         updateEntryId: entry.id,
         domain: entry.domain,
@@ -116,6 +129,7 @@ export async function compareArtifactsForUpdate(
           countDeltas,
           changedChunkSignals,
         },
+        ...(scriptEvidence ? { scriptEvidence } : {}),
       }];
     })
     .sort((a, b) => a.updateEntryId.localeCompare(b.updateEntryId));

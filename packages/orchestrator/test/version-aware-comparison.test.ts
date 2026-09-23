@@ -12,6 +12,13 @@ describe("version-aware comparison contract", () => {
         countDeltas: ["pendingTickRecords:-2"],
         changedChunkSignals: 1,
       },
+      scriptEvidence: {
+        moduleSurfaceOverlap: false,
+        moduleIdentifiers: [],
+        exactSymbolMatches: [],
+        observedSymbols: 0,
+        unclassifiedObservedSymbols: [],
+      },
     };
 
     expect(link.updateEntryId).toContain("1.26.40");

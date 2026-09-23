@@ -26,3 +26,4 @@ export * from "./version-aware-comparison.js";
 export * from "./command-effect-graph.js";
 export * from "./dialogue-graph.js";
 export * from "./script-api-usage.js";
+export * from "./script-update-correlation.js";
