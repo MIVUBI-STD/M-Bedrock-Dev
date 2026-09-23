@@ -2,7 +2,7 @@ import { compareVersions } from "../../knowledge/src/version.js";
 import type { ScriptApiTrack } from "./script-api.js";
 
 export interface ScriptSymbolLifecycle {
-  deprecatedInMajor: number;
+  deprecatedInMajor?: number;
   removedIn: string;
   replacement?: string;
   sourceIds: readonly string[];
@@ -53,7 +53,10 @@ export function evaluateScriptSymbolLifecycle(
     };
   }
 
-  if (major === lifecycle.deprecatedInMajor) {
+  if (
+    lifecycle.deprecatedInMajor !== undefined &&
+    major === lifecycle.deprecatedInMajor
+  ) {
     return {
       state: "deprecated",
       reason:

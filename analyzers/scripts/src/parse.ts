@@ -7,8 +7,12 @@ import type {
   ScriptCapabilityUse,
   ScriptEventSubscription,
   ScriptImport,
+  ScriptModuleMemberAccess,
 } from "./types.js";
-import { inferScriptMethodCalls } from "./receiver-inference.js";
+import {
+  inferScriptMethodCalls,
+  inferScriptPropertyAccesses,
+} from "./receiver-inference.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -44,6 +48,36 @@ function importBindings(node: ts.ImportDeclaration): string[] {
   }
 
   return bindings;
+}
+
+
+function minecraftNamedBindings(file: ts.SourceFile): Map<string, {
+  module: string;
+  importedName: string;
+}> {
+  const output = new Map<string, { module: string; importedName: string }>();
+
+  for (const statement of file.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteralLike(statement.moduleSpecifier) ||
+      statement.moduleSpecifier.text !== "@minecraft/server"
+    ) {
+      continue;
+    }
+
+    const bindings = statement.importClause?.namedBindings;
+    if (!bindings || !ts.isNamedImports(bindings)) continue;
+
+    for (const element of bindings.elements) {
+      output.set(element.name.text, {
+        module: "@minecraft/server",
+        importedName: element.propertyName?.text ?? element.name.text,
+      });
+    }
+  }
+
+  return output;
 }
 
 function classifyModule(module: string): ScriptImport["kind"] {
@@ -143,11 +177,21 @@ export function parseScriptFile(
   const dynamicProperties: DynamicPropertyAccess[] = [];
   const restrictedMutations: RestrictedExecutionMutation[] = [];
   const methodCalls = inferScriptMethodCalls(file, source);
-  const capabilities: ScriptCapabilityUse[] = methodCalls.map((call) => ({
-    capability: "api-method",
-    detail: call.symbol,
-    source: call.source,
-  }));
+  const propertyAccesses = inferScriptPropertyAccesses(file, source);
+  const moduleMemberAccesses: ScriptModuleMemberAccess[] = [];
+  const namedMinecraftBindings = minecraftNamedBindings(file);
+  const capabilities: ScriptCapabilityUse[] = [
+    ...methodCalls.map((call) => ({
+      capability: "api-method" as const,
+      detail: call.symbol,
+      source: call.source,
+    })),
+    ...propertyAccesses.map((access) => ({
+      capability: "api-property" as const,
+      detail: access.symbol,
+      source: access.source,
+    })),
+  ];
 
   const visit = (node: ts.Node): void => {
     if (ts.isImportDeclaration(node) && ts.isStringLiteralLike(node.moduleSpecifier)) {
@@ -158,6 +202,30 @@ export function parseScriptFile(
         bindings: importBindings(node),
         source: lineSource(file, node, source),
       });
+    }
+
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      !(ts.isCallExpression(node.parent) && node.parent.expression === node)
+    ) {
+      const binding = namedMinecraftBindings.get(node.expression.text);
+      if (binding) {
+        const access: ScriptModuleMemberAccess = {
+          module: binding.module,
+          importedName: binding.importedName,
+          localName: node.expression.text,
+          member: node.name.text,
+          symbol: `${binding.importedName}.${node.name.text}`,
+          source: lineSource(file, node, source),
+        };
+        moduleMemberAccesses.push(access);
+        capabilities.push({
+          capability: "api-module-member",
+          detail: access.symbol,
+          source: access.source,
+        });
+      }
     }
 
     if (ts.isIdentifier(node) && (node.text === "world" || node.text === "system")) {
@@ -268,6 +336,8 @@ export function parseScriptFile(
     dynamicProperties,
     restrictedMutations,
     methodCalls,
+    propertyAccesses,
+    moduleMemberAccesses,
     capabilities,
   };
 }

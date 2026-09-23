@@ -34,7 +34,8 @@ export type ScriptApiReceiverType =
   | "Entity"
   | "Dimension"
   | "Scoreboard"
-  | "ScoreboardObjective";
+  | "ScoreboardObjective"
+  | "PlayerInputPermissions";
 
 export interface ScriptMethodCall {
   receiverType: ScriptApiReceiverType;
@@ -42,6 +43,24 @@ export interface ScriptMethodCall {
   method: string;
   symbol: string;
   inference: "direct" | "bounded";
+  source: SourceRef;
+}
+
+export interface ScriptPropertyAccess {
+  receiverType: ScriptApiReceiverType;
+  root?: "world" | "system";
+  property: string;
+  symbol: string;
+  inference: "direct" | "bounded";
+  source: SourceRef;
+}
+
+export interface ScriptModuleMemberAccess {
+  module: string;
+  importedName: string;
+  localName: string;
+  member: string;
+  symbol: string;
   source: SourceRef;
 }
 
@@ -55,6 +74,8 @@ export interface ScriptCapabilityUse {
     | "restricted-execution"
     | "early-execution"
     | "api-method"
+    | "api-property"
+    | "api-module-member"
     | "unknown";
   detail?: string;
   source: SourceRef;
@@ -68,5 +89,7 @@ export interface ParsedScriptFile {
   dynamicProperties: DynamicPropertyAccess[];
   restrictedMutations: RestrictedExecutionMutation[];
   methodCalls: ScriptMethodCall[];
+  propertyAccesses: ScriptPropertyAccess[];
+  moduleMemberAccesses: ScriptModuleMemberAccess[];
   capabilities: ScriptCapabilityUse[];
 }

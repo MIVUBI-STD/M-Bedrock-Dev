@@ -3,6 +3,7 @@ import type { SourceRef } from "../../../packages/project-model/src/source-ref.j
 import type {
   ScriptApiReceiverType,
   ScriptMethodCall,
+  ScriptPropertyAccess,
 } from "./types.js";
 
 type ReceiverValueType =
@@ -98,7 +99,8 @@ function typeFromAnnotation(
       name === "Entity" ||
       name === "Dimension" ||
       name === "Scoreboard" ||
-      name === "ScoreboardObjective"
+      name === "ScoreboardObjective" ||
+      name === "PlayerInputPermissions"
     ) {
       return name;
     }
@@ -111,6 +113,9 @@ function propertyType(
   property: string,
 ): ReceiverValueType | undefined {
   if (receiver === "World" && property === "scoreboard") return "Scoreboard";
+  if (receiver === "Player" && property === "inputPermissions") {
+    return "PlayerInputPermissions";
+  }
   return undefined;
 }
 
@@ -129,7 +134,7 @@ function methodReturnType(
   return undefined;
 }
 
-function canonicalSymbol(
+function canonicalMethodSymbol(
   receiver: ScriptApiReceiverType,
   method: string,
 ): string {
@@ -253,7 +258,7 @@ export function inferScriptMethodCalls(
         ? { root: receiver === "World" ? "world" as const : "system" as const }
         : {}),
       method,
-      symbol: canonicalSymbol(receiver, method),
+      symbol: canonicalMethodSymbol(receiver, method),
       inference: direct ? "direct" : "bounded",
       source: lineSource(file, call, source),
     });
@@ -354,6 +359,156 @@ export function inferScriptMethodCalls(
   return calls.filter((call) => {
     const line = call.source.range?.lineStart ?? 0;
     const key = `${call.symbol}\0${line}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function canonicalPropertySymbol(
+  receiver: ScriptApiReceiverType,
+  property: string,
+): string {
+  if (receiver === "World") return `world.${property}`;
+  if (receiver === "System") return `system.${property}`;
+  return `${receiver}.${property}`;
+}
+
+export function inferScriptPropertyAccesses(
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptPropertyAccess[] {
+  const accesses: ScriptPropertyAccess[] = [];
+  const functionReturns = inferFunctionReturns(file);
+  const rootScope = childScope();
+
+  const recordProperty = (
+    node: ts.PropertyAccessExpression,
+    scope: Scope,
+  ): void => {
+    if (ts.isCallExpression(node.parent) && node.parent.expression === node) {
+      return;
+    }
+
+    const receiverExpression = node.expression;
+    const receiver = receiverObject(
+      inferExpressionType(receiverExpression, scope, functionReturns),
+    );
+    if (!receiver) return;
+
+    const property = node.name.text;
+    const direct =
+      ts.isIdentifier(receiverExpression) &&
+      ((receiverExpression.text === "world" && receiver === "World") ||
+        (receiverExpression.text === "system" && receiver === "System"));
+
+    accesses.push({
+      receiverType: receiver,
+      ...(direct
+        ? { root: receiver === "World" ? "world" as const : "system" as const }
+        : {}),
+      property,
+      symbol: canonicalPropertySymbol(receiver, property),
+      inference: direct ? "direct" : "bounded",
+      source: lineSource(file, node, source),
+    });
+  };
+
+  const visit = (node: ts.Node, scope: Scope): void => {
+    if (ts.isFunctionDeclaration(node)) {
+      const fnScope = childScope(scope);
+      for (const parameter of node.parameters) {
+        if (!ts.isIdentifier(parameter.name)) continue;
+        const type = typeFromAnnotation(parameter.type);
+        if (type) fnScope.values.set(parameter.name.text, type);
+      }
+      if (node.body) visit(node.body, fnScope);
+      return;
+    }
+
+    if (ts.isBlock(node)) {
+      const blockScope = childScope(scope);
+      for (const statement of node.statements) visit(statement, blockScope);
+      return;
+    }
+
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
+      const explicit = typeFromAnnotation(node.type);
+      const inferred = node.initializer
+        ? inferExpressionType(node.initializer, scope, functionReturns)
+        : undefined;
+      const type = explicit ?? inferred;
+      if (type) scope.values.set(node.name.text, type);
+      if (node.initializer) visit(node.initializer, scope);
+      return;
+    }
+
+    if (ts.isForOfStatement(node)) {
+      visit(node.expression, scope);
+      const element = receiverElement(
+        inferExpressionType(node.expression, scope, functionReturns),
+      );
+      const loopScope = childScope(scope);
+      const declaration = node.initializer;
+      if (
+        element &&
+        ts.isVariableDeclarationList(declaration) &&
+        declaration.declarations.length === 1
+      ) {
+        const item = declaration.declarations[0];
+        if (item && ts.isIdentifier(item.name)) {
+          loopScope.values.set(item.name.text, element);
+        }
+      }
+      visit(node.statement, loopScope);
+      return;
+    }
+
+    if (ts.isPropertyAccessExpression(node)) {
+      recordProperty(node, scope);
+    }
+
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const receiverType = inferExpressionType(
+        node.expression.expression,
+        scope,
+        functionReturns,
+      );
+      const element = receiverElement(receiverType);
+      const method = node.expression.name.text;
+      const callback = node.arguments[0];
+
+      visit(node.expression, scope);
+
+      if (
+        element &&
+        ARRAY_CALLBACK_METHODS.has(method) &&
+        callback &&
+        (ts.isArrowFunction(callback) || ts.isFunctionExpression(callback))
+      ) {
+        const callbackScope = childScope(scope);
+        const parameter = callback.parameters[0];
+        if (parameter && ts.isIdentifier(parameter.name)) {
+          callbackScope.values.set(parameter.name.text, element);
+        }
+        visit(callback.body, callbackScope);
+        for (let index = 1; index < node.arguments.length; index += 1) {
+          const argument = node.arguments[index];
+          if (argument) visit(argument, scope);
+        }
+        return;
+      }
+    }
+
+    ts.forEachChild(node, (child) => visit(child, scope));
+  };
+
+  visit(file, rootScope);
+
+  const seen = new Set<string>();
+  return accesses.filter((access) => {
+    const line = access.source.range?.lineStart ?? 0;
+    const key = `${access.symbol}\0${line}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
