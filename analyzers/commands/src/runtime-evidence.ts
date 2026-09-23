@@ -42,6 +42,7 @@ function evidenceFromEffect(effect: CommandEffect): RuntimeEvidenceRecord[] {
       return [
         observed("teleport-destination", effect),
         observed("teleport-apply-request", effect),
+        observed("teleport-apply", effect),
       ];
     case "function-call":
       return [observed("function-call", effect, "Function target: " + effect.target)];
