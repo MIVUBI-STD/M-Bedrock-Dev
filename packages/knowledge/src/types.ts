@@ -57,6 +57,10 @@ export type KnowledgeDomain =
   | "physics"
   | "mounts"
   | "npc-dialogue"
+  | "environment-hazards"
+  | "observability"
+  | "validation"
+  | "education-runtime"
   | "education";
 
 export type KnowledgeRelationKind =
