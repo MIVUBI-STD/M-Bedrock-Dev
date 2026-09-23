@@ -268,3 +268,38 @@ export function analyzeTransactionOrdering(
 
   return findings;
 }
+
+
+export function transactionRoots(
+  functions: readonly ParsedFunction[],
+): string[] {
+  const known = new Set(functions.map((fn) => fn.identifier));
+  const called = new Set<string>();
+
+  for (const fn of functions) {
+    for (const command of fn.commands) {
+      for (const target of functionCalls(command)) {
+        if (known.has(target)) called.add(target);
+      }
+    }
+  }
+
+  const roots = functions
+    .map((fn) => fn.identifier)
+    .filter((id) => !called.has(id))
+    .sort();
+
+  // Purely recursive/cyclic function sets may have no root.
+  return roots.length > 0
+    ? roots
+    : functions.map((fn) => fn.identifier).sort();
+}
+
+export function traceProjectTransactions(
+  functions: readonly ParsedFunction[],
+  maxDepth = 8,
+): TransactionTrace[] {
+  return transactionRoots(functions).map((root) =>
+    traceFunctionTransactionOrder(functions, root, maxDepth)
+  );
+}
