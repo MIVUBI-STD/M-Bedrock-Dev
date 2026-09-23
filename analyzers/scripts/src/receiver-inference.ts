@@ -36,6 +36,7 @@ const ENTITY_INHERITED_METHODS = new Set([
   "runCommandAsync",
   "isValid",
   "applyKnockback",
+  "teleport",
 ]);
 
 const ENTITY_INHERITED_PROPERTIES = new Set([
@@ -739,7 +740,8 @@ export function inferScriptMethodCalls(
   const seen = new Set<string>();
   return calls.filter((call) => {
     const line = call.source.range?.lineStart ?? 0;
-    const key = `${call.symbol}\0${line}`;
+    const column = call.source.range?.columnStart ?? 0;
+    const key = `${call.symbol}\0${line}\0${column}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -900,7 +902,8 @@ export function inferScriptPropertyAccesses(
   const seen = new Set<string>();
   return accesses.filter((access) => {
     const line = access.source.range?.lineStart ?? 0;
-    const key = `${access.symbol}\0${line}`;
+    const column = access.source.range?.columnStart ?? 0;
+    const key = `${access.symbol}\0${line}\0${column}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -1015,7 +1018,8 @@ export function inferScriptPropertyWrites(
   const seen = new Set<string>();
   return writes.filter((write) => {
     const line = write.source.range?.lineStart ?? 0;
-    const key = `${write.symbol}\0${line}\0${write.operation}`;
+    const column = write.source.range?.columnStart ?? 0;
+    const key = `${write.symbol}\0${line}\0${column}\0${write.operation}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
