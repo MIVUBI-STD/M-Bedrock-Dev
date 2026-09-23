@@ -1,3 +1,5 @@
+import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+
 export type SelectorScope = "self" | "nearest" | "all_players" | "all_entities" | "filtered" | "unknown";
 
 export interface StateAccess {
@@ -6,6 +8,7 @@ export interface StateAccess {
   access: "read" | "write";
   selector: string;
   selectorScope: SelectorScope;
+  source?: SourceRef;
 }
 
 export function classifySelector(selector: string): SelectorScope {
