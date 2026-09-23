@@ -56,6 +56,10 @@ import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { planInspectionRepairs } from "./repair-planning.js";
 import { deriveReliabilityFingerprint } from "./reliability-fingerprint.js";
 import { analyzeEntityWithKnowledge } from "./entity-knowledge-analysis.js";
+import {
+  analyzeKnowledgeRuntime,
+  resolveInspectionKnowledgeProfile,
+} from "./knowledge-runtime-analysis.js";
 import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
@@ -455,6 +459,20 @@ export async function inspectDirectory(
     ));
   }
 
+  const parsedFunctionModelsForKnowledge = parsedFunctions.map((item) => item.parsed);
+  const manifestModelsForKnowledge = manifests.map((item) => item.manifest);
+  const knowledgeProfileResolution = resolveInspectionKnowledgeProfile(
+    target,
+    manifestModelsForKnowledge,
+  );
+  const knowledgeRuntime = analyzeKnowledgeRuntime(
+    knowledgeCatalog,
+    target,
+    manifestModelsForKnowledge,
+    parsedFunctionModelsForKnowledge,
+  );
+  diagnostics.push(...knowledgeRuntime.diagnostics);
+
   const entityEventEvidence = deriveEntityEventExternalEvidence(
     parsedFunctions.map((item) => item.parsed),
     parsedScripts.map((item) => item.parsed),
@@ -463,12 +481,11 @@ export async function inspectDirectory(
   let entityStates = 0;
   let entityKnowledgeGaps = 0;
   let entityStaticLimits = 0;
-  if (knowledgeCatalog) {
+  if (knowledgeCatalog && knowledgeProfileResolution.profile) {
     for (const item of parsedEntities) {
       const profile = {
-        edition: (target.edition ?? "bedrock") as "bedrock" | "education",
+        ...knowledgeProfileResolution.profile,
         ...(item.parsed.formatVersion ? { formatVersion: item.parsed.formatVersion } : {}),
-        ...(target.experiments ? { experiments: target.experiments } : {}),
       };
       const externalRootEvents = externalEventRootsForEntity(
         item.parsed,
@@ -632,10 +649,22 @@ export async function inspectDirectory(
     parsedStructures,
     entities: parsedEntities.length,
     entityKnowledge: {
-      analyzed: knowledgeCatalog ? parsedEntities.length : 0,
+      analyzed: knowledgeCatalog && knowledgeProfileResolution.profile
+        ? parsedEntities.length
+        : 0,
       states: entityStates,
       prerequisiteGaps: entityKnowledgeGaps,
       staticAnalysisLimits: entityStaticLimits,
+    },
+    knowledgeRuntime: {
+      enabled: knowledgeRuntime.enabled,
+      profileResolved: knowledgeRuntime.profileResolved,
+      profileSource: knowledgeRuntime.profileSource,
+      profileConflicts: knowledgeRuntime.profileConflicts,
+      evidenceRecords: knowledgeRuntime.evidenceRecords,
+      violations: knowledgeRuntime.violations,
+      evidenceGaps: knowledgeRuntime.evidenceGaps,
+      validationCases: knowledgeRuntime.validationCases.length,
     },
     worldDatabase: {
       present: dbFiles.length > 0,
