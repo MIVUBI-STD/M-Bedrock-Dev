@@ -463,6 +463,41 @@ const entry = {
     ]);
   });
 
+  it("captures literal runCommand surfaces with execution context", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const dimension = world.getDimension("overworld");
+const player = world.getAllPlayers()[0];
+
+dimension.runCommand("fill 0 64 0 1 65 1 minecraft:stone");
+player.runCommandAsync("tp @s 5 65 5");
+const dynamic = "tp @s " + player.name;
+dimension.runCommand(dynamic);
+`,
+      source,
+    );
+
+    expect(parsed.commandLiterals).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        command: "fill 0 64 0 1 65 1 minecraft:stone",
+        mechanism: "runCommand",
+        executionRegion: "module",
+        receiverHint: "dimension",
+      }),
+      expect.objectContaining({
+        command: "tp @s 5 65 5",
+        mechanism: "runCommandAsync",
+        executionRegion: "module",
+        receiverHint: "player",
+      }),
+    ]));
+    expect(parsed.commandLiterals.some(
+      (item) => item.command.includes("player.name"),
+    )).toBe(false);
+  });
+
   it("tracks lifecycle member exposure even when receiver typing is incomplete", () => {
     const parsed = parseScriptFile(
       "scripts/main",
