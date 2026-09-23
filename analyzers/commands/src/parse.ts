@@ -77,7 +77,17 @@ export function analyzeCommand(command: string, source: SourceRef): CommandAnaly
   }
 
   if (verb === "summon" && tokens[1]) {
+    const position = parseCoordinate3(tokens, 2);
     const spawnEvent = tokens[7];
+
+    effects.push({
+      kind: "entity-spawn",
+      entityIdentifier: tokens[1],
+      ...(position ? { position } : {}),
+      ...(spawnEvent ? { spawnEvent } : {}),
+      source,
+    });
+
     if (spawnEvent) {
       effects.push({
         kind: "entity-event-trigger",
@@ -86,8 +96,8 @@ export function analyzeCommand(command: string, source: SourceRef): CommandAnaly
         event: spawnEvent,
         source,
       });
-      return { command, effects };
     }
+    return { command, effects };
   }
 
   if (
