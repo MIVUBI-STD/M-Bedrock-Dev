@@ -43,6 +43,7 @@ export type KnowledgeDomain =
   | "round-integrity"
   | "arena-cleanup"
   | "compatibility"
+  | "automation"
   | "education";
 
 export type KnowledgeRelationKind =
