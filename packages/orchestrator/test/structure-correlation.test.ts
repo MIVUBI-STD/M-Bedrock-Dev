@@ -22,6 +22,9 @@ describe("structure load correlation", () => {
         containerPaletteEntries: 1,
         embeddedCommandBlocks: 1,
         queuedTickPositions: 0,
+        educationAllowEntries: 0,
+        educationDenyEntries: 0,
+        educationBorderEntries: 0,
       },
     }]);
 
