@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-performance-policy-v1",
+      "title": "MIVUBI Performance Watchdog and Scheduler Budget Policy v1",
+      "url": "project://knowledge/performance-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "performance-policy.tick-budget-classification",
+      "domain": "performance",
+      "subject": "scheduled work",
+      "statement": "Classify scheduled work as CRITICAL_NOW, SOON, BACKGROUND, or RECOVERY. Only critical-now work may consume the immediate tick path without batching; lower-priority work must be deferred, distributed, or coalesced.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["priority", "tick-budget"],
+      "riskSurfaces": ["tick-spike", "priority-inversion"]
+    },
+    {
+      "id": "performance-policy.per-arena-budget",
+      "domain": "performance",
+      "subject": "multi-arena work budget",
+      "statement": "Each arena generation gets a bounded scheduler budget for scans, retries, world verification, entity setup, and recovery so simultaneous arenas cannot each consume an unbounded full-tick workload.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["arena-budget", "scheduler"],
+      "riskSurfaces": ["multi-arena-spike", "fairness"]
+    },
+    {
+      "id": "performance-policy.global-budget",
+      "domain": "performance",
+      "subject": "global script budget",
+      "statement": "Per-arena budgets must also obey a global runtime budget; local compliance is insufficient if many arenas or recovery jobs run concurrently.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["global-budget", "multi-arena"],
+      "riskSurfaces": ["thundering-herd", "watchdog"]
+    },
+    {
+      "id": "performance-policy.no-fullworld-scan-hotpath",
+      "domain": "performance",
+      "subject": "entity/world scanning",
+      "statement": "Do not perform unfiltered full-world entity scans or equivalent wide queries on a per-tick hot path when narrower filters, registries, spatial bounds, or event-driven updates can satisfy the requirement.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["entity-query", "hot-path"],
+      "riskSurfaces": ["query-fanout", "tick-spike"]
+    },
+    {
+      "id": "performance-policy.polling-backoff",
+      "domain": "performance",
+      "subject": "polling and retry",
+      "statement": "Polling/retry loops must define maximum attempts, minimum interval, exponential or staged backoff where appropriate, and a terminal state. Many independent one-tick retries are prohibited when the condition is slow-changing.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["retry", "backoff"],
+      "riskSurfaces": ["retry-storm", "watchdog", "scheduler-load"]
+    },
+    {
+      "id": "performance-policy.coalesce-same-purpose-work",
+      "domain": "performance",
+      "subject": "duplicate scheduled work",
+      "statement": "Requests for the same logical verification/recovery target within a generation should coalesce behind one in-flight operation instead of spawning duplicate intervals, jobs, or scans.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["coalescing", "deduplication"],
+      "riskSurfaces": ["duplicate-work", "retry-storm"]
+    },
+    {
+      "id": "performance-policy.runjob-fine-grain",
+      "domain": "performance",
+      "subject": "runJob generator design",
+      "statement": "runJob generators must yield at fine-grained, bounded units of work and avoid iterations whose single step can itself perform an unbounded scan or large mutation batch.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["runJob", "generator-granularity"],
+      "riskSurfaces": ["watchdog", "slow-device"]
+    },
+    {
+      "id": "performance-policy.interval-overlap-guard",
+      "domain": "performance",
+      "subject": "repeating callbacks",
+      "statement": "Repeating work that can outlive its nominal interval must have an in-flight/ownership guard so a new iteration cannot start while the prior generation's operation is still active.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["runInterval", "in-flight-guard"],
+      "riskSurfaces": ["overlap", "duplicate-work", "race-condition"]
+    },
+    {
+      "id": "performance-policy.recovery-thundering-herd",
+      "domain": "performance",
+      "subject": "worldLoad recovery",
+      "statement": "worldLoad/restart reconciliation must phase and queue expensive recovery work instead of starting every arena scan, lease repair, entity reconciliation, and structure verification in the same tick window.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["recovery", "thundering-herd"],
+      "riskSurfaces": ["startup-spike", "watchdog"]
+    },
+    {
+      "id": "performance-policy.cache-stable-lookups",
+      "domain": "performance",
+      "subject": "stable runtime lookups",
+      "statement": "Cache stable handles/metadata that do not need per-tick recomputation, while still revalidating handles whose lifecycle can become invalid. Avoid repeated dimension/config/constant lookup work inside hot loops.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["cache", "hot-path"],
+      "riskSurfaces": ["unnecessary-work", "stale-handle"]
+    },
+    {
+      "id": "performance-policy.profiler-before-optimization",
+      "domain": "performance",
+      "subject": "performance evidence",
+      "statement": "Treat profiler data and measured call counts as the primary evidence for hot-path optimization. Static suspicion may trigger investigation, but optimization claims should be tied to measured runtime evidence where possible.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["profiler", "evidence"],
+      "riskSurfaces": ["premature-optimization", "hidden-hotpath"]
+    },
+    {
+      "id": "performance-policy.watchdog-event-not-recovery-plan",
+      "domain": "performance",
+      "subject": "watchdog terminate event",
+      "statement": "Do not rely on cancelling or handling watchdog termination as the main resilience strategy. Prevent budget violations and maintain crash-safe recovery because termination cancellation may be unavailable or unsafe.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"],
+      "capabilityTags": ["watchdog", "recovery"],
+      "riskSurfaces": ["server-termination", "false-resilience"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "performance-policy.relation-budget-gates-background",
+      "domain": "performance",
+      "subject": "available-global-budget",
+      "kind": "gates",
+      "object": "background-and-recovery-work",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"]
+    },
+    {
+      "id": "performance-policy.relation-duplicate-requests-queue",
+      "domain": "performance",
+      "subject": "duplicate-logical-work",
+      "kind": "queues-behind",
+      "object": "single-in-flight-owner",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-performance-policy-v1"]
+    }
+  ]
+}
