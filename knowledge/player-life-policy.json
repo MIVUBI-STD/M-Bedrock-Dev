@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-player-life-policy-v1",
+      "title": "MIVUBI Downed Death Respawn Revive Policy v1",
+      "url": "project://knowledge/player-life-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "life-policy.downed-is-project-state",
+      "domain": "player-life",
+      "subject": "downed state",
+      "statement": "DOWNED is a project-defined gameplay state layered above engine health/death. It requires explicit authority and must not be inferred solely from low health, crouch input, gamemode, tags, or animation.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["downed", "state-authority"],
+      "riskSurfaces": ["self-revive", "implicit-state", "state-drift"]
+    },
+    {
+      "id": "life-policy.life-state-machine",
+      "domain": "player-life",
+      "subject": "player life state",
+      "statement": "Model arena life state explicitly as ACTIVE, DOWNED, BEING_REVIVED, REVIVED, DEAD_CONFIRMED, RESPAWNING, ELIMINATED, and DISCONNECTED, with generation-scoped transitions.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["state-machine", "life-cycle"],
+      "riskSurfaces": ["illegal-transition", "revive-race", "respawn-leak"]
+    },
+    {
+      "id": "life-policy.self-revive-prohibited-by-default",
+      "domain": "player-life",
+      "subject": "revive ownership",
+      "statement": "A downed player must not satisfy their own reviver requirement unless the specific game mode explicitly supports self-revive. Input such as crouch/shift from the downed player is never sufficient evidence of an external reviver.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["revive", "reviver-identity"],
+      "riskSurfaces": ["self-revive", "input-abuse"]
+    },
+    {
+      "id": "life-policy.reviver-distinct-current-participant",
+      "domain": "player-life",
+      "subject": "reviver eligibility",
+      "statement": "A valid reviver must be a distinct current participant in the same arena generation, connected, eligible, non-downed/non-dead, within the configured interaction condition, and still current when revive completes.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["revive", "arena-isolation", "eligibility"],
+      "riskSurfaces": ["self-revive", "cross-arena-revive", "stale-reviver"]
+    },
+    {
+      "id": "life-policy.single-revive-transaction-owner",
+      "domain": "player-life",
+      "subject": "revive transaction",
+      "statement": "Each downed target generation may have at most one accepted revive transaction owner at a time. Multiple interaction events may request evaluation but cannot create independent completion timers.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["revive", "transaction"],
+      "riskSurfaces": ["multiple-revivers", "duplicate-revive", "race-condition"]
+    },
+    {
+      "id": "life-policy.revive-generation-bound",
+      "domain": "player-life",
+      "subject": "revive generation",
+      "statement": "Revive work must capture target lifeGeneration, target participationGeneration, reviver connectionGeneration, arenaGeneration, and reviveGeneration. Any mismatch invalidates completion.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["generation-token", "revive"],
+      "riskSurfaces": ["stale-revive-timer", "respawn-race", "disconnect"]
+    },
+    {
+      "id": "life-policy.death-invalidates-revive",
+      "domain": "player-life",
+      "subject": "death transition",
+      "statement": "DEAD_CONFIRMED immediately invalidates all revive timers, reviver ownership, downed interaction prompts, and low-health recovery callbacks for that life generation.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["death", "revive-cancel"],
+      "riskSurfaces": ["revive-after-death", "stale-callback"]
+    },
+    {
+      "id": "life-policy.disconnect-invalidates-revive-role",
+      "domain": "player-life",
+      "subject": "disconnect during downed/revive",
+      "statement": "Disconnect of target or reviver invalidates the current revive transaction. Reconnect creates a new connection session and must reconcile life state rather than resume an old timer blindly.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["disconnect", "revive"],
+      "riskSurfaces": ["revive-after-disconnect", "stale-session"]
+    },
+    {
+      "id": "life-policy.respawn-reconciliation-matrix",
+      "domain": "player-life",
+      "subject": "respawn state reset",
+      "statement": "Respawn must use an explicit reset/preserve matrix covering life state, health, gamemode, inventory, effects, input permissions, tags, scoreboard mirrors, pending teleports, revive ownership, and arena participation.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["respawn", "reconciliation"],
+      "riskSurfaces": ["inventory-leak", "spectator-leak", "downed-state-leak", "state-resurrection"]
+    },
+    {
+      "id": "life-policy.dead-not-active-participant",
+      "domain": "player-life",
+      "subject": "participant predicates",
+      "statement": "DEAD_CONFIRMED, RESPAWNING, ELIMINATED, and stale/disconnected life generations must not satisfy active, ready, alive-team, objective, or revive-source predicates unless the game mode explicitly defines otherwise.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["participant-set", "death"],
+      "riskSurfaces": ["dead-counted-active", "ghost-ready", "round-end"]
+    },
+    {
+      "id": "life-policy.health-handler-no-direct-recursive-heal",
+      "domain": "player-life",
+      "subject": "health-change processing",
+      "statement": "Do not implement revive/downed correction by directly changing health inside the same entityHealthChanged handler without a recursion guard/deferred transition. Use a guarded state transition and explicit verification.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["health", "event-loop", "revive"],
+      "riskSurfaces": ["infinite-loop", "watchdog"]
+    },
+    {
+      "id": "life-policy.revive-completion-idempotent",
+      "domain": "player-life",
+      "subject": "revive completion",
+      "statement": "Revive completion must be idempotent: one generation can transition DOWNED/BEING_REVIVED to REVIVED at most once, and duplicate completion callbacks must become no-ops.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"],
+      "capabilityTags": ["idempotency", "revive"],
+      "riskSurfaces": ["duplicate-revive", "duplicate-effects"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "life-policy.relation-downed-gates-revive",
+      "domain": "player-life",
+      "subject": "DOWNED",
+      "kind": "gates",
+      "object": "revive-eligibility",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"]
+    },
+    {
+      "id": "life-policy.relation-death-deactivates-revive",
+      "domain": "player-life",
+      "subject": "DEAD_CONFIRMED",
+      "kind": "deactivates",
+      "object": "revive-transaction",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"]
+    },
+    {
+      "id": "life-policy.relation-respawn-requires-reconcile",
+      "domain": "player-life",
+      "subject": "RESPAWNING",
+      "kind": "requires",
+      "object": "respawn-reconciliation-matrix",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-player-life-policy-v1"]
+    }
+  ]
+}
