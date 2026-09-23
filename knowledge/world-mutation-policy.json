@@ -369,24 +369,6 @@
       "sourceIds": [
         "mivubi-world-mutation-policy-v1"
       ]
-    },
-    {
-      "id": "world-policy.relation-apply-requires-verify-before-dependent",
-      "domain": "world-mutation",
-      "subject": "mutation-apply",
-      "kind": "requires",
-      "object": "transaction-verification-before-dependent-work",
-      "classification": "project-policy",
-      "applicability": {
-        "editions": [
-          "bedrock",
-          "education"
-        ]
-      },
-      "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
-      ],
-      "diagnosticSeverity": "medium"
     }
   ]
 }
