@@ -28,3 +28,5 @@ export * from "./dialogue-graph.js";
 export * from "./script-api-usage.js";
 export * from "./script-update-correlation.js";
 export * from "./entity-event-evidence.js";
+
+export * from "./knowledge-runtime-analysis.js";
