@@ -5,6 +5,7 @@ import type {
   ScriptMethodCall,
   ScriptMethodResultUse,
   ScriptPropertyAccess,
+  ScriptPropertyWrite,
 } from "./types.js";
 import type { ScriptArgumentKind } from "../../../packages/compatibility/src/script-signature-matrix.js";
 
@@ -104,7 +105,12 @@ function typeFromAnnotation(
       name === "Dimension" ||
       name === "Scoreboard" ||
       name === "ScoreboardObjective" ||
-      name === "PlayerInputPermissions"
+      name === "PlayerInputPermissions" ||
+      name === "EntityFrictionModifierComponent" ||
+      name === "EntityMarkVariantComponent" ||
+      name === "EntityPushThroughComponent" ||
+      name === "EntityScaleComponent" ||
+      name === "EntitySkinIdComponent"
     ) {
       return name;
     }
@@ -123,10 +129,41 @@ function propertyType(
   return undefined;
 }
 
+
+function entityComponentType(
+  call: ts.CallExpression,
+): ScriptApiReceiverType | undefined {
+  const argument = call.arguments[0];
+  if (!argument || !ts.isStringLiteralLike(argument)) return undefined;
+
+  switch (argument.text) {
+    case "minecraft:friction_modifier":
+      return "EntityFrictionModifierComponent";
+    case "minecraft:mark_variant":
+      return "EntityMarkVariantComponent";
+    case "minecraft:push_through":
+      return "EntityPushThroughComponent";
+    case "minecraft:scale":
+      return "EntityScaleComponent";
+    case "minecraft:skin_id":
+      return "EntitySkinIdComponent";
+    default:
+      return undefined;
+  }
+}
+
 function methodReturnType(
   receiver: ScriptApiReceiverType,
   method: string,
+  call?: ts.CallExpression,
 ): ReceiverValueType | undefined {
+  if (
+    call &&
+    (receiver === "Entity" || receiver === "Player") &&
+    method === "getComponent"
+  ) {
+    return entityComponentType(call);
+  }
   if (receiver === "World" && method === "getAllPlayers") return "Player[]";
   if (receiver === "World" && method === "getPlayers") return "Player[]";
   if (receiver === "World" && method === "getDimension") return "Dimension";
@@ -388,7 +425,7 @@ function inferExpressionType(
       }
 
       const receiver = receiverObject(receiverType);
-      return receiver ? methodReturnType(receiver, method) : undefined;
+      return receiver ? methodReturnType(receiver, method, node) : undefined;
     }
   }
 
@@ -718,6 +755,116 @@ export function inferScriptPropertyAccesses(
   return accesses.filter((access) => {
     const line = access.source.range?.lineStart ?? 0;
     const key = `${access.symbol}\0${line}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function canonicalPropertyWriteSymbol(
+  receiver: ScriptApiReceiverType,
+  property: string,
+): string {
+  if (receiver === "World") return `world.${property}`;
+  if (receiver === "System") return `system.${property}`;
+  return `${receiver}.${property}`;
+}
+
+function assignmentOperation(kind: ts.SyntaxKind): ScriptPropertyWrite["operation"] | undefined {
+  if (kind === ts.SyntaxKind.EqualsToken) return "assign";
+  if (
+    kind === ts.SyntaxKind.PlusEqualsToken ||
+    kind === ts.SyntaxKind.MinusEqualsToken ||
+    kind === ts.SyntaxKind.AsteriskEqualsToken ||
+    kind === ts.SyntaxKind.SlashEqualsToken ||
+    kind === ts.SyntaxKind.PercentEqualsToken
+  ) {
+    return "compound";
+  }
+  return undefined;
+}
+
+export function inferScriptPropertyWrites(
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptPropertyWrite[] {
+  const writes: ScriptPropertyWrite[] = [];
+  const functionReturns = inferFunctionReturns(file);
+  const rootScope = childScope();
+
+  const record = (
+    access: ts.PropertyAccessExpression,
+    operation: ScriptPropertyWrite["operation"],
+    node: ts.Node,
+    scope: Scope,
+  ): void => {
+    const receiver = receiverObject(
+      inferExpressionType(access.expression, scope, functionReturns),
+    );
+    if (!receiver) return;
+
+    const property = access.name.text;
+    writes.push({
+      receiverType: receiver,
+      property,
+      symbol: canonicalPropertyWriteSymbol(receiver, property),
+      operation,
+      source: lineSource(file, node, source),
+    });
+  };
+
+  const visit = (node: ts.Node, scope: Scope): void => {
+    if (ts.isFunctionDeclaration(node)) {
+      const fnScope = childScope(scope);
+      for (const parameter of node.parameters) {
+        if (!ts.isIdentifier(parameter.name)) continue;
+        const type = typeFromAnnotation(parameter.type);
+        if (type) fnScope.values.set(parameter.name.text, type);
+      }
+      if (node.body) visit(node.body, fnScope);
+      return;
+    }
+
+    if (ts.isBlock(node)) {
+      const blockScope = childScope(scope);
+      for (const statement of node.statements) visit(statement, blockScope);
+      return;
+    }
+
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
+      const explicit = typeFromAnnotation(node.type);
+      const inferred = node.initializer
+        ? inferExpressionType(node.initializer, scope, functionReturns)
+        : undefined;
+      const type = explicit ?? inferred;
+      if (type) scope.values.set(node.name.text, type);
+      if (node.initializer) visit(node.initializer, scope);
+      return;
+    }
+
+    if (ts.isBinaryExpression(node) && ts.isPropertyAccessExpression(node.left)) {
+      const operation = assignmentOperation(node.operatorToken.kind);
+      if (operation) record(node.left, operation, node, scope);
+    }
+
+    if (
+      (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
+      (node.operator === ts.SyntaxKind.PlusPlusToken ||
+        node.operator === ts.SyntaxKind.MinusMinusToken) &&
+      ts.isPropertyAccessExpression(node.operand)
+    ) {
+      record(node.operand, "increment", node, scope);
+    }
+
+    ts.forEachChild(node, (child) => visit(child, scope));
+  };
+
+  visit(file, rootScope);
+
+  const seen = new Set<string>();
+  return writes.filter((write) => {
+    const line = write.source.range?.lineStart ?? 0;
+    const key = `${write.symbol}\0${line}\0${write.operation}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

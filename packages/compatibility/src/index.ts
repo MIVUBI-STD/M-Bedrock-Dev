@@ -13,3 +13,4 @@ export * from "./script-enum-matrix.js";
 export * from "./script-signature-matrix.js";
 export * from "./script-return-contract-matrix.js";
 export * from "./script-type-matrix.js";
+export * from "./script-property-mutability-matrix.js";

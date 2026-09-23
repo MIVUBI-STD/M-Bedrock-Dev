@@ -36,7 +36,12 @@ export type ScriptApiReceiverType =
   | "Dimension"
   | "Scoreboard"
   | "ScoreboardObjective"
-  | "PlayerInputPermissions";
+  | "PlayerInputPermissions"
+  | "EntityFrictionModifierComponent"
+  | "EntityMarkVariantComponent"
+  | "EntityPushThroughComponent"
+  | "EntityScaleComponent"
+  | "EntitySkinIdComponent";
 
 export type ScriptMethodResultUse =
   | "ignored"
@@ -59,6 +64,14 @@ export interface ScriptMethodCall {
   argumentKinds: ScriptArgumentKind[];
   hasSpreadArgument: boolean;
   resultUse: ScriptMethodResultUse;
+  source: SourceRef;
+}
+
+export interface ScriptPropertyWrite {
+  receiverType: ScriptApiReceiverType;
+  property: string;
+  symbol: string;
+  operation: "assign" | "compound" | "increment";
   source: SourceRef;
 }
 
@@ -99,6 +112,7 @@ export interface ScriptCapabilityUse {
     | "early-execution"
     | "api-method"
     | "api-property"
+    | "api-property-write"
     | "api-module-member"
     | "api-imported-symbol"
     | "unknown";
@@ -115,6 +129,7 @@ export interface ParsedScriptFile {
   restrictedMutations: RestrictedExecutionMutation[];
   methodCalls: ScriptMethodCall[];
   propertyAccesses: ScriptPropertyAccess[];
+  propertyWrites: ScriptPropertyWrite[];
   moduleMemberAccesses: ScriptModuleMemberAccess[];
   importedSymbols: ScriptImportedSymbol[];
   capabilities: ScriptCapabilityUse[];

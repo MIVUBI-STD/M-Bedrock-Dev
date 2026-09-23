@@ -13,6 +13,7 @@ import type {
 import {
   inferScriptMethodCalls,
   inferScriptPropertyAccesses,
+  inferScriptPropertyWrites,
 } from "./receiver-inference.js";
 
 function scriptKind(path: string): ts.ScriptKind {
@@ -208,6 +209,7 @@ export function parseScriptFile(
   const restrictedMutations: RestrictedExecutionMutation[] = [];
   const methodCalls = inferScriptMethodCalls(file, source);
   const propertyAccesses = inferScriptPropertyAccesses(file, source);
+  const propertyWrites = inferScriptPropertyWrites(file, source);
   const moduleMemberAccesses: ScriptModuleMemberAccess[] = [];
   const importedSymbols: ScriptImportedSymbol[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
@@ -222,6 +224,11 @@ export function parseScriptFile(
       capability: "api-property" as const,
       detail: access.symbol,
       source: access.source,
+    })),
+    ...propertyWrites.map((write) => ({
+      capability: "api-property-write" as const,
+      detail: write.symbol,
+      source: write.source,
     })),
   ];
 
@@ -443,6 +450,7 @@ export function parseScriptFile(
     restrictedMutations,
     methodCalls,
     propertyAccesses,
+    propertyWrites,
     moduleMemberAccesses,
     importedSymbols,
     capabilities,
