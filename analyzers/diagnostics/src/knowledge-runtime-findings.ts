@@ -81,6 +81,28 @@ export function knowledgeRuntimeDiagnostics(
 
   for (const [scopeKey, records] of groupRuntimeEvidenceByScope(input.snapshot)) {
     const { map, conflicts } = mergeEvidence(records);
+    const sourceRefs = records.flatMap((record) => record.sourceRefs ?? []);
+    const relatedNodeIds = [...new Set(
+      records.flatMap((record) => record.relatedNodeIds ?? []),
+    )];
+
+    for (const predicate of conflicts) {
+      findings.push({
+        id: idFor(scopeKey, `evidence-conflict:${predicate}`, "unknown"),
+        code: "KNOWLEDGE_EVIDENCE_GAP",
+        severity: "info",
+        message: `Conflicting runtime evidence prevents a reliable conclusion for ${predicate}.`,
+        ...(sourceRefs[0] === undefined ? {} : { source: sourceRefs[0] }),
+        ...(relatedNodeIds.length === 0 ? {} : { relatedNodeIds }),
+        data: {
+          scopeKey,
+          predicate,
+          status: "unknown",
+          evidenceConflict: true,
+        },
+      });
+    }
+
     for (const assessment of assessKnowledgeRelations(
       input.catalog,
       input.profile,
@@ -95,6 +117,8 @@ export function knowledgeRuntimeDiagnostics(
           : "KNOWLEDGE_EVIDENCE_GAP",
         severity: assessment.status === "violation" ? "medium" : "info",
         message: assessment.message,
+        ...(sourceRefs[0] === undefined ? {} : { source: sourceRefs[0] }),
+        ...(relatedNodeIds.length === 0 ? {} : { relatedNodeIds }),
         data: {
           scopeKey,
           relationId: assessment.relationId,
