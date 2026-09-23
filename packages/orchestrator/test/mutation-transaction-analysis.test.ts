@@ -144,6 +144,40 @@ describe("mutation transaction ordering", () => {
     ]);
   });
 
+  it("flags a dependent action in a child function before a later sibling verification", () => {
+    const root = parseMcFunction(
+      "demo:root",
+      [
+        "structure load demo:arena 0 64 0",
+        "function demo:start",
+        "function demo:verify",
+      ].join("\n"),
+      { artifactId: "a", relativePath: "functions/root.mcfunction" },
+    );
+    const start = parseMcFunction(
+      "demo:start",
+      "tp @s 5 65 5",
+      { artifactId: "a", relativePath: "functions/start.mcfunction" },
+    );
+    const verify = parseMcFunction(
+      "demo:verify",
+      "execute if block 1 64 1 minecraft:gold_block run function demo:done",
+      { artifactId: "a", relativePath: "functions/verify.mcfunction" },
+    );
+
+    const { transactions } = analyze([root, start, verify]);
+    expect(transactions.assessments[0]).toEqual(expect.objectContaining({
+      rootFunctionId: "demo:root",
+      status: "dependent-before-verification",
+      dependentStep: expect.objectContaining({
+        functionId: "demo:start",
+      }),
+      verificationStep: expect.objectContaining({
+        functionId: "demo:verify",
+      }),
+    }));
+  });
+
   it("treats summon as dependent work after a direct fill mutation", () => {
     const fn = parseMcFunction(
       "demo:spawn",
@@ -250,6 +284,54 @@ describe("mutation transaction ordering", () => {
         detail: "phase-activation",
       }),
     }));
+  });
+
+  it("surfaces bounded inline depth as unresolved instead of no-dependent-action", () => {
+    const root = parseMcFunction(
+      "demo:root",
+      [
+        "structure load demo:arena 0 64 0",
+        "function demo:a",
+      ].join("\n"),
+      { artifactId: "a", relativePath: "functions/root.mcfunction" },
+    );
+    const a = parseMcFunction(
+      "demo:a",
+      "function demo:b",
+      { artifactId: "a", relativePath: "functions/a.mcfunction" },
+    );
+    const b = parseMcFunction(
+      "demo:b",
+      "function demo:c",
+      { artifactId: "a", relativePath: "functions/b.mcfunction" },
+    );
+    const cFn = parseMcFunction(
+      "demo:c",
+      "tp @s 5 65 5",
+      { artifactId: "a", relativePath: "functions/c.mcfunction" },
+    );
+
+    const runtime = analyzeStructureAndChunkRuntime(
+      [root, a, b, cFn],
+      [structure],
+    );
+    const proofs = derivePlacementProofs(
+      runtime,
+      [root, a, b, cFn],
+    );
+    const result = analyzeMutationTransactionOrdering(
+      [root, a, b, cFn],
+      proofs,
+      [],
+      1,
+    );
+
+    expect(result.assessments[0]?.status).toBe("verification-unresolved");
+    expect(result.assessments[0]?.barriers).toEqual([
+      expect.objectContaining({
+        kind: "depth-limit",
+      }),
+    ]);
   });
 
   it("keeps unrelated verification or unresolved calls as unknown", () => {
