@@ -66,7 +66,9 @@ export function knowledgeRuntimeDiagnostics(
         code: assessment.status === "violation"
           ? "KNOWLEDGE_RELATION_VIOLATION"
           : "KNOWLEDGE_EVIDENCE_GAP",
-        severity: assessment.status === "violation" ? "medium" : "info",
+        severity: assessment.status === "violation"
+          ? (assessment.diagnosticSeverity ?? "medium")
+          : "info",
         message: assessment.message,
         ...(sourceRefs[0] === undefined ? {} : { source: sourceRefs[0] }),
         ...(relatedNodeIds.length === 0 ? {} : { relatedNodeIds }),
