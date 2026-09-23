@@ -173,7 +173,7 @@ export interface InspectDirectoryResult {
   scriptMutationTransactions: {
     assessed: number;
     verifiedBeforeDependent: number;
-    lateVerificationCandidates: number;
+    dependentBeforeVerification: number;
     verificationUnresolved: number;
     noDependentAction: number;
   };
