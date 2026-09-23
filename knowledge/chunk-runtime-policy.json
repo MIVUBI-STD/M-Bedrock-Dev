@@ -1057,6 +1057,213 @@
         "performance",
         "resource-limit"
       ]
+    },
+    {
+      "id": "chunk-policy.original-loader-inventory",
+      "domain": "chunks",
+      "subject": "original-pack-chunk-loader-inventory",
+      "statement": "Before designing coverage or fallback loading, inventory every original-pack chunk-activation mechanism: player proximity assumptions, command ticking areas, Script TickingAreaManager usage, schedule on_area_loaded dependencies, and entities with minecraft:tick_world. Preserve original ownership and avoid double-loading by default.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-lifecycle",
+        "loader-inventory",
+        "original-pack-preservation"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "resource-limit",
+        "performance"
+      ],
+      "diagnosticHints": [
+        "CHUNK_LOADER_OWNERSHIP_CONFLICT",
+        "CHUNK_LOADER_OVERLAP"
+      ]
+    },
+    {
+      "id": "chunk-policy.do-not-remove-original-loaders",
+      "domain": "chunks",
+      "subject": "original-loader-ownership",
+      "statement": "A repair/setup manager must not remove or rename an original-pack ticking area, tick_world entity, or other loader unless the change is an explicit migration with equivalent behavior and ownership proof.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "original-pack-preservation",
+        "chunk-lifecycle"
+      ],
+      "riskSurfaces": [
+        "gameplay-state",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunk-policy.loader-overlap-accounting",
+      "domain": "chunks",
+      "subject": "loader-overlap-accounting",
+      "statement": "Coverage and recovery planning must account for chunks already activated by original loaders. Existing activation can satisfy readiness evidence, but duplicate Script ticking-area coverage still consumes manager capacity and should be avoided.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "loader-inventory",
+        "capacity-accounting"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "performance"
+      ]
+    },
+    {
+      "id": "chunk-policy.legacy-schedule-not-bootstrap",
+      "domain": "chunks",
+      "subject": "legacy-area-loaded-readiness",
+      "statement": "For legacy targets, schedule on_area_loaded may be used as a readiness notification only after another mechanism is expected to load the area. It must never be treated as a loader or bootstrap source by itself.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "command:schedule",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "ARENA_SETUP_NO_BOOTSTRAP_SOURCE"
+      ]
+    },
+    {
+      "id": "chunk-policy.coverage-anchor-height-validation",
+      "domain": "chunks",
+      "subject": "coverage-anchor-geometry",
+      "statement": "Every coverage anchor must be validated against Dimension.heightRange and use an explicit original/safe Y coordinate. The planner must not invent a universal high-Y teleport anchor across dimensions.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "coverage-anchor",
+        "dimension-boundary"
+      ],
+      "riskSurfaces": [
+        "entity-position",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "ARENA_SETUP_ANCHOR_OUT_OF_BOUNDS"
+      ]
+    },
+    {
+      "id": "chunk-policy.negative-coordinate-flooring",
+      "domain": "chunks",
+      "subject": "negative-chunk-coordinate-normalization",
+      "statement": "Chunk conversion must use mathematical floor division for negative block coordinates; truncation toward zero produces incorrect chunk ownership west/north of the origin.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-coordinate",
+        "coverage-planner"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Add regression tests around x/z = -1, -16, -17, 0, 15, 16."
+      ]
+    },
+    {
+      "id": "chunk-policy.tick-world-awareness",
+      "domain": "chunks",
+      "subject": "tick-world-entity-ownership",
+      "statement": "Entities with minecraft:tick_world are part of the chunk-loading topology. Their radius, never_despawn policy, and distance_to_players behavior must be considered before adding another loader around the same arena.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "entity-chunk-loader",
+        "loader-inventory"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "performance",
+        "entity-lifecycle"
+      ]
+    },
+    {
+      "id": "chunk-policy.recovery-footprint-movement-risk",
+      "domain": "chunks",
+      "subject": "moving-entity-recovery-footprint",
+      "statement": "If a recovered operation creates or activates entities expected to move immediately, the temporary footprint must either include the bounded movement requirement or the operation must hand off to player simulation before releasing the lease. Do not assume an entity remains active after crossing the temporary area boundary.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "entity-ai"
+      ],
+      "riskSurfaces": [
+        "entity-ai",
+        "chunk-lifecycle"
+      ]
     }
   ],
   "relations": [

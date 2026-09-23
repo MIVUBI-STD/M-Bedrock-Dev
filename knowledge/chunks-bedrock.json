@@ -136,6 +136,22 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-tick-world-component",
+      "title": "minecraft:tick_world Entity Component",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_tick_world?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-schedule-command",
+      "title": "schedule Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/commands/commands/schedule?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -885,6 +901,138 @@
       ],
       "diagnosticHints": [
         "Absence from getEntities is not a sufficient permanent-loss proof without target-chunk readiness and identity/lifecycle checks."
+      ]
+    },
+    {
+      "id": "chunks.entity-tick-world-loader",
+      "domain": "chunks",
+      "subject": "minecraft:tick_world",
+      "statement": "The minecraft:tick_world entity component causes the owning entity to tick the world around itself with a configurable radius from 2 to 6, and can be configured to avoid despawning when players are far away.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-tick-world-component"
+      ],
+      "capabilityTags": [
+        "entity-chunk-loader",
+        "chunk-lifecycle",
+        "entity-persistence"
+      ],
+      "riskSurfaces": [
+        "chunk-lifecycle",
+        "entity-lifecycle",
+        "performance"
+      ],
+      "diagnosticHints": [
+        "Original packs may already have entity-driven chunk loading that overlaps player/ticking-area plans."
+      ]
+    },
+    {
+      "id": "chunks.dimension-height-range",
+      "domain": "chunks",
+      "subject": "Dimension.heightRange",
+      "statement": "Dimension.heightRange exposes the valid vertical range of a dimension; coverage anchors and temporary operation locations must remain inside the target dimension's valid height range.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-dimension-current"
+      ],
+      "capabilityTags": [
+        "dimension-boundary",
+        "coverage-anchor"
+      ],
+      "riskSurfaces": [
+        "entity-position",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.schedule-on-area-loaded-not-loader",
+      "domain": "chunks",
+      "subject": "schedule-on-area-loaded",
+      "statement": "The schedule on_area_loaded command schedules a function to execute once an area is loaded; it is a loaded-area trigger and does not itself establish a chunk-loading source.",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-schedule-command"
+      ],
+      "capabilityTags": [
+        "command:schedule",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Do not use schedule on_area_loaded as the bootstrap mechanism for an otherwise unloaded remote arena."
+      ]
+    },
+    {
+      "id": "chunks.tickingarea-moving-entity-exits-active-region",
+      "domain": "chunks",
+      "subject": "tickingarea-moving-entity",
+      "statement": "An active entity that moves outside a ticking area can stop moving until it is again within simulation distance, so a temporary ticking area only guarantees the bounded region rather than continued activity for entities that leave it.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-simulation-ticking"
+      ],
+      "capabilityTags": [
+        "tickingarea",
+        "entity-ai"
+      ],
+      "riskSurfaces": [
+        "entity-ai",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.overlap-still-costs-script-manager-capacity",
+      "domain": "chunks",
+      "subject": "script-tickingarea-overlap",
+      "statement": "Overlapping chunks in Script TickingAreaManager areas still count toward the manager's chunk capacity, so overlapping recovery leases are not capacity-free.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "ms-chunks-tickingarea-manager"
+      ],
+      "capabilityTags": [
+        "script-tickingarea-manager",
+        "chunk-capacity"
+      ],
+      "riskSurfaces": [
+        "resource-limit",
+        "performance"
       ]
     }
   ],

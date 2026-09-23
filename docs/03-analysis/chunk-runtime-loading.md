@@ -958,3 +958,207 @@ RUNTIME RECOVERY
 ```
 
 The architecture now treats chunk loading as a resource-and-state coordination problem, not merely a teleport or ticking-area command problem.
+
+
+---
+
+# 21. Original-loader topology blindspots
+
+## 21.1 The original pack may already load chunks
+
+Chunk activation can already come from several sources:
+
+```text
+player simulation distance
+command /tickingarea
+Script world.tickingAreaManager
+entity minecraft:tick_world
+other original-pack control logic
+```
+
+The first planning step is therefore not "add a loader".
+
+It is:
+
+```text
+DISCOVER EXISTING LOADERS
+        ↓
+ATTRIBUTE OWNERSHIP
+        ↓
+ESTIMATE ACTIVE FOOTPRINT
+        ↓
+ONLY ADD WHAT IS MISSING
+```
+
+This avoids building a second loading system on top of an existing one.
+
+## 21.2 minecraft:tick_world changes the topology
+
+An entity with `minecraft:tick_world` can tick a radius around itself.
+
+The documented radius range is 2–6.
+
+Therefore a critical "spawner" or controller entity may itself be the reason surrounding chunks remain active.
+
+The analyzer/repair planner should record:
+
+```ts
+interface EntityChunkLoaderProfile {
+  entityType: string;
+  sourceComponent: "minecraft:tick_world";
+  radius: number;
+  neverDespawn: boolean;
+  distanceToPlayers: number;
+}
+```
+
+Removing or replacing that entity is potentially equivalent to deleting part of the arena's loading infrastructure.
+
+## 21.3 Existing loaders must be ownership-safe
+
+Never execute a broad cleanup such as:
+
+```text
+/tickingarea remove_all
+```
+
+as part of arena recovery.
+
+A repair manager only owns:
+
+- namespaced areas it created;
+- Script manager leases belonging to its pack/generation;
+- explicit migration targets approved by the repair plan.
+
+Everything else is external/original state.
+
+## 21.4 Overlap is not free
+
+If an original loader already covers a target region:
+
+- readiness may already be satisfied;
+- another temporary area may be unnecessary;
+- Script TickingAreaManager overlap still consumes chunk capacity.
+
+The planner should deduplicate by **effective loaded footprint**, not only by lease identifier.
+
+---
+
+# 22. Legacy readiness correction
+
+`/schedule on_area_loaded` is a notification/gating tool.
+
+It is **not** a loading primitive.
+
+Bad model:
+
+```text
+schedule on_area_loaded
+→ therefore area loads
+```
+
+Correct model:
+
+```text
+some loader eventually loads area
+        ↓
+schedule on_area_loaded fires
+        ↓
+setup continuation may execute
+```
+
+For a remote arena with no player, ticking area, tick_world entity, or other loader, scheduling alone does not solve the bootstrap problem.
+
+---
+
+# 23. Anchor geometry and negative coordinates
+
+## Dimension Y
+
+A coverage point is not only an X/Z chunk center.
+
+It needs a valid teleport coordinate.
+
+Validate Y using:
+
+```ts
+dimension.heightRange
+```
+
+Do not invent a universal Y such as 320 or -64 for every dimension/custom world.
+
+Prefer an original known-safe location or an explicitly authored setup anchor.
+
+## Negative chunk coordinates
+
+Use:
+
+```text
+floor(x / 16)
+floor(z / 16)
+```
+
+not integer truncation.
+
+Regression anchors:
+
+```text
+block -1  → chunk -1
+block -16 → chunk -1
+block -17 → chunk -2
+block 0   → chunk 0
+block 15  → chunk 0
+block 16  → chunk 1
+```
+
+A truncation bug here can silently assign western/northern targets to the wrong coverage point.
+
+---
+
+# 24. Moving-entity handoff
+
+Temporary ticking areas are spatially bounded.
+
+Minecraft documentation notes that active entities moving outside a ticking area can stop until they are within player simulation distance again.
+
+Therefore recovery needs a handoff rule:
+
+```text
+operation completes
+    ↓
+entity remains stationary?
+    YES → lease may release
+
+entity expected to move immediately?
+    ↓
+player simulation already owns destination path?
+    YES → handoff then release
+    NO  → keep bounded footprint / fail design
+```
+
+A temporary chunk lease guarantees an operation window, not indefinite AI continuity.
+
+---
+
+# 25. Updated preflight checklist
+
+Before arena setup:
+
+```text
+[ ] target registry complete
+[ ] dimensions separated
+[ ] negative chunk math verified
+[ ] original chunk loaders inventoried
+[ ] tick_world entities inventoried
+[ ] command ticking areas inventoried
+[ ] Script ticking areas inventoried
+[ ] loader side effects assessed
+[ ] control-plane liveness assessed
+[ ] coverage anchors inside heightRange
+[ ] anchor bootstrap source exists
+[ ] critical entity persistence profiles known
+[ ] backend permissions/capacity known
+[ ] setup concurrency budget available
+```
+
+The architecture is now topology-aware: it reasons about **who already owns chunk activity**, not only how to create more of it.
