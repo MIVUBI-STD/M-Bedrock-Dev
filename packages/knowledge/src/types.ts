@@ -48,6 +48,7 @@ export type KnowledgeDomain =
   | "effects"
   | "cinematic"
   | "client-feedback"
+  | "loot-economy"
   | "education";
 
 export type KnowledgeRelationKind =
