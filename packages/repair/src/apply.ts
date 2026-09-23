@@ -1,7 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { atomicWriteText } from "./atomic-write.js";
 import { verifyPreconditions } from "./preconditions.js";
-import { resolveWorkingPath, type MutationWorkspace } from "./workspace.js";
+import {
+  prepareMutationWorkspace,
+  resolveWorkingPathSecure,
+  type MutationWorkspace,
+} from "./workspace.js";
 import type { PatchOperation, PatchTransaction } from "./types.js";
 
 export interface AppliedFileRollback {
@@ -62,8 +66,29 @@ export async function applyPatchTransaction(
   workspace: MutationWorkspace,
   context: ApplyTransactionContext,
 ): Promise<ApplyTransactionResult> {
+  let prepared;
+  try {
+    prepared = await prepareMutationWorkspace(workspace);
+  } catch (error) {
+    return {
+      ok: false,
+      appliedOperations: 0,
+      rollback: [],
+      failure: error instanceof Error ? error.message : "WORKSPACE_PREPARATION_FAILED",
+    };
+  }
+
+  const pathCache = new Map<string, string>();
+  const securePath = async (relativePath: string) => {
+    const existing = pathCache.get(relativePath);
+    if (existing) return existing;
+    const resolved = await resolveWorkingPathSecure(prepared, relativePath);
+    pathCache.set(relativePath, resolved);
+    return resolved;
+  };
+
   const readWorkingText = async (relativePath: string) =>
-    await readFile(resolveWorkingPath(workspace, relativePath), "utf8");
+    await readFile(await securePath(relativePath), "utf8");
 
   const preconditions = await verifyPreconditions(transaction.preconditions, {
     sourceFingerprint: context.currentSourceFingerprint,
@@ -87,7 +112,7 @@ export async function applyPatchTransaction(
 
   try {
     for (const [relativePath, operations] of byPath) {
-      const target = resolveWorkingPath(workspace, relativePath);
+      const target = await securePath(relativePath);
       const previousText = await readFile(target, "utf8");
       let nextText = previousText;
 
@@ -103,7 +128,8 @@ export async function applyPatchTransaction(
     let rollbackFailure: string | undefined;
     for (const entry of [...rollback].reverse()) {
       try {
-        await atomicWriteText(resolveWorkingPath(workspace, entry.relativePath), entry.previousText);
+        const target = await resolveWorkingPathSecure(prepared, entry.relativePath);
+        await atomicWriteText(target, entry.previousText);
       } catch (rollbackError) {
         rollbackFailure = rollbackError instanceof Error
           ? rollbackError.message

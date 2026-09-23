@@ -1,20 +1,25 @@
 # Next Action
 
-A reliability-focused implementation audit found and corrected false-confidence and search-efficiency issues.
+P0 repair filesystem hardening is now implemented.
 
-Fixed:
+Implemented:
 
-1. branch-level interleaving reduction instead of post-factorial canonicalization;
-2. explicit interleaving explored-node budget;
-3. duplicate operation-id rejection;
-4. semantic coverage buckets no longer inflate from state diversity alone;
-5. advanced invariant candidates are challenged against historical failure evidence;
-6. transition-progress historical contradictions are now recognized.
+1. realpath-resolved source and working roots;
+2. bidirectional root-overlap rejection;
+3. lexical + realpath target containment;
+4. symlink escape rejection;
+5. direct symbolic-link target rejection;
+6. hardlink-to-source rejection for corresponding files;
+7. collision-safe exclusive atomic temp allocation;
+8. file data sync before rename;
+9. destination mode preservation;
+10. secure target re-resolution during rollback.
 
-No new general framework layer should be added.
+No additional generic bug-finder framework work is recommended now.
 
-Remaining work should be evidence-driven, with one important engineering hardening item still open before broad repair use:
+Remaining high-value work should come from evidence:
 
-- repair workspace realpath/symlink/root-overlap protection and collision-safe atomic writes.
-
-Exact-head CI and local Minecraft runtime proof remain deferred until the user chooses to test.
+- exact-head CI/typecheck/test proof when the user is ready;
+- local Minecraft runtime proof when the user is ready;
+- survived mutants/regressions that identify a specific detector gap;
+- real repair scenarios that expose transaction or validation weaknesses.

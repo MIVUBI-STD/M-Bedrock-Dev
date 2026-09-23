@@ -24,9 +24,14 @@ Replace-command operations additionally require exact line content equality duri
 ## Safety
 
 - original source remains immutable;
-- mutation targets working copy only;
+- sourceRoot and workingRoot are realpath-resolved and must not overlap;
+- mutation targets must remain inside the real working root;
+- symlink escapes and direct symlink targets fail closed;
+- hardlinks back to the corresponding immutable source file fail closed;
 - replacement command must remain one logical line;
 - ambiguous text replacement fails closed;
+- atomic writes use collision-safe same-directory temp files;
+- destination mode is preserved across atomic replacement;
 - transaction failure triggers rollback of already-written files;
 - rollback failure is surfaced separately;
 - validation steps describe the proof required after mutation.
