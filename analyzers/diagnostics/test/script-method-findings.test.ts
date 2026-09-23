@@ -73,6 +73,72 @@ describe("script method symbol diagnostics", () => {
     ]);
   });
 
+  it("flags a legacy method as deprecated on documented 1.x usage", () => {
+    const script = parseScriptFile(
+      "scripts/main",
+      `
+        import { world } from "@minecraft/server";
+        world.playSound("note.pling", { x: 0, y: 0, z: 0 });
+      `,
+      source,
+    );
+
+    const findings = scriptMethodSymbolDiagnostics({
+      scriptModules: [{
+        moduleName: "@minecraft/server",
+        version: "1.19.0",
+        track: "stable",
+      }],
+      educationMetadata: false,
+    }, [script]);
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        code: "SCRIPT_API_DEPRECATED_SYMBOL",
+        severity: "minor",
+        data: expect.objectContaining({
+          symbol: "world.playSound",
+          lifecycleState: "deprecated",
+          removedIn: "2.0.0",
+          replacement: "Dimension.playSound",
+        }),
+      }),
+    ]);
+  });
+
+  it("flags an inherited legacy Entity method as removed on 2.x", () => {
+    const script = parseScriptFile(
+      "scripts/main",
+      `
+        import { world } from "@minecraft/server";
+        const player = world.getAllPlayers()[0];
+        player.runCommandAsync("say legacy");
+      `,
+      source,
+    );
+
+    const findings = scriptMethodSymbolDiagnostics({
+      scriptModules: [{
+        moduleName: "@minecraft/server",
+        version: "2.0.0",
+        track: "stable",
+      }],
+      educationMetadata: false,
+    }, [script]);
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        code: "SCRIPT_API_REMOVED_SYMBOL",
+        severity: "critical",
+        data: expect.objectContaining({
+          symbol: "Entity.runCommandAsync",
+          lifecycleState: "removed",
+          removedIn: "2.0.0",
+        }),
+      }),
+    ]);
+  });
+
   it("does not invent compatibility failures for unregistered methods", () => {
     const script = parseScriptFile(
       "scripts/main",

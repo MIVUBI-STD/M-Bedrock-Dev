@@ -53,6 +53,32 @@ describe("Script API usage inventory", () => {
     ]));
   });
 
+  it("retains lifecycle metadata for observed legacy symbols", () => {
+    const usage = deriveScriptApiUsage([
+      parse("legacy/scripts/main.js", `
+        import { world } from "@minecraft/server";
+        world.playSound("note.pling", { x: 0, y: 0, z: 0 });
+        world.beforeEvents.worldInitialize.subscribe(() => {});
+      `),
+    ]);
+
+    expect(usage.symbols).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "world.playSound",
+        lifecycle: expect.objectContaining({
+          deprecatedInMajor: 1,
+          removedIn: "2.0.0",
+        }),
+      }),
+      expect.objectContaining({
+        symbol: "world.beforeEvents.worldInitialize",
+        lifecycle: expect.objectContaining({
+          removedIn: "2.0.0",
+        }),
+      }),
+    ]));
+  });
+
   it("ranks portfolio promotion candidates by real map coverage before raw frequency", () => {
     const mapA = deriveScriptApiUsage([
       parse("a/scripts/main.js", `

@@ -38,6 +38,59 @@ describe("script event symbol diagnostics", () => {
     ]);
   });
 
+  it("flags a legacy event as deprecated on 1.x and removed on 2.x", () => {
+    const script = parseScriptFile(
+      "scripts/main",
+      `
+        import { world } from "@minecraft/server";
+        world.afterEvents.itemUseOn.subscribe(() => {});
+      `,
+      source,
+    );
+
+    const deprecated = scriptEventSymbolDiagnostics({
+      scriptModules: [{
+        moduleName: "@minecraft/server",
+        version: "1.19.0",
+        track: "stable",
+      }],
+      educationMetadata: false,
+    }, [script]);
+
+    expect(deprecated).toEqual([
+      expect.objectContaining({
+        code: "SCRIPT_API_DEPRECATED_SYMBOL",
+        severity: "minor",
+        data: expect.objectContaining({
+          symbol: "world.afterEvents.itemUseOn",
+          lifecycleState: "deprecated",
+          replacement: "world.afterEvents.playerInteractWithBlock",
+        }),
+      }),
+    ]);
+
+    const removed = scriptEventSymbolDiagnostics({
+      scriptModules: [{
+        moduleName: "@minecraft/server",
+        version: "2.0.0",
+        track: "stable",
+      }],
+      educationMetadata: false,
+    }, [script]);
+
+    expect(removed).toEqual([
+      expect.objectContaining({
+        code: "SCRIPT_API_REMOVED_SYMBOL",
+        severity: "critical",
+        data: expect.objectContaining({
+          symbol: "world.afterEvents.itemUseOn",
+          lifecycleState: "removed",
+          removedIn: "2.0.0",
+        }),
+      }),
+    ]);
+  });
+
   it("does not flag a pre-release symbol when the manifest itself uses beta", () => {
     const script = parseScriptFile(
       "scripts/main",

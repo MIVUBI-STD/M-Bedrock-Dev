@@ -20,7 +20,7 @@ export interface ScriptSymbolLifecycleCheck {
 }
 
 function majorVersion(version: string): number | undefined {
-  const match = version.trim().match(/^(\\d+)/);
+  const match = version.trim().match(/^(\d+)/);
   if (!match?.[1]) return undefined;
   const parsed = Number.parseInt(match[1], 10);
   return Number.isFinite(parsed) ? parsed : undefined;
