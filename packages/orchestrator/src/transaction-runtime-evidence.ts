@@ -30,7 +30,15 @@ export function transactionRuntimeEvidence(
   const records: RuntimeEvidenceRecord[] = [];
 
   for (const apply of trace.steps.filter((step) => step.stage === "APPLY")) {
-    const scope = { operationId: operationId(apply.source) };
+    const scope = {
+      operationId:
+        "tx:" +
+        trace.rootFunctionId +
+        ":" +
+        apply.callStack.join(">") +
+        ":" +
+        operationId(apply.source),
+    };
     records.push({
       predicate: "mutation-apply",
       state: "present",
