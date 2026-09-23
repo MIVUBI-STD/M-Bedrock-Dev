@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-combat-damage-source",
+      "title": "EntityDamageSource Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entitydamagesource?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-combat-hurt-event",
+      "title": "EntityHurtAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityhurtafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-combat-projectile",
+      "title": "EntityProjectileComponent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityprojectilecomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-combat-gamerules",
+      "title": "Introduction to Gamerules",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/introductiontogamerules?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-combat-gamerule-command",
+      "title": "gamerule Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/commands/commands/gamerule?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "combat.damage-source-multifield",
+      "domain": "combat",
+      "subject": "EntityDamageSource",
+      "statement": "Damage attribution exposes a cause plus optional damagingEntity and damagingProjectile; combat logic must not assume every damaging event has exactly one direct attacker entity.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-combat-damage-source"
+      ],
+      "capabilityTags": [
+        "damage-source",
+        "attribution"
+      ],
+      "riskSurfaces": [
+        "wrong-attacker",
+        "environmental-damage",
+        "projectile-attribution"
+      ]
+    },
+    {
+      "id": "combat.hurt-event-damage-and-source",
+      "domain": "combat",
+      "subject": "EntityHurtAfterEvent",
+      "statement": "EntityHurtAfterEvent provides the hurt entity, damage amount, and EntityDamageSource, allowing damage handling to distinguish victim, amount, cause, direct damaging entity, and projectile source.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-combat-hurt-event",
+        "ms-combat-damage-source"
+      ],
+      "capabilityTags": [
+        "entity-hurt",
+        "damage-attribution"
+      ],
+      "riskSurfaces": [
+        "score-attribution",
+        "friendly-fire"
+      ]
+    },
+    {
+      "id": "combat.projectile-owner-controls-attribution",
+      "domain": "combat",
+      "subject": "EntityProjectileComponent.owner",
+      "statement": "Projectile owner is used by the engine to determine what the projectile can collide with or damage and which entity is assigned as the attacker.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-combat-projectile"
+      ],
+      "capabilityTags": [
+        "projectile",
+        "owner"
+      ],
+      "riskSurfaces": [
+        "projectile-attribution",
+        "friendly-fire",
+        "stale-owner"
+      ]
+    },
+    {
+      "id": "combat.pvp-gamerule-prevents-player-damage",
+      "domain": "combat",
+      "subject": "pvp gamerule",
+      "statement": "The pvp gamerule can prevent players from damaging each other globally when disabled, making it a coarse world-level control rather than an arena-specific team policy.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-combat-gamerules"
+      ],
+      "capabilityTags": [
+        "gamerule:pvp",
+        "player-damage"
+      ],
+      "riskSurfaces": [
+        "global-policy",
+        "multi-arena-conflict"
+      ]
+    },
+    {
+      "id": "combat.projectile-block-destruction-separate-gamerule",
+      "domain": "combat",
+      "subject": "projectilescanbreakblocks gamerule",
+      "statement": "Projectile block-destruction behavior is controlled separately from player damage through the projectilescanbreakblocks gamerule, so projectile combat effects and projectile world-mutation effects are distinct policy surfaces.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-combat-gamerule-command"
+      ],
+      "capabilityTags": [
+        "projectile",
+        "world-mutation"
+      ],
+      "riskSurfaces": [
+        "block-damage",
+        "combat-world-state"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "combat.relation-projectile-owner-informs-attacker",
+      "domain": "combat",
+      "subject": "projectile-owner",
+      "kind": "produces",
+      "object": "attacker-attribution-evidence",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-combat-projectile"
+      ]
+    },
+    {
+      "id": "combat.relation-pvp-global-not-team-policy",
+      "domain": "combat",
+      "subject": "pvp-gamerule",
+      "kind": "requires",
+      "object": "project-team-arena-policy-for-fine-grained-control",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-combat-gamerules"
+      ]
+    }
+  ]
+}
