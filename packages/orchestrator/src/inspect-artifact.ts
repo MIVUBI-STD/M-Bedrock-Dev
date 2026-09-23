@@ -7,6 +7,7 @@ import { sha256File, artifactIdFromFingerprint } from "../../artifact/src/finger
 import { inspectDirectory } from "./inspect.js";
 import type { InspectDirectoryResult, InspectTargetProfile } from "./types.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import { analyzeWorldDbNative } from "./world-db-analysis.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -33,11 +34,16 @@ export async function inspectArtifact(
     await cp(sourceRoot, workingRoot, { recursive: true });
 
     const result = await inspectDirectory(workingRoot, artifactId, target, fingerprint, knowledgeCatalog);
+    const nativeWorldDb = await analyzeWorldDbNative(workingRoot);
     return {
       artifactId,
       fingerprint,
       archiveEntries: inventory.entries.length,
       ...result,
+      worldDatabase: {
+        ...result.worldDatabase,
+        nativeScan: nativeWorldDb,
+      },
     };
   } finally {
     await rm(sessionRoot, { recursive: true, force: true });

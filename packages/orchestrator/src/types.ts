@@ -41,6 +41,22 @@ export interface InspectDirectoryResult {
   worldDatabase: {
     present: boolean;
     fileCount: number;
+    nativeScan?: {
+      status: "not-present" | "scanned" | "failed";
+      entriesScanned: number;
+      truncated: boolean;
+      actorRecords: number;
+      actorDigestRecords: number;
+      chunkRecords: number;
+      blockEntityRecords: number;
+      pendingTickRecords: number;
+      randomTickRecords: number;
+      finalizedStateRecords: number;
+      subChunkRecords: number;
+      dimensions: number[];
+      chunksObserved: number;
+      failure?: string;
+    };
   };
   stateAnalysis: {
     accesses: number;
