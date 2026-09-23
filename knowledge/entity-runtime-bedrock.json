@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-ai-components-guide",
+      "title": "Entity Components Guide",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitycomponentsguide?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ai-behavior-list",
+      "title": "Entity Behavior (AI) Components Documentation",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/aigoallist?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ai-move-target",
+      "title": "minecraft:behavior.move_towards_target",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitygoals/minecraftbehavior_move_towards_target?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ai-navigation-generic",
+      "title": "minecraft:navigation.generic",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_navigation.generic?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ai-entity-behavior-intro",
+      "title": "Entity Behavior Introduction",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitybehaviorintroduction?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ai-troubleshooting",
+      "title": "Troubleshooting and Fixing Add-On Bugs",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/troubleshootingaddons?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ai-update-1.26",
+      "title": "1.26.0 Update Notes",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.0?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "ai.move-target-requires-target",
+      "domain": "entity-runtime",
+      "subject": "minecraft:behavior.move_towards_target",
+      "statement": "move_towards_target requires the entity to already have a current target; movement logic can be valid while the entity remains stationary because target acquisition never succeeded.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-move-target"
+      ],
+      "capabilityTags": [
+        "ai-goal",
+        "target"
+      ],
+      "riskSurfaces": [
+        "no-target",
+        "stationary-entity"
+      ]
+    },
+    {
+      "id": "ai.goal-priority-lower-number-higher",
+      "domain": "entity-runtime",
+      "subject": "AI goal priority",
+      "statement": "AI goal priority increases as the numeric priority approaches zero, so competing behaviors can prevent a movement/attack goal from running even when its configuration is otherwise valid.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-move-target",
+        "ms-ai-components-guide"
+      ],
+      "capabilityTags": [
+        "ai-priority",
+        "goal-arbitration"
+      ],
+      "riskSurfaces": [
+        "goal-starvation",
+        "behavior-conflict"
+      ]
+    },
+    {
+      "id": "ai.control-flags-compete",
+      "domain": "entity-runtime",
+      "subject": "AI control flags",
+      "statement": "AI goals can claim control flags such as move, look, and jump; incompatible active goals can therefore contend for movement-related control and alter which behavior actually executes.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-move-target"
+      ],
+      "capabilityTags": [
+        "control-flags",
+        "goal-arbitration"
+      ],
+      "riskSurfaces": [
+        "movement-conflict",
+        "goal-starvation"
+      ]
+    },
+    {
+      "id": "ai.navigation-requires-navigation-component",
+      "domain": "entity-runtime",
+      "subject": "navigation stack",
+      "statement": "Entities need compatible movement and navigation components to move through the world; missing movement or navigation components is a documented cause of entities spawning but standing still.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-entity-behavior-intro",
+        "ms-ai-troubleshooting"
+      ],
+      "capabilityTags": [
+        "movement",
+        "navigation"
+      ],
+      "riskSurfaces": [
+        "stationary-entity",
+        "component-missing"
+      ]
+    },
+    {
+      "id": "ai.navigation-generic-capability-flags",
+      "domain": "entity-runtime",
+      "subject": "minecraft:navigation.generic",
+      "statement": "navigation.generic path generation is governed by capability/avoidance settings such as walking, swimming, climbing, jumping, avoiding water, avoiding damage blocks, portals, and explicit blocks_to_avoid.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-navigation-generic"
+      ],
+      "capabilityTags": [
+        "navigation",
+        "path-capability"
+      ],
+      "riskSurfaces": [
+        "unreachable-path",
+        "environment-mismatch"
+      ]
+    },
+    {
+      "id": "ai.target-acquisition-separate-goal",
+      "domain": "entity-runtime",
+      "subject": "target acquisition",
+      "statement": "Target acquisition behaviors such as nearest_attackable_target are separate from movement/attack behaviors, so a complete hostile AI stack must establish both a valid target and a compatible pursue/attack behavior.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-components-guide",
+        "ms-ai-behavior-list"
+      ],
+      "capabilityTags": [
+        "target-acquisition",
+        "attack"
+      ],
+      "riskSurfaces": [
+        "no-target",
+        "ai-stack-incomplete"
+      ]
+    },
+    {
+      "id": "ai.search-cost-can-scale",
+      "domain": "entity-runtime",
+      "subject": "AI search parameters",
+      "statement": "Some AI goals perform repeated block searches per tick and expose search_count/range parameters; high search counts or wide search areas can increase per-entity work and become significant at scale.",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-behavior-list"
+      ],
+      "capabilityTags": [
+        "ai-search",
+        "performance"
+      ],
+      "riskSurfaces": [
+        "tick-cost",
+        "mob-scale"
+      ]
+    },
+    {
+      "id": "ai.schema-version-can-break-behavior",
+      "domain": "entity-runtime",
+      "subject": "behavior schema version",
+      "statement": "Recent Bedrock format updates can make AI behavior schemas stricter, so an entity can lose intended behavior when outdated JSON shapes no longer parse under newer format versions.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-update-1.26"
+      ],
+      "capabilityTags": [
+        "format-version",
+        "ai-schema"
+      ],
+      "riskSurfaces": [
+        "update-regression",
+        "behavior-missing"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "ai.relation-target-gates-pursuit",
+      "domain": "entity-runtime",
+      "subject": "current-target",
+      "kind": "gates",
+      "object": "move-towards-target-behavior",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-move-target"
+      ]
+    },
+    {
+      "id": "ai.relation-navigation-requires-movement-stack",
+      "domain": "entity-runtime",
+      "subject": "pathfinding-movement",
+      "kind": "requires",
+      "object": "compatible-movement-and-navigation-components",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ai-entity-behavior-intro",
+        "ms-ai-troubleshooting"
+      ]
+    }
+  ]
+}
