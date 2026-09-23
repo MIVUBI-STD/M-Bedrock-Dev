@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-round-integrity-policy-v1",
+      "title": "MIVUBI Objective Scoring and Round Completion Policy v1",
+      "url": "project://knowledge/round-integrity-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "round-policy.single-terminal-owner",
+      "domain": "round-integrity",
+      "subject": "round terminal transition",
+      "statement": "Each arena generation must have exactly one accepted terminal-transition owner. Timer expiry, objective completion, all-enemies-dead, all-players-dead, disconnect policy, admin skip, and script callbacks may propose outcomes but only one transition may commit.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "terminal-owner",
+        "round-state"
+      ],
+      "riskSurfaces": [
+        "double-complete",
+        "conflicting-result"
+      ]
+    },
+    {
+      "id": "round-policy.result-state-machine",
+      "domain": "round-integrity",
+      "subject": "round state",
+      "statement": "Model terminal flow explicitly as ACTIVE -> TERMINAL_CANDIDATE -> RESOLVING -> RESULT_COMMITTED -> REWARDING -> CLEANUP -> COMPLETE, with generation-scoped ownership and idempotent transitions.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "state-machine",
+        "terminal"
+      ],
+      "riskSurfaces": [
+        "duplicate-reward",
+        "early-cleanup"
+      ]
+    },
+    {
+      "id": "round-policy.objective-authority-declared",
+      "domain": "round-integrity",
+      "subject": "objective truth",
+      "statement": "Each objective must declare one authoritative state source. Scoreboards, tags, entity counts, block state, timers, and UI may mirror or contribute evidence but must not independently finalize the round.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "objective",
+        "state-authority"
+      ],
+      "riskSurfaces": [
+        "split-brain",
+        "premature-completion"
+      ]
+    },
+    {
+      "id": "round-policy.enemy-count-registry-based",
+      "domain": "round-integrity",
+      "subject": "enemy remaining count",
+      "statement": "For critical kill-all objectives, derive enemy remaining state from a generation-scoped entity registry and lifecycle model rather than decrement-only counters that can drift on duplicate death events, unloads, respawns, or replacement spawns.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "enemy-count",
+        "entity-registry"
+      ],
+      "riskSurfaces": [
+        "negative-count",
+        "false-zero",
+        "never-zero"
+      ]
+    },
+    {
+      "id": "round-policy.participant-set-authoritative",
+      "domain": "round-integrity",
+      "subject": "player completion predicates",
+      "statement": "Win and loss predicates involving players must use the current authoritative participant set for the arena generation. Disconnected, eliminated, respawning, spectator, or stale-generation players are handled explicitly by mode policy.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "participant-set",
+        "win-loss"
+      ],
+      "riskSurfaces": [
+        "dead-player-counted",
+        "disconnect-blocks-end"
+      ]
+    },
+    {
+      "id": "round-policy.simultaneous-terminal-resolution",
+      "domain": "round-integrity",
+      "subject": "simultaneous terminal conditions",
+      "statement": "When multiple terminal conditions become true in the same or adjacent tick window, resolve them through a deterministic precedence or tie policy before committing the result; do not let callback order decide the winner implicitly.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "tie-policy",
+        "event-ordering"
+      ],
+      "riskSurfaces": [
+        "nondeterministic-result",
+        "dual-winner"
+      ]
+    },
+    {
+      "id": "round-policy.reward-after-result-commit",
+      "domain": "round-integrity",
+      "subject": "reward ordering",
+      "statement": "Rewards, progression, unlocks, score totals, and victory UI may execute only after RESULT_COMMITTED for the current arena generation. Candidate or provisional outcomes must not grant durable rewards.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "reward",
+        "commit-order"
+      ],
+      "riskSurfaces": [
+        "reward-before-winner",
+        "duplicate-reward"
+      ]
+    },
+    {
+      "id": "round-policy.reward-idempotent",
+      "domain": "round-integrity",
+      "subject": "reward transaction",
+      "statement": "Reward and persistent-score commits must be idempotent using a round or result operation token so retries, reconnect recovery, duplicate terminal callbacks, or crash recovery cannot apply them more than once.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "reward"
+      ],
+      "riskSurfaces": [
+        "duplicate-reward",
+        "duplicate-progression"
+      ]
+    },
+    {
+      "id": "round-policy.cleanup-after-reward-journal",
+      "domain": "round-integrity",
+      "subject": "terminal cleanup",
+      "statement": "Cleanup that destroys evidence needed for attribution or reward verification must occur only after result and reward journal state is durable or otherwise safely committed. Do not remove entities or state before winner attribution is reconstructable.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "journal"
+      ],
+      "riskSurfaces": [
+        "lost-attribution",
+        "crash-recovery"
+      ]
+    },
+    {
+      "id": "round-policy.timer-generation-bound",
+      "domain": "round-integrity",
+      "subject": "round timer",
+      "statement": "Round timers must be bound to arenaGeneration and timerGeneration. An old timer expiration cannot propose or commit a result for a newer round.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "timer",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-timeout",
+        "new-round-ended"
+      ]
+    },
+    {
+      "id": "round-policy.objective-progress-idempotent",
+      "domain": "round-integrity",
+      "subject": "objective progress",
+      "statement": "Objective increments from combat, interaction, collection, or triggers must be idempotent per source event or operation when duplicate delivery is possible; progress must not depend on callback duplication behavior.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "objective-progress",
+        "idempotency"
+      ],
+      "riskSurfaces": [
+        "double-progress",
+        "score-inflation"
+      ]
+    },
+    {
+      "id": "round-policy.result-audit-record",
+      "domain": "round-integrity",
+      "subject": "terminal audit",
+      "statement": "Store a compact result record containing arenaGeneration, resultId, terminal reason, winning or losing side if applicable, participant snapshot or revision, objective evidence, commit tick, and reward operation id for debugging and crash recovery.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ],
+      "capabilityTags": [
+        "result-audit",
+        "recovery"
+      ],
+      "riskSurfaces": [
+        "non-reproducible-result",
+        "reward-recovery"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "round-policy.relation-candidate-gates-resolution",
+      "domain": "round-integrity",
+      "subject": "TERMINAL_CANDIDATE",
+      "kind": "gates",
+      "object": "deterministic-terminal-resolution",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ]
+    },
+    {
+      "id": "round-policy.relation-result-gates-reward",
+      "domain": "round-integrity",
+      "subject": "RESULT_COMMITTED",
+      "kind": "gates",
+      "object": "reward-and-progression-commit",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ]
+    },
+    {
+      "id": "round-policy.relation-reward-gates-cleanup",
+      "domain": "round-integrity",
+      "subject": "reward-commit-safe",
+      "kind": "gates",
+      "object": "destructive-terminal-cleanup",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-round-integrity-policy-v1"
+      ]
+    }
+  ]
+}
