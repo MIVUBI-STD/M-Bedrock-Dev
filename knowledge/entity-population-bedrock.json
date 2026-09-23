@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-pop-spawn-deep-dive",
+      "title": "Entity Spawning Deep Dive",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/spawning/entityspawningdeepdive?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-pop-spawn-rules",
+      "title": "Spawn Rules Documentation",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/spawnrulesreference/examples/spawnruleslist?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-pop-despawn",
+      "title": "minecraft:despawn",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_despawn?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-pop-data-driven",
+      "title": "Data-Driven Spawn Rules",
+      "url": "https://learn.microsoft.com/id-id/minecraft/creator/reference/content/entityreference/examples/cliententitydocumentation/datadrivenspawning?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-pop-spawn-entity",
+      "title": "minecraft:spawn_entity",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_spawn_entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-pop-spawn-on-death",
+      "title": "minecraft:spawn_on_death",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_spawn_on_death?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "population.spawn-rule-multifactor",
+      "domain": "entity-population",
+      "subject": "spawn rules",
+      "statement": "Natural/data-driven spawning evaluates multiple gates including spawn conditions, valid location, population control, weight, and spawn event initialization; failure at any gate can prevent an entity from appearing.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-spawn-deep-dive",
+        "ms-pop-spawn-rules"
+      ],
+      "capabilityTags": [
+        "spawn-rules",
+        "natural-spawn"
+      ],
+      "riskSurfaces": [
+        "spawn-suppressed",
+        "wrong-condition"
+      ]
+    },
+    {
+      "id": "population.population-control-cap",
+      "domain": "entity-population",
+      "subject": "population_control",
+      "statement": "Spawn rules assign entities to population-control pools with caps; when the relevant pool is full, otherwise-valid natural spawns can be suppressed.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-spawn-deep-dive",
+        "ms-pop-data-driven"
+      ],
+      "capabilityTags": [
+        "population-control",
+        "spawn-cap"
+      ],
+      "riskSurfaces": [
+        "spawn-suppression",
+        "population-pressure"
+      ]
+    },
+    {
+      "id": "population.density-limit",
+      "domain": "entity-population",
+      "subject": "minecraft:density_limit",
+      "statement": "Spawn density limits can cap the number of a specific entity type in surface and underground contexts, providing another suppression layer beyond general population pools.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-spawn-rules"
+      ],
+      "capabilityTags": [
+        "density-limit",
+        "spawn-cap"
+      ],
+      "riskSurfaces": [
+        "local-spawn-suppression"
+      ]
+    },
+    {
+      "id": "population.despawn-multimode",
+      "domain": "entity-population",
+      "subject": "minecraft:despawn",
+      "statement": "minecraft:despawn can remove actors based on distance, inactivity, simulation edge, chance, or explicit filters; when filters are defined, standard despawn rules are ignored.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-despawn"
+      ],
+      "capabilityTags": [
+        "despawn",
+        "distance",
+        "inactivity"
+      ],
+      "riskSurfaces": [
+        "entity-disappears",
+        "false-missing"
+      ]
+    },
+    {
+      "id": "population.distance-despawn-defaults",
+      "domain": "entity-population",
+      "subject": "despawn distance",
+      "statement": "Standard despawn-from-distance defaults include a minimum range of 32 and maximum range of 128 blocks when configured with default values, making player distance a runtime disappearance factor.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-despawn"
+      ],
+      "capabilityTags": [
+        "despawn-distance",
+        "player-distance"
+      ],
+      "riskSurfaces": [
+        "entity-disappears",
+        "arena-empty"
+      ]
+    },
+    {
+      "id": "population.spawn-entity-timer",
+      "domain": "entity-population",
+      "subject": "minecraft:spawn_entity",
+      "statement": "minecraft:spawn_entity can schedule repeated or single-use spawning after configurable wait times and filters, so an entity can itself become an autonomous spawn source independent of arena script spawners.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-spawn-entity"
+      ],
+      "capabilityTags": [
+        "spawn_entity",
+        "spawn-timer"
+      ],
+      "riskSurfaces": [
+        "duplicate-spawn",
+        "hidden-spawner",
+        "population-growth"
+      ]
+    },
+    {
+      "id": "population.spawn-on-death-new-surface",
+      "domain": "entity-population",
+      "subject": "minecraft:spawn_on_death",
+      "statement": "minecraft:spawn_on_death can create one or more entities when the owner dies and is version-gated, creating a terminal-event spawn path that must be included in entity-count and cleanup analysis.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "minFormatVersion": "1.26.20"
+        }
+      },
+      "sourceIds": [
+        "ms-pop-spawn-on-death"
+      ],
+      "capabilityTags": [
+        "spawn-on-death",
+        "version-gated"
+      ],
+      "riskSurfaces": [
+        "unexpected-replacement",
+        "enemy-count-drift"
+      ]
+    },
+    {
+      "id": "population.spawn-rule-identifier-match",
+      "domain": "entity-population",
+      "subject": "spawn rule identifier",
+      "statement": "Spawn rule identifiers must match the entity identifier they target; mismatches are a direct cause of entities failing to spawn through those rules.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-spawn-deep-dive",
+        "ms-pop-data-driven"
+      ],
+      "capabilityTags": [
+        "identifier",
+        "spawn-rules"
+      ],
+      "riskSurfaces": [
+        "spawn-never-occurs"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "population.relation-cap-gates-natural-spawn",
+      "domain": "entity-population",
+      "subject": "population-and-density-capacity",
+      "kind": "gates",
+      "object": "natural-spawn-eligibility",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-spawn-deep-dive",
+        "ms-pop-data-driven"
+      ]
+    },
+    {
+      "id": "population.relation-despawn-deactivates-residency",
+      "domain": "entity-population",
+      "subject": "despawn-rule-trigger",
+      "kind": "deactivates",
+      "object": "entity-runtime-residency",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-pop-despawn"
+      ]
+    }
+  ]
+}
