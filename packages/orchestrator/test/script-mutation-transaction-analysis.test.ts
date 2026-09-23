@@ -118,6 +118,25 @@ describe("script mutation transaction analysis", () => {
     expect(reasoning.diagnostics[0]?.severity).toBe("info");
   });
 
+  it("does not treat an unrelated earlier guard as proof for a later teleport", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+      const player = world.getAllPlayers()[0];
+      block.setType("minecraft:stone");
+
+      if (block.matches("minecraft:stone")) {
+        player.addTag("checked");
+      }
+
+      player.teleport({ x: 1, y: 65, z: 1 });
+    `);
+
+    const assessment = analyzeScriptMutationTransactions([script])[0];
+    expect(assessment?.status).toBe("verification-unresolved");
+  });
+
   it("does not accept a guard on a different block receiver", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
