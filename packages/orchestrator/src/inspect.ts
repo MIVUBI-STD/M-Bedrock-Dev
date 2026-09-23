@@ -61,6 +61,8 @@ import {
   resolveInspectionKnowledgeProfile,
 } from "./knowledge-runtime-analysis.js";
 import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
+import { structureRuntimeEvidence } from "./structure-runtime-evidence.js";
+import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
 import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
@@ -465,14 +467,6 @@ export async function inspectDirectory(
     target,
     manifestModelsForKnowledge,
   );
-  const knowledgeRuntime = analyzeKnowledgeRuntime(
-    knowledgeCatalog,
-    target,
-    manifestModelsForKnowledge,
-    parsedFunctionModelsForKnowledge,
-  );
-  diagnostics.push(...knowledgeRuntime.diagnostics);
-
   const entityEventEvidence = deriveEntityEventExternalEvidence(
     parsedFunctions.map((item) => item.parsed),
     parsedScripts.map((item) => item.parsed),
@@ -567,6 +561,18 @@ export async function inspectDirectory(
 
   const topology = analyzeFunctionTopology(parsedFunctionModels);
   diagnostics.push(...topology.stateDiagnostics, ...topology.topologyDiagnostics);
+
+  const knowledgeRuntime = analyzeKnowledgeRuntime(
+    knowledgeCatalog,
+    target,
+    manifestModelsForKnowledge,
+    parsedFunctionModelsForKnowledge,
+    [
+      ...structureRuntimeEvidence(structureRuntime, sourceByFunction),
+      ...topologyRuntimeEvidence(topology),
+    ],
+  );
+  diagnostics.push(...knowledgeRuntime.diagnostics);
 
   const educationMetadata = manifests.some(
     ({ manifest }) => manifest.hasEducationMetadata === true,
