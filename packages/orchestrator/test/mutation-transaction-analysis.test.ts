@@ -144,6 +144,50 @@ describe("mutation transaction ordering", () => {
     ]);
   });
 
+  it("treats summon as dependent work after a direct fill mutation", () => {
+    const fn = parseMcFunction(
+      "demo:spawn",
+      [
+        "fill 0 64 0 15 70 15 minecraft:stone",
+        "execute if block 1 64 1 minecraft:stone run summon minecraft:zombie 5 65 5",
+      ].join("\n"),
+      { artifactId: "a", relativePath: "functions/spawn.mcfunction" },
+    );
+
+    const runtime = analyzeStructureAndChunkRuntime([fn], []);
+    const proofs = derivePlacementProofs(runtime, [fn]);
+    const transactions = analyzeMutationTransactionOrdering([fn], proofs);
+
+    expect(transactions.assessments).toEqual([
+      expect.objectContaining({
+        status: "verified-before-dependent",
+        dependentStep: expect.objectContaining({
+          detail: "entity-spawn",
+        }),
+      }),
+    ]);
+  });
+
+  it("flags summon before a later direct-mutation verification", () => {
+    const fn = parseMcFunction(
+      "demo:spawn",
+      [
+        "fill 0 64 0 15 70 15 minecraft:stone",
+        "summon minecraft:zombie 5 65 5",
+        "execute if block 1 64 1 minecraft:stone run function demo:done",
+      ].join("\n"),
+      { artifactId: "a", relativePath: "functions/spawn.mcfunction" },
+    );
+
+    const runtime = analyzeStructureAndChunkRuntime([fn], []);
+    const proofs = derivePlacementProofs(runtime, [fn]);
+    const transactions = analyzeMutationTransactionOrdering([fn], proofs);
+
+    expect(transactions.assessments[0]?.status).toBe(
+      "dependent-before-verification",
+    );
+  });
+
   it("keeps unrelated verification or unresolved calls as unknown", () => {
     const unrelated = parseMcFunction(
       "demo:unrelated",
