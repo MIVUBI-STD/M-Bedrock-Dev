@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-gametest-module",
+      "title": "minecraft/server-gametest Module",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-gametest/minecraft-server-gametest?view=minecraft-bedrock-experimental",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-gametest-first",
+      "title": "Building your first GameTest",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/gametestbuildyourfirstgametest?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-gametest-intro",
+      "title": "Introduction to the GameTest Framework",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/gametestgettingstarted?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "gametest.repeatable-environment",
+      "domain": "validation",
+      "subject": "GameTest",
+      "statement": "GameTest provides repeatable miniature structures plus script-defined setup and assertions, allowing creator behavior to be exercised against explicit expected outcomes.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock"
+        ]
+      },
+      "sourceIds": [
+        "ms-gametest-first",
+        "ms-gametest-intro"
+      ],
+      "capabilityTags": [
+        "gametest",
+        "repeatability"
+      ],
+      "riskSurfaces": [
+        "regression-testing"
+      ]
+    },
+    {
+      "id": "gametest.max-ticks-bounded",
+      "domain": "validation",
+      "subject": "GameTest registration",
+      "statement": "GameTests can define maxTicks and success/failure assertions, making time-bounded validation a built-in part of the framework rather than an unbounded manual observation loop.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock"
+        ]
+      },
+      "sourceIds": [
+        "ms-gametest-module",
+        "ms-gametest-first"
+      ],
+      "capabilityTags": [
+        "timeout",
+        "assertion"
+      ],
+      "riskSurfaces": [
+        "hung-test",
+        "nondeterministic-wait"
+      ]
+    },
+    {
+      "id": "gametest.experimental",
+      "domain": "validation",
+      "subject": "GameTest compatibility",
+      "statement": "GameTest remains experimental/beta and can change across Minecraft versions, so test infrastructure itself must be version-scoped and should not be confused with production gameplay requirements.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock"
+        ]
+      },
+      "sourceIds": [
+        "ms-gametest-first",
+        "ms-gametest-module"
+      ],
+      "capabilityTags": [
+        "experimental",
+        "compatibility"
+      ],
+      "riskSurfaces": [
+        "test-harness-drift"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "gametest.relation-test-validates-invariant",
+      "domain": "validation",
+      "subject": "repeatable-gametest",
+      "kind": "validates",
+      "object": "runtime-invariant-or-regression-expectation",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock"
+        ]
+      },
+      "sourceIds": [
+        "ms-gametest-intro"
+      ]
+    }
+  ]
+}
