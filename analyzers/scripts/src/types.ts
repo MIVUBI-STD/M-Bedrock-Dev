@@ -118,6 +118,9 @@ export interface ScriptEntityEventTrigger {
 
 export interface ScriptCommandLiteral {
   command: string;
+  mechanism?: "runCommand" | "runCommandAsync" | "embedded-literal";
+  executionRegion?: string;
+  receiverHint?: string;
   source: SourceRef;
 }
 
