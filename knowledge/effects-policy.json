@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-effects-policy-v1",
+      "title": "MIVUBI Effects Attributes and Component Mutation Policy v1",
+      "url": "project://knowledge/effects-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "effects-policy.baseline-contract",
+      "domain": "effects",
+      "subject": "effect and attribute baseline",
+      "statement": "Each arena/player/entity role must declare a baseline contract for status effects, health/max-health, movement-related attributes, combat modifiers, component groups, and project properties that should hold before gameplay starts and after reset completes.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "baseline",
+        "reset"
+      ],
+      "riskSurfaces": [
+        "effect-leak",
+        "attribute-leak"
+      ]
+    },
+    {
+      "id": "effects-policy.effect-owner",
+      "domain": "effects",
+      "subject": "temporary effect ownership",
+      "statement": "Temporary effects and modifiers should be owned by a scoped source with arenaGeneration, lifeGeneration or entityGeneration, effectGeneration, and reason so cleanup can remove or reconcile only the ending scope.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "effect-owner",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "cross-round-effect",
+        "over-clear"
+      ]
+    },
+    {
+      "id": "effects-policy.max-health-reconcile",
+      "domain": "effects",
+      "subject": "health attribute mutation",
+      "statement": "Any max-health change must define current-health reconciliation semantics, including whether current health clamps, preserves ratio, resets to max, or remains unchanged; do not infer one behavior implicitly.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "health",
+        "attribute"
+      ],
+      "riskSurfaces": [
+        "overheal",
+        "underheal",
+        "revive-desync"
+      ]
+    },
+    {
+      "id": "effects-policy.component-group-idempotency",
+      "domain": "effects",
+      "subject": "component group activation",
+      "statement": "Project-triggered component-group changes should be generation-aware and idempotent. Re-adding an already-active group is not automatically harmless because stateful components may reinitialize.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "component-group",
+        "idempotency"
+      ],
+      "riskSurfaces": [
+        "timer-restart",
+        "duplicate-state"
+      ]
+    },
+    {
+      "id": "effects-policy.mutation-observe-later",
+      "domain": "effects",
+      "subject": "event-driven component mutation",
+      "statement": "After entity events that modify properties or component groups, downstream logic must treat the mutation as queued until post-tick verification confirms the expected state. Same-tick reads are not commit proof.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "event-ordering",
+        "verification"
+      ],
+      "riskSurfaces": [
+        "same-tick-stale-read",
+        "premature-transition"
+      ]
+    },
+    {
+      "id": "effects-policy.single-authority-per-modifier",
+      "domain": "effects",
+      "subject": "attribute and effect authority",
+      "statement": "For each logical modifier such as speed boost, damage buff, resistance, downed slow, or revive immunity, declare one gameplay authority; status effect, property, component group, equipment modifier, and scoreboard mirrors must not independently decide the same state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "state-authority",
+        "modifier"
+      ],
+      "riskSurfaces": [
+        "split-brain",
+        "stacked-buff"
+      ]
+    },
+    {
+      "id": "effects-policy.reset-removes-ending-scope",
+      "domain": "effects",
+      "subject": "arena reset",
+      "statement": "Arena cleanup must reconcile all ending-generation effects, attribute overrides, component groups, temporary properties, fire/state modifiers, and equipment-derived gameplay modifiers before declaring player/entity normal form.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "normal-form"
+      ],
+      "riskSurfaces": [
+        "effect-residue",
+        "attribute-residue",
+        "second-run-buff"
+      ]
+    },
+    {
+      "id": "effects-policy.respawn-policy",
+      "domain": "effects",
+      "subject": "respawn and revive",
+      "statement": "Respawn and revive flows must explicitly define which effects and component groups are cleared, preserved, or reapplied. Health restoration alone does not constitute a complete life-state reset.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "respawn",
+        "revive"
+      ],
+      "riskSurfaces": [
+        "debuff-after-revive",
+        "spectator-effect-leak"
+      ]
+    },
+    {
+      "id": "effects-policy.stack-risk",
+      "domain": "effects",
+      "subject": "stacked temporary modifiers",
+      "statement": "When multiple systems can apply semantically similar buffs or debuffs, track owner sets or a resolved effective modifier instead of blindly applying/removing effects; removing one owner must not erase another valid owner's contribution.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "stacking",
+        "ownership"
+      ],
+      "riskSurfaces": [
+        "premature-remove",
+        "double-buff"
+      ]
+    },
+    {
+      "id": "effects-policy.verify-baseline",
+      "domain": "effects",
+      "subject": "post-reset verification",
+      "statement": "VERIFY_EMPTY or player normal-form checks should include absence/presence of expected status effects, current/max health relationship, active project properties, and component-group-derived behavior indicators where observable.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ],
+      "capabilityTags": [
+        "verification",
+        "baseline"
+      ],
+      "riskSurfaces": [
+        "hidden-residue",
+        "nth-run-regression"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "effects-policy.relation-posttick-gates-dependent",
+      "domain": "effects",
+      "subject": "verified-effect-or-component-state",
+      "kind": "gates",
+      "object": "dependent-gameplay-transition",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ]
+    },
+    {
+      "id": "effects-policy.relation-reset-restores-baseline",
+      "domain": "effects",
+      "subject": "arena-cleanup",
+      "kind": "restores",
+      "object": "effect-and-attribute-baseline",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ]
+    },
+    {
+      "id": "effects-policy.relation-owner-set-gates-remove",
+      "domain": "effects",
+      "subject": "modifier-owner-set",
+      "kind": "gates",
+      "object": "temporary-modifier-removal",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-effects-policy-v1"
+      ]
+    }
+  ]
+}
