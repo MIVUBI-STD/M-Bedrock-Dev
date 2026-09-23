@@ -750,6 +750,13 @@ export async function inspectDirectory(
       loads: structureRuntime.structureLoads.length,
       resolvedLoads: structureRuntime.correlations.filter((item) => item.status === "resolved").length,
       unresolvedLoads: structureRuntime.unresolvedStructureLoads,
+      scriptLoads: scriptStructureLoads.length,
+      resolvedScriptLoads: scriptStructureLoads.filter(
+        (item) => item.status === "resolved",
+      ).length,
+      unresolvedScriptLoads: scriptStructureLoads.filter(
+        (item) => item.status !== "resolved",
+      ).length,
       probabilisticLoads: structureRuntime.probabilisticStructureLoads,
       runtimeLogicLoads: structureRuntime.runtimeLogicStructureLoads,
       tickingAreas: structureRuntime.chunkLifecycleEvidence.tickingAreas,
