@@ -1,16 +1,18 @@
 # Current Validation
 
-Status: PACKAGE PIPELINE REMEDIATION PENDING EXACT-HEAD CI
+Status: EXACT-HEAD SOURCE VERIFICATION ENABLED ON LOCAL
 
-GitHub Actions proof on 2026-09-22:
+GitHub Actions evidence:
 
-- exact commit 27852249e008c6f178db68d3f7ff566ead4a02c8 completed Verify successfully;
-- Node.js 24 setup, dependency installation, TypeScript typecheck and then-current Vitest suite succeeded;
-- commit a0a08e67e88cb12a526f9c0459f2ad4b60475fc4 kept typecheck green and proved deterministic packaging, ZIP transport and all existing tests except one semantic fixture assertion;
-- that failing assertion exposed structure namespace normalization, not ZIP transport failure;
-- structure identifier normalization now maps structures/<namespace>/<path>.mcstructure to <namespace>:<path> and the synthetic fixture follows that layout.
+- commit `a65b93cff46f48b8a30e785ac06227b324a9d124` completed the Repository Policy workflow successfully;
+- that policy-only success did **not** include TypeScript typecheck or Vitest because the Verify workflow previously ran on push only for `main`;
+- the Verify workflow now also runs on every push to `Local`, so future Local commits receive repository policy + typecheck + Vitest proof automatically.
 
-The new remediation head requires exact-head CI before package-pipeline proof is promoted.
+Historical proof:
+
+- exact commit `27852249e008c6f178db68d3f7ff566ead4a02c8` completed Verify successfully;
+- Node.js 24 setup, dependency installation, TypeScript typecheck and the then-current Vitest suite succeeded;
+- later reliability, mutation, invariant-mining and repair-hardening work requires a fresh exact-head Verify run before source proof is promoted.
 
 Still not proven:
 
