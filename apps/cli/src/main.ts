@@ -4,14 +4,16 @@ import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/ve
 import { inspectArtifact } from "../../../packages/orchestrator/src/inspect-artifact.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/load.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/script-api-usage.js";
+import { parseCliTargetOptions } from "./target-options.js";
 
 async function main(): Promise<void> {
-  const [, , command, ...args] = process.argv;
+  const [, , command, ...rawArgs] = process.argv;
+  const { positionals: args, target } = parseCliTargetOptions(rawArgs);
   const [input, secondInput, thirdInput] = args;
   const knowledge = await loadKnowledgeDirectory(resolve("knowledge"));
 
   if (command === "inspect" && input) {
-    const result = await inspectArtifact(resolve(input), {}, knowledge);
+    const result = await inspectArtifact(resolve(input), target, knowledge);
     console.log(JSON.stringify(result, null, 2));
 
     if (result.diagnostics.some((finding) => finding.severity === "critical")) {
@@ -23,7 +25,7 @@ async function main(): Promise<void> {
   if (command === "script-usage" && args.length > 0) {
     const maps = [];
     for (const artifactPath of args) {
-      const result = await inspectArtifact(resolve(artifactPath), {}, knowledge);
+      const result = await inspectArtifact(resolve(artifactPath), target, knowledge);
       maps.push({
         mapId: result.artifactId,
         label: artifactPath,
@@ -40,7 +42,7 @@ async function main(): Promise<void> {
       resolve(secondInput),
       thirdInput,
       resolve("reliability/catalogs"),
-      {},
+      target,
       knowledge,
     );
     console.log(JSON.stringify(result, null, 2));
@@ -51,7 +53,7 @@ async function main(): Promise<void> {
     const result = await compareArtifacts(
       resolve(input),
       resolve(secondInput),
-      {},
+      target,
       knowledge,
     );
     console.log(JSON.stringify(result, null, 2));
@@ -60,10 +62,10 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip>",
-    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...]",
-    "  npm run cli -- compare <before-mcworld> <after-mcworld>",
-    "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version>",
+    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id]",
+    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...]",
+    "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...]",
+    "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version> [--edition ...] [--experiment id]",
   ].join("\n"));
   process.exitCode = 2;
 }
