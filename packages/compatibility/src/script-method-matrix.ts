@@ -173,6 +173,20 @@ export const SCRIPT_METHOD_SYMBOL_RULES: readonly ScriptMethodSymbolRule[] = [
   currentStableMethod("script-method.entity.get-property-current", "Entity.getProperty", ["ms-entity-current"]),
   currentStableMethod("script-method.entity.teleport-current", "Entity.teleport", ["ms-entity-current"]),
   currentStableMethod("script-method.player.send-message-current", "Player.sendMessage", ["ms-player-current"]),
+
+  // Production-observed current symbols present in one representative map.
+  currentStableMethod("script-method.system.run-current", "system.run", ["ms-system-current"]),
+  currentStableMethod("script-method.dimension.get-block-current", "Dimension.getBlock", ["ms-dimension-current"]),
+  currentStableMethod("script-method.dimension.is-chunk-loaded-current", "Dimension.isChunkLoaded", ["ms-dimension-current"]),
+  currentStableMethod("script-method.dimension.set-weather-current", "Dimension.setWeather", ["ms-dimension-current"]),
+  currentStableMethod("script-method.entity.trigger-event-current", "Entity.triggerEvent", ["ms-entity-current"]),
+  currentStableMethod("script-method.entity.get-dynamic-property-current", "Entity.getDynamicProperty", ["ms-entity-current"]),
+  currentStableMethod("script-method.entity.matches-current", "Entity.matches", ["ms-entity-current"]),
+  currentStableMethod("script-method.entity.set-rotation-current", "Entity.setRotation", ["ms-entity-current"]),
+  currentStableMethod("script-method.scoreboard-objective.remove-participant-current", "ScoreboardObjective.removeParticipant", ["ms-scoreboard-objective-current"]),
+  currentStableMethod("script-method.world.set-default-spawn-current", "world.setDefaultSpawnLocation", ["ms-world-current"]),
+  currentStableMethod("script-method.world.set-difficulty-current", "world.setDifficulty", ["ms-world-current"]),
+  currentStableMethod("script-method.world.set-time-of-day-current", "world.setTimeOfDay", ["ms-world-current"]),
 ];
 
 export interface ScriptMethodSymbolCheck {

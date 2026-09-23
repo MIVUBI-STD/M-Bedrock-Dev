@@ -12,6 +12,14 @@ export interface ScriptEnumMemberRule {
 
 export const SCRIPT_ENUM_MEMBER_RULES: readonly ScriptEnumMemberRule[] = [
   {
+    id: "script-enum-entity-damage-cause-contact-current",
+    moduleName: "@minecraft/server",
+    enumName: "EntityDamageCause",
+    member: "contact",
+    symbol: "EntityDamageCause.contact",
+    sourceIds: ["ms-entity-damage-cause-current"],
+  },
+  {
     id: "script-enum-gamemode-adventure",
     moduleName: "@minecraft/server",
     enumName: "GameMode",

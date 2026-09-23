@@ -70,6 +70,8 @@ export const SCRIPT_PROPERTY_SYMBOL_RULES: readonly ScriptPropertySymbolRule[] =
   currentProperty("script-property.entity.is-valid-current", "Entity.isValid", ["ms-entity-current"]),
   currentProperty("script-property.player.name-current", "Player.name", ["ms-player-current"]),
   currentProperty("script-property.scoreboard-objective.display-name-current", "ScoreboardObjective.displayName", ["ms-scoreboard-objective-current"]),
+  currentProperty("script-property.world.game-rules-current", "world.gameRules", ["ms-world-current"]),
+  currentProperty("script-property.dimension.id-current", "Dimension.id", ["ms-dimension-current"]),
 ];
 
 export function findScriptPropertyRule(
