@@ -1,0 +1,331 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-compatibility-policy-v1",
+      "title": "MIVUBI Pack Dependency Version and Experiment Compatibility Policy v1",
+      "url": "project://knowledge/compatibility-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "compat-policy.runtime-profile",
+      "domain": "compatibility",
+      "subject": "effective runtime profile",
+      "statement": "Every analyzed world must resolve an effective compatibility profile containing Minecraft version, edition, manifest format, pack UUID/version graph, min_engine_version, script module versions, capabilities, and enabled experiments.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "runtime-profile",
+        "compatibility"
+      ],
+      "riskSurfaces": [
+        "unknown-environment",
+        "false-diagnostic"
+      ]
+    },
+    {
+      "id": "compat-policy.unknown-profile-is-risk",
+      "domain": "compatibility",
+      "subject": "missing compatibility context",
+      "statement": "If engine/module/experiment profile is unknown, version-sensitive findings must be marked conditional or unresolved rather than asserted as universal engine facts.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "confidence",
+        "version-scope"
+      ],
+      "riskSurfaces": [
+        "false-positive",
+        "false-negative"
+      ]
+    },
+    {
+      "id": "compat-policy.pack-graph-validate",
+      "domain": "compatibility",
+      "subject": "pack dependency graph",
+      "statement": "Validate pack UUID uniqueness, module UUID uniqueness, required dependency existence, version compatibility, and behavior/resource pack pairing before deeper gameplay diagnosis.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "manifest",
+        "dependency-graph"
+      ],
+      "riskSurfaces": [
+        "missing-pack",
+        "wrong-version",
+        "duplicate-uuid"
+      ]
+    },
+    {
+      "id": "compat-policy.script-symbol-version-proof",
+      "domain": "compatibility",
+      "subject": "Script API symbol use",
+      "statement": "Each version-sensitive Script API symbol should be checked against the declared module version; presence in current docs is not proof it exists in the world's requested module version.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "script-api",
+        "symbol-version"
+      ],
+      "riskSurfaces": [
+        "missing-symbol",
+        "runtime-error"
+      ]
+    },
+    {
+      "id": "compat-policy.beta-explicit",
+      "domain": "compatibility",
+      "subject": "beta dependency",
+      "statement": "Any beta module dependency must be explicitly linked to required experiment state and treated as unstable compatibility surface with stronger update-regression warnings.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "beta",
+        "experiment"
+      ],
+      "riskSurfaces": [
+        "preview-only",
+        "build-drift"
+      ]
+    },
+    {
+      "id": "compat-policy.version-change-invalidates-assumptions",
+      "domain": "compatibility",
+      "subject": "platform update",
+      "statement": "When Minecraft, module, min_engine_version, or experiment profile changes, invalidate cached compatibility assumptions and rerun version-sensitive knowledge checks before attributing failures solely to map logic.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "update",
+        "invalidation"
+      ],
+      "riskSurfaces": [
+        "stale-knowledge",
+        "misattribution"
+      ]
+    },
+    {
+      "id": "compat-policy.baseline-and-current-diff",
+      "domain": "compatibility",
+      "subject": "regression triage",
+      "statement": "For update regressions, compare last-known-good compatibility profile against current profile and classify differences in engine version, module versions, experiments, manifest semantics, and pack graph before changing gameplay code.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "regression-diff",
+        "triage"
+      ],
+      "riskSurfaces": [
+        "unnecessary-code-fix",
+        "root-cause-missed"
+      ]
+    },
+    {
+      "id": "compat-policy.edition-specific-facts",
+      "domain": "compatibility",
+      "subject": "Bedrock versus Education",
+      "statement": "Knowledge facts and diagnostics that differ by edition must carry explicit edition applicability. Do not assume Bedrock retail behavior universally matches Minecraft Education.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "edition",
+        "education"
+      ],
+      "riskSurfaces": [
+        "edition-mismatch",
+        "false-assumption"
+      ]
+    },
+    {
+      "id": "compat-policy.manifest-v3-preview-guard",
+      "domain": "compatibility",
+      "subject": "manifest format preview",
+      "statement": "Preview-only manifest formats or semantics must be marked experimental/preview and must not be treated as stable production assumptions for retail-targeted packs.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "manifest",
+        "preview"
+      ],
+      "riskSurfaces": [
+        "preview-retail-mismatch"
+      ]
+    },
+    {
+      "id": "compat-policy.compatibility-diagnostic-before-logic",
+      "domain": "compatibility",
+      "subject": "diagnostic ordering",
+      "statement": "When a failure appears immediately after a Minecraft update, run compatibility/profile diagnostics before invasive gameplay rewrites. Logic bugs and platform regressions may coexist, but version drift must be ruled in or out explicitly.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "triage",
+        "diagnostic-order"
+      ],
+      "riskSurfaces": [
+        "wrong-fix-layer"
+      ]
+    },
+    {
+      "id": "compat-policy.compat-matrix",
+      "domain": "compatibility",
+      "subject": "supported runtime matrix",
+      "statement": "Project releases should maintain a supported runtime matrix mapping tested Minecraft versions, editions, script module versions, manifest format, required experiments, and known incompatibilities.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ],
+      "capabilityTags": [
+        "support-matrix",
+        "release"
+      ],
+      "riskSurfaces": [
+        "unsupported-runtime",
+        "unknown-regression"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "compat-policy.relation-profile-gates-analysis",
+      "domain": "compatibility",
+      "subject": "effective-runtime-profile",
+      "kind": "gates",
+      "object": "version-sensitive-analysis",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ]
+    },
+    {
+      "id": "compat-policy.relation-update-invalidates-cache",
+      "domain": "compatibility",
+      "subject": "runtime-profile-change",
+      "kind": "deactivates",
+      "object": "cached-version-assumptions",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ]
+    },
+    {
+      "id": "compat-policy.relation-pack-graph-validates-load",
+      "domain": "compatibility",
+      "subject": "validated-pack-dependency-graph",
+      "kind": "validates",
+      "object": "expected-pack-load-state",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-compatibility-policy-v1"
+      ]
+    }
+  ]
+}
