@@ -18,6 +18,8 @@ export interface ScriptEventSubscription {
 export interface DynamicPropertyAccess {
   operation: "get" | "set" | "delete" | "clear" | "ids" | "size" | "unknown";
   propertyId?: string;
+  receiverHint?: string;
+  executionRegion?: string;
   source: SourceRef;
 }
 
