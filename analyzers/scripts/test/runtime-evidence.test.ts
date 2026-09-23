@@ -28,6 +28,53 @@ describe("script runtime evidence", () => {
     expect(records.some((record) => record.predicate === "gameplay-knockback-request")).toBe(true);
   });
 
+  it("emits generation revalidation evidence only for explicit callback guards", () => {
+    const guarded = parseScriptFile(
+      "scripts/main",
+      `
+        import { system } from "@minecraft/server";
+        let arenaGeneration = 4;
+        const capturedGeneration = arenaGeneration;
+        system.run(() => {
+          if (capturedGeneration !== arenaGeneration) return;
+          arenaGeneration += 1;
+        });
+      `,
+      source,
+    );
+
+    const guardedRecords = scriptRuntimeEvidence(guarded);
+    expect(guarded.deferredCallbacks).toEqual([
+      expect.objectContaining({
+        scheduler: "run",
+        guardEvidence: "explicit-generation-check",
+        guardIdentifiers: expect.arrayContaining([
+          "capturedGeneration",
+          "arenaGeneration",
+        ]),
+      }),
+    ]);
+    expect(guardedRecords.some(
+      (record) => record.predicate === "async-generation-revalidation",
+    )).toBe(true);
+
+    const unresolved = parseScriptFile(
+      "scripts/main",
+      `
+        import { system } from "@minecraft/server";
+        system.run(() => {
+          doWork();
+        });
+      `,
+      source,
+    );
+    const unresolvedRecords = scriptRuntimeEvidence(unresolved);
+    expect(unresolved.deferredCallbacks[0]?.guardEvidence).toBe("unresolved");
+    expect(unresolvedRecords.some(
+      (record) => record.predicate === "async-generation-revalidation",
+    )).toBe(false);
+  });
+
   it("emits durable-state and deferred-work evidence without claiming completion", () => {
     const parsed = parseScriptFile(
       "scripts/main",
