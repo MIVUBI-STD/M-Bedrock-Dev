@@ -3,14 +3,12 @@ import {
   assessKnowledgeRelations,
   type EffectiveKnowledgeProfile,
   type KnowledgeCatalog,
-  type KnowledgeEvidence,
-  type KnowledgeEvidenceMap,
 } from "../../../packages/knowledge/src/index.js";
 import {
   groupRuntimeEvidenceByScope,
-  type RuntimeEvidenceRecord,
   type RuntimeEvidenceSnapshot,
 } from "../../../packages/project-model/src/runtime-evidence.js";
+import { mergeRuntimeEvidenceRecords } from "./runtime-evidence-merge.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 
 function idFor(scopeKey: string, relationId: string, status: string): string {
@@ -18,54 +16,6 @@ function idFor(scopeKey: string, relationId: string, status: string): string {
     .update(`knowledge:${scopeKey}:${relationId}:${status}`)
     .digest("hex")
     .slice(0, 16);
-}
-
-function mergeEvidence(
-  records: readonly RuntimeEvidenceRecord[],
-): {
-  map: KnowledgeEvidenceMap;
-  conflicts: readonly string[];
-} {
-  const map: Record<string, KnowledgeEvidence> = {};
-  const conflicts: string[] = [];
-
-  for (const record of records) {
-    const current = map[record.predicate];
-    const sourceIds = record.sourceRefs?.map((source) =>
-      `${source.artifactId}:${source.relativePath}`
-    ) ?? [];
-
-    if (!current) {
-      map[record.predicate] = {
-        state: record.state,
-        sourceIds,
-        ...(record.note === undefined ? {} : { note: record.note }),
-      };
-      continue;
-    }
-
-    const mergedSourceIds = [...new Set([
-      ...(current.sourceIds ?? []),
-      ...sourceIds,
-    ])];
-
-    if (current.state !== record.state) {
-      map[record.predicate] = {
-        state: "unknown",
-        sourceIds: mergedSourceIds,
-        note: "Conflicting runtime evidence states.",
-      };
-      conflicts.push(record.predicate);
-      continue;
-    }
-
-    map[record.predicate] = {
-      ...current,
-      sourceIds: mergedSourceIds,
-    };
-  }
-
-  return { map, conflicts: [...new Set(conflicts)].sort() };
 }
 
 export interface KnowledgeRuntimeDiagnosticInput {
@@ -80,11 +30,12 @@ export function knowledgeRuntimeDiagnostics(
   const findings: DiagnosticFinding[] = [];
 
   for (const [scopeKey, records] of groupRuntimeEvidenceByScope(input.snapshot)) {
-    const { map, conflicts } = mergeEvidence(records);
-    const sourceRefs = records.flatMap((record) => record.sourceRefs ?? []);
-    const relatedNodeIds = [...new Set(
-      records.flatMap((record) => record.relatedNodeIds ?? []),
-    )];
+    const {
+      map,
+      conflicts,
+      sourceRefs,
+      relatedNodeIds,
+    } = mergeRuntimeEvidenceRecords(records);
 
     for (const predicate of conflicts) {
       findings.push({
