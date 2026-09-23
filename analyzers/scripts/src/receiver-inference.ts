@@ -36,7 +36,10 @@ const ENTITY_INHERITED_METHODS = new Set([
   "runCommandAsync",
   "isValid",
   "applyKnockback",
+  "applyImpulse",
+  "clearVelocity",
   "teleport",
+  "triggerEvent",
 ]);
 
 const ENTITY_INHERITED_PROPERTIES = new Set([
