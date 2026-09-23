@@ -518,6 +518,7 @@ export async function inspectDirectory(
     parsedStructureModels.map((item) => ({
       identifier: item.identifier,
       relativePath: item.node.source.relativePath,
+      ...(item.size ? { size: item.size } : {}),
       semantics: item.semantics,
     })),
   );
