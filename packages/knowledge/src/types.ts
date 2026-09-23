@@ -37,6 +37,7 @@ export type KnowledgeDomain =
   | "performance"
   | "interaction"
   | "inventory"
+  | "teleport"
   | "education";
 
 export type KnowledgeRelationKind =
