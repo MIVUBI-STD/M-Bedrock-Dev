@@ -41,6 +41,7 @@ export type KnowledgeDomain =
   | "entity-runtime"
   | "combat"
   | "round-integrity"
+  | "arena-cleanup"
   | "education";
 
 export type KnowledgeRelationKind =
