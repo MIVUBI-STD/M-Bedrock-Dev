@@ -33,6 +33,7 @@ export type KnowledgeDomain =
   | "player-life"
   | "command-context"
   | "world-mutation"
+  | "persistence"
   | "education";
 
 export type KnowledgeRelationKind =
