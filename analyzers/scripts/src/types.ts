@@ -92,6 +92,14 @@ export interface ScriptPropertyAccess {
   source: SourceRef;
 }
 
+export interface ScriptDeferredCallback {
+  scheduler: "run" | "runTimeout" | "runInterval" | "runJob";
+  source: SourceRef;
+  callbackSource?: SourceRef;
+  guardEvidence: "explicit-generation-check" | "unresolved";
+  guardIdentifiers: string[];
+}
+
 export interface ScriptEntityEventTrigger {
   event: string;
   receiverHint?: string;
@@ -164,6 +172,7 @@ export interface ParsedScriptFile {
   events: ScriptEventSubscription[];
   dynamicProperties: DynamicPropertyAccess[];
   restrictedMutations: RestrictedExecutionMutation[];
+  deferredCallbacks: ScriptDeferredCallback[];
   methodCalls: ScriptMethodCall[];
   propertyAccesses: ScriptPropertyAccess[];
   propertyWrites: ScriptPropertyWrite[];
