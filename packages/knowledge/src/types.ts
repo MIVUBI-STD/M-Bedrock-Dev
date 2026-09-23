@@ -38,6 +38,7 @@ export type KnowledgeDomain =
   | "interaction"
   | "inventory"
   | "teleport"
+  | "entity-runtime"
   | "education";
 
 export type KnowledgeRelationKind =
