@@ -136,6 +136,108 @@ describe("script mutation transaction analysis", () => {
     );
   });
 
+  it("follows direct local function calls in execution order", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+      const player = world.getAllPlayers()[0];
+
+      function verifyAndMove() {
+        if (block.matches("minecraft:stone")) {
+          player.teleport({ x: 1, y: 65, z: 1 });
+        }
+      }
+
+      block.setType("minecraft:stone");
+      verifyAndMove();
+    `);
+
+    expect(script.localFunctionCalls).toEqual([
+      expect.objectContaining({
+        callerRegion: "module",
+        targetRegion: "function:verifyAndMove",
+        targetName: "verifyAndMove",
+      }),
+    ]);
+
+    const assessments = analyzeScriptMutationTransactions([script]);
+    expect(assessments).toEqual([
+      expect.objectContaining({
+        executionRegion: "module",
+        applyRegion: "module",
+        status: "verified-before-dependent",
+        verificationCall: expect.objectContaining({
+          executionRegion: "function:verifyAndMove",
+          method: "matches",
+        }),
+        dependentCall: expect.objectContaining({
+          executionRegion: "function:verifyAndMove",
+          method: "teleport",
+        }),
+      }),
+    ]);
+  });
+
+  it("detects late verification across direct local function calls", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+      const player = world.getAllPlayers()[0];
+
+      function move() {
+        player.teleport({ x: 1, y: 65, z: 1 });
+      }
+
+      function verify() {
+        if (block.matches("minecraft:stone")) {
+          player.addTag("verified");
+        }
+      }
+
+      block.setType("minecraft:stone");
+      move();
+      verify();
+    `);
+
+    expect(analyzeScriptMutationTransactions([script])[0]?.status).toBe(
+      "late-verification-candidate",
+    );
+  });
+
+  it("treats recursive local call paths as an ordering barrier", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+      const player = world.getAllPlayers()[0];
+
+      function verifyAndMove() {
+        recurse();
+        if (block.matches("minecraft:stone")) {
+          player.teleport({ x: 1, y: 65, z: 1 });
+        }
+      }
+
+      function recurse() {
+        verifyAndMove();
+      }
+
+      block.setType("minecraft:stone");
+      verifyAndMove();
+    `);
+
+    const assessment = analyzeScriptMutationTransactions([script])[0];
+    expect(assessment?.status).toBe("verification-unresolved");
+    expect(assessment?.barriers).toEqual([
+      expect.objectContaining({
+        kind: "recursive-call",
+        targetRegion: "function:verifyAndMove",
+      }),
+    ]);
+  });
+
   it("does not merge independent lexical execution regions", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
