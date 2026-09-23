@@ -222,7 +222,12 @@ export function derivePlacementProofs(
 
         const verification = parseBlockVerificationSemantics(command.raw);
         const position = absolute(verification?.position);
-        if (!verification || !position || !inside(bounds, position)) continue;
+        if (
+          !verification ||
+          !verification.gatesDependentCommand ||
+          !position ||
+          !inside(bounds, position)
+        ) continue;
 
         postPlacementVerifications.push({
           functionId: correlation.load.functionId,
