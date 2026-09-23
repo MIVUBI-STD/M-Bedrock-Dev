@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-education-runtime-policy-v1",
+      "title": "MIVUBI Education Runtime Isolation Policy v1",
+      "url": "project://knowledge/education-runtime-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "education-policy.explicit-profile",
+      "domain": "education-runtime",
+      "subject": "Education analysis profile",
+      "statement": "Education analysis must record exact Education version/build, multiplayer host mode, dedicated-server use, Code Builder/Agent availability, and classroom/admin controls. Bedrock facts are reused only when applicability is explicitly shared.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-education-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "runtime-profile",
+        "education"
+      ],
+      "riskSurfaces": [
+        "edition-assumption"
+      ]
+    },
+    {
+      "id": "education-policy.agent-is-external-mutator",
+      "domain": "education-runtime",
+      "subject": "Agent",
+      "statement": "Treat Agent/Code Builder actions as an external world mutator comparable to player/admin automation. Arena-protected regions and critical blocks need policy for Agent movement, placement, destruction, and inventory-driven actions.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-education-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "agent",
+        "world-mutation"
+      ],
+      "riskSurfaces": [
+        "arena-corruption",
+        "student-code-interference"
+      ]
+    },
+    {
+      "id": "education-policy.classroom-global-state",
+      "domain": "education-runtime",
+      "subject": "classroom controls",
+      "statement": "Classroom/admin changes to pause, permissions, world settings, or server state are external global-state events and must be distinguishable from pack bugs in diagnostics/recovery.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-education-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "classroom",
+        "observability"
+      ],
+      "riskSurfaces": [
+        "false-root-cause"
+      ]
+    },
+    {
+      "id": "education-policy.scale-profile",
+      "domain": "education-runtime",
+      "subject": "Education multiplayer scale",
+      "statement": "Dedicated-server and classroom-scale validation must use Education-specific concurrency/performance profiles rather than extrapolating from small retail Bedrock sessions.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-education-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "performance",
+        "multiplayer"
+      ],
+      "riskSurfaces": [
+        "scale-regression"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "education-policy.relation-agent-mutation-invalidates",
+      "domain": "education-runtime",
+      "subject": "agent-world-mutation",
+      "kind": "deactivates",
+      "object": "cached-arena-world-state-proof",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-education-runtime-policy-v1"
+      ]
+    }
+  ]
+}
