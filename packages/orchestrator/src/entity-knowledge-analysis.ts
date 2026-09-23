@@ -7,6 +7,7 @@ import type { EffectiveKnowledgeProfile } from "../../knowledge/src/types.js";
 import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/types.js";
 import { deriveEntityStateGraph } from "../../../analyzers/entities/src/state-graph.js";
 import { extractNavigationCapabilities } from "../../../analyzers/entities/src/navigation.js";
+import { extractTargetingSemantics } from "../../../analyzers/entities/src/targeting.js";
 
 export interface EntityStateKnowledgeFinding extends EntityKnowledgeFinding {
   stateId: string;
@@ -19,6 +20,8 @@ export interface EntityKnowledgeAnalysis {
   runtimeIdentifier?: string;
   states: number;
   eventEdges: number;
+  targetingProviders: number;
+  configuredTargetProviders: number;
   findings: EntityStateKnowledgeFinding[];
   staticAnalysisLimits: string[];
 }
@@ -30,12 +33,25 @@ export function analyzeEntityWithKnowledge(
 ): EntityKnowledgeAnalysis {
   const graph = deriveEntityStateGraph(entity);
   const findings: EntityStateKnowledgeFinding[] = [];
+  let targetingProviders = 0;
+  let configuredTargetProviders = 0;
 
   for (const state of graph.candidates) {
     const navigation = extractNavigationCapabilities(state);
+    const targeting = extractTargetingSemantics(state);
+    targetingProviders += targeting.length;
+    configuredTargetProviders += targeting.filter(
+      (item) => item.configuredTargetTypes > 0,
+    ).length;
+
+    const targetingCapabilities = targeting.flatMap((item) => item.capabilities);
+
     for (const finding of assessEntityKnowledge(catalog, profile, {
       activeComponents: state.activeComponents,
-      availableCapabilities: navigation.capabilities,
+      availableCapabilities: [
+        ...navigation.capabilities,
+        ...targetingCapabilities,
+      ],
     })) {
       findings.push({
         ...finding,
@@ -58,6 +74,8 @@ export function analyzeEntityWithKnowledge(
     ...(entity.runtimeIdentifier ? { runtimeIdentifier: entity.runtimeIdentifier } : {}),
     states: graph.candidates.length,
     eventEdges: graph.eventEdges.length,
+    targetingProviders,
+    configuredTargetProviders,
     findings,
     staticAnalysisLimits,
   };

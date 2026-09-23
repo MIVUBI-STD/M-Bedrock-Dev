@@ -18,6 +18,12 @@ function bool(
 
 const NAVIGATION_PREFIX = "minecraft:navigation.";
 
+function navigationVariant(component: string): string | undefined {
+  if (!component.startsWith(NAVIGATION_PREFIX)) return undefined;
+  const variant = component.slice(NAVIGATION_PREFIX.length);
+  return variant ? `navigation:variant:${variant}` : undefined;
+}
+
 export function extractNavigationCapabilities(
   state: EntityStateCandidate,
 ): NavigationCapabilities {
@@ -39,6 +45,8 @@ export function extractNavigationCapabilities(
   const avoidDamageBlocks = bool(config, "avoid_damage_blocks");
 
   const capabilities: string[] = [];
+  const variant = navigationVariant(navigationComponent);
+  if (variant) capabilities.push(variant);
   if (canPassDoors !== false) capabilities.push("navigation:path-through-doors");
   if (canOpenDoors === true) capabilities.push("navigation:can-open-doors");
   if (canOpenIronDoors === true) capabilities.push("navigation:can-open-iron-doors");
@@ -62,6 +70,6 @@ export function extractNavigationCapabilities(
     ...(canSink !== undefined ? { canSink } : {}),
     ...(avoidWater !== undefined ? { avoidWater } : {}),
     ...(avoidDamageBlocks !== undefined ? { avoidDamageBlocks } : {}),
-    capabilities: capabilities.sort(),
+    capabilities: [...new Set(capabilities)].sort(),
   };
 }

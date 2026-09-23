@@ -80,6 +80,46 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-nearest-target",
+      "title": "minecraft:behavior.nearest_attackable_target",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitygoals/minecraftbehavior_nearest_attackable_target?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-nearest-prioritized-target",
+      "title": "minecraft:behavior.nearest_prioritized_attackable_target",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitygoals/minecraftbehavior_nearest_prioritized_attackable_target?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-is-family",
+      "title": "minecraft:is_family filter",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/filters/is_family?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-navigation-walk",
+      "title": "minecraft:navigation.walk",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_navigation.walk?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-navigation-generic",
+      "title": "minecraft:navigation.generic",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/entitycomponents/minecraftcomponent_navigation.generic?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -301,6 +341,144 @@
       "diagnosticHints": [
         "Static JSON analysis cannot fully explain entities with built-in identifier-specific behavior."
       ]
+    },
+    {
+      "id": "entity.target.entity-types-valid-set",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.nearest_attackable_target",
+      "statement": "entity_types defines the list of entity types considered valid targets; each entry can constrain filters, max distance, visibility and reevaluation.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-nearest-target"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "target-acquisition"
+      ],
+      "riskSurfaces": [
+        "target-acquisition",
+        "entity-stuck"
+      ],
+      "diagnosticHints": [
+        "An active target behavior with no configured entity_types has no explicit valid target entries."
+      ]
+    },
+    {
+      "id": "entity.target.must-reach-path-gate",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.nearest_attackable_target",
+      "statement": "When must_reach is true, target validity requires a path to the target.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-nearest-target"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "entity-navigation"
+      ],
+      "riskSurfaces": [
+        "target-acquisition",
+        "navigation"
+      ]
+    },
+    {
+      "id": "entity.target.must-see-visibility-gate",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.nearest_attackable_target",
+      "statement": "When must_see is true, target validity depends on both range and line of sight.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-nearest-target"
+      ],
+      "capabilityTags": [
+        "entity-ai"
+      ],
+      "riskSurfaces": [
+        "target-acquisition",
+        "visibility"
+      ]
+    },
+    {
+      "id": "entity.target.is-family",
+      "domain": "entity-ai",
+      "subject": "is_family",
+      "statement": "The is_family filter returns true when the selected subject belongs to the named entity family.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-is-family"
+      ],
+      "capabilityTags": [
+        "entity-filter"
+      ],
+      "riskSurfaces": [
+        "target-filter"
+      ]
+    },
+    {
+      "id": "entity.navigation.walk-flags",
+      "domain": "navigation",
+      "subject": "minecraft:navigation.walk",
+      "statement": "Walking navigation exposes path flags including can_walk, can_swim, can_path_over_water, can_sink, lava traversal and amphibious behavior.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-navigation-walk"
+      ],
+      "capabilityTags": [
+        "entity-navigation"
+      ],
+      "riskSurfaces": [
+        "navigation",
+        "environment-compatibility",
+        "entity-stuck"
+      ]
+    },
+    {
+      "id": "entity.navigation.generic-multimodal",
+      "domain": "navigation",
+      "subject": "minecraft:navigation.generic",
+      "statement": "Generic navigation can generate paths using walking, swimming, flying and climbing according to its configured capability flags.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-navigation-generic"
+      ],
+      "capabilityTags": [
+        "entity-navigation"
+      ],
+      "riskSurfaces": [
+        "navigation",
+        "environment-compatibility",
+        "entity-stuck"
+      ]
     }
   ],
   "relations": [
@@ -469,6 +647,40 @@
       "sourceIds": [
         "ms-unique-behaviors"
       ]
+    },
+    {
+      "id": "rel.nearest-target.configured-types",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.nearest_attackable_target",
+      "kind": "requires",
+      "object": "targeting:configured-entity-types",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-nearest-target"
+      ],
+      "diagnosticHint": "nearest_attackable_target is active but entity_types contains no configured valid target entries."
+    },
+    {
+      "id": "rel.nearest-prioritized-target.configured-types",
+      "domain": "entity-ai",
+      "subject": "minecraft:behavior.nearest_prioritized_attackable_target",
+      "kind": "requires",
+      "object": "targeting:configured-entity-types",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-nearest-prioritized-target"
+      ],
+      "diagnosticHint": "nearest_prioritized_attackable_target is active but entity_types contains no configured valid target entries."
     }
   ]
 }
