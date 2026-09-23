@@ -1,0 +1,333 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-permissions-policy-v1",
+      "title": "MIVUBI Player Permission Gamemode and Developer Access Policy v1",
+      "url": "project://knowledge/permissions-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "permissions-policy.dev-access-explicit",
+      "domain": "permissions",
+      "subject": "developer access",
+      "statement": "Developer/admin access must be an explicit, auditable capability separate from gameplay role, arena membership, scoreboard tags, or gamemode. Do not infer dev authority merely from Creative, Operator, a tag, or proximity to a dev area.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "dev-access",
+        "authority"
+      ],
+      "riskSurfaces": [
+        "privilege-leak",
+        "role-confusion"
+      ]
+    },
+    {
+      "id": "permissions-policy.command-minimum-privilege",
+      "domain": "permissions",
+      "subject": "developer command surface",
+      "statement": "Custom developer commands should use the minimum command permission level that excludes unintended callers and command blocks where appropriate. Debug/admin commands must not default to Any or broad GameDirectors unless intentionally required.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "least-privilege",
+        "custom-command"
+      ],
+      "riskSurfaces": [
+        "debug-command-exposure",
+        "command-block-abuse"
+      ]
+    },
+    {
+      "id": "permissions-policy.dev-command-scope",
+      "domain": "permissions",
+      "subject": "developer command targeting",
+      "statement": "Developer operations such as skip level, force start, reset arena, teleport, grant kit, kill entities, or load structures must require explicit arena/player scope and generation validation. Broad @a/@e dev commands are prohibited unless intentionally global.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "dev-command",
+        "scope"
+      ],
+      "riskSurfaces": [
+        "cross-arena-dev-effect",
+        "global-reset"
+      ]
+    },
+    {
+      "id": "permissions-policy.gamemode-lease",
+      "domain": "permissions",
+      "subject": "temporary gamemode change",
+      "statement": "Temporary gameplay gamemode changes such as Spectator for chunk loading/cutscenes or Creative for dev workflows must be owned by a scoped lease with original state, reason, session generation, arena generation, and restore policy.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "gamemode",
+        "lease"
+      ],
+      "riskSurfaces": [
+        "spectator-leak",
+        "creative-leak"
+      ]
+    },
+    {
+      "id": "permissions-policy.spectator-not-active-default",
+      "domain": "permissions",
+      "subject": "spectator participation",
+      "statement": "Spectator mode is excluded by default from active/ready/alive/interactable participant predicates unless the game mode explicitly opts in. Gamemode alone does not prove participation, but Spectator should trigger scrutiny for gameplay interactions.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "spectator",
+        "participant-set"
+      ],
+      "riskSurfaces": [
+        "spectator-counted-active",
+        "spectator-trigger"
+      ]
+    },
+    {
+      "id": "permissions-policy.permission-gamemode-input-separate",
+      "domain": "permissions",
+      "subject": "player control authority",
+      "statement": "Permission level, command permission, gamemode, and input permissions are independent state surfaces and must be reconciled separately. Restoring one must not be treated as proof the others are correct.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "state-authority",
+        "player-control"
+      ],
+      "riskSurfaces": [
+        "partial-restore",
+        "privilege-state-drift"
+      ]
+    },
+    {
+      "id": "permissions-policy.reconnect-revalidate",
+      "domain": "permissions",
+      "subject": "reconnect access state",
+      "statement": "On reconnect or new session generation, revalidate runtime permission/gamemode/input state against current project policy. Do not blindly restore transient dev/gameplay privileges from stale session state.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "reconnect",
+        "revalidation"
+      ],
+      "riskSurfaces": [
+        "reconnect-privilege-leak",
+        "stale-spectator"
+      ]
+    },
+    {
+      "id": "permissions-policy.production-debug-guard",
+      "domain": "permissions",
+      "subject": "production debug tooling",
+      "statement": "Production-targeted packs should maintain an explicit debug-surface registry for dev commands, bypass tags, hidden buttons, admin items, debug scoreboards, and test-only command blocks, with release checks that flag unintended enabled surfaces.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "production",
+        "debug-surface"
+      ],
+      "riskSurfaces": [
+        "debug-bypass-left-enabled",
+        "cheat-path"
+      ]
+    },
+    {
+      "id": "permissions-policy.operator-not-gameplay-authority",
+      "domain": "permissions",
+      "subject": "operator status",
+      "statement": "Operator or command permission level may authorize developer actions but must not become gameplay authority for arena membership, team role, scoring, readiness, or winner determination.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "operator",
+        "state-authority"
+      ],
+      "riskSurfaces": [
+        "role-escalation",
+        "gameplay-bypass"
+      ]
+    },
+    {
+      "id": "permissions-policy.player-normal-form",
+      "domain": "permissions",
+      "subject": "post-arena permission baseline",
+      "statement": "Arena cleanup/player normal form must verify intended permission level, command permission policy, gamemode, input permissions, flight/spectator state, and removal of temporary dev/gameplay bypass markers before reuse.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "normal-form"
+      ],
+      "riskSurfaces": [
+        "creative-leak",
+        "operator-leak",
+        "input-lock-leak"
+      ]
+    },
+    {
+      "id": "permissions-policy.dev-actions-auditable",
+      "domain": "permissions",
+      "subject": "developer action audit",
+      "statement": "High-impact dev/admin actions should emit compact audit evidence containing actor identity, permission basis, target arena/player, generation, action, and result so test interventions are distinguishable from organic gameplay transitions.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ],
+      "capabilityTags": [
+        "audit",
+        "developer-action"
+      ],
+      "riskSurfaces": [
+        "unattributed-state-change",
+        "debugging-confusion"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "permissions-policy.relation-dev-capability-gates-action",
+      "domain": "permissions",
+      "subject": "validated-developer-capability",
+      "kind": "gates",
+      "object": "high-impact-dev-action",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ]
+    },
+    {
+      "id": "permissions-policy.relation-gamemode-lease-restores",
+      "domain": "permissions",
+      "subject": "temporary-gamemode-lease-end",
+      "kind": "restores",
+      "object": "declared-gamemode-baseline",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ]
+    },
+    {
+      "id": "permissions-policy.relation-release-deactivates-debug",
+      "domain": "permissions",
+      "subject": "production-release-mode",
+      "kind": "deactivates",
+      "object": "test-only-debug-surfaces",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-permissions-policy-v1"
+      ]
+    }
+  ]
+}
