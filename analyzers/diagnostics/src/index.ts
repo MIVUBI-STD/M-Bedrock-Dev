@@ -18,3 +18,4 @@ export * from "./script-event-findings.js";
 export * from "./script-method-findings.js";
 export * from "./script-member-findings.js";
 export * from "./script-signature-findings.js";
+export * from "./script-return-contract-findings.js";

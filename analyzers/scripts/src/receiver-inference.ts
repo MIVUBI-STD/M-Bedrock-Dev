@@ -31,6 +31,7 @@ const ENTITY_INHERITED_METHODS = new Set([
   "getTags",
   "hasTag",
   "removeTag",
+  "getComponent",
   "runCommandAsync",
   "isValid",
   "applyKnockback",

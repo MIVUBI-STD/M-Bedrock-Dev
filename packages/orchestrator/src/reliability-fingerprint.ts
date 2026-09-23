@@ -169,6 +169,10 @@ export function deriveReliabilityFingerprint(
     capabilityTags.add("script-signature-migration");
     riskSurfaces.add("script-signature");
   }
+  if (input.diagnostics.some((finding) => finding.code === "SCRIPT_API_RETURN_CONTRACT_RISK")) {
+    capabilityTags.add("script-return-contract");
+    riskSurfaces.add("script-return-optional");
+  }
 
   const editions = input.target.edition ? [input.target.edition] : [];
   const minEngineVersions = input.packs
