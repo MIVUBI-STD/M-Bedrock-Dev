@@ -17,6 +17,7 @@ import {
 import { findScriptReturnContractRule } from "../../compatibility/src/script-return-contract-matrix.js";
 import { findScriptTypeRule } from "../../compatibility/src/script-type-matrix.js";
 import { findScriptPropertyMutabilityRule } from "../../compatibility/src/script-property-mutability-matrix.js";
+import { findScriptEnumValueRule } from "../../compatibility/src/script-enum-value-matrix.js";
 
 export type ScriptApiUsageKind = "event" | "method" | "property" | "enum" | "type";
 export type ScriptApiKnowledgeState = "known" | "unclassified";
@@ -25,6 +26,13 @@ export interface ScriptCallShapeUsage {
   argumentCount: number;
   argumentKinds: ScriptArgumentKind[];
   hasSpreadArgument: boolean;
+  occurrences: number;
+  files: string[];
+}
+
+export interface ScriptEnumLiteralUsage {
+  literal: string;
+  operator: "==" | "===" | "!=" | "!==";
   occurrences: number;
   files: string[];
 }
@@ -50,6 +58,7 @@ export interface ScriptApiUsageSymbol {
     occurrences: number;
     files: string[];
   }>;
+  literalComparisons?: ScriptEnumLiteralUsage[];
 }
 
 export interface ScriptApiUsageInventory {
@@ -106,6 +115,12 @@ interface MutableUsage {
   }>;
   resultUses: Map<string, {
     use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
+    occurrences: number;
+    files: Set<string>;
+  }>;
+  literalComparisons: Map<string, {
+    literal: string;
+    operator: "==" | "===" | "!=" | "!==";
     occurrences: number;
     files: Set<string>;
   }>;
@@ -293,6 +308,86 @@ function mergeResultUses(
     );
 }
 
+function recordLiteralComparison(
+  item: MutableUsage,
+  file: string,
+  literal: string,
+  operator: "==" | "===" | "!=" | "!==",
+): void {
+  const key = `${operator}\0${literal}`;
+  const current = item.literalComparisons.get(key);
+  if (current) {
+    current.occurrences += 1;
+    current.files.add(file);
+    return;
+  }
+
+  item.literalComparisons.set(key, {
+    literal,
+    operator,
+    occurrences: 1,
+    files: new Set([file]),
+  });
+}
+
+function materializeLiteralComparisons(
+  item: MutableUsage,
+): ScriptEnumLiteralUsage[] {
+  return [...item.literalComparisons.values()]
+    .map((entry) => ({
+      literal: entry.literal,
+      operator: entry.operator,
+      occurrences: entry.occurrences,
+      files: [...entry.files].sort(),
+    }))
+    .sort((a, b) =>
+      b.occurrences - a.occurrences ||
+      a.literal.localeCompare(b.literal) ||
+      a.operator.localeCompare(b.operator)
+    );
+}
+
+function mergeLiteralComparisons(
+  left: readonly ScriptEnumLiteralUsage[],
+  right: readonly ScriptEnumLiteralUsage[],
+): ScriptEnumLiteralUsage[] {
+  const merged = new Map<string, {
+    literal: string;
+    operator: "==" | "===" | "!=" | "!==";
+    occurrences: number;
+    files: Set<string>;
+  }>();
+
+  for (const entry of [...left, ...right]) {
+    const key = `${entry.operator}\0${entry.literal}`;
+    const current = merged.get(key);
+    if (current) {
+      current.occurrences += entry.occurrences;
+      for (const file of entry.files) current.files.add(file);
+      continue;
+    }
+    merged.set(key, {
+      literal: entry.literal,
+      operator: entry.operator,
+      occurrences: entry.occurrences,
+      files: new Set(entry.files),
+    });
+  }
+
+  return [...merged.values()]
+    .map((entry) => ({
+      literal: entry.literal,
+      operator: entry.operator,
+      occurrences: entry.occurrences,
+      files: [...entry.files].sort(),
+    }))
+    .sort((a, b) =>
+      b.occurrences - a.occurrences ||
+      a.literal.localeCompare(b.literal) ||
+      a.operator.localeCompare(b.operator)
+    );
+}
+
 function materialize(item: MutableUsage): ScriptApiUsageSymbol {
   return {
     kind: item.kind,
@@ -304,6 +399,9 @@ function materialize(item: MutableUsage): ScriptApiUsageSymbol {
     ...(item.stability ? { stability: item.stability } : {}),
     ...(item.introducedIn ? { introducedIn: item.introducedIn } : {}),
     ...(item.lifecycle ? { lifecycle: item.lifecycle } : {}),
+    ...(item.kind === "enum" && item.literalComparisons.size > 0
+      ? { literalComparisons: materializeLiteralComparisons(item) }
+      : {}),
     ...(item.kind === "method" || item.kind === "property"
       ? {
           directOccurrences: item.directOccurrences,
@@ -367,6 +465,7 @@ export function deriveScriptApiUsage(
       writeOperations: new Set<string>(),
       callShapes: new Map(),
       resultUses: new Map(),
+      literalComparisons: new Map(),
     };
     bySymbol.set(key, created);
     return created;
@@ -435,6 +534,34 @@ export function deriveScriptApiUsage(
       const rule = findScriptEnumMemberRule(member.symbol);
       getOrCreate("enum", member.symbol, file, rule);
     }
+
+    for (const comparison of script.enumValueComparisons) {
+      if (comparison.module !== "@minecraft/server") continue;
+      const valueRule = findScriptEnumValueRule(comparison.symbol);
+      if (!valueRule) continue;
+
+      const key = usageKey("enum", comparison.symbol);
+      let item = bySymbol.get(key);
+
+      if (!item) {
+        item = getOrCreate(
+          "enum",
+          comparison.symbol,
+          file,
+          { id: valueRule.id },
+        );
+      } else if (!isKnownScriptEnum(comparison.enumName)) {
+        item.occurrences += 1;
+        item.files.add(file);
+      }
+
+      recordLiteralComparison(
+        item,
+        file,
+        comparison.literal,
+        comparison.operator,
+      );
+    }
   }
 
   const symbols = [...bySymbol.values()].map(materialize).sort(compareUsage);
@@ -502,6 +629,12 @@ export function aggregateScriptApiUsage(
         current.item.resultUses = mergeResultUses(
           current.item.resultUses ?? [],
           symbol.resultUses ?? [],
+        );
+      }
+      if (symbol.kind === "enum") {
+        current.item.literalComparisons = mergeLiteralComparisons(
+          current.item.literalComparisons ?? [],
+          symbol.literalComparisons ?? [],
         );
       }
       if (current.item.knowledge === "unclassified" && symbol.knowledge === "known") {

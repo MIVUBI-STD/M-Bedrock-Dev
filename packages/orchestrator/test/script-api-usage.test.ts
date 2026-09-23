@@ -199,6 +199,56 @@ describe("Script API usage inventory", () => {
     ]));
   });
 
+  it("retains enum backing-value comparison distributions", () => {
+    const oldUsage = deriveScriptApiUsage([
+      parse("old/scripts/main.js", `
+        import { BlockComponentTypes } from "@minecraft/server";
+        BlockComponentTypes.FluidContainer === "minecraft:fluidContainer";
+      `),
+    ]);
+    const newUsage = deriveScriptApiUsage([
+      parse("new/scripts/main.js", `
+        import { BlockComponentTypes } from "@minecraft/server";
+        BlockComponentTypes.FluidContainer === "minecraft:fluid_container";
+      `),
+    ]);
+
+    const oldSymbol = oldUsage.symbols.find(
+      (item) => item.symbol === "BlockComponentTypes.FluidContainer",
+    );
+    expect(oldSymbol).toMatchObject({
+      kind: "enum",
+      knowledge: "known",
+      literalComparisons: [
+        expect.objectContaining({
+          literal: "minecraft:fluidContainer",
+          operator: "===",
+          occurrences: 1,
+        }),
+      ],
+    });
+
+    const portfolio = aggregateScriptApiUsage([
+      { mapId: "old-map", usage: oldUsage },
+      { mapId: "new-map", usage: newUsage },
+    ]);
+    expect(portfolio.symbols.find(
+      (item) => item.symbol === "BlockComponentTypes.FluidContainer",
+    )).toMatchObject({
+      mapCount: 2,
+      literalComparisons: expect.arrayContaining([
+        expect.objectContaining({
+          literal: "minecraft:fluidContainer",
+          occurrences: 1,
+        }),
+        expect.objectContaining({
+          literal: "minecraft:fluid_container",
+          occurrences: 1,
+        }),
+      ]),
+    });
+  });
+
   it("ranks portfolio promotion candidates by real map coverage before raw frequency", () => {
     const mapA = deriveScriptApiUsage([
       parse("a/scripts/main.js", `
