@@ -178,23 +178,22 @@ function isDependent(call: ScriptMethodCall): boolean {
 
 function rootsForScript(script: ParsedScriptFile): string[] {
   const regions = new Set<string>([
-    ...script.methodCalls.map((call) => call.executionRegion ?? "unresolved-region"),
+    ...script.methodCalls.map(
+      (call) => call.executionRegion ?? "unresolved-region",
+    ),
     ...script.localFunctionCalls.map((call) => call.callerRegion),
     ...script.localFunctionCalls.map((call) => call.targetRegion),
   ]);
-  const calledTargets = new Set(
-    script.localFunctionCalls.map((call) => call.targetRegion),
-  );
 
-  const roots = [...regions].filter((region) =>
-    region === "module" ||
-    region.startsWith("callback@") ||
-    !calledTargets.has(region)
-  );
-
-  return roots.length > 0
-    ? roots.sort()
-    : [...regions].sort();
+  // A named function is not a runtime entrypoint just because nothing in the
+  // current file calls it. It may be dead code or externally exported.
+  // Module execution and callbacks are the statically justified roots here.
+  return [...regions]
+    .filter((region) =>
+      region === "module" ||
+      region.startsWith("callback@")
+    )
+    .sort();
 }
 
 function regionEvents(
