@@ -5,8 +5,13 @@ import {
 } from "../../compatibility/src/script-event-matrix.js";
 import { findScriptMethodRule } from "../../compatibility/src/script-method-matrix.js";
 import type { ScriptSymbolLifecycle } from "../../compatibility/src/script-lifecycle.js";
+import { findScriptPropertyRule } from "../../compatibility/src/script-property-matrix.js";
+import {
+  findScriptEnumMemberRule,
+  isKnownScriptEnum,
+} from "../../compatibility/src/script-enum-matrix.js";
 
-export type ScriptApiUsageKind = "event" | "method";
+export type ScriptApiUsageKind = "event" | "method" | "property" | "enum";
 export type ScriptApiKnowledgeState = "known" | "unclassified";
 
 export interface ScriptApiUsageSymbol {
@@ -95,7 +100,7 @@ function materialize(item: MutableUsage): ScriptApiUsageSymbol {
     ...(item.stability ? { stability: item.stability } : {}),
     ...(item.introducedIn ? { introducedIn: item.introducedIn } : {}),
     ...(item.lifecycle ? { lifecycle: item.lifecycle } : {}),
-    ...(item.kind === "method"
+    ...(item.kind === "method" || item.kind === "property"
       ? {
           directOccurrences: item.directOccurrences,
           boundedOccurrences: item.boundedOccurrences,
@@ -116,7 +121,7 @@ export function deriveScriptApiUsage(
     file: string,
     rule?: {
       id: string;
-      stability: "stable" | "pre-release";
+      stability?: "stable" | "pre-release";
       introducedIn?: string;
       lifecycle?: ScriptSymbolLifecycle;
     },
@@ -162,6 +167,25 @@ export function deriveScriptApiUsage(
       if (method.inference === "direct") item.directOccurrences += 1;
       else item.boundedOccurrences += 1;
       item.receiverTypes.add(method.receiverType);
+    }
+
+    for (const property of script.propertyAccesses) {
+      const rule = findScriptPropertyRule(property.symbol);
+      const item = getOrCreate("property", property.symbol, file, rule);
+      if (property.inference === "direct") item.directOccurrences += 1;
+      else item.boundedOccurrences += 1;
+      item.receiverTypes.add(property.receiverType);
+    }
+
+    for (const member of script.moduleMemberAccesses) {
+      if (
+        member.module !== "@minecraft/server" ||
+        !isKnownScriptEnum(member.importedName)
+      ) {
+        continue;
+      }
+      const rule = findScriptEnumMemberRule(member.symbol);
+      getOrCreate("enum", member.symbol, file, rule);
     }
   }
 
@@ -219,6 +243,7 @@ export function aggregateScriptApiUsage(
         if (symbol.ruleId) current.item.ruleId = symbol.ruleId;
         if (symbol.stability) current.item.stability = symbol.stability;
         if (symbol.introducedIn) current.item.introducedIn = symbol.introducedIn;
+        if (symbol.lifecycle) current.item.lifecycle = symbol.lifecycle;
       }
     }
   }
@@ -228,7 +253,7 @@ export function aggregateScriptApiUsage(
     files: [...files].sort(),
     mapCount: maps.size,
     maps: [...maps].sort(),
-    ...(item.kind === "method"
+    ...(item.kind === "method" || item.kind === "property"
       ? { receiverTypes: [...receiverTypes].sort() }
       : {}),
   })).sort((left, right) =>

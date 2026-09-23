@@ -20,6 +20,10 @@ import { scriptVersionDiagnostics } from "../../../analyzers/diagnostics/src/scr
 import { scriptEventSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-event-findings.js";
 import { scriptMethodSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-method-findings.js";
 import {
+  scriptEnumLifecycleDiagnostics,
+  scriptPropertyLifecycleDiagnostics,
+} from "../../../analyzers/diagnostics/src/script-member-findings.js";
+import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
 } from "../../../analyzers/diagnostics/src/structure-findings.js";
@@ -409,6 +413,14 @@ export async function inspectDirectory(
       scripts,
     ));
     diagnostics.push(...scriptMethodSymbolDiagnostics(
+      scriptCompatibility,
+      scripts,
+    ));
+    diagnostics.push(...scriptPropertyLifecycleDiagnostics(
+      scriptCompatibility,
+      scripts,
+    ));
+    diagnostics.push(...scriptEnumLifecycleDiagnostics(
       scriptCompatibility,
       scripts,
     ));

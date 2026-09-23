@@ -16,3 +16,4 @@ export * from "./script-privilege-findings.js";
 export * from "./script-version-findings.js";
 export * from "./script-event-findings.js";
 export * from "./script-method-findings.js";
+export * from "./script-member-findings.js";
