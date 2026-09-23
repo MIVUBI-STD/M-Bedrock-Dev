@@ -88,6 +88,17 @@ export interface InspectDirectoryResult {
       functionId: string;
       line?: number;
     }>;
+    placedEmbeddedCommands: Array<{
+      target: string;
+      flatIndex: number;
+      worldX: number;
+      worldY: number;
+      worldZ: number;
+      chunkX: number;
+      chunkZ: number;
+      command: string;
+      confidence: "inferred-transform";
+    }>;
     nativeChunkCorrelations?: Array<{
       target: string;
       chunkX: number;
@@ -95,6 +106,24 @@ export interface InspectDirectoryResult {
       matches: Array<{
         dimensionId: number;
         kinds: string[];
+      }>;
+    }>;
+    embeddedCommandNativeCorrelations?: Array<{
+      target: string;
+      flatIndex: number;
+      worldX: number;
+      worldY: number;
+      worldZ: number;
+      chunkX: number;
+      chunkZ: number;
+      command: string;
+      confidence: "inferred-transform";
+      matches: Array<{
+        dimensionId: number;
+        kinds: string[];
+        hasBlockEntityEvidence: boolean;
+        hasPendingTickEvidence: boolean;
+        hasRandomTickEvidence: boolean;
       }>;
     }>;
   };

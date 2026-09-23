@@ -47,6 +47,7 @@ import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnost
 import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
 import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.js";
 import { embeddedCommandStateIdentifiers, populateEmbeddedStructureCommandGraph } from "./embedded-structure-graph.js";
+import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -133,7 +134,7 @@ export async function inspectDirectory(
   const parsedFunctions = [];
   const parsedScripts: Array<{ node: SemanticNode; parsed: ParsedScriptFile }> = [];
   const parsedEntities: Array<{ node: SemanticNode; parsed: ReturnType<typeof parseEntityDefinition> }> = [];
-  const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; semantics: ReturnType<typeof deriveMcStructureSemantics>; embeddedCommands: ReturnType<typeof analyzeEmbeddedStructureCommands>; queuedTickPositions: number }> = [];
+  const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; size?: { x: number; y: number; z: number }; semantics: ReturnType<typeof deriveMcStructureSemantics>; embeddedCommands: ReturnType<typeof analyzeEmbeddedStructureCommands>; queuedTickPositions: number }> = [];
   const diagnostics: DiagnosticFinding[] = [];
   let parsedStructures = 0;
 
@@ -236,6 +237,7 @@ export async function inspectDirectory(
         parsedStructureModels.push({
           identifier: structureId,
           node,
+          ...(structure.size ? { size: structure.size } : {}),
           semantics: deriveMcStructureSemantics(structure),
           embeddedCommands,
           queuedTickPositions: runtimeContent.queuedTickPositions,
@@ -401,6 +403,33 @@ export async function inspectDirectory(
   );
   diagnostics.push(...structureRuntimeDiagnostics(structureRuntime, sourceByFunction));
 
+  const placedEmbeddedCommands = structureRuntime.correlations.flatMap((correlation) => {
+    if (correlation.status !== "resolved") return [];
+    const parsed = parsedStructureModels.find(
+      (item) => item.identifier === correlation.load.semantics.name,
+    );
+    if (!parsed) return [];
+    return derivePlacedEmbeddedCommands(
+      {
+        position: correlation.load.semantics.position,
+        rotation: correlation.load.semantics.rotation,
+        mirror: correlation.load.semantics.mirror,
+      },
+      parsed.size,
+      parsed.embeddedCommands.map((item) => item.block),
+    ).map((item) => ({
+      target: correlation.load.semantics.name,
+      flatIndex: item.flatIndex,
+      worldX: item.world.x,
+      worldY: item.world.y,
+      worldZ: item.world.z,
+      chunkX: Math.floor(item.world.x / 16),
+      chunkZ: Math.floor(item.world.z / 16),
+      command: item.command,
+      confidence: item.confidence,
+    }));
+  });
+
   const topology = analyzeFunctionTopology(parsedFunctionModels);
   diagnostics.push(...topology.stateDiagnostics, ...topology.topologyDiagnostics);
 
@@ -486,6 +515,7 @@ export async function inspectDirectory(
         0,
       ),
       absoluteLoadDestinations: structureRuntime.absoluteLoadDestinations,
+      placedEmbeddedCommands,
     },
     topologyAnalysis: {
       resolvedSpatialEffects: topology.resolvedSpatialEffects.length,

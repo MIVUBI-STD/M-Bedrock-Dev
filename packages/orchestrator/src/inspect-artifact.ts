@@ -8,6 +8,7 @@ import { inspectDirectory } from "./inspect.js";
 import type { InspectDirectoryResult, InspectTargetProfile } from "./types.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { analyzeWorldDbNative } from "./world-db-analysis.js";
+import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -35,6 +36,11 @@ export async function inspectArtifact(
 
     const result = await inspectDirectory(workingRoot, artifactId, target, fingerprint, knowledgeCatalog);
     const nativeWorldDb = await analyzeWorldDbNative(workingRoot);
+    const embeddedCommandNativeCorrelations =
+      correlateEmbeddedCommandsWithNativeChunks(
+        result.structureRuntime.placedEmbeddedCommands,
+        nativeWorldDb.chunkSignals,
+      );
     const nativeChunkCorrelations = result.structureRuntime.absoluteLoadDestinations.map(
       (destination) => ({
         target: destination.target,
@@ -63,6 +69,7 @@ export async function inspectArtifact(
       structureRuntime: {
         ...result.structureRuntime,
         nativeChunkCorrelations,
+        embeddedCommandNativeCorrelations,
       },
     };
   } finally {
