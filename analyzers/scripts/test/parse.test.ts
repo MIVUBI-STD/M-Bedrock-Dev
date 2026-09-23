@@ -153,6 +153,34 @@ const legacyMode = GM.adventure;
     ]));
   });
 
+  it("records bounded method call shape evidence", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const player = world.getAllPlayers()[0];
+player.applyKnockback(0, 1, 0.5, 0.4);
+player.applyKnockback({ x: 0, z: 1 }, 0.4);
+`,
+      source,
+    );
+
+    expect(parsed.methodCalls).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "Entity.applyKnockback",
+        argumentCount: 4,
+        argumentKinds: ["number", "number", "number", "number"],
+        hasSpreadArgument: false,
+      }),
+      expect.objectContaining({
+        symbol: "Entity.applyKnockback",
+        argumentCount: 2,
+        argumentKinds: ["object", "number"],
+        hasSpreadArgument: false,
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

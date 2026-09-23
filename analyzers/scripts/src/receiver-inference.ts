@@ -32,6 +32,7 @@ const ENTITY_INHERITED_METHODS = new Set([
   "removeTag",
   "runCommandAsync",
   "isValid",
+  "applyKnockback",
 ]);
 
 function lineSource(

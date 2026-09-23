@@ -23,6 +23,7 @@ import {
   scriptEnumLifecycleDiagnostics,
   scriptPropertyLifecycleDiagnostics,
 } from "../../../analyzers/diagnostics/src/script-member-findings.js";
+import { scriptSignatureDiagnostics } from "../../../analyzers/diagnostics/src/script-signature-findings.js";
 import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
@@ -421,6 +422,10 @@ export async function inspectDirectory(
       scripts,
     ));
     diagnostics.push(...scriptEnumLifecycleDiagnostics(
+      scriptCompatibility,
+      scripts,
+    ));
+    diagnostics.push(...scriptSignatureDiagnostics(
       scriptCompatibility,
       scripts,
     ));

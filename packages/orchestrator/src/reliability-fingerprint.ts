@@ -165,6 +165,10 @@ export function deriveReliabilityFingerprint(
     capabilityTags.add("script-legacy-api");
     riskSurfaces.add("script-removed-api");
   }
+  if (input.diagnostics.some((finding) => finding.code === "SCRIPT_API_SIGNATURE_INCOMPATIBLE")) {
+    capabilityTags.add("script-signature-migration");
+    riskSurfaces.add("script-signature");
+  }
 
   const editions = input.target.edition ? [input.target.edition] : [];
   const minEngineVersions = input.packs
