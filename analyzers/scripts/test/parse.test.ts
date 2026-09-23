@@ -64,6 +64,60 @@ world.scoreboard.getObjective("round");
     ]);
   });
 
+  it("infers bounded receiver types through variables, loops, callbacks and property chains", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+
+const dimension = world.getDimension("overworld");
+for (const entity of dimension.getEntities()) {
+  entity.getTags();
+}
+
+world.getAllPlayers().forEach((player) => {
+  player.addTag("arena:test");
+  player.removeTag("arena:old");
+});
+
+const objective = world.scoreboard.getObjective("round");
+objective?.getScore("#arena1");
+`,
+      source,
+    );
+
+    expect(parsed.methodCalls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ symbol: "world.getDimension", inference: "direct" }),
+      expect.objectContaining({ symbol: "Dimension.getEntities", receiverType: "Dimension" }),
+      expect.objectContaining({ symbol: "Entity.getTags", receiverType: "Entity" }),
+      expect.objectContaining({ symbol: "Entity.addTag", receiverType: "Player" }),
+      expect.objectContaining({ symbol: "Entity.removeTag", receiverType: "Player" }),
+      expect.objectContaining({ symbol: "Scoreboard.getObjective", receiverType: "Scoreboard" }),
+    ]));
+  });
+
+  it("propagates a bounded Player return from a local helper built on getAllPlayers().find", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+
+function findPlayer(name) {
+  return world.getAllPlayers().find((player) => player.name === name);
+}
+
+const player = findPlayer("Alex");
+player?.addTag("session:assigned");
+`,
+      source,
+    );
+
+    expect(parsed.methodCalls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ symbol: "world.getAllPlayers" }),
+      expect.objectContaining({ symbol: "Entity.addTag", receiverType: "Player" }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

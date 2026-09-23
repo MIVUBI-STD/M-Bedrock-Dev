@@ -27,10 +27,21 @@ export interface RestrictedExecutionMutation {
   source: SourceRef;
 }
 
+export type ScriptApiReceiverType =
+  | "World"
+  | "System"
+  | "Player"
+  | "Entity"
+  | "Dimension"
+  | "Scoreboard"
+  | "ScoreboardObjective";
+
 export interface ScriptMethodCall {
-  root: "world" | "system";
+  receiverType: ScriptApiReceiverType;
+  root?: "world" | "system";
   method: string;
   symbol: string;
+  inference: "direct" | "bounded";
   source: SourceRef;
 }
 

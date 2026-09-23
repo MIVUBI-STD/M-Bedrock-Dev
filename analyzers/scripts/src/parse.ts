@@ -5,10 +5,10 @@ import type {
   ParsedScriptFile,
   RestrictedExecutionMutation,
   ScriptCapabilityUse,
-  ScriptMethodCall,
   ScriptEventSubscription,
   ScriptImport,
 } from "./types.js";
+import { inferScriptMethodCalls } from "./receiver-inference.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -142,8 +142,12 @@ export function parseScriptFile(
   const events: ScriptEventSubscription[] = [];
   const dynamicProperties: DynamicPropertyAccess[] = [];
   const restrictedMutations: RestrictedExecutionMutation[] = [];
-  const methodCalls: ScriptMethodCall[] = [];
-  const capabilities: ScriptCapabilityUse[] = [];
+  const methodCalls = inferScriptMethodCalls(file, source);
+  const capabilities: ScriptCapabilityUse[] = methodCalls.map((call) => ({
+    capability: "api-method",
+    detail: call.symbol,
+    source: call.source,
+  }));
 
   const visit = (node: ts.Node): void => {
     if (ts.isImportDeclaration(node) && ts.isStringLiteralLike(node.moduleSpecifier)) {
@@ -165,27 +169,6 @@ export function parseScriptFile(
 
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const chain = propertyAccessChain(node.expression);
-
-      if (
-        chain.length === 2 &&
-        (chain[0] === "world" || chain[0] === "system") &&
-        chain[1]
-      ) {
-        const root = chain[0];
-        const method = chain[1];
-        const methodSource = lineSource(file, node, source);
-        methodCalls.push({
-          root,
-          method,
-          symbol: `${root}.${method}`,
-          source: methodSource,
-        });
-        capabilities.push({
-          capability: "api-method",
-          detail: `${root}.${method}`,
-          source: methodSource,
-        });
-      }
 
       if (chain.at(-1) === "subscribe") {
         const root = chain[0];

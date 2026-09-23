@@ -37,6 +37,38 @@ export const SCRIPT_METHOD_SYMBOL_RULES: readonly ScriptMethodSymbolRule[] = [
     introducedIn: "1.1.0",
     sourceIds: ["ms-update-1.19.80", "ms-server-changelog"],
   },
+  {
+    id: "script-method.dimension.get-entities",
+    moduleName: "@minecraft/server",
+    symbol: "Dimension.getEntities",
+    stability: "stable",
+    introducedIn: "1.1.0",
+    sourceIds: ["ms-server-changelog"],
+  },
+  {
+    id: "script-method.entity.add-tag",
+    moduleName: "@minecraft/server",
+    symbol: "Entity.addTag",
+    stability: "stable",
+    introducedIn: "1.2.0",
+    sourceIds: ["ms-server-changelog"],
+  },
+  {
+    id: "script-method.entity.get-tags",
+    moduleName: "@minecraft/server",
+    symbol: "Entity.getTags",
+    stability: "stable",
+    introducedIn: "1.2.0",
+    sourceIds: ["ms-server-changelog"],
+  },
+  {
+    id: "script-method.entity.remove-tag",
+    moduleName: "@minecraft/server",
+    symbol: "Entity.removeTag",
+    stability: "stable",
+    introducedIn: "1.2.0",
+    sourceIds: ["ms-server-changelog"],
+  },
 ];
 
 export interface ScriptMethodSymbolCheck {
