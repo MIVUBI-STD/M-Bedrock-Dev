@@ -1,24 +1,25 @@
 # Next Action
 
-Reliability Search now closes the loop from historical evidence to future targeted search.
+Dynamic invariant mining is now available as a conservative candidate-generation layer.
 
 Implemented:
 
-1. persistent append-only campaign history writer;
-2. immutable content-derived filenames/identities;
-3. deterministic history loader;
-4. repository history integrity verification;
-5. historical operator-effectiveness aggregation;
-6. historical blindspot aggregation;
-7. adaptive budget from historical evidence;
-8. automatic P0/P1 targeted-search tasks with explicit objectives.
+1. mining from known-good RuntimeObservationSnapshot traces;
+2. support/antecedent/counterexample accounting;
+3. confidence calculation;
+4. immediate rejection on known-good counterexample;
+5. historical-failure challenge;
+6. mutation-survivor challenge;
+7. candidate/supported/challenged/rejected lifecycle;
+8. promotion drafts only for unchallenged supported candidates;
+9. no automatic writes to the durable Invariant Registry.
 
 Next high-value work:
 
-1. dynamic invariant mining from known-good session/runtime traces;
-2. keep mined invariants as candidates with support/confidence, never auto-promote;
-3. cross-check candidate invariants against mutation survivors and historical failures;
-4. reject candidates contradicted by known-good traces;
-5. only promote reviewed/stable candidates into the durable Invariant Registry.
+1. extend invariant mining to score/tag/entity spatial relations;
+2. add trace diversity metrics so repeated identical snapshots do not create misleading support;
+3. correlate candidate invariants with semantic coverage buckets;
+4. mine transition invariants, not only state relations;
+5. add candidate aging/version scoping so Minecraft updates can invalidate stale mined assumptions.
 
-At this point, avoid expanding framework breadth unless invariant mining reveals a concrete detector gap.
+Do not auto-promote mined invariants.

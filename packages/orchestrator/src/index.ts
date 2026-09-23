@@ -5,6 +5,7 @@ export * from "./function-graph-mutation.js";
 export * from "./history-intelligence.js";
 export * from "./inspect-artifact.js";
 export * from "./inspect.js";
+export * from "./invariant-intelligence.js";
 export * from "./mutation-campaign.js";
 export * from "./portfolio-retest.js";
 export * from "./reliability-fingerprint.js";
