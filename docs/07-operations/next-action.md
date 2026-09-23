@@ -1,22 +1,24 @@
 # Next Action
 
-Native-world differential analysis now has a direct artifact comparison entrypoint.
+Version-aware regression correlation is now available.
 
 Implemented:
 
-1. compare two mcworld/zip artifacts through the same inspection pipeline;
-2. reuse the same knowledge catalog for both sides;
-3. compare fingerprints and diagnostic counts;
-4. compare native LevelDB summaries using bounded world-state diffs;
-5. CLI entrypoint:
-   `npm run cli -- compare <before.mcworld> <after.mcworld>`.
+1. compare two artifacts under one target Minecraft update;
+2. load the repo-owned update delta, regression corpus and coverage catalog;
+3. generate retest plans for before/after fingerprints;
+4. correlate update entries with map domains/capabilities;
+5. attach historical regression ids;
+6. attach bounded native LevelDB count/chunk-signal deltas;
+7. CLI:
+   `npm run cli -- compare-update before.mcworld after.mcworld <version>`.
 
-Recommended next proof work:
+Next priority:
 
-1. use the same real map before/after a Minecraft update;
-2. compare native chunk signals around known runtime-sensitive structures;
-3. record which native changes correlate with known regressions;
-4. promote only repeatable correlations into regression knowledge;
-5. continue Education scene/NPC graph support separately.
+1. feed known real-map before/after update pairs into this correlation engine;
+2. measure which update entries repeatedly co-occur with known failures;
+3. keep repeated correlations as observed knowledge, not documented truth;
+4. expand NPC dialogue scene graph and Education world mechanics;
+5. add Script API version matrix after real-map regression intake.
 
-The comparison tool reports differences; it does not label a native change as a bug without additional evidence.
+Do not auto-assign causation from correlation evidence.

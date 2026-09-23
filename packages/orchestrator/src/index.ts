@@ -22,3 +22,4 @@ export * from "./embedded-structure-graph.js";
 export * from "./embedded-native-correlation.js";
 export * from "./world-db-diff.js";
 export * from "./compare-artifacts.js";
+export * from "./version-aware-comparison.js";
