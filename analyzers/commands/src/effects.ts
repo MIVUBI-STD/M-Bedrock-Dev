@@ -33,6 +33,13 @@ export type CommandEffect =
       source: SourceRef;
     }
   | {
+      kind: "entity-spawn";
+      entityIdentifier: string;
+      position?: Coordinate3;
+      spawnEvent?: string;
+      source: SourceRef;
+    }
+  | {
       kind: "function-call";
       target: string;
       source: SourceRef;
