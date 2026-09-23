@@ -78,7 +78,8 @@ export function parseStructureLoadSemantics(
     index += 1;
   }
 
-  if (tokens[index]) result.seed = tokens[index];
+  const seed = tokens[index];
+  if (seed !== undefined) result.seed = seed;
 
   return result;
 }
