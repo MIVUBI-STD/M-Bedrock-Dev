@@ -397,6 +397,13 @@ export function inferScriptPropertyAccesses(
     if (!receiver) return;
 
     const property = node.name.text;
+    if (
+      (receiver === "World" || receiver === "System") &&
+      (property === "beforeEvents" || property === "afterEvents")
+    ) {
+      return;
+    }
+
     const direct =
       ts.isIdentifier(receiverExpression) &&
       ((receiverExpression.text === "world" && receiver === "World") ||
