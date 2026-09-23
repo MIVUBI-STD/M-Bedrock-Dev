@@ -19,4 +19,5 @@ export * from "./source-mutation-detection.js";
 export * from "./topology-analysis.js";
 export * from "./types.js";
 export * from "./embedded-structure-graph.js";
-export * from "./embedded-native-correlation.js";\nexport * from "./world-db-diff.js";\n
+export * from "./embedded-native-correlation.js";
+export * from "./world-db-diff.js";
