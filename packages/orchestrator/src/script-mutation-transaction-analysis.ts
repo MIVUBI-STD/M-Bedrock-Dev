@@ -12,7 +12,7 @@ import {
 
 export type ScriptMutationOrderingStatus =
   | "verified-before-dependent"
-  | "late-verification-candidate"
+  | "dependent-before-verification"
   | "verification-unresolved"
   | "no-dependent-action";
 
@@ -432,7 +432,7 @@ export function analyzeScriptMutationTransactions(
           status = "verified-before-dependent";
           verificationCall = verifyBefore;
         } else if (barriers.length === 0 && verifyAfter) {
-          status = "late-verification-candidate";
+          status = "dependent-before-verification";
           verificationCall = verifyAfter;
         }
 
@@ -520,7 +520,7 @@ export function scriptMutationTransactionRuntimeEvidence(
           item.dependentCall.source,
         ],
       });
-    } else if (item.status === "late-verification-candidate") {
+    } else if (item.status === "dependent-before-verification") {
       records.push({
         predicate: "script-verification-before-dependent-action",
         state: "absent",
@@ -535,7 +535,7 @@ export function scriptMutationTransactionRuntimeEvidence(
           "Verification on the same mutation receiver occurs only after the dependent action.",
       });
       records.push({
-        predicate: "script-late-verification-candidate",
+        predicate: "script-dependent-before-verification",
         state: "present",
         confidence: "derived",
         scope,
