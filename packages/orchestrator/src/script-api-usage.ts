@@ -10,9 +10,21 @@ import {
   findScriptEnumMemberRule,
   isKnownScriptEnum,
 } from "../../compatibility/src/script-enum-matrix.js";
+import {
+  findScriptSignatureRule,
+  type ScriptArgumentKind,
+} from "../../compatibility/src/script-signature-matrix.js";
 
 export type ScriptApiUsageKind = "event" | "method" | "property" | "enum";
 export type ScriptApiKnowledgeState = "known" | "unclassified";
+
+export interface ScriptCallShapeUsage {
+  argumentCount: number;
+  argumentKinds: ScriptArgumentKind[];
+  hasSpreadArgument: boolean;
+  occurrences: number;
+  files: string[];
+}
 
 export interface ScriptApiUsageSymbol {
   kind: ScriptApiUsageKind;
@@ -27,6 +39,7 @@ export interface ScriptApiUsageSymbol {
   directOccurrences?: number;
   boundedOccurrences?: number;
   receiverTypes?: string[];
+  callShapes?: ScriptCallShapeUsage[];
 }
 
 export interface ScriptApiUsageInventory {
@@ -72,6 +85,13 @@ interface MutableUsage {
   directOccurrences: number;
   boundedOccurrences: number;
   receiverTypes: Set<string>;
+  callShapes: Map<string, {
+    argumentCount: number;
+    argumentKinds: ScriptArgumentKind[];
+    hasSpreadArgument: boolean;
+    occurrences: number;
+    files: Set<string>;
+  }>;
 }
 
 function usageKey(kind: ScriptApiUsageKind, symbol: string): string {
@@ -87,6 +107,106 @@ function compareUsage(
     left.kind.localeCompare(right.kind) ||
     left.symbol.localeCompare(right.symbol)
   );
+}
+
+function callShapeKey(input: {
+  argumentCount: number;
+  argumentKinds: readonly ScriptArgumentKind[];
+  hasSpreadArgument: boolean;
+}): string {
+  return [
+    input.argumentCount,
+    input.hasSpreadArgument ? "spread" : "fixed",
+    input.argumentKinds.join(","),
+  ].join("|");
+}
+
+function recordCallShape(
+  item: MutableUsage,
+  file: string,
+  input: {
+    argumentCount: number;
+    argumentKinds: readonly ScriptArgumentKind[];
+    hasSpreadArgument: boolean;
+  },
+): void {
+  const key = callShapeKey(input);
+  const current = item.callShapes.get(key);
+  if (current) {
+    current.occurrences += 1;
+    current.files.add(file);
+    return;
+  }
+
+  item.callShapes.set(key, {
+    argumentCount: input.argumentCount,
+    argumentKinds: [...input.argumentKinds],
+    hasSpreadArgument: input.hasSpreadArgument,
+    occurrences: 1,
+    files: new Set([file]),
+  });
+}
+
+function materializeCallShapes(
+  item: MutableUsage,
+): ScriptCallShapeUsage[] {
+  return [...item.callShapes.values()]
+    .map((shape) => ({
+      argumentCount: shape.argumentCount,
+      argumentKinds: shape.argumentKinds,
+      hasSpreadArgument: shape.hasSpreadArgument,
+      occurrences: shape.occurrences,
+      files: [...shape.files].sort(),
+    }))
+    .sort((left, right) =>
+      right.occurrences - left.occurrences ||
+      left.argumentCount - right.argumentCount ||
+      left.argumentKinds.join(",").localeCompare(right.argumentKinds.join(","))
+    );
+}
+
+function mergeCallShapes(
+  left: readonly ScriptCallShapeUsage[],
+  right: readonly ScriptCallShapeUsage[],
+): ScriptCallShapeUsage[] {
+  const merged = new Map<string, {
+    argumentCount: number;
+    argumentKinds: ScriptArgumentKind[];
+    hasSpreadArgument: boolean;
+    occurrences: number;
+    files: Set<string>;
+  }>();
+
+  for (const shape of [...left, ...right]) {
+    const key = callShapeKey(shape);
+    const current = merged.get(key);
+    if (current) {
+      current.occurrences += shape.occurrences;
+      for (const file of shape.files) current.files.add(file);
+      continue;
+    }
+    merged.set(key, {
+      argumentCount: shape.argumentCount,
+      argumentKinds: [...shape.argumentKinds],
+      hasSpreadArgument: shape.hasSpreadArgument,
+      occurrences: shape.occurrences,
+      files: new Set(shape.files),
+    });
+  }
+
+  return [...merged.values()]
+    .map((shape) => ({
+      argumentCount: shape.argumentCount,
+      argumentKinds: shape.argumentKinds,
+      hasSpreadArgument: shape.hasSpreadArgument,
+      occurrences: shape.occurrences,
+      files: [...shape.files].sort(),
+    }))
+    .sort((a, b) =>
+      b.occurrences - a.occurrences ||
+      a.argumentCount - b.argumentCount ||
+      a.argumentKinds.join(",").localeCompare(b.argumentKinds.join(","))
+    );
 }
 
 function materialize(item: MutableUsage): ScriptApiUsageSymbol {
@@ -105,6 +225,9 @@ function materialize(item: MutableUsage): ScriptApiUsageSymbol {
           directOccurrences: item.directOccurrences,
           boundedOccurrences: item.boundedOccurrences,
           receiverTypes: [...item.receiverTypes].sort(),
+          ...(item.kind === "method"
+            ? { callShapes: materializeCallShapes(item) }
+            : {}),
         }
       : {}),
   };
@@ -147,6 +270,7 @@ export function deriveScriptApiUsage(
       directOccurrences: 0,
       boundedOccurrences: 0,
       receiverTypes: new Set<string>(),
+      callShapes: new Map(),
     };
     bySymbol.set(key, created);
     return created;
@@ -162,11 +286,14 @@ export function deriveScriptApiUsage(
     }
 
     for (const method of script.methodCalls) {
-      const rule = findScriptMethodRule(method.symbol);
+      const methodRule = findScriptMethodRule(method.symbol);
+      const signatureRule = findScriptSignatureRule(method.symbol);
+      const rule = methodRule ?? (signatureRule ? { id: signatureRule.id } : undefined);
       const item = getOrCreate("method", method.symbol, file, rule);
       if (method.inference === "direct") item.directOccurrences += 1;
       else item.boundedOccurrences += 1;
       item.receiverTypes.add(method.receiverType);
+      recordCallShape(item, file, method);
     }
 
     for (const property of script.propertyAccesses) {
@@ -238,6 +365,12 @@ export function aggregateScriptApiUsage(
         (current.item.directOccurrences ?? 0) + (symbol.directOccurrences ?? 0);
       current.item.boundedOccurrences =
         (current.item.boundedOccurrences ?? 0) + (symbol.boundedOccurrences ?? 0);
+      if (symbol.kind === "method") {
+        current.item.callShapes = mergeCallShapes(
+          current.item.callShapes ?? [],
+          symbol.callShapes ?? [],
+        );
+      }
       if (current.item.knowledge === "unclassified" && symbol.knowledge === "known") {
         current.item.knowledge = "known";
         if (symbol.ruleId) current.item.ruleId = symbol.ruleId;

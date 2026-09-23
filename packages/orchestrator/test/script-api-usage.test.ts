@@ -114,6 +114,69 @@ describe("Script API usage inventory", () => {
     ]));
   });
 
+  it("retains method call-shape distributions and signature knowledge", () => {
+    const usage = deriveScriptApiUsage([
+      parse("signature/scripts/main.js", `
+        import { world } from "@minecraft/server";
+        const player = world.getAllPlayers()[0];
+        player.applyKnockback(0, 1, 0.5, 0.4);
+        player.applyKnockback({ x: 0, z: 1 }, 0.4);
+      `),
+    ]);
+
+    expect(usage.symbols).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "method",
+        symbol: "Entity.applyKnockback",
+        knowledge: "known",
+        callShapes: expect.arrayContaining([
+          expect.objectContaining({
+            argumentCount: 4,
+            argumentKinds: ["number", "number", "number", "number"],
+            occurrences: 1,
+          }),
+          expect.objectContaining({
+            argumentCount: 2,
+            argumentKinds: ["object", "number"],
+            occurrences: 1,
+          }),
+        ]),
+      }),
+    ]));
+  });
+
+  it("merges call-shape distributions across maps", () => {
+    const legacy = deriveScriptApiUsage([
+      parse("legacy/scripts/main.js", `
+        import { world } from "@minecraft/server";
+        const player = world.getAllPlayers()[0];
+        player.applyKnockback(0, 1, 0.5, 0.4);
+      `),
+    ]);
+    const current = deriveScriptApiUsage([
+      parse("current/scripts/main.js", `
+        import { world } from "@minecraft/server";
+        const player = world.getAllPlayers()[0];
+        player.applyKnockback({ x: 0, z: 1 }, 0.4);
+      `),
+    ]);
+
+    const portfolio = aggregateScriptApiUsage([
+      { mapId: "legacy-map", usage: legacy },
+      { mapId: "current-map", usage: current },
+    ]);
+
+    expect(portfolio.symbols.find(
+      (item) => item.symbol === "Entity.applyKnockback",
+    )).toMatchObject({
+      mapCount: 2,
+      callShapes: expect.arrayContaining([
+        expect.objectContaining({ argumentCount: 4, occurrences: 1 }),
+        expect.objectContaining({ argumentCount: 2, occurrences: 1 }),
+      ]),
+    });
+  });
+
   it("ranks portfolio promotion candidates by real map coverage before raw frequency", () => {
     const mapA = deriveScriptApiUsage([
       parse("a/scripts/main.js", `
