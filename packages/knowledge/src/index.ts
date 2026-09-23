@@ -5,3 +5,7 @@ export * from "./merge.js";
 export * from "./types.js";
 export * from "./validate.js";
 export * from "./version.js";
+
+export * from "./diagnostics.js";
+export * from "./graph.js";
+export * from "./registry.js";
