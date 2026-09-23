@@ -1162,3 +1162,186 @@ Before arena setup:
 ```
 
 The architecture is now topology-aware: it reasons about **who already owns chunk activity**, not only how to create more of it.
+
+
+---
+
+# 26. World lifecycle and registry evidence
+
+## 26.1 Activate the manager after world readiness
+
+Scripting V2 has a real startup boundary.
+
+```text
+module load / early execution
+        ↓
+system.beforeEvents.startup
+        ↓
+world finishes loading
+        ↓
+first tick
+        ↓
+world.afterEvents.worldLoad
+```
+
+Chunk setup that reads players, entities, blocks, custom dimensions, or active leases belongs on the world-ready side of that boundary.
+
+Startup may register allowed subscriptions, but it must not be treated as proof that the world state is ready.
+
+## 26.2 Custom dimensions need an even stronger bootstrap rule
+
+Custom dimension types may not be available until startup has completed.
+
+For modern Script API, the Microsoft custom-dimension pattern is directly compatible with this architecture:
+
+```text
+worldLoad
+  ↓
+resolve custom dimension
+  ↓
+await createTickingArea(...)
+  ↓
+destination chunks loaded
+  ↓
+build/validate destination
+  ↓
+teleport player
+  ↓
+remove temporary area
+```
+
+This is the preferred bootstrap for a genuinely unloaded custom dimension.
+
+## 26.3 Shutdown is not the cleanup transaction
+
+Do not design:
+
+```text
+"we will remove all temporary leases in shutdown"
+```
+
+as the only safety mechanism.
+
+A server crash, watchdog termination, or restricted shutdown context can prevent final cleanup.
+
+Use a durable lease journal updated during normal operation.
+
+Then:
+
+```text
+next worldLoad
+    ↓
+enumerate actual pack-owned leases
+    ↓
+compare to journal + generation
+    ↓
+adopt valid
+remove stale
+repair accounting
+```
+
+## 26.4 Entity residency state machine
+
+Replace:
+
+```text
+FOUND / MISSING
+```
+
+with:
+
+```text
+UNKNOWN
+   │
+   ├─ entityLoad ───────────────► RESIDENT
+   │
+   ├─ lookup found ─────────────► RESIDENT
+   │
+RESIDENT
+   │
+   ├─ entityRemove ─────────────► UNLOADED_OR_REMOVED
+   ├─ entityDie ────────────────► DEAD_CONFIRMED
+   ├─ owned explicit remove ────► EXPLICITLY_REMOVED
+   │
+UNLOADED_OR_REMOVED
+   │
+   ├─ entityLoad ───────────────► RESIDENT
+   ├─ loaded-state recovery
+   │    cannot resolve ─────────► MISSING_CANDIDATE
+   │
+MISSING_CANDIDATE
+   │
+   ├─ later entityLoad ─────────► RESIDENT
+   └─ stronger lifecycle proof ─► terminal project decision
+```
+
+`entityRemove` includes unload cases, so it cannot be interpreted as death.
+
+## 26.5 Use entityLoad as positive recovery evidence
+
+When coverage or a temporary ticking area causes chunks to return, `entityLoad` can positively confirm an entity became resident.
+
+Registry correlation should record:
+
+```ts
+interface EntityResidencyEvidence {
+  logicalKey: string;
+  entityId: string;
+  typeId: string;
+  generation: number;
+
+  source:
+    | "lookup"
+    | "entityLoad"
+    | "entitySpawn"
+    | "entityRemove"
+    | "entityDie"
+    | "explicit-remove";
+
+  tick: number;
+}
+```
+
+Events do not replace final identity validation; they strengthen it.
+
+## 26.6 Post-await stale session hazard
+
+Consider:
+
+```text
+Arena generation 21
+  ↓
+await createTickingArea()
+  ↓
+arena aborted/restarted
+  ↓
+generation becomes 22
+  ↓
+old promise resolves
+```
+
+If the continuation does not check the generation again, stale setup work can mutate the new round.
+
+Therefore every async continuation starts with:
+
+```text
+is session still current?
+does lease still belong to this session?
+is target still pending?
+has arena been cancelled?
+```
+
+Only then may it mutate state.
+
+## 26.7 Retry scheduler safety
+
+Avoid recursive `system.runTimeout(..., 0)` for polling.
+
+Minecraft documents that zero-timeout callbacks can execute again in the current tick and can create infinite callback loops.
+
+Use:
+
+- `system.run`, or
+- explicit >=1 tick delay,
+
+plus bounded attempts and watchdog-aware budgets.

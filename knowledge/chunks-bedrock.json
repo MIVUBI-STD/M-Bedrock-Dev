@@ -152,6 +152,46 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-world-after-events",
+      "title": "WorldAfterEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-entity-load-event",
+      "title": "EntityLoadAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityloadafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-entity-remove-event",
+      "title": "EntityRemoveAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityremoveafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-scripting-v2-overview",
+      "title": "Scripting V2 Overview",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/v2-overview?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-chunks-dimension-types",
+      "title": "DimensionTypes Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/dimensiontypes?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -1033,6 +1073,136 @@
       "riskSurfaces": [
         "resource-limit",
         "performance"
+      ]
+    },
+    {
+      "id": "chunks.entity-load-event-evidence",
+      "domain": "chunks",
+      "subject": "world.afterEvents.entityLoad",
+      "statement": "The entityLoad after-event fires when an entity loads into the world, including when an unloaded chunk is reloaded or an entity changes dimensions.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-world-after-events",
+        "ms-chunks-entity-load-event"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "entity-load-evidence"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunks.entity-remove-event-ambiguous-cause",
+      "domain": "chunks",
+      "subject": "world.afterEvents.entityRemove",
+      "statement": "The entityRemove after-event fires when an entity is removed from the world and can represent unloading or removal after death; it exposes removedEntityId and typeId but does not itself prove a permanent-loss cause.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-world-after-events",
+        "ms-chunks-entity-remove-event"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "entity-remove-evidence"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "chunk-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Treat entityRemove as a residency transition unless a stronger death/explicit-remove cause is also observed."
+      ]
+    },
+    {
+      "id": "chunks.world-load-default-execution-boundary",
+      "domain": "chunks",
+      "subject": "world.afterEvents.worldLoad",
+      "statement": "Scripting V2 runs startup in early execution and worldLoad after the world has finished loading and the first game tick; world/entity/block state work that is unavailable during startup belongs after the world-load boundary.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-scripting-v2-overview",
+        "ms-chunks-world-after-events"
+      ],
+      "capabilityTags": [
+        "script-lifecycle",
+        "world-ready"
+      ],
+      "riskSurfaces": [
+        "early-execution",
+        "load-order"
+      ]
+    },
+    {
+      "id": "chunks.custom-dimensions-after-startup",
+      "domain": "chunks",
+      "subject": "custom-dimension-availability",
+      "statement": "Custom dimension types are not available from DimensionTypes until after the system startup event has completed, so custom-dimension setup cannot assume full availability during early startup.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-dimension-types"
+      ],
+      "capabilityTags": [
+        "custom-dimension",
+        "world-ready"
+      ],
+      "riskSurfaces": [
+        "early-execution",
+        "load-order"
+      ]
+    },
+    {
+      "id": "chunks.shutdown-restricted-cleanup",
+      "domain": "chunks",
+      "subject": "system.beforeEvents.shutdown",
+      "statement": "SystemBeforeEvents callbacks run before shutdown with restricted execution semantics, so gameplay-state mutation cannot be relied on as a final ticking-area cleanup mechanism at shutdown.",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-chunks-execution-privilege",
+        "ms-chunks-world-after-events"
+      ],
+      "capabilityTags": [
+        "shutdown",
+        "lease-reconciliation"
+      ],
+      "riskSurfaces": [
+        "script-execution-privilege",
+        "resource-limit"
+      ],
+      "diagnosticHints": [
+        "Persist lease state continuously and reconcile on the next world-load cycle rather than relying on shutdown mutation."
       ]
     }
   ],

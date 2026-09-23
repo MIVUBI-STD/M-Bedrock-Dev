@@ -1264,6 +1264,211 @@
         "entity-ai",
         "chunk-lifecycle"
       ]
+    },
+    {
+      "id": "chunk-policy.registry-residency-state-machine",
+      "domain": "chunks",
+      "subject": "persistent-entity-residency-state",
+      "statement": "Track critical entities with a residency state machine rather than a found/missing boolean: RESIDENT, UNLOADED_OR_REMOVED, DEAD_CONFIRMED, EXPLICITLY_REMOVED, MISSING_CANDIDATE, and UNKNOWN. entityRemove alone transitions away from RESIDENT but does not prove death.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "entity-load-evidence",
+        "entity-remove-evidence"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "state-identity"
+      ]
+    },
+    {
+      "id": "chunk-policy.registry-event-correlation",
+      "domain": "chunks",
+      "subject": "entity-registry-event-correlation",
+      "statement": "Subscribe to entityLoad/entityRemove/entityDie/entitySpawn where supported and correlate by logical key, entity id, type, tags, dimension, and setup generation. Event evidence augments polling; no single event should overwrite stronger lifecycle evidence without reconciliation.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "event-correlation"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle",
+        "event-order"
+      ]
+    },
+    {
+      "id": "chunk-policy.worldload-manager-activation",
+      "domain": "chunks",
+      "subject": "chunk-manager-initialization",
+      "statement": "Register subscriptions during startup when allowed, but activate world-state reconciliation, custom-dimension resolution, orphan-lease cleanup, and arena chunk setup only after the worldLoad/default-execution boundary.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "world-ready",
+        "lease-reconciliation",
+        "custom-dimension"
+      ],
+      "riskSurfaces": [
+        "early-execution",
+        "load-order"
+      ]
+    },
+    {
+      "id": "chunk-policy.continuous-lease-journal",
+      "domain": "chunks",
+      "subject": "lease-journal-durability",
+      "statement": "Persist recovery lease intent/state when leases are created, adopted, renewed, and removed; do not wait for shutdown to write the only copy of lease ownership because shutdown cleanup may run under restricted execution or be skipped by crashes/watchdog termination.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "lease-reconciliation",
+        "durable-journal"
+      ],
+      "riskSurfaces": [
+        "script-reload",
+        "shutdown",
+        "resource-limit"
+      ]
+    },
+    {
+      "id": "chunk-policy.post-await-generation-check",
+      "domain": "chunks",
+      "subject": "async-generation-safety",
+      "statement": "After every await or deferred system callback in setup/recovery, revalidate arena/session generation, lease ownership, target criticality, and cancellation state before mutating gameplay. Promise completion does not guarantee the originating session is still current.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "async-race",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "multiplayer-concurrency",
+        "event-order",
+        "gameplay-state"
+      ]
+    },
+    {
+      "id": "chunk-policy.no-zero-timeout-retry-loop",
+      "domain": "chunks",
+      "subject": "recovery-scheduler",
+      "statement": "Do not implement chunk-recovery polling or retry loops with recursive system.runTimeout(..., 0). Use system.run or bounded >=1-tick scheduling with retry budgets so the scheduler cannot create same-tick runaway work.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-recovery",
+        "scheduler-safety"
+      ],
+      "riskSurfaces": [
+        "watchdog",
+        "performance",
+        "event-order"
+      ]
+    },
+    {
+      "id": "chunk-policy.custom-dimension-bootstrap",
+      "domain": "chunks",
+      "subject": "custom-dimension-coverage-bootstrap",
+      "statement": "Custom-dimension coverage must resolve the dimension only after it is registered/world-ready. For an unloaded arrival area, the preferred modern bootstrap is a temporary Script TickingAreaManager lease that resolves before player teleport, matching Microsoft's custom-dimension loading pattern.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "2.6.0"
+        }
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "custom-dimension",
+        "teleport-bootstrap",
+        "script-tickingarea-manager"
+      ],
+      "riskSurfaces": [
+        "load-order",
+        "chunk-lifecycle"
+      ]
+    },
+    {
+      "id": "chunk-policy.entity-remove-not-loss",
+      "domain": "chunks",
+      "subject": "entity-remove-residency",
+      "statement": "An entityRemove event or getEntity(undefined) must never directly set a critical registry entry to permanently lost. Permanent loss requires stronger evidence such as confirmed death/explicit removal or bounded loaded-state recovery that still cannot resolve the logical identity.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-chunk-runtime-policy-v1"
+      ],
+      "capabilityTags": [
+        "entity-registry",
+        "entity-loss-proof"
+      ],
+      "riskSurfaces": [
+        "entity-lifecycle"
+      ],
+      "diagnosticHints": [
+        "ENTITY_RESIDENCY_UNKNOWN",
+        "ENTITY_MISSING_CANDIDATE"
+      ]
     }
   ],
   "relations": [
