@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-interactive-block-policy-v1",
+      "title": "MIVUBI Interactive Block and Container State Policy v1",
+      "url": "project://knowledge/interactive-block-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "block-policy.object-contract",
+      "domain": "interactive-blocks",
+      "subject": "interactive world object",
+      "statement": "Every gameplay-critical block object should declare an object-state contract covering dimension/location, block type, required permutation states, relevant components, inventory/container expectations, automation coupling, and owning arenaGeneration.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "object-contract",
+        "block-state"
+      ],
+      "riskSurfaces": [
+        "state-drift",
+        "wrong-object"
+      ]
+    },
+    {
+      "id": "block-policy.type-not-enough",
+      "domain": "interactive-blocks",
+      "subject": "critical block verification",
+      "statement": "Do not treat matching block type as sufficient proof. Verify required permutation state such as open/closed, facing, upper/lower half, powered state, or project-defined state when gameplay depends on it.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "permutation",
+        "verification"
+      ],
+      "riskSurfaces": [
+        "type-correct-state-wrong"
+      ]
+    },
+    {
+      "id": "block-policy.container-baseline",
+      "domain": "interactive-blocks",
+      "subject": "container baseline",
+      "statement": "Arena-owned containers must declare expected baseline contents and reset policy. Structure restore, script fill, loot insertion, player access, and hopper/dispenser automation must converge to that baseline before arena reuse.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "container",
+        "baseline"
+      ],
+      "riskSurfaces": [
+        "duplicate-container-loot",
+        "stale-inventory"
+      ]
+    },
+    {
+      "id": "block-policy.container-access-lease",
+      "domain": "interactive-blocks",
+      "subject": "container interaction",
+      "statement": "When container content is transaction-critical, opening/interaction should be scoped to current player/session/arena ownership and concurrent writers must arbitrate access or reconcile on close; cleanup must not overwrite an active valid transaction blindly.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "container",
+        "concurrency"
+      ],
+      "riskSurfaces": [
+        "double-withdraw",
+        "cleanup-race"
+      ]
+    },
+    {
+      "id": "block-policy.route-state-integrated",
+      "domain": "interactive-blocks",
+      "subject": "door gate route state",
+      "statement": "Doors, gates, trapdoors, bridges, and similar route objects must feed their actual block permutation state into navigation/route verification. Visual presence of the expected block type is not enough to mark a route open.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "navigation",
+        "route-state"
+      ],
+      "riskSurfaces": [
+        "ai-stuck",
+        "blocked-player-route"
+      ]
+    },
+    {
+      "id": "block-policy.automation-state-coupled",
+      "domain": "interactive-blocks",
+      "subject": "redstone/interactive block coupling",
+      "statement": "If an interactive object participates in redstone or command automation, changes to its permutation/component state invalidate affected automation-graph assumptions and require re-verification.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "automation",
+        "block-state"
+      ],
+      "riskSurfaces": [
+        "wiring-drift",
+        "hidden-trigger-state"
+      ]
+    },
+    {
+      "id": "block-policy.structure-restore-rerender",
+      "domain": "interactive-blocks",
+      "subject": "structure restored object",
+      "statement": "After structure restoration, re-read interactive block permutation/component/container state from the world instead of assuming the saved structure restored the exact logical state required by the current arena generation.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "structure",
+        "verification"
+      ],
+      "riskSurfaces": [
+        "stale-container",
+        "wrong-door-state",
+        "restored-command-state"
+      ]
+    },
+    {
+      "id": "block-policy.block-handle-reacquire",
+      "domain": "interactive-blocks",
+      "subject": "block reference lifetime",
+      "statement": "After world mutation, chunk unload/reload, or deferred callbacks, reacquire critical Block and container/component references before mutation or verification rather than relying on stale handles.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "handle-validity",
+        "reacquire"
+      ],
+      "riskSurfaces": [
+        "stale-block-handle",
+        "invalid-container"
+      ]
+    },
+    {
+      "id": "block-policy.container-reward-idempotency",
+      "domain": "interactive-blocks",
+      "subject": "container reward contents",
+      "statement": "If a chest/barrel/container holds gameplay rewards, its fill/claim/reset path must share rewardOperationId or equivalent idempotency with loot/economy logic so structure restore or reset cannot duplicate claimable value.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "loot-economy",
+        "container"
+      ],
+      "riskSurfaces": [
+        "duplicate-reward",
+        "second-run-loot"
+      ]
+    },
+    {
+      "id": "block-policy.reset-baseline-verify",
+      "domain": "interactive-blocks",
+      "subject": "arena reset interactive objects",
+      "statement": "Arena reset verification should include expected block type, permutation, component state, container contents, open/powered state, and automation readiness for all declared critical interactive objects.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "baseline"
+      ],
+      "riskSurfaces": [
+        "dirty-reuse",
+        "hidden-block-state"
+      ]
+    },
+    {
+      "id": "block-policy.unloaded-object-fail-closed",
+      "domain": "interactive-blocks",
+      "subject": "critical object unavailable",
+      "statement": "If a critical interactive object cannot be read because its chunk is unloaded or location invalid, treat its state as unknown and fail closed or load/retry within bounded policy. Do not assume its last known state remains current.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ],
+      "capabilityTags": [
+        "chunk-readiness",
+        "unknown-state"
+      ],
+      "riskSurfaces": [
+        "false-route-open",
+        "stale-container-state"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "block-policy.relation-object-contract-validates-use",
+      "domain": "interactive-blocks",
+      "subject": "verified-interactive-object-state",
+      "kind": "gates",
+      "object": "gameplay-use-or-route-activation",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ]
+    },
+    {
+      "id": "block-policy.relation-reset-restores-object-baseline",
+      "domain": "interactive-blocks",
+      "subject": "arena-cleanup",
+      "kind": "restores",
+      "object": "interactive-object-baseline",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ]
+    },
+    {
+      "id": "block-policy.relation-permutation-change-invalidates-automation",
+      "domain": "interactive-blocks",
+      "subject": "automation-coupled-block-state-change",
+      "kind": "deactivates",
+      "object": "cached-automation-readiness",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-interactive-block-policy-v1"
+      ]
+    }
+  ]
+}
