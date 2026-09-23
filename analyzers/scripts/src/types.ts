@@ -95,6 +95,14 @@ export interface ScriptPropertyAccess {
   source: SourceRef;
 }
 
+export interface ScriptBlockMatchGuard {
+  receiverHint: string;
+  receiverType: "Block" | "BlockPermutation";
+  conditionSource: SourceRef;
+  guardedSource: SourceRef;
+  executionRegion: string;
+}
+
 export interface ScriptLocalFunctionCall {
   callerRegion: string;
   targetRegion: string;
@@ -187,6 +195,7 @@ export interface ParsedScriptFile {
   restrictedMutations: RestrictedExecutionMutation[];
   deferredCallbacks: ScriptDeferredCallback[];
   localFunctionCalls: ScriptLocalFunctionCall[];
+  blockMatchGuards: ScriptBlockMatchGuard[];
   methodCalls: ScriptMethodCall[];
   propertyAccesses: ScriptPropertyAccess[];
   propertyWrites: ScriptPropertyWrite[];
