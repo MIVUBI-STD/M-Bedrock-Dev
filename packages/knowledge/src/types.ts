@@ -35,6 +35,7 @@ export type KnowledgeDomain =
   | "world-mutation"
   | "persistence"
   | "performance"
+  | "interaction"
   | "education";
 
 export type KnowledgeRelationKind =
