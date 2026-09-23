@@ -106,6 +106,9 @@ function typeFromAnnotation(
       name === "Scoreboard" ||
       name === "ScoreboardObjective" ||
       name === "PlayerInputPermissions" ||
+      name === "Block" ||
+      name === "ItemStack" ||
+      name === "BlockPermutation" ||
       name === "EntityFrictionModifierComponent" ||
       name === "EntityMarkVariantComponent" ||
       name === "EntityPushThroughComponent" ||
@@ -123,6 +126,7 @@ function propertyType(
   property: string,
 ): ReceiverValueType | undefined {
   if (receiver === "World" && property === "scoreboard") return "Scoreboard";
+  if (receiver === "Block" && property === "permutation") return "BlockPermutation";
   if (receiver === "Player" && property === "inputPermissions") {
     return "PlayerInputPermissions";
   }

@@ -31,6 +31,24 @@ describe("Script API return-contract matrix", () => {
     }, "1.18.0", "stable").state).toBe("risk");
   });
 
+  it("tracks the other 1.18 optional return transitions", () => {
+    for (const symbol of [
+      "Block.getComponent",
+      "ItemStack.getComponent",
+      "BlockPermutation.getState",
+    ]) {
+      expect(checkScriptReturnContract({
+        symbol,
+        resultUse: "dereferenced",
+      }, "1.17.0", "stable").state).toBe("safe");
+
+      expect(checkScriptReturnContract({
+        symbol,
+        resultUse: "dereferenced",
+      }, "1.18.0", "stable").state).toBe("risk");
+    }
+  });
+
   it("keeps assigned results unknown instead of guessing downstream guards", () => {
     expect(checkScriptReturnContract({
       symbol: "Entity.getComponent",

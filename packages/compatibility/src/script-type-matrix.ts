@@ -46,6 +46,18 @@ function removed(
 }
 
 export const SCRIPT_TYPE_SYMBOL_RULES: readonly ScriptTypeSymbolRule[] = [
+  deprecatedRemoved(
+    "script-type.camera-default-options",
+    "CameraDefaultOptions",
+    ["ms-camera-default-options-1xx", "ms-server-changelog"],
+    "Camera.setDefaultCamera",
+  ),
+  deprecatedRemoved(
+    "script-type.camera-ease-options",
+    "CameraEaseOptions",
+    ["ms-camera-ease-options-1xx", "ms-server-changelog"],
+    "EaseOptions",
+  ),
   deprecatedRemoved("script-type.world-init-before-event", "WorldInitializeBeforeEvent", ["ms-world-init-before-1xx", "ms-server-changelog"], "StartupEvent"),
   deprecatedRemoved("script-type.world-init-after-event", "WorldInitializeAfterEvent", ["ms-world-init-after-1xx", "ms-server-changelog"], "WorldLoadAfterEvent"),
   deprecatedRemoved("script-type.world-init-before-signal", "WorldInitializeBeforeEventSignal", ["ms-world-init-before-signal-1xx", "ms-server-changelog"], "StartupBeforeEventSignal"),

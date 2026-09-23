@@ -35,6 +35,42 @@ describe("script imported type lifecycle diagnostics", () => {
     ]);
   });
 
+  it("flags legacy camera option types with documented replacements", () => {
+    const script = parseScriptFile(
+      "scripts/main",
+      `
+        import type { CameraDefaultOptions, CameraEaseOptions } from "@minecraft/server";
+      `,
+      source,
+    );
+
+    const findings = scriptImportedTypeLifecycleDiagnostics({
+      scriptModules: [{
+        moduleName: "@minecraft/server",
+        version: "2.0.0",
+        track: "stable",
+      }],
+      educationMetadata: false,
+    }, [script]);
+
+    expect(findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: "SCRIPT_API_REMOVED_SYMBOL",
+        data: expect.objectContaining({
+          symbol: "CameraDefaultOptions",
+          replacement: "Camera.setDefaultCamera",
+        }),
+      }),
+      expect.objectContaining({
+        code: "SCRIPT_API_REMOVED_SYMBOL",
+        data: expect.objectContaining({
+          symbol: "CameraEaseOptions",
+          replacement: "EaseOptions",
+        }),
+      }),
+    ]));
+  });
+
   it("flags removed namespace-qualified types on 2.x", () => {
     const script = parseScriptFile(
       "scripts/main",

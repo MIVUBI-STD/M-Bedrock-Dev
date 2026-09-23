@@ -30,6 +30,39 @@ export interface ScriptReturnContractRule {
 
 export const SCRIPT_RETURN_CONTRACT_RULES: readonly ScriptReturnContractRule[] = [
   {
+    id: "script-return.block-get-component-1.18",
+    moduleName: "@minecraft/server",
+    symbol: "Block.getComponent",
+    transitionIn: "1.18.0",
+    before: "required",
+    after: "optional",
+    sourceIds: ["ms-server-changelog", "ms-block-current"],
+    summary:
+      "Block.getComponent changed from BlockComponent to BlockComponentReturnType<T> | undefined in @minecraft/server 1.18.0.",
+  },
+  {
+    id: "script-return.item-stack-get-component-1.18",
+    moduleName: "@minecraft/server",
+    symbol: "ItemStack.getComponent",
+    transitionIn: "1.18.0",
+    before: "required",
+    after: "optional",
+    sourceIds: ["ms-server-changelog", "ms-item-stack-current"],
+    summary:
+      "ItemStack.getComponent changed from ItemComponent to ItemComponentReturnType<T> | undefined in @minecraft/server 1.18.0.",
+  },
+  {
+    id: "script-return.block-permutation-get-state-1.18",
+    moduleName: "@minecraft/server",
+    symbol: "BlockPermutation.getState",
+    transitionIn: "1.18.0",
+    before: "required",
+    after: "optional",
+    sourceIds: ["ms-server-changelog", "ms-block-permutation-current"],
+    summary:
+      "BlockPermutation.getState changed from boolean | number | string to BlockStateSuperset[T] | undefined in @minecraft/server 1.18.0.",
+  },
+  {
     id: "script-return.entity-get-component-1.18",
     moduleName: "@minecraft/server",
     symbol: "Entity.getComponent",

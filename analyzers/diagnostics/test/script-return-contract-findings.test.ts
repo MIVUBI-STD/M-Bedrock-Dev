@@ -41,6 +41,43 @@ describe("script return-contract diagnostics", () => {
     ]);
   });
 
+  it("supports explicitly typed Block, ItemStack, and BlockPermutation receivers", () => {
+    const script = parseScriptFile(
+      "scripts/main",
+      `
+        import type { Block, ItemStack, BlockPermutation } from "@minecraft/server";
+
+        function inspect(block: Block, item: ItemStack, permutation: BlockPermutation) {
+          block.getComponent("minecraft:inventory").foo;
+          item.getComponent("minecraft:durability").foo;
+          permutation.getState("minecraft:cardinal_direction").toString();
+        }
+      `,
+      source,
+    );
+
+    const findings = scriptReturnContractDiagnostics({
+      scriptModules: [{
+        moduleName: "@minecraft/server",
+        version: "1.18.0",
+        track: "stable",
+      }],
+      educationMetadata: false,
+    }, [script]);
+
+    expect(findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        data: expect.objectContaining({ symbol: "Block.getComponent" }),
+      }),
+      expect.objectContaining({
+        data: expect.objectContaining({ symbol: "ItemStack.getComponent" }),
+      }),
+      expect.objectContaining({
+        data: expect.objectContaining({ symbol: "BlockPermutation.getState" }),
+      }),
+    ]));
+  });
+
   it("does not flag optional chaining", () => {
     const script = parseScriptFile(
       "scripts/main",
