@@ -20,14 +20,25 @@ function normalizedPayload(effect: ResolvedEffect) {
       block: effect.kind === "fill" ? effect.block : undefined,
     };
   }
-  if (effect.kind === "setblock") return { kind: effect.kind, block: effect.block };
+  if (effect.kind === "setblock") {
+    return { kind: effect.kind, block: effect.block };
+  }
+  if (effect.kind === "entity-spawn") {
+    return {
+      kind: effect.kind,
+      entityIdentifier: effect.entityIdentifier,
+    };
+  }
   return { kind: effect.kind, target: effect.target };
 }
 
 export function effectSignature(effect: ResolvedEffect): EffectSignature {
   const anchor =
-    effect.kind === "fill" || effect.kind === "clone" ? effect.from :
-    effect.kind === "setblock" ? effect.position : effect.destination;
+    effect.kind === "fill" || effect.kind === "clone"
+      ? effect.from
+      : effect.kind === "setblock" || effect.kind === "entity-spawn"
+        ? effect.position
+        : effect.destination;
 
   const shapeHash = createHash("sha256")
     .update(JSON.stringify(normalizedPayload(effect)))
