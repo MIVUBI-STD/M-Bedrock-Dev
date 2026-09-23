@@ -26,23 +26,27 @@ function observed(
   };
 }
 
+function isEntityLike(call: ScriptMethodCall): boolean {
+  return call.receiverType === "Entity" || call.receiverType === "Player";
+}
+
 function methodEvidence(call: ScriptMethodCall): RuntimeEvidenceRecord[] {
   const records: RuntimeEvidenceRecord[] = [
     observed("script-api-call", call.source, call.symbol),
     observed("script-call:" + call.symbol, call.source),
   ];
 
-  if (call.receiverType === "Entity" && call.method === "teleport") {
+  if (isEntityLike(call) && call.method === "teleport") {
     records.push(observed("teleport-apply-request", call.source, call.symbol));
     records.push(observed("teleport-apply", call.source, call.symbol));
   }
-  if (call.receiverType === "Entity" && call.method === "applyKnockback") {
+  if (isEntityLike(call) && call.method === "applyKnockback") {
     records.push(observed("gameplay-knockback-request", call.source, call.symbol));
   }
-  if (call.receiverType === "Entity" && call.method === "applyImpulse") {
+  if (isEntityLike(call) && call.method === "applyImpulse") {
     records.push(observed("gameplay-impulse-request", call.source, call.symbol));
   }
-  if (call.receiverType === "Entity" && call.method === "clearVelocity") {
+  if (isEntityLike(call) && call.method === "clearVelocity") {
     records.push(observed("velocity-normalization", call.source, call.symbol));
   }
   if (call.receiverType === "Block" && (call.method === "setPermutation" || call.method === "setType")) {
