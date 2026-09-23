@@ -25,6 +25,16 @@ describe("Education capability profile", () => {
     expect(profile.eduLevel).toBe(1);
   });
 
+  it("preserves unknown edition without assuming Bedrock", () => {
+    const profile = deriveEducationProfile({
+      edition: "unknown",
+    });
+
+    expect(profile.edition).toBe("unknown");
+    expect(profile.educationFeatures).toBe("unknown");
+    expect(requireEducationFeatures(profile).supported).toBe("unknown");
+  });
+
   it("does not treat manifest education metadata as proof that world features are enabled", () => {
     const profile = deriveEducationProfile({
       edition: "bedrock",
