@@ -8,3 +8,5 @@ export * from "./tokenize.js";
 export * from "./schedule-semantics.js";
 
 export * from "./runtime-evidence.js";
+
+export * from "./verification-semantics.js";
