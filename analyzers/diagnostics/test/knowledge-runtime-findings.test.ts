@@ -44,7 +44,48 @@ describe("knowledge runtime diagnostics", () => {
           scope: { arenaId: "arena-1", arenaGeneration: 3 },
         }],
       },
+      it("honors critical severity only for explicit violations", () => {
+    const criticalCatalog: KnowledgeCatalog = {
+      ...catalog,
+      relations: [{
+        ...catalog.relations![0]!,
+        diagnosticSeverity: "critical",
+      }],
+    };
+
+    const violation = knowledgeRuntimeDiagnostics({
+      catalog: criticalCatalog,
+      profile: { edition: "bedrock" },
+      snapshot: {
+        schemaVersion: 1,
+        records: [{
+          predicate: "committed",
+          state: "present",
+          confidence: "observed",
+        }, {
+          predicate: "verified",
+          state: "absent",
+          confidence: "observed",
+        }],
+      },
     });
+    expect(violation[0]?.severity).toBe("critical");
+
+    const unknown = knowledgeRuntimeDiagnostics({
+      catalog: criticalCatalog,
+      profile: { edition: "bedrock" },
+      snapshot: {
+        schemaVersion: 1,
+        records: [{
+          predicate: "committed",
+          state: "present",
+          confidence: "observed",
+        }],
+      },
+    });
+    expect(unknown[0]?.severity).toBe("info");
+  });
+});
 
     expect(findings).toHaveLength(1);
     expect(findings[0]?.code).toBe("KNOWLEDGE_RELATION_VIOLATION");
