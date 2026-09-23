@@ -18,6 +18,7 @@ const classifications = stringRegistry("KNOWLEDGE_CLASSIFICATIONS");
 const authorities = stringRegistry("KNOWLEDGE_AUTHORITIES");
 const confidences = stringRegistry("KNOWLEDGE_CONFIDENCES");
 const editions = stringRegistry("KNOWLEDGE_EDITIONS");
+const diagnosticSeverities = stringRegistry("KNOWLEDGE_DIAGNOSTIC_SEVERITIES");
 
 const directory = "knowledge";
 const files = readdirSync(directory)
@@ -163,6 +164,14 @@ for (const path of files) {
     ) {
       throw new Error(
         `${path}: relation ${relation.id} has unknown classification ${relation.classification}`,
+      );
+    }
+    if (
+      relation.diagnosticSeverity !== undefined &&
+      !diagnosticSeverities.has(relation.diagnosticSeverity)
+    ) {
+      throw new Error(
+        `${path}: relation ${relation.id} has unknown diagnosticSeverity ${relation.diagnosticSeverity}`,
       );
     }
     if (!relation.subject || !relation.object) {
