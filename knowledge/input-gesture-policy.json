@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-input-gesture-policy-v1",
+      "title": "MIVUBI Input Gesture and Item Use Lifecycle Policy v1",
+      "url": "project://knowledge/input-gesture-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "input-policy.gesture-state-machine",
+      "domain": "input-gesture",
+      "subject": "input gesture",
+      "statement": "Model gameplay input as a gesture state machine such as IDLE -> PRESSED/STARTED -> HELD/CHARGING -> RELEASED/COMPLETED or CANCELLED, rather than interpreting each event as an isolated action.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "gesture",
+        "state-machine"
+      ],
+      "riskSurfaces": [
+        "double-trigger",
+        "phase-confusion"
+      ]
+    },
+    {
+      "id": "input-policy.gesture-ownership",
+      "domain": "input-gesture",
+      "subject": "gesture ownership",
+      "statement": "Gameplay gestures should capture playerKey, connectionGeneration, arenaGeneration, life/participation generation where relevant, gestureGeneration, item identity/signature, and purpose. Stop/release events only complete the current matching gesture.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "generation-token",
+        "gesture"
+      ],
+      "riskSurfaces": [
+        "stale-release",
+        "cross-round-input"
+      ]
+    },
+    {
+      "id": "input-policy.hold-not-single-press",
+      "domain": "input-gesture",
+      "subject": "held input",
+      "statement": "Sneak, use, interact, charge, and other held states must not be treated as one-time button presses without explicit edge detection/debounce. State persistence and repeat events are separate from initial activation.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "hold",
+        "edge-detection"
+      ],
+      "riskSurfaces": [
+        "repeat-action",
+        "self-revive-spam"
+      ]
+    },
+    {
+      "id": "input-policy.release-matches-start",
+      "domain": "input-gesture",
+      "subject": "release/stop event",
+      "statement": "A release/stop event must match a current gesture started in the same session/generation with a compatible item/purpose. Unmatched stop events, including those caused by teleport/dimension change, are ignored or treated as cancellation.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "release",
+        "correlation"
+      ],
+      "riskSurfaces": [
+        "false-completion",
+        "teleport-release"
+      ]
+    },
+    {
+      "id": "input-policy.cooldown-is-authoritative-check",
+      "domain": "input-gesture",
+      "subject": "cooldown eligibility",
+      "statement": "If cooldown is part of gameplay eligibility, query/track the actual cooldown category state and bind it to the action contract. Do not rely only on UI animation or a separate script timer that can drift.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "cooldown",
+        "authority"
+      ],
+      "riskSurfaces": [
+        "visual-cooldown-only",
+        "timer-drift"
+      ]
+    },
+    {
+      "id": "input-policy.cooldown-category-audit",
+      "domain": "input-gesture",
+      "subject": "shared cooldown category",
+      "statement": "Audit items sharing cooldownCategory because using one item may suppress another. Shared categories must be intentional and documented when multiple kit/tools use the same category.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "cooldown-category",
+        "inventory"
+      ],
+      "riskSurfaces": [
+        "cross-item-cooldown",
+        "kit-conflict"
+      ]
+    },
+    {
+      "id": "input-policy.before-event-cancel-only",
+      "domain": "input-gesture",
+      "subject": "before-use handler",
+      "statement": "Use before-event handlers for cancellation/eligibility gating and defer gameplay-state mutation to valid execution phases. Do not mix restricted before-event mutation with normal transaction commit logic.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "before-event",
+        "execution-privilege"
+      ],
+      "riskSurfaces": [
+        "restricted-mutation",
+        "partial-action"
+      ]
+    },
+    {
+      "id": "input-policy.action-idempotent",
+      "domain": "input-gesture",
+      "subject": "input-triggered gameplay action",
+      "statement": "Revive start, purchase, ready, cast, charge release, tool activation, and similar input-driven side effects must be idempotent per gestureGeneration/operation token so duplicate start/use/release events cannot commit twice.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "input"
+      ],
+      "riskSurfaces": [
+        "duplicate-sideeffect",
+        "double-cast"
+      ]
+    },
+    {
+      "id": "input-policy.reset-cancels-gestures",
+      "domain": "input-gesture",
+      "subject": "arena reset",
+      "statement": "Arena reset, disconnect, respawn, item replacement, or session generation change invalidates active gestures and charge state before new gameplay begins. Old release/stop events cannot complete a cancelled gesture.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "gesture"
+      ],
+      "riskSurfaces": [
+        "stale-release",
+        "new-round-action"
+      ]
+    },
+    {
+      "id": "input-policy.platform-neutral-contract",
+      "domain": "input-gesture",
+      "subject": "cross-device input semantics",
+      "statement": "Gameplay contracts should be based on semantic events/states rather than assumed keyboard key timing, because touch/controller/keyboard surfaces can present different physical interactions while producing equivalent Bedrock input semantics.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "cross-platform",
+        "input"
+      ],
+      "riskSurfaces": [
+        "keyboard-only-assumption",
+        "mobile-regression"
+      ]
+    },
+    {
+      "id": "input-policy.presentation-not-proof",
+      "domain": "input-gesture",
+      "subject": "gesture animation/feedback",
+      "statement": "Animation, pose, item-use visual, or client feedback is presentation evidence only and must not be the sole proof that a gameplay gesture completed successfully.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ],
+      "capabilityTags": [
+        "presentation",
+        "gesture"
+      ],
+      "riskSurfaces": [
+        "animation-used-as-authority",
+        "client-desync"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "input-policy.relation-start-gates-hold",
+      "domain": "input-gesture",
+      "subject": "validated-gesture-start",
+      "kind": "gates",
+      "object": "held-or-charging-state",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ]
+    },
+    {
+      "id": "input-policy.relation-release-gates-commit",
+      "domain": "input-gesture",
+      "subject": "matching-current-release",
+      "kind": "gates",
+      "object": "release-driven-gameplay-commit",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ]
+    },
+    {
+      "id": "input-policy.relation-reset-deactivates-gesture",
+      "domain": "input-gesture",
+      "subject": "arena-or-session-reset",
+      "kind": "deactivates",
+      "object": "old-active-gesture",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-input-gesture-policy-v1"
+      ]
+    }
+  ]
+}
