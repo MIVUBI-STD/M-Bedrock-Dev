@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-physics-entity",
+      "title": "Entity Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-physics-teleport",
+      "title": "TeleportOptions Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/teleportoptions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-physics-update-12620",
+      "title": "1.26.20 Update Notes",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.20?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-physics-update-12640",
+      "title": "1.26.40 Update Notes",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.40?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "physics.impulse-adds-velocity",
+      "domain": "physics",
+      "subject": "Entity.applyImpulse",
+      "statement": "applyImpulse adds an impulse vector to the entity's current velocity rather than replacing motion state, so previous momentum and new impulse can combine.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-physics-entity"
+      ],
+      "capabilityTags": [
+        "impulse",
+        "velocity"
+      ],
+      "riskSurfaces": [
+        "residual-momentum",
+        "unexpected-motion"
+      ]
+    },
+    {
+      "id": "physics.knockback-adds-velocity",
+      "domain": "physics",
+      "subject": "Entity.applyKnockback",
+      "statement": "applyKnockback applies knockback by changing entity velocity and can throw on invalid entities or unsupported functionality.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-physics-entity"
+      ],
+      "capabilityTags": [
+        "knockback",
+        "velocity"
+      ],
+      "riskSurfaces": [
+        "cross-arena-motion",
+        "stale-entity"
+      ]
+    },
+    {
+      "id": "physics.clearvelocity-zeroes-motion",
+      "domain": "physics",
+      "subject": "Entity.clearVelocity",
+      "statement": "clearVelocity sets current entity velocity to zero and must be invoked in an allowed execution phase on a valid entity.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-physics-entity"
+      ],
+      "capabilityTags": [
+        "velocity",
+        "reset"
+      ],
+      "riskSurfaces": [
+        "residual-motion",
+        "restricted-execution"
+      ]
+    },
+    {
+      "id": "physics.getvelocity-observable",
+      "domain": "physics",
+      "subject": "Entity.getVelocity",
+      "statement": "Entity.getVelocity exposes current velocity, enabling runtime verification of residual or expected motion rather than inferring it only from position changes.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-physics-entity"
+      ],
+      "capabilityTags": [
+        "velocity",
+        "observation"
+      ],
+      "riskSurfaces": [
+        "hidden-momentum",
+        "false-stuck"
+      ]
+    },
+    {
+      "id": "physics.teleport-keepvelocity-explicit",
+      "domain": "physics",
+      "subject": "TeleportOptions.keepVelocity",
+      "statement": "TeleportOptions explicitly controls whether velocity is retained after teleport, so teleport does not have one universal momentum semantic and callers must choose or verify intended behavior.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-physics-teleport"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "velocity"
+      ],
+      "riskSurfaces": [
+        "post-teleport-fall",
+        "residual-knockback"
+      ]
+    },
+    {
+      "id": "physics.knockback-rules-version-sensitive",
+      "domain": "physics",
+      "subject": "minecraft:apply_knockback_rules",
+      "statement": "Recent Bedrock versions introduced and then changed apply_knockback_rules semantics, including power scaling and knockback mode, making knockback behavior version-sensitive.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "minFormatVersion": "1.26.20"
+        }
+      },
+      "sourceIds": [
+        "ms-physics-update-12620",
+        "ms-physics-update-12640"
+      ],
+      "capabilityTags": [
+        "knockback",
+        "compatibility"
+      ],
+      "riskSurfaces": [
+        "update-regression",
+        "combat-physics-change"
+      ]
+    },
+    {
+      "id": "physics.pushability-version-sensitive",
+      "domain": "physics",
+      "subject": "minecraft:pushable_by_entity",
+      "statement": "Entity pushability semantics changed in format version 1.26.40 through require_collision_overlap defaults, so crowd movement and pushing behavior can differ across format versions.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "minFormatVersion": "1.26.40"
+        }
+      },
+      "sourceIds": [
+        "ms-physics-update-12640"
+      ],
+      "capabilityTags": [
+        "pushability",
+        "collision"
+      ],
+      "riskSurfaces": [
+        "crowd-regression",
+        "movement-change"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "physics.relation-clearvelocity-restores-zero-motion",
+      "domain": "physics",
+      "subject": "clearVelocity",
+      "kind": "restores",
+      "object": "zero-velocity-baseline",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-physics-entity"
+      ]
+    },
+    {
+      "id": "physics.relation-teleport-requires-velocity-policy",
+      "domain": "physics",
+      "subject": "critical-teleport",
+      "kind": "requires",
+      "object": "explicit-velocity-retention-policy",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-physics-teleport"
+      ]
+    }
+  ]
+}
