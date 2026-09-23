@@ -16,6 +16,12 @@ export function validateKnowledgeCatalog(
     }
   }
 
+  const projectPolicySources = new Set(
+    catalog.sources
+      .filter((source) => source.authority === "project-policy")
+      .map((source) => source.id),
+  );
+
   const factIds = new Set<string>();
   for (const fact of catalog.facts) {
     if (factIds.has(fact.id)) errors.push(`Duplicate knowledge fact id: ${fact.id}`);
@@ -25,6 +31,14 @@ export function validateKnowledgeCatalog(
       if (!sourceIds.has(sourceId)) {
         errors.push(`Knowledge fact ${fact.id} references missing source ${sourceId}`);
       }
+    }
+    if (
+      fact.classification === "project-policy" &&
+      !fact.sourceIds.some((sourceId) => projectPolicySources.has(sourceId))
+    ) {
+      errors.push(
+        `Project-policy knowledge fact requires project-policy provenance: ${fact.id}`,
+      );
     }
   }
 
@@ -44,6 +58,14 @@ export function validateKnowledgeCatalog(
       if (!sourceIds.has(sourceId)) {
         errors.push(`Knowledge relation ${relation.id} references missing source ${sourceId}`);
       }
+    }
+    if (
+      relation.classification === "project-policy" &&
+      !relation.sourceIds.some((sourceId) => projectPolicySources.has(sourceId))
+    ) {
+      errors.push(
+        `Project-policy knowledge relation requires project-policy provenance: ${relation.id}`,
+      );
     }
   }
 

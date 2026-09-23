@@ -41,6 +41,43 @@ describe("knowledge catalog", () => {
     expect(validateKnowledgeCatalog(catalog)).toEqual([]);
   });
 
+  it("requires explicit project-policy provenance for design rules", () => {
+    const policyCatalog: KnowledgeCatalog = {
+      schemaVersion: 1,
+      sources: [{
+        id: "policy",
+        title: "Project Policy",
+        url: "https://github.com/MIVUBI-STD/M-Bedrock-Dev/policy",
+        authority: "project-policy",
+        confidence: "designed",
+        retrievedDate: "2026-09-23",
+      }],
+      facts: [{
+        id: "coverage-policy",
+        domain: "chunks",
+        subject: "coverage-radius",
+        statement: "fixture",
+        classification: "project-policy",
+        applicability: { editions: ["bedrock"] },
+        sourceIds: ["policy"],
+        capabilityTags: ["chunk-coverage"],
+        riskSurfaces: ["chunk-lifecycle"],
+      }],
+    };
+    expect(validateKnowledgeCatalog(policyCatalog)).toEqual([]);
+
+    expect(validateKnowledgeCatalog({
+      ...policyCatalog,
+      sources: [{
+        ...policyCatalog.sources[0]!,
+        authority: "official",
+        confidence: "documented",
+      }],
+    })).toEqual([
+      "Project-policy knowledge fact requires project-policy provenance: coverage-policy",
+    ]);
+  });
+
   it("builds edition-specific effective knowledge", () => {
     expect(effectiveKnowledge(catalog, { edition: "bedrock" }).map((fact) => fact.id))
       .toEqual(["bedrock-only"]);

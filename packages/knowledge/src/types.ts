@@ -2,12 +2,14 @@ export type KnowledgeAuthority =
   | "official"
   | "official-sample"
   | "community"
-  | "observed";
+  | "observed"
+  | "project-policy";
 
 export type KnowledgeConfidence =
   | "documented"
   | "observed"
-  | "inferred";
+  | "inferred"
+  | "designed";
 
 export type KnowledgeEdition =
   | "bedrock"
@@ -62,11 +64,17 @@ export interface KnowledgeApplicability {
   versions?: VersionScope;
 }
 
+export type KnowledgeClassification =
+  | "engine-fact"
+  | "derived-rule"
+  | "project-policy";
+
 export interface KnowledgeFact {
   id: string;
   domain: KnowledgeDomain;
   subject: string;
   statement: string;
+  classification?: KnowledgeClassification;
   applicability: KnowledgeApplicability;
   sourceIds: readonly string[];
   capabilityTags: readonly string[];
@@ -80,6 +88,7 @@ export interface KnowledgeRelation {
   subject: string;
   kind: KnowledgeRelationKind;
   object: string;
+  classification?: KnowledgeClassification;
   applicability: KnowledgeApplicability;
   sourceIds: readonly string[];
   diagnosticHint?: string;
