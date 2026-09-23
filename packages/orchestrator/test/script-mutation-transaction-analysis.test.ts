@@ -103,7 +103,7 @@ describe("script mutation transaction analysis", () => {
     `);
 
     const assessments = analyzeScriptMutationTransactions([script]);
-    expect(assessments[0]?.status).toBe("late-verification-candidate");
+    expect(assessments[0]?.status).toBe("dependent-before-verification");
 
     const reasoning = analyzeKnowledgeRuntime(
       catalog,
@@ -154,7 +154,7 @@ describe("script mutation transaction analysis", () => {
     `);
 
     const assessment = analyzeScriptMutationTransactions([script])[0];
-    expect(assessment?.status).toBe("late-verification-candidate");
+    expect(assessment?.status).toBe("dependent-before-verification");
   });
 
   it("supports project-defined direct Script API handoffs", () => {
@@ -320,7 +320,7 @@ describe("script mutation transaction analysis", () => {
     `);
 
     expect(analyzeScriptMutationTransactions([script])[0]?.status).toBe(
-      "late-verification-candidate",
+      "dependent-before-verification",
     );
   });
 
