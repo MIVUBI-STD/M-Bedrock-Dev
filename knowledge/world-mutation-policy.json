@@ -370,6 +370,24 @@
         "mivubi-world-mutation-policy-v1"
       ],
       "diagnosticSeverity": "critical"
+    },
+    {
+      "id": "world-policy.relation-incomplete-order-proof-requires-more-evidence",
+      "domain": "world-mutation",
+      "subject": "transaction-order-proof-incomplete",
+      "kind": "requires",
+      "object": "additional-transaction-order-proof",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ],
+      "diagnosticSeverity": "info"
     }
   ]
 }
