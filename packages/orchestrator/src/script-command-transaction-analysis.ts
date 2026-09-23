@@ -524,13 +524,16 @@ export function analyzeScriptCommandMutationTransactions(
           operationId(applyEntry.literal.source);
 
         if (!dependent) {
+          const barriers = segment.filter((item) => item.kind !== "command");
           output.push({
             id,
             scriptId: script.identifier,
             executionRegion: root,
             applyLiteral: applyEntry.literal,
-            status: "no-dependent-action",
-            barriers: segment.filter((item) => item.kind !== "command"),
+            status: barriers.length > 0
+              ? "verification-unresolved"
+              : "no-dependent-action",
+            barriers,
           });
           continue;
         }
