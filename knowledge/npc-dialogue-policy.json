@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-npc-policy-v1",
+      "title": "MIVUBI NPC Dialogue and Command Interaction Policy v1",
+      "url": "project://knowledge/npc-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "npc-policy.session-envelope",
+      "domain": "npc-dialogue",
+      "subject": "dialogue session",
+      "statement": "Gameplay dialogue must capture player session generation, npc entity generation, arenaGeneration, dialogueGeneration, scene tag, and purpose; button/close actions revalidate this envelope before side effects.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-npc-policy-v1"
+      ],
+      "capabilityTags": [
+        "dialogue-session",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-dialogue",
+        "cross-round-action"
+      ]
+    },
+    {
+      "id": "npc-policy.commands-scope",
+      "domain": "npc-dialogue",
+      "subject": "NPC command",
+      "statement": "Commands embedded in dialogue are analyzed like any other command surface: executor/origin assumptions, selector scope, cardinality, arena ownership, and generation must be explicit for critical actions.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-npc-policy-v1"
+      ],
+      "capabilityTags": [
+        "command-context",
+        "npc"
+      ],
+      "riskSurfaces": [
+        "global-selector",
+        "wrong-player"
+      ]
+    },
+    {
+      "id": "npc-policy.no-dual-form-authority",
+      "domain": "npc-dialogue",
+      "subject": "dialogue vs script form",
+      "statement": "NPC dialogue and script UI forms must not independently own the same gameplay transaction without arbitration; duplicate button/form paths require one operation token.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-npc-policy-v1"
+      ],
+      "capabilityTags": [
+        "ui",
+        "idempotency"
+      ],
+      "riskSurfaces": [
+        "double-submit"
+      ]
+    },
+    {
+      "id": "npc-policy.reset-invalidates",
+      "domain": "npc-dialogue",
+      "subject": "arena reset",
+      "statement": "Arena reset/disconnect invalidates dialogue sessions and their pending logical actions. NPCs restored by structures are re-registered before reuse.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-npc-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "npc"
+      ],
+      "riskSurfaces": [
+        "stale-dialogue-action",
+        "duplicate-npc"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "npc-policy.relation-current-session-gates-action",
+      "domain": "npc-dialogue",
+      "subject": "current-dialogue-session",
+      "kind": "gates",
+      "object": "dialogue-gameplay-sideeffect",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-npc-policy-v1"
+      ]
+    }
+  ]
+}
