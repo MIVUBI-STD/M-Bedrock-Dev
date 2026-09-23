@@ -572,7 +572,7 @@ export async function inspectDirectory(
     ({ manifest }) => manifest.hasEducationMetadata === true,
   );
   const targetEducation = deriveEducationProfile({
-    edition: target.edition ?? "bedrock",
+    edition: target.edition ?? "unknown",
     manifestEducationMetadata: educationMetadata,
     ...(target.educationFeatures !== undefined
       ? { worldEducationFeatures: target.educationFeatures === "enabled" }
