@@ -80,6 +80,22 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-update-1.19.50",
+      "title": "1.19.50 Update Notes",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.19.50?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-update-1.19.80",
+      "title": "1.19.80 Update Notes",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.19.80?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -291,6 +307,85 @@
       ],
       "capabilityTags": [
         "script-event",
+        "script-stable"
+      ],
+      "riskSurfaces": [
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.method.world-get-all-players-stable-1.0",
+      "domain": "script-api",
+      "subject": "world.getAllPlayers",
+      "statement": "World.getAllPlayers is part of the initial stable @minecraft/server 1.0.0 API release.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.0.0"
+        }
+      },
+      "sourceIds": [
+        "ms-update-1.19.50"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-stable"
+      ],
+      "riskSurfaces": [
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.method.world-get-dimension-stable-1.0",
+      "domain": "script-api",
+      "subject": "world.getDimension",
+      "statement": "World.getDimension is part of the initial stable @minecraft/server 1.0.0 API release.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.0.0"
+        }
+      },
+      "sourceIds": [
+        "ms-update-1.19.50"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-stable"
+      ],
+      "riskSurfaces": [
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.method.system-run-interval-stable-1.1",
+      "domain": "script-api",
+      "subject": "system.runInterval",
+      "statement": "System.runInterval was added to the stable @minecraft/server API in version 1.1.0.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.1.0"
+        }
+      },
+      "sourceIds": [
+        "ms-update-1.19.80",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-method",
         "script-stable"
       ],
       "riskSurfaces": [
