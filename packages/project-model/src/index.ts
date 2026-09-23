@@ -9,3 +9,5 @@ export * from "./workspace.js";
 export * from "./runtime-evidence.js";
 
 export * from "./route-corridor.js";
+
+export * from "./state-authority-contract.js";
