@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-effects-entity",
+      "title": "Entity Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-effects-health",
+      "title": "EntityHealthComponent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityhealthcomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-effects-entity-properties",
+      "title": "Introduction to Entity Properties",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/introductiontoentityproperties?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-effects-component-groups",
+      "title": "Entity Behavior Introduction",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitybehaviorintroduction?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-effects-add-component-group",
+      "title": "minecraft:add_component_group",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/entityreference/examples/eventactions/add_component_group?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "effects.add-effect-updates-existing",
+      "domain": "effects",
+      "subject": "Entity.addEffect",
+      "statement": "Entity.addEffect adds or updates an effect for a duration in ticks and can throw on invalid effect, duration, amplifier, or entity state; applying an effect is therefore a mutable runtime operation with explicit failure modes.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-effects-entity"
+      ],
+      "capabilityTags": [
+        "status-effect",
+        "duration"
+      ],
+      "riskSurfaces": [
+        "effect-leak",
+        "invalid-effect",
+        "partial-transition"
+      ]
+    },
+    {
+      "id": "effects.health-is-attribute-component",
+      "domain": "effects",
+      "subject": "EntityHealthComponent",
+      "statement": "EntityHealthComponent extends the entity attribute component and exposes current/max health semantics, so maximum-health changes and current-health state are related but distinct values that require reconciliation.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-effects-health"
+      ],
+      "capabilityTags": [
+        "health",
+        "attribute"
+      ],
+      "riskSurfaces": [
+        "max-health-desync",
+        "revive-health"
+      ]
+    },
+    {
+      "id": "effects.component-group-replaces-same-type",
+      "domain": "effects",
+      "subject": "component group activation",
+      "statement": "Adding a component group can replace an already-active component of the same type, meaning component-group changes can alter health, timers, movement, AI, or other behavior surfaces rather than simply append new behavior.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-effects-component-groups",
+        "ms-effects-add-component-group"
+      ],
+      "capabilityTags": [
+        "component-group",
+        "replacement"
+      ],
+      "riskSurfaces": [
+        "attribute-overwrite",
+        "behavior-overwrite"
+      ]
+    },
+    {
+      "id": "effects.readding-group-reinitializes",
+      "domain": "effects",
+      "subject": "re-adding active component group",
+      "statement": "Adding a component group that is already active can re-initialize its components; for stateful components such as timers, associated logic can restart.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-effects-component-groups",
+        "ms-effects-add-component-group"
+      ],
+      "capabilityTags": [
+        "component-group",
+        "reinitialize"
+      ],
+      "riskSurfaces": [
+        "timer-restart",
+        "duplicate-transition"
+      ]
+    },
+    {
+      "id": "effects.event-mutation-delayed-until-entity-tick",
+      "domain": "effects",
+      "subject": "entity event mutation",
+      "statement": "Entity-event property and component-group mutations are calculated when the event is received but applied later when the entity ticks; same-tick reads or subsequent events may not observe the queued mutation yet.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-effects-entity-properties"
+      ],
+      "capabilityTags": [
+        "entity-event",
+        "delayed-apply"
+      ],
+      "riskSurfaces": [
+        "same-tick-read-after-write",
+        "stale-property-read"
+      ]
+    },
+    {
+      "id": "effects.property-and-component-group-batched",
+      "domain": "effects",
+      "subject": "entity property mutation queue",
+      "statement": "Property changes and add/remove component-group changes can be queued together and applied later, so intermediate same-tick state is not necessarily globally observable.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-effects-entity-properties"
+      ],
+      "capabilityTags": [
+        "property",
+        "component-group",
+        "event-ordering"
+      ],
+      "riskSurfaces": [
+        "partial-observation",
+        "ordering-assumption"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "effects.relation-event-gates-observation",
+      "domain": "effects",
+      "subject": "entity-event-mutation",
+      "kind": "delayed-until-tick",
+      "object": "observable-property-or-component-state",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-effects-entity-properties"
+      ]
+    },
+    {
+      "id": "effects.relation-max-health-requires-current-health-reconcile",
+      "domain": "effects",
+      "subject": "max-health-change",
+      "kind": "requires",
+      "object": "current-health-policy",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-effects-health"
+      ]
+    }
+  ]
+}
