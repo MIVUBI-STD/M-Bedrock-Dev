@@ -3,7 +3,12 @@ import type { SourceRef } from "../../../packages/project-model/src/source-ref.j
 import type { ParsedScriptFile, ScriptMethodCall } from "./types.js";
 
 function operationId(source: SourceRef): string {
-  return source.artifactId + ":" + source.relativePath + ":" + (source.range?.lineStart ?? 0);
+  return [
+    source.artifactId,
+    source.relativePath,
+    source.range?.lineStart ?? 0,
+    source.range?.columnStart ?? 0,
+  ].join(":");
 }
 
 function observed(
@@ -47,9 +52,6 @@ function methodEvidence(call: ScriptMethodCall): RuntimeEvidenceRecord[] {
   if (call.receiverType === "PlayerInputPermissions") {
     records.push(observed("input-permission-mutation", call.source, call.symbol));
   }
-  if (call.receiverType === "System" && ["run", "runTimeout", "runInterval", "runJob"].includes(call.method)) {
-    records.push(observed("deferred-script-work", call.source, call.symbol));
-  }
   return records;
 }
 
@@ -88,6 +90,21 @@ export function scriptRuntimeEvidence(
       access.source,
       (access.propertyId ?? "<dynamic>") + ":" + access.operation,
     ));
+  }
+
+  for (const deferred of script.deferredCallbacks) {
+    records.push(observed(
+      "deferred-script-work",
+      deferred.source,
+      "system." + deferred.scheduler,
+    ));
+    if (deferred.guardEvidence === "explicit-generation-check") {
+      records.push(observed(
+        "async-generation-revalidation",
+        deferred.source,
+        deferred.guardIdentifiers.join(","),
+      ));
+    }
   }
 
   for (const call of script.methodCalls) {
