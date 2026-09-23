@@ -31,6 +31,13 @@ export interface InspectDirectoryResult {
   scripts: number;
   structures: number;
   parsedStructures: number;
+  entities: number;
+  entityKnowledge: {
+    analyzed: number;
+    states: number;
+    prerequisiteGaps: number;
+    staticAnalysisLimits: number;
+  };
   worldDatabase: {
     present: boolean;
     fileCount: number;

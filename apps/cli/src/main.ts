@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { inspectArtifact } from "../../../packages/orchestrator/src/inspect-artifact.js";
+import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/load.js";
 
 async function main(): Promise<void> {
   const [, , command, input] = process.argv;
@@ -10,7 +11,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  const result = await inspectArtifact(resolve(input));
+  const knowledge = await loadKnowledgeDirectory(resolve("knowledge"));
+  const result = await inspectArtifact(resolve(input), {}, knowledge);
   console.log(JSON.stringify(result, null, 2));
 
   if (result.diagnostics.some((finding) => finding.severity === "critical")) {

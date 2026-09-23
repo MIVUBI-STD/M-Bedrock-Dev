@@ -6,6 +6,7 @@ import {
 import type { EffectiveKnowledgeProfile } from "../../knowledge/src/types.js";
 import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/types.js";
 import { deriveEntityStateGraph } from "../../../analyzers/entities/src/state-graph.js";
+import { extractNavigationCapabilities } from "../../../analyzers/entities/src/navigation.js";
 
 export interface EntityStateKnowledgeFinding extends EntityKnowledgeFinding {
   stateId: string;
@@ -31,8 +32,10 @@ export function analyzeEntityWithKnowledge(
   const findings: EntityStateKnowledgeFinding[] = [];
 
   for (const state of graph.candidates) {
+    const navigation = extractNavigationCapabilities(state);
     for (const finding of assessEntityKnowledge(catalog, profile, {
       activeComponents: state.activeComponents,
+      availableCapabilities: navigation.capabilities,
     })) {
       findings.push({
         ...finding,

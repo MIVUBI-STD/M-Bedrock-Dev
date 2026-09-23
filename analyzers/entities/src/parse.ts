@@ -10,9 +10,12 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
     : undefined;
 }
 
+function componentData(value: unknown): Record<string, unknown> {
+  return asRecord(value) ?? {};
+}
+
 function componentKeys(value: unknown): string[] {
-  const record = asRecord(value);
-  return record ? Object.keys(record).sort() : [];
+  return Object.keys(componentData(value)).sort();
 }
 
 function collectGroups(value: unknown): string[] {
@@ -72,10 +75,14 @@ export function parseEntityDefinition(
   const description = asRecord(entity.description) ?? {};
   const groups = asRecord(entity.component_groups) ?? {};
   const events = asRecord(entity.events) ?? {};
+  const baseData = componentData(entity.components);
 
   const componentGroups: Record<string, string[]> = {};
+  const componentGroupData: Record<string, Record<string, unknown>> = {};
   for (const [groupId, groupValue] of Object.entries(groups)) {
-    componentGroups[groupId] = componentKeys(groupValue);
+    const data = componentData(groupValue);
+    componentGroups[groupId] = Object.keys(data).sort();
+    componentGroupData[groupId] = data;
   }
 
   const normalizedEvents: Record<string, EntityEventMutation> = {};
@@ -98,7 +105,9 @@ export function parseEntityDefinition(
     ),
     source,
     baseComponents: componentKeys(entity.components),
+    baseComponentData: baseData,
     componentGroups,
+    componentGroupData,
     events: normalizedEvents,
   };
 }

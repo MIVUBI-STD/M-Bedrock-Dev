@@ -6,6 +6,7 @@ import { extractZipSafely, inventoryZip } from "../../archive/src/zip-transport.
 import { sha256File, artifactIdFromFingerprint } from "../../artifact/src/fingerprint.js";
 import { inspectDirectory } from "./inspect.js";
 import type { InspectDirectoryResult, InspectTargetProfile } from "./types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -16,6 +17,7 @@ export interface InspectArtifactResult extends InspectDirectoryResult {
 export async function inspectArtifact(
   path: string,
   target: InspectTargetProfile = {},
+  knowledgeCatalog?: KnowledgeCatalog,
 ): Promise<InspectArtifactResult> {
   const fingerprint = await sha256File(path);
   const artifactId = artifactIdFromFingerprint(fingerprint);
@@ -30,7 +32,7 @@ export async function inspectArtifact(
     await extractZipSafely(path, sourceRoot, NORMAL_EXTRACTION_BUDGET);
     await cp(sourceRoot, workingRoot, { recursive: true });
 
-    const result = await inspectDirectory(workingRoot, artifactId, target, fingerprint);
+    const result = await inspectDirectory(workingRoot, artifactId, target, fingerprint, knowledgeCatalog);
     return {
       artifactId,
       fingerprint,

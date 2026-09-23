@@ -21,6 +21,8 @@ export interface ReliabilityFingerprintInput {
   scripts: readonly ParsedScriptFile[];
   structures: number;
   parsedStructures: number;
+  entities: number;
+  entityKnowledgeGaps: number;
   worldDatabasePresent: boolean;
   stateAccesses: number;
   broadStateWrites: number;
@@ -84,6 +86,7 @@ export function deriveReliabilityFingerprint(
   if (input.functions.length > 0) domains.add("commands");
   if (input.scripts.length > 0) domains.add("scripts");
   if (input.structures > 0) domains.add("structures");
+  if (input.entities > 0) domains.add("entities");
   if (input.worldDatabasePresent) domains.add("world-db");
   if (input.stateAccesses > 0) domains.add("state");
   if (input.packs.length > 0) domains.add("compatibility");
@@ -101,6 +104,11 @@ export function deriveReliabilityFingerprint(
   }
 
   if (input.structures > 0) capabilityTags.add("structures");
+  if (input.entities > 0) capabilityTags.add("entities");
+  if (input.entityKnowledgeGaps > 0) {
+    capabilityTags.add("entity-knowledge-gap");
+    riskSurfaces.add("entity-ai");
+  }
   if (verbs.includes("structure")) capabilityTags.add("structure-load");
 
   if (input.stateAccesses > 0) capabilityTags.add("gameplay-state");

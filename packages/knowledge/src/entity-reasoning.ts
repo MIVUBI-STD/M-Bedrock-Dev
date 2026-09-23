@@ -12,6 +12,7 @@ export interface EntityKnowledgeState {
 
 export interface EntityKnowledgeFinding {
   relationId: string;
+  sourceIds: string[];
   subject: string;
   requirement: string;
   message: string;
@@ -44,6 +45,7 @@ export function assessEntityKnowledge(
         if (!active.has(relation.object) && !capabilities.has(relation.object)) {
           findings.push({
             relationId: relation.id,
+            sourceIds: [...relation.sourceIds],
             subject,
             requirement: relation.object,
             severity: "warning",
@@ -61,6 +63,7 @@ export function assessEntityKnowledge(
       if (!alternatives.some((value) => active.has(value) || capabilities.has(value))) {
         findings.push({
           relationId: relation.id,
+          sourceIds: [...relation.sourceIds],
           subject,
           requirement: relation.object,
           severity: "warning",

@@ -6,6 +6,8 @@ import { analyzeManifest, classifyPackFromManifest } from "../../../analyzers/ma
 import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/compatibility.js";
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
+import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
+import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/entity-knowledge-findings.js";
 import { resolveScriptImports } from "../../../analyzers/scripts/src/resolve.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
@@ -21,6 +23,7 @@ import type { SemanticNode } from "../../graph/src/types.js";
 import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";
 import { semanticNodeId } from "../../project-model/src/identity.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { populateFunctionEdges } from "../../../analyzers/references/src/populate-function-edges.js";
 import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
@@ -32,6 +35,7 @@ import type {
 import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { planInspectionRepairs } from "./repair-planning.js";
 import { deriveReliabilityFingerprint } from "./reliability-fingerprint.js";
+import { analyzeEntityWithKnowledge } from "./entity-knowledge-analysis.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -86,6 +90,7 @@ export async function inspectDirectory(
   artifactId = "art_working",
   target: InspectTargetProfile = {},
   sourceFingerprint?: string,
+  knowledgeCatalog?: KnowledgeCatalog,
 ): Promise<InspectDirectoryResult> {
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
@@ -116,6 +121,7 @@ export async function inspectDirectory(
   const nodes: SemanticNode[] = [];
   const parsedFunctions = [];
   const parsedScripts: Array<{ node: SemanticNode; parsed: ParsedScriptFile }> = [];
+  const parsedEntities: Array<{ node: SemanticNode; parsed: ReturnType<typeof parseEntityDefinition> }> = [];
   const diagnostics: DiagnosticFinding[] = [];
   let parsedStructures = 0;
 
@@ -161,6 +167,34 @@ export async function inspectDirectory(
           node.source,
         ),
       });
+      continue;
+    }
+
+    const normalizedPath = "/" + file.relativePath.replaceAll("\\", "/");
+    const isEntityJson = normalizedPath.includes("/entities/") &&
+      normalizedPath.endsWith(".json");
+    if (isEntityJson) {
+      try {
+        const raw = JSON.parse(await readFile(join(root, file.relativePath), "utf8")) as unknown;
+        const parsed = parseEntityDefinition(raw, {
+          artifactId,
+          relativePath: file.relativePath,
+        });
+        if (parsed.identifier) {
+          const node: SemanticNode = {
+            id: semanticNodeId("entity", "project", parsed.identifier),
+            identity: { kind: "entity", scope: "project", identifier: parsed.identifier },
+            kind: "entity",
+            identifier: parsed.identifier,
+            source: parsed.source,
+          };
+          graph.addNode(node);
+          nodes.push(node);
+          parsedEntities.push({ node, parsed });
+        }
+      } catch {
+        // Generic malformed JSON handling remains outside entity knowledge diagnostics.
+      }
       continue;
     }
 
@@ -270,6 +304,24 @@ export async function inspectDirectory(
     diagnostics.push(...undeclaredMinecraftModuleDiagnostics(manifest, scripts));
   }
 
+  let entityStates = 0;
+  let entityKnowledgeGaps = 0;
+  let entityStaticLimits = 0;
+  if (knowledgeCatalog) {
+    for (const item of parsedEntities) {
+      const profile = {
+        edition: (target.edition ?? "bedrock") as "bedrock" | "education",
+        ...(item.parsed.formatVersion ? { formatVersion: item.parsed.formatVersion } : {}),
+        ...(target.experiments ? { experiments: target.experiments } : {}),
+      };
+      const analysis = analyzeEntityWithKnowledge(item.parsed, knowledgeCatalog, profile);
+      entityStates += analysis.states;
+      entityKnowledgeGaps += analysis.findings.length;
+      entityStaticLimits += analysis.staticAnalysisLimits.length;
+      diagnostics.push(...entityKnowledgeDiagnostics(analysis, item.node.source));
+    }
+  }
+
   diagnostics.push(
     ...duplicateManifestUuidDiagnostics(manifests.map((entry) => entry.manifest)),
     ...referenceDiagnostics([
@@ -306,6 +358,8 @@ export async function inspectDirectory(
     scripts: parsedScripts.map((item) => item.parsed),
     structures: nodes.filter((node) => node.kind === "structure").length,
     parsedStructures,
+    entities: parsedEntities.length,
+    entityKnowledgeGaps,
     worldDatabasePresent: dbFiles.length > 0,
     stateAccesses: topology.stateAccesses.length,
     broadStateWrites: topology.broadWrites,
@@ -321,6 +375,13 @@ export async function inspectDirectory(
     scripts: nodes.filter((node) => node.kind === "script_file").length,
     structures: nodes.filter((node) => node.kind === "structure").length,
     parsedStructures,
+    entities: parsedEntities.length,
+    entityKnowledge: {
+      analyzed: knowledgeCatalog ? parsedEntities.length : 0,
+      states: entityStates,
+      prerequisiteGaps: entityKnowledgeGaps,
+      staticAnalysisLimits: entityStaticLimits,
+    },
     worldDatabase: {
       present: dbFiles.length > 0,
       fileCount: dbFiles.length,

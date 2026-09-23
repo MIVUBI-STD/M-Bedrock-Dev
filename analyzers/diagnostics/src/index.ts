@@ -1,3 +1,4 @@
+export * from "./entity-knowledge-findings.js";
 export * from "./command-findings.js";
 export * from "./education-findings.js";
 export * from "./manifest-findings.js";
