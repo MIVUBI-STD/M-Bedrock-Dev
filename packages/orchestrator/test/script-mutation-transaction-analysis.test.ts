@@ -157,6 +157,66 @@ describe("script mutation transaction analysis", () => {
     expect(assessment?.status).toBe("late-verification-candidate");
   });
 
+  it("supports project-defined direct Script API handoffs", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+      const player = world.getAllPlayers()[0];
+
+      block.setType("minecraft:stone");
+      if (block.matches("minecraft:stone")) {
+        player.setGameMode("adventure");
+      }
+    `);
+
+    const assessments = analyzeScriptMutationTransactions(
+      [script],
+      [{
+        id: "gameplay-mode-handoff",
+        kind: "script-method",
+        scriptSymbol: "Player.setGameMode",
+        purpose: "gameplay mode activation",
+      }],
+    );
+
+    expect(assessments).toEqual([
+      expect.objectContaining({
+        status: "verified-before-dependent",
+        dependentLabel: "gameplay mode activation",
+        dependentCall: expect.objectContaining({
+          symbol: "Player.setGameMode",
+        }),
+      }),
+    ]);
+  });
+
+  it("keeps project-defined Script API handoff unproven outside the verified branch", () => {
+    const script = parse(`
+      import { world } from "@minecraft/server";
+      const dimension = world.getDimension("overworld");
+      const block = dimension.getBlock({ x: 0, y: 64, z: 0 });
+      const player = world.getAllPlayers()[0];
+
+      block.setType("minecraft:stone");
+      if (block.matches("minecraft:stone")) {
+        player.addTag("verified");
+      }
+      player.setGameMode("adventure");
+    `);
+
+    const assessments = analyzeScriptMutationTransactions(
+      [script],
+      [{
+        id: "gameplay-mode-handoff",
+        kind: "script-method",
+        scriptSymbol: "Player.setGameMode",
+      }],
+    );
+
+    expect(assessments[0]?.status).toBe("verification-unresolved");
+  });
+
   it("does not treat an unrelated earlier guard as proof for a later teleport", () => {
     const script = parse(`
       import { world } from "@minecraft/server";
