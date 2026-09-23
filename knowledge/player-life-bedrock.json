@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-life-world-after-events",
+      "title": "WorldAfterEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-life-player-spawn",
+      "title": "PlayerSpawnAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playerspawnafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-life-player-spawn-signal",
+      "title": "PlayerSpawnAfterEventSignal Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playerspawnaftereventsignal?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-life-entity-die",
+      "title": "EntityDieAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entitydieafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-life-entity-health-changed",
+      "title": "EntityHealthChangedAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityhealthchangedafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-life-health-component",
+      "title": "EntityHealthComponent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityhealthcomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-life-gamemode-change",
+      "title": "PlayerGameModeChangeAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playergamemodechangeafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "life.health-change-is-not-death",
+      "domain": "player-life",
+      "subject": "entityHealthChanged",
+      "statement": "entityHealthChanged reports old and new health values whenever health changes; it is not itself proof that an entity has died.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-world-after-events", "ms-life-entity-health-changed"],
+      "capabilityTags": ["health", "health-change"],
+      "riskSurfaces": ["death-detection", "downed-state"]
+    },
+    {
+      "id": "life.health-change-handler-mutation-loop-risk",
+      "domain": "player-life",
+      "subject": "entityHealthChanged handler",
+      "statement": "Changing entity health from within entityHealthChanged can create an infinite event loop, so health correction/revive logic should defer or otherwise guard recursive health changes.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-entity-health-changed"],
+      "capabilityTags": ["health", "event-loop"],
+      "riskSurfaces": ["infinite-loop", "watchdog", "revive"]
+    },
+    {
+      "id": "life.entity-die-is-terminal-engine-evidence",
+      "domain": "player-life",
+      "subject": "entityDie",
+      "statement": "entityDie fires after an entity has died and provides the dead entity plus damage-source context; it is stronger terminal evidence than a low-health threshold.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-entity-die"],
+      "capabilityTags": ["death", "damage-source"],
+      "riskSurfaces": ["death-detection", "terminal-state"]
+    },
+    {
+      "id": "life.player-spawn-covers-respawn",
+      "domain": "player-life",
+      "subject": "playerSpawn",
+      "statement": "playerSpawn fires when a player spawns or respawns and initialSpawn distinguishes first spawn after join from later respawn after death.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-world-after-events", "ms-life-player-spawn", "ms-life-player-spawn-signal"],
+      "capabilityTags": ["respawn", "initial-spawn"],
+      "riskSurfaces": ["respawn-state", "state-reset"]
+    },
+    {
+      "id": "life.respawn-player-ready-world",
+      "domain": "player-life",
+      "subject": "PlayerSpawnAfterEventSignal",
+      "statement": "The player-spawn signal represents a spawned or re-spawned player that is ready within the world, making it a stronger lifecycle point for post-respawn reconciliation than pre-death health observations.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-player-spawn-signal"],
+      "capabilityTags": ["respawn", "world-ready"],
+      "riskSurfaces": ["respawn-state", "load-order"]
+    },
+    {
+      "id": "life.gamemode-change-observable",
+      "domain": "player-life",
+      "subject": "playerGameModeChange",
+      "statement": "Player game-mode transitions expose previous and new game modes through an after-event, so spectator/active mode changes can be tracked independently from downed/death state.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-gamemode-change"],
+      "capabilityTags": ["gamemode", "spectator"],
+      "riskSurfaces": ["spectator-leak", "state-desync"]
+    },
+    {
+      "id": "life.health-component-is-attribute-not-session-state",
+      "domain": "player-life",
+      "subject": "EntityHealthComponent",
+      "statement": "EntityHealthComponent exposes entity health values, but health alone does not encode project-defined states such as DOWNED, BEING_REVIVED, ELIMINATED, or arena participation.",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-health-component"],
+      "capabilityTags": ["health", "project-state"],
+      "riskSurfaces": ["implicit-state", "downed-state", "revive"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "life.relation-health-change-does-not-prove-death",
+      "domain": "player-life",
+      "subject": "health-threshold",
+      "kind": "requires",
+      "object": "project-downed-policy-or-terminal-death-evidence",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-entity-health-changed", "ms-life-entity-die"]
+    },
+    {
+      "id": "life.relation-respawn-gates-reconciliation",
+      "domain": "player-life",
+      "subject": "non-initial-playerSpawn",
+      "kind": "gates",
+      "object": "post-respawn-state-reconciliation",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-life-player-spawn", "ms-life-player-spawn-signal"]
+    }
+  ]
+}
