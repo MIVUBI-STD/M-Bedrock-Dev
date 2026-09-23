@@ -1,7 +1,21 @@
 import { createHash } from "node:crypto";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
-import type { EntityKnowledgeAnalysis } from "../../../packages/orchestrator/src/entity-knowledge-analysis.js";
+
+export interface EntityKnowledgeDiagnosticInput {
+  runtimeIdentifier?: string;
+  findings: Array<{
+    relationId: string;
+    sourceIds: string[];
+    subject: string;
+    requirement: string;
+    message: string;
+    stateId: string;
+    activeGroups: string[];
+    viaEvent?: string;
+  }>;
+  staticAnalysisLimits: string[];
+}
 
 function idFor(source: SourceRef, suffix: string): string {
   return "diag_" + createHash("sha256")
@@ -11,7 +25,7 @@ function idFor(source: SourceRef, suffix: string): string {
 }
 
 export function entityKnowledgeDiagnostics(
-  analysis: EntityKnowledgeAnalysis,
+  analysis: EntityKnowledgeDiagnosticInput,
   source: SourceRef,
 ): DiagnosticFinding[] {
   const findings: DiagnosticFinding[] = analysis.findings.map((finding) => ({
