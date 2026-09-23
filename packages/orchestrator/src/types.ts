@@ -41,6 +41,16 @@ export interface InspectDirectoryResult {
     prerequisiteGaps: number;
     staticAnalysisLimits: number;
   };
+  knowledgeRuntime: {
+    enabled: boolean;
+    profileResolved: boolean;
+    profileSource: "target" | "education-metadata" | "unresolved";
+    profileConflicts: readonly string[];
+    evidenceRecords: number;
+    violations: number;
+    evidenceGaps: number;
+    validationCases: number;
+  };
   worldDatabase: {
     present: boolean;
     fileCount: number;
