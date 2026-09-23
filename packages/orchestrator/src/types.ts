@@ -180,6 +180,7 @@ export interface InspectDirectoryResult {
   scriptCommandTransactions: {
     assessed: number;
     verifiedBeforeDependent: number;
+    dependentBeforeVerification: number;
     verificationUnresolved: number;
     noDependentAction: number;
   };
