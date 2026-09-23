@@ -1,20 +1,39 @@
 # Current Validation
 
-Status: EXACT-HEAD VERIFY REMEDIATION ACTIVE
+Status: EXACT-HEAD SOURCE VERIFICATION GREEN
 
-GitHub Actions evidence:
+GitHub Actions proof on 2026-09-23:
 
-- full Verify now runs on every push to `Local`;
-- repository policy and TypeScript typecheck are green on the recent remediation heads;
-- `252f7831ec2d8698cb833ccb22f7fa69f93d6a00` reached 162/163 passing tests;
-- its sole remaining property-based counterexample showed that moving a starting player to another arena could leave the old arena cutscene active.
+- exact commit `b8d3178d32d48714bca4dd621d193bb8997ec20f` completed the full Verify workflow successfully;
+- repository policy verification passed;
+- TypeScript `tsc --noEmit` passed;
+- the full Vitest suite passed;
+- the separate Repository Policy workflow also passed for the same exact commit.
 
-Cutscene ownership is now derived from actual arena membership plus player phase after membership/phase transitions, rather than patched action-by-action. A focused regression test covers the cross-arena move case.
+The verification cycle exposed and remediated:
 
-The next exact-head Verify run is the source-proof candidate.
+- repair/analyzer ownership violations;
+- stale graph identity fixtures and strict optional-property contract drift;
+- stale parser/reference/interleaving assertions;
+- repeated-topology mutation blindspots;
+- session-model cutscene ownership defects found by property-based testing;
+- optional coverage metadata being treated as mandatory invariant evidence.
+
+Current remote/source proof:
+
+```text
+repository policy  VERIFIED
+typecheck          VERIFIED
+Vitest             VERIFIED
+exact Local head   VERIFIED at b8d3178d32d48714bca4dd621d193bb8997ec20f
+```
 
 Still not proven:
 
 - genuine Minecraft-loadable mcworld acceptance;
-- production-map analysis;
-- Minecraft runtime behavior.
+- production-map diagnosis quality;
+- Minecraft package import/load acceptance;
+- local Minecraft runtime behavior;
+- live multiplayer/runtime behavior.
+
+These remain separate LOCAL GAME / LIVE GAME proof lanes.
