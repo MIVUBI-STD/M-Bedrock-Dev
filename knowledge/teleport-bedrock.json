@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-teleport-options",
+      "title": "TeleportOptions Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/teleportoptions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-teleport",
+      "title": "Entity Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-dimension-spawn",
+      "title": "Dimension Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/dimension?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-player-spawnpoint",
+      "title": "Player Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/player?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-dimension-location",
+      "title": "DimensionLocation Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/dimensionlocation?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "teleport.tryteleport-can-fail",
+      "domain": "teleport",
+      "subject": "Entity.tryTeleport",
+      "statement": "Entity.tryTeleport returns whether teleport succeeded and may fail when the destination chunk is unloaded or when the destination would intersect blocks.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-teleport"
+      ],
+      "capabilityTags": [
+        "tryTeleport",
+        "collision",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "failed-teleport",
+        "unloaded-chunk",
+        "block-collision"
+      ]
+    },
+    {
+      "id": "teleport.options-check-for-blocks",
+      "domain": "teleport",
+      "subject": "TeleportOptions.checkForBlocks",
+      "statement": "TeleportOptions can request block-obstruction checking at the destination, making collision policy an explicit part of teleport semantics rather than an automatic guarantee for every teleport path.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-teleport-options"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "collision-check"
+      ],
+      "riskSurfaces": [
+        "unsafe-destination",
+        "inside-block"
+      ]
+    },
+    {
+      "id": "teleport.options-dimension",
+      "domain": "teleport",
+      "subject": "TeleportOptions.dimension",
+      "statement": "TeleportOptions can move an entity to another dimension; if dimension is omitted, teleport occurs within the entity's current dimension.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-teleport-options"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "dimension-transfer"
+      ],
+      "riskSurfaces": [
+        "wrong-dimension",
+        "cross-dimension-state"
+      ]
+    },
+    {
+      "id": "teleport.teleport-can-throw",
+      "domain": "teleport",
+      "subject": "Entity.teleport",
+      "statement": "Entity.teleport can throw when the entity is invalid or functionality is unsupported and cannot be called from restricted execution, so a teleport call is not an infallible state transition.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-teleport"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "error"
+      ],
+      "riskSurfaces": [
+        "partial-transition",
+        "invalid-entity"
+      ]
+    },
+    {
+      "id": "teleport.spawn-entity-unloaded-chunk-error",
+      "domain": "teleport",
+      "subject": "Dimension.spawnEntity",
+      "statement": "Dimension.spawnEntity can throw LocationInUnloadedChunkError and LocationOutOfWorldBoundariesError, so entity spawning requires both spatial validity and chunk readiness.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-dimension-spawn"
+      ],
+      "capabilityTags": [
+        "spawnEntity",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "spawn-failure",
+        "world-boundary"
+      ]
+    },
+    {
+      "id": "teleport.spawnpoint-is-separate-from-teleport",
+      "domain": "teleport",
+      "subject": "Player.setSpawnPoint",
+      "statement": "Player.setSpawnPoint configures a player's future spawn point and is a distinct operation from teleporting the player immediately.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-player-spawnpoint"
+      ],
+      "capabilityTags": [
+        "spawnpoint",
+        "respawn"
+      ],
+      "riskSurfaces": [
+        "respawn-location",
+        "state-confusion"
+      ]
+    },
+    {
+      "id": "teleport.dimensionlocation-binds-dimension-and-position",
+      "domain": "teleport",
+      "subject": "DimensionLocation",
+      "statement": "DimensionLocation combines coordinates with a specific Dimension, so cross-dimension destination identity should be modeled as dimension plus position rather than position alone.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-dimension-location"
+      ],
+      "capabilityTags": [
+        "dimension-location",
+        "destination-identity"
+      ],
+      "riskSurfaces": [
+        "wrong-dimension",
+        "coordinate-aliasing"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "teleport.relation-destination-requires-readiness",
+      "domain": "teleport",
+      "subject": "teleport-destination",
+      "kind": "requires",
+      "object": "loaded-and-spatially-valid-destination",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-teleport",
+        "ms-teleport-options"
+      ]
+    },
+    {
+      "id": "teleport.relation-spawnpoint-does-not-replace-teleport",
+      "domain": "teleport",
+      "subject": "spawnpoint",
+      "kind": "requires",
+      "object": "separate-current-position-transition-if-needed",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-player-spawnpoint"
+      ]
+    }
+  ]
+}
