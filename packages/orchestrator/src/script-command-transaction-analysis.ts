@@ -200,12 +200,25 @@ function isApply(
   );
 }
 
+function dependentKind(
+  literal: ScriptCommandLiteral,
+): "teleport" | "entity-spawn" | undefined {
+  const effects = flattenCommandEffects(
+    analyzeCommand(literal.command, literal.source),
+  );
+  if (effects.some((effect) => effect.kind === "teleport")) {
+    return "teleport";
+  }
+  if (effects.some((effect) => effect.kind === "entity-spawn")) {
+    return "entity-spawn";
+  }
+  return undefined;
+}
+
 function isDependent(
   literal: ScriptCommandLiteral,
 ): boolean {
-  return flattenCommandEffects(
-    analyzeCommand(literal.command, literal.source),
-  ).some((effect) => effect.kind === "teleport");
+  return dependentKind(literal) !== undefined;
 }
 
 function inside(
@@ -467,7 +480,10 @@ export function scriptCommandMutationRuntimeEvidence(
         item.applyLiteral.source,
         item.dependentLiteral.source,
       ],
-      note: "Literal command mutation precedes a dependent teleport.",
+      note:
+        "Literal command mutation precedes dependent action: " +
+        (dependentKind(item.dependentLiteral) ?? "unknown") +
+        ".",
     });
 
     if (item.status === "verified-before-dependent") {
@@ -481,7 +497,7 @@ export function scriptCommandMutationRuntimeEvidence(
           item.dependentLiteral.source,
         ],
         note:
-          "The dependent teleport is inside a gated block verification command.",
+          "The dependent action is inside a gated block verification command.",
       });
     }
   }
