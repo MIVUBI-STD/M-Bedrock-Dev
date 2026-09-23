@@ -548,6 +548,24 @@ export function mutationTransactionRuntimeEvidence(
   const records: RuntimeEvidenceRecord[] = [];
 
   for (const item of assessments) {
+    if (
+      item.status === "verification-unresolved" &&
+      item.barriers.length > 0
+    ) {
+      records.push({
+        predicate: "transaction-order-proof-incomplete",
+        state: "present",
+        confidence: "derived",
+        scope: { operationId: item.id },
+        sourceRefs: [
+          item.applyStep.source,
+          ...item.barriers.map((barrier) => barrier.source),
+        ],
+        note:
+          "Function transaction ordering is blocked by unresolved, recursive, or depth-limited calls.",
+      });
+    }
+
     if (!item.dependentStep) continue;
     const scope = {
       operationId:
