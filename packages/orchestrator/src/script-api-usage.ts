@@ -4,6 +4,7 @@ import {
   scriptEventSymbol,
 } from "../../compatibility/src/script-event-matrix.js";
 import { findScriptMethodRule } from "../../compatibility/src/script-method-matrix.js";
+import type { ScriptSymbolLifecycle } from "../../compatibility/src/script-lifecycle.js";
 
 export type ScriptApiUsageKind = "event" | "method";
 export type ScriptApiKnowledgeState = "known" | "unclassified";
@@ -17,6 +18,7 @@ export interface ScriptApiUsageSymbol {
   ruleId?: string;
   stability?: "stable" | "pre-release";
   introducedIn?: string;
+  lifecycle?: ScriptSymbolLifecycle;
   directOccurrences?: number;
   boundedOccurrences?: number;
   receiverTypes?: string[];
@@ -61,6 +63,7 @@ interface MutableUsage {
   ruleId?: string;
   stability?: "stable" | "pre-release";
   introducedIn?: string;
+  lifecycle?: ScriptSymbolLifecycle;
   directOccurrences: number;
   boundedOccurrences: number;
   receiverTypes: Set<string>;
@@ -91,6 +94,7 @@ function materialize(item: MutableUsage): ScriptApiUsageSymbol {
     ...(item.ruleId ? { ruleId: item.ruleId } : {}),
     ...(item.stability ? { stability: item.stability } : {}),
     ...(item.introducedIn ? { introducedIn: item.introducedIn } : {}),
+    ...(item.lifecycle ? { lifecycle: item.lifecycle } : {}),
     ...(item.kind === "method"
       ? {
           directOccurrences: item.directOccurrences,
@@ -114,6 +118,7 @@ export function deriveScriptApiUsage(
       id: string;
       stability: "stable" | "pre-release";
       introducedIn?: string;
+      lifecycle?: ScriptSymbolLifecycle;
     },
   ): MutableUsage => {
     const key = usageKey(kind, symbol);
@@ -133,6 +138,7 @@ export function deriveScriptApiUsage(
       ...(rule?.id ? { ruleId: rule.id } : {}),
       ...(rule?.stability ? { stability: rule.stability } : {}),
       ...(rule?.introducedIn ? { introducedIn: rule.introducedIn } : {}),
+      ...(rule?.lifecycle ? { lifecycle: rule.lifecycle } : {}),
       directOccurrences: 0,
       boundedOccurrences: 0,
       receiverTypes: new Set<string>(),

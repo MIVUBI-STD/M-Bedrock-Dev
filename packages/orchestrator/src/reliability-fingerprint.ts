@@ -157,6 +157,14 @@ export function deriveReliabilityFingerprint(
   if (input.diagnostics.some((finding) => finding.code === "STRUCTURE_PARSE_FAILED")) {
     riskSurfaces.add("structure-binary");
   }
+  if (input.diagnostics.some((finding) => finding.code === "SCRIPT_API_DEPRECATED_SYMBOL")) {
+    capabilityTags.add("script-legacy-api");
+    riskSurfaces.add("script-deprecated-api");
+  }
+  if (input.diagnostics.some((finding) => finding.code === "SCRIPT_API_REMOVED_SYMBOL")) {
+    capabilityTags.add("script-legacy-api");
+    riskSurfaces.add("script-removed-api");
+  }
 
   const editions = input.target.edition ? [input.target.edition] : [];
   const minEngineVersions = input.packs

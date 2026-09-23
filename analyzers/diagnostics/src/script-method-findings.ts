@@ -1,6 +1,10 @@
 import type { ManifestCompatibilityFacts } from "../../manifest/src/compatibility.js";
 import type { ParsedScriptFile } from "../../scripts/src/types.js";
-import { checkScriptMethodSymbol } from "../../../packages/compatibility/src/script-method-matrix.js";
+import {
+  checkScriptMethodSymbol,
+  findScriptMethodRule,
+} from "../../../packages/compatibility/src/script-method-matrix.js";
+import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/script-lifecycle.js";
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 
@@ -24,17 +28,53 @@ export function scriptMethodSymbolDiagnostics(
 
   for (const script of scripts) {
     for (const method of script.methodCalls) {
+      const rule = findScriptMethodRule(method.symbol);
+      const key = `${script.source.relativePath}\0${method.symbol}`;
+
+      if (rule?.lifecycle) {
+        const lifecycle = evaluateScriptSymbolLifecycle(
+          rule.lifecycle,
+          module.version,
+          module.track,
+        );
+        if (
+          (lifecycle.state === "deprecated" || lifecycle.state === "removed") &&
+          !seen.has(key)
+        ) {
+          seen.add(key);
+          const removed = lifecycle.state === "removed";
+          findings.push(createDiagnostic({
+            code: removed
+              ? "SCRIPT_API_REMOVED_SYMBOL"
+              : "SCRIPT_API_DEPRECATED_SYMBOL",
+            severity: removed ? "critical" : "minor",
+            message: removed
+              ? `${method.symbol} was removed in @minecraft/server ${rule.lifecycle.removedIn}, but the manifest declares ${module.version}.`
+              : `${method.symbol} is deprecated in the documented 1.x API and scheduled for removal in ${rule.lifecycle.removedIn}.`,
+            source: method.source,
+            data: {
+              symbol: method.symbol,
+              symbolKind: "method",
+              module: "@minecraft/server",
+              declaredVersion: module.version,
+              declaredTrack: module.track,
+              lifecycleState: lifecycle.state,
+              removedIn: rule.lifecycle.removedIn,
+              replacement: rule.lifecycle.replacement ?? null,
+              ruleId: rule.id,
+            },
+          }));
+        }
+      }
+
       const check = checkScriptMethodSymbol(
         method.symbol,
         module.version,
         module.track,
       );
-      if (check.supported !== false || !check.rule) continue;
+      if (check.supported !== false || !check.rule || seen.has(key)) continue;
 
-      const key = `${script.source.relativePath}\0${method.symbol}`;
-      if (seen.has(key)) continue;
       seen.add(key);
-
       const prerelease = check.rule.stability === "pre-release";
       findings.push(createDiagnostic({
         code: prerelease
