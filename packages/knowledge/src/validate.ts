@@ -9,6 +9,7 @@ import {
 import type { KnowledgeCatalog, KnowledgeSource } from "./types.js";
 
 function validSourceUrl(source: KnowledgeSource): boolean {
+  if (typeof source.url !== "string") return false;
   if (source.authority === "project-policy") {
     return source.url.startsWith("project://") || source.url.startsWith("https://");
   }
@@ -34,12 +35,25 @@ function validateApplicability(
     }
   }
 
-  for (const experiment of applicability.experiments ?? []) {
-    if (!experiment.trim()) errors.push(`${label} has empty experiment id.`);
+  if (
+    applicability.experiments !== undefined &&
+    !Array.isArray(applicability.experiments)
+  ) {
+    errors.push(`${label} experiments must be an array when provided.`);
+  } else {
+    for (const experiment of applicability.experiments ?? []) {
+      if (typeof experiment !== "string" || !experiment.trim()) {
+        errors.push(`${label} has empty experiment id.`);
+      }
+    }
   }
 
   const versions = applicability.versions;
   if (!versions) return;
+  if (typeof versions !== "object" || Array.isArray(versions)) {
+    errors.push(`${label} versions must be an object when provided.`);
+    return;
+  }
   for (const [key, value] of Object.entries(versions)) {
     if (value !== undefined && !String(value).trim()) {
       errors.push(`${label} has empty version field: ${key}`);
@@ -127,10 +141,11 @@ export function validateKnowledgeCatalog(
 
     validateApplicability(`Knowledge fact ${fact.id}`, fact.applicability, errors);
 
-    if (!Array.isArray(fact.sourceIds) || fact.sourceIds.length === 0) {
+    const factSourceIds = Array.isArray(fact.sourceIds) ? fact.sourceIds : [];
+    if (factSourceIds.length === 0) {
       errors.push(`Knowledge fact has no source: ${fact.id}`);
     }
-    for (const sourceId of fact.sourceIds ?? []) {
+    for (const sourceId of factSourceIds) {
       if (!sourceIds.has(sourceId)) {
         errors.push(`Knowledge fact ${fact.id} references missing source ${sourceId}`);
       }
@@ -145,7 +160,7 @@ export function validateKnowledgeCatalog(
 
     if (
       fact.classification === "project-policy" &&
-      !fact.sourceIds.some((sourceId) => projectPolicySources.has(sourceId))
+      !factSourceIds.some((sourceId) => projectPolicySources.has(sourceId))
     ) {
       errors.push(
         `Project-policy knowledge fact requires project-policy provenance: ${fact.id}`,
@@ -189,17 +204,18 @@ export function validateKnowledgeCatalog(
 
     validateApplicability(`Knowledge relation ${relation.id}`, relation.applicability, errors);
 
-    if (!Array.isArray(relation.sourceIds) || relation.sourceIds.length === 0) {
+    const relationSourceIds = Array.isArray(relation.sourceIds) ? relation.sourceIds : [];
+    if (relationSourceIds.length === 0) {
       errors.push(`Knowledge relation has no source: ${relation.id}`);
     }
-    for (const sourceId of relation.sourceIds ?? []) {
+    for (const sourceId of relationSourceIds) {
       if (!sourceIds.has(sourceId)) {
         errors.push(`Knowledge relation ${relation.id} references missing source ${sourceId}`);
       }
     }
     if (
       relation.classification === "project-policy" &&
-      !relation.sourceIds.some((sourceId) => projectPolicySources.has(sourceId))
+      !relationSourceIds.some((sourceId) => projectPolicySources.has(sourceId))
     ) {
       errors.push(
         `Project-policy knowledge relation requires project-policy provenance: ${relation.id}`,
