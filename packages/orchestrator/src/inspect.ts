@@ -62,6 +62,7 @@ import {
 } from "./knowledge-runtime-analysis.js";
 import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
 import { structureRuntimeEvidence } from "./structure-runtime-evidence.js";
+import { derivePlacementProofs } from "./structure-proof-analysis.js";
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
@@ -563,13 +564,22 @@ export async function inspectDirectory(
   const topology = analyzeFunctionTopology(parsedFunctionModels);
   diagnostics.push(...topology.stateDiagnostics, ...topology.topologyDiagnostics);
 
+  const structureProofs = derivePlacementProofs(
+    structureRuntime,
+    parsedFunctionModels,
+  );
+
   const knowledgeRuntime = analyzeKnowledgeRuntime(
     knowledgeCatalog,
     target,
     manifestModelsForKnowledge,
     parsedFunctionModelsForKnowledge,
     [
-      ...structureRuntimeEvidence(structureRuntime, sourceByFunction),
+      ...structureRuntimeEvidence(
+        structureRuntime,
+        sourceByFunction,
+        structureProofs,
+      ),
       ...topologyRuntimeEvidence(topology),
     ],
     parsedScripts.map((item) => item.parsed),
