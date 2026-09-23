@@ -71,6 +71,14 @@ export interface ScriptPropertyAccess {
   source: SourceRef;
 }
 
+export interface ScriptImportedSymbol {
+  module: string;
+  importedName: string;
+  localName: string;
+  typeOnly: boolean;
+  source: SourceRef;
+}
+
 export interface ScriptModuleMemberAccess {
   module: string;
   importedName: string;
@@ -92,6 +100,7 @@ export interface ScriptCapabilityUse {
     | "api-method"
     | "api-property"
     | "api-module-member"
+    | "api-imported-symbol"
     | "unknown";
   detail?: string;
   source: SourceRef;
@@ -107,5 +116,6 @@ export interface ParsedScriptFile {
   methodCalls: ScriptMethodCall[];
   propertyAccesses: ScriptPropertyAccess[];
   moduleMemberAccesses: ScriptModuleMemberAccess[];
+  importedSymbols: ScriptImportedSymbol[];
   capabilities: ScriptCapabilityUse[];
 }

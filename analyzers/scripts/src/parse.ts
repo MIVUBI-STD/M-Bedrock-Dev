@@ -7,6 +7,7 @@ import type {
   ScriptCapabilityUse,
   ScriptEventSubscription,
   ScriptImport,
+  ScriptImportedSymbol,
   ScriptModuleMemberAccess,
 } from "./types.js";
 import {
@@ -78,6 +79,35 @@ function minecraftNamedBindings(file: ts.SourceFile): Map<string, {
   }
 
   return output;
+}
+
+
+function minecraftNamespaceBindings(file: ts.SourceFile): Map<string, string> {
+  const output = new Map<string, string>();
+
+  for (const statement of file.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteralLike(statement.moduleSpecifier)
+    ) {
+      continue;
+    }
+
+    const module = statement.moduleSpecifier.text;
+    if (!module.startsWith("@minecraft/")) continue;
+
+    const bindings = statement.importClause?.namedBindings;
+    if (bindings && ts.isNamespaceImport(bindings)) {
+      output.set(bindings.name.text, module);
+    }
+  }
+
+  return output;
+}
+
+function qualifiedNameChain(node: ts.EntityName): string[] {
+  if (ts.isIdentifier(node)) return [node.text];
+  return [...qualifiedNameChain(node.left), node.right.text];
 }
 
 function classifyModule(module: string): ScriptImport["kind"] {
@@ -179,7 +209,9 @@ export function parseScriptFile(
   const methodCalls = inferScriptMethodCalls(file, source);
   const propertyAccesses = inferScriptPropertyAccesses(file, source);
   const moduleMemberAccesses: ScriptModuleMemberAccess[] = [];
+  const importedSymbols: ScriptImportedSymbol[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
+  const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
   const capabilities: ScriptCapabilityUse[] = [
     ...methodCalls.map((call) => ({
       capability: "api-method" as const,
@@ -202,21 +234,64 @@ export function parseScriptFile(
         bindings: importBindings(node),
         source: lineSource(file, node, source),
       });
+
+      const clause = node.importClause;
+      const named = clause?.namedBindings;
+      if (module.startsWith("@minecraft/") && named && ts.isNamedImports(named)) {
+        for (const element of named.elements) {
+          const importedName = element.propertyName?.text ?? element.name.text;
+          const use: ScriptImportedSymbol = {
+            module,
+            importedName,
+            localName: element.name.text,
+            typeOnly: clause?.isTypeOnly === true || element.isTypeOnly,
+            source: lineSource(file, element, source),
+          };
+          importedSymbols.push(use);
+          capabilities.push({
+            capability: "api-imported-symbol",
+            detail: importedName,
+            source: use.source,
+          });
+        }
+      }
     }
 
     if (
       ts.isPropertyAccessExpression(node) &&
-      ts.isIdentifier(node.expression) &&
       !(ts.isCallExpression(node.parent) && node.parent.expression === node)
     ) {
-      const binding = namedMinecraftBindings.get(node.expression.text);
-      if (binding) {
+      if (ts.isIdentifier(node.expression)) {
+        const binding = namedMinecraftBindings.get(node.expression.text);
+        if (binding) {
+          const access: ScriptModuleMemberAccess = {
+            module: binding.module,
+            importedName: binding.importedName,
+            localName: node.expression.text,
+            member: node.name.text,
+            symbol: `${binding.importedName}.${node.name.text}`,
+            source: lineSource(file, node, source),
+          };
+          moduleMemberAccesses.push(access);
+          capabilities.push({
+            capability: "api-module-member",
+            detail: access.symbol,
+            source: access.source,
+          });
+        }
+      }
+
+      const chain = propertyAccessChain(node);
+      const namespaceModule = chain[0]
+        ? namespaceMinecraftBindings.get(chain[0])
+        : undefined;
+      if (namespaceModule && chain.length === 3 && chain[1] && chain[2]) {
         const access: ScriptModuleMemberAccess = {
-          module: binding.module,
-          importedName: binding.importedName,
-          localName: node.expression.text,
-          member: node.name.text,
-          symbol: `${binding.importedName}.${node.name.text}`,
+          module: namespaceModule,
+          importedName: chain[1],
+          localName: chain[0],
+          member: chain[2],
+          symbol: `${chain[1]}.${chain[2]}`,
           source: lineSource(file, node, source),
         };
         moduleMemberAccesses.push(access);
@@ -224,6 +299,28 @@ export function parseScriptFile(
           capability: "api-module-member",
           detail: access.symbol,
           source: access.source,
+        });
+      }
+    }
+
+    if (ts.isTypeReferenceNode(node) && ts.isQualifiedName(node.typeName)) {
+      const chain = qualifiedNameChain(node.typeName);
+      const module = chain[0]
+        ? namespaceMinecraftBindings.get(chain[0])
+        : undefined;
+      if (module && chain.length === 2 && chain[1]) {
+        const use: ScriptImportedSymbol = {
+          module,
+          importedName: chain[1],
+          localName: `${chain[0]}.${chain[1]}`,
+          typeOnly: true,
+          source: lineSource(file, node, source),
+        };
+        importedSymbols.push(use);
+        capabilities.push({
+          capability: "api-imported-symbol",
+          detail: chain[1],
+          source: use.source,
         });
       }
     }
@@ -338,6 +435,7 @@ export function parseScriptFile(
     methodCalls,
     propertyAccesses,
     moduleMemberAccesses,
+    importedSymbols,
     capabilities,
   };
 }
