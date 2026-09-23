@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-worldstate-gamerules",
+      "title": "Introduction to Gamerules",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/introductiontogamerules?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-worldstate-gamerule-command",
+      "title": "gamerule Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/commands/commands/gamerule?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-worldstate-command-list",
+      "title": "Commands Documentation",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/commandsreference/examples/commandlist?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-worldstate-weather",
+      "title": "weather Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/commands/commands/weather?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-worldstate-command-intro",
+      "title": "Introduction to Commands",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/commandsintroduction?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-worldstate-chunker",
+      "title": "Chunker - World Settings",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/chunkerworldsettings?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "worldstate.gamerules-global-world-settings",
+      "domain": "world-state",
+      "subject": "gamerules",
+      "statement": "Game rules are world-level settings that change gameplay behavior for the world, including PvP, keepInventory, mob spawning, fire tick, damage rules, command blocks, daylight/weather cycles, immediate respawn, and related behavior.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-gamerules",
+        "ms-worldstate-gamerule-command",
+        "ms-worldstate-chunker"
+      ],
+      "capabilityTags": [
+        "gamerule",
+        "global-state"
+      ],
+      "riskSurfaces": [
+        "cross-arena-effect",
+        "world-global-conflict"
+      ]
+    },
+    {
+      "id": "worldstate.pvp-global",
+      "domain": "world-state",
+      "subject": "pvp gamerule",
+      "statement": "The pvp gamerule controls whether players can damage each other at the world level, so it cannot independently express different simultaneous PvP policies per arena.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-gamerules",
+        "ms-worldstate-gamerule-command"
+      ],
+      "capabilityTags": [
+        "pvp",
+        "global-state"
+      ],
+      "riskSurfaces": [
+        "multi-arena-conflict"
+      ]
+    },
+    {
+      "id": "worldstate.keepinventory-global",
+      "domain": "world-state",
+      "subject": "keepinventory gamerule",
+      "statement": "The keepinventory gamerule controls whether players keep inventory on death at the world level, so using it as a temporary arena mechanic affects all players in the world while the rule is active.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-gamerules",
+        "ms-worldstate-gamerule-command"
+      ],
+      "capabilityTags": [
+        "keepinventory",
+        "global-state"
+      ],
+      "riskSurfaces": [
+        "cross-arena-inventory-policy"
+      ]
+    },
+    {
+      "id": "worldstate.difficulty-world-level",
+      "domain": "world-state",
+      "subject": "difficulty",
+      "statement": "The difficulty command sets the world's difficulty level to Peaceful, Easy, Normal, or Hard, making difficulty another shared world-level gameplay setting.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-command-intro",
+        "ms-worldstate-command-list"
+      ],
+      "capabilityTags": [
+        "difficulty",
+        "global-state"
+      ],
+      "riskSurfaces": [
+        "cross-arena-difficulty"
+      ]
+    },
+    {
+      "id": "worldstate.time-weather-world-level",
+      "domain": "world-state",
+      "subject": "time and weather",
+      "statement": "Commands such as time, daylock, weather, and toggledownfall modify world time/daylight/weather behavior, so cinematic or arena-specific use changes the shared world environment.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-command-list",
+        "ms-worldstate-weather"
+      ],
+      "capabilityTags": [
+        "time",
+        "weather",
+        "global-state"
+      ],
+      "riskSurfaces": [
+        "cross-arena-cinematic",
+        "environment-drift"
+      ]
+    },
+    {
+      "id": "worldstate.commandblocks-enabled-global",
+      "domain": "world-state",
+      "subject": "commandblocksenabled gamerule",
+      "statement": "The commandblocksenabled gamerule controls whether command blocks execute in the world, so changing it affects all command-block-driven arenas and automation globally.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-gamerule-command",
+        "ms-worldstate-chunker"
+      ],
+      "capabilityTags": [
+        "command-block",
+        "gamerule"
+      ],
+      "riskSurfaces": [
+        "automation-global-disable",
+        "cross-arena-failure"
+      ]
+    },
+    {
+      "id": "worldstate.domobspawning-global",
+      "domain": "world-state",
+      "subject": "domobspawning gamerule",
+      "statement": "The domobspawning gamerule controls mob spawning for the world, so toggling it to isolate one mode can suppress natural spawning elsewhere.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-gamerules",
+        "ms-worldstate-gamerule-command"
+      ],
+      "capabilityTags": [
+        "mob-spawning",
+        "gamerule"
+      ],
+      "riskSurfaces": [
+        "population-global-conflict"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "worldstate.relation-global-setting-affects-all-arenas",
+      "domain": "world-state",
+      "subject": "world-level-rule-change",
+      "kind": "produces",
+      "object": "shared-world-behavior-change",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-gamerules",
+        "ms-worldstate-command-list"
+      ]
+    },
+    {
+      "id": "worldstate.relation-global-pvp-requires-local-filter",
+      "domain": "world-state",
+      "subject": "mixed-arena-pvp-policy",
+      "kind": "requires",
+      "object": "arena-scoped-combat-policy-instead-of-global-toggle",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-worldstate-gamerules"
+      ]
+    }
+  ]
+}
