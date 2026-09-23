@@ -17,9 +17,13 @@ function validSourceUrl(source: KnowledgeSource): boolean {
 
 function validateApplicability(
   label: string,
-  applicability: KnowledgeCatalog["facts"][number]["applicability"],
+  applicability: KnowledgeCatalog["facts"][number]["applicability"] | undefined,
   errors: string[],
 ): void {
+  if (!applicability) {
+    errors.push(`${label} requires applicability.`);
+    return;
+  }
   if (!Array.isArray(applicability.editions) || applicability.editions.length === 0) {
     errors.push(`${label} requires at least one edition.`);
   } else {
@@ -54,16 +58,28 @@ export function validateKnowledgeCatalog(
     errors.push("Knowledge catalog schemaVersion must be 1.");
   }
 
+  const sources = Array.isArray(catalog.sources) ? catalog.sources : [];
+  const facts = Array.isArray(catalog.facts) ? catalog.facts : [];
+  const relations = Array.isArray(catalog.relations) ? catalog.relations : [];
+
   if (!Array.isArray(catalog.sources)) errors.push("Knowledge catalog sources must be an array.");
   if (!Array.isArray(catalog.facts)) errors.push("Knowledge catalog facts must be an array.");
+  if (catalog.relations !== undefined && !Array.isArray(catalog.relations)) {
+    errors.push("Knowledge catalog relations must be an array when provided.");
+  }
 
   const sourceIds = new Set<string>();
-  for (const source of catalog.sources ?? []) {
-    if (!source.id.trim()) errors.push("Knowledge source requires id.");
+  for (const source of sources) {
+    if (typeof source.id !== "string" || !source.id.trim()) {
+      errors.push("Knowledge source requires id.");
+      continue;
+    }
     if (sourceIds.has(source.id)) errors.push(`Duplicate knowledge source id: ${source.id}`);
     sourceIds.add(source.id);
 
-    if (!source.title.trim()) errors.push(`Knowledge source requires title: ${source.id}`);
+    if (typeof source.title !== "string" || !source.title.trim()) {
+      errors.push(`Knowledge source requires title: ${source.id}`);
+    }
     if (!KNOWLEDGE_AUTHORITY_SET.has(source.authority)) {
       errors.push(`Knowledge source has unknown authority: ${source.id}`);
     }
@@ -73,28 +89,35 @@ export function validateKnowledgeCatalog(
     if (!validSourceUrl(source)) {
       errors.push(`Knowledge source has invalid URL scheme for authority: ${source.id}`);
     }
-    if (!source.retrievedDate.trim()) {
+    if (typeof source.retrievedDate !== "string" || !source.retrievedDate.trim()) {
       errors.push(`Knowledge source requires retrievedDate: ${source.id}`);
     }
   }
 
   const projectPolicySources = new Set(
-    (catalog.sources ?? [])
+    sources
       .filter((source) => source.authority === "project-policy")
       .map((source) => source.id),
   );
 
   const factIds = new Set<string>();
-  for (const fact of catalog.facts ?? []) {
-    if (!fact.id.trim()) errors.push("Knowledge fact requires id.");
+  for (const fact of facts) {
+    if (typeof fact.id !== "string" || !fact.id.trim()) {
+      errors.push("Knowledge fact requires id.");
+      continue;
+    }
     if (factIds.has(fact.id)) errors.push(`Duplicate knowledge fact id: ${fact.id}`);
     factIds.add(fact.id);
 
     if (!KNOWLEDGE_DOMAIN_SET.has(fact.domain)) {
       errors.push(`Knowledge fact ${fact.id} has unknown domain: ${fact.domain}`);
     }
-    if (!fact.subject.trim()) errors.push(`Knowledge fact requires subject: ${fact.id}`);
-    if (!fact.statement.trim()) errors.push(`Knowledge fact requires statement: ${fact.id}`);
+    if (typeof fact.subject !== "string" || !fact.subject.trim()) {
+      errors.push(`Knowledge fact requires subject: ${fact.id}`);
+    }
+    if (typeof fact.statement !== "string" || !fact.statement.trim()) {
+      errors.push(`Knowledge fact requires statement: ${fact.id}`);
+    }
     if (
       fact.classification !== undefined &&
       !KNOWLEDGE_CLASSIFICATION_SET.has(fact.classification)
@@ -131,8 +154,11 @@ export function validateKnowledgeCatalog(
   }
 
   const relationIds = new Set<string>();
-  for (const relation of catalog.relations ?? []) {
-    if (!relation.id.trim()) errors.push("Knowledge relation requires id.");
+  for (const relation of relations) {
+    if (typeof relation.id !== "string" || !relation.id.trim()) {
+      errors.push("Knowledge relation requires id.");
+      continue;
+    }
     if (relationIds.has(relation.id)) {
       errors.push(`Duplicate knowledge relation id: ${relation.id}`);
     }
@@ -152,7 +178,12 @@ export function validateKnowledgeCatalog(
         `Knowledge relation ${relation.id} has unknown classification: ${relation.classification}`,
       );
     }
-    if (!relation.subject.trim() || !relation.object.trim()) {
+    if (
+      typeof relation.subject !== "string" ||
+      typeof relation.object !== "string" ||
+      !relation.subject.trim() ||
+      !relation.object.trim()
+    ) {
       errors.push(`Knowledge relation requires subject/object: ${relation.id}`);
     }
 
