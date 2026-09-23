@@ -139,6 +139,30 @@ function propertyAccessChain(node: ts.Expression): string[] {
   return names;
 }
 
+function runCommandStringContext(
+  node: ts.StringLiteralLike,
+  file: ts.SourceFile,
+): {
+  mechanism: "runCommand" | "runCommandAsync";
+  executionRegion: string;
+  receiverHint: string;
+} | undefined {
+  const parent = node.parent;
+  if (!ts.isCallExpression(parent) || parent.arguments[0] !== node) {
+    return undefined;
+  }
+  if (!ts.isPropertyAccessExpression(parent.expression)) return undefined;
+  const method = parent.expression.name.text;
+  if (method !== "runCommand" && method !== "runCommandAsync") {
+    return undefined;
+  }
+  return {
+    mechanism: method,
+    executionRegion: localExecutionRegionId(parent, file),
+    receiverHint: parent.expression.expression.getText(file),
+  };
+}
+
 function stringArgument(node: ts.CallExpression, index = 0): string | undefined {
   const arg = node.arguments[index];
   return arg && ts.isStringLiteralLike(arg) ? arg.text : undefined;
@@ -579,11 +603,15 @@ export function parseScriptFile(
   const visit = (node: ts.Node): void => {
     if (ts.isStringLiteralLike(node)) {
       const command = node.text.trim();
+      const runCommandContext = runCommandStringContext(node, file);
       if (
+        !runCommandContext &&
         /^\/?(?:summon|event)\s+/i.test(command)
       ) {
         commandLiterals.push({
           command,
+          mechanism: "embedded-literal",
+          executionRegion: localExecutionRegionId(node, file),
           source: lineSource(file, node, source),
         });
       }
@@ -750,6 +778,26 @@ export function parseScriptFile(
 
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const chain = propertyAccessChain(node.expression);
+      const methodName = node.expression.name.text;
+
+      if (methodName === "runCommand" || methodName === "runCommandAsync") {
+        const argument = node.arguments[0];
+        if (
+          argument &&
+          (
+            ts.isStringLiteralLike(argument) ||
+            ts.isNoSubstitutionTemplateLiteral(argument)
+          )
+        ) {
+          commandLiterals.push({
+            command: argument.text.trim(),
+            mechanism: methodName,
+            executionRegion: localExecutionRegionId(node, file),
+            receiverHint: node.expression.expression.getText(file),
+            source: lineSource(file, argument, source),
+          });
+        }
+      }
 
       const scheduler = deferredScheduler(node, namedMinecraftBindings);
       if (scheduler) {
