@@ -7,10 +7,20 @@ import { validateKnowledgeCatalog } from "./validate.js";
 export async function loadKnowledgeCatalog(
   path: string,
 ): Promise<KnowledgeCatalog> {
-  const parsed = JSON.parse(await readFile(path, "utf8")) as KnowledgeCatalog;
+  let parsed: KnowledgeCatalog;
+  try {
+    parsed = JSON.parse(await readFile(path, "utf8")) as KnowledgeCatalog;
+  } catch (error) {
+    throw new Error(
+      `Failed to parse knowledge catalog ${path}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+
   const errors = validateKnowledgeCatalog(parsed);
   if (errors.length > 0) {
-    throw new Error(errors.join("; "));
+    throw new Error(
+      `Invalid knowledge catalog ${path}: ${errors.join("; ")}`,
+    );
   }
   return parsed;
 }
@@ -21,8 +31,21 @@ export async function loadKnowledgeDirectory(
   const names = (await readdir(directory))
     .filter((name) => name.endsWith(".json"))
     .sort();
-  const catalogs = await Promise.all(
-    names.map((name) => loadKnowledgeCatalog(join(directory, name))),
-  );
-  return mergeKnowledgeCatalogs(catalogs);
+
+  if (names.length === 0) {
+    throw new Error(`No knowledge catalogs found in ${directory}`);
+  }
+
+  const catalogs: KnowledgeCatalog[] = [];
+  for (const name of names) {
+    catalogs.push(await loadKnowledgeCatalog(join(directory, name)));
+  }
+
+  try {
+    return mergeKnowledgeCatalogs(catalogs);
+  } catch (error) {
+    throw new Error(
+      `Failed to merge knowledge directory ${directory}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
