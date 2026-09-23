@@ -55,6 +55,9 @@ export interface InspectDirectoryResult {
     tickingAreas: number;
     preloadedTickingAreas: number;
     areaLoadedSchedules: number;
+    embeddedCommandBlocks: number;
+    unknownEmbeddedCommandEffects: number;
+    queuedTickPositions: number;
   };
   topologyAnalysis: {
     resolvedSpatialEffects: number;

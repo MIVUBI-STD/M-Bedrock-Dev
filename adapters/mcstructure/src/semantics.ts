@@ -1,4 +1,5 @@
 import type { McStructureModel } from "./types.js";
+import { extractStructureRuntimeContent } from "./runtime-content.js";
 
 export interface McStructureSemantics {
   entityCount: number;
@@ -7,6 +8,8 @@ export interface McStructureSemantics {
   hasBlockPositionData: boolean;
   commandBlockPaletteEntries: number;
   containerPaletteEntries: number;
+  embeddedCommandBlocks: number;
+  queuedTickPositions: number;
 }
 
 const COMMAND_BLOCK_NAMES = new Set([
@@ -39,6 +42,8 @@ export function deriveMcStructureSemantics(
     }
   }
 
+  const runtime = extractStructureRuntimeContent(structure);
+
   return {
     entityCount: structure.entities.length,
     hasEntities: structure.entities.length > 0,
@@ -46,5 +51,7 @@ export function deriveMcStructureSemantics(
     hasBlockPositionData: structure.blockPositionData !== undefined,
     commandBlockPaletteEntries,
     containerPaletteEntries,
+    embeddedCommandBlocks: runtime.commandBlocks.length,
+    queuedTickPositions: runtime.queuedTickPositions,
   };
 }

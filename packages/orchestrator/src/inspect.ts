@@ -20,6 +20,7 @@ import {
 } from "../../../analyzers/diagnostics/src/structure-findings.js";
 import { parseMcStructure } from "../../../adapters/mcstructure/src/parse.js";
 import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
+import { extractStructureRuntimeContent } from "../../../adapters/mcstructure/src/runtime-content.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";
@@ -41,6 +42,8 @@ import { deriveReliabilityFingerprint } from "./reliability-fingerprint.js";
 import { analyzeEntityWithKnowledge } from "./entity-knowledge-analysis.js";
 import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
+import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
+import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -127,7 +130,7 @@ export async function inspectDirectory(
   const parsedFunctions = [];
   const parsedScripts: Array<{ node: SemanticNode; parsed: ParsedScriptFile }> = [];
   const parsedEntities: Array<{ node: SemanticNode; parsed: ReturnType<typeof parseEntityDefinition> }> = [];
-  const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; semantics: ReturnType<typeof deriveMcStructureSemantics> }> = [];
+  const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; semantics: ReturnType<typeof deriveMcStructureSemantics>; embeddedCommands: ReturnType<typeof analyzeEmbeddedStructureCommands>; queuedTickPositions: number }> = [];
   const diagnostics: DiagnosticFinding[] = [];
   let parsedStructures = 0;
 
@@ -222,7 +225,28 @@ export async function inspectDirectory(
           file.relativePath,
         );
         parsedStructures += 1;
-        parsedStructureModels.push({ identifier: structureId, node, semantics: deriveMcStructureSemantics(structure) });
+        const runtimeContent = extractStructureRuntimeContent(structure);
+        const embeddedCommands = analyzeEmbeddedStructureCommands(
+          runtimeContent.commandBlocks,
+          node.source,
+        );
+        parsedStructureModels.push({
+          identifier: structureId,
+          node,
+          semantics: deriveMcStructureSemantics(structure),
+          embeddedCommands,
+          queuedTickPositions: runtimeContent.queuedTickPositions,
+        });
+        diagnostics.push(...embeddedStructureCommandDiagnostics(
+          embeddedCommands.map((item) => ({
+            flatIndex: item.block.flatIndex,
+            command: item.block.command,
+            ...(item.block.auto !== undefined ? { auto: item.block.auto } : {}),
+            ...(item.block.tickDelay !== undefined ? { tickDelay: item.block.tickDelay } : {}),
+            unknownEffects: item.unknownEffects,
+          })),
+          node.source,
+        ));
         diagnostics.push(...structureInvariantDiagnostics(structure, node.source));
       } catch (error) {
         diagnostics.push(structureParseFailedDiagnostic(node.source, error));
@@ -424,6 +448,21 @@ export async function inspectDirectory(
       tickingAreas: structureRuntime.chunkLifecycleEvidence.tickingAreas,
       preloadedTickingAreas: structureRuntime.chunkLifecycleEvidence.preloadedTickingAreas,
       areaLoadedSchedules: structureRuntime.chunkLifecycleEvidence.areaLoadedSchedules,
+      embeddedCommandBlocks: parsedStructureModels.reduce(
+        (sum, item) => sum + item.embeddedCommands.length,
+        0,
+      ),
+      unknownEmbeddedCommandEffects: parsedStructureModels.reduce(
+        (sum, item) => sum + item.embeddedCommands.reduce(
+          (inner, command) => inner + command.unknownEffects,
+          0,
+        ),
+        0,
+      ),
+      queuedTickPositions: parsedStructureModels.reduce(
+        (sum, item) => sum + item.queuedTickPositions,
+        0,
+      ),
     },
     topologyAnalysis: {
       resolvedSpatialEffects: topology.resolvedSpatialEffects.length,
