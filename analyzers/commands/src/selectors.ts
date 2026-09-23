@@ -10,14 +10,14 @@ export interface SelectorTagFilter {
 
 export interface ParsedSelector {
   raw: string;
-  base: "@a" | "@e" | "@p" | "@r" | "@s";
+  base: "@a" | "@e" | "@p" | "@r" | "@s" | "@initiator";
   arguments: Readonly<Record<string, string[]>>;
   scores: SelectorScoresFilter[];
   tags: SelectorTagFilter[];
 }
 
 export function parseSelector(token: string): ParsedSelector | undefined {
-  const match = /^(@[aeprs])(?:\[(.*)\])?$/.exec(token.trim());
+  const match = /^(@(?:[aeprs]|initiator))(?:\[(.*)\])?$/.exec(token.trim());
   if (!match) return undefined;
 
   const base = match[1] as ParsedSelector["base"];

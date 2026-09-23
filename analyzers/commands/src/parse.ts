@@ -47,6 +47,33 @@ export function analyzeCommand(command: string, source: SourceRef): CommandAnaly
     return { command, effects };
   }
 
+  if (verb === "dialogue") {
+    const operation = tokens[1]?.toLowerCase();
+    if (operation === "open" && tokens[2] && tokens[3]) {
+      effects.push({
+        kind: "dialogue",
+        operation: "open",
+        npcTarget: tokens[2],
+        playerTarget: tokens[3],
+        ...(tokens[4] ? { sceneName: tokens[4] } : {}),
+        source,
+      });
+      return { command, effects };
+    }
+
+    if (operation === "change" && tokens[2] && tokens[3]) {
+      effects.push({
+        kind: "dialogue",
+        operation: "change",
+        npcTarget: tokens[2],
+        sceneName: tokens[3],
+        ...(tokens[4] ? { playerTarget: tokens[4] } : {}),
+        source,
+      });
+      return { command, effects };
+    }
+  }
+
   if (verb === "function" && tokens[1]) {
     effects.push({ kind: "function-call", target: tokens[1], source });
     return { command, effects };

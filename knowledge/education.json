@@ -8,6 +8,38 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-npc-dialogue",
+      "title": "NPC Dialogue Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/npcdialogue?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-custom-npc",
+      "title": "Create a Custom NPC",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/createnpcs?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-education-service",
+      "title": "Minecraft Education service description",
+      "url": "https://learn.microsoft.com/en-us/office365/servicedescriptions/office-365-platform-service-description/minecraft-education-service-description",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "minecraft-education-agent",
+      "title": "Basic Moves and the Agent",
+      "url": "https://education.minecraft.net/en-us/lessons/basic-moves-the-agent",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -35,6 +67,148 @@
       ],
       "diagnosticHints": [
         "Commands executed from NPC dialogue may depend on initiator context rather than @s."
+      ]
+    },
+    {
+      "id": "education.npc.initiator-only-dialogue-context",
+      "domain": "education",
+      "subject": "@initiator",
+      "statement": "@initiator identifies the player who initiated an NPC dialogue interaction and is specific to NPC dialogue context.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-target-selectors",
+        "ms-npc-dialogue"
+      ],
+      "capabilityTags": [
+        "education:npc",
+        "selector"
+      ],
+      "riskSurfaces": [
+        "npc-dialogue",
+        "selector-context",
+        "multiplayer-state"
+      ],
+      "diagnosticHints": [
+        "Do not interpret @initiator as equivalent to @s; in NPC dialogue @s is the NPC while @initiator is the interacting player."
+      ]
+    },
+    {
+      "id": "education.npc.dialogue-open-loaded-ticking",
+      "domain": "education",
+      "subject": "dialogue-open",
+      "statement": "An NPC targeted by dialogue open must exist in the world; hidden NPCs used as pop-up dialogue sources still need to be in a loaded chunk and within ticking distance of the receiving player.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-npc-dialogue"
+      ],
+      "capabilityTags": [
+        "education:npc",
+        "command:dialogue"
+      ],
+      "riskSurfaces": [
+        "npc-dialogue",
+        "chunk-lifecycle",
+        "entity-runtime"
+      ],
+      "diagnosticHints": [
+        "A valid dialogue command can still fail operationally if its NPC is not loaded/ticking."
+      ]
+    },
+    {
+      "id": "education.npc.dialogue-change-player-scope",
+      "domain": "education",
+      "subject": "dialogue-change",
+      "statement": "dialogue change can update dialogue globally when player target is omitted or per-player when a player target is supplied.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-npc-dialogue"
+      ],
+      "capabilityTags": [
+        "education:npc",
+        "command:dialogue"
+      ],
+      "riskSurfaces": [
+        "npc-dialogue",
+        "multiplayer-state"
+      ]
+    },
+    {
+      "id": "education.npc.multiple-commands-order",
+      "domain": "education",
+      "subject": "npc-commands",
+      "statement": "A custom NPC can hold multiple commands and executes them in order when the player interaction closes its dialogue window.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-custom-npc"
+      ],
+      "capabilityTags": [
+        "education:npc"
+      ],
+      "riskSurfaces": [
+        "npc-dialogue",
+        "command-ordering"
+      ]
+    },
+    {
+      "id": "education.code-builder.support",
+      "domain": "education",
+      "subject": "code-builder",
+      "statement": "Minecraft Education includes Code Builder with block-based coding, JavaScript and Python workflows.",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-education-service"
+      ],
+      "capabilityTags": [
+        "education:code-builder"
+      ],
+      "riskSurfaces": [
+        "education-profile"
+      ]
+    },
+    {
+      "id": "education.agent.code-builder-companion",
+      "domain": "education",
+      "subject": "agent",
+      "statement": "The Agent is a coding companion used by Minecraft Education Code Builder/MakeCode lessons and can be programmed to perform actions in the world.",
+      "applicability": {
+        "editions": [
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "minecraft-education-agent"
+      ],
+      "capabilityTags": [
+        "education:agent",
+        "education:code-builder"
+      ],
+      "riskSurfaces": [
+        "education-profile",
+        "agent-runtime"
       ]
     }
   ]

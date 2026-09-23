@@ -59,6 +59,14 @@ export type CommandEffect =
       source: SourceRef;
     }
   | {
+      kind: "dialogue";
+      operation: "open" | "change";
+      npcTarget: string;
+      playerTarget?: string;
+      sceneName?: string;
+      source: SourceRef;
+    }
+  | {
       kind: "tag-mutation";
       operation: "add" | "remove";
       target: string;
