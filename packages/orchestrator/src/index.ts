@@ -50,3 +50,5 @@ export * from "./mutation-transaction-analysis.js";
 export * from "./script-mutation-transaction-analysis.js";
 
 export * from "./script-structure-correlation.js";
+
+export * from "./script-command-transaction-analysis.js";
