@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-inv-entity-inventory",
+      "title": "EntityInventoryComponent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entityinventorycomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-inv-container",
+      "title": "Container Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/container?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-inv-slot",
+      "title": "ContainerSlot Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/containerslot?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-inv-equippable",
+      "title": "EntityEquippableComponent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/entityequippablecomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-inv-itemstack",
+      "title": "ItemStack Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemstack?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "inventory.entity-component-container-invalid-on-removed",
+      "domain": "inventory",
+      "subject": "EntityInventoryComponent.container",
+      "statement": "An entity inventory container becomes unavailable/invalid when the owning entity is removed, so cached inventory handles must not be treated as durable across entity/session lifecycle changes.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-entity-inventory"
+      ],
+      "capabilityTags": [
+        "inventory",
+        "container-validity"
+      ],
+      "riskSurfaces": [
+        "stale-reference",
+        "respawn",
+        "disconnect"
+      ]
+    },
+    {
+      "id": "inventory.slot-validity-runtime",
+      "domain": "inventory",
+      "subject": "ContainerSlot.isValid",
+      "statement": "ContainerSlot exposes runtime validity and slot operations can throw InvalidContainerSlotError, so cached slot handles require validation before use.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-slot"
+      ],
+      "capabilityTags": [
+        "container-slot",
+        "validity"
+      ],
+      "riskSurfaces": [
+        "stale-slot",
+        "invalid-handle"
+      ]
+    },
+    {
+      "id": "inventory.getitem-returns-copy",
+      "domain": "inventory",
+      "subject": "ContainerSlot.getItem",
+      "statement": "ContainerSlot.getItem returns an exact copy of the item stack. Mutating that returned ItemStack does not by itself prove the original slot was updated; an explicit write-back path is required.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-slot",
+        "ms-inv-itemstack"
+      ],
+      "capabilityTags": [
+        "ItemStack",
+        "copy-semantics"
+      ],
+      "riskSurfaces": [
+        "lost-update",
+        "equipment-desync"
+      ]
+    },
+    {
+      "id": "inventory.setitem-replaces-slot",
+      "domain": "inventory",
+      "subject": "ContainerSlot.setItem",
+      "statement": "ContainerSlot.setItem replaces the item in that slot and cannot be called in restricted-execution mode; slot writes may throw container-rule or validity errors.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-slot"
+      ],
+      "capabilityTags": [
+        "inventory-write",
+        "restricted-execution"
+      ],
+      "riskSurfaces": [
+        "partial-reset",
+        "write-failure"
+      ]
+    },
+    {
+      "id": "inventory.equipment-separate-surface",
+      "domain": "inventory",
+      "subject": "EntityEquippableComponent",
+      "statement": "Equipment slots are exposed through an equippable component with separate get/set operations, so clearing inventory storage alone does not prove equipped items were reset.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-equippable"
+      ],
+      "capabilityTags": [
+        "equipment",
+        "inventory"
+      ],
+      "riskSurfaces": [
+        "equipment-leak",
+        "loadout-reset"
+      ]
+    },
+    {
+      "id": "inventory.container-additem-can-leave-remainder",
+      "domain": "inventory",
+      "subject": "Container.addItem",
+      "statement": "Container add operations can fail due to invalid container state and may be constrained by available slots/stack rules, so a grant path must verify the intended item quantity actually entered the inventory rather than treating the call as an unconditional commit.",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-container",
+        "ms-inv-slot"
+      ],
+      "capabilityTags": [
+        "item-grant",
+        "container-capacity"
+      ],
+      "riskSurfaces": [
+        "partial-grant",
+        "item-loss"
+      ]
+    },
+    {
+      "id": "inventory.itemstack-can-carry-custom-state",
+      "domain": "inventory",
+      "subject": "ItemStack custom data",
+      "statement": "ItemStack can carry components and dynamic/custom properties, so equality by typeId alone may be insufficient for deduplication, kit verification, or equipment reconciliation.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-itemstack"
+      ],
+      "capabilityTags": [
+        "ItemStack",
+        "custom-data"
+      ],
+      "riskSurfaces": [
+        "duplicate-detection",
+        "wrong-item-identity"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "inventory.relation-slot-validity-gates-write",
+      "domain": "inventory",
+      "subject": "container-slot-write",
+      "kind": "gates",
+      "object": "valid-container-slot",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-slot"
+      ]
+    },
+    {
+      "id": "inventory.relation-equipment-requires-separate-reset",
+      "domain": "inventory",
+      "subject": "loadout-reset",
+      "kind": "requires",
+      "object": "inventory-and-equipment-reconciliation",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-inv-equippable",
+        "ms-inv-entity-inventory"
+      ]
+    }
+  ]
+}
