@@ -26,6 +26,7 @@ import {
 import { scriptSignatureDiagnostics } from "../../../analyzers/diagnostics/src/script-signature-findings.js";
 import { scriptReturnContractDiagnostics } from "../../../analyzers/diagnostics/src/script-return-contract-findings.js";
 import { scriptImportedTypeLifecycleDiagnostics } from "../../../analyzers/diagnostics/src/script-type-findings.js";
+import { scriptEnumValueDiagnostics } from "../../../analyzers/diagnostics/src/script-enum-value-findings.js";
 import { scriptPropertyWriteDiagnostics } from "../../../analyzers/diagnostics/src/script-property-write-findings.js";
 import {
   structureInvariantDiagnostics,
@@ -437,6 +438,10 @@ export async function inspectDirectory(
       scripts,
     ));
     diagnostics.push(...scriptImportedTypeLifecycleDiagnostics(
+      scriptCompatibility,
+      scripts,
+    ));
+    diagnostics.push(...scriptEnumValueDiagnostics(
       scriptCompatibility,
       scripts,
     ));

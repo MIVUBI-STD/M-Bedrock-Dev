@@ -177,6 +177,10 @@ export function deriveReliabilityFingerprint(
     capabilityTags.add("script-property-mutability");
     riskSurfaces.add("script-readonly-write");
   }
+  if (input.diagnostics.some((finding) => finding.code === "SCRIPT_API_ENUM_VALUE_INCOMPATIBLE")) {
+    capabilityTags.add("script-enum-value-migration");
+    riskSurfaces.add("script-enum-backing-value");
+  }
 
   const editions = input.target.edition ? [input.target.edition] : [];
   const minEngineVersions = input.packs

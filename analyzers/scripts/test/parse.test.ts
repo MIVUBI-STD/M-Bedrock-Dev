@@ -303,6 +303,33 @@ mark.value += 1;
     ]));
   });
 
+  it("captures enum backing-value literal comparisons", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { BlockComponentTypes as BCT } from "@minecraft/server";
+import * as mc from "@minecraft/server";
+
+const a = BCT.FluidContainer === "minecraft:fluidContainer";
+const b = "minecraft:fluid_container" !== mc.BlockComponentTypes.FluidContainer;
+`,
+      source,
+    );
+
+    expect(parsed.enumValueComparisons).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "BlockComponentTypes.FluidContainer",
+        operator: "===",
+        literal: "minecraft:fluidContainer",
+      }),
+      expect.objectContaining({
+        symbol: "BlockComponentTypes.FluidContainer",
+        operator: "!==",
+        literal: "minecraft:fluid_container",
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",
