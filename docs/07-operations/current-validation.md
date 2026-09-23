@@ -67,3 +67,22 @@ Entity-event reachability findings remain informational static limits where no i
 - controlled migration of the four legacy Defense V2 API usages if the target module line is upgraded.
 
 These require local Minecraft or controlled runtime/differential evidence.
+
+
+## Lifecycle migration exposure
+
+Production migration inventory additionally measures deprecated member names whose receivers cannot always be reconstructed from bundled JavaScript.
+
+Defense V2:
+
+```text
+runCommandAsync  57 total = 10 exact + 47 lexical-only
+isValid          16 total =  5 exact + 11 lexical-only
+playSound         2 total =  0 exact +  2 lexical-only
+```
+
+Defense V1 has two lexical-only `playSound` candidates and no exact deprecated Script API finding.
+
+Lexical-only counts are evidence for migration planning and never generate diagnostics by themselves.
+
+A partial `runCommandAsync` rewrite was rejected as a final map repair because it changed only a small portion of the 57-call exposure and would risk changing asynchronous gameplay semantics.

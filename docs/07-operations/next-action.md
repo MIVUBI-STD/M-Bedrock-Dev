@@ -21,7 +21,7 @@ Do not add another generalized static subsystem without new evidence.
 Next work should use one of these lanes:
 
 1. **Runtime proof** — import/load the maps in the target Minecraft build and validate entity AI, event timing, chunks, saved ticks, and multiplayer behavior.
-2. **Controlled API migration** — migrate the four genuine Defense V2 1.x deprecations only together with an explicit target `@minecraft/server` upgrade and runtime validation.
+2. **Controlled API migration** — choose an explicit target `@minecraft/server` line first. Defense V2 currently exposes 57 `runCommandAsync` member calls (10 exact, 47 lexical-only) and 16 `isValid` calls (5 exact, 11 lexical-only); do not bulk-rewrite them without runtime validation.
 3. **Update differential** — run `compare-update` on real before/after Minecraft-update artifacts.
 4. **Entity-event proof** — add runtime/project evidence for informational event-reachability gaps when a reported bug points at those events.
 5. **Knowledge expansion** — only when production usage or a new official API change exposes a new unclassified surface.
