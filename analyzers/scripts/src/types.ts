@@ -93,6 +93,13 @@ export interface ScriptPropertyAccess {
   source: SourceRef;
 }
 
+export interface ScriptLocalFunctionCall {
+  callerRegion: string;
+  targetRegion: string;
+  targetName: string;
+  source: SourceRef;
+}
+
 export interface ScriptDeferredCallback {
   scheduler: "run" | "runTimeout" | "runInterval" | "runJob";
   source: SourceRef;
@@ -174,6 +181,7 @@ export interface ParsedScriptFile {
   dynamicProperties: DynamicPropertyAccess[];
   restrictedMutations: RestrictedExecutionMutation[];
   deferredCallbacks: ScriptDeferredCallback[];
+  localFunctionCalls: ScriptLocalFunctionCall[];
   methodCalls: ScriptMethodCall[];
   propertyAccesses: ScriptPropertyAccess[];
   propertyWrites: ScriptPropertyWrite[];
