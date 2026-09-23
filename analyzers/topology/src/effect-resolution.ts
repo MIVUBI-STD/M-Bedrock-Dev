@@ -6,7 +6,8 @@ export type ResolvedEffect =
   | { kind: "fill"; from: WorldPosition; to: WorldPosition; block: string; sourcePath: string }
   | { kind: "setblock"; position: WorldPosition; block: string; sourcePath: string }
   | { kind: "clone"; from: WorldPosition; to: WorldPosition; destination: WorldPosition; sourcePath: string }
-  | { kind: "teleport"; target: string; destination: WorldPosition; sourcePath: string };
+  | { kind: "teleport"; target: string; destination: WorldPosition; sourcePath: string }
+  | { kind: "entity-spawn"; entityIdentifier: string; position: WorldPosition; sourcePath: string };
 
 function resolveRegion(region: BlockRegion, context: CoordinateContext) {
   const from = resolveCoordinate3(region.from, context);
@@ -31,6 +32,10 @@ export function effectUsesOnlyAbsoluteCoordinates(effect: CommandEffect): boolea
       && coordinateIsAbsolute(effect.destination);
   }
   if (effect.kind === "teleport") return coordinateIsAbsolute(effect.destination);
+  if (effect.kind === "entity-spawn") {
+    return effect.position !== undefined &&
+      coordinateIsAbsolute(effect.position);
+  }
   return false;
 }
 
