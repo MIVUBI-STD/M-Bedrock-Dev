@@ -1,25 +1,26 @@
 # Next Action
 
-Usage-driven Script API inventory is now implemented on top of bounded receiver inference.
+Script API usage can now be correlated directly with Minecraft update evidence.
 
 Implemented:
 
-1. per-map `scriptApiUsage` in inspection results;
-2. event and method occurrence inventory with source-file evidence;
-3. known versus unclassified symbol classification;
-4. direct/bounded receiver inference counts and receiver-type evidence;
-5. multi-map portfolio aggregation;
-6. `promotionCandidates` ordered by cross-map coverage before raw frequency;
-7. CLI: `npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...]`;
-8. unknown symbols remain knowledge gaps and never become diagnostics automatically.
+1. per-map and multi-map Script API usage inventory;
+2. bounded receiver inference and method/event symbol classification;
+3. Script update correlation in `compare-update`;
+4. deterministic aliases between source syntax and documented class/event-container identifiers;
+5. separate module-surface overlap and exact/alias symbol matches;
+6. before/after occurrence and source-file evidence for matched symbols;
+7. unclassified observed symbols retained as knowledge gaps;
+8. Minecraft 1.26.40 catalog enriched with documented v2.9.0 promoted symbols and runtime-fix identifiers;
+9. correlation remains descriptive and never asserts update causation.
 
 Next priority:
 
-1. run the portfolio inventory against a representative production-map set and retain the resulting symbol distribution as evidence;
-2. establish method-level provenance for the most frequent unclassified symbols, starting with Scoreboard/ScoreboardObjective only if real-map coverage supports it;
-3. correlate observed event/method symbols with Minecraft update regression evidence;
-4. add deprecated and removed symbol states from official changelogs;
-5. extend execution-privilege rules to inferred receiver methods where restrictions are explicit;
-6. add longitudinal usage snapshots only after real portfolio runs justify historical tracking.
+1. add deprecated and removed Script API symbol states from official changelogs and detect real-map exposure to them;
+2. run `script-usage` and `compare-update` against representative production maps to establish actual symbol/update overlap distributions;
+3. promote high-frequency unclassified symbols only after official version provenance is established;
+4. extend execution-privilege rules to inferred receiver methods where Microsoft explicitly documents restrictions;
+5. add regression-level affected identifiers only when a reproduced historical regression can name them reliably;
+6. consider longitudinal symbol-usage snapshots only after production portfolio evidence justifies storage.
 
-Usage-driven expansion remains the default. Broad API inventory generation stays out of the hot path.
+Usage-driven expansion remains the default. Broad or fuzzy API matching stays out of the hot path.
