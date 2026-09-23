@@ -157,6 +157,7 @@ export interface InspectDirectoryResult {
   repairCandidates: InspectionRepairCandidate[];
   targetCompatibility: {
     edition: MinecraftEdition | "unknown";
+    version?: string;
     educationFeatures: EducationFeatureState;
     eduLevel?: number;
   };
