@@ -50,6 +50,8 @@ describe("automatic reliability fingerprint", () => {
       scripts: [script],
       structures: 1,
       parsedStructures: 1,
+      entities: 0,
+      entityKnowledgeGaps: 0,
       worldDatabasePresent: true,
       stateAccesses: 1,
       broadStateWrites: 1,
