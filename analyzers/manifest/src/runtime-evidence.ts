@@ -104,15 +104,18 @@ export function resolveKnowledgeProfile(
 ): KnowledgeProfileResolution {
   const conflicts: string[] = [];
   const modules = new Map<string, string>();
+  const conflictedModules = new Set<string>();
 
   for (const manifest of manifests) {
     for (const [name, version] of Object.entries(manifestRuntimeEvidence(manifest).scriptModules)) {
       const existing = modules.get(name);
       if (existing !== undefined && existing !== version) {
         conflicts.push("Conflicting script module versions for " + name + ": " + existing + " vs " + version);
+        conflictedModules.add(name);
+        modules.delete(name);
         continue;
       }
-      modules.set(name, version);
+      if (!conflictedModules.has(name)) modules.set(name, version);
     }
   }
 
