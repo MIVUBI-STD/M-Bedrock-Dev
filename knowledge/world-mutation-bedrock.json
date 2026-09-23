@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-structure-command",
+      "title": "structure Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/commandsreference/examples/commands/structure?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-structure-manager",
+      "title": "StructureManager Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/structuremanager?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-structure-create-options",
+      "title": "StructureCreateOptions Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/structurecreateoptions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-structure-blocks",
+      "title": "Introduction to Structure Blocks",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/structures/introductiontostructureblocks?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-dimension-current-structure",
+      "title": "Dimension Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/dimension?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "world-mutation.structure-load-can-include-entities-blocks",
+      "domain": "world-mutation",
+      "subject": "/structure load",
+      "statement": "Structure loading can independently include blocks and entities, with optional rotation, mirroring, animation, waterlogging, integrity, and seed parameters. The resulting world mutation therefore depends on more than the structure identifier and destination alone.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-structure-command"],
+      "capabilityTags": ["structure-load", "entities", "blocks"],
+      "riskSurfaces": ["duplicate-entity", "partial-world-mutation", "wrong-transform"]
+    },
+    {
+      "id": "world-mutation.structure-integrity-can-be-partial",
+      "domain": "world-mutation",
+      "subject": "structure integrity",
+      "statement": "Structure load integrity can intentionally place only a probabilistic subset of blocks, so successful command execution does not always imply a complete block-for-block reconstruction.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-structure-command"],
+      "capabilityTags": ["structure-load", "integrity"],
+      "riskSurfaces": ["partial-world-mutation", "readiness-proof"]
+    },
+    {
+      "id": "world-mutation.structure-animation-is-time-spread",
+      "domain": "world-mutation",
+      "subject": "structure animation",
+      "statement": "Structure loads may use block-by-block or layer-by-layer animation over a configured duration, so command acceptance is not necessarily equivalent to all intended blocks being present immediately.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-structure-command"],
+      "capabilityTags": ["structure-animation", "deferred-world-mutation"],
+      "riskSurfaces": ["timing-assumption", "readiness-proof"]
+    },
+    {
+      "id": "world-mutation.structure-manager-place-queues-unloaded",
+      "domain": "world-mutation",
+      "subject": "StructureManager.place",
+      "statement": "StructureManager.place can queue a structure placement when destination chunks are unloaded, so placement request return is not universal proof that the destination world state is already materialized and ready for dependent gameplay.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-structure-manager"],
+      "capabilityTags": ["StructureManager.place", "chunk-loading"],
+      "riskSurfaces": ["queued-placement", "false-readiness", "chunk-lifecycle"]
+    },
+    {
+      "id": "world-mutation.structure-manager-restricted-execution",
+      "domain": "world-mutation",
+      "subject": "StructureManager mutation APIs",
+      "statement": "StructureManager mutation methods such as create/place cannot be called from restricted-execution mode and may throw engine/argument errors.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-structure-manager"],
+      "capabilityTags": ["StructureManager", "execution-privilege"],
+      "riskSurfaces": ["restricted-execution", "world-mutation-failure"]
+    },
+    {
+      "id": "world-mutation.structure-save-includes-stateful-block-data",
+      "domain": "world-mutation",
+      "subject": "structure saved block state",
+      "statement": "Structure data preserves block state, including stateful blocks such as command blocks, chests/inventories, and structure blocks, so loading a structure can restore embedded runtime-relevant block data rather than only visual blocks.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-structure-blocks"],
+      "capabilityTags": ["structure-data", "block-state"],
+      "riskSurfaces": ["command-block-runtime", "inventory-state", "hidden-world-state"]
+    },
+    {
+      "id": "world-mutation.setblock-can-fail-unloaded",
+      "domain": "world-mutation",
+      "subject": "Dimension.setBlockPermutation",
+      "statement": "Direct block mutation can throw LocationInUnloadedChunkError when the destination chunk is not loaded, so block writes require chunk readiness or explicit recovery.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-dimension-current-structure"],
+      "capabilityTags": ["block-mutation", "chunk-readiness"],
+      "riskSurfaces": ["unloaded-chunk", "partial-world-mutation"]
+    },
+    {
+      "id": "world-mutation.createfromworld-defaults-include",
+      "domain": "world-mutation",
+      "subject": "StructureCreateOptions",
+      "statement": "StructureCreateOptions defaults includeBlocks and includeEntities to true, so dynamically captured structures can unintentionally include entities unless options explicitly narrow the snapshot.",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-structure-create-options"],
+      "capabilityTags": ["structure-save", "entity-capture"],
+      "riskSurfaces": ["duplicate-entity", "snapshot-scope"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "world-mutation.relation-place-does-not-prove-ready",
+      "domain": "world-mutation",
+      "subject": "structure-placement-request",
+      "kind": "requires",
+      "object": "post-placement-readiness-verification",
+      "classification": "derived-rule",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-structure-manager"]
+    },
+    {
+      "id": "world-mutation.relation-setblock-requires-loaded",
+      "domain": "world-mutation",
+      "subject": "block-write",
+      "kind": "requires",
+      "object": "loaded-target-chunk",
+      "classification": "engine-fact",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["ms-dimension-current-structure"]
+    }
+  ]
+}
