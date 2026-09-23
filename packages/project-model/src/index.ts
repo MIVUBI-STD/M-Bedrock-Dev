@@ -11,3 +11,5 @@ export * from "./runtime-evidence.js";
 export * from "./route-corridor.js";
 
 export * from "./state-authority-contract.js";
+
+export * from "./mutation-dependent-action.js";
