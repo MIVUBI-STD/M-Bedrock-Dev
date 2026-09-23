@@ -65,6 +65,10 @@ import { structureRuntimeEvidence } from "./structure-runtime-evidence.js";
 import { derivePlacementProofs } from "./structure-proof-analysis.js";
 import { areaLoadedBlockWriteEvidence } from "./area-loaded-proof.js";
 import {
+  analyzeMutationTransactionOrdering,
+  mutationTransactionRuntimeEvidence,
+} from "./mutation-transaction-analysis.js";
+import {
   correlateRouteMutations,
   routeMutationRuntimeEvidence,
 } from "./route-mutation-analysis.js";
@@ -579,6 +583,9 @@ export async function inspectDirectory(
     structureProofs,
     target.staticExecutionDimension,
   );
+  const mutationTransactions = analyzeMutationTransactionOrdering(
+    parsedFunctionModels,
+  );
 
   const knowledgeRuntime = analyzeKnowledgeRuntime(
     knowledgeCatalog,
@@ -597,6 +604,9 @@ export async function inspectDirectory(
         parsedFunctionModels,
       ),
       ...routeMutationRuntimeEvidence(routeCorrelations),
+      ...mutationTransactionRuntimeEvidence(
+        mutationTransactions.assessments,
+      ),
     ],
     parsedScripts.map((item) => item.parsed),
     parsedEntities.map((item) => ({
@@ -753,6 +763,21 @@ export async function inspectDirectory(
       overlaps: routeCorrelations.filter((item) => item.status === "overlap").length,
       dimensionUnresolved: routeCorrelations.filter(
         (item) => item.status === "dimension-unresolved",
+      ).length,
+    },
+    mutationTransactions: {
+      assessed: mutationTransactions.assessments.length,
+      verifiedBeforeDependent: mutationTransactions.assessments.filter(
+        (item) => item.status === "verified-before-dependent",
+      ).length,
+      dependentBeforeVerification: mutationTransactions.assessments.filter(
+        (item) => item.status === "dependent-before-verification",
+      ).length,
+      verificationUnresolved: mutationTransactions.assessments.filter(
+        (item) => item.status === "verification-unresolved",
+      ).length,
+      noDependentAction: mutationTransactions.assessments.filter(
+        (item) => item.status === "no-dependent-action",
       ).length,
     },
     reliability: {
