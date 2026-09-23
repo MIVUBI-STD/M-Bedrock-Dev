@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-spatial-dimension",
+      "title": "Dimension Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/dimension?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-spatial-dimension-location",
+      "title": "DimensionLocation Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/dimensionlocation?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-spatial-dimension-height",
+      "title": "Data Driven Overworld Height and Void Generation",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/datadrivenoverworldheight?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-spatial-teleport-options",
+      "title": "TeleportOptions Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/teleportoptions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-spatial-custom-dimension",
+      "title": "Building with the Custom Dimension API",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/custom-dimension-api-tutorial?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "spatial.dimension-height-range-runtime",
+      "domain": "spatial-containment",
+      "subject": "Dimension.heightRange",
+      "statement": "Each dimension exposes a heightRange defining valid vertical bounds; spatial validation must use the actual dimension range rather than hard-coded universal Y limits.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-spatial-dimension"
+      ],
+      "capabilityTags": [
+        "dimension",
+        "height-range"
+      ],
+      "riskSurfaces": [
+        "out-of-bounds",
+        "void-recovery"
+      ]
+    },
+    {
+      "id": "spatial.dimensionlocation-binds-coordinates",
+      "domain": "spatial-containment",
+      "subject": "DimensionLocation",
+      "statement": "A world location is identified by both its coordinates and its Dimension; identical x/y/z values in different dimensions represent different spatial locations.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-spatial-dimension-location"
+      ],
+      "capabilityTags": [
+        "dimension-location",
+        "identity"
+      ],
+      "riskSurfaces": [
+        "wrong-dimension",
+        "coordinate-aliasing"
+      ]
+    },
+    {
+      "id": "spatial.custom-height-can-change",
+      "domain": "spatial-containment",
+      "subject": "dimension bounds",
+      "statement": "Bedrock worlds can define modified vertical dimension bounds and void generation, so authored assumptions about buildable height can become invalid when custom dimension bounds are used.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-spatial-dimension-height"
+      ],
+      "capabilityTags": [
+        "custom-dimension",
+        "height"
+      ],
+      "riskSurfaces": [
+        "hardcoded-y",
+        "void-map"
+      ]
+    },
+    {
+      "id": "spatial.teleport-can-change-dimension",
+      "domain": "spatial-containment",
+      "subject": "TeleportOptions.dimension",
+      "statement": "Teleport can move entities between dimensions and can optionally preserve velocity or check block collision, so containment transitions can change both dimension membership and motion state.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-spatial-teleport-options"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "dimension-transfer",
+        "velocity"
+      ],
+      "riskSurfaces": [
+        "cross-dimension-leak",
+        "post-transfer-motion"
+      ]
+    },
+    {
+      "id": "spatial.custom-dimension-travel-needs-loaded-arrival",
+      "domain": "spatial-containment",
+      "subject": "custom dimension travel",
+      "statement": "Official custom-dimension guidance explicitly prepares/loads destination areas before teleporting players, reinforcing that spatial transfer and destination readiness are separate concerns.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-spatial-custom-dimension"
+      ],
+      "capabilityTags": [
+        "custom-dimension",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "unsafe-transfer",
+        "arrival-not-ready"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "spatial.relation-position-requires-dimension",
+      "domain": "spatial-containment",
+      "subject": "arena-position",
+      "kind": "requires",
+      "object": "dimension-identity",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-spatial-dimension-location"
+      ]
+    },
+    {
+      "id": "spatial.relation-y-validity-requires-height-range",
+      "domain": "spatial-containment",
+      "subject": "vertical-location",
+      "kind": "requires",
+      "object": "dimension-heightRange-validation",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-spatial-dimension"
+      ]
+    }
+  ]
+}
