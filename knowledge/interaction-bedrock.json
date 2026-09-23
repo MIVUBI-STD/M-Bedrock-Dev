@@ -1,0 +1,285 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-ui-action-form",
+      "title": "ActionFormData Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/actionformdata?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ui-modal-form",
+      "title": "ModalFormData Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/modalformdata?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-ui-action-response",
+      "title": "ActionFormResponse Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/actionformresponse?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-input-permissions",
+      "title": "PlayerInputPermissions Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playerinputpermissions?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-player-current-interaction",
+      "title": "Player Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/player?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-world-after-interaction",
+      "title": "WorldAfterEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-interact-block-after",
+      "title": "PlayerInteractWithBlockAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playerinteractwithblockafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-interact-entity-after",
+      "title": "PlayerInteractWithEntityAfterEvent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/playerinteractwithentityafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "interaction.form-show-async",
+      "domain": "interaction",
+      "subject": "server-ui form show",
+      "statement": "ActionFormData.show and ModalFormData.show return Promises that resolve later when the player confirms or cancels, so response handling is a deferred callback path rather than an immediate transaction.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ui-action-form",
+        "ms-ui-modal-form"
+      ],
+      "capabilityTags": [
+        "server-ui",
+        "async-form"
+      ],
+      "riskSurfaces": [
+        "stale-response",
+        "disconnect",
+        "generation-change"
+      ]
+    },
+    {
+      "id": "interaction.form-show-restricted-illegal",
+      "domain": "interaction",
+      "subject": "form show execution privilege",
+      "statement": "Form show methods cannot be called from restricted-execution mode and can throw engine/entity/message errors.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ui-action-form",
+        "ms-ui-modal-form"
+      ],
+      "capabilityTags": [
+        "server-ui",
+        "execution-privilege"
+      ],
+      "riskSurfaces": [
+        "restricted-execution",
+        "invalid-player"
+      ]
+    },
+    {
+      "id": "interaction.form-response-can-cancel",
+      "domain": "interaction",
+      "subject": "form response",
+      "statement": "Form responses can represent cancellation and optional selection/value data, so canceled/absent values must be handled separately from successful user choice.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ui-action-response",
+        "ms-ui-action-form",
+        "ms-ui-modal-form"
+      ],
+      "capabilityTags": [
+        "form-response",
+        "cancel"
+      ],
+      "riskSurfaces": [
+        "undefined-selection",
+        "false-submit"
+      ]
+    },
+    {
+      "id": "interaction.input-permissions-mutable",
+      "domain": "interaction",
+      "subject": "PlayerInputPermissions",
+      "statement": "Player input permission categories can be queried and enabled or disabled through PlayerInputPermissions; mutating these permissions is not allowed in restricted-execution mode and may throw errors.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-input-permissions",
+        "ms-player-current-interaction"
+      ],
+      "capabilityTags": [
+        "input-permissions",
+        "player-control"
+      ],
+      "riskSurfaces": [
+        "movement-lock",
+        "camera-lock",
+        "restore-failure"
+      ]
+    },
+    {
+      "id": "interaction.input-permission-change-observable",
+      "domain": "interaction",
+      "subject": "playerInputPermissionCategoryChange",
+      "statement": "World after-events expose player input-permission category changes, so control-lock changes are observable independently from the gameplay state that requested them.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-after-interaction"
+      ],
+      "capabilityTags": [
+        "input-permissions",
+        "event"
+      ],
+      "riskSurfaces": [
+        "permission-desync",
+        "restore-failure"
+      ]
+    },
+    {
+      "id": "interaction.block-interact-can-repeat-while-held",
+      "domain": "interaction",
+      "subject": "playerInteractWithBlock",
+      "statement": "playerInteractWithBlock includes isFirstEvent, which is true for the initial interaction press and false for repeated events from holding the interaction input; treating every event as a unique button press can duplicate actions.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-interact-block-after"
+      ],
+      "capabilityTags": [
+        "interaction",
+        "isFirstEvent"
+      ],
+      "riskSurfaces": [
+        "double-submit",
+        "repeat-trigger",
+        "revive-spam"
+      ]
+    },
+    {
+      "id": "interaction.entity-interact-exposes-before-after-item",
+      "domain": "interaction",
+      "subject": "playerInteractWithEntity",
+      "statement": "Entity interaction after-events expose the source player, target entity, and item stack before/after the successful interaction, so gameplay can validate both actor/target identity and item-side effects.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-interact-entity-after"
+      ],
+      "capabilityTags": [
+        "interaction",
+        "entity-target",
+        "item-state"
+      ],
+      "riskSurfaces": [
+        "wrong-target",
+        "item-desync"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "interaction.relation-form-response-is-deferred",
+      "domain": "interaction",
+      "subject": "form-show",
+      "kind": "produces",
+      "object": "deferred-form-response",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-ui-action-form",
+        "ms-ui-modal-form"
+      ]
+    },
+    {
+      "id": "interaction.relation-repeat-interact-requires-firstevent",
+      "domain": "interaction",
+      "subject": "held-block-interaction",
+      "kind": "requires",
+      "object": "first-event-or-explicit-repeat-policy",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-interact-block-after"
+      ]
+    }
+  ]
+}
