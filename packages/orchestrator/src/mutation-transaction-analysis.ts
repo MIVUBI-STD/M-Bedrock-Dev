@@ -23,6 +23,10 @@ export interface MutationTransactionStep {
   command: string;
   detail?: string;
   verification?: BlockVerificationSemantics;
+  mutationBounds?: {
+    min: { x: number; y: number; z: number };
+    max: { x: number; y: number; z: number };
+  };
 }
 
 export type MutationOrderingStatus =
@@ -59,6 +63,63 @@ function directFunctionTargets(command: ParsedFunctionCommand): string[] {
     .map((effect) => effect.target);
 }
 
+function normalizedBounds(
+  a: { x: number; y: number; z: number },
+  b: { x: number; y: number; z: number },
+) {
+  return {
+    min: {
+      x: Math.min(a.x, b.x),
+      y: Math.min(a.y, b.y),
+      z: Math.min(a.z, b.z),
+    },
+    max: {
+      x: Math.max(a.x, b.x),
+      y: Math.max(a.y, b.y),
+      z: Math.max(a.z, b.z),
+    },
+  };
+}
+
+function directMutationBounds(
+  effects: readonly ReturnType<typeof flattenCommandEffects>[number][],
+): MutationTransactionStep["mutationBounds"] | undefined {
+  for (const effect of effects) {
+    if (effect.kind === "setblock") {
+      const point = absolutePosition(effect.position);
+      if (point) return normalizedBounds(point, point);
+    }
+
+    if (effect.kind === "fill") {
+      const from = absolutePosition(effect.region.from);
+      const to = absolutePosition(effect.region.to);
+      if (from && to) return normalizedBounds(from, to);
+    }
+
+    if (effect.kind === "clone") {
+      const from = absolutePosition(effect.sourceRegion.from);
+      const to = absolutePosition(effect.sourceRegion.to);
+      const destination = absolutePosition(effect.destination);
+      if (!from || !to || !destination) continue;
+
+      const size = {
+        x: Math.abs(to.x - from.x) + 1,
+        y: Math.abs(to.y - from.y) + 1,
+        z: Math.abs(to.z - from.z) + 1,
+      };
+      return normalizedBounds(
+        destination,
+        {
+          x: destination.x + size.x - 1,
+          y: destination.y + size.y - 1,
+          z: destination.z + size.z - 1,
+        },
+      );
+    }
+  }
+  return undefined;
+}
+
 function commandSteps(
   functionId: string,
   command: ParsedFunctionCommand,
@@ -87,24 +148,30 @@ function commandSteps(
     effect.kind === "clone"
   );
   if (hasApply) {
+    const mutationBounds = directMutationBounds(effects);
     output.push({
       kind: "apply",
       functionId,
       source: command.source,
       command: command.raw,
+      ...(mutationBounds ? { mutationBounds } : {}),
     });
   }
 
-  const hasDependentAction = effects.some((effect) =>
-    effect.kind === "teleport"
+  const dependentEffect = effects.find((effect) =>
+    effect.kind === "teleport" ||
+    effect.kind === "entity-spawn"
   );
+  const hasDependentAction = dependentEffect !== undefined;
   if (hasDependentAction) {
     output.push({
       kind: "dependent-action",
       functionId,
       source: command.source,
       command: command.raw,
-      detail: "teleport",
+      detail: dependentEffect?.kind === "entity-spawn"
+        ? "entity-spawn"
+        : "teleport",
     });
   }
 
@@ -220,8 +287,10 @@ function trustedVerification(
 ): boolean {
   if (candidate.kind !== "verify" || !candidate.verification) return false;
   const line = apply.source.range?.lineStart;
-  if (line === undefined) return false;
-  const bounds = proofs?.bounds.get(apply.functionId + ":" + line);
+  const structureBounds = line === undefined
+    ? undefined
+    : proofs?.bounds.get(apply.functionId + ":" + line);
+  const bounds = apply.mutationBounds ?? structureBounds;
   if (!bounds) return false;
 
   const position = absolutePosition(candidate.verification.position);
