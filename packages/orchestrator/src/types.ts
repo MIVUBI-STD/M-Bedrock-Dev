@@ -46,6 +46,16 @@ export interface InspectDirectoryResult {
     accesses: number;
     broadWrites: number;
   };
+  structureRuntime: {
+    loads: number;
+    resolvedLoads: number;
+    unresolvedLoads: number;
+    probabilisticLoads: number;
+    runtimeLogicLoads: number;
+    tickingAreas: number;
+    preloadedTickingAreas: number;
+    areaLoadedSchedules: number;
+  };
   topologyAnalysis: {
     resolvedSpatialEffects: number;
     repeatedCandidates: number;

@@ -1,23 +1,23 @@
 # Next Action
 
-Structure and chunk/ticking knowledge foundations are now being connected to inspection.
+Structure commands are now correlated with actual parsed mcstructure content.
 
 Implemented:
 
-1. /structure load option parsing;
-2. rotation/mirror/animation/include/integrity/seed semantics;
-3. mcstructure content summaries;
-4. tickingarea command parsing;
-5. simulation-distance/ticking-area knowledge catalogs;
-6. preload/load-order knowledge;
-7. structure/chunk runtime summary.
+1. structure target resolution;
+2. missing/ambiguous load detection;
+3. includeEntities vs actual entity-content comparison;
+4. includeBlocks vs actual block-content comparison;
+5. integrity risk for command-block/container structures;
+6. schedule on_area_loaded parsing;
+7. conservative chunk-lifecycle risk when runtime-significant loaded content has no visible lifecycle evidence.
 
 Next priority:
 
-1. connect structure-load records to the actual referenced mcstructure model;
-2. compare includeEntities/includeBlocks intent against structure contents;
-3. add schedule on_area_loaded semantics;
-4. detect remote runtime logic with no observable chunk-lifecycle protection;
-5. add conservative diagnostics for probable load-order/chunk-lifecycle risks.
+1. remove remaining static-analysis blindspots in command-block block_position_data inspection;
+2. extract command text and command-block mode/state from mcstructure block-position data;
+3. connect loaded command blocks back into the command dependency graph;
+4. distinguish runtime command logic embedded inside structures from behavior-pack functions;
+5. then deepen LevelDB/chunk runtime knowledge.
 
-Do not claim chunk runtime failure from static analysis alone.
+This is the point where mcstructure stops being only binary content and starts becoming executable gameplay state.

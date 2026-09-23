@@ -19,6 +19,7 @@ import {
   structureParseFailedDiagnostic,
 } from "../../../analyzers/diagnostics/src/structure-findings.js";
 import { parseMcStructure } from "../../../adapters/mcstructure/src/parse.js";
+import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";
@@ -38,6 +39,8 @@ import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { planInspectionRepairs } from "./repair-planning.js";
 import { deriveReliabilityFingerprint } from "./reliability-fingerprint.js";
 import { analyzeEntityWithKnowledge } from "./entity-knowledge-analysis.js";
+import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
+import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -124,6 +127,7 @@ export async function inspectDirectory(
   const parsedFunctions = [];
   const parsedScripts: Array<{ node: SemanticNode; parsed: ParsedScriptFile }> = [];
   const parsedEntities: Array<{ node: SemanticNode; parsed: ReturnType<typeof parseEntityDefinition> }> = [];
+  const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; semantics: ReturnType<typeof deriveMcStructureSemantics> }> = [];
   const diagnostics: DiagnosticFinding[] = [];
   let parsedStructures = 0;
 
@@ -218,6 +222,7 @@ export async function inspectDirectory(
           file.relativePath,
         );
         parsedStructures += 1;
+        parsedStructureModels.push({ identifier: structureId, node, semantics: deriveMcStructureSemantics(structure) });
         diagnostics.push(...structureInvariantDiagnostics(structure, node.source));
       } catch (error) {
         diagnostics.push(structureParseFailedDiagnostic(node.source, error));
@@ -336,7 +341,21 @@ export async function inspectDirectory(
     ]),
   );
 
-  const topology = analyzeFunctionTopology(parsedFunctions.map((item) => item.parsed));
+  const parsedFunctionModels = parsedFunctions.map((item) => item.parsed);
+  const structureRuntime = analyzeStructureAndChunkRuntime(
+    parsedFunctionModels,
+    parsedStructureModels.map((item) => ({
+      identifier: item.identifier,
+      relativePath: item.node.source.relativePath,
+      semantics: item.semantics,
+    })),
+  );
+  const sourceByFunction = new Map(
+    parsedFunctions.map((item) => [item.parsed.identifier, item.node.source]),
+  );
+  diagnostics.push(...structureRuntimeDiagnostics(structureRuntime, sourceByFunction));
+
+  const topology = analyzeFunctionTopology(parsedFunctionModels);
   diagnostics.push(...topology.stateDiagnostics, ...topology.topologyDiagnostics);
 
   const educationMetadata = manifests.some(
@@ -395,6 +414,16 @@ export async function inspectDirectory(
     stateAnalysis: {
       accesses: topology.stateAccesses.length,
       broadWrites: topology.broadWrites,
+    },
+    structureRuntime: {
+      loads: structureRuntime.structureLoads.length,
+      resolvedLoads: structureRuntime.correlations.filter((item) => item.status === "resolved").length,
+      unresolvedLoads: structureRuntime.unresolvedStructureLoads,
+      probabilisticLoads: structureRuntime.probabilisticStructureLoads,
+      runtimeLogicLoads: structureRuntime.runtimeLogicStructureLoads,
+      tickingAreas: structureRuntime.chunkLifecycleEvidence.tickingAreas,
+      preloadedTickingAreas: structureRuntime.chunkLifecycleEvidence.preloadedTickingAreas,
+      areaLoadedSchedules: structureRuntime.chunkLifecycleEvidence.areaLoadedSchedules,
     },
     topologyAnalysis: {
       resolvedSpatialEffects: topology.resolvedSpatialEffects.length,
