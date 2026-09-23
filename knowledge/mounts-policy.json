@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-mount-policy-v1",
+      "title": "MIVUBI Mount Ride and Passenger Lifecycle Policy v1",
+      "url": "project://knowledge/mount-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "mount-policy.relationship-authority",
+      "domain": "mounts",
+      "subject": "mount relationship",
+      "statement": "Track rider-vehicle ownership as a generation-scoped relationship including rider identity/session generation, vehicle entityGeneration, arenaGeneration, seat index, controlling status, and relationshipGeneration.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-mount-policy-v1"
+      ],
+      "capabilityTags": [
+        "ownership",
+        "mount"
+      ],
+      "riskSurfaces": [
+        "stale-rider",
+        "seat-hijack"
+      ]
+    },
+    {
+      "id": "mount-policy.teleport-atomicity",
+      "domain": "mounts",
+      "subject": "mounted teleport",
+      "statement": "Teleport/recovery must explicitly decide whether rider and vehicle move together, dismount first, or are independently rerouted; moving one side without reconciling the other is a partial transition.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-mount-policy-v1"
+      ],
+      "capabilityTags": [
+        "teleport",
+        "mount"
+      ],
+      "riskSurfaces": [
+        "rider-vehicle-desync"
+      ]
+    },
+    {
+      "id": "mount-policy.reset-dismount-order",
+      "domain": "mounts",
+      "subject": "arena reset",
+      "statement": "Arena cleanup should invalidate the relationship, safely dismount riders, normalize rider physics/location/control, then remove/reset arena-owned vehicles. Deleting a mount before rider reconciliation is unsafe.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-mount-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "dismount"
+      ],
+      "riskSurfaces": [
+        "fall-after-reset",
+        "orphan-passenger"
+      ]
+    },
+    {
+      "id": "mount-policy.containment",
+      "domain": "mounts",
+      "subject": "mounted containment",
+      "statement": "Mounted movement and dismount positions remain subject to arena spatial containment. Vehicle location alone must not silently substitute for participant location authority.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-mount-policy-v1"
+      ],
+      "capabilityTags": [
+        "spatial-containment",
+        "vehicle"
+      ],
+      "riskSurfaces": [
+        "cross-arena-ride",
+        "unsafe-dismount"
+      ]
+    },
+    {
+      "id": "mount-policy.disconnect-death",
+      "domain": "mounts",
+      "subject": "rider lifecycle boundary",
+      "statement": "Disconnect, rider death, vehicle death/despawn, respawn, and arena generation end must reconcile the mount relationship explicitly; reconnect never resumes an old relationship by stale reference.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-mount-policy-v1"
+      ],
+      "capabilityTags": [
+        "disconnect",
+        "death"
+      ],
+      "riskSurfaces": [
+        "ghost-rider",
+        "stale-mount"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "mount-policy.relation-current-relationship-gates-control",
+      "domain": "mounts",
+      "subject": "validated-mount-relationship",
+      "kind": "gates",
+      "object": "vehicle-gameplay-control",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-mount-policy-v1"
+      ]
+    },
+    {
+      "id": "mount-policy.relation-reset-deactivates-relationship",
+      "domain": "mounts",
+      "subject": "arena-reset",
+      "kind": "deactivates",
+      "object": "old-mount-relationship",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-mount-policy-v1"
+      ]
+    }
+  ]
+}
