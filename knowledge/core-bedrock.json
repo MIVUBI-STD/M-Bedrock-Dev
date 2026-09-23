@@ -1,0 +1,401 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-commands-intro",
+      "title": "Introduction to Commands",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/commandsintroduction?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-target-selectors",
+      "title": "Target Selectors",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/targetselectors?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-scoreboard",
+      "title": "Introduction to Scoreboards",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scoreboardintroduction?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-execute",
+      "title": "execute Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/commands/commands/execute?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-intro",
+      "title": "Entity Behavior Introduction",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitybehaviorintroduction?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-components",
+      "title": "Entity Components Guide",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitycomponentsguide?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-events",
+      "title": "Entity Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entityevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-ai",
+      "title": "Entity Behavior (AI) Components",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitybehaviorcomponents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-popular-commands",
+      "title": "Popular Commands",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/commandsnewexecute?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "command.coordinate.relative-origin",
+      "domain": "commands",
+      "subject": "coordinates",
+      "statement": "Tilde coordinates are relative to the current execution origin; execution context therefore changes their meaning.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-commands-intro"
+      ],
+      "capabilityTags": [
+        "command:coordinates"
+      ],
+      "riskSurfaces": [
+        "execution-context",
+        "coordinate-transform"
+      ],
+      "diagnosticHints": [
+        "Do not treat relative coordinates as globally absolute.",
+        "Nested execute context can change coordinate meaning."
+      ]
+    },
+    {
+      "id": "selector.base-semantics",
+      "domain": "selectors",
+      "subject": "target-selectors",
+      "statement": "Base selectors include @p, @a, @r, @e, @s and @initiator; selector parameters narrow candidate targets and all supplied parameters must match.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-target-selectors"
+      ],
+      "capabilityTags": [
+        "selector"
+      ],
+      "riskSurfaces": [
+        "selector-scope",
+        "multiplayer-concurrency"
+      ],
+      "diagnosticHints": [
+        "Broadening or removing selector filters can create cross-arena state leakage."
+      ]
+    },
+    {
+      "id": "selector.no-match-command-fails",
+      "domain": "selectors",
+      "subject": "target-selectors",
+      "statement": "If a target selector finds no targets, the command fails to run.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-target-selectors"
+      ],
+      "capabilityTags": [
+        "selector"
+      ],
+      "riskSurfaces": [
+        "control-flow",
+        "missing-target"
+      ]
+    },
+    {
+      "id": "scoreboard.persistent-fake-player",
+      "domain": "scoreboard",
+      "subject": "scoreboard-players",
+      "statement": "Scoreboard player operations may address names that are not currently active players and can be used as stored state.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-scoreboard"
+      ],
+      "capabilityTags": [
+        "command:scoreboard"
+      ],
+      "riskSurfaces": [
+        "global-state",
+        "state-scope"
+      ],
+      "diagnosticHints": [
+        "Do not assume scoreboard participants correspond only to online players."
+      ]
+    },
+    {
+      "id": "execute.entity-condition",
+      "domain": "commands",
+      "subject": "execute-if-entity",
+      "statement": "execute if/unless entity conditions depend on whether a target selector resolves at least one entity.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-execute"
+      ],
+      "capabilityTags": [
+        "command:execute",
+        "selector"
+      ],
+      "riskSurfaces": [
+        "control-flow",
+        "selector-scope"
+      ]
+    },
+    {
+      "id": "execute.score-condition",
+      "domain": "commands",
+      "subject": "execute-if-score",
+      "statement": "execute can branch on scoreboard comparisons and score ranges, making scoreboard state part of command control flow.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-execute"
+      ],
+      "capabilityTags": [
+        "command:execute",
+        "command:scoreboard"
+      ],
+      "riskSurfaces": [
+        "control-flow",
+        "gameplay-state"
+      ]
+    },
+    {
+      "id": "teleport.destination-single-target",
+      "domain": "commands",
+      "subject": "teleport",
+      "statement": "Teleporting to an entity destination requires the destination selector to resolve to a single entity.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-popular-commands"
+      ],
+      "capabilityTags": [
+        "command:teleport",
+        "selector"
+      ],
+      "riskSurfaces": [
+        "entity-position",
+        "selector-scope"
+      ],
+      "diagnosticHints": [
+        "Ambiguous destination selectors can invalidate teleport assumptions."
+      ]
+    },
+    {
+      "id": "entity.component-groups-event-driven",
+      "domain": "entities",
+      "subject": "component-groups",
+      "statement": "Base components are active immediately while component groups can be added or removed through entity events.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-intro",
+        "ms-entity-events"
+      ],
+      "capabilityTags": [
+        "entity-components",
+        "entity-events"
+      ],
+      "riskSurfaces": [
+        "entity-state",
+        "event-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Static presence of a component group does not mean the component is active at runtime."
+      ]
+    },
+    {
+      "id": "entity.events-change-active-components",
+      "domain": "entity-events",
+      "subject": "events",
+      "statement": "Entity events can add and remove component groups and therefore alter active entity behavior over time.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-events"
+      ],
+      "capabilityTags": [
+        "entity-events"
+      ],
+      "riskSurfaces": [
+        "entity-state",
+        "event-lifecycle"
+      ]
+    },
+    {
+      "id": "entity.spawn-event-summon-difference",
+      "domain": "entity-events",
+      "subject": "spawn-events",
+      "statement": "minecraft:entity_spawned is not automatically run for entities manually created with /summon; summon may use an explicit spawn event.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-events"
+      ],
+      "capabilityTags": [
+        "entity-events",
+        "command:summon"
+      ],
+      "riskSurfaces": [
+        "spawn-lifecycle",
+        "entity-state"
+      ],
+      "diagnosticHints": [
+        "Do not assume natural/spawn-egg initialization and /summon initialization are equivalent."
+      ]
+    },
+    {
+      "id": "entity.ai-priority-lower-number-higher",
+      "domain": "entity-ai",
+      "subject": "behavior-priority",
+      "statement": "AI goal behavior components use priority where lower numeric values represent higher priority and can interrupt lower-priority behavior.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-intro",
+        "ms-entity-ai"
+      ],
+      "capabilityTags": [
+        "entity-ai"
+      ],
+      "riskSurfaces": [
+        "ai-priority",
+        "entity-behavior"
+      ],
+      "diagnosticHints": [
+        "Conflicting or equal-priority goals may require runtime evidence before diagnosing pathfinding."
+      ]
+    },
+    {
+      "id": "entity.navigation-required-for-pathing",
+      "domain": "navigation",
+      "subject": "navigation",
+      "statement": "Entity movement/pathfinding behavior depends on movement/navigation components such as minecraft:movement, movement.basic and navigation variants.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-components",
+        "ms-entity-intro"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "entity-navigation"
+      ],
+      "riskSurfaces": [
+        "entity-ai",
+        "navigation",
+        "entity-stuck"
+      ],
+      "diagnosticHints": [
+        "When an entity is stuck, inspect active navigation/movement components before blaming coordinates alone."
+      ]
+    },
+    {
+      "id": "entity.navigation-generic-capabilities",
+      "domain": "navigation",
+      "subject": "minecraft:navigation.generic",
+      "statement": "navigation.generic exposes capability flags such as walking, swimming, sinking, water traversal and damage-block avoidance that constrain viable paths.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-components"
+      ],
+      "capabilityTags": [
+        "entity-navigation"
+      ],
+      "riskSurfaces": [
+        "navigation",
+        "environment-compatibility",
+        "entity-stuck"
+      ]
+    }
+  ]
+}

@@ -1,25 +1,28 @@
 # Next Action
 
-P0 repair filesystem hardening is now implemented.
+The largest remaining blindspot is now explicit: Minecraft Bedrock/Education domain knowledge depth.
 
-Implemented:
+A dedicated Knowledge Layer is being established instead of expanding generic reliability framework breadth.
 
-1. realpath-resolved source and working roots;
-2. bidirectional root-overlap rejection;
-3. lexical + realpath target containment;
-4. symlink escape rejection;
-5. direct symbolic-link target rejection;
-6. hardlink-to-source rejection for corresponding files;
-7. collision-safe exclusive atomic temp allocation;
-8. file data sync before rename;
-9. destination mode preservation;
-10. secure target re-resolution during rollback.
+Implemented first slice:
 
-No additional generic bug-finder framework work is recommended now.
+1. canonical knowledge contracts and provenance;
+2. Bedrock/Education effective-profile filtering;
+3. repo-owned knowledge catalogs;
+4. repository verification for catalog integrity;
+5. command/selector/scoreboard/execute seed knowledge;
+6. entity component/event lifecycle seed knowledge;
+7. AI priority and navigation seed knowledge;
+8. first Education/NPC execution-context fact.
 
-Remaining high-value work should come from evidence:
+Next knowledge expansion priority:
 
-- exact-head CI/typecheck/test proof when the user is ready;
-- local Minecraft runtime proof when the user is ready;
-- survived mutants/regressions that identify a specific detector gap;
-- real repair scenarios that expose transaction or validation weaknesses.
+1. full entity component/event/navigation dependency model;
+2. selector parameter semantics and command execution-context matrix;
+3. structure/.mcstructure behavior knowledge;
+4. Script API stable/beta/version matrix;
+5. chunk/ticking/spawn lifecycle;
+6. animation/controller/Molang;
+7. deeper Education Agent/NPC/assessment systems.
+
+Do not hardcode new Minecraft semantics directly into analyzers when they belong in the knowledge catalog.
