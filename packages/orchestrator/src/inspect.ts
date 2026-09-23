@@ -18,6 +18,7 @@ import { undeclaredMinecraftModuleDiagnostics } from "../../../analyzers/diagnos
 import { scriptExecutionPrivilegeDiagnostics } from "../../../analyzers/diagnostics/src/script-privilege-findings.js";
 import { scriptVersionDiagnostics } from "../../../analyzers/diagnostics/src/script-version-findings.js";
 import { scriptEventSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-event-findings.js";
+import { scriptMethodSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-method-findings.js";
 import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
@@ -403,6 +404,10 @@ export async function inspectDirectory(
       scripts,
     ));
     diagnostics.push(...scriptEventSymbolDiagnostics(
+      scriptCompatibility,
+      scripts,
+    ));
+    diagnostics.push(...scriptMethodSymbolDiagnostics(
       scriptCompatibility,
       scripts,
     ));
