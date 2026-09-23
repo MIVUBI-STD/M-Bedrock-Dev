@@ -602,6 +602,26 @@ export function scriptCommandMutationRuntimeEvidence(
   const records: RuntimeEvidenceRecord[] = [];
 
   for (const item of assessments) {
+    if (
+      item.status === "verification-unresolved" &&
+      item.barriers.length > 0
+    ) {
+      records.push({
+        predicate: "transaction-order-proof-incomplete",
+        state: "present",
+        confidence: "derived",
+        scope: { operationId: item.id },
+        sourceRefs: [
+          item.applyLiteral.source,
+          ...item.barriers.map((barrier) =>
+            barrier.kind === "command" ? barrier.literal.source : barrier.source
+          ),
+        ],
+        note:
+          "Script command ordering is blocked by recursive or depth-limited local calls.",
+      });
+    }
+
     if (!item.dependentLiteral) continue;
     const scope = { operationId: item.id };
 
