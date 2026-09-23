@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-command-context-policy-v1",
+      "title": "MIVUBI Command Execution and Selector Context Policy v1",
+      "url": "project://knowledge/command-context-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "command-policy.context-envelope",
+      "domain": "command-context",
+      "subject": "command execution envelope",
+      "statement": "Every critical command path should be reasoned about with an explicit execution envelope: executor, dimension, position, rotation, anchor, arena scope, and session/arena generation. Missing fields are unknown, not implicitly safe.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["execution-context", "arena-isolation"],
+      "riskSurfaces": ["wrong-origin", "wrong-dimension", "selector-leak"]
+    },
+    {
+      "id": "command-policy.no-bare-global-selectors-critical",
+      "domain": "command-context",
+      "subject": "critical target selectors",
+      "statement": "Critical gameplay commands in multi-arena maps must not use bare @a, @e, or origin-sensitive @p without explicit project-owned arena/generation scope.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["selector-scope", "arena-isolation"],
+      "riskSurfaces": ["cross-arena-mutation", "wrong-player"]
+    },
+    {
+      "id": "command-policy.no-single-tag-membership-proof",
+      "domain": "command-context",
+      "subject": "selector membership proof",
+      "statement": "A tag alone is insufficient proof of current arena membership when stale tags are possible. Critical selectors must correlate current arena identity/generation or use a registry-driven target list.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["tags", "generation-token"],
+      "riskSurfaces": ["stale-tag", "cross-arena-state"]
+    },
+    {
+      "id": "command-policy.command-block-origin-explicit",
+      "domain": "command-context",
+      "subject": "command block execution",
+      "statement": "For command-block logic, analyzer should derive and record command-block position and dimension as the default execution origin; code must not assume player-relative @p/radius semantics unless execute explicitly changes context.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["command-block", "execution-origin"],
+      "riskSurfaces": ["wrong-player", "wrong-area"]
+    },
+    {
+      "id": "command-policy.nested-execute-context-trace",
+      "domain": "command-context",
+      "subject": "nested execute",
+      "statement": "Analyzer should compute context evolution through nested execute clauses instead of evaluating only the final selector string. as/at/in/positioned/rotated/anchored each modifies a different context field.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["nested-execute", "context-trace"],
+      "riskSurfaces": ["context-confusion", "coordinate-bug"]
+    },
+    {
+      "id": "command-policy.no-match-is-diagnostic",
+      "domain": "command-context",
+      "subject": "selector no-match",
+      "statement": "For critical commands, selector no-match must be surfaced as a diagnostic with expected scope and context. Do not silently treat command failure as successful empty work.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["command-result", "selector"],
+      "riskSurfaces": ["silent-failure", "missing-target"]
+    },
+    {
+      "id": "command-policy.success-count-validated",
+      "domain": "command-context",
+      "subject": "CommandResult",
+      "statement": "Script-issued critical commands should validate CommandResult success counts or caught errors against expected cardinality; mere absence of an exception is not sufficient when target count matters.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["CommandResult", "cardinality"],
+      "riskSurfaces": ["partial-target", "silent-failure"]
+    },
+    {
+      "id": "command-policy.dimension-explicit-for-script-command",
+      "domain": "command-context",
+      "subject": "script-issued command dimension",
+      "statement": "Script code must choose Dimension.runCommand from the intended gameplay dimension or deliberately use entity-bound execution; defaulting to an arbitrary/common dimension is unsafe for cross-dimension maps.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["script-command", "dimension-context"],
+      "riskSurfaces": ["wrong-dimension", "cross-dimension-state"]
+    },
+    {
+      "id": "command-policy.relative-coordinate-context-proof",
+      "domain": "command-context",
+      "subject": "relative coordinates",
+      "statement": "Commands using ~ or local/relative spatial assumptions require a proven current execution position/rotation/anchor. Analyzer should flag relative coordinates whose context was not established in the same command path.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["relative-coordinate", "rotation-context"],
+      "riskSurfaces": ["wrong-location", "wrong-facing"]
+    },
+    {
+      "id": "command-policy.cardinality-contract",
+      "domain": "command-context",
+      "subject": "selector cardinality",
+      "statement": "Each critical selector should declare expected cardinality: exactly-one, at-least-one, zero-or-one, or many. Commands such as teleport destination selection must fail closed when actual cardinality violates the contract.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["selector-cardinality", "target-contract"],
+      "riskSurfaces": ["ambiguous-target", "partial-target"]
+    },
+    {
+      "id": "command-policy.function-inherits-caller-context",
+      "domain": "command-context",
+      "subject": "function command context",
+      "statement": "Treat mcfunction execution as inheriting the caller's command context unless the function explicitly changes it; analyzer must track the call-site envelope across function boundaries.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"],
+      "capabilityTags": ["mcfunction", "context-propagation"],
+      "riskSurfaces": ["hidden-context", "wrong-origin"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "command-policy.relation-context-gates-selector",
+      "domain": "command-context",
+      "subject": "execution-context-proof",
+      "kind": "gates",
+      "object": "critical-selector-evaluation",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"]
+    },
+    {
+      "id": "command-policy.relation-cardinality-gates-sideeffect",
+      "domain": "command-context",
+      "subject": "selector-cardinality-contract",
+      "kind": "gates",
+      "object": "critical-command-side-effect",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-command-context-policy-v1"]
+    }
+  ]
+}
