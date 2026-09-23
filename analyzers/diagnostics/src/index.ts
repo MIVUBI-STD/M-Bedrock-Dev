@@ -22,3 +22,5 @@ export * from "./script-return-contract-findings.js";
 export * from "./script-type-findings.js";
 export * from "./script-property-write-findings.js";
 export * from "./script-enum-value-findings.js";
+
+export * from "./knowledge-runtime-findings.js";
