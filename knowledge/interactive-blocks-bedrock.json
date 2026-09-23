@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-block-state-permutation",
+      "title": "Block Documentation - Block States and Permutations",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/blockreference/examples/blockstatesandpermutations?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-block-listings",
+      "title": "Default Minecraft Block Listings",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/vanillalistingsreference/blocks?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-block-class",
+      "title": "Block Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/block?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-block-inventory",
+      "title": "BlockInventoryComponent Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/blockinventorycomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-block-components",
+      "title": "BlockComponentTypes Enumeration",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/blockcomponenttypes?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-block-server-module",
+      "title": "@minecraft/server Module",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/minecraft-server?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "blockstate.type-and-permutation-distinct",
+      "domain": "interactive-blocks",
+      "subject": "block state",
+      "statement": "A block's type and its BlockPermutation are distinct layers; the permutation carries state values that can change behavior and appearance without changing the base block type.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-block-state-permutation",
+        "ms-block-class"
+      ],
+      "capabilityTags": [
+        "block-permutation",
+        "block-state"
+      ],
+      "riskSurfaces": [
+        "type-correct-state-wrong",
+        "visual-behavior-drift"
+      ]
+    },
+    {
+      "id": "blockstate.vanilla-open-bit",
+      "domain": "interactive-blocks",
+      "subject": "doors gates trapdoors",
+      "statement": "Vanilla doors, fence gates, and trapdoors expose block states such as open_bit together with orientation/hinge/upper-half states, so route availability can differ even when the expected block type is present.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-block-listings"
+      ],
+      "capabilityTags": [
+        "open_bit",
+        "door",
+        "gate"
+      ],
+      "riskSurfaces": [
+        "closed-route",
+        "wrong-orientation"
+      ]
+    },
+    {
+      "id": "blockstate.block-access-can-fail-unloaded",
+      "domain": "interactive-blocks",
+      "subject": "Block.permutation and mutation",
+      "statement": "Reading or changing block type/permutation can throw LocationInUnloadedChunkError or LocationOutOfWorldBoundariesError, and mutation methods cannot run in restricted-execution mode.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-block-class"
+      ],
+      "capabilityTags": [
+        "block-access",
+        "chunk-readiness"
+      ],
+      "riskSurfaces": [
+        "unloaded-chunk",
+        "partial-object-reset"
+      ]
+    },
+    {
+      "id": "blockstate.block-inventory-container",
+      "domain": "interactive-blocks",
+      "subject": "BlockInventoryComponent",
+      "statement": "Inventory-bearing blocks expose a separate container through BlockInventoryComponent; the container may be unavailable or error, so block existence alone does not prove its contents are valid or accessible.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-block-inventory"
+      ],
+      "capabilityTags": [
+        "block-inventory",
+        "container"
+      ],
+      "riskSurfaces": [
+        "container-state-drift",
+        "stale-container"
+      ]
+    },
+    {
+      "id": "blockstate.block-components-many-surfaces",
+      "domain": "interactive-blocks",
+      "subject": "block components",
+      "statement": "Blocks may expose additional components such as inventory, piston, redstone producer, movable, record player, fluid container, dynamic properties, sign, and crafting components, making interactive block state broader than type/permutation alone.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-block-components"
+      ],
+      "capabilityTags": [
+        "block-component",
+        "interactive-state"
+      ],
+      "riskSurfaces": [
+        "hidden-state",
+        "automation-coupling"
+      ]
+    },
+    {
+      "id": "blockstate.container-events-separate",
+      "domain": "interactive-blocks",
+      "subject": "block container lifecycle",
+      "statement": "The server module exposes block-container opened/closed events separately from block interaction events, so container access is its own runtime lifecycle surface rather than just a generic block click.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-block-server-module"
+      ],
+      "capabilityTags": [
+        "container-open",
+        "container-close"
+      ],
+      "riskSurfaces": [
+        "concurrent-access",
+        "cleanup-during-use"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "blockstate.relation-type-requires-state-verify",
+      "domain": "interactive-blocks",
+      "subject": "critical-interactive-block",
+      "kind": "requires",
+      "object": "type-plus-permutation-plus-component-verification",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-block-state-permutation",
+        "ms-block-components"
+      ]
+    },
+    {
+      "id": "blockstate.relation-door-state-validates-route",
+      "domain": "interactive-blocks",
+      "subject": "door-or-gate-open-state",
+      "kind": "validates",
+      "object": "route-passability",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-block-listings"
+      ]
+    }
+  ]
+}
