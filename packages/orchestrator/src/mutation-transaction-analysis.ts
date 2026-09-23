@@ -232,7 +232,7 @@ export function analyzeMutationTransactionOrdering(
 
       if (!dependent) {
         assessments.push({
-          id: "mutation:" + operationId(apply.source),
+          id: "mutation:" + root + ":" + operationId(apply.source),
           rootFunctionId: root,
           applyStep: apply,
           status: "no-dependent-action",
@@ -268,7 +268,7 @@ export function analyzeMutationTransactionOrdering(
       }
 
       assessments.push({
-        id: "mutation:" + operationId(apply.source),
+        id: "mutation:" + root + ":" + operationId(apply.source),
         rootFunctionId: root,
         applyStep: apply,
         dependentStep: dependent,
@@ -289,7 +289,13 @@ export function mutationTransactionRuntimeEvidence(
 
   for (const item of assessments) {
     if (!item.dependentStep) continue;
-    const scope = { operationId: operationId(item.applyStep.source) };
+    const scope = {
+      operationId:
+        "mutation:" +
+        item.rootFunctionId +
+        ":" +
+        operationId(item.applyStep.source),
+    };
 
     records.push({
       predicate: "mutation-dependent-action",
