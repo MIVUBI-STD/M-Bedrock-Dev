@@ -9,6 +9,7 @@ import type {
   ScriptImport,
   ScriptImportedSymbol,
   ScriptModuleMemberAccess,
+  ScriptEnumValueComparison,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -352,8 +353,42 @@ export function parseScriptFile(
   const propertyWrites = inferScriptPropertyWrites(file, source);
   const moduleMemberAccesses: ScriptModuleMemberAccess[] = [];
   const importedSymbols: ScriptImportedSymbol[] = [];
+  const enumValueComparisons: ScriptEnumValueComparison[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
   const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
+  const canonicalMinecraftMember = (
+    expression: ts.Expression,
+  ): { module: string; enumName: string; member: string; symbol: string } | undefined => {
+    if (!ts.isPropertyAccessExpression(expression)) return undefined;
+
+    if (ts.isIdentifier(expression.expression)) {
+      const binding = namedMinecraftBindings.get(expression.expression.text);
+      if (binding) {
+        return {
+          module: binding.module,
+          enumName: binding.importedName,
+          member: expression.name.text,
+          symbol: `${binding.importedName}.${expression.name.text}`,
+        };
+      }
+    }
+
+    const chain = propertyAccessChain(expression);
+    const namespaceModule = chain[0]
+      ? namespaceMinecraftBindings.get(chain[0])
+      : undefined;
+    if (namespaceModule && chain.length === 3 && chain[1] && chain[2]) {
+      return {
+        module: namespaceModule,
+        enumName: chain[1],
+        member: chain[2],
+        symbol: `${chain[1]}.${chain[2]}`,
+      };
+    }
+
+    return undefined;
+  };
+
   const capabilities: ScriptCapabilityUse[] = [
     ...methodCalls.map((call) => ({
       capability: "api-method" as const,
@@ -481,6 +516,37 @@ export function parseScriptFile(
       }
     }
 
+    if (ts.isBinaryExpression(node)) {
+      const operatorKind = node.operatorToken.kind;
+      const operator =
+        operatorKind === ts.SyntaxKind.EqualsEqualsToken ? "==" :
+        operatorKind === ts.SyntaxKind.EqualsEqualsEqualsToken ? "===" :
+        operatorKind === ts.SyntaxKind.ExclamationEqualsToken ? "!=" :
+        operatorKind === ts.SyntaxKind.ExclamationEqualsEqualsToken ? "!==" :
+        undefined;
+
+      if (operator) {
+        const leftMember = canonicalMinecraftMember(node.left);
+        const rightMember = canonicalMinecraftMember(node.right);
+        const leftLiteral = ts.isStringLiteralLike(node.left) ? node.left.text : undefined;
+        const rightLiteral = ts.isStringLiteralLike(node.right) ? node.right.text : undefined;
+        const member = leftMember ?? rightMember;
+        const literal = leftMember ? rightLiteral : leftLiteral;
+
+        if (member && literal !== undefined) {
+          enumValueComparisons.push({
+            module: member.module,
+            enumName: member.enumName,
+            member: member.member,
+            symbol: member.symbol,
+            operator,
+            literal,
+            source: lineSource(file, node, source),
+          });
+        }
+      }
+    }
+
     if (ts.isIdentifier(node) && (node.text === "world" || node.text === "system")) {
       capabilities.push({
         capability: node.text === "world" ? "world-access" : "system-access",
@@ -595,6 +661,7 @@ export function parseScriptFile(
     propertyWrites,
     moduleMemberAccesses,
     importedSymbols,
+    enumValueComparisons,
     capabilities,
   };
 }

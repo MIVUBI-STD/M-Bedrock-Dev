@@ -108,6 +108,16 @@ export interface ScriptModuleMemberAccess {
   source: SourceRef;
 }
 
+export interface ScriptEnumValueComparison {
+  module: string;
+  enumName: string;
+  member: string;
+  symbol: string;
+  operator: "==" | "===" | "!=" | "!==";
+  literal: string;
+  source: SourceRef;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
@@ -139,5 +149,6 @@ export interface ParsedScriptFile {
   propertyWrites: ScriptPropertyWrite[];
   moduleMemberAccesses: ScriptModuleMemberAccess[];
   importedSymbols: ScriptImportedSymbol[];
+  enumValueComparisons: ScriptEnumValueComparison[];
   capabilities: ScriptCapabilityUse[];
 }
