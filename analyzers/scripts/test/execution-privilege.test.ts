@@ -23,6 +23,7 @@ describe("script execution privilege analysis", () => {
     expect(parsed.restrictedMutations).toEqual([
       expect.objectContaining({
         root: "world",
+        context: "before-event",
         event: "playerBreakBlock",
         method: "setGameMode",
         symbol: "Player.setGameMode",
@@ -60,6 +61,72 @@ describe("script execution privilege analysis", () => {
       expect.objectContaining({
         symbol: "Entity.applyKnockback",
         evidence: "exact-symbol",
+      }),
+    ]));
+  });
+
+  it("does not treat startup itself as restricted execution", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+        import { system, world } from "@minecraft/server";
+        system.beforeEvents.startup.subscribe(() => {
+          world.setDifficulty("hard");
+        });
+      `,
+      source,
+    );
+
+    expect(parsed.restrictedMutations).toEqual([]);
+  });
+
+  it("captures restricted operations inside custom command callbacks", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+        import { system, world } from "@minecraft/server";
+
+        system.beforeEvents.startup.subscribe((init) => {
+          init.customCommandRegistry.registerCommand(
+            { name: "demo:test", description: "demo", permissionLevel: 0 },
+            () => {
+              const player = world.getAllPlayers()[0];
+              player.applyKnockback({ x: 1, z: 0 }, 0.4);
+            },
+          );
+        });
+      `,
+      source,
+    );
+
+    expect(parsed.restrictedMutations).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        context: "custom-command",
+        event: "customCommand",
+        symbol: "Entity.applyKnockback",
+        evidence: "exact-symbol",
+      }),
+    ]));
+  });
+
+  it("flags restricted PlayerInputPermissions reads documented as denied", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+        import { world } from "@minecraft/server";
+        const player = world.getAllPlayers()[0];
+
+        world.beforeEvents.playerBreakBlock.subscribe(() => {
+          player.inputPermissions.isPermissionCategoryEnabled(0);
+        });
+      `,
+      source,
+    );
+
+    expect(parsed.restrictedMutations).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        context: "before-event",
+        symbol: "PlayerInputPermissions.isPermissionCategoryEnabled",
       }),
     ]));
   });

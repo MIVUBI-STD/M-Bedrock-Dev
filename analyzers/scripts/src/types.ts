@@ -23,6 +23,7 @@ export interface DynamicPropertyAccess {
 
 export interface RestrictedExecutionMutation {
   root: "world" | "system" | "unknown";
+  context: "before-event" | "custom-command";
   event: string;
   method: string;
   symbol: string;

@@ -157,6 +157,26 @@ function callbackNode(call: ts.CallExpression): ts.Node | undefined {
   return undefined;
 }
 
+function customCommandCallback(
+  call: ts.CallExpression,
+): ts.ArrowFunction | ts.FunctionExpression | undefined {
+  if (!ts.isPropertyAccessExpression(call.expression)) return undefined;
+  const chain = propertyAccessChain(call.expression);
+  if (
+    chain.length !== 3 ||
+    chain[1] !== "customCommandRegistry" ||
+    chain[2] !== "registerCommand"
+  ) {
+    return undefined;
+  }
+
+  const callback = call.arguments[1];
+  return callback &&
+    (ts.isArrowFunction(callback) || ts.isFunctionExpression(callback))
+    ? callback
+    : undefined;
+}
+
 function sourceInside(inner: SourceRef, outer: SourceRef): boolean {
   const innerStart = inner.range?.lineStart;
   const innerEnd = inner.range?.lineEnd;
@@ -220,6 +240,7 @@ function contextualWriteSymbol(node: ts.BinaryExpression): string | undefined {
 function scanRestrictedMutations(
   callback: ts.Node,
   root: RestrictedExecutionMutation["root"],
+  context: RestrictedExecutionMutation["context"],
   event: string,
   file: ts.SourceFile,
   source: SourceRef,
@@ -238,6 +259,7 @@ function scanRestrictedMutations(
     occupied.add(`${line}\0call\0${call.method}`);
     output.push({
       root,
+      context,
       event,
       method: call.method,
       symbol: call.symbol,
@@ -256,6 +278,7 @@ function scanRestrictedMutations(
     occupied.add(`${line}\0write\0${write.property}`);
     output.push({
       root,
+      context,
       event,
       method: write.property,
       symbol: write.symbol,
@@ -557,6 +580,22 @@ export function parseScriptFile(
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const chain = propertyAccessChain(node.expression);
 
+      const commandCallback = customCommandCallback(node);
+      if (commandCallback) {
+        restrictedMutations.push(
+          ...scanRestrictedMutations(
+            commandCallback,
+            "system",
+            "custom-command",
+            "customCommand",
+            file,
+            source,
+            methodCalls,
+            propertyWrites,
+          ),
+        );
+      }
+
       if (chain.at(-1) === "subscribe") {
         const root = chain[0];
         const phase = chain[1];
@@ -592,11 +631,14 @@ export function parseScriptFile(
             });
 
             const callback = callbackNode(node);
-            if (callback) {
+            const isStartup =
+              normalizedRoot === "system" && event === "startup";
+            if (callback && !isStartup) {
               restrictedMutations.push(
                 ...scanRestrictedMutations(
                   callback,
                   normalizedRoot,
+                  "before-event",
                   event,
                   file,
                   source,

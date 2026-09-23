@@ -53,6 +53,11 @@ export const SCRIPT_EXECUTION_PRIVILEGE_RULES: readonly ScriptExecutionPrivilege
   call("script-privilege.player.set-game-mode", "Player.setGameMode", ["ms-player-current"]),
   call("script-privilege.player.set-spawn-point", "Player.setSpawnPoint", ["ms-player-current"]),
   call(
+    "script-privilege.player-input.is-permission-category-enabled",
+    "PlayerInputPermissions.isPermissionCategoryEnabled",
+    ["ms-player-input-permissions-current"],
+  ),
+  call(
     "script-privilege.player-input.set-permission-category",
     "PlayerInputPermissions.setPermissionCategory",
     ["ms-player-input-permissions-current"],
