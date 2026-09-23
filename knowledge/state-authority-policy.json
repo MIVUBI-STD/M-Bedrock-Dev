@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-state-authority-policy-v1",
+      "title": "MIVUBI State Authority and Consistency Policy v1",
+      "url": "project://knowledge/state-authority-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "state-policy.one-authority-per-concept",
+      "domain": "state-authority",
+      "subject": "logical gameplay state",
+      "statement": "Every logical gameplay concept must declare exactly one authoritative owner. Scoreboard, tag, dynamic property, inventory, entity property, and script memory may mirror that concept, but mirrors must not independently decide truth.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["source-of-truth", "authority-map"],
+      "riskSurfaces": ["split-brain", "state-drift", "duplicate-authority"]
+    },
+    {
+      "id": "state-policy.mirror-direction-declared",
+      "domain": "state-authority",
+      "subject": "state replication",
+      "statement": "For every mirrored state, declare replication direction explicitly: authority->mirror, mirror->authority migration, or bidirectional reconciliation. Unspecified two-way synchronization is prohibited.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["replication", "mirror"],
+      "riskSurfaces": ["feedback-loop", "state-drift", "last-write-wins-bug"]
+    },
+    {
+      "id": "state-policy.transient-vs-durable-separation",
+      "domain": "state-authority",
+      "subject": "state durability",
+      "statement": "Classify each state field as transient-session, round-scoped, arena-scoped, player-durable, or world-durable. Do not restore transient-session state from durable storage after reconnect or restart unless an explicit reconciliation rule permits it.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["durability", "reconciliation"],
+      "riskSurfaces": ["reconnect-leak", "restart-leak", "stale-state"]
+    },
+    {
+      "id": "state-policy.authority-version-or-generation",
+      "domain": "state-authority",
+      "subject": "authoritative record version",
+      "statement": "Authoritative mutable records should carry a generation, revision, or epoch where stale writers are possible. Mirrors must record which authoritative revision they represent.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["revision", "generation-token"],
+      "riskSurfaces": ["stale-write", "out-of-order-replication"]
+    },
+    {
+      "id": "state-policy.no-read-from-display-mirror",
+      "domain": "state-authority",
+      "subject": "display/state mirrors",
+      "statement": "UI-facing scoreboards, tags, actionbar values, names, or visual markers must not be read back as authoritative gameplay state unless they are explicitly designated as the owner for that concept.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["display-mirror", "source-of-truth"],
+      "riskSurfaces": ["display-drift", "ghost-ready", "wrong-control-flow"]
+    },
+    {
+      "id": "state-policy.reconcile-on-bootstrap",
+      "domain": "state-authority",
+      "subject": "bootstrap reconciliation",
+      "statement": "At worldLoad, player initial-spawn/reconnect, arena creation, and round reset, reconcile declared mirrors against their authority before accepting gameplay decisions.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["bootstrap", "reconciliation"],
+      "riskSurfaces": ["startup-drift", "reconnect-drift", "round-reset"]
+    },
+    {
+      "id": "state-policy.conflict-is-diagnostic-not-silent-choice",
+      "domain": "state-authority",
+      "subject": "state conflict",
+      "statement": "When two non-authoritative surfaces disagree and authority cannot be proven, emit a conflict diagnostic and fail closed for critical gameplay rather than silently choosing whichever value was read last.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["conflict-detection", "fail-closed"],
+      "riskSurfaces": ["split-brain", "critical-state"]
+    },
+    {
+      "id": "state-policy.authority-write-then-mirror",
+      "domain": "state-authority",
+      "subject": "mutation ordering",
+      "statement": "For critical state transitions, commit the authoritative state first, then update mirrors. If mirror update fails, record mirror drift; do not roll authority backward solely to preserve display consistency unless the transaction explicitly requires atomic rollback.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["commit-order", "mirror-repair"],
+      "riskSurfaces": ["partial-write", "rollback-corruption"]
+    },
+    {
+      "id": "state-policy.reset-clears-all-owned-mirrors",
+      "domain": "state-authority",
+      "subject": "reset semantics",
+      "statement": "Arena/round/player reset must enumerate and clear or rewrite every mirror owned by that scope. Clearing only the authoritative record while leaving tags/scores/properties behind creates resurrection bugs on later queries.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["reset", "mirror-cleanup"],
+      "riskSurfaces": ["state-resurrection", "ghost-state"]
+    },
+    {
+      "id": "state-policy.inventory-is-observed-state-not-session-authority",
+      "domain": "state-authority",
+      "subject": "inventory and equipment",
+      "statement": "Inventory/equipment may be authoritative for item possession, but should not implicitly serve as authority for unrelated session/arena state such as role, readiness, revive eligibility, or round membership.",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"],
+      "capabilityTags": ["inventory", "authority-boundary"],
+      "riskSurfaces": ["implicit-state", "item-loss", "role-desync"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "state-policy.relation-authority-produces-mirror",
+      "domain": "state-authority",
+      "subject": "authoritative-state",
+      "kind": "produces",
+      "object": "derived-mirror-state",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"]
+    },
+    {
+      "id": "state-policy.relation-authority-gates-critical-branch",
+      "domain": "state-authority",
+      "subject": "authoritative-state-proof",
+      "kind": "gates",
+      "object": "critical-gameplay-branch",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"]
+    },
+    {
+      "id": "state-policy.relation-conflict-requires-reconcile",
+      "domain": "state-authority",
+      "subject": "state-conflict",
+      "kind": "requires",
+      "object": "authority-reconciliation",
+      "classification": "project-policy",
+      "applicability": { "editions": ["bedrock", "education"] },
+      "sourceIds": ["mivubi-state-authority-policy-v1"]
+    }
+  ]
+}
