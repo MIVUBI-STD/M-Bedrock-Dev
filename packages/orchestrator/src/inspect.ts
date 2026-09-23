@@ -843,6 +843,9 @@ export async function inspectDirectory(
       verifiedBeforeDependent: scriptCommandTransactions.filter(
         (item) => item.status === "verified-before-dependent",
       ).length,
+      dependentBeforeVerification: scriptCommandTransactions.filter(
+        (item) => item.status === "dependent-before-verification",
+      ).length,
       verificationUnresolved: scriptCommandTransactions.filter(
         (item) => item.status === "verification-unresolved",
       ).length,
