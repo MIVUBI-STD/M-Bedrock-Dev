@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-npc-dialogue",
+      "title": "NPC Dialogue Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/npcdialogue?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-npc-dialogue-doc",
+      "title": "NPC Dialogue Document",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/dialoguereference/examples/dialoguedefinitions/dialogue_document?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-npc-custom",
+      "title": "Create a Custom NPC",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/createnpcs?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "npc.dialogue-scenes-button-commands",
+      "domain": "npc-dialogue",
+      "subject": "NPC dialogue scenes",
+      "statement": "NPC dialogue scenes can contain text, buttons, and commands, making dialogue a gameplay command-entry surface rather than presentation only.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-npc-dialogue",
+        "ms-npc-dialogue-doc"
+      ],
+      "capabilityTags": [
+        "npc",
+        "dialogue",
+        "commands"
+      ],
+      "riskSurfaces": [
+        "duplicate-command",
+        "scope-leak"
+      ]
+    },
+    {
+      "id": "npc.dialogue-open-targets-npc-player",
+      "domain": "npc-dialogue",
+      "subject": "dialogue targeting",
+      "statement": "Dialogue open targets a specific NPC and player, so dialogue ownership is naturally pair-scoped and broad selectors can expose scenes to unintended players.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-npc-dialogue"
+      ],
+      "capabilityTags": [
+        "dialogue",
+        "targeting"
+      ],
+      "riskSurfaces": [
+        "cross-arena-dialogue"
+      ]
+    },
+    {
+      "id": "npc.commands-run-from-dialogue",
+      "domain": "npc-dialogue",
+      "subject": "NPC command actions",
+      "statement": "NPCs can execute configured commands as part of dialogue interaction, including multiple commands in order, which creates hidden automation that must be included in command-context and reset analysis.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-npc-custom"
+      ],
+      "capabilityTags": [
+        "npc-command",
+        "automation"
+      ],
+      "riskSurfaces": [
+        "hidden-sideeffect",
+        "conditional-order"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "npc.relation-dialogue-produces-command",
+      "domain": "npc-dialogue",
+      "subject": "dialogue-button-or-close-action",
+      "kind": "produces",
+      "object": "npc-command-sideeffect",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-npc-custom",
+        "ms-npc-dialogue-doc"
+      ]
+    }
+  ]
+}
