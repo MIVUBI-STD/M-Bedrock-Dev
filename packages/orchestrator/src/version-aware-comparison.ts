@@ -7,6 +7,7 @@ import {
 import { planRetest } from "../../reliability/src/retest-planner.js";
 import type {
   RegressionCase,
+  ReliabilityDomain,
   RetestPlan,
   UpdateDeltaEntry,
 } from "../../reliability/src/types.js";
@@ -16,7 +17,7 @@ import type { InspectTargetProfile } from "./types.js";
 
 export interface VersionAwareEvidenceLink {
   updateEntryId: string;
-  domain: string;
+  domain: ReliabilityDomain;
   overlappingCapabilities: string[];
   historicalRegressionIds: string[];
   nativeEvidence: {
@@ -95,8 +96,8 @@ export async function compareArtifactsForUpdate(
       ? comparison.nativeWorld.changedChunkSignals.length
       : 0;
 
-  const evidenceLinks = delta.entries
-    .map((entry) => {
+  const evidenceLinks: VersionAwareEvidenceLink[] = delta.entries
+    .flatMap((entry): VersionAwareEvidenceLink[] => {
       const overlappingCapabilities = entry.capabilityTags.filter(
         (tag) => beforeCaps.has(tag) || afterCaps.has(tag),
       );
@@ -104,9 +105,9 @@ export async function compareArtifactsForUpdate(
         before.reliability.fingerprint.domains.includes(entry.domain) ||
         after.reliability.fingerprint.domains.includes(entry.domain);
 
-      if (overlappingCapabilities.length === 0 && !domainOverlap) return undefined;
+      if (overlappingCapabilities.length === 0 && !domainOverlap) return [];
 
-      return {
+      return [{
         updateEntryId: entry.id,
         domain: entry.domain,
         overlappingCapabilities,
@@ -115,9 +116,8 @@ export async function compareArtifactsForUpdate(
           countDeltas,
           changedChunkSignals,
         },
-      };
+      }];
     })
-    .filter((item): item is VersionAwareEvidenceLink => item !== undefined)
     .sort((a, b) => a.updateEntryId.localeCompare(b.updateEntryId));
 
   return {
