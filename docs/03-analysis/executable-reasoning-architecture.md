@@ -257,3 +257,118 @@ Resolution order:
 3. otherwise profile remains unresolved.
 
 `min_engine_version` remains a compatibility constraint and is not treated as the actual running Minecraft version.
+
+
+## Canonical mutation transaction analyzers
+
+Transaction ordering is implemented by the existing specialized analyzers:
+
+- `mutation-transaction-analysis.ts` for mcfunction command flows;
+- `script-mutation-transaction-analysis.ts` for direct Script API block mutations;
+- `script-command-transaction-analysis.ts` for commands issued from script.
+
+These are the canonical transaction engines. A separate generic transaction tracer is intentionally not kept.
+
+They model:
+
+```text
+APPLY
+↓
+VERIFY
+↓
+DEPENDENT ACTION
+```
+
+where dependent actions include built-in high-impact actions such as teleport/entity spawn and project-defined contracts such as:
+
+- arena-start function calls;
+- scoreboard phase activation;
+- tag handoff;
+- entity events;
+- dialogue handoff;
+- selected Script API methods.
+
+### Cross-function and cross-region ordering
+
+The analyzers bounded-inline:
+
+- direct mcfunction calls;
+- local script function calls;
+- script command execution regions.
+
+They preserve recursion, unresolved calls, and depth limits as proof barriers rather than silently assuming safety.
+
+### Proven ordering defect
+
+When a related verification is statically known but occurs only after the dependent action:
+
+```text
+APPLY
+↓
+DEPENDENT ACTION
+↓
+VERIFY
+```
+
+the evidence explicitly marks verification-before-dependent as absent, producing a knowledge relation violation.
+
+When verification cannot be proven because of unresolved/recursive/depth-limited calls, the analyzer emits:
+
+```text
+transaction-order-proof-incomplete
+```
+
+which maps to an evidence gap, not a gameplay failure.
+
+## Readiness proof enrichment
+
+Static readiness can now be strengthened by:
+
+- transformed structure placement bounds;
+- gated block sentinel checks inside those bounds;
+- `schedule on_area_loaded` rectangle/circle/ticking-area coverage;
+- exact chunk coverage for direct `fill` and `setblock` mutations.
+
+A standalone `testforblock` is observation evidence only. It is not treated as a readiness gate unless the dependent command is actually gated.
+
+## Route mutation correlation
+
+Project-provided `RouteCorridorContract` volumes can be correlated with:
+
+- fill;
+- setblock;
+- clone;
+- transformed structure placement bounds.
+
+A coordinate overlap is only actionable when dimension identity is compatible or dimension-agnostic by contract.
+
+An overlap emits:
+
+```text
+route-affecting-world-mutation
+```
+
+and requires route revalidation. It does not assert that AI pathfinding is broken.
+
+## State authority observations
+
+Runtime or QA capture can provide `StateValueObservation` entries for declared authority/mirror contracts.
+
+Reconciliation distinguishes:
+
+- consistent;
+- value drift;
+- stale mirror revision;
+- missing authority;
+- missing mirror;
+- ambiguous duplicate observations.
+
+This layer requires observed values/revisions; static scoreboard/tag presence alone is not treated as drift proof.
+
+## External and native evidence
+
+`inspectDirectory` accepts optional normalized external evidence.
+
+`inspectArtifact` now feeds native LevelDB scan evidence into that channel before knowledge evaluation.
+
+Persisted chunk records remain disk evidence only. They never imply `loaded-target-chunk`.
