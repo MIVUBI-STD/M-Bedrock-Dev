@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-feedback-animation-modeling",
+      "title": "Entity Modeling and Animation",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/entitymodelingandanimation?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-feedback-animations-vs-controllers",
+      "title": "Animations vs. Animation Controllers",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/animationsvscontrollers?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-feedback-animation-controller",
+      "title": "Animation Controller Documentation",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/animationsreference/examples/animationdefinitions/animation_controller_document?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-feedback-animation-upgrade",
+      "title": "Animation Documentation - Upgrading Animation Scripts",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/animations/animationupgrade?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-feedback-title-command",
+      "title": "title Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/commandsreference/examples/commands/title?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-feedback-particle-command",
+      "title": "particle Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/commandsreference/examples/commands/particle?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-feedback-molang",
+      "title": "Practical Molang",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/molang/practical-molang?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "feedback.animation-controller-state-machine",
+      "domain": "client-feedback",
+      "subject": "animation controller",
+      "statement": "Animation controllers are state machines that transition between states using Molang conditions; one controller state is active at a time and each state can play animations, sounds, and particles.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-animation-modeling",
+        "ms-feedback-animation-controller"
+      ],
+      "capabilityTags": [
+        "animation-controller",
+        "state-machine"
+      ],
+      "riskSurfaces": [
+        "visual-state-drift",
+        "transition-mismatch"
+      ]
+    },
+    {
+      "id": "feedback.animation-controller-load-initial-state",
+      "domain": "client-feedback",
+      "subject": "animation controller client load",
+      "statement": "When an entity is loaded by the client, its animation controller starts from its initial/default state, so client reload or newly observing the entity can reconstruct visual state through controller conditions rather than inheriting an arbitrary previous client state.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-animation-modeling"
+      ],
+      "capabilityTags": [
+        "client-load",
+        "initial-state"
+      ],
+      "riskSurfaces": [
+        "visual-reconstruction",
+        "join-desync"
+      ]
+    },
+    {
+      "id": "feedback.animation-vs-controller",
+      "domain": "client-feedback",
+      "subject": "animation semantics",
+      "statement": "Animations define raw visual motion while animation controllers define the logic for when animations run, so animation content and visual state-transition logic are distinct layers.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-animations-vs-controllers"
+      ],
+      "capabilityTags": [
+        "animation",
+        "controller"
+      ],
+      "riskSurfaces": [
+        "wrong-trigger",
+        "visual-state-drift"
+      ]
+    },
+    {
+      "id": "feedback.animation-version-behavior-can-change",
+      "domain": "client-feedback",
+      "subject": "animation format compatibility",
+      "statement": "Minecraft animation behavior has changed across format/platform revisions, including fixes to default-state events and Molang evaluation, so resource-pack animation regressions can be version-sensitive.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-animation-upgrade"
+      ],
+      "capabilityTags": [
+        "animation",
+        "compatibility"
+      ],
+      "riskSurfaces": [
+        "update-regression",
+        "controller-transition-change"
+      ]
+    },
+    {
+      "id": "feedback.title-has-clear-reset-times",
+      "domain": "client-feedback",
+      "subject": "title/actionbar",
+      "statement": "The title command provides clear, reset, title/subtitle/actionbar locations, and configurable fade-in/stay/fade-out timing, so text feedback has its own lifecycle and timing state.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-title-command"
+      ],
+      "capabilityTags": [
+        "title",
+        "actionbar",
+        "timing"
+      ],
+      "riskSurfaces": [
+        "stale-text",
+        "overlapping-feedback"
+      ]
+    },
+    {
+      "id": "feedback.particle-position-context",
+      "domain": "client-feedback",
+      "subject": "particle command",
+      "statement": "Particle emitters are created at an explicit position or, when omitted, at the current command execution position, tying particle placement to command context and making wrong-origin feedback possible.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-particle-command"
+      ],
+      "capabilityTags": [
+        "particle",
+        "command-context"
+      ],
+      "riskSurfaces": [
+        "wrong-location",
+        "cross-arena-visual"
+      ]
+    },
+    {
+      "id": "feedback.molang-client-derived-state",
+      "domain": "client-feedback",
+      "subject": "Molang animation/render state",
+      "statement": "Molang queries and variables can drive resource-pack animation/render behavior per render tick, so visible client state may be derived from client-observed entity state rather than from a direct server-side UI command.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-molang",
+        "ms-feedback-animation-modeling"
+      ],
+      "capabilityTags": [
+        "molang",
+        "client-derived"
+      ],
+      "riskSurfaces": [
+        "client-server-drift",
+        "presentation-lag"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "feedback.relation-controller-validates-visual-state",
+      "domain": "client-feedback",
+      "subject": "animation-controller-condition",
+      "kind": "validates",
+      "object": "client-visual-state-transition",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-animation-modeling",
+        "ms-feedback-animation-controller"
+      ]
+    },
+    {
+      "id": "feedback.relation-title-reset-restores-default-timing",
+      "domain": "client-feedback",
+      "subject": "title-reset",
+      "kind": "restores",
+      "object": "default-title-state",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-feedback-title-command"
+      ]
+    }
+  ]
+}
