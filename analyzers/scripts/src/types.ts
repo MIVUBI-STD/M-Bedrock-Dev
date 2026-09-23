@@ -41,6 +41,8 @@ export type ScriptApiReceiverType =
 export type ScriptMethodResultUse =
   | "ignored"
   | "assigned"
+  | "guarded-assigned"
+  | "unguarded-assigned"
   | "returned"
   | "dereferenced"
   | "optional-dereferenced"

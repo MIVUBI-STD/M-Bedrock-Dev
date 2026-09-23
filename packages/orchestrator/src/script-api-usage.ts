@@ -42,7 +42,7 @@ export interface ScriptApiUsageSymbol {
   receiverTypes?: string[];
   callShapes?: ScriptCallShapeUsage[];
   resultUses?: Array<{
-    use: "ignored" | "assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
+    use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
     occurrences: number;
     files: string[];
   }>;
@@ -99,7 +99,7 @@ interface MutableUsage {
     files: Set<string>;
   }>;
   resultUses: Map<string, {
-    use: "ignored" | "assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
+    use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
     occurrences: number;
     files: Set<string>;
   }>;
@@ -223,7 +223,7 @@ function mergeCallShapes(
 function recordResultUse(
   item: MutableUsage,
   file: string,
-  use: "ignored" | "assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other",
+  use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other",
 ): void {
   const current = item.resultUses.get(use);
   if (current) {

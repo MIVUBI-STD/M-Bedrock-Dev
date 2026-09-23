@@ -210,6 +210,40 @@ const assigned = entity.getComponent("minecraft:health");
     ]));
   });
 
+  it("classifies bounded local guards for assigned optional results", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const entity = world.getDimension("overworld").getEntities()[0];
+
+const guarded = entity.getComponent("minecraft:health");
+if (guarded) {
+  guarded.currentValue;
+}
+
+const early = entity.getComponent("minecraft:health");
+if (!early) return;
+early.currentValue;
+
+const unsafe = entity.getComponent("minecraft:health");
+unsafe.currentValue;
+`,
+      source,
+    );
+
+    expect(parsed.methodCalls).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "Entity.getComponent",
+        resultUse: "guarded-assigned",
+      }),
+      expect.objectContaining({
+        symbol: "Entity.getComponent",
+        resultUse: "unguarded-assigned",
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

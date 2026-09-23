@@ -19,6 +19,18 @@ describe("Script API return-contract matrix", () => {
     }, "1.18.0", "stable").state).toBe("safe");
   });
 
+  it("distinguishes bounded guarded and unguarded assigned results", () => {
+    expect(checkScriptReturnContract({
+      symbol: "Entity.getComponent",
+      resultUse: "guarded-assigned",
+    }, "1.18.0", "stable").state).toBe("safe");
+
+    expect(checkScriptReturnContract({
+      symbol: "Entity.getComponent",
+      resultUse: "unguarded-assigned",
+    }, "1.18.0", "stable").state).toBe("risk");
+  });
+
   it("keeps assigned results unknown instead of guessing downstream guards", () => {
     expect(checkScriptReturnContract({
       symbol: "Entity.getComponent",

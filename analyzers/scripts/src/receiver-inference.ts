@@ -138,6 +138,161 @@ function methodReturnType(
   return undefined;
 }
 
+function isUndefinedLike(node: ts.Expression): boolean {
+  return (
+    node.kind === ts.SyntaxKind.NullKeyword ||
+    (ts.isIdentifier(node) && node.text === "undefined")
+  );
+}
+
+function isPositiveGuard(node: ts.Expression, name: string): boolean {
+  if (ts.isIdentifier(node) && node.text === name) return true;
+  if (ts.isParenthesizedExpression(node)) return isPositiveGuard(node.expression, name);
+  if (
+    ts.isBinaryExpression(node) &&
+    ts.isIdentifier(node.left) &&
+    node.left.text === name &&
+    (
+      node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsToken ||
+      node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken
+    ) &&
+    isUndefinedLike(node.right)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function isNegativeGuard(node: ts.Expression, name: string): boolean {
+  if (
+    ts.isPrefixUnaryExpression(node) &&
+    node.operator === ts.SyntaxKind.ExclamationToken &&
+    ts.isIdentifier(node.operand) &&
+    node.operand.text === name
+  ) {
+    return true;
+  }
+  if (ts.isParenthesizedExpression(node)) return isNegativeGuard(node.expression, name);
+  if (
+    ts.isBinaryExpression(node) &&
+    ts.isIdentifier(node.left) &&
+    node.left.text === name &&
+    (
+      node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken ||
+      node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
+    ) &&
+    isUndefinedLike(node.right)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function statementTerminates(node: ts.Statement): boolean {
+  if (ts.isReturnStatement(node) || ts.isThrowStatement(node)) return true;
+  if (ts.isBlock(node)) {
+    const last = node.statements.at(-1);
+    return last ? statementTerminates(last) : false;
+  }
+  return false;
+}
+
+function identifierDereferenceState(
+  node: ts.Node,
+  name: string,
+  guarded = false,
+): { safe: boolean; risk: boolean } {
+  let safe = false;
+  let risk = false;
+
+  const visit = (current: ts.Node, currentGuarded: boolean): void => {
+    if (ts.isIfStatement(current) && isPositiveGuard(current.expression, name)) {
+      visit(current.thenStatement, true);
+      if (current.elseStatement) visit(current.elseStatement, currentGuarded);
+      return;
+    }
+
+    if (
+      ts.isPropertyAccessExpression(current) &&
+      ts.isIdentifier(current.expression) &&
+      current.expression.text === name
+    ) {
+      if (current.questionDotToken || currentGuarded) safe = true;
+      else risk = true;
+    }
+
+    if (
+      ts.isElementAccessExpression(current) &&
+      ts.isIdentifier(current.expression) &&
+      current.expression.text === name
+    ) {
+      if (current.questionDotToken || currentGuarded) safe = true;
+      else risk = true;
+    }
+
+    ts.forEachChild(current, (child) => visit(child, currentGuarded));
+  };
+
+  visit(node, guarded);
+  return { safe, risk };
+}
+
+function assignedResultUse(
+  declaration: ts.VariableDeclaration,
+): ScriptMethodResultUse {
+  if (!ts.isIdentifier(declaration.name)) return "assigned";
+  const name = declaration.name.text;
+  const declarationList = declaration.parent;
+  const statement = declarationList.parent;
+  if (!ts.isVariableStatement(statement)) return "assigned";
+
+  const container = statement.parent;
+  const statements = ts.isBlock(container) || ts.isSourceFile(container)
+    ? container.statements
+    : undefined;
+  if (!statements) return "assigned";
+
+  const start = statements.indexOf(statement);
+  if (start < 0) return "assigned";
+
+  let guardedAfterEarlyExit = false;
+  let safe = false;
+
+  for (let index = start + 1; index < statements.length; index += 1) {
+    const candidate = statements[index];
+    if (!candidate) continue;
+
+    if (
+      ts.isExpressionStatement(candidate) &&
+      ts.isBinaryExpression(candidate.expression) &&
+      candidate.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(candidate.expression.left) &&
+      candidate.expression.left.text === name
+    ) {
+      break;
+    }
+
+    if (
+      ts.isIfStatement(candidate) &&
+      isNegativeGuard(candidate.expression, name) &&
+      statementTerminates(candidate.thenStatement)
+    ) {
+      guardedAfterEarlyExit = true;
+      continue;
+    }
+
+    const state = identifierDereferenceState(
+      candidate,
+      name,
+      guardedAfterEarlyExit,
+    );
+    if (state.risk) return "unguarded-assigned";
+    if (state.safe) safe = true;
+  }
+
+  return safe ? "guarded-assigned" : "assigned";
+}
+
 function methodResultUse(call: ts.CallExpression): ScriptMethodResultUse {
   const parent = call.parent;
 
@@ -148,7 +303,9 @@ function methodResultUse(call: ts.CallExpression): ScriptMethodResultUse {
     return parent.questionDotToken ? "optional-dereferenced" : "dereferenced";
   }
   if (ts.isNonNullExpression(parent)) return "non-null-asserted";
-  if (ts.isVariableDeclaration(parent) && parent.initializer === call) return "assigned";
+  if (ts.isVariableDeclaration(parent) && parent.initializer === call) {
+    return assignedResultUse(parent);
+  }
   if (ts.isReturnStatement(parent) && parent.expression === call) return "returned";
   if (ts.isExpressionStatement(parent)) return "ignored";
   return "other";

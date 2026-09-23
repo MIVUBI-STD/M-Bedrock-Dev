@@ -4,6 +4,8 @@ import type { ScriptApiTrack } from "./script-api.js";
 export type ScriptReturnUse =
   | "ignored"
   | "assigned"
+  | "guarded-assigned"
+  | "unguarded-assigned"
   | "returned"
   | "dereferenced"
   | "optional-dereferenced"
@@ -88,7 +90,10 @@ export function checkScriptReturnContract(
     };
   }
 
-  if (call.resultUse === "dereferenced") {
+  if (
+    call.resultUse === "dereferenced" ||
+    call.resultUse === "unguarded-assigned"
+  ) {
     return {
       state: "risk",
       phase,
@@ -101,6 +106,7 @@ export function checkScriptReturnContract(
   if (
     call.resultUse === "optional-dereferenced" ||
     call.resultUse === "non-null-asserted" ||
+    call.resultUse === "guarded-assigned" ||
     call.resultUse === "ignored"
   ) {
     return {
