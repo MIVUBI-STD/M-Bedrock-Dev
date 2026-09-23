@@ -1,0 +1,333 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-loot-economy-policy-v1",
+      "title": "MIVUBI Loot Drop Pickup and Economy Transfer Policy v1",
+      "url": "project://knowledge/loot-economy-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "loot-policy.reward-source-registry",
+      "domain": "loot-economy",
+      "subject": "reward source",
+      "statement": "Every gameplay reward path must be classified and registered: ENGINE_LOOT_TABLE, LOOT_COMMAND, SCRIPT_INVENTORY_GRANT, DROPPED_ITEM_PICKUP, SCOREBOARD_CURRENCY, STRUCTURE_CONTAINER, or RECOVERY_REWARD. Multiple paths for the same logical reward require explicit arbitration.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "reward-source",
+        "classification"
+      ],
+      "riskSurfaces": [
+        "duplicate-reward",
+        "hidden-reward-path"
+      ]
+    },
+    {
+      "id": "loot-policy.logical-reward-idempotency",
+      "domain": "loot-economy",
+      "subject": "logical reward",
+      "statement": "A logical reward must carry rewardOperationId, arenaGeneration, round/result id where applicable, recipient identity/session generation, source, and expected value so retries or parallel loot/script paths cannot commit it twice.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "reward"
+      ],
+      "riskSurfaces": [
+        "duplicate-reward",
+        "reconnect-reward"
+      ]
+    },
+    {
+      "id": "loot-policy.drop-ownership",
+      "domain": "loot-economy",
+      "subject": "dropped arena item",
+      "statement": "Arena-relevant dropped items should have explicit logical ownership or correlatable metadata for arenaGeneration, rewardOperationId, allowed recipients/team, and expiry/cleanup policy. Ambient item entities must not be indistinguishable from protected gameplay rewards.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "drop-owner",
+        "arena-isolation"
+      ],
+      "riskSurfaces": [
+        "cross-arena-pickup",
+        "stale-drop"
+      ]
+    },
+    {
+      "id": "loot-policy.pickup-scope-validation",
+      "domain": "loot-economy",
+      "subject": "item pickup eligibility",
+      "statement": "Before a pickup produces gameplay currency/progression/objective credit, validate picker session, arena/team scope, drop generation, reward ownership, and item identity. A successful engine pickup alone does not prove gameplay eligibility.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "pickup",
+        "scope-validation"
+      ],
+      "riskSurfaces": [
+        "cross-arena-reward",
+        "wrong-recipient"
+      ]
+    },
+    {
+      "id": "loot-policy.inventory-full-transfer",
+      "domain": "loot-economy",
+      "subject": "reward transfer capacity",
+      "statement": "Reward systems that require inventory delivery must define behavior when inventory cannot fully accept the reward: keep/drop remainder, mailbox/defer, convert, reject, or compensate. Currency/progression must not commit as if physical delivery succeeded when delivery is required.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "inventory-capacity",
+        "partial-transfer"
+      ],
+      "riskSurfaces": [
+        "paid-no-item",
+        "reward-loss",
+        "double-claim"
+      ]
+    },
+    {
+      "id": "loot-policy.pickup-commit-order",
+      "domain": "loot-economy",
+      "subject": "pickup economy commit",
+      "statement": "For pickup-to-currency conversions, use a single transaction order: validate drop/picker, reserve claim idempotently, verify pickup/inventory or consume/remove according to mode, then commit currency/progression. Avoid incrementing currency while leaving a claimable item in the world.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "currency",
+        "transaction"
+      ],
+      "riskSurfaces": [
+        "currency-plus-item-duplication",
+        "partial-commit"
+      ]
+    },
+    {
+      "id": "loot-policy.death-reward-arbitration",
+      "domain": "loot-economy",
+      "subject": "death reward paths",
+      "statement": "If entity death can produce an engine loot table and script-side kill reward, declare whether they are complementary or mutually exclusive. Equivalent rewards from both paths are a duplicate-reward defect.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "death-loot",
+        "script-reward"
+      ],
+      "riskSurfaces": [
+        "double-drop",
+        "double-currency"
+      ]
+    },
+    {
+      "id": "loot-policy.stale-drop-invalid",
+      "domain": "loot-economy",
+      "subject": "round-end dropped item",
+      "statement": "Drops owned by an ending arena generation must be removed, expired, or made ineligible before the next generation starts. A round-N item picked up in round N+1 must not grant round-N reward semantics.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-drop",
+        "cross-round-reward"
+      ]
+    },
+    {
+      "id": "loot-policy.loot-table-audit",
+      "domain": "loot-economy",
+      "subject": "loot table integrity",
+      "statement": "For gameplay-critical loot tables, analyzer should resolve referenced table paths, pools, conditions, nested references, multiplicity, and overlap with scripted reward logic before concluding that a missing or duplicate reward is an inventory bug.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "loot-table",
+        "analysis"
+      ],
+      "riskSurfaces": [
+        "missing-loot",
+        "duplicate-loot"
+      ]
+    },
+    {
+      "id": "loot-policy.reward-after-result",
+      "domain": "loot-economy",
+      "subject": "terminal reward",
+      "statement": "Durable end-of-round rewards remain gated by RESULT_COMMITTED and reuse the round/result reward operation token; dropped cosmetic or intermediate loot must not bypass terminal reward idempotency when representing the same entitlement.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "round-integrity",
+        "reward"
+      ],
+      "riskSurfaces": [
+        "reward-before-result",
+        "duplicate-entitlement"
+      ]
+    },
+    {
+      "id": "loot-policy.cleanup-all-drops",
+      "domain": "loot-economy",
+      "subject": "arena cleanup",
+      "statement": "Arena cleanup must reconcile both dropped item entities and their originating reward/spawner paths, including containers restored by structure, delayed loot commands, scripted drops, and death loot sources, before declaring the arena reusable.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-cleanup",
+        "loot"
+      ],
+      "riskSurfaces": [
+        "item-residue",
+        "second-run-duplication"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "loot-policy.relation-valid-claim-gates-credit",
+      "domain": "loot-economy",
+      "subject": "validated-reward-claim",
+      "kind": "gates",
+      "object": "currency-or-progression-credit",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ]
+    },
+    {
+      "id": "loot-policy.relation-result-gates-terminal-loot",
+      "domain": "loot-economy",
+      "subject": "RESULT_COMMITTED",
+      "kind": "gates",
+      "object": "terminal-reward-transfer",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ]
+    },
+    {
+      "id": "loot-policy.relation-cleanup-deactivates-stale-drop",
+      "domain": "loot-economy",
+      "subject": "arena-generation-end",
+      "kind": "deactivates",
+      "object": "old-generation-drop-eligibility",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-loot-economy-policy-v1"
+      ]
+    }
+  ]
+}
