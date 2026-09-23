@@ -15,6 +15,8 @@ import { resolveScriptImports } from "../../../analyzers/scripts/src/resolve.js"
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
 import { undeclaredMinecraftModuleDiagnostics } from "../../../analyzers/diagnostics/src/script-findings.js";
+import { scriptExecutionPrivilegeDiagnostics } from "../../../analyzers/diagnostics/src/script-privilege-findings.js";
+import { scriptVersionDiagnostics } from "../../../analyzers/diagnostics/src/script-version-findings.js";
 import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
@@ -393,6 +395,11 @@ export async function inspectDirectory(
       .map((item) => item.parsed);
 
     diagnostics.push(...undeclaredMinecraftModuleDiagnostics(manifest, scripts));
+    diagnostics.push(...scriptExecutionPrivilegeDiagnostics(scripts));
+    diagnostics.push(...scriptVersionDiagnostics(
+      deriveManifestCompatibilityFacts(manifest),
+      scripts,
+    ));
   }
 
   let entityStates = 0;

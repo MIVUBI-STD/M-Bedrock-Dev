@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-script-execution-privilege",
+      "title": "Scripting Execution Privilege",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/execution-privilege?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-script-events",
+      "title": "Working With Events",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/events?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-system-before-events",
+      "title": "SystemBeforeEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/systembeforeevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-system-after-events",
+      "title": "SystemAfterEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/systemafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-server-module",
+      "title": "@minecraft/server Module",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/minecraft-server?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-update-1.20.50",
+      "title": "1.20.50 Update Notes",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.20.50?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-update-1.20.70",
+      "title": "1.20.70 Update Notes",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.20.70?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    }
+  ],
+  "facts": [
+    {
+      "id": "script.execution.restricted-before-events",
+      "domain": "script-api",
+      "subject": "before-events",
+      "statement": "Before-event callbacks use restricted execution; gameplay-state modifying APIs generally throw unless specifically privileged.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-script-execution-privilege",
+        "ms-script-events"
+      ],
+      "capabilityTags": [
+        "script-before-events",
+        "script-restricted-execution"
+      ],
+      "riskSurfaces": [
+        "script-execution-privilege"
+      ]
+    },
+    {
+      "id": "script.execution.early-startup",
+      "domain": "script-api",
+      "subject": "system.beforeEvents.startup",
+      "statement": "Initial script load and system.beforeEvents.startup callbacks use early-execution privilege, where only APIs marked for early execution are available.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-script-execution-privilege",
+        "ms-system-before-events"
+      ],
+      "capabilityTags": [
+        "script-early-execution"
+      ],
+      "riskSurfaces": [
+        "script-startup"
+      ]
+    },
+    {
+      "id": "script.execution.after-events-default",
+      "domain": "script-api",
+      "subject": "after-events",
+      "statement": "After-event callbacks run in default execution where the normal API set is available.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-script-execution-privilege",
+        "ms-script-events"
+      ],
+      "capabilityTags": [
+        "script-after-events"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle"
+      ]
+    },
+    {
+      "id": "script.dynamic-properties.world-entity-stable-1.7",
+      "domain": "script-api",
+      "subject": "dynamic-properties",
+      "statement": "World and Entity dynamic-property APIs were promoted to stable in @minecraft/server 1.7.0.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.7.0"
+        }
+      },
+      "sourceIds": [
+        "ms-update-1.20.50"
+      ],
+      "capabilityTags": [
+        "dynamic-properties",
+        "script-stable"
+      ],
+      "riskSurfaces": [
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.dynamic-properties.itemstack-stable-1.9",
+      "domain": "script-api",
+      "subject": "itemstack-dynamic-properties",
+      "statement": "ItemStack dynamic-property APIs were promoted to stable in @minecraft/server 1.9.0.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.9.0"
+        }
+      },
+      "sourceIds": [
+        "ms-update-1.20.70"
+      ],
+      "capabilityTags": [
+        "dynamic-properties",
+        "script-stable"
+      ],
+      "riskSurfaces": [
+        "script-version"
+      ]
+    }
+  ]
+}

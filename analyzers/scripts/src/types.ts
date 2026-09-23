@@ -20,6 +20,13 @@ export interface DynamicPropertyAccess {
   source: SourceRef;
 }
 
+export interface RestrictedExecutionMutation {
+  root: "world" | "system" | "unknown";
+  event: string;
+  method: string;
+  source: SourceRef;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
@@ -27,6 +34,8 @@ export interface ScriptCapabilityUse {
     | "event-subscription"
     | "dynamic-properties"
     | "script-event"
+    | "restricted-execution"
+    | "early-execution"
     | "unknown";
   detail?: string;
   source: SourceRef;
@@ -38,5 +47,6 @@ export interface ParsedScriptFile {
   imports: ScriptImport[];
   events: ScriptEventSubscription[];
   dynamicProperties: DynamicPropertyAccess[];
+  restrictedMutations: RestrictedExecutionMutation[];
   capabilities: ScriptCapabilityUse[];
 }

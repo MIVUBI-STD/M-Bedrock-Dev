@@ -1,25 +1,23 @@
 # Next Action
 
-NPC dialogue scene graphs and Education specialty-block compatibility are now covered.
+Script API knowledge now includes version and execution-privilege reasoning.
 
 Implemented:
 
-1. content-based minecraft:npc_dialogue parsing;
-2. scene nodes and scene-command nodes;
-3. on-open/on-close/button command analysis;
-4. scene-to-scene branching references;
-5. duplicate and unresolved scene diagnostics;
-6. shared command dependency owner across structure/dialogue commands;
-7. allow/deny/border palette detection;
-8. Education feature-state diagnostics for specialty blocks;
-9. documented Education permission-block semantics.
+1. machine-readable Script API capability/version rules;
+2. stable dynamic-property version anchors;
+3. restricted vs early vs default execution knowledge;
+4. AST detection of known world-state mutations inside before-event callbacks;
+5. SCRIPT_RESTRICTED_EXECUTION_MUTATION diagnostics;
+6. SCRIPT_API_VERSION_INCOMPATIBLE diagnostics;
+7. prerelease versions remain unknown unless explicitly modeled.
 
 Next priority:
 
-1. add dialogue-scene counts and multiplayer state surfaces to reliability fingerprints;
-2. derive allow/deny/border spatial regions when real world/block-position evidence is available;
-3. add immutable-world/worldbuilder setting extraction from world metadata;
-4. build Script API stable/beta version matrix;
-5. continue validating against real Education maps rather than expanding speculative rules.
+1. expand the matrix from official @minecraft/server changelog/version pages;
+2. add per-event introduced/stable/deprecated metadata;
+3. model write-privilege annotations for more APIs without broad name guessing;
+4. add manifest beta/experiment cross-checking;
+5. validate the matrix against real script-heavy maps and update regressions.
 
-Permission-block presence is compatibility evidence, not standalone proof of a movement/build bug.
+Do not infer API legality from method names alone.

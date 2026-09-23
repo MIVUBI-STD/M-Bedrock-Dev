@@ -3,6 +3,7 @@ import type { SourceRef } from "../../../packages/project-model/src/source-ref.j
 import type {
   DynamicPropertyAccess,
   ParsedScriptFile,
+  RestrictedExecutionMutation,
   ScriptCapabilityUse,
   ScriptEventSubscription,
   ScriptImport,
@@ -77,6 +78,52 @@ function dynamicPropertyOperation(name: string): DynamicPropertyAccess["operatio
   return "unknown";
 }
 
+const RESTRICTED_MUTATORS = new Set([
+  "setGameMode",
+  "spawnEntity",
+  "setDynamicProperty",
+  "clearDynamicProperties",
+]);
+
+function callbackNode(call: ts.CallExpression): ts.Node | undefined {
+  const candidate = call.arguments[0];
+  if (
+    candidate &&
+    (ts.isArrowFunction(candidate) || ts.isFunctionExpression(candidate))
+  ) {
+    return candidate;
+  }
+  return undefined;
+}
+
+function scanRestrictedMutations(
+  callback: ts.Node,
+  root: RestrictedExecutionMutation["root"],
+  event: string,
+  file: ts.SourceFile,
+  source: SourceRef,
+): RestrictedExecutionMutation[] {
+  const output: RestrictedExecutionMutation[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const method = node.expression.name.text;
+      if (RESTRICTED_MUTATORS.has(method)) {
+        output.push({
+          root,
+          event,
+          method,
+          source: lineSource(file, node, source),
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(callback);
+  return output;
+}
+
 export function parseScriptFile(
   identifier: string,
   text: string,
@@ -93,6 +140,7 @@ export function parseScriptFile(
   const imports: ScriptImport[] = [];
   const events: ScriptEventSubscription[] = [];
   const dynamicProperties: DynamicPropertyAccess[] = [];
+  const restrictedMutations: RestrictedExecutionMutation[] = [];
   const capabilities: ScriptCapabilityUse[] = [];
 
   const visit = (node: ts.Node): void => {
@@ -139,6 +187,30 @@ export function parseScriptFile(
             detail: `${normalizedRoot}.${normalizedPhase}.${event}`,
             source: eventSource,
           });
+
+          if (normalizedPhase === "beforeEvents") {
+            capabilities.push({
+              capability:
+                normalizedRoot === "system" && event === "startup"
+                  ? "early-execution"
+                  : "restricted-execution",
+              detail: `${normalizedRoot}.${normalizedPhase}.${event}`,
+              source: eventSource,
+            });
+
+            const callback = callbackNode(node);
+            if (callback) {
+              restrictedMutations.push(
+                ...scanRestrictedMutations(
+                  callback,
+                  normalizedRoot,
+                  event,
+                  file,
+                  source,
+                ),
+              );
+            }
+          }
 
           if (
             normalizedRoot === "system" &&
@@ -188,6 +260,7 @@ export function parseScriptFile(
     imports,
     events,
     dynamicProperties,
+    restrictedMutations,
     capabilities,
   };
 }
