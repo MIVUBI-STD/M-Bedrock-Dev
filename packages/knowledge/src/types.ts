@@ -45,6 +45,7 @@ export type KnowledgeDomain =
   | "compatibility"
   | "automation"
   | "entity-population"
+  | "effects"
   | "education";
 
 export type KnowledgeRelationKind =
