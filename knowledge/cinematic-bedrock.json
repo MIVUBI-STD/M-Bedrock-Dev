@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-camera-system",
+      "title": "Camera System Introduction",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/camerasystem/cameracommandintroduction?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-camera-command",
+      "title": "camera Command",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/commandsreference/examples/commands/camera?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-camera-player",
+      "title": "Player Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/player?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-camera-class-1xx",
+      "title": "Camera Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/camera?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "cinematic.camera-state-persists-until-clear-or-disconnect",
+      "domain": "cinematic",
+      "subject": "camera state",
+      "statement": "A camera preset applied to a player persists until explicitly cleared or the player disconnects, so camera state is a per-player runtime resource that requires lifecycle cleanup.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-camera-system"
+      ],
+      "capabilityTags": [
+        "camera",
+        "lifecycle"
+      ],
+      "riskSurfaces": [
+        "camera-leak",
+        "disconnect",
+        "cutscene-residue"
+      ]
+    },
+    {
+      "id": "cinematic.camera-set-clear-fade-target-player",
+      "domain": "cinematic",
+      "subject": "camera command targeting",
+      "statement": "Camera commands target selected players and support set, clear, fade, target attachment, FOV, easing, and facing operations, so cinematic state is player-targeted rather than inherently global.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-camera-command",
+        "ms-camera-system"
+      ],
+      "capabilityTags": [
+        "camera",
+        "player-target"
+      ],
+      "riskSurfaces": [
+        "cross-arena-targeting",
+        "global-selector"
+      ]
+    },
+    {
+      "id": "cinematic.camera-clear-ends-active-perspective",
+      "domain": "cinematic",
+      "subject": "camera clear",
+      "statement": "Clearing a camera ends active camera perspectives/eased motions and returns the player to their normal perspective.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-camera-system",
+        "ms-camera-class-1xx"
+      ],
+      "capabilityTags": [
+        "camera-clear",
+        "restore"
+      ],
+      "riskSurfaces": [
+        "restore-missing",
+        "stuck-camera"
+      ]
+    },
+    {
+      "id": "cinematic.fade-has-independent-timing",
+      "domain": "cinematic",
+      "subject": "camera fade",
+      "statement": "Camera fades have explicit fade-in, hold, and fade-out durations and can be combined with delayed teleports or camera changes, creating another scheduler/timing surface inside a cutscene.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-camera-system",
+        "ms-camera-command"
+      ],
+      "capabilityTags": [
+        "camera-fade",
+        "timing"
+      ],
+      "riskSurfaces": [
+        "timing-race",
+        "early-teleport",
+        "late-restore"
+      ]
+    },
+    {
+      "id": "cinematic.camera-methods-restricted-execution",
+      "domain": "cinematic",
+      "subject": "Camera API execution privilege",
+      "statement": "Camera clear/fade/set methods cannot be called from restricted-execution mode and may throw, so cutscene control must run in a valid execution phase and handle failure.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-camera-class-1xx",
+        "ms-camera-player"
+      ],
+      "capabilityTags": [
+        "camera-api",
+        "execution-privilege"
+      ],
+      "riskSurfaces": [
+        "restore-failure",
+        "cutscene-start-failure"
+      ]
+    },
+    {
+      "id": "cinematic.cutscene-example-disables-input",
+      "domain": "cinematic",
+      "subject": "non-interactive cutscene",
+      "statement": "Official camera guidance pairs cutscene camera changes with movement/camera input disabling and restores both camera and input at the end, showing camera and player-control state are separate resources that must be coordinated.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-camera-system"
+      ],
+      "capabilityTags": [
+        "camera",
+        "input-permission"
+      ],
+      "riskSurfaces": [
+        "input-lock-leak",
+        "partial-restore"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "cinematic.relation-camera-clear-restores-view",
+      "domain": "cinematic",
+      "subject": "camera-clear",
+      "kind": "restores",
+      "object": "normal-player-camera",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-camera-system",
+        "ms-camera-class-1xx"
+      ]
+    },
+    {
+      "id": "cinematic.relation-cutscene-requires-control-coordination",
+      "domain": "cinematic",
+      "subject": "non-interactive-cutscene",
+      "kind": "requires",
+      "object": "camera-and-input-permission-coordination",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-camera-system"
+      ]
+    }
+  ]
+}
