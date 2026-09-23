@@ -136,3 +136,25 @@ other
 ```
 
 Return-contract rules can therefore distinguish a direct unsafe-looking dereference from optional chaining without requiring full program-wide type flow. Assigned/returned results remain conservative because downstream guards are not inferred yet.
+
+
+## Enum backing-value evidence
+
+When an official enum backing value changes and source code compares the enum member with a literal, the inventory retains the observed comparison distribution.
+
+For each comparison it records:
+
+- literal value;
+- comparison operator;
+- occurrence count;
+- source files.
+
+Example portfolio evidence can therefore distinguish use of both API lines:
+
+```text
+BlockComponentTypes.FluidContainer
+├── "minecraft:fluidContainer"   → legacy comparisons
+└── "minecraft:fluid_container"  → current comparisons
+```
+
+This evidence is merged across maps without double-counting the enum-member occurrence itself.

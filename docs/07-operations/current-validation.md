@@ -1,26 +1,37 @@
 # Current Validation
 
-Status: REMOTE STATIC SOURCE GREEN; PRODUCTION/RUNTIME PROOF PENDING
+Status: REMOTE STATIC SOURCE COMPLETE AND GREEN; PRODUCTION/RUNTIME PROOF PENDING
 
 Latest source-bearing verification on 2026-09-23:
 
-- commit `605299ae72052c53ef8a202beebafbb32054367d` completed the full Verify workflow successfully;
+- commit `dc15e91919d62a32907fe54f5240c1ab5e34dafb` completed the full Verify workflow successfully;
 - repository policy passed;
 - source boundaries passed;
 - TypeScript `tsc --noEmit` passed;
 - the full Vitest suite passed.
 
-Source-verified Script API capabilities now include lifecycle, type/namespace imports, signature migration, return contracts with local guards, property mutability writes, enum backing-value migration, receiver-aware restricted execution, usage/portfolio intelligence, and update correlation.
+Source-verified Script API capabilities now include:
+
+- module/version and prerelease compatibility;
+- event/method/property/enum/imported-type lifecycle;
+- bounded receiver and namespace inference;
+- signature/call-shape migration;
+- return-contract migration with bounded local guards;
+- property mutability and incompatible writes;
+- enum backing-value migration;
+- receiver-aware restricted execution and custom-command callback handling;
+- per-map and portfolio distributions for symbols, call shapes, result uses, property writes, and enum literal comparisons;
+- Minecraft update/regression correlation.
 
 ```text
 repository policy   VERIFIED
 source boundaries   VERIFIED
 typecheck           VERIFIED
 Vitest              VERIFIED
-source-bearing head 605299ae72052c53ef8a202beebafbb32054367d
+source-bearing head dc15e91919d62a32907fe54f5240c1ab5e34dafb
 ```
 
-Documentation/provenance-only commits after the source-bearing head are validated independently to avoid self-referential SHA churn.
+Documentation-only commits after this source-bearing head are verified independently to avoid self-referential SHA churn.
 
 ## Remaining proof lanes
 
@@ -32,6 +43,7 @@ These are not unfinished remote-static architecture tasks:
 - entity AI/event timing;
 - chunk/load/saved-tick behavior;
 - live multiplayer/session interleavings;
-- update-specific semantic changes with identical source syntax.
+- semantic behavior changes with identical source syntax;
+- newly introduced official Script API changes not yet observed in real map usage.
 
 They require production artifacts, local game execution, or controlled runtime/differential evidence.

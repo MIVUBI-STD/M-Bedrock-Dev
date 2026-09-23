@@ -15,8 +15,9 @@ The remote static `@minecraft/server` compatibility architecture is evidence-dri
 9. property mutability transitions and incompatible writes;
 10. enum backing-value migrations when explicit literal comparisons are observable;
 11. receiver-aware restricted execution and restricted custom-command callbacks;
-12. real-map usage, call-shape, result-use, property-write, and portfolio distributions;
-13. Minecraft update correlation against observed Script API symbols.
+12. real-map usage, call-shape, result-use, property-write, enum backing-value comparison, and portfolio distributions;
+13. receiver-aware restricted execution across before-events and custom-command callbacks, while startup remains a separate early-execution context;
+14. Minecraft update correlation against observed Script API symbols.
 
 ## Evidence rule
 
@@ -39,4 +40,4 @@ Those require production-artifact, runtime, differential, or live-game evidence.
 
 ## Completion criterion
 
-The remote static architecture is source-complete for the current curated evidence set. Further growth is usage-driven evidence ingestion, not speculative architecture expansion.
+The remote static architecture is source-complete for the current curated evidence set. The last audited evidence gap—enum backing-value comparison distributions—is retained in per-map and portfolio usage. Further growth is usage-driven evidence ingestion, not speculative architecture expansion.
