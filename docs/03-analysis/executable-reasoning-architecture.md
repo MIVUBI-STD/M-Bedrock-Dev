@@ -170,3 +170,90 @@ The executable layer follows one rule:
 > absence of proof is not proof of absence.
 
 This is necessary for Bedrock because unloaded chunks, deferred entity mutation, client presentation, and partially observable runtime state frequently produce incomplete evidence.
+
+
+## Implemented evidence producers
+
+The executable reasoning pipeline now has concrete producers for:
+
+- manifest compatibility constraints and script-module dependencies;
+- `.mcfunction` command effects;
+- structure-load target correlation and chunk-readiness mechanisms;
+- topology/spatial effects and outliers;
+- Script API/event/dynamic-property/deferred-work evidence;
+- entity transition integrity and AI capability surfaces;
+- native LevelDB/world-db chunk records as disk evidence only.
+
+### Important evidence boundary
+
+Native LevelDB chunk records deliberately emit predicates such as:
+
+```text
+world-db-chunk-record
+world-db-block-entity-record
+world-db-pending-tick-record
+```
+
+They do **not** emit:
+
+```text
+loaded-target-chunk
+```
+
+because persisted chunk data is not proof that the chunk is currently resident in the running world.
+
+### Current cross-domain proofs
+
+The first executable cross-domain chains now include:
+
+```text
+structure command
+→ structure-placement-request
+→ requires structure-target-resolved
+→ structure inventory correlation
+→ SATISFIED / VIOLATION
+```
+
+and:
+
+```text
+structure/block mutation
+→ requires runtime readiness proof
+→ UNKNOWN when static evidence cannot prove it
+→ KNOWLEDGE_EVIDENCE_GAP
+→ validation case
+```
+
+Entity definitions also emit explicit transition-integrity evidence when undefined event/group references are provable.
+
+## Diagnostic severity
+
+Knowledge relations may now carry a `diagnosticSeverity` hint.
+
+Severity is only applied when a relation is explicitly violated. Unknown evidence remains informational even when the relation would be critical if disproven.
+
+Current high-impact critical relations include:
+
+- structure placement with a definitely missing target;
+- world mutation commit without required verification;
+- terminal reward before result commit;
+- arena reuse before reset verification.
+
+This preserves the distinction between:
+
+```text
+PROVEN BAD → ranked severity
+UNKNOWN    → evidence gap
+```
+
+## Runtime profile handling
+
+The effective knowledge profile no longer silently assumes Bedrock.
+
+Resolution order:
+
+1. explicit inspection target edition/version;
+2. Education metadata can establish Education edition;
+3. otherwise profile remains unresolved.
+
+`min_engine_version` remains a compatibility constraint and is not treated as the actual running Minecraft version.
