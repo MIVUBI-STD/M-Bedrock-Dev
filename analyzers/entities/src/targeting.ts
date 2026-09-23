@@ -88,16 +88,16 @@ export function extractTargetingSemantics(
       collectFamilyFilters(item.filters, families);
       for (const family of families) allFamilies.add(family);
 
+      const maxDist = numberValue(item, "max_dist");
+      const mustSee = boolValue(item, "must_see");
+      const reevaluateDescription = boolValue(item, "reevaluate_description");
+
       return {
         families: [...families].sort(),
-        ...(numberValue(item, "max_dist") !== undefined
-          ? { maxDist: numberValue(item, "max_dist") }
-          : {}),
-        ...(boolValue(item, "must_see") !== undefined
-          ? { mustSee: boolValue(item, "must_see") }
-          : {}),
-        ...(boolValue(item, "reevaluate_description") !== undefined
-          ? { reevaluateDescription: boolValue(item, "reevaluate_description") }
+        ...(maxDist !== undefined ? { maxDist } : {}),
+        ...(mustSee !== undefined ? { mustSee } : {}),
+        ...(reevaluateDescription !== undefined
+          ? { reevaluateDescription }
           : {}),
       };
     });
@@ -111,23 +111,20 @@ export function extractTargetingSemantics(
       capabilities.push(`targeting:family:${family}`);
     }
 
+    const mustSee = boolValue(config, "must_see");
+    const mustReach = boolValue(config, "must_reach");
+    const withinRadius = numberValue(config, "within_radius");
+    const reselectTargets = boolValue(config, "reselect_targets");
+
     results.push({
       component,
       configuredTargetTypes: rawTypes.length,
       families: [...allFamilies].sort(),
       targetTypes,
-      ...(boolValue(config, "must_see") !== undefined
-        ? { mustSee: boolValue(config, "must_see") }
-        : {}),
-      ...(boolValue(config, "must_reach") !== undefined
-        ? { mustReach: boolValue(config, "must_reach") }
-        : {}),
-      ...(numberValue(config, "within_radius") !== undefined
-        ? { withinRadius: numberValue(config, "within_radius") }
-        : {}),
-      ...(boolValue(config, "reselect_targets") !== undefined
-        ? { reselectTargets: boolValue(config, "reselect_targets") }
-        : {}),
+      ...(mustSee !== undefined ? { mustSee } : {}),
+      ...(mustReach !== undefined ? { mustReach } : {}),
+      ...(withinRadius !== undefined ? { withinRadius } : {}),
+      ...(reselectTargets !== undefined ? { reselectTargets } : {}),
       capabilities: [...new Set(capabilities)].sort(),
     });
   }
