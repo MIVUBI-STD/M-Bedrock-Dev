@@ -96,6 +96,62 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-world-1xx",
+      "title": "World Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/world?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-dimension-1xx",
+      "title": "Dimension Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/dimension?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-1xx",
+      "title": "Entity Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-world-before-events-1xx",
+      "title": "WorldBeforeEvents Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/worldbeforeevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-world-after-events-1xx",
+      "title": "WorldAfterEvents Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/worldafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-item-use-on-before-1xx",
+      "title": "ItemUseOnBeforeEvent Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/itemuseonbeforeevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-item-use-on-after-1xx",
+      "title": "ItemUseOnAfterEvent Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/itemuseonafterevent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -443,6 +499,135 @@
         "receiver-inference"
       ],
       "riskSurfaces": [
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle.world-play-sound-removed-2.0",
+      "domain": "script-api",
+      "subject": "world.playSound",
+      "statement": "The prior 1.x World API marks playSound deprecated, directs creators to Dimension.playSound, and states that the function is removed in @minecraft/server 2.0.0.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-1xx",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-deprecated",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle-run-command-async-removed-2.0",
+      "domain": "script-api",
+      "subject": "Dimension.runCommandAsync / Entity.runCommandAsync",
+      "statement": "The prior 1.x Dimension and Entity APIs mark runCommandAsync deprecated and scheduled for removal in @minecraft/server 2.0.0; the 2.0.0 changelog records their removal.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-dimension-1xx",
+        "ms-entity-1xx",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-deprecated",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle-world-initialize-events-removed-2.0",
+      "domain": "script-api",
+      "subject": "world.beforeEvents.worldInitialize / world.afterEvents.worldInitialize",
+      "statement": "The prior 1.x world initialization event properties are documented as deprecated and removed in @minecraft/server 2.0.0.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-before-events-1xx",
+        "ms-world-after-events-1xx",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-event",
+        "script-deprecated",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle-item-use-on-events-removed-2.0",
+      "domain": "script-api",
+      "subject": "world.beforeEvents.itemUseOn / world.afterEvents.itemUseOn",
+      "statement": "The prior 1.x itemUseOn event APIs are deprecated and removed in 2.0.0; Microsoft directs creators to PlayerInteractWithBlock before/after events instead.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-before-events-1xx",
+        "ms-world-after-events-1xx",
+        "ms-item-use-on-before-1xx",
+        "ms-item-use-on-after-1xx",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-event",
+        "script-deprecated",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.lifecycle-is-valid-methods-removed-2.0",
+      "domain": "script-api",
+      "subject": "Entity.isValid / ScoreboardObjective.isValid methods",
+      "statement": "The @minecraft/server 2.0.0 changelog removes multiple isValid functions while adding isValid properties, including Entity and ScoreboardObjective.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-1xx",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-removed"
+      ],
+      "riskSurfaces": [
+        "script-lifecycle",
         "script-version"
       ]
     }

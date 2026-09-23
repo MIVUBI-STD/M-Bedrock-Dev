@@ -1,26 +1,26 @@
 # Next Action
 
-Script API usage can now be correlated directly with Minecraft update evidence.
+Deprecated and removed Script API lifecycle intelligence is now implemented for observable method and event symbols.
 
 Implemented:
 
-1. per-map and multi-map Script API usage inventory;
-2. bounded receiver inference and method/event symbol classification;
-3. Script update correlation in `compare-update`;
-4. deterministic aliases between source syntax and documented class/event-container identifiers;
-5. separate module-surface overlap and exact/alias symbol matches;
-6. before/after occurrence and source-file evidence for matched symbols;
-7. unclassified observed symbols retained as knowledge gaps;
-8. Minecraft 1.26.40 catalog enriched with documented v2.9.0 promoted symbols and runtime-fix identifiers;
-9. correlation remains descriptive and never asserts update causation.
+1. version-aware lifecycle states: active, deprecated, removed, unknown;
+2. documented 1.x deprecation → 2.0.0 removal transitions;
+3. `SCRIPT_API_DEPRECATED_SYMBOL` minor diagnostics;
+4. `SCRIPT_API_REMOVED_SYMBOL` critical diagnostics;
+5. official replacement metadata where Microsoft documents a replacement;
+6. inherited Player legacy methods canonicalized to Entity symbols;
+7. lifecycle metadata retained in Script API usage inventory;
+8. lifecycle findings feed reliability risk surfaces;
+9. official provenance for the initial legacy method/event seed.
 
 Next priority:
 
-1. add deprecated and removed Script API symbol states from official changelogs and detect real-map exposure to them;
-2. run `script-usage` and `compare-update` against representative production maps to establish actual symbol/update overlap distributions;
-3. promote high-frequency unclassified symbols only after official version provenance is established;
-4. extend execution-privilege rules to inferred receiver methods where Microsoft explicitly documents restrictions;
-5. add regression-level affected identifiers only when a reproduced historical regression can name them reliably;
-6. consider longitudinal symbol-usage snapshots only after production portfolio evidence justifies storage.
+1. add deterministic property-access symbol extraction so removed properties such as PlayerInputPermissions.cameraEnabled/movementEnabled can be detected;
+2. add enum/member lifecycle intelligence for documented removals such as lowercase GameMode values without guessing dynamic values;
+3. run lifecycle analysis against representative production maps to learn which legacy surfaces are actually present;
+4. expand lifecycle rules only from observed map usage plus official evidence;
+5. continue execution-privilege enrichment for inferred receiver methods;
+6. keep type/signature migration analysis separate from simple removed-symbol detection.
 
-Usage-driven expansion remains the default. Broad or fuzzy API matching stays out of the hot path.
+Method/event lifecycle coverage is source-verified. Property, enum, and argument-shape lifecycle coverage remains an explicit blindspot.
