@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-entity-population-policy-v1",
+      "title": "MIVUBI Entity Spawn Despawn and Population Integrity Policy v1",
+      "url": "project://knowledge/entity-population-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "population-policy.spawn-path-classification",
+      "domain": "entity-population",
+      "subject": "entity creation path",
+      "statement": "Classify every gameplay entity creation path as NATURAL_RULE, SCRIPT_SPAWN, COMMAND_SUMMON, STRUCTURE_RESTORE, PARENT_SPAWN_ENTITY, SPAWN_ON_DEATH, or RECOVERY_RESTORE so analyzer can reason about duplicates and ownership across heterogeneous spawn sources.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "spawn-source",
+        "classification"
+      ],
+      "riskSurfaces": [
+        "duplicate-spawn",
+        "hidden-spawn-source"
+      ]
+    },
+    {
+      "id": "population-policy.spawn-intent-token",
+      "domain": "entity-population",
+      "subject": "scripted gameplay spawn",
+      "statement": "Critical scripted spawns should carry a spawn intent or generation token containing arenaGeneration, waveGeneration, spawnOperationId, expected entity type, and expected count; repeated callbacks must not create extra entities for the same logical intent.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "spawn"
+      ],
+      "riskSurfaces": [
+        "duplicate-wave",
+        "retry-duplication"
+      ]
+    },
+    {
+      "id": "population-policy.spawn-verify-after-create",
+      "domain": "entity-population",
+      "subject": "spawn verification",
+      "statement": "After critical spawn, verify entity identity, location, arena ownership, entityGeneration, and registry membership before treating the spawn as committed. API or command success alone is not sufficient for wave/objective accounting.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "spawn",
+        "verification"
+      ],
+      "riskSurfaces": [
+        "false-spawn-success",
+        "enemy-count-drift"
+      ]
+    },
+    {
+      "id": "population-policy.despawn-vs-death-separated",
+      "domain": "entity-population",
+      "subject": "entity disappearance",
+      "statement": "Classify disappearance evidence into DEAD_CONFIRMED, DESPAWN_CONFIRMED_OR_EXPECTED, UNLOADED, EXPLICIT_REMOVE, REPLACED, and UNKNOWN. Do not decrement kill objectives merely because an entity is no longer queryable.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "despawn",
+        "lifecycle"
+      ],
+      "riskSurfaces": [
+        "false-kill",
+        "false-enemy-zero"
+      ]
+    },
+    {
+      "id": "population-policy.critical-entity-persistence",
+      "domain": "entity-population",
+      "subject": "critical arena entity",
+      "statement": "Entities required for arena progression should have an explicit persistence/despawn policy. If default despawn behavior can remove them, either disable/override that path where appropriate or design recovery and objective logic that tolerates expected despawn.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "critical-entity",
+        "persistence"
+      ],
+      "riskSurfaces": [
+        "objective-stall",
+        "entity-disappears"
+      ]
+    },
+    {
+      "id": "population-policy.natural-spawn-isolation",
+      "domain": "entity-population",
+      "subject": "arena population isolation",
+      "statement": "If arena objectives depend on precise enemy counts, distinguish arena-owned scripted entities from unrelated natural mobs sharing the same type or population pool. Broad type selectors must not become authoritative enemy registries.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-isolation",
+        "entity-registry"
+      ],
+      "riskSurfaces": [
+        "wrong-enemy-count",
+        "natural-mob-inclusion"
+      ]
+    },
+    {
+      "id": "population-policy.hidden-spawner-audit",
+      "domain": "entity-population",
+      "subject": "autonomous spawn components",
+      "statement": "Audit entity definitions for minecraft:spawn_entity and spawn_on_death when diagnosing unexplained population growth or replacement entities; these spawn paths can operate independently of arena script spawn functions.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "spawn_entity",
+        "spawn-on-death"
+      ],
+      "riskSurfaces": [
+        "population-growth",
+        "unexpected-replacement"
+      ]
+    },
+    {
+      "id": "population-policy.cap-pressure-diagnostic",
+      "domain": "entity-population",
+      "subject": "natural spawn failure",
+      "statement": "When a natural/data-driven spawn fails, inspect population pool pressure and density limits before concluding that spawn conditions or identifiers are wrong.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "population-cap",
+        "diagnosis"
+      ],
+      "riskSurfaces": [
+        "false-spawn-rule-diagnosis"
+      ]
+    },
+    {
+      "id": "population-policy.wave-count-registry",
+      "domain": "entity-population",
+      "subject": "wave population",
+      "statement": "Wave/objective counts should be derived from generation-scoped registered entities plus lifecycle evidence, not from ambient world counts or decrement-only counters.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "wave",
+        "registry"
+      ],
+      "riskSurfaces": [
+        "count-drift",
+        "natural-mob-contamination"
+      ]
+    },
+    {
+      "id": "population-policy.cleanup-owned-population",
+      "domain": "entity-population",
+      "subject": "arena reset population",
+      "statement": "Arena reset must reconcile all arena-owned population sources and products: live entities, children/replacements, projectiles where relevant, autonomous spawn components, pending spawn callbacks, and spawn-on-death chains before reuse.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "cleanup",
+        "population"
+      ],
+      "riskSurfaces": [
+        "population-leak",
+        "second-run-duplicates"
+      ]
+    },
+    {
+      "id": "population-policy.spawn-budget",
+      "domain": "entity-population",
+      "subject": "mass spawning",
+      "statement": "Burst spawning, recovery spawning, and autonomous population growth must obey per-arena/global performance budgets; a logically correct wave system can still cause watchdog pressure if many entities are created or initialized in one tick.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "performance",
+        "spawn-burst"
+      ],
+      "riskSurfaces": [
+        "tick-spike",
+        "watchdog"
+      ]
+    },
+    {
+      "id": "population-policy.replacement-lineage",
+      "domain": "entity-population",
+      "subject": "replacement entity lineage",
+      "statement": "When death or entity components create replacement/child entities, track lineage from source entity and decide whether the replacement inherits objective membership, arenaGeneration, and scoring role; inheritance must not be implicit.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ],
+      "capabilityTags": [
+        "lineage",
+        "replacement"
+      ],
+      "riskSurfaces": [
+        "enemy-count-drift",
+        "wrong-objective-membership"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "population-policy.relation-intent-gates-spawn",
+      "domain": "entity-population",
+      "subject": "valid-spawn-intent",
+      "kind": "gates",
+      "object": "critical-scripted-spawn",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ]
+    },
+    {
+      "id": "population-policy.relation-spawn-verify-gates-registration",
+      "domain": "entity-population",
+      "subject": "verified-spawned-entity",
+      "kind": "gates",
+      "object": "wave-registry-membership",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ]
+    },
+    {
+      "id": "population-policy.relation-disappearance-requires-classification",
+      "domain": "entity-population",
+      "subject": "missing-entity-observation",
+      "kind": "requires",
+      "object": "death-despawn-unload-remove-classification",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-entity-population-policy-v1"
+      ]
+    }
+  ]
+}
