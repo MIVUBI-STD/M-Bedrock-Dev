@@ -828,8 +828,8 @@ export async function inspectDirectory(
       verifiedBeforeDependent: scriptMutationTransactions.filter(
         (item) => item.status === "verified-before-dependent",
       ).length,
-      lateVerificationCandidates: scriptMutationTransactions.filter(
-        (item) => item.status === "late-verification-candidate",
+      dependentBeforeVerification: scriptMutationTransactions.filter(
+        (item) => item.status === "dependent-before-verification",
       ).length,
       verificationUnresolved: scriptMutationTransactions.filter(
         (item) => item.status === "verification-unresolved",
