@@ -2,6 +2,7 @@ export * from "./blindspot-portfolio.js";
 export * from "./campaign-history.js";
 export * from "./retest-catalog.js";
 export * from "./function-graph-mutation.js";
+export * from "./entity-knowledge-analysis.js";
 export * from "./history-intelligence.js";
 export * from "./inspect-artifact.js";
 export * from "./inspect.js";

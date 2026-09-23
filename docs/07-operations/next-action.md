@@ -1,32 +1,25 @@
 # Next Action
 
-The Bedrock/Education Knowledge Layer now has its first executable entity dependency graph.
+Entity JSON is now connected to the Bedrock knowledge dependency graph.
 
 Implemented:
 
-1. provenance-backed knowledge facts;
-2. version/profile filtering;
-3. machine-readable knowledge relations;
-4. merge support for multiple catalogs;
-5. entity prerequisite reasoning;
-6. target-provider dependencies;
-7. attack-component dependencies;
-8. door/navigation dependency knowledge;
-9. event-to-component-group lifecycle relations;
-10. event application timing semantics;
-11. runtime_identifier built-in-behavior caveat;
-12. automatic verification for every JSON knowledge catalog.
+1. entity definition parser;
+2. base-component extraction;
+3. component-group extraction;
+4. recursive event add/remove/trigger extraction;
+5. conservative possible-state graph;
+6. separate group states instead of unsafe global union;
+7. event-added multi-group states;
+8. state-scoped knowledge prerequisite checks;
+9. runtime_identifier static-analysis limitation reporting.
 
-Next priority is to connect entity JSON analysis to this graph:
+Next priority:
 
-```text
-entity JSON
-→ base components
-→ component groups
-→ events/triggers
-→ possible active-state graph
-→ knowledge prerequisite check
-→ diagnostics with provenance
-```
+1. add navigation capability extraction (door/water/swim/avoidance/path flags);
+2. add target/filter semantics and family matching knowledge;
+3. model sensor/environment-triggered transitions more explicitly;
+4. connect entity knowledge findings into the main inspection diagnostics with provenance;
+5. then expand structure and chunk/ticking knowledge.
 
-Then expand navigation variants and entity target/filter semantics before moving to structures/chunks.
+Keep runtime state claims conservative until live evidence exists.
