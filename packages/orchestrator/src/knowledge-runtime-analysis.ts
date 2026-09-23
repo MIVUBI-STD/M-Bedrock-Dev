@@ -118,6 +118,7 @@ export function analyzeKnowledgeRuntime(
   target: InspectTargetProfile,
   manifests: readonly ManifestModel[],
   functions: readonly ParsedFunction[],
+  extraEvidence: readonly RuntimeEvidenceRecord[] = [],
 ): KnowledgeRuntimeAnalysis {
   if (!catalog) {
     return {
@@ -137,6 +138,7 @@ export function analyzeKnowledgeRuntime(
   const records: RuntimeEvidenceRecord[] = [
     ...manifests.flatMap((manifest) => manifestRuntimeEvidence(manifest).records),
     ...functions.flatMap(functionRuntimeEvidence),
+    ...extraEvidence,
   ];
 
   if (!resolution.profile) {
