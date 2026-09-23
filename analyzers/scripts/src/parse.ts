@@ -285,13 +285,22 @@ export function parseScriptFile(
       const namespaceModule = chain[0]
         ? namespaceMinecraftBindings.get(chain[0])
         : undefined;
-      if (namespaceModule && chain.length === 3 && chain[1] && chain[2]) {
+      const namespaceLocal = chain[0];
+      const importedName = chain[1];
+      const member = chain[2];
+      if (
+        namespaceModule &&
+        chain.length === 3 &&
+        namespaceLocal &&
+        importedName &&
+        member
+      ) {
         const access: ScriptModuleMemberAccess = {
           module: namespaceModule,
-          importedName: chain[1],
-          localName: chain[0],
-          member: chain[2],
-          symbol: `${chain[1]}.${chain[2]}`,
+          importedName,
+          localName: namespaceLocal,
+          member,
+          symbol: `${importedName}.${member}`,
           source: lineSource(file, node, source),
         };
         moduleMemberAccesses.push(access);
