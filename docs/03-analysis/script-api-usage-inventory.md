@@ -104,3 +104,18 @@ This preserves the evidence-first rule used by the rest of M-Bedrock-Dev.
 Portfolio inventory is repository-verified for event, method, property, and named-import enum symbols.
 
 Production-map diagnosis quality remains a separate proof lane. A representative map portfolio must be inspected before symbol-frequency or lifecycle-exposure distributions can be treated as production evidence.
+
+
+## Method call-shape evidence
+
+Method inventory also retains observed call-shape distributions when available.
+
+Each distinct shape records:
+
+- argument count;
+- coarse argument kinds;
+- spread-argument presence;
+- occurrence count;
+- files containing that shape.
+
+Signature-matrix symbols are treated as known even when they do not need a separate introduction/lifecycle rule. This prevents methods such as `Entity.applyKnockback` from appearing as false promotion candidates while still preserving their real-world call forms.

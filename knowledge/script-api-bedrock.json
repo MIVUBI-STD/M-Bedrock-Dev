@@ -192,6 +192,22 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-entity-current",
+      "title": "Entity Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-dimension-current",
+      "title": "Dimension Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/dimension?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -764,6 +780,57 @@
         "script-stable"
       ],
       "riskSurfaces": [
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.signature.entity-apply-knockback-2.0",
+      "domain": "script-api",
+      "subject": "Entity.applyKnockback",
+      "statement": "The prior 1.x API uses four numeric parameters (directionX, directionZ, horizontalStrength, verticalStrength), while the current API uses horizontalForce VectorXZ plus verticalStrength. M-Bedrock-Dev treats this as a 2.0.0 call-shape transition.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-1xx",
+        "ms-server-changelog",
+        "ms-entity-current"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-signature",
+        "script-breaking-change"
+      ],
+      "riskSurfaces": [
+        "script-signature",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.signature.dimension-spawn-entity-options-2.0",
+      "domain": "script-api",
+      "subject": "Dimension.spawnEntity",
+      "statement": "The prior 1.x API accepts identifier and location, while the current API additionally accepts optional SpawnEntityOptions. M-Bedrock-Dev treats the third argument as available from the 2.0.0 signature line.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-dimension-1xx",
+        "ms-server-changelog",
+        "ms-dimension-current"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-signature"
+      ],
+      "riskSurfaces": [
+        "script-signature",
         "script-version"
       ]
     }
