@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ms-automation-command-blocks",
+      "title": "Getting Started with Command Blocks",
+      "url": "https://learn.microsoft.com/nl-nl/minecraft/creator/documents/commandblocks?view=minecraft-bedrock-experimental",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-automation-inworld-game",
+      "title": "Create an In-World Game with Commands",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/createaninworldgame?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-automation-block-tick",
+      "title": "minecraft:tick Block Component",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/blockreference/examples/blockcomponents/minecraftblock_tick?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-automation-custom-component",
+      "title": "BlockCustomComponent Interface",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/blockcustomcomponent?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-automation-custom-components-guide",
+      "title": "Introducing Custom Components",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/documents/scripting/custom-components?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    },
+    {
+      "id": "ms-automation-queued-tick-deprecated",
+      "title": "minecraft:queued_ticking Block Component",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/reference/content/blockreference/examples/blockcomponents/minecraftblock_queued_ticking?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "automation.command-block-mode-semantics",
+      "domain": "automation",
+      "subject": "command block execution mode",
+      "statement": "Command blocks can operate as impulse, chain, or repeating blocks, with redstone requirement and always-active settings that materially change when and how often commands execute.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-command-blocks"
+      ],
+      "capabilityTags": [
+        "command-block",
+        "execution-mode"
+      ],
+      "riskSurfaces": [
+        "repeat-trigger",
+        "chain-break",
+        "unexpected-always-active"
+      ]
+    },
+    {
+      "id": "automation.chain-conditional-depends-previous",
+      "domain": "automation",
+      "subject": "conditional chain command",
+      "statement": "Conditional chain command blocks depend on success of the preceding command block in the chain, so command success/failure becomes control-flow state for downstream automation.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-inworld-game",
+        "ms-automation-command-blocks"
+      ],
+      "capabilityTags": [
+        "command-chain",
+        "conditional"
+      ],
+      "riskSurfaces": [
+        "chain-short-circuit",
+        "hidden-dependency"
+      ]
+    },
+    {
+      "id": "automation.repeat-delay-firsttick",
+      "domain": "automation",
+      "subject": "repeating command block delay",
+      "statement": "Repeating command blocks can have Delay in Ticks and Execute on First Tick behavior, so activation timing is not equivalent to immediate execution and can differ on the first cycle versus later cycles.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-command-blocks"
+      ],
+      "capabilityTags": [
+        "command-block",
+        "delay"
+      ],
+      "riskSurfaces": [
+        "timing-race",
+        "duplicate-trigger",
+        "missed-first-run"
+      ]
+    },
+    {
+      "id": "automation.block-tick-random-interval",
+      "domain": "automation",
+      "subject": "minecraft:tick",
+      "statement": "The minecraft:tick block component schedules block ticks using an interval_range and can loop or run once; each subsequent interval may be chosen again from the configured range.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-block-tick"
+      ],
+      "capabilityTags": [
+        "block-tick",
+        "scheduler"
+      ],
+      "riskSurfaces": [
+        "nondeterministic-timing",
+        "residual-automation"
+      ]
+    },
+    {
+      "id": "automation.block-custom-events",
+      "domain": "automation",
+      "subject": "BlockCustomComponent events",
+      "statement": "Block custom components can receive targeted events including onTick, onRandomTick, onRedstoneUpdate, onStepOn, and onStepOff, creating block-driven script entrypoints separate from general world events.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-custom-component",
+        "ms-automation-custom-components-guide"
+      ],
+      "capabilityTags": [
+        "custom-component",
+        "block-event"
+      ],
+      "riskSurfaces": [
+        "duplicate-entrypoint",
+        "hybrid-authority"
+      ]
+    },
+    {
+      "id": "automation.redstone-update-needs-consumer",
+      "domain": "automation",
+      "subject": "onRedstoneUpdate",
+      "statement": "onRedstoneUpdate is tied to the block redstone-consumer component and qualifying signal strength, so redstone signal configuration is part of the effective trigger contract.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-custom-component"
+      ],
+      "capabilityTags": [
+        "redstone",
+        "custom-component"
+      ],
+      "riskSurfaces": [
+        "missing-trigger",
+        "threshold-mismatch"
+      ]
+    },
+    {
+      "id": "automation.queued-ticking-deprecated",
+      "domain": "automation",
+      "subject": "minecraft:queued_ticking",
+      "statement": "minecraft:queued_ticking is deprecated and no longer used in latest Minecraft versions, so legacy packs using it require compatibility/version review rather than assuming current tick behavior.",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-queued-tick-deprecated"
+      ],
+      "capabilityTags": [
+        "queued-tick",
+        "deprecated"
+      ],
+      "riskSurfaces": [
+        "version-regression",
+        "legacy-automation"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "automation.relation-chain-success-gates-next",
+      "domain": "automation",
+      "subject": "conditional-command-block",
+      "kind": "gates",
+      "object": "downstream-chain-execution",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-inworld-game"
+      ]
+    },
+    {
+      "id": "automation.relation-block-tick-activates-callback",
+      "domain": "automation",
+      "subject": "minecraft:tick",
+      "kind": "activates",
+      "object": "block-custom-component-onTick",
+      "classification": "engine-fact",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-automation-block-tick",
+        "ms-automation-custom-component"
+      ]
+    }
+  ]
+}
