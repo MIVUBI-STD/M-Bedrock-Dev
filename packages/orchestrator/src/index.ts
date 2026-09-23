@@ -18,3 +18,4 @@ export * from "./script-mutation-detection.js";
 export * from "./source-mutation-detection.js";
 export * from "./topology-analysis.js";
 export * from "./types.js";
+export * from "./embedded-structure-graph.js";

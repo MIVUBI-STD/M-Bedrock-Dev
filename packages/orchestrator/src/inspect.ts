@@ -44,6 +44,7 @@ import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
 import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.js";
+import { embeddedCommandStateIdentifiers, populateEmbeddedStructureCommandGraph } from "./embedded-structure-graph.js";
 
 function functionIdentifier(path: string): string | undefined {
   const marker = "/functions/";
@@ -256,6 +257,11 @@ export async function inspectDirectory(
 
   const scoreboardIds = new Set<string>();
   const tagIds = new Set<string>();
+  for (const structure of parsedStructureModels) {
+    const identifiers = embeddedCommandStateIdentifiers(structure.embeddedCommands);
+    for (const objective of identifiers.scoreboardObjectives) scoreboardIds.add(objective);
+    for (const tag of identifiers.tags) tagIds.add(tag);
+  }
   for (const { parsed } of parsedFunctions) {
     for (const ref of parsed.references) {
       if ("objective" in ref) scoreboardIds.add(ref.objective);
@@ -289,6 +295,16 @@ export async function inspectDirectory(
 
   for (const item of parsedFunctions) {
     populateFunctionEdges(graph, item.node, item.parsed, nodes);
+  }
+
+  for (const structure of parsedStructureModels) {
+    populateEmbeddedStructureCommandGraph(
+      graph,
+      structure.node,
+      structure.identifier,
+      structure.embeddedCommands,
+      nodes,
+    );
   }
 
   const scriptResolutions = resolveScriptImports(parsedScripts.map((item) => item.parsed));
