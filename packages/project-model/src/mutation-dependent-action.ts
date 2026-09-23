@@ -3,7 +3,8 @@ export type MutationDependentActionKind =
   | "scoreboard-write"
   | "tag-write"
   | "entity-event"
-  | "dialogue";
+  | "dialogue"
+  | "script-method";
 
 export interface MutationDependentActionContract {
   id: string;
@@ -13,6 +14,7 @@ export interface MutationDependentActionContract {
   tag?: string;
   event?: string;
   dialogueScene?: string;
+  scriptSymbol?: string;
   purpose?: string;
 }
 
