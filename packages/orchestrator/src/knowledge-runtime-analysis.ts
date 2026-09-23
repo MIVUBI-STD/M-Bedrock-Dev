@@ -15,6 +15,10 @@ import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
 import { manifestRuntimeEvidence } from "../../../analyzers/manifest/src/runtime-evidence.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
 import { functionRuntimeEvidence } from "../../../analyzers/functions/src/runtime-evidence.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
+import { scriptRuntimeEvidence } from "../../../analyzers/scripts/src/runtime-evidence.js";
+import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/types.js";
+import { entityRuntimeEvidence } from "../../../analyzers/entities/src/runtime-evidence.js";
 import {
   knowledgeRuntimeDiagnostics,
 } from "../../../analyzers/diagnostics/src/knowledge-runtime-findings.js";
@@ -119,6 +123,11 @@ export function analyzeKnowledgeRuntime(
   manifests: readonly ManifestModel[],
   functions: readonly ParsedFunction[],
   extraEvidence: readonly RuntimeEvidenceRecord[] = [],
+  scripts: readonly ParsedScriptFile[] = [],
+  entities: readonly Array<{
+    entity: ParsedEntityDefinition;
+    externalRootEvents?: readonly string[];
+  }> = [],
 ): KnowledgeRuntimeAnalysis {
   if (!catalog) {
     return {
@@ -138,6 +147,10 @@ export function analyzeKnowledgeRuntime(
   const records: RuntimeEvidenceRecord[] = [
     ...manifests.flatMap((manifest) => manifestRuntimeEvidence(manifest).records),
     ...functions.flatMap(functionRuntimeEvidence),
+    ...scripts.flatMap(scriptRuntimeEvidence),
+    ...entities.flatMap((item) =>
+      entityRuntimeEvidence(item.entity, item.externalRootEvents ?? [])
+    ),
     ...extraEvidence,
   ];
 
