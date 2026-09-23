@@ -17,6 +17,7 @@ import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics
 import { undeclaredMinecraftModuleDiagnostics } from "../../../analyzers/diagnostics/src/script-findings.js";
 import { scriptExecutionPrivilegeDiagnostics } from "../../../analyzers/diagnostics/src/script-privilege-findings.js";
 import { scriptVersionDiagnostics } from "../../../analyzers/diagnostics/src/script-version-findings.js";
+import { scriptEventSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-event-findings.js";
 import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
@@ -396,8 +397,13 @@ export async function inspectDirectory(
 
     diagnostics.push(...undeclaredMinecraftModuleDiagnostics(manifest, scripts));
     diagnostics.push(...scriptExecutionPrivilegeDiagnostics(scripts));
+    const scriptCompatibility = deriveManifestCompatibilityFacts(manifest);
     diagnostics.push(...scriptVersionDiagnostics(
-      deriveManifestCompatibilityFacts(manifest),
+      scriptCompatibility,
+      scripts,
+    ));
+    diagnostics.push(...scriptEventSymbolDiagnostics(
+      scriptCompatibility,
       scripts,
     ));
   }

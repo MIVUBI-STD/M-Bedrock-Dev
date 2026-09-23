@@ -14,3 +14,4 @@ export * from "./topology-findings.js";
 export * from "./topology-outliers.js";
 export * from "./script-privilege-findings.js";
 export * from "./script-version-findings.js";
+export * from "./script-event-findings.js";

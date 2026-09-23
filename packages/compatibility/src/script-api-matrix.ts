@@ -30,13 +30,6 @@ export const SCRIPT_API_CAPABILITY_RULES: readonly ScriptApiCapabilityRule[] = [
     track: "stable",
     sourceIds: ["ms-system-before-events"],
   },
-  {
-    id: "script.system-after-events",
-    moduleName: "@minecraft/server",
-    minStableVersion: "2.0.0",
-    track: "stable",
-    sourceIds: ["ms-system-after-events"],
-  },
 ];
 
 export interface ScriptApiCapabilityCheck {

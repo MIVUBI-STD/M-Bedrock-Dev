@@ -1,23 +1,23 @@
 # Next Action
 
-Script API knowledge now includes version and execution-privilege reasoning.
+Script API intelligence is now usage-driven at event-symbol granularity.
 
 Implemented:
 
-1. machine-readable Script API capability/version rules;
-2. stable dynamic-property version anchors;
-3. restricted vs early vs default execution knowledge;
-4. AST detection of known world-state mutations inside before-event callbacks;
-5. SCRIPT_RESTRICTED_EXECUTION_MUTATION diagnostics;
-6. SCRIPT_API_VERSION_INCOMPATIBLE diagnostics;
-7. prerelease versions remain unknown unless explicitly modeled.
+1. event-symbol matrix separate from broad capability minima;
+2. corrected over-broad system.afterEvents version assumption;
+3. stable recognition for playerBreakBlock, startup/shutdown and scriptEventReceive;
+4. pre-release recognition for current 2.12 beta event additions;
+5. SCRIPT_API_PRERELEASE_SYMBOL diagnostics;
+6. stable-vs-beta manifest cross-checking;
+7. official changelog/source provenance for every symbol rule.
 
 Next priority:
 
-1. expand the matrix from official @minecraft/server changelog/version pages;
-2. add per-event introduced/stable/deprecated metadata;
-3. model write-privilege annotations for more APIs without broad name guessing;
-4. add manifest beta/experiment cross-checking;
-5. validate the matrix against real script-heavy maps and update regressions.
+1. ingest additional event symbols only when found in real map scripts;
+2. add function/method symbols with explicit changelog evidence;
+3. correlate symbol changes with Minecraft update regression reports;
+4. add deprecated/removed symbol states when official changelogs document them;
+5. avoid broad API inventory generation.
 
-Do not infer API legality from method names alone.
+Usage-driven expansion remains the default to keep the matrix maintainable and low-noise.

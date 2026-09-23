@@ -56,6 +56,30 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-server-changelog",
+      "title": "@minecraft/server Changelog",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/changelog?view=minecraft-bedrock-experimental",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-world-before-events",
+      "title": "WorldBeforeEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldbeforeevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-system-after-events-1xx",
+      "title": "SystemAfterEvents Class (Version 1.x.x)",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/priorscriptapi/minecraft/server-1xx/systemafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -172,6 +196,101 @@
       ],
       "capabilityTags": [
         "dynamic-properties",
+        "script-stable"
+      ],
+      "riskSurfaces": [
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.event.player-place-block-prerelease",
+      "domain": "script-api",
+      "subject": "world.beforeEvents.playerPlaceBlock",
+      "statement": "Current documentation marks playerPlaceBlock before-event as pre-release; the current experimental changelog adds it in the 2.12.0 beta line.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-before-events",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-event",
+        "script-prerelease"
+      ],
+      "riskSurfaces": [
+        "script-beta",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.event.chat-send-prerelease",
+      "domain": "script-api",
+      "subject": "world.beforeEvents.chatSend",
+      "statement": "Current documentation marks chatSend before-event as pre-release; the current experimental changelog adds it in the 2.12.0 beta line.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-before-events",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-event",
+        "script-prerelease"
+      ],
+      "riskSurfaces": [
+        "script-beta",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.event.watchdog-terminate-prerelease",
+      "domain": "script-api",
+      "subject": "system.beforeEvents.watchdogTerminate",
+      "statement": "Current SystemBeforeEvents documentation marks watchdogTerminate as pre-release and the experimental changelog adds it in the 2.12.0 beta line.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-system-before-events",
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-event",
+        "script-prerelease"
+      ],
+      "riskSurfaces": [
+        "script-beta",
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.event.script-event-receive-prior-1xx",
+      "domain": "script-api",
+      "subject": "system.afterEvents.scriptEventReceive",
+      "statement": "scriptEventReceive is documented in the prior 1.x SystemAfterEvents API, so no 2.0 minimum should be inferred for the whole system.afterEvents surface.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-system-after-events-1xx",
+        "ms-system-after-events"
+      ],
+      "capabilityTags": [
+        "script-event",
         "script-stable"
       ],
       "riskSurfaces": [

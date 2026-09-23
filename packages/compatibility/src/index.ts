@@ -5,3 +5,4 @@ export * from "./script-api.js";
 export * from "./types.js";
 export * from "./version.js";
 export * from "./script-api-matrix.js";
+export * from "./script-event-matrix.js";
