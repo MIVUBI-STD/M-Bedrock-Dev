@@ -109,6 +109,12 @@ export type KnowledgeClassification =
   | "project-policy"
   | "open-assumption";
 
+export type KnowledgeDiagnosticSeverity =
+  | "info"
+  | "minor"
+  | "medium"
+  | "critical";
+
 export interface KnowledgeFact {
   id: string;
   domain: KnowledgeDomain;
@@ -132,6 +138,7 @@ export interface KnowledgeRelation {
   applicability: KnowledgeApplicability;
   sourceIds: readonly string[];
   diagnosticHint?: string;
+  diagnosticSeverity?: KnowledgeDiagnosticSeverity;
 }
 
 export interface KnowledgeCatalog {
