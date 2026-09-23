@@ -18,10 +18,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Upload source snapshot
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Upload portable workspace
         uses: actions/upload-artifact@v4
         with:
-          name: m-bedrock-dev-source
+          name: m-bedrock-dev-portable
           path: |
             .
             !.git
