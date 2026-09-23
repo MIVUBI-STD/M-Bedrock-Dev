@@ -56,6 +56,7 @@ export type ScriptMethodResultUse =
   | "assigned"
   | "guarded-assigned"
   | "unguarded-assigned"
+  | "guard-condition"
   | "returned"
   | "dereferenced"
   | "optional-dereferenced"
