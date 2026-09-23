@@ -1,20 +1,21 @@
 import type { EffectiveKnowledgeProfile } from "../../../packages/knowledge/src/types.js";
+import type { ProjectSession } from "../../../packages/project-model/src/session.js";
 import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/runtime-evidence.js";
 import { formatGameVersion } from "../../../packages/compatibility/src/version.js";
 import { deriveManifestCompatibilityFacts } from "./compatibility.js";
 import type { ManifestModel } from "./types.js";
 
-function versionToString(value: unknown): string | undefined {
-  if (typeof value === "string") return value;
-  if (Array.isArray(value) && value.length >= 3 && value.every((part) => typeof part === "number")) {
-    return value.join(".");
-  }
-  return undefined;
-}
-
 export interface ManifestRuntimeEvidence {
   records: RuntimeEvidenceRecord[];
-  profilePatch: Partial<EffectiveKnowledgeProfile>;
+  scriptModules: Readonly<Record<string, string>>;
+  declaredMinEngineVersion?: string;
+  manifestFormatVersion?: string;
+}
+
+function manifestFormatVersion(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return undefined;
 }
 
 export function manifestRuntimeEvidence(
@@ -28,23 +29,27 @@ export function manifestRuntimeEvidence(
     sourceRefs: [manifest.source],
   }];
 
-  if (manifest.formatVersion !== undefined) {
+  const formatVersion = manifestFormatVersion(manifest.formatVersion);
+  if (formatVersion !== undefined) {
     records.push({
       predicate: "manifest-format-version-declared",
       state: "present",
       confidence: "observed",
       sourceRefs: [manifest.source],
-      note: String(manifest.formatVersion),
+      note: formatVersion,
     });
   }
 
-  if (facts.minEngineVersion) {
+  const declaredMinEngineVersion = facts.minEngineVersion
+    ? formatGameVersion(facts.minEngineVersion)
+    : undefined;
+  if (declaredMinEngineVersion !== undefined) {
     records.push({
       predicate: "min-engine-version-declared",
       state: "present",
       confidence: "observed",
       sourceRefs: [manifest.source],
-      note: formatGameVersion(facts.minEngineVersion),
+      note: declaredMinEngineVersion,
     });
   }
 
@@ -60,7 +65,7 @@ export function manifestRuntimeEvidence(
 
   if (facts.scriptModules.some((module) => module.track !== "stable")) {
     records.push({
-      predicate: "prerelease-script-module",
+      predicate: "nonstable-script-module",
       state: "present",
       confidence: "observed",
       sourceRefs: [manifest.source],
@@ -79,17 +84,48 @@ export function manifestRuntimeEvidence(
   const scriptModules = Object.fromEntries(
     facts.scriptModules.map((module) => [module.moduleName, module.version]),
   );
-  const formatVersion = versionToString(manifest.formatVersion);
 
   return {
     records,
-    profilePatch: {
-      ...(facts.minEngineVersion
-        ? { minecraftVersion: formatGameVersion(facts.minEngineVersion) }
-        : {}),
-      ...(formatVersion === undefined ? {} : { formatVersion }),
-      ...(Object.keys(scriptModules).length > 0 ? { scriptModules } : {}),
-      ...(facts.educationMetadata ? { edition: "education" } : {}),
-    },
+    scriptModules,
+    ...(declaredMinEngineVersion === undefined ? {} : { declaredMinEngineVersion }),
+    ...(formatVersion === undefined ? {} : { manifestFormatVersion: formatVersion }),
   };
+}
+
+export interface KnowledgeProfileResolution {
+  profile?: EffectiveKnowledgeProfile;
+  conflicts: readonly string[];
+}
+
+export function resolveKnowledgeProfile(
+  session: ProjectSession,
+  manifests: readonly ManifestModel[],
+): KnowledgeProfileResolution {
+  const conflicts: string[] = [];
+  const modules = new Map<string, string>();
+
+  for (const manifest of manifests) {
+    for (const [name, version] of Object.entries(manifestRuntimeEvidence(manifest).scriptModules)) {
+      const existing = modules.get(name);
+      if (existing !== undefined && existing !== version) {
+        conflicts.push("Conflicting script module versions for " + name + ": " + existing + " vs " + version);
+        continue;
+      }
+      modules.set(name, version);
+    }
+  }
+
+  if (session.targetEdition === "unknown") {
+    return { conflicts: [...new Set(conflicts)].sort() };
+  }
+
+  const scriptModules = Object.fromEntries([...modules.entries()].sort(([a], [b]) => a.localeCompare(b)));
+  const profile: EffectiveKnowledgeProfile = {
+    edition: session.targetEdition,
+    ...(session.targetVersion === undefined ? {} : { minecraftVersion: session.targetVersion }),
+    ...(Object.keys(scriptModules).length === 0 ? {} : { scriptModules }),
+  };
+
+  return { profile, conflicts: [...new Set(conflicts)].sort() };
 }
