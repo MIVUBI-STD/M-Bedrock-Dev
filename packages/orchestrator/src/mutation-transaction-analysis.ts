@@ -18,7 +18,8 @@ export type MutationTransactionStepKind =
   | "verify"
   | "dependent-action"
   | "unresolved-call"
-  | "recursive-call";
+  | "recursive-call"
+  | "depth-limit";
 
 export interface MutationTransactionStep {
   kind: MutationTransactionStepKind;
@@ -276,9 +277,18 @@ function expandFunctionTimeline(
 ): MutationTransactionStep[] {
   const fn = functions.get(functionId);
   if (!fn) return [];
-  if (depth > maxDepth) return [];
 
   const output: MutationTransactionStep[] = [];
+  if (depth > maxDepth) {
+    output.push({
+      kind: "depth-limit",
+      functionId,
+      source: fn.source,
+      command: "<function-depth-limit>",
+      detail: String(maxDepth),
+    });
+    return output;
+  }
 
   for (const command of fn.commands) {
     const verification = parseBlockVerificationSemantics(command.raw);
@@ -476,15 +486,19 @@ export function analyzeMutationTransactionOrdering(
         : undefined;
 
       if (!dependent) {
+        const barriers = segment.filter((step) =>
+          step.kind === "unresolved-call" ||
+          step.kind === "recursive-call" ||
+          step.kind === "depth-limit"
+        );
         assessments.push({
           id: "mutation:" + root + ":" + operationId(apply.source),
           rootFunctionId: root,
           applyStep: apply,
-          status: "no-dependent-action",
-          barriers: segment.filter((step) =>
-            step.kind === "unresolved-call" ||
-            step.kind === "recursive-call"
-          ),
+          status: barriers.length > 0
+            ? "verification-unresolved"
+            : "no-dependent-action",
+          barriers,
         });
         continue;
       }
@@ -492,7 +506,8 @@ export function analyzeMutationTransactionOrdering(
       const beforeDependent = segment.slice(0, dependentIndex);
       const barriers = beforeDependent.filter((step) =>
         step.kind === "unresolved-call" ||
-        step.kind === "recursive-call"
+        step.kind === "recursive-call" ||
+        step.kind === "depth-limit"
       );
       const verifyBefore = beforeDependent.find(
         (step) => trustedVerification(apply, step, proofs),
