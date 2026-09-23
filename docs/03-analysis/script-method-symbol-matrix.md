@@ -1,29 +1,50 @@
 # Script Method Symbol Matrix
 
-Script compatibility now evaluates direct `world.*` and `system.*` method calls at symbol granularity.
+Script compatibility evaluates method calls at symbol granularity and now includes bounded receiver-type inference.
 
-## Initial usage-driven seed
+## Usage-driven direct symbols
 
-The first rules are limited to methods already used by the repository runtime harness:
+The direct singleton rules currently include:
 
 - `world.getAllPlayers` → stable from `@minecraft/server 1.0.0`;
 - `world.getDimension` → stable from `@minecraft/server 1.0.0`;
 - `system.runInterval` → stable from `@minecraft/server 1.1.0`.
 
-Each rule carries official Microsoft source provenance.
+## Bounded receiver inference
 
-## Parser boundary
+The analyzer propagates only receiver types that can be derived from a small evidence-backed flow model:
 
-The script parser only records direct root calls whose receiver is statically known to be the imported `world` or `system` singleton.
+- `world.getAllPlayers()` / `world.getPlayers()` → `Player[]`;
+- `world.getDimension()` → `Dimension`;
+- `Dimension.getEntities()` → `Entity[]`;
+- `Dimension.getPlayers()` → `Player[]`;
+- `world.scoreboard` → `Scoreboard`;
+- `Scoreboard.getObjective()` → `ScoreboardObjective`;
+- array element flow through `for...of`, `find`, `filter`, `forEach`, `map`, `some`, and `every`;
+- simple local helper functions with one directly inferable return expression;
+- explicit receiver type annotations for the supported Bedrock receiver classes.
 
-Calls such as `player.getTags()`, `dimension.getEntities()`, or `world.scoreboard.getObjective()` are not assigned a class-level compatibility rule yet because doing so would require receiver-type inference. Unknown or unregistered method symbols remain unclassified rather than being guessed incompatible.
+Player calls inherited from Entity are canonicalized to the Entity symbol. For example, `player.getTags()` becomes `Entity.getTags`.
+
+## Evidence-backed receiver rules
+
+Current rules include:
+
+- `Dimension.getEntities` → stable from `1.1.0`;
+- `Entity.addTag` → stable from `1.2.0`;
+- `Entity.getTags` → stable from `1.2.0`;
+- `Entity.removeTag` → stable from `1.2.0`.
+
+Scoreboard receiver types are recognized so real usage can be inventoried, but Scoreboard method minima are intentionally left unclassified until method-level version evidence is strong enough.
+
+## Safety boundary
+
+This is not a general TypeScript type checker. Unknown function returns, arbitrary object aliases, dynamic property access, unresolved imports, and unsupported receiver types remain unclassified. The analyzer prefers missing a rule over inventing a receiver type.
 
 ## Diagnostics
 
-When a known stable method is used with an older stable manifest dependency, inspection emits:
+A known method used against an older stable manifest dependency emits:
 
 `SCRIPT_API_VERSION_INCOMPATIBLE`
 
-The diagnostic includes `symbolKind: "method"`, the exact symbol, declared module version, required version, and rule ID.
-
-Pre-release module versions remain unknown for stable-minimum comparison until track-specific evidence is registered.
+Unknown methods and receiver paths do not emit compatibility failures.

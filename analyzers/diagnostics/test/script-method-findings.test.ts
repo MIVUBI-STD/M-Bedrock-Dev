@@ -39,6 +39,40 @@ describe("script method symbol diagnostics", () => {
     ]);
   });
 
+  it("enforces a version rule reached through bounded receiver inference", () => {
+    const script = parseScriptFile(
+      "scripts/main",
+      `
+        import { world } from "@minecraft/server";
+        const dimension = world.getDimension("overworld");
+        for (const entity of dimension.getEntities()) {
+          entity.getTags();
+        }
+      `,
+      source,
+    );
+
+    const findings = scriptMethodSymbolDiagnostics({
+      scriptModules: [{
+        moduleName: "@minecraft/server",
+        version: "1.1.0",
+        track: "stable",
+      }],
+      educationMetadata: false,
+    }, [script]);
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        code: "SCRIPT_API_VERSION_INCOMPATIBLE",
+        data: expect.objectContaining({
+          symbol: "Entity.getTags",
+          symbolKind: "method",
+          requiredVersion: "1.2.0",
+        }),
+      }),
+    ]);
+  });
+
   it("does not invent compatibility failures for unregistered methods", () => {
     const script = parseScriptFile(
       "scripts/main",

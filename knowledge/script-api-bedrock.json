@@ -391,6 +391,60 @@
       "riskSurfaces": [
         "script-version"
       ]
+    },
+    {
+      "id": "script.method.dimension-get-entities-stable-1.1",
+      "domain": "script-api",
+      "subject": "Dimension.getEntities",
+      "statement": "Dimension.getEntities was added to the stable @minecraft/server API in version 1.1.0.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.1.0"
+        }
+      },
+      "sourceIds": [
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-stable",
+        "receiver-inference"
+      ],
+      "riskSurfaces": [
+        "script-version"
+      ]
+    },
+    {
+      "id": "script.method.entity-tags-stable-1.2",
+      "domain": "script-api",
+      "subject": "Entity.addTag/getTags/removeTag",
+      "statement": "Entity addTag, getTags, and removeTag were added to the stable @minecraft/server API in version 1.2.0; Player inherits Entity.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ],
+        "versions": {
+          "scriptModule": "@minecraft/server",
+          "scriptModuleVersion": "1.2.0"
+        }
+      },
+      "sourceIds": [
+        "ms-server-changelog"
+      ],
+      "capabilityTags": [
+        "script-method",
+        "script-stable",
+        "receiver-inference"
+      ],
+      "riskSurfaces": [
+        "script-version"
+      ]
     }
   ]
 }

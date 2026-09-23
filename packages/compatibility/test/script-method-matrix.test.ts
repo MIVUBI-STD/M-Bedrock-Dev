@@ -16,6 +16,21 @@ describe("Script API method symbol matrix", () => {
     });
   });
 
+  it("tracks evidence-backed receiver method minima", () => {
+    expect(findScriptMethodRule("Dimension.getEntities")).toMatchObject({
+      stability: "stable",
+      introducedIn: "1.1.0",
+    });
+    expect(findScriptMethodRule("Entity.getTags")).toMatchObject({
+      stability: "stable",
+      introducedIn: "1.2.0",
+    });
+    expect(findScriptMethodRule("Entity.addTag")).toMatchObject({
+      stability: "stable",
+      introducedIn: "1.2.0",
+    });
+  });
+
   it("evaluates stable method minima without guessing beta compatibility", () => {
     expect(checkScriptMethodSymbol(
       "system.runInterval",
