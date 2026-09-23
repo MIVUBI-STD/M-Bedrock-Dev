@@ -277,6 +277,32 @@ type Init = mc.WorldInitializeAfterEvent;
     ]));
   });
 
+  it("infers component property writes from getComponent identifiers", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+import { world } from "@minecraft/server";
+const entity = world.getDimension("overworld").getEntities()[0];
+const scale = entity.getComponent("minecraft:scale");
+scale.value = 2;
+const mark = entity.getComponent("minecraft:mark_variant");
+mark.value += 1;
+`,
+      source,
+    );
+
+    expect(parsed.propertyWrites).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        symbol: "EntityScaleComponent.value",
+        operation: "assign",
+      }),
+      expect.objectContaining({
+        symbol: "EntityMarkVariantComponent.value",
+        operation: "compound",
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

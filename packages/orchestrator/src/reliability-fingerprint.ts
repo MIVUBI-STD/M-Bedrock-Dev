@@ -173,6 +173,10 @@ export function deriveReliabilityFingerprint(
     capabilityTags.add("script-return-contract");
     riskSurfaces.add("script-return-optional");
   }
+  if (input.diagnostics.some((finding) => finding.code === "SCRIPT_API_PROPERTY_WRITE_INCOMPATIBLE")) {
+    capabilityTags.add("script-property-mutability");
+    riskSurfaces.add("script-readonly-write");
+  }
 
   const editions = input.target.edition ? [input.target.edition] : [];
   const minEngineVersions = input.packs

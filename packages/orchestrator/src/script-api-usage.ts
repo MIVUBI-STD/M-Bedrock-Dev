@@ -16,6 +16,7 @@ import {
 } from "../../compatibility/src/script-signature-matrix.js";
 import { findScriptReturnContractRule } from "../../compatibility/src/script-return-contract-matrix.js";
 import { findScriptTypeRule } from "../../compatibility/src/script-type-matrix.js";
+import { findScriptPropertyMutabilityRule } from "../../compatibility/src/script-property-mutability-matrix.js";
 
 export type ScriptApiUsageKind = "event" | "method" | "property" | "enum" | "type";
 export type ScriptApiKnowledgeState = "known" | "unclassified";
@@ -41,6 +42,8 @@ export interface ScriptApiUsageSymbol {
   directOccurrences?: number;
   boundedOccurrences?: number;
   receiverTypes?: string[];
+  writeOccurrences?: number;
+  writeOperations?: string[];
   callShapes?: ScriptCallShapeUsage[];
   resultUses?: Array<{
     use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
@@ -92,6 +95,8 @@ interface MutableUsage {
   directOccurrences: number;
   boundedOccurrences: number;
   receiverTypes: Set<string>;
+  writeOccurrences: number;
+  writeOperations: Set<string>;
   callShapes: Map<string, {
     argumentCount: number;
     argumentKinds: ScriptArgumentKind[];
@@ -304,6 +309,12 @@ function materialize(item: MutableUsage): ScriptApiUsageSymbol {
           directOccurrences: item.directOccurrences,
           boundedOccurrences: item.boundedOccurrences,
           receiverTypes: [...item.receiverTypes].sort(),
+          ...(item.kind === "property"
+            ? {
+                writeOccurrences: item.writeOccurrences,
+                writeOperations: [...item.writeOperations].sort(),
+              }
+            : {}),
           ...(item.kind === "method"
             ? {
                 callShapes: materializeCallShapes(item),
@@ -352,6 +363,8 @@ export function deriveScriptApiUsage(
       directOccurrences: 0,
       boundedOccurrences: 0,
       receiverTypes: new Set<string>(),
+      writeOccurrences: 0,
+      writeOperations: new Set<string>(),
       callShapes: new Map(),
       resultUses: new Map(),
     };
@@ -384,11 +397,25 @@ export function deriveScriptApiUsage(
     }
 
     for (const property of script.propertyAccesses) {
-      const rule = findScriptPropertyRule(property.symbol);
+      const propertyRule = findScriptPropertyRule(property.symbol);
+      const mutabilityRule = findScriptPropertyMutabilityRule(property.symbol);
+      const rule = propertyRule ??
+        (mutabilityRule ? { id: mutabilityRule.id } : undefined);
       const item = getOrCreate("property", property.symbol, file, rule);
       if (property.inference === "direct") item.directOccurrences += 1;
       else item.boundedOccurrences += 1;
       item.receiverTypes.add(property.receiverType);
+    }
+
+    for (const write of script.propertyWrites) {
+      const propertyRule = findScriptPropertyRule(write.symbol);
+      const mutabilityRule = findScriptPropertyMutabilityRule(write.symbol);
+      const rule = propertyRule ??
+        (mutabilityRule ? { id: mutabilityRule.id } : undefined);
+      const item = getOrCreate("property", write.symbol, file, rule);
+      item.writeOccurrences += 1;
+      item.writeOperations.add(write.operation);
+      item.receiverTypes.add(write.receiverType);
     }
 
     for (const imported of script.importedSymbols) {
@@ -459,6 +486,14 @@ export function aggregateScriptApiUsage(
         (current.item.directOccurrences ?? 0) + (symbol.directOccurrences ?? 0);
       current.item.boundedOccurrences =
         (current.item.boundedOccurrences ?? 0) + (symbol.boundedOccurrences ?? 0);
+      if (symbol.kind === "property") {
+        current.item.writeOccurrences =
+          (current.item.writeOccurrences ?? 0) + (symbol.writeOccurrences ?? 0);
+        current.item.writeOperations = [...new Set([
+          ...(current.item.writeOperations ?? []),
+          ...(symbol.writeOperations ?? []),
+        ])].sort();
+      }
       if (symbol.kind === "method") {
         current.item.callShapes = mergeCallShapes(
           current.item.callShapes ?? [],
