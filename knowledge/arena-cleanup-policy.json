@@ -334,7 +334,8 @@
       },
       "sourceIds": [
         "mivubi-arena-cleanup-policy-v1"
-      ]
+      ],
+      "diagnosticSeverity": "critical"
     },
     {
       "id": "cleanup-policy.relation-failed-reset-deactivates-arena",
