@@ -144,7 +144,15 @@ export function stateAuthorityRuntimeEvidence(
   correlations: readonly StateMirrorCorrelation[],
 ): RuntimeEvidenceRecord[] {
   return correlations.flatMap((item): RuntimeEvidenceRecord[] => {
-    const scope = { operationId: "state:" + item.contractId + ":" + item.scopeKey };
+    const scope = {
+      operationId:
+        "state:" +
+        item.contractId +
+        ":" +
+        item.scopeKey +
+        ":" +
+        item.mirrorKey,
+    };
     const records: RuntimeEvidenceRecord[] = [];
 
     if (
@@ -159,6 +167,21 @@ export function stateAuthorityRuntimeEvidence(
         confidence: "observed",
         scope,
         note: item.contractId,
+      });
+    }
+
+    if (
+      item.status === "consistent" ||
+      item.status === "value-drift" ||
+      item.status === "revision-stale" ||
+      item.status === "authority-missing"
+    ) {
+      records.push({
+        predicate: "state-mirror-observed",
+        state: "present",
+        confidence: "observed",
+        scope,
+        note: item.mirrorKey,
       });
     }
 
