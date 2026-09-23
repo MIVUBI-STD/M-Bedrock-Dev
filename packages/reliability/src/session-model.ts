@@ -215,12 +215,31 @@ export function applySessionAction(
   }
 
   if (action.kind === "reconnect") {
-    return withPlayer(model, {
+    const next = withPlayer(model, {
       ...current,
       connected: true,
       phase: current.arenaId ? "assigned" : "lobby",
       progress: 0,
     });
+
+    if (!current.arenaId) return next;
+    const arena = next.arenas[current.arenaId];
+    if (!arena) return next;
+
+    const hasStartingPlayer = arena.activePlayerIds.some((playerId) =>
+      next.players[playerId]?.phase === "starting"
+    );
+
+    return {
+      ...next,
+      arenas: {
+        ...next.arenas,
+        [current.arenaId]: {
+          ...arena,
+          cutsceneActive: hasStartingPlayer,
+        },
+      },
+    };
   }
 
   const arena = model.arenas[action.arenaId];
