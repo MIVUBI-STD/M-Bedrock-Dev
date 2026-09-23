@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "mivubi-observability-policy-v1",
+      "title": "MIVUBI Runtime Observability and Invariant Policy v1",
+      "url": "project://knowledge/observability-policy-v1",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
+    }
+  ],
+  "facts": [
+    {
+      "id": "observability-policy.trace-envelope",
+      "domain": "observability",
+      "subject": "runtime trace",
+      "statement": "High-value transitions emit structured trace fields including tick, operationId, player/entity key, connectionGeneration, arenaId/arenaGeneration, subsystem generation, phase, event/source, and result.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-observability-policy-v1"
+      ],
+      "capabilityTags": [
+        "trace",
+        "correlation"
+      ],
+      "riskSurfaces": [
+        "unreproducible-race"
+      ]
+    },
+    {
+      "id": "observability-policy.invariant-checks",
+      "domain": "observability",
+      "subject": "runtime invariants",
+      "statement": "Critical state machines should expose cheap invariant checks such as one terminal owner, no stale participant, no duplicate critical entity, valid input-lock owner set, clean reset baseline, and authority/mirror revision agreement.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-observability-policy-v1"
+      ],
+      "capabilityTags": [
+        "invariant",
+        "self-check"
+      ],
+      "riskSurfaces": [
+        "silent-corruption"
+      ]
+    },
+    {
+      "id": "observability-policy.root-cause-not-log-spam",
+      "domain": "observability",
+      "subject": "diagnostic logging",
+      "statement": "Prefer state-transition and anomaly logs over per-tick spam. Logs must be bounded and structured so instrumentation itself does not create performance problems.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-observability-policy-v1"
+      ],
+      "capabilityTags": [
+        "logging",
+        "performance"
+      ],
+      "riskSurfaces": [
+        "log-spam",
+        "watchdog"
+      ]
+    },
+    {
+      "id": "observability-policy.dev-actions-traced",
+      "domain": "observability",
+      "subject": "developer interventions",
+      "statement": "Developer/admin actions, recovery actions, and automated repairs must use the same trace envelope so externally forced state changes can be distinguished from organic gameplay.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-observability-policy-v1"
+      ],
+      "capabilityTags": [
+        "audit",
+        "dev-action"
+      ],
+      "riskSurfaces": [
+        "false-root-cause"
+      ]
+    },
+    {
+      "id": "observability-policy.diagnostic-evidence-stage",
+      "domain": "observability",
+      "subject": "diagnostic evidence",
+      "statement": "Diagnostics should record evidence stage such as observed, inferred, verified, or unresolved and avoid upgrading missing/ambiguous evidence into a definitive engine failure.",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-observability-policy-v1"
+      ],
+      "capabilityTags": [
+        "confidence",
+        "evidence"
+      ],
+      "riskSurfaces": [
+        "false-positive"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "observability-policy.relation-invariant-validates-commit",
+      "domain": "observability",
+      "subject": "critical-invariant-set",
+      "kind": "validates",
+      "object": "transaction-commit-confidence",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-observability-policy-v1"
+      ]
+    }
+  ]
+}
