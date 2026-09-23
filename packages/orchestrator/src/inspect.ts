@@ -69,6 +69,10 @@ import {
   mutationTransactionRuntimeEvidence,
 } from "./mutation-transaction-analysis.js";
 import {
+  analyzeScriptMutationTransactions,
+  scriptMutationTransactionRuntimeEvidence,
+} from "./script-mutation-transaction-analysis.js";
+import {
   correlateRouteMutations,
   routeMutationRuntimeEvidence,
 } from "./route-mutation-analysis.js";
@@ -587,6 +591,9 @@ export async function inspectDirectory(
     parsedFunctionModels,
     structureProofs,
   );
+  const scriptMutationTransactions = analyzeScriptMutationTransactions(
+    parsedScripts.map((item) => item.parsed),
+  );
 
   const knowledgeRuntime = analyzeKnowledgeRuntime(
     knowledgeCatalog,
@@ -607,6 +614,9 @@ export async function inspectDirectory(
       ...routeMutationRuntimeEvidence(routeCorrelations),
       ...mutationTransactionRuntimeEvidence(
         mutationTransactions.assessments,
+      ),
+      ...scriptMutationTransactionRuntimeEvidence(
+        scriptMutationTransactions,
       ),
     ],
     parsedScripts.map((item) => item.parsed),
@@ -778,6 +788,21 @@ export async function inspectDirectory(
         (item) => item.status === "verification-unresolved",
       ).length,
       noDependentAction: mutationTransactions.assessments.filter(
+        (item) => item.status === "no-dependent-action",
+      ).length,
+    },
+    scriptMutationTransactions: {
+      assessed: scriptMutationTransactions.length,
+      verifiedBeforeDependent: scriptMutationTransactions.filter(
+        (item) => item.status === "verified-before-dependent",
+      ).length,
+      lateVerificationCandidates: scriptMutationTransactions.filter(
+        (item) => item.status === "late-verification-candidate",
+      ).length,
+      verificationUnresolved: scriptMutationTransactions.filter(
+        (item) => item.status === "verification-unresolved",
+      ).length,
+      noDependentAction: scriptMutationTransactions.filter(
         (item) => item.status === "no-dependent-action",
       ).length,
     },
