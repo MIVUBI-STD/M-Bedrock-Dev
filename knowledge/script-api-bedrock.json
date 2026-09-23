@@ -256,6 +256,38 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-system-current",
+      "title": "System Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/system?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-scoreboard-current",
+      "title": "Scoreboard Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/scoreboard?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-scoreboard-objective-current",
+      "title": "ScoreboardObjective Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/scoreboardobjective?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "ms-world-after-events-current",
+      "title": "WorldAfterEvents Class",
+      "url": "https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldafterevents?view=minecraft-bedrock-stable",
+      "authority": "official",
+      "confidence": "documented",
+      "retrievedDate": "2026-09-23"
     }
   ],
   "facts": [
@@ -1050,6 +1082,35 @@
       ],
       "riskSurfaces": [
         "script-execution-privilege"
+      ]
+    },
+    {
+      "id": "script.production-portfolio.current-stable-surface",
+      "domain": "script-api",
+      "subject": "production-observed current stable Script API surface",
+      "statement": "Representative production Defense maps use current stable World, System, Dimension, Entity, Player, Scoreboard, ScoreboardObjective, and WorldAfterEvents symbols. These symbols are registered as current-stable knowledge without inventing historical introduction versions.",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-world-current",
+        "ms-system-current",
+        "ms-dimension-current",
+        "ms-entity-current",
+        "ms-player-current",
+        "ms-scoreboard-current",
+        "ms-scoreboard-objective-current",
+        "ms-world-after-events-current"
+      ],
+      "capabilityTags": [
+        "script-production-observed",
+        "script-stable"
+      ],
+      "riskSurfaces": [
+        "script-version"
       ]
     }
   ]

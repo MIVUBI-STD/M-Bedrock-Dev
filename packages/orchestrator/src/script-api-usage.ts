@@ -498,8 +498,10 @@ export function deriveScriptApiUsage(
     for (const property of script.propertyAccesses) {
       const propertyRule = findScriptPropertyRule(property.symbol);
       const mutabilityRule = findScriptPropertyMutabilityRule(property.symbol);
+      const methodReferenceRule = findScriptMethodRule(property.symbol);
       const rule = propertyRule ??
-        (mutabilityRule ? { id: mutabilityRule.id } : undefined);
+        (mutabilityRule ? { id: mutabilityRule.id } : undefined) ??
+        (methodReferenceRule ? { id: methodReferenceRule.id } : undefined);
       const item = getOrCreate("property", property.symbol, file, rule);
       if (property.inference === "direct") item.directOccurrences += 1;
       else item.boundedOccurrences += 1;

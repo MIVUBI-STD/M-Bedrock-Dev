@@ -44,11 +44,11 @@ describe("Script API usage inventory", () => {
       }),
       expect.objectContaining({
         symbol: "Scoreboard.getObjective",
-        knowledge: "unclassified",
+        knowledge: "known",
       }),
       expect.objectContaining({
         symbol: "world.afterEvents.playerSpawn",
-        knowledge: "unclassified",
+        knowledge: "known",
       }),
     ]));
   });
@@ -293,15 +293,15 @@ describe("Script API usage inventory", () => {
     const mapA = deriveScriptApiUsage([
       parse("a/scripts/main.js", `
         import { world } from "@minecraft/server";
-        world.scoreboard.getObjective("round");
-        world.scoreboard.getObjective("score");
+        world.scoreboard.someFutureMethod("round");
+        world.scoreboard.someFutureMethod("score");
         world.afterEvents.playerSpawn.subscribe(() => {});
       `),
     ]);
     const mapB = deriveScriptApiUsage([
       parse("b/scripts/main.js", `
         import { world } from "@minecraft/server";
-        world.scoreboard.getObjective("round");
+        world.scoreboard.someFutureMethod("round");
         world.getDimension("overworld");
       `),
     ]);
@@ -312,7 +312,7 @@ describe("Script API usage inventory", () => {
     ]);
 
     expect(portfolio.promotionCandidates[0]).toMatchObject({
-      symbol: "Scoreboard.getObjective",
+      symbol: "Scoreboard.someFutureMethod",
       mapCount: 2,
       occurrences: 3,
       knowledge: "unclassified",

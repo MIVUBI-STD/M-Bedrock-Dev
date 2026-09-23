@@ -8,6 +8,19 @@ export interface ScriptPropertySymbolRule {
   sourceIds: readonly string[];
 }
 
+function currentProperty(
+  id: string,
+  symbol: string,
+  sourceIds: readonly string[],
+): ScriptPropertySymbolRule {
+  return {
+    id,
+    moduleName: "@minecraft/server",
+    symbol,
+    sourceIds,
+  };
+}
+
 export const SCRIPT_PROPERTY_SYMBOL_RULES: readonly ScriptPropertySymbolRule[] = [
   {
     id: "script-property.world-scoreboard",
@@ -45,6 +58,18 @@ export const SCRIPT_PROPERTY_SYMBOL_RULES: readonly ScriptPropertySymbolRule[] =
     },
     sourceIds: ["ms-player-input-permissions-1xx", "ms-server-changelog"],
   },
+
+  // Usage-driven current properties from the production portfolio.
+  currentProperty("script-property.system.current-tick-current", "system.currentTick", ["ms-system-current"]),
+  currentProperty("script-property.entity.id-current", "Entity.id", ["ms-entity-current"]),
+  currentProperty("script-property.entity.location-current", "Entity.location", ["ms-entity-current"]),
+  currentProperty("script-property.entity.dimension-current", "Entity.dimension", ["ms-entity-current"]),
+  currentProperty("script-property.entity.type-id-current", "Entity.typeId", ["ms-entity-current"]),
+  currentProperty("script-property.entity.name-tag-current", "Entity.nameTag", ["ms-entity-current"]),
+  currentProperty("script-property.entity.scoreboard-identity-current", "Entity.scoreboardIdentity", ["ms-entity-current"]),
+  currentProperty("script-property.entity.is-valid-current", "Entity.isValid", ["ms-entity-current"]),
+  currentProperty("script-property.player.name-current", "Player.name", ["ms-player-current"]),
+  currentProperty("script-property.scoreboard-objective.display-name-current", "ScoreboardObjective.displayName", ["ms-scoreboard-objective-current"]),
 ];
 
 export function findScriptPropertyRule(

@@ -12,6 +12,19 @@ export interface ScriptEventSymbolRule {
   sourceIds: readonly string[];
 }
 
+function currentStableEvent(
+  id: string,
+  symbol: string,
+): ScriptEventSymbolRule {
+  return {
+    id,
+    moduleName: "@minecraft/server",
+    symbol,
+    stability: "stable",
+    sourceIds: ["ms-world-after-events-current"],
+  };
+}
+
 export const SCRIPT_EVENT_SYMBOL_RULES: readonly ScriptEventSymbolRule[] = [
   {
     id: "script-event.world.before.player-break-block",
@@ -135,6 +148,20 @@ export const SCRIPT_EVENT_SYMBOL_RULES: readonly ScriptEventSymbolRule[] = [
     },
     sourceIds: ["ms-world-after-events-1xx", "ms-server-changelog"],
   },
+
+  // Current-stable events observed in both production Defense maps.
+  currentStableEvent("script-event.world-after.data-driven-entity-trigger-current", "world.afterEvents.dataDrivenEntityTrigger"),
+  currentStableEvent("script-event.world-after.entity-die-current", "world.afterEvents.entityDie"),
+  currentStableEvent("script-event.world-after.entity-spawn-current", "world.afterEvents.entitySpawn"),
+  currentStableEvent("script-event.world-after.item-start-use-current", "world.afterEvents.itemStartUse"),
+  currentStableEvent("script-event.world-after.player-dimension-change-current", "world.afterEvents.playerDimensionChange"),
+  currentStableEvent("script-event.world-after.player-game-mode-change-current", "world.afterEvents.playerGameModeChange"),
+  currentStableEvent("script-event.world-after.player-interact-with-block-current", "world.afterEvents.playerInteractWithBlock"),
+  currentStableEvent("script-event.world-after.player-join-current", "world.afterEvents.playerJoin"),
+  currentStableEvent("script-event.world-after.player-leave-current", "world.afterEvents.playerLeave"),
+  currentStableEvent("script-event.world-after.player-place-block-current", "world.afterEvents.playerPlaceBlock"),
+  currentStableEvent("script-event.world-after.player-spawn-current", "world.afterEvents.playerSpawn"),
+  currentStableEvent("script-event.world-after.world-load-current", "world.afterEvents.worldLoad"),
 ];
 
 export function scriptEventSymbol(

@@ -14,6 +14,20 @@ export interface ScriptMethodSymbolRule {
   sourceIds: readonly string[];
 }
 
+function currentStableMethod(
+  id: string,
+  symbol: string,
+  sourceIds: readonly string[],
+): ScriptMethodSymbolRule {
+  return {
+    id,
+    moduleName: "@minecraft/server",
+    symbol,
+    stability: "stable",
+    sourceIds,
+  };
+}
+
 export const SCRIPT_METHOD_SYMBOL_RULES: readonly ScriptMethodSymbolRule[] = [
   {
     id: "script-method.world.get-all-players",
@@ -134,6 +148,31 @@ export const SCRIPT_METHOD_SYMBOL_RULES: readonly ScriptMethodSymbolRule[] = [
     },
     sourceIds: ["ms-server-changelog"],
   },
+
+  // Usage-driven current-stable rules promoted from the production portfolio.
+  // No introducedIn value is assigned unless historical provenance is explicit.
+  currentStableMethod("script-method.system.run-timeout-current", "system.runTimeout", ["ms-system-current"]),
+  currentStableMethod("script-method.system.clear-run-current", "system.clearRun", ["ms-system-current"]),
+  currentStableMethod("script-method.scoreboard.get-objective-current", "Scoreboard.getObjective", ["ms-scoreboard-current"]),
+  currentStableMethod("script-method.scoreboard.add-objective-current", "Scoreboard.addObjective", ["ms-scoreboard-current"]),
+  currentStableMethod("script-method.scoreboard.get-objectives-current", "Scoreboard.getObjectives", ["ms-scoreboard-current"]),
+  currentStableMethod("script-method.scoreboard-objective.get-score-current", "ScoreboardObjective.getScore", ["ms-scoreboard-objective-current"]),
+  currentStableMethod("script-method.scoreboard-objective.get-scores-current", "ScoreboardObjective.getScores", ["ms-scoreboard-objective-current"]),
+  currentStableMethod("script-method.scoreboard-objective.get-participants-current", "ScoreboardObjective.getParticipants", ["ms-scoreboard-objective-current"]),
+  currentStableMethod("script-method.scoreboard-objective.set-score-current", "ScoreboardObjective.setScore", ["ms-scoreboard-objective-current"]),
+  currentStableMethod("script-method.world.get-dynamic-property-current", "world.getDynamicProperty", ["ms-world-current"]),
+  currentStableMethod("script-method.world.get-dynamic-property-ids-current", "world.getDynamicPropertyIds", ["ms-world-current"]),
+  currentStableMethod("script-method.world.set-dynamic-property-current", "world.setDynamicProperty", ["ms-world-current"]),
+  currentStableMethod("script-method.world.get-players-current", "world.getPlayers", ["ms-world-current"]),
+  currentStableMethod("script-method.world.send-message-current", "world.sendMessage", ["ms-world-current"]),
+  currentStableMethod("script-method.dimension.run-command-current", "Dimension.runCommand", ["ms-dimension-current"]),
+  currentStableMethod("script-method.dimension.get-players-current", "Dimension.getPlayers", ["ms-dimension-current"]),
+  currentStableMethod("script-method.dimension.spawn-item-current", "Dimension.spawnItem", ["ms-dimension-current"]),
+  currentStableMethod("script-method.entity.has-tag-current", "Entity.hasTag", ["ms-entity-current"]),
+  currentStableMethod("script-method.entity.remove-current", "Entity.remove", ["ms-entity-current"]),
+  currentStableMethod("script-method.entity.get-property-current", "Entity.getProperty", ["ms-entity-current"]),
+  currentStableMethod("script-method.entity.teleport-current", "Entity.teleport", ["ms-entity-current"]),
+  currentStableMethod("script-method.player.send-message-current", "Player.sendMessage", ["ms-player-current"]),
 ];
 
 export interface ScriptMethodSymbolCheck {
