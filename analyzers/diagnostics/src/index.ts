@@ -24,3 +24,5 @@ export * from "./script-property-write-findings.js";
 export * from "./script-enum-value-findings.js";
 
 export * from "./knowledge-runtime-findings.js";
+
+export * from "./function-knowledge-runtime-findings.js";
