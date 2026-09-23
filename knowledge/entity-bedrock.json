@@ -883,6 +883,23 @@
         "ms-entity-sensor-detail"
       ],
       "diagnosticHint": "entity_sensor is active but no subsensor event is configured."
+    },
+    {
+      "id": "entity.relation-definition-requires-transition-integrity",
+      "domain": "entities",
+      "subject": "entity-definition",
+      "kind": "requires",
+      "object": "entity-transition-integrity",
+      "classification": "derived-rule",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-entity-events"
+      ]
     }
   ]
 }
