@@ -352,6 +352,23 @@
         "mivubi-world-mutation-policy-v1"
       ],
       "diagnosticSeverity": "critical"
+    },
+    {
+      "id": "world-policy.relation-script-mutation-candidate-requires-verification",
+      "domain": "world-mutation",
+      "subject": "script-mutation-dependent-action-candidate",
+      "kind": "requires",
+      "object": "script-verification-before-dependent-action",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-world-mutation-policy-v1"
+      ]
     }
   ]
 }
