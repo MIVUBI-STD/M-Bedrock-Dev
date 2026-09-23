@@ -34,6 +34,13 @@ export const KNOWLEDGE_CLASSIFICATIONS = [
   "open-assumption",
 ] as const satisfies readonly KnowledgeClassification[];
 
+export const KNOWLEDGE_DIAGNOSTIC_SEVERITIES = [
+  "info",
+  "minor",
+  "medium",
+  "critical",
+] as const;
+
 export const KNOWLEDGE_RELATION_KINDS = [
   "requires",
   "requires-any",
@@ -105,3 +112,5 @@ export const KNOWLEDGE_CLASSIFICATION_SET = new Set<string>(KNOWLEDGE_CLASSIFICA
 export const KNOWLEDGE_AUTHORITY_SET = new Set<string>(KNOWLEDGE_AUTHORITIES);
 export const KNOWLEDGE_CONFIDENCE_SET = new Set<string>(KNOWLEDGE_CONFIDENCES);
 export const KNOWLEDGE_EDITION_SET = new Set<string>(KNOWLEDGE_EDITIONS);
+
+export const KNOWLEDGE_DIAGNOSTIC_SEVERITY_SET = new Set<string>(KNOWLEDGE_DIAGNOSTIC_SEVERITIES);
