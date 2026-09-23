@@ -46,3 +46,5 @@ export * from "./state-authority-analysis.js";
 export * from "./evidence-overlay.js";
 
 export * from "./mutation-transaction-analysis.js";
+
+export * from "./script-mutation-transaction-analysis.js";
