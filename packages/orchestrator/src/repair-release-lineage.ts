@@ -4,6 +4,9 @@ import type {
   DecisionLedgerKind,
   DecisionLedgerSnapshot,
 } from "../../project-model/src/decision-ledger.js";
+import {
+  validateDecisionLedgerSnapshot,
+} from "../../project-model/src/decision-ledger-validate.js";
 import type { RepairLifecycleState } from "./repair-lifecycle.js";
 import {
   invalidateStaleDecisionLedger,
@@ -120,6 +123,25 @@ export function decideRepairReleaseWithLineage(
   currentBasis: DecisionBasisRevision,
 ): RepairReleaseLineageResult {
   const lifecycleDecision = decideRepairRelease(lifecycle);
+  const ledgerErrors = validateDecisionLedgerSnapshot(
+    ledgerSnapshot,
+  );
+  if (ledgerErrors.length > 0) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Decision ledger is structurally invalid.",
+          ...ledgerErrors,
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: ledgerErrors,
+    };
+  }
+
   const ledger = invalidateStaleDecisionLedger(
     ledgerSnapshot,
     currentBasis,
