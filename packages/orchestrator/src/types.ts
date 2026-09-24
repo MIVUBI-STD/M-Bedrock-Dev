@@ -7,6 +7,7 @@ import type { ScriptApiUsageInventory } from "./script-api-usage.js";
 import type { RouteCorridorContract } from "../../project-model/src/route-corridor.js";
 import type { MutationDependentActionContract } from "../../project-model/src/mutation-dependent-action.js";
 import type { CausalChain, CausalIncident } from "../../project-model/src/causal-chain.js";
+import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -67,6 +68,11 @@ export interface InspectDirectoryResult {
     observedOutcomes: number;
     incidents: readonly CausalIncident[];
     rootCauseCandidates: number;
+  };
+  telemetryAnalysis: {
+    events: number;
+    evidenceRecords: number;
+    byKind: Readonly<Record<string, number>>;
   };
   worldDatabase: {
     present: boolean;
@@ -209,4 +215,10 @@ export interface InspectDirectoryResult {
   };
   diagnostics: DiagnosticFinding[];
   unresolvedReferences: number;
+}
+
+
+export interface InspectEvidenceInput {
+  records?: readonly import("../../project-model/src/runtime-evidence.js").RuntimeEvidenceRecord[];
+  telemetryEvents?: readonly TelemetryEvent[];
 }
