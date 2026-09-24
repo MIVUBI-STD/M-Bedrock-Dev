@@ -4,6 +4,9 @@ import {
   authorizeRepairMutation,
 } from "../src/authorized-repair.js";
 import type { RepairProofBundle } from "../src/repair-proof-bundle.js";
+import {
+  CONTRACT_REGISTRY_REVISION,
+} from "../../project-model/src/contract-registry-revision.js";
 
 function transaction(validation = true) {
   return createPatchTransaction({
@@ -39,6 +42,7 @@ function proof(
     sourceFingerprint: "abc",
     graphFingerprint: "graph-current",
     decisionBasis: {
+      contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
       sourceFingerprint: "abc",
       graphFingerprint: "graph-current",
       ...(disposition === "guarded"
