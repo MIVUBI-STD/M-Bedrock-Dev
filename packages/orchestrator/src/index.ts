@@ -62,3 +62,5 @@ export * from "./causal-incident-analysis.js";
 export * from "./causal-comparison.js";
 
 export * from "./causal-retest.js";
+
+export * from "./telemetry-evidence.js";
