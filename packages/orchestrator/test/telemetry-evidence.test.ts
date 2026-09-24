@@ -84,6 +84,34 @@ describe("telemetry evidence adapter", () => {
     ]));
   });
 
+  it("maps mutation applied telemetry into timed world mutation evidence", () => {
+    const records = telemetryRuntimeEvidence([{
+      schemaVersion: 1,
+      eventId: "mutation-1",
+      kind: "mutation-applied",
+      producer: "instrumentation",
+      scope: { operationId: "mutation-op" },
+      tick: 40,
+      sequence: 3,
+      mutationKind: "structure-load",
+      routeId: "bridge",
+    }]);
+
+    expect(records).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        predicate: "route-affecting-world-mutation",
+        observedAt: {
+          tick: 40,
+          sequence: 3,
+        },
+      }),
+      expect.objectContaining({
+        predicate: "mutation-apply",
+        state: "present",
+      }),
+    ]));
+  });
+
   it("maps state drift into authority/mirror evidence", () => {
     const records = telemetryRuntimeEvidence([{
       schemaVersion: 1,
