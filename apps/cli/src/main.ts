@@ -6,6 +6,7 @@ import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/load.js"
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/script-api-usage.js";
 import { parseCliTargetOptions } from "./target-options.js";
 import { loadTelemetryFile } from "../../../packages/orchestrator/src/telemetry-load.js";
+import { loadRuntimeProbeTranscript } from "../../../packages/orchestrator/src/runtime-probe-load.js";
 
 async function main(): Promise<void> {
   const [, , command, ...rawArgs] = process.argv;
@@ -13,6 +14,7 @@ async function main(): Promise<void> {
     positionals: args,
     target,
     telemetryPath,
+    probeTranscriptPath,
   } = parseCliTargetOptions(rawArgs);
   const [input, secondInput, thirdInput] = args;
   const knowledge = await loadKnowledgeDirectory(resolve("knowledge"));
@@ -21,11 +23,15 @@ async function main(): Promise<void> {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
       : undefined;
+    const probeTranscript = probeTranscriptPath
+      ? await loadRuntimeProbeTranscript(resolve(probeTranscriptPath))
+      : undefined;
     const result = await inspectArtifact(
       resolve(input),
       target,
       knowledge,
       telemetry ?? [],
+      probeTranscript,
     );
     console.log(JSON.stringify(result, null, 2));
 
@@ -35,8 +41,13 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (telemetryPath && command !== "inspect") {
-    throw new Error("Telemetry input is only supported by inspect.");
+  if (
+    (telemetryPath || probeTranscriptPath) &&
+    command !== "inspect"
+  ) {
+    throw new Error(
+      "Telemetry and runtime probe transcript inputs are only supported by inspect.",
+    );
   }
 
   if (command === "script-usage" && args.length > 0) {
@@ -79,7 +90,7 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--telemetry qa.json]",
+    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...]",
     "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...]",
     "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version> [--edition ...] [--experiment id]",
