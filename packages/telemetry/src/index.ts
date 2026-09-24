@@ -31,3 +31,5 @@ export * from "./mutation-lifecycle.js";
 export * from "./scheduler.js";
 
 export * from "./runtime-probe-executor.js";
+
+export * from "./runtime-probe-session.js";
