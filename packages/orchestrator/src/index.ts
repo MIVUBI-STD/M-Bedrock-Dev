@@ -85,3 +85,8 @@ export * from "./first-wrong-transition.js";
 export * from "./invariant-runtime-plan.js";
 
 export * from "./runtime-probe-request-compiler.js";
+export * from "./repair-counterfactual-types.js";
+export * from "./repair-counterfactual.js";
+export * from "./repair-blast-radius.js";
+export * from "./repair-admission.js";
+export * from "./repair-proof-bundle.js";
