@@ -364,8 +364,12 @@ export function validateRuntimeProbeTranscript(
     }
 
     const expectedOutcome = expectedOutcomeId(request, response.state);
-    if (response.outcomeId !== expectedOutcome) {
-      errors.push(prefix + " outcomeId does not match request outcome mapping.");
+    if (response.ok) {
+      if (response.outcomeId !== expectedOutcome) {
+        errors.push(prefix + " outcomeId does not match request outcome mapping.");
+      }
+    } else if (response.outcomeId !== undefined) {
+      errors.push(prefix + " failed response must not include outcomeId.");
     }
 
     if (
