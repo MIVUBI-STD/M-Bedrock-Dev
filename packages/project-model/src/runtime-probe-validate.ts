@@ -647,13 +647,13 @@ export function validateRuntimeProbeRequestBundle(
     );
   }
 
+  const incidentIds = new Set<string>();
   if (
     input.incidentIds !== undefined &&
     !Array.isArray(input.incidentIds)
   ) {
     errors.push("Runtime probe request bundle incidentIds must be an array.");
   } else {
-    const incidentIds = new Set<string>();
     for (const raw of input.incidentIds ?? []) {
       if (!nonEmpty(raw)) {
         errors.push(
@@ -697,6 +697,23 @@ export function validateRuntimeProbeRequestBundle(
         );
       }
       requestIds.add(request.requestId);
+    }
+
+    if (incidentIds.size > 0 && record(request)) {
+      if (!nonEmpty(request.incidentId)) {
+        errors.push(
+          "Runtime probe request bundle request " +
+          index +
+          " must declare incidentId when bundle incidentIds are present.",
+        );
+      } else if (!incidentIds.has(request.incidentId)) {
+        errors.push(
+          "Runtime probe request bundle request " +
+          index +
+          " incidentId is not declared by the bundle: " +
+          request.incidentId,
+        );
+      }
     }
   }
 
