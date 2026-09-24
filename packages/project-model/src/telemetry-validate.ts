@@ -174,6 +174,13 @@ export function validateTelemetryEvent(
     validateScope(input.scope, errors);
   }
   numberField(input, "tick", errors);
+  numberField(input, "sequence", errors);
+  if (
+    typeof input.sequence === "number" &&
+    (!Number.isInteger(input.sequence) || input.sequence < 0)
+  ) {
+    errors.push("sequence must be a non-negative integer.");
+  }
   if (input.timestamp !== undefined && typeof input.timestamp !== "string") {
     errors.push("timestamp must be a string.");
   }
