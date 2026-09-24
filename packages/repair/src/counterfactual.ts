@@ -60,6 +60,10 @@ export function analyzeRepairCounterfactual(
   const transactionCoversChangedPaths = changedPaths.every(
     (path) => transactionPaths.has(path),
   );
+  const changedPathSet = new Set(changedPaths);
+  const changedNodesCoverTransactionPaths = [...transactionPaths].every(
+    (path) => changedPathSet.has(path),
+  );
 
   return {
     transactionId: input.transaction.id,
@@ -74,6 +78,7 @@ export function analyzeRepairCounterfactual(
       unknownChangedNodeIds.length === 0 &&
       unresolvedEdgeIds.length === 0 &&
       ambiguousEdgeIds.length === 0 &&
-      transactionCoversChangedPaths,
+      transactionCoversChangedPaths &&
+      changedNodesCoverTransactionPaths,
   };
 }
