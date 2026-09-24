@@ -137,6 +137,8 @@ try {
         }
         "audit" {
             npm run audit:source
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            npm run audit:api
         }
         "check" {
             npm run verify:full

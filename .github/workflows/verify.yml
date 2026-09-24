@@ -42,6 +42,9 @@ jobs:
       - name: Source hygiene audit
         run: npm run audit:source
 
+      - name: Public API audit
+        run: npm run audit:api
+
       - name: Typecheck
         run: npm run typecheck
 

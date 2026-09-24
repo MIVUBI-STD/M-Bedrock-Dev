@@ -19,7 +19,8 @@
     "verify:modules": "node tooling/repository/verify-module-shape.mjs",
     "verify:dependencies": "node tooling/repository/verify-dependency-graph.mjs",
     "audit:source": "node tooling/repository/audit-source-hygiene.mjs",
-    "verify:ready": "npm run verify:full && npm run audit:source"
+    "verify:ready": "npm run verify:full && npm run audit:source && npm run audit:api",
+    "audit:api": "node tooling/repository/audit-public-api.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",

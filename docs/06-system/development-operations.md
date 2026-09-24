@@ -75,3 +75,9 @@ It intentionally does not require a clean Git working tree. Repository readiness
 Production source may import external packages only when they are declared in `dependencies`; test/build-only packages belong in `devDependencies`.
 
 Install scripts are deny-by-default under npm's script policy and approved explicitly by exact locked version in `package.json#allowScripts`. The current approved native/build hooks are `@8crafter/leveldb-zlib@1.6.0` and `esbuild@0.28.2`.
+
+## Public API surface audit
+
+`DEV.cmd audit` also reports cross-owner imports that bypass another module's `src/index.ts` entrypoint.
+
+The audit is non-blocking while legacy deep imports remain. Migrate one semantic owner at a time, then promote only that proven owner boundary into a blocking rule. This preserves internal refactor freedom without forcing a repository-wide import rewrite.
