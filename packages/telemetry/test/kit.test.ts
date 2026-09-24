@@ -201,4 +201,49 @@ describe("development telemetry instrumentation kit", () => {
     expect(kit.buffer.size).toBe(0);
     expect(kit.scope.current()).toEqual({});
   });
+  it("uses configured batch metadata and validates events by default", () => {
+    const kit = createTelemetryInstrumentationKit({
+      sessionId: "qa-run-1",
+      artifactId: "art-1",
+    });
+
+    kit.emitter.routeRevalidation({
+      routeId: "bridge",
+      result: "passed",
+    });
+
+    expect(kit.batch()).toEqual(expect.objectContaining({
+      schemaVersion: 1,
+      sessionId: "qa-run-1",
+      artifactId: "art-1",
+      events: expect.any(Array),
+    }));
+
+    expect(() => kit.emitter.emit({
+      schemaVersion: 1,
+      eventId: "",
+      kind: "route-revalidation",
+      producer: "instrumentation",
+      scope: {},
+      routeId: "bridge",
+      result: "passed",
+    })).toThrow(/Invalid emitted telemetry event/);
+  });
+
+  it("can disable validation explicitly", () => {
+    const kit = createTelemetryInstrumentationKit({
+      validateEvents: false,
+    });
+
+    expect(() => kit.emitter.emit({
+      schemaVersion: 1,
+      eventId: "",
+      kind: "route-revalidation",
+      producer: "instrumentation",
+      scope: {},
+      routeId: "bridge",
+      result: "passed",
+    })).not.toThrow();
+    expect(kit.buffer.size).toBe(1);
+  });
 });
