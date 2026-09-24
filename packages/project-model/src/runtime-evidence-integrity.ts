@@ -6,6 +6,9 @@ export interface RuntimeEvidenceIntegrityReport {
   unlocatedObservedRecords: number;
   unresolvedConflictPredicates: readonly string[];
   resolvedConflictCount: number;
+  /** Generic continuity status for the assessed evidence channel. */
+  continuityComplete: boolean;
+  /** Retained for telemetry-specific compatibility. */
   telemetryContinuityComplete: boolean;
   safeForCurrentStateClaims: boolean;
   safeForTemporalViolationClaims: boolean;
