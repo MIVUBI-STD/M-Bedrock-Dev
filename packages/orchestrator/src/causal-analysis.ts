@@ -124,6 +124,7 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
 
   let hasCorroboratedRisk = false;
   let hasObservedOutcome = false;
+  const observedOutcomeNodeIds = new Set<string>();
 
   for (const consequence of consequences) {
     const riskNodeId = idFor([finding.id, "risk", consequence]);
@@ -176,20 +177,22 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
       const observedNodeId = idFor([
         finding.id,
         "observed-outcome",
-        consequence,
         predicate,
       ]);
       const observedSourceKeys = predicateSourceKeys[predicate] ?? [];
-      nodes.push({
-        id: observedNodeId,
-        kind: "observed-state",
-        label: predicate,
-        diagnosticIds: [finding.id],
-        corroboratingPredicates: [predicate],
-        ...(observedSourceKeys.length === 0
-          ? {}
-          : { corroboratingSourceKeys: observedSourceKeys }),
-      });
+      if (!observedOutcomeNodeIds.has(observedNodeId)) {
+        observedOutcomeNodeIds.add(observedNodeId);
+        nodes.push({
+          id: observedNodeId,
+          kind: "observed-state",
+          label: predicate,
+          diagnosticIds: [finding.id],
+          corroboratingPredicates: [predicate],
+          ...(observedSourceKeys.length === 0
+            ? {}
+            : { corroboratingSourceKeys: observedSourceKeys }),
+        });
+      }
       links.push({
         from: riskNodeId,
         to: observedNodeId,
