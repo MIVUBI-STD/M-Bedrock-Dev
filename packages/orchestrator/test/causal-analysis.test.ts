@@ -253,10 +253,12 @@ describe("causal chain synthesis", () => {
       predicateObservations: {
         "route-affecting-world-mutation": [{
           tick: 200,
+          streamId: "runtime-main",
           sequence: 2,
         }],
         "navigation-stall-observed": [{
           tick: 200,
+          streamId: "runtime-main",
           sequence: 3,
         }],
       },
