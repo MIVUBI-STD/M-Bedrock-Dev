@@ -21,6 +21,7 @@ const bundle = {
     schemaVersion: 1 as const,
     requestId: "req-1",
     probeId: "chunk-ready",
+    incidentId: "incident-1",
     predicate: "loaded-target-chunk",
     scope: {
       arenaId: "arena-1",
@@ -40,6 +41,7 @@ const bundle = {
     schemaVersion: 1 as const,
     requestId: "req-2",
     probeId: "phase",
+    incidentId: "incident-1",
     predicate: "phase-is-active",
     query: {
       kind: "scoreboard-value" as const,
