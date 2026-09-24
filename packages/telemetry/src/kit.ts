@@ -19,6 +19,7 @@ import {
   createFanoutTelemetrySink,
   createValidatingTelemetrySink,
 } from "./sink.js";
+import { createPriorityBufferedTelemetrySink } from "./priority-buffer.js";
 import {
   captureDeferredGeneration,
   createArenaStartGuard,
@@ -60,6 +61,7 @@ export interface TelemetryInstrumentationKitOptions {
   sessionId?: string;
   artifactId?: string;
   maxEvents?: number;
+  bufferStrategy?: "fifo" | "priority";
   baseScope?: RuntimeScope;
   initialScope?: RuntimeScope;
   scopeProvider?: () => RuntimeScope | undefined;
@@ -135,9 +137,10 @@ export function createTelemetryInstrumentationKit(
 ): TelemetryInstrumentationKit {
   const profile = resolveTelemetryRuntimeProfile(options.profile);
   const scope = createTelemetryScopeLease(options.initialScope ?? {});
-  const buffer = createBufferedTelemetrySink(
-    options.maxEvents ?? 1000,
-  );
+  const buffer =
+    options.bufferStrategy === "priority"
+      ? createPriorityBufferedTelemetrySink(options.maxEvents ?? 1000)
+      : createBufferedTelemetrySink(options.maxEvents ?? 1000);
 
   const fanout = options.transportSink
     ? createFanoutTelemetrySink([buffer, options.transportSink])
