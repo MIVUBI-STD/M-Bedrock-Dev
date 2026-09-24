@@ -4,6 +4,7 @@ export interface ParsedCliTargetOptions {
   positionals: string[];
   target: InspectTargetProfile;
   telemetryPath?: string;
+  probeTranscriptPath?: string;
 }
 
 export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetOptions {
@@ -11,6 +12,7 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
   const experiments: string[] = [];
   const target: InspectTargetProfile = {};
   let telemetryPath: string | undefined;
+  let probeTranscriptPath: string | undefined;
 
   for (let index = 0; index < args.length; index += 1) {
     const token = args[index]!;
@@ -55,6 +57,16 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
       continue;
     }
 
+    if (token === "--probe-transcript") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--probe-transcript requires a JSON file path");
+      }
+      probeTranscriptPath = value;
+      index += 1;
+      continue;
+    }
+
     if (token.startsWith("--")) {
       throw new Error("Unknown option: " + token);
     }
@@ -67,5 +79,8 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
     positionals,
     target,
     ...(telemetryPath === undefined ? {} : { telemetryPath }),
+    ...(probeTranscriptPath === undefined
+      ? {}
+      : { probeTranscriptPath }),
   };
 }
