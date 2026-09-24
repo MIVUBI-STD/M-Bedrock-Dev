@@ -76,3 +76,5 @@ export * from "./diagnostic-runtime-binding.js";
 export * from "./runtime-probe-evidence.js";
 
 export * from "./runtime-probe-session.js";
+
+export * from "./runtime-probe-load.js";
