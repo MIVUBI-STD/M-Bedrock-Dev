@@ -214,4 +214,79 @@ describe("temporal telemetry causal reasoning", () => {
       }),
     ]));
   });
+  it("runtime-probe-only temporal support remains valid when unrelated telemetry is incomplete", () => {
+    const records = [{
+      predicate: "route-affecting-world-mutation",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "runtime-probe" as const,
+      scope: { operationId: "route-op" },
+      observedAt: { tick: 100 },
+    }, {
+      predicate: "navigation-stall-observed",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "runtime-probe" as const,
+      scope: { operationId: "route-op" },
+      observedAt: { tick: 120 },
+    }];
+
+    const diagnostics = knowledgeRuntimeDiagnostics({
+      catalog,
+      profile: { edition: "bedrock" },
+      snapshot: { schemaVersion: 1, records },
+    });
+    const chain = synthesizeCausalChains(diagnostics, {
+      telemetryTemporalReliable: false,
+    })[0]!;
+
+    expect(chain.confidence).toBe("medium");
+    expect(chain.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        strength: "direct-evidence",
+        temporalStatus: "after-subject",
+        temporalIntegrity: "complete",
+      }),
+    ]));
+  });
+
+  it("mixed telemetry and runtime-probe timing remains fail-closed when telemetry is incomplete", () => {
+    const records = [{
+      predicate: "route-affecting-world-mutation",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "telemetry" as const,
+      scope: { operationId: "route-op" },
+      observedAt: {
+        tick: 100,
+        streamId: "runtime-main",
+        sequence: 1,
+      },
+    }, {
+      predicate: "navigation-stall-observed",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "runtime-probe" as const,
+      scope: { operationId: "route-op" },
+      observedAt: { tick: 120 },
+    }];
+
+    const diagnostics = knowledgeRuntimeDiagnostics({
+      catalog,
+      profile: { edition: "bedrock" },
+      snapshot: { schemaVersion: 1, records },
+    });
+    const chain = synthesizeCausalChains(diagnostics, {
+      telemetryTemporalReliable: false,
+    })[0]!;
+
+    expect(chain.confidence).toBe("low");
+    expect(chain.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        strength: "direct-evidence",
+        temporalStatus: "after-subject",
+        temporalIntegrity: "incomplete",
+      }),
+    ]));
+  });
 });
