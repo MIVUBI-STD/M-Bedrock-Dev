@@ -120,4 +120,29 @@ describe("diagnostic repair gate", () => {
       "LIVE_MINECRAFT",
     ).disposition).toBe("observe-only");
   });
+
+  it("blocks runtime repair when current-state evidence integrity is unsafe", () => {
+    const decision = decideDiagnosticRepair(
+      incident("proven-with-observed-outcome"),
+      investigation(true),
+      "LIVE_MINECRAFT",
+      {
+        records: 2,
+        observedRecords: 2,
+        derivedRecords: 0,
+        unknownConfidenceRecords: 0,
+        unlocatedObservedRecords: 0,
+        unresolvedConflictPredicates: ["chunk-ready"],
+        resolvedConflictCount: 0,
+        telemetryContinuityComplete: true,
+        safeForCurrentStateClaims: false,
+        safeForTemporalViolationClaims: false,
+        reasons: ["Unresolved conflicting runtime evidence."],
+      },
+    );
+
+    expect(decision.disposition).toBe("proposal-only");
+    expect(decision.reasons.join(" ")).toMatch(/integrity/i);
+  });
+
 });
