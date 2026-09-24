@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { parseTelemetryBatch } from "../../project-model/src/telemetry-validate.js";
-import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
+import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";\n\nexport function isTelemetryBatch(\n  telemetry: readonly TelemetryEvent[] | TelemetryBatch,\n): telemetry is TelemetryBatch {\n  return !Array.isArray(telemetry);\n}
 
 export async function loadTelemetryFile(path: string): Promise<TelemetryBatch> {
   let parsed: unknown;
@@ -23,7 +23,7 @@ export function resolveTelemetryEventsForArtifact(
   telemetry: readonly TelemetryEvent[] | TelemetryBatch,
   artifactId: string,
 ): readonly TelemetryEvent[] {
-  if (Array.isArray(telemetry)) return telemetry;
+  if (!isTelemetryBatch(telemetry)) return telemetry;
   if (
     telemetry.artifactId !== undefined &&
     telemetry.artifactId !== artifactId
