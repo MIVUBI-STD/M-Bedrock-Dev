@@ -31,6 +31,9 @@ export async function inspectArtifact(
     telemetry,
     artifactId,
   );
+  const telemetryDroppedEvents = Array.isArray(telemetry)
+    ? 0
+    : telemetry.droppedEvents ?? 0;
   const sessionRoot = await mkdtemp(join(tmpdir(), "m-bedrock-inspect-"));
   const sourceRoot = join(sessionRoot, "source");
   const workingRoot = join(sessionRoot, "working");
@@ -51,6 +54,7 @@ export async function inspectArtifact(
       knowledgeCatalog,
       worldDbRuntimeEvidence(nativeWorldDb),
       telemetryEvents,
+      telemetryDroppedEvents,
     );
     const embeddedCommandNativeCorrelations =
       correlateEmbeddedCommandsWithNativeChunks(
