@@ -625,3 +625,112 @@ new corroborated risk         weight 2
 Negative deltas represent improvement and do not add causal-regression retest reasons.
 
 Causal-regression reasons request both runtime and differential retest lanes.
+
+
+## Causal corroboration and incidents
+
+Causal analysis now distinguishes four downstream evidence levels:
+
+```text
+risk-only
+corroborated-risk
+observed downstream outcome
+proven dependency violation + observed outcome
+```
+
+A downstream risk is corroborated only when the relation explicitly declares the required predicates and those predicates are present in the **same runtime scope**.
+
+Example route contract:
+
+```text
+route-affecting-world-mutation
+requires
+route-revalidation
+```
+
+with:
+
+```text
+navigation-stall-risk
+  corroborators:
+    route-navigation-consumer-present
+    route-target-driven-consumer-present
+```
+
+The route contract may explicitly link entity keys. Static entity analysis then proves whether those exact entities have navigation and configured targeting. An unrelated navigable entity cannot corroborate the route risk.
+
+Relations may also define:
+
+- `causalOutcomePredicates`: runtime predicates that directly report a downstream outcome;
+- `causalCorroborationMinSources`: minimum independent provenance sources required before a risk can be upgraded.
+
+Example:
+
+```text
+navigation-stall-risk
+  outcome:
+    navigation-stall-observed
+  minimum corroborating sources: 2
+```
+
+A stall observation in another operation/arena/entity scope does not attach to the chain.
+
+### Confidence semantics
+
+```text
+dependency gap + risk projection
+→ low
+
+dependency gap + scoped multi-source corroboration
+→ medium
+
+dependency gap + observed downstream outcome
+→ medium
+  (candidate attribution; dependency itself is still unproven)
+
+explicit dependency violation
+→ high
+
+explicit dependency violation + observed downstream outcome
+→ high with strongest root-cause evidence level
+```
+
+Observed outcomes never imply sole causation by themselves.
+
+### Causal incidents
+
+Chains sharing the same runtime scope are grouped into a `CausalIncident`.
+
+Each incident contains ranked root-cause candidates with these evidence levels:
+
+1. `proven-with-observed-outcome`
+2. `proven-dependency-violation`
+3. `corroborated-candidate`
+4. `unproven-candidate`
+
+Ranking prioritizes evidence quality before severity. This prevents a critical but speculative chain from outranking a medium-severity cause that has an explicit violation plus matching runtime outcome.
+
+### Current route corroboration
+
+Route mutation evidence can now combine:
+
+```text
+world mutation overlaps declared corridor
++
+route explicitly links entity
++
+that entity has navigation
++
+that entity has configured targeting
+```
+
+to strengthen `navigation-stall-risk`.
+
+Runtime telemetry may add:
+
+```text
+navigation-stall-observed
+teleport-fallback-observed
+```
+
+as external evidence. These predicates only affect chains in the same operation scope.
