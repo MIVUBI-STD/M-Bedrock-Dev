@@ -16,14 +16,25 @@ export function createBufferedTelemetrySink(
   }
 
   const events: TelemetryEvent[] = [];
+  const eventIds = new Set<string>();
   let dropped = 0;
 
   return {
     emit(event) {
+      if (eventIds.has(event.eventId)) {
+        throw new Error(
+          "Duplicate telemetry eventId emitted into buffer: " +
+          event.eventId,
+        );
+      }
+
       events.push(event);
+      eventIds.add(event.eventId);
+
       if (events.length > maxEvents) {
         const overflow = events.length - maxEvents;
-        events.splice(0, overflow);
+        const removed = events.splice(0, overflow);
+        for (const item of removed) eventIds.delete(item.eventId);
         dropped += overflow;
       }
     },
@@ -41,6 +52,7 @@ export function createBufferedTelemetrySink(
     },
     clear() {
       events.length = 0;
+      eventIds.clear();
       dropped = 0;
     },
     batch(input = {}): TelemetryBatch {
