@@ -110,5 +110,6 @@ export interface TelemetryBatch {
   schemaVersion: 1;
   sessionId?: string;
   artifactId?: string;
+  droppedEvents?: number;
   events: readonly TelemetryEvent[];
 }
