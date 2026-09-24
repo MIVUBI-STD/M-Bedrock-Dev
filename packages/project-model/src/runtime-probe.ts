@@ -84,3 +84,12 @@ export interface RuntimeProbeBindingSet {
   schemaVersion: 1;
   bindings: readonly RuntimeProbeBinding[];
 }
+
+
+export interface RuntimeProbeRequestBundle {
+  schemaVersion: 1;
+  sessionId?: string;
+  artifactId?: string;
+  incidentIds?: readonly string[];
+  requests: readonly RuntimeProbeRequest[];
+}
