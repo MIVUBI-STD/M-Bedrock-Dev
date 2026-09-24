@@ -14,6 +14,10 @@ export type CausalTemporalStatus =
   | "same-moment"
   | "unresolved";
 
+export type CausalTemporalIntegrity =
+  | "complete"
+  | "incomplete";
+
 export type CausalNodeKind =
   | "observed-state"
   | "missing-requirement"
@@ -38,6 +42,7 @@ export interface CausalLink {
   strength: CausalLinkStrength;
   relationId?: string;
   temporalStatus?: CausalTemporalStatus;
+  temporalIntegrity?: CausalTemporalIntegrity;
   rationale: string;
 }
 
