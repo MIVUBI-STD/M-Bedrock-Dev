@@ -115,3 +115,4 @@ export * from "./invariant-registry.js";
 export * from "./decision-ledger.js";
 export * from "./decision-basis.js";
 export * from "./decision-ledger-recording.js";
+export * from "./repair-strategy-selection.js";
