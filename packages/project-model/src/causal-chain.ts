@@ -1,5 +1,6 @@
 import type { DiagnosticSeverity } from "../../diagnostics/src/types.js";
 import type { SourceRef } from "./source-ref.js";
+import type { RuntimeScope } from "./runtime-evidence.js";
 
 export type CausalLinkStrength =
   | "direct-evidence"
@@ -43,6 +44,7 @@ export interface CausalLink {
 export interface CausalChain {
   id: string;
   scopeKey?: string;
+  scope?: RuntimeScope;
   severity: DiagnosticSeverity;
   confidence: "high" | "medium" | "low";
   title: string;
@@ -78,6 +80,7 @@ export interface RootCauseCandidate {
 export interface CausalIncident {
   id: string;
   scopeKey: string;
+  scope?: RuntimeScope;
   severity: DiagnosticSeverity;
   confidence: "high" | "medium" | "low";
   chainIds: readonly string[];
