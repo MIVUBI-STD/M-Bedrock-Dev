@@ -17,6 +17,7 @@ function base(
     predicate,
     state,
     confidence: "observed",
+    origin: "telemetry",
     scope: event.scope,
     relatedNodeIds: ["telemetry:" + event.eventId],
     ...(
