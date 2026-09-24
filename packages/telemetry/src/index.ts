@@ -25,3 +25,5 @@ export * from "./bedrock.js";
 export * from "./transport.js";
 export * from "./observers.js";
 export * from "./entity-progress.js";
+
+export * from "./mutation-lifecycle.js";
