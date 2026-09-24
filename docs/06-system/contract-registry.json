@@ -87,6 +87,35 @@
       "status": "canonical"
     },
     {
+      "id": "repair-strategy-provider-proposal",
+      "symbol": "RepairStrategyProviderProposal",
+      "owner": "packages/orchestrator/src/repair-strategy-provider.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "repair-provider",
+      "status": "canonical"
+    },
+    {
+      "id": "repair-strategy-provider-registry",
+      "symbol": "RepairStrategyProviderRegistry",
+      "owner": "packages/orchestrator/src/repair-strategy-provider.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator",
+        "apps"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "repair-provider",
+      "status": "canonical"
+    },
+    {
       "id": "repair-verification-receipt",
       "symbol": "RepairVerificationReceipt",
       "owner": "packages/orchestrator/src/repair-lifecycle.ts",
