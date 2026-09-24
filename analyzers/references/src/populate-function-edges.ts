@@ -1,4 +1,4 @@
-import type { ParsedFunction } from "../../functions/src/types.js";
+import type { ParsedFunction } from "../../functions/src/index.js";
 import { SemanticGraph } from "../../../packages/graph/src/graph.js";
 import type { SemanticNode, EdgeType, SemanticEdge } from "../../../packages/graph/src/types.js";
 import { resolveByIdentifier } from "./resolve.js";

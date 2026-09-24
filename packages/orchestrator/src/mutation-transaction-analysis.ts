@@ -1,4 +1,4 @@
-import type { ParsedFunction, ParsedFunctionCommand } from "../../../analyzers/functions/src/types.js";
+import type { ParsedFunction, ParsedFunctionCommand } from "../../../analyzers/functions/src/index.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
 import {
   parseBlockVerificationSemantics,

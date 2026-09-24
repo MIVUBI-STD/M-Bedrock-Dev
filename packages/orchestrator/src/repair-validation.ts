@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
+import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
 import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { inspectDirectory } from "./inspect.js";
 import { summarizeValidation } from "../../validation/src/index.js";

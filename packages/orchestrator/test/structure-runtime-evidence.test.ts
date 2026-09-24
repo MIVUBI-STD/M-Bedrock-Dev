@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
-import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
+import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
 import { analyzeStructureAndChunkRuntime } from "../src/structure-runtime-analysis.js";
 import { structureRuntimeEvidence } from "../src/structure-runtime-evidence.js";
 import { analyzeKnowledgeRuntime } from "../src/knowledge-runtime-analysis.js";

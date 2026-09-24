@@ -2,7 +2,7 @@ import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/i
 import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/index.js";
 import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
-import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
+import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";

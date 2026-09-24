@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
+import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
 import { analyzeFunctionTopology } from "../src/topology-analysis.js";
 import { analyzeStructureAndChunkRuntime } from "../src/structure-runtime-analysis.js";
 import { derivePlacementProofs } from "../src/structure-proof-analysis.js";

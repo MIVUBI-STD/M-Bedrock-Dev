@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../../packages/knowledge/src/types.js";
-import { parseMcFunction } from "../../functions/src/parse.js";
+import { parseMcFunction } from "../../functions/src/index.js";
 import { functionKnowledgeRuntimeDiagnostics } from "../src/function-knowledge-runtime-findings.js";
 
 const source = { artifactId: "a", relativePath: "functions/arena.mcfunction" };

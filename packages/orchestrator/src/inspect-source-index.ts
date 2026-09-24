@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
+import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import { parseEntityDefinition } from "../../../analyzers/entities/src/index.js";

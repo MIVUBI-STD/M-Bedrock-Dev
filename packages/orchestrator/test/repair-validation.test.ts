@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { applyPatchTransaction } from "../../repair/src/index.js";
 import { planLinearTopologyRepair } from "../../repair/src/index.js";
-import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
+import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
 import { analyzeFunctionTopology } from "../src/topology-analysis.js";
 import { validatePatchTransaction } from "../src/repair-validation.js";
 

@@ -1,4 +1,4 @@
-import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
+import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";
 import { semanticNodeId } from "../../project-model/src/identity.js";

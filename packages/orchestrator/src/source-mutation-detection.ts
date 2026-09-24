@@ -1,4 +1,4 @@
-import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
+import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
 import { stateAccessesFromEffects } from "../../../analyzers/topology/src/index.js";
 import { likelyGlobalAccess } from "../../../analyzers/topology/src/index.js";
