@@ -174,6 +174,21 @@ for (const path of files) {
         `${path}: relation ${relation.id} has unknown diagnosticSeverity ${relation.diagnosticSeverity}`,
       );
     }
+    if (
+      relation.causalConsequences !== undefined &&
+      !Array.isArray(relation.causalConsequences)
+    ) {
+      throw new Error(
+        `${path}: relation ${relation.id} causalConsequences must be an array`,
+      );
+    }
+    for (const consequence of relation.causalConsequences ?? []) {
+      if (typeof consequence !== "string" || consequence.trim().length === 0) {
+        throw new Error(
+          `${path}: relation ${relation.id} has empty causal consequence`,
+        );
+      }
+    }
     if (!relation.subject || !relation.object) {
       throw new Error(`${path}: relation ${relation.id} lacks subject/object`);
     }
