@@ -1,5 +1,11 @@
-import type { MergedRuntimeEvidence } from "../../../analyzers/diagnostics/src/runtime-evidence-merge.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import {
+  mergeRuntimeEvidenceRecords,
+  type MergedRuntimeEvidence,
+} from "../../../analyzers/diagnostics/src/runtime-evidence-merge.js";
+import {
+  groupRuntimeEvidenceByScope,
+  type RuntimeEvidenceRecord,
+} from "../../project-model/src/runtime-evidence.js";
 import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
 import type { TelemetryContinuityReport } from "../../project-model/src/telemetry-continuity.js";
 
@@ -60,6 +66,85 @@ export function assessRuntimeEvidenceIntegrity(
     telemetryContinuityComplete,
     safeForCurrentStateClaims,
     safeForTemporalViolationClaims,
+    reasons,
+  };
+}
+
+
+export function assessRuntimeEvidenceSetIntegrity(
+  records: readonly RuntimeEvidenceRecord[],
+  continuity?: TelemetryContinuityReport,
+): RuntimeEvidenceIntegrityReport {
+  const reports = [...groupRuntimeEvidenceByScope({
+    schemaVersion: 1,
+    records,
+  }).values()].map((scopedRecords) =>
+    assessRuntimeEvidenceIntegrity(
+      scopedRecords,
+      mergeRuntimeEvidenceRecords(scopedRecords),
+      continuity,
+    )
+  );
+
+  if (reports.length === 0) {
+    return {
+      records: 0,
+      observedRecords: 0,
+      derivedRecords: 0,
+      unknownConfidenceRecords: 0,
+      unlocatedObservedRecords: 0,
+      unresolvedConflictPredicates: [],
+      resolvedConflictCount: 0,
+      telemetryContinuityComplete: continuity?.incomplete !== true,
+      safeForCurrentStateClaims: true,
+      safeForTemporalViolationClaims: continuity?.incomplete !== true,
+      reasons: continuity?.incomplete === true
+        ? [
+            "Telemetry continuity is incomplete; no temporal claim should rely on absence/order from this channel.",
+          ]
+        : [
+            "No evidence-integrity blocker is detected for the assessed claim classes.",
+          ],
+    };
+  }
+
+  const unresolvedConflictPredicates = [...new Set(
+    reports.flatMap((report) => report.unresolvedConflictPredicates),
+  )].sort();
+  const reasons = [...new Set(
+    reports.flatMap((report) => report.reasons),
+  )];
+
+  return {
+    records: reports.reduce((sum, report) => sum + report.records, 0),
+    observedRecords: reports.reduce(
+      (sum, report) => sum + report.observedRecords,
+      0,
+    ),
+    derivedRecords: reports.reduce(
+      (sum, report) => sum + report.derivedRecords,
+      0,
+    ),
+    unknownConfidenceRecords: reports.reduce(
+      (sum, report) => sum + report.unknownConfidenceRecords,
+      0,
+    ),
+    unlocatedObservedRecords: reports.reduce(
+      (sum, report) => sum + report.unlocatedObservedRecords,
+      0,
+    ),
+    unresolvedConflictPredicates,
+    resolvedConflictCount: reports.reduce(
+      (sum, report) => sum + report.resolvedConflictCount,
+      0,
+    ),
+    telemetryContinuityComplete: continuity?.incomplete !== true,
+    safeForCurrentStateClaims: reports.every(
+      (report) => report.safeForCurrentStateClaims,
+    ),
+    safeForTemporalViolationClaims: reports.every(
+      (report) => report.safeForTemporalViolationClaims,
+    ),
     reasons,
   };
 }
