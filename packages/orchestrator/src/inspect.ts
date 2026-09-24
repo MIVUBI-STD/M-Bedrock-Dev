@@ -100,6 +100,7 @@ import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe
 import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
 import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";
 import { assessRuntimeEvidenceSetIntegrity } from "./runtime-evidence-integrity.js";
+import { planEvidenceRecovery } from "./evidence-recovery.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
@@ -206,6 +207,10 @@ export async function inspectDirectory(
             "Runtime probe exchanges were dropped; missing probe observations cannot safely establish temporal absence or ordering.",
           ],
         };
+  const evidenceRecovery = planEvidenceRecovery(
+    telemetryEvidenceIntegrity,
+    runtimeProbeEvidenceIntegrity,
+  );
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
 
@@ -1003,6 +1008,7 @@ export async function inspectDirectory(
       telemetry: telemetryEvidenceIntegrity,
       runtimeProbe: runtimeProbeEvidenceIntegrity,
     },
+    evidenceRecovery,
     diagnosticProbeAnalysis,
     worldDatabase: {
       present: dbFiles.length > 0,
