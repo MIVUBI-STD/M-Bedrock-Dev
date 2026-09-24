@@ -36,6 +36,8 @@ function proof(
 ): RepairProofBundle {
   return {
     transactionId: txId,
+    sourceFingerprint: "abc",
+    graphFingerprint: "graph-current",
     incidentId: "incident-1",
     selectedCandidateId: "candidate",
     diagnosticDisposition:
@@ -68,6 +70,10 @@ describe("authorized repair mutation", () => {
     expect(authorizeRepairMutation(
       tx,
       proof(tx.id, "eligible"),
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+      },
     )).toMatchObject({
       authorized: true,
       mode: "eligible",
@@ -79,6 +85,10 @@ describe("authorized repair mutation", () => {
     expect(authorizeRepairMutation(
       tx,
       proof("other", "eligible"),
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+      },
     ).authorized).toBe(false);
   });
 
@@ -87,10 +97,18 @@ describe("authorized repair mutation", () => {
     expect(authorizeRepairMutation(
       tx,
       proof(tx.id, "review-required"),
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+      },
     ).authorized).toBe(false);
     expect(authorizeRepairMutation(
       tx,
       proof(tx.id, "blocked"),
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+      },
     ).authorized).toBe(false);
   });
 
@@ -101,11 +119,19 @@ describe("authorized repair mutation", () => {
     expect(authorizeRepairMutation(
       tx,
       guarded,
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+      },
     ).authorized).toBe(false);
 
     expect(authorizeRepairMutation(
       tx,
       guarded,
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+      },
       { allowGuarded: true },
     )).toMatchObject({
       authorized: true,
@@ -118,6 +144,39 @@ describe("authorized repair mutation", () => {
     expect(authorizeRepairMutation(
       tx,
       proof(tx.id, "eligible"),
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+      },
     ).authorized).toBe(false);
   });
+
+  it("rejects stale semantic graph proof", () => {
+    const tx = transaction();
+    expect(authorizeRepairMutation(
+      tx,
+      proof(tx.id, "eligible"),
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-new",
+      },
+    )).toMatchObject({
+      authorized: false,
+    });
+  });
+
+  it("rejects stale source fingerprint proof", () => {
+    const tx = transaction();
+    expect(authorizeRepairMutation(
+      tx,
+      proof(tx.id, "eligible"),
+      {
+        currentSourceFingerprint: "new-source",
+        currentGraphFingerprint: "graph-current",
+      },
+    )).toMatchObject({
+      authorized: false,
+    });
+  });
+
 });
