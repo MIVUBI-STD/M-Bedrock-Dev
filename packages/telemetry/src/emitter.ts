@@ -63,6 +63,15 @@ function buildEvent<K extends Kind>(
   );
 
   const { scope: _scope, ...rest } = input;
+  const tick =
+    "tick" in rest && typeof rest.tick === "number"
+      ? rest.tick
+      : options.tickProvider?.();
+  const timestamp =
+    "timestamp" in rest && typeof rest.timestamp === "string"
+      ? rest.timestamp
+      : options.timestampProvider?.();
+
   return {
     schemaVersion: 1,
     eventId: idFactory.next(kind),
@@ -70,6 +79,8 @@ function buildEvent<K extends Kind>(
     producer: options.producer,
     scope,
     ...rest,
+    ...(tick === undefined ? {} : { tick }),
+    ...(timestamp === undefined ? {} : { timestamp }),
   } as EventFor<K>;
 }
 
