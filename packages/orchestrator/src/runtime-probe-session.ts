@@ -5,7 +5,10 @@ import type {
   RuntimeProbeResponse,
 } from "../../project-model/src/runtime-probe.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
-import { parseRuntimeProbeResponse } from "../../project-model/src/runtime-probe-validate.js";
+import {
+  parseRuntimeProbeRequest,
+  parseRuntimeProbeResponse,
+} from "../../project-model/src/runtime-probe-validate.js";
 import {
   createDiagnosticInvestigation,
   investigationIncident,
@@ -20,6 +23,8 @@ export interface RuntimeProbeInvestigationSessionOptions {
   incident: CausalIncident;
   probes: readonly DiagnosticProbeDefinition[];
   maxResponseTickDelta?: number;
+  maxConsumedRequestIds?: number;
+  maxEvidenceRecords?: number;
 }
 
 export interface AppliedRuntimeProbeSessionResult
@@ -32,12 +37,14 @@ export interface RuntimeProbeInvestigationSession {
   readonly investigation: DiagnosticInvestigationState;
   readonly pendingRequests: number;
   readonly consumedRequests: number;
+  readonly droppedEvidenceRecords: number;
   register(request: RuntimeProbeRequest): void;
   apply(input: unknown): AppliedRuntimeProbeSessionResult;
   discard(requestId: string): boolean;
   pending(): readonly RuntimeProbeRequest[];
   evidence(): readonly RuntimeEvidenceRecord[];
   incident(): CausalIncident;
+  expire(currentRuntimeTick: number): readonly RuntimeProbeRequest[];
   clearPending(): void;
 }
 
@@ -49,6 +56,18 @@ function validateMaxTickDelta(value: number | undefined): void {
     throw new Error(
       "maxResponseTickDelta must be a non-negative integer.",
     );
+  }
+}
+
+function validatePositiveBudget(
+  value: number | undefined,
+  label: string,
+): void {
+  if (
+    value !== undefined &&
+    (!Number.isInteger(value) || value < 1)
+  ) {
+    throw new Error(label + " must be a positive integer.");
   }
 }
 
@@ -75,11 +94,34 @@ export function createRuntimeProbeInvestigationSession(
   options: RuntimeProbeInvestigationSessionOptions,
 ): RuntimeProbeInvestigationSession {
   validateMaxTickDelta(options.maxResponseTickDelta);
+  validatePositiveBudget(
+    options.maxConsumedRequestIds,
+    "maxConsumedRequestIds",
+  );
+  validatePositiveBudget(
+    options.maxEvidenceRecords,
+    "maxEvidenceRecords",
+  );
 
-  const probeIds = new Set(options.probes.map((probe) => probe.id));
+  const probeIds = new Set<string>();
+  for (const probe of options.probes) {
+    if (probeIds.has(probe.id)) {
+      throw new Error(
+        "Duplicate diagnostic probe id: " + probe.id,
+      );
+    }
+    probeIds.add(probe.id);
+  }
+
+  const maxConsumedRequestIds =
+    options.maxConsumedRequestIds ?? 1024;
+  const maxEvidenceRecords =
+    options.maxEvidenceRecords ?? 1024;
   const pending = new Map<string, RuntimeProbeRequest>();
   const consumed = new Set<string>();
+  const consumedOrder: string[] = [];
   const evidenceRecords: RuntimeEvidenceRecord[] = [];
+  let droppedEvidenceRecords = 0;
   let investigation = createDiagnosticInvestigation(options.incident);
 
   return {
@@ -95,19 +137,24 @@ export function createRuntimeProbeInvestigationSession(
       return consumed.size;
     },
 
+    get droppedEvidenceRecords() {
+      return droppedEvidenceRecords;
+    },
+
     register(request) {
-      if (!probeIds.has(request.probeId)) {
+      const parsed = parseRuntimeProbeRequest(request);
+      if (!probeIds.has(parsed.probeId)) {
         throw new Error(
           "Runtime probe request references unknown diagnostic probe: " +
-            request.probeId,
+            parsed.probeId,
         );
       }
-      if (pending.has(request.requestId) || consumed.has(request.requestId)) {
+      if (pending.has(parsed.requestId) || consumed.has(parsed.requestId)) {
         throw new Error(
-          "Duplicate runtime probe requestId: " + request.requestId,
+          "Duplicate runtime probe requestId: " + parsed.requestId,
         );
       }
-      pending.set(request.requestId, request);
+      pending.set(parsed.requestId, parsed);
     },
 
     apply(input) {
@@ -150,7 +197,19 @@ export function createRuntimeProbeInvestigationSession(
       investigation = result.investigation;
       pending.delete(response.requestId);
       consumed.add(response.requestId);
+      consumedOrder.push(response.requestId);
+      while (consumedOrder.length > maxConsumedRequestIds) {
+        const oldest = consumedOrder.shift();
+        if (oldest !== undefined) consumed.delete(oldest);
+      }
+
       evidenceRecords.push(evidence);
+      if (evidenceRecords.length > maxEvidenceRecords) {
+        const overflow =
+          evidenceRecords.length - maxEvidenceRecords;
+        evidenceRecords.splice(0, overflow);
+        droppedEvidenceRecords += overflow;
+      }
 
       return {
         ...result,
@@ -185,6 +244,33 @@ export function createRuntimeProbeInvestigationSession(
       return investigationIncident(
         options.incident,
         investigation,
+      );
+    },
+
+    expire(currentRuntimeTick) {
+      if (
+        !Number.isInteger(currentRuntimeTick) ||
+        currentRuntimeTick < 0
+      ) {
+        throw new Error(
+          "currentRuntimeTick must be a non-negative integer.",
+        );
+      }
+      if (options.maxResponseTickDelta === undefined) return [];
+
+      const expired: RuntimeProbeRequest[] = [];
+      for (const [requestId, request] of pending) {
+        if (
+          request.runtimeTick !== undefined &&
+          currentRuntimeTick - request.runtimeTick >
+            options.maxResponseTickDelta
+        ) {
+          pending.delete(requestId);
+          expired.push(request);
+        }
+      }
+      return expired.sort(
+        (a, b) => a.requestId.localeCompare(b.requestId),
       );
     },
 
