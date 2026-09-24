@@ -184,6 +184,18 @@ console.log("");
 console.log("Highest fan-in:");
 for (const item of fanIn.slice(0, 8)) console.log(`  ${item.module}: ${item.count}`);
 
+const orchestratorTargets = [...(moduleGraph.get("packages/orchestrator") ?? [])].sort();
+if (orchestratorTargets.length > 0) {
+  console.log("");
+  console.log("Orchestrator dependency breakdown:");
+  for (const target of orchestratorTargets) {
+    const key = "packages/orchestrator -> " + target;
+    const files = [...new Set(edgeFiles.get(key) ?? [])].sort();
+    console.log(`  ${target}: ${files.length} file(s)`);
+    for (const file of files) console.log(`    - ${file}`);
+  }
+}
+
 if (unresolvedRelative.length > 0) {
   console.error("");
   console.error("Unresolved relative imports:");
