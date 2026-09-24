@@ -95,4 +95,30 @@ describe("Bedrock telemetry runtime bridge", () => {
     expect(sent).toHaveLength(1);
     expect(buffer.size).toBe(0);
   });
+  it("applies the critical profile at the Bedrock runtime boundary", () => {
+    const buffer = createBufferedTelemetrySink();
+    const runtime = createBedrockTelemetryRuntime({
+      system: { currentTick: 5 },
+      sink: buffer,
+      profile: "critical",
+    });
+
+    expect(runtime.profile.name).toBe("critical");
+
+    runtime.telemetry.routeRevalidation({
+      routeId: "bridge",
+      result: "passed",
+    });
+    runtime.telemetry.routeRevalidation({
+      routeId: "bridge",
+      result: "failed",
+    });
+
+    expect(buffer.snapshot()).toEqual([
+      expect.objectContaining({
+        kind: "route-revalidation",
+        result: "failed",
+      }),
+    ]);
+  });
 });
