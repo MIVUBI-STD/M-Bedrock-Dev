@@ -142,6 +142,18 @@ export function validateDecisionLedgerSnapshot(
   const errors = input.entries.flatMap(
     (entry, index) => validateEntryShape(entry, index),
   );
+
+  // Ledger identity is a global invariant and should still be reported when
+  // an entry also has a local lineage-shape defect.
+  const seenIds = new Set<string>();
+  for (const entry of input.entries) {
+    if (!record(entry) || !nonEmpty(entry.id)) continue;
+    if (seenIds.has(entry.id)) {
+      errors.push("Duplicate decision ledger id: " + entry.id + ".");
+    }
+    seenIds.add(entry.id);
+  }
+
   if (errors.length > 0) return errors;
 
   const entries = input.entries as unknown as DecisionLedgerEntry[];
@@ -149,9 +161,6 @@ export function validateDecisionLedgerSnapshot(
   let previousSequence = 0;
 
   for (const [index, entry] of entries.entries()) {
-    if (byId.has(entry.id)) {
-      errors.push("Duplicate decision ledger id: " + entry.id + ".");
-    }
     if (entry.createdSequence <= previousSequence) {
       errors.push(
         "entries[" + index + "] createdSequence must be strictly increasing.",
