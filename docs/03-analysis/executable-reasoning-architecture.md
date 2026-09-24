@@ -557,3 +557,71 @@ Artifact comparison also reports explicit causal deltas:
 - added/removed candidate labels.
 
 This allows update analysis to distinguish a map whose static code is unchanged but whose runtime evidence has become stronger or weaker.
+
+
+## Incident-level root-cause synthesis
+
+Causal chains are grouped by runtime scope into `CausalIncident` objects.
+
+Each incident merges:
+
+- chain ids;
+- diagnostics;
+- causal nodes and links;
+- root-cause candidates.
+
+Root-cause candidates use evidence categories instead of arbitrary numeric scores:
+
+```text
+proven-with-observed-outcome
+proven-dependency-violation
+corroborated-candidate
+unproven-candidate
+```
+
+Ordering is deterministic:
+
+1. evidence level;
+2. diagnostic severity;
+3. confidence;
+4. stable label ordering.
+
+Repeated candidates within one incident are merged while retaining support counts for violations, gaps, corroborated risks, and observed outcomes.
+
+## Provenance-aware corroboration
+
+Relations may require `causalCorroborationMinSources`.
+
+For route/navigation reasoning, corroboration can require:
+
+- mutation source;
+- linked entity source;
+- navigation capability;
+- configured target acquisition.
+
+A project-wide unrelated navigable entity does not corroborate a route unless the route contract explicitly includes that entity key.
+
+## Causal reliability comparison
+
+Reliability fingerprints now retain compact causal evidence tags.
+
+Artifact and update comparison report causal deltas explicitly, including:
+
+- confidence changes;
+- observed-outcome changes;
+- corroborated-risk changes;
+- candidate count changes;
+- added/removed root-cause labels.
+
+Positive causal regressions can augment retest planning:
+
+```text
+new observed outcome          weight 5
+new high-confidence chain     weight 4
+new root-cause candidate      weight 3
+new corroborated risk         weight 2
+```
+
+Negative deltas represent improvement and do not add causal-regression retest reasons.
+
+Causal-regression reasons request both runtime and differential retest lanes.
