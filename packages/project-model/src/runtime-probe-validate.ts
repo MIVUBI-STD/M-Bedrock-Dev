@@ -407,6 +407,18 @@ export function validateRuntimeProbeTranscript(
   ) {
     errors.push("Runtime probe transcript artifactId must be a non-empty string.");
   }
+  if (
+    input.droppedExchanges !== undefined &&
+    (
+      !finite(input.droppedExchanges) ||
+      !Number.isInteger(input.droppedExchanges) ||
+      input.droppedExchanges < 0
+    )
+  ) {
+    errors.push(
+      "Runtime probe transcript droppedExchanges must be a non-negative integer.",
+    );
+  }
   if (!Array.isArray(input.exchanges)) {
     errors.push("Runtime probe transcript exchanges must be an array.");
     return errors;
