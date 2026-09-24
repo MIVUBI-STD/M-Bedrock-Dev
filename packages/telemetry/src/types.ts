@@ -8,7 +8,7 @@ import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
 export type TelemetryEventInput<T extends TelemetryEvent> =
   Omit<
     T,
-    "schemaVersion" | "eventId" | "kind" | "producer" | "scope" | "sequence"
+    "schemaVersion" | "eventId" | "kind" | "producer" | "scope" | "sequence" | "streamId"
   > & {
     scope?: RuntimeScope;
   };
