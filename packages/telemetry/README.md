@@ -280,3 +280,46 @@ The session composes the same canonical primitives:
 - entity-progress probe factory.
 
 `reset()` clears observer state and buffered evidence without resetting the emitter id counter, preserving event-id monotonicity for the session instance.
+
+
+## Development kit
+
+For most map-development instrumentation, prefer the composed kit:
+
+```ts
+const kit = createTelemetryInstrumentationKit({
+  producer: "instrumentation",
+  maxEvents: 512,
+  initialScope: {
+    arenaId,
+    arenaGeneration,
+  },
+  tickProvider: () => system.currentTick,
+  transportSink,
+});
+
+kit.arenaStart.observeStart({
+  arenaId,
+  arenaGeneration,
+  operationId: startOperationId,
+});
+
+const callbackGuard = kit.captureGeneration({
+  subsystem: "countdown",
+  callbackKind: "runTimeout",
+  capturedGeneration: arenaGeneration,
+});
+
+const movement = kit.entityProgress({
+  stallTicks: 40,
+  minProgressDistance: 0.25,
+});
+```
+
+Lifecycle controls are intentionally separate:
+
+- `resetRuntimeState()` clears leases/guards/probe state but retains captured evidence;
+- `clearBuffer()` clears captured evidence but leaves instrumentation state;
+- `clearAll()` clears both.
+
+This avoids accidentally deleting the diagnostic evidence during the same arena reset being investigated.
