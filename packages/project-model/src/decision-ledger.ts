@@ -20,6 +20,7 @@ export interface DecisionBasisRevision {
   invariantRegistryRevision?: string;
   targetProfileFingerprint?: string;
   probeBindingRevision?: string;
+  runtimeEvidenceRevision?: string;
 }
 
 export interface DecisionLedgerEntry {
