@@ -48,11 +48,26 @@ const probes: DiagnosticProbeDefinition[] = [{
   }],
 }];
 
+const binding = {
+  probeId: "chunk-readiness",
+  predicate: "target-chunk-loaded",
+  query: {
+    kind: "chunk-loaded" as const,
+    dimension: "overworld",
+    location: { x: 0, y: 64, z: 0 },
+  },
+  outcomeByState: {
+    present: "ready",
+    absent: "not-ready",
+  },
+};
+
 describe("runtime probe investigation adapter", () => {
   it("applies an explicitly mapped outcome to the investigation", () => {
     const result = applyRuntimeProbeResponse(
       createDiagnosticInvestigation(incident),
       probes,
+      binding,
       {
         schemaVersion: 1,
         requestId: "req-1",
@@ -78,6 +93,7 @@ describe("runtime probe investigation adapter", () => {
     expect(() => applyRuntimeProbeResponse(
       createDiagnosticInvestigation(incident),
       probes,
+      binding,
       {
         schemaVersion: 1,
         requestId: "req-2",
@@ -98,6 +114,7 @@ describe("runtime probe investigation adapter", () => {
     expect(() => applyRuntimeProbeResponse(
       createDiagnosticInvestigation(incident),
       probes,
+      binding,
       {
         schemaVersion: 1,
         requestId: "req-3",
@@ -114,4 +131,27 @@ describe("runtime probe investigation adapter", () => {
       },
     )).toThrow(/does not belong to probe/);
   });
+
+  it("rejects a mismatched state-to-outcome response", () => {
+    expect(() => applyRuntimeProbeResponse(
+      createDiagnosticInvestigation(incident),
+      probes,
+      binding,
+      {
+        schemaVersion: 1,
+        requestId: "req-4",
+        probeId: "chunk-readiness",
+        runtimeTick: 103,
+        ok: true,
+        state: "present",
+        outcomeId: "not-ready",
+        evidence: {
+          predicate: "target-chunk-loaded",
+          state: "present",
+          confidence: "observed",
+        },
+      },
+    )).toThrow(/does not match bound state mapping/);
+  });
+
 });
