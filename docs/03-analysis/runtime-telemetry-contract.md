@@ -373,3 +373,133 @@ Bedrock code supplies:
 - transport through a `TelemetrySink`.
 
 This avoids tying the deterministic SDK to one Script API version or transport mechanism.
+
+
+## Canonical instrumentation façade
+
+The single composed runtime façade is:
+
+```text
+createTelemetryInstrumentationKit()
+```
+
+It combines:
+
+- canonical emitter;
+- validating sink by default;
+- bounded in-memory buffer;
+- optional fanout transport;
+- runtime scope lease;
+- arena-start guard;
+- deferred-generation guard factory;
+- revive anomaly guard;
+- state-mirror probe;
+- entity-progress/stall probe factory;
+- route/mutation verification reporter.
+
+Example:
+
+```ts
+const kit = createTelemetryInstrumentationKit({
+  producer: "instrumentation",
+  sessionId: qaSessionId,
+  artifactId: buildArtifactId,
+  maxEvents: 512,
+  tickProvider: () => system.currentTick,
+  initialScope: {
+    arenaId,
+    arenaGeneration,
+  },
+  transportSink,
+});
+```
+
+Verification reports use:
+
+```ts
+kit.verify.route({
+  routeId: "bridge-route",
+  result: "passed",
+  scope: { operationId: routeOperationId },
+});
+
+kit.verify.mutation({
+  result: "failed",
+  mechanism: "sentinel-block",
+  scope: { operationId: mutationOperationId },
+});
+```
+
+Batch lifecycle:
+
+```text
+kit.batch()      → snapshot without clearing
+kit.drainBatch() → snapshot and atomically clear buffer/drop count
+```
+
+Runtime state and captured evidence are intentionally separate:
+
+```text
+resetRuntimeState()
+  clears scope/guard/probe state
+  preserves evidence
+
+clearBuffer()
+  clears captured evidence/drop count
+  preserves runtime observer state
+
+clearAll()
+  clears both
+```
+
+This separation prevents arena cleanup from deleting the evidence needed to explain the cleanup bug.
+
+## Instrumentation probes
+
+### Entity progress
+
+`kit.entityProgress()` tracks movement only while the caller explicitly states that progress is expected.
+
+It emits one `entity-stall` event per no-progress episode and rearms after meaningful movement.
+
+The probe does not decide whether an entity should have a target. Gameplay/AI authority remains outside telemetry.
+
+### State mirror
+
+`kit.stateMirror.observe()` compares caller-provided authority and mirror values/revisions.
+
+It emits on:
+
+- value drift;
+- stale mirror revision.
+
+Repeated identical drift is deduplicated and a consistent sample rearms the observer.
+
+### Revive guard
+
+`kit.revive` observes revive attempts/completions and can report:
+
+- self-revive;
+- multiple revivers;
+- stale completion;
+- revive after confirmed death;
+- invalid reviver.
+
+Eligibility and transaction-current state remain caller-provided authoritative facts.
+
+### Arena start and deferred callbacks
+
+`kit.arenaStart` emits one double-start anomaly per arena generation when a second distinct start operation is observed.
+
+`kit.captureGeneration()` creates a one-shot stale-callback observer around a captured generation. Repeated stale checks do not spam telemetry.
+
+## SDK isolation
+
+The repository boundary verifier enforces that `packages/telemetry`:
+
+- does not import `@minecraft/server`;
+- does not import Node.js built-ins;
+- does not depend on analyzers/adapters/apps/orchestrator;
+- may depend only on `packages/project-model` and itself.
+
+This keeps instrumentation bundle-compatible with Bedrock while leaving Script API/version semantics in their canonical analyzer/compatibility layers.
