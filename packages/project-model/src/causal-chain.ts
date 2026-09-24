@@ -1,4 +1,4 @@
-import type { DiagnosticSeverity } from "../diagnostics/src/types.js";
+import type { DiagnosticSeverity } from "../../diagnostics/src/types.js";
 import type { SourceRef } from "./source-ref.js";
 
 export type CausalLinkStrength =
