@@ -183,6 +183,12 @@ export function deriveReliabilityFingerprint(
   )) {
     capabilityTags.add("telemetry-stream-unidentified");
   }
+  if (input.diagnostics.some(
+    (finding) => finding.code === "RUNTIME_PROBE_EXCHANGES_DROPPED",
+  )) {
+    capabilityTags.add("runtime-probe-truncated");
+    riskSurfaces.add("runtime-evidence-incomplete");
+  }
   if (input.diagnostics.some((finding) => finding.code === "STRUCTURE_PARSE_FAILED")) {
     riskSurfaces.add("structure-binary");
   }
