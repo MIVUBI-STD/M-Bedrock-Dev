@@ -27,6 +27,10 @@ import {
   type DeferredGenerationGuard,
 } from "./guards.js";
 import {
+  createArenaGenerationMonitor,
+  type ArenaGenerationMonitor,
+} from "./arena-generation-monitor.js";
+import {
   createEntityProgressProbe,
   createStateMirrorProbe,
   type EntityProgressProbe,
@@ -68,6 +72,7 @@ export interface TelemetryInstrumentationKit {
   readonly buffer: BufferedTelemetrySink;
   readonly scope: TelemetryScopeLease;
   readonly arenaStart: ArenaStartGuard;
+  readonly arenaGeneration: ArenaGenerationMonitor;
   readonly revive: ReviveTelemetryGuard;
   readonly stateMirror: StateMirrorProbe;
   readonly verify: VerificationReporter;
@@ -150,6 +155,7 @@ export function createTelemetryInstrumentationKit(
   });
 
   const arenaStart = createArenaStartGuard(emitter);
+  const arenaGeneration = createArenaGenerationMonitor(emitter);
   const revive = createReviveTelemetryGuard(emitter);
   const stateMirror = createStateMirrorProbe(emitter);
   const verify = createVerificationReporter(emitter);
@@ -177,6 +183,7 @@ export function createTelemetryInstrumentationKit(
   const resetRuntimeState = (): void => {
     scope.clear();
     arenaStart.clear();
+    arenaGeneration.reset();
     revive.reset();
     stateMirror.reset();
     for (const probe of entityProgressProbes) probe.clear();
@@ -188,6 +195,7 @@ export function createTelemetryInstrumentationKit(
     buffer,
     scope,
     arenaStart,
+    arenaGeneration,
     revive,
     stateMirror,
     verify,
