@@ -90,3 +90,5 @@ export * from "./repair-counterfactual.js";
 export * from "./repair-blast-radius.js";
 export * from "./repair-admission.js";
 export * from "./repair-proof-bundle.js";
+
+export * from "./diagnostic-probe-analysis.js";
