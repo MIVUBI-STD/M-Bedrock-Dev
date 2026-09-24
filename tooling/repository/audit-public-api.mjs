@@ -92,10 +92,10 @@ for (const [target, items] of [...grouped.entries()].sort((a,b) =>
 )) {
   console.log("");
   console.log(`${target}: ${items.length}`);
-  for (const item of items.slice(0, 100)) {
+  for (const item of items.slice(0, 500)) {
     console.log(`  - ${item.from} -> ${item.import}`);
   }
-  if (items.length > 100) console.log(`  - ... and ${items.length - 100} more`);
+  if (items.length > 500) console.log(`  - ... and ${items.length - 500} more`);
 }
 
 const regressions = [];
