@@ -38,10 +38,14 @@ export interface PrepareRuntimeProbeBundleOptions {
 }
 
 export function prepareRuntimeProbeBundle(
-  inspection: Pick<
-    InspectDirectoryResult,
-    "causalAnalysis" | "diagnosticProbeAnalysis"
-  >,
+  inspection: {
+    causalAnalysis: Pick<
+      InspectDirectoryResult["causalAnalysis"],
+      "incidents"
+    >;
+    diagnosticProbeAnalysis:
+      InspectDirectoryResult["diagnosticProbeAnalysis"];
+  },
   options: PrepareRuntimeProbeBundleOptions,
 ): PreparedRuntimeProbeBundle {
   const incidentsById = new Map(
