@@ -174,6 +174,26 @@ for (const path of files) {
         `${path}: relation ${relation.id} has unknown diagnosticSeverity ${relation.diagnosticSeverity}`,
       );
     }
+    const causalConsequences = new Set(
+      Array.isArray(relation.causalConsequences)
+        ? relation.causalConsequences
+        : [],
+    );
+    for (const risk of Object.keys(relation.causalCorroborators ?? {})) {
+      if (!causalConsequences.has(risk)) {
+        throw new Error(
+          `${path}: relation ${relation.id} references corroboration risk not listed in causalConsequences: ${risk}`,
+        );
+      }
+    }
+    for (const risk of Object.keys(relation.causalOutcomePredicates ?? {})) {
+      if (!causalConsequences.has(risk)) {
+        throw new Error(
+          `${path}: relation ${relation.id} references outcome risk not listed in causalConsequences: ${risk}`,
+        );
+      }
+    }
+
     if (
       relation.causalOutcomePredicates !== undefined &&
       (
