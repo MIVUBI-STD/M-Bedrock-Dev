@@ -609,17 +609,23 @@ export async function inspectDirectory(
     structureProofs,
     target.staticExecutionDimension,
   );
-  const navigatingEntityKeys = new Set(
+  const navigatingEntities = new Map(
     parsedEntities
       .map((item) => item.parsed)
       .filter(entityHasNavigation)
-      .map(entityRuntimeKey),
+      .map((entity) => [
+        entityRuntimeKey(entity),
+        [entity.source] as const,
+      ]),
   );
-  const targetDrivenEntityKeys = new Set(
+  const targetDrivenEntities = new Map(
     parsedEntities
       .map((item) => item.parsed)
       .filter(entityHasConfiguredTargeting)
-      .map(entityRuntimeKey),
+      .map((entity) => [
+        entityRuntimeKey(entity),
+        [entity.source] as const,
+      ]),
   );
   const mutationTransactions = analyzeMutationTransactionOrdering(
     parsedFunctionModels,
@@ -655,8 +661,8 @@ export async function inspectDirectory(
       ),
       ...routeMutationRuntimeEvidence(
         routeCorrelations,
-        navigatingEntityKeys,
-        targetDrivenEntityKeys,
+        navigatingEntities,
+        targetDrivenEntities,
       ),
       ...mutationTransactionRuntimeEvidence(
         mutationTransactions.assessments,
