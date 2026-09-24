@@ -117,6 +117,29 @@ function recordsForEvent(event: TelemetryEvent): RuntimeEvidenceRecord[] {
       ];
     }
 
+    case "arena-generation-anomaly": {
+      const scoped = {
+        ...event,
+        scope: {
+          ...event.scope,
+          arenaId: event.arenaId,
+          arenaGeneration:
+            event.scope.arenaGeneration ?? event.observedGeneration,
+        },
+      };
+      return [
+        base(scoped, "arena-generation-transition-observed"),
+        base(scoped, "arena-generation-transition-valid", "absent", event.anomaly),
+        base(
+          scoped,
+          "arena-generation-anomaly-observed",
+          "present",
+          event.anomaly,
+        ),
+        base(scoped, "arena-generation-anomaly:" + event.anomaly),
+      ];
+    }
+
     case "stale-callback":
       return [
         base(event, "deferred-callback-executed", "present", event.subsystem),
