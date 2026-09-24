@@ -30,6 +30,7 @@ export interface RuntimeProbeReplayResult {
   nextPlan: DiagnosticProbePlan;
   transcriptIncomplete: boolean;
   droppedExchanges: number;
+  ignoredIncidentExchanges: number;
 }
 
 export interface RuntimeProbeReplayOptions {
@@ -85,8 +86,16 @@ export function replayRuntimeProbeTranscript(
   const successfulProbeIds = new Set<string>();
   const failed: RuntimeProbeReplayFailure[] = [];
   const failedEvidenceRecords: RuntimeEvidenceRecord[] = [];
+  let ignoredIncidentExchanges = 0;
 
   for (const exchange of transcript.exchanges) {
+    if (
+      exchange.request.incidentId !== undefined &&
+      exchange.request.incidentId !== incident.id
+    ) {
+      ignoredIncidentExchanges += 1;
+      continue;
+    }
     session.register(exchange.request);
 
     if (!exchange.response.ok) {
@@ -133,5 +142,6 @@ export function replayRuntimeProbeTranscript(
     droppedExchanges:
       (transcript.droppedExchanges ?? 0) +
       session.droppedEvidenceRecords,
+    ignoredIncidentExchanges,
   };
 }
