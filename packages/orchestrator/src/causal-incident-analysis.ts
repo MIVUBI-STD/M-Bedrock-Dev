@@ -36,11 +36,15 @@ function idFor(parts: readonly string[]): string {
 
 function observedOutcomeCount(chain: CausalChain): number {
   const nodes = new Map(chain.nodes.map((node) => [node.id, node]));
-  return chain.links.filter((link) =>
-    link.strength === "direct-evidence" &&
-    nodes.get(link.from)?.kind === "downstream-risk" &&
-    nodes.get(link.to)?.kind === "observed-state"
-  ).length;
+  return new Set(
+    chain.links
+      .filter((link) =>
+        link.strength === "direct-evidence" &&
+        nodes.get(link.from)?.kind === "downstream-risk" &&
+        nodes.get(link.to)?.kind === "observed-state"
+      )
+      .map((link) => link.to),
+  ).size;
 }
 
 function candidateForChain(chain: CausalChain): RootCauseCandidate | undefined {
