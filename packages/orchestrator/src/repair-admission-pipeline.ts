@@ -67,6 +67,7 @@ export function evaluateRepairAdmissionPipeline(
     impact,
     blastRadius,
     admission,
+    semanticGraphFingerprint(input.graph),
     input.supportingInvariantIds ?? [],
   );
 
