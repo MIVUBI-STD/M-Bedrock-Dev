@@ -60,3 +60,5 @@ export * from "./causal-analysis.js";
 export * from "./causal-incident-analysis.js";
 
 export * from "./causal-comparison.js";
+
+export * from "./causal-retest.js";
