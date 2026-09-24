@@ -40,6 +40,14 @@
       "authority": "official",
       "confidence": "documented",
       "retrievedDate": "2026-09-23"
+    },
+    {
+      "id": "mivubi-player-runtime-policy-v1",
+      "title": "MIVUBI Player Runtime Policy",
+      "url": "project://knowledge/player-runtime-bedrock",
+      "authority": "project-policy",
+      "confidence": "designed",
+      "retrievedDate": "2026-09-24"
     }
   ],
   "facts": [
@@ -49,10 +57,24 @@
       "subject": "world.afterEvents.playerJoin",
       "statement": "playerJoin reports an opaque playerId and playerName for a player that joined; it is related to, but distinct from, the later playerSpawn lifecycle event.",
       "classification": "engine-fact",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-player-world-after-events", "ms-player-join-event"],
-      "capabilityTags": ["player-join", "player-identity"],
-      "riskSurfaces": ["player-lifecycle", "event-ordering"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-player-world-after-events",
+        "ms-player-join-event"
+      ],
+      "capabilityTags": [
+        "player-join",
+        "player-identity"
+      ],
+      "riskSurfaces": [
+        "player-lifecycle",
+        "event-ordering"
+      ]
     },
     {
       "id": "player.spawn-initial-vs-respawn",
@@ -60,10 +82,24 @@
       "subject": "world.afterEvents.playerSpawn",
       "statement": "playerSpawn fires for both initial spawn after joining and later respawns, and its initialSpawn flag distinguishes those paths.",
       "classification": "engine-fact",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-player-world-after-events", "ms-multiplayer-aware-scripts"],
-      "capabilityTags": ["player-spawn", "respawn"],
-      "riskSurfaces": ["player-lifecycle", "state-reset"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-player-world-after-events",
+        "ms-multiplayer-aware-scripts"
+      ],
+      "capabilityTags": [
+        "player-spawn",
+        "respawn"
+      ],
+      "riskSurfaces": [
+        "player-lifecycle",
+        "state-reset"
+      ]
     },
     {
       "id": "player.leave-player-object-no-longer-current",
@@ -71,11 +107,28 @@
       "subject": "world.afterEvents.playerLeave",
       "statement": "After playerLeave, code should treat the active Player object as unavailable for normal session work and use event identity fields such as playerId/playerName for cleanup and correlation.",
       "classification": "derived-rule",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-player-world-after-events", "ms-multiplayer-aware-scripts"],
-      "capabilityTags": ["player-leave", "session-cleanup"],
-      "riskSurfaces": ["stale-reference", "disconnect", "resource-leak"],
-      "diagnosticHints": ["Do not retain a Player reference as proof that a connection/session is still active."]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-player-world-after-events",
+        "ms-multiplayer-aware-scripts"
+      ],
+      "capabilityTags": [
+        "player-leave",
+        "session-cleanup"
+      ],
+      "riskSurfaces": [
+        "stale-reference",
+        "disconnect",
+        "resource-leak"
+      ],
+      "diagnosticHints": [
+        "Do not retain a Player reference as proof that a connection/session is still active."
+      ]
     },
     {
       "id": "player.dynamic-properties-persist-across-sessions",
@@ -83,10 +136,24 @@
       "subject": "player dynamic properties",
       "statement": "Player dynamic properties can persist with the world across server restarts, so persisted player state is not equivalent to current connection-session state.",
       "classification": "engine-fact",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-multiplayer-aware-scripts"],
-      "capabilityTags": ["dynamic-properties", "persistence"],
-      "riskSurfaces": ["stale-state", "reconnect", "restart"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-multiplayer-aware-scripts"
+      ],
+      "capabilityTags": [
+        "dynamic-properties",
+        "persistence"
+      ],
+      "riskSurfaces": [
+        "stale-state",
+        "reconnect",
+        "restart"
+      ]
     },
     {
       "id": "player.scoreboard-identity-separate-validity",
@@ -94,10 +161,25 @@
       "subject": "ScoreboardIdentity",
       "statement": "ScoreboardIdentity has its own id, type, validity, and optional entity resolution; scoreboard identity state must not be treated as identical to an online Player session.",
       "classification": "engine-fact",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-scoreboard-identity", "ms-scoreboard-identity-type"],
-      "capabilityTags": ["scoreboard-identity", "player-identity"],
-      "riskSurfaces": ["identity-aliasing", "stale-state", "scoreboard"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-scoreboard-identity",
+        "ms-scoreboard-identity-type"
+      ],
+      "capabilityTags": [
+        "scoreboard-identity",
+        "player-identity"
+      ],
+      "riskSurfaces": [
+        "identity-aliasing",
+        "stale-state",
+        "scoreboard"
+      ]
     },
     {
       "id": "player.session-memory-cleanup-required",
@@ -105,10 +187,24 @@
       "subject": "per-player in-memory state",
       "statement": "Per-player in-memory maps, timers, subscriptions, and pending work require explicit cleanup on leave to prevent stale state and unbounded growth.",
       "classification": "derived-rule",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-multiplayer-aware-scripts"],
-      "capabilityTags": ["session-memory", "cleanup"],
-      "riskSurfaces": ["resource-leak", "disconnect", "stale-session"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-multiplayer-aware-scripts"
+      ],
+      "capabilityTags": [
+        "session-memory",
+        "cleanup"
+      ],
+      "riskSurfaces": [
+        "resource-leak",
+        "disconnect",
+        "stale-session"
+      ]
     },
     {
       "id": "player.initial-spawn-not-universal-readiness-proof",
@@ -116,11 +212,27 @@
       "subject": "initial player readiness",
       "statement": "Initial spawn is a lifecycle milestone, not a universal proof that every downstream arena, UI, inventory, persisted-state, or custom gameplay subsystem has completed its own initialization.",
       "classification": "derived-rule",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-multiplayer-aware-scripts"],
-      "capabilityTags": ["initialization", "readiness"],
-      "riskSurfaces": ["race-condition", "load-order", "player-lifecycle"],
-      "diagnosticHints": ["Gate arena participation on project-owned readiness, not solely on initialSpawn."]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-multiplayer-aware-scripts"
+      ],
+      "capabilityTags": [
+        "initialization",
+        "readiness"
+      ],
+      "riskSurfaces": [
+        "race-condition",
+        "load-order",
+        "player-lifecycle"
+      ],
+      "diagnosticHints": [
+        "Gate arena participation on project-owned readiness, not solely on initialSpawn."
+      ]
     },
     {
       "id": "multiplayer.shared-state-race-surface",
@@ -128,10 +240,24 @@
       "subject": "shared arena state",
       "statement": "Multiplayer scripts that mutate shared arena state from multiple player event paths must be designed for interleaving joins, leaves, respawns, ready actions, and deferred callbacks rather than assuming single-player ordering.",
       "classification": "derived-rule",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-multiplayer-aware-scripts"],
-      "capabilityTags": ["multiplayer-concurrency", "arena-state"],
-      "riskSurfaces": ["race-condition", "double-start", "cross-player-state"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-multiplayer-aware-scripts"
+      ],
+      "capabilityTags": [
+        "multiplayer-concurrency",
+        "arena-state"
+      ],
+      "riskSurfaces": [
+        "race-condition",
+        "double-start",
+        "cross-player-state"
+      ]
     }
   ],
   "relations": [
@@ -142,8 +268,16 @@
       "kind": "activates",
       "object": "connection-session-bootstrap",
       "classification": "derived-rule",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-player-world-after-events", "ms-player-join-event"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-player-world-after-events",
+        "ms-player-join-event"
+      ]
     },
     {
       "id": "player.relation.initial-spawn-gates-session-ready",
@@ -152,8 +286,16 @@
       "kind": "gates",
       "object": "project-player-readiness-reconciliation",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-multiplayer-aware-scripts"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-multiplayer-aware-scripts",
+        "mivubi-player-runtime-policy-v1"
+      ]
     },
     {
       "id": "player.relation.leave-deactivates-current-session",
@@ -162,8 +304,17 @@
       "kind": "deactivates",
       "object": "current-connection-session",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["ms-player-world-after-events", "ms-multiplayer-aware-scripts"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "ms-player-world-after-events",
+        "ms-multiplayer-aware-scripts",
+        "mivubi-player-runtime-policy-v1"
+      ]
     }
   ]
 }
