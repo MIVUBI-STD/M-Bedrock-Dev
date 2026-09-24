@@ -7,7 +7,8 @@ Use this before broad repository search.
 | Shared dependency-neutral primitives | packages/common/ |
 | Artifact kind/identity/fingerprint | packages/artifact/ |
 | ZIP/archive safety, inventory, package transport | packages/archive/ |
-| Workspace/session/file inventory | packages/project-model/ |
+| Workspace/session/file inventory + telemetry data contracts | packages/project-model/ |
+| Runtime telemetry emission helpers / sinks / instrumentation guards | packages/telemetry/ |
 | Semantic dependency graph/invalidation | packages/graph/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Validation step/result contracts | packages/validation/ |
