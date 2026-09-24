@@ -21,6 +21,7 @@ const basis = {
   sourceFingerprint: "source-a",
   graphFingerprint: "graph-a",
   invariantRegistryRevision: "inv-a",
+  runtimeEvidenceRevision: "runtime-a",
 };
 
 const lifecycle: RepairLifecycleState = {
@@ -227,5 +228,50 @@ describe("decision ledger recording", () => {
         (entry) => entry.status === "invalidated",
       ),
     ).toBe(true);
+  });
+  it("rejects runtime decision recording without evidence revision", () => {
+    expect(() => recordDiagnosticRepairDecision(
+      createDecisionLedger(),
+      {
+        incidentId: "incident-1",
+        activeCandidateIds: ["candidate-1"],
+        disposition: "repair-eligible",
+        selectedCandidateId: "candidate-1",
+        effectiveEvidenceLevel:
+          "proven-with-observed-outcome",
+        claimStrength: "proven-runtime",
+        reasons: ["proof"],
+      },
+      {
+        decisionId: "missing-evidence-basis",
+        basis: {
+          sourceFingerprint: "source-a",
+          graphFingerprint: "graph-a",
+        },
+      },
+    )).toThrow(/runtimeEvidenceRevision/);
+
+    expect(() => recordRuntimeVerificationDecision(
+      createDecisionLedger(),
+      {
+        passed: true,
+        satisfiedStateRequirementIds: [],
+        failedStateRequirementIds: [],
+        temporalAssessments: [],
+        evidenceIds: [],
+        receipt: {
+          transactionId: "tx-1",
+          kind: "runtime",
+          passed: true,
+          evidenceIds: [],
+        },
+        reasons: [],
+      },
+      "tx-1",
+      {
+        decisionId: "runtime-missing-evidence-basis",
+        basis: {},
+      },
+    )).toThrow(/runtimeEvidenceRevision/);
   });
 });
