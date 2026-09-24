@@ -1,5 +1,5 @@
 import type { SemanticGraph } from "../../graph/src/index.js";
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type {
   CausalChain,
   CausalIncident,

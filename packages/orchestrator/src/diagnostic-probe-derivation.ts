@@ -1,4 +1,4 @@
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { ValidationCase, ValidationStrategy } from "../../knowledge/src/index.js";
 import type { CausalIncident } from "../../project-model/src/causal-chain.js";
 import type {

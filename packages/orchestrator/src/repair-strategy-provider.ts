@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { DiagnosticCode } from "../../diagnostics/src/types.js";
+import type { DiagnosticCode } from "../../diagnostics/src/index.js";
 import type { PatchOperation } from "../../repair/src/index.js";
 import type { RepairStrategyCandidate } from "./repair-strategy-selection.js";
 

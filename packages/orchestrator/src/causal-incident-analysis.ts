@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { DiagnosticSeverity } from "../../diagnostics/src/types.js";
+import type { DiagnosticSeverity } from "../../diagnostics/src/index.js";
 import type {
   CausalChain,
   CausalIncident,

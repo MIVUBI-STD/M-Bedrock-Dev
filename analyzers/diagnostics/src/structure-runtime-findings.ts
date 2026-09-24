@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type { StructureRuntimeDiagnosticInput } from "./structure-runtime-types.js";
 

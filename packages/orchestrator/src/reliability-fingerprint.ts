@@ -2,7 +2,7 @@ import { tokenizeCommand } from "../../../analyzers/commands/src/index.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import {
   createMapCompatibilityFingerprint,
   fingerprintIdentity,

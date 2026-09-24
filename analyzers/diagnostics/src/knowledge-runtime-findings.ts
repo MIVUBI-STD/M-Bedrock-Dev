@@ -11,7 +11,7 @@ import {
   type RuntimeEvidenceSnapshot,
 } from "../../../packages/project-model/src/runtime-evidence.js";
 import { mergeRuntimeEvidenceRecords } from "./runtime-evidence-merge.js";
-import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 
 function sourceKey(source: {
   artifactId: string;

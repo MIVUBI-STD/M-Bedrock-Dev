@@ -2,8 +2,8 @@ import type { ManifestCompatibilityFacts } from "../../manifest/src/index.js";
 import type { ParsedScriptFile } from "../../scripts/src/index.js";
 import { findScriptEventRule, scriptEventSymbol } from "../../../packages/compatibility/src/index.js";
 import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/index.js";
-import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
-import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import { createDiagnostic } from "../../../packages/diagnostics/src/index.js";
+import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 
 function serverModule(
   compatibility: ManifestCompatibilityFacts,

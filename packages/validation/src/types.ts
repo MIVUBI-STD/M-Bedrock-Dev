@@ -1,5 +1,5 @@
 import type { SourceRef } from "../../project-model/src/source-ref.js";
-import type { DiagnosticCode } from "../../diagnostics/src/types.js";
+import type { DiagnosticCode } from "../../diagnostics/src/index.js";
 
 export type ValidationStep =
   | {

@@ -1,5 +1,5 @@
-import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
-import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import { createDiagnostic } from "../../../packages/diagnostics/src/index.js";
+import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 import type { EducationProfile } from "../../../packages/compatibility/src/index.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 

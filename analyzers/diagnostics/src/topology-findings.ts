@@ -1,5 +1,5 @@
-import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
-import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import { createDiagnostic } from "../../../packages/diagnostics/src/index.js";
+import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 import type { LinearTopologyOutlier } from "../../topology/src/index.js";
 import type { StateAccess } from "../../topology/src/index.js";
 import { likelyGlobalAccess } from "../../topology/src/index.js";

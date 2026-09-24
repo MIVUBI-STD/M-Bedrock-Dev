@@ -1,8 +1,8 @@
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type { McStructureModel } from "../../../adapters/mcstructure/src/index.js";
 import { validateStructureLayerLengths } from "../../../adapters/mcstructure/src/index.js";
-import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
-import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import { createDiagnostic } from "../../../packages/diagnostics/src/index.js";
+import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 
 export function structureParseFailedDiagnostic(
   source: SourceRef,

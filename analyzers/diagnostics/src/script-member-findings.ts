@@ -3,8 +3,8 @@ import type { ParsedScriptFile } from "../../scripts/src/index.js";
 import { findScriptPropertyRule } from "../../../packages/compatibility/src/index.js";
 import { findScriptEnumMemberRule } from "../../../packages/compatibility/src/index.js";
 import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/index.js";
-import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
-import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import { createDiagnostic } from "../../../packages/diagnostics/src/index.js";
+import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type { ScriptApiTrack } from "../../../packages/compatibility/src/index.js";
 

@@ -1,5 +1,5 @@
 import type { EffectiveKnowledgeProfile, KnowledgeCatalog } from "../../../packages/knowledge/src/index.js";
-import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 import type { RuntimeEvidenceSnapshot } from "../../../packages/project-model/src/runtime-evidence.js";
 import { functionRuntimeEvidence } from "../../functions/src/index.js";
 import type { ParsedFunction } from "../../functions/src/index.js";

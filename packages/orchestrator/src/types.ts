@@ -1,6 +1,6 @@
 import type { MinecraftEdition } from "../../compatibility/src/index.js";
 import type { EducationFeatureState } from "../../compatibility/src/index.js";
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { ScriptApiUsageInventory } from "./script-api-usage.js";
