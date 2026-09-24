@@ -101,6 +101,7 @@ import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.
 import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";
 import { assessRuntimeEvidenceSetIntegrity } from "./runtime-evidence-integrity.js";
 import { planEvidenceRecovery } from "./evidence-recovery.js";
+import { buildDecisionBasis } from "./decision-basis.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
@@ -867,6 +868,26 @@ export async function inspectDirectory(
     parsedScripts.map((item) => item.parsed),
   );
 
+  const decisionBasis = buildDecisionBasis({
+    ...(sourceFingerprint === undefined
+      ? {}
+      : { sourceFingerprint }),
+    graph,
+    ...(knowledgeCatalog === undefined
+      ? {}
+      : { knowledge: knowledgeCatalog }),
+    target,
+    runtimeEvidence: [
+      ...externalEvidence,
+      ...telemetryEvidence,
+      ...runtimeProbeEvidence.records,
+    ],
+    evidenceIntegrity: {
+      telemetry: telemetryEvidenceIntegrity,
+      runtimeProbe: runtimeProbeEvidenceIntegrity,
+    },
+  });
+
   const causalChains = synthesizeCausalChains(diagnostics, {
     telemetryTemporalReliable:
       telemetryEvidenceIntegrity.safeForTemporalViolationClaims,
@@ -1114,6 +1135,7 @@ export async function inspectDirectory(
       fingerprintId: reliability.id,
       fingerprint: reliability.fingerprint,
     },
+    decisionBasis,
     repairCandidates: planInspectionRepairs(topology, sourceFingerprint),
     targetCompatibility: {
       edition: target.edition ?? "unknown",
