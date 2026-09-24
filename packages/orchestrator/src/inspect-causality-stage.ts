@@ -1,6 +1,6 @@
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { SemanticGraph } from "../../graph/src/index.js";
-import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
 } from "../../project-model/src/runtime-evidence-integrity.js";

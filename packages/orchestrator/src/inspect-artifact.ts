@@ -6,7 +6,7 @@ import { extractZipSafely, inventoryZip } from "../../archive/src/index.js";
 import { sha256File, artifactIdFromFingerprint } from "../../artifact/src/index.js";
 import { inspectDirectory } from "./inspect.js";
 import type { InspectDirectoryResult, InspectTargetProfile } from "./types.js";
-import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import { analyzeWorldDbNative } from "./world-db-analysis.js";
 import { worldDbRuntimeEvidence } from "./world-db-runtime-evidence.js";
 import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";

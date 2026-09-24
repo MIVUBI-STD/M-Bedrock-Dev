@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type {
   CompiledDiagnosticInvariant,
-} from "../../knowledge/src/invariant-compiler.js";
+} from "../../knowledge/src/index.js";
 import {
   materializeInvariantRegistry,
 } from "../src/invariant-registry.js";

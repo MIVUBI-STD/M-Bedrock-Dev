@@ -1,4 +1,4 @@
-import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import {
   loadCoverageCatalog,
   loadRegressionCatalog,

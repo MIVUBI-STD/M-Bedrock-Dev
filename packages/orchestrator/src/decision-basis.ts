@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import type { SemanticGraph } from "../../graph/src/index.js";
-import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import type {
   InvariantRegistrySnapshot,
 } from "../../project-model/src/invariant-registry.js";

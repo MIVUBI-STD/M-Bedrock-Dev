@@ -1,4 +1,4 @@
-import { compareVersions } from "../../knowledge/src/version.js";
+import { compareVersions } from "../../knowledge/src/index.js";
 import type { ScriptApiTrack } from "./script-api.js";
 
 export interface ScriptPropertyMutabilityRule {

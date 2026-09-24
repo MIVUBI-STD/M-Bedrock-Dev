@@ -1,4 +1,4 @@
-import type { CompiledDiagnosticInvariant } from "../../knowledge/src/invariant-compiler.js";
+import type { CompiledDiagnosticInvariant } from "../../knowledge/src/index.js";
 import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
 import type { RuntimeTemporalRequirement } from "../../project-model/src/runtime-temporal.js";
 

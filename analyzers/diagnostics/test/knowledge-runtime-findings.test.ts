@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { knowledgeRuntimeDiagnostics } from "../src/knowledge-runtime-findings.js";
-import type { KnowledgeCatalog } from "../../../packages/knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../../packages/knowledge/src/index.js";
 
 const catalog: KnowledgeCatalog = {
   schemaVersion: 1,

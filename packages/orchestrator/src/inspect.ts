@@ -15,7 +15,7 @@ import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/index.j
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
-import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import type {
   InspectDirectoryResult,
   InspectTargetProfile,

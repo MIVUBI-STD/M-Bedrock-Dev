@@ -1,9 +1,9 @@
-import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import {
   assessEntityKnowledge,
   type EntityKnowledgeFinding,
-} from "../../knowledge/src/entity-reasoning.js";
-import type { EffectiveKnowledgeProfile } from "../../knowledge/src/types.js";
+} from "../../knowledge/src/index.js";
+import type { EffectiveKnowledgeProfile } from "../../knowledge/src/index.js";
 import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/index.js";
 import { deriveEntityStateGraph } from "../../../analyzers/entities/src/index.js";
 import { extractNavigationCapabilities } from "../../../analyzers/entities/src/index.js";

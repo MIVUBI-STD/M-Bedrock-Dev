@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type {
   CompiledDiagnosticInvariant,
-} from "../../knowledge/src/invariant-compiler.js";
+} from "../../knowledge/src/index.js";
 import type {
   InvariantRegistryEntry,
   InvariantRegistrySnapshot,

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
 import type { CausalIncident } from "../../project-model/src/causal-chain.js";
 import type { RuntimeProbeBinding } from "../../project-model/src/runtime-probe.js";
-import type { ValidationCase } from "../../knowledge/src/validation-plan.js";
+import type { ValidationCase } from "../../knowledge/src/index.js";
 import {
   analyzeDiagnosticProbes,
   prepareRuntimeProbes,

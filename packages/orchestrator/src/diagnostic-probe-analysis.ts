@@ -1,5 +1,5 @@
 import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
-import type { ValidationCase } from "../../knowledge/src/validation-plan.js";
+import type { ValidationCase } from "../../knowledge/src/index.js";
 import type { CausalIncident } from "../../project-model/src/causal-chain.js";
 import type {
   DiagnosticExecutionContext,

@@ -1,4 +1,4 @@
-import type { EffectiveKnowledgeProfile, KnowledgeCatalog } from "../../../packages/knowledge/src/types.js";
+import type { EffectiveKnowledgeProfile, KnowledgeCatalog } from "../../../packages/knowledge/src/index.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 import type { RuntimeEvidenceSnapshot } from "../../../packages/project-model/src/runtime-evidence.js";
 import { functionRuntimeEvidence } from "../../functions/src/index.js";

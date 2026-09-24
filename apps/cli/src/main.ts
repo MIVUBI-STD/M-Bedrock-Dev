@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { compareArtifacts } from "../../../packages/orchestrator/src/index.js";
 import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/index.js";
 import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";
-import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/load.js";
+import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/index.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
 import { loadTelemetryFile } from "../../../packages/orchestrator/src/index.js";

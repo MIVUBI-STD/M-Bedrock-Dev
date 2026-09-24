@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompiledDiagnosticInvariant } from "../../knowledge/src/invariant-compiler.js";
+import type { CompiledDiagnosticInvariant } from "../../knowledge/src/index.js";
 import { materializeInvariantRuntimePlan } from "../src/invariant-runtime-plan.js";
 
 function invariant(

@@ -1,4 +1,4 @@
-import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import { inspectArtifact, type InspectArtifactResult } from "./inspect-artifact.js";
 import type { InspectTargetProfile } from "./types.js";
 import { diffWorldDbNative, type WorldDbNativeDiff } from "./world-db-diff.js";

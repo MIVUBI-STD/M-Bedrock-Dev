@@ -5,7 +5,7 @@ import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
-import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
+import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import type { SemanticNode } from "../../graph/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 import { analyzeEntityWithKnowledge } from "./entity-knowledge-analysis.js";

@@ -1,4 +1,4 @@
-import type { KnowledgeEvidence, KnowledgeEvidenceMap } from "../../../packages/knowledge/src/evaluate.js";
+import type { KnowledgeEvidence, KnowledgeEvidenceMap } from "../../../packages/knowledge/src/index.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type {
   RuntimeEvidenceConfidence,
