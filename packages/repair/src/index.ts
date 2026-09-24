@@ -7,3 +7,6 @@ export * from "./topology-planner.js";
 export * from "./translate.js";
 export * from "./types.js";
 export * from "./workspace.js";
+export * from "./counterfactual-types.js";
+export * from "./counterfactual.js";
+export * from "./blast-radius.js";
