@@ -983,8 +983,6 @@ export async function inspectDirectory(
               const to = nodesById.get(link.to);
               return (
                 link.strength === "direct-evidence" &&
-                link.temporalIntegrity !== "incomplete" &&
-                link.temporalStatus !== "before-subject" &&
                 from?.kind === "downstream-risk" &&
                 to?.kind === "observed-state"
               );
