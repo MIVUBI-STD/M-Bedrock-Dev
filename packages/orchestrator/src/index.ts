@@ -101,3 +101,4 @@ export * from "./authorized-repair.js";
 
 export * from "./runtime-probe-replay.js";
 export * from "./semantic-graph-fingerprint.js";
+export * from "./repair-lifecycle.js";
