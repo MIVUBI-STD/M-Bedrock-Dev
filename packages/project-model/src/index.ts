@@ -17,3 +17,5 @@ export * from "./mutation-dependent-action.js";
 export * from "./causal-chain.js";
 
 export * from "./telemetry.js";
+
+export * from "./telemetry-validate.js";
