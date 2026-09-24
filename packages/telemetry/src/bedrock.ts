@@ -18,7 +18,7 @@ import type {
   TelemetryIdFactory,
   TelemetryScopeLease,
   TelemetrySink,
-  type BufferedTelemetrySink,
+  BufferedTelemetrySink,
 } from "./types.js";
 
 export interface BedrockSystemClock {
