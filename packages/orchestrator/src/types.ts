@@ -74,6 +74,16 @@ export interface InspectDirectoryResult {
     evidenceRecords: number;
     droppedEvents: number;
     byKind: Readonly<Record<string, number>>;
+    continuity: {
+      sequencedEvents: number;
+      unsequencedEvents: number;
+      unidentifiedStreamEvents: number;
+      streams: number;
+      missingSequences: number;
+      duplicateSequences: number;
+      nonMonotonicTransitions: number;
+      incomplete: boolean;
+    };
   };
   worldDatabase: {
     present: boolean;
