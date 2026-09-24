@@ -2,6 +2,7 @@ export { structureIdentifier } from "./inspect-identifiers.js";
 import { discoverInspectionPacks } from "./inspect-packs.js";
 import { indexInspectionSources } from "./inspect-source-index.js";
 import { analyzeInspectionScriptCompatibility } from "./inspect-script-compatibility.js";
+import { populateInspectionScriptImportGraph } from "./inspect-script-import-graph.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
 import {
@@ -12,7 +13,6 @@ import {
 import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/entity-knowledge-findings.js";
 import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/entity-transition-findings.js";
 import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/reachability.js";
-import { resolveScriptImports } from "../../../analyzers/scripts/src/resolve.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
@@ -194,41 +194,10 @@ export async function inspectDirectory(
     );
   }
 
-  const scriptResolutions = resolveScriptImports(parsedScripts.map((item) => item.parsed));
-  const scriptNodesByIdentifier = new Map(
-    parsedScripts.map((item) => [item.parsed.identifier, item.node]),
+  populateInspectionScriptImportGraph(
+    graph,
+    parsedScripts,
   );
-
-  for (const resolution of scriptResolutions) {
-    const from = scriptNodesByIdentifier.get(resolution.fromIdentifier);
-    if (!from) continue;
-
-    if (resolution.status === "external") {
-      if (resolution.module.startsWith("@minecraft/")) {
-        graph.addEdge({
-          from: from.id,
-          type: "IMPORTS_MINECRAFT_MODULE",
-          targetIdentifier: resolution.module,
-          status: "unresolved",
-          evidence: { source: from.source },
-        });
-      }
-      continue;
-    }
-
-    const targetNode = resolution.targetIdentifier
-      ? scriptNodesByIdentifier.get(resolution.targetIdentifier)
-      : undefined;
-
-    graph.addEdge({
-      from: from.id,
-      type: "IMPORTS_SCRIPT",
-      targetIdentifier: resolution.module,
-      status: targetNode ? "resolved" : "unresolved",
-      ...(targetNode ? { to: targetNode.id } : {}),
-      evidence: { source: from.source },
-    });
-  }
 
   diagnostics.push(
     ...analyzeInspectionScriptCompatibility(
