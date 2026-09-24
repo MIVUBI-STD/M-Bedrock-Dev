@@ -402,6 +402,14 @@
           "route-navigation-consumer-present",
           "route-target-driven-consumer-present"
         ]
+      },
+      "causalOutcomePredicates": {
+        "navigation-stall-risk": [
+          "navigation-stall-observed"
+        ],
+        "fallback-recovery-risk": [
+          "teleport-fallback-observed"
+        ]
       }
     }
   ]
