@@ -12,6 +12,8 @@ import type {
   TelemetryScopeLease,
 } from "./types.js";
 
+let emitterInstanceCounter = 0;
+
 function mergeScope(
   ...scopes: Array<RuntimeScope | undefined>
 ): RuntimeScope {
