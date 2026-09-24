@@ -59,7 +59,7 @@ describe("structure placement proofs", () => {
   it("proves area-loaded coverage only when the scheduled area covers all placement chunks", () => {
     const scheduler = parseMcFunction(
       "demo:schedule",
-      "schedule on_area_loaded add 96 0 192 143 255 223 demo:load",
+      "schedule on_area_loaded add 96 0 192 143 255 239 demo:load",
       { artifactId: "a", relativePath: "functions/schedule.mcfunction" },
     );
     const loader = parseMcFunction(
