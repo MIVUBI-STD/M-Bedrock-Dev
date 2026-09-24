@@ -27,6 +27,33 @@ const REVALIDATION = new Set([
   "package",
 ]);
 
+const SCOPE_FIELDS = new Set([
+  "arenaId",
+  "arenaGeneration",
+  "playerKey",
+  "connectionGeneration",
+  "lifeGeneration",
+  "entityKey",
+  "entityGeneration",
+  "operationId",
+  "subsystemGeneration",
+]);
+
+const SCOPE_STRING_FIELDS = new Set([
+  "arenaId",
+  "playerKey",
+  "entityKey",
+  "operationId",
+]);
+
+const SCOPE_GENERATION_FIELDS = new Set([
+  "arenaGeneration",
+  "connectionGeneration",
+  "lifeGeneration",
+  "entityGeneration",
+  "subsystemGeneration",
+]);
+
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -42,6 +69,114 @@ function duplicate(values: readonly string[]): string | undefined {
     seen.add(value);
   }
   return undefined;
+}
+
+function validateScope(
+  value: unknown,
+  label: string,
+): string[] {
+  if (value === undefined) return [];
+  if (!record(value)) {
+    return [label + " must be an object when provided."];
+  }
+
+  const errors: string[] = [];
+  for (const [key, item] of Object.entries(value)) {
+    if (!SCOPE_FIELDS.has(key)) {
+      errors.push(label + " has unknown field " + key + ".");
+      continue;
+    }
+    if (
+      SCOPE_STRING_FIELDS.has(key) &&
+      !nonEmpty(item)
+    ) {
+      errors.push(
+        label + "." + key +
+          " must be a non-empty string when provided.",
+      );
+      continue;
+    }
+    if (
+      SCOPE_GENERATION_FIELDS.has(key) &&
+      (
+        typeof item !== "number" ||
+        !Number.isInteger(item) ||
+        item < 0
+      )
+    ) {
+      errors.push(
+        label + "." + key +
+          " must be a non-negative integer when provided.",
+      );
+    }
+  }
+  return errors;
+}
+
+function validateStateRequirement(
+  value: unknown,
+  label: string,
+): string[] {
+  if (!record(value)) {
+    return [label + " must be an object."];
+  }
+
+  const errors: string[] = [];
+  if (!nonEmpty(value.id)) {
+    errors.push(label + ".id must be non-empty.");
+  }
+  if (!nonEmpty(value.predicate)) {
+    errors.push(label + ".predicate must be non-empty.");
+  }
+  if (
+    value.expectedState !== "present" &&
+    value.expectedState !== "absent"
+  ) {
+    errors.push(
+      label + ".expectedState must be present or absent.",
+    );
+  }
+  errors.push(...validateScope(value.scope, label + ".scope"));
+  return errors;
+}
+
+function validateTemporalRequirement(
+  value: unknown,
+  label: string,
+): string[] {
+  if (!record(value)) {
+    return [label + " must be an object."];
+  }
+
+  const errors: string[] = [];
+  if (!nonEmpty(value.id)) {
+    errors.push(label + ".id must be non-empty.");
+  }
+  if (!nonEmpty(value.beforePredicate)) {
+    errors.push(
+      label + ".beforePredicate must be non-empty.",
+    );
+  }
+  if (!nonEmpty(value.afterPredicate)) {
+    errors.push(
+      label + ".afterPredicate must be non-empty.",
+    );
+  }
+  if (
+    value.maxTickDelta !== undefined &&
+    (
+      typeof value.maxTickDelta !== "number" ||
+      !Number.isFinite(value.maxTickDelta) ||
+      value.maxTickDelta < 0
+    )
+  ) {
+    errors.push(
+      label +
+        ".maxTickDelta must be a non-negative finite number when provided.",
+    );
+  }
+  errors.push(...validateScope(value.scope, label + ".scope"));
+  return errors;
 }
 
 function validateEntry(value: unknown, index: number): string[] {
@@ -81,11 +216,57 @@ function validateEntry(value: unknown, index: number): string[] {
     errors.push(
       "entries[" + index + "].stateRequirements must be an array.",
     );
+  } else {
+    errors.push(
+      ...value.stateRequirements.flatMap((requirement, requirementIndex) =>
+        validateStateRequirement(
+          requirement,
+          "entries[" + index + "].stateRequirements[" +
+            requirementIndex + "]",
+        )
+      ),
+    );
+    const stateIds = value.stateRequirements
+      .filter(record)
+      .map((requirement) => requirement.id)
+      .filter(nonEmpty);
+    const repeatedStateId = duplicate(stateIds);
+    if (repeatedStateId) {
+      errors.push(
+        "entries[" + index +
+          "] has duplicate state requirement id " +
+          repeatedStateId + ".",
+      );
+    }
   }
+
   if (!Array.isArray(value.temporalRequirements)) {
     errors.push(
       "entries[" + index + "].temporalRequirements must be an array.",
     );
+  } else {
+    errors.push(
+      ...value.temporalRequirements.flatMap(
+        (requirement, requirementIndex) =>
+          validateTemporalRequirement(
+            requirement,
+            "entries[" + index + "].temporalRequirements[" +
+              requirementIndex + "]",
+          )
+      ),
+    );
+    const temporalIds = value.temporalRequirements
+      .filter(record)
+      .map((requirement) => requirement.id)
+      .filter(nonEmpty);
+    const repeatedTemporalId = duplicate(temporalIds);
+    if (repeatedTemporalId) {
+      errors.push(
+        "entries[" + index +
+          "] has duplicate temporal requirement id " +
+          repeatedTemporalId + ".",
+      );
+    }
   }
 
   if (!Array.isArray(value.revalidationLayers)) {
