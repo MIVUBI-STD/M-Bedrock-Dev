@@ -65,3 +65,5 @@ export {
 } from "./revive-monitor.js";
 
 export * from "./budget.js";
+
+export * from "./bedrock-lifecycle.js";
