@@ -27,6 +27,7 @@ export interface KnowledgeRelationAssessment {
   diagnosticSeverity?: "info" | "minor" | "medium" | "critical";
   causalConsequences?: readonly string[];
   causalCorroborators?: Readonly<Record<string, readonly string[]>>;
+  causalOutcomePredicates?: Readonly<Record<string, readonly string[]>>;
 }
 
 function evidenceFor(
@@ -83,6 +84,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalCorroborators === undefined
           ? {}
           : { causalCorroborators: relation.causalCorroborators }),
+        ...(relation.causalOutcomePredicates === undefined
+          ? {}
+          : { causalOutcomePredicates: relation.causalOutcomePredicates }),
       });
       continue;
     }
@@ -116,6 +120,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalCorroborators === undefined
           ? {}
           : { causalCorroborators: relation.causalCorroborators }),
+        ...(relation.causalOutcomePredicates === undefined
+          ? {}
+          : { causalOutcomePredicates: relation.causalOutcomePredicates }),
       });
       continue;
     }
@@ -147,6 +154,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalCorroborators === undefined
           ? {}
           : { causalCorroborators: relation.causalCorroborators }),
+        ...(relation.causalOutcomePredicates === undefined
+          ? {}
+          : { causalOutcomePredicates: relation.causalOutcomePredicates }),
       });
       continue;
     }
@@ -174,6 +184,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalCorroborators === undefined
           ? {}
           : { causalCorroborators: relation.causalCorroborators }),
+        ...(relation.causalOutcomePredicates === undefined
+          ? {}
+          : { causalOutcomePredicates: relation.causalOutcomePredicates }),
       });
       continue;
     }
@@ -205,6 +218,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalCorroborators === undefined
           ? {}
           : { causalCorroborators: relation.causalCorroborators }),
+        ...(relation.causalOutcomePredicates === undefined
+          ? {}
+          : { causalOutcomePredicates: relation.causalOutcomePredicates }),
       });
     }
   }
