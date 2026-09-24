@@ -93,10 +93,8 @@ describe("runtime probe bundle runner", () => {
   });
 
   it("fails closed when expected artifact identity is missing or different", () => {
-    expect(() => executeRuntimeProbeBundle({
-      ...bundle,
-      artifactId: undefined,
-    }, {
+    const { artifactId: _artifactId, ...withoutArtifactId } = bundle;
+    expect(() => executeRuntimeProbeBundle(withoutArtifactId, {
       executor,
       expectedArtifactId: "art-1",
     })).toThrow(/does not match expected artifact/);
@@ -111,10 +109,8 @@ describe("runtime probe bundle runner", () => {
   });
 
   it("fails closed when expected session identity is missing or different", () => {
-    expect(() => executeRuntimeProbeBundle({
-      ...bundle,
-      sessionId: undefined,
-    }, {
+    const { sessionId: _sessionId, ...withoutSessionId } = bundle;
+    expect(() => executeRuntimeProbeBundle(withoutSessionId, {
       executor,
       expectedSessionId: "qa-run",
     })).toThrow(/does not match expected session/);
