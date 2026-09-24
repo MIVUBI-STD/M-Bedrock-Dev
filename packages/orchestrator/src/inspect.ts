@@ -202,6 +202,18 @@ export async function inspectDirectory(
   const parsedDialogueDocuments: ReturnType<typeof parseDialogueDocument>[] = [];
   const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; size?: { x: number; y: number; z: number }; semantics: ReturnType<typeof deriveMcStructureSemantics>; embeddedCommands: ReturnType<typeof analyzeEmbeddedStructureCommands>; queuedTickPositions: number }> = [];
   const diagnostics: DiagnosticFinding[] = [];
+  if (telemetryDroppedEvents > 0) {
+    diagnostics.push({
+      id: "diag_telemetry_dropped_" + telemetryDroppedEvents,
+      code: "TELEMETRY_EVENTS_DROPPED",
+      severity: "minor",
+      message:
+        "Runtime telemetry buffer dropped " +
+        telemetryDroppedEvents +
+        " event(s); causal/runtime evidence may be incomplete.",
+      data: { droppedEvents: telemetryDroppedEvents },
+    });
+  }
   let parsedStructures = 0;
 
   for (const file of files) {
