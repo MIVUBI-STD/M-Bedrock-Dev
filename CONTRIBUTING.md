@@ -15,6 +15,7 @@ Use the repository-root developer entrypoint:
 
 ```text
 DEV.cmd setup
+DEV.cmd doctor
 DEV.cmd check
 DEV.cmd test
 DEV.cmd inspect <artifact>

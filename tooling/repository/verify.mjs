@@ -40,6 +40,73 @@ const required = [
   "tooling/windows-toolchain/dev.ps1"
 ];
 
+const trackedFiles = execFileSync("git", ["ls-files"], { encoding: "utf8" })
+  .split(/\r?\n/)
+  .filter(Boolean);
+
+const allowedRootEntries = new Set([
+  ".agents",
+  ".editorconfig",
+  ".gitattributes",
+  ".github",
+  ".gitignore",
+  ".node-version",
+  "AGENTS.md",
+  "CONTEXT.md",
+  "CONTRIBUTING.md",
+  "DEV.cmd",
+  "Experimental",
+  "GITHUB_RULES.md",
+  "README.md",
+  "SECURITY.md",
+  "VERSION",
+  "adapters",
+  "analyzers",
+  "apps",
+  "docs",
+  "fixtures",
+  "knowledge",
+  "package-lock.json",
+  "package.json",
+  "packages",
+  "reliability",
+  "rules",
+  "runtime",
+  "schemas",
+  "toolchain.json",
+  "tooling",
+  "tsconfig.json",
+  "workspace"
+]);
+
+const trackedRootEntries = new Set(
+  trackedFiles.map((path) => path.split("/")[0]).filter(Boolean)
+);
+const unexpectedRootEntries = [...trackedRootEntries]
+  .filter((entry) => !allowedRootEntries.has(entry))
+  .sort();
+
+if (unexpectedRootEntries.length > 0) {
+  console.error("Unexpected tracked repository root entries:");
+  for (const entry of unexpectedRootEntries) console.error(`- ${entry}`);
+  process.exit(1);
+}
+
+const forbiddenLegacyPrefixes = [
+  "scripts/",
+  "fixtures/regression/"
+];
+
+const legacyTracked = trackedFiles.filter((path) =>
+  forbiddenLegacyPrefixes.some((prefix) => path.startsWith(prefix))
+);
+
+if (legacyTracked.length > 0) {
+  console.error("Legacy repository paths are forbidden:");
+  for (const path of legacyTracked) console.error(`- ${path}`);
+  process.exit(1);
+}
+
 const missing = required.filter((path) => !existsSync(path));
 if (missing.length > 0) {
   console.error("Missing canonical repository owners:");

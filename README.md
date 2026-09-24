@@ -52,7 +52,10 @@ adapters/       external/container/format adapters
 analyzers/      semantic analysis and derived diagnostics
 rules/          versioned Bedrock/Education rules
 schemas/        structural/internal schemas
-fixtures/       minimized valid/invalid/regression evidence
+fixtures/       minimized reproducible evidence
+knowledge/      machine-readable domain facts and project policy
+reliability/    reliability catalogs and history data
+runtime/        bounded runtime-proof harness content
 workspace/      ignored local artifact continuity
 tooling/        repository-owned developer/build control plane
 docs/           canonical durable documentation
@@ -66,6 +69,7 @@ Normal repository-level development starts from:
 
 ```text
 DEV.cmd setup
+DEV.cmd doctor
 DEV.cmd check
 DEV.cmd test
 DEV.cmd inspect <artifact>

@@ -6,6 +6,7 @@
 
 ```text
 DEV.cmd setup
+DEV.cmd doctor
 DEV.cmd check
 DEV.cmd test
 DEV.cmd inspect <artifact>
@@ -13,6 +14,8 @@ DEV.cmd finalize-local
 ```
 
 It delegates to `tooling/windows-toolchain/dev.ps1`. Internal package scripts remain implementation details.
+
+`DEV.cmd doctor` checks the pinned Node major, npm, PowerShell, Git/branch context, dependency lock state, installed dependencies, and local workspace shape without owning product semantics.
 
 ## Toolchain authority
 

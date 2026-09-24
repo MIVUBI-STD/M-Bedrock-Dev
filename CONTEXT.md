@@ -56,8 +56,10 @@ analyzers/     semantic derivation and diagnostics
 rules/         versioned Bedrock/Education rules
 schemas/       structural/internal schemas
 fixtures/      minimized reproducible evidence
+knowledge/     machine-readable Bedrock/Education facts and project policy
+reliability/   repository-owned reliability catalogs/history data
+runtime/       bounded runtime proof harness content
 docs/          canonical product/system/operations docs
-scripts/       repository/runtime verification utilities
 tooling/       repository-owned developer/build control plane
 workspace/     ignored local artifact continuity
 Experimental/  bounded research only
