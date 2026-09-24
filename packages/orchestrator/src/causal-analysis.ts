@@ -19,6 +19,24 @@ function asStringArray(value: unknown): string[] {
     : [];
 }
 
+function asNumberMap(
+  value: unknown,
+): Readonly<Record<string, number>> {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value)
+  ) return {};
+
+  const output: Record<string, number> = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (typeof item === "number" && Number.isFinite(item) && item >= 1) {
+      output[key] = item;
+    }
+  }
+  return output;
+}
+
 function asCorroboratorMap(
   value: unknown,
 ): Readonly<Record<string, readonly string[]>> {
@@ -56,6 +74,10 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
   const presentPredicates = new Set(asStringArray(data.presentPredicates));
   const corroborators = asCorroboratorMap(data.causalCorroborators);
   const outcomePredicates = asCorroboratorMap(data.causalOutcomePredicates);
+  const minCorroboratingSources = asNumberMap(
+    data.causalCorroborationMinSources,
+  );
+  const predicateSourceKeys = asCorroboratorMap(data.predicateSourceKeys);
 
   const violation = finding.code === "KNOWLEDGE_RELATION_VIOLATION";
   const subjectNodeId = idFor([finding.id, "subject"]);
@@ -106,9 +128,18 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
   for (const consequence of consequences) {
     const riskNodeId = idFor([finding.id, "risk", consequence]);
     const requiredPredicates = corroborators[consequence] ?? [];
-    const corroborated =
+    const sourceKeys = [...new Set(
+      requiredPredicates.flatMap(
+        (predicate) => predicateSourceKeys[predicate] ?? [],
+      ),
+    )].sort();
+    const minimumSources = minCorroboratingSources[consequence] ?? 0;
+    const predicateProof =
       requiredPredicates.length > 0 &&
       requiredPredicates.every((predicate) => presentPredicates.has(predicate));
+    const sourceProof =
+      minimumSources === 0 || sourceKeys.length >= minimumSources;
+    const corroborated = predicateProof && sourceProof;
     if (corroborated) hasCorroboratedRisk = true;
 
     nodes.push({
@@ -117,7 +148,12 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
       label: consequence,
       diagnosticIds: [finding.id],
       ...(corroborated
-        ? { corroboratingPredicates: requiredPredicates }
+        ? {
+            corroboratingPredicates: requiredPredicates,
+            ...(sourceKeys.length === 0
+              ? {}
+              : { corroboratingSourceKeys: sourceKeys }),
+          }
         : {}),
     });
     links.push({
@@ -143,12 +179,16 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
         consequence,
         predicate,
       ]);
+      const observedSourceKeys = predicateSourceKeys[predicate] ?? [];
       nodes.push({
         id: observedNodeId,
         kind: "observed-state",
         label: predicate,
         diagnosticIds: [finding.id],
         corroboratingPredicates: [predicate],
+        ...(observedSourceKeys.length === 0
+          ? {}
+          : { corroboratingSourceKeys: observedSourceKeys }),
       });
       links.push({
         from: riskNodeId,
