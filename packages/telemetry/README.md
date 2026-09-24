@@ -524,3 +524,32 @@ The monitor can emit:
 
 These are telemetry observations only. Gameplay authority remains in the map's
 actual revive transaction/state machine.
+
+
+## Performance safety
+
+Instrumentation must not become a new hot path.
+
+Use `createTickBudgetedTelemetrySink()` to cap event volume per tick and
+maintain emitted/dropped counters. Unticked events have a separate bounded
+budget.
+
+Use `createSamplingTelemetrySink()` only for high-frequency observational
+signals. Do not sample invariant violations such as double-start, stale
+callback, revive anomaly, or failed verification.
+
+Recommended composition:
+
+```text
+critical anomaly emitter
+→ validating sink
+→ bounded buffer / console
+
+high-frequency progress telemetry
+→ sampling sink
+→ tick budget
+→ validating sink
+→ transport
+```
+
+The stall/state/revive guards already suppress identical repeated anomalies.
