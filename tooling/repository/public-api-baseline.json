@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "inspection-stage diagnostics entrypoint migration",
+  "generatedFrom": "packages/common public entrypoint migration",
   "policy": "Cross-owner deep-import debt may decrease but must not increase without an explicit baseline update.",
   "owners": {
     "packages/project-model": 309,
@@ -19,7 +19,7 @@
     "adapters/mcstructure": 15,
     "analyzers/topology": 12,
     "packages/orchestrator": 11,
-    "packages/common": 9,
+    "packages/common": 0,
     "packages/archive": 7,
     "packages/reliability-search": 7,
     "packages/artifact": 5,

@@ -1,4 +1,4 @@
-import type { Severity } from "../../common/src/severity.js";
+import type { Severity } from "../../common/src/index.js";
 import type { SourceRef } from "./source-ref.js";
 import type { RuntimeScope } from "./runtime-evidence.js";
 

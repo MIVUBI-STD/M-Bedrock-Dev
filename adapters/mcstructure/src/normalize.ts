@@ -5,7 +5,7 @@ import type {
   StructureSize,
 } from "./types.js";
 import type { ParsedNbtDocument } from "../../nbt/src/types.js";
-import type { WorldPosition } from "../../../packages/common/src/spatial.js";
+import type { WorldPosition } from "../../../packages/common/src/index.js";
 
 function record(value: unknown): Record<string, unknown> | undefined {
   return typeof value === "object" && value !== null && !Array.isArray(value)

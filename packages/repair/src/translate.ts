@@ -1,4 +1,4 @@
-import type { Translation3, WorldPosition } from "../../common/src/spatial.js";
+import type { Translation3, WorldPosition } from "../../common/src/index.js";
 
 export function translateWorldPosition(
   position: WorldPosition,

@@ -1,5 +1,5 @@
 import type { ParsedNbtDocument } from "../../nbt/src/types.js";
-import type { WorldPosition } from "../../../packages/common/src/spatial.js";
+import type { WorldPosition } from "../../../packages/common/src/index.js";
 
 export interface StructureSize {
   x: number;

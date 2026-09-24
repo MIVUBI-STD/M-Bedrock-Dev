@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import type { ResolvedEffect } from "./effect-resolution.js";
-import type { Translation3 } from "../../../packages/common/src/spatial.js";
+import type { Translation3 } from "../../../packages/common/src/index.js";
 
-export type { Translation3 } from "../../../packages/common/src/spatial.js";
+export type { Translation3 } from "../../../packages/common/src/index.js";
 
 export interface EffectSignature {
   kind: ResolvedEffect["kind"];
