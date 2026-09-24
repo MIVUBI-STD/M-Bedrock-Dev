@@ -67,6 +67,13 @@ describe("inspection evidence integrity", () => {
         .toBe(false);
       expect(result.evidenceIntegrity.runtimeProbe.reasons.join(" "))
         .toMatch(/probe exchanges were dropped/i);
+      expect(result.evidenceRecovery.required).toBe(true);
+      expect(result.evidenceRecovery.actions).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          channel: "runtime-probe",
+          kind: "rerun-runtime-probe-bundle",
+        }),
+      ]));
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -122,6 +129,12 @@ describe("inspection evidence integrity", () => {
         .toBe(true);
       expect(result.evidenceIntegrity.telemetry.safeForTemporalViolationClaims)
         .toBe(false);
+      expect(result.evidenceRecovery.actions).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          channel: "telemetry",
+          kind: "recapture-continuous-stream",
+        }),
+      ]));
     } finally {
       await rm(root, { recursive: true, force: true });
     }
