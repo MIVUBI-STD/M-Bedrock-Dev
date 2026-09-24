@@ -2,6 +2,12 @@ import type { SourceRef } from "./source-ref.js";
 
 export type RuntimeEvidenceState = "present" | "absent" | "unknown";
 export type RuntimeEvidenceConfidence = "observed" | "derived" | "unknown";
+export type RuntimeEvidenceOrigin =
+  | "static"
+  | "telemetry"
+  | "runtime-probe"
+  | "native"
+  | "external";
 
 export interface RuntimeObservationPoint {
   tick?: number;
@@ -26,6 +32,7 @@ export interface RuntimeEvidenceRecord {
   predicate: string;
   state: RuntimeEvidenceState;
   confidence: RuntimeEvidenceConfidence;
+  origin?: RuntimeEvidenceOrigin;
   scope?: RuntimeScope;
   sourceRefs?: readonly SourceRef[];
   relatedNodeIds?: readonly string[];
