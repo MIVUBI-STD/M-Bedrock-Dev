@@ -27,6 +27,9 @@ import {
 import type {
   RepairStrategySelection,
 } from "./repair-strategy-selection.js";
+import type {
+  ProviderBackedRepairStrategySelection,
+} from "./provider-backed-repair-selection.js";
 import {
   appendDecisionLedgerEntry,
 } from "./decision-ledger.js";
@@ -325,4 +328,49 @@ export function recordTransitiveRevalidationDecision(
       ...(context.evidenceIds ?? []),
     ],
   });
+}
+
+
+export function recordProviderBackedRepairStrategySelection(
+  ledger: DecisionLedgerSnapshot,
+  selection: ProviderBackedRepairStrategySelection,
+  transactionId: string | undefined,
+  context: DecisionRecordContext,
+): DecisionLedgerSnapshot {
+  if (selection.status !== "evaluated") {
+    throw new Error(
+      "Provider-backed strategy selection cannot be recorded before provider validation passes.",
+    );
+  }
+  if (selection.result.status !== "evaluated") {
+    throw new Error(
+      "Provider-backed strategy selection cannot be recorded before invariant derivation passes.",
+    );
+  }
+
+  const providedRevision =
+    context.basis.repairProviderRegistryRevision;
+  if (
+    providedRevision !== undefined &&
+    providedRevision !== selection.providerRegistryRevision
+  ) {
+    throw new Error(
+      "Decision basis repair provider registry revision does not match evaluated provider registry.",
+    );
+  }
+
+  return recordRepairStrategySelection(
+    ledger,
+    selection.result.selection,
+    transactionId,
+    {
+      ...context,
+      basis: {
+        ...context.basis,
+        repairProviderRegistryRevision:
+          selection.providerRegistryRevision,
+      },
+      providerProvenance: selection.providerProvenance,
+    },
+  );
 }
