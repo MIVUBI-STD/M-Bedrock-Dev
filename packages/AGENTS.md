@@ -23,7 +23,8 @@ Packages own stable reusable behavior. They must not depend on CLI presentation,
 common         → dependency-neutral shared primitives only
 artifact       → identity / fingerprint / source classification
 archive        → archive policy / inventory / extraction / packaging transport
-project-model  → normalized project/workspace/session/file inventory
+project-model  → normalized project/workspace/session/file inventory + telemetry data contracts
+telemetry      → runtime telemetry emission helpers / sinks / instrumentation guards
 graph          → semantic graph / edges / invalidation
 diagnostics    → diagnostic contract and stable identifiers
 validation     → post-mutation validation contracts/results
