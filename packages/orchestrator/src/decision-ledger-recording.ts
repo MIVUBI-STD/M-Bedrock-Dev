@@ -43,8 +43,8 @@ export function recordDiagnosticRepairDecision(
     basis: context.basis,
     inputIds: [
       ...decision.activeCandidateIds,
-      ...(context.upstreamDecisionIds ?? []),
     ],
+    upstreamDecisionIds: context.upstreamDecisionIds,
     outputIds: [
       "repair-disposition:" + decision.disposition,
       ...(decision.selectedCandidateId === undefined
@@ -95,8 +95,8 @@ export function recordRuntimeVerificationDecision(
       ...result.satisfiedStateRequirementIds.map(
         (id) => "runtime-requirement:" + id,
       ),
-      ...(context.upstreamDecisionIds ?? []),
     ],
+    upstreamDecisionIds: context.upstreamDecisionIds,
     outputIds: [
       "runtime-verification:" +
         (result.passed ? "passed" : "failed"),
@@ -190,7 +190,7 @@ export function recordRepairStrategySelection(
       ? {}
       : { transactionId }),
     basis: context.basis,
-    inputIds: context.upstreamDecisionIds,
+    upstreamDecisionIds: context.upstreamDecisionIds,
     outputIds,
     evidenceIds: context.evidenceIds,
   });
