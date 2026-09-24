@@ -70,7 +70,7 @@ export function recordRepairAdmissionDecision(
     basis: context.basis,
     ...(context.upstreamDecisionIds === undefined
       ? {}
-      : { inputIds: context.upstreamDecisionIds }),
+      : { upstreamDecisionIds: context.upstreamDecisionIds }),
     outputIds: [
       "repair-admission:" + decision.disposition,
     ],
@@ -121,7 +121,7 @@ export function recordPackageVerificationDecision(
     basis: context.basis,
     ...(context.upstreamDecisionIds === undefined
       ? {}
-      : { inputIds: context.upstreamDecisionIds }),
+      : { upstreamDecisionIds: context.upstreamDecisionIds }),
     outputIds: [
       "package-verification:" +
         (result.ok ? "passed" : "failed"),
@@ -150,7 +150,7 @@ export function recordReleaseDecision(
     basis: context.basis,
     ...(context.upstreamDecisionIds === undefined
       ? {}
-      : { inputIds: context.upstreamDecisionIds }),
+      : { upstreamDecisionIds: context.upstreamDecisionIds }),
     outputIds: [
       "release:" + decision.disposition,
     ],
