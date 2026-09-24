@@ -112,7 +112,10 @@ export function planDiagnosticProbes(
       unresolvedCandidateIds,
       recommended: [],
       blockedByContext: [],
-      stopCondition: "no-probe-required",
+      stopCondition:
+        incident.rootCauseCandidates.length === 0
+          ? "candidate-set-exhausted"
+          : "no-probe-required",
     };
   }
 
