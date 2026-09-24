@@ -59,7 +59,7 @@ function planItem(
 
   const useful =
     pairSeparationCount > 0 ||
-    (candidateIds.length === 1 && covered.has(candidateIds[0]!));
+    covered.size > 0;
   if (!useful) return undefined;
 
   const effectiveCost =
