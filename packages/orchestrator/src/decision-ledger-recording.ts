@@ -173,6 +173,9 @@ export function recordRepairStrategySelection(
           "repair-strategy:selected",
           "repair-strategy:" + selection.selected.strategyId,
           "repair-transaction:" + selection.selected.transactionId,
+          ...selection.selected.pipeline.proof.supportingInvariantIds.map(
+            (id) => "repair-invariant:" + id,
+          ),
         ]
       : selection.status === "ambiguous"
         ? [
@@ -193,5 +196,42 @@ export function recordRepairStrategySelection(
     upstreamDecisionIds: context.upstreamDecisionIds,
     outputIds,
     evidenceIds: context.evidenceIds,
+  });
+}
+
+
+export function recordTransitiveRevalidationDecision(
+  ledger: DecisionLedgerSnapshot,
+  input: {
+    transactionId: string;
+    passed: boolean;
+    validatedNodeIds: readonly string[];
+    validatedPaths: readonly string[];
+    evidenceIds: readonly string[];
+  },
+  context: DecisionRecordContext,
+): DecisionLedgerSnapshot {
+  return appendDecisionLedgerEntry(ledger, {
+    id: context.decisionId,
+    kind: "transitive-revalidation",
+    transactionId: input.transactionId,
+    basis: context.basis,
+    upstreamDecisionIds: context.upstreamDecisionIds,
+    inputIds: [
+      ...input.validatedNodeIds.map(
+        (id) => "revalidation-node:" + id,
+      ),
+      ...input.validatedPaths.map(
+        (path) => "revalidation-path:" + path,
+      ),
+    ],
+    outputIds: [
+      "transitive-revalidation:" +
+        (input.passed ? "passed" : "failed"),
+    ],
+    evidenceIds: [
+      ...input.evidenceIds,
+      ...(context.evidenceIds ?? []),
+    ],
   });
 }
