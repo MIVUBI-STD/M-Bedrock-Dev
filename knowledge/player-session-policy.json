@@ -17,10 +17,24 @@
       "subject": "player runtime identity",
       "statement": "Treat persistent player identity, current Player object/reference, connection session, arena membership, and round participation as separate identity layers. Never use one layer as proof that all others are current.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["identity-layering", "session-generation"],
-      "riskSurfaces": ["stale-session", "reconnect", "cross-arena-state"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "identity-layering",
+        "session-generation"
+      ],
+      "riskSurfaces": [
+        "stale-session",
+        "reconnect",
+        "cross-arena-state"
+      ]
     },
     {
       "id": "player-policy.connection-generation",
@@ -28,10 +42,24 @@
       "subject": "connection generation",
       "statement": "Every accepted join creates a new connectionGeneration for the logical player. Deferred callbacks and async continuations captured by an older generation must self-cancel before mutating gameplay.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["generation-token", "disconnect-reconnect"],
-      "riskSurfaces": ["stale-callback", "reconnect", "async-race"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "generation-token",
+        "disconnect-reconnect"
+      ],
+      "riskSurfaces": [
+        "stale-callback",
+        "reconnect",
+        "async-race"
+      ]
     },
     {
       "id": "player-policy.arena-participation-generation",
@@ -39,10 +67,24 @@
       "subject": "arena participation generation",
       "statement": "Arena assignment and round participation each require generation-scoped ownership. A callback may act only when player identity, connectionGeneration, arenaId, arenaGeneration, and participationGeneration still match.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["arena-isolation", "generation-token"],
-      "riskSurfaces": ["cross-arena-state", "stale-round", "multiplayer-concurrency"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-isolation",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "cross-arena-state",
+        "stale-round",
+        "multiplayer-concurrency"
+      ]
     },
     {
       "id": "player-policy.leave-invalidates-transient-state",
@@ -50,10 +92,25 @@
       "subject": "disconnect cleanup",
       "statement": "On leave, immediately invalidate transient readiness, countdown participation, revive ownership, UI/form ownership, temporary loader duties, and per-session timers before later cleanup executes.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["disconnect", "cleanup"],
-      "riskSurfaces": ["ghost-ready", "ghost-player", "stale-timer", "revive-state"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "disconnect",
+        "cleanup"
+      ],
+      "riskSurfaces": [
+        "ghost-ready",
+        "ghost-player",
+        "stale-timer",
+        "revive-state"
+      ]
     },
     {
       "id": "player-policy.reconnect-reconciliation",
@@ -61,10 +118,24 @@
       "subject": "reconnect",
       "statement": "Reconnect creates a new runtime session and must reconcile persisted identity/state against current arena ownership. Persisted data may inform recovery but must not silently reactivate stale transient session state.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["reconnect", "reconciliation"],
-      "riskSurfaces": ["stale-state", "arena-membership", "session-resume"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "reconnect",
+        "reconciliation"
+      ],
+      "riskSurfaces": [
+        "stale-state",
+        "arena-membership",
+        "session-resume"
+      ]
     },
     {
       "id": "player-policy.respawn-explicit-transition",
@@ -72,10 +143,25 @@
       "subject": "respawn",
       "statement": "Respawn is an explicit lifecycle transition, not a fresh join. Systems for downed/dead/revive, inventory, gamemode, arena membership, and pending teleports must define which state resets and which state survives respawn.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["respawn", "state-reset"],
-      "riskSurfaces": ["self-revive", "inventory-leak", "gamemode-leak", "stale-teleport"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "respawn",
+        "state-reset"
+      ],
+      "riskSurfaces": [
+        "self-revive",
+        "inventory-leak",
+        "gamemode-leak",
+        "stale-teleport"
+      ]
     },
     {
       "id": "multiplayer-policy.single-arena-start-transaction",
@@ -83,10 +169,24 @@
       "subject": "arena start",
       "statement": "Arena start must be a single-owner generation-scoped transaction. Concurrent ready/join/leave events may request evaluation, but only one transition from WAITING/READY to COUNTDOWN/SETUP for the same arena generation is accepted.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["arena-start", "transaction"],
-      "riskSurfaces": ["double-start", "duplicate-countdown", "race-condition"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-start",
+        "transaction"
+      ],
+      "riskSurfaces": [
+        "double-start",
+        "duplicate-countdown",
+        "race-condition"
+      ]
     },
     {
       "id": "multiplayer-policy.countdown-generation-bound",
@@ -94,10 +194,23 @@
       "subject": "countdown lifecycle",
       "statement": "Countdown callbacks are owned by arenaGeneration and countdownGeneration. A leave, abort, reset, or replacement countdown invalidates old callbacks so they cannot start setup later.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["countdown", "generation-token"],
-      "riskSurfaces": ["stale-countdown", "double-start"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "countdown",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-countdown",
+        "double-start"
+      ]
     },
     {
       "id": "multiplayer-policy.selector-arena-scope",
@@ -105,10 +218,23 @@
       "subject": "arena-scoped player selection",
       "statement": "Any command or script query that can affect gameplay must prove arena scope explicitly through project-owned membership identity; broad tags, @a, spatial proximity, or shared scoreboard values alone are insufficient for cross-arena isolation.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["arena-isolation", "selector-scope"],
-      "riskSurfaces": ["cross-arena-state", "selector-leak"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "arena-isolation",
+        "selector-scope"
+      ],
+      "riskSurfaces": [
+        "cross-arena-state",
+        "selector-leak"
+      ]
     },
     {
       "id": "multiplayer-policy.idempotent-reward-cleanup",
@@ -116,10 +242,24 @@
       "subject": "terminal round side effects",
       "statement": "Rewards, scoring commits, inventory grants, cleanup, and return-to-lobby actions must be idempotent or generation-guarded so duplicate terminal events cannot apply the same side effect twice.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["idempotency", "round-finalization"],
-      "riskSurfaces": ["duplicate-reward", "duplicate-cleanup", "score-corruption"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "idempotency",
+        "round-finalization"
+      ],
+      "riskSurfaces": [
+        "duplicate-reward",
+        "duplicate-cleanup",
+        "score-corruption"
+      ]
     },
     {
       "id": "multiplayer-policy.authoritative-ready-set",
@@ -127,10 +267,24 @@
       "subject": "ready state",
       "statement": "Ready evaluation must use the current authoritative participant set for the arena generation. Disconnected, migrating, spectator-loader, eliminated, or stale-generation players must not satisfy all-ready predicates unless explicitly defined by the game mode.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["ready-state", "participant-set"],
-      "riskSurfaces": ["ghost-ready", "arena-start", "disconnect"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "ready-state",
+        "participant-set"
+      ],
+      "riskSurfaces": [
+        "ghost-ready",
+        "arena-start",
+        "disconnect"
+      ]
     },
     {
       "id": "multiplayer-policy.post-defer-validation",
@@ -138,10 +292,24 @@
       "subject": "deferred player action",
       "statement": "After system.run, runTimeout, Promise resolution, form completion, delayed teleport, or any deferred callback, revalidate current player session and arena/round ownership before applying side effects.",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"],
-      "capabilityTags": ["deferred-work", "generation-token"],
-      "riskSurfaces": ["stale-callback", "async-race", "cross-round-state"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "capabilityTags": [
+        "deferred-work",
+        "generation-token"
+      ],
+      "riskSurfaces": [
+        "stale-callback",
+        "async-race",
+        "cross-round-state"
+      ]
     }
   ],
   "relations": [
@@ -152,8 +320,15 @@
       "kind": "deactivates",
       "object": "transient-player-readiness",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ]
     },
     {
       "id": "player-policy.relation.reconnect-requires-reconcile",
@@ -162,8 +337,15 @@
       "kind": "requires",
       "object": "player-state-reconciliation",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ]
     },
     {
       "id": "multiplayer-policy.relation-current-generation-gates-side-effects",
@@ -172,8 +354,15 @@
       "kind": "gates",
       "object": "current-session-and-arena-generation-validation",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ]
     },
     {
       "id": "multiplayer-policy.relation-arena-owner-gates-start",
@@ -182,8 +371,42 @@
       "kind": "gates",
       "object": "single-start-transaction-owner",
       "classification": "project-policy",
-      "applicability": { "editions": ["bedrock", "education"] },
-      "sourceIds": ["mivubi-player-session-policy-v1"]
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ]
+    },
+    {
+      "id": "multiplayer-policy.relation-observed-start-requires-single-owner",
+      "domain": "multiplayer",
+      "subject": "arena-start-observed",
+      "kind": "requires",
+      "object": "single-start-transaction-owner",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-player-session-policy-v1"
+      ],
+      "diagnosticSeverity": "critical",
+      "causalConsequences": [
+        "duplicate-countdown-risk",
+        "arena-state-race-risk"
+      ],
+      "causalOutcomePredicates": {
+        "duplicate-countdown-risk": [
+          "arena-double-start-observed"
+        ]
+      }
     }
   ]
 }
