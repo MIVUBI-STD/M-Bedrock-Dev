@@ -473,4 +473,34 @@ describe("repair release lineage", () => {
     expect(result.decision.reasons.join(" "))
       .toMatch(/runtimeEvidenceRevision/);
   });
+
+  it("blocks provider-bound release without strategy provider provenance", () => {
+    const providerBasis = {
+      ...basis,
+      repairProviderRegistryRevision: "provider-r1",
+    };
+    const repairProof = proof({
+      decisionBasis: providerBasis,
+    });
+    const baseLedger = completeLedger(repairProof);
+    const ledger = {
+      schemaVersion: 1 as const,
+      entries: baseLedger.entries.map((entry) => ({
+        ...entry,
+        basis: providerBasis,
+      })),
+    };
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      ledger,
+      providerBasis,
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/no provider provenance/);
+  });
+
 });
