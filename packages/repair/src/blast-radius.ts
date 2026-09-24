@@ -8,6 +8,7 @@ export const DEFAULT_REPAIR_BLAST_RADIUS_POLICY: RepairBlastRadiusPolicy = {
   maxAffectedNodes: 12,
   maxAffectedPaths: 6,
   maxAffectedKinds: 5,
+  maxImpactDepth: 4,
   sensitiveKinds: [
     "world",
     "pack",
@@ -70,10 +71,11 @@ export function decideRepairBlastRadius(
   if (
     impact.affectedNodeIds.length > policy.maxAffectedNodes ||
     impact.affectedPaths.length > policy.maxAffectedPaths ||
-    impact.affectedKinds.length > policy.maxAffectedKinds
+    impact.affectedKinds.length > policy.maxAffectedKinds ||
+    impact.maxImpactDepth > policy.maxImpactDepth
   ) {
     reasons.push(
-      "Counterfactual impact exceeds the configured bounded-repair envelope.",
+      "Counterfactual impact exceeds the configured bounded-repair envelope for node count, path spread, component kinds, or transitive depth.",
     );
     return {
       transactionId: impact.transactionId,
