@@ -29,3 +29,4 @@ export * from "./telemetry-continuity.js";
 export * from "./diagnostic-decision.js";
 export * from "./runtime-temporal.js";
 export * from "./runtime-evidence-integrity.js";
+export * from "./runtime-first-wrong.js";
