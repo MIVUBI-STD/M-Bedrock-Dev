@@ -1,4 +1,6 @@
 import type {
+  RuntimeProbeBinding,
+  RuntimeProbeBindingSet,
   RuntimeProbeRequest,
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
@@ -485,4 +487,124 @@ export function parseRuntimeProbeTranscriptJson(
     );
   }
   return parseRuntimeProbeTranscript(parsed);
+}
+
+
+export function validateRuntimeProbeBinding(
+  input: unknown,
+  index?: number,
+): string[] {
+  const prefix = index === undefined
+    ? "Runtime probe binding"
+    : "Runtime probe binding " + index;
+
+  if (!record(input)) return [prefix + " must be an object."];
+
+  const errors: string[] = [];
+  if (!nonEmpty(input.probeId)) {
+    errors.push(prefix + ".probeId must be a non-empty string.");
+  }
+  if (!nonEmpty(input.predicate)) {
+    errors.push(prefix + ".predicate must be a non-empty string.");
+  }
+  if (
+    input.incidentId !== undefined &&
+    !nonEmpty(input.incidentId)
+  ) {
+    errors.push(
+      prefix + ".incidentId must be a non-empty string when provided.",
+    );
+  }
+
+  validateScope(input.scope, prefix + ".scope", errors);
+
+  const syntheticRequest = {
+    schemaVersion: 1,
+    requestId: "binding-validation",
+    probeId: input.probeId,
+    predicate: input.predicate,
+    ...(input.scope === undefined ? {} : { scope: input.scope }),
+    query: input.query,
+    outcomeByState: input.outcomeByState,
+  };
+
+  const requestErrors = validateRuntimeProbeRequest(syntheticRequest);
+  for (const error of requestErrors) {
+    if (
+      error.startsWith("requestId") ||
+      error.startsWith("probeId") ||
+      error.startsWith("predicate") ||
+      error.startsWith("scope.")
+    ) {
+      continue;
+    }
+    errors.push(prefix + ": " + error);
+  }
+
+  return errors;
+}
+
+export function parseRuntimeProbeBinding(
+  input: unknown,
+): RuntimeProbeBinding {
+  const errors = validateRuntimeProbeBinding(input);
+  if (errors.length > 0) {
+    throw new Error(
+      "Invalid runtime probe binding: " + errors.join("; "),
+    );
+  }
+  return input as RuntimeProbeBinding;
+}
+
+export function validateRuntimeProbeBindingSet(
+  input: unknown,
+): string[] {
+  if (!record(input)) {
+    return ["Runtime probe binding set must be an object."];
+  }
+
+  const errors: string[] = [];
+  if (input.schemaVersion !== 1) {
+    errors.push("Runtime probe binding set schemaVersion must be 1.");
+  }
+  if (!Array.isArray(input.bindings)) {
+    errors.push("Runtime probe binding set bindings must be an array.");
+    return errors;
+  }
+
+  const keys = new Set<string>();
+  for (let index = 0; index < input.bindings.length; index += 1) {
+    const binding = input.bindings[index];
+    errors.push(...validateRuntimeProbeBinding(binding, index));
+
+    if (record(binding) && nonEmpty(binding.probeId)) {
+      const incidentId = nonEmpty(binding.incidentId)
+        ? binding.incidentId
+        : "*";
+      const key = incidentId + "\u0000" + binding.probeId;
+      if (keys.has(key)) {
+        errors.push(
+          "Duplicate runtime probe binding for incident/probe: " +
+          incidentId +
+          " / " +
+          binding.probeId,
+        );
+      }
+      keys.add(key);
+    }
+  }
+
+  return errors;
+}
+
+export function parseRuntimeProbeBindingSet(
+  input: unknown,
+): RuntimeProbeBindingSet {
+  const errors = validateRuntimeProbeBindingSet(input);
+  if (errors.length > 0) {
+    throw new Error(
+      "Invalid runtime probe binding set: " + errors.join("; "),
+    );
+  }
+  return input as RuntimeProbeBindingSet;
 }
