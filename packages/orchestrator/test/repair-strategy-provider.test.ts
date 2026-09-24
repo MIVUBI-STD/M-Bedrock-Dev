@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createPatchTransaction } from "../../repair/src/create.js";
 import {
   BUILTIN_REPAIR_STRATEGY_PROVIDERS,
+  repairStrategyProviderRegistryRevision,
   validateRepairStrategyProviderProposal,
   validateRepairStrategyProviderRegistry,
   type RepairStrategyProviderRegistry,
@@ -46,6 +47,28 @@ function proposal(providerId: string, providerVersion = "1") {
       supportingInvariantIds: ["invariant:ready"],
       addressesCandidateIds: ["cause-1"],
     },
+  };
+}
+
+function causalProviderFixture(
+  version: string,
+): RepairStrategyProviderRegistry {
+  return {
+    schemaVersion: 1,
+    providers: [{
+      id: "verified",
+      version,
+      owner: "provider",
+      deterministic: true,
+      evidenceClass: "runtime-causal",
+      selectionMode: "causal-auto",
+      supportedDiagnosticCodes: [
+        "KNOWLEDGE_RELATION_VIOLATION",
+      ],
+      mutationKinds: ["replace-command"],
+      requiresExactSourceEvidence: true,
+      rationale: "fixture",
+    }],
   };
 }
 
@@ -180,4 +203,59 @@ describe("repair strategy provider registry", () => {
       { requireCausalAuto: true },
     ).join(" ")).toMatch(/exact single-line source evidence/);
   });
+
+  it("fingerprints provider policy independent of declaration order", () => {
+    const first: RepairStrategyProviderRegistry = {
+      schemaVersion: 1,
+      providers: [{
+        id: "b",
+        version: "1",
+        owner: "b",
+        deterministic: true,
+        evidenceClass: "deterministic-static",
+        selectionMode: "causal-auto",
+        supportedDiagnosticCodes: [
+          "UNRESOLVED_REFERENCE",
+          "KNOWLEDGE_RELATION_VIOLATION",
+        ],
+        mutationKinds: ["replace-text", "replace-command"],
+        requiresExactSourceEvidence: true,
+        rationale: "b",
+      }, {
+        id: "a",
+        version: "1",
+        owner: "a",
+        deterministic: true,
+        evidenceClass: "runtime-causal",
+        selectionMode: "causal-auto",
+        supportedDiagnosticCodes: [
+          "KNOWLEDGE_RELATION_VIOLATION",
+        ],
+        mutationKinds: ["replace-command"],
+        requiresExactSourceEvidence: true,
+        rationale: "a",
+      }],
+    };
+    const second: RepairStrategyProviderRegistry = {
+      ...first,
+      providers: [...first.providers].reverse().map((provider) => ({
+        ...provider,
+        supportedDiagnosticCodes:
+          [...provider.supportedDiagnosticCodes].reverse(),
+        mutationKinds: [...provider.mutationKinds].reverse(),
+      })),
+    };
+
+    expect(repairStrategyProviderRegistryRevision(first))
+      .toBe(repairStrategyProviderRegistryRevision(second));
+  });
+
+  it("changes provider revision when provider policy/version changes", () => {
+    const first = causalProviderFixture("1");
+    const second = causalProviderFixture("2");
+
+    expect(repairStrategyProviderRegistryRevision(first))
+      .not.toBe(repairStrategyProviderRegistryRevision(second));
+  });
+
 });
