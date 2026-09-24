@@ -19,6 +19,18 @@ describe("CLI target options", () => {
     });
   });
 
+  it("parses a telemetry file without putting it in the target profile", () => {
+    const parsed = parseCliTargetOptions([
+      "map.mcworld",
+      "--edition", "bedrock",
+      "--telemetry", "qa/runtime.json",
+    ]);
+
+    expect(parsed.positionals).toEqual(["map.mcworld"]);
+    expect(parsed.target).toEqual({ edition: "bedrock" });
+    expect(parsed.telemetryPath).toBe("qa/runtime.json");
+  });
+
   it("rejects invalid edition instead of guessing", () => {
     expect(() => parseCliTargetOptions(["map.mcworld", "--edition", "java"]))
       .toThrow(/bedrock or education/);
