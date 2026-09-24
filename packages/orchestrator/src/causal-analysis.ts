@@ -5,12 +5,57 @@ import type {
   CausalLink,
   CausalNode,
 } from "../../project-model/src/causal-chain.js";
+import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
 
 function idFor(parts: readonly string[]): string {
   return "cause_" + createHash("sha256")
     .update(parts.join("|"))
     .digest("hex")
     .slice(0, 16);
+}
+
+function asRuntimeScope(
+  value: unknown,
+): RuntimeScope | undefined {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value)
+  ) return undefined;
+
+  const input = value as Record<string, unknown>;
+  const output: RuntimeScope = {};
+
+  for (const key of [
+    "arenaId",
+    "playerKey",
+    "entityKey",
+    "operationId",
+  ] as const) {
+    const item = input[key];
+    if (item === undefined) continue;
+    if (typeof item !== "string" || !item.trim()) return undefined;
+    output[key] = item;
+  }
+
+  for (const key of [
+    "arenaGeneration",
+    "connectionGeneration",
+    "lifeGeneration",
+    "entityGeneration",
+    "subsystemGeneration",
+  ] as const) {
+    const item = input[key];
+    if (item === undefined) continue;
+    if (
+      typeof item !== "number" ||
+      !Number.isInteger(item) ||
+      item < 0
+    ) return undefined;
+    output[key] = item;
+  }
+
+  return output;
 }
 
 function asStringArray(value: unknown): string[] {
@@ -197,6 +242,7 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
   const subject = typeof data.subject === "string" ? data.subject : undefined;
   const object = typeof data.object === "string" ? data.object : undefined;
   const scopeKey = typeof data.scopeKey === "string" ? data.scopeKey : undefined;
+  const runtimeScope = asRuntimeScope(data.runtimeScope);
   if (!relationId || !subject || !object) return undefined;
 
   const consequences = asStringArray(data.causalConsequences);
@@ -353,6 +399,7 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
   return {
     id: idFor([scopeKey ?? "global", relationId, finding.id]),
     ...(scopeKey === undefined ? {} : { scopeKey }),
+    ...(runtimeScope === undefined ? {} : { scope: runtimeScope }),
     severity: finding.severity,
     confidence: violation
       ? "high"
