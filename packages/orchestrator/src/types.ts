@@ -63,6 +63,8 @@ export interface InspectDirectoryResult {
     mediumConfidence: number;
     lowConfidence: number;
     projectedRisks: number;
+    corroboratedRisks: number;
+    observedOutcomes: number;
   };
   worldDatabase: {
     present: boolean;
