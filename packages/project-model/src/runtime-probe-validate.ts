@@ -192,3 +192,19 @@ export function parseRuntimeProbeResponse(input: unknown): RuntimeProbeResponse 
   }
   return input as RuntimeProbeResponse;
 }
+
+
+export function parseRuntimeProbeResponseJson(
+  json: string,
+): RuntimeProbeResponse {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json) as unknown;
+  } catch (error) {
+    throw new Error(
+      "Invalid runtime probe response JSON: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+  return parseRuntimeProbeResponse(parsed);
+}
