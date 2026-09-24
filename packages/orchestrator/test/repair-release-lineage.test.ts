@@ -408,4 +408,42 @@ describe("repair release lineage", () => {
       .toMatch(/does not carry current proof basis invariantRegistryRevision/);
   });
 
+
+  it("blocks release when runtime evidence revision changes", () => {
+    const runtimeBasis = {
+      ...basis,
+      runtimeEvidenceRevision: "runtime-r1",
+    };
+    const repairProof = proof({
+      decisionBasis: runtimeBasis,
+    });
+    const baseLedger = completeLedger(repairProof);
+    const ledger = {
+      schemaVersion: 1 as const,
+      entries: baseLedger.entries.map((entry) => ({
+        ...entry,
+        basis: runtimeBasis,
+      })),
+    };
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      ledger,
+      {
+        ...runtimeBasis,
+        runtimeEvidenceRevision: "runtime-r2",
+      },
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/runtimeEvidenceRevision changed/);
+    expect(
+      result.ledger.entries.every(
+        (entry) => entry.status === "invalidated",
+      ),
+    ).toBe(true);
+  });
+
 });
