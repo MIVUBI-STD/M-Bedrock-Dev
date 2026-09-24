@@ -232,4 +232,33 @@ describe("decision ledger", () => {
     expect(ledger.entries[0]?.invalidationReason)
       .toMatch(/runtimeEvidenceRevision changed/);
   });
+
+  it("invalidates descendants when contract registry revision changes", () => {
+    let ledger = createDecisionLedger();
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "contract-bound",
+      kind: "repair-authorization",
+      basis: {
+        contractRegistryRevision: "contracts-a",
+      },
+    });
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "downstream",
+      kind: "release-admission",
+      basis: {},
+      upstreamDecisionIds: ["contract-bound"],
+    });
+
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      contractRegistryRevision: "contracts-b",
+    });
+
+    expect(ledger.entries.map((entry) => entry.status))
+      .toEqual(["invalidated", "invalidated"]);
+    expect(ledger.entries[0]?.invalidationReason)
+      .toMatch(/contractRegistryRevision changed/);
+    expect(ledger.entries[1]?.invalidationReason)
+      .toMatch(/Upstream decision/);
+  });
+
 });
