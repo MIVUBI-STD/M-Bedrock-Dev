@@ -5,21 +5,38 @@ import { inspectArtifact } from "../../../packages/orchestrator/src/inspect-arti
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/load.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/script-api-usage.js";
 import { parseCliTargetOptions } from "./target-options.js";
+import { loadTelemetryFile } from "../../../packages/orchestrator/src/telemetry-load.js";
 
 async function main(): Promise<void> {
   const [, , command, ...rawArgs] = process.argv;
-  const { positionals: args, target } = parseCliTargetOptions(rawArgs);
+  const {
+    positionals: args,
+    target,
+    telemetryPath,
+  } = parseCliTargetOptions(rawArgs);
   const [input, secondInput, thirdInput] = args;
   const knowledge = await loadKnowledgeDirectory(resolve("knowledge"));
 
   if (command === "inspect" && input) {
-    const result = await inspectArtifact(resolve(input), target, knowledge);
+    const telemetry = telemetryPath
+      ? await loadTelemetryFile(resolve(telemetryPath))
+      : undefined;
+    const result = await inspectArtifact(
+      resolve(input),
+      target,
+      knowledge,
+      telemetry?.events ?? [],
+    );
     console.log(JSON.stringify(result, null, 2));
 
     if (result.diagnostics.some((finding) => finding.severity === "critical")) {
       process.exitCode = 1;
     }
     return;
+  }
+
+  if (telemetryPath && command !== "inspect") {
+    throw new Error("Telemetry input is only supported by inspect.");
   }
 
   if (command === "script-usage" && args.length > 0) {
@@ -62,7 +79,7 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id]",
+    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--telemetry qa.json]",
     "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...]",
     "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...]",
     "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version> [--edition ...] [--experiment id]",
