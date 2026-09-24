@@ -28,6 +28,7 @@ export interface KnowledgeRelationAssessment {
   causalConsequences?: readonly string[];
   causalCorroborators?: Readonly<Record<string, readonly string[]>>;
   causalOutcomePredicates?: Readonly<Record<string, readonly string[]>>;
+  causalCorroborationMinSources?: Readonly<Record<string, number>>;
 }
 
 function evidenceFor(
@@ -87,6 +88,12 @@ export function assessKnowledgeRelations(
         ...(relation.causalOutcomePredicates === undefined
           ? {}
           : { causalOutcomePredicates: relation.causalOutcomePredicates }),
+        ...(relation.causalCorroborationMinSources === undefined
+          ? {}
+          : {
+              causalCorroborationMinSources:
+                relation.causalCorroborationMinSources,
+            }),
       });
       continue;
     }
@@ -123,6 +130,12 @@ export function assessKnowledgeRelations(
         ...(relation.causalOutcomePredicates === undefined
           ? {}
           : { causalOutcomePredicates: relation.causalOutcomePredicates }),
+        ...(relation.causalCorroborationMinSources === undefined
+          ? {}
+          : {
+              causalCorroborationMinSources:
+                relation.causalCorroborationMinSources,
+            }),
       });
       continue;
     }
@@ -157,6 +170,12 @@ export function assessKnowledgeRelations(
         ...(relation.causalOutcomePredicates === undefined
           ? {}
           : { causalOutcomePredicates: relation.causalOutcomePredicates }),
+        ...(relation.causalCorroborationMinSources === undefined
+          ? {}
+          : {
+              causalCorroborationMinSources:
+                relation.causalCorroborationMinSources,
+            }),
       });
       continue;
     }
@@ -187,6 +206,12 @@ export function assessKnowledgeRelations(
         ...(relation.causalOutcomePredicates === undefined
           ? {}
           : { causalOutcomePredicates: relation.causalOutcomePredicates }),
+        ...(relation.causalCorroborationMinSources === undefined
+          ? {}
+          : {
+              causalCorroborationMinSources:
+                relation.causalCorroborationMinSources,
+            }),
       });
       continue;
     }
@@ -221,6 +246,12 @@ export function assessKnowledgeRelations(
         ...(relation.causalOutcomePredicates === undefined
           ? {}
           : { causalOutcomePredicates: relation.causalOutcomePredicates }),
+        ...(relation.causalCorroborationMinSources === undefined
+          ? {}
+          : {
+              causalCorroborationMinSources:
+                relation.causalCorroborationMinSources,
+            }),
       });
     }
   }
