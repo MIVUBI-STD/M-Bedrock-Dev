@@ -4,6 +4,7 @@ import type {
 } from "../../project-model/src/diagnostic-probe.js";
 import type {
   RuntimeProbeBinding,
+  RuntimeProbeRequest,
   RuntimeProbeRequestBundle,
 } from "../../project-model/src/runtime-probe.js";
 import { parseRuntimeProbeRequestBundle } from "../../project-model/src/runtime-probe-validate.js";
@@ -51,7 +52,7 @@ export function prepareRuntimeProbeBundle(
   );
 
   const prepared: PreparedProbeIncident[] = [];
-  const requests = [];
+  const requests: RuntimeProbeRequest[] = [];
   const allIssues: RuntimeProbeCompilationIssue[] = [];
 
   for (const analysis of inspection.diagnosticProbeAnalysis.incidents) {
