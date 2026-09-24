@@ -51,7 +51,6 @@ function normalizedRuntimeEvidence(
       origin: record.origin ?? null,
       scopeKey: runtimeScopeKey(record.scope),
       observedAt: record.observedAt ?? null,
-      note: record.note ?? null,
       sourceRefs: [...(record.sourceRefs ?? [])]
         .map((source) => ({
           artifactId: source.artifactId,
@@ -76,6 +75,36 @@ function normalizedRuntimeEvidence(
         JSON.stringify(b.observedAt),
       )
     );
+}
+
+function normalizedEvidenceIntegrity(
+  integrity: Readonly<Record<string, RuntimeEvidenceIntegrityReport>>,
+): unknown {
+  return Object.fromEntries(
+    Object.entries(integrity)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([channel, report]) => [
+        channel,
+        {
+          records: report.records,
+          observedRecords: report.observedRecords,
+          derivedRecords: report.derivedRecords,
+          unknownConfidenceRecords: report.unknownConfidenceRecords,
+          unlocatedObservedRecords: report.unlocatedObservedRecords,
+          unresolvedConflictPredicates: [
+            ...report.unresolvedConflictPredicates,
+          ].sort(),
+          resolvedConflictCount: report.resolvedConflictCount,
+          continuityComplete: report.continuityComplete,
+          telemetryContinuityComplete:
+            report.telemetryContinuityComplete,
+          safeForCurrentStateClaims:
+            report.safeForCurrentStateClaims,
+          safeForTemporalViolationClaims:
+            report.safeForTemporalViolationClaims,
+        },
+      ]),
+  );
 }
 
 export interface DecisionBasisInput {
@@ -129,7 +158,11 @@ export function buildDecisionBasis(
             records: normalizedRuntimeEvidence(
               input.runtimeEvidence ?? [],
             ),
-            integrity: input.evidenceIntegrity ?? {},
+            integrity: input.evidenceIntegrity === undefined
+              ? {}
+              : normalizedEvidenceIntegrity(
+                  input.evidenceIntegrity,
+                ),
           }),
         }),
   };
