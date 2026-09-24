@@ -28,7 +28,7 @@ describe("structure placement proofs", () => {
       "demo:load",
       [
         "structure load demo:arena 100 64 200 90_degrees",
-        "execute if block 110 64 210 minecraft:gold_block run function demo:start",
+        "execute if block 100 64 200 minecraft:gold_block run function demo:start",
       ].join("\n"),
       { artifactId: "a", relativePath: "functions/load.mcfunction" },
     );
