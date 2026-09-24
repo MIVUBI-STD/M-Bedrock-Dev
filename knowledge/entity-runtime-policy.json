@@ -392,7 +392,11 @@
       "sourceIds": [
         "mivubi-entity-runtime-policy-v1"
       ],
-      "diagnosticSeverity": "medium"
+      "diagnosticSeverity": "medium",
+      "causalConsequences": [
+        "navigation-stall-risk",
+        "fallback-recovery-risk"
+      ]
     }
   ]
 }
