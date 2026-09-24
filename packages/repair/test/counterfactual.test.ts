@@ -143,4 +143,43 @@ describe("repair counterfactual and blast radius", () => {
     expect(decideRepairBlastRadius(impact).disposition)
       .toBe("indeterminate");
   });
+
+  it("marks undeclared extra patch paths as indeterminate", () => {
+    const tx = createPatchTransaction({
+      title: "wide",
+      sourceFingerprint: "abc",
+      operations: [{
+        kind: "replace-text",
+        source: {
+          artifactId: "art-1",
+          relativePath: "functions/target.mcfunction",
+        },
+        expected: "a",
+        replacement: "b",
+      }, {
+        kind: "replace-text",
+        source: {
+          artifactId: "art-1",
+          relativePath: "functions/unrelated.mcfunction",
+        },
+        expected: "x",
+        replacement: "y",
+      }],
+      preconditions: [{
+        kind: "source-fingerprint",
+        expected: "abc",
+      }],
+      validation: [],
+    });
+
+    const impact = analyzeRepairCounterfactual(graphFixture(), {
+      transaction: tx,
+      changedNodeIds: ["function:p:target"],
+    });
+
+    expect(impact.graphCoverageComplete).toBe(false);
+    expect(decideRepairBlastRadius(impact).disposition)
+      .toBe("indeterminate");
+  });
+
 });
