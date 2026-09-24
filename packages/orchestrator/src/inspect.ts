@@ -6,9 +6,8 @@ import {
   structureIdentifier,
 } from "./inspect-identifiers.js";
 export { structureIdentifier } from "./inspect-identifiers.js";
+import { discoverInspectionPacks } from "./inspect-packs.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
-import { discoverPackCandidates } from "../../../analyzers/discovery/src/pack-discovery.js";
-import { analyzeManifest, classifyPackFromManifest } from "../../../analyzers/manifest/src/analyze.js";
 import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/compatibility.js";
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
@@ -57,11 +56,9 @@ import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { populateFunctionEdges } from "../../../analyzers/references/src/populate-function-edges.js";
-import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import type {
   InspectDirectoryResult,
-  InspectedPack,
   InspectTargetProfile,
 } from "./types.js";
 import { analyzeFunctionTopology } from "./topology-analysis.js";
@@ -127,10 +124,6 @@ function isWithinPack(relativePath: string, packRoot: string): boolean {
   return relativePath === packRoot || relativePath.startsWith(packRoot.replace(/\/$/, "") + "/");
 }
 
-function formatVersion(value: { major: number; minor: number; patch: number } | undefined): string | undefined {
-  return value ? `${value.major}.${value.minor}.${value.patch}` : undefined;
-}
-
 export async function inspectDirectory(
   root: string,
   artifactId = "art_working",
@@ -181,27 +174,11 @@ export async function inspectDirectory(
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
 
-  const packs: InspectedPack[] = [];
-  const manifests: Array<{ root: string; manifest: ManifestModel }> = [];
-
-  for (const pack of discoverPackCandidates(files)) {
-    const raw = JSON.parse(await readFile(join(root, pack.manifestPath), "utf8")) as unknown;
-    const manifest = analyzeManifest(raw, { artifactId, relativePath: pack.manifestPath });
-    const compatibility = deriveManifestCompatibilityFacts(manifest);
-    manifests.push({ root: pack.root, manifest });
-
-    const normalizedPack: InspectedPack = {
-      root: pack.root,
-      type: classifyPackFromManifest(manifest),
-      educationMetadata: compatibility.educationMetadata,
-      scriptModules: compatibility.scriptModules,
-    };
-
-    if (manifest.headerUuid) normalizedPack.uuid = manifest.headerUuid;
-    const minEngineVersion = formatVersion(compatibility.minEngineVersion);
-    if (minEngineVersion) normalizedPack.minEngineVersion = minEngineVersion;
-    packs.push(normalizedPack);
-  }
+  const { packs, manifests } = await discoverInspectionPacks(
+    root,
+    artifactId,
+    files,
+  );
 
   const graph = new SemanticGraph();
   const nodes: SemanticNode[] = [];
