@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "6bdf530ba8709753e16ab0dd27c298d498950b06",
+  "generatedFrom": "inspection-stage diagnostics entrypoint migration",
   "policy": "Cross-owner deep-import debt may decrease but must not increase without an explicit baseline update.",
   "owners": {
     "packages/project-model": 309,
-    "packages/diagnostics": 69,
+    "packages/diagnostics": 61,
     "packages/knowledge": 52,
     "analyzers/commands": 48,
     "analyzers/scripts": 45,

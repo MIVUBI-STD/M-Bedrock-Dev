@@ -1,7 +1,7 @@
 import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
 import { educationRequirementDiagnostic } from "../../../analyzers/diagnostics/src/education-findings.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 import type { InspectionSourceIndex } from "./inspect-source-index.js";
 

@@ -15,7 +15,7 @@ import { scriptReturnContractDiagnostics } from "../../../analyzers/diagnostics/
 import { scriptImportedTypeLifecycleDiagnostics } from "../../../analyzers/diagnostics/src/script-type-findings.js";
 import { scriptEnumValueDiagnostics } from "../../../analyzers/diagnostics/src/script-enum-value-findings.js";
 import { scriptPropertyWriteDiagnostics } from "../../../analyzers/diagnostics/src/script-property-write-findings.js";
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { SemanticNode } from "../../graph/src/types.js";
 
 function isWithinPack(

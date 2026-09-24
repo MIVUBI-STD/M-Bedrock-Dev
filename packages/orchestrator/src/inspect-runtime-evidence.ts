@@ -1,4 +1,4 @@
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";

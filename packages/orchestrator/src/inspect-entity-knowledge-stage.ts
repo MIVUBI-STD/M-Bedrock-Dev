@@ -4,7 +4,7 @@ import { analyzeEntityTransitionReachability } from "../../../analyzers/entities
 import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
+import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import type { SemanticNode } from "../../graph/src/types.js";
 import type { InspectTargetProfile } from "./types.js";
