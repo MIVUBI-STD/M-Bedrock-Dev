@@ -59,7 +59,7 @@ describe("repair lifecycle", () => {
       },
       validation: {
         ok: true,
-        results: [],
+        steps: [],
       },
       pendingNodeIds: ["n2"],
       pendingPaths: ["functions/caller.mcfunction"],
@@ -126,7 +126,7 @@ describe("repair lifecycle", () => {
       },
       validation: {
         ok: false,
-        results: [],
+        steps: [],
       },
       rollback: {
         ok: true,
