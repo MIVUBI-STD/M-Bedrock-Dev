@@ -93,3 +93,5 @@ export * from "./repair-proof-bundle.js";
 
 export * from "./diagnostic-probe-analysis.js";
 export * from "./repair-admission-pipeline.js";
+
+export * from "./runtime-probe-binding-load.js";
