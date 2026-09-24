@@ -13,6 +13,10 @@ const proof: RepairProofBundle = {
   transactionId: "tx-1",
   sourceFingerprint: "source",
   graphFingerprint: "graph",
+  decisionBasis: {
+    sourceFingerprint: "source",
+    graphFingerprint: "graph",
+  },
   incidentId: "incident-1",
   selectedCandidateId: "candidate",
   diagnosticDisposition: "repair-eligible",
