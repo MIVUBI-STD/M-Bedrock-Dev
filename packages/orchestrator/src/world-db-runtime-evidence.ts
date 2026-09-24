@@ -22,6 +22,7 @@ export function worldDbRuntimeEvidence(
       predicate: "world-db-scan-complete",
       state: "absent",
       confidence: "observed",
+      origin: "native",
       note: "Native LevelDB scan reached its inspection budget.",
     });
   } else {
@@ -29,6 +30,7 @@ export function worldDbRuntimeEvidence(
       predicate: "world-db-scan-complete",
       state: "present",
       confidence: "observed",
+      origin: "native",
     });
   }
 
@@ -40,6 +42,7 @@ export function worldDbRuntimeEvidence(
       predicate: "world-db-chunk-record",
       state: "present",
       confidence: "observed",
+      origin: "native",
       scope,
       note: "dimension=" + chunk.dimensionId + ";kinds=" + chunk.kinds.join(","),
     });
@@ -49,6 +52,7 @@ export function worldDbRuntimeEvidence(
         predicate: "world-db-block-entity-record",
         state: "present",
         confidence: "observed",
+      origin: "native",
         scope,
       });
     }
@@ -57,6 +61,7 @@ export function worldDbRuntimeEvidence(
         predicate: "world-db-pending-tick-record",
         state: "present",
         confidence: "observed",
+      origin: "native",
         scope,
       });
     }
@@ -65,6 +70,7 @@ export function worldDbRuntimeEvidence(
         predicate: "world-db-random-tick-record",
         state: "present",
         confidence: "observed",
+      origin: "native",
         scope,
       });
     }
