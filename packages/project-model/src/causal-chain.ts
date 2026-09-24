@@ -7,6 +7,12 @@ export type CausalLinkStrength =
   | "corroborated-risk"
   | "risk-only";
 
+export type CausalTemporalStatus =
+  | "after-subject"
+  | "before-subject"
+  | "same-moment"
+  | "unresolved";
+
 export type CausalNodeKind =
   | "observed-state"
   | "missing-requirement"
@@ -30,6 +36,7 @@ export interface CausalLink {
   to: string;
   strength: CausalLinkStrength;
   relationId?: string;
+  temporalStatus?: CausalTemporalStatus;
   rationale: string;
 }
 
