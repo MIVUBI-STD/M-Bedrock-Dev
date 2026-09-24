@@ -17,6 +17,12 @@ export interface ApplyTransactionContext {
   currentSourceFingerprint: string;
 }
 
+export interface RollbackAppliedFilesResult {
+  ok: boolean;
+  restoredFiles: number;
+  failure?: string;
+}
+
 export interface ApplyTransactionResult {
   ok: boolean;
   appliedOperations: number;
@@ -148,4 +154,46 @@ export async function applyPatchTransaction(
   }
 
   return { ok: true, appliedOperations, rollback };
+}
+
+
+export async function rollbackAppliedFiles(
+  workspace: MutationWorkspace,
+  rollback: readonly AppliedFileRollback[],
+): Promise<RollbackAppliedFilesResult> {
+  let prepared;
+  try {
+    prepared = await prepareMutationWorkspace(workspace);
+  } catch (error) {
+    return {
+      ok: false,
+      restoredFiles: 0,
+      failure:
+        error instanceof Error
+          ? error.message
+          : "WORKSPACE_PREPARATION_FAILED",
+    };
+  }
+
+  let restoredFiles = 0;
+  try {
+    for (const entry of [...rollback].reverse()) {
+      const target = await resolveWorkingPathSecure(
+        prepared,
+        entry.relativePath,
+      );
+      await atomicWriteText(target, entry.previousText);
+      restoredFiles += 1;
+    }
+    return { ok: true, restoredFiles };
+  } catch (error) {
+    return {
+      ok: false,
+      restoredFiles,
+      failure:
+        error instanceof Error
+          ? error.message
+          : "ROLLBACK_FAILED",
+    };
+  }
 }
