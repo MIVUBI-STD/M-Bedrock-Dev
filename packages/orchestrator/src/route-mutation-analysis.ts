@@ -152,6 +152,7 @@ export function correlateRouteMutations(
 export function routeMutationRuntimeEvidence(
   correlations: readonly RouteMutationCorrelation[],
   navigatingEntityKeys: ReadonlySet<string> = new Set(),
+  targetDrivenEntityKeys: ReadonlySet<string> = new Set(),
 ): RuntimeEvidenceRecord[] {
   return correlations.flatMap((item): RuntimeEvidenceRecord[] => {
     if (item.status !== "overlap") return [];
@@ -184,6 +185,21 @@ export function routeMutationRuntimeEvidence(
         ...(item.source === undefined ? {} : { sourceRefs: [item.source] }),
         relatedNodeIds: linkedNavigators,
         note: linkedNavigators.join(","),
+      });
+    }
+
+    const linkedTargetDriven = item.entityKeys.filter((key) =>
+      targetDrivenEntityKeys.has(key)
+    );
+    if (linkedTargetDriven.length > 0) {
+      records.push({
+        predicate: "route-target-driven-consumer-present",
+        state: "present",
+        confidence: "derived",
+        scope: { operationId: item.mutationId },
+        ...(item.source === undefined ? {} : { sourceRefs: [item.source] }),
+        relatedNodeIds: linkedTargetDriven,
+        note: linkedTargetDriven.join(","),
       });
     }
 
