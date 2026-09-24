@@ -175,6 +175,15 @@ export function createTelemetryInstrumentationKit(
       });
     },
 
+    drainBatch(input = {}) {
+      const sessionId = input.sessionId ?? options.sessionId;
+      const artifactId = input.artifactId ?? options.artifactId;
+      return buffer.drainBatch({
+        ...(sessionId === undefined ? {} : { sessionId }),
+        ...(artifactId === undefined ? {} : { artifactId }),
+      });
+    },
+
     resetRuntimeState,
 
     clearBuffer() {
