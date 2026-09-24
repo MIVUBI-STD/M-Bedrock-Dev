@@ -271,4 +271,64 @@ describe("repair strategy selection", () => {
       }],
     )).toThrow(/Duplicate repair strategy id/);
   });
+
+  it("keeps trade-off strategies ambiguous on the Pareto frontier", () => {
+    const graph = graphFixture();
+
+    const fewNodesMoreOps = createPatchTransaction({
+      title: "few-nodes-more-ops",
+      sourceFingerprint: "source",
+      operations: [{
+        kind: "replace-text",
+        source: source("functions/caller.mcfunction"),
+        expected: "old-a",
+        replacement: "new-a",
+      }, {
+        kind: "replace-text",
+        source: source("functions/caller.mcfunction"),
+        expected: "old-b",
+        replacement: "new-b",
+      }],
+      preconditions: [{
+        kind: "source-fingerprint",
+        expected: "source",
+      }],
+      validation: [{ kind: "rebuild-graph" }],
+    });
+
+    const moreNodesFewerOps = transaction(
+      "more-nodes-fewer-ops",
+      "functions/target.mcfunction",
+    );
+
+    const result = selectRepairStrategy(
+      graph,
+      diagnostic,
+      [{
+        strategyId: "few-nodes-more-ops",
+        transaction: fewNodesMoreOps,
+        changedNodeIds: ["function:p:caller"],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+      }, {
+        strategyId: "more-nodes-fewer-ops",
+        transaction: moreNodesFewerOps,
+        changedNodeIds: ["function:p:target"],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+      }],
+      {
+        requiredInvariantIds: ["invariant:ready"],
+      },
+    );
+
+    expect(result.status).toBe("ambiguous");
+    if (result.status !== "ambiguous") return;
+    expect(result.tied.map((item) => item.strategyId).sort())
+      .toEqual([
+        "few-nodes-more-ops",
+        "more-nodes-fewer-ops",
+      ]);
+  });
+
 });
