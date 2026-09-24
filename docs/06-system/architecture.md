@@ -81,3 +81,16 @@ Application modules under `apps/` expose either `src/main.ts` or `src/index.ts`.
 Generic first-level module buckets such as `utils`, `helpers`, `misc`, and `shared` are forbidden. Shared code must have a semantic owner; genuinely dependency-neutral primitives belong in `packages/common`.
 
 This shape is checked by `tooling/repository/verify-module-shape.mjs`.
+
+## Dependency graph audit
+
+Repository verification builds a first-level module dependency graph from relative source imports across `apps/`, `packages/`, `analyzers/`, and `adapters/`.
+
+The graph audit fails on:
+
+- unresolved relative source imports;
+- dependency cycles between first-level modules.
+
+Fan-in and fan-out are reported as maintenance signals only. They are not threshold-gated until a repository-specific baseline justifies one.
+
+The implementation lives in `tooling/repository/verify-dependency-graph.mjs`.

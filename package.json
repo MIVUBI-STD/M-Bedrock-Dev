@@ -9,14 +9,15 @@
   },
   "scripts": {
     "check": "npm run verify:full",
-    "verify:repository": "node tooling/repository/verify.mjs && npm run verify:modules && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs",
+    "verify:repository": "node tooling/repository/verify.mjs && npm run verify:modules && npm run verify:dependencies && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs",
     "verify:boundaries": "node tooling/repository/verify-boundaries.mjs",
     "verify:source": "npm run typecheck && npm test",
     "verify:full": "npm run verify:repository && npm run verify:source",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "cli": "tsx apps/cli/src/main.ts",
-    "verify:modules": "node tooling/repository/verify-module-shape.mjs"
+    "verify:modules": "node tooling/repository/verify-module-shape.mjs",
+    "verify:dependencies": "node tooling/repository/verify-dependency-graph.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",

@@ -31,7 +31,7 @@ Use targeted proof during development. Integrated repository verification is a c
 policy/docs change      → structural review
 TypeScript owner        → typecheck + targeted test
 archive/repair owner    → targeted fixture tests
-cross-owner checkpoint  → integrated Verify
+cross-owner checkpoint  → module shape + dependency graph + integrated Verify
 real artifact behavior  → LOCAL_ARTIFACT
 Minecraft import/open   → LOCAL_MINECRAFT
 gameplay/runtime        → LIVE_MINECRAFT

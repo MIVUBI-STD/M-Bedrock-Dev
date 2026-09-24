@@ -24,6 +24,7 @@ const required = [
   "docs/06-system/contract-registry.json",
   "tooling/repository/verify-contract-registry.mjs",
   "tooling/repository/verify-module-shape.mjs",
+  "tooling/repository/verify-dependency-graph.mjs",
   "docs/06-system/skill-routing.md",
   "docs/06-system/development-operations.md",
   "docs/07-operations/current-validation.md",

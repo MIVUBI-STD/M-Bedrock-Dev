@@ -1,0 +1,172 @@
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, extname, normalize, relative, resolve, sep } from "node:path";
+
+const ROOT = process.cwd();
+const SOURCE_ROOTS = ["apps", "packages", "analyzers", "adapters"];
+const SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".mjs", ".cjs"];
+const IMPORT_RE = /(?:import|export)\s+(?:type\s+)?(?:[^"'()]*?\s+from\s+)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)/g;
+
+function walk(dir) {
+  const output = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = resolve(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (["node_modules", "dist", "coverage"].includes(entry.name)) continue;
+      output.push(...walk(full));
+    } else if (entry.isFile() && SOURCE_EXTENSIONS.includes(extname(entry.name))) {
+      output.push(full);
+    }
+  }
+  return output;
+}
+
+function moduleId(file) {
+  const rel = relative(ROOT, file).split(sep);
+  if (rel.length < 2 || !SOURCE_ROOTS.includes(rel[0])) return undefined;
+  return rel[0] + "/" + rel[1];
+}
+
+function candidateTargets(base) {
+  const ext = extname(base);
+  if (SOURCE_EXTENSIONS.includes(ext)) return [base];
+
+  const values = [base];
+  for (const candidateExt of SOURCE_EXTENSIONS) values.push(base + candidateExt);
+  for (const candidateExt of SOURCE_EXTENSIONS) values.push(resolve(base, "index" + candidateExt));
+  return values;
+}
+
+function resolveRelativeImport(fromFile, specifier) {
+  if (!specifier.startsWith(".")) return undefined;
+  const raw = normalize(resolve(dirname(fromFile), specifier));
+
+  for (const candidate of candidateTargets(raw)) {
+    if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+  }
+
+  if (/\.js$/.test(raw)) {
+    const withoutJs = raw.slice(0, -3);
+    for (const ext of [".ts", ".tsx", ".mts", ".cts"]) {
+      const candidate = withoutJs + ext;
+      if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+    }
+  }
+
+  return undefined;
+}
+
+const moduleGraph = new Map();
+const edgeFiles = new Map();
+const unresolvedRelative = [];
+
+for (const rootName of SOURCE_ROOTS) {
+  const rootPath = resolve(ROOT, rootName);
+  if (!existsSync(rootPath)) continue;
+
+  for (const file of walk(rootPath)) {
+    const fromModule = moduleId(file);
+    if (!fromModule) continue;
+    if (!moduleGraph.has(fromModule)) moduleGraph.set(fromModule, new Set());
+
+    const text = readFileSync(file, "utf8");
+    for (const match of text.matchAll(IMPORT_RE)) {
+      const specifier = match[1] ?? match[2];
+      if (!specifier?.startsWith(".")) continue;
+
+      const target = resolveRelativeImport(file, specifier);
+      if (!target) {
+        unresolvedRelative.push({
+          file: relative(ROOT, file).replaceAll("\\", "/"),
+          import: specifier,
+        });
+        continue;
+      }
+
+      const toModule = moduleId(target);
+      if (!toModule || toModule === fromModule) continue;
+
+      moduleGraph.get(fromModule).add(toModule);
+      const edgeKey = fromModule + " -> " + toModule;
+      if (!edgeFiles.has(edgeKey)) edgeFiles.set(edgeKey, []);
+      edgeFiles.get(edgeKey).push(relative(ROOT, file).replaceAll("\\", "/"));
+    }
+  }
+}
+
+const visiting = new Set();
+const visited = new Set();
+const stack = [];
+const cycles = [];
+const cycleKeys = new Set();
+
+function visit(module) {
+  if (visited.has(module)) return;
+  if (visiting.has(module)) {
+    const index = stack.indexOf(module);
+    const cycle = [...stack.slice(index), module];
+    const normalized = cycle.slice(0, -1);
+    const rotations = normalized.map((_, i) =>
+      [...normalized.slice(i), ...normalized.slice(0, i)].join(" -> "),
+    );
+    const key = rotations.sort()[0];
+    if (!cycleKeys.has(key)) {
+      cycleKeys.add(key);
+      cycles.push(cycle);
+    }
+    return;
+  }
+
+  visiting.add(module);
+  stack.push(module);
+  for (const target of [...(moduleGraph.get(module) ?? [])].sort()) visit(target);
+  stack.pop();
+  visiting.delete(module);
+  visited.add(module);
+}
+
+for (const module of [...moduleGraph.keys()].sort()) visit(module);
+
+const fanOut = [...moduleGraph.entries()]
+  .map(([module, targets]) => ({ module, count: targets.size }))
+  .sort((a, b) => b.count - a.count || a.module.localeCompare(b.module));
+
+const fanInCounts = new Map([...moduleGraph.keys()].map((module) => [module, 0]));
+for (const targets of moduleGraph.values()) {
+  for (const target of targets) fanInCounts.set(target, (fanInCounts.get(target) ?? 0) + 1);
+}
+const fanIn = [...fanInCounts.entries()]
+  .map(([module, count]) => ({ module, count }))
+  .sort((a, b) => b.count - a.count || a.module.localeCompare(b.module));
+
+console.log("Dependency graph audit");
+console.log("  modules:", moduleGraph.size);
+console.log("  edges:", [...moduleGraph.values()].reduce((sum, targets) => sum + targets.size, 0));
+console.log("  unresolved relative imports:", unresolvedRelative.length);
+console.log("");
+console.log("Highest fan-out:");
+for (const item of fanOut.slice(0, 8)) console.log(`  ${item.module}: ${item.count}`);
+console.log("");
+console.log("Highest fan-in:");
+for (const item of fanIn.slice(0, 8)) console.log(`  ${item.module}: ${item.count}`);
+
+if (unresolvedRelative.length > 0) {
+  console.error("");
+  console.error("Unresolved relative imports:");
+  for (const item of unresolvedRelative.slice(0, 20)) {
+    console.error(`- ${item.file} -> ${item.import}`);
+  }
+  if (unresolvedRelative.length > 20) {
+    console.error(`- ... and ${unresolvedRelative.length - 20} more`);
+  }
+  process.exit(1);
+}
+
+if (cycles.length > 0) {
+  console.error("");
+  console.error("Module dependency cycles:");
+  for (const cycle of cycles) console.error("- " + cycle.join(" -> "));
+  process.exit(1);
+}
+
+console.log("");
+console.log("No module dependency cycles found.");
