@@ -35,6 +35,24 @@ function resolveImport(fromFile, specifier) {
   return normalize(resolve(dirname(fromFile), specifier));
 }
 
+function externalSpecifierViolation(fromFile, specifier) {
+  const fromArea = topArea(fromFile);
+  if (fromArea !== "packages") return undefined;
+
+  const fromPackage = packageName(fromFile);
+  if (
+    fromPackage === "telemetry" &&
+    (
+      specifier === "@minecraft/server" ||
+      specifier.startsWith("@minecraft/server/")
+    )
+  ) {
+    return "packages/telemetry must remain runtime-independent and must not import @minecraft/server";
+  }
+
+  return undefined;
+}
+
 function violation(fromFile, targetPath) {
   const fromArea = topArea(fromFile);
   const targetArea = topArea(targetPath);
@@ -45,6 +63,19 @@ function violation(fromFile, targetPath) {
 
   if (fromArea === "packages") {
     const fromPackage = packageName(fromFile);
+    if (
+      fromPackage === "telemetry" &&
+      targetArea === "packages" &&
+      !["telemetry", "project-model"].includes(packageName(targetPath))
+    ) {
+      return "packages/telemetry may depend only on project-model and itself";
+    }
+    if (
+      fromPackage === "telemetry" &&
+      (targetArea === "analyzers" || targetArea === "adapters")
+    ) {
+      return "packages/telemetry must not depend on analyzers or adapters";
+    }
     if (targetArea === "apps") {
       return "packages must never import presentation apps";
     }
@@ -87,6 +118,16 @@ for (const rootName of SOURCE_ROOTS) {
     for (const match of text.matchAll(IMPORT_RE)) {
       const specifier = match[1] ?? match[2];
       if (!specifier) continue;
+      const externalReason = externalSpecifierViolation(file, specifier);
+      if (externalReason) {
+        failures.push({
+          file: relative(ROOT, file).replaceAll("\\", "/"),
+          import: specifier,
+          reason: externalReason,
+        });
+        continue;
+      }
+
       const target = resolveImport(file, specifier);
       if (!target) continue;
       const reason = violation(file, target);
