@@ -126,6 +126,8 @@ export function createTelemetryEmitter(
     entityStall: (input) => emitBuilt("entity-stall", input),
     teleportFallback: (input) => emitBuilt("teleport-fallback", input),
     arenaDoubleStart: (input) => emitBuilt("arena-double-start", input),
+    arenaGenerationAnomaly: (input) =>
+      emitBuilt("arena-generation-anomaly", input),
     staleCallback: (input) => emitBuilt("stale-callback", input),
     reviveAnomaly: (input) => emitBuilt("revive-anomaly", input),
     stateDrift: (input) => emitBuilt("state-drift", input),
