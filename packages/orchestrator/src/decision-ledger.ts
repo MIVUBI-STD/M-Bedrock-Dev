@@ -114,6 +114,7 @@ function mismatchReason(
     "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
+    "repairProviderRegistryRevision",
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
