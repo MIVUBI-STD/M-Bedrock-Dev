@@ -27,6 +27,7 @@ export function createArenaStartGuard(
   telemetry: TelemetryEmitter,
 ): ArenaStartGuard {
   const operations = new Map<string, Set<string>>();
+  const reported = new Set<string>();
 
   return {
     observeStart(input) {
@@ -36,7 +37,11 @@ export function createArenaStartGuard(
       );
       const current = operations.get(key) ?? new Set<string>();
 
-      if (!current.has(input.operationId) && current.size > 0) {
+      if (
+        !current.has(input.operationId) &&
+        current.size > 0 &&
+        !reported.has(key)
+      ) {
         telemetry.arenaDoubleStart({
           arenaId: input.arenaId,
           arenaGeneration: input.arenaGeneration,
@@ -47,6 +52,7 @@ export function createArenaStartGuard(
             ? {}
             : { timestamp: input.timestamp }),
         });
+        reported.add(key);
       }
 
       current.add(input.operationId);
@@ -55,19 +61,23 @@ export function createArenaStartGuard(
 
     reset(arenaId, arenaGeneration) {
       if (arenaGeneration !== undefined) {
-        operations.delete(
-          arenaGenerationKey(arenaId, arenaGeneration),
-        );
+        const key = arenaGenerationKey(arenaId, arenaGeneration);
+        operations.delete(key);
+        reported.delete(key);
         return;
       }
 
       for (const key of [...operations.keys()]) {
-        if (key.startsWith(arenaId + ":")) operations.delete(key);
+        if (key.startsWith(arenaId + ":")) {
+          operations.delete(key);
+          reported.delete(key);
+        }
       }
     },
 
     clear() {
       operations.clear();
+      reported.clear();
     },
   };
 }
@@ -94,11 +104,13 @@ export function captureDeferredGeneration(
   telemetry: TelemetryEmitter,
   input: DeferredGenerationCapture,
 ): DeferredGenerationGuard {
+  let reported = false;
+
   return {
     check(currentGeneration, overrides = {}) {
       if (currentGeneration === input.capturedGeneration) return true;
 
-      telemetry.staleCallback({
+      if (!reported) telemetry.staleCallback({
         subsystem: input.subsystem,
         capturedGeneration: input.capturedGeneration,
         currentGeneration,
@@ -115,6 +127,7 @@ export function captureDeferredGeneration(
           ? {}
           : { timestamp: overrides.timestamp }),
       });
+      reported = true;
       return false;
     },
   };
