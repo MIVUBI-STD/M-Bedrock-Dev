@@ -171,6 +171,16 @@ describe("Bedrock telemetry bridge", () => {
     })).toThrow(/payload limit/);
   });
 
+  it("rejects an unnamespaced collector id", () => {
+    expect(() => createBedrockScriptEventTelemetryCollector({
+      signal: {
+        subscribe() {},
+      },
+      sink: createBufferedTelemetrySink(),
+      eventId: "telemetry",
+    })).toThrow(/Collector script event id must be namespaced/);
+  });
+
   it("rejects an unnamespaced script event id", () => {
     expect(() => createBedrockScriptEventTelemetrySink(
       { sendScriptEvent() {} },
