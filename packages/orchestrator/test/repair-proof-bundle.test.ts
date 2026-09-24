@@ -7,6 +7,13 @@ import { decideRepairAdmission } from "../src/repair-admission.js";
 import { createRepairProofBundle, validateRepairProofBundle } from "../src/repair-proof-bundle.js";
 import { semanticGraphFingerprint } from "../src/semantic-graph-fingerprint.js";
 
+function decisionBasis(graph: SemanticGraph) {
+  return {
+    sourceFingerprint: "abc",
+    graphFingerprint: decisionBasis(graph),
+  };
+}
+
 function setup() {
   const graph = new SemanticGraph();
   const source = (relativePath: string) => ({
@@ -85,7 +92,7 @@ describe("repair proof bundle", () => {
       impact,
       blast,
       admission,
-      semanticGraphFingerprint(graph),
+      decisionBasis(graph),
       ["invariant::ready-before-start"],
     );
 
@@ -113,7 +120,7 @@ describe("repair proof bundle", () => {
       impact,
       { ...blast, transactionId: "other" },
       admission,
-      semanticGraphFingerprint(graph),
+      decisionBasis(graph),
     )).toThrow(/does not belong to transaction/);
   });
 
@@ -125,7 +132,7 @@ describe("repair proof bundle", () => {
       impact,
       blast,
       admission,
-      semanticGraphFingerprint(graph),
+      decisionBasis(graph),
     );
 
     const errors = validateRepairProofBundle(
@@ -150,7 +157,7 @@ describe("repair proof bundle", () => {
       impact,
       blast,
       admission,
-      semanticGraphFingerprint(graph),
+      decisionBasis(graph),
     );
 
     const errors = validateRepairProofBundle(
