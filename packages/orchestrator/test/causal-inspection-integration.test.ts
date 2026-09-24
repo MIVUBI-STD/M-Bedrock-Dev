@@ -30,6 +30,11 @@ const catalog: KnowledgeCatalog = {
       "navigation-stall-risk",
       "fallback-recovery-risk",
     ],
+    causalCorroborators: {
+      "navigation-stall-risk": [
+        "route-navigation-consumer-present",
+      ],
+    },
   }],
 };
 
@@ -83,6 +88,83 @@ describe("inspection causal analysis", () => {
         expect.objectContaining({
           label: "navigation-stall-risk",
           kind: "downstream-risk",
+        }),
+      ]));
+      expect(chain.nodes.some(
+        (node) => node.label === "navigation-stall-observed",
+      )).toBe(false);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+  it("corroborates navigation risk only when the route explicitly links a navigable entity", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-causal-linked-test-"));
+    try {
+      const functions = join(root, "behavior_pack", "functions");
+      const entities = join(root, "behavior_pack", "entities");
+      await mkdir(functions, { recursive: true });
+      await mkdir(entities, { recursive: true });
+
+      await writeFile(
+        join(functions, "mutate.mcfunction"),
+        "fill 10 64 10 20 70 20 minecraft:stone\n",
+        "utf8",
+      );
+      await writeFile(
+        join(entities, "zombie.json"),
+        JSON.stringify({
+          format_version: "1.21.0",
+          "minecraft:entity": {
+            description: {
+              identifier: "demo:zombie",
+            },
+            components: {
+              "minecraft:navigation.walk": {},
+              "minecraft:movement.basic": {},
+            },
+          },
+        }),
+        "utf8",
+      );
+
+      const result = await inspectDirectory(
+        root,
+        "artifact-linked-test",
+        {
+          edition: "bedrock",
+          staticExecutionDimension: "overworld",
+          routeCorridors: [{
+            id: "bridge-route",
+            dimension: "overworld",
+            entityKeys: ["demo:zombie"],
+            volume: {
+              min: { x: 0, y: 60, z: 0 },
+              max: { x: 30, y: 80, z: 30 },
+            },
+          }],
+        },
+        "fingerprint-linked-test",
+        catalog,
+      );
+
+      expect(result.routeAnalysis.overlaps).toBe(1);
+      expect(result.causalAnalysis.mediumConfidence).toBe(1);
+      expect(result.causalAnalysis.lowConfidence).toBe(0);
+
+      const chain = result.causalAnalysis.chains[0]!;
+      const navigationRisk = chain.nodes.find(
+        (node) => node.label === "navigation-stall-risk",
+      );
+      expect(navigationRisk).toEqual(expect.objectContaining({
+        kind: "downstream-risk",
+        corroboratingPredicates: [
+          "route-navigation-consumer-present",
+        ],
+      }));
+      expect(chain.links).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          to: navigationRisk?.id,
+          strength: "corroborated-risk",
         }),
       ]));
       expect(chain.nodes.some(
