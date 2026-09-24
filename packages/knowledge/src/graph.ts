@@ -19,6 +19,7 @@ export interface KnowledgeGraphEdge {
   causalConsequences?: readonly string[];
   causalCorroborators?: Readonly<Record<string, readonly string[]>>;
   causalOutcomePredicates?: Readonly<Record<string, readonly string[]>>;
+  causalCorroborationMinSources?: Readonly<Record<string, number>>;
 }
 
 export interface KnowledgeGraphPath {
@@ -89,6 +90,12 @@ export function buildKnowledgeGraph(
     ...(relation.causalOutcomePredicates === undefined
       ? {}
       : { causalOutcomePredicates: relation.causalOutcomePredicates }),
+    ...(relation.causalCorroborationMinSources === undefined
+      ? {}
+      : {
+          causalCorroborationMinSources:
+            relation.causalCorroborationMinSources,
+        }),
   }));
 
   const nodes = new Set<string>();
