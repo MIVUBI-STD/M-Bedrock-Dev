@@ -91,6 +91,31 @@ describe("causal chain synthesis", () => {
     ]));
   });
 
+  it("adds a direct observed outcome node without upgrading an unproven dependency to high confidence", () => {
+    const item = finding("KNOWLEDGE_EVIDENCE_GAP");
+    item.data = {
+      ...item.data,
+      presentPredicates: [
+        "route-affecting-world-mutation",
+        "navigation-stall-observed",
+      ],
+      causalOutcomePredicates: {
+        "navigation-stall-risk": [
+          "navigation-stall-observed",
+        ],
+      },
+    };
+
+    const chains = synthesizeCausalChains([item]);
+    expect(chains[0]?.confidence).toBe("medium");
+    expect(chains[0]?.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "observed-state",
+        label: "navigation-stall-observed",
+      }),
+    ]));
+  });
+
   it("does not synthesize risk chains without explicit consequence metadata", () => {
     const item = finding("KNOWLEDGE_RELATION_VIOLATION");
     item.data = {
