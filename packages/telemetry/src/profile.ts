@@ -74,7 +74,7 @@ export function resolveTelemetryRuntimeProfile(
     | TelemetryRuntimeProfile
     | undefined,
 ): TelemetryRuntimeProfile {
-  if (profile === undefined) return telemetryRuntimeProfile("qa");
+  if (profile === undefined) return telemetryRuntimeProfile("full");
   return typeof profile === "string"
     ? telemetryRuntimeProfile(profile)
     : profile;
