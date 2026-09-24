@@ -553,3 +553,79 @@ high-frequency progress telemetry
 ```
 
 The stall/state/revive guards already suppress identical repeated anomalies.
+
+
+## Runtime profiles
+
+Instrumentation can be gated with one shared runtime profile:
+
+```text
+full
+qa
+critical
+off
+```
+
+### full
+
+Preserves the historical/default SDK behavior.
+
+- all telemetry event kinds pass;
+- continuous state/entity monitors are enabled;
+- active runtime probes are enabled when a probe transport is supplied.
+
+Use for deep development investigation.
+
+### qa
+
+- all telemetry event kinds pass;
+- continuous monitors are enabled;
+- active runtime probes are disabled.
+
+Use for routine QA runs when active probing is unnecessary.
+
+### critical
+
+Only high-value anomaly evidence passes:
+
+- arena double start;
+- arena generation anomaly;
+- stale callback;
+- revive anomaly;
+- state drift;
+- failed route revalidation;
+- failed mutation verification.
+
+Continuous entity/state probes and active runtime probes are disabled.
+
+Recommended for low-overhead production diagnostics when telemetry is intentionally retained.
+
+### off
+
+- all emitted telemetry is discarded before buffering/transport;
+- continuous monitors return `disabled`;
+- active probes are unavailable;
+- Bedrock lifecycle host does not register periodic flush or ScriptEvent collection.
+
+Use when instrumentation must remain wired into source but produce no runtime telemetry.
+
+### Configuration
+
+```ts
+const kit = createTelemetryInstrumentationKit({
+  profile: "critical",
+  // ...
+});
+```
+
+or:
+
+```ts
+const host = createBedrockTelemetryLifecycleHost({
+  system,
+  transport,
+  profile: "off",
+});
+```
+
+The default is `full` for backward compatibility. Production builds should choose `critical` or `off` explicitly rather than relying on the default.
