@@ -65,6 +65,30 @@ describe("causal chain synthesis", () => {
     )).toBe(true);
   });
 
+  it("raises an evidence-gap chain to medium confidence only with scoped corroborators", () => {
+    const item = finding("KNOWLEDGE_EVIDENCE_GAP");
+    item.data = {
+      ...item.data,
+      presentPredicates: [
+        "route-affecting-world-mutation",
+        "route-navigation-consumer-present",
+      ],
+      causalCorroborators: {
+        "navigation-stall-risk": [
+          "route-navigation-consumer-present",
+        ],
+      },
+    };
+
+    const chains = synthesizeCausalChains([item]);
+    expect(chains[0]?.confidence).toBe("medium");
+    expect(chains[0]?.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        strength: "corroborated-risk",
+      }),
+    ]));
+  });
+
   it("does not synthesize risk chains without explicit consequence metadata", () => {
     const item = finding("KNOWLEDGE_RELATION_VIOLATION");
     item.data = {
