@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createPatchTransaction } from "../../repair/src/create.js";
+import { createPatchTransaction } from "../../repair/src/index.js";
 import {
   BUILTIN_REPAIR_STRATEGY_PROVIDERS,
   repairStrategyProviderRegistryRevision,

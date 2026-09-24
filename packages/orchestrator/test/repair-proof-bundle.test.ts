@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SemanticGraph } from "../../graph/src/graph.js";
-import { createPatchTransaction } from "../../repair/src/create.js";
+import { createPatchTransaction } from "../../repair/src/index.js";
 import { analyzeRepairCounterfactual } from "../src/repair-counterfactual.js";
 import { decideRepairBlastRadius } from "../src/repair-blast-radius.js";
 import { decideRepairAdmission } from "../src/repair-admission.js";
