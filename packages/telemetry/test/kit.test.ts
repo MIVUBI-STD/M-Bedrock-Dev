@@ -1,0 +1,163 @@
+import { describe, expect, it } from "vitest";
+import {
+  createCallbackTelemetrySink,
+  createTelemetryInstrumentationKit,
+} from "../src/index.js";
+
+describe("development telemetry instrumentation kit", () => {
+  it("assembles emitter, scope, guards, buffer, and optional transport", () => {
+    const transported: string[] = [];
+    let tick = 100;
+
+    const kit = createTelemetryInstrumentationKit({
+      producer: "instrumentation",
+      maxEvents: 10,
+      initialScope: {
+        arenaId: "arena-1",
+        arenaGeneration: 4,
+      },
+      tickProvider: () => tick,
+      transportSink: createCallbackTelemetrySink(
+        (event) => transported.push(event.eventId),
+      ),
+    });
+
+    kit.arenaStart.observeStart({
+      arenaId: "arena-1",
+      arenaGeneration: 4,
+      operationId: "start-a",
+    });
+    kit.arenaStart.observeStart({
+      arenaId: "arena-1",
+      arenaGeneration: 4,
+      operationId: "start-b",
+    });
+
+    expect(kit.buffer.size).toBe(1);
+    expect(transported).toHaveLength(1);
+    expect(kit.buffer.snapshot()[0]).toEqual(expect.objectContaining({
+      kind: "arena-double-start",
+      tick: 100,
+      scope: expect.objectContaining({
+        arenaId: "arena-1",
+        arenaGeneration: 4,
+      }),
+    }));
+
+    tick = 120;
+    const generation = kit.captureGeneration({
+      subsystem: "countdown",
+      capturedGeneration: 4,
+      scope: { operationId: "countdown-4" },
+    });
+    expect(generation.check(5)).toBe(false);
+
+    expect(kit.buffer.size).toBe(2);
+    expect(kit.batch({ sessionId: "qa-1" })).toEqual(
+      expect.objectContaining({
+        schemaVersion: 1,
+        sessionId: "qa-1",
+        events: expect.any(Array),
+      }),
+    );
+  });
+
+  it("resets instrumentation state without deleting captured evidence", () => {
+    const kit = createTelemetryInstrumentationKit({
+      initialScope: {
+        arenaId: "arena-1",
+        arenaGeneration: 1,
+      },
+    });
+
+    kit.arenaStart.observeStart({
+      arenaId: "arena-1",
+      arenaGeneration: 1,
+      operationId: "a",
+    });
+    kit.arenaStart.observeStart({
+      arenaId: "arena-1",
+      arenaGeneration: 1,
+      operationId: "b",
+    });
+    expect(kit.buffer.size).toBe(1);
+
+    kit.resetRuntimeState();
+
+    expect(kit.buffer.size).toBe(1);
+    expect(kit.scope.current()).toEqual({});
+
+    kit.scope.replace({
+      arenaId: "arena-1",
+      arenaGeneration: 1,
+    });
+    kit.arenaStart.observeStart({
+      arenaId: "arena-1",
+      arenaGeneration: 1,
+      operationId: "c",
+    });
+    kit.arenaStart.observeStart({
+      arenaId: "arena-1",
+      arenaGeneration: 1,
+      operationId: "d",
+    });
+    expect(kit.buffer.size).toBe(2);
+  });
+
+  it("resets created entity progress probes while preserving their emitted evidence", () => {
+    const kit = createTelemetryInstrumentationKit();
+    const progress = kit.entityProgress({
+      stallTicks: 10,
+      minProgressDistance: 0.5,
+    });
+
+    progress.observe({
+      entityKey: "demo:zombie",
+      tick: 0,
+      position: { x: 0, y: 0, z: 0 },
+      expectedToProgress: true,
+    });
+    progress.observe({
+      entityKey: "demo:zombie",
+      tick: 10,
+      position: { x: 0, y: 0, z: 0 },
+      expectedToProgress: true,
+    });
+    expect(kit.buffer.size).toBe(1);
+
+    kit.resetRuntimeState();
+
+    expect(progress.observe({
+      entityKey: "demo:zombie",
+      tick: 11,
+      position: { x: 0, y: 0, z: 0 },
+      expectedToProgress: true,
+    })).toBe("initialized");
+    expect(kit.buffer.size).toBe(1);
+  });
+
+  it("can clear evidence independently or clear everything", () => {
+    const kit = createTelemetryInstrumentationKit({
+      initialScope: { arenaId: "arena-1" },
+    });
+
+    kit.emitter.routeRevalidation({
+      routeId: "bridge",
+      result: "passed",
+    });
+    expect(kit.buffer.size).toBe(1);
+
+    kit.clearBuffer();
+    expect(kit.buffer.size).toBe(0);
+    expect(kit.scope.current()).toEqual({ arenaId: "arena-1" });
+
+    kit.emitter.routeRevalidation({
+      routeId: "bridge",
+      result: "failed",
+    });
+    kit.clearAll();
+
+    expect(kit.buffer.size).toBe(0);
+    expect(kit.scope.current()).toEqual({});
+  });
+});
