@@ -1,3 +1,4 @@
+import { validateTelemetryEvent } from "../../project-model/src/telemetry-validate.js";
 import type {
   TelemetryBatch,
   TelemetryEvent,
@@ -65,5 +66,30 @@ export function createCallbackTelemetrySink(
 ): TelemetrySink {
   return {
     emit: callback,
+  };
+}
+
+
+export function createValidatingTelemetrySink(
+  sink: TelemetrySink,
+): TelemetrySink {
+  return {
+    emit(event) {
+      const errors = validateTelemetryEvent(event);
+      if (errors.length > 0) {
+        throw new Error("Invalid emitted telemetry event: " + errors.join("; "));
+      }
+      sink.emit(event);
+    },
+  };
+}
+
+export function createJsonLineTelemetrySink(
+  writeLine: (line: string) => void,
+): TelemetrySink {
+  return {
+    emit(event) {
+      writeLine(JSON.stringify(event));
+    },
   };
 }
