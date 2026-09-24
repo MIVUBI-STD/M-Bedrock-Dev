@@ -15,6 +15,7 @@ export type RuntimeProbeCompilationIssueKind =
   | "duplicate-binding"
   | "non-read-only-probe"
   | "binding-outcome-unknown"
+  | "binding-scope-conflict"
   | "request-budget-exceeded";
 
 export interface RuntimeProbeCompilationIssue {
@@ -37,6 +38,48 @@ export interface RuntimeProbeCompilation {
 
 function outcomeIds(probe: DiagnosticProbeDefinition): Set<string> {
   return new Set(probe.outcomes.map((outcome) => outcome.id));
+}
+
+function compatibleScope(
+  left: RuntimeScope | undefined,
+  right: RuntimeScope | undefined,
+): RuntimeScope | undefined {
+  if (!left) return right;
+  if (!right) return left;
+
+  const leftRecord = left as Record<string, string | number | undefined>;
+  const rightRecord = right as Record<string, string | number | undefined>;
+  for (const key of new Set([
+    ...Object.keys(leftRecord),
+    ...Object.keys(rightRecord),
+  ])) {
+    const a = leftRecord[key];
+    const b = rightRecord[key];
+    if (a !== undefined && b !== undefined && a !== b) {
+      return undefined;
+    }
+  }
+  return { ...left, ...right };
+}
+
+function bindingsForIncident(
+  bindings: readonly RuntimeProbeBinding[],
+  probeId: string,
+  incidentId: string,
+): RuntimeProbeBinding[] {
+  const matches = bindings.filter((binding) =>
+    binding.probeId === probeId &&
+    (
+      binding.incidentId === undefined ||
+      binding.incidentId === incidentId
+    )
+  );
+  const exact = matches.filter(
+    (binding) => binding.incidentId === incidentId,
+  );
+  return exact.length > 0
+    ? exact
+    : matches.filter((binding) => binding.incidentId === undefined);
 }
 
 function validateBindingOutcomes(
@@ -65,13 +108,6 @@ export function compileRuntimeProbeRequests(
   }
 
   const probesById = new Map(probes.map((probe) => [probe.id, probe]));
-  const bindingsById = new Map<string, RuntimeProbeBinding[]>();
-  for (const binding of bindings) {
-    const list = bindingsById.get(binding.probeId) ?? [];
-    list.push(binding);
-    bindingsById.set(binding.probeId, list);
-  }
-
   const issues: RuntimeProbeCompilationIssue[] = [];
   const requests: RuntimeProbeRequest[] = [];
 
@@ -106,7 +142,11 @@ export function compileRuntimeProbeRequests(
       continue;
     }
 
-    const candidates = bindingsById.get(item.probeId) ?? [];
+    const candidates = bindingsForIncident(
+      bindings,
+      item.probeId,
+      plan.incidentId,
+    );
     if (candidates.length === 0) {
       issues.push({
         kind: "missing-binding",
@@ -139,6 +179,24 @@ export function compileRuntimeProbeRequests(
       continue;
     }
 
+    const mergedScope = compatibleScope(
+      options.scope,
+      binding.scope,
+    );
+    if (
+      options.scope !== undefined &&
+      binding.scope !== undefined &&
+      mergedScope === undefined
+    ) {
+      issues.push({
+        kind: "binding-scope-conflict",
+        probeId: item.probeId,
+        detail:
+          "Compiler scope conflicts with the explicit runtime probe binding scope.",
+      });
+      continue;
+    }
+
     const index = requests.length;
     const request: RuntimeProbeRequest = {
       schemaVersion: 1,
@@ -147,9 +205,9 @@ export function compileRuntimeProbeRequests(
         plan.incidentId + "::" + item.probeId + "::" + (index + 1),
       probeId: item.probeId,
       predicate: binding.predicate,
-      ...(options.scope === undefined
+      ...(mergedScope === undefined
         ? {}
-        : { scope: options.scope }),
+        : { scope: mergedScope }),
       ...(options.runtimeTick === undefined
         ? {}
         : { runtimeTick: options.runtimeTick }),
