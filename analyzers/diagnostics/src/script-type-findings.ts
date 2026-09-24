@@ -1,4 +1,4 @@
-import type { ManifestCompatibilityFacts } from "../../manifest/src/compatibility.js";
+import type { ManifestCompatibilityFacts } from "../../manifest/src/index.js";
 import type { ParsedScriptFile } from "../../scripts/src/types.js";
 import { findScriptTypeRule } from "../../../packages/compatibility/src/script-type-matrix.js";
 import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/script-lifecycle.js";

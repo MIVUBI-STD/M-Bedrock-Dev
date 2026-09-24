@@ -1,7 +1,7 @@
 import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/entity-knowledge-findings.js";
 import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/entity-transition-findings.js";
 import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/index.js";
-import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
+import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";

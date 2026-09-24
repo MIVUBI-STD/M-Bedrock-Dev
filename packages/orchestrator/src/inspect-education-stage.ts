@@ -1,4 +1,4 @@
-import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
+import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import { educationRequirementDiagnostic } from "../../../analyzers/diagnostics/src/education-findings.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";

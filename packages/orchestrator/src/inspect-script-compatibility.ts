@@ -1,6 +1,6 @@
-import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
+import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
-import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/compatibility.js";
+import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/index.js";
 import { undeclaredMinecraftModuleDiagnostics } from "../../../analyzers/diagnostics/src/script-findings.js";
 import { scriptExecutionPrivilegeDiagnostics } from "../../../analyzers/diagnostics/src/script-privilege-findings.js";
 import { scriptVersionDiagnostics } from "../../../analyzers/diagnostics/src/script-version-findings.js";

@@ -11,8 +11,8 @@ import {
   type RuntimeEvidenceRecord,
   type RuntimeEvidenceSnapshot,
 } from "../../project-model/src/runtime-evidence.js";
-import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
-import { manifestRuntimeEvidence } from "../../../analyzers/manifest/src/runtime-evidence.js";
+import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
+import { manifestRuntimeEvidence } from "../../../analyzers/manifest/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
 import { functionRuntimeEvidence } from "../../../analyzers/functions/src/runtime-evidence.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";

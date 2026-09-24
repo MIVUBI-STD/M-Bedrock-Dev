@@ -1,4 +1,4 @@
-import type { ManifestCompatibilityFacts } from "../../manifest/src/compatibility.js";
+import type { ManifestCompatibilityFacts } from "../../manifest/src/index.js";
 import type { ParsedScriptFile } from "../../scripts/src/types.js";
 import { findScriptPropertyRule } from "../../../packages/compatibility/src/script-property-matrix.js";
 import { findScriptEnumMemberRule } from "../../../packages/compatibility/src/script-enum-matrix.js";

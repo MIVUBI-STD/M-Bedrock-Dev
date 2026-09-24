@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
-import { analyzeManifest } from "../../../analyzers/manifest/src/analyze.js";
+import { analyzeManifest } from "../../../analyzers/manifest/src/index.js";
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { analyzeKnowledgeRuntime, resolveInspectionKnowledgeProfile } from "../src/knowledge-runtime-analysis.js";
 

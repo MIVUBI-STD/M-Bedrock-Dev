@@ -4,9 +4,9 @@ import { discoverPackCandidates } from "../../../analyzers/discovery/src/index.j
 import {
   analyzeManifest,
   classifyPackFromManifest,
-} from "../../../analyzers/manifest/src/analyze.js";
-import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/compatibility.js";
-import type { ManifestModel } from "../../../analyzers/manifest/src/types.js";
+} from "../../../analyzers/manifest/src/index.js";
+import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/index.js";
+import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import type { FileInventoryEntry } from "../../project-model/src/project.js";
 import type { InspectedPack } from "./types.js";
 

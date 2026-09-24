@@ -1,4 +1,4 @@
-import type { ManifestModel } from "../../manifest/src/types.js";
+import type { ManifestModel } from "../../manifest/src/index.js";
 import type { ParsedScriptFile } from "../../scripts/src/types.js";
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";

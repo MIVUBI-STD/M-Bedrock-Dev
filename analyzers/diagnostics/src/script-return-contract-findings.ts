@@ -1,4 +1,4 @@
-import type { ManifestCompatibilityFacts } from "../../manifest/src/compatibility.js";
+import type { ManifestCompatibilityFacts } from "../../manifest/src/index.js";
 import type { ParsedScriptFile } from "../../scripts/src/types.js";
 import { checkScriptReturnContract } from "../../../packages/compatibility/src/script-return-contract-matrix.js";
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
