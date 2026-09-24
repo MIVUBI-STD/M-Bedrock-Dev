@@ -10,3 +10,4 @@ export * from "./workspace.js";
 export * from "./counterfactual-types.js";
 export * from "./counterfactual.js";
 export * from "./blast-radius.js";
+export * from "./admission.js";
