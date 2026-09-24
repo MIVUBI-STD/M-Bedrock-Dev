@@ -29,6 +29,7 @@ export interface TelemetryEmitterOptions {
   tickProvider?: () => number | undefined;
   timestampProvider?: () => string | undefined;
   streamId?: string;
+  idNamespace?: string;
   idFactory?: TelemetryIdFactory;
 }
 
