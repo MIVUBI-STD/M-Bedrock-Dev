@@ -16,6 +16,7 @@ import {
 import {
   createValidatingTelemetrySink,
 } from "./sink.js";
+import { createProfileTelemetrySink } from "./profile.js";
 import type { TelemetryBatchTransport } from "./transport.js";
 
 export interface BedrockTelemetryLifecycleSystem
@@ -87,7 +88,8 @@ export function createBedrockTelemetryLifecycleHost(
   };
 
   const periodic: PeriodicTelemetryFlush | undefined =
-    options.flushIntervalTicks === undefined
+    options.flushIntervalTicks === undefined ||
+    kit.profile.name === "off"
       ? undefined
       : createPeriodicTelemetryFlush({
           scheduler: options.system,
@@ -109,6 +111,7 @@ export function createBedrockTelemetryLifecycleHost(
 
   const startCollector = (): void => {
     if (
+      kit.profile.name === "off" ||
       options.receiveScriptEvents === false ||
       collector !== undefined
     ) {
@@ -120,7 +123,10 @@ export function createBedrockTelemetryLifecycleHost(
 
     collector = createBedrockScriptEventTelemetryCollector({
       signal,
-      sink: createValidatingTelemetrySink(kit.buffer),
+      sink: createProfileTelemetrySink(
+        createValidatingTelemetrySink(kit.buffer),
+        kit.profile,
+      ),
       ...(options.scriptEventId === undefined
         ? {}
         : { eventId: options.scriptEventId }),
