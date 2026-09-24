@@ -113,3 +113,5 @@ export * from "./repair-package-verification.js";
 export * from "./repair-runtime-verification.js";
 export * from "./invariant-registry.js";
 export * from "./decision-ledger.js";
+export * from "./decision-basis.js";
+export * from "./decision-ledger-recording.js";
