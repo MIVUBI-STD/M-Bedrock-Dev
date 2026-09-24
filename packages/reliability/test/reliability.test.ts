@@ -7,6 +7,7 @@ import {
   createUpdateDelta,
   fingerprintIdentity,
   planRetest,
+  type RetestPlan,
 } from "../src/index.js";
 
 describe("reliability foundation", () => {
@@ -86,13 +87,13 @@ describe("reliability foundation", () => {
     ]));
   });
   it("augments retest plans from causal regression evidence", () => {
-    const base = {
+    const base: RetestPlan = {
       mapId: "map",
       updateVersion: "1.30.0",
-      priority: "P3" as const,
+      priority: "P3",
       reasons: [],
-      suggestedLanes: ["static"] as const,
-      affectedDomains: [] as const,
+      suggestedLanes: ["static"],
+      affectedDomains: [],
     };
 
     const augmented = augmentRetestPlan(
