@@ -124,7 +124,7 @@ export function analyzeKnowledgeRuntime(
   functions: readonly ParsedFunction[],
   extraEvidence: readonly RuntimeEvidenceRecord[] = [],
   scripts: readonly ParsedScriptFile[] = [],
-  entities: readonly Array<{
+  entities: ReadonlyArray<{
     entity: ParsedEntityDefinition;
     externalRootEvents?: readonly string[];
   }> = [],
