@@ -1,5 +1,6 @@
 import type { SemanticGraph } from "../../graph/src/graph.js";
 import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
+import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import {
   analyzeRepairCounterfactual,
@@ -30,6 +31,10 @@ export interface RepairAdmissionPipelineInput {
   diagnostic: DiagnosticRepairDecision;
   changedNodeIds: readonly string[];
   supportingInvariantIds?: readonly string[];
+  decisionBasis?: Omit<
+    DecisionBasisRevision,
+    "sourceFingerprint" | "graphFingerprint"
+  >;
   blastRadiusPolicy?: RepairBlastRadiusPolicy;
 }
 
@@ -62,13 +67,19 @@ export function evaluateRepairAdmissionPipeline(
     blastRadius,
   );
 
+  const decisionBasis: DecisionBasisRevision = {
+    ...(input.decisionBasis ?? {}),
+    sourceFingerprint: input.transaction.sourceFingerprint,
+    graphFingerprint: semanticGraphFingerprint(input.graph),
+  };
+
   const proof = createRepairProofBundle(
     input.transaction,
     input.diagnostic,
     impact,
     blastRadius,
     admission,
-    semanticGraphFingerprint(input.graph),
+    decisionBasis,
     input.supportingInvariantIds ?? [],
   );
 
