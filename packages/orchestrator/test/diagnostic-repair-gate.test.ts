@@ -134,6 +134,7 @@ describe("diagnostic repair gate", () => {
         unlocatedObservedRecords: 0,
         unresolvedConflictPredicates: ["chunk-ready"],
         resolvedConflictCount: 0,
+        continuityComplete: true,
         telemetryContinuityComplete: true,
         safeForCurrentStateClaims: false,
         safeForTemporalViolationClaims: false,
@@ -145,4 +146,36 @@ describe("diagnostic repair gate", () => {
     expect(decision.reasons.join(" ")).toMatch(/integrity/i);
   });
 
+  it("downgrades full runtime repair when temporal integrity is unsafe", () => {
+    const decision = decideDiagnosticRepair(
+      incident("proven-with-observed-outcome"),
+      investigation(true),
+      "LIVE_MINECRAFT",
+      {
+        records: 2,
+        observedRecords: 2,
+        derivedRecords: 0,
+        unknownConfidenceRecords: 0,
+        unlocatedObservedRecords: 1,
+        unresolvedConflictPredicates: [],
+        resolvedConflictCount: 0,
+        continuityComplete: true,
+        telemetryContinuityComplete: true,
+        safeForCurrentStateClaims: true,
+        safeForTemporalViolationClaims: false,
+        reasons: [
+          "Observed runtime evidence lacks a safe temporal observation point.",
+        ],
+      },
+    );
+
+    expect(decision).toMatchObject({
+      disposition: "guarded-repair-eligible",
+      effectiveEvidenceLevel: "proven-dependency-violation",
+      claimStrength: "proven-static",
+    });
+    expect(decision.reasons.join(" ")).toMatch(
+      /temporal evidence integrity is unsafe/i,
+    );
+  });
 });
