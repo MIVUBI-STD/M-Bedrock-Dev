@@ -48,6 +48,7 @@ function successfulResponse(
   state: "present" | "absent",
   value?: string | number | boolean,
 ): RuntimeProbeResponse {
+  const resolvedOutcomeId = outcomeId(request, state);
   return {
     schemaVersion: 1,
     requestId: request.requestId,
@@ -55,9 +56,9 @@ function successfulResponse(
     runtimeTick: tick,
     ok: true,
     state,
-    ...(outcomeId(request, state) === undefined
+    ...(resolvedOutcomeId === undefined
       ? {}
-      : { outcomeId: outcomeId(request, state) }),
+      : { outcomeId: resolvedOutcomeId }),
     evidence: {
       predicate: request.predicate,
       state,
