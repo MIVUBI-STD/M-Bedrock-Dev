@@ -19,6 +19,23 @@ function base(
     confidence: "observed",
     scope: event.scope,
     relatedNodeIds: ["telemetry:" + event.eventId],
+    ...(
+      event.tick === undefined &&
+      event.sequence === undefined &&
+      event.timestamp === undefined
+        ? {}
+        : {
+            observedAt: {
+              ...(event.tick === undefined ? {} : { tick: event.tick }),
+              ...(event.sequence === undefined
+                ? {}
+                : { sequence: event.sequence }),
+              ...(event.timestamp === undefined
+                ? {}
+                : { timestamp: event.timestamp }),
+            },
+          }
+    ),
     ...(event.sourceRefs === undefined ? {} : { sourceRefs: event.sourceRefs }),
     ...(note ?? event.note
       ? { note: note ?? event.note }
