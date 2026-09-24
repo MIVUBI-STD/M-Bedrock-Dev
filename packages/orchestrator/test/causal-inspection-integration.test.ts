@@ -33,6 +33,7 @@ const catalog: KnowledgeCatalog = {
     causalCorroborators: {
       "navigation-stall-risk": [
         "route-navigation-consumer-present",
+        "route-target-driven-consumer-present",
       ],
     },
   }],
@@ -121,6 +122,16 @@ describe("inspection causal analysis", () => {
             components: {
               "minecraft:navigation.walk": {},
               "minecraft:movement.basic": {},
+              "minecraft:behavior.nearest_attackable_target": {
+                entity_types: [{
+                  filters: {
+                    test: "is_family",
+                    subject: "other",
+                    value: "player",
+                  },
+                  max_dist: 32,
+                }],
+              },
             },
           },
         }),
@@ -159,6 +170,7 @@ describe("inspection causal analysis", () => {
         kind: "downstream-risk",
         corroboratingPredicates: [
           "route-navigation-consumer-present",
+          "route-target-driven-consumer-present",
         ],
       }));
       expect(chain.links).toEqual(expect.arrayContaining([
@@ -169,6 +181,70 @@ describe("inspection causal analysis", () => {
       ]));
       expect(chain.nodes.some(
         (node) => node.label === "navigation-stall-observed",
+      )).toBe(false);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+  it("does not corroborate from an unrelated navigable entity", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-causal-unlinked-test-"));
+    try {
+      const functions = join(root, "behavior_pack", "functions");
+      const entities = join(root, "behavior_pack", "entities");
+      await mkdir(functions, { recursive: true });
+      await mkdir(entities, { recursive: true });
+
+      await writeFile(
+        join(functions, "mutate.mcfunction"),
+        "fill 10 64 10 20 70 20 minecraft:stone\n",
+        "utf8",
+      );
+      await writeFile(
+        join(entities, "other.json"),
+        JSON.stringify({
+          "minecraft:entity": {
+            description: { identifier: "demo:other" },
+            components: {
+              "minecraft:navigation.walk": {},
+              "minecraft:behavior.nearest_attackable_target": {
+                entity_types: [{
+                  filters: {
+                    test: "is_family",
+                    subject: "other",
+                    value: "player",
+                  },
+                }],
+              },
+            },
+          },
+        }),
+        "utf8",
+      );
+
+      const result = await inspectDirectory(
+        root,
+        "artifact-unlinked-test",
+        {
+          edition: "bedrock",
+          staticExecutionDimension: "overworld",
+          routeCorridors: [{
+            id: "bridge-route",
+            dimension: "overworld",
+            entityKeys: ["demo:zombie"],
+            volume: {
+              min: { x: 0, y: 60, z: 0 },
+              max: { x: 30, y: 80, z: 30 },
+            },
+          }],
+        },
+        "fingerprint-unlinked-test",
+        catalog,
+      );
+
+      expect(result.causalAnalysis.lowConfidence).toBe(1);
+      expect(result.causalAnalysis.mediumConfidence).toBe(0);
+      expect(result.causalAnalysis.chains[0]?.links.some(
+        (link) => link.strength === "corroborated-risk",
       )).toBe(false);
     } finally {
       await rm(root, { recursive: true, force: true });
