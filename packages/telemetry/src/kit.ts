@@ -158,13 +158,11 @@ export function createTelemetryInstrumentationKit(
     },
 
     batch(input = {}) {
+      const sessionId = input.sessionId ?? options.sessionId;
+      const artifactId = input.artifactId ?? options.artifactId;
       return buffer.batch({
-        ...(input.sessionId ?? options.sessionId
-          ? { sessionId: input.sessionId ?? options.sessionId }
-          : {}),
-        ...(input.artifactId ?? options.artifactId
-          ? { artifactId: input.artifactId ?? options.artifactId }
-          : {}),
+        ...(sessionId === undefined ? {} : { sessionId }),
+        ...(artifactId === undefined ? {} : { artifactId }),
       });
     },
 
