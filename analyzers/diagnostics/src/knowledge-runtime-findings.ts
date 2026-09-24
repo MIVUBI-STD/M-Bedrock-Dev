@@ -94,11 +94,11 @@ export function knowledgeRuntimeDiagnostics(
     > = {};
     for (const record of causalRecords) {
       if (record.state !== "present") continue;
-      if (record.observedAt) {
+      if (record.observedAt || record.origin) {
         predicateObservations[record.predicate] = [
           ...(predicateObservations[record.predicate] ?? []),
           {
-            ...record.observedAt,
+            ...(record.observedAt ?? {}),
             ...(record.origin === undefined
               ? {}
               : { origin: record.origin }),
