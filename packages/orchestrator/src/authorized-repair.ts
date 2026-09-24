@@ -1,13 +1,18 @@
 import type {
   ApplyTransactionContext,
   ApplyTransactionResult,
+  RollbackAppliedFilesResult,
 } from "../../repair/src/apply.js";
-import { applyPatchTransaction } from "../../repair/src/apply.js";
+import {
+  applyPatchTransaction,
+  rollbackAppliedFiles,
+} from "../../repair/src/apply.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import type { MutationWorkspace } from "../../repair/src/workspace.js";
 import type { TransactionValidationResult } from "../../validation/src/types.js";
 import type { InspectTargetProfile } from "./types.js";
 import type { RepairProofBundle } from "./repair-proof-bundle.js";
+import { validateRepairProofBundle } from "./repair-proof-bundle.js";
 import { validatePatchTransaction } from "./repair-validation.js";
 
 export interface AuthorizedRepairOptions {
@@ -41,6 +46,14 @@ export type AuthorizedRepairApplyResult =
       proof: RepairProofBundle;
       apply: ApplyTransactionResult;
       validation: TransactionValidationResult;
+      rollback: RollbackAppliedFilesResult;
+    }
+  | {
+      status: "static-validation-failed-rollback-failed";
+      proof: RepairProofBundle;
+      apply: ApplyTransactionResult;
+      validation: TransactionValidationResult;
+      rollback: RollbackAppliedFilesResult;
     }
   | {
       status: "transitive-revalidation-pending";
@@ -62,6 +75,20 @@ export function authorizeRepairMutation(
   proof: RepairProofBundle,
   options: AuthorizedRepairOptions = {},
 ): RepairMutationAuthorization {
+  const proofErrors = validateRepairProofBundle(
+    transaction,
+    proof,
+  );
+  if (proofErrors.length > 0) {
+    return {
+      authorized: false,
+      reasons: [
+        "Repair proof bundle failed integrity validation.",
+        ...proofErrors,
+      ],
+    };
+  }
+
   if (proof.transactionId !== transaction.id) {
     return {
       authorized: false,
@@ -163,11 +190,18 @@ export async function applyAuthorizedRepair(
   );
 
   if (!validation.ok) {
+    const rollback = await rollbackAppliedFiles(
+      workspace,
+      apply.rollback,
+    );
     return {
-      status: "static-validation-failed",
+      status: rollback.ok
+        ? "static-validation-failed"
+        : "static-validation-failed-rollback-failed",
       proof,
       apply,
       validation,
+      rollback,
     };
   }
 
