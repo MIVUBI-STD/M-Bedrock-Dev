@@ -11,6 +11,7 @@ export interface AppendDecisionInput {
   incidentId?: string;
   transactionId?: string;
   basis: DecisionBasisRevision;
+  upstreamDecisionIds?: readonly string[];
   inputIds?: readonly string[];
   outputIds?: readonly string[];
   evidenceIds?: readonly string[];
@@ -35,6 +36,27 @@ export function appendDecisionLedgerEntry(
     throw new Error("Decision ledger entry id already exists: " + input.id);
   }
 
+  const upstreamDecisionIds = unique(
+    input.upstreamDecisionIds,
+  );
+  for (const upstreamId of upstreamDecisionIds) {
+    const parent = snapshot.entries.find(
+      (entry) => entry.id === upstreamId,
+    );
+    if (!parent) {
+      throw new Error(
+        "Upstream decision ledger entry does not exist: " +
+          upstreamId,
+      );
+    }
+    if (parent.status !== "active") {
+      throw new Error(
+        "Upstream decision ledger entry is not active: " +
+          upstreamId,
+      );
+    }
+  }
+
   const createdSequence =
     snapshot.entries.reduce(
       (maximum, entry) =>
@@ -53,6 +75,7 @@ export function appendDecisionLedgerEntry(
       ? {}
       : { transactionId: input.transactionId }),
     basis: { ...input.basis },
+    upstreamDecisionIds,
     inputIds: unique(input.inputIds),
     outputIds: unique(input.outputIds),
     evidenceIds: unique(input.evidenceIds),
