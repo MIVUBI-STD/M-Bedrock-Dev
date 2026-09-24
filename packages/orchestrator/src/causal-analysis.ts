@@ -55,6 +55,7 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
   if (consequences.length === 0) return undefined;
   const presentPredicates = new Set(asStringArray(data.presentPredicates));
   const corroborators = asCorroboratorMap(data.causalCorroborators);
+  const outcomePredicates = asCorroboratorMap(data.causalOutcomePredicates);
 
   const violation = finding.code === "KNOWLEDGE_RELATION_VIOLATION";
   const subjectNodeId = idFor([finding.id, "subject"]);
@@ -100,6 +101,8 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
   }];
 
   let hasCorroboratedRisk = false;
+  let hasObservedOutcome = false;
+
   for (const consequence of consequences) {
     const riskNodeId = idFor([finding.id, "risk", consequence]);
     const requiredPredicates = corroborators[consequence] ?? [];
@@ -126,21 +129,59 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
         ? "Independent evidence in the same runtime scope corroborates this downstream risk, but the outcome itself is still not observed."
         : "Project knowledge marks this as a downstream risk, not as an observed outcome.",
     });
+
+    const observedPredicates = outcomePredicates[consequence] ?? [];
+    const observed = observedPredicates.filter((predicate) =>
+      presentPredicates.has(predicate)
+    );
+
+    for (const predicate of observed) {
+      hasObservedOutcome = true;
+      const observedNodeId = idFor([
+        finding.id,
+        "observed-outcome",
+        consequence,
+        predicate,
+      ]);
+      nodes.push({
+        id: observedNodeId,
+        kind: "observed-state",
+        label: predicate,
+        diagnosticIds: [finding.id],
+        corroboratingPredicates: [predicate],
+      });
+      links.push({
+        from: riskNodeId,
+        to: observedNodeId,
+        strength: "direct-evidence",
+        relationId,
+        rationale:
+          "Runtime evidence in the same scope reports the downstream outcome directly; causal attribution remains bounded by the dependency evidence.",
+      });
+    }
   }
 
   return {
     id: idFor([scopeKey ?? "global", relationId, finding.id]),
     ...(scopeKey === undefined ? {} : { scopeKey }),
     severity: finding.severity,
-    confidence: violation ? "high" : hasCorroboratedRisk ? "medium" : "low",
+    confidence: violation
+      ? "high"
+      : hasObservedOutcome || hasCorroboratedRisk
+        ? "medium"
+        : "low",
     title: violation
       ? subject + " → missing " + object
       : subject + " → unproven " + object,
     summary: violation
-      ? "A required dependency is explicitly violated; downstream items remain risk projections unless separately observed."
-      : hasCorroboratedRisk
-        ? "The required dependency is still unproven, but independent evidence in the same scope corroborates at least one downstream risk."
-        : "Available evidence establishes the initiating state but cannot prove the required dependency; downstream items are risk-only.",
+      ? hasObservedOutcome
+        ? "A required dependency is explicitly violated and at least one downstream outcome is independently observed in the same scope."
+        : "A required dependency is explicitly violated; downstream items remain risk projections unless separately observed."
+      : hasObservedOutcome
+        ? "The required dependency remains unproven, while at least one downstream outcome is independently observed in the same scope; attribution remains a corroborated candidate rather than a proven sole cause."
+        : hasCorroboratedRisk
+          ? "The required dependency is still unproven, but independent evidence in the same scope corroborates at least one downstream risk."
+          : "Available evidence establishes the initiating state but cannot prove the required dependency; downstream items are risk-only.",
     nodes,
     links,
     relatedDiagnosticIds: [finding.id],
