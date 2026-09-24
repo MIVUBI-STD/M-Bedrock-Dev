@@ -971,6 +971,7 @@ export async function inspectDirectory(
       failed: runtimeProbeEvidence.summary.failed,
       droppedExchanges: runtimeProbeDroppedExchanges,
     },
+    diagnosticProbeAnalysis,
     worldDatabase: {
       present: dbFiles.length > 0,
       fileCount: dbFiles.length,
