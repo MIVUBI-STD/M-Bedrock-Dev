@@ -11,7 +11,7 @@ import {
   reassembleTelemetryFrameSet,
   type TelemetryFrame,
   type TelemetryFrameSet,
-} from "../telemetry/src/framing.js";
+} from "../../telemetry/src/framing.js";
 
 export function isTelemetryBatch(
   telemetry: readonly TelemetryEvent[] | TelemetryBatch,
@@ -21,11 +21,6 @@ export function isTelemetryBatch(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function asTelemetryFrameArray(value: unknown): readonly TelemetryFrame[] | undefined {
-  if (!Array.isArray(value)) return undefined;
-  return value as readonly TelemetryFrame[];
 }
 
 function parseJsonLines(text: string, path: string): unknown[] {
