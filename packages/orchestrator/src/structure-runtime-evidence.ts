@@ -8,11 +8,24 @@ type StructurePlacementProofs = ReturnType<typeof derivePlacementProofs>;
 
 function lineSource(source: SourceRef, line: number | undefined): SourceRef {
   if (line === undefined) return source;
-  return { ...source, range: { lineStart: line, lineEnd: line } };
+  return {
+    ...source,
+    range: {
+      lineStart: line,
+      lineEnd: line,
+      columnStart: 0,
+      columnEnd: 0,
+    },
+  };
 }
 
 function operationId(source: SourceRef): string {
-  return source.artifactId + ":" + source.relativePath + ":" + (source.range?.lineStart ?? 0);
+  return [
+    source.artifactId,
+    source.relativePath,
+    source.range?.lineStart ?? 0,
+    source.range?.columnStart ?? 0,
+  ].join(":");
 }
 
 export function structureRuntimeEvidence(
