@@ -99,6 +99,7 @@ import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
 import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";
+import { assessRuntimeEvidenceSetIntegrity } from "./runtime-evidence-integrity.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
@@ -184,6 +185,27 @@ export async function inspectDirectory(
       : { droppedEvents: telemetryDroppedEvents }),
     events: telemetryEvents,
   });
+  const telemetryEvidenceIntegrity =
+    assessRuntimeEvidenceSetIntegrity(
+      telemetryEvidence,
+      telemetryContinuity,
+    );
+  const runtimeProbeEvidenceIntegrityBase =
+    assessRuntimeEvidenceSetIntegrity(
+      runtimeProbeEvidence.records,
+    );
+  const runtimeProbeEvidenceIntegrity =
+    runtimeProbeDroppedExchanges === 0
+      ? runtimeProbeEvidenceIntegrityBase
+      : {
+          ...runtimeProbeEvidenceIntegrityBase,
+          continuityComplete: false,
+          safeForTemporalViolationClaims: false,
+          reasons: [
+            ...runtimeProbeEvidenceIntegrityBase.reasons,
+            "Runtime probe exchanges were dropped; missing probe observations cannot safely establish temporal absence or ordering.",
+          ],
+        };
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
 
@@ -974,6 +996,10 @@ export async function inspectDirectory(
       unknown: runtimeProbeEvidence.summary.unknown,
       failed: runtimeProbeEvidence.summary.failed,
       droppedExchanges: runtimeProbeDroppedExchanges,
+    },
+    evidenceIntegrity: {
+      telemetry: telemetryEvidenceIntegrity,
+      runtimeProbe: runtimeProbeEvidenceIntegrity,
     },
     diagnosticProbeAnalysis,
     worldDatabase: {
