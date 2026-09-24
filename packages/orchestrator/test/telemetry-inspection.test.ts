@@ -124,6 +124,16 @@ describe("standard telemetry inspection", () => {
           "stale-callback": 1,
           "revive-anomaly": 1,
         },
+        continuity: {
+          sequencedEvents: 0,
+          unsequencedEvents: 3,
+          unidentifiedStreamEvents: 0,
+          streams: 0,
+          missingSequences: 0,
+          duplicateSequences: 0,
+          nonMonotonicTransitions: 0,
+          incomplete: false,
+        },
       });
       expect(result.knowledgeRuntime.violations).toBe(3);
       expect(result.causalAnalysis.highConfidence).toBe(3);
@@ -236,6 +246,71 @@ describe("standard telemetry inspection", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+  it("reports sequence continuity defects and fingerprints evidence quality", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-telemetry-sequence-test-"));
+    try {
+      await mkdir(join(root, "behavior_pack", "functions"), {
+        recursive: true,
+      });
+      await writeFile(
+        join(root, "behavior_pack", "functions", "noop.mcfunction"),
+        "say ready\n",
+        "utf8",
+      );
+
+      const result = await inspectDirectory(
+        root,
+        "artifact-sequence",
+        { edition: "bedrock" },
+        "fingerprint-sequence",
+        catalog,
+        [],
+        [{
+          schemaVersion: 1,
+          eventId: "route-1",
+          kind: "route-revalidation",
+          producer: "runtime",
+          scope: {},
+          streamId: "runtime-main",
+          sequence: 1,
+          routeId: "bridge",
+          result: "passed",
+        }, {
+          schemaVersion: 1,
+          eventId: "route-3",
+          kind: "route-revalidation",
+          producer: "runtime",
+          scope: {},
+          streamId: "runtime-main",
+          sequence: 3,
+          routeId: "bridge",
+          result: "passed",
+        }],
+      );
+
+      expect(result.telemetryAnalysis.continuity).toEqual(
+        expect.objectContaining({
+          sequencedEvents: 2,
+          streams: 1,
+          missingSequences: 1,
+          incomplete: true,
+        }),
+      );
+      expect(result.diagnostics).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          code: "TELEMETRY_SEQUENCE_GAP",
+          severity: "minor",
+        }),
+      ]));
+      expect(result.reliability.fingerprint.capabilityTags)
+        .toContain("telemetry-sequence-gap");
+      expect(result.reliability.fingerprint.riskSurfaces)
+        .toContain("runtime-evidence-incomplete");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("reports truncated telemetry captures as incomplete runtime evidence", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-telemetry-drop-test-"));
     try {
