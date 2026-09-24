@@ -63,6 +63,7 @@ export function assessRuntimeEvidenceIntegrity(
     unlocatedObservedRecords,
     unresolvedConflictPredicates: [...merged.conflicts],
     resolvedConflictCount: merged.resolvedConflicts.length,
+    continuityComplete: telemetryContinuityComplete,
     telemetryContinuityComplete,
     safeForCurrentStateClaims,
     safeForTemporalViolationClaims,
@@ -95,6 +96,7 @@ export function assessRuntimeEvidenceSetIntegrity(
       unlocatedObservedRecords: 0,
       unresolvedConflictPredicates: [],
       resolvedConflictCount: 0,
+      continuityComplete: continuity?.incomplete !== true,
       telemetryContinuityComplete: continuity?.incomplete !== true,
       safeForCurrentStateClaims: true,
       safeForTemporalViolationClaims: continuity?.incomplete !== true,
@@ -138,6 +140,7 @@ export function assessRuntimeEvidenceSetIntegrity(
       (sum, report) => sum + report.resolvedConflictCount,
       0,
     ),
+    continuityComplete: continuity?.incomplete !== true,
     telemetryContinuityComplete: continuity?.incomplete !== true,
     safeForCurrentStateClaims: reports.every(
       (report) => report.safeForCurrentStateClaims,
