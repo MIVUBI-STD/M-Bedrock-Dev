@@ -81,3 +81,4 @@ export * from "./runtime-probe-load.js";
 export * from "./diagnostic-repair-gate.js";
 export * from "./runtime-temporal-analysis.js";
 export * from "./runtime-evidence-integrity.js";
+export * from "./first-wrong-transition.js";
