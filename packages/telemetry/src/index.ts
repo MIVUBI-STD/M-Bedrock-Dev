@@ -46,3 +46,5 @@ export * from "./bedrock-bridge.js";
 export * from "./monitors.js";
 
 export * from "./revive-monitor.js";
+
+export * from "./budget.js";
