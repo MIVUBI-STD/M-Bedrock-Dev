@@ -48,6 +48,15 @@ export interface RepairAdmissionPipelineResult {
 export function evaluateRepairAdmissionPipeline(
   input: RepairAdmissionPipelineInput,
 ): RepairAdmissionPipelineResult {
+  if (
+    input.diagnostic.claimStrength === "proven-runtime" &&
+    !input.decisionBasis?.runtimeEvidenceRevision?.trim()
+  ) {
+    throw new Error(
+      "Runtime-proven repair admission requires a decision basis with runtimeEvidenceRevision from the analyzed evidence snapshot.",
+    );
+  }
+
   const impact = analyzeRepairCounterfactual(
     input.graph,
     {
