@@ -149,7 +149,9 @@ export async function inspectDirectory(
 
   const entityKnowledge = analyzeInspectionEntityKnowledge({
     target,
-    knowledgeCatalog,
+    ...(knowledgeCatalog === undefined
+      ? {}
+      : { knowledgeCatalog }),
     manifests: manifestModelsForKnowledge,
     parsedFunctions,
     parsedScripts,
