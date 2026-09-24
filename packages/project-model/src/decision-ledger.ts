@@ -29,6 +29,7 @@ export interface DecisionLedgerEntry {
   incidentId?: string;
   transactionId?: string;
   basis: DecisionBasisRevision;
+  upstreamDecisionIds: readonly string[];
   inputIds: readonly string[];
   outputIds: readonly string[];
   evidenceIds: readonly string[];
