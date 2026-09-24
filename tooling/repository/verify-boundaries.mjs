@@ -50,6 +50,13 @@ function externalSpecifierViolation(fromFile, specifier) {
     return "packages/telemetry must remain runtime-independent and must not import @minecraft/server";
   }
 
+  if (
+    fromPackage === "telemetry" &&
+    specifier.startsWith("node:")
+  ) {
+    return "packages/telemetry must remain Bedrock-runtime portable and must not import Node.js built-ins";
+  }
+
   return undefined;
 }
 
