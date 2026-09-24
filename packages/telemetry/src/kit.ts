@@ -141,9 +141,9 @@ export function createTelemetryInstrumentationKit(
     ...(options.timestampProvider === undefined
       ? {}
       : { timestampProvider: options.timestampProvider }),
-    ...(options.streamId === undefined
-      ? {}
-      : { streamId: options.streamId }),
+    ...(options.streamId ?? options.sessionId
+      ? { streamId: options.streamId ?? options.sessionId }
+      : {}),
     ...(options.idFactory === undefined
       ? {}
       : { idFactory: options.idFactory }),
