@@ -5,13 +5,9 @@ import { analyzeInspectionScriptCompatibility } from "./inspect-script-compatibi
 import { populateInspectionScriptImportGraph } from "./inspect-script-import-graph.js";
 import { enrichInspectionSemanticGraph } from "./inspect-graph-enrichment.js";
 import { analyzeInspectionEntityKnowledge } from "./inspect-entity-knowledge-stage.js";
+import { analyzeInspectionRuntimeState } from "./inspect-runtime-analysis-stage.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
-import {
-  entityHasNavigation,
-  entityHasConfiguredTargeting,
-  entityRuntimeKey,
-} from "../../../analyzers/entities/src/runtime-evidence.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
@@ -24,37 +20,19 @@ import type {
   InspectDirectoryResult,
   InspectTargetProfile,
 } from "./types.js";
-import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { planInspectionRepairs } from "./repair-planning.js";
 import { deriveReliabilityFingerprint } from "./reliability-fingerprint.js";
 import {
   analyzeKnowledgeRuntime,
   resolveInspectionKnowledgeProfile,
 } from "./knowledge-runtime-analysis.js";
-import { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
 import { structureRuntimeEvidence } from "./structure-runtime-evidence.js";
-import { derivePlacementProofs } from "./structure-proof-analysis.js";
-import {
-  correlateScriptStructureLoads,
-  scriptStructureRuntimeEvidence,
-} from "./script-structure-correlation.js";
+import { scriptStructureRuntimeEvidence } from "./script-structure-correlation.js";
 import { areaLoadedBlockWriteEvidence } from "./area-loaded-proof.js";
-import {
-  analyzeMutationTransactionOrdering,
-  mutationTransactionRuntimeEvidence,
-} from "./mutation-transaction-analysis.js";
-import {
-  analyzeScriptMutationTransactions,
-  scriptMutationTransactionRuntimeEvidence,
-} from "./script-mutation-transaction-analysis.js";
-import {
-  analyzeScriptCommandMutationTransactions,
-  scriptCommandMutationRuntimeEvidence,
-} from "./script-command-transaction-analysis.js";
-import {
-  correlateRouteMutations,
-  routeMutationRuntimeEvidence,
-} from "./route-mutation-analysis.js";
+import { mutationTransactionRuntimeEvidence } from "./mutation-transaction-analysis.js";
+import { scriptMutationTransactionRuntimeEvidence } from "./script-mutation-transaction-analysis.js";
+import { scriptCommandMutationRuntimeEvidence } from "./script-command-transaction-analysis.js";
+import { routeMutationRuntimeEvidence } from "./route-mutation-analysis.js";
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { synthesizeCausalChains } from "./causal-analysis.js";
 import { synthesizeCausalIncidents } from "./causal-incident-analysis.js";
@@ -63,8 +41,6 @@ import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe
 import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
 import { buildDecisionBasis } from "./decision-basis.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
-import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
-import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
 import { deriveScriptApiUsage } from "./script-api-usage.js";
 import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 
@@ -174,105 +150,31 @@ export async function inspectDirectory(
     ]),
   );
 
-  const parsedFunctionModels = parsedFunctions.map((item) => item.parsed);
-  const parsedStructureSummaries = parsedStructureModels.map((item) => ({
-    identifier: item.identifier,
-    relativePath: item.node.source.relativePath,
-    ...(item.size ? { size: item.size } : {}),
-    semantics: item.semantics,
-  }));
-  const structureRuntime = analyzeStructureAndChunkRuntime(
+  const runtimeAnalysis =
+    analyzeInspectionRuntimeState({
+      target,
+      parsedFunctions,
+      parsedScripts,
+      parsedEntities,
+      parsedStructureModels,
+    });
+  const {
     parsedFunctionModels,
     parsedStructureSummaries,
-  );
-  const scriptStructureLoads = correlateScriptStructureLoads(
-    parsedScripts.map((item) => item.parsed),
-    parsedStructureSummaries,
-  );
-  const sourceByFunction = new Map(
-    parsedFunctions.map((item) => [item.parsed.identifier, item.node.source]),
-  );
-  diagnostics.push(...structureRuntimeDiagnostics(structureRuntime, sourceByFunction));
-
-  const placedEmbeddedCommands = structureRuntime.correlations.flatMap((correlation) => {
-    if (correlation.status !== "resolved") return [];
-    const parsed = parsedStructureModels.find(
-      (item) => item.identifier === correlation.load.semantics.name,
-    );
-    if (!parsed) return [];
-    return derivePlacedEmbeddedCommands(
-      {
-        ...(correlation.load.semantics.position
-          ? { position: correlation.load.semantics.position }
-          : {}),
-        ...(correlation.load.semantics.rotation
-          ? { rotation: correlation.load.semantics.rotation }
-          : {}),
-        ...(correlation.load.semantics.mirror
-          ? { mirror: correlation.load.semantics.mirror }
-          : {}),
-      },
-      parsed.size,
-      parsed.embeddedCommands.map((item) => item.block),
-    ).map((item) => ({
-      target: correlation.load.semantics.name,
-      flatIndex: item.flatIndex,
-      worldX: item.world.x,
-      worldY: item.world.y,
-      worldZ: item.world.z,
-      chunkX: Math.floor(item.world.x / 16),
-      chunkZ: Math.floor(item.world.z / 16),
-      command: item.command,
-      confidence: item.confidence,
-    }));
-  });
-
-  const topology = analyzeFunctionTopology(parsedFunctionModels);
-  diagnostics.push(...topology.stateDiagnostics, ...topology.topologyDiagnostics);
-
-  const structureProofs = derivePlacementProofs(
     structureRuntime,
-    parsedFunctionModels,
-  );
-  const routeCorrelations = correlateRouteMutations(
-    target.routeCorridors ?? [],
+    scriptStructureLoads,
+    sourceByFunction,
+    placedEmbeddedCommands,
     topology,
     structureProofs,
-    target.staticExecutionDimension,
-  );
-  const navigatingEntities = new Map(
-    parsedEntities
-      .map((item) => item.parsed)
-      .filter(entityHasNavigation)
-      .map((entity) => [
-        entityRuntimeKey(entity),
-        [entity.source] as const,
-      ]),
-  );
-  const targetDrivenEntities = new Map(
-    parsedEntities
-      .map((item) => item.parsed)
-      .filter(entityHasConfiguredTargeting)
-      .map((entity) => [
-        entityRuntimeKey(entity),
-        [entity.source] as const,
-      ]),
-  );
-  const mutationTransactions = analyzeMutationTransactionOrdering(
-    parsedFunctionModels,
-    structureProofs,
-    target.mutationDependentActions ?? [],
-  );
-  const scriptMutationTransactions = analyzeScriptMutationTransactions(
-    parsedScripts.map((item) => item.parsed),
-    target.mutationDependentActions ?? [],
-  );
-  const scriptCommandTransactions =
-    analyzeScriptCommandMutationTransactions(
-      parsedScripts.map((item) => item.parsed),
-      parsedStructureSummaries,
-      target.mutationDependentActions ?? [],
-    );
+    routeCorrelations,
+    navigatingEntities,
+    targetDrivenEntities,
+    mutationTransactions,
+    scriptMutationTransactions,
+    scriptCommandTransactions,
+  } = runtimeAnalysis;
+  diagnostics.push(...runtimeAnalysis.diagnostics);
 
   const knowledgeRuntime = analyzeKnowledgeRuntime(
     knowledgeCatalog,
