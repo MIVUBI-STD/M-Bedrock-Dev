@@ -58,3 +58,5 @@ export * from "./script-command-transaction-analysis.js";
 export * from "./causal-analysis.js";
 
 export * from "./causal-incident-analysis.js";
+
+export * from "./causal-comparison.js";
