@@ -72,10 +72,12 @@ describe("causal chain synthesis", () => {
       presentPredicates: [
         "route-affecting-world-mutation",
         "route-navigation-consumer-present",
+        "route-target-driven-consumer-present",
       ],
       causalCorroborators: {
         "navigation-stall-risk": [
           "route-navigation-consumer-present",
+          "route-target-driven-consumer-present",
         ],
       },
     };
