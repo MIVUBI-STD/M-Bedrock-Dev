@@ -397,4 +397,26 @@ describe("development telemetry instrumentation kit", () => {
     });
     expect(full.activeProbe).toBeDefined();
   });
+  it("preserves critical anomalies with priority buffering", () => {
+    const kit = createTelemetryInstrumentationKit({
+      maxEvents: 1,
+      bufferStrategy: "priority",
+    });
+
+    kit.emitter.mutationApplied({
+      mutationKind: "fill",
+    });
+    kit.emitter.staleCallback({
+      subsystem: "countdown",
+      capturedGeneration: 1,
+      currentGeneration: 2,
+    });
+
+    expect(kit.buffer.snapshot()).toEqual([
+      expect.objectContaining({
+        kind: "stale-callback",
+      }),
+    ]);
+    expect(kit.buffer.dropped).toBe(1);
+  });
 });
