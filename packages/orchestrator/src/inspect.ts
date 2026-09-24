@@ -92,6 +92,7 @@ import {
 } from "./route-mutation-analysis.js";
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { synthesizeCausalChains } from "./causal-analysis.js";
+import { synthesizeCausalIncidents } from "./causal-incident-analysis.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
 import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
@@ -734,6 +735,7 @@ export async function inspectDirectory(
   );
 
   const causalChains = synthesizeCausalChains(diagnostics);
+  const causalIncidents = synthesizeCausalIncidents(causalChains);
 
   const reliability = deriveReliabilityFingerprint({
     mapId: artifactId,
@@ -817,6 +819,11 @@ export async function inspectDirectory(
           );
         }).length;
       }, 0),
+      incidents: causalIncidents,
+      rootCauseCandidates: causalIncidents.reduce(
+        (sum, incident) => sum + incident.rootCauseCandidates.length,
+        0,
+      ),
     },
     worldDatabase: {
       present: dbFiles.length > 0,
