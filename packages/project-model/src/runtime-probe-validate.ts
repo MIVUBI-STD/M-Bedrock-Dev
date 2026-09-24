@@ -1,4 +1,4 @@
-import type { RuntimeProbeRequest } from "./runtime-probe.js";
+import type { RuntimeProbeRequest, RuntimeProbeResponse } from "./runtime-probe.js";
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -113,4 +113,82 @@ export function parseRuntimeProbeRequest(input: unknown): RuntimeProbeRequest {
     throw new Error("Invalid runtime probe request: " + errors.join("; "));
   }
   return input as RuntimeProbeRequest;
+}
+
+
+export function validateRuntimeProbeResponse(input: unknown): string[] {
+  if (!record(input)) return ["Runtime probe response must be an object."];
+  const errors: string[] = [];
+
+  if (input.schemaVersion !== 1) errors.push("schemaVersion must be 1.");
+  if (!nonEmpty(input.requestId)) errors.push("requestId must be a non-empty string.");
+  if (!nonEmpty(input.probeId)) errors.push("probeId must be a non-empty string.");
+  if (
+    !finite(input.runtimeTick) ||
+    !Number.isInteger(input.runtimeTick) ||
+    input.runtimeTick < 0
+  ) {
+    errors.push("runtimeTick must be a non-negative integer.");
+  }
+  if (typeof input.ok !== "boolean") errors.push("ok must be boolean.");
+  if (
+    input.state !== "present" &&
+    input.state !== "absent" &&
+    input.state !== "unknown"
+  ) {
+    errors.push("state must be present, absent, or unknown.");
+  }
+  if (input.outcomeId !== undefined && !nonEmpty(input.outcomeId)) {
+    errors.push("outcomeId must be a non-empty string when provided.");
+  }
+
+  if (!record(input.evidence)) {
+    errors.push("evidence must be an object.");
+  } else {
+    if (!nonEmpty(input.evidence.predicate)) {
+      errors.push("evidence.predicate must be a non-empty string.");
+    }
+    if (
+      input.evidence.state !== "present" &&
+      input.evidence.state !== "absent" &&
+      input.evidence.state !== "unknown"
+    ) {
+      errors.push("evidence.state must be present, absent, or unknown.");
+    }
+    if (
+      input.evidence.confidence !== "observed" &&
+      input.evidence.confidence !== "derived" &&
+      input.evidence.confidence !== "unknown"
+    ) {
+      errors.push("evidence.confidence is invalid.");
+    }
+    if (
+      typeof input.state === "string" &&
+      input.evidence.state !== input.state
+    ) {
+      errors.push("evidence.state must match response state.");
+    }
+  }
+
+  if (
+    input.value !== undefined &&
+    typeof input.value !== "string" &&
+    typeof input.value !== "number" &&
+    typeof input.value !== "boolean"
+  ) {
+    errors.push("value must be string, number, or boolean.");
+  }
+  if (input.error !== undefined && typeof input.error !== "string") {
+    errors.push("error must be a string.");
+  }
+
+  return errors;
+}
+
+export function parseRuntimeProbeResponse(input: unknown): RuntimeProbeResponse {
+  const errors = validateRuntimeProbeResponse(input);
+  if (errors.length > 0) {
+    throw new Error("Invalid runtime probe response: " + errors.join("; "));
+  }
+  return input as RuntimeProbeResponse;
 }
