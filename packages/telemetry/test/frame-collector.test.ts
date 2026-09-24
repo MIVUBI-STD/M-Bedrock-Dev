@@ -91,6 +91,88 @@ describe("telemetry frame collector", () => {
     expect(collector.discard("batch-b")).toBe(true);
   });
 
+  it("enforces per-frame payload limits", () => {
+    const collector = createTelemetryFrameCollector({
+      maxPayloadCharactersPerFrame: 8,
+    });
+    const frames = frameTelemetryBatch(batch, {
+      batchId: "batch-a",
+      maxPayloadCharacters: 12,
+    });
+
+    expect(frames[0]!.payload.length).toBeGreaterThan(8);
+    expect(() => collector.accept(frames[0]!))
+      .toThrow(/payload exceeds collector character budget/);
+    expect(collector.pendingPayloadCharacters).toBe(0);
+  });
+
+  it("evicts oldest incomplete batches to stay within total payload budget", () => {
+    const collector = createTelemetryFrameCollector({
+      maxPendingBatches: 8,
+      maxPayloadCharactersPerFrame: 64,
+      maxPendingPayloadCharacters: 20,
+    });
+    const a = frameTelemetryBatch(batch, {
+      batchId: "batch-a",
+      maxPayloadCharacters: 10,
+    });
+    const b = frameTelemetryBatch(batch, {
+      batchId: "batch-b",
+      maxPayloadCharacters: 10,
+    });
+    const c = frameTelemetryBatch(batch, {
+      batchId: "batch-c",
+      maxPayloadCharacters: 10,
+    });
+
+    collector.accept(a[0]!);
+    collector.accept(b[0]!);
+    expect(collector.pendingPayloadCharacters).toBe(20);
+
+    const result = collector.accept(c[0]!);
+    expect(result.evictedBatchId).toBe("batch-a");
+    expect(collector.pendingBatches).toBe(2);
+    expect(collector.pendingPayloadCharacters).toBe(20);
+  });
+
+  it("releases pending payload accounting on completion discard and clear", () => {
+    const collector = createTelemetryFrameCollector({
+      maxPayloadCharactersPerFrame: 64,
+      maxPendingPayloadCharacters: 10_000,
+    });
+    const frames = frameTelemetryBatch(batch, {
+      batchId: "batch-a",
+      maxPayloadCharacters: 20,
+    });
+
+    for (const frame of frames.slice(0, -1)) {
+      collector.accept(frame);
+    }
+    expect(collector.pendingPayloadCharacters).toBeGreaterThan(0);
+
+    const final = collector.accept(frames.at(-1)!);
+    expect(final.status).toBe("complete");
+    expect(collector.pendingPayloadCharacters).toBe(0);
+
+    const b = frameTelemetryBatch(batch, {
+      batchId: "batch-b",
+      maxPayloadCharacters: 20,
+    });
+    collector.accept(b[0]!);
+    expect(collector.pendingPayloadCharacters).toBeGreaterThan(0);
+    expect(collector.discard("batch-b")).toBe(true);
+    expect(collector.pendingPayloadCharacters).toBe(0);
+
+    const cFrames = frameTelemetryBatch(batch, {
+      batchId: "batch-c",
+      maxPayloadCharacters: 20,
+    });
+    collector.accept(cFrames[0]!);
+    collector.clear();
+    expect(collector.pendingPayloadCharacters).toBe(0);
+    expect(collector.pendingBatches).toBe(0);
+  });
+
   it("rejects batches larger than the configured frame budget", () => {
     const collector = createTelemetryFrameCollector({
       maxFramesPerBatch: 2,
