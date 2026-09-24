@@ -61,7 +61,12 @@ export function knowledgeRuntimeDiagnostics(
     const predicateSourceKeys: Record<string, string[]> = {};
     const predicateObservations: Record<
       string,
-      Array<{ tick?: number; sequence?: number; timestamp?: string }>
+      Array<{
+        tick?: number;
+        streamId?: string;
+        sequence?: number;
+        timestamp?: string;
+      }>
     > = {};
     for (const record of records) {
       if (record.state !== "present") continue;
