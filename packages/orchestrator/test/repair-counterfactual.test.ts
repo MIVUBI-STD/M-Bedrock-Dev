@@ -182,4 +182,33 @@ describe("repair counterfactual and blast radius", () => {
       .toBe("indeterminate");
   });
 
+
+  it("can explicitly allow unresolved topology without falsifying graph coverage", () => {
+    const graph = graphFixture();
+    graph.addEdge({
+      from: "function:p:target",
+      type: "CALLS",
+      targetIdentifier: "missing",
+      status: "unresolved",
+      evidence: {
+        source: {
+          artifactId: "art-1",
+          relativePath: "functions/target.mcfunction",
+        },
+      },
+    });
+
+    const impact = analyzeRepairCounterfactual(graph, {
+      transaction: transaction(),
+      changedNodeIds: ["function:p:target"],
+    });
+
+    expect(impact.graphCoverageComplete).toBe(true);
+    expect(impact.dependencyTopologyResolved).toBe(false);
+    expect(decideRepairBlastRadius(impact, {
+      ...DEFAULT_REPAIR_BLAST_RADIUS_POLICY,
+      blockOnUnresolvedTopology: false,
+    }).disposition).toBe("bounded");
+  });
+
 });
