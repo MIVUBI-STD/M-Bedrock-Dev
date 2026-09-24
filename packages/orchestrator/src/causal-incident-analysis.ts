@@ -184,10 +184,16 @@ export function synthesizeCausalIncidents(
         .map(candidateForChain)
         .filter((item): item is RootCauseCandidate => item !== undefined),
     );
+    const structuredScope = scopedChains.find(
+      (chain) => chain.scope !== undefined,
+    )?.scope;
 
     incidents.push({
       id: idFor([scopeKey, ...scopedChains.map((chain) => chain.id).sort()]),
       scopeKey,
+      ...(structuredScope === undefined
+        ? {}
+        : { scope: structuredScope }),
       severity,
       confidence,
       chainIds: scopedChains.map((chain) => chain.id).sort(),
