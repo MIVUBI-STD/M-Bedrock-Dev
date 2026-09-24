@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   parseRuntimeProbeRequest,
   parseRuntimeProbeResponseJson,
+  parseRuntimeProbeTranscript,
   validateRuntimeProbeRequest,
   validateRuntimeProbeResponse,
+  validateRuntimeProbeTranscript,
 } from "../src/runtime-probe-validate.js";
 
 describe("runtime probe contracts", () => {
@@ -152,6 +154,166 @@ describe("runtime probe contracts", () => {
     })).toEqual(expect.arrayContaining([
       expect.stringContaining("ok=true responses must not include error"),
     ]));
+  });
+
+  it("validates request-response transcripts as a trust boundary", () => {
+    const request = {
+      schemaVersion: 1 as const,
+      requestId: "req-transcript",
+      probeId: "chunk-ready",
+      predicate: "loaded-target-chunk",
+      scope: {
+        arenaId: "arena-1",
+        arenaGeneration: 4,
+        operationId: "mutation-1",
+      },
+      runtimeTick: 90,
+      query: {
+        kind: "chunk-loaded" as const,
+        dimension: "overworld",
+        location: { x: 16, y: 64, z: 16 },
+      },
+      outcomeByState: {
+        present: "ready",
+        absent: "not-ready",
+        unknown: "unknown",
+      },
+    };
+
+    const response = {
+      schemaVersion: 1 as const,
+      requestId: "req-transcript",
+      probeId: "chunk-ready",
+      runtimeTick: 100,
+      ok: true,
+      state: "present" as const,
+      outcomeId: "ready",
+      evidence: {
+        predicate: "loaded-target-chunk",
+        state: "present" as const,
+        confidence: "observed" as const,
+        scope: request.scope,
+        observedAt: { tick: 100 },
+      },
+      value: true,
+    };
+
+    const transcript = parseRuntimeProbeTranscript({
+      schemaVersion: 1,
+      sessionId: "qa-run",
+      artifactId: "art-1",
+      exchanges: [{ request, response }],
+    });
+
+    expect(transcript.exchanges).toHaveLength(1);
+    expect(validateRuntimeProbeTranscript({
+      ...transcript,
+      exchanges: [{
+        request,
+        response: {
+          ...response,
+          evidence: {
+            ...response.evidence,
+            predicate: "wrong-predicate",
+            scope: {
+              ...request.scope,
+              arenaGeneration: 5,
+            },
+          },
+          runtimeTick: 80,
+          outcomeId: "not-ready",
+        },
+      }],
+    })).toEqual(expect.arrayContaining([
+      expect.stringContaining("evidence predicate mismatch"),
+      expect.stringContaining("evidence scope mismatch"),
+      expect.stringContaining("response runtimeTick precedes request runtimeTick"),
+      expect.stringContaining("outcomeId does not match request outcome mapping"),
+    ]));
+  });
+
+  it("rejects duplicate request ids inside one transcript", () => {
+    const request = parseRuntimeProbeRequest({
+      schemaVersion: 1,
+      requestId: "req-dup",
+      probeId: "entity-live",
+      predicate: "critical-entity-resolvable",
+      query: {
+        kind: "entity-resolvable",
+        entityId: "entity-1",
+      },
+      outcomeByState: {
+        present: "live",
+        absent: "missing",
+      },
+    });
+    const response = {
+      schemaVersion: 1 as const,
+      requestId: "req-dup",
+      probeId: "entity-live",
+      runtimeTick: 10,
+      ok: true,
+      state: "present" as const,
+      outcomeId: "live",
+      evidence: {
+        predicate: "critical-entity-resolvable",
+        state: "present" as const,
+        confidence: "observed" as const,
+        observedAt: { tick: 10 },
+      },
+      value: true,
+    };
+
+    expect(validateRuntimeProbeTranscript({
+      schemaVersion: 1,
+      exchanges: [
+        { request, response },
+        { request, response },
+      ],
+    })).toEqual(expect.arrayContaining([
+      expect.stringContaining("duplicates requestId req-dup"),
+    ]));
+  });
+
+  it("allows failed transcript responses without a logical outcome id", () => {
+    const request = parseRuntimeProbeRequest({
+      schemaVersion: 1,
+      requestId: "req-failed-transcript",
+      probeId: "chunk-ready",
+      predicate: "loaded-target-chunk",
+      query: {
+        kind: "chunk-loaded",
+        dimension: "overworld",
+        location: { x: 0, y: 64, z: 0 },
+      },
+      outcomeByState: {
+        present: "ready",
+        absent: "not-ready",
+        unknown: "unknown",
+      },
+    });
+
+    expect(validateRuntimeProbeTranscript({
+      schemaVersion: 1,
+      exchanges: [{
+        request,
+        response: {
+          schemaVersion: 1,
+          requestId: request.requestId,
+          probeId: request.probeId,
+          runtimeTick: 20,
+          ok: false,
+          state: "unknown",
+          evidence: {
+            predicate: request.predicate,
+            state: "unknown",
+            confidence: "unknown",
+            observedAt: { tick: 20 },
+          },
+          error: "dimension unavailable",
+        },
+      }],
+    })).toEqual([]);
   });
 
   it("rejects malformed response json", () => {
