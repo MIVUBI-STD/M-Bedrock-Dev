@@ -1,5 +1,6 @@
 import { system, world } from "@minecraft/server";
 import { enqueueControlAction } from "./control.js";
+import { enqueueProbeRequest } from "./probe.js";
 
 const PREFIX = "[M-BEDROCK-OBS]";
 const CONTROL_INPUT_PREFIX = "[M-BEDROCK-CTRL-IN]";
@@ -134,6 +135,29 @@ function emit(snapshot) {
 }
 
 world.afterEvents.scriptEventReceive.subscribe((event) => {
+  if (event.id === "m-bedrock:probe") {
+    try {
+      enqueueProbeRequest(JSON.parse(event.message));
+    } catch (error) {
+      console.warn(`[M-BEDROCK-PROBE]${JSON.stringify({
+        schemaVersion: 1,
+        requestId: "invalid",
+        probeId: "invalid",
+        runtimeTick: system.currentTick,
+        ok: false,
+        state: "unknown",
+        evidence: {
+          predicate: "runtime-probe-request-valid",
+          state: "unknown",
+          confidence: "unknown",
+          note: String(error)
+        },
+        error: String(error)
+      })}`);
+    }
+    return;
+  }
+
   if (event.id !== "m-bedrock:control") return;
   try {
     const message = JSON.parse(event.message);
