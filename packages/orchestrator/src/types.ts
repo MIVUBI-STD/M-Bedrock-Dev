@@ -8,6 +8,7 @@ import type { RouteCorridorContract } from "../../project-model/src/route-corrid
 import type { MutationDependentActionContract } from "../../project-model/src/mutation-dependent-action.js";
 import type { CausalChain, CausalIncident } from "../../project-model/src/causal-chain.js";
 import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
+import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -84,6 +85,14 @@ export interface InspectDirectoryResult {
       nonMonotonicTransitions: number;
       incomplete: boolean;
     };
+  };
+  runtimeProbeAnalysis: {
+    responses: number;
+    evidenceRecords: number;
+    present: number;
+    absent: number;
+    unknown: number;
+    failed: number;
   };
   worldDatabase: {
     present: boolean;
@@ -232,4 +241,5 @@ export interface InspectDirectoryResult {
 export interface InspectEvidenceInput {
   records?: readonly import("../../project-model/src/runtime-evidence.js").RuntimeEvidenceRecord[];
   telemetryEvents?: readonly TelemetryEvent[];
+  runtimeProbeResponses?: readonly RuntimeProbeResponse[];
 }
