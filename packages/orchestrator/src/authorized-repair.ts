@@ -132,6 +132,7 @@ export function authorizeRepairMutation(
     "invariantRegistryRevision",
     "targetProfileFingerprint",
     "probeBindingRevision",
+    "runtimeEvidenceRevision",
   ] as const) {
     const expected = proof.decisionBasis[key];
     if (
