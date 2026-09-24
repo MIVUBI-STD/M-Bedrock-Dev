@@ -208,6 +208,21 @@ describe("provider-backed repair selection", () => {
     expect(result.status).toBe("evaluated");
     if (result.status !== "evaluated") return;
     expect(result.result.status).toBe("evaluated");
+    expect(result.providerRegistryRevision).toMatch(
+      /^[a-f0-9]{64}$/,
+    );
+    expect(result.providerProvenance).toEqual([{
+      providerId: "knowledge-fix",
+      providerVersion: "1",
+    }]);
+
+    if (result.result.status !== "evaluated") return;
+    expect(result.result.selection.status).toBe("selected");
+    if (result.result.selection.status !== "selected") return;
+    expect(
+      result.result.selection.selected.pipeline.proof
+        .decisionBasis.repairProviderRegistryRevision,
+    ).toBe(result.providerRegistryRevision);
   });
 
   it("blocks proposal whose diagnostic is outside selected causal provenance", () => {
