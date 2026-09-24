@@ -126,4 +126,47 @@ describe("inspection evidence integrity", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+  it("marks unlocated telemetry unsafe for temporal claims even without sequence gaps", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-integrity-unlocated-"));
+    try {
+      await mkdir(join(root, "behavior_pack", "functions"), {
+        recursive: true,
+      });
+      await writeFile(
+        join(root, "behavior_pack", "functions", "noop.mcfunction"),
+        "say ready\n",
+        "utf8",
+      );
+
+      const result = await inspectDirectory(
+        root,
+        "artifact-unlocated",
+        { edition: "bedrock" },
+        "fingerprint-unlocated",
+        undefined,
+        [],
+        [{
+          schemaVersion: 1,
+          eventId: "unlocated-1",
+          kind: "route-revalidation",
+          producer: "qa",
+          scope: { operationId: "route-1" },
+          routeId: "bridge",
+          result: "failed",
+        }],
+      );
+
+      expect(result.telemetryAnalysis.continuity.incomplete).toBe(false);
+      expect(result.evidenceIntegrity.telemetry.unlocatedObservedRecords)
+        .toBeGreaterThan(0);
+      expect(result.evidenceIntegrity.telemetry.continuityComplete)
+        .toBe(true);
+      expect(result.evidenceIntegrity.telemetry.safeForCurrentStateClaims)
+        .toBe(true);
+      expect(result.evidenceIntegrity.telemetry.safeForTemporalViolationClaims)
+        .toBe(false);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });
