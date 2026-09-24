@@ -114,6 +114,30 @@ describe("telemetry emitter sdk", () => {
       ]);
   });
 
+  it("rejects duplicate ids across emitters sharing one buffer", () => {
+    const buffer = createBufferedTelemetrySink();
+    const first = createTelemetryEmitter({
+      producer: "runtime",
+      sink: buffer,
+      idFactory: createCounterTelemetryIdFactory("shared"),
+    });
+    const second = createTelemetryEmitter({
+      producer: "runtime",
+      sink: buffer,
+      idFactory: createCounterTelemetryIdFactory("shared"),
+    });
+
+    first.routeRevalidation({
+      routeId: "bridge",
+      result: "passed",
+    });
+
+    expect(() => second.routeRevalidation({
+      routeId: "bridge",
+      result: "failed",
+    })).toThrow(/Duplicate telemetry eventId/);
+  });
+
   it("supports validating, fanout, callback, and json-line sinks", () => {
     const seen: string[] = [];
     const lines: string[] = [];
