@@ -40,6 +40,18 @@ function outcomeIds(probe: DiagnosticProbeDefinition): Set<string> {
   return new Set(probe.outcomes.map((outcome) => outcome.id));
 }
 
+const RUNTIME_SCOPE_KEYS = [
+  "arenaId",
+  "arenaGeneration",
+  "playerKey",
+  "connectionGeneration",
+  "lifeGeneration",
+  "entityKey",
+  "entityGeneration",
+  "operationId",
+  "subsystemGeneration",
+] as const satisfies readonly (keyof RuntimeScope)[];
+
 function compatibleScope(
   left: RuntimeScope | undefined,
   right: RuntimeScope | undefined,
@@ -47,14 +59,9 @@ function compatibleScope(
   if (!left) return right;
   if (!right) return left;
 
-  const leftRecord = left as Record<string, string | number | undefined>;
-  const rightRecord = right as Record<string, string | number | undefined>;
-  for (const key of new Set([
-    ...Object.keys(leftRecord),
-    ...Object.keys(rightRecord),
-  ])) {
-    const a = leftRecord[key];
-    const b = rightRecord[key];
+  for (const key of RUNTIME_SCOPE_KEYS) {
+    const a = left[key];
+    const b = right[key];
     if (a !== undefined && b !== undefined && a !== b) {
       return undefined;
     }
