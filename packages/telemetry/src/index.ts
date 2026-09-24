@@ -69,3 +69,5 @@ export * from "./budget.js";
 export * from "./bedrock-lifecycle.js";
 
 export * from "./arena-generation-monitor.js";
+
+export * from "./profile.js";
