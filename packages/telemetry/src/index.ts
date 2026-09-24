@@ -27,3 +27,5 @@ export * from "./observers.js";
 export * from "./entity-progress.js";
 
 export * from "./mutation-lifecycle.js";
+
+export * from "./scheduler.js";
