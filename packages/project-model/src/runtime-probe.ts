@@ -73,5 +73,6 @@ export interface RuntimeProbeTranscript {
   schemaVersion: 1;
   sessionId?: string;
   artifactId?: string;
+  droppedExchanges?: number;
   exchanges: readonly RuntimeProbeExchange[];
 }
