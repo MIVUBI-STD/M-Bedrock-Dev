@@ -229,7 +229,14 @@ function asCorroboratorMap(
   return output;
 }
 
-function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefined {
+export interface CausalSynthesisOptions {
+  temporalEvidenceReliable?: boolean;
+}
+
+function knowledgeFindingChain(
+  finding: DiagnosticFinding,
+  options: CausalSynthesisOptions,
+): CausalChain | undefined {
   if (
     finding.code !== "KNOWLEDGE_RELATION_VIOLATION" &&
     finding.code !== "KNOWLEDGE_EVIDENCE_GAP"
@@ -359,7 +366,12 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
         subjectObservations,
         outcomeObservations,
       );
-      if (timing !== "before-subject") {
+      const temporalEvidenceReliable =
+        options.temporalEvidenceReliable !== false;
+      if (
+        temporalEvidenceReliable &&
+        timing !== "before-subject"
+      ) {
         hasObservedOutcome = true;
       }
       const observedNodeId = idFor([
@@ -387,11 +399,17 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
         strength: "direct-evidence",
         relationId,
         temporalStatus: timing,
-        rationale: timing === "before-subject"
-          ? "The downstream outcome is observed in the same scope, but available timing places it before the initiating subject; it is not counted as causal support."
-          : timing === "after-subject"
-            ? "Runtime evidence reports the downstream outcome after the initiating subject in the same scope; causal attribution remains bounded by the dependency evidence."
-            : "Runtime evidence in the same scope reports the downstream outcome directly, but temporal ordering is not fully resolved.",
+        temporalIntegrity:
+          options.temporalEvidenceReliable === false
+            ? "incomplete"
+            : "complete",
+        rationale: options.temporalEvidenceReliable === false
+          ? "The downstream outcome is observed, but telemetry continuity is incomplete; the observation is retained without using its temporal position as causal support."
+          : timing === "before-subject"
+            ? "The downstream outcome is observed in the same scope, but available timing places it before the initiating subject; it is not counted as causal support."
+            : timing === "after-subject"
+              ? "Runtime evidence reports the downstream outcome after the initiating subject in the same scope; causal attribution remains bounded by the dependency evidence."
+              : "Runtime evidence in the same scope reports the downstream outcome directly, but temporal ordering is not fully resolved.",
       });
     }
   }
@@ -434,9 +452,10 @@ function chainKey(chain: CausalChain): string {
 
 export function synthesizeCausalChains(
   diagnostics: readonly DiagnosticFinding[],
+  options: CausalSynthesisOptions = {},
 ): CausalChain[] {
   const chains = diagnostics
-    .map(knowledgeFindingChain)
+    .map((finding) => knowledgeFindingChain(finding, options))
     .filter((item): item is CausalChain => item !== undefined);
 
   const deduped = new Map<string, CausalChain>();
