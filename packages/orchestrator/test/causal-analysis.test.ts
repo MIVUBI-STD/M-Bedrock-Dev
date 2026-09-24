@@ -91,6 +91,63 @@ describe("causal chain synthesis", () => {
     ]));
   });
 
+  it("requires the configured number of independent provenance sources", () => {
+    const singleSource = finding("KNOWLEDGE_EVIDENCE_GAP");
+    singleSource.data = {
+      ...singleSource.data,
+      presentPredicates: [
+        "route-navigation-consumer-present",
+        "route-target-driven-consumer-present",
+      ],
+      causalCorroborators: {
+        "navigation-stall-risk": [
+          "route-navigation-consumer-present",
+          "route-target-driven-consumer-present",
+        ],
+      },
+      causalCorroborationMinSources: {
+        "navigation-stall-risk": 2,
+      },
+      predicateSourceKeys: {
+        "route-navigation-consumer-present": ["artifact:entity.json:1:0"],
+        "route-target-driven-consumer-present": ["artifact:entity.json:1:0"],
+      },
+    };
+
+    const one = synthesizeCausalChains([singleSource]);
+    expect(one[0]?.confidence).toBe("low");
+    expect(one[0]?.links.some(
+      (link) => link.strength === "corroborated-risk",
+    )).toBe(false);
+
+    const multiSource = finding("KNOWLEDGE_EVIDENCE_GAP");
+    multiSource.data = {
+      ...singleSource.data,
+      predicateSourceKeys: {
+        "route-navigation-consumer-present": [
+          "artifact:mutation.mcfunction:1:0",
+          "artifact:entity.json:1:0",
+        ],
+        "route-target-driven-consumer-present": [
+          "artifact:mutation.mcfunction:1:0",
+          "artifact:entity.json:1:0",
+        ],
+      },
+    };
+
+    const two = synthesizeCausalChains([multiSource]);
+    expect(two[0]?.confidence).toBe("medium");
+    expect(two[0]?.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        label: "navigation-stall-risk",
+        corroboratingSourceKeys: [
+          "artifact:entity.json:1:0",
+          "artifact:mutation.mcfunction:1:0",
+        ],
+      }),
+    ]));
+  });
+
   it("adds a direct observed outcome node without upgrading an unproven dependency to high confidence", () => {
     const item = finding("KNOWLEDGE_EVIDENCE_GAP");
     item.data = {
