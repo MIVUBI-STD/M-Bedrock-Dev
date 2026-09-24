@@ -143,7 +143,8 @@ function asObservationMap(
       if (
         point.tick !== undefined ||
         point.sequence !== undefined ||
-        point.timestamp !== undefined
+        point.timestamp !== undefined ||
+        point.origin !== undefined
       ) {
         normalized.push(point);
       }
