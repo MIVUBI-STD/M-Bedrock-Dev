@@ -1,5 +1,11 @@
-import { parseRuntimeProbeResponse } from "../../project-model/src/runtime-probe-validate.js";
-import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
+import {
+  parseRuntimeProbeResponse,
+  parseRuntimeProbeTranscript,
+} from "../../project-model/src/runtime-probe-validate.js";
+import type {
+  RuntimeProbeResponse,
+  RuntimeProbeTranscript,
+} from "../../project-model/src/runtime-probe.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 
 export interface RuntimeProbeResponseSummary {
@@ -58,4 +64,14 @@ export function runtimeProbeResponseEvidence(
       failed,
     },
   };
+}
+
+
+export function runtimeProbeTranscriptEvidence(
+  rawTranscript: RuntimeProbeTranscript,
+): RuntimeProbeResponseEvidence {
+  const transcript = parseRuntimeProbeTranscript(rawTranscript);
+  return runtimeProbeResponseEvidence(
+    transcript.exchanges.map((exchange) => exchange.response),
+  );
 }
