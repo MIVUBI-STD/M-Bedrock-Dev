@@ -166,6 +166,7 @@ export async function inspectDirectory(
   knowledgeCatalog?: KnowledgeCatalog,
   externalEvidence: readonly RuntimeEvidenceRecord[] = [],
   telemetryEvents: readonly TelemetryEvent[] = [],
+  telemetryDroppedEvents = 0,
 ): Promise<InspectDirectoryResult> {
   const telemetryEvidence = telemetryRuntimeEvidence(telemetryEvents);
   const files = await buildFilesystemInventory(root);
@@ -846,6 +847,7 @@ export async function inspectDirectory(
     telemetryAnalysis: {
       events: telemetryEvents.length,
       evidenceRecords: telemetryEvidence.length,
+      droppedEvents: telemetryDroppedEvents,
       byKind: telemetryEventKinds(telemetryEvents),
     },
     worldDatabase: {
