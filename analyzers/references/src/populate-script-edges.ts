@@ -1,4 +1,4 @@
-import type { ParsedScriptFile } from "../../scripts/src/types.js";
+import type { ParsedScriptFile } from "../../scripts/src/index.js";
 import type { SemanticNode } from "../../../packages/graph/src/index.js";
 import { SemanticGraph } from "../../../packages/graph/src/index.js";
 import { resolveByIdentifier } from "./resolve.js";

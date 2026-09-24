@@ -1,6 +1,6 @@
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
-import type { ParsedScriptFile } from "../../scripts/src/types.js";
+import type { ParsedScriptFile } from "../../scripts/src/index.js";
 
 export function scriptExecutionPrivilegeDiagnostics(
   scripts: readonly ParsedScriptFile[],

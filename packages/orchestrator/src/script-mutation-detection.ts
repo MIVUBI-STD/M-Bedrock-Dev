@@ -1,5 +1,5 @@
-import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
-import { resolveScriptImports } from "../../../analyzers/scripts/src/resolve.js";
+import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { resolveScriptImports } from "../../../analyzers/scripts/src/index.js";
 import type { SourceMutation } from "../../reliability-search/src/index.js";
 import type { SourceMutationDetector } from "../../reliability-search/src/index.js";
 

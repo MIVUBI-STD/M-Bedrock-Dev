@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
+import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import { parseEntityDefinition } from "../../../analyzers/entities/src/index.js";
 import { parseDialogueDocument } from "../../../analyzers/dialogue/src/index.js";
 import { dialogueDocumentDiagnostics } from "../../../analyzers/diagnostics/src/index.js";

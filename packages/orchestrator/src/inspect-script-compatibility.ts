@@ -1,5 +1,5 @@
 import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/index.js";
 import { undeclaredMinecraftModuleDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { scriptExecutionPrivilegeDiagnostics } from "../../../analyzers/diagnostics/src/index.js";

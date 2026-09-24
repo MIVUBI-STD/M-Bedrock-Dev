@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../scripts/src/parse.js";
+import { parseScriptFile } from "../../scripts/src/index.js";
 import { scriptSignatureDiagnostics } from "../src/script-signature-findings.js";
 
 const source = {

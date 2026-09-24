@@ -15,8 +15,8 @@ import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import { manifestRuntimeEvidence } from "../../../analyzers/manifest/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
 import { functionRuntimeEvidence } from "../../../analyzers/functions/src/index.js";
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
-import { scriptRuntimeEvidence } from "../../../analyzers/scripts/src/runtime-evidence.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { scriptRuntimeEvidence } from "../../../analyzers/scripts/src/index.js";
 import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/index.js";
 import { entityRuntimeEvidence } from "../../../analyzers/entities/src/index.js";
 import {

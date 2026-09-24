@@ -1,4 +1,4 @@
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import { parseStructureLoadSemantics } from "../../../analyzers/commands/src/structure-semantics.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";

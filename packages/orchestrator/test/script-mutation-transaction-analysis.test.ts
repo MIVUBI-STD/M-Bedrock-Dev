@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
+import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
 import {
   analyzeScriptMutationTransactions,
   scriptMutationTransactionRuntimeEvidence,

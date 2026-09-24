@@ -1,5 +1,5 @@
 import type { ManifestCompatibilityFacts } from "../../manifest/src/index.js";
-import type { ParsedScriptFile } from "../../scripts/src/types.js";
+import type { ParsedScriptFile } from "../../scripts/src/index.js";
 import { findScriptPropertyRule } from "../../../packages/compatibility/src/index.js";
 import { findScriptEnumMemberRule } from "../../../packages/compatibility/src/index.js";
 import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/index.js";

@@ -2,7 +2,7 @@ import type {
   ParsedScriptFile,
   ScriptLocalFunctionCall,
   ScriptMethodCall,
-} from "../../../analyzers/scripts/src/types.js";
+} from "../../../analyzers/scripts/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 import {

@@ -1,4 +1,4 @@
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import {
   findScriptEventRule,
   scriptEventSymbol,

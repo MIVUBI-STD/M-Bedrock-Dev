@@ -1,5 +1,5 @@
 import type { ManifestCompatibilityFacts } from "../../manifest/src/index.js";
-import type { ParsedScriptFile } from "../../scripts/src/types.js";
+import type { ParsedScriptFile } from "../../scripts/src/index.js";
 import {
   checkScriptMethodSymbol,
   findScriptMethodRule,

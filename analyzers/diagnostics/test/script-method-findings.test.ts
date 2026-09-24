@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { scriptMethodSymbolDiagnostics } from "../src/script-method-findings.js";
-import { parseScriptFile } from "../../scripts/src/parse.js";
+import { parseScriptFile } from "../../scripts/src/index.js";
 
 const source = {
   artifactId: "fixture",

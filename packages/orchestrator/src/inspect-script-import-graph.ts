@@ -1,5 +1,5 @@
-import { resolveScriptImports } from "../../../analyzers/scripts/src/resolve.js";
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
+import { resolveScriptImports } from "../../../analyzers/scripts/src/index.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import type { SemanticGraph } from "../../graph/src/index.js";
 import type { SemanticNode } from "../../graph/src/index.js";
 

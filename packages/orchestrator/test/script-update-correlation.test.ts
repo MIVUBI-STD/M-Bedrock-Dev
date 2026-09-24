@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
+import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
 import { deriveScriptApiUsage } from "../src/script-api-usage.js";
 import { correlateScriptUsageWithUpdate } from "../src/script-update-correlation.js";
 

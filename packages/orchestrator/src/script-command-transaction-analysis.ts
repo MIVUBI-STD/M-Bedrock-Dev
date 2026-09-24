@@ -2,7 +2,7 @@ import type {
   ParsedScriptFile,
   ScriptCommandLiteral,
   ScriptLocalFunctionCall,
-} from "../../../analyzers/scripts/src/types.js";
+} from "../../../analyzers/scripts/src/index.js";
 import { analyzeCommand } from "../../../analyzers/commands/src/parse.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
 import type { CommandEffect } from "../../../analyzers/commands/src/effects.js";

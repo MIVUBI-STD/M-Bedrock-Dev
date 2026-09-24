@@ -3,7 +3,7 @@ import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/
 import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/index.js";
 import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import type { SemanticNode } from "../../graph/src/index.js";
