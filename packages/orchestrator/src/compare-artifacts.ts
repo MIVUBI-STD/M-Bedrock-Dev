@@ -2,6 +2,7 @@ import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { inspectArtifact, type InspectArtifactResult } from "./inspect-artifact.js";
 import type { InspectTargetProfile } from "./types.js";
 import { diffWorldDbNative, type WorldDbNativeDiff } from "./world-db-diff.js";
+import { compareCausalAnalysis, type CausalComparison } from "./causal-comparison.js";
 
 export interface ArtifactComparisonResult {
   before: {
@@ -20,6 +21,7 @@ export interface ArtifactComparisonResult {
     comparable: false;
     reason: string;
   };
+  causal: CausalComparison;
 }
 
 function summarize(result: InspectArtifactResult) {
@@ -57,5 +59,6 @@ export async function compareArtifacts(
             comparable: false,
             reason: "Both artifacts must expose native LevelDB summaries.",
           },
+    causal: compareCausalAnalysis(before, after),
   };
 }
