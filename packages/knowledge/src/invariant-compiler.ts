@@ -4,10 +4,42 @@ import type {
   KnowledgeCatalog,
   KnowledgeGraphEdge,
 } from "./index.js";
-import type {
-  CompiledDiagnosticInvariant,
-  InvariantCompilationResult,
-} from "../../project-model/src/diagnostic-invariant.js";
+export type CompiledInvariantKind =
+  | "requires-state"
+  | "requires-any-state"
+  | "gated-state"
+  | "deactivates-state"
+  | "restores-state"
+  | "temporal-order";
+
+export interface CompiledDiagnosticInvariant {
+  id: string;
+  relationId: string;
+  relationKind: KnowledgeGraphEdge["kind"];
+  invariantKind: CompiledInvariantKind;
+  domain: KnowledgeGraphEdge["domain"];
+  subject: string;
+  object: string;
+  alternatives?: readonly string[];
+  expectedObjectState?: "present" | "absent";
+  beforePredicate?: string;
+  afterPredicate?: string;
+  classification?: KnowledgeGraphEdge["classification"];
+  diagnosticSeverity?: KnowledgeGraphEdge["diagnosticSeverity"];
+  knowledgeSourceIds: readonly string[];
+  rationale?: string;
+}
+
+export interface InvariantCompilationSkip {
+  relationId: string;
+  relationKind: KnowledgeGraphEdge["kind"];
+  reason: string;
+}
+
+export interface InvariantCompilationResult {
+  invariants: readonly CompiledDiagnosticInvariant[];
+  skipped: readonly InvariantCompilationSkip[];
+}
 
 function base(
   edge: KnowledgeGraphEdge,
