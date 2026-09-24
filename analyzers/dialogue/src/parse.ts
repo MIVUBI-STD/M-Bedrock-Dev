@@ -1,5 +1,5 @@
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
-import { analyzeCommand } from "../../commands/src/parse.js";
+import { analyzeCommand } from "../../commands/src/index.js";
 import type {
   DialogueCommandTrigger,
   DialogueSceneCommand,

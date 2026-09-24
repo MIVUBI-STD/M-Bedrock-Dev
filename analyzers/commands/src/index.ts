@@ -10,3 +10,6 @@ export * from "./schedule-semantics.js";
 export * from "./runtime-evidence.js";
 
 export * from "./verification-semantics.js";
+
+export * from "./structure-semantics.js";
+export * from "./tickingarea-semantics.js";

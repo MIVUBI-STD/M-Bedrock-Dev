@@ -1,6 +1,6 @@
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
-import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
-import type { CommandEffect } from "../../../analyzers/commands/src/effects.js";
+import { flattenCommandEffects } from "../../../analyzers/commands/src/index.js";
+import type { CommandEffect } from "../../../analyzers/commands/src/index.js";
 import {
   effectUsesOnlyAbsoluteCoordinates,
   resolveEffect,

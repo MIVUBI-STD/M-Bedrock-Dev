@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeCommand } from "../../commands/src/parse.js";
+import { analyzeCommand } from "../../commands/src/index.js";
 import { resolveEffect } from "../src/effect-resolution.js";
 import { compareExpectedTranslation } from "../src/outliers.js";
 import type { ResolvedEffect } from "../src/effect-resolution.js";

@@ -1,8 +1,8 @@
 import type { ParsedFunction, FunctionReference } from "./types.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
-import { analyzeCommand } from "../../commands/src/parse.js";
-import { flattenCommandEffects } from "../../commands/src/flatten.js";
-import { scoreboardAccesses, tagAccesses } from "../../commands/src/state-access.js";
+import { analyzeCommand } from "../../commands/src/index.js";
+import { flattenCommandEffects } from "../../commands/src/index.js";
+import { scoreboardAccesses, tagAccesses } from "../../commands/src/index.js";
 
 function lineSource(source: SourceRef, line: number): SourceRef {
   return { ...source, range: { lineStart: line, lineEnd: line } };

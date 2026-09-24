@@ -1,5 +1,5 @@
 import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/runtime-evidence.js";
-import { commandRuntimeEvidence } from "../../commands/src/runtime-evidence.js";
+import { commandRuntimeEvidence } from "../../commands/src/index.js";
 import type { ParsedFunction } from "./types.js";
 
 export function functionRuntimeEvidence(

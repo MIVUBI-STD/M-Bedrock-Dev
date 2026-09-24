@@ -1,5 +1,5 @@
-import type { CommandEffect } from "../../commands/src/effects.js";
-import type { BlockRegion, Coordinate3 } from "../../commands/src/coordinates.js";
+import type { CommandEffect } from "../../commands/src/index.js";
+import type { BlockRegion, Coordinate3 } from "../../commands/src/index.js";
 import { resolveCoordinate3, type CoordinateContext, type WorldPosition } from "./coordinate-context.js";
 
 export type ResolvedEffect =

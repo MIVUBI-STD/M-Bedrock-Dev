@@ -1,10 +1,10 @@
 import type { ParsedFunction, ParsedFunctionCommand } from "../../../analyzers/functions/src/index.js";
-import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
+import { flattenCommandEffects } from "../../../analyzers/commands/src/index.js";
 import {
   parseBlockVerificationSemantics,
   type BlockVerificationSemantics,
-} from "../../../analyzers/commands/src/verification-semantics.js";
-import type { Coordinate3 } from "../../../analyzers/commands/src/coordinates.js";
+} from "../../../analyzers/commands/src/index.js";
+import type { Coordinate3 } from "../../../analyzers/commands/src/index.js";
 import type { derivePlacementProofs, PlacementBounds } from "./structure-proof-analysis.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";

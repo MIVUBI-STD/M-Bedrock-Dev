@@ -1,4 +1,4 @@
-import type { CommandEffect } from "../../../analyzers/commands/src/effects.js";
+import type { CommandEffect } from "../../../analyzers/commands/src/index.js";
 import { resolveByIdentifier } from "../../../analyzers/references/src/index.js";
 import { SemanticGraph } from "../../graph/src/index.js";
 import type { EdgeType, SemanticNode } from "../../graph/src/index.js";

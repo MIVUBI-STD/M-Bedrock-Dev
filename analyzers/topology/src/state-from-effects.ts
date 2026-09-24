@@ -1,5 +1,5 @@
-import type { CommandEffect } from "../../commands/src/effects.js";
-import { scoreboardAccesses, tagAccesses } from "../../commands/src/state-access.js";
+import type { CommandEffect } from "../../commands/src/index.js";
+import { scoreboardAccesses, tagAccesses } from "../../commands/src/index.js";
 import { classifySelector, type StateAccess } from "./state-scope.js";
 
 export function stateAccessesFromEffects(

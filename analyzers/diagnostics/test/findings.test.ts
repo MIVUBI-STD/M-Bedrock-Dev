@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { commandEffectDiagnostics } from "../src/command-findings.js";
 import { referenceDiagnostics } from "../src/reference-findings.js";
-import { analyzeCommand } from "../../commands/src/parse.js";
-import { flattenCommandEffects } from "../../commands/src/flatten.js";
+import { analyzeCommand } from "../../commands/src/index.js";
+import { flattenCommandEffects } from "../../commands/src/index.js";
 
 const source = { artifactId: "art_demo", relativePath: "functions/demo.mcfunction" };
 

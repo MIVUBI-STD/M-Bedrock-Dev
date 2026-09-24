@@ -1,4 +1,4 @@
-import type { Coordinate3 } from "../../../analyzers/commands/src/coordinates.js";
+import type { Coordinate3 } from "../../../analyzers/commands/src/index.js";
 import type { McStructureSemantics } from "../../../adapters/mcstructure/src/index.js";
 import type {
   StructureCoordinate,

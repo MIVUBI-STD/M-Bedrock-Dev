@@ -1,5 +1,5 @@
-import { analyzeCommand } from "../../../analyzers/commands/src/parse.js";
-import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
+import { analyzeCommand } from "../../../analyzers/commands/src/index.js";
+import { flattenCommandEffects } from "../../../analyzers/commands/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";

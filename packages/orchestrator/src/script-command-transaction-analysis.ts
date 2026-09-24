@@ -3,12 +3,12 @@ import type {
   ScriptCommandLiteral,
   ScriptLocalFunctionCall,
 } from "../../../analyzers/scripts/src/index.js";
-import { analyzeCommand } from "../../../analyzers/commands/src/parse.js";
-import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
-import type { CommandEffect } from "../../../analyzers/commands/src/effects.js";
-import type { Coordinate3 } from "../../../analyzers/commands/src/coordinates.js";
-import { parseBlockVerificationSemantics } from "../../../analyzers/commands/src/verification-semantics.js";
-import { parseStructureLoadSemantics } from "../../../analyzers/commands/src/structure-semantics.js";
+import { analyzeCommand } from "../../../analyzers/commands/src/index.js";
+import { flattenCommandEffects } from "../../../analyzers/commands/src/index.js";
+import type { CommandEffect } from "../../../analyzers/commands/src/index.js";
+import type { Coordinate3 } from "../../../analyzers/commands/src/index.js";
+import { parseBlockVerificationSemantics } from "../../../analyzers/commands/src/index.js";
+import { parseStructureLoadSemantics } from "../../../analyzers/commands/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 import type { ParsedStructureSummary } from "./structure-runtime-analysis.js";

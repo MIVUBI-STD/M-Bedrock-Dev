@@ -1,4 +1,4 @@
-import type { CommandAnalysis } from "../../commands/src/effects.js";
+import type { CommandAnalysis } from "../../commands/src/index.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 
 export type DialogueCommandTrigger = "open" | "close" | "button";

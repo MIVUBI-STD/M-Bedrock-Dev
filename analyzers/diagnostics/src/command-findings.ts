@@ -1,4 +1,4 @@
-import type { CommandEffect } from "../../commands/src/effects.js";
+import type { CommandEffect } from "../../commands/src/index.js";
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 

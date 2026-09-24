@@ -1,4 +1,4 @@
-import type { Coordinate3, CoordinateValue } from "../../commands/src/coordinates.js";
+import type { Coordinate3, CoordinateValue } from "../../commands/src/index.js";
 import type { WorldPosition } from "../../../packages/common/src/index.js";
 
 export type { WorldPosition } from "../../../packages/common/src/index.js";

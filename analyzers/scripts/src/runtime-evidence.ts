@@ -1,8 +1,8 @@
 import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/runtime-evidence.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import type { ParsedScriptFile, ScriptMethodCall } from "./types.js";
-import { analyzeCommand } from "../../commands/src/parse.js";
-import { commandRuntimeEvidence } from "../../commands/src/runtime-evidence.js";
+import { analyzeCommand } from "../../commands/src/index.js";
+import { commandRuntimeEvidence } from "../../commands/src/index.js";
 
 function operationId(source: SourceRef): string {
   return [

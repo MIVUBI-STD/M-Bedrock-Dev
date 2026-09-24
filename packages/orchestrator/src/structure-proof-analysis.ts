@@ -1,6 +1,6 @@
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
-import type { Coordinate3 } from "../../../analyzers/commands/src/coordinates.js";
-import { parseBlockVerificationSemantics } from "../../../analyzers/commands/src/verification-semantics.js";
+import type { Coordinate3 } from "../../../analyzers/commands/src/index.js";
+import { parseBlockVerificationSemantics } from "../../../analyzers/commands/src/index.js";
 import type { StructureCoordinate, StructureSize } from "../../../adapters/mcstructure/src/index.js";
 import {
   placedWorldCoordinate,

@@ -1,7 +1,7 @@
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
-import { parseStructureLoadSemantics } from "../../../analyzers/commands/src/structure-semantics.js";
-import { parseTickingAreaSemantics } from "../../../analyzers/commands/src/tickingarea-semantics.js";
-import { parseScheduleAreaLoadedSemantics } from "../../../analyzers/commands/src/schedule-semantics.js";
+import { parseStructureLoadSemantics } from "../../../analyzers/commands/src/index.js";
+import { parseTickingAreaSemantics } from "../../../analyzers/commands/src/index.js";
+import { parseScheduleAreaLoadedSemantics } from "../../../analyzers/commands/src/index.js";
 import type { McStructureSemantics } from "../../../adapters/mcstructure/src/index.js";
 import type { StructureSize } from "../../../adapters/mcstructure/src/index.js";
 
