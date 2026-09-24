@@ -59,45 +59,7 @@ function chainFor(stallTick: number) {
     catalog,
     profile: { edition: "bedrock" },
     snapshot: { schemaVersion: 1, records },
-    it("does not compare sequence across different streams", () => {
-    const records = telemetryRuntimeEvidence([{
-      schemaVersion: 1,
-      eventId: "mutation-stream-a",
-      kind: "mutation-applied",
-      producer: "instrumentation",
-      scope: { operationId: "route-op" },
-      tick: 100,
-      streamId: "stream-a",
-      sequence: 10,
-      mutationKind: "fill",
-      routeId: "bridge",
-    }, {
-      schemaVersion: 1,
-      eventId: "stall-stream-b",
-      kind: "entity-stall",
-      producer: "instrumentation",
-      scope: { operationId: "route-op" },
-      tick: 100,
-      streamId: "stream-b",
-      sequence: 20,
-      entityKey: "demo:zombie",
-      routeId: "bridge",
-    }]);
-
-    const diagnostics = knowledgeRuntimeDiagnostics({
-      catalog,
-      profile: { edition: "bedrock" },
-      snapshot: { schemaVersion: 1, records },
-    });
-    const chain = synthesizeCausalChains(diagnostics)[0]!;
-
-    expect(chain.links).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        temporalStatus: "same-moment",
-      }),
-    ]));
   });
-});
 
   return synthesizeCausalChains(diagnostics)[0]!;
 }
@@ -125,7 +87,7 @@ describe("temporal telemetry causal reasoning", () => {
     ]));
   });
 
-  it("uses sequence to order events within one tick", () => {
+  it("uses sequence to order events within one tick in the same stream", () => {
     const records = telemetryRuntimeEvidence([{
       schemaVersion: 1,
       eventId: "mutation-1",
@@ -161,6 +123,45 @@ describe("temporal telemetry causal reasoning", () => {
     expect(chain.links).toEqual(expect.arrayContaining([
       expect.objectContaining({
         temporalStatus: "after-subject",
+      }),
+    ]));
+  });
+
+  it("does not compare sequence across different streams", () => {
+    const records = telemetryRuntimeEvidence([{
+      schemaVersion: 1,
+      eventId: "mutation-stream-a",
+      kind: "mutation-applied",
+      producer: "instrumentation",
+      scope: { operationId: "route-op" },
+      tick: 100,
+      streamId: "stream-a",
+      sequence: 10,
+      mutationKind: "fill",
+      routeId: "bridge",
+    }, {
+      schemaVersion: 1,
+      eventId: "stall-stream-b",
+      kind: "entity-stall",
+      producer: "instrumentation",
+      scope: { operationId: "route-op" },
+      tick: 100,
+      streamId: "stream-b",
+      sequence: 20,
+      entityKey: "demo:zombie",
+      routeId: "bridge",
+    }]);
+
+    const diagnostics = knowledgeRuntimeDiagnostics({
+      catalog,
+      profile: { edition: "bedrock" },
+      snapshot: { schemaVersion: 1, records },
+    });
+    const chain = synthesizeCausalChains(diagnostics)[0]!;
+
+    expect(chain.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        temporalStatus: "same-moment",
       }),
     ]));
   });
