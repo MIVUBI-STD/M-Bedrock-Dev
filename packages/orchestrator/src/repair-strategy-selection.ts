@@ -1,6 +1,7 @@
 import type { SemanticGraph } from "../../graph/src/graph.js";
 import type { DiagnosticRepairDecision, DiagnosticClaimStrength } from "../../project-model/src/diagnostic-decision.js";
 import type { InvariantRegistrySnapshot } from "../../project-model/src/invariant-registry.js";
+import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import {
   evaluateRepairAdmissionPipeline,
@@ -23,6 +24,10 @@ export interface RepairStrategySelectionPolicy {
   requiredInvariantIds: readonly string[];
   allowGuarded?: boolean;
   blastRadiusPolicy?: RepairBlastRadiusPolicy;
+  decisionBasis?: Omit<
+    DecisionBasisRevision,
+    "sourceFingerprint" | "graphFingerprint" | "invariantRegistryRevision"
+  >;
 }
 
 export interface RepairStrategyAssessment {
@@ -232,6 +237,7 @@ export function selectRepairStrategy(
         supportingInvariantIds:
           candidate.supportingInvariantIds,
         decisionBasis: {
+          ...(policy.decisionBasis ?? {}),
           invariantRegistryRevision:
             policy.invariantRegistry.revision,
         },
