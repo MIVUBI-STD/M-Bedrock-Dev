@@ -396,6 +396,7 @@ describe("repair release lineage", () => {
                 contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
                 sourceFingerprint: "source",
                 graphFingerprint: "graph",
+                runtimeEvidenceRevision: "runtime-r1",
               },
             }
           : entry
@@ -500,7 +501,7 @@ describe("repair release lineage", () => {
 
     expect(result.decision.disposition).toBe("blocked");
     expect(result.decision.reasons.join(" "))
-      .toMatch(/no provider provenance/);
+      .toMatch(/requires repair-provider provenance/);
   });
 
 });
