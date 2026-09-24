@@ -203,6 +203,22 @@ export function validateKnowledgeCatalog(
       );
     }
     if (
+      relation.causalConsequences !== undefined &&
+      !Array.isArray(relation.causalConsequences)
+    ) {
+      errors.push(
+        `Knowledge relation ${relation.id} causalConsequences must be an array.`,
+      );
+    } else {
+      for (const consequence of relation.causalConsequences ?? []) {
+        if (typeof consequence !== "string" || !consequence.trim()) {
+          errors.push(
+            `Knowledge relation ${relation.id} has an empty causal consequence.`,
+          );
+        }
+      }
+    }
+    if (
       typeof relation.subject !== "string" ||
       typeof relation.object !== "string" ||
       !relation.subject.trim() ||
