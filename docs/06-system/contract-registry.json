@@ -2,31 +2,102 @@
   "schemaVersion": 1,
   "contracts": [
     {
-      "id": "telemetry-event",
-      "symbol": "TelemetryEvent",
-      "owner": "packages/project-model/src/telemetry.ts",
-      "producers": ["packages/telemetry"],
-      "consumers": ["packages/orchestrator"],
+      "id": "decision-ledger-snapshot",
+      "symbol": "DecisionLedgerSnapshot",
+      "owner": "packages/project-model/src/decision-ledger.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator",
+        "apps"
+      ],
       "schemaVersion": 1,
-      "verificationLevel": "runtime-observation",
+      "verificationLevel": "decision-lineage",
       "status": "canonical"
     },
     {
-      "id": "telemetry-batch",
-      "symbol": "TelemetryBatch",
-      "owner": "packages/project-model/src/telemetry.ts",
-      "producers": ["packages/telemetry"],
-      "consumers": ["packages/orchestrator", "apps"],
+      "id": "diagnostic-repair-decision",
+      "symbol": "DiagnosticRepairDecision",
+      "owner": "packages/project-model/src/diagnostic-decision.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
       "schemaVersion": 1,
-      "verificationLevel": "runtime-observation",
+      "verificationLevel": "decision",
+      "status": "canonical"
+    },
+    {
+      "id": "invariant-registry-snapshot",
+      "symbol": "InvariantRegistrySnapshot",
+      "owner": "packages/project-model/src/invariant-registry.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "system-invariant",
+      "status": "canonical"
+    },
+    {
+      "id": "repair-lifecycle-state",
+      "symbol": "RepairLifecycleState",
+      "owner": "packages/orchestrator/src/repair-lifecycle.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "repair-lifecycle",
+      "status": "canonical"
+    },
+    {
+      "id": "repair-proof-bundle",
+      "symbol": "RepairProofBundle",
+      "owner": "packages/orchestrator/src/repair-proof-bundle.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "repair-authorization",
+      "status": "canonical"
+    },
+    {
+      "id": "repair-verification-receipt",
+      "symbol": "RepairVerificationReceipt",
+      "owner": "packages/orchestrator/src/repair-lifecycle.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "verification-receipt",
       "status": "canonical"
     },
     {
       "id": "runtime-probe-request",
       "symbol": "RuntimeProbeRequest",
       "owner": "packages/project-model/src/runtime-probe.ts",
-      "producers": ["packages/telemetry", "packages/orchestrator"],
-      "consumers": ["packages/telemetry", "packages/orchestrator"],
+      "producers": [
+        "packages/telemetry",
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/telemetry",
+        "packages/orchestrator"
+      ],
       "schemaVersion": 1,
       "verificationLevel": "runtime-observation",
       "status": "canonical"
@@ -35,8 +106,12 @@
       "id": "runtime-probe-response",
       "symbol": "RuntimeProbeResponse",
       "owner": "packages/project-model/src/runtime-probe.ts",
-      "producers": ["packages/telemetry"],
-      "consumers": ["packages/orchestrator"],
+      "producers": [
+        "packages/telemetry"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
       "schemaVersion": 1,
       "verificationLevel": "runtime-observation",
       "status": "canonical"
@@ -45,50 +120,44 @@
       "id": "runtime-probe-transcript",
       "symbol": "RuntimeProbeTranscript",
       "owner": "packages/project-model/src/runtime-probe.ts",
-      "producers": ["packages/telemetry"],
-      "consumers": ["packages/orchestrator", "apps"],
+      "producers": [
+        "packages/telemetry"
+      ],
+      "consumers": [
+        "packages/orchestrator",
+        "apps"
+      ],
       "schemaVersion": 1,
       "verificationLevel": "runtime-observation",
       "status": "canonical"
     },
     {
-      "id": "diagnostic-repair-decision",
-      "symbol": "DiagnosticRepairDecision",
-      "owner": "packages/project-model/src/diagnostic-decision.ts",
-      "producers": ["packages/orchestrator"],
-      "consumers": ["packages/orchestrator"],
+      "id": "telemetry-batch",
+      "symbol": "TelemetryBatch",
+      "owner": "packages/project-model/src/telemetry.ts",
+      "producers": [
+        "packages/telemetry"
+      ],
+      "consumers": [
+        "packages/orchestrator",
+        "apps"
+      ],
       "schemaVersion": 1,
-      "verificationLevel": "decision",
+      "verificationLevel": "runtime-observation",
       "status": "canonical"
     },
     {
-      "id": "repair-proof-bundle",
-      "symbol": "RepairProofBundle",
-      "owner": "packages/orchestrator/src/repair-proof-bundle.ts",
-      "producers": ["packages/orchestrator"],
-      "consumers": ["packages/orchestrator"],
+      "id": "telemetry-event",
+      "symbol": "TelemetryEvent",
+      "owner": "packages/project-model/src/telemetry.ts",
+      "producers": [
+        "packages/telemetry"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
       "schemaVersion": 1,
-      "verificationLevel": "repair-authorization",
-      "status": "canonical"
-    },
-    {
-      "id": "repair-lifecycle-state",
-      "symbol": "RepairLifecycleState",
-      "owner": "packages/orchestrator/src/repair-lifecycle.ts",
-      "producers": ["packages/orchestrator"],
-      "consumers": ["packages/orchestrator"],
-      "schemaVersion": 1,
-      "verificationLevel": "repair-lifecycle",
-      "status": "canonical"
-    },
-    {
-      "id": "repair-verification-receipt",
-      "symbol": "RepairVerificationReceipt",
-      "owner": "packages/orchestrator/src/repair-lifecycle.ts",
-      "producers": ["packages/orchestrator"],
-      "consumers": ["packages/orchestrator"],
-      "schemaVersion": 1,
-      "verificationLevel": "verification-receipt",
+      "verificationLevel": "runtime-observation",
       "status": "canonical"
     }
   ]
