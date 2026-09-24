@@ -299,4 +299,35 @@ describe("decision ledger", () => {
     )).toThrow(/contract registry revision is stale/);
   });
 
+
+  it("invalidates provider-bound decisions when provider registry changes", () => {
+    let ledger = appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "provider-bound",
+        kind: "repair-strategy-selection",
+        transactionId: "tx-1",
+        basis: {
+          repairProviderRegistryRevision: "providers-a",
+        },
+      },
+    );
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "provider-downstream",
+      kind: "repair-admission",
+      transactionId: "tx-1",
+      basis: {},
+      upstreamDecisionIds: ["provider-bound"],
+    });
+
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      repairProviderRegistryRevision: "providers-b",
+    });
+
+    expect(ledger.entries.map((entry) => entry.status))
+      .toEqual(["invalidated", "invalidated"]);
+    expect(ledger.entries[0]?.invalidationReason)
+      .toMatch(/repairProviderRegistryRevision changed/);
+  });
+
 });
