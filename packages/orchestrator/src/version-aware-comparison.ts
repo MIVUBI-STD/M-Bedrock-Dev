@@ -4,7 +4,10 @@ import {
   loadRegressionCatalog,
   loadUpdateDeltaCatalog,
 } from "../../reliability/src/catalog-loader.js";
-import { planRetest } from "../../reliability/src/retest-planner.js";
+import {
+  augmentRetestPlan,
+  planRetest,
+} from "../../reliability/src/retest-planner.js";
 import type {
   RegressionCase,
   ReliabilityDomain,
@@ -18,6 +21,7 @@ import {
   correlateScriptUsageWithUpdate,
   type ScriptUpdateCorrelation,
 } from "./script-update-correlation.js";
+import { causalRetestReasons } from "./causal-retest.js";
 
 export interface VersionAwareEvidenceLink {
   updateEntryId: string;
@@ -92,11 +96,15 @@ export async function compareArtifactsForUpdate(
     regressions,
     coverage,
   );
-  const afterPlan = planRetest(
-    after.reliability.fingerprint,
-    delta,
-    regressions,
-    coverage,
+  const afterPlan = augmentRetestPlan(
+    planRetest(
+      after.reliability.fingerprint,
+      delta,
+      regressions,
+      coverage,
+    ),
+    causalRetestReasons(comparison.causal),
+    ["unknown"],
   );
 
   const beforeCaps = new Set(before.reliability.fingerprint.capabilityTags);
