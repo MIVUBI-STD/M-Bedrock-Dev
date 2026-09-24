@@ -63,7 +63,7 @@ function completeLedger(
   repairProof = proof(),
   options: {
     includeTransitive?: boolean;
-    verificationParent?: "admission" | "transitive";
+    verificationParent?: "admission" | "transitive" | "strategy";
   } = {},
 ) {
   let ledger = createDecisionLedger();
