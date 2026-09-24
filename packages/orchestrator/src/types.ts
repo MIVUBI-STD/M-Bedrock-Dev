@@ -8,6 +8,7 @@ import type { RouteCorridorContract } from "../../project-model/src/route-corrid
 import type { MutationDependentActionContract } from "../../project-model/src/mutation-dependent-action.js";
 import type { CausalChain, CausalIncident } from "../../project-model/src/causal-chain.js";
 import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
+import type { TelemetryIntegrityReport } from "../../project-model/src/telemetry-integrity.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 
 export interface InspectTargetProfile {
