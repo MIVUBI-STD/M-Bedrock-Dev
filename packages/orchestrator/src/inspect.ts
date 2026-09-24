@@ -842,6 +842,7 @@ export async function inspectDirectory(
 
   const causalChains = synthesizeCausalChains(diagnostics, {
     telemetryTemporalReliable: !telemetryContinuity.incomplete,
+    runtimeProbeTemporalReliable: runtimeProbeDroppedExchanges === 0,
   });
   const causalIncidents = synthesizeCausalIncidents(causalChains);
   const diagnosticProbeAnalysis = analyzeDiagnosticProbes(
