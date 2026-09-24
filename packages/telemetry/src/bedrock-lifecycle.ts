@@ -2,7 +2,6 @@ import type { TelemetryBatch } from "../../project-model/src/telemetry.js";
 import {
   createBedrockScriptEventTelemetryCollector,
   type BedrockScriptEventSignalLike,
-  type BedrockTelemetrySystemLike,
 } from "./bedrock-bridge.js";
 import {
   createTelemetryInstrumentationKit,
@@ -20,8 +19,8 @@ import {
 import type { TelemetryBatchTransport } from "./transport.js";
 
 export interface BedrockTelemetryLifecycleSystem
-  extends BedrockTelemetrySystemLike,
-    TelemetryIntervalScheduler {
+  extends TelemetryIntervalScheduler {
+  readonly currentTick: number;
   afterEvents?: {
     scriptEventReceive?: BedrockScriptEventSignalLike;
   };
