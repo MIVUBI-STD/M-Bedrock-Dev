@@ -1,3 +1,6 @@
+import {
+  CONTRACT_REGISTRY_REVISION,
+} from "../../project-model/src/contract-registry-revision.js";
 import type {
   DecisionBasisRevision,
   DecisionLedgerEntry,
@@ -32,6 +35,16 @@ export function appendDecisionLedgerEntry(
   snapshot: DecisionLedgerSnapshot,
   input: AppendDecisionInput,
 ): DecisionLedgerSnapshot {
+  if (
+    input.basis.contractRegistryRevision !== undefined &&
+    input.basis.contractRegistryRevision !==
+      CONTRACT_REGISTRY_REVISION
+  ) {
+    throw new Error(
+      "Decision basis contract registry revision is stale.",
+    );
+  }
+
   if (snapshot.entries.some((entry) => entry.id === input.id)) {
     throw new Error("Decision ledger entry id already exists: " + input.id);
   }
@@ -74,7 +87,10 @@ export function appendDecisionLedgerEntry(
     ...(input.transactionId === undefined
       ? {}
       : { transactionId: input.transactionId }),
-    basis: { ...input.basis },
+    basis: {
+      ...input.basis,
+      contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
+    },
     upstreamDecisionIds,
     inputIds: unique(input.inputIds),
     outputIds: unique(input.outputIds),
