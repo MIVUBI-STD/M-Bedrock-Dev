@@ -158,7 +158,7 @@ describe("runtime probe investigation adapter", () => {
           confidence: "observed",
         },
       },
-    )).toThrow(/does not match bound state mapping/);
+    )).toThrow(/outcomeId does not match request outcome mapping/);
   });
 
 
@@ -181,7 +181,7 @@ describe("runtime probe investigation adapter", () => {
           confidence: "observed",
         },
       },
-    )).toThrow(/requestId does not match issued request/);
+    )).toThrow(/requestId mismatch/);
   });
 
   it("rejects a response older than the issued probe", () => {
@@ -208,7 +208,7 @@ describe("runtime probe investigation adapter", () => {
           confidence: "observed",
         },
       },
-    )).toThrow(/predates issued request/);
+    )).toThrow(/runtimeTick precedes request runtimeTick/);
   });
 
   it("rejects cross-scope evidence for a scoped probe request", () => {
@@ -245,7 +245,7 @@ describe("runtime probe investigation adapter", () => {
           },
         },
       },
-    )).toThrow(/scope does not match issued request/);
+    )).toThrow(/evidence scope mismatch/);
   });
 
   it("accepts evidence that preserves the issued scope and adds narrower identity", () => {
