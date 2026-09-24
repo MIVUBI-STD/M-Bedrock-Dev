@@ -25,6 +25,7 @@ export interface KnowledgeRelationAssessment {
   knowledgeSourceIds: readonly string[];
   evidenceSourceIds: readonly string[];
   diagnosticSeverity?: "info" | "minor" | "medium" | "critical";
+  causalConsequences?: readonly string[];
 }
 
 function evidenceFor(
@@ -75,6 +76,9 @@ export function assessKnowledgeRelations(
         ...(relation.diagnosticSeverity === undefined
           ? {}
           : { diagnosticSeverity: relation.diagnosticSeverity }),
+        ...(relation.causalConsequences === undefined
+          ? {}
+          : { causalConsequences: relation.causalConsequences }),
       });
       continue;
     }
@@ -102,6 +106,9 @@ export function assessKnowledgeRelations(
         ...(relation.diagnosticSeverity === undefined
           ? {}
           : { diagnosticSeverity: relation.diagnosticSeverity }),
+        ...(relation.causalConsequences === undefined
+          ? {}
+          : { causalConsequences: relation.causalConsequences }),
       });
       continue;
     }
@@ -127,6 +134,9 @@ export function assessKnowledgeRelations(
         ...(relation.diagnosticSeverity === undefined
           ? {}
           : { diagnosticSeverity: relation.diagnosticSeverity }),
+        ...(relation.causalConsequences === undefined
+          ? {}
+          : { causalConsequences: relation.causalConsequences }),
       });
       continue;
     }
@@ -148,6 +158,9 @@ export function assessKnowledgeRelations(
         ...(relation.diagnosticSeverity === undefined
           ? {}
           : { diagnosticSeverity: relation.diagnosticSeverity }),
+        ...(relation.causalConsequences === undefined
+          ? {}
+          : { causalConsequences: relation.causalConsequences }),
       });
       continue;
     }
@@ -173,6 +186,9 @@ export function assessKnowledgeRelations(
         ...(relation.diagnosticSeverity === undefined
           ? {}
           : { diagnosticSeverity: relation.diagnosticSeverity }),
+        ...(relation.causalConsequences === undefined
+          ? {}
+          : { causalConsequences: relation.causalConsequences }),
       });
     }
   }
