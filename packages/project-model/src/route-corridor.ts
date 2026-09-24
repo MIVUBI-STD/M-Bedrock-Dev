@@ -11,6 +11,7 @@ export interface RouteCorridorContract {
   volume: BlockVolume;
   sourceRefs?: readonly SourceRef[];
   tags?: readonly string[];
+  entityKeys?: readonly string[];
   purpose?: string;
 }
 
