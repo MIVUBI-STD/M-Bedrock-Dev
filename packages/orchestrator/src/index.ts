@@ -92,3 +92,4 @@ export * from "./repair-admission.js";
 export * from "./repair-proof-bundle.js";
 
 export * from "./diagnostic-probe-analysis.js";
+export * from "./repair-admission-pipeline.js";
