@@ -202,6 +202,26 @@ export function validateKnowledgeCatalog(
         `Knowledge relation ${relation.id} has unknown diagnosticSeverity: ${relation.diagnosticSeverity}`,
       );
     }
+    const causalConsequences = new Set(
+      Array.isArray(relation.causalConsequences)
+        ? relation.causalConsequences
+        : [],
+    );
+    for (const risk of Object.keys(relation.causalCorroborators ?? {})) {
+      if (!causalConsequences.has(risk)) {
+        errors.push(
+          `Knowledge relation ${relation.id} references corroboration risk not listed in causalConsequences: ${risk}`,
+        );
+      }
+    }
+    for (const risk of Object.keys(relation.causalOutcomePredicates ?? {})) {
+      if (!causalConsequences.has(risk)) {
+        errors.push(
+          `Knowledge relation ${relation.id} references outcome risk not listed in causalConsequences: ${risk}`,
+        );
+      }
+    }
+
     if (
       relation.causalOutcomePredicates !== undefined &&
       (
