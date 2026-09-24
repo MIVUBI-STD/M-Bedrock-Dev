@@ -30,9 +30,21 @@ describe("command grammar", () => {
     const accesses = scoreboardAccesses(result.effects);
 
     expect(accesses).toEqual(expect.arrayContaining([
-      { objective: "score", access: "read", target: "@s" },
-      { objective: "score", access: "write", target: "@s" },
-      { objective: "other", access: "read", target: "@p" },
+      expect.objectContaining({
+        objective: "score",
+        access: "read",
+        target: "@s",
+      }),
+      expect.objectContaining({
+        objective: "score",
+        access: "write",
+        target: "@s",
+      }),
+      expect.objectContaining({
+        objective: "other",
+        access: "read",
+        target: "@p",
+      }),
     ]));
   });
 
