@@ -38,6 +38,10 @@ function proof(
     transactionId: txId,
     sourceFingerprint: "abc",
     graphFingerprint: "graph-current",
+    decisionBasis: {
+      sourceFingerprint: "abc",
+      graphFingerprint: "graph-current",
+    },
     incidentId: "incident-1",
     selectedCandidateId: "candidate",
     diagnosticDisposition:
