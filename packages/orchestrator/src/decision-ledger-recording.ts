@@ -15,7 +15,14 @@ import type {
   StagedPackageVerificationResult,
 } from "./repair-package-verification.js";
 import type {
-  RepairReleaseLineageResult,
+  RepairLifecycleState,
+} from "./repair-lifecycle.js";
+import type {
+  RepairProofBundle,
+} from "./repair-proof-bundle.js";
+import {
+  decideRepairReleaseWithLineage,
+  type RepairReleaseLineageResult,
 } from "./repair-release-lineage.js";
 import type {
   RepairStrategySelection,
@@ -136,27 +143,61 @@ export function recordPackageVerificationDecision(
   });
 }
 
+export interface ReleaseDecisionRecordingResult {
+  ledger: DecisionLedgerSnapshot;
+  release: RepairReleaseLineageResult;
+  recorded: boolean;
+}
+
 export function recordReleaseDecision(
   ledger: DecisionLedgerSnapshot,
-  result: RepairReleaseLineageResult,
+  lifecycle: RepairLifecycleState,
+  proof: RepairProofBundle,
+  currentBasis: DecisionBasisRevision,
   context: Omit<
     DecisionRecordContext,
-    "upstreamDecisionIds"
+    "basis" | "upstreamDecisionIds"
   >,
-): DecisionLedgerSnapshot {
-  return appendDecisionLedgerEntry(ledger, {
-    id: context.decisionId,
-    kind: "release-admission",
-    transactionId: result.decision.transactionId,
-    basis: context.basis,
-    upstreamDecisionIds: result.lineageDecisionIds,
-    outputIds: [
-      "release:" + result.decision.disposition,
-    ],
-    ...(context.evidenceIds === undefined
-      ? {}
-      : { evidenceIds: context.evidenceIds }),
-  });
+): ReleaseDecisionRecordingResult {
+  const release = decideRepairReleaseWithLineage(
+    lifecycle,
+    proof,
+    ledger,
+    currentBasis,
+  );
+
+  if (
+    release.decision.disposition !==
+      "release-eligible"
+  ) {
+    return {
+      ledger: release.ledger,
+      release,
+      recorded: false,
+    };
+  }
+
+  const nextLedger = appendDecisionLedgerEntry(
+    release.ledger,
+    {
+      id: context.decisionId,
+      kind: "release-admission",
+      transactionId: release.decision.transactionId,
+      basis: { ...currentBasis },
+      upstreamDecisionIds:
+        release.lineageDecisionIds,
+      outputIds: ["release:release-eligible"],
+      ...(context.evidenceIds === undefined
+        ? {}
+        : { evidenceIds: context.evidenceIds }),
+    },
+  );
+
+  return {
+    ledger: nextLedger,
+    release,
+    recorded: true,
+  };
 }
 
 
