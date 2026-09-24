@@ -81,3 +81,11 @@ Install scripts are deny-by-default under npm's script policy and approved expli
 `DEV.cmd audit` also reports cross-owner imports that bypass another module's `src/index.ts` entrypoint.
 
 The audit is non-blocking while legacy deep imports remain. Migrate one semantic owner at a time, then promote only that proven owner boundary into a blocking rule. This preserves internal refactor freedom without forcing a repository-wide import rewrite.
+
+## Public API debt ratchet
+
+`tooling/repository/public-api-baseline.json` records the current count of cross-owner deep imports per target owner.
+
+The public API audit fails only when an owner exceeds its recorded baseline. Existing debt may remain temporarily, but it cannot increase. After a migration reduces an owner's count, lower that owner's baseline in the same logical change.
+
+Never raise a baseline merely to make CI green; a baseline increase requires an intentional architecture decision.

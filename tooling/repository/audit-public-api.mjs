@@ -30,6 +30,11 @@ function normalizePath(value) {
   return value.replaceAll("\\", "/");
 }
 
+const BASELINE_PATH = resolve(ROOT, "tooling/repository/public-api-baseline.json");
+const baseline = existsSync(BASELINE_PATH)
+  ? JSON.parse(readFileSync(BASELINE_PATH, "utf8"))
+  : { owners: {} };
+
 const findings = [];
 
 for (const rootName of SOURCE_ROOTS) {
@@ -93,5 +98,36 @@ for (const [target, items] of [...grouped.entries()].sort((a,b) =>
   if (items.length > 20) console.log(`  - ... and ${items.length - 20} more`);
 }
 
+const regressions = [];
+for (const [ownerName, items] of grouped.entries()) {
+  const allowed = Number(baseline.owners?.[ownerName] ?? 0);
+  if (items.length > allowed) {
+    regressions.push({
+      owner: ownerName,
+      current: items.length,
+      baseline: allowed,
+    });
+  }
+}
+
+for (const [ownerName, allowed] of Object.entries(baseline.owners ?? {})) {
+  if (!grouped.has(ownerName) && Number(allowed) < 0) {
+    regressions.push({
+      owner: ownerName,
+      current: 0,
+      baseline: Number(allowed),
+    });
+  }
+}
+
 console.log("");
-console.log("This audit is informational. Migrate consumers owner-by-owner before enforcing public-entrypoint-only imports.");
+if (regressions.length > 0) {
+  console.error("Public API debt regressions:");
+  for (const item of regressions.sort((a,b) => a.owner.localeCompare(b.owner))) {
+    console.error(`- ${item.owner}: ${item.current} > baseline ${item.baseline}`);
+  }
+  process.exit(1);
+}
+
+console.log("Public API debt ratchet passed: no owner exceeded its baseline.");
+console.log("Reduce baseline counts after migrations; do not raise them to bypass a regression.");
