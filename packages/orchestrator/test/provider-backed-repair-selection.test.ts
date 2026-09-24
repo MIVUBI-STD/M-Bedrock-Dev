@@ -11,6 +11,12 @@ import type {
 import {
   selectProviderBackedRepairStrategyForIncident,
 } from "../src/provider-backed-repair-selection.js";
+import {
+  createDecisionLedger,
+} from "../src/decision-ledger.js";
+import {
+  recordProviderBackedRepairStrategySelection,
+} from "../src/decision-ledger-recording.js";
 import type {
   RepairStrategyProviderRegistry,
 } from "../src/repair-strategy-provider.js";
@@ -222,6 +228,24 @@ describe("provider-backed repair selection", () => {
     expect(
       result.result.selection.selected.pipeline.proof
         .decisionBasis.repairProviderRegistryRevision,
+    ).toBe(result.providerRegistryRevision);
+
+    const ledger = recordProviderBackedRepairStrategySelection(
+      createDecisionLedger(),
+      result,
+      transaction.id,
+      {
+        decisionId: "provider-strategy",
+        basis: {
+          invariantRegistryRevision:
+            invariantRegistry.revision,
+        },
+      },
+    );
+    expect(ledger.entries[0]?.inputIds)
+      .toEqual(["repair-provider:knowledge-fix@1"]);
+    expect(
+      ledger.entries[0]?.basis.repairProviderRegistryRevision,
     ).toBe(result.providerRegistryRevision);
   });
 
