@@ -81,6 +81,10 @@ export interface BufferedTelemetrySink extends TelemetrySink {
     sessionId?: string;
     artifactId?: string;
   }): TelemetryBatch;
+  drainBatch(input?: {
+    sessionId?: string;
+    artifactId?: string;
+  }): TelemetryBatch;
 }
 
 export interface TelemetryScopeLease {
