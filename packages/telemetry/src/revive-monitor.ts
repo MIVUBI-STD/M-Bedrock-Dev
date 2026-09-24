@@ -136,9 +136,11 @@ export function createReviveTransactionMonitor(
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
           reviverPlayerKey: input.reviverPlayerKey,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         });
       }
 
@@ -148,9 +150,11 @@ export function createReviveTransactionMonitor(
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
           reviverPlayerKey: input.reviverPlayerKey,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         });
       }
 
@@ -163,9 +167,11 @@ export function createReviveTransactionMonitor(
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
           reviverPlayerKey: input.reviverPlayerKey,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         });
       }
 
@@ -179,9 +185,11 @@ export function createReviveTransactionMonitor(
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
           reviverPlayerKey: input.reviverPlayerKey,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         });
       } else if (owner === undefined) {
         state.ownerByLife.set(
@@ -203,9 +211,11 @@ export function createReviveTransactionMonitor(
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
           reviverPlayerKey: input.reviverPlayerKey,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         });
       }
 
@@ -215,9 +225,11 @@ export function createReviveTransactionMonitor(
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
           reviverPlayerKey: input.reviverPlayerKey,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         });
       }
     },
