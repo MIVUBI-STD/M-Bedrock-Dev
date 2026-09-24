@@ -10,6 +10,13 @@ export type RepairLifecycleStage =
   | "transitive-revalidation-pending"
   | "static-validated";
 
+export interface RepairVerificationReceipt {
+  transactionId: string;
+  kind: "runtime" | "package";
+  passed: boolean;
+  evidenceIds: readonly string[];
+}
+
 export interface RepairLifecycleState {
   transactionId: string;
   stage: RepairLifecycleStage;
@@ -18,7 +25,6 @@ export interface RepairLifecycleState {
   transitiveRevalidationComplete: boolean;
   runtimeVerificationComplete: boolean;
   packageVerificationComplete: boolean;
-  releaseEligible: boolean;
   pendingNodeIds: readonly string[];
   pendingPaths: readonly string[];
   reasons: readonly string[];
@@ -39,7 +45,6 @@ export function repairLifecycleFromApplyResult(
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
         packageVerificationComplete: false,
-        releaseEligible: false,
         pendingNodeIds: [],
         pendingPaths: [],
         reasons: [...result.reasons],
@@ -54,7 +59,6 @@ export function repairLifecycleFromApplyResult(
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
         packageVerificationComplete: false,
-        releaseEligible: false,
         pendingNodeIds: [],
         pendingPaths: [],
         reasons: [
@@ -71,7 +75,6 @@ export function repairLifecycleFromApplyResult(
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
         packageVerificationComplete: false,
-        releaseEligible: false,
         pendingNodeIds: [],
         pendingPaths: [],
         reasons: [
@@ -91,7 +94,6 @@ export function repairLifecycleFromApplyResult(
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
         packageVerificationComplete: false,
-        releaseEligible: false,
         pendingNodeIds: [],
         pendingPaths: [],
         reasons: [
@@ -109,7 +111,6 @@ export function repairLifecycleFromApplyResult(
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
         packageVerificationComplete: false,
-        releaseEligible: false,
         pendingNodeIds: [...result.pendingNodeIds],
         pendingPaths: [...result.pendingPaths],
         reasons: [
@@ -126,7 +127,6 @@ export function repairLifecycleFromApplyResult(
         transitiveRevalidationComplete: true,
         runtimeVerificationComplete: false,
         packageVerificationComplete: false,
-        releaseEligible: false,
         pendingNodeIds: [],
         pendingPaths: [],
         reasons: [
@@ -137,8 +137,36 @@ export function repairLifecycleFromApplyResult(
   }
 }
 
+function validateReceipt(
+  state: RepairLifecycleState,
+  receipt: RepairVerificationReceipt,
+  kind: RepairVerificationReceipt["kind"],
+): void {
+  if (receipt.transactionId !== state.transactionId) {
+    throw new Error(
+      "Repair verification receipt belongs to another transaction.",
+    );
+  }
+  if (receipt.kind !== kind) {
+    throw new Error(
+      "Repair verification receipt kind mismatch.",
+    );
+  }
+  if (!receipt.passed) {
+    throw new Error(
+      "Failed verification receipt cannot advance repair lifecycle.",
+    );
+  }
+  if (receipt.evidenceIds.length === 0) {
+    throw new Error(
+      "Repair verification receipt requires explicit evidence ids.",
+    );
+  }
+}
+
 export function markRepairRuntimeVerified(
   state: RepairLifecycleState,
+  receipt: RepairVerificationReceipt,
 ): RepairLifecycleState {
   if (
     state.stage !== "static-validated" ||
@@ -149,19 +177,22 @@ export function markRepairRuntimeVerified(
       "Runtime verification cannot be credited before static and transitive repair validation complete.",
     );
   }
+  validateReceipt(state, receipt, "runtime");
 
   return {
     ...state,
     runtimeVerificationComplete: true,
     reasons: [
       ...state.reasons,
-      "Runtime verification evidence has been accepted.",
+      "Runtime verification evidence has been accepted: " +
+        [...new Set(receipt.evidenceIds)].sort().join(", "),
     ],
   };
 }
 
 export function markRepairPackageVerified(
   state: RepairLifecycleState,
+  receipt: RepairVerificationReceipt,
 ): RepairLifecycleState {
   if (
     state.stage !== "static-validated" ||
@@ -172,15 +203,15 @@ export function markRepairPackageVerified(
       "Package verification cannot be credited before repair validation complete.",
     );
   }
+  validateReceipt(state, receipt, "package");
 
   return {
     ...state,
     packageVerificationComplete: true,
-    releaseEligible:
-      state.runtimeVerificationComplete,
     reasons: [
       ...state.reasons,
-      "Package verification evidence has been accepted.",
+      "Package verification evidence has been accepted: " +
+        [...new Set(receipt.evidenceIds)].sort().join(", "),
     ],
   };
 }
