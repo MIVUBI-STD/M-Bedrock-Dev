@@ -16,6 +16,16 @@ export function entityHasNavigation(entity: ParsedEntityDefinition): boolean {
   );
 }
 
+export function entityHasConfiguredTargeting(
+  entity: ParsedEntityDefinition,
+): boolean {
+  return deriveEntityStateGraph(entity).candidates.some(
+    (state) => extractTargetingSemantics(state).some(
+      (item) => item.configuredTargetTypes > 0,
+    ),
+  );
+}
+
 export function entityRuntimeEvidence(
   entity: ParsedEntityDefinition,
   externalRootEvents: readonly string[] = [],
