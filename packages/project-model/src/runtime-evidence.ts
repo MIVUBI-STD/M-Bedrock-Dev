@@ -3,6 +3,12 @@ import type { SourceRef } from "./source-ref.js";
 export type RuntimeEvidenceState = "present" | "absent" | "unknown";
 export type RuntimeEvidenceConfidence = "observed" | "derived" | "unknown";
 
+export interface RuntimeObservationPoint {
+  tick?: number;
+  sequence?: number;
+  timestamp?: string;
+}
+
 export interface RuntimeScope {
   arenaId?: string;
   arenaGeneration?: number;
@@ -22,6 +28,7 @@ export interface RuntimeEvidenceRecord {
   scope?: RuntimeScope;
   sourceRefs?: readonly SourceRef[];
   relatedNodeIds?: readonly string[];
+  observedAt?: RuntimeObservationPoint;
   note?: string;
 }
 
