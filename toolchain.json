@@ -15,13 +15,13 @@
   },
   "policy": {
     "nodeMajorPinned": true,
-    "lockfileRequiredAfterBootstrap": true,
     "pythonMandatory": false,
     "rustMandatory": false,
     "globalBuildToolsRequired": false,
     "endUserToolchainRequired": false,
     "nodeVersionPinned": true,
-    "npmVersionPinned": true
+    "npmVersionPinned": true,
+    "lockfileRequired": true
   },
   "node": {
     "major": 24,
@@ -40,7 +40,9 @@
       "developer-build"
     ],
     "version": "11.19.0",
-    "pinPolicy": "exact developer/build version paired with pinned Node"
+    "pinPolicy": "exact developer/build version paired with pinned Node",
+    "installMode": "npm ci",
+    "installScripts": "explicit allowlist in package.json#allowScripts"
   },
   "typescript": {
     "source": "package-lock.json",

@@ -25,13 +25,10 @@ Push-Location $Root
 try {
     switch ($Command) {
         "setup" {
-            if (Test-Path "package-lock.json") {
-                npm ci --no-audit --no-fund
+            if (-not (Test-Path "package-lock.json")) {
+                throw "package-lock.json is required by repository policy."
             }
-            else {
-                Write-Host "package-lock.json not found; bootstrapping dependency lock with npm install."
-                npm install --no-audit --no-fund
-            }
+            npm ci --no-audit --no-fund
         }
         "doctor" {
             $toolchain = Get-Content "toolchain.json" -Raw | ConvertFrom-Json
@@ -102,8 +99,8 @@ try {
                 Write-DoctorStatus "Lockfile" "PASS" "package-lock.json"
             }
             else {
-                Write-DoctorStatus "Lockfile" "WARN" "missing; run DEV.cmd setup and commit the generated lockfile"
-                $warnings.Add("Dependency lockfile is missing.")
+                Write-DoctorStatus "Lockfile" "FAIL" "package-lock.json is required"
+                $failures.Add("Dependency lockfile is missing.")
             }
 
             if (Test-Path "node_modules") {
@@ -154,7 +151,7 @@ try {
             npm run cli -- inspect $Arguments[0]
         }
         "finalize-local" {
-            npm run verify:full
+            npm run verify:ready
         }
         default {
             Write-Host "M-Bedrock-Dev"

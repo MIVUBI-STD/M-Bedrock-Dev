@@ -18,7 +18,8 @@
     "cli": "tsx apps/cli/src/main.ts",
     "verify:modules": "node tooling/repository/verify-module-shape.mjs",
     "verify:dependencies": "node tooling/repository/verify-dependency-graph.mjs",
-    "audit:source": "node tooling/repository/audit-source-hygiene.mjs"
+    "audit:source": "node tooling/repository/audit-source-hygiene.mjs",
+    "verify:ready": "npm run verify:full && npm run audit:source"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
@@ -32,5 +33,9 @@
     "tsx": "^4.20.0",
     "vitest": "^3.2.0"
   },
-  "packageManager": "npm@11.19.0"
+  "packageManager": "npm@11.19.0",
+  "allowScripts": {
+    "@8crafter/leveldb-zlib@1.6.0": true,
+    "esbuild@0.28.2": true
+  }
 }

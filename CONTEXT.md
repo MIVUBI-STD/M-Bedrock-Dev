@@ -92,8 +92,8 @@ Current initial implementation lane:
 
 ```text
 Windows 10/11 x64 primary developer target
-Node.js 24 LTS
-npm lockfile authority once generated
+Node.js 24 LTS (developer/build pinned to 24.21.0)
+npm 11.19.0 + committed lockfile authority; installs use `npm ci`
 TypeScript strict mode
 Vitest
 PowerShell 7-compatible repository tooling

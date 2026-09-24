@@ -20,6 +20,13 @@ function walk(dir) {
   return output;
 }
 
+function packageName(specifier) {
+  if (specifier.startsWith("@")) {
+    return specifier.split("/").slice(0, 2).join("/");
+  }
+  return specifier.split("/")[0];
+}
+
 function moduleId(file) {
   const rel = relative(ROOT, file).split(sep);
   if (rel.length < 2 || !SOURCE_ROOTS.includes(rel[0])) return undefined;
@@ -58,6 +65,7 @@ function resolveRelativeImport(fromFile, specifier) {
 const moduleGraph = new Map();
 const edgeFiles = new Map();
 const unresolvedRelative = [];
+const productionExternalImports = new Map();
 
 for (const rootName of SOURCE_ROOTS) {
   const rootPath = resolve(ROOT, rootName);
@@ -71,7 +79,20 @@ for (const rootName of SOURCE_ROOTS) {
     const text = readFileSync(file, "utf8");
     for (const match of text.matchAll(IMPORT_RE)) {
       const specifier = match[1] ?? match[2];
-      if (!specifier?.startsWith(".")) continue;
+      if (!specifier) continue;
+
+      if (!specifier.startsWith(".")) {
+        if (!specifier.startsWith("node:")) {
+          const name = packageName(specifier);
+          if (!productionExternalImports.has(name)) {
+            productionExternalImports.set(name, new Set());
+          }
+          productionExternalImports.get(name).add(
+            relative(ROOT, file).replaceAll("\\", "/"),
+          );
+        }
+        continue;
+      }
 
       const target = resolveRelativeImport(file, specifier);
       if (!target) {
@@ -138,6 +159,20 @@ const fanIn = [...fanInCounts.entries()]
   .map(([module, count]) => ({ module, count }))
   .sort((a, b) => b.count - a.count || a.module.localeCompare(b.module));
 
+const packageJson = JSON.parse(
+  readFileSync(resolve(ROOT, "package.json"), "utf8"),
+);
+const runtimeDependencies = new Set(
+  Object.keys(packageJson.dependencies ?? {}),
+);
+const devDependencies = new Set(
+  Object.keys(packageJson.devDependencies ?? {}),
+);
+const invalidProductionDependencies =
+  [...productionExternalImports.keys()]
+    .filter((name) => !runtimeDependencies.has(name))
+    .sort();
+
 console.log("Dependency graph audit");
 console.log("  modules:", moduleGraph.size);
 console.log("  edges:", [...moduleGraph.values()].reduce((sum, targets) => sum + targets.size, 0));
@@ -168,5 +203,21 @@ if (cycles.length > 0) {
   process.exit(1);
 }
 
+if (invalidProductionDependencies.length > 0) {
+  console.error("");
+  console.error("Production imports not declared as runtime dependencies:");
+  for (const name of invalidProductionDependencies) {
+    const classification = devDependencies.has(name)
+      ? "declared only in devDependencies"
+      : "not declared";
+    console.error(`- ${name}: ${classification}`);
+    for (const file of [...productionExternalImports.get(name)].sort()) {
+      console.error(`  - ${file}`);
+    }
+  }
+  process.exit(1);
+}
+
 console.log("");
 console.log("No module dependency cycles found.");
+console.log("Production dependency classification passed.");

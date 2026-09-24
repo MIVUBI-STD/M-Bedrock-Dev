@@ -10,6 +10,7 @@ const required = [
   "README.md",
   "VERSION",
   "toolchain.json",
+  "package-lock.json",
   ".node-version",
   ".editorconfig",
   ".gitattributes",
@@ -117,6 +118,7 @@ if (missing.length > 0) {
 }
 
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+const lock = JSON.parse(readFileSync("package-lock.json", "utf8"));
 const toolchain = JSON.parse(readFileSync("toolchain.json", "utf8"));
 const version = readFileSync("VERSION", "utf8").trim();
 const nodeVersion = readFileSync(".node-version", "utf8").trim();
@@ -151,6 +153,41 @@ if (!requiredNpmVersion || pkg.packageManager !== `npm@${requiredNpmVersion}`) {
   console.error(
     `npm authority mismatch: package.json=${pkg.packageManager ?? "<missing>"}, toolchain.json=npm@${requiredNpmVersion}`,
   );
+  process.exit(1);
+}
+
+function sortedRecord(value) {
+  return Object.fromEntries(
+    Object.entries(value ?? {}).sort(([left], [right]) =>
+      left.localeCompare(right)
+    ),
+  );
+}
+
+const lockRoot = lock?.packages?.[""];
+if (lock?.lockfileVersion !== 3 || !lockRoot) {
+  console.error("package-lock.json must be lockfileVersion 3 with a root package entry.");
+  process.exit(1);
+}
+
+if (lockRoot.name !== pkg.name || lockRoot.version !== pkg.version) {
+  console.error("package-lock.json root identity does not match package.json.");
+  process.exit(1);
+}
+
+if (
+  JSON.stringify(sortedRecord(lockRoot.dependencies)) !==
+  JSON.stringify(sortedRecord(pkg.dependencies))
+) {
+  console.error("package-lock.json runtime dependencies are out of sync with package.json.");
+  process.exit(1);
+}
+
+if (
+  JSON.stringify(sortedRecord(lockRoot.devDependencies)) !==
+  JSON.stringify(sortedRecord(pkg.devDependencies))
+) {
+  console.error("package-lock.json dev dependencies are out of sync with package.json.");
   process.exit(1);
 }
 

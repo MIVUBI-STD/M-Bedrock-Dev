@@ -20,7 +20,7 @@ It delegates to `tooling/windows-toolchain/dev.ps1`. Internal package scripts re
 
 ## Toolchain authority
 
-`toolchain.json` owns supported developer-tool policy. The developer/build environment pins Node `24.21.0` and npm `11.19.0`; `package.json#engines` remains the broader runtime compatibility contract for Node 24.
+`toolchain.json` owns supported developer-tool policy. The developer/build environment pins Node `24.21.0` and npm `11.19.0`; `package.json#engines` remains the broader runtime compatibility contract for Node 24. `package-lock.json` is mandatory and all normal installs use `npm ci`.
 
 Do not require global TypeScript/Vitest/build tools when package-managed versions are sufficient.
 
@@ -63,3 +63,15 @@ Focused workflows are evidence tools, not parallel readiness authorities.
 The audit is intentionally non-blocking. A zero-inbound file or apparently unused dependency is a review candidate, not deletion permission. Dynamic loading, generated entrypoints, runtime adapters, or test-only support can make a candidate legitimate.
 
 Promote a hygiene rule into `verify:repository` only after the repository baseline proves that the rule has low false-positive risk.
+
+## Local readiness gate
+
+`DEV.cmd finalize-local` runs `npm run verify:ready`, combining blocking repository/source verification with the source-hygiene report.
+
+It intentionally does not require a clean Git working tree. Repository readiness and commit timing remain separate developer concerns.
+
+## Dependency execution policy
+
+Production source may import external packages only when they are declared in `dependencies`; test/build-only packages belong in `devDependencies`.
+
+Install scripts are deny-by-default under npm's script policy and approved explicitly by exact locked version in `package.json#allowScripts`. The current approved native/build hooks are `@8crafter/leveldb-zlib@1.6.0` and `esbuild@0.28.2`.
