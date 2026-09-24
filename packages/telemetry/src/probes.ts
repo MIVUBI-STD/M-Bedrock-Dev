@@ -27,6 +27,7 @@ export interface EntityProgressProbeOptions {
 }
 
 export type EntityProgressStatus =
+  | "disabled"
   | "initialized"
   | "paused"
   | "waiting"
@@ -186,6 +187,7 @@ export interface StateMirrorSample {
 }
 
 export type StateMirrorProbeStatus =
+  | "disabled"
   | "consistent"
   | "value-drift"
   | "revision-stale";
