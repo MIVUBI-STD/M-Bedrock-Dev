@@ -278,6 +278,16 @@ export function validateTelemetryBatch(input: unknown): string[] {
   ) {
     errors.push("Telemetry batch sessionId must be a non-empty string.");
   }
+  if (
+    input.droppedEvents !== undefined &&
+    (
+      typeof input.droppedEvents !== "number" ||
+      !Number.isInteger(input.droppedEvents) ||
+      input.droppedEvents < 0
+    )
+  ) {
+    errors.push("Telemetry batch droppedEvents must be a non-negative integer.");
+  }
   if (!Array.isArray(input.events)) {
     errors.push("Telemetry batch events must be an array.");
     return errors;
