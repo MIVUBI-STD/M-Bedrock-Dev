@@ -3,6 +3,7 @@ import {
   BUILT_IN_INVARIANTS,
   InvariantRegistry,
   createMapCompatibilityFingerprint,
+  augmentRetestPlan,
   createUpdateDelta,
   fingerprintIdentity,
   planRetest,
@@ -83,5 +84,33 @@ describe("reliability foundation", () => {
       "runtime",
       "generative",
     ]));
+  });
+  it("augments retest plans from causal regression evidence", () => {
+    const base = {
+      mapId: "map",
+      updateVersion: "1.30.0",
+      priority: "P3" as const,
+      reasons: [],
+      suggestedLanes: ["static"] as const,
+      affectedDomains: [] as const,
+    };
+
+    const augmented = augmentRetestPlan(
+      base,
+      [{
+        kind: "causal-regression",
+        detail: "Observed downstream causal outcomes increased by 1.",
+        weight: 5,
+      }],
+      ["unknown"],
+    );
+
+    expect(augmented.priority).toBe("P2");
+    expect(augmented.suggestedLanes).toEqual(expect.arrayContaining([
+      "static",
+      "runtime",
+      "differential",
+    ]));
+    expect(augmented.affectedDomains).toContain("unknown");
   });
 });
