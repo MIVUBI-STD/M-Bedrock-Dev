@@ -2,6 +2,7 @@ export type DecisionLedgerKind =
   | "diagnostic-candidate-selection"
   | "repair-authorization"
   | "repair-admission"
+  | "repair-strategy-selection"
   | "transitive-revalidation"
   | "runtime-verification"
   | "package-verification"
