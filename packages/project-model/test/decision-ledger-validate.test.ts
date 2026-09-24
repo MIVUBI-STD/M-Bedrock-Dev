@@ -137,4 +137,99 @@ describe("decision ledger validation", () => {
     expect(errors.join(" ")).toMatch(/unknown field contractRegsitryRevision/);
   });
 
+
+  it("rejects runtime verification without runtime evidence revision", () => {
+    const errors = validateDecisionLedgerSnapshot({
+      schemaVersion: 1,
+      entries: [{
+        id: "runtime",
+        kind: "runtime-verification",
+        status: "active",
+        transactionId: "tx-1",
+        basis: {},
+        upstreamDecisionIds: [],
+        inputIds: [],
+        outputIds: ["runtime-verification:passed"],
+        evidenceIds: ["runtime:pass"],
+        createdSequence: 1,
+      }],
+    });
+
+    expect(errors.join(" "))
+      .toMatch(/runtime-verification requires runtimeEvidenceRevision/);
+  });
+
+  it("rejects provider provenance without provider registry revision", () => {
+    const errors = validateDecisionLedgerSnapshot({
+      schemaVersion: 1,
+      entries: [{
+        id: "strategy",
+        kind: "repair-strategy-selection",
+        status: "active",
+        transactionId: "tx-1",
+        basis: {
+          invariantRegistryRevision: "inv-r1",
+        },
+        upstreamDecisionIds: [],
+        inputIds: ["repair-provider:provider@1"],
+        outputIds: [
+          "repair-strategy:selected",
+          "repair-invariant:inv-1",
+        ],
+        evidenceIds: [],
+        createdSequence: 1,
+      }],
+    });
+
+    expect(errors.join(" "))
+      .toMatch(/repairProviderRegistryRevision/);
+  });
+
+  it("rejects invariant provenance without invariant registry revision", () => {
+    const errors = validateDecisionLedgerSnapshot({
+      schemaVersion: 1,
+      entries: [{
+        id: "strategy",
+        kind: "repair-strategy-selection",
+        status: "active",
+        transactionId: "tx-1",
+        basis: {},
+        upstreamDecisionIds: [],
+        inputIds: [],
+        outputIds: [
+          "repair-strategy:selected",
+          "repair-invariant:inv-1",
+        ],
+        evidenceIds: [],
+        createdSequence: 1,
+      }],
+    });
+
+    expect(errors.join(" "))
+      .toMatch(/invariantRegistryRevision/);
+  });
+
+  it("rejects provider-bound strategy basis without provider provenance", () => {
+    const errors = validateDecisionLedgerSnapshot({
+      schemaVersion: 1,
+      entries: [{
+        id: "strategy",
+        kind: "repair-strategy-selection",
+        status: "active",
+        transactionId: "tx-1",
+        basis: {
+          repairProviderRegistryRevision: "providers-r1",
+        },
+        upstreamDecisionIds: [],
+        inputIds: [],
+        outputIds: ["repair-strategy:selected"],
+        evidenceIds: [],
+        createdSequence: 1,
+      }],
+    });
+
+    expect(errors.join(" "))
+      .toMatch(/requires repair-provider provenance/);
+  });
+
 });
