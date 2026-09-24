@@ -131,7 +131,7 @@ export function assessRuntimeTemporalRequirement(
       status: "missing-before",
       beforePredicate: requirement.beforePredicate,
       afterPredicate: requirement.afterPredicate,
-      after: after[0],
+      ...(after[0] === undefined ? {} : { after: after[0] }),
       reason:
         "The dependent observation is present, but the required prerequisite observation is absent from a complete evidence stream.",
     };
@@ -143,7 +143,7 @@ export function assessRuntimeTemporalRequirement(
       status: "missing-after",
       beforePredicate: requirement.beforePredicate,
       afterPredicate: requirement.afterPredicate,
-      before: before[0],
+      ...(before[0] === undefined ? {} : { before: before[0] }),
       reason:
         "The prerequisite is observed, but the expected dependent observation is absent from a complete evidence stream.",
     };
