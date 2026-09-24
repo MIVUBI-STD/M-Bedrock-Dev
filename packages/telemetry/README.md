@@ -411,3 +411,68 @@ mutation tick 100
 ```
 
 If one side lacks comparable temporal metadata, status remains `unresolved`; it is not fabricated.
+
+
+## Bedrock bridge
+
+The SDK does not import `@minecraft/server`. Inject the Bedrock objects at the
+map boundary:
+
+```ts
+import { system } from "@minecraft/server";
+
+const buffer = createBufferedTelemetrySink();
+const collector = createBedrockScriptEventTelemetryCollector({
+  signal: system.afterEvents.scriptEventReceive,
+  sink: buffer,
+});
+
+const telemetry = createTelemetryEmitter({
+  producer: "instrumentation",
+  sink: createBedrockScriptEventTelemetrySink(system),
+  tickProvider: createBedrockTickProvider(system),
+});
+```
+
+Bedrock exposes `system.currentTick`, `system.sendScriptEvent()`, and
+`system.afterEvents.scriptEventReceive`; the bridge only depends on the small
+shape required by those APIs.
+
+Recommended multi-module flow:
+
+```text
+gameplay subsystem
+  → TelemetryEmitter
+  → mivubi:telemetry ScriptEvent
+  → central ScriptEvent collector
+  → validating / buffered / console sink
+  → JSONL capture
+  → analyzer --telemetry
+```
+
+The default script-event sink rejects payloads above 2048 characters. Keep
+individual events compact; do not put large snapshots into one event.
+
+If the ScriptEvent channel is reachable from command/NPC/player-driven sources,
+use the collector `accept` callback as a trust-boundary filter.
+
+## Runtime monitors
+
+`createEntityProgressMonitor()` reports a stall only after an entity fails to
+make the configured minimum progress for the configured tick window. Callers
+must mark samples `eligible: false` while an entity is intentionally idle,
+airborne, in cutscene/setup, or otherwise outside the movement contract.
+
+`createStateMirrorMonitor()` emits state-drift telemetry on value divergence
+or stale mirror revision and suppresses identical repeated drift reports until
+the state becomes healthy or the drift changes.
+
+## Instrumentation guards
+
+`createArenaStartGuard()` observes accepted start operation ids and emits one
+double-start anomaly per arena generation.
+
+`captureDeferredGeneration()` captures an expected generation and emits one
+stale-callback anomaly if a later callback observes a different generation.
+The guard is observational; gameplay must still cancel/return when `check()`
+returns false.
