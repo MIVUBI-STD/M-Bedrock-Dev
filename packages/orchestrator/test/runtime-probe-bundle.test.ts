@@ -105,7 +105,7 @@ describe("runtime probe bundle preparation", () => {
     const result = prepareRuntimeProbeBundle({
       causalAnalysis: {
         incidents: [incident],
-      } as never,
+      },
       diagnosticProbeAnalysis: analysis,
     }, {
       availableContext: "LIVE_MINECRAFT",
@@ -139,7 +139,7 @@ describe("runtime probe bundle preparation", () => {
     const result = prepareRuntimeProbeBundle({
       causalAnalysis: {
         incidents: [incident],
-      } as never,
+      },
       diagnosticProbeAnalysis: analysis,
     }, {
       availableContext: "LIVE_MINECRAFT",
