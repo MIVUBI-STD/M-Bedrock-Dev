@@ -44,6 +44,9 @@ jobs:
       - name: Repository policy
         run: npm run verify:repository
 
+      - name: Source hygiene audit
+        run: npm run audit:source
+
       - name: Typecheck
         run: npm run typecheck
 

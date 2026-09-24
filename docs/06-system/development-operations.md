@@ -7,6 +7,7 @@
 ```text
 DEV.cmd setup
 DEV.cmd doctor
+DEV.cmd audit
 DEV.cmd check
 DEV.cmd test
 DEV.cmd inspect <artifact>
@@ -54,3 +55,11 @@ Release/promotion to `main` is separate from ordinary development.
 - no full expensive workflow on every trivial Local edit unless a specific invariant requires it.
 
 Focused workflows are evidence tools, not parallel readiness authorities.
+
+## Source hygiene audit
+
+`DEV.cmd audit` reports possible unreferenced production source files and production external-package usage.
+
+The audit is intentionally non-blocking. A zero-inbound file or apparently unused dependency is a review candidate, not deletion permission. Dynamic loading, generated entrypoints, runtime adapters, or test-only support can make a candidate legitimate.
+
+Promote a hygiene rule into `verify:repository` only after the repository baseline proves that the rule has low false-positive risk.

@@ -70,6 +70,7 @@ Normal repository-level development starts from:
 ```text
 DEV.cmd setup
 DEV.cmd doctor
+DEV.cmd audit
 DEV.cmd check
 DEV.cmd test
 DEV.cmd inspect <artifact>

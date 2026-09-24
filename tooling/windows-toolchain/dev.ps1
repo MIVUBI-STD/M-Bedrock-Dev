@@ -1,6 +1,6 @@
 param(
     [Parameter(Position=0)]
-    [ValidateSet("setup","doctor","check","test","inspect","finalize-local","help")]
+    [ValidateSet("setup","doctor","audit","check","test","inspect","finalize-local","help")]
     [string]$Command = "help",
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
@@ -138,6 +138,9 @@ try {
                 Write-Host "Environment ready."
             }
         }
+        "audit" {
+            npm run audit:source
+        }
         "check" {
             npm run verify:full
         }
@@ -157,6 +160,7 @@ try {
             Write-Host "M-Bedrock-Dev"
             Write-Host "  DEV.cmd setup"
             Write-Host "  DEV.cmd doctor"
+            Write-Host "  DEV.cmd audit"
             Write-Host "  DEV.cmd check"
             Write-Host "  DEV.cmd test [vitest args]"
             Write-Host "  DEV.cmd inspect <artifact>"

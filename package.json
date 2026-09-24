@@ -17,7 +17,8 @@
     "test": "vitest run",
     "cli": "tsx apps/cli/src/main.ts",
     "verify:modules": "node tooling/repository/verify-module-shape.mjs",
-    "verify:dependencies": "node tooling/repository/verify-dependency-graph.mjs"
+    "verify:dependencies": "node tooling/repository/verify-dependency-graph.mjs",
+    "audit:source": "node tooling/repository/audit-source-hygiene.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
