@@ -5,13 +5,13 @@ import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import { parseEntityDefinition } from "../../../analyzers/entities/src/index.js";
 import { parseDialogueDocument } from "../../../analyzers/dialogue/src/index.js";
-import { dialogueDocumentDiagnostics } from "../../../analyzers/diagnostics/src/dialogue-findings.js";
-import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
-import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
+import { dialogueDocumentDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
-} from "../../../analyzers/diagnostics/src/structure-findings.js";
+} from "../../../analyzers/diagnostics/src/index.js";
 import { parseMcStructure } from "../../../adapters/mcstructure/src/index.js";
 import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/index.js";
 import { extractStructureRuntimeContent } from "../../../adapters/mcstructure/src/index.js";

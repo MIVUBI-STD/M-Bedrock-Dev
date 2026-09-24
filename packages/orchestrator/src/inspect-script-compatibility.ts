@@ -1,20 +1,20 @@
 import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/index.js";
-import { undeclaredMinecraftModuleDiagnostics } from "../../../analyzers/diagnostics/src/script-findings.js";
-import { scriptExecutionPrivilegeDiagnostics } from "../../../analyzers/diagnostics/src/script-privilege-findings.js";
-import { scriptVersionDiagnostics } from "../../../analyzers/diagnostics/src/script-version-findings.js";
-import { scriptEventSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-event-findings.js";
-import { scriptMethodSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-method-findings.js";
+import { undeclaredMinecraftModuleDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { scriptExecutionPrivilegeDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { scriptVersionDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { scriptEventSymbolDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { scriptMethodSymbolDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import {
   scriptEnumLifecycleDiagnostics,
   scriptPropertyLifecycleDiagnostics,
-} from "../../../analyzers/diagnostics/src/script-member-findings.js";
-import { scriptSignatureDiagnostics } from "../../../analyzers/diagnostics/src/script-signature-findings.js";
-import { scriptReturnContractDiagnostics } from "../../../analyzers/diagnostics/src/script-return-contract-findings.js";
-import { scriptImportedTypeLifecycleDiagnostics } from "../../../analyzers/diagnostics/src/script-type-findings.js";
-import { scriptEnumValueDiagnostics } from "../../../analyzers/diagnostics/src/script-enum-value-findings.js";
-import { scriptPropertyWriteDiagnostics } from "../../../analyzers/diagnostics/src/script-property-write-findings.js";
+} from "../../../analyzers/diagnostics/src/index.js";
+import { scriptSignatureDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { scriptReturnContractDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { scriptImportedTypeLifecycleDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { scriptEnumValueDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { scriptPropertyWriteDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { SemanticNode } from "../../graph/src/types.js";
 

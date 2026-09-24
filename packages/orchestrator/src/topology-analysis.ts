@@ -10,7 +10,7 @@ import { deriveTopologyCandidates } from "../../../analyzers/topology/src/index.
 import { detectLinearTopologyOutliers } from "../../../analyzers/topology/src/index.js";
 import { stateAccessesFromEffects } from "../../../analyzers/topology/src/index.js";
 import { likelyGlobalAccess } from "../../../analyzers/topology/src/index.js";
-import { stateScopeDiagnostics, linearTopologyOutlierDiagnostics } from "../../../analyzers/diagnostics/src/topology-findings.js";
+import { stateScopeDiagnostics, linearTopologyOutlierDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import type { LinearTopologyOutlier } from "../../../analyzers/topology/src/index.js";
 
 export interface SpatialEffectRecord {

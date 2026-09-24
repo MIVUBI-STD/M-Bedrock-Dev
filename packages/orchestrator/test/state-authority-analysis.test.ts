@@ -4,7 +4,7 @@ import {
   correlateStateAuthority,
   stateAuthorityRuntimeEvidence,
 } from "../src/state-authority-analysis.js";
-import { knowledgeRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/knowledge-runtime-findings.js";
+import { knowledgeRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 
 const contract = {
   id: "arena-ready",

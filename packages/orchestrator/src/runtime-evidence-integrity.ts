@@ -1,7 +1,7 @@
 import {
   mergeRuntimeEvidenceRecords,
   type MergedRuntimeEvidence,
-} from "../../../analyzers/diagnostics/src/runtime-evidence-merge.js";
+} from "../../../analyzers/diagnostics/src/index.js";
 import {
   groupRuntimeEvidenceByScope,
   type RuntimeEvidenceRecord,

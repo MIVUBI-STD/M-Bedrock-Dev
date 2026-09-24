@@ -21,8 +21,8 @@ import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/ind
 import { entityRuntimeEvidence } from "../../../analyzers/entities/src/index.js";
 import {
   knowledgeRuntimeDiagnostics,
-} from "../../../analyzers/diagnostics/src/knowledge-runtime-findings.js";
-import { mergeRuntimeEvidenceRecords } from "../../../analyzers/diagnostics/src/runtime-evidence-merge.js";
+} from "../../../analyzers/diagnostics/src/index.js";
+import { mergeRuntimeEvidenceRecords } from "../../../analyzers/diagnostics/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 
 export interface InspectionKnowledgeProfileResolution {

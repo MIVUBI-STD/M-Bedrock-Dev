@@ -3,7 +3,7 @@ import {
   entityHasNavigation,
   entityRuntimeKey,
 } from "../../../analyzers/entities/src/index.js";
-import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
+import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 import type { InspectionSourceIndex } from "./inspect-source-index.js";
