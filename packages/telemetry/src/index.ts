@@ -40,3 +40,7 @@ export * from "./runtime-probe-executor.js";
 export * from "./runtime-probe-session.js";
 
 export * from "./runtime-probe-bundle-runner.js";
+
+export * from "./bedrock-bridge.js";
+
+export * from "./monitors.js";
