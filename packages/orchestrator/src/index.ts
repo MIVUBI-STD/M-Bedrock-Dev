@@ -100,3 +100,4 @@ export * from "./runtime-probe-bundle.js";
 export * from "./authorized-repair.js";
 
 export * from "./runtime-probe-replay.js";
+export * from "./semantic-graph-fingerprint.js";
