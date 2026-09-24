@@ -135,7 +135,9 @@ export function createReviveTransactionMonitor(
           anomaly: "self-revive",
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
-          reviverPlayerKey: input.reviverPlayerKey,
+          ...(input.reviverPlayerKey === undefined
+            ? {}
+            : { reviverPlayerKey: input.reviverPlayerKey }),
           ...(input.scope === undefined ? {} : { scope: input.scope }),
           ...(input.tick === undefined ? {} : { tick: input.tick }),
           ...(input.timestamp === undefined
@@ -149,7 +151,9 @@ export function createReviveTransactionMonitor(
           anomaly: "invalid-reviver",
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
-          reviverPlayerKey: input.reviverPlayerKey,
+          ...(input.reviverPlayerKey === undefined
+            ? {}
+            : { reviverPlayerKey: input.reviverPlayerKey }),
           ...(input.scope === undefined ? {} : { scope: input.scope }),
           ...(input.tick === undefined ? {} : { tick: input.tick }),
           ...(input.timestamp === undefined
@@ -166,7 +170,9 @@ export function createReviveTransactionMonitor(
           anomaly: "stale-revive",
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
-          reviverPlayerKey: input.reviverPlayerKey,
+          ...(input.reviverPlayerKey === undefined
+            ? {}
+            : { reviverPlayerKey: input.reviverPlayerKey }),
           ...(input.scope === undefined ? {} : { scope: input.scope }),
           ...(input.tick === undefined ? {} : { tick: input.tick }),
           ...(input.timestamp === undefined
@@ -184,7 +190,9 @@ export function createReviveTransactionMonitor(
           anomaly: "multiple-revivers",
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
-          reviverPlayerKey: input.reviverPlayerKey,
+          ...(input.reviverPlayerKey === undefined
+            ? {}
+            : { reviverPlayerKey: input.reviverPlayerKey }),
           ...(input.scope === undefined ? {} : { scope: input.scope }),
           ...(input.tick === undefined ? {} : { tick: input.tick }),
           ...(input.timestamp === undefined
@@ -210,7 +218,9 @@ export function createReviveTransactionMonitor(
           anomaly: "stale-revive",
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
-          reviverPlayerKey: input.reviverPlayerKey,
+          ...(input.reviverPlayerKey === undefined
+            ? {}
+            : { reviverPlayerKey: input.reviverPlayerKey }),
           ...(input.scope === undefined ? {} : { scope: input.scope }),
           ...(input.tick === undefined ? {} : { tick: input.tick }),
           ...(input.timestamp === undefined
@@ -224,7 +234,9 @@ export function createReviveTransactionMonitor(
           anomaly: "revive-after-death",
           targetPlayerKey: input.targetPlayerKey,
           lifeGeneration: input.targetLifeGeneration,
-          reviverPlayerKey: input.reviverPlayerKey,
+          ...(input.reviverPlayerKey === undefined
+            ? {}
+            : { reviverPlayerKey: input.reviverPlayerKey }),
           ...(input.scope === undefined ? {} : { scope: input.scope }),
           ...(input.tick === undefined ? {} : { tick: input.tick }),
           ...(input.timestamp === undefined
