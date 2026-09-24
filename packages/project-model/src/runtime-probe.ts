@@ -61,6 +61,8 @@ export interface RuntimeProbeBinding {
   predicate: string;
   query: RuntimeProbeQuery;
   outcomeByState: RuntimeProbeOutcomeMap;
+  incidentId?: string;
+  scope?: RuntimeScope;
 }
 
 
