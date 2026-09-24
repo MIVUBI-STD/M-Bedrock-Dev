@@ -21,6 +21,7 @@ import type {
 } from "./repair-strategy-provider.js";
 import {
   repairStrategyProvider,
+  repairStrategyProviderRegistryRevision,
   validateRepairStrategyProviderProposal,
   validateRepairStrategyProviderRegistry,
 } from "./repair-strategy-provider.js";
@@ -125,6 +126,9 @@ export function selectProviderBackedRepairStrategyForIncident(
     };
   }
 
+  const providerRegistryRevision =
+    repairStrategyProviderRegistryRevision(providerRegistry);
+
   return {
     status: "evaluated",
     result: selectRepairStrategyForIncident(
@@ -134,7 +138,14 @@ export function selectProviderBackedRepairStrategyForIncident(
       diagnostic,
       invariantRegistry,
       proposals.map((proposal) => proposal.strategy),
-      policy,
+      {
+        ...policy,
+        decisionBasis: {
+          ...(policy.decisionBasis ?? {}),
+          repairProviderRegistryRevision:
+            providerRegistryRevision,
+        },
+      },
     ),
   };
 }
