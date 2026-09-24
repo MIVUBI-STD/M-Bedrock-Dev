@@ -6,12 +6,11 @@ import { populateInspectionScriptImportGraph } from "./inspect-script-import-gra
 import { enrichInspectionSemanticGraph } from "./inspect-graph-enrichment.js";
 import { analyzeInspectionEntityKnowledge } from "./inspect-entity-knowledge-stage.js";
 import { analyzeInspectionRuntimeState } from "./inspect-runtime-analysis-stage.js";
+import { analyzeInspectionEducation } from "./inspect-education-stage.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
-import { deriveEducationProfile } from "../../compatibility/src/education.js";
-import { educationRequirementDiagnostic } from "../../../analyzers/diagnostics/src/education-findings.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
 import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
@@ -222,49 +221,16 @@ export async function inspectDirectory(
   );
   diagnostics.push(...knowledgeRuntime.diagnostics);
 
-  const educationMetadata = manifests.some(
-    ({ manifest }) => manifest.hasEducationMetadata === true,
-  );
-  const targetEducation = deriveEducationProfile({
-    edition: target.edition ?? "unknown",
-    manifestEducationMetadata: educationMetadata,
-    ...(target.educationFeatures !== undefined
-      ? { worldEducationFeatures: target.educationFeatures === "enabled" }
-      : {}),
-    ...(target.eduLevel !== undefined ? { eduLevel: target.eduLevel } : {}),
+  const education = analyzeInspectionEducation({
+    target,
+    manifests: manifestModelsForKnowledge,
+    parsedStructureModels,
   });
-
-  const educationSpecialtyBlocks = {
-    allow: parsedStructureModels.reduce(
-      (sum, item) => sum + item.semantics.educationAllowEntries,
-      0,
-    ),
-    deny: parsedStructureModels.reduce(
-      (sum, item) => sum + item.semantics.educationDenyEntries,
-      0,
-    ),
-    border: parsedStructureModels.reduce(
-      (sum, item) => sum + item.semantics.educationBorderEntries,
-      0,
-    ),
-  };
-  const educationSpecialtyCount =
-    educationSpecialtyBlocks.allow +
-    educationSpecialtyBlocks.deny +
-    educationSpecialtyBlocks.border;
-
-  if (educationSpecialtyCount > 0) {
-    const finding = educationRequirementDiagnostic(targetEducation);
-    if (finding) {
-      diagnostics.push({
-        ...finding,
-        data: {
-          ...(finding.data ?? {}),
-          educationSpecialtyBlocks,
-        },
-      });
-    }
-  }
+  const {
+    targetEducation,
+    educationSpecialtyBlocks,
+  } = education;
+  diagnostics.push(...education.diagnostics);
 
   const dbFiles = files.filter((file) => {
     const normalized = "/" + file.relativePath.replaceAll("\\", "/");
