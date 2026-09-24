@@ -21,6 +21,8 @@ const required = [
   "docs/05-validation/README.md",
   "docs/06-system/development-discipline.md",
   "docs/06-system/implementation-map.md",
+  "docs/06-system/contract-registry.json",
+  "tooling/repository/verify-contract-registry.mjs",
   "docs/06-system/skill-routing.md",
   "docs/06-system/development-operations.md",
   "docs/07-operations/current-validation.md",
