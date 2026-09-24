@@ -51,7 +51,9 @@ export function recordDiagnosticRepairDecision(
     inputIds: [
       ...decision.activeCandidateIds,
     ],
-    upstreamDecisionIds: context.upstreamDecisionIds,
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : { upstreamDecisionIds: context.upstreamDecisionIds }),
     outputIds: [
       "repair-disposition:" + decision.disposition,
       ...(decision.selectedCandidateId === undefined
@@ -103,7 +105,9 @@ export function recordRuntimeVerificationDecision(
         (id) => "runtime-requirement:" + id,
       ),
     ],
-    upstreamDecisionIds: context.upstreamDecisionIds,
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : { upstreamDecisionIds: context.upstreamDecisionIds }),
     outputIds: [
       "runtime-verification:" +
         (result.passed ? "passed" : "failed"),
@@ -233,9 +237,13 @@ export function recordRepairStrategySelection(
       ? {}
       : { transactionId }),
     basis: context.basis,
-    upstreamDecisionIds: context.upstreamDecisionIds,
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : { upstreamDecisionIds: context.upstreamDecisionIds }),
     outputIds,
-    evidenceIds: context.evidenceIds,
+    ...(context.evidenceIds === undefined
+      ? {}
+      : { evidenceIds: context.evidenceIds }),
   });
 }
 
@@ -256,7 +264,9 @@ export function recordTransitiveRevalidationDecision(
     kind: "transitive-revalidation",
     transactionId: input.transactionId,
     basis: context.basis,
-    upstreamDecisionIds: context.upstreamDecisionIds,
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : { upstreamDecisionIds: context.upstreamDecisionIds }),
     inputIds: [
       ...input.validatedNodeIds.map(
         (id) => "revalidation-node:" + id,
