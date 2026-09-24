@@ -210,4 +210,26 @@ describe("decision ledger", () => {
     )).toThrow(/newer/);
   });
 
+  it("invalidates decisions when runtime evidence revision changes", () => {
+    let ledger = appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "evidence-bound",
+        kind: "repair-authorization",
+        basis: {
+          runtimeEvidenceRevision: "evidence-a",
+        },
+      },
+    );
+
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      runtimeEvidenceRevision: "evidence-b",
+    });
+
+    expect(ledger.entries[0]).toMatchObject({
+      status: "invalidated",
+    });
+    expect(ledger.entries[0]?.invalidationReason)
+      .toMatch(/runtimeEvidenceRevision changed/);
+  });
 });
