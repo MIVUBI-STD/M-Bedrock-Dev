@@ -100,6 +100,7 @@ describe("active runtime probe inspection integration", () => {
         absent: 0,
         unknown: 0,
         failed: 0,
+        droppedExchanges: 0,
       });
 
       const notReady = await inspectDirectory(
@@ -135,6 +136,50 @@ describe("active runtime probe inspection integration", () => {
       );
       expect(unknown.knowledgeRuntime.evidenceGaps).toBe(1);
       expect(unknown.knowledgeRuntime.violations).toBe(0);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports incomplete proof coverage when transcript history was dropped", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-probe-drop-test-"));
+    try {
+      const functions = join(root, "behavior_pack", "functions");
+      await mkdir(functions, { recursive: true });
+      await writeFile(
+        join(functions, "mutate.mcfunction"),
+        "fill 0 64 0 1 65 1 minecraft:stone\n",
+        "utf8",
+      );
+
+      const result = await inspectDirectory(
+        root,
+        "artifact-probe",
+        { edition: "bedrock" },
+        "fingerprint-probe",
+        catalog,
+        [],
+        [],
+        0,
+        [response("present")],
+        2,
+      );
+
+      expect(result.runtimeProbeAnalysis).toMatchObject({
+        responses: 1,
+        present: 1,
+        droppedExchanges: 2,
+      });
+      expect(result.diagnostics).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          code: "RUNTIME_PROBE_EXCHANGES_DROPPED",
+          severity: "minor",
+        }),
+      ]));
+      expect(result.reliability.fingerprint.capabilityTags)
+        .toContain("runtime-probe-truncated");
+      expect(result.reliability.fingerprint.riskSurfaces)
+        .toContain("runtime-evidence-incomplete");
     } finally {
       await rm(root, { recursive: true, force: true });
     }
