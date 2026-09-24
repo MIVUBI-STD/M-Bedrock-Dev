@@ -30,6 +30,7 @@ const basis = {
   sourceFingerprint: "source",
   graphFingerprint: "graph",
   invariantRegistryRevision: "inv-r1",
+  runtimeEvidenceRevision: "runtime-r1",
 };
 
 function proof(
@@ -446,4 +447,24 @@ describe("repair release lineage", () => {
     ).toBe(true);
   });
 
+  it("blocks runtime proof that has no evidence revision", () => {
+    const repairProof = proof({
+      decisionBasis: {
+        sourceFingerprint: "source",
+        graphFingerprint: "graph",
+        invariantRegistryRevision: "inv-r1",
+      },
+    });
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      completeLedger(proof()),
+      basis,
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/runtimeEvidenceRevision/);
+  });
 });
