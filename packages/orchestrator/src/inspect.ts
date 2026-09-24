@@ -969,6 +969,7 @@ export async function inspectDirectory(
       absent: runtimeProbeEvidence.summary.absent,
       unknown: runtimeProbeEvidence.summary.unknown,
       failed: runtimeProbeEvidence.summary.failed,
+      droppedExchanges: runtimeProbeDroppedExchanges,
     },
     worldDatabase: {
       present: dbFiles.length > 0,
