@@ -12,6 +12,8 @@ import { worldDbRuntimeEvidence } from "./world-db-runtime-evidence.js";
 import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { isTelemetryBatch, resolveTelemetryEventsForArtifact } from "./telemetry-load.js";
+import type { RuntimeProbeTranscript } from "../../project-model/src/runtime-probe.js";
+import { assertRuntimeProbeTranscriptArtifact } from "./runtime-probe-load.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -24,6 +26,7 @@ export async function inspectArtifact(
   target: InspectTargetProfile = {},
   knowledgeCatalog?: KnowledgeCatalog,
   telemetry: readonly TelemetryEvent[] | TelemetryBatch = [],
+  runtimeProbeTranscript?: RuntimeProbeTranscript,
 ): Promise<InspectArtifactResult> {
   const fingerprint = await sha256File(path);
   const artifactId = artifactIdFromFingerprint(fingerprint);
@@ -34,6 +37,16 @@ export async function inspectArtifact(
   const telemetryDroppedEvents = Array.isArray(telemetry)
     ? 0
     : telemetry.droppedEvents ?? 0;
+  if (runtimeProbeTranscript) {
+    assertRuntimeProbeTranscriptArtifact(
+      runtimeProbeTranscript,
+      artifactId,
+    );
+  }
+  const runtimeProbeResponses =
+    runtimeProbeTranscript?.exchanges.map(
+      (exchange) => exchange.response,
+    ) ?? [];
   const sessionRoot = await mkdtemp(join(tmpdir(), "m-bedrock-inspect-"));
   const sourceRoot = join(sessionRoot, "source");
   const workingRoot = join(sessionRoot, "working");
@@ -55,6 +68,7 @@ export async function inspectArtifact(
       worldDbRuntimeEvidence(nativeWorldDb),
       telemetryEvents,
       telemetryDroppedEvents,
+      runtimeProbeResponses,
     );
     const embeddedCommandNativeCorrelations =
       correlateEmbeddedCommandsWithNativeChunks(
