@@ -20,6 +20,7 @@ export interface RepairCounterfactualImpact {
   maxImpactDepth: number;
   unresolvedEdgeIds: readonly string[];
   ambiguousEdgeIds: readonly string[];
+  dependencyTopologyResolved: boolean;
   graphCoverageComplete: boolean;
 }
 
