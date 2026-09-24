@@ -69,3 +69,33 @@ export function groupRuntimeEvidenceByScope(
   }
   return groups;
 }
+
+
+export function runtimeScopeContains(
+  actual: RuntimeScope | undefined,
+  expected: RuntimeScope | undefined,
+): boolean {
+  if (!expected) return true;
+  if (!actual) return false;
+
+  for (const key of [
+    "arenaId",
+    "arenaGeneration",
+    "playerKey",
+    "connectionGeneration",
+    "lifeGeneration",
+    "entityKey",
+    "entityGeneration",
+    "operationId",
+    "subsystemGeneration",
+  ] as const) {
+    const expectedValue = expected[key];
+    if (
+      expectedValue !== undefined &&
+      actual[key] !== expectedValue
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
