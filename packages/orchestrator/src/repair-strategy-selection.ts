@@ -14,6 +14,7 @@ export interface RepairStrategyCandidate {
   transaction: PatchTransaction;
   changedNodeIds: readonly string[];
   supportingInvariantIds: readonly string[];
+  addressesCandidateIds: readonly string[];
 }
 
 export interface RepairStrategySelectionPolicy {
@@ -90,18 +91,6 @@ function blastRadiusRank(
   }
 }
 
-function sameSet(
-  left: readonly string[],
-  right: readonly string[],
-): boolean {
-  const a = [...new Set(left)].sort();
-  const b = [...new Set(right)].sort();
-  return (
-    a.length === b.length &&
-    a.every((value, index) => value === b[index])
-  );
-}
-
 function coversRequiredInvariants(
   actual: readonly string[],
   required: readonly string[],
@@ -144,6 +133,24 @@ export function selectRepairStrategy(
   candidates: readonly RepairStrategyCandidate[],
   policy: RepairStrategySelectionPolicy = {},
 ): RepairStrategySelection {
+  const strategyIds = new Set<string>();
+  const transactionIds = new Set<string>();
+  for (const candidate of candidates) {
+    if (strategyIds.has(candidate.strategyId)) {
+      throw new Error(
+        "Duplicate repair strategy id: " + candidate.strategyId,
+      );
+    }
+    if (transactionIds.has(candidate.transaction.id)) {
+      throw new Error(
+        "Repair strategies must not alias the same patch transaction: " +
+          candidate.transaction.id,
+      );
+    }
+    strategyIds.add(candidate.strategyId);
+    transactionIds.add(candidate.transaction.id);
+  }
+
   const requiredInvariantIds =
     [...new Set(policy.requiredInvariantIds ?? [])].sort();
 
@@ -162,6 +169,21 @@ export function selectRepairStrategy(
       });
 
       const reasons: string[] = [];
+      const addressesSelectedCandidate =
+        diagnostic.selectedCandidateId !== undefined &&
+        candidate.addressesCandidateIds.includes(
+          diagnostic.selectedCandidateId,
+        );
+      if (!addressesSelectedCandidate) {
+        reasons.push(
+          diagnostic.selectedCandidateId === undefined
+            ? "Diagnostic decision has no selected root-cause candidate."
+            : "Strategy does not address the selected root-cause candidate: " +
+                diagnostic.selectedCandidateId +
+                ".",
+        );
+      }
+
       const invariantCoverage = coversRequiredInvariants(
         candidate.supportingInvariantIds,
         requiredInvariantIds,
@@ -197,6 +219,7 @@ export function selectRepairStrategy(
         strategyId: candidate.strategyId,
         transactionId: candidate.transaction.id,
         admissible:
+          addressesSelectedCandidate &&
           invariantCoverage &&
           candidate.transaction.validation.length > 0 &&
           admissionAllowed,
