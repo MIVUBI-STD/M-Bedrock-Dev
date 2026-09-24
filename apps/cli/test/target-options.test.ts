@@ -31,6 +31,17 @@ describe("CLI target options", () => {
     expect(parsed.telemetryPath).toBe("qa/runtime.json");
   });
 
+  it("parses a runtime probe transcript path", () => {
+    const parsed = parseCliTargetOptions([
+      "map.mcworld",
+      "--probe-transcript", "qa/probes.json",
+    ]);
+
+    expect(parsed.positionals).toEqual(["map.mcworld"]);
+    expect(parsed.probeTranscriptPath).toBe("qa/probes.json");
+    expect(parsed.target).toEqual({});
+  });
+
   it("rejects invalid edition instead of guessing", () => {
     expect(() => parseCliTargetOptions(["map.mcworld", "--edition", "java"]))
       .toThrow(/bedrock or education/);
