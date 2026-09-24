@@ -221,6 +221,43 @@ export function validateKnowledgeCatalog(
         );
       }
     }
+    for (const risk of Object.keys(
+      relation.causalCorroborationMinSources ?? {},
+    )) {
+      if (!causalConsequences.has(risk)) {
+        errors.push(
+          `Knowledge relation ${relation.id} references source-threshold risk not listed in causalConsequences: ${risk}`,
+        );
+      }
+    }
+
+    if (
+      relation.causalCorroborationMinSources !== undefined &&
+      (
+        typeof relation.causalCorroborationMinSources !== "object" ||
+        relation.causalCorroborationMinSources === null ||
+        Array.isArray(relation.causalCorroborationMinSources)
+      )
+    ) {
+      errors.push(
+        `Knowledge relation ${relation.id} causalCorroborationMinSources must be an object.`,
+      );
+    } else {
+      for (const [risk, minimum] of Object.entries(
+        relation.causalCorroborationMinSources ?? {},
+      )) {
+        if (
+          !risk.trim() ||
+          typeof minimum !== "number" ||
+          !Number.isInteger(minimum) ||
+          minimum < 1
+        ) {
+          errors.push(
+            `Knowledge relation ${relation.id} has invalid causal corroboration source threshold for ${risk}.`,
+          );
+        }
+      }
+    }
 
     if (
       relation.causalOutcomePredicates !== undefined &&
