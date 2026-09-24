@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   markRepairPackageVerified,
   markRepairRuntimeVerified,
+  markRepairTransitiveRevalidated,
   repairLifecycleFromApplyResult,
   repairReleaseEligible,
   type RepairLifecycleState,
@@ -138,4 +139,72 @@ describe("repair lifecycle", () => {
     expect(state.mutationPresent).toBe(false);
     expect(repairReleaseEligible(state)).toBe(false);
   });
+
+  it("advances pending transitive revalidation only with exact proof coverage", () => {
+    const pending: RepairLifecycleState = {
+      transactionId: "tx-1",
+      stage: "transitive-revalidation-pending",
+      mutationPresent: true,
+      localStaticValidationPassed: true,
+      transitiveRevalidationComplete: false,
+      runtimeVerificationComplete: false,
+      packageVerificationComplete: false,
+      pendingNodeIds: ["n2", "n3"],
+      pendingPaths: ["functions/b.mcfunction"],
+      reasons: [],
+    };
+
+    expect(() => markRepairTransitiveRevalidated(pending, {
+      transactionId: "tx-1",
+      passed: true,
+      validatedNodeIds: ["n2"],
+      validatedPaths: ["functions/b.mcfunction"],
+      evidenceIds: ["static:dependent-pass"],
+    })).toThrow(/exactly cover/);
+
+    const completed = markRepairTransitiveRevalidated(pending, {
+      transactionId: "tx-1",
+      passed: true,
+      validatedNodeIds: ["n3", "n2"],
+      validatedPaths: ["functions/b.mcfunction"],
+      evidenceIds: ["static:dependent-pass"],
+    });
+
+    expect(completed.stage).toBe("static-validated");
+    expect(completed.transitiveRevalidationComplete).toBe(true);
+    expect(completed.pendingNodeIds).toEqual([]);
+    expect(completed.pendingPaths).toEqual([]);
+  });
+
+  it("rejects failed or cross-transaction transitive revalidation receipts", () => {
+    const pending: RepairLifecycleState = {
+      transactionId: "tx-1",
+      stage: "transitive-revalidation-pending",
+      mutationPresent: true,
+      localStaticValidationPassed: true,
+      transitiveRevalidationComplete: false,
+      runtimeVerificationComplete: false,
+      packageVerificationComplete: false,
+      pendingNodeIds: ["n2"],
+      pendingPaths: [],
+      reasons: [],
+    };
+
+    expect(() => markRepairTransitiveRevalidated(pending, {
+      transactionId: "tx-1",
+      passed: false,
+      validatedNodeIds: ["n2"],
+      validatedPaths: [],
+      evidenceIds: ["static:failed"],
+    })).toThrow(/Failed transitive/);
+
+    expect(() => markRepairTransitiveRevalidated(pending, {
+      transactionId: "other",
+      passed: true,
+      validatedNodeIds: ["n2"],
+      validatedPaths: [],
+      evidenceIds: ["static:pass"],
+    })).toThrow(/another transaction/);
+  });
+
 });
