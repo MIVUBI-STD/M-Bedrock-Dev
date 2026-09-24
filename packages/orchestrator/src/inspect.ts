@@ -9,6 +9,7 @@ import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
 import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
 import {
   entityHasNavigation,
+  entityHasConfiguredTargeting,
   entityRuntimeKey,
 } from "../../../analyzers/entities/src/runtime-evidence.js";
 import { parseDialogueDocument } from "../../../analyzers/dialogue/src/parse.js";
@@ -613,6 +614,12 @@ export async function inspectDirectory(
       .filter(entityHasNavigation)
       .map(entityRuntimeKey),
   );
+  const targetDrivenEntityKeys = new Set(
+    parsedEntities
+      .map((item) => item.parsed)
+      .filter(entityHasConfiguredTargeting)
+      .map(entityRuntimeKey),
+  );
   const mutationTransactions = analyzeMutationTransactionOrdering(
     parsedFunctionModels,
     structureProofs,
@@ -648,6 +655,7 @@ export async function inspectDirectory(
       ...routeMutationRuntimeEvidence(
         routeCorrelations,
         navigatingEntityKeys,
+        targetDrivenEntityKeys,
       ),
       ...mutationTransactionRuntimeEvidence(
         mutationTransactions.assessments,
