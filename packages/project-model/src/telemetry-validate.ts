@@ -8,6 +8,7 @@ const KINDS = new Set([
   "entity-stall",
   "teleport-fallback",
   "arena-double-start",
+  "arena-generation-anomaly",
   "stale-callback",
   "revive-anomaly",
   "state-drift",
@@ -212,6 +213,22 @@ export function validateTelemetryEvent(
     case "arena-double-start":
       stringField(input, "arenaId", errors);
       numberField(input, "arenaGeneration", errors, true);
+      break;
+    case "arena-generation-anomaly":
+      stringField(input, "arenaId", errors);
+      numberField(input, "observedGeneration", errors, true);
+      numberField(input, "currentGeneration", errors);
+      numberField(input, "priorGeneration", errors);
+      if (
+        ![
+          "generation-regression",
+          "generation-overlap",
+          "reuse-before-reset",
+          "stale-terminal",
+        ].includes(String(input.anomaly))
+      ) {
+        errors.push("arena-generation-anomaly anomaly is invalid.");
+      }
       break;
     case "stale-callback":
       stringField(input, "subsystem", errors);
