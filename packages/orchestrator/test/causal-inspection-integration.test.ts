@@ -36,6 +36,14 @@ const catalog: KnowledgeCatalog = {
         "route-target-driven-consumer-present",
       ],
     },
+    causalOutcomePredicates: {
+      "navigation-stall-risk": [
+        "navigation-stall-observed",
+      ],
+      "fallback-recovery-risk": [
+        "teleport-fallback-observed",
+      ],
+    },
   }],
 };
 
@@ -246,6 +254,132 @@ describe("inspection causal analysis", () => {
       expect(result.causalAnalysis.chains[0]?.links.some(
         (link) => link.strength === "corroborated-risk",
       )).toBe(false);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+  it("promotes a matching runtime stall observation without claiming sole causation", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-causal-observed-test-"));
+    try {
+      const functions = join(root, "behavior_pack", "functions");
+      const entities = join(root, "behavior_pack", "entities");
+      await mkdir(functions, { recursive: true });
+      await mkdir(entities, { recursive: true });
+
+      await writeFile(
+        join(functions, "mutate.mcfunction"),
+        "fill 10 64 10 20 70 20 minecraft:stone\n",
+        "utf8",
+      );
+      await writeFile(
+        join(entities, "zombie.json"),
+        JSON.stringify({
+          "minecraft:entity": {
+            description: { identifier: "demo:zombie" },
+            components: {
+              "minecraft:navigation.walk": {},
+              "minecraft:behavior.nearest_attackable_target": {
+                entity_types: [{
+                  filters: {
+                    test: "is_family",
+                    subject: "other",
+                    value: "player",
+                  },
+                }],
+              },
+            },
+          },
+        }),
+        "utf8",
+      );
+
+      const operationId =
+        "artifact-observed:behavior_pack/functions/mutate.mcfunction:1:0";
+
+      const result = await inspectDirectory(
+        root,
+        "artifact-observed",
+        {
+          edition: "bedrock",
+          staticExecutionDimension: "overworld",
+          routeCorridors: [{
+            id: "bridge-route",
+            dimension: "overworld",
+            entityKeys: ["demo:zombie"],
+            volume: {
+              min: { x: 0, y: 60, z: 0 },
+              max: { x: 30, y: 80, z: 30 },
+            },
+          }],
+        },
+        "fingerprint-observed",
+        catalog,
+        [{
+          predicate: "navigation-stall-observed",
+          state: "present",
+          confidence: "observed",
+          scope: { operationId },
+          note: "QA telemetry observed no navigation progress in the route scope.",
+        }],
+      );
+
+      expect(result.causalAnalysis.mediumConfidence).toBe(1);
+      expect(result.causalAnalysis.corroboratedRisks).toBe(1);
+      expect(result.causalAnalysis.observedOutcomes).toBe(1);
+
+      const chain = result.causalAnalysis.chains[0]!;
+      expect(chain.nodes).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          kind: "observed-state",
+          label: "navigation-stall-observed",
+        }),
+      ]));
+      expect(chain.summary).toMatch(/attribution remains a corroborated candidate/);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("does not attach a runtime stall observation from a different operation scope", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-causal-wrong-scope-test-"));
+    try {
+      const functions = join(root, "behavior_pack", "functions");
+      await mkdir(functions, { recursive: true });
+      await writeFile(
+        join(functions, "mutate.mcfunction"),
+        "fill 10 64 10 20 70 20 minecraft:stone\n",
+        "utf8",
+      );
+
+      const result = await inspectDirectory(
+        root,
+        "artifact-wrong-scope",
+        {
+          edition: "bedrock",
+          staticExecutionDimension: "overworld",
+          routeCorridors: [{
+            id: "bridge-route",
+            dimension: "overworld",
+            volume: {
+              min: { x: 0, y: 60, z: 0 },
+              max: { x: 30, y: 80, z: 30 },
+            },
+          }],
+        },
+        "fingerprint-wrong-scope",
+        catalog,
+        [{
+          predicate: "navigation-stall-observed",
+          state: "present",
+          confidence: "observed",
+          scope: {
+            operationId: "artifact-wrong-scope:other/function.mcfunction:9:0",
+          },
+        }],
+      );
+
+      expect(result.causalAnalysis.observedOutcomes).toBe(0);
+      expect(result.causalAnalysis.lowConfidence).toBe(1);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
