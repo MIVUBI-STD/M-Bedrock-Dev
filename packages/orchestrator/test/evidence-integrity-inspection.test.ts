@@ -40,7 +40,6 @@ describe("inspection evidence integrity", () => {
           schemaVersion: 1,
           requestId: "probe-1",
           probeId: "chunk-ready",
-          predicate: "chunk-ready",
           ok: true,
           state: "present",
           runtimeTick: 10,
