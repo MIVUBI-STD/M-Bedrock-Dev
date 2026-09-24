@@ -276,3 +276,80 @@ This avoids accidentally deleting the diagnostic evidence during the same arena 
 
 
 The development kit is the sole composed façade for telemetry instrumentation. Lower-level emitter/sink/guard/probe primitives remain available when a map needs custom composition, but there is no parallel session manager with separate lifecycle semantics.
+
+
+## Verification reporter
+
+The instrumentation kit exposes:
+
+```text
+kit.verify.route(...)
+kit.verify.mutation(...)
+```
+
+These are thin canonical reporters over the same telemetry emitter.
+
+```ts
+kit.verify.route({
+  routeId: "bridge-route",
+  result: "passed",
+  scope: { operationId: routeOperationId },
+});
+
+kit.verify.mutation({
+  result: "failed",
+  mechanism: "sentinel-block",
+  scope: { operationId: mutationOperationId },
+});
+```
+
+They do not perform the verification themselves. The caller supplies the observed result.
+
+## Batch draining
+
+```text
+kit.batch()      → snapshot, retain buffered events
+kit.drainBatch() → snapshot, then clear events + dropped count
+```
+
+Use `drainBatch()` when exporting a batch to transport so the same event set is not sent twice.
+
+
+## Framed transport
+
+For transports with payload-size limits:
+
+```ts
+const batch = kit.drainBatch();
+
+const frames = frameTelemetryBatch(batch, {
+  batchId: qaBatchId,
+  maxPayloadCharacters: 1024,
+});
+
+for (const frame of frames) {
+  sendFrame(JSON.stringify(frame));
+}
+```
+
+Each frame carries:
+
+```text
+batchId
+partIndex
+partCount
+checksum
+payload
+```
+
+`reassembleTelemetryFrames()` accepts out-of-order frames and rejects:
+
+- missing parts;
+- duplicate part indexes;
+- mixed batch ids;
+- inconsistent part counts;
+- checksum metadata mismatch;
+- payload tampering;
+- invalid reconstructed telemetry batches.
+
+Framing limits JavaScript string characters, not encoded transport bytes. Byte-limited transports should choose a conservative frame size or add a transport-specific byte envelope outside this package.
