@@ -1,5 +1,5 @@
 import type { DiagnosticProbeDefinition } from "../../project-model/src/diagnostic-probe.js";
-import type { RuntimeProbeBinding, RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
+import type { RuntimeProbeRequest, RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import { parseRuntimeProbeResponse } from "../../project-model/src/runtime-probe-validate.js";
 import type { DiagnosticInvestigationState } from "./diagnostic-investigation.js";
 import { applyDiagnosticProbeObservation } from "./diagnostic-investigation.js";
@@ -12,7 +12,7 @@ export interface AppliedRuntimeProbeResult {
 export function applyRuntimeProbeResponse(
   state: DiagnosticInvestigationState,
   probes: readonly DiagnosticProbeDefinition[],
-  binding: RuntimeProbeBinding,
+  issuedRequest: RuntimeProbeRequest,
   input: unknown,
 ): AppliedRuntimeProbeResult {
   const response = parseRuntimeProbeResponse(input);
@@ -22,16 +22,35 @@ export function applyRuntimeProbeResponse(
     throw new Error("Runtime probe response references unknown probe: " + response.probeId);
   }
 
-  if (binding.probeId !== response.probeId) {
+  if (response.requestId !== issuedRequest.requestId) {
     throw new Error(
-      "Runtime probe response does not match binding probe: " +
-        response.probeId +
+      "Runtime probe response requestId does not match issued request: " +
+        response.requestId +
         " vs " +
-        binding.probeId,
+        issuedRequest.requestId,
     );
   }
 
-  const expectedOutcomeId = binding.outcomeByState[response.state];
+  if (
+    response.probeId !== issuedRequest.probeId ||
+    issuedRequest.probeId !== probe.id
+  ) {
+    throw new Error(
+      "Runtime probe response does not match issued probe: " +
+        response.probeId +
+        " vs " +
+        issuedRequest.probeId,
+    );
+  }
+
+  if (response.evidence.predicate !== issuedRequest.predicate) {
+    throw new Error(
+      "Runtime probe response predicate does not match issued request.",
+    );
+  }
+
+  const expectedOutcomeId =
+    issuedRequest.outcomeByState[response.state];
   if (!expectedOutcomeId) {
     throw new Error(
       "Runtime probe state has no explicit bound outcome; investigation state is unchanged.",
