@@ -377,4 +377,35 @@ describe("repair release lineage", () => {
     expect(result.decision.reasons.join(" "))
       .toMatch(/does not cover required node/);
   });
+
+  it("blocks lineage entries that omit a proof basis dimension", () => {
+    const repairProof = proof();
+    const baseLedger = completeLedger(repairProof);
+    const ledger = {
+      schemaVersion: 1 as const,
+      entries: baseLedger.entries.map((entry) =>
+        entry.id === "runtime"
+          ? {
+              ...entry,
+              basis: {
+                sourceFingerprint: "source",
+                graphFingerprint: "graph",
+              },
+            }
+          : entry
+      ),
+    };
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      ledger,
+      basis,
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/does not carry current proof basis invariantRegistryRevision/);
+  });
+
 });
