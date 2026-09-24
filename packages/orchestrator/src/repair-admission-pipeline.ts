@@ -22,6 +22,7 @@ import type {
 import type {
   RepairAdmissionDecision,
 } from "./repair-admission.js";
+import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 
 export interface RepairAdmissionPipelineInput {
   graph: SemanticGraph;
