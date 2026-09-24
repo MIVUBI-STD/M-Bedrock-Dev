@@ -2,6 +2,7 @@ import type {
   RuntimeProbeBinding,
   RuntimeProbeBindingSet,
   RuntimeProbeRequest,
+  RuntimeProbeRequestBundle,
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
 } from "./runtime-probe.js";
@@ -607,4 +608,101 @@ export function parseRuntimeProbeBindingSet(
     );
   }
   return input as RuntimeProbeBindingSet;
+}
+
+
+export function validateRuntimeProbeRequestBundle(
+  input: unknown,
+): string[] {
+  if (!record(input)) {
+    return ["Runtime probe request bundle must be an object."];
+  }
+
+  const errors: string[] = [];
+  if (input.schemaVersion !== 1) {
+    errors.push("Runtime probe request bundle schemaVersion must be 1.");
+  }
+  if (
+    input.sessionId !== undefined &&
+    !nonEmpty(input.sessionId)
+  ) {
+    errors.push(
+      "Runtime probe request bundle sessionId must be a non-empty string.",
+    );
+  }
+  if (
+    input.artifactId !== undefined &&
+    !nonEmpty(input.artifactId)
+  ) {
+    errors.push(
+      "Runtime probe request bundle artifactId must be a non-empty string.",
+    );
+  }
+
+  if (
+    input.incidentIds !== undefined &&
+    !Array.isArray(input.incidentIds)
+  ) {
+    errors.push("Runtime probe request bundle incidentIds must be an array.");
+  } else {
+    const incidentIds = new Set<string>();
+    for (const raw of input.incidentIds ?? []) {
+      if (!nonEmpty(raw)) {
+        errors.push(
+          "Runtime probe request bundle incidentIds must contain non-empty strings.",
+        );
+        continue;
+      }
+      if (incidentIds.has(raw)) {
+        errors.push(
+          "Duplicate runtime probe request bundle incidentId: " + raw,
+        );
+      }
+      incidentIds.add(raw);
+    }
+  }
+
+  if (!Array.isArray(input.requests)) {
+    errors.push("Runtime probe request bundle requests must be an array.");
+    return errors;
+  }
+
+  const requestIds = new Set<string>();
+  for (let index = 0; index < input.requests.length; index += 1) {
+    const request = input.requests[index];
+    const requestErrors = validateRuntimeProbeRequest(request);
+    errors.push(
+      ...requestErrors.map(
+        (error) =>
+          "Runtime probe request bundle request " +
+          index +
+          ": " +
+          error,
+      ),
+    );
+
+    if (record(request) && nonEmpty(request.requestId)) {
+      if (requestIds.has(request.requestId)) {
+        errors.push(
+          "Duplicate runtime probe request bundle requestId: " +
+          request.requestId,
+        );
+      }
+      requestIds.add(request.requestId);
+    }
+  }
+
+  return errors;
+}
+
+export function parseRuntimeProbeRequestBundle(
+  input: unknown,
+): RuntimeProbeRequestBundle {
+  const errors = validateRuntimeProbeRequestBundle(input);
+  if (errors.length > 0) {
+    throw new Error(
+      "Invalid runtime probe request bundle: " + errors.join("; "),
+    );
+  }
+  return input as RuntimeProbeRequestBundle;
 }
