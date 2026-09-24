@@ -58,4 +58,106 @@ describe("decision basis", () => {
     expect(left.targetProfileFingerprint)
       .not.toBe(right.targetProfileFingerprint);
   });
+  it("fingerprints runtime evidence independently of record ordering", () => {
+    const a = {
+      predicate: "route-ready",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "telemetry" as const,
+      scope: { operationId: "op-a" },
+      observedAt: { tick: 10, streamId: "s", sequence: 1 },
+    };
+    const z = {
+      predicate: "entity-stall-observed",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "runtime-probe" as const,
+      scope: { operationId: "op-a" },
+      observedAt: { tick: 12 },
+    };
+
+    expect(buildDecisionBasis({
+      runtimeEvidence: [a, z],
+    }).runtimeEvidenceRevision).toBe(
+      buildDecisionBasis({
+        runtimeEvidence: [z, a],
+      }).runtimeEvidenceRevision,
+    );
+  });
+
+  it("changes runtime evidence revision when observed state or integrity changes", () => {
+    const base = {
+      predicate: "route-ready",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "telemetry" as const,
+      scope: { operationId: "op-a" },
+      observedAt: { tick: 10 },
+    };
+
+    const left = buildDecisionBasis({
+      runtimeEvidence: [base],
+      evidenceIntegrity: {
+        telemetry: {
+          records: 1,
+          observedRecords: 1,
+          derivedRecords: 0,
+          unknownConfidenceRecords: 0,
+          unlocatedObservedRecords: 0,
+          unresolvedConflictPredicates: [],
+          resolvedConflictCount: 0,
+          continuityComplete: true,
+          telemetryContinuityComplete: true,
+          safeForCurrentStateClaims: true,
+          safeForTemporalViolationClaims: true,
+          reasons: ["healthy"],
+        },
+      },
+    });
+
+    const changedState = buildDecisionBasis({
+      runtimeEvidence: [{ ...base, state: "absent" as const }],
+      evidenceIntegrity: {
+        telemetry: {
+          records: 1,
+          observedRecords: 1,
+          derivedRecords: 0,
+          unknownConfidenceRecords: 0,
+          unlocatedObservedRecords: 0,
+          unresolvedConflictPredicates: [],
+          resolvedConflictCount: 0,
+          continuityComplete: true,
+          telemetryContinuityComplete: true,
+          safeForCurrentStateClaims: true,
+          safeForTemporalViolationClaims: true,
+          reasons: ["healthy"],
+        },
+      },
+    });
+
+    const changedIntegrity = buildDecisionBasis({
+      runtimeEvidence: [base],
+      evidenceIntegrity: {
+        telemetry: {
+          records: 1,
+          observedRecords: 1,
+          derivedRecords: 0,
+          unknownConfidenceRecords: 0,
+          unlocatedObservedRecords: 1,
+          unresolvedConflictPredicates: [],
+          resolvedConflictCount: 0,
+          continuityComplete: true,
+          telemetryContinuityComplete: true,
+          safeForCurrentStateClaims: true,
+          safeForTemporalViolationClaims: false,
+          reasons: ["missing temporal point"],
+        },
+      },
+    });
+
+    expect(left.runtimeEvidenceRevision)
+      .not.toBe(changedState.runtimeEvidenceRevision);
+    expect(left.runtimeEvidenceRevision)
+      .not.toBe(changedIntegrity.runtimeEvidenceRevision);
+  });
 });
