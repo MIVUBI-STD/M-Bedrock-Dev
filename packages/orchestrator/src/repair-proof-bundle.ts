@@ -9,6 +9,8 @@ import type { RepairAdmissionDecision } from "./repair-admission.js";
 
 export interface RepairProofBundle {
   transactionId: string;
+  sourceFingerprint: string;
+  graphFingerprint: string;
   incidentId: string;
   selectedCandidateId?: string;
   diagnosticDisposition: DiagnosticRepairDecision["disposition"];
@@ -31,6 +33,7 @@ export function createRepairProofBundle(
   impact: RepairCounterfactualImpact,
   blastRadius: RepairBlastRadiusDecision,
   admission: RepairAdmissionDecision,
+  graphFingerprint: string,
   supportingInvariantIds: readonly string[] = [],
 ): RepairProofBundle {
   for (const [label, id] of [
@@ -59,8 +62,14 @@ export function createRepairProofBundle(
     .filter((path) => !changedPaths.has(path))
     .sort();
 
+  if (!graphFingerprint.trim()) {
+    throw new Error("Repair proof bundle requires a semantic graph fingerprint.");
+  }
+
   return {
     transactionId: transaction.id,
+    sourceFingerprint: transaction.sourceFingerprint,
+    graphFingerprint,
     incidentId: diagnostic.incidentId,
     ...(diagnostic.selectedCandidateId === undefined
       ? {}
@@ -106,6 +115,18 @@ export function validateRepairProofBundle(
   if (proof.transactionId !== transaction.id) {
     errors.push(
       "Repair proof bundle does not belong to this patch transaction.",
+    );
+  }
+
+  if (proof.sourceFingerprint !== transaction.sourceFingerprint) {
+    errors.push(
+      "Repair proof source fingerprint does not match the patch transaction.",
+    );
+  }
+
+  if (!proof.graphFingerprint.trim()) {
+    errors.push(
+      "Repair proof semantic graph fingerprint must be non-empty.",
     );
   }
 
