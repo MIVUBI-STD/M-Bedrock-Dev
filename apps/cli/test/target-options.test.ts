@@ -42,6 +42,25 @@ describe("CLI target options", () => {
     expect(parsed.target).toEqual({});
   });
 
+  it("parses probe binding and execution context options", () => {
+    const parsed = parseCliTargetOptions([
+      "map.mcworld",
+      "--probe-bindings", "qa/probe-bindings.json",
+      "--probe-context", "LIVE_MINECRAFT",
+    ]);
+
+    expect(parsed.positionals).toEqual(["map.mcworld"]);
+    expect(parsed.probeBindingsPath).toBe("qa/probe-bindings.json");
+    expect(parsed.probeContext).toBe("LIVE_MINECRAFT");
+  });
+
+  it("rejects invalid probe execution context", () => {
+    expect(() => parseCliTargetOptions([
+      "map.mcworld",
+      "--probe-context", "SOMETHING_ELSE",
+    ])).toThrow(/probe-context/);
+  });
+
   it("rejects invalid edition instead of guessing", () => {
     expect(() => parseCliTargetOptions(["map.mcworld", "--edition", "java"]))
       .toThrow(/bedrock or education/);
