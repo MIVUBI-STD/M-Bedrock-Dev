@@ -94,3 +94,11 @@ The graph audit fails on:
 Fan-in and fan-out are reported as maintenance signals only. They are not threshold-gated until a repository-specific baseline justifies one.
 
 The implementation lives in `tooling/repository/verify-dependency-graph.mjs`.
+
+## Orchestrator composition
+
+`packages/orchestrator` is intentionally a high-fan-out composition root. Repository dependency reports may show substantially higher fan-out here than in ordinary modules; this is a maintenance signal, not an automatic violation.
+
+The inspection implementation keeps one public composition path in `packages/orchestrator/src/inspect.ts` and delegates bounded stages for pack discovery, source indexing, graph enrichment, script resolution/compatibility, entity knowledge, runtime analysis, education compatibility, causality, and result projection.
+
+Do not split the orchestrator into additional packages based on line count or fan-out alone. A new semantic owner requires an independently meaningful responsibility and dependency boundary.
