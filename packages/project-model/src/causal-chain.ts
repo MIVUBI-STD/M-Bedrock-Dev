@@ -4,6 +4,7 @@ import type { SourceRef } from "./source-ref.js";
 export type CausalLinkStrength =
   | "direct-evidence"
   | "dependency-supported"
+  | "corroborated-risk"
   | "risk-only";
 
 export type CausalNodeKind =
@@ -20,6 +21,7 @@ export interface CausalNode {
   label: string;
   sourceRefs?: readonly SourceRef[];
   diagnosticIds?: readonly string[];
+  corroboratingPredicates?: readonly string[];
 }
 
 export interface CausalLink {
