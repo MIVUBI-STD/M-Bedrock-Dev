@@ -26,13 +26,13 @@ export function observeStateMirror(
   telemetry: TelemetryEmitter,
   input: StateMirrorObservation,
 ): boolean {
-  const staleRevision =
+  const revisionDrift =
     input.authority.revision !== undefined &&
     input.mirror.revision !== undefined &&
-    input.mirror.revision < input.authority.revision;
+    input.mirror.revision !== input.authority.revision;
   const valueDrift = input.authority.value !== input.mirror.value;
 
-  if (!staleRevision && !valueDrift) return true;
+  if (!revisionDrift && !valueDrift) return true;
 
   telemetry.stateDrift({
     contractId: input.contractId,
@@ -125,6 +125,10 @@ export function emitTeleportFallback(
   telemetry: TelemetryEmitter,
   input: TeleportFallbackObservation,
 ): void {
+  if (!input.entityKey && !input.playerKey) {
+    throw new Error("teleport fallback requires entityKey or playerKey.");
+  }
+
   telemetry.teleportFallback({
     ...(input.entityKey === undefined
       ? {}
