@@ -28,6 +28,7 @@ const BASIS_FIELDS = new Set([
   "contractRegistryRevision",
   "knowledgeRevision",
   "invariantRegistryRevision",
+  "repairProviderRegistryRevision",
   "targetProfileFingerprint",
   "probeBindingRevision",
   "runtimeEvidenceRevision",
