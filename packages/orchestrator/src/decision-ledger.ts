@@ -1,6 +1,9 @@
 import {
   CONTRACT_REGISTRY_REVISION,
 } from "../../project-model/src/contract-registry-revision.js";
+import {
+  validateDecisionLedgerSnapshot,
+} from "../../project-model/src/decision-ledger-validate.js";
 import type {
   DecisionBasisRevision,
   DecisionLedgerEntry,
@@ -98,10 +101,18 @@ export function appendDecisionLedgerEntry(
     createdSequence,
   };
 
-  return {
+  const next: DecisionLedgerSnapshot = {
     schemaVersion: 1,
     entries: [...snapshot.entries, entry],
   };
+  const errors = validateDecisionLedgerSnapshot(next);
+  if (errors.length > 0) {
+    throw new Error(
+      "Refusing to append invalid decision ledger entry: " +
+        errors.join("; "),
+    );
+  }
+  return next;
 }
 
 function mismatchReason(
