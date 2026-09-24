@@ -1,5 +1,5 @@
 import type { CausalComparison } from "./causal-comparison.js";
-import type { RetestReason } from "../../reliability/src/types.js";
+import type { RetestReason } from "../../reliability/src/index.js";
 
 export function causalRetestReasons(
   comparison: CausalComparison,

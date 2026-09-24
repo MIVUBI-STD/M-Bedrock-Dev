@@ -1,11 +1,11 @@
 import { inspectDirectory } from "./inspect.js";
-import { planRetest } from "../../reliability/src/retest-planner.js";
+import { planRetest } from "../../reliability/src/index.js";
 import type {
   BlindspotCoverage,
   MinecraftUpdateDelta,
   RegressionCase,
   RetestPlan,
-} from "../../reliability/src/types.js";
+} from "../../reliability/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 
 export interface DirectoryRetestPlanInput {

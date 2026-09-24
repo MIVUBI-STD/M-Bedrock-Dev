@@ -1,4 +1,4 @@
-import { loadReliabilityCatalogs, loadUpdateDeltaCatalog } from "../../reliability/src/catalog-loader.js";
+import { loadReliabilityCatalogs, loadUpdateDeltaCatalog } from "../../reliability/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 import { planArtifactRetest } from "./retest-plan.js";
 import { planDirectoryRetest } from "./retest-plan-directory.js";

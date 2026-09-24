@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "topology and mcstructure public entrypoint migration",
+  "generatedFrom": "packages/reliability public entrypoint migration",
   "policy": "Cross-owner deep-import debt may decrease but must not increase without an explicit baseline update.",
   "owners": {
     "packages/project-model": 309,
@@ -15,7 +15,7 @@
     "packages/repair": 26,
     "analyzers/manifest": 0,
     "analyzers/entities": 0,
-    "packages/reliability": 17,
+    "packages/reliability": 0,
     "adapters/mcstructure": 0,
     "analyzers/topology": 0,
     "packages/orchestrator": 0,

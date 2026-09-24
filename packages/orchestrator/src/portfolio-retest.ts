@@ -1,6 +1,6 @@
-import { loadReliabilityCatalogs, loadUpdateDeltaCatalog } from "../../reliability/src/catalog-loader.js";
-import { planPortfolioRetest } from "../../reliability/src/portfolio-planner.js";
-import type { MapCompatibilityFingerprint } from "../../reliability/src/types.js";
+import { loadReliabilityCatalogs, loadUpdateDeltaCatalog } from "../../reliability/src/index.js";
+import { planPortfolioRetest } from "../../reliability/src/index.js";
+import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
 
 export interface PortfolioFingerprintEntry {
   fingerprint: MapCompatibilityFingerprint;

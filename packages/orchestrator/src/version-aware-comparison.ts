@@ -3,17 +3,17 @@ import {
   loadCoverageCatalog,
   loadRegressionCatalog,
   loadUpdateDeltaCatalog,
-} from "../../reliability/src/catalog-loader.js";
+} from "../../reliability/src/index.js";
 import {
   augmentRetestPlan,
   planRetest,
-} from "../../reliability/src/retest-planner.js";
+} from "../../reliability/src/index.js";
 import type {
   RegressionCase,
   ReliabilityDomain,
   RetestPlan,
   UpdateDeltaEntry,
-} from "../../reliability/src/types.js";
+} from "../../reliability/src/index.js";
 import { compareArtifacts, type ArtifactComparisonResult } from "./compare-artifacts.js";
 import { inspectArtifact } from "./inspect-artifact.js";
 import type { InspectTargetProfile } from "./types.js";

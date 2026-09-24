@@ -1,4 +1,4 @@
-import type { UpdateDeltaEntry } from "../../reliability/src/types.js";
+import type { UpdateDeltaEntry } from "../../reliability/src/index.js";
 import type {
   ScriptApiUsageInventory,
   ScriptApiUsageKind,

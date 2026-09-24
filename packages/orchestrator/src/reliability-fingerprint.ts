@@ -6,11 +6,11 @@ import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
 import {
   createMapCompatibilityFingerprint,
   fingerprintIdentity,
-} from "../../reliability/src/fingerprint.js";
+} from "../../reliability/src/index.js";
 import type {
   MapCompatibilityFingerprint,
   ReliabilityDomain,
-} from "../../reliability/src/types.js";
+} from "../../reliability/src/index.js";
 import type { InspectedPack, InspectTargetProfile } from "./types.js";
 import type {
   CausalChain,
