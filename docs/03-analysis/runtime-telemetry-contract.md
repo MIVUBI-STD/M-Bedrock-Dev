@@ -141,6 +141,49 @@ arena-double-start-observed = PRESENT
 
 This can become a direct knowledge relation violation.
 
+### arena-generation-anomaly
+
+Use this only for an observed cross-generation arena lifecycle violation.
+
+Supported anomalies:
+
+```text
+generation-regression
+generation-overlap
+reuse-before-reset
+stale-terminal
+```
+
+Typical event:
+
+```json
+{
+  "schemaVersion": 1,
+  "eventId": "arena-generation-001",
+  "kind": "arena-generation-anomaly",
+  "producer": "instrumentation",
+  "scope": {
+    "arenaId": "arena-1",
+    "arenaGeneration": 5,
+    "operationId": "start-generation-5"
+  },
+  "anomaly": "reuse-before-reset",
+  "arenaId": "arena-1",
+  "observedGeneration": 5,
+  "currentGeneration": 5,
+  "priorGeneration": 4
+}
+```
+
+The runtime helper `createArenaGenerationMonitor()` can observe generation
+starts, reset verification, and terminal callbacks. It is observer-side only:
+the arena state machine remains gameplay authority.
+
+A new generation starting before the prior generation is reset emits
+`reuse-before-reset`. Starting an older generation emits
+`generation-regression`. A terminal callback from an older generation emits
+`stale-terminal`.
+
 ### stale-callback
 
 Use only when the callback is known to belong to an old generation.
