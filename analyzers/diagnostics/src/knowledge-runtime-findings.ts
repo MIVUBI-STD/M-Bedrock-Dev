@@ -6,6 +6,8 @@ import {
 } from "../../../packages/knowledge/src/index.js";
 import {
   groupRuntimeEvidenceByScope,
+  runtimeScopeContains,
+  type RuntimeEvidenceRecord,
   type RuntimeEvidenceSnapshot,
 } from "../../../packages/project-model/src/runtime-evidence.js";
 import { mergeRuntimeEvidenceRecords } from "./runtime-evidence-merge.js";
@@ -40,6 +42,20 @@ export interface KnowledgeRuntimeDiagnosticInput {
   snapshot: RuntimeEvidenceSnapshot;
 }
 
+function causalEvidenceRecordsForScope(
+  allRecords: readonly RuntimeEvidenceRecord[],
+  scopedRecords: readonly RuntimeEvidenceRecord[],
+): readonly RuntimeEvidenceRecord[] {
+  const baseScope = scopedRecords.find(
+    (record) => record.scope !== undefined,
+  )?.scope;
+  if (!baseScope) return scopedRecords;
+
+  return allRecords.filter((record) =>
+    runtimeScopeContains(record.scope, baseScope)
+  );
+}
+
 export function knowledgeRuntimeDiagnostics(
   input: KnowledgeRuntimeDiagnosticInput,
 ): DiagnosticFinding[] {
@@ -52,8 +68,12 @@ export function knowledgeRuntimeDiagnostics(
       sourceRefs,
       relatedNodeIds,
     } = mergeRuntimeEvidenceRecords(records);
+    const causalRecords = causalEvidenceRecordsForScope(
+      input.snapshot.records,
+      records,
+    );
     const presentPredicates = [...new Set(
-      records
+      causalRecords
         .filter((record) => record.state === "present")
         .map((record) => record.predicate),
     )].sort();
@@ -71,7 +91,7 @@ export function knowledgeRuntimeDiagnostics(
         timestamp?: string;
       }>
     > = {};
-    for (const record of records) {
+    for (const record of causalRecords) {
       if (record.state !== "present") continue;
       if (record.observedAt) {
         predicateObservations[record.predicate] = [
