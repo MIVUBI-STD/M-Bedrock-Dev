@@ -353,10 +353,15 @@ function inferBlockMatchGuards(
           )
         );
         if (!call?.receiverHint) continue;
+        const receiverType =
+          call.receiverType === "Block" || call.receiverType === "BlockPermutation"
+            ? call.receiverType
+            : undefined;
+        if (!receiverType) continue;
 
         output.push({
           receiverHint: call.receiverHint,
-          receiverType: call.receiverType,
+          receiverType,
           conditionSource: lineSource(file, node.expression, source),
           guardedSource: lineSource(file, node.thenStatement, source),
           executionRegion: localExecutionRegionId(node, file),
