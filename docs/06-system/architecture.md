@@ -54,3 +54,21 @@ Do not collapse these into one global project state object.
 ## Interface rule
 
 CLI, future MCP, future desktop, CI, and automation are clients of the same deterministic engine. No interface gets a private implementation of Bedrock semantics.
+
+
+## Telemetry runtime instrumentation
+
+Telemetry is split deliberately:
+
+```text
+packages/project-model
+  → canonical TelemetryEvent / TelemetryBatch contracts
+
+packages/telemetry
+  → runtime-independent event emitters, sinks, buffering, scope leases, guards
+
+packages/orchestrator
+  → telemetry ingestion, RuntimeEvidence adaptation, knowledge/causal reasoning
+```
+
+`packages/telemetry` must not import `@minecraft/server`, analyzers, CLI, or orchestrator. Bedrock-specific map code supplies tick/scope providers and a transport sink.
