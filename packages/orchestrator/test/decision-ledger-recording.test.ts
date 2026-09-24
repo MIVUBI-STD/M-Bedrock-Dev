@@ -124,10 +124,11 @@ describe("decision ledger recording", () => {
       "decision-package",
       "decision-release",
     ]);
-    expect(ledger.entries.at(-1)?.inputIds).toEqual([
+    expect(ledger.entries.at(-1)?.upstreamDecisionIds).toEqual([
       "decision-package",
       "decision-runtime",
     ]);
+    expect(ledger.entries.at(-1)?.inputIds).toEqual([]);
     expect(ledger.entries.every((entry) => entry.status === "active"))
       .toBe(true);
   });
