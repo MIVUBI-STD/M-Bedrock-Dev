@@ -91,6 +91,20 @@ export interface RouteRevalidationTelemetryEvent extends TelemetryEventBase {
   result: "passed" | "failed";
 }
 
+export type MutationTelemetryKind =
+  | "structure-load"
+  | "fill"
+  | "setblock"
+  | "clone"
+  | "script-block-write"
+  | "other";
+
+export interface MutationAppliedTelemetryEvent extends TelemetryEventBase {
+  kind: "mutation-applied";
+  mutationKind: MutationTelemetryKind;
+  routeId?: string;
+}
+
 export interface MutationVerificationTelemetryEvent extends TelemetryEventBase {
   kind: "mutation-verification";
   result: "passed" | "failed";
@@ -105,6 +119,7 @@ export type TelemetryEvent =
   | ReviveAnomalyTelemetryEvent
   | StateDriftTelemetryEvent
   | RouteRevalidationTelemetryEvent
+  | MutationAppliedTelemetryEvent
   | MutationVerificationTelemetryEvent;
 
 export interface TelemetryBatch {
