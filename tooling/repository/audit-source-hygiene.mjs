@@ -60,6 +60,7 @@ const productionFiles = SOURCE_ROOTS.flatMap((rootName) => {
 
 const inbound = new Map(productionFiles.map((file) => [file, 0]));
 const externalUsage = new Map();
+const externalUsageFiles = new Map();
 
 for (const file of productionFiles) {
   const text = readFileSync(file, "utf8");
@@ -76,6 +77,8 @@ for (const file of productionFiles) {
     if (specifier.startsWith("node:")) continue;
     const pkg = packageName(specifier);
     externalUsage.set(pkg, (externalUsage.get(pkg) ?? 0) + 1);
+    if (!externalUsageFiles.has(pkg)) externalUsageFiles.set(pkg, new Set());
+    externalUsageFiles.get(pkg).add(relative(ROOT, file).replaceAll("\\", "/"));
   }
 }
 
@@ -112,7 +115,9 @@ if (externalUsage.size === 0) {
   console.log("  none");
 } else {
   for (const [name, count] of [...externalUsage.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const files = [...(externalUsageFiles.get(name) ?? [])].sort();
     console.log(`  ${name}: ${count}`);
+    for (const file of files) console.log(`    - ${file}`);
   }
 }
 
