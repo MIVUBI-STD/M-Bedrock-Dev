@@ -16,7 +16,7 @@ import { scriptImportedTypeLifecycleDiagnostics } from "../../../analyzers/diagn
 import { scriptEnumValueDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { scriptPropertyWriteDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
-import type { SemanticNode } from "../../graph/src/types.js";
+import type { SemanticNode } from "../../graph/src/index.js";
 
 function isWithinPack(
   relativePath: string,

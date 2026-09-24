@@ -1,6 +1,6 @@
 import type { ParsedFunction } from "../../functions/src/index.js";
-import { SemanticGraph } from "../../../packages/graph/src/graph.js";
-import type { SemanticNode, EdgeType, SemanticEdge } from "../../../packages/graph/src/types.js";
+import { SemanticGraph } from "../../../packages/graph/src/index.js";
+import type { SemanticNode, EdgeType, SemanticEdge } from "../../../packages/graph/src/index.js";
 import { resolveByIdentifier } from "./resolve.js";
 
 function edgeTypeForReference(kind: ParsedFunction["references"][number]["kind"]): EdgeType {

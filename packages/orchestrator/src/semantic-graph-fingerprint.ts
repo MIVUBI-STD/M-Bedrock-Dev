@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { SemanticGraph } from "../../graph/src/graph.js";
+import type { SemanticGraph } from "../../graph/src/index.js";
 
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) {

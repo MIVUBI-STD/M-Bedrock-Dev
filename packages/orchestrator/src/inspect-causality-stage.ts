@@ -1,5 +1,5 @@
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
-import type { SemanticGraph } from "../../graph/src/graph.js";
+import type { SemanticGraph } from "../../graph/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import type {
   RuntimeEvidenceIntegrityReport,

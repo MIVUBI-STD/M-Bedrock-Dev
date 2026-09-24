@@ -1,7 +1,7 @@
 import type { ParsedDialogueDocument } from "../../../analyzers/dialogue/src/index.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
-import { SemanticGraph } from "../../graph/src/graph.js";
-import type { SemanticNode } from "../../graph/src/types.js";
+import { SemanticGraph } from "../../graph/src/index.js";
+import type { SemanticNode } from "../../graph/src/index.js";
 import { semanticNodeId } from "../../project-model/src/identity.js";
 import {
   commandEffectStateIdentifiers,

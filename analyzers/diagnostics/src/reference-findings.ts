@@ -1,4 +1,4 @@
-import type { SemanticEdge } from "../../../packages/graph/src/types.js";
+import type { SemanticEdge } from "../../../packages/graph/src/index.js";
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 

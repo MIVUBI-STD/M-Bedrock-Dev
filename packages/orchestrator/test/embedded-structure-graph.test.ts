@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/graph.js";
-import type { SemanticNode } from "../../graph/src/types.js";
+import { SemanticGraph } from "../../graph/src/index.js";
+import type { SemanticNode } from "../../graph/src/index.js";
 import { analyzeEmbeddedStructureCommands } from "../src/embedded-structure-commands.js";
 import { populateEmbeddedStructureCommandGraph } from "../src/embedded-structure-graph.js";
 

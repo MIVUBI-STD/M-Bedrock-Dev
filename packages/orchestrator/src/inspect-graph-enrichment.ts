@@ -1,7 +1,7 @@
 import { populateFunctionEdges } from "../../../analyzers/references/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
-import type { SemanticGraph } from "../../graph/src/graph.js";
-import type { SemanticNode } from "../../graph/src/types.js";
+import type { SemanticGraph } from "../../graph/src/index.js";
+import type { SemanticNode } from "../../graph/src/index.js";
 import { semanticNodeId } from "../../project-model/src/identity.js";
 import {
   createDialogueSceneNodes,

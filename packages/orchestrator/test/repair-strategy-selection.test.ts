@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/graph.js";
+import { SemanticGraph } from "../../graph/src/index.js";
 import { createPatchTransaction } from "../../repair/src/index.js";
 import {
   selectRepairStrategy,

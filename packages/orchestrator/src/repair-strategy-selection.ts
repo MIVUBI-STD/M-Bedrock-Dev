@@ -1,4 +1,4 @@
-import type { SemanticGraph } from "../../graph/src/graph.js";
+import type { SemanticGraph } from "../../graph/src/index.js";
 import type { DiagnosticRepairDecision, DiagnosticClaimStrength } from "../../project-model/src/diagnostic-decision.js";
 import type { InvariantRegistrySnapshot } from "../../project-model/src/invariant-registry.js";
 import {

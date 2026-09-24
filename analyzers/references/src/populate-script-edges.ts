@@ -1,6 +1,6 @@
 import type { ParsedScriptFile } from "../../scripts/src/types.js";
-import type { SemanticNode } from "../../../packages/graph/src/types.js";
-import { SemanticGraph } from "../../../packages/graph/src/graph.js";
+import type { SemanticNode } from "../../../packages/graph/src/index.js";
+import { SemanticGraph } from "../../../packages/graph/src/index.js";
 import { resolveByIdentifier } from "./resolve.js";
 
 export function populateScriptEdges(

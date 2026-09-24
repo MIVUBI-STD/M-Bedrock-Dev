@@ -1,4 +1,4 @@
-import type { SemanticNode } from "../../../packages/graph/src/types.js";
+import type { SemanticNode } from "../../../packages/graph/src/index.js";
 
 export interface ResolutionResult {
   status: "resolved" | "unresolved" | "ambiguous";

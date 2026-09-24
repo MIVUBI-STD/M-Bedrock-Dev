@@ -1,4 +1,4 @@
-import type { SemanticGraph } from "../../graph/src/graph.js";
+import type { SemanticGraph } from "../../graph/src/index.js";
 import type {
   CausalChain,
   CausalIncident,

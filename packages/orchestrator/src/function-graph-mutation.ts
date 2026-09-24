@@ -1,6 +1,6 @@
 import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { SemanticGraph } from "../../graph/src/graph.js";
-import type { SemanticNode } from "../../graph/src/types.js";
+import { SemanticGraph } from "../../graph/src/index.js";
+import type { SemanticNode } from "../../graph/src/index.js";
 import { semanticNodeId } from "../../project-model/src/identity.js";
 import { populateFunctionEdges } from "../../../analyzers/references/src/index.js";
 import type { SourceMutation } from "../../reliability-search/src/index.js";

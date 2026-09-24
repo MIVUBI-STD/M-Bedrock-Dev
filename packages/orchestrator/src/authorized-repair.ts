@@ -1,4 +1,4 @@
-import type { SemanticGraph } from "../../graph/src/graph.js";
+import type { SemanticGraph } from "../../graph/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
 import {
   CONTRACT_REGISTRY_REVISION,
