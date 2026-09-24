@@ -34,6 +34,11 @@ export type ProviderBackedRepairStrategySelection =
   | {
       status: "evaluated";
       result: CausalRepairStrategySelection;
+      providerRegistryRevision: string;
+      providerProvenance: readonly {
+        providerId: string;
+        providerVersion: string;
+      }[];
     };
 
 export function selectProviderBackedRepairStrategyForIncident(
@@ -129,8 +134,23 @@ export function selectProviderBackedRepairStrategyForIncident(
   const providerRegistryRevision =
     repairStrategyProviderRegistryRevision(providerRegistry);
 
+  const providerProvenance = [...new Map(
+    proposals.map((proposal) => [
+      proposal.providerId + "@" + proposal.providerVersion,
+      {
+        providerId: proposal.providerId,
+        providerVersion: proposal.providerVersion,
+      },
+    ]),
+  ).values()].sort((a, b) =>
+    a.providerId.localeCompare(b.providerId) ||
+    a.providerVersion.localeCompare(b.providerVersion)
+  );
+
   return {
     status: "evaluated",
+    providerRegistryRevision,
+    providerProvenance,
     result: selectRepairStrategyForIncident(
       graph,
       incident,
