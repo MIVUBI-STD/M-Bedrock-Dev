@@ -4,6 +4,7 @@ import { indexInspectionSources } from "./inspect-source-index.js";
 import { analyzeInspectionScriptCompatibility } from "./inspect-script-compatibility.js";
 import { populateInspectionScriptImportGraph } from "./inspect-script-import-graph.js";
 import { enrichInspectionSemanticGraph } from "./inspect-graph-enrichment.js";
+import { analyzeInspectionEntityKnowledge } from "./inspect-entity-knowledge-stage.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
 import {
@@ -11,9 +12,6 @@ import {
   entityHasConfiguredTargeting,
   entityRuntimeKey,
 } from "../../../analyzers/entities/src/runtime-evidence.js";
-import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/entity-knowledge-findings.js";
-import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/entity-transition-findings.js";
-import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/reachability.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
@@ -29,7 +27,6 @@ import type {
 import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { planInspectionRepairs } from "./repair-planning.js";
 import { deriveReliabilityFingerprint } from "./reliability-fingerprint.js";
-import { analyzeEntityWithKnowledge } from "./entity-knowledge-analysis.js";
 import {
   analyzeKnowledgeRuntime,
   resolveInspectionKnowledgeProfile,
@@ -69,10 +66,7 @@ import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/tel
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
 import { deriveScriptApiUsage } from "./script-api-usage.js";
-import {
-  deriveEntityEventExternalEvidence,
-  externalEventRootsForEntity,
-} from "./entity-event-evidence.js";
+import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 
 export async function inspectDirectory(
   root: string,
@@ -148,48 +142,27 @@ export async function inspectDirectory(
     ),
   );
 
-  const parsedFunctionModelsForKnowledge = parsedFunctions.map((item) => item.parsed);
-  const manifestModelsForKnowledge = manifests.map((item) => item.manifest);
-  const knowledgeProfileResolution = resolveInspectionKnowledgeProfile(
-    target,
-    manifestModelsForKnowledge,
-  );
-  const entityEventEvidence = deriveEntityEventExternalEvidence(
-    parsedFunctions.map((item) => item.parsed),
-    parsedScripts.map((item) => item.parsed),
-  );
+  const manifestModelsForKnowledge =
+    manifests.map((item) => item.manifest);
+  const parsedFunctionModelsForKnowledge =
+    parsedFunctions.map((item) => item.parsed);
 
-  let entityStates = 0;
-  let entityKnowledgeGaps = 0;
-  let entityStaticLimits = 0;
-  if (knowledgeCatalog && knowledgeProfileResolution.profile) {
-    for (const item of parsedEntities) {
-      const profile = {
-        ...knowledgeProfileResolution.profile,
-        ...(item.parsed.formatVersion ? { formatVersion: item.parsed.formatVersion } : {}),
-      };
-      const externalRootEvents = externalEventRootsForEntity(
-        item.parsed,
-        entityEventEvidence,
-      );
-      const analysis = analyzeEntityWithKnowledge(
-        item.parsed,
-        knowledgeCatalog,
-        profile,
-        externalRootEvents,
-      );
-      entityStates += analysis.states;
-      entityKnowledgeGaps += analysis.findings.length;
-      entityStaticLimits += analysis.staticAnalysisLimits.length;
-      diagnostics.push(...entityKnowledgeDiagnostics(analysis, item.node.source));
-      diagnostics.push(...entityTransitionDiagnostics(
-        analyzeEntityTransitionReachability(item.parsed, {
-          externalRootEvents,
-        }),
-        item.node.source,
-      ));
-    }
-  }
+  const entityKnowledge = analyzeInspectionEntityKnowledge({
+    target,
+    knowledgeCatalog,
+    manifests: manifestModelsForKnowledge,
+    parsedFunctions,
+    parsedScripts,
+    parsedEntities,
+  });
+  const {
+    knowledgeProfileResolution,
+    entityEventEvidence,
+    entityStates,
+    entityKnowledgeGaps,
+    entityStaticLimits,
+  } = entityKnowledge;
+  diagnostics.push(...entityKnowledge.diagnostics);
 
   diagnostics.push(
     ...duplicateManifestUuidDiagnostics(manifests.map((entry) => entry.manifest)),
