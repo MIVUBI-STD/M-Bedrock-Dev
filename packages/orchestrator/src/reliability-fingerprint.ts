@@ -12,6 +12,10 @@ import type {
   ReliabilityDomain,
 } from "../../reliability/src/types.js";
 import type { InspectedPack, InspectTargetProfile } from "./types.js";
+import type {
+  CausalChain,
+  CausalIncident,
+} from "../../project-model/src/causal-chain.js";
 
 export interface ReliabilityFingerprintInput {
   mapId: string;
@@ -28,6 +32,8 @@ export interface ReliabilityFingerprintInput {
   broadStateWrites: number;
   repeatedTopologyCandidates: number;
   diagnostics: readonly DiagnosticFinding[];
+  causalChains?: readonly CausalChain[];
+  causalIncidents?: readonly CausalIncident[];
   target: InspectTargetProfile;
 }
 
@@ -180,6 +186,44 @@ export function deriveReliabilityFingerprint(
   if (input.diagnostics.some((finding) => finding.code === "SCRIPT_API_ENUM_VALUE_INCOMPATIBLE")) {
     capabilityTags.add("script-enum-value-migration");
     riskSurfaces.add("script-enum-backing-value");
+  }
+
+  const causalChains = input.causalChains ?? [];
+  const causalIncidents = input.causalIncidents ?? [];
+
+  if (causalChains.length > 0) {
+    capabilityTags.add("causal-analysis");
+  }
+  if (causalChains.some((chain) => chain.confidence === "high")) {
+    capabilityTags.add("causal-high-confidence");
+    riskSurfaces.add("causal-root-cause-high-confidence");
+  }
+  if (causalChains.some((chain) =>
+    chain.links.some((link) => link.strength === "corroborated-risk")
+  )) {
+    capabilityTags.add("causal-corroborated-risk");
+    riskSurfaces.add("corroborated-runtime-risk");
+  }
+  if (causalChains.some((chain) => {
+    const nodes = new Map(chain.nodes.map((node) => [node.id, node]));
+    return chain.links.some((link) =>
+      link.strength === "direct-evidence" &&
+      nodes.get(link.from)?.kind === "downstream-risk" &&
+      nodes.get(link.to)?.kind === "observed-state"
+    );
+  })) {
+    capabilityTags.add("causal-observed-outcome");
+    riskSurfaces.add("observed-downstream-outcome");
+  }
+  if (causalIncidents.some((incident) =>
+    incident.rootCauseCandidates.some(
+      (candidate) =>
+        candidate.evidenceLevel === "proven-with-observed-outcome" ||
+        candidate.evidenceLevel === "proven-dependency-violation",
+    )
+  )) {
+    capabilityTags.add("root-cause-candidate");
+    riskSurfaces.add("root-cause-evidence");
   }
 
   const editions = input.target.edition ? [input.target.edition] : [];
