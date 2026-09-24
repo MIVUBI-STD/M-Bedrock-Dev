@@ -96,6 +96,7 @@ export async function compareArtifactsForUpdate(
     regressions,
     coverage,
   );
+  const causalReasons = causalRetestReasons(comparison.causal);
   const afterPlan = augmentRetestPlan(
     planRetest(
       after.reliability.fingerprint,
@@ -103,8 +104,8 @@ export async function compareArtifactsForUpdate(
       regressions,
       coverage,
     ),
-    causalRetestReasons(comparison.causal),
-    ["unknown"],
+    causalReasons,
+    causalReasons.length > 0 ? ["unknown"] : [],
   );
 
   const beforeCaps = new Set(before.reliability.fingerprint.capabilityTags);
