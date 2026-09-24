@@ -112,4 +112,29 @@ describe("decision ledger validation", () => {
     expect(errors).toMatch(/Duplicate decision ledger id/);
     expect(errors).toMatch(/duplicate value/);
   });
+
+  it("rejects unknown or empty decision basis revisions", () => {
+    const base = {
+      schemaVersion: 1,
+      entries: [{
+        id: "d1",
+        kind: "repair-authorization",
+        status: "active",
+        basis: {
+          contractRegistryRevision: "",
+          contractRegsitryRevision: "typo",
+        },
+        upstreamDecisionIds: [],
+        inputIds: [],
+        outputIds: [],
+        evidenceIds: [],
+        createdSequence: 1,
+      }],
+    };
+
+    const errors = validateDecisionLedgerSnapshot(base);
+    expect(errors.join(" ")).toMatch(/contractRegistryRevision/);
+    expect(errors.join(" ")).toMatch(/unknown field contractRegsitryRevision/);
+  });
+
 });
