@@ -1,3 +1,6 @@
+import {
+  CONTRACT_REGISTRY_REVISION,
+} from "../../project-model/src/contract-registry-revision.js";
 import type {
   DecisionBasisRevision,
   DecisionLedgerEntry,
@@ -189,6 +192,46 @@ export function decideRepairReleaseWithLineage(
   currentBasis: DecisionBasisRevision,
 ): RepairReleaseLineageResult {
   const lifecycleDecision = decideRepairRelease(lifecycle);
+
+  if (
+    currentBasis.contractRegistryRevision !==
+      CONTRACT_REGISTRY_REVISION
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Current release basis contract registry revision is stale or missing.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Release evaluation must use the canonical contract registry revision.",
+      ],
+    };
+  }
+
+  if (
+    proof.decisionBasis.contractRegistryRevision !==
+      CONTRACT_REGISTRY_REVISION
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof contract registry revision is stale.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Repair proof must be recreated under the canonical contract registry.",
+      ],
+    };
+  }
 
   if (
     proof.claimStrength === "proven-runtime" &&
