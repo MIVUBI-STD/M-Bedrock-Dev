@@ -7,7 +7,8 @@ Reusable deterministic engine modules.
 ```text
 artifact/       source identity, classification, fingerprint
 archive/        archive security, transport, deterministic packaging
-project-model/  project/session/workspace/file inventory
+project-model/  project/session/workspace/file inventory + telemetry contracts
+telemetry/      runtime telemetry emitter, sinks, and instrumentation guards
 graph/          semantic graph, indexes, invalidation
 diagnostics/    finding contract and stable IDs
 repair/         patch planning/application/preconditions
