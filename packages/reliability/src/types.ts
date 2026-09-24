@@ -105,7 +105,12 @@ export interface BlindspotCoverage {
 export type RetestPriority = "P0" | "P1" | "P2" | "P3";
 
 export interface RetestReason {
-  kind: "update-overlap" | "historical-regression" | "coverage-gap" | "runtime-sensitive";
+  kind:
+    | "update-overlap"
+    | "historical-regression"
+    | "coverage-gap"
+    | "runtime-sensitive"
+    | "causal-regression";
   detail: string;
   weight: number;
 }
