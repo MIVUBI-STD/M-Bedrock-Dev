@@ -51,6 +51,19 @@ describe("telemetry text parsing", () => {
     expect(batch.events.map((event) => event.eventId)).toEqual(["e1", "e2"]);
   });
 
+  it("preserves validation errors for a malformed batch document", () => {
+    expect(() => parseTelemetryText(JSON.stringify({
+      schemaVersion: 1,
+      events: [{
+        schemaVersion: 1,
+        eventId: "bad",
+        kind: "unknown-event",
+        producer: "qa",
+        scope: {},
+      }],
+    }))).toThrow(/unsupported/);
+  });
+
   it("rejects duplicate ids in json-line captures", () => {
     const event = JSON.stringify({
       schemaVersion: 1,
