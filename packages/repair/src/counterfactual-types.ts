@@ -1,6 +1,14 @@
 import type { ComponentKind } from "../../project-model/src/component.js";
 import type { PatchTransaction } from "./types.js";
 
+export interface RepairImpactTrace {
+  changedNodeId: string;
+  affectedNodeId: string;
+  nodePath: readonly string[];
+  edgePath: readonly string[];
+  depth: number;
+}
+
 export interface RepairCounterfactualImpact {
   transactionId: string;
   changedNodeIds: readonly string[];
@@ -8,6 +16,8 @@ export interface RepairCounterfactualImpact {
   affectedNodeIds: readonly string[];
   affectedPaths: readonly string[];
   affectedKinds: readonly ComponentKind[];
+  impactTraces: readonly RepairImpactTrace[];
+  maxImpactDepth: number;
   unresolvedEdgeIds: readonly string[];
   ambiguousEdgeIds: readonly string[];
   graphCoverageComplete: boolean;
@@ -24,6 +34,7 @@ export interface RepairBlastRadiusPolicy {
   maxAffectedNodes: number;
   maxAffectedPaths: number;
   maxAffectedKinds: number;
+  maxImpactDepth: number;
   sensitiveKinds: readonly ComponentKind[];
   blockOnUnresolvedTopology: boolean;
   blockOnAmbiguousTopology: boolean;
