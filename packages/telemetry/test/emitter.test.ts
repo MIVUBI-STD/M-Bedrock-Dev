@@ -101,10 +101,12 @@ describe("telemetry emitter sdk", () => {
     });
 
     expect(buffer.size).toBe(2);
+    expect(buffer.dropped).toBe(1);
     const batch = buffer.batch({
       sessionId: "run-1",
       artifactId: "art-1",
     });
+    expect(batch.droppedEvents).toBe(1);
     expect(parseTelemetryBatch(batch).events.map((event) => event.eventId))
       .toEqual([
         "runtime:route-revalidation:2",
