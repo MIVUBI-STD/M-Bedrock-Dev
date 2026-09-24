@@ -1,24 +1,14 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import {
-  functionIdentifier,
-  scriptIdentifier,
-  structureIdentifier,
-} from "./inspect-identifiers.js";
 export { structureIdentifier } from "./inspect-identifiers.js";
 import { discoverInspectionPacks } from "./inspect-packs.js";
+import { indexInspectionSources } from "./inspect-source-index.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
 import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/compatibility.js";
-import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
-import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
 import {
   entityHasNavigation,
   entityHasConfiguredTargeting,
   entityRuntimeKey,
 } from "../../../analyzers/entities/src/runtime-evidence.js";
-import { parseDialogueDocument } from "../../../analyzers/dialogue/src/parse.js";
 import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/entity-knowledge-findings.js";
 import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/entity-transition-findings.js";
 import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/reachability.js";
@@ -39,14 +29,6 @@ import { scriptReturnContractDiagnostics } from "../../../analyzers/diagnostics/
 import { scriptImportedTypeLifecycleDiagnostics } from "../../../analyzers/diagnostics/src/script-type-findings.js";
 import { scriptEnumValueDiagnostics } from "../../../analyzers/diagnostics/src/script-enum-value-findings.js";
 import { scriptPropertyWriteDiagnostics } from "../../../analyzers/diagnostics/src/script-property-write-findings.js";
-import {
-  structureInvariantDiagnostics,
-  structureParseFailedDiagnostic,
-} from "../../../analyzers/diagnostics/src/structure-findings.js";
-import { parseMcStructure } from "../../../adapters/mcstructure/src/parse.js";
-import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
-import { extractStructureRuntimeContent } from "../../../adapters/mcstructure/src/runtime-content.js";
-import { analyzeCommandBlockChains } from "../../../adapters/mcstructure/src/command-chain.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
 import { educationRequirementDiagnostic } from "../../../analyzers/diagnostics/src/education-findings.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
@@ -56,7 +38,6 @@ import { semanticNodeId } from "../../project-model/src/identity.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { populateFunctionEdges } from "../../../analyzers/references/src/populate-function-edges.js";
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import type {
   InspectDirectoryResult,
   InspectTargetProfile,
@@ -102,10 +83,6 @@ import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.
 import { buildDecisionBasis } from "./decision-basis.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
-import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
-import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
-import { dialogueDocumentDiagnostics } from "../../../analyzers/diagnostics/src/dialogue-findings.js";
-import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.js";
 import { embeddedCommandStateIdentifiers, populateEmbeddedStructureCommandGraph } from "./embedded-structure-graph.js";
 import { createDialogueSceneNodes, dialogueStateIdentifiers, populateDialogueCommandGraph, type DialogueGraphDocument } from "./dialogue-graph.js";
 import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
@@ -154,158 +131,22 @@ export async function inspectDirectory(
     files,
   );
 
-  const graph = new SemanticGraph();
-  const nodes: SemanticNode[] = [];
-  const parsedFunctions = [];
-  const parsedScripts: Array<{ node: SemanticNode; parsed: ParsedScriptFile }> = [];
-  const parsedEntities: Array<{ node: SemanticNode; parsed: ReturnType<typeof parseEntityDefinition> }> = [];
-  const parsedDialogueDocuments: ReturnType<typeof parseDialogueDocument>[] = [];
-  const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; size?: { x: number; y: number; z: number }; semantics: ReturnType<typeof deriveMcStructureSemantics>; embeddedCommands: ReturnType<typeof analyzeEmbeddedStructureCommands>; queuedTickPositions: number }> = [];
-  let parsedStructures = 0;
-
-  for (const file of files) {
-    const fnId = functionIdentifier(file.relativePath);
-    if (fnId) {
-      const node: SemanticNode = {
-        id: semanticNodeId("function", "project", fnId),
-        identity: { kind: "function", scope: "project", identifier: fnId },
-        kind: "function",
-        identifier: fnId,
-        source: { artifactId, relativePath: file.relativePath },
-      };
-      graph.addNode(node);
-      nodes.push(node);
-      parsedFunctions.push({
-        node,
-        parsed: parseMcFunction(
-          fnId,
-          await readFile(join(root, file.relativePath), "utf8"),
-          node.source,
-        ),
-      });
-      continue;
-    }
-
-    const scriptId = scriptIdentifier(file.relativePath);
-    if (scriptId) {
-      const node: SemanticNode = {
-        id: semanticNodeId("script_file", "project", scriptId),
-        identity: { kind: "script_file", scope: "project", identifier: scriptId },
-        kind: "script_file",
-        identifier: scriptId,
-        source: { artifactId, relativePath: file.relativePath },
-      };
-      graph.addNode(node);
-      nodes.push(node);
-      parsedScripts.push({
-        node,
-        parsed: parseScriptFile(
-          scriptId,
-          await readFile(join(root, file.relativePath), "utf8"),
-          node.source,
-        ),
-      });
-      continue;
-    }
-
-    const normalizedPath = "/" + file.relativePath.replaceAll("\\", "/");
-    const isEntityJson = normalizedPath.includes("/entities/") &&
-      normalizedPath.endsWith(".json");
-    if (isEntityJson) {
-      try {
-        const raw = JSON.parse(await readFile(join(root, file.relativePath), "utf8")) as unknown;
-        const parsed = parseEntityDefinition(raw, {
-          artifactId,
-          relativePath: file.relativePath,
-        });
-        if (parsed.identifier) {
-          const node: SemanticNode = {
-            id: semanticNodeId("entity", "project", parsed.identifier),
-            identity: { kind: "entity", scope: "project", identifier: parsed.identifier },
-            kind: "entity",
-            identifier: parsed.identifier,
-            source: parsed.source,
-          };
-          graph.addNode(node);
-          nodes.push(node);
-          parsedEntities.push({ node, parsed });
-        }
-      } catch {
-        // Generic malformed JSON handling remains outside entity knowledge diagnostics.
-      }
-      continue;
-    }
-
-    if (normalizedPath.endsWith(".json")) {
-      try {
-        const raw = JSON.parse(
-          await readFile(join(root, file.relativePath), "utf8"),
-        ) as unknown;
-        const dialogue = parseDialogueDocument(raw, {
-          artifactId,
-          relativePath: file.relativePath,
-        });
-        if (dialogue) {
-          parsedDialogueDocuments.push(dialogue);
-          diagnostics.push(...dialogueDocumentDiagnostics(dialogue));
-          continue;
-        }
-      } catch {
-        // Generic malformed JSON handling remains outside dialogue diagnostics.
-      }
-    }
-
-    const structureId = structureIdentifier(file.relativePath);
-    if (structureId) {
-      const node: SemanticNode = {
-        id: semanticNodeId("structure", "project", structureId),
-        identity: { kind: "structure", scope: "project", identifier: structureId },
-        kind: "structure",
-        identifier: structureId,
-        source: { artifactId, relativePath: file.relativePath },
-      };
-      graph.addNode(node);
-      nodes.push(node);
-
-      try {
-        const structure = await parseMcStructure(
-          new Uint8Array(await readFile(join(root, file.relativePath))),
-          file.relativePath,
-        );
-        parsedStructures += 1;
-        const runtimeContent = extractStructureRuntimeContent(structure);
-        const embeddedCommands = analyzeEmbeddedStructureCommands(
-          runtimeContent.commandBlocks,
-          node.source,
-        );
-        parsedStructureModels.push({
-          identifier: structureId,
-          node,
-          ...(structure.size ? { size: structure.size } : {}),
-          semantics: deriveMcStructureSemantics(structure),
-          embeddedCommands,
-          queuedTickPositions: runtimeContent.queuedTickPositions,
-        });
-        diagnostics.push(...embeddedStructureCommandDiagnostics(
-          embeddedCommands.map((item) => ({
-            flatIndex: item.block.flatIndex,
-            command: item.block.command,
-            ...(item.block.auto !== undefined ? { auto: item.block.auto } : {}),
-            ...(item.block.tickDelay !== undefined ? { tickDelay: item.block.tickDelay } : {}),
-            unknownEffects: item.unknownEffects,
-          })),
-          node.source,
-        ));
-        diagnostics.push(...commandChainDiagnostics(
-          analyzeCommandBlockChains(runtimeContent.commandBlocks).issues,
-          node.source,
-        ));
-        diagnostics.push(...structureInvariantDiagnostics(structure, node.source));
-      } catch (error) {
-        diagnostics.push(structureParseFailedDiagnostic(node.source, error));
-      }
-    }
-  }
+  const {
+    graph,
+    nodes,
+    parsedFunctions,
+    parsedScripts,
+    parsedEntities,
+    parsedDialogueDocuments,
+    parsedStructureModels,
+    parsedStructures,
+    diagnostics: sourceDiagnostics,
+  } = await indexInspectionSources(
+    root,
+    artifactId,
+    files,
+  );
+  diagnostics.push(...sourceDiagnostics);
 
   const dialogueGraphDocuments: DialogueGraphDocument[] = parsedDialogueDocuments
     .filter((item): item is NonNullable<typeof item> => item !== undefined)
