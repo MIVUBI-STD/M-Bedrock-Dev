@@ -11,7 +11,7 @@ import { analyzeWorldDbNative } from "./world-db-analysis.js";
 import { worldDbRuntimeEvidence } from "./world-db-runtime-evidence.js";
 import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
-import { resolveTelemetryEventsForArtifact } from "./telemetry-load.js";
+import { isTelemetryBatch, resolveTelemetryEventsForArtifact } from "./telemetry-load.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
