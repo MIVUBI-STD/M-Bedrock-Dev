@@ -86,6 +86,7 @@ import {
   routeMutationRuntimeEvidence,
 } from "./route-mutation-analysis.js";
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
+import { synthesizeCausalChains } from "./causal-analysis.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
 import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
@@ -711,6 +712,8 @@ export async function inspectDirectory(
     parsedScripts.map((item) => item.parsed),
   );
 
+  const causalChains = synthesizeCausalChains(diagnostics);
+
   const reliability = deriveReliabilityFingerprint({
     mapId: artifactId,
     ...(sourceFingerprint ? { artifactFingerprint: sourceFingerprint } : {}),
@@ -755,6 +758,24 @@ export async function inspectDirectory(
       violations: knowledgeRuntime.violations,
       evidenceGaps: knowledgeRuntime.evidenceGaps,
       validationCases: knowledgeRuntime.validationCases.length,
+    },
+    causalAnalysis: {
+      chains: causalChains,
+      highConfidence: causalChains.filter(
+        (item) => item.confidence === "high",
+      ).length,
+      mediumConfidence: causalChains.filter(
+        (item) => item.confidence === "medium",
+      ).length,
+      lowConfidence: causalChains.filter(
+        (item) => item.confidence === "low",
+      ).length,
+      projectedRisks: causalChains.reduce(
+        (sum, item) =>
+          sum +
+          item.nodes.filter((node) => node.kind === "downstream-risk").length,
+        0,
+      ),
     },
     worldDatabase: {
       present: dbFiles.length > 0,
