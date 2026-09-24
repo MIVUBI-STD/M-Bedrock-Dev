@@ -83,6 +83,8 @@ describe("inspection causal analysis", () => {
       expect(result.causalAnalysis.chains).toHaveLength(1);
       expect(result.causalAnalysis.lowConfidence).toBe(1);
       expect(result.causalAnalysis.projectedRisks).toBe(2);
+      expect(result.causalAnalysis.incidents).toHaveLength(1);
+      expect(result.causalAnalysis.rootCauseCandidates).toBe(1);
 
       const chain = result.causalAnalysis.chains[0]!;
       expect(chain.nodes).toEqual(expect.arrayContaining([
