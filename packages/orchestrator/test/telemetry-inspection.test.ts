@@ -117,7 +117,7 @@ describe("standard telemetry inspection", () => {
 
       expect(result.telemetryAnalysis).toEqual({
         events: 3,
-        evidenceRecords: 9,
+        evidenceRecords: 10,
         byKind: {
           "arena-double-start": 1,
           "stale-callback": 1,
