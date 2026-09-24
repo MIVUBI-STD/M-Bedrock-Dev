@@ -1,0 +1,150 @@
+import type {
+  TelemetryBatch,
+  TelemetryProducer,
+} from "../../project-model/src/telemetry.js";
+import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+import {
+  createTelemetryEmitter,
+  createTelemetryScopeLease,
+} from "./emitter.js";
+import {
+  createBufferedTelemetrySink,
+  createFanoutTelemetrySink,
+  createValidatingTelemetrySink,
+} from "./sink.js";
+import {
+  captureDeferredGeneration,
+  createArenaStartGuard,
+  type ArenaStartGuard,
+  type DeferredGenerationCapture,
+  type DeferredGenerationGuard,
+} from "./guards.js";
+import {
+  createEntityProgressProbe,
+  createStateMirrorProbe,
+  type EntityProgressProbe,
+  type EntityProgressProbeOptions,
+  type StateMirrorProbe,
+} from "./probes.js";
+import {
+  createReviveTelemetryGuard,
+  type ReviveTelemetryGuard,
+} from "./revive-guard.js";
+import type {
+  BufferedTelemetrySink,
+  TelemetryEmitter,
+  TelemetryIdFactory,
+  TelemetrySink,
+  TelemetryScopeLease,
+} from "./types.js";
+
+export interface TelemetryInstrumentationKitOptions {
+  producer?: TelemetryProducer;
+  maxEvents?: number;
+  baseScope?: RuntimeScope;
+  initialScope?: RuntimeScope;
+  scopeProvider?: () => RuntimeScope | undefined;
+  tickProvider?: () => number | undefined;
+  timestampProvider?: () => string | undefined;
+  idFactory?: TelemetryIdFactory;
+  transportSink?: TelemetrySink;
+}
+
+export interface TelemetryInstrumentationKit {
+  readonly emitter: TelemetryEmitter;
+  readonly buffer: BufferedTelemetrySink;
+  readonly scope: TelemetryScopeLease;
+  readonly arenaStart: ArenaStartGuard;
+  readonly revive: ReviveTelemetryGuard;
+  readonly stateMirror: StateMirrorProbe;
+
+  captureGeneration(
+    input: DeferredGenerationCapture,
+  ): DeferredGenerationGuard;
+
+  entityProgress(
+    options: EntityProgressProbeOptions,
+  ): EntityProgressProbe;
+
+  batch(input?: {
+    sessionId?: string;
+    artifactId?: string;
+  }): TelemetryBatch;
+
+  clear(): void;
+}
+
+function mergeRuntimeScope(
+  ...parts: Array<RuntimeScope | undefined>
+): RuntimeScope {
+  return Object.assign({}, ...parts.filter(Boolean));
+}
+
+export function createTelemetryInstrumentationKit(
+  options: TelemetryInstrumentationKitOptions = {},
+): TelemetryInstrumentationKit {
+  const scope = createTelemetryScopeLease(options.initialScope);
+  const buffer = createBufferedTelemetrySink(
+    options.maxEvents ?? 1000,
+  );
+
+  const fanout = options.transportSink
+    ? createFanoutTelemetrySink([buffer, options.transportSink])
+    : buffer;
+  const sink = createValidatingTelemetrySink(fanout);
+
+  const emitter = createTelemetryEmitter({
+    producer: options.producer ?? "instrumentation",
+    sink,
+    ...(options.baseScope === undefined
+      ? {}
+      : { baseScope: options.baseScope }),
+    scopeProvider: () =>
+      mergeRuntimeScope(
+        scope.current(),
+        options.scopeProvider?.(),
+      ),
+    ...(options.tickProvider === undefined
+      ? {}
+      : { tickProvider: options.tickProvider }),
+    ...(options.timestampProvider === undefined
+      ? {}
+      : { timestampProvider: options.timestampProvider }),
+    ...(options.idFactory === undefined
+      ? {}
+      : { idFactory: options.idFactory }),
+  });
+
+  const arenaStart = createArenaStartGuard(emitter);
+  const revive = createReviveTelemetryGuard(emitter);
+  const stateMirror = createStateMirrorProbe(emitter);
+
+  return {
+    emitter,
+    buffer,
+    scope,
+    arenaStart,
+    revive,
+    stateMirror,
+
+    captureGeneration(input) {
+      return captureDeferredGeneration(emitter, input);
+    },
+
+    entityProgress(probeOptions) {
+      return createEntityProgressProbe(emitter, probeOptions);
+    },
+
+    batch(input) {
+      return buffer.batch(input);
+    },
+
+    clear() {
+      buffer.clear();
+      scope.clear();
+      arenaStart.clear();
+      revive.reset();
+      stateMirror.reset();
+    },
+  };
+}
