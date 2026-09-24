@@ -139,6 +139,7 @@ export interface KnowledgeRelation {
   sourceIds: readonly string[];
   diagnosticHint?: string;
   diagnosticSeverity?: KnowledgeDiagnosticSeverity;
+  causalConsequences?: readonly string[];
 }
 
 export interface KnowledgeCatalog {
