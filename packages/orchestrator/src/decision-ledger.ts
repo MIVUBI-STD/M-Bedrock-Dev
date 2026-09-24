@@ -140,11 +140,16 @@ export function invalidateStaleDecisionLedger(
   snapshot: DecisionLedgerSnapshot,
   currentBasis: DecisionBasisRevision,
 ): DecisionLedgerSnapshot {
+  const effectiveCurrentBasis: DecisionBasisRevision = {
+    ...currentBasis,
+    contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
+  };
+
   let entries = snapshot.entries.map((entry) => {
     if (entry.status !== "active") return entry;
     const reason = mismatchReason(
       entry.basis,
-      currentBasis,
+      effectiveCurrentBasis,
     );
     if (!reason) return entry;
     return {
