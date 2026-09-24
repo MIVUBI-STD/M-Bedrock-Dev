@@ -41,6 +41,12 @@ import {
   createReviveTelemetryGuard,
   type ReviveTelemetryGuard,
 } from "./revive-guard.js";
+import {
+  createProfileTelemetrySink,
+  resolveTelemetryRuntimeProfile,
+  type TelemetryRuntimeProfile,
+  type TelemetryRuntimeProfileName,
+} from "./profile.js";
 import type {
   BufferedTelemetrySink,
   TelemetryEmitter,
@@ -65,9 +71,11 @@ export interface TelemetryInstrumentationKitOptions {
   activeProbeTransport?: ActiveRuntimeProbeTransport;
   probeRequestIdFactory?: () => string;
   validateEvents?: boolean;
+  profile?: TelemetryRuntimeProfileName | TelemetryRuntimeProfile;
 }
 
 export interface TelemetryInstrumentationKit {
+  readonly profile: TelemetryRuntimeProfile;
   readonly emitter: TelemetryEmitter;
   readonly buffer: BufferedTelemetrySink;
   readonly scope: TelemetryScopeLease;
@@ -114,9 +122,18 @@ function mergeRuntimeScope(
   return Object.assign({}, ...parts.filter(Boolean));
 }
 
+function createDisabledEntityProgressProbe(): EntityProgressProbe {
+  return {
+    observe: () => "disabled",
+    forget: () => {},
+    clear: () => {},
+  };
+}
+
 export function createTelemetryInstrumentationKit(
   options: TelemetryInstrumentationKitOptions = {},
 ): TelemetryInstrumentationKit {
+  const profile = resolveTelemetryRuntimeProfile(options.profile);
   const scope = createTelemetryScopeLease(options.initialScope ?? {});
   const buffer = createBufferedTelemetrySink(
     options.maxEvents ?? 1000,
@@ -125,9 +142,13 @@ export function createTelemetryInstrumentationKit(
   const fanout = options.transportSink
     ? createFanoutTelemetrySink([buffer, options.transportSink])
     : buffer;
-  const sink = options.validateEvents === false
+  const validatedSink = options.validateEvents === false
     ? fanout
     : createValidatingTelemetrySink(fanout);
+  const sink = createProfileTelemetrySink(
+    validatedSink,
+    profile,
+  );
 
   const emitter = createTelemetryEmitter({
     producer: options.producer ?? "instrumentation",
@@ -157,10 +178,16 @@ export function createTelemetryInstrumentationKit(
   const arenaStart = createArenaStartGuard(emitter);
   const arenaGeneration = createArenaGenerationMonitor(emitter);
   const revive = createReviveTelemetryGuard(emitter);
-  const stateMirror = createStateMirrorProbe(emitter);
+  const stateMirror: StateMirrorProbe = profile.continuousMonitoring
+    ? createStateMirrorProbe(emitter)
+    : {
+        observe: () => "disabled",
+        reset: () => {},
+      };
   const verify = createVerificationReporter(emitter);
-  const activeProbe = options.activeProbeTransport
-    ? createActiveRuntimeProbeClient({
+  const activeProbe =
+    profile.activeProbes && options.activeProbeTransport
+      ? createActiveRuntimeProbeClient({
         transport: options.activeProbeTransport,
         ...(options.baseScope === undefined
           ? {}
@@ -177,7 +204,7 @@ export function createTelemetryInstrumentationKit(
           ? {}
           : { requestIdFactory: options.probeRequestIdFactory }),
       })
-    : undefined;
+      : undefined;
   const entityProgressProbes = new Set<EntityProgressProbe>();
 
   const resetRuntimeState = (): void => {
@@ -191,6 +218,7 @@ export function createTelemetryInstrumentationKit(
   };
 
   return {
+    profile,
     emitter,
     buffer,
     scope,
@@ -206,6 +234,9 @@ export function createTelemetryInstrumentationKit(
     },
 
     entityProgress(probeOptions) {
+      if (!profile.continuousMonitoring) {
+        return createDisabledEntityProgressProbe();
+      }
       const probe = createEntityProgressProbe(
         emitter,
         probeOptions,
