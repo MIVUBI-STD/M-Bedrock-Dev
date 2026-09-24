@@ -4,7 +4,7 @@ import { createPatchTransaction } from "../../repair/src/create.js";
 import { analyzeRepairCounterfactual } from "../src/repair-counterfactual.js";
 import { decideRepairBlastRadius } from "../src/repair-blast-radius.js";
 import { decideRepairAdmission } from "../src/repair-admission.js";
-import { createRepairProofBundle } from "../src/repair-proof-bundle.js";
+import { createRepairProofBundle, validateRepairProofBundle } from "../src/repair-proof-bundle.js";
 
 function setup() {
   const graph = new SemanticGraph();
@@ -113,4 +113,56 @@ describe("repair proof bundle", () => {
       admission,
     )).toThrow(/does not belong to transaction/);
   });
+
+  it("rejects internally contradictory proof metadata", () => {
+    const { transaction, impact, blast, diagnostic, admission } = setup();
+    const bundle = createRepairProofBundle(
+      transaction,
+      diagnostic,
+      impact,
+      blast,
+      admission,
+    );
+
+    const errors = validateRepairProofBundle(
+      transaction,
+      {
+        ...bundle,
+        admissionDisposition: "eligible",
+        diagnosticDisposition: "proposal-only",
+      },
+    );
+
+    expect(errors).toEqual(expect.arrayContaining([
+      expect.stringContaining("Eligible admission requires repair-eligible"),
+    ]));
+  });
+
+  it("rejects malformed impact traces", () => {
+    const { transaction, impact, blast, diagnostic, admission } = setup();
+    const bundle = createRepairProofBundle(
+      transaction,
+      diagnostic,
+      impact,
+      blast,
+      admission,
+    );
+
+    const errors = validateRepairProofBundle(
+      transaction,
+      {
+        ...bundle,
+        impactTraces: [{
+          changedNodeId: "unknown",
+          affectedNodeId: "unknown",
+          nodePath: ["wrong"],
+          edgePath: ["edge"],
+          depth: 3,
+        }],
+      },
+    );
+
+    expect(errors.join(" ")).toMatch(/trace/i);
+  });
+
 });
