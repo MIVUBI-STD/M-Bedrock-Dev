@@ -102,6 +102,12 @@ export function createBedrockScriptEventTelemetryCollector(
   options: BedrockScriptEventCollectorOptions,
 ): BedrockScriptEventCollector {
   const eventId = options.eventId ?? "mivubi:telemetry";
+  if (!eventId.includes(":")) {
+    throw new Error(
+      "Collector script event id must be namespaced, for example mivubi:telemetry.",
+    );
+  }
+
   const callback = (message: BedrockScriptEventMessageLike): void => {
     if (message.id !== eventId) return;
     if (options.accept && !options.accept(message)) return;
