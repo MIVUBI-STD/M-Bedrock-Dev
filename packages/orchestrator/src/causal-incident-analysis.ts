@@ -40,6 +40,7 @@ function observedOutcomeCount(chain: CausalChain): number {
     chain.links
       .filter((link) =>
         link.strength === "direct-evidence" &&
+        link.temporalStatus !== "before-subject" &&
         nodes.get(link.from)?.kind === "downstream-risk" &&
         nodes.get(link.to)?.kind === "observed-state"
       )
