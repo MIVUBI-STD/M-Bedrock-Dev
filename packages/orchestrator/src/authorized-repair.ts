@@ -145,6 +145,7 @@ export function authorizeRepairMutation(
   for (const key of [
     "knowledgeRevision",
     "invariantRegistryRevision",
+    "repairProviderRegistryRevision",
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
