@@ -43,3 +43,38 @@ export interface CausalChain {
   links: readonly CausalLink[];
   relatedDiagnosticIds: readonly string[];
 }
+
+
+export type RootCauseEvidenceLevel =
+  | "proven-with-observed-outcome"
+  | "proven-dependency-violation"
+  | "corroborated-candidate"
+  | "unproven-candidate";
+
+export interface RootCauseCandidate {
+  id: string;
+  label: string;
+  evidenceLevel: RootCauseEvidenceLevel;
+  severity: DiagnosticSeverity;
+  confidence: "high" | "medium" | "low";
+  chainIds: readonly string[];
+  relatedDiagnosticIds: readonly string[];
+  support: {
+    dependencyViolations: number;
+    evidenceGaps: number;
+    corroboratedRisks: number;
+    observedOutcomes: number;
+  };
+}
+
+export interface CausalIncident {
+  id: string;
+  scopeKey: string;
+  severity: DiagnosticSeverity;
+  confidence: "high" | "medium" | "low";
+  chainIds: readonly string[];
+  relatedDiagnosticIds: readonly string[];
+  nodes: readonly CausalNode[];
+  links: readonly CausalLink[];
+  rootCauseCandidates: readonly RootCauseCandidate[];
+}
