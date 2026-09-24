@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { discoverPackCandidates } from "../../../analyzers/discovery/src/pack-discovery.js";
+import { discoverPackCandidates } from "../../../analyzers/discovery/src/index.js";
 import {
   analyzeManifest,
   classifyPackFromManifest,

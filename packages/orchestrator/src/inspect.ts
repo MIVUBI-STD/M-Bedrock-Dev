@@ -10,7 +10,7 @@ import { analyzeInspectionEducation } from "./inspect-education-stage.js";
 import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
 import { buildInspectionResult } from "./inspect-result.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
-import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
+import { classifyContentPath } from "../../../analyzers/discovery/src/index.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
 import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";

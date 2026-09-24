@@ -1,9 +1,9 @@
 import { mkdtemp, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { createLevelDbSnapshot } from "../../../adapters/leveldb/src/snapshot.js";
-import { openBedrockLevelDbSnapshot } from "../../../adapters/leveldb/src/native-reader.js";
-import { scanLevelDbMetadata } from "../../../adapters/leveldb/src/inspect.js";
+import { createLevelDbSnapshot } from "../../../adapters/leveldb/src/index.js";
+import { openBedrockLevelDbSnapshot } from "../../../adapters/leveldb/src/index.js";
+import { scanLevelDbMetadata } from "../../../adapters/leveldb/src/index.js";
 
 const INSPECTION_LEVELDB_BUDGET = {
   maxEntries: 50_000,

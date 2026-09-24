@@ -11,7 +11,7 @@ import {
   reassembleTelemetryFrameSet,
   type TelemetryFrame,
   type TelemetryFrameSet,
-} from "../../telemetry/src/framing.js";
+} from "../../telemetry/src/index.js";
 
 export function isTelemetryBatch(
   telemetry: readonly TelemetryEvent[] | TelemetryBatch,

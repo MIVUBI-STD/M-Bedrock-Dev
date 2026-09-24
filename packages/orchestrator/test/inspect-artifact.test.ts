@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { packageDirectoryDeterministically } from "../../archive/src/package-zip.js";
-import { sha256File } from "../../artifact/src/fingerprint.js";
+import { sha256File } from "../../artifact/src/index.js";
 import { inspectArtifact } from "../src/inspect-artifact.js";
 
 async function createSyntheticWorldTree(root: string): Promise<void> {

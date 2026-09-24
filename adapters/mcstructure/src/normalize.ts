@@ -4,7 +4,7 @@ import type {
   StructurePaletteEntry,
   StructureSize,
 } from "./types.js";
-import type { ParsedNbtDocument } from "../../nbt/src/types.js";
+import type { ParsedNbtDocument } from "../../nbt/src/index.js";
 import type { WorldPosition } from "../../../packages/common/src/index.js";
 
 function record(value: unknown): Record<string, unknown> | undefined {

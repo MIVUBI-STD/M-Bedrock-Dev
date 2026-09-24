@@ -1,5 +1,5 @@
 import type { SourceRef } from "../../project-model/src/source-ref.js";
-import type { ValidationStep } from "../../validation/src/types.js";
+import type { ValidationStep } from "../../validation/src/index.js";
 
 export type PatchOperation =
   | {

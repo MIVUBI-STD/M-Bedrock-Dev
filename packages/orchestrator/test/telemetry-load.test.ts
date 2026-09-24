@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   frameTelemetryBatch,
   frameTelemetryBatchSet,
-} from "../../telemetry/src/framing.js";
+} from "../../telemetry/src/index.js";
 import {
   loadTelemetryFile,
   parseTelemetryText,

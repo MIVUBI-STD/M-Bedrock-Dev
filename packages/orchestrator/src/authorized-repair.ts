@@ -14,7 +14,7 @@ import {
 } from "../../repair/src/apply.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import type { MutationWorkspace } from "../../repair/src/workspace.js";
-import type { TransactionValidationResult } from "../../validation/src/types.js";
+import type { TransactionValidationResult } from "../../validation/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 import type { RepairProofBundle } from "./repair-proof-bundle.js";
 import { validateRepairProofBundle } from "./repair-proof-bundle.js";

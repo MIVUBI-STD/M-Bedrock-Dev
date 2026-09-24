@@ -1,4 +1,4 @@
-import { populateFunctionEdges } from "../../../analyzers/references/src/populate-function-edges.js";
+import { populateFunctionEdges } from "../../../analyzers/references/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
 import type { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";

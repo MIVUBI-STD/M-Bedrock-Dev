@@ -1,4 +1,4 @@
-import type { ParsedNbtDocument } from "../../nbt/src/types.js";
+import type { ParsedNbtDocument } from "../../nbt/src/index.js";
 import type { WorldPosition } from "../../../packages/common/src/index.js";
 
 export interface StructureSize {

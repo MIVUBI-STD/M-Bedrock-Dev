@@ -3,12 +3,12 @@ import { join } from "node:path";
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { inspectDirectory } from "./inspect.js";
-import { summarizeValidation } from "../../validation/src/evaluate.js";
+import { summarizeValidation } from "../../validation/src/index.js";
 import type {
   TransactionValidationResult,
   ValidationStep,
   ValidationStepResult,
-} from "../../validation/src/types.js";
+} from "../../validation/src/index.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import type { MutationWorkspace } from "../../repair/src/workspace.js";
 import type { InspectTargetProfile } from "./types.js";

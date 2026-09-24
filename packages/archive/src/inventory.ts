@@ -1,4 +1,4 @@
-import type { ArtifactFinding } from "../../artifact/src/findings.js";
+import type { ArtifactFinding } from "../../artifact/src/index.js";
 import { validateArchivePath } from "./path-safety.js";
 import type {
   ArchiveEntryDescriptor,

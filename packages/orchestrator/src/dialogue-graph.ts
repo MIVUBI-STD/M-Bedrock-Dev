@@ -1,4 +1,4 @@
-import type { ParsedDialogueDocument } from "../../../analyzers/dialogue/src/types.js";
+import type { ParsedDialogueDocument } from "../../../analyzers/dialogue/src/index.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";

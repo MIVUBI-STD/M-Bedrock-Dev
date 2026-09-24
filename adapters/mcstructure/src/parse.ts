@@ -1,4 +1,4 @@
-import { parseBedrockNbt } from "../../nbt/src/parse.js";
+import { parseBedrockNbt } from "../../nbt/src/index.js";
 import { normalizeMcStructure } from "./normalize.js";
 import type { McStructureModel } from "./types.js";
 

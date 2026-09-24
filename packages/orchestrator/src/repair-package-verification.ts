@@ -7,7 +7,7 @@ import {
   extractZipSafely,
   inventoryZip,
 } from "../../archive/src/zip-transport.js";
-import { sha256File } from "../../artifact/src/fingerprint.js";
+import { sha256File } from "../../artifact/src/index.js";
 import type {
   RepairVerificationReceipt,
 } from "./repair-lifecycle.js";

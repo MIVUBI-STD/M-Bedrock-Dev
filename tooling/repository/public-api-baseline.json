@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "packages/common public entrypoint migration",
+  "generatedFrom": "small-owner public entrypoint migration",
   "policy": "Cross-owner deep-import debt may decrease but must not increase without an explicit baseline update.",
   "owners": {
     "packages/project-model": 309,
@@ -22,13 +22,13 @@
     "packages/common": 0,
     "packages/archive": 7,
     "packages/reliability-search": 7,
-    "packages/artifact": 5,
-    "packages/validation": 4,
-    "adapters/leveldb": 3,
-    "adapters/nbt": 3,
-    "analyzers/dialogue": 3,
-    "analyzers/references": 3,
-    "analyzers/discovery": 2,
-    "packages/telemetry": 2
+    "packages/artifact": 0,
+    "packages/validation": 0,
+    "adapters/leveldb": 0,
+    "adapters/nbt": 0,
+    "analyzers/dialogue": 0,
+    "analyzers/references": 0,
+    "analyzers/discovery": 0,
+    "packages/telemetry": 0
   }
 }

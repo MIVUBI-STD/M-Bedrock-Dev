@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { NORMAL_EXTRACTION_BUDGET } from "../../archive/src/budgets.js";
 import { extractZipSafely, inventoryZip } from "../../archive/src/zip-transport.js";
-import { sha256File, artifactIdFromFingerprint } from "../../artifact/src/fingerprint.js";
+import { sha256File, artifactIdFromFingerprint } from "../../artifact/src/index.js";
 import { inspectDirectory } from "./inspect.js";
 import type { InspectDirectoryResult, InspectTargetProfile } from "./types.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
