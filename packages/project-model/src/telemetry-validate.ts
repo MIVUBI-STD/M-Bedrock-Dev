@@ -53,6 +53,102 @@ function numberField(
   }
 }
 
+function validateScope(scope: Record<string, unknown>, errors: string[]): void {
+  for (const key of [
+    "arenaId",
+    "playerKey",
+    "entityKey",
+    "operationId",
+  ]) {
+    const value = scope[key];
+    if (
+      value !== undefined &&
+      (typeof value !== "string" || value.trim().length === 0)
+    ) {
+      errors.push("scope." + key + " must be a non-empty string.");
+    }
+  }
+
+  for (const key of [
+    "arenaGeneration",
+    "connectionGeneration",
+    "lifeGeneration",
+    "entityGeneration",
+    "subsystemGeneration",
+  ]) {
+    const value = scope[key];
+    if (
+      value !== undefined &&
+      (
+        typeof value !== "number" ||
+        !Number.isInteger(value) ||
+        value < 0
+      )
+    ) {
+      errors.push("scope." + key + " must be a non-negative integer.");
+    }
+  }
+}
+
+function validStateValue(value: unknown): boolean {
+  return (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  );
+}
+
+function validateStateSurface(
+  value: unknown,
+  label: string,
+  errors: string[],
+): void {
+  if (!isRecord(value)) {
+    errors.push(label + " must be an object.");
+    return;
+  }
+  const kinds = new Set([
+    "scoreboard",
+    "tag",
+    "dynamic-property",
+    "entity-property",
+    "inventory",
+    "script-memory",
+  ]);
+  if (typeof value.kind !== "string" || !kinds.has(value.kind)) {
+    errors.push(label + ".kind is invalid.");
+  }
+  if (typeof value.key !== "string" || value.key.trim().length === 0) {
+    errors.push(label + ".key must be a non-empty string.");
+  }
+}
+
+function validateStateEndpoint(
+  value: unknown,
+  label: string,
+  errors: string[],
+): void {
+  if (!isRecord(value)) {
+    errors.push(label + " must be an object.");
+    return;
+  }
+  validateStateSurface(value.surface, label + ".surface", errors);
+  if (!validStateValue(value.value)) {
+    errors.push(label + ".value must be a scalar or null.");
+  }
+  if (
+    value.revision !== undefined &&
+    (
+      typeof value.revision !== "number" ||
+      !Number.isInteger(value.revision) ||
+      value.revision < 0
+    )
+  ) {
+    errors.push(label + ".revision must be a non-negative integer.");
+  }
+}
+
 export function validateTelemetryEvent(
   input: unknown,
   index?: number,
@@ -74,6 +170,8 @@ export function validateTelemetryEvent(
   }
   if (!isRecord(input.scope)) {
     errors.push("scope must be an object.");
+  } else {
+    validateScope(input.scope, errors);
   }
   numberField(input, "tick", errors);
   if (input.timestamp !== undefined && typeof input.timestamp !== "string") {
@@ -102,6 +200,13 @@ export function validateTelemetryEvent(
       stringField(input, "subsystem", errors);
       numberField(input, "capturedGeneration", errors);
       numberField(input, "currentGeneration", errors);
+      if (
+        typeof input.capturedGeneration === "number" &&
+        typeof input.currentGeneration === "number" &&
+        input.capturedGeneration === input.currentGeneration
+      ) {
+        errors.push("stale-callback generations must differ when both are provided.");
+      }
       break;
     case "revive-anomaly":
       stringField(input, "targetPlayerKey", errors);
@@ -116,11 +221,22 @@ export function validateTelemetryEvent(
       ) {
         errors.push("revive-anomaly anomaly is invalid.");
       }
+      if (
+        input.anomaly === "self-revive" &&
+        (
+          typeof input.reviverPlayerKey !== "string" ||
+          input.reviverPlayerKey !== input.targetPlayerKey
+        )
+      ) {
+        errors.push(
+          "self-revive requires reviverPlayerKey to match targetPlayerKey.",
+        );
+      }
       break;
     case "state-drift":
       stringField(input, "contractId", errors);
-      if (!isRecord(input.authority)) errors.push("authority must be an object.");
-      if (!isRecord(input.mirror)) errors.push("mirror must be an object.");
+      validateStateEndpoint(input.authority, "authority", errors);
+      validateStateEndpoint(input.mirror, "mirror", errors);
       break;
     case "route-revalidation":
       stringField(input, "routeId", errors);
@@ -143,6 +259,24 @@ export function validateTelemetryBatch(input: unknown): string[] {
   const errors: string[] = [];
   if (input.schemaVersion !== 1) {
     errors.push("Telemetry batch schemaVersion must be 1.");
+  }
+  if (
+    input.artifactId !== undefined &&
+    (
+      typeof input.artifactId !== "string" ||
+      input.artifactId.trim().length === 0
+    )
+  ) {
+    errors.push("Telemetry batch artifactId must be a non-empty string.");
+  }
+  if (
+    input.sessionId !== undefined &&
+    (
+      typeof input.sessionId !== "string" ||
+      input.sessionId.trim().length === 0
+    )
+  ) {
+    errors.push("Telemetry batch sessionId must be a non-empty string.");
   }
   if (!Array.isArray(input.events)) {
     errors.push("Telemetry batch events must be an array.");
