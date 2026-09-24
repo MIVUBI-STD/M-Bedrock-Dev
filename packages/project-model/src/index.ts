@@ -19,3 +19,5 @@ export * from "./causal-chain.js";
 export * from "./telemetry.js";
 
 export * from "./telemetry-validate.js";
+
+export * from "./diagnostic-probe.js";

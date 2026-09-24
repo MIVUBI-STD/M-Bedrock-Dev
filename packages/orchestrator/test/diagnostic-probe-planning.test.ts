@@ -136,11 +136,14 @@ describe("diagnostic probe planning", () => {
   });
 
   it("does not request more evidence after a candidate is proven with outcome", () => {
-    const input = incident();
-    input.rootCauseCandidates = [{
-      ...input.rootCauseCandidates[0]!,
-      evidenceLevel: "proven-with-observed-outcome",
-    }];
+    const base = incident();
+    const input: CausalIncident = {
+      ...base,
+      rootCauseCandidates: [{
+        ...base.rootCauseCandidates[0]!,
+        evidenceLevel: "proven-with-observed-outcome",
+      }],
+    };
     const plan = planDiagnosticProbes(input, probes, "LIVE_MINECRAFT");
     expect(plan.recommended).toEqual([]);
     expect(plan.stopCondition).toBe("no-probe-required");
