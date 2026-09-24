@@ -69,6 +69,11 @@ export interface TelemetryEmitter {
       Extract<TelemetryEvent, { kind: "route-revalidation" }>
     >,
   ): Extract<TelemetryEvent, { kind: "route-revalidation" }>;
+  mutationApplied(
+    input: TelemetryEventInput<
+      Extract<TelemetryEvent, { kind: "mutation-applied" }>
+    >,
+  ): Extract<TelemetryEvent, { kind: "mutation-applied" }>;
   mutationVerification(
     input: TelemetryEventInput<
       Extract<TelemetryEvent, { kind: "mutation-verification" }>
