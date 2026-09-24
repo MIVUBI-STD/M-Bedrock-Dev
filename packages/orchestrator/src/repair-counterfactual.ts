@@ -146,10 +146,11 @@ export function analyzeRepairCounterfactual(
     ),
     unresolvedEdgeIds,
     ambiguousEdgeIds,
+    dependencyTopologyResolved:
+      unresolvedEdgeIds.length === 0 &&
+      ambiguousEdgeIds.length === 0,
     graphCoverageComplete:
       unknownChangedNodeIds.length === 0 &&
-      unresolvedEdgeIds.length === 0 &&
-      ambiguousEdgeIds.length === 0 &&
       transactionCoversChangedPaths &&
       changedNodesCoverTransactionPaths,
   };
