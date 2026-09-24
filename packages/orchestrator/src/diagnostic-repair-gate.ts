@@ -126,11 +126,10 @@ export function decideDiagnosticRepair(
     };
   }
 
-  const effectiveEvidenceLevel = capRootCauseEvidenceLevel(
+  let effectiveEvidenceLevel = capRootCauseEvidenceLevel(
     selected.evidenceLevel,
     context,
   );
-  const claimStrength = claimStrengthFor(effectiveEvidenceLevel);
   const supportedByInvestigation =
     investigation.supportedCandidateIds.includes(selected.id);
 
@@ -145,13 +144,25 @@ export function decideDiagnosticRepair(
       disposition: "proposal-only",
       selectedCandidateId: selected.id,
       effectiveEvidenceLevel,
-      claimStrength,
+      claimStrength: claimStrengthFor(effectiveEvidenceLevel),
       reasons: [
         "Runtime evidence integrity does not permit a current-state repair claim.",
         ...integrity.reasons,
       ],
     };
   }
+
+  const temporalEvidenceDowngraded =
+    effectiveEvidenceLevel === "proven-with-observed-outcome" &&
+    (context === "LOCAL_MINECRAFT" || context === "LIVE_MINECRAFT") &&
+    integrity !== undefined &&
+    !integrity.safeForTemporalViolationClaims;
+
+  if (temporalEvidenceDowngraded) {
+    effectiveEvidenceLevel = "proven-dependency-violation";
+  }
+
+  const claimStrength = claimStrengthFor(effectiveEvidenceLevel);
 
   if (
     effectiveEvidenceLevel === "proven-with-observed-outcome" &&
@@ -186,6 +197,12 @@ export function decideDiagnosticRepair(
       reasons: [
         "Exactly one candidate remains.",
         "A dependency violation is proven within the available evidence ceiling.",
+        ...(temporalEvidenceDowngraded
+          ? [
+              "Observed-outcome evidence was not used for full repair authorization because temporal evidence integrity is unsafe.",
+              ...(integrity?.reasons ?? []),
+            ]
+          : []),
         "Repair must remain guarded until downstream behavior is verified.",
       ],
     };
