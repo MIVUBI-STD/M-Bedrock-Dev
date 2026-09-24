@@ -105,3 +105,4 @@ export * from "./repair-lifecycle.js";
 export * from "./repair-release-gate.js";
 
 export * from "./telemetry-text.js";
+export * from "./repair-package-staging.js";
