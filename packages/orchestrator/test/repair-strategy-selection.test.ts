@@ -164,6 +164,9 @@ describe("repair strategy selection", () => {
       {
         invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     );
 
@@ -201,6 +204,9 @@ describe("repair strategy selection", () => {
       {
         invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     );
 
@@ -229,6 +235,9 @@ describe("repair strategy selection", () => {
       {
         invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     );
 
@@ -264,6 +273,9 @@ describe("repair strategy selection", () => {
       {
         invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     ).status).toBe("none-eligible");
 
@@ -309,6 +321,9 @@ describe("repair strategy selection", () => {
       {
         invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     )).toThrow(/Duplicate repair strategy id/);
   });
@@ -361,6 +376,9 @@ describe("repair strategy selection", () => {
       {
         invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     );
 
@@ -440,6 +458,9 @@ describe("repair strategy selection", () => {
       {
         invariantRegistry: diagnosticOnly,
         requiredInvariantIds: ["invariant:diagnostic-only"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     );
 
@@ -465,6 +486,9 @@ describe("repair strategy selection", () => {
       {
         invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     );
 
@@ -476,4 +500,27 @@ describe("repair strategy selection", () => {
     ).toBe("inv-r1");
   });
 
+  it("rejects proven-runtime strategy selection without evidence-bound decision basis", () => {
+    const graph = graphFixture();
+    const candidate = {
+      strategyId: "candidate-no-evidence-basis",
+      transaction: transaction(
+        "candidate-no-evidence-basis",
+        "functions/caller.mcfunction",
+      ),
+      changedNodeIds: ["function:p:caller"],
+      supportingInvariantIds: ["invariant:ready"],
+      addressesCandidateIds: ["cause-1"],
+    };
+
+    expect(() => selectRepairStrategy(
+      graph,
+      diagnostic,
+      [candidate],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+      },
+    )).toThrow(/runtimeEvidenceRevision/);
+  });
 });
