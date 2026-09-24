@@ -13,6 +13,12 @@ import {
   type TelemetryBatchTransport,
   type TelemetryFlushController,
 } from "./transport.js";
+import {
+  createProfileTelemetrySink,
+  resolveTelemetryRuntimeProfile,
+  type TelemetryRuntimeProfile,
+  type TelemetryRuntimeProfileName,
+} from "./profile.js";
 import type {
   TelemetryEmitter,
   TelemetryIdFactory,
@@ -33,9 +39,11 @@ export interface BedrockTelemetryRuntimeOptions {
   streamId?: string;
   idFactory?: TelemetryIdFactory;
   timestampProvider?: () => string | undefined;
+  profile?: TelemetryRuntimeProfileName | TelemetryRuntimeProfile;
 }
 
 export interface BedrockTelemetryRuntime {
+  readonly profile: TelemetryRuntimeProfile;
   telemetry: TelemetryEmitter;
   scope: TelemetryScopeLease;
 }
@@ -43,11 +51,12 @@ export interface BedrockTelemetryRuntime {
 export function createBedrockTelemetryRuntime(
   options: BedrockTelemetryRuntimeOptions,
 ): BedrockTelemetryRuntime {
+  const profile = resolveTelemetryRuntimeProfile(options.profile);
   const scope = createTelemetryScopeLease();
 
   const telemetry = createTelemetryEmitter({
     producer: "instrumentation",
-    sink: options.sink,
+    sink: createProfileTelemetrySink(options.sink, profile),
     ...(options.baseScope === undefined
       ? {}
       : { baseScope: options.baseScope }),
@@ -67,7 +76,7 @@ export function createBedrockTelemetryRuntime(
       : { idFactory: options.idFactory }),
   });
 
-  return { telemetry, scope };
+  return { profile, telemetry, scope };
 }
 
 
@@ -84,6 +93,7 @@ export interface BedrockTelemetryKitOptions {
   timestampProvider?: () => string | undefined;
   mirrorSink?: TelemetrySink;
   minimumFlushEvents?: number;
+  profile?: TelemetryRuntimeProfileName | TelemetryRuntimeProfile;
 }
 
 export interface BedrockTelemetryKit extends BedrockTelemetryRuntime {
@@ -118,6 +128,9 @@ export function createBedrockTelemetryKit(
     ...(options.timestampProvider === undefined
       ? {}
       : { timestampProvider: options.timestampProvider }),
+    ...(options.profile === undefined
+      ? {}
+      : { profile: options.profile }),
   });
 
   const flush = createTelemetryFlushController({
