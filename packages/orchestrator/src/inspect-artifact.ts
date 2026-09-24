@@ -34,9 +34,9 @@ export async function inspectArtifact(
     telemetry,
     artifactId,
   );
-  const telemetryDroppedEvents = Array.isArray(telemetry)
-    ? 0
-    : telemetry.droppedEvents ?? 0;
+  const telemetryDroppedEvents = isTelemetryBatch(telemetry)
+    ? telemetry.droppedEvents ?? 0
+    : 0;
   if (runtimeProbeTranscript) {
     assertRuntimeProbeTranscriptArtifact(
       runtimeProbeTranscript,
