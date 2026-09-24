@@ -8,6 +8,5 @@ export * from "./probes.js";
 
 export * from "./revive-guard.js";
 
-export * from "./session.js";
 
 export * from "./kit.js";
