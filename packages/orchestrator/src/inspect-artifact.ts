@@ -69,6 +69,7 @@ export async function inspectArtifact(
       telemetryEvents,
       telemetryDroppedEvents,
       runtimeProbeResponses,
+      runtimeProbeTranscript?.droppedExchanges ?? 0,
     );
     const embeddedCommandNativeCorrelations =
       correlateEmbeddedCommandsWithNativeChunks(
