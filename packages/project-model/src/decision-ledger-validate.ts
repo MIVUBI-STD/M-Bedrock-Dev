@@ -77,6 +77,80 @@ function validateDecisionBasis(
   return errors;
 }
 
+function validateEntrySemantics(
+  value: Record<string, unknown>,
+  index: number,
+): string[] {
+  const errors: string[] = [];
+  if (!record(value.basis)) return errors;
+
+  const inputIds = stringArray(value.inputIds)
+    ? value.inputIds
+    : [];
+  const outputIds = stringArray(value.outputIds)
+    ? value.outputIds
+    : [];
+
+  const providerBound = inputIds.some((id) =>
+    id.startsWith("repair-provider:")
+  );
+  if (
+    providerBound &&
+    !nonEmpty(value.basis.repairProviderRegistryRevision)
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] provider-bound decision requires repairProviderRegistryRevision.",
+    );
+  }
+
+  if (
+    value.kind === "repair-strategy-selection" &&
+    nonEmpty(value.basis.repairProviderRegistryRevision) &&
+    !providerBound
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] provider-bound repair strategy requires repair-provider provenance.",
+    );
+  }
+
+  const invariantBound = outputIds.some((id) =>
+    id.startsWith("repair-invariant:")
+  );
+  if (
+    invariantBound &&
+    !nonEmpty(value.basis.invariantRegistryRevision)
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] invariant-bound decision requires invariantRegistryRevision.",
+    );
+  }
+
+  if (
+    value.kind === "runtime-verification" &&
+    !nonEmpty(value.basis.runtimeEvidenceRevision)
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] runtime-verification requires runtimeEvidenceRevision.",
+    );
+  }
+
+  if (
+    value.kind === "release-admission" &&
+    !nonEmpty(value.basis.runtimeEvidenceRevision)
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] release-admission requires runtimeEvidenceRevision.",
+    );
+  }
+
+  return errors;
+}
+
 function validateEntryShape(
   value: unknown,
   index: number,
@@ -130,6 +204,8 @@ function validateEntryShape(
       );
     }
   }
+
+  errors.push(...validateEntrySemantics(value, index));
 
   if (
     value.status === "invalidated" &&
