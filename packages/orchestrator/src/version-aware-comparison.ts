@@ -105,7 +105,6 @@ export async function compareArtifactsForUpdate(
       coverage,
     ),
     causalReasons,
-    causalReasons.length > 0 ? ["unknown"] : [],
   );
 
   const beforeCaps = new Set(before.reliability.fingerprint.capabilityTags);
