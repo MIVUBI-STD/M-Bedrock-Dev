@@ -24,6 +24,8 @@ export interface TelemetryEmitterOptions {
   sink: TelemetrySink;
   baseScope?: RuntimeScope;
   scopeProvider?: () => RuntimeScope | undefined;
+  tickProvider?: () => number | undefined;
+  timestampProvider?: () => string | undefined;
   idFactory?: TelemetryIdFactory;
 }
 
