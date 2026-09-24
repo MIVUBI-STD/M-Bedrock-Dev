@@ -269,4 +269,43 @@ describe("development telemetry instrumentation kit", () => {
     })).not.toThrow();
     expect(kit.buffer.size).toBe(1);
   });
+
+  it("shares kit scope and tick with active runtime probes", () => {
+    const requests: unknown[] = [];
+    const kit = createTelemetryInstrumentationKit({
+      baseScope: { subsystemGeneration: 3 },
+      initialScope: { arenaId: "arena-2", arenaGeneration: 9 },
+      scopeProvider: () => ({ operationId: "bridge-op" }),
+      tickProvider: () => 240,
+      activeProbeTransport: {
+        send: (request) => requests.push(request),
+      },
+      probeRequestIdFactory: () => "probe-1",
+    });
+
+    expect(kit.activeProbe).toBeDefined();
+    const request = kit.activeProbe!.request({
+      probeId: "chunk-ready",
+      predicate: "bridge-chunk-loaded",
+      query: {
+        kind: "chunk-loaded",
+        dimension: "overworld",
+        location: { x: 100, y: 64, z: 100 },
+      },
+      outcomeByState: {
+        present: "ready",
+        absent: "not-ready",
+      },
+    });
+
+    expect(request.runtimeTick).toBe(240);
+    expect(request.scope).toEqual({
+      subsystemGeneration: 3,
+      arenaId: "arena-2",
+      arenaGeneration: 9,
+      operationId: "bridge-op",
+    });
+    expect(requests).toEqual([request]);
+  });
+
 });
