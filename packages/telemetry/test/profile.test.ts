@@ -21,6 +21,12 @@ function event(
 }
 
 describe("telemetry runtime profiles", () => {
+  it("defaults to full for backward compatibility", () => {
+    const profile = telemetryRuntimeProfile("full");
+    expect(profile.name).toBe("full");
+    expect(profile.continuousMonitoring).toBe(true);
+    expect(profile.activeProbes).toBe(true);
+  });
   it("off drops every event", () => {
     const buffer = createBufferedTelemetrySink();
     const sink = createProfileTelemetrySink(buffer, "off");
