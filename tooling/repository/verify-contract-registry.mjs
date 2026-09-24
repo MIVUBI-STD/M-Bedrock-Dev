@@ -1,4 +1,22 @@
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) {
+    return "[" + value.map(canonicalJson).join(",") + "]";
+  }
+  if (value !== null && typeof value === "object") {
+    return "{" +
+      Object.keys(value)
+        .sort()
+        .map((key) =>
+          JSON.stringify(key) + ":" + canonicalJson(value[key])
+        )
+        .join(",") +
+      "}";
+  }
+  return JSON.stringify(value);
+}
 
 const path = "docs/06-system/contract-registry.json";
 if (!existsSync(path)) {
@@ -7,6 +25,42 @@ if (!existsSync(path)) {
 }
 
 const registry = JSON.parse(readFileSync(path, "utf8"));
+const canonicalRevision = createHash("sha256")
+  .update(canonicalJson({
+    schemaVersion: registry.schemaVersion,
+    contracts: registry.contracts,
+  }))
+  .digest("hex");
+
+const revisionOwner =
+  "packages/project-model/src/contract-registry-revision.ts";
+if (!existsSync(revisionOwner)) {
+  console.error(
+    "Missing generated contract registry revision owner: " +
+      revisionOwner,
+  );
+  process.exit(1);
+}
+const revisionText = readFileSync(revisionOwner, "utf8");
+const revisionMatch = revisionText.match(
+  /CONTRACT_REGISTRY_REVISION\s*=\s*["']([a-f0-9]{64})["']/,
+);
+if (!revisionMatch) {
+  console.error(
+    "Generated contract registry revision constant is missing or invalid.",
+  );
+  process.exit(1);
+}
+if (revisionMatch[1] !== canonicalRevision) {
+  console.error(
+    "Contract registry revision is stale. Expected " +
+      canonicalRevision +
+      " but found " +
+      revisionMatch[1] +
+      ".",
+  );
+  process.exit(1);
+}
 if (registry.schemaVersion !== 1 || !Array.isArray(registry.contracts)) {
   console.error("Invalid contract registry root.");
   process.exit(1);
