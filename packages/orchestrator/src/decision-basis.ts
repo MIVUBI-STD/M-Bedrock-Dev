@@ -7,6 +7,9 @@ import type {
 import type {
   DecisionBasisRevision,
 } from "../../project-model/src/decision-ledger.js";
+import {
+  CONTRACT_REGISTRY_REVISION,
+} from "../../project-model/src/contract-registry-revision.js";
 import type {
   RuntimeProbeBinding,
 } from "../../project-model/src/runtime-probe.js";
@@ -122,6 +125,7 @@ export function buildDecisionBasis(
   input: DecisionBasisInput,
 ): DecisionBasisRevision {
   return {
+    contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
     ...(input.sourceFingerprint === undefined
       ? {}
       : { sourceFingerprint: input.sourceFingerprint }),
