@@ -85,6 +85,7 @@ function decisionBasisMismatch(
   for (const key of [
     "sourceFingerprint",
     "graphFingerprint",
+    "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
     "targetProfileFingerprint",
@@ -156,6 +157,7 @@ function proofBasisMismatch(
   for (const key of [
     "sourceFingerprint",
     "graphFingerprint",
+    "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
     "targetProfileFingerprint",
