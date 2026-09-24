@@ -15,8 +15,8 @@ import type {
   StagedPackageVerificationResult,
 } from "./repair-package-verification.js";
 import type {
-  RepairReleaseDecision,
-} from "./repair-release-gate.js";
+  RepairReleaseLineageResult,
+} from "./repair-release-lineage.js";
 import type {
   RepairStrategySelection,
 } from "./repair-strategy-selection.js";
@@ -138,21 +138,20 @@ export function recordPackageVerificationDecision(
 
 export function recordReleaseDecision(
   ledger: DecisionLedgerSnapshot,
-  decision: RepairReleaseDecision,
-  context: DecisionRecordContext & {
-    transactionId: string;
-  },
+  result: RepairReleaseLineageResult,
+  context: Omit<
+    DecisionRecordContext,
+    "upstreamDecisionIds"
+  >,
 ): DecisionLedgerSnapshot {
   return appendDecisionLedgerEntry(ledger, {
     id: context.decisionId,
     kind: "release-admission",
-    transactionId: context.transactionId,
+    transactionId: result.decision.transactionId,
     basis: context.basis,
-    ...(context.upstreamDecisionIds === undefined
-      ? {}
-      : { upstreamDecisionIds: context.upstreamDecisionIds }),
+    upstreamDecisionIds: result.lineageDecisionIds,
     outputIds: [
-      "release:" + decision.disposition,
+      "release:" + result.decision.disposition,
     ],
     ...(context.evidenceIds === undefined
       ? {}
