@@ -3,7 +3,7 @@ import type {
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
 } from "./runtime-probe.js";
-import { runtimeScopeKey } from "./runtime-evidence.js";
+import { runtimeScopeContains } from "./runtime-evidence.js";
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -286,6 +286,104 @@ function expectedOutcomeId(
   return request.outcomeByState.unknown;
 }
 
+export function validateRuntimeProbeExchange(
+  requestInput: unknown,
+  responseInput: unknown,
+): string[] {
+  const errors: string[] = [];
+  const requestErrors = validateRuntimeProbeRequest(requestInput);
+  const responseErrors = validateRuntimeProbeResponse(responseInput);
+
+  errors.push(...requestErrors.map((error) => "request: " + error));
+  errors.push(...responseErrors.map((error) => "response: " + error));
+
+  if (requestErrors.length > 0 || responseErrors.length > 0) {
+    return errors;
+  }
+
+  const request = requestInput as RuntimeProbeRequest;
+  const response = responseInput as RuntimeProbeResponse;
+
+  if (response.requestId !== request.requestId) {
+    errors.push("requestId mismatch.");
+  }
+  if (response.probeId !== request.probeId) {
+    errors.push("probeId mismatch.");
+  }
+  if (response.evidence.predicate !== request.predicate) {
+    errors.push("evidence predicate mismatch.");
+  }
+  if (
+    !runtimeScopeContains(
+      response.evidence.scope,
+      request.scope,
+    )
+  ) {
+    errors.push("evidence scope mismatch.");
+  }
+  if (
+    request.runtimeTick !== undefined &&
+    response.runtimeTick < request.runtimeTick
+  ) {
+    errors.push("response runtimeTick precedes request runtimeTick.");
+  }
+
+  const expectedOutcome = expectedOutcomeId(request, response.state);
+  if (response.ok) {
+    if (response.outcomeId !== expectedOutcome) {
+      errors.push("outcomeId does not match request outcome mapping.");
+    }
+  } else if (response.outcomeId !== undefined) {
+    errors.push("failed response must not include outcomeId.");
+  }
+
+  if (
+    response.evidence.observedAt?.tick !== undefined &&
+    response.evidence.observedAt.tick !== response.runtimeTick
+  ) {
+    errors.push(
+      "evidence observedAt.tick must match response runtimeTick.",
+    );
+  }
+
+  if (
+    response.ok &&
+    response.evidence.confidence !== "observed"
+  ) {
+    errors.push("successful response evidence must be observed.");
+  }
+  if (
+    !response.ok &&
+    response.evidence.confidence !== "unknown"
+  ) {
+    errors.push("failed response evidence must have unknown confidence.");
+  }
+
+  return errors;
+}
+
+export function parseRuntimeProbeExchange(
+  requestInput: unknown,
+  responseInput: unknown,
+): {
+  request: RuntimeProbeRequest;
+  response: RuntimeProbeResponse;
+} {
+  const errors = validateRuntimeProbeExchange(
+    requestInput,
+    responseInput,
+  );
+  if (errors.length > 0) {
+    throw new Error(
+      "Invalid runtime probe exchange: " + errors.join("; "),
+    );
+  }
+  return {
+    request: requestInput as RuntimeProbeRequest,
+    response: responseInput as RuntimeProbeResponse,
+  };
+}
+
 export function validateRuntimeProbeTranscript(
   input: unknown,
 ): string[] {
@@ -324,72 +422,26 @@ export function validateRuntimeProbeTranscript(
       continue;
     }
 
-    const requestErrors = validateRuntimeProbeRequest(rawExchange.request);
-    const responseErrors = validateRuntimeProbeResponse(rawExchange.response);
-    errors.push(...requestErrors.map((error) => prefix + " request: " + error));
-    errors.push(...responseErrors.map((error) => prefix + " response: " + error));
+    const exchangeErrors = validateRuntimeProbeExchange(
+      rawExchange.request,
+      rawExchange.response,
+    );
+    errors.push(
+      ...exchangeErrors.map((error) => prefix + ": " + error),
+    );
 
-    if (requestErrors.length > 0 || responseErrors.length > 0) continue;
+    const request = record(rawExchange.request) &&
+      typeof rawExchange.request.requestId === "string"
+      ? rawExchange.request as unknown as RuntimeProbeRequest
+      : undefined;
 
-    const request = rawExchange.request as RuntimeProbeRequest;
-    const response = rawExchange.response as RuntimeProbeResponse;
-
-    if (requestIds.has(request.requestId)) {
-      errors.push(
-        prefix + " duplicates requestId " + request.requestId + ".",
-      );
-    }
-    requestIds.add(request.requestId);
-
-    if (response.requestId !== request.requestId) {
-      errors.push(prefix + " requestId mismatch.");
-    }
-    if (response.probeId !== request.probeId) {
-      errors.push(prefix + " probeId mismatch.");
-    }
-    if (response.evidence.predicate !== request.predicate) {
-      errors.push(prefix + " evidence predicate mismatch.");
-    }
-    if (
-      runtimeScopeKey(response.evidence.scope) !==
-      runtimeScopeKey(request.scope)
-    ) {
-      errors.push(prefix + " evidence scope mismatch.");
-    }
-    if (
-      request.runtimeTick !== undefined &&
-      response.runtimeTick < request.runtimeTick
-    ) {
-      errors.push(prefix + " response runtimeTick precedes request runtimeTick.");
-    }
-
-    const expectedOutcome = expectedOutcomeId(request, response.state);
-    if (response.ok) {
-      if (response.outcomeId !== expectedOutcome) {
-        errors.push(prefix + " outcomeId does not match request outcome mapping.");
+    if (request) {
+      if (requestIds.has(request.requestId)) {
+        errors.push(
+          prefix + " duplicates requestId " + request.requestId + ".",
+        );
       }
-    } else if (response.outcomeId !== undefined) {
-      errors.push(prefix + " failed response must not include outcomeId.");
-    }
-
-    if (
-      response.evidence.observedAt?.tick !== undefined &&
-      response.evidence.observedAt.tick !== response.runtimeTick
-    ) {
-      errors.push(prefix + " evidence observedAt.tick must match response runtimeTick.");
-    }
-
-    if (
-      response.ok &&
-      response.evidence.confidence !== "observed"
-    ) {
-      errors.push(prefix + " successful response evidence must be observed.");
-    }
-    if (
-      !response.ok &&
-      response.evidence.confidence !== "unknown"
-    ) {
-      errors.push(prefix + " failed response evidence must have unknown confidence.");
+      requestIds.add(request.requestId);
     }
   }
 
