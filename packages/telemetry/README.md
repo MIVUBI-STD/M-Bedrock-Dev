@@ -629,3 +629,51 @@ const host = createBedrockTelemetryLifecycleHost({
 ```
 
 The default is `full` for backward compatibility. Production builds should choose `critical` or `off` explicitly rather than relying on the default.
+
+
+## Priority buffering
+
+For noisy QA/full captures, `bufferStrategy: "priority"` prevents routine
+observations from evicting more important anomaly evidence.
+
+```ts
+const kit = createTelemetryInstrumentationKit({
+  profile: "qa",
+  maxEvents: 512,
+  bufferStrategy: "priority",
+});
+```
+
+Priority classes:
+
+```text
+critical
+  arena double-start
+  arena-generation anomaly
+  stale callback
+  revive anomaly
+  state drift
+  failed route/mutation verification
+
+high
+  entity stall
+  teleport fallback
+
+normal
+  successful route/mutation verification
+
+low
+  routine mutation/application observations
+```
+
+When full, a higher-priority incoming event may evict an older lower-priority
+event. Equal/lower priority does not displace retained higher-priority evidence.
+
+The exported batch still reports the total `droppedEvents`, so analysis never
+treats bounded capture as complete. The priority sink also exposes
+`droppedByPriority()` for runtime diagnostics.
+
+Default buffering remains FIFO for backward compatibility.
+
+For production `critical` mode the profile already removes routine noise, so
+priority buffering is mainly useful for `qa` and `full` profiles.
