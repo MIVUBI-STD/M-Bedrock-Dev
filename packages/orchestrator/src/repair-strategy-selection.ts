@@ -114,17 +114,20 @@ function metricVector(
   ];
 }
 
-function compareMetrics(
+function dominates(
   left: RepairStrategyAssessment,
   right: RepairStrategyAssessment,
-): number {
+): boolean {
   const a = metricVector(left);
   const b = metricVector(right);
+  let strictlyBetter = false;
+
   for (let index = 0; index < a.length; index += 1) {
-    const delta = a[index]! - b[index]!;
-    if (delta !== 0) return delta;
+    if (a[index]! > b[index]!) return false;
+    if (a[index]! < b[index]!) strictlyBetter = true;
   }
-  return 0;
+
+  return strictlyBetter;
 }
 
 export function selectRepairStrategy(
@@ -244,10 +247,7 @@ export function selectRepairStrategy(
         },
       };
     })
-    .sort((a, b) =>
-      compareMetrics(a, b) ||
-      a.strategyId.localeCompare(b.strategyId)
-    );
+    .sort((a, b) => a.strategyId.localeCompare(b.strategyId));
 
   const admissible = assessments.filter(
     (assessment) => assessment.admissible,
@@ -263,26 +263,31 @@ export function selectRepairStrategy(
     };
   }
 
-  const best = admissible[0]!;
-  const tied = admissible.filter(
-    (assessment) => compareMetrics(assessment, best) === 0,
+  const frontier = admissible.filter(
+    (candidate) =>
+      !admissible.some(
+        (other) =>
+          other !== candidate &&
+          dominates(other, candidate),
+      ),
   );
 
-  if (tied.length > 1) {
+  if (frontier.length > 1) {
     return {
       status: "ambiguous",
-      tied,
+      tied: frontier,
       assessments,
       reasons: [
-        "Multiple repair strategies are equally minimal under the deterministic selection dimensions.",
-        "Human review or an additional discriminating criterion is required; lexical strategy id is not used as a winner.",
+        "Multiple repair strategies remain on the non-dominated Pareto frontier.",
+        "No strategy is better or equal on every safety/impact dimension while being strictly better on at least one.",
+        "Human review or an additional explicit policy criterion is required.",
       ],
     };
   }
 
   return {
     status: "selected",
-    selected: best,
+    selected: frontier[0]!,
     assessments,
   };
 }
