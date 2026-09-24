@@ -142,7 +142,9 @@ describe("decision ledger", () => {
     ledger = appendDecisionLedgerEntry(ledger, {
       id: "grandchild",
       kind: "release-admission",
-      basis: {},
+      basis: {
+        runtimeEvidenceRevision: "runtime-r1",
+      },
       upstreamDecisionIds: ["child"],
     });
 
@@ -243,7 +245,9 @@ describe("decision ledger", () => {
     ledger = appendDecisionLedgerEntry(ledger, {
       id: "downstream",
       kind: "release-admission",
-      basis: {},
+      basis: {
+        runtimeEvidenceRevision: "runtime-r1",
+      },
       upstreamDecisionIds: ["contract-bound"],
     });
     ledger = {
@@ -310,6 +314,7 @@ describe("decision ledger", () => {
         basis: {
           repairProviderRegistryRevision: "providers-a",
         },
+        inputIds: ["repair-provider:fixture@1"],
       },
     );
     ledger = appendDecisionLedgerEntry(ledger, {
