@@ -82,3 +82,4 @@ export * from "./diagnostic-repair-gate.js";
 export * from "./runtime-temporal-analysis.js";
 export * from "./runtime-evidence-integrity.js";
 export * from "./first-wrong-transition.js";
+export * from "./invariant-runtime-plan.js";
