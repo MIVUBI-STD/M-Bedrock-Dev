@@ -11,7 +11,7 @@ function walk(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = resolve(dir, entry.name);
     if (entry.isDirectory()) {
-      if (["node_modules", "dist", "coverage"].includes(entry.name)) continue;
+      if (["node_modules", "dist", "coverage", "test", "tests", "fixtures", "__tests__"].includes(entry.name)) continue;
       output.push(...walk(full));
     } else if (entry.isFile() && SOURCE_EXTENSIONS.includes(extname(entry.name))) {
       output.push(full);
