@@ -5,6 +5,7 @@ export type RuntimeEvidenceConfidence = "observed" | "derived" | "unknown";
 
 export interface RuntimeObservationPoint {
   tick?: number;
+  streamId?: string;
   sequence?: number;
   timestamp?: string;
 }
