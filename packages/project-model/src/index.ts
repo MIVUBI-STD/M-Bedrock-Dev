@@ -30,4 +30,5 @@ export * from "./diagnostic-decision.js";
 export * from "./runtime-temporal.js";
 export * from "./runtime-evidence-integrity.js";
 export * from "./runtime-first-wrong.js";
-
+export * from "./invariant-registry.js";
+export * from "./decision-ledger.js";
