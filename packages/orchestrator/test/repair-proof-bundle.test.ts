@@ -5,6 +5,7 @@ import { analyzeRepairCounterfactual } from "../src/repair-counterfactual.js";
 import { decideRepairBlastRadius } from "../src/repair-blast-radius.js";
 import { decideRepairAdmission } from "../src/repair-admission.js";
 import { createRepairProofBundle, validateRepairProofBundle } from "../src/repair-proof-bundle.js";
+import { semanticGraphFingerprint } from "../src/semantic-graph-fingerprint.js";
 
 function setup() {
   const graph = new SemanticGraph();
@@ -72,18 +73,19 @@ function setup() {
     blast,
   );
 
-  return { transaction, impact, blast, diagnostic, admission };
+  return { graph, transaction, impact, blast, diagnostic, admission };
 }
 
 describe("repair proof bundle", () => {
   it("records transitive revalidation scope and supporting invariants", () => {
-    const { transaction, impact, blast, diagnostic, admission } = setup();
+    const { graph, transaction, impact, blast, diagnostic, admission } = setup();
     const bundle = createRepairProofBundle(
       transaction,
       diagnostic,
       impact,
       blast,
       admission,
+      semanticGraphFingerprint(graph),
       ["invariant::ready-before-start"],
     );
 
@@ -103,7 +105,7 @@ describe("repair proof bundle", () => {
   });
 
   it("fails closed when decisions belong to a different transaction", () => {
-    const { transaction, impact, blast, diagnostic, admission } = setup();
+    const { graph, transaction, impact, blast, diagnostic, admission } = setup();
 
     expect(() => createRepairProofBundle(
       transaction,
@@ -111,17 +113,19 @@ describe("repair proof bundle", () => {
       impact,
       { ...blast, transactionId: "other" },
       admission,
+      semanticGraphFingerprint(graph),
     )).toThrow(/does not belong to transaction/);
   });
 
   it("rejects internally contradictory proof metadata", () => {
-    const { transaction, impact, blast, diagnostic, admission } = setup();
+    const { graph, transaction, impact, blast, diagnostic, admission } = setup();
     const bundle = createRepairProofBundle(
       transaction,
       diagnostic,
       impact,
       blast,
       admission,
+      semanticGraphFingerprint(graph),
     );
 
     const errors = validateRepairProofBundle(
@@ -139,13 +143,14 @@ describe("repair proof bundle", () => {
   });
 
   it("rejects malformed impact traces", () => {
-    const { transaction, impact, blast, diagnostic, admission } = setup();
+    const { graph, transaction, impact, blast, diagnostic, admission } = setup();
     const bundle = createRepairProofBundle(
       transaction,
       diagnostic,
       impact,
       blast,
       admission,
+      semanticGraphFingerprint(graph),
     );
 
     const errors = validateRepairProofBundle(
