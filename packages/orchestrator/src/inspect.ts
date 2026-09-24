@@ -823,15 +823,19 @@ export async function inspectDirectory(
       ),
       observedOutcomes: causalChains.reduce((sum, item) => {
         const nodesById = new Map(item.nodes.map((node) => [node.id, node]));
-        return sum + item.links.filter((link) => {
-          const from = nodesById.get(link.from);
-          const to = nodesById.get(link.to);
-          return (
-            link.strength === "direct-evidence" &&
-            from?.kind === "downstream-risk" &&
-            to?.kind === "observed-state"
-          );
-        }).length;
+        return sum + new Set(
+          item.links
+            .filter((link) => {
+              const from = nodesById.get(link.from);
+              const to = nodesById.get(link.to);
+              return (
+                link.strength === "direct-evidence" &&
+                from?.kind === "downstream-risk" &&
+                to?.kind === "observed-state"
+              );
+            })
+            .map((link) => link.to),
+        ).size;
       }, 0),
       incidents: causalIncidents,
       rootCauseCandidates: causalIncidents.reduce(
