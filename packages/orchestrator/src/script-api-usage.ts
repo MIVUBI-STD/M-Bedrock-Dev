@@ -258,7 +258,7 @@ function mergeCallShapes(
 function recordResultUse(
   item: MutableUsage,
   file: string,
-  use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other",
+  use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "guard-condition" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other",
 ): void {
   const current = item.resultUses.get(use);
   if (current) {
