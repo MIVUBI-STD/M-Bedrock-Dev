@@ -1,5 +1,5 @@
 import type { ComponentKind } from "../../project-model/src/component.js";
-import type { PatchTransaction } from "../../repair/src/types.js";
+import type { PatchTransaction } from "../../repair/src/index.js";
 
 export interface RepairImpactTrace {
   changedNodeId: string;

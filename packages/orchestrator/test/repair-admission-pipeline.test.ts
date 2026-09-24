@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SemanticGraph } from "../../graph/src/graph.js";
-import { createPatchTransaction } from "../../repair/src/create.js";
+import { createPatchTransaction } from "../../repair/src/index.js";
 import { evaluateRepairAdmissionPipeline } from "../src/repair-admission-pipeline.js";
 
 function source(relativePath: string) {

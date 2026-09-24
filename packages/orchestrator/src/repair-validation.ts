@@ -9,8 +9,8 @@ import type {
   ValidationStep,
   ValidationStepResult,
 } from "../../validation/src/index.js";
-import type { PatchTransaction } from "../../repair/src/types.js";
-import type { MutationWorkspace } from "../../repair/src/workspace.js";
+import type { PatchTransaction } from "../../repair/src/index.js";
+import type { MutationWorkspace } from "../../repair/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 
 function sameSource(

@@ -1,5 +1,5 @@
-import { planLinearTopologyRepair } from "../../repair/src/topology-planner.js";
-import type { PatchTransaction } from "../../repair/src/types.js";
+import { planLinearTopologyRepair } from "../../repair/src/index.js";
+import type { PatchTransaction } from "../../repair/src/index.js";
 import type { analyzeFunctionTopology } from "./topology-analysis.js";
 
 export interface InspectionRepairCandidate {

@@ -7,13 +7,13 @@ import type {
   ApplyTransactionContext,
   ApplyTransactionResult,
   RollbackAppliedFilesResult,
-} from "../../repair/src/apply.js";
+} from "../../repair/src/index.js";
 import {
   applyPatchTransaction,
   rollbackAppliedFiles,
-} from "../../repair/src/apply.js";
-import type { PatchTransaction } from "../../repair/src/types.js";
-import type { MutationWorkspace } from "../../repair/src/workspace.js";
+} from "../../repair/src/index.js";
+import type { PatchTransaction } from "../../repair/src/index.js";
+import type { MutationWorkspace } from "../../repair/src/index.js";
 import type { TransactionValidationResult } from "../../validation/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 import type { RepairProofBundle } from "./repair-proof-bundle.js";

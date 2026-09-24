@@ -5,7 +5,7 @@ import {
   validateInvariantRegistrySnapshot,
 } from "../../project-model/src/invariant-registry-validate.js";
 import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
-import type { PatchTransaction } from "../../repair/src/types.js";
+import type { PatchTransaction } from "../../repair/src/index.js";
 import {
   evaluateRepairAdmissionPipeline,
   type RepairAdmissionPipelineResult,

@@ -1,5 +1,5 @@
 import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
-import type { PatchTransaction } from "../../repair/src/types.js";
+import type { PatchTransaction } from "../../repair/src/index.js";
 import type { RepairBlastRadiusDecision } from "./repair-counterfactual-types.js";
 
 export type RepairAdmissionDisposition =

@@ -1,6 +1,6 @@
 import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
 import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
-import type { PatchTransaction } from "../../repair/src/types.js";
+import type { PatchTransaction } from "../../repair/src/index.js";
 import type {
   RepairBlastRadiusDecision,
   RepairCounterfactualImpact,
