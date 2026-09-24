@@ -326,7 +326,11 @@
       "sourceIds": [
         "mivubi-state-authority-policy-v1"
       ],
-      "diagnosticSeverity": "medium"
+      "diagnosticSeverity": "medium",
+      "causalConsequences": [
+        "stale-gameplay-mirror-risk",
+        "incorrect-state-decision-risk"
+      ]
     },
     {
       "id": "state-policy.relation-mirror-requires-authority",
@@ -344,7 +348,11 @@
       "sourceIds": [
         "mivubi-state-authority-policy-v1"
       ],
-      "diagnosticSeverity": "medium"
+      "diagnosticSeverity": "medium",
+      "causalConsequences": [
+        "orphan-mirror-authority-risk",
+        "incorrect-state-decision-risk"
+      ]
     }
   ]
 }
