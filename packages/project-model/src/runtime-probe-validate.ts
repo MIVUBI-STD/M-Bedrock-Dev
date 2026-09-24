@@ -1,4 +1,9 @@
-import type { RuntimeProbeRequest, RuntimeProbeResponse } from "./runtime-probe.js";
+import type {
+  RuntimeProbeRequest,
+  RuntimeProbeResponse,
+  RuntimeProbeTranscript,
+} from "./runtime-probe.js";
+import { runtimeScopeKey } from "./runtime-evidence.js";
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -269,4 +274,147 @@ export function parseRuntimeProbeResponseJson(
     );
   }
   return parseRuntimeProbeResponse(parsed);
+}
+
+
+function expectedOutcomeId(
+  request: RuntimeProbeRequest,
+  state: RuntimeProbeResponse["state"],
+): string | undefined {
+  if (state === "present") return request.outcomeByState.present;
+  if (state === "absent") return request.outcomeByState.absent;
+  return request.outcomeByState.unknown;
+}
+
+export function validateRuntimeProbeTranscript(
+  input: unknown,
+): string[] {
+  if (!record(input)) {
+    return ["Runtime probe transcript must be an object."];
+  }
+
+  const errors: string[] = [];
+  if (input.schemaVersion !== 1) {
+    errors.push("Runtime probe transcript schemaVersion must be 1.");
+  }
+  if (
+    input.sessionId !== undefined &&
+    !nonEmpty(input.sessionId)
+  ) {
+    errors.push("Runtime probe transcript sessionId must be a non-empty string.");
+  }
+  if (
+    input.artifactId !== undefined &&
+    !nonEmpty(input.artifactId)
+  ) {
+    errors.push("Runtime probe transcript artifactId must be a non-empty string.");
+  }
+  if (!Array.isArray(input.exchanges)) {
+    errors.push("Runtime probe transcript exchanges must be an array.");
+    return errors;
+  }
+
+  const requestIds = new Set<string>();
+
+  for (let index = 0; index < input.exchanges.length; index += 1) {
+    const rawExchange = input.exchanges[index];
+    const prefix = "Runtime probe exchange " + index;
+    if (!record(rawExchange)) {
+      errors.push(prefix + " must be an object.");
+      continue;
+    }
+
+    const requestErrors = validateRuntimeProbeRequest(rawExchange.request);
+    const responseErrors = validateRuntimeProbeResponse(rawExchange.response);
+    errors.push(...requestErrors.map((error) => prefix + " request: " + error));
+    errors.push(...responseErrors.map((error) => prefix + " response: " + error));
+
+    if (requestErrors.length > 0 || responseErrors.length > 0) continue;
+
+    const request = rawExchange.request as RuntimeProbeRequest;
+    const response = rawExchange.response as RuntimeProbeResponse;
+
+    if (requestIds.has(request.requestId)) {
+      errors.push(
+        prefix + " duplicates requestId " + request.requestId + ".",
+      );
+    }
+    requestIds.add(request.requestId);
+
+    if (response.requestId !== request.requestId) {
+      errors.push(prefix + " requestId mismatch.");
+    }
+    if (response.probeId !== request.probeId) {
+      errors.push(prefix + " probeId mismatch.");
+    }
+    if (response.evidence.predicate !== request.predicate) {
+      errors.push(prefix + " evidence predicate mismatch.");
+    }
+    if (
+      runtimeScopeKey(response.evidence.scope) !==
+      runtimeScopeKey(request.scope)
+    ) {
+      errors.push(prefix + " evidence scope mismatch.");
+    }
+    if (
+      request.runtimeTick !== undefined &&
+      response.runtimeTick < request.runtimeTick
+    ) {
+      errors.push(prefix + " response runtimeTick precedes request runtimeTick.");
+    }
+
+    const expectedOutcome = expectedOutcomeId(request, response.state);
+    if (response.outcomeId !== expectedOutcome) {
+      errors.push(prefix + " outcomeId does not match request outcome mapping.");
+    }
+
+    if (
+      response.evidence.observedAt?.tick !== undefined &&
+      response.evidence.observedAt.tick !== response.runtimeTick
+    ) {
+      errors.push(prefix + " evidence observedAt.tick must match response runtimeTick.");
+    }
+
+    if (
+      response.ok &&
+      response.evidence.confidence !== "observed"
+    ) {
+      errors.push(prefix + " successful response evidence must be observed.");
+    }
+    if (
+      !response.ok &&
+      response.evidence.confidence !== "unknown"
+    ) {
+      errors.push(prefix + " failed response evidence must have unknown confidence.");
+    }
+  }
+
+  return errors;
+}
+
+export function parseRuntimeProbeTranscript(
+  input: unknown,
+): RuntimeProbeTranscript {
+  const errors = validateRuntimeProbeTranscript(input);
+  if (errors.length > 0) {
+    throw new Error(
+      "Invalid runtime probe transcript: " + errors.join("; "),
+    );
+  }
+  return input as RuntimeProbeTranscript;
+}
+
+export function parseRuntimeProbeTranscriptJson(
+  json: string,
+): RuntimeProbeTranscript {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json) as unknown;
+  } catch (error) {
+    throw new Error(
+      "Invalid runtime probe transcript JSON: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+  return parseRuntimeProbeTranscript(parsed);
 }
