@@ -193,6 +193,42 @@ for (const path of files) {
         );
       }
     }
+    for (const risk of Object.keys(
+      relation.causalCorroborationMinSources ?? {},
+    )) {
+      if (!causalConsequences.has(risk)) {
+        throw new Error(
+          `${path}: relation ${relation.id} references source-threshold risk not listed in causalConsequences: ${risk}`,
+        );
+      }
+    }
+
+    if (
+      relation.causalCorroborationMinSources !== undefined &&
+      (
+        typeof relation.causalCorroborationMinSources !== "object" ||
+        relation.causalCorroborationMinSources === null ||
+        Array.isArray(relation.causalCorroborationMinSources)
+      )
+    ) {
+      throw new Error(
+        `${path}: relation ${relation.id} causalCorroborationMinSources must be an object`,
+      );
+    }
+    for (const [risk, minimum] of Object.entries(
+      relation.causalCorroborationMinSources ?? {},
+    )) {
+      if (
+        !risk.trim() ||
+        typeof minimum !== "number" ||
+        !Number.isInteger(minimum) ||
+        minimum < 1
+      ) {
+        throw new Error(
+          `${path}: relation ${relation.id} has invalid source threshold for ${risk}`,
+        );
+      }
+    }
 
     if (
       relation.causalOutcomePredicates !== undefined &&
