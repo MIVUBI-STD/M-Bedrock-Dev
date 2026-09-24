@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { DiagnosticCode } from "../../diagnostics/src/types.js";
 import type { PatchOperation } from "../../repair/src/types.js";
 import type { RepairStrategyCandidate } from "./repair-strategy-selection.js";
@@ -34,6 +35,56 @@ export interface RepairStrategyProviderProposal {
   providerVersion: string;
   relatedDiagnosticIds: readonly string[];
   strategy: RepairStrategyCandidate;
+}
+
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return "[" + value.map(canonicalJson).join(",") + "]";
+  }
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return "{" +
+      Object.keys(record)
+        .sort()
+        .map((key) =>
+          JSON.stringify(key) + ":" + canonicalJson(record[key])
+        )
+        .join(",") +
+      "}";
+  }
+  return JSON.stringify(value);
+}
+
+function normalizedProviderRegistry(
+  registry: RepairStrategyProviderRegistry,
+) {
+  return {
+    schemaVersion: registry.schemaVersion,
+    providers: registry.providers
+      .map((provider) => ({
+        ...provider,
+        supportedDiagnosticCodes:
+          [...provider.supportedDiagnosticCodes].sort(),
+        mutationKinds: [...provider.mutationKinds].sort(),
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id)),
+  };
+}
+
+export function repairStrategyProviderRegistryRevision(
+  registry: RepairStrategyProviderRegistry,
+): string {
+  const errors = validateRepairStrategyProviderRegistry(registry);
+  if (errors.length > 0) {
+    throw new Error(
+      "Invalid repair strategy provider registry: " +
+        errors.join("; "),
+    );
+  }
+
+  return createHash("sha256")
+    .update(canonicalJson(normalizedProviderRegistry(registry)))
+    .digest("hex");
 }
 
 export const BUILTIN_REPAIR_STRATEGY_PROVIDERS: RepairStrategyProviderRegistry = {
