@@ -377,7 +377,7 @@ function absolutePosition(
 }
 
 function insideBounds(
-  bounds: PlacementBounds,
+  bounds: Pick<PlacementBounds, "min" | "max">,
   position: { x: number; y: number; z: number },
 ): boolean {
   return (
