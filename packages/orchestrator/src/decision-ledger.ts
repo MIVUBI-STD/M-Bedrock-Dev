@@ -122,21 +122,59 @@ export function invalidateStaleDecisionLedger(
   snapshot: DecisionLedgerSnapshot,
   currentBasis: DecisionBasisRevision,
 ): DecisionLedgerSnapshot {
-  return {
-    schemaVersion: 1,
-    entries: snapshot.entries.map((entry) => {
+  let entries = snapshot.entries.map((entry) => {
+    if (entry.status !== "active") return entry;
+    const reason = mismatchReason(
+      entry.basis,
+      currentBasis,
+    );
+    if (!reason) return entry;
+    return {
+      ...entry,
+      status: "invalidated" as const,
+      invalidationReason: reason,
+    };
+  });
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    const byId = new Map(
+      entries.map((entry) => [entry.id, entry]),
+    );
+
+    entries = entries.map((entry) => {
       if (entry.status !== "active") return entry;
-      const reason = mismatchReason(
-        entry.basis,
-        currentBasis,
-      );
-      if (!reason) return entry;
+
+      const invalidParent = entry.upstreamDecisionIds
+        .map((id) => byId.get(id))
+        .find(
+          (parent) =>
+            parent === undefined ||
+            parent.status !== "active",
+        );
+
+      if (!invalidParent && entry.upstreamDecisionIds.every((id) => byId.has(id))) {
+        return entry;
+      }
+
+      changed = true;
       return {
         ...entry,
         status: "invalidated" as const,
-        invalidationReason: reason,
+        invalidationReason:
+          invalidParent === undefined
+            ? "Upstream decision is missing."
+            : "Upstream decision is no longer active: " +
+              invalidParent.id +
+              ".",
       };
-    }),
+    });
+  }
+
+  return {
+    schemaVersion: 1,
+    entries,
   };
 }
 
