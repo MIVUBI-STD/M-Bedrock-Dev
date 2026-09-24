@@ -123,3 +123,4 @@ export * from "./repair-invariant-derivation.js";
 export * from "./causal-repair-strategy-selection.js";
 export * from "./repair-strategy-provider.js";
 export * from "./provider-backed-repair-selection.js";
+export * from "./provider-backed-repair-workflow.js";
