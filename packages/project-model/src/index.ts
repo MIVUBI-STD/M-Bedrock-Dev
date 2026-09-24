@@ -21,3 +21,6 @@ export * from "./telemetry.js";
 export * from "./telemetry-validate.js";
 
 export * from "./diagnostic-probe.js";
+
+export * from "./runtime-probe.js";
+export * from "./runtime-probe-validate.js";
