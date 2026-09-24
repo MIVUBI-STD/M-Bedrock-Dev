@@ -1,5 +1,8 @@
 import type { SemanticGraph } from "../../graph/src/graph.js";
 import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
+import {
+  CONTRACT_REGISTRY_REVISION,
+} from "../../project-model/src/contract-registry-revision.js";
 import type {
   ApplyTransactionContext,
   ApplyTransactionResult,
@@ -107,6 +110,18 @@ export function authorizeRepairMutation(
   }
 
   if (
+    proof.decisionBasis.contractRegistryRevision !==
+      CONTRACT_REGISTRY_REVISION
+  ) {
+    return {
+      authorized: false,
+      reasons: [
+        "Repair proof contract registry revision is stale.",
+      ],
+    };
+  }
+
+  if (
     proof.sourceFingerprint !== basis.currentSourceFingerprint ||
     transaction.sourceFingerprint !== basis.currentSourceFingerprint
   ) {
@@ -128,7 +143,6 @@ export function authorizeRepairMutation(
   }
 
   for (const key of [
-    "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
     "targetProfileFingerprint",
