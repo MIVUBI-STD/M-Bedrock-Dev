@@ -6,7 +6,7 @@ import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { ScriptApiUsageInventory } from "./script-api-usage.js";
 import type { RouteCorridorContract } from "../../project-model/src/route-corridor.js";
 import type { MutationDependentActionContract } from "../../project-model/src/mutation-dependent-action.js";
-import type { CausalChain } from "../../project-model/src/causal-chain.js";
+import type { CausalChain, CausalIncident } from "../../project-model/src/causal-chain.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -65,6 +65,8 @@ export interface InspectDirectoryResult {
     projectedRisks: number;
     corroboratedRisks: number;
     observedOutcomes: number;
+    incidents: readonly CausalIncident[];
+    rootCauseCandidates: number;
   };
   worldDatabase: {
     present: boolean;
