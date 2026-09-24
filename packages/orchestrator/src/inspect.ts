@@ -97,7 +97,6 @@ import { telemetryRuntimeEvidence } from "./telemetry-evidence.js";
 import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
-import { analyzeTelemetryIntegrity } from "../../project-model/src/telemetry-integrity.js";
 import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
@@ -172,6 +171,7 @@ export async function inspectDirectory(
   telemetryEvents: readonly TelemetryEvent[] = [],
   telemetryDroppedEvents = 0,
   runtimeProbeResponses: readonly RuntimeProbeResponse[] = [],
+  runtimeProbeDroppedExchanges = 0,
 ): Promise<InspectDirectoryResult> {
   const telemetryEvidence = telemetryRuntimeEvidence(telemetryEvents);
   const runtimeProbeEvidence =
@@ -274,6 +274,22 @@ export async function inspectDirectory(
       data: {
         unidentifiedStreamEvents:
           telemetryContinuity.unidentifiedStreamEvents,
+      },
+    });
+  }
+  if (runtimeProbeDroppedExchanges > 0) {
+    diagnostics.push({
+      id:
+        "diag_runtime_probe_dropped_" +
+        runtimeProbeDroppedExchanges,
+      code: "RUNTIME_PROBE_EXCHANGES_DROPPED",
+      severity: "minor",
+      message:
+        "Runtime probe transcript dropped " +
+        runtimeProbeDroppedExchanges +
+        " exchange(s); runtime proof coverage is incomplete.",
+      data: {
+        droppedExchanges: runtimeProbeDroppedExchanges,
       },
     });
   }
