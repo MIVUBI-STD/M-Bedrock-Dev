@@ -94,6 +94,8 @@ import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { synthesizeCausalChains } from "./causal-analysis.js";
 import { synthesizeCausalIncidents } from "./causal-incident-analysis.js";
 import { telemetryRuntimeEvidence } from "./telemetry-evidence.js";
+import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
+import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
 import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";
 import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
@@ -168,8 +170,11 @@ export async function inspectDirectory(
   externalEvidence: readonly RuntimeEvidenceRecord[] = [],
   telemetryEvents: readonly TelemetryEvent[] = [],
   telemetryDroppedEvents = 0,
+  runtimeProbeResponses: readonly RuntimeProbeResponse[] = [],
 ): Promise<InspectDirectoryResult> {
   const telemetryEvidence = telemetryRuntimeEvidence(telemetryEvents);
+  const runtimeProbeEvidence =
+    runtimeProbeResponseEvidence(runtimeProbeResponses);
   const telemetryContinuity = analyzeTelemetryContinuity({
     schemaVersion: 1,
     ...(telemetryDroppedEvents === 0
@@ -751,6 +756,7 @@ export async function inspectDirectory(
       ),
       ...externalEvidence,
       ...telemetryEvidence,
+      ...runtimeProbeEvidence.records,
     ],
     parsedScripts.map((item) => item.parsed),
     parsedEntities.map((item) => ({
@@ -931,6 +937,14 @@ export async function inspectDirectory(
           telemetryContinuity.nonMonotonicTransitions,
         incomplete: telemetryContinuity.incomplete,
       },
+    },
+    runtimeProbeAnalysis: {
+      responses: runtimeProbeEvidence.summary.responses,
+      evidenceRecords: runtimeProbeEvidence.records.length,
+      present: runtimeProbeEvidence.summary.present,
+      absent: runtimeProbeEvidence.summary.absent,
+      unknown: runtimeProbeEvidence.summary.unknown,
+      failed: runtimeProbeEvidence.summary.failed,
     },
     worldDatabase: {
       present: dbFiles.length > 0,
