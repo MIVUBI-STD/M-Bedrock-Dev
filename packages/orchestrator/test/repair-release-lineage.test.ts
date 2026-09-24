@@ -9,6 +9,9 @@ import {
 import type {
   RepairLifecycleState,
 } from "../src/repair-lifecycle.js";
+import type {
+  RepairProofBundle,
+} from "../src/repair-proof-bundle.js";
 
 const lifecycle: RepairLifecycleState = {
   transactionId: "tx-1",
@@ -29,7 +32,40 @@ const basis = {
   invariantRegistryRevision: "inv-r1",
 };
 
-function completeLedger() {
+function proof(
+  overrides: Partial<RepairProofBundle> = {},
+): RepairProofBundle {
+  return {
+    transactionId: "tx-1",
+    sourceFingerprint: "source",
+    graphFingerprint: "graph",
+    decisionBasis: basis,
+    incidentId: "incident-1",
+    selectedCandidateId: "cause-1",
+    diagnosticDisposition: "repair-eligible",
+    claimStrength: "proven-runtime",
+    effectiveEvidenceLevel:
+      "proven-with-observed-outcome",
+    blastRadiusDisposition: "minimal",
+    admissionDisposition: "eligible",
+    supportingInvariantIds: ["invariant:ready"],
+    changedNodeIds: ["function:p:target"],
+    affectedNodeIds: ["function:p:target"],
+    requiredRevalidationNodeIds: [],
+    requiredRevalidationPaths: [],
+    impactTraces: [],
+    reasons: [],
+    ...overrides,
+  };
+}
+
+function completeLedger(
+  repairProof = proof(),
+  options: {
+    includeTransitive?: boolean;
+    verificationParent?: "admission" | "transitive";
+  } = {},
+) {
   let ledger = createDecisionLedger();
 
   ledger = appendDecisionLedgerEntry(ledger, {
@@ -53,6 +89,9 @@ function completeLedger() {
       "repair-strategy:selected",
       "repair-strategy:small",
       "repair-transaction:tx-1",
+      ...repairProof.supportingInvariantIds.map(
+        (id) => "repair-invariant:" + id,
+      ),
     ],
   });
 
@@ -65,12 +104,38 @@ function completeLedger() {
     outputIds: ["repair-admission:eligible"],
   });
 
+  const includeTransitive =
+    options.includeTransitive === true;
+  if (includeTransitive) {
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "transitive",
+      kind: "transitive-revalidation",
+      transactionId: "tx-1",
+      basis,
+      upstreamDecisionIds: ["admission"],
+      inputIds: [
+        ...repairProof.requiredRevalidationNodeIds.map(
+          (id) => "revalidation-node:" + id,
+        ),
+        ...repairProof.requiredRevalidationPaths.map(
+          (value) => "revalidation-path:" + value,
+        ),
+      ],
+      outputIds: ["transitive-revalidation:passed"],
+      evidenceIds: ["static:dependent-pass"],
+    });
+  }
+
+  const verificationParent =
+    options.verificationParent ??
+    (includeTransitive ? "transitive" : "admission");
+
   ledger = appendDecisionLedgerEntry(ledger, {
     id: "runtime",
     kind: "runtime-verification",
     transactionId: "tx-1",
     basis,
-    upstreamDecisionIds: ["admission"],
+    upstreamDecisionIds: [verificationParent],
     outputIds: ["runtime-verification:passed"],
     evidenceIds: ["runtime:pass"],
   });
@@ -80,7 +145,7 @@ function completeLedger() {
     kind: "package-verification",
     transactionId: "tx-1",
     basis,
-    upstreamDecisionIds: ["admission"],
+    upstreamDecisionIds: [verificationParent],
     outputIds: ["package-verification:passed"],
     evidenceIds: ["package:pass"],
   });
@@ -90,9 +155,11 @@ function completeLedger() {
 
 describe("repair release lineage", () => {
   it("allows release only with a complete active proof chain", () => {
+    const repairProof = proof();
     const result = decideRepairReleaseWithLineage(
       lifecycle,
-      completeLedger(),
+      repairProof,
+      completeLedger(repairProof),
       basis,
     );
 
@@ -107,10 +174,12 @@ describe("repair release lineage", () => {
     ]);
   });
 
-  it("blocks release and transitively invalidates lineage when authorization basis becomes stale", () => {
+  it("blocks stale proof and returns transitively invalidated lineage", () => {
+    const repairProof = proof();
     const result = decideRepairReleaseWithLineage(
       lifecycle,
-      completeLedger(),
+      repairProof,
+      completeLedger(repairProof),
       {
         ...basis,
         graphFingerprint: "graph-new",
@@ -123,15 +192,19 @@ describe("repair release lineage", () => {
         (entry) => entry.status === "invalidated",
       ),
     ).toBe(true);
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/decision basis is stale/);
   });
 
   it("blocks release when strategy selection is missing", () => {
+    const repairProof = proof();
     let ledger = createDecisionLedger();
 
     ledger = appendDecisionLedgerEntry(ledger, {
       id: "auth",
       kind: "repair-authorization",
       basis,
+      outputIds: ["root-cause:cause-1"],
     });
     ledger = appendDecisionLedgerEntry(ledger, {
       id: "admission",
@@ -160,6 +233,7 @@ describe("repair release lineage", () => {
 
     const result = decideRepairReleaseWithLineage(
       lifecycle,
+      repairProof,
       ledger,
       basis,
     );
@@ -170,7 +244,8 @@ describe("repair release lineage", () => {
   });
 
   it("blocks release when a verification stage has multiple active decisions", () => {
-    let ledger = completeLedger();
+    const repairProof = proof();
+    let ledger = completeLedger(repairProof);
     ledger = appendDecisionLedgerEntry(ledger, {
       id: "runtime-duplicate",
       kind: "runtime-verification",
@@ -182,6 +257,7 @@ describe("repair release lineage", () => {
 
     const result = decideRepairReleaseWithLineage(
       lifecycle,
+      repairProof,
       ledger,
       basis,
     );
@@ -192,22 +268,15 @@ describe("repair release lineage", () => {
   });
 
   it("blocks release when verification is not descended from admission", () => {
-    let ledger = completeLedger();
-    const entries = ledger.entries.map((entry) =>
-      entry.id === "runtime"
-        ? {
-            ...entry,
-            upstreamDecisionIds: ["strategy"],
-          }
-        : entry
+    const repairProof = proof();
+    const ledger = completeLedger(
+      repairProof,
+      { verificationParent: "strategy" },
     );
-    ledger = {
-      schemaVersion: 1,
-      entries,
-    };
 
     const result = decideRepairReleaseWithLineage(
       lifecycle,
+      repairProof,
       ledger,
       basis,
     );
@@ -215,5 +284,97 @@ describe("repair release lineage", () => {
     expect(result.decision.disposition).toBe("blocked");
     expect(result.decision.reasons.join(" "))
       .toMatch(/Runtime verification is not descended/);
+  });
+
+  it("blocks release when strategy lineage omits a proof invariant", () => {
+    const repairProof = proof();
+    const ledger = completeLedger({
+      ...repairProof,
+      supportingInvariantIds: [],
+    });
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      ledger,
+      basis,
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/does not carry supporting invariant/);
+  });
+
+  it("requires transitive revalidation lineage when proof has a dependent envelope", () => {
+    const repairProof = proof({
+      affectedNodeIds: [
+        "function:p:target",
+        "function:p:caller",
+      ],
+      requiredRevalidationNodeIds: [
+        "function:p:caller",
+      ],
+      requiredRevalidationPaths: [
+        "functions/caller.mcfunction",
+      ],
+    });
+
+    const missing = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      completeLedger(repairProof),
+      basis,
+    );
+    expect(missing.decision.disposition).toBe("blocked");
+    expect(missing.decision.reasons.join(" "))
+      .toMatch(/Missing active transitive-revalidation/);
+
+    const complete = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      completeLedger(repairProof, {
+        includeTransitive: true,
+      }),
+      basis,
+    );
+    expect(complete.decision.disposition)
+      .toBe("release-eligible");
+    expect(complete.lineageDecisionIds)
+      .toContain("transitive");
+  });
+
+  it("blocks release when transitive lineage misses required envelope coverage", () => {
+    const repairProof = proof({
+      affectedNodeIds: [
+        "function:p:target",
+        "function:p:caller",
+      ],
+      requiredRevalidationNodeIds: [
+        "function:p:caller",
+      ],
+    });
+
+    let ledger = completeLedger(repairProof, {
+      includeTransitive: true,
+    });
+    ledger = {
+      schemaVersion: 1,
+      entries: ledger.entries.map((entry) =>
+        entry.id === "transitive"
+          ? { ...entry, inputIds: [] }
+          : entry
+      ),
+    };
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      ledger,
+      basis,
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/does not cover required node/);
   });
 });
