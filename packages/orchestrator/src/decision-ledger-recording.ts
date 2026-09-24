@@ -17,6 +17,9 @@ import type {
 import type {
   RepairReleaseDecision,
 } from "./repair-release-gate.js";
+import type {
+  RepairStrategySelection,
+} from "./repair-strategy-selection.js";
 import {
   appendDecisionLedgerEntry,
 } from "./decision-ledger.js";
@@ -154,5 +157,41 @@ export function recordReleaseDecision(
     ...(context.evidenceIds === undefined
       ? {}
       : { evidenceIds: context.evidenceIds }),
+  });
+}
+
+
+export function recordRepairStrategySelection(
+  ledger: DecisionLedgerSnapshot,
+  selection: RepairStrategySelection,
+  transactionId: string | undefined,
+  context: DecisionRecordContext,
+): DecisionLedgerSnapshot {
+  const outputIds =
+    selection.status === "selected"
+      ? [
+          "repair-strategy:selected",
+          "repair-strategy:" + selection.selected.strategyId,
+          "repair-transaction:" + selection.selected.transactionId,
+        ]
+      : selection.status === "ambiguous"
+        ? [
+            "repair-strategy:ambiguous",
+            ...selection.tied.map(
+              (item) => "repair-strategy:" + item.strategyId,
+            ),
+          ]
+        : ["repair-strategy:none-eligible"];
+
+  return appendDecisionLedgerEntry(ledger, {
+    id: context.decisionId,
+    kind: "repair-strategy-selection",
+    ...(transactionId === undefined
+      ? {}
+      : { transactionId }),
+    basis: context.basis,
+    inputIds: context.upstreamDecisionIds,
+    outputIds,
+    evidenceIds: context.evidenceIds,
   });
 }
