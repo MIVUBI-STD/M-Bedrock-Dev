@@ -353,6 +353,40 @@
       "sourceIds": [
         "mivubi-arena-cleanup-policy-v1"
       ]
+    },
+    {
+      "id": "cleanup-policy.relation-generation-transition-requires-valid-lifecycle",
+      "domain": "arena-cleanup",
+      "subject": "arena-generation-transition-observed",
+      "kind": "requires",
+      "object": "arena-generation-transition-valid",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-arena-cleanup-policy-v1"
+      ],
+      "diagnosticSeverity": "critical",
+      "causalConsequences": [
+        "cross-generation-state-risk",
+        "dirty-arena-reuse-risk",
+        "stale-terminal-result-risk"
+      ],
+      "causalOutcomePredicates": {
+        "cross-generation-state-risk": [
+          "arena-generation-anomaly-observed"
+        ],
+        "dirty-arena-reuse-risk": [
+          "arena-generation-anomaly-observed"
+        ],
+        "stale-terminal-result-risk": [
+          "arena-generation-anomaly-observed"
+        ]
+      }
     }
   ]
 }
