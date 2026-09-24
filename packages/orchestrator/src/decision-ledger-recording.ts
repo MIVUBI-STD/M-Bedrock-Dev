@@ -38,11 +38,30 @@ export interface DecisionRecordContext {
   evidenceIds?: readonly string[];
 }
 
+function requireRuntimeEvidenceRevision(
+  basis: DecisionBasisRevision,
+  label: string,
+): void {
+  if (!basis.runtimeEvidenceRevision?.trim()) {
+    throw new Error(
+      label +
+        " requires runtimeEvidenceRevision in the decision basis.",
+    );
+  }
+}
+
 export function recordDiagnosticRepairDecision(
   ledger: DecisionLedgerSnapshot,
   decision: DiagnosticRepairDecision,
   context: DecisionRecordContext,
 ): DecisionLedgerSnapshot {
+  if (decision.claimStrength === "proven-runtime") {
+    requireRuntimeEvidenceRevision(
+      context.basis,
+      "Runtime-proven repair authorization",
+    );
+  }
+
   return appendDecisionLedgerEntry(ledger, {
     id: context.decisionId,
     kind: "repair-authorization",
@@ -95,6 +114,11 @@ export function recordRuntimeVerificationDecision(
   transactionId: string,
   context: DecisionRecordContext,
 ): DecisionLedgerSnapshot {
+  requireRuntimeEvidenceRevision(
+    context.basis,
+    "Runtime verification decision",
+  );
+
   return appendDecisionLedgerEntry(ledger, {
     id: context.decisionId,
     kind: "runtime-verification",
