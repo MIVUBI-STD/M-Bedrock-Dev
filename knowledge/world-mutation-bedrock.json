@@ -291,7 +291,11 @@
       "sourceIds": [
         "ms-structure-command"
       ],
-      "diagnosticSeverity": "critical"
+      "diagnosticSeverity": "critical",
+      "causalConsequences": [
+        "missing-world-content-risk",
+        "downstream-arena-setup-failure-risk"
+      ]
     }
   ]
 }
