@@ -2,6 +2,8 @@ import type {
   TelemetryEvent,
 } from "../../project-model/src/telemetry.js";
 import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+let emitterInstanceCounter = 0;
+
 import type {
   TelemetryEmitter,
   TelemetryEmitterOptions,
@@ -91,8 +93,12 @@ function buildEvent<K extends Kind>(
 export function createTelemetryEmitter(
   options: TelemetryEmitterOptions,
 ): TelemetryEmitter {
+  emitterInstanceCounter += 1;
+  const defaultNamespace =
+    options.idNamespace ??
+    options.producer + ":emitter-" + emitterInstanceCounter;
   const idFactory =
-    options.idFactory ?? createCounterTelemetryIdFactory(options.producer);
+    options.idFactory ?? createCounterTelemetryIdFactory(defaultNamespace);
   let localSequence = 0;
 
   const emitBuilt = <K extends Kind>(
