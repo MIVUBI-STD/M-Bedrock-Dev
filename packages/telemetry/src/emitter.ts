@@ -123,6 +123,7 @@ export function createTelemetryEmitter(
     reviveAnomaly: (input) => emitBuilt("revive-anomaly", input),
     stateDrift: (input) => emitBuilt("state-drift", input),
     routeRevalidation: (input) => emitBuilt("route-revalidation", input),
+    mutationApplied: (input) => emitBuilt("mutation-applied", input),
     mutationVerification: (input) => emitBuilt("mutation-verification", input),
   };
 }
