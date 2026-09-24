@@ -7,6 +7,7 @@ import { enrichInspectionSemanticGraph } from "./inspect-graph-enrichment.js";
 import { analyzeInspectionEntityKnowledge } from "./inspect-entity-knowledge-stage.js";
 import { analyzeInspectionRuntimeState } from "./inspect-runtime-analysis-stage.js";
 import { analyzeInspectionEducation } from "./inspect-education-stage.js";
+import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
@@ -33,12 +34,8 @@ import { scriptMutationTransactionRuntimeEvidence } from "./script-mutation-tran
 import { scriptCommandMutationRuntimeEvidence } from "./script-command-transaction-analysis.js";
 import { routeMutationRuntimeEvidence } from "./route-mutation-analysis.js";
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
-import { synthesizeCausalChains } from "./causal-analysis.js";
-import { synthesizeCausalIncidents } from "./causal-incident-analysis.js";
-import { analyzeDiagnosticProbes } from "./diagnostic-probe-analysis.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
-import { buildDecisionBasis } from "./decision-basis.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { deriveScriptApiUsage } from "./script-api-usage.js";
 import { externalEventRootsForEntity } from "./entity-event-evidence.js";
@@ -241,39 +238,33 @@ export async function inspectDirectory(
     parsedScripts.map((item) => item.parsed),
   );
 
-  const decisionBasis = buildDecisionBasis({
+  const causal = analyzeInspectionCausality({
     ...(sourceFingerprint === undefined
       ? {}
       : { sourceFingerprint }),
     graph,
     ...(knowledgeCatalog === undefined
       ? {}
-      : { knowledge: knowledgeCatalog }),
+      : { knowledgeCatalog }),
     target,
-    runtimeEvidence: [
-      ...externalEvidence,
-      ...telemetryEvidence,
-      ...runtimeProbeEvidence.records,
-    ],
-    evidenceIntegrity: {
-      telemetry: telemetryEvidenceIntegrity,
-      runtimeProbe: runtimeProbeEvidenceIntegrity,
-    },
-  });
-
-  const causalChains = synthesizeCausalChains(diagnostics, {
-    telemetryTemporalReliable:
-      !telemetryContinuity.incomplete,
-    runtimeProbeTemporalReliable:
-      runtimeProbeDroppedExchanges === 0,
-  });
-  const causalIncidents = synthesizeCausalIncidents(causalChains);
-  const diagnosticProbeAnalysis = analyzeDiagnosticProbes(
-    causalIncidents,
+    externalEvidence,
+    telemetryEvidence,
+    runtimeProbeEvidenceRecords:
+      runtimeProbeEvidence.records,
+    telemetryEvidenceIntegrity,
+    runtimeProbeEvidenceIntegrity,
+    telemetryContinuity,
+    runtimeProbeDroppedExchanges,
     diagnostics,
-    knowledgeRuntime.validationCases,
-    "LOCAL_ARTIFACT",
-  );
+    validationCases:
+      knowledgeRuntime.validationCases,
+  });
+  const {
+    decisionBasis,
+    causalChains,
+    causalIncidents,
+    diagnosticProbeAnalysis,
+  } = causal;
 
   const reliability = deriveReliabilityFingerprint({
     mapId: artifactId,
