@@ -10,6 +10,14 @@ export type RepairLifecycleStage =
   | "transitive-revalidation-pending"
   | "static-validated";
 
+export interface TransitiveRevalidationReceipt {
+  transactionId: string;
+  passed: boolean;
+  validatedNodeIds: readonly string[];
+  validatedPaths: readonly string[];
+  evidenceIds: readonly string[];
+}
+
 export interface RepairVerificationReceipt {
   transactionId: string;
   kind: "runtime" | "package";
@@ -135,6 +143,71 @@ export function repairLifecycleFromApplyResult(
         ],
       };
   }
+}
+
+function sameStringSet(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  const a = [...new Set(left)].sort();
+  const b = [...new Set(right)].sort();
+  return (
+    a.length === b.length &&
+    a.every((value, index) => value === b[index])
+  );
+}
+
+export function markRepairTransitiveRevalidated(
+  state: RepairLifecycleState,
+  receipt: TransitiveRevalidationReceipt,
+): RepairLifecycleState {
+  if (state.stage !== "transitive-revalidation-pending") {
+    throw new Error(
+      "Transitive revalidation receipt requires transitive-revalidation-pending state.",
+    );
+  }
+  if (receipt.transactionId !== state.transactionId) {
+    throw new Error(
+      "Transitive revalidation receipt belongs to another transaction.",
+    );
+  }
+  if (!receipt.passed) {
+    throw new Error(
+      "Failed transitive revalidation cannot advance repair lifecycle.",
+    );
+  }
+  if (receipt.evidenceIds.length === 0) {
+    throw new Error(
+      "Transitive revalidation receipt requires explicit evidence ids.",
+    );
+  }
+  if (
+    !sameStringSet(
+      receipt.validatedNodeIds,
+      state.pendingNodeIds,
+    ) ||
+    !sameStringSet(
+      receipt.validatedPaths,
+      state.pendingPaths,
+    )
+  ) {
+    throw new Error(
+      "Transitive revalidation receipt does not exactly cover the pending node/path envelope.",
+    );
+  }
+
+  return {
+    ...state,
+    stage: "static-validated",
+    transitiveRevalidationComplete: true,
+    pendingNodeIds: [],
+    pendingPaths: [],
+    reasons: [
+      ...state.reasons,
+      "Transitive revalidation completed with evidence: " +
+        [...new Set(receipt.evidenceIds)].sort().join(", "),
+    ],
+  };
 }
 
 function validateReceipt(
