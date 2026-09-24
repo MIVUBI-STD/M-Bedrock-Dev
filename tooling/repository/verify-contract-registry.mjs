@@ -71,6 +71,15 @@ const canonicalSymbols = new Map();
 const allowedStatuses = new Set(["canonical", "deprecated"]);
 const requiredArrayFields = ["producers", "consumers"];
 
+function duplicateValue(values) {
+  const seen = new Set();
+  for (const value of values) {
+    if (seen.has(value)) return value;
+    seen.add(value);
+  }
+  return undefined;
+}
+
 for (const contract of registry.contracts) {
   for (const field of ["id", "symbol", "owner", "verificationLevel", "status"]) {
     if (typeof contract[field] !== "string" || !contract[field].trim()) {
@@ -88,6 +97,25 @@ for (const contract of registry.contracts) {
     if (!Array.isArray(contract[field]) || contract[field].some((value) => typeof value !== "string" || !value.trim())) {
       console.error("Contract " + contract.id + " has invalid " + field + ".");
       process.exit(1);
+    }
+
+    const repeated = duplicateValue(contract[field]);
+    if (repeated) {
+      console.error(
+        "Contract " + contract.id + " has duplicate " +
+          field + " entry: " + repeated,
+      );
+      process.exit(1);
+    }
+
+    for (const root of contract[field]) {
+      if (!existsSync(root)) {
+        console.error(
+          "Contract " + contract.id + " " + field +
+            " root does not exist: " + root,
+        );
+        process.exit(1);
+      }
     }
   }
 
@@ -127,6 +155,12 @@ for (const contract of registry.contracts) {
   if (contract.status === "deprecated") {
     if (typeof contract.replacedBy !== "string" || !contract.replacedBy.trim()) {
       console.error("Deprecated contract " + contract.id + " must declare replacedBy.");
+      process.exit(1);
+    }
+    if (contract.replacedBy === contract.id) {
+      console.error(
+        "Deprecated contract " + contract.id + " cannot replace itself.",
+      );
       process.exit(1);
     }
   }
