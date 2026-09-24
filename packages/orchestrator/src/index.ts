@@ -66,3 +66,5 @@ export * from "./causal-retest.js";
 export * from "./telemetry-evidence.js";
 
 export * from "./telemetry-load.js";
+
+export * from "./diagnostic-probe-planning.js";
