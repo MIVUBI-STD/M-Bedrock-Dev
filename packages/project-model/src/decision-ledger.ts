@@ -19,6 +19,7 @@ export interface DecisionBasisRevision {
   contractRegistryRevision?: string;
   knowledgeRevision?: string;
   invariantRegistryRevision?: string;
+  repairProviderRegistryRevision?: string;
   targetProfileFingerprint?: string;
   probeBindingRevision?: string;
   runtimeEvidenceRevision?: string;
