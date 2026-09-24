@@ -157,6 +157,43 @@ export function validateRepairStrategyProviderRegistry(
           " must declare at least one mutation kind.",
       );
     }
+
+    if (!provider.rationale.trim()) {
+      errors.push(
+        "Repair strategy provider " +
+          provider.id +
+          " rationale must be non-empty.",
+      );
+    }
+
+    const repeatedDiagnosticCode =
+      provider.supportedDiagnosticCodes.find(
+        (code, index, values) =>
+          values.indexOf(code) !== index,
+      );
+    if (repeatedDiagnosticCode) {
+      errors.push(
+        "Duplicate supported diagnostic code " +
+          repeatedDiagnosticCode +
+          " in provider " +
+          provider.id +
+          ".",
+      );
+    }
+
+    const repeatedMutationKind = provider.mutationKinds.find(
+      (kind, index, values) =>
+        values.indexOf(kind) !== index,
+    );
+    if (repeatedMutationKind) {
+      errors.push(
+        "Duplicate mutation kind " +
+          repeatedMutationKind +
+          " in provider " +
+          provider.id +
+          ".",
+      );
+    }
     if (
       provider.selectionMode === "causal-auto" &&
       (
