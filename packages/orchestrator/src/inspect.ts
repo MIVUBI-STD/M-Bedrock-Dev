@@ -93,6 +93,7 @@ import {
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { synthesizeCausalChains } from "./causal-analysis.js";
 import { synthesizeCausalIncidents } from "./causal-incident-analysis.js";
+import { analyzeDiagnosticProbes } from "./diagnostic-probe-analysis.js";
 import { telemetryRuntimeEvidence } from "./telemetry-evidence.js";
 import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
@@ -841,6 +842,12 @@ export async function inspectDirectory(
 
   const causalChains = synthesizeCausalChains(diagnostics);
   const causalIncidents = synthesizeCausalIncidents(causalChains);
+  const diagnosticProbeAnalysis = analyzeDiagnosticProbes(
+    causalIncidents,
+    diagnostics,
+    knowledgeRuntime.validationCases,
+    "LOCAL_ARTIFACT",
+  );
 
   const reliability = deriveReliabilityFingerprint({
     mapId: artifactId,
