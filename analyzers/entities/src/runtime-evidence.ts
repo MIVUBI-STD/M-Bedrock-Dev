@@ -6,11 +6,21 @@ import { extractAttackSemantics } from "./attack.js";
 import { analyzeEntityTransitionReachability } from "./reachability.js";
 import type { ParsedEntityDefinition } from "./types.js";
 
+export function entityRuntimeKey(entity: ParsedEntityDefinition): string {
+  return entity.identifier ?? entity.runtimeIdentifier ?? entity.source.relativePath;
+}
+
+export function entityHasNavigation(entity: ParsedEntityDefinition): boolean {
+  return deriveEntityStateGraph(entity).candidates.some(
+    (state) => extractNavigationCapabilities(state).navigationComponent !== undefined,
+  );
+}
+
 export function entityRuntimeEvidence(
   entity: ParsedEntityDefinition,
   externalRootEvents: readonly string[] = [],
 ): RuntimeEvidenceRecord[] {
-  const entityKey = entity.identifier ?? entity.runtimeIdentifier ?? entity.source.relativePath;
+  const entityKey = entityRuntimeKey(entity);
   const scope = { entityKey };
   const records: RuntimeEvidenceRecord[] = [{
     predicate: "entity-definition",
