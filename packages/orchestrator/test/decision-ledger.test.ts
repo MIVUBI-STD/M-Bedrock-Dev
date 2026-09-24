@@ -233,14 +233,12 @@ describe("decision ledger", () => {
       .toMatch(/runtimeEvidenceRevision changed/);
   });
 
-  it("invalidates descendants when contract registry revision changes", () => {
+  it("invalidates descendants when a historical contract revision is stale", () => {
     let ledger = createDecisionLedger();
     ledger = appendDecisionLedgerEntry(ledger, {
       id: "contract-bound",
       kind: "repair-authorization",
-      basis: {
-        contractRegistryRevision: "contracts-a",
-      },
+      basis: {},
     });
     ledger = appendDecisionLedgerEntry(ledger, {
       id: "downstream",
@@ -248,10 +246,22 @@ describe("decision ledger", () => {
       basis: {},
       upstreamDecisionIds: ["contract-bound"],
     });
+    ledger = {
+      schemaVersion: 1,
+      entries: ledger.entries.map((entry) =>
+        entry.id === "contract-bound"
+          ? {
+              ...entry,
+              basis: {
+                ...entry.basis,
+                contractRegistryRevision: "historical-contract-revision",
+              },
+            }
+          : entry
+      ),
+    };
 
-    ledger = invalidateStaleDecisionLedger(ledger, {
-      contractRegistryRevision: "contracts-b",
-    });
+    ledger = invalidateStaleDecisionLedger(ledger, {});
 
     expect(ledger.entries.map((entry) => entry.status))
       .toEqual(["invalidated", "invalidated"]);
@@ -259,6 +269,34 @@ describe("decision ledger", () => {
       .toMatch(/contractRegistryRevision changed/);
     expect(ledger.entries[1]?.invalidationReason)
       .toMatch(/Upstream decision/);
+  });
+
+
+  it("automatically binds new decisions to the canonical contract registry", () => {
+    const ledger = appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "contract-bound-auto",
+        kind: "repair-authorization",
+        basis: {},
+      },
+    );
+
+    expect(ledger.entries[0]?.basis.contractRegistryRevision)
+      .toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("rejects callers that try to append a stale contract revision", () => {
+    expect(() => appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "contract-stale",
+        kind: "repair-authorization",
+        basis: {
+          contractRegistryRevision: "stale",
+        },
+      },
+    )).toThrow(/contract registry revision is stale/);
   });
 
 });
