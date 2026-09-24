@@ -18,6 +18,7 @@ function base(
     state,
     confidence: "observed",
     scope: event.scope,
+    relatedNodeIds: ["telemetry:" + event.eventId],
     ...(event.sourceRefs === undefined ? {} : { sourceRefs: event.sourceRefs }),
     ...(note ?? event.note
       ? { note: note ?? event.note }
