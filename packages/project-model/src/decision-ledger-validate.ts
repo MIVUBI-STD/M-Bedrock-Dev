@@ -22,6 +22,17 @@ const STATUSES = new Set<DecisionLedgerStatus>([
   "invalidated",
 ]);
 
+const BASIS_FIELDS = new Set([
+  "sourceFingerprint",
+  "graphFingerprint",
+  "contractRegistryRevision",
+  "knowledgeRevision",
+  "invariantRegistryRevision",
+  "targetProfileFingerprint",
+  "probeBindingRevision",
+  "runtimeEvidenceRevision",
+]);
+
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -41,6 +52,28 @@ function duplicate(values: readonly string[]): string | undefined {
     seen.add(value);
   }
   return undefined;
+}
+
+function validateDecisionBasis(
+  value: Record<string, unknown>,
+  index: number,
+): string[] {
+  const errors: string[] = [];
+  for (const [key, revision] of Object.entries(value)) {
+    if (!BASIS_FIELDS.has(key)) {
+      errors.push(
+        "entries[" + index + "].basis has unknown field " + key + ".",
+      );
+      continue;
+    }
+    if (!nonEmpty(revision)) {
+      errors.push(
+        "entries[" + index + "].basis." + key +
+          " must be a non-empty string when present.",
+      );
+    }
+  }
+  return errors;
 }
 
 function validateEntryShape(
@@ -71,6 +104,8 @@ function validateEntryShape(
   }
   if (!record(value.basis)) {
     errors.push("entries[" + index + "].basis must be an object.");
+  } else {
+    errors.push(...validateDecisionBasis(value.basis, index));
   }
 
   for (const field of [
