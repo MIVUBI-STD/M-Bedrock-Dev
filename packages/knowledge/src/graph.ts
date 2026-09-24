@@ -17,6 +17,7 @@ export interface KnowledgeGraphEdge {
   diagnosticHint?: string;
   diagnosticSeverity?: KnowledgeRelation["diagnosticSeverity"];
   causalConsequences?: readonly string[];
+  causalCorroborators?: Readonly<Record<string, readonly string[]>>;
 }
 
 export interface KnowledgeGraphPath {
@@ -81,6 +82,9 @@ export function buildKnowledgeGraph(
     ...(relation.causalConsequences === undefined
       ? {}
       : { causalConsequences: relation.causalConsequences }),
+    ...(relation.causalCorroborators === undefined
+      ? {}
+      : { causalCorroborators: relation.causalCorroborators }),
   }));
 
   const nodes = new Set<string>();
