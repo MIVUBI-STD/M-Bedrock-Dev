@@ -39,6 +39,7 @@ function asNumberMap(
 
 interface ObservationPoint {
   tick?: number;
+  streamId?: string;
   sequence?: number;
   timestamp?: string;
 }
@@ -66,6 +67,9 @@ function asObservationMap(
       const point: ObservationPoint = {};
       if (typeof record.tick === "number" && Number.isFinite(record.tick)) {
         point.tick = record.tick;
+      }
+      if (typeof record.streamId === "string" && record.streamId.trim()) {
+        point.streamId = record.streamId;
       }
       if (
         typeof record.sequence === "number" &&
@@ -100,6 +104,9 @@ function compareObservation(
     if (outcome.tick > subject.tick) return 1;
     if (outcome.tick < subject.tick) return -1;
     if (
+      subject.streamId !== undefined &&
+      outcome.streamId !== undefined &&
+      subject.streamId === outcome.streamId &&
       subject.sequence !== undefined &&
       outcome.sequence !== undefined
     ) {
@@ -110,6 +117,9 @@ function compareObservation(
   }
 
   if (
+    subject.streamId !== undefined &&
+    outcome.streamId !== undefined &&
+    subject.streamId === outcome.streamId &&
     subject.sequence !== undefined &&
     outcome.sequence !== undefined
   ) {
