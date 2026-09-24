@@ -160,4 +160,57 @@ describe("decision basis", () => {
     expect(left.runtimeEvidenceRevision)
       .not.toBe(changedIntegrity.runtimeEvidenceRevision);
   });
+  it("ignores explanatory note and integrity reason wording in evidence revision", () => {
+    const record = {
+      predicate: "route-ready",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "telemetry" as const,
+      scope: { operationId: "op-a" },
+      observedAt: { tick: 10 },
+    };
+
+    const commonIntegrity = {
+      records: 1,
+      observedRecords: 1,
+      derivedRecords: 0,
+      unknownConfidenceRecords: 0,
+      unlocatedObservedRecords: 0,
+      unresolvedConflictPredicates: [] as string[],
+      resolvedConflictCount: 0,
+      continuityComplete: true,
+      telemetryContinuityComplete: true,
+      safeForCurrentStateClaims: true,
+      safeForTemporalViolationClaims: true,
+    };
+
+    const left = buildDecisionBasis({
+      runtimeEvidence: [{
+        ...record,
+        note: "first human explanation",
+      }],
+      evidenceIntegrity: {
+        telemetry: {
+          ...commonIntegrity,
+          reasons: ["wording one"],
+        },
+      },
+    });
+
+    const right = buildDecisionBasis({
+      runtimeEvidence: [{
+        ...record,
+        note: "different human explanation",
+      }],
+      evidenceIntegrity: {
+        telemetry: {
+          ...commonIntegrity,
+          reasons: ["wording two"],
+        },
+      },
+    });
+
+    expect(left.runtimeEvidenceRevision)
+      .toBe(right.runtimeEvidenceRevision);
+  });
 });
