@@ -1,5 +1,8 @@
 import type { SemanticGraph } from "../../graph/src/graph.js";
 import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
+import {
+  CONTRACT_REGISTRY_REVISION,
+} from "../../project-model/src/contract-registry-revision.js";
 import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import {
@@ -78,6 +81,7 @@ export function evaluateRepairAdmissionPipeline(
 
   const decisionBasis: DecisionBasisRevision = {
     ...(input.decisionBasis ?? {}),
+    contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
     sourceFingerprint: input.transaction.sourceFingerprint,
     graphFingerprint: semanticGraphFingerprint(input.graph),
   };
