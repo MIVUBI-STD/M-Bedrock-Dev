@@ -85,3 +85,164 @@ export function createRepairProofBundle(
     ],
   };
 }
+
+
+function duplicateValues(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const value of values) {
+    if (seen.has(value)) duplicates.add(value);
+    seen.add(value);
+  }
+  return [...duplicates].sort();
+}
+
+export function validateRepairProofBundle(
+  transaction: PatchTransaction,
+  proof: RepairProofBundle,
+): string[] {
+  const errors: string[] = [];
+
+  if (proof.transactionId !== transaction.id) {
+    errors.push(
+      "Repair proof bundle does not belong to this patch transaction.",
+    );
+  }
+
+  for (const [label, values] of [
+    ["supportingInvariantIds", proof.supportingInvariantIds],
+    ["changedNodeIds", proof.changedNodeIds],
+    ["affectedNodeIds", proof.affectedNodeIds],
+    ["requiredRevalidationNodeIds", proof.requiredRevalidationNodeIds],
+    ["requiredRevalidationPaths", proof.requiredRevalidationPaths],
+  ] as const) {
+    const duplicates = duplicateValues(values);
+    if (duplicates.length > 0) {
+      errors.push(
+        label + " contains duplicate values: " + duplicates.join(", "),
+      );
+    }
+  }
+
+  const changed = new Set(proof.changedNodeIds);
+  const affected = new Set(proof.affectedNodeIds);
+
+  for (const id of changed) {
+    if (!affected.has(id)) {
+      errors.push(
+        "Changed node is missing from affectedNodeIds: " + id,
+      );
+    }
+  }
+
+  for (const id of proof.requiredRevalidationNodeIds) {
+    if (!affected.has(id)) {
+      errors.push(
+        "Revalidation node is outside affectedNodeIds: " + id,
+      );
+    }
+    if (changed.has(id)) {
+      errors.push(
+        "Changed node must not also be listed as a transitive revalidation node: " +
+          id,
+      );
+    }
+  }
+
+  const transactionPaths = new Set(transaction.affectedPaths);
+  for (const path of proof.requiredRevalidationPaths) {
+    if (transactionPaths.has(path)) {
+      errors.push(
+        "Directly mutated path must not also be listed as transitive revalidation: " +
+          path,
+      );
+    }
+  }
+
+  for (const trace of proof.impactTraces) {
+    if (!changed.has(trace.changedNodeId)) {
+      errors.push(
+        "Impact trace references undeclared changed node: " +
+          trace.changedNodeId,
+      );
+    }
+    if (!affected.has(trace.affectedNodeId)) {
+      errors.push(
+        "Impact trace references node outside affectedNodeIds: " +
+          trace.affectedNodeId,
+      );
+    }
+    if (trace.depth !== trace.edgePath.length) {
+      errors.push(
+        "Impact trace depth does not match edgePath length.",
+      );
+    }
+    if (
+      trace.nodePath[0] !== trace.changedNodeId ||
+      trace.nodePath.at(-1) !== trace.affectedNodeId
+    ) {
+      errors.push(
+        "Impact trace nodePath endpoints do not match declared nodes.",
+      );
+    }
+  }
+
+  if (
+    proof.admissionDisposition === "eligible" &&
+    proof.diagnosticDisposition !== "repair-eligible"
+  ) {
+    errors.push(
+      "Eligible admission requires repair-eligible diagnostic authorization.",
+    );
+  }
+
+  if (
+    proof.admissionDisposition === "guarded" &&
+    proof.diagnosticDisposition !== "guarded-repair-eligible"
+  ) {
+    errors.push(
+      "Guarded admission requires guarded-repair-eligible diagnostic authorization.",
+    );
+  }
+
+  if (
+    (proof.admissionDisposition === "eligible" ||
+      proof.admissionDisposition === "guarded") &&
+    proof.blastRadiusDisposition !== "minimal" &&
+    proof.blastRadiusDisposition !== "bounded"
+  ) {
+    errors.push(
+      "Mutation-authorizing admission requires minimal or bounded blast radius.",
+    );
+  }
+
+  if (
+    proof.claimStrength === "proven-runtime" &&
+    proof.effectiveEvidenceLevel !== "proven-with-observed-outcome"
+  ) {
+    errors.push(
+      "proven-runtime claim requires proven-with-observed-outcome evidence.",
+    );
+  }
+
+  if (
+    proof.claimStrength === "proven-static" &&
+    proof.effectiveEvidenceLevel !== "proven-dependency-violation"
+  ) {
+    errors.push(
+      "proven-static claim requires proven-dependency-violation evidence.",
+    );
+  }
+
+  if (
+    (proof.admissionDisposition === "eligible" ||
+      proof.admissionDisposition === "guarded") &&
+    !proof.selectedCandidateId
+  ) {
+    errors.push(
+      "Mutation-authorizing proof requires a selected root-cause candidate.",
+    );
+  }
+
+  return errors;
+}
