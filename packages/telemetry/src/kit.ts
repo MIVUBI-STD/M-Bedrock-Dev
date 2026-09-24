@@ -55,6 +55,7 @@ export interface TelemetryInstrumentationKitOptions {
   scopeProvider?: () => RuntimeScope | undefined;
   tickProvider?: () => number | undefined;
   timestampProvider?: () => string | undefined;
+  streamId?: string;
   idFactory?: TelemetryIdFactory;
   transportSink?: TelemetrySink;
   activeProbeTransport?: ActiveRuntimeProbeTransport;
@@ -140,6 +141,9 @@ export function createTelemetryInstrumentationKit(
     ...(options.timestampProvider === undefined
       ? {}
       : { timestampProvider: options.timestampProvider }),
+    ...(options.streamId === undefined
+      ? {}
+      : { streamId: options.streamId }),
     ...(options.idFactory === undefined
       ? {}
       : { idFactory: options.idFactory }),
