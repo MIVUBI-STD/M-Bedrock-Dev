@@ -1,4 +1,4 @@
-import type { DiagnosticSeverity } from "../../diagnostics/src/types.js";
+import type { Severity } from "../../common/src/severity.js";
 import type { SourceRef } from "./source-ref.js";
 import type { RuntimeScope } from "./runtime-evidence.js";
 
@@ -50,7 +50,7 @@ export interface CausalChain {
   id: string;
   scopeKey?: string;
   scope?: RuntimeScope;
-  severity: DiagnosticSeverity;
+  severity: Severity;
   confidence: "high" | "medium" | "low";
   title: string;
   summary: string;
@@ -70,7 +70,7 @@ export interface RootCauseCandidate {
   id: string;
   label: string;
   evidenceLevel: RootCauseEvidenceLevel;
-  severity: DiagnosticSeverity;
+  severity: Severity;
   confidence: "high" | "medium" | "low";
   chainIds: readonly string[];
   relatedDiagnosticIds: readonly string[];
@@ -86,7 +86,7 @@ export interface CausalIncident {
   id: string;
   scopeKey: string;
   scope?: RuntimeScope;
-  severity: DiagnosticSeverity;
+  severity: Severity;
   confidence: "high" | "medium" | "low";
   chainIds: readonly string[];
   relatedDiagnosticIds: readonly string[];

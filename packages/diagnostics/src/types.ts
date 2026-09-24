@@ -1,6 +1,7 @@
+import type { Severity } from "../../common/src/severity.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 
-export type DiagnosticSeverity = "info" | "minor" | "medium" | "critical";
+export type DiagnosticSeverity = Severity;
 
 export type DiagnosticCode =
   | "UNRESOLVED_REFERENCE"
