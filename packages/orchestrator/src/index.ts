@@ -64,3 +64,5 @@ export * from "./causal-comparison.js";
 export * from "./causal-retest.js";
 
 export * from "./telemetry-evidence.js";
+
+export * from "./telemetry-load.js";
