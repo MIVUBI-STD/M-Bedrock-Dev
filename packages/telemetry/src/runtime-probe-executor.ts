@@ -55,7 +55,9 @@ function successfulResponse(
     runtimeTick: tick,
     ok: true,
     state,
-    outcomeId: outcomeId(request, state),
+    ...(outcomeId(request, state) === undefined
+      ? {}
+      : { outcomeId: outcomeId(request, state) }),
     evidence: {
       predicate: request.predicate,
       state,
