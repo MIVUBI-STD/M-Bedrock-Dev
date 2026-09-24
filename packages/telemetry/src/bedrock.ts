@@ -8,6 +8,7 @@ import {
   createFanoutTelemetrySink,
   createValidatingTelemetrySink,
 } from "./sink.js";
+import { createPriorityBufferedTelemetrySink } from "./priority-buffer.js";
 import {
   createTelemetryFlushController,
   type TelemetryBatchTransport,
@@ -84,6 +85,7 @@ export interface BedrockTelemetryKitOptions {
   system: BedrockSystemClock;
   transport: TelemetryBatchTransport;
   maxEvents?: number;
+  bufferStrategy?: "fifo" | "priority";
   sessionId?: string;
   artifactId?: string;
   baseScope?: RuntimeScope;
@@ -104,7 +106,10 @@ export interface BedrockTelemetryKit extends BedrockTelemetryRuntime {
 export function createBedrockTelemetryKit(
   options: BedrockTelemetryKitOptions,
 ): BedrockTelemetryKit {
-  const buffer = createBufferedTelemetrySink(options.maxEvents ?? 1000);
+  const buffer =
+    options.bufferStrategy === "priority"
+      ? createPriorityBufferedTelemetrySink(options.maxEvents ?? 1000)
+      : createBufferedTelemetrySink(options.maxEvents ?? 1000);
   const fanout = options.mirrorSink
     ? createFanoutTelemetrySink([buffer, options.mirrorSink])
     : buffer;
