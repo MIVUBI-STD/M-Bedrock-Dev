@@ -47,5 +47,6 @@ export interface DiagnosticProbePlan {
   stopCondition:
     | "candidate-proven"
     | "candidate-set-not-discriminable"
+    | "candidate-set-exhausted"
     | "no-probe-required";
 }
