@@ -287,3 +287,89 @@ Telemetry-derived evidence participates in:
 - observed downstream outcomes;
 - causal incidents;
 - ranked root-cause candidates.
+
+
+## Runtime emitter SDK
+
+Canonical runtime helpers live in:
+
+```text
+packages/telemetry/
+```
+
+while the event schema remains owned by:
+
+```text
+packages/project-model/
+```
+
+This keeps map instrumentation independent from analyzer/orchestrator code.
+
+### Core helpers
+
+```text
+createTelemetryEmitter
+createTelemetryScopeLease
+createCounterTelemetryIdFactory
+createBufferedTelemetrySink
+createValidatingTelemetrySink
+createFanoutTelemetrySink
+createCallbackTelemetrySink
+createJsonLineTelemetrySink
+createArenaStartGuard
+captureDeferredGeneration
+```
+
+Emitter options can provide current runtime context:
+
+```ts
+createTelemetryEmitter({
+  producer: "instrumentation",
+  sink,
+  baseScope,
+  scopeProvider,
+  tickProvider,
+  timestampProvider,
+});
+```
+
+Event-level scope overrides provider scope only for the supplied fields.
+
+### Buffer truncation
+
+Bounded buffering tracks how many old events were discarded:
+
+```json
+{
+  "schemaVersion": 1,
+  "droppedEvents": 12,
+  "events": []
+}
+```
+
+During inspection this is surfaced as:
+
+```text
+TELEMETRY_EVENTS_DROPPED
+```
+
+and the reliability fingerprint adds:
+
+```text
+telemetry-truncated
+runtime-evidence-incomplete
+```
+
+A capture with dropped events remains usable, but absence of an observation cannot be treated as strong negative evidence.
+
+### Runtime package boundary
+
+`packages/telemetry` does not import `@minecraft/server`.
+
+Bedrock code supplies:
+
+- `system.currentTick` through `tickProvider`;
+- current arena/player/entity generations through `scopeProvider`;
+- transport through a `TelemetrySink`.
+
+This avoids tying the deterministic SDK to one Script API version or transport mechanism.
