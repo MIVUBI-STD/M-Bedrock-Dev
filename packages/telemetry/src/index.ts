@@ -16,3 +16,5 @@ export * from "./reporters.js";
 export * from "./framing.js";
 
 export * from "./frame-collector.js";
+
+export * from "./active-probe.js";
