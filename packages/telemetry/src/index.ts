@@ -33,3 +33,5 @@ export * from "./scheduler.js";
 export * from "./runtime-probe-executor.js";
 
 export * from "./runtime-probe-session.js";
+
+export * from "./runtime-probe-bundle-runner.js";
