@@ -151,13 +151,13 @@ export function correlateRouteMutations(
 
 export function routeMutationRuntimeEvidence(
   correlations: readonly RouteMutationCorrelation[],
-  navigatingEntityKeys: ReadonlySet<string> = new Set(),
-  targetDrivenEntityKeys: ReadonlySet<string> = new Set(),
+  navigatingEntities: ReadonlyMap<string, readonly SourceRef[]> = new Map(),
+  targetDrivenEntities: ReadonlyMap<string, readonly SourceRef[]> = new Map(),
 ): RuntimeEvidenceRecord[] {
   return correlations.flatMap((item): RuntimeEvidenceRecord[] => {
     if (item.status !== "overlap") return [];
     const linkedNavigators = item.entityKeys.filter((key) =>
-      navigatingEntityKeys.has(key)
+      navigatingEntities.has(key)
     );
 
     const records: RuntimeEvidenceRecord[] = [{
@@ -182,14 +182,19 @@ export function routeMutationRuntimeEvidence(
         state: "present",
         confidence: "derived",
         scope: { operationId: item.mutationId },
-        ...(item.source === undefined ? {} : { sourceRefs: [item.source] }),
+        sourceRefs: [
+          ...(item.source === undefined ? [] : [item.source]),
+          ...linkedNavigators.flatMap(
+            (key) => navigatingEntities.get(key) ?? [],
+          ),
+        ],
         relatedNodeIds: linkedNavigators,
         note: linkedNavigators.join(","),
       });
     }
 
     const linkedTargetDriven = item.entityKeys.filter((key) =>
-      targetDrivenEntityKeys.has(key)
+      targetDrivenEntities.has(key)
     );
     if (linkedTargetDriven.length > 0) {
       records.push({
@@ -197,7 +202,12 @@ export function routeMutationRuntimeEvidence(
         state: "present",
         confidence: "derived",
         scope: { operationId: item.mutationId },
-        ...(item.source === undefined ? {} : { sourceRefs: [item.source] }),
+        sourceRefs: [
+          ...(item.source === undefined ? [] : [item.source]),
+          ...linkedTargetDriven.flatMap(
+            (key) => targetDrivenEntities.get(key) ?? [],
+          ),
+        ],
         relatedNodeIds: linkedTargetDriven,
         note: linkedTargetDriven.join(","),
       });
