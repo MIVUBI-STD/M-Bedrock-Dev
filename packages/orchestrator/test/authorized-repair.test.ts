@@ -1,0 +1,123 @@
+import { describe, expect, it } from "vitest";
+import { createPatchTransaction } from "../../repair/src/create.js";
+import {
+  authorizeRepairMutation,
+} from "../src/authorized-repair.js";
+import type { RepairProofBundle } from "../src/repair-proof-bundle.js";
+
+function transaction(validation = true) {
+  return createPatchTransaction({
+    title: "demo",
+    sourceFingerprint: "abc",
+    operations: [{
+      kind: "replace-text",
+      source: {
+        artifactId: "art-1",
+        relativePath: "functions/demo.mcfunction",
+      },
+      expected: "a",
+      replacement: "b",
+    }],
+    preconditions: [{
+      kind: "source-fingerprint",
+      expected: "abc",
+    }],
+    validation: validation
+      ? [{
+          kind: "rebuild-graph" as const,
+        }]
+      : [],
+  });
+}
+
+function proof(
+  txId: string,
+  disposition: RepairProofBundle["admissionDisposition"],
+): RepairProofBundle {
+  return {
+    transactionId: txId,
+    incidentId: "incident-1",
+    selectedCandidateId: "candidate",
+    diagnosticDisposition:
+      disposition === "guarded"
+        ? "guarded-repair-eligible"
+        : "repair-eligible",
+    claimStrength:
+      disposition === "guarded"
+        ? "proven-static"
+        : "proven-runtime",
+    effectiveEvidenceLevel:
+      disposition === "guarded"
+        ? "proven-dependency-violation"
+        : "proven-with-observed-outcome",
+    blastRadiusDisposition: "minimal",
+    admissionDisposition: disposition,
+    supportingInvariantIds: [],
+    changedNodeIds: ["function:p:demo"],
+    affectedNodeIds: ["function:p:demo"],
+    requiredRevalidationNodeIds: [],
+    requiredRevalidationPaths: [],
+    impactTraces: [],
+    reasons: [],
+  };
+}
+
+describe("authorized repair mutation", () => {
+  it("authorizes an eligible proof with concrete validation", () => {
+    const tx = transaction();
+    expect(authorizeRepairMutation(
+      tx,
+      proof(tx.id, "eligible"),
+    )).toMatchObject({
+      authorized: true,
+      mode: "eligible",
+    });
+  });
+
+  it("blocks proof for another transaction", () => {
+    const tx = transaction();
+    expect(authorizeRepairMutation(
+      tx,
+      proof("other", "eligible"),
+    ).authorized).toBe(false);
+  });
+
+  it("blocks review-required and blocked admission", () => {
+    const tx = transaction();
+    expect(authorizeRepairMutation(
+      tx,
+      proof(tx.id, "review-required"),
+    ).authorized).toBe(false);
+    expect(authorizeRepairMutation(
+      tx,
+      proof(tx.id, "blocked"),
+    ).authorized).toBe(false);
+  });
+
+  it("requires explicit authorization for guarded repair", () => {
+    const tx = transaction();
+    const guarded = proof(tx.id, "guarded");
+
+    expect(authorizeRepairMutation(
+      tx,
+      guarded,
+    ).authorized).toBe(false);
+
+    expect(authorizeRepairMutation(
+      tx,
+      guarded,
+      { allowGuarded: true },
+    )).toMatchObject({
+      authorized: true,
+      mode: "guarded",
+    });
+  });
+
+  it("refuses repair without concrete validation steps", () => {
+    const tx = transaction(false);
+    expect(authorizeRepairMutation(
+      tx,
+      proof(tx.id, "eligible"),
+    ).authorized).toBe(false);
+  });
+});
