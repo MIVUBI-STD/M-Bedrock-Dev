@@ -71,3 +71,4 @@ export * from "./diagnostic-probe-planning.js";
 export * from "./diagnostic-probe-derivation.js";
 export * from "./diagnostic-investigation.js";
 export * from "./diagnostic-runtime-probe.js";
+export * from "./diagnostic-runtime-binding.js";
