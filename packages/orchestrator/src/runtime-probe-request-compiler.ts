@@ -211,6 +211,7 @@ export function compileRuntimeProbeRequests(
         options.requestId?.(item.probeId, index) ??
         plan.incidentId + "::" + item.probeId + "::" + (index + 1),
       probeId: item.probeId,
+      incidentId: plan.incidentId,
       predicate: binding.predicate,
       ...(mergedScope === undefined
         ? {}
