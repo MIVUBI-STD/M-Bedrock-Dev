@@ -188,3 +188,43 @@ mirrors.observe({
 ```
 
 Repeated identical drift is deduplicated. A changed drift state emits a new observation, and a consistent observation rearms the probe.
+
+
+### Revive transaction observation
+
+```ts
+const reviveGuard = createReviveTelemetryGuard(telemetry);
+
+reviveGuard.observeAttempt({
+  targetPlayerKey,
+  reviverPlayerKey,
+  scope: {
+    arenaId,
+    arenaGeneration,
+    lifeGeneration,
+  },
+});
+
+reviveGuard.observeCompletion({
+  targetPlayerKey,
+  reviverPlayerKey,
+  scope: {
+    arenaId,
+    arenaGeneration,
+    lifeGeneration,
+  },
+  transactionCurrent,
+  targetDeadConfirmed,
+  reviverEligible,
+});
+```
+
+The guard can observe:
+
+- self revive;
+- multiple distinct revivers;
+- stale completion;
+- completion after confirmed death;
+- invalid reviver.
+
+It does not decide revive eligibility. The caller supplies authoritative runtime facts such as `transactionCurrent`, `targetDeadConfirmed`, and `reviverEligible`.
