@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createBufferedTelemetrySink,
+  createCounterTelemetryIdFactory,
   createSamplingTelemetrySink,
   createTelemetryEmitter,
   createTickBudgetedTelemetrySink,
@@ -91,6 +92,7 @@ describe("telemetry performance budgets", () => {
     const telemetry = createTelemetryEmitter({
       producer: "instrumentation",
       sink: sampled,
+      idFactory: createCounterTelemetryIdFactory("instrumentation"),
     });
 
     for (let index = 0; index < 7; index += 1) {
