@@ -19,6 +19,7 @@ export function createBedrockTickProvider(
 export function createBedrockScriptEventTelemetrySink(
   system: Pick<BedrockSystemTelemetryLike, "sendScriptEvent">,
   eventId = "mivubi:telemetry",
+  maxMessageLength = 2048,
 ): TelemetrySink {
   if (!eventId.includes(":")) {
     throw new Error(
@@ -26,9 +27,23 @@ export function createBedrockScriptEventTelemetrySink(
     );
   }
 
+  if (!Number.isInteger(maxMessageLength) || maxMessageLength < 1) {
+    throw new Error("maxMessageLength must be a positive integer.");
+  }
+
   return {
     emit(event) {
-      system.sendScriptEvent(eventId, JSON.stringify(event));
+      const message = JSON.stringify(event);
+      if (message.length > maxMessageLength) {
+        throw new Error(
+          "Telemetry event exceeds script-event payload limit: " +
+          message.length +
+          " > " +
+          maxMessageLength +
+          ".",
+        );
+      }
+      system.sendScriptEvent(eventId, message);
     },
   };
 }
@@ -45,6 +60,76 @@ export function createBedrockConsoleTelemetrySink(
   return {
     emit(event) {
       write.call(consoleLike, prefix + JSON.stringify(event));
+    },
+  };
+}
+
+
+export interface BedrockScriptEventMessageLike {
+  readonly id: string;
+  readonly message: string;
+  readonly sourceType?: unknown;
+  readonly initiator?: unknown;
+  readonly sourceEntity?: unknown;
+  readonly sourceBlock?: unknown;
+}
+
+export interface BedrockScriptEventSignalLike {
+  subscribe(
+    callback: (event: BedrockScriptEventMessageLike) => void,
+  ): unknown;
+  unsubscribe?(
+    callback: (event: BedrockScriptEventMessageLike) => void,
+  ): void;
+}
+
+export interface BedrockScriptEventCollector {
+  dispose(): void;
+}
+
+export interface BedrockScriptEventCollectorOptions {
+  signal: BedrockScriptEventSignalLike;
+  sink: TelemetrySink;
+  eventId?: string;
+  accept?: (event: BedrockScriptEventMessageLike) => boolean;
+  onInvalid?: (
+    error: Error,
+    event: BedrockScriptEventMessageLike,
+  ) => void;
+}
+
+export function createBedrockScriptEventTelemetryCollector(
+  options: BedrockScriptEventCollectorOptions,
+): BedrockScriptEventCollector {
+  const eventId = options.eventId ?? "mivubi:telemetry";
+  const callback = (message: BedrockScriptEventMessageLike): void => {
+    if (message.id !== eventId) return;
+    if (options.accept && !options.accept(message)) return;
+
+    try {
+      const parsed = JSON.parse(message.message) as unknown;
+      const errors = validateTelemetryEvent(parsed);
+      if (errors.length > 0) {
+        throw new Error(errors.join("; "));
+      }
+      options.sink.emit(parsed as TelemetryEvent);
+    } catch (error) {
+      const normalized = error instanceof Error
+        ? error
+        : new Error(String(error));
+      if (options.onInvalid) {
+        options.onInvalid(normalized, message);
+        return;
+      }
+      throw normalized;
+    }
+  };
+
+  options.signal.subscribe(callback);
+
+  return {
+    dispose() {
+      options.signal.unsubscribe?.(callback);
     },
   };
 }
