@@ -197,4 +197,48 @@ describe("causal repair strategy selection", () => {
     expect(result.derivation.missingChainIds)
       .toEqual(["chain-1"]);
   });
+  it("forwards decision basis into selected repair proof", () => {
+    const { graph, candidate } = fixture();
+    const runtimeIncident: CausalIncident = {
+      ...incident,
+      rootCauseCandidates: [{
+        ...incident.rootCauseCandidates[0]!,
+        evidenceLevel: "proven-with-observed-outcome",
+        support: {
+          ...incident.rootCauseCandidates[0]!.support,
+          observedOutcomes: 1,
+        },
+      }],
+    };
+    const runtimeDiagnostic = {
+      ...diagnostic,
+      disposition: "repair-eligible" as const,
+      effectiveEvidenceLevel:
+        "proven-with-observed-outcome" as const,
+      claimStrength: "proven-runtime" as const,
+    };
+
+    const result = selectRepairStrategyForIncident(
+      graph,
+      runtimeIncident,
+      [chain],
+      runtimeDiagnostic,
+      registry,
+      [candidate],
+      {
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      },
+    );
+
+    expect(result.status).toBe("evaluated");
+    if (result.status !== "evaluated") return;
+    expect(result.selection.status).toBe("selected");
+    if (result.selection.status !== "selected") return;
+    expect(
+      result.selection.selected.pipeline.proof.decisionBasis
+        .runtimeEvidenceRevision,
+    ).toBe("evidence-current");
+  });
 });
