@@ -22,6 +22,7 @@ export interface RouteMutationCorrelation {
   status: RouteMutationCorrelationStatus;
   source?: SourceRef;
   mutationVolume: BlockVolume;
+  entityKeys: readonly string[];
 }
 
 function normalizedVolume(
@@ -137,6 +138,7 @@ export function correlateRouteMutations(
         status,
         ...(mutation.source === undefined ? {} : { source: mutation.source }),
         mutationVolume: mutation.volume,
+        entityKeys: route.entityKeys ?? [],
       });
     }
   }
@@ -149,10 +151,15 @@ export function correlateRouteMutations(
 
 export function routeMutationRuntimeEvidence(
   correlations: readonly RouteMutationCorrelation[],
+  navigatingEntityKeys: ReadonlySet<string> = new Set(),
 ): RuntimeEvidenceRecord[] {
   return correlations.flatMap((item): RuntimeEvidenceRecord[] => {
     if (item.status !== "overlap") return [];
-    return [{
+    const linkedNavigators = item.entityKeys.filter((key) =>
+      navigatingEntityKeys.has(key)
+    );
+
+    const records: RuntimeEvidenceRecord[] = [{
       predicate: "route-affecting-world-mutation",
       state: "present",
       confidence: "derived",
@@ -167,5 +174,19 @@ export function routeMutationRuntimeEvidence(
       ...(item.source === undefined ? {} : { sourceRefs: [item.source] }),
       note: item.routeId,
     }];
+
+    if (linkedNavigators.length > 0) {
+      records.push({
+        predicate: "route-navigation-consumer-present",
+        state: "present",
+        confidence: "derived",
+        scope: { operationId: item.mutationId },
+        ...(item.source === undefined ? {} : { sourceRefs: [item.source] }),
+        relatedNodeIds: linkedNavigators,
+        note: linkedNavigators.join(","),
+      });
+    }
+
+    return records;
   });
 }
