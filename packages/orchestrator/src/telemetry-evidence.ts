@@ -177,6 +177,34 @@ function recordsForEvent(event: TelemetryEvent): RuntimeEvidenceRecord[] {
         ),
       ];
 
+    case "mutation-applied": {
+      const records: RuntimeEvidenceRecord[] = [
+        base(
+          event,
+          "world-mutation-observed",
+          "present",
+          event.mutationKind,
+        ),
+        base(
+          event,
+          "mutation-apply",
+          "present",
+          event.mutationKind,
+        ),
+      ];
+      if (event.routeId !== undefined) {
+        records.push(
+          base(
+            event,
+            "route-affecting-world-mutation",
+            "present",
+            "route=" + event.routeId + ";mutation=" + event.mutationKind,
+          ),
+        );
+      }
+      return records;
+    }
+
     case "mutation-verification": {
       const records: RuntimeEvidenceRecord[] = [
         base(
