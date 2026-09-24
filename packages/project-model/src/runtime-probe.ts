@@ -78,3 +78,9 @@ export interface RuntimeProbeTranscript {
   droppedExchanges?: number;
   exchanges: readonly RuntimeProbeExchange[];
 }
+
+
+export interface RuntimeProbeBindingSet {
+  schemaVersion: 1;
+  bindings: readonly RuntimeProbeBinding[];
+}
