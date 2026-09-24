@@ -41,6 +41,13 @@ jobs:
             npm install --no-audit --no-fund
           fi
 
+      - name: Upload dependency lock bootstrap
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-lock
+          path: package-lock.json
+          retention-days: 1
+
       - name: Repository policy
         run: npm run verify:repository
 
