@@ -14,6 +14,7 @@ export interface EntityProgressSample {
   scope?: RuntimeScope;
   routeId?: string;
   eligible?: boolean;
+  expectedToProgress?: boolean;
   tick?: number;
   timestamp?: string;
 }
@@ -26,7 +27,7 @@ export interface EntityProgressMonitorOptions {
 }
 
 export interface EntityProgressMonitor {
-  observe(sample: EntityProgressSample): void;
+  observe(sample: EntityProgressSample): boolean;
   reset(entityKey: string): void;
   clear(): void;
 }
@@ -59,14 +60,16 @@ export function createEntityProgressMonitor(
 
   return {
     observe(sample) {
-      if (sample.eligible === false) {
+      const expectedToProgress =
+        sample.expectedToProgress ?? sample.eligible ?? true;
+      if (!expectedToProgress) {
         states.delete(sample.entityKey);
-        return;
+        return true;
       }
 
       const tick = sample.tick;
       if (tick === undefined || !Number.isInteger(tick) || tick < 0) {
-        return;
+        return true;
       }
 
       const current = states.get(sample.entityKey);
@@ -76,7 +79,7 @@ export function createEntityProgressMonitor(
           anchorTick: tick,
           lastTick: tick,
         });
-        return;
+        return true;
       }
 
       const delta = distance(current.anchor, sample.position);
@@ -89,18 +92,18 @@ export function createEntityProgressMonitor(
             ? {}
             : { lastReportedTick: current.lastReportedTick }),
         });
-        return;
+        return true;
       }
 
       current.lastTick = tick;
       const stalledTicks = tick - current.anchorTick;
-      if (stalledTicks < options.stallTicks) return;
+      if (stalledTicks < options.stallTicks) return true;
 
       if (
         current.lastReportedTick !== undefined &&
         tick - current.lastReportedTick < repeatCooldownTicks
       ) {
-        return;
+        return false;
       }
 
       options.telemetry.entityStall({
@@ -115,6 +118,7 @@ export function createEntityProgressMonitor(
           : { timestamp: sample.timestamp }),
       });
       current.lastReportedTick = tick;
+      return false;
     },
 
     reset(entityKey) {
