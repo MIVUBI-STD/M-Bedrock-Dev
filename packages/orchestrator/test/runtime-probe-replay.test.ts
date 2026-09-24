@@ -88,7 +88,7 @@ function exchange(input: {
   state: "present" | "absent" | "unknown";
   outcomeId?: string;
   ok?: boolean;
-  incidentId?: string;
+  incidentId?: string | null;
 }): RuntimeProbeExchange {
   const ok = input.ok ?? true;
   const outcomeByState =
@@ -109,9 +109,9 @@ function exchange(input: {
       schemaVersion: 1,
       requestId: input.requestId,
       probeId: input.probeId,
-      ...(input.incidentId === undefined
+      ...(input.incidentId === null
         ? {}
-        : { incidentId: input.incidentId }),
+        : { incidentId: input.incidentId ?? "incident-1" }),
       predicate: input.probeId,
       runtimeTick: 90,
       query: {
@@ -232,6 +232,40 @@ describe("adaptive runtime probe transcript replay", () => {
 
     expect(result.incident.rootCauseCandidates).toEqual([]);
     expect(result.nextPlan.stopCondition).toBe("candidate-set-exhausted");
+  });
+
+  it("ignores unscoped exchanges by default", () => {
+    const transcript: RuntimeProbeTranscript = {
+      schemaVersion: 1,
+      exchanges: [exchange({
+        requestId: "req-unscoped",
+        probeId: "chunk-ready",
+        incidentId: null,
+        state: "present",
+        outcomeId: "ready",
+      })],
+    };
+
+    const safe = replayRuntimeProbeTranscript(
+      incident(),
+      probes,
+      transcript,
+      { availableContext: "LIVE_MINECRAFT" },
+    );
+    expect(safe.ignoredIncidentExchanges).toBe(1);
+    expect(safe.successfulProbeIds).toEqual([]);
+
+    const legacy = replayRuntimeProbeTranscript(
+      incident(),
+      probes,
+      transcript,
+      {
+        availableContext: "LIVE_MINECRAFT",
+        allowUnscopedRequests: true,
+      },
+    );
+    expect(legacy.ignoredIncidentExchanges).toBe(0);
+    expect(legacy.successfulProbeIds).toEqual(["chunk-ready"]);
   });
 
   it("ignores exchanges explicitly bound to another incident", () => {
