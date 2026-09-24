@@ -35,6 +35,7 @@ export interface RuntimeProbeReplayResult {
 
 export interface RuntimeProbeReplayOptions {
   availableContext: DiagnosticExecutionContext;
+  allowUnscopedRequests?: boolean;
   maxResponseTickDelta?: number;
   maxConsumedRequestIds?: number;
   maxEvidenceRecords?: number;
@@ -90,8 +91,14 @@ export function replayRuntimeProbeTranscript(
 
   for (const exchange of transcript.exchanges) {
     if (
-      exchange.request.incidentId !== undefined &&
-      exchange.request.incidentId !== incident.id
+      (
+        exchange.request.incidentId === undefined &&
+        options.allowUnscopedRequests !== true
+      ) ||
+      (
+        exchange.request.incidentId !== undefined &&
+        exchange.request.incidentId !== incident.id
+      )
     ) {
       ignoredIncidentExchanges += 1;
       continue;
