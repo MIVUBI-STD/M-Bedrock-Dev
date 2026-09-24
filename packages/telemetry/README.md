@@ -476,3 +476,51 @@ double-start anomaly per arena generation.
 stale-callback anomaly if a later callback observes a different generation.
 The guard is observational; gameplay must still cancel/return when `check()`
 returns false.
+
+
+## Revive transaction monitoring
+
+`createReviveTransactionMonitor()` is an observer-side helper for the revive
+state machine. It does not grant, cancel, or complete revive gameplay.
+
+Typical integration:
+
+```ts
+const reviveMonitor = createReviveTransactionMonitor(telemetry);
+
+reviveMonitor.observeGeneration({
+  targetPlayerKey,
+  currentLifeGeneration: lifeGeneration,
+});
+
+reviveMonitor.observeStart({
+  targetPlayerKey,
+  targetLifeGeneration: lifeGeneration,
+  reviverPlayerKey,
+  eligible: isValidReviver,
+  scope,
+});
+
+reviveMonitor.observeDeath({
+  targetPlayerKey,
+  targetLifeGeneration: lifeGeneration,
+});
+
+reviveMonitor.observeCompletion({
+  targetPlayerKey,
+  targetLifeGeneration: lifeGeneration,
+  reviverPlayerKey,
+  scope,
+});
+```
+
+The monitor can emit:
+
+- `self-revive`
+- `multiple-revivers`
+- `stale-revive`
+- `revive-after-death`
+- `invalid-reviver`
+
+These are telemetry observations only. Gameplay authority remains in the map's
+actual revive transaction/state machine.
