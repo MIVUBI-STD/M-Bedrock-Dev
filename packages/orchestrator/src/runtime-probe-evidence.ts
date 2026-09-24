@@ -40,6 +40,7 @@ export function runtimeProbeResponseEvidence(
 
     records.push({
       ...response.evidence,
+      origin: "runtime-probe",
       relatedNodeIds: [
         ...(response.evidence.relatedNodeIds ?? []),
         "runtime-probe-response:" + response.requestId,
