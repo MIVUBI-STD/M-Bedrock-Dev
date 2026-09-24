@@ -194,4 +194,78 @@ describe("Bedrock telemetry lifecycle host", () => {
     expect(host.flushNow()).toBeDefined();
     expect(sent).toHaveLength(1);
   });
+  it("does not schedule or subscribe in off profile", () => {
+    const system = fakeSystem();
+    const sent: unknown[] = [];
+    const host = createBedrockTelemetryLifecycleHost({
+      system,
+      profile: "off",
+      flushIntervalTicks: 20,
+      transport: {
+        send(batch) {
+          sent.push(batch);
+        },
+      },
+    });
+
+    expect(host.kit.profile.name).toBe("off");
+    expect(host.start()).toBe(true);
+    expect(system.intervalCount()).toBe(0);
+    expect(system.subscriberCount()).toBe(0);
+
+    host.kit.emitter.staleCallback({
+      subsystem: "countdown",
+      capturedGeneration: 1,
+      currentGeneration: 2,
+    });
+    expect(host.kit.buffer.size).toBe(0);
+    expect(host.flushNow()).toBeUndefined();
+    expect(sent).toEqual([]);
+
+    host.dispose();
+  });
+
+  it("filters shared ScriptEvent input through the critical profile", () => {
+    const system = fakeSystem();
+    const host = createBedrockTelemetryLifecycleHost({
+      system,
+      profile: "critical",
+      transport: { send() {} },
+    });
+    host.start();
+
+    system.emitScriptEvent({
+      id: "mivubi:telemetry",
+      message: JSON.stringify({
+        schemaVersion: 1,
+        eventId: "pass-1",
+        kind: "route-revalidation",
+        producer: "instrumentation",
+        scope: {},
+        routeId: "bridge",
+        result: "passed",
+      }),
+    });
+    system.emitScriptEvent({
+      id: "mivubi:telemetry",
+      message: JSON.stringify({
+        schemaVersion: 1,
+        eventId: "fail-1",
+        kind: "route-revalidation",
+        producer: "instrumentation",
+        scope: {},
+        routeId: "bridge",
+        result: "failed",
+      }),
+    });
+
+    expect(host.kit.buffer.snapshot()).toEqual([
+      expect.objectContaining({
+        eventId: "fail-1",
+        result: "failed",
+      }),
+    ]);
+
+    host.dispose();
+  });
 });
