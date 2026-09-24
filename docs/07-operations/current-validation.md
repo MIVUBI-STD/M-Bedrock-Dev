@@ -86,3 +86,27 @@ Defense V1 has two lexical-only `playSound` candidates and no exact deprecated S
 Lexical-only counts are evidence for migration planning and never generate diagnostics by themselves.
 
 A partial `runCommandAsync` rewrite was rejected as a final map repair because it changed only a small portion of the 57-call exposure and would risk changing asynchronous gameplay semantics.
+
+## Repository engineering baseline — 2026-09-24
+
+Exact `Local` repository verification now includes:
+
+```text
+Node developer/build     24.21.0
+npm developer/build      11.19.0
+package-lock             v3 / mandatory
+locked package entries   213
+production source files  419
+orphan candidates        0
+first-level modules      29
+module edges             74
+dependency cycles        0
+```
+
+Repository policy, module shape, dependency graph, production dependency classification, source boundaries, TypeScript, Vitest, source hygiene, and portable source packaging are green on the deterministic lockfile/toolchain lane.
+
+### Dependency maintenance watch
+
+The stable `@8crafter/leveldb-zlib@1.6.0` dependency currently resolves through `cmake-js@7.4.0`, whose build dependency chain includes deprecated `tar@6.2.1`.
+
+Do not force an unverified `tar@7` override: the corresponding `cmake-js@8` line is a breaking major. Track upstream-compatible updates through Dependabot and validate any native-build dependency change through the normal exact-toolchain CI lane before adoption.

@@ -14,6 +14,7 @@ const required = [
   ".node-version",
   ".editorconfig",
   ".gitattributes",
+  ".github/dependabot.yml",
   "docs/README.md",
   "docs/01-product/README.md",
   "docs/02-artifacts/README.md",
