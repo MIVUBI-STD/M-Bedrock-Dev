@@ -25,6 +25,10 @@ function laneSet(
 
   if (reasons.some((reason) => reason.kind === "update-overlap")) lanes.add("differential");
   if (reasons.some((reason) => reason.kind === "historical-regression")) lanes.add("runtime");
+  if (reasons.some((reason) => reason.kind === "causal-regression")) {
+    lanes.add("runtime");
+    lanes.add("differential");
+  }
   if (domains.some((domain) => ["multiplayer", "chunks", "entities"].includes(domain))) {
     lanes.add("runtime");
     lanes.add("generative");
@@ -109,5 +113,29 @@ export function planRetest(
     reasons: reasons.sort((a, b) => b.weight - a.weight || a.detail.localeCompare(b.detail)),
     suggestedLanes: laneSet(reasons, domains),
     affectedDomains: domains,
+  };
+}
+
+
+export function augmentRetestPlan(
+  plan: RetestPlan,
+  extraReasons: readonly RetestReason[],
+  extraDomains: readonly ReliabilityDomain[] = [],
+): RetestPlan {
+  if (extraReasons.length === 0 && extraDomains.length === 0) return plan;
+
+  const reasons = [...plan.reasons, ...extraReasons]
+    .sort((a, b) => b.weight - a.weight || a.detail.localeCompare(b.detail));
+  const affectedDomains = [
+    ...new Set([...plan.affectedDomains, ...extraDomains]),
+  ].sort();
+  const totalWeight = reasons.reduce((sum, reason) => sum + reason.weight, 0);
+
+  return {
+    ...plan,
+    priority: priorityFor(totalWeight),
+    reasons,
+    suggestedLanes: laneSet(reasons, affectedDomains),
+    affectedDomains,
   };
 }
