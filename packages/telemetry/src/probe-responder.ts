@@ -36,9 +36,16 @@ interface ProbeResult {
 }
 
 function booleanResult(value: boolean | undefined): ProbeResult {
-  return value === undefined
-    ? { state: "unknown" }
-    : { state: value ? "present" : "absent", value };
+  if (value === undefined) return { state: "unknown" };
+  if (typeof value !== "boolean") {
+    throw new Error(
+      "Runtime probe boolean resolver returned a non-boolean value.",
+    );
+  }
+  return {
+    state: value ? "present" : "absent",
+    value,
+  };
 }
 
 function resolveQuery(
@@ -61,6 +68,11 @@ function resolveQuery(
     case "scoreboard-value": {
       const value = resolvers.scoreboardValue?.(request.query);
       if (value === undefined) return { state: "unknown" };
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        throw new Error(
+          "Runtime probe scoreboard resolver returned a non-finite value.",
+        );
+      }
       if (
         request.query.expected !== undefined &&
         value !== request.query.expected
