@@ -10,6 +10,13 @@ import type {
 import type {
   RuntimeProbeBinding,
 } from "../../project-model/src/runtime-probe.js";
+import {
+  runtimeScopeKey,
+  type RuntimeEvidenceRecord,
+} from "../../project-model/src/runtime-evidence.js";
+import type {
+  RuntimeEvidenceIntegrityReport,
+} from "../../project-model/src/runtime-evidence-integrity.js";
 import type { InspectTargetProfile } from "./types.js";
 import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 
@@ -33,6 +40,44 @@ function fingerprint(value: unknown): string {
     .digest("hex");
 }
 
+function normalizedRuntimeEvidence(
+  records: readonly RuntimeEvidenceRecord[],
+): unknown[] {
+  return [...records]
+    .map((record) => ({
+      predicate: record.predicate,
+      state: record.state,
+      confidence: record.confidence,
+      origin: record.origin ?? null,
+      scopeKey: runtimeScopeKey(record.scope),
+      observedAt: record.observedAt ?? null,
+      note: record.note ?? null,
+      sourceRefs: [...(record.sourceRefs ?? [])]
+        .map((source) => ({
+          artifactId: source.artifactId,
+          relativePath: source.relativePath,
+          range: source.range ?? null,
+          jsonPointer: source.jsonPointer ?? null,
+        }))
+        .sort((a, b) =>
+          a.artifactId.localeCompare(b.artifactId) ||
+          a.relativePath.localeCompare(b.relativePath) ||
+          JSON.stringify(a.range).localeCompare(JSON.stringify(b.range)) ||
+          String(a.jsonPointer).localeCompare(String(b.jsonPointer))
+        ),
+      relatedNodeIds: [...(record.relatedNodeIds ?? [])].sort(),
+    }))
+    .sort((a, b) =>
+      a.scopeKey.localeCompare(b.scopeKey) ||
+      a.predicate.localeCompare(b.predicate) ||
+      a.state.localeCompare(b.state) ||
+      a.confidence.localeCompare(b.confidence) ||
+      JSON.stringify(a.observedAt).localeCompare(
+        JSON.stringify(b.observedAt),
+      )
+    );
+}
+
 export interface DecisionBasisInput {
   sourceFingerprint?: string;
   graph?: SemanticGraph;
@@ -40,6 +85,8 @@ export interface DecisionBasisInput {
   invariantRegistry?: InvariantRegistrySnapshot;
   target?: InspectTargetProfile;
   probeBindings?: readonly RuntimeProbeBinding[];
+  runtimeEvidence?: readonly RuntimeEvidenceRecord[];
+  evidenceIntegrity?: Readonly<Record<string, RuntimeEvidenceIntegrityReport>>;
 }
 
 export function buildDecisionBasis(
@@ -73,6 +120,17 @@ export function buildDecisionBasis(
               a.predicate.localeCompare(b.predicate)
             ),
           ),
+        }),
+    ...(input.runtimeEvidence === undefined &&
+      input.evidenceIntegrity === undefined
+      ? {}
+      : {
+          runtimeEvidenceRevision: fingerprint({
+            records: normalizedRuntimeEvidence(
+              input.runtimeEvidence ?? [],
+            ),
+            integrity: input.evidenceIntegrity ?? {},
+          }),
         }),
   };
 }
