@@ -32,7 +32,11 @@ function transaction(
   });
 }
 
-function invariantRegistry() {
+function invariantRegistry(
+  minimumRepairClaim:
+    | "proven-static"
+    | "proven-runtime" = "proven-runtime",
+) {
   return {
     schemaVersion: 1 as const,
     revision: "inv-r1",
@@ -45,7 +49,7 @@ function invariantRegistry() {
         revision: "r1",
       },
       enforcement: "runtime-state" as const,
-      minimumRepairClaim: "proven-runtime" as const,
+      minimumRepairClaim,
       stateRequirements: [{
         id: "invariant:ready",
         predicate: "ready",
@@ -284,7 +288,7 @@ describe("repair strategy selection", () => {
       guardedDiagnostic,
       [candidate],
       {
-        invariantRegistry: invariantRegistry(),
+        invariantRegistry: invariantRegistry("proven-static"),
         requiredInvariantIds: ["invariant:ready"],
         allowGuarded: true,
       },
