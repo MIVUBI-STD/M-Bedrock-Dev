@@ -69,3 +69,4 @@ export * from "./telemetry-load.js";
 
 export * from "./diagnostic-probe-planning.js";
 export * from "./diagnostic-probe-derivation.js";
+export * from "./diagnostic-investigation.js";
