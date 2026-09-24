@@ -112,6 +112,40 @@ describe("telemetry evidence adapter", () => {
     ]));
   });
 
+  it("maps arena generation lifecycle anomalies into explicit invariant evidence", () => {
+    const records = telemetryRuntimeEvidence([{
+      schemaVersion: 1,
+      eventId: "arena-generation-1",
+      kind: "arena-generation-anomaly",
+      producer: "instrumentation",
+      scope: { operationId: "start-generation-5" },
+      anomaly: "reuse-before-reset",
+      arenaId: "arena-1",
+      observedGeneration: 5,
+      priorGeneration: 4,
+      currentGeneration: 5,
+    }]);
+
+    expect(records).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        predicate: "arena-generation-transition-observed",
+        state: "present",
+        scope: expect.objectContaining({
+          arenaId: "arena-1",
+          arenaGeneration: 5,
+        }),
+      }),
+      expect.objectContaining({
+        predicate: "arena-generation-transition-valid",
+        state: "absent",
+      }),
+      expect.objectContaining({
+        predicate: "arena-generation-anomaly-observed",
+        state: "present",
+      }),
+    ]));
+  });
+
   it("maps state drift into authority/mirror evidence", () => {
     const records = telemetryRuntimeEvidence([{
       schemaVersion: 1,
