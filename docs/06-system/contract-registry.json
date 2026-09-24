@@ -2,6 +2,20 @@
   "schemaVersion": 1,
   "contracts": [
     {
+      "id": "decision-basis-revision",
+      "symbol": "DecisionBasisRevision",
+      "owner": "packages/project-model/src/decision-ledger.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "decision-freshness",
+      "status": "canonical"
+    },
+    {
       "id": "decision-ledger-snapshot",
       "symbol": "DecisionLedgerSnapshot",
       "owner": "packages/project-model/src/decision-ledger.ts",
