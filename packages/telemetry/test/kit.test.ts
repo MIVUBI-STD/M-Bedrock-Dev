@@ -136,6 +136,47 @@ describe("development telemetry instrumentation kit", () => {
     expect(kit.buffer.size).toBe(1);
   });
 
+  it("reports verification and drains batches atomically", () => {
+    const kit = createTelemetryInstrumentationKit({
+      maxEvents: 1,
+    });
+
+    kit.verify.route({
+      routeId: "bridge",
+      result: "passed",
+      scope: { operationId: "route-op" },
+    });
+    kit.verify.mutation({
+      result: "failed",
+      mechanism: "sentinel",
+      scope: { operationId: "mutation-op" },
+    });
+
+    expect(kit.buffer.size).toBe(1);
+    expect(kit.buffer.dropped).toBe(1);
+
+    const batch = kit.drainBatch({
+      sessionId: "run-1",
+      artifactId: "art-1",
+    });
+
+    expect(batch).toEqual(expect.objectContaining({
+      schemaVersion: 1,
+      sessionId: "run-1",
+      artifactId: "art-1",
+      droppedEvents: 1,
+      events: [
+        expect.objectContaining({
+          kind: "mutation-verification",
+          result: "failed",
+          mechanism: "sentinel",
+        }),
+      ],
+    }));
+    expect(kit.buffer.size).toBe(0);
+    expect(kit.buffer.dropped).toBe(0);
+  });
+
   it("can clear evidence independently or clear everything", () => {
     const kit = createTelemetryInstrumentationKit({
       initialScope: { arenaId: "arena-1" },
