@@ -175,6 +175,15 @@ export function validateTelemetryEvent(
     validateScope(input.scope, errors);
   }
   numberField(input, "tick", errors);
+  if (
+    input.streamId !== undefined &&
+    (
+      typeof input.streamId !== "string" ||
+      input.streamId.trim().length === 0
+    )
+  ) {
+    errors.push("streamId must be a non-empty string.");
+  }
   numberField(input, "sequence", errors);
   if (
     typeof input.sequence === "number" &&
