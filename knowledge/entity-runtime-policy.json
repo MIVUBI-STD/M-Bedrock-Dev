@@ -396,7 +396,12 @@
       "causalConsequences": [
         "navigation-stall-risk",
         "fallback-recovery-risk"
-      ]
+      ],
+      "causalCorroborators": {
+        "navigation-stall-risk": [
+          "route-navigation-consumer-present"
+        ]
+      }
     }
   ]
 }
