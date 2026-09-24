@@ -9,6 +9,7 @@ import type {
   DiagnosticRepairDecision,
 } from "../../project-model/src/diagnostic-decision.js";
 import type { DiagnosticExecutionContext } from "../../project-model/src/diagnostic-probe.js";
+import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
 import type { DiagnosticInvestigationState } from "./diagnostic-investigation.js";
 
 const evidenceRank: Readonly<Record<RootCauseEvidenceLevel, number>> = {
@@ -81,6 +82,7 @@ export function decideDiagnosticRepair(
   incident: CausalIncident,
   investigation: DiagnosticInvestigationState,
   context: DiagnosticExecutionContext,
+  integrity?: RuntimeEvidenceIntegrityReport,
 ): DiagnosticRepairDecision {
   if (incident.id !== investigation.incidentId) {
     throw new Error("Diagnostic repair decision incident mismatch.");
@@ -131,6 +133,25 @@ export function decideDiagnosticRepair(
   const claimStrength = claimStrengthFor(effectiveEvidenceLevel);
   const supportedByInvestigation =
     investigation.supportedCandidateIds.includes(selected.id);
+
+  if (
+    (context === "LOCAL_MINECRAFT" || context === "LIVE_MINECRAFT") &&
+    integrity !== undefined &&
+    !integrity.safeForCurrentStateClaims
+  ) {
+    return {
+      incidentId: incident.id,
+      activeCandidateIds: active,
+      disposition: "proposal-only",
+      selectedCandidateId: selected.id,
+      effectiveEvidenceLevel,
+      claimStrength,
+      reasons: [
+        "Runtime evidence integrity does not permit a current-state repair claim.",
+        ...integrity.reasons,
+      ],
+    };
+  }
 
   if (
     effectiveEvidenceLevel === "proven-with-observed-outcome" &&
