@@ -84,7 +84,11 @@ describe("runtime evidence integrity", () => {
 
   it("blocks temporal claims for observed records without observation points", () => {
     const report = assessRuntimeEvidenceIntegrity(
-      [{ ...observed, observedAt: undefined }],
+      [{
+        predicate: observed.predicate,
+        state: observed.state,
+        confidence: observed.confidence,
+      }],
       {
         map: {},
         conflicts: [],
