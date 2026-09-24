@@ -173,6 +173,132 @@ describe("causal chain synthesis", () => {
     ]));
   });
 
+  it("marks a later observed outcome as temporally after the subject", () => {
+    const item = finding("KNOWLEDGE_EVIDENCE_GAP");
+    item.data = {
+      ...item.data,
+      presentPredicates: [
+        "route-affecting-world-mutation",
+        "navigation-stall-observed",
+      ],
+      causalOutcomePredicates: {
+        "navigation-stall-risk": ["navigation-stall-observed"],
+      },
+      predicateObservations: {
+        "route-affecting-world-mutation": [{
+          tick: 100,
+          sequence: 1,
+        }],
+        "navigation-stall-observed": [{
+          tick: 120,
+          sequence: 5,
+        }],
+      },
+    };
+
+    const chains = synthesizeCausalChains([item]);
+    expect(chains[0]?.confidence).toBe("medium");
+    expect(chains[0]?.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        temporalStatus: "after-subject",
+        strength: "direct-evidence",
+      }),
+    ]));
+  });
+
+  it("does not count an outcome observed before the subject as causal support", () => {
+    const item = finding("KNOWLEDGE_EVIDENCE_GAP");
+    item.data = {
+      ...item.data,
+      presentPredicates: [
+        "route-affecting-world-mutation",
+        "navigation-stall-observed",
+      ],
+      causalOutcomePredicates: {
+        "navigation-stall-risk": ["navigation-stall-observed"],
+      },
+      predicateObservations: {
+        "route-affecting-world-mutation": [{
+          tick: 120,
+          sequence: 5,
+        }],
+        "navigation-stall-observed": [{
+          tick: 100,
+          sequence: 1,
+        }],
+      },
+    };
+
+    const chains = synthesizeCausalChains([item]);
+    expect(chains[0]?.confidence).toBe("low");
+    expect(chains[0]?.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        temporalStatus: "before-subject",
+        strength: "direct-evidence",
+      }),
+    ]));
+  });
+
+  it("uses sequence to order outcomes inside the same tick", () => {
+    const item = finding("KNOWLEDGE_EVIDENCE_GAP");
+    item.data = {
+      ...item.data,
+      presentPredicates: [
+        "route-affecting-world-mutation",
+        "navigation-stall-observed",
+      ],
+      causalOutcomePredicates: {
+        "navigation-stall-risk": ["navigation-stall-observed"],
+      },
+      predicateObservations: {
+        "route-affecting-world-mutation": [{
+          tick: 200,
+          sequence: 2,
+        }],
+        "navigation-stall-observed": [{
+          tick: 200,
+          sequence: 3,
+        }],
+      },
+    };
+
+    const chains = synthesizeCausalChains([item]);
+    expect(chains[0]?.confidence).toBe("medium");
+    expect(chains[0]?.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        temporalStatus: "after-subject",
+      }),
+    ]));
+  });
+
+  it("keeps temporal status unresolved when one side lacks observation timing", () => {
+    const item = finding("KNOWLEDGE_EVIDENCE_GAP");
+    item.data = {
+      ...item.data,
+      presentPredicates: [
+        "route-affecting-world-mutation",
+        "navigation-stall-observed",
+      ],
+      causalOutcomePredicates: {
+        "navigation-stall-risk": ["navigation-stall-observed"],
+      },
+      predicateObservations: {
+        "navigation-stall-observed": [{
+          tick: 200,
+          sequence: 3,
+        }],
+      },
+    };
+
+    const chains = synthesizeCausalChains([item]);
+    expect(chains[0]?.confidence).toBe("medium");
+    expect(chains[0]?.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        temporalStatus: "unresolved",
+      }),
+    ]));
+  });
+
   it("does not synthesize risk chains without explicit consequence metadata", () => {
     const item = finding("KNOWLEDGE_RELATION_VIOLATION");
     item.data = {
