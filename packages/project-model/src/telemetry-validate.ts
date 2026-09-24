@@ -12,6 +12,7 @@ const KINDS = new Set([
   "revive-anomaly",
   "state-drift",
   "route-revalidation",
+  "mutation-applied",
   "mutation-verification",
 ]);
 
@@ -249,6 +250,26 @@ export function validateTelemetryEvent(
       stringField(input, "routeId", errors);
       if (input.result !== "passed" && input.result !== "failed") {
         errors.push("route-revalidation result must be passed or failed.");
+      }
+      break;
+    case "mutation-applied":
+      if (
+        ![
+          "structure-load",
+          "fill",
+          "setblock",
+          "clone",
+          "script-block-write",
+          "other",
+        ].includes(String(input.mutationKind))
+      ) {
+        errors.push("mutation-applied mutationKind is invalid.");
+      }
+      if (
+        input.routeId !== undefined &&
+        (typeof input.routeId !== "string" || input.routeId.trim().length === 0)
+      ) {
+        errors.push("mutation-applied routeId must be a non-empty string.");
       }
       break;
     case "mutation-verification":
