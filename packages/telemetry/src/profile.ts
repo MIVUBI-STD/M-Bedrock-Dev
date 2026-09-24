@@ -7,6 +7,12 @@ export type TelemetryRuntimeProfileName =
   | "qa"
   | "full";
 
+export type TelemetryEventPriority =
+  | "low"
+  | "normal"
+  | "high"
+  | "critical";
+
 export interface TelemetryRuntimeProfile {
   name: TelemetryRuntimeProfileName;
   continuousMonitoring: boolean;
@@ -14,7 +20,7 @@ export interface TelemetryRuntimeProfile {
   allow(event: TelemetryEvent): boolean;
 }
 
-function isFailedVerification(event: TelemetryEvent): boolean {
+export function isFailedTelemetryVerification(event: TelemetryEvent): boolean {
   return (
     (event.kind === "route-revalidation" ||
       event.kind === "mutation-verification") &&
@@ -22,14 +28,14 @@ function isFailedVerification(event: TelemetryEvent): boolean {
   );
 }
 
-function isCriticalEvent(event: TelemetryEvent): boolean {
+export function isCriticalTelemetryEvent(event: TelemetryEvent): boolean {
   return (
     event.kind === "arena-double-start" ||
     event.kind === "arena-generation-anomaly" ||
     event.kind === "stale-callback" ||
     event.kind === "revive-anomaly" ||
     event.kind === "state-drift" ||
-    isFailedVerification(event)
+    isFailedTelemetryVerification(event)
   );
 }
 
@@ -49,7 +55,7 @@ export function telemetryRuntimeProfile(
         name,
         continuousMonitoring: false,
         activeProbes: false,
-        allow: isCriticalEvent,
+        allow: isCriticalTelemetryEvent,
       };
     case "qa":
       return {
@@ -92,4 +98,27 @@ export function createProfileTelemetrySink(
       if (resolved.allow(event)) sink.emit(event);
     },
   };
+}
+
+
+export function telemetryEventPriority(
+  event: TelemetryEvent,
+): TelemetryEventPriority {
+  if (isCriticalTelemetryEvent(event)) return "critical";
+
+  if (
+    event.kind === "entity-stall" ||
+    event.kind === "teleport-fallback"
+  ) {
+    return "high";
+  }
+
+  if (
+    event.kind === "route-revalidation" ||
+    event.kind === "mutation-verification"
+  ) {
+    return "normal";
+  }
+
+  return "low";
 }
