@@ -140,6 +140,7 @@ export interface KnowledgeRelation {
   diagnosticHint?: string;
   diagnosticSeverity?: KnowledgeDiagnosticSeverity;
   causalConsequences?: readonly string[];
+  causalCorroborators?: Readonly<Record<string, readonly string[]>>;
 }
 
 export interface KnowledgeCatalog {
