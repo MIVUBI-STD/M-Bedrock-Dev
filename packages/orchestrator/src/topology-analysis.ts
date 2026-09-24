@@ -5,13 +5,13 @@ import {
   effectUsesOnlyAbsoluteCoordinates,
   resolveEffect,
   type ResolvedEffect,
-} from "../../../analyzers/topology/src/effect-resolution.js";
-import { deriveTopologyCandidates } from "../../../analyzers/topology/src/candidates.js";
-import { detectLinearTopologyOutliers } from "../../../analyzers/topology/src/linear-outliers.js";
-import { stateAccessesFromEffects } from "../../../analyzers/topology/src/state-from-effects.js";
-import { likelyGlobalAccess } from "../../../analyzers/topology/src/state-scope.js";
+} from "../../../analyzers/topology/src/index.js";
+import { deriveTopologyCandidates } from "../../../analyzers/topology/src/index.js";
+import { detectLinearTopologyOutliers } from "../../../analyzers/topology/src/index.js";
+import { stateAccessesFromEffects } from "../../../analyzers/topology/src/index.js";
+import { likelyGlobalAccess } from "../../../analyzers/topology/src/index.js";
 import { stateScopeDiagnostics, linearTopologyOutlierDiagnostics } from "../../../analyzers/diagnostics/src/topology-findings.js";
-import type { LinearTopologyOutlier } from "../../../analyzers/topology/src/linear-outliers.js";
+import type { LinearTopologyOutlier } from "../../../analyzers/topology/src/index.js";
 
 export interface SpatialEffectRecord {
   effect: CommandEffect;

@@ -12,10 +12,10 @@ import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
 } from "../../../analyzers/diagnostics/src/structure-findings.js";
-import { parseMcStructure } from "../../../adapters/mcstructure/src/parse.js";
-import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
-import { extractStructureRuntimeContent } from "../../../adapters/mcstructure/src/runtime-content.js";
-import { analyzeCommandBlockChains } from "../../../adapters/mcstructure/src/command-chain.js";
+import { parseMcStructure } from "../../../adapters/mcstructure/src/index.js";
+import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/index.js";
+import { extractStructureRuntimeContent } from "../../../adapters/mcstructure/src/index.js";
+import { analyzeCommandBlockChains } from "../../../adapters/mcstructure/src/index.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";

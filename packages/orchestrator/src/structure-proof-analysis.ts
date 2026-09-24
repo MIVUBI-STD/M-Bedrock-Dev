@@ -1,12 +1,12 @@
 import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
 import type { Coordinate3 } from "../../../analyzers/commands/src/coordinates.js";
 import { parseBlockVerificationSemantics } from "../../../analyzers/commands/src/verification-semantics.js";
-import type { StructureCoordinate, StructureSize } from "../../../adapters/mcstructure/src/types.js";
+import type { StructureCoordinate, StructureSize } from "../../../adapters/mcstructure/src/index.js";
 import {
   placedWorldCoordinate,
   type StructureMirror,
   type StructureRotation,
-} from "../../../adapters/mcstructure/src/placement-transform.js";
+} from "../../../adapters/mcstructure/src/index.js";
 import type { analyzeStructureAndChunkRuntime, StructureLoadCorrelation } from "./structure-runtime-analysis.js";
 
 type StructureRuntimeAnalysis = ReturnType<typeof analyzeStructureAndChunkRuntime>;

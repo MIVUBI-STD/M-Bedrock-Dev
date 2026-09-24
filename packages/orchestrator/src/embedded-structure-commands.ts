@@ -1,6 +1,6 @@
 import { analyzeCommand } from "../../../analyzers/commands/src/parse.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
-import type { EmbeddedCommandBlock } from "../../../adapters/mcstructure/src/runtime-content.js";
+import type { EmbeddedCommandBlock } from "../../../adapters/mcstructure/src/index.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
 
 export interface EmbeddedStructureCommandAnalysis {

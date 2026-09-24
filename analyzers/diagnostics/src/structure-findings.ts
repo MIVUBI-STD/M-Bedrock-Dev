@@ -1,6 +1,6 @@
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
-import type { McStructureModel } from "../../../adapters/mcstructure/src/types.js";
-import { validateStructureLayerLengths } from "../../../adapters/mcstructure/src/indexing.js";
+import type { McStructureModel } from "../../../adapters/mcstructure/src/index.js";
+import { validateStructureLayerLengths } from "../../../adapters/mcstructure/src/index.js";
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 

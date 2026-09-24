@@ -1,6 +1,6 @@
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
-import type { ExpectedTranslation } from "../../topology/src/outliers.js";
+import type { ExpectedTranslation } from "../../topology/src/index.js";
 
 export function topologyOutlierDiagnostics(
   comparisons: readonly ExpectedTranslation[],

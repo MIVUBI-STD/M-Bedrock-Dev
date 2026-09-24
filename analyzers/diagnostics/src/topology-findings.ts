@@ -1,8 +1,8 @@
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
-import type { LinearTopologyOutlier } from "../../topology/src/linear-outliers.js";
-import type { StateAccess } from "../../topology/src/state-scope.js";
-import { likelyGlobalAccess } from "../../topology/src/state-scope.js";
+import type { LinearTopologyOutlier } from "../../topology/src/index.js";
+import type { StateAccess } from "../../topology/src/index.js";
+import { likelyGlobalAccess } from "../../topology/src/index.js";
 
 export function stateScopeDiagnostics(accesses: readonly StateAccess[]): DiagnosticFinding[] {
   const findings: DiagnosticFinding[] = [];

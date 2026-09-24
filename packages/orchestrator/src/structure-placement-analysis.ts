@@ -1,15 +1,15 @@
 import type { Coordinate3 } from "../../../analyzers/commands/src/coordinates.js";
-import type { McStructureSemantics } from "../../../adapters/mcstructure/src/semantics.js";
+import type { McStructureSemantics } from "../../../adapters/mcstructure/src/index.js";
 import type {
   StructureCoordinate,
   StructureSize,
-} from "../../../adapters/mcstructure/src/types.js";
+} from "../../../adapters/mcstructure/src/index.js";
 import {
   placedWorldCoordinate,
   type StructureMirror,
   type StructureRotation,
-} from "../../../adapters/mcstructure/src/placement-transform.js";
-import type { EmbeddedCommandBlock } from "../../../adapters/mcstructure/src/runtime-content.js";
+} from "../../../adapters/mcstructure/src/index.js";
+import type { EmbeddedCommandBlock } from "../../../adapters/mcstructure/src/index.js";
 
 function absolute(
   coordinate: Coordinate3 | undefined,
