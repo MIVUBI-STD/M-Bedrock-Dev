@@ -10,6 +10,7 @@ import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { analyzeWorldDbNative } from "./world-db-analysis.js";
 import { worldDbRuntimeEvidence } from "./world-db-runtime-evidence.js";
 import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";
+import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -21,6 +22,7 @@ export async function inspectArtifact(
   path: string,
   target: InspectTargetProfile = {},
   knowledgeCatalog?: KnowledgeCatalog,
+  telemetryEvents: readonly TelemetryEvent[] = [],
 ): Promise<InspectArtifactResult> {
   const fingerprint = await sha256File(path);
   const artifactId = artifactIdFromFingerprint(fingerprint);
@@ -43,6 +45,7 @@ export async function inspectArtifact(
       fingerprint,
       knowledgeCatalog,
       worldDbRuntimeEvidence(nativeWorldDb),
+      telemetryEvents,
     );
     const embeddedCommandNativeCorrelations =
       correlateEmbeddedCommandsWithNativeChunks(
