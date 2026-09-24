@@ -308,4 +308,93 @@ describe("development telemetry instrumentation kit", () => {
     expect(requests).toEqual([request]);
   });
 
+  it("disables heavy instrumentation in off mode", () => {
+    const requests: unknown[] = [];
+    const kit = createTelemetryInstrumentationKit({
+      profile: "off",
+      activeProbeTransport: {
+        send(request) {
+          requests.push(request);
+        },
+      },
+    });
+
+    expect(kit.profile.name).toBe("off");
+    expect(kit.activeProbe).toBeUndefined();
+    expect(kit.entityProgress({ stallTicks: 10 }).observe({
+      entityKey: "demo:zombie",
+      tick: 10,
+      position: { x: 0, y: 0, z: 0 },
+      expectedToProgress: true,
+    })).toBe("disabled");
+    expect(kit.stateMirror.observe({
+      contractId: "ready",
+      authority: {
+        surface: { kind: "scoreboard", key: "ready" },
+        value: 1,
+      },
+      mirror: {
+        surface: { kind: "tag", key: "ready" },
+        value: 0,
+      },
+    })).toBe("disabled");
+
+    kit.emitter.staleCallback({
+      subsystem: "countdown",
+      capturedGeneration: 1,
+      currentGeneration: 2,
+    });
+
+    expect(kit.buffer.size).toBe(0);
+    expect(requests).toEqual([]);
+  });
+
+  it("critical profile retains failures while dropping normal observation noise", () => {
+    const kit = createTelemetryInstrumentationKit({
+      profile: "critical",
+    });
+
+    kit.emitter.routeRevalidation({
+      routeId: "bridge",
+      result: "passed",
+    });
+    kit.emitter.mutationApplied({
+      mutationKind: "fill",
+    });
+    kit.emitter.routeRevalidation({
+      routeId: "bridge",
+      result: "failed",
+    });
+    kit.emitter.staleCallback({
+      subsystem: "countdown",
+      capturedGeneration: 1,
+      currentGeneration: 2,
+    });
+
+    expect(kit.buffer.snapshot()).toEqual([
+      expect.objectContaining({
+        kind: "route-revalidation",
+        result: "failed",
+      }),
+      expect.objectContaining({
+        kind: "stale-callback",
+      }),
+    ]);
+  });
+
+  it("only exposes active probes in full profile", () => {
+    const transport = { send() {} };
+
+    const qa = createTelemetryInstrumentationKit({
+      profile: "qa",
+      activeProbeTransport: transport,
+    });
+    expect(qa.activeProbe).toBeUndefined();
+
+    const full = createTelemetryInstrumentationKit({
+      profile: "full",
+      activeProbeTransport: transport,
+    });
+    expect(full.activeProbe).toBeDefined();
+  });
 });
