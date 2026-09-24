@@ -54,6 +54,7 @@ function buildEvent<K extends Kind>(
   input: TelemetryEventInput<EventFor<K>>,
   options: TelemetryEmitterOptions,
   idFactory: TelemetryIdFactory,
+  sequence: number,
 ): EventFor<K> {
   const scope = mergeScope(
     options.baseScope,
@@ -77,6 +78,7 @@ function buildEvent<K extends Kind>(
     kind,
     producer: options.producer,
     scope,
+    sequence,
     ...rest,
     ...(tick === undefined ? {} : { tick }),
     ...(timestamp === undefined ? {} : { timestamp }),
@@ -97,12 +99,10 @@ export function createTelemetryEmitter(
     localSequence += 1;
     const event = buildEvent(
       kind,
-      {
-        ...input,
-        sequence: input.sequence ?? localSequence,
-      } as TelemetryEventInput<EventFor<K>>,
+      input,
       options,
       idFactory,
+      localSequence,
     );
     options.sink.emit(event);
     return event;
