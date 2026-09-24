@@ -33,3 +33,4 @@ export * from "./runtime-first-wrong.js";
 export * from "./invariant-registry.js";
 export * from "./decision-ledger.js";
 export * from "./decision-ledger-validate.js";
+export * from "./contract-registry-revision.js";
