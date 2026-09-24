@@ -35,6 +35,7 @@ export interface RuntimeProbeRequest {
   schemaVersion: 1;
   requestId: string;
   probeId: string;
+  incidentId?: string;
   predicate: string;
   scope?: RuntimeScope;
   runtimeTick?: number;
