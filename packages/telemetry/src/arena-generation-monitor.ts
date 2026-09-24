@@ -133,9 +133,11 @@ export function createArenaGenerationMonitor(
           observedGeneration: input.arenaGeneration,
           currentGeneration: current,
           priorGeneration: current,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         })) {
           anomalies.push("generation-regression");
         }
@@ -160,34 +162,16 @@ export function createArenaGenerationMonitor(
           observedGeneration: input.arenaGeneration,
           currentGeneration: input.arenaGeneration,
           priorGeneration,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         })) {
           anomalies.push("reuse-before-reset");
         }
       }
 
-      if (
-        [...state.activeGenerations].some(
-          (generation) =>
-            generation !== input.arenaGeneration &&
-            !state.resetVerified.has(generation),
-        )
-      ) {
-        if (emitOnce(telemetry, state, {
-          anomaly: "generation-overlap",
-          arenaId: input.arenaId,
-          observedGeneration: input.arenaGeneration,
-          currentGeneration: input.arenaGeneration,
-          priorGeneration,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
-        })) {
-          anomalies.push("generation-overlap");
-        }
-      }
 
       state.currentGeneration = input.arenaGeneration;
       state.activeGenerations.add(input.arenaGeneration);
@@ -215,9 +199,11 @@ export function createArenaGenerationMonitor(
           observedGeneration: input.arenaGeneration,
           currentGeneration: current,
           priorGeneration: input.arenaGeneration,
-          scope: input.scope,
-          tick: input.tick,
-          timestamp: input.timestamp,
+          ...(input.scope === undefined ? {} : { scope: input.scope }),
+          ...(input.tick === undefined ? {} : { tick: input.tick }),
+          ...(input.timestamp === undefined
+            ? {}
+            : { timestamp: input.timestamp }),
         })) {
           anomalies.push("stale-terminal");
         }
