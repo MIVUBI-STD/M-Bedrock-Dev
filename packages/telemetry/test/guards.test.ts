@@ -89,5 +89,8 @@ describe("telemetry instrumentation guards", () => {
         },
       }),
     ]);
+
+    expect(guard.check(9)).toBe(false);
+    expect(buffer.size).toBe(1);
   });
 });
