@@ -54,7 +54,7 @@ export interface ScriptApiUsageSymbol {
   writeOperations?: string[];
   callShapes?: ScriptCallShapeUsage[];
   resultUses?: Array<{
-    use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
+    use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "guard-condition" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
     occurrences: number;
     files: string[];
   }>;
@@ -128,7 +128,7 @@ interface MutableUsage {
     files: Set<string>;
   }>;
   resultUses: Map<string, {
-    use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
+    use: "ignored" | "assigned" | "guarded-assigned" | "unguarded-assigned" | "guard-condition" | "returned" | "dereferenced" | "optional-dereferenced" | "non-null-asserted" | "other";
     occurrences: number;
     files: Set<string>;
   }>;
