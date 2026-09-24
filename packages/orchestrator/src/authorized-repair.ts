@@ -1,4 +1,5 @@
 import type { SemanticGraph } from "../../graph/src/graph.js";
+import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
 import type {
   ApplyTransactionContext,
   ApplyTransactionResult,
@@ -19,9 +20,17 @@ import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 
 export interface AuthorizedRepairOptions {
   allowGuarded?: boolean;
+  decisionBasis?: Omit<
+    DecisionBasisRevision,
+    "sourceFingerprint" | "graphFingerprint"
+  >;
 }
 
-export interface RepairAuthorizationBasis {
+export interface RepairAuthorizationBasis
+  extends Omit<
+    DecisionBasisRevision,
+    "sourceFingerprint" | "graphFingerprint"
+  > {
   currentSourceFingerprint: string;
   currentGraphFingerprint: string;
 }
@@ -118,6 +127,32 @@ export function authorizeRepairMutation(
     };
   }
 
+  for (const key of [
+    "knowledgeRevision",
+    "invariantRegistryRevision",
+    "targetProfileFingerprint",
+    "probeBindingRevision",
+  ] as const) {
+    const expected = proof.decisionBasis[key];
+    if (
+      expected !== undefined &&
+      basis[key] !== expected
+    ) {
+      return {
+        authorized: false,
+        reasons: [
+          "Repair proof decision basis is stale for " +
+            key +
+            ": expected " +
+            expected +
+            ", received " +
+            String(basis[key] ?? "<missing>") +
+            ".",
+        ],
+      };
+    }
+  }
+
   if (proof.transactionId !== transaction.id) {
     return {
       authorized: false,
@@ -191,6 +226,7 @@ export async function applyAuthorizedRepair(
     {
       currentSourceFingerprint: context.currentSourceFingerprint,
       currentGraphFingerprint: semanticGraphFingerprint(currentGraph),
+      ...(options.decisionBasis ?? {}),
     },
     options,
   );
