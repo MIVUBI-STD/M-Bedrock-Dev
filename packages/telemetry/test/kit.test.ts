@@ -177,6 +177,29 @@ describe("development telemetry instrumentation kit", () => {
     expect(kit.buffer.dropped).toBe(0);
   });
 
+  it("drains framed batches with session defaults", () => {
+    const kit = createTelemetryInstrumentationKit({
+      sessionId: "session-default",
+      artifactId: "art-default",
+    });
+
+    kit.emitter.routeRevalidation({
+      routeId: "bridge",
+      result: "passed",
+    });
+
+    const frames = kit.drainFrames({
+      batchId: "frame-batch",
+      maxPayloadCharacters: 32,
+    });
+
+    expect(frames.length).toBeGreaterThan(1);
+    expect(kit.buffer.size).toBe(0);
+    expect(frames.every(
+      (frame) => frame.batchId === "frame-batch",
+    )).toBe(true);
+  });
+
   it("can clear evidence independently or clear everything", () => {
     const kit = createTelemetryInstrumentationKit({
       initialScope: { arenaId: "arena-1" },
