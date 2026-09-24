@@ -10,7 +10,8 @@ import { semanticGraphFingerprint } from "../src/semantic-graph-fingerprint.js";
 function decisionBasis(graph: SemanticGraph) {
   return {
     sourceFingerprint: "abc",
-    graphFingerprint: decisionBasis(graph),
+    graphFingerprint: semanticGraphFingerprint(graph),
+    runtimeEvidenceRevision: "evidence-current",
   };
 }
 
@@ -177,4 +178,27 @@ describe("repair proof bundle", () => {
     expect(errors.join(" ")).toMatch(/trace/i);
   });
 
+  it("rejects proven-runtime proof without a runtime evidence revision", () => {
+    const { graph, transaction, impact, blast, diagnostic, admission } = setup();
+    const bundle = createRepairProofBundle(
+      transaction,
+      diagnostic,
+      impact,
+      blast,
+      admission,
+      {
+        sourceFingerprint: "abc",
+        graphFingerprint: semanticGraphFingerprint(graph),
+      },
+    );
+
+    const errors = validateRepairProofBundle(
+      transaction,
+      bundle,
+    );
+
+    expect(errors).toEqual(expect.arrayContaining([
+      expect.stringMatching(/runtime evidence revision/i),
+    ]));
+  });
 });
