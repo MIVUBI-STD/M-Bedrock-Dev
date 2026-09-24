@@ -2,7 +2,7 @@ import type {
   MinecraftUpdateDelta,
   RuntimeObservationSnapshot,
 } from "../../reliability/src/index.js";
-import type { CampaignHistoryRecord } from "../../reliability-search/src/campaign-history.js";
+import type { CampaignHistoryRecord } from "../../reliability-search/src/index.js";
 import {
   challengeMinedInvariants,
   createInvariantRevalidationTasks,

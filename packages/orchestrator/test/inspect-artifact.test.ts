@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { packageDirectoryDeterministically } from "../../archive/src/package-zip.js";
+import { packageDirectoryDeterministically } from "../../archive/src/index.js";
 import { sha256File } from "../../artifact/src/index.js";
 import { inspectArtifact } from "../src/inspect-artifact.js";
 

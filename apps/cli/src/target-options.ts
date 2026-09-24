@@ -1,4 +1,4 @@
-import type { InspectTargetProfile } from "../../../packages/orchestrator/src/types.js";
+import type { InspectTargetProfile } from "../../../packages/orchestrator/src/index.js";
 import type { DiagnosticExecutionContext } from "../../../packages/project-model/src/diagnostic-probe.js";
 
 export interface ParsedCliTargetOptions {

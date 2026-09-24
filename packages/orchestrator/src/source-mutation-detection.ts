@@ -2,8 +2,8 @@ import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.js";
 import { stateAccessesFromEffects } from "../../../analyzers/topology/src/state-from-effects.js";
 import { likelyGlobalAccess } from "../../../analyzers/topology/src/state-scope.js";
-import type { SourceMutation } from "../../reliability-search/src/mutation-types.js";
-import type { SourceMutationDetector } from "../../reliability-search/src/source-mutation-campaign.js";
+import type { SourceMutation } from "../../reliability-search/src/index.js";
+import type { SourceMutationDetector } from "../../reliability-search/src/index.js";
 import { analyzeFunctionTopology } from "./topology-analysis.js";
 
 export interface SourceMutationFixture {

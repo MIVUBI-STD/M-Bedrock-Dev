@@ -1,7 +1,7 @@
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
 import { resolveScriptImports } from "../../../analyzers/scripts/src/resolve.js";
-import type { SourceMutation } from "../../reliability-search/src/mutation-types.js";
-import type { SourceMutationDetector } from "../../reliability-search/src/source-mutation-campaign.js";
+import type { SourceMutation } from "../../reliability-search/src/index.js";
+import type { SourceMutationDetector } from "../../reliability-search/src/index.js";
 
 export interface ScriptMutationFixture {
   identifier: string;

@@ -1,16 +1,16 @@
 import { resolve } from "node:path";
-import { compareArtifacts } from "../../../packages/orchestrator/src/compare-artifacts.js";
-import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/version-aware-comparison.js";
-import { inspectArtifact } from "../../../packages/orchestrator/src/inspect-artifact.js";
+import { compareArtifacts } from "../../../packages/orchestrator/src/index.js";
+import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/index.js";
+import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/load.js";
-import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/script-api-usage.js";
+import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
-import { loadTelemetryFile } from "../../../packages/orchestrator/src/telemetry-load.js";
-import { loadRuntimeProbeTranscript, assertRuntimeProbeTranscriptArtifact } from "../../../packages/orchestrator/src/runtime-probe-load.js";
-import { loadRuntimeProbeBindings } from "../../../packages/orchestrator/src/runtime-probe-binding-load.js";
-import { prepareRuntimeProbeBundle } from "../../../packages/orchestrator/src/runtime-probe-bundle.js";
-import { replayRuntimeProbeTranscript } from "../../../packages/orchestrator/src/runtime-probe-replay.js";
-import { compileRuntimeProbeRequests } from "../../../packages/orchestrator/src/runtime-probe-request-compiler.js";
+import { loadTelemetryFile } from "../../../packages/orchestrator/src/index.js";
+import { loadRuntimeProbeTranscript, assertRuntimeProbeTranscriptArtifact } from "../../../packages/orchestrator/src/index.js";
+import { loadRuntimeProbeBindings } from "../../../packages/orchestrator/src/index.js";
+import { prepareRuntimeProbeBundle } from "../../../packages/orchestrator/src/index.js";
+import { replayRuntimeProbeTranscript } from "../../../packages/orchestrator/src/index.js";
+import { compileRuntimeProbeRequests } from "../../../packages/orchestrator/src/index.js";
 
 async function main(): Promise<void> {
   const [, , command, ...rawArgs] = process.argv;

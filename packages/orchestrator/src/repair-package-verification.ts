@@ -2,11 +2,11 @@ import { createHash } from "node:crypto";
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
-import { NORMAL_EXTRACTION_BUDGET } from "../../archive/src/budgets.js";
+import { NORMAL_EXTRACTION_BUDGET } from "../../archive/src/index.js";
 import {
   extractZipSafely,
   inventoryZip,
-} from "../../archive/src/zip-transport.js";
+} from "../../archive/src/index.js";
 import { sha256File } from "../../artifact/src/index.js";
 import type {
   RepairVerificationReceipt,

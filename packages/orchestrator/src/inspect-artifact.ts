@@ -1,8 +1,8 @@
 import { mkdtemp, mkdir, cp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { NORMAL_EXTRACTION_BUDGET } from "../../archive/src/budgets.js";
-import { extractZipSafely, inventoryZip } from "../../archive/src/zip-transport.js";
+import { NORMAL_EXTRACTION_BUDGET } from "../../archive/src/index.js";
+import { extractZipSafely, inventoryZip } from "../../archive/src/index.js";
 import { sha256File, artifactIdFromFingerprint } from "../../artifact/src/index.js";
 import { inspectDirectory } from "./inspect.js";
 import type { InspectDirectoryResult, InspectTargetProfile } from "./types.js";
