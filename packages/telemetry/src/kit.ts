@@ -1,4 +1,5 @@
 import { createVerificationReporter, type VerificationReporter } from "./reporters.js";
+import { frameTelemetryBatch, type TelemetryFrame } from "./framing.js";
 import type {
   TelemetryBatch,
   TelemetryProducer,
@@ -80,6 +81,13 @@ export interface TelemetryInstrumentationKit {
     sessionId?: string;
     artifactId?: string;
   }): TelemetryBatch;
+
+  drainFrames(input: {
+    batchId: string;
+    maxPayloadCharacters: number;
+    sessionId?: string;
+    artifactId?: string;
+  }): readonly TelemetryFrame[];
 
   resetRuntimeState(): void;
   clearBuffer(): void;
@@ -181,6 +189,21 @@ export function createTelemetryInstrumentationKit(
       return buffer.drainBatch({
         ...(sessionId === undefined ? {} : { sessionId }),
         ...(artifactId === undefined ? {} : { artifactId }),
+      });
+    },
+
+    drainFrames(input) {
+      const batch = this.drainBatch({
+        ...(input.sessionId === undefined
+          ? {}
+          : { sessionId: input.sessionId }),
+        ...(input.artifactId === undefined
+          ? {}
+          : { artifactId: input.artifactId }),
+      });
+      return frameTelemetryBatch(batch, {
+        batchId: input.batchId,
+        maxPayloadCharacters: input.maxPayloadCharacters,
       });
     },
 
