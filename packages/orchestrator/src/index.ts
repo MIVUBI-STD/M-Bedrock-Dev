@@ -106,3 +106,4 @@ export * from "./repair-release-gate.js";
 
 export * from "./telemetry-text.js";
 export * from "./repair-package-staging.js";
+export * from "./repair-package-verification.js";
