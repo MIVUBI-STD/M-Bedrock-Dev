@@ -230,58 +230,6 @@ The guard can observe:
 It does not decide revive eligibility. The caller supplies authoritative runtime facts such as `transactionCurrent`, `targetDeadConfirmed`, and `reviverEligible`.
 
 
-## Session façade
-
-For normal map instrumentation, prefer the composed session:
-
-```ts
-const session = createTelemetrySession({
-  producer: "instrumentation",
-  sessionId: qaSessionId,
-  artifactId: buildArtifactId,
-  maxEvents: 512,
-  tickProvider: () => system.currentTick,
-  initialScope: {
-    arenaId,
-    arenaGeneration,
-  },
-  transportSink,
-});
-
-session.telemetry.routeRevalidation({
-  routeId: "bridge-route",
-  result: "passed",
-  scope: { operationId: routeOperationId },
-});
-
-session.arenaStart.observeStart({
-  arenaId,
-  arenaGeneration,
-  operationId: startOperationId,
-});
-
-const progress = session.createEntityProgressProbe({
-  stallTicks: 40,
-});
-
-const batch = session.batch();
-```
-
-The session composes the same canonical primitives:
-
-- validating emitter;
-- shared scope lease;
-- bounded buffer;
-- optional fanout transport;
-- arena-start guard;
-- revive guard;
-- state-mirror probe;
-- deferred-generation guard factory;
-- entity-progress probe factory.
-
-`reset()` clears observer state and buffered evidence without resetting the emitter id counter, preserving event-id monotonicity for the session instance.
-
-
 ## Development kit
 
 For most map-development instrumentation, prefer the composed kit:
@@ -289,6 +237,8 @@ For most map-development instrumentation, prefer the composed kit:
 ```ts
 const kit = createTelemetryInstrumentationKit({
   producer: "instrumentation",
+  sessionId: qaSessionId,
+  artifactId: buildArtifactId,
   maxEvents: 512,
   initialScope: {
     arenaId,
@@ -323,3 +273,6 @@ Lifecycle controls are intentionally separate:
 - `clearAll()` clears both.
 
 This avoids accidentally deleting the diagnostic evidence during the same arena reset being investigated.
+
+
+The development kit is the sole composed façade for telemetry instrumentation. Lower-level emitter/sink/guard/probe primitives remain available when a map needs custom composition, but there is no parallel session manager with separate lifecycle semantics.
