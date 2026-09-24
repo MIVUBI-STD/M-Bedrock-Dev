@@ -372,3 +372,76 @@ This layer requires observed values/revisions; static scoreboard/tag presence al
 `inspectArtifact` now feeds native LevelDB scan evidence into that channel before knowledge evaluation.
 
 Persisted chunk records remain disk evidence only. They never imply `loaded-target-chunk`.
+
+
+## Causal chain synthesis
+
+Inspection now produces evidence-aware causal chains in addition to flat diagnostics.
+
+The chain model distinguishes:
+
+```text
+observed-state
+↓ direct/dependency link
+missing requirement
+↓
+violation or evidence gap
+↓ risk-only
+downstream risk
+```
+
+Three link strengths are used:
+
+- `direct-evidence`: the relevant state contradiction is explicitly observed;
+- `dependency-supported`: knowledge establishes a dependency but available evidence is incomplete;
+- `risk-only`: project knowledge marks a plausible downstream consequence that has not itself been observed.
+
+Example:
+
+```text
+route-affecting-world-mutation
+↓
+route-revalidation missing/unproven
+↓
+navigation-stall-risk
+↓
+fallback-recovery-risk
+```
+
+The final two nodes remain risk projections unless separate runtime evidence proves an actual stall or recovery event.
+
+Causal consequence labels come from `KnowledgeRelation.causalConsequences`, not from hard-coded orchestrator relation ids.
+
+Current consequence-enabled high-value relations include:
+
+- route mutation → navigation/recovery risk;
+- mutation dependent-work ordering → premature gameplay/partial-world-state risk;
+- state authority/mirror drift → incorrect state-decision risk;
+- premature terminal reward → reward/progression corruption risk;
+- missing structure target → downstream setup failure risk.
+
+### Transaction-order source of truth
+
+Mutation ordering uses the existing canonical analyzers:
+
+- `mutation-transaction-analysis.ts`;
+- `script-mutation-transaction-analysis.ts`;
+- `script-command-transaction-analysis.ts`.
+
+They perform bounded call expansion, mutation-bound-aware verification, dependent-action contracts, and conservative unresolved barriers.
+
+A redundant generic transaction tracer was intentionally removed rather than maintaining two competing ordering engines.
+
+Proven late verification such as:
+
+```text
+APPLY
+↓
+teleport/spawn/gameplay activation
+↓
+VERIFY
+```
+
+produces explicit absent verification evidence and can become a high-severity relation violation.
+
+Unresolved recursion/call depth/unknown execution paths remain evidence gaps.
