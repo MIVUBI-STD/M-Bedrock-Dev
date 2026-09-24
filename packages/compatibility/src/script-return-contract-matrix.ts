@@ -6,6 +6,7 @@ export type ScriptReturnUse =
   | "assigned"
   | "guarded-assigned"
   | "unguarded-assigned"
+  | "guard-condition"
   | "returned"
   | "dereferenced"
   | "optional-dereferenced"
@@ -140,6 +141,7 @@ export function checkScriptReturnContract(
     call.resultUse === "optional-dereferenced" ||
     call.resultUse === "non-null-asserted" ||
     call.resultUse === "guarded-assigned" ||
+    call.resultUse === "guard-condition" ||
     call.resultUse === "ignored"
   ) {
     return {
