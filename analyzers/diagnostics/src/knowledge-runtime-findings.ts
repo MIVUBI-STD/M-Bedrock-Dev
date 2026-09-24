@@ -89,6 +89,7 @@ export function knowledgeRuntimeDiagnostics(
         streamId?: string;
         sequence?: number;
         timestamp?: string;
+        origin?: RuntimeEvidenceRecord["origin"];
       }>
     > = {};
     for (const record of causalRecords) {
@@ -96,7 +97,12 @@ export function knowledgeRuntimeDiagnostics(
       if (record.observedAt) {
         predicateObservations[record.predicate] = [
           ...(predicateObservations[record.predicate] ?? []),
-          record.observedAt,
+          {
+            ...record.observedAt,
+            ...(record.origin === undefined
+              ? {}
+              : { origin: record.origin }),
+          },
         ];
       }
       const keys = record.sourceRefs?.map(sourceKey) ?? [];
