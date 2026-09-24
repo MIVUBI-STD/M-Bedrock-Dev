@@ -260,6 +260,36 @@
         "mivubi-event-order-policy-v1"
       ],
       "diagnosticSeverity": "medium"
+    },
+    {
+      "id": "event-policy.relation-callback-execution-requires-current-generation",
+      "domain": "event-ordering",
+      "subject": "deferred-callback-executed",
+      "kind": "requires",
+      "object": "current-generation-callback",
+      "classification": "project-policy",
+      "applicability": {
+        "editions": [
+          "bedrock",
+          "education"
+        ]
+      },
+      "sourceIds": [
+        "mivubi-event-order-policy-v1"
+      ],
+      "diagnosticSeverity": "critical",
+      "causalConsequences": [
+        "cross-round-state-risk",
+        "async-race-risk"
+      ],
+      "causalOutcomePredicates": {
+        "cross-round-state-risk": [
+          "stale-callback-observed"
+        ],
+        "async-race-risk": [
+          "stale-callback-observed"
+        ]
+      }
     }
   ]
 }
