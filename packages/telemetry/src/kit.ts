@@ -1,4 +1,9 @@
 import { createVerificationReporter, type VerificationReporter } from "./reporters.js";
+import {
+  createActiveRuntimeProbeClient,
+  type ActiveRuntimeProbeClient,
+  type ActiveRuntimeProbeTransport,
+} from "./active-probe.js";
 import { frameTelemetryBatch, type TelemetryFrame } from "./framing.js";
 import type {
   TelemetryBatch,
@@ -52,6 +57,8 @@ export interface TelemetryInstrumentationKitOptions {
   timestampProvider?: () => string | undefined;
   idFactory?: TelemetryIdFactory;
   transportSink?: TelemetrySink;
+  activeProbeTransport?: ActiveRuntimeProbeTransport;
+  probeRequestIdFactory?: () => string;
   validateEvents?: boolean;
 }
 
@@ -63,6 +70,7 @@ export interface TelemetryInstrumentationKit {
   readonly revive: ReviveTelemetryGuard;
   readonly stateMirror: StateMirrorProbe;
   readonly verify: VerificationReporter;
+  readonly activeProbe?: ActiveRuntimeProbeClient;
 
   captureGeneration(
     input: DeferredGenerationCapture,
@@ -141,6 +149,25 @@ export function createTelemetryInstrumentationKit(
   const revive = createReviveTelemetryGuard(emitter);
   const stateMirror = createStateMirrorProbe(emitter);
   const verify = createVerificationReporter(emitter);
+  const activeProbe = options.activeProbeTransport
+    ? createActiveRuntimeProbeClient({
+        transport: options.activeProbeTransport,
+        ...(options.baseScope === undefined
+          ? {}
+          : { baseScope: options.baseScope }),
+        scopeProvider: () =>
+          mergeRuntimeScope(
+            scope.current(),
+            options.scopeProvider?.(),
+          ),
+        ...(options.tickProvider === undefined
+          ? {}
+          : { tickProvider: options.tickProvider }),
+        ...(options.probeRequestIdFactory === undefined
+          ? {}
+          : { requestIdFactory: options.probeRequestIdFactory }),
+      })
+    : undefined;
   const entityProgressProbes = new Set<EntityProgressProbe>();
 
   const resetRuntimeState = (): void => {
@@ -160,6 +187,7 @@ export function createTelemetryInstrumentationKit(
     revive,
     stateMirror,
     verify,
+    ...(activeProbe === undefined ? {} : { activeProbe }),
 
     captureGeneration(input) {
       return captureDeferredGeneration(emitter, input);
