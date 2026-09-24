@@ -15,11 +15,11 @@ DEV.cmd finalize-local
 
 It delegates to `tooling/windows-toolchain/dev.ps1`. Internal package scripts remain implementation details.
 
-`DEV.cmd doctor` checks the pinned Node major, npm, PowerShell, Git/branch context, dependency lock state, installed dependencies, and local workspace shape without owning product semantics.
+`DEV.cmd doctor` checks the exact pinned Node/npm developer toolchain, PowerShell, Git/branch context, dependency lock state, installed dependencies, and local workspace shape without owning product semantics.
 
 ## Toolchain authority
 
-`toolchain.json` owns supported developer-tool policy.
+`toolchain.json` owns supported developer-tool policy. The developer/build environment pins Node `24.21.0` and npm `11.19.0`; `package.json#engines` remains the broader runtime compatibility contract for Node 24.
 
 Do not require global TypeScript/Vitest/build tools when package-managed versions are sufficient.
 

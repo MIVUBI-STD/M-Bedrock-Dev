@@ -72,3 +72,12 @@ packages/orchestrator
 ```
 
 `packages/telemetry` must not import `@minecraft/server`, analyzers, CLI, or orchestrator. Bedrock-specific map code supplies tick/scope providers and a transport sink.
+
+## Module shape
+
+First-level modules under `packages/`, `analyzers/`, and `adapters/` expose `src/index.ts`.
+Application modules under `apps/` expose either `src/main.ts` or `src/index.ts`.
+
+Generic first-level module buckets such as `utils`, `helpers`, `misc`, and `shared` are forbidden. Shared code must have a semantic owner; genuinely dependency-neutral primitives belong in `packages/common`.
+
+This shape is checked by `tooling/repository/verify-module-shape.mjs`.

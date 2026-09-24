@@ -35,7 +35,8 @@ try {
         }
         "doctor" {
             $toolchain = Get-Content "toolchain.json" -Raw | ConvertFrom-Json
-            $expectedNodeMajor = [string]$toolchain.node.major
+            $expectedNodeVersion = [string]$toolchain.node.version
+            $expectedNpmVersion = [string]$toolchain.npm.version
             $expectedPowerShellMajor = [int]$toolchain.powershell.minimumMajor
             $failures = [System.Collections.Generic.List[string]]::new()
             $warnings = [System.Collections.Generic.List[string]]::new()
@@ -46,20 +47,26 @@ try {
                 $failures.Add("Node.js is required.")
             }
             else {
-                $nodeVersion = (& node --version).Trim()
-                $nodeMajor = $nodeVersion.TrimStart("v").Split(".")[0]
-                if ($nodeMajor -eq $expectedNodeMajor) {
-                    Write-DoctorStatus "Node" "PASS" $nodeVersion
+                $nodeVersion = (& node --version).Trim().TrimStart("v")
+                if ($nodeVersion -eq $expectedNodeVersion) {
+                    Write-DoctorStatus "Node" "PASS" "v$nodeVersion"
                 }
                 else {
-                    Write-DoctorStatus "Node" "FAIL" "$nodeVersion; expected major $expectedNodeMajor"
-                    $failures.Add("Node.js major does not match toolchain.json.")
+                    Write-DoctorStatus "Node" "FAIL" "v$nodeVersion; expected v$expectedNodeVersion"
+                    $failures.Add("Node.js version does not match toolchain.json.")
                 }
             }
 
             $npmCommand = Get-Command npm -ErrorAction SilentlyContinue
             if ($npmCommand) {
-                Write-DoctorStatus "npm" "PASS" ((& npm --version).Trim())
+                $npmVersion = (& npm --version).Trim()
+                if ($npmVersion -eq $expectedNpmVersion) {
+                    Write-DoctorStatus "npm" "PASS" $npmVersion
+                }
+                else {
+                    Write-DoctorStatus "npm" "FAIL" "$npmVersion; expected $expectedNpmVersion"
+                    $failures.Add("npm version does not match toolchain.json.")
+                }
             }
             else {
                 Write-DoctorStatus "npm" "FAIL" "not found"

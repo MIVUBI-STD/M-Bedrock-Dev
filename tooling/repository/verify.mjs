@@ -23,6 +23,7 @@ const required = [
   "docs/06-system/implementation-map.md",
   "docs/06-system/contract-registry.json",
   "tooling/repository/verify-contract-registry.mjs",
+  "tooling/repository/verify-module-shape.mjs",
   "docs/06-system/skill-routing.md",
   "docs/06-system/development-operations.md",
   "docs/07-operations/current-validation.md",
@@ -125,13 +126,30 @@ if (pkg.version !== version) {
 }
 
 const requiredNodeMajor = String(toolchain?.node?.major ?? "");
-if (!requiredNodeMajor || nodeVersion !== requiredNodeMajor) {
-  console.error(`Node authority mismatch: toolchain.json=${requiredNodeMajor}, .node-version=${nodeVersion}`);
+const requiredNodeVersion = String(toolchain?.node?.version ?? "");
+const requiredNpmVersion = String(toolchain?.npm?.version ?? "");
+
+if (!requiredNodeMajor || !requiredNodeVersion || nodeVersion !== requiredNodeVersion) {
+  console.error(
+    `Node authority mismatch: toolchain.json=${requiredNodeVersion}, .node-version=${nodeVersion}`,
+  );
+  process.exit(1);
+}
+
+if (!requiredNodeVersion.startsWith(requiredNodeMajor + ".")) {
+  console.error("toolchain.json node.version does not match node.major.");
   process.exit(1);
 }
 
 if (!String(pkg.engines?.node ?? "").includes(requiredNodeMajor)) {
   console.error("package.json engines.node does not reflect toolchain Node authority.");
+  process.exit(1);
+}
+
+if (!requiredNpmVersion || pkg.packageManager !== `npm@${requiredNpmVersion}`) {
+  console.error(
+    `npm authority mismatch: package.json=${pkg.packageManager ?? "<missing>"}, toolchain.json=npm@${requiredNpmVersion}`,
+  );
   process.exit(1);
 }
 
