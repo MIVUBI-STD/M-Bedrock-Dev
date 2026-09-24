@@ -890,9 +890,9 @@ export async function inspectDirectory(
 
   const causalChains = synthesizeCausalChains(diagnostics, {
     telemetryTemporalReliable:
-      telemetryEvidenceIntegrity.safeForTemporalViolationClaims,
+      !telemetryContinuity.incomplete,
     runtimeProbeTemporalReliable:
-      runtimeProbeEvidenceIntegrity.safeForTemporalViolationClaims,
+      runtimeProbeDroppedExchanges === 0,
   });
   const causalIncidents = synthesizeCausalIncidents(causalChains);
   const diagnosticProbeAnalysis = analyzeDiagnosticProbes(
@@ -983,6 +983,8 @@ export async function inspectDirectory(
               const to = nodesById.get(link.to);
               return (
                 link.strength === "direct-evidence" &&
+                link.temporalIntegrity !== "incomplete" &&
+                link.temporalStatus !== "before-subject" &&
                 from?.kind === "downstream-risk" &&
                 to?.kind === "observed-state"
               );
