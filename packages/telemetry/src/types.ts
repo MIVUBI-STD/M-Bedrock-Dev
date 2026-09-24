@@ -75,6 +75,7 @@ export interface TelemetryEmitter {
 
 export interface BufferedTelemetrySink extends TelemetrySink {
   readonly size: number;
+  readonly dropped: number;
   snapshot(): readonly TelemetryEvent[];
   clear(): void;
   batch(input?: {
