@@ -95,6 +95,7 @@ function mismatchReason(
   for (const key of [
     "sourceFingerprint",
     "graphFingerprint",
+    "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
     "targetProfileFingerprint",
