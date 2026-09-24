@@ -14,3 +14,5 @@ export * from "./kit.js";
 export * from "./reporters.js";
 
 export * from "./framing.js";
+
+export * from "./frame-collector.js";
