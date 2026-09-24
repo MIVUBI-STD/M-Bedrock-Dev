@@ -16,6 +16,7 @@ export type DecisionLedgerStatus =
 export interface DecisionBasisRevision {
   sourceFingerprint?: string;
   graphFingerprint?: string;
+  contractRegistryRevision?: string;
   knowledgeRevision?: string;
   invariantRegistryRevision?: string;
   targetProfileFingerprint?: string;
