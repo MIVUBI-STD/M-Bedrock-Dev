@@ -183,4 +183,50 @@ describe("authorized repair mutation", () => {
     });
   });
 
+  it("rejects stale runtime evidence proof", () => {
+    const tx = transaction();
+    const boundProof: RepairProofBundle = {
+      ...proof(tx.id, "eligible"),
+      decisionBasis: {
+        ...proof(tx.id, "eligible").decisionBasis,
+        runtimeEvidenceRevision: "evidence-a",
+      },
+    };
+
+    expect(authorizeRepairMutation(
+      tx,
+      boundProof,
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+        runtimeEvidenceRevision: "evidence-b",
+      },
+    )).toMatchObject({
+      authorized: false,
+    });
+  });
+
+  it("accepts repair proof when runtime evidence revision still matches", () => {
+    const tx = transaction();
+    const boundProof: RepairProofBundle = {
+      ...proof(tx.id, "eligible"),
+      decisionBasis: {
+        ...proof(tx.id, "eligible").decisionBasis,
+        runtimeEvidenceRevision: "evidence-a",
+      },
+    };
+
+    expect(authorizeRepairMutation(
+      tx,
+      boundProof,
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+        runtimeEvidenceRevision: "evidence-a",
+      },
+    )).toMatchObject({
+      authorized: true,
+      mode: "eligible",
+    });
+  });
 });
