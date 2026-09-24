@@ -24,7 +24,12 @@ export * from "./probe-responder.js";
 export * from "./bedrock.js";
 export * from "./transport.js";
 export * from "./observers.js";
-export * from "./entity-progress.js";
+export {
+  createEntityProgressMonitor,
+  type Position3,
+  type EntityProgressMonitorOptions,
+  type EntityProgressMonitor,
+} from "./entity-progress.js";
 
 export * from "./mutation-lifecycle.js";
 
