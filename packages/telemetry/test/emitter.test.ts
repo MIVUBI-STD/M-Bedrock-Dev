@@ -12,6 +12,36 @@ import {
 } from "../src/index.js";
 
 describe("telemetry emitter sdk", () => {
+  it("assigns monotonic sequence within its configured stream", () => {
+    const buffer = createBufferedTelemetrySink();
+    const emitter = createTelemetryEmitter({
+      producer: "instrumentation",
+      sink: buffer,
+      streamId: "arena-runtime",
+      tickProvider: () => 42,
+    });
+
+    const first = emitter.routeRevalidation({
+      routeId: "bridge",
+      result: "passed",
+    });
+    const second = emitter.mutationApplied({
+      mutationKind: "fill",
+      routeId: "bridge",
+    });
+
+    expect(first).toMatchObject({
+      streamId: "arena-runtime",
+      sequence: 1,
+      tick: 42,
+    });
+    expect(second).toMatchObject({
+      streamId: "arena-runtime",
+      sequence: 2,
+      tick: 42,
+    });
+  });
+
   it("merges base, dynamic, and event scope while filling tick and timestamp", () => {
     const buffer = createBufferedTelemetrySink();
     const lease = createTelemetryScopeLease({
