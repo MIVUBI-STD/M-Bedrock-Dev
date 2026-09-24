@@ -28,7 +28,7 @@ describe("decision ledger", () => {
         sourceFingerprint: "source-a",
         graphFingerprint: "graph-a",
       },
-      inputIds: ["decision-1"],
+      upstreamDecisionIds: ["decision-1"],
     });
 
     expect(ledger.entries.map((entry) => entry.createdSequence))
@@ -94,7 +94,7 @@ describe("decision ledger", () => {
       id: "decision-2",
       kind: "diagnostic-candidate-selection",
       basis: { knowledgeRevision: "k1" },
-      inputIds: ["decision-1"],
+      upstreamDecisionIds: ["decision-1"],
     });
     ledger = supersedeDecisionLedgerEntry(
       ledger,
@@ -125,4 +125,89 @@ describe("decision ledger", () => {
       basis: {},
     })).toThrow(/already exists/);
   });
+
+  it("invalidates descendants when an upstream decision becomes stale", () => {
+    let ledger = createDecisionLedger();
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "parent",
+      kind: "repair-authorization",
+      basis: { graphFingerprint: "graph-a" },
+    });
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "child",
+      kind: "repair-admission",
+      basis: {},
+      upstreamDecisionIds: ["parent"],
+    });
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "grandchild",
+      kind: "release-admission",
+      basis: {},
+      upstreamDecisionIds: ["child"],
+    });
+
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      graphFingerprint: "graph-b",
+    });
+
+    expect(ledger.entries.map((entry) => entry.status))
+      .toEqual(["invalidated", "invalidated", "invalidated"]);
+    expect(ledger.entries[2]?.invalidationReason)
+      .toMatch(/Upstream decision/);
+  });
+
+  it("rejects missing or inactive upstream decision parents", () => {
+    expect(() => appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "child",
+        kind: "repair-admission",
+        basis: {},
+        upstreamDecisionIds: ["missing"],
+      },
+    )).toThrow(/does not exist/);
+
+    let ledger = appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "parent",
+        kind: "repair-authorization",
+        basis: { graphFingerprint: "old" },
+      },
+    );
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      graphFingerprint: "new",
+    });
+
+    expect(() => appendDecisionLedgerEntry(
+      ledger,
+      {
+        id: "child",
+        kind: "repair-admission",
+        basis: {},
+        upstreamDecisionIds: ["parent"],
+      },
+    )).toThrow(/not active/);
+  });
+
+  it("rejects supersession by an older decision", () => {
+    let ledger = createDecisionLedger();
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "old",
+      kind: "diagnostic-candidate-selection",
+      basis: {},
+    });
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "new",
+      kind: "diagnostic-candidate-selection",
+      basis: {},
+    });
+
+    expect(() => supersedeDecisionLedgerEntry(
+      ledger,
+      "new",
+      "old",
+    )).toThrow(/newer/);
+  });
+
 });
