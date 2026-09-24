@@ -68,6 +68,9 @@ describe("repair admission pipeline", () => {
       },
       changedNodeIds: ["function:p:target"],
       supportingInvariantIds: ["invariant::ready"],
+      decisionBasis: {
+        runtimeEvidenceRevision: "evidence-current",
+      },
     });
 
     expect(result.blastRadius.disposition).toBe("bounded");
@@ -97,5 +100,43 @@ describe("repair admission pipeline", () => {
 
     expect(result.admission.disposition).toBe("blocked");
     expect(result.proof.admissionDisposition).toBe("blocked");
+  });
+  it("rejects runtime-proven admission without evidence-bound decision basis", () => {
+    const { graph, transaction } = fixture();
+
+    expect(() => evaluateRepairAdmissionPipeline({
+      graph,
+      transaction,
+      diagnostic: {
+        incidentId: "incident-1",
+        activeCandidateIds: ["candidate"],
+        disposition: "repair-eligible",
+        selectedCandidateId: "candidate",
+        effectiveEvidenceLevel: "proven-with-observed-outcome",
+        claimStrength: "proven-runtime",
+        reasons: ["runtime proof"],
+      },
+      changedNodeIds: ["function:p:target"],
+    })).toThrow(/runtimeEvidenceRevision/);
+  });
+
+  it("does not require runtime evidence revision for static guarded repair", () => {
+    const { graph, transaction } = fixture();
+    const result = evaluateRepairAdmissionPipeline({
+      graph,
+      transaction,
+      diagnostic: {
+        incidentId: "incident-1",
+        activeCandidateIds: ["candidate"],
+        disposition: "guarded-repair-eligible",
+        selectedCandidateId: "candidate",
+        effectiveEvidenceLevel: "proven-dependency-violation",
+        claimStrength: "proven-static",
+        reasons: ["static proof"],
+      },
+      changedNodeIds: ["function:p:target"],
+    });
+
+    expect(result.admission.disposition).toBe("guarded");
   });
 });
