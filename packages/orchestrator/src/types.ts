@@ -72,6 +72,7 @@ export interface InspectDirectoryResult {
   telemetryAnalysis: {
     events: number;
     evidenceRecords: number;
+    droppedEvents: number;
     byKind: Readonly<Record<string, number>>;
   };
   worldDatabase: {
