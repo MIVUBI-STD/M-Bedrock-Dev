@@ -12,6 +12,9 @@ import type {
 import type {
   RepairProofBundle,
 } from "../src/repair-proof-bundle.js";
+import {
+  CONTRACT_REGISTRY_REVISION,
+} from "../../project-model/src/contract-registry-revision.js";
 
 const lifecycle: RepairLifecycleState = {
   transactionId: "tx-1",
@@ -27,6 +30,7 @@ const lifecycle: RepairLifecycleState = {
 };
 
 const basis = {
+  contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
   sourceFingerprint: "source",
   graphFingerprint: "graph",
   invariantRegistryRevision: "inv-r1",
@@ -389,6 +393,7 @@ describe("repair release lineage", () => {
           ? {
               ...entry,
               basis: {
+                contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
                 sourceFingerprint: "source",
                 graphFingerprint: "graph",
               },
@@ -450,6 +455,7 @@ describe("repair release lineage", () => {
   it("blocks runtime proof that has no evidence revision", () => {
     const repairProof = proof({
       decisionBasis: {
+        contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
         sourceFingerprint: "source",
         graphFingerprint: "graph",
         invariantRegistryRevision: "inv-r1",
