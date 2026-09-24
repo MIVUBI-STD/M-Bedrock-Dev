@@ -1,3 +1,4 @@
+import type { SemanticGraph } from "../../graph/src/graph.js";
 import type {
   ApplyTransactionContext,
   ApplyTransactionResult,
@@ -14,9 +15,15 @@ import type { InspectTargetProfile } from "./types.js";
 import type { RepairProofBundle } from "./repair-proof-bundle.js";
 import { validateRepairProofBundle } from "./repair-proof-bundle.js";
 import { validatePatchTransaction } from "./repair-validation.js";
+import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 
 export interface AuthorizedRepairOptions {
   allowGuarded?: boolean;
+}
+
+export interface RepairAuthorizationBasis {
+  currentSourceFingerprint: string;
+  currentGraphFingerprint: string;
 }
 
 export type RepairMutationAuthorization =
@@ -73,6 +80,7 @@ export type AuthorizedRepairApplyResult =
 export function authorizeRepairMutation(
   transaction: PatchTransaction,
   proof: RepairProofBundle,
+  basis: RepairAuthorizationBasis,
   options: AuthorizedRepairOptions = {},
 ): RepairMutationAuthorization {
   const proofErrors = validateRepairProofBundle(
@@ -85,6 +93,27 @@ export function authorizeRepairMutation(
       reasons: [
         "Repair proof bundle failed integrity validation.",
         ...proofErrors,
+      ],
+    };
+  }
+
+  if (
+    proof.sourceFingerprint !== basis.currentSourceFingerprint ||
+    transaction.sourceFingerprint !== basis.currentSourceFingerprint
+  ) {
+    return {
+      authorized: false,
+      reasons: [
+        "Repair proof or transaction source fingerprint is stale.",
+      ],
+    };
+  }
+
+  if (proof.graphFingerprint !== basis.currentGraphFingerprint) {
+    return {
+      authorized: false,
+      reasons: [
+        "Repair proof semantic graph fingerprint is stale.",
       ],
     };
   }
@@ -152,12 +181,17 @@ export async function applyAuthorizedRepair(
   workspace: MutationWorkspace,
   context: ApplyTransactionContext,
   proof: RepairProofBundle,
+  currentGraph: SemanticGraph,
   target: InspectTargetProfile = {},
   options: AuthorizedRepairOptions = {},
 ): Promise<AuthorizedRepairApplyResult> {
   const authorization = authorizeRepairMutation(
     transaction,
     proof,
+    {
+      currentSourceFingerprint: context.currentSourceFingerprint,
+      currentGraphFingerprint: semanticGraphFingerprint(currentGraph),
+    },
     options,
   );
 
