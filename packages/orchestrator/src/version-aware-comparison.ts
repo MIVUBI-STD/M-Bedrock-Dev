@@ -39,6 +39,7 @@ export interface VersionAwareComparisonResult {
     after: RetestPlan;
   };
   evidenceLinks: VersionAwareEvidenceLink[];
+  causal: ArtifactComparisonResult["causal"];
 }
 
 function regressionIdsFor(
@@ -147,5 +148,6 @@ export async function compareArtifactsForUpdate(
       after: afterPlan,
     },
     evidenceLinks,
+    causal: comparison.causal,
   };
 }
