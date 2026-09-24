@@ -399,7 +399,8 @@
       ],
       "causalCorroborators": {
         "navigation-stall-risk": [
-          "route-navigation-consumer-present"
+          "route-navigation-consumer-present",
+          "route-target-driven-consumer-present"
         ]
       }
     }
