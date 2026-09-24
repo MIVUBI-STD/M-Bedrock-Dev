@@ -82,6 +82,9 @@ export function knowledgeRuntimeDiagnostics(
           knowledgeSourceIds: assessment.knowledgeSourceIds,
           evidenceSourceIds: assessment.evidenceSourceIds,
           evidenceConflicts: conflicts,
+          ...(assessment.causalConsequences === undefined
+            ? {}
+            : { causalConsequences: assessment.causalConsequences }),
         },
       });
     }
