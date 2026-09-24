@@ -1,5 +1,6 @@
 import type { SemanticGraph } from "../../graph/src/graph.js";
-import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
+import type { DiagnosticRepairDecision, DiagnosticClaimStrength } from "../../project-model/src/diagnostic-decision.js";
+import type { InvariantRegistrySnapshot } from "../../project-model/src/invariant-registry.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import {
   evaluateRepairAdmissionPipeline,
@@ -18,7 +19,8 @@ export interface RepairStrategyCandidate {
 }
 
 export interface RepairStrategySelectionPolicy {
-  requiredInvariantIds?: readonly string[];
+  invariantRegistry: InvariantRegistrySnapshot;
+  requiredInvariantIds: readonly string[];
   allowGuarded?: boolean;
   blastRadiusPolicy?: RepairBlastRadiusPolicy;
 }
@@ -58,6 +60,21 @@ export type RepairStrategySelection =
       assessments: readonly RepairStrategyAssessment[];
       reasons: readonly string[];
     };
+
+function claimRank(
+  claim: DiagnosticClaimStrength,
+): number {
+  switch (claim) {
+    case "hypothesis":
+      return 0;
+    case "corroborated":
+      return 1;
+    case "proven-static":
+      return 2;
+    case "proven-runtime":
+      return 3;
+  }
+}
 
 function admissionRank(
   disposition: RepairAdmissionPipelineResult["admission"]["disposition"],
@@ -134,7 +151,7 @@ export function selectRepairStrategy(
   graph: SemanticGraph,
   diagnostic: DiagnosticRepairDecision,
   candidates: readonly RepairStrategyCandidate[],
-  policy: RepairStrategySelectionPolicy = {},
+  policy: RepairStrategySelectionPolicy,
 ): RepairStrategySelection {
   const strategyIds = new Set<string>();
   const transactionIds = new Set<string>();
@@ -155,7 +172,55 @@ export function selectRepairStrategy(
   }
 
   const requiredInvariantIds =
-    [...new Set(policy.requiredInvariantIds ?? [])].sort();
+    [...new Set(policy.requiredInvariantIds)].sort();
+
+  if (requiredInvariantIds.length === 0) {
+    throw new Error(
+      "Repair strategy selection requires at least one required invariant.",
+    );
+  }
+
+  const registryById = new Map(
+    policy.invariantRegistry.entries.map((entry) => [
+      entry.id,
+      entry,
+    ]),
+  );
+
+  const missingRequired = requiredInvariantIds.filter(
+    (id) => !registryById.has(id),
+  );
+  if (missingRequired.length > 0) {
+    throw new Error(
+      "Required repair invariant is not present in invariant registry: " +
+        missingRequired.join(", "),
+    );
+  }
+
+  const requiredInvariantIssues: string[] = [];
+  for (const id of requiredInvariantIds) {
+    const invariant = registryById.get(id)!;
+    if (invariant.enforcement === "diagnostic-only") {
+      requiredInvariantIssues.push(
+        "Required invariant " + id +
+          " is diagnostic-only and cannot authorize automatic strategy selection.",
+      );
+    }
+    if (
+      claimRank(diagnostic.claimStrength) <
+      claimRank(invariant.minimumRepairClaim)
+    ) {
+      requiredInvariantIssues.push(
+        "Diagnostic claim strength " +
+          diagnostic.claimStrength +
+          " is below invariant minimum " +
+          invariant.minimumRepairClaim +
+          " for " +
+          id +
+          ".",
+      );
+    }
+  }
 
   const assessments = candidates
     .map((candidate): RepairStrategyAssessment => {
@@ -166,6 +231,10 @@ export function selectRepairStrategy(
         changedNodeIds: candidate.changedNodeIds,
         supportingInvariantIds:
           candidate.supportingInvariantIds,
+        decisionBasis: {
+          invariantRegistryRevision:
+            policy.invariantRegistry.revision,
+        },
         ...(policy.blastRadiusPolicy === undefined
           ? {}
           : { blastRadiusPolicy: policy.blastRadiusPolicy }),
@@ -187,11 +256,32 @@ export function selectRepairStrategy(
         );
       }
 
-      const invariantCoverage = coversRequiredInvariants(
-        candidate.supportingInvariantIds,
-        requiredInvariantIds,
-      );
-      if (!invariantCoverage) {
+      const unknownSupportingInvariantIds =
+        candidate.supportingInvariantIds.filter(
+          (id) => !registryById.has(id),
+        );
+      if (unknownSupportingInvariantIds.length > 0) {
+        reasons.push(
+          "Strategy references invariant(s) outside the active registry: " +
+            unknownSupportingInvariantIds.sort().join(", ") +
+            ".",
+        );
+      }
+
+      const invariantCoverage =
+        requiredInvariantIssues.length === 0 &&
+        unknownSupportingInvariantIds.length === 0 &&
+        coversRequiredInvariants(
+          candidate.supportingInvariantIds,
+          requiredInvariantIds,
+        );
+      if (requiredInvariantIssues.length > 0) {
+        reasons.push(...requiredInvariantIssues);
+      }
+      if (
+        requiredInvariantIssues.length === 0 &&
+        !invariantCoverage
+      ) {
         reasons.push(
           "Strategy does not cover every required supporting invariant.",
         );
