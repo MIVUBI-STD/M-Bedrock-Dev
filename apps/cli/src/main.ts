@@ -25,7 +25,7 @@ async function main(): Promise<void> {
       resolve(input),
       target,
       knowledge,
-      telemetry?.events ?? [],
+      telemetry ?? [],
     );
     console.log(JSON.stringify(result, null, 2));
 
