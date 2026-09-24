@@ -452,6 +452,17 @@ export function decideRepairReleaseWithLineage(
     );
   }
 
+  if (
+    proof.decisionBasis.repairProviderRegistryRevision !== undefined &&
+    !strategyEntry.inputIds.some((id) =>
+      id.startsWith("repair-provider:")
+    )
+  ) {
+    lineageErrors.push(
+      "Provider-bound repair strategy lineage has no provider provenance.",
+    );
+  }
+
   for (const invariantId of proof.supportingInvariantIds) {
     if (
       !strategyEntry.outputIds.includes(
