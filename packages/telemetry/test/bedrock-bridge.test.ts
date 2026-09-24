@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createBedrockConsoleTelemetrySink,
+  createBedrockScriptEventTelemetryCollector,
   createBedrockScriptEventTelemetrySink,
   createBedrockTickProvider,
   createBufferedTelemetrySink,
@@ -74,6 +75,100 @@ describe("Bedrock telemetry bridge", () => {
       "[M-Bedrock-Dev telemetry] " + JSON.stringify(event),
     );
     expect(buffer.size).toBe(1);
+  });
+
+  it("collects telemetry from the injected script-event signal", () => {
+    const callbacks = new Set<(event: {
+      id: string;
+      message: string;
+    }) => void>();
+    const buffer = createBufferedTelemetrySink();
+    const collector = createBedrockScriptEventTelemetryCollector({
+      signal: {
+        subscribe(callback) {
+          callbacks.add(callback);
+        },
+        unsubscribe(callback) {
+          callbacks.delete(callback);
+        },
+      },
+      sink: buffer,
+      eventId: "mivubi:telemetry",
+    });
+
+    const event = {
+      schemaVersion: 1 as const,
+      eventId: "event-1",
+      kind: "route-revalidation" as const,
+      producer: "runtime" as const,
+      scope: { operationId: "op-1" },
+      routeId: "bridge",
+      result: "passed" as const,
+    };
+
+    for (const callback of callbacks) {
+      callback({
+        id: "other:channel",
+        message: JSON.stringify(event),
+      });
+      callback({
+        id: "mivubi:telemetry",
+        message: JSON.stringify(event),
+      });
+    }
+
+    expect(buffer.snapshot()).toEqual([event]);
+
+    collector.dispose();
+    expect(callbacks.size).toBe(0);
+  });
+
+  it("can reject or report invalid script-event payloads", () => {
+    const invalid: string[] = [];
+    let callback:
+      | ((event: { id: string; message: string }) => void)
+      | undefined;
+    createBedrockScriptEventTelemetryCollector({
+      signal: {
+        subscribe(next) {
+          callback = next;
+        },
+      },
+      sink: createBufferedTelemetrySink(),
+      onInvalid(error) {
+        invalid.push(error.message);
+      },
+    });
+
+    callback?.({
+      id: "mivubi:telemetry",
+      message: JSON.stringify({
+        schemaVersion: 1,
+        eventId: "bad",
+        kind: "unknown",
+        producer: "qa",
+        scope: {},
+      }),
+    });
+
+    expect(invalid[0]).toMatch(/unsupported/);
+  });
+
+  it("rejects a script-event payload that exceeds the configured limit", () => {
+    const sink = createBedrockScriptEventTelemetrySink(
+      { sendScriptEvent() {} },
+      "mivubi:telemetry",
+      32,
+    );
+    const emitter = createTelemetryEmitter({
+      producer: "qa",
+      sink,
+    });
+
+    expect(() => emitter.routeRevalidation({
+      routeId: "a-very-long-route-id-that-will-not-fit",
+      result: "passed",
+    })).toThrow(/payload limit/);
   });
 
   it("rejects an unnamespaced script event id", () => {
