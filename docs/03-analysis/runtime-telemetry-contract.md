@@ -546,3 +546,61 @@ The repository boundary verifier enforces that `packages/telemetry`:
 - may depend only on `packages/project-model` and itself.
 
 This keeps instrumentation bundle-compatible with Bedrock while leaving Script API/version semantics in their canonical analyzer/compatibility layers.
+
+
+## Evidence integrity output
+
+Inspection exposes channel-specific integrity:
+
+```text
+evidenceIntegrity.telemetry
+evidenceIntegrity.runtimeProbe
+```
+
+Each report includes:
+
+```text
+continuityComplete
+safeForCurrentStateClaims
+safeForTemporalViolationClaims
+unlocatedObservedRecords
+unresolvedConflictPredicates
+resolvedConflictCount
+reasons
+```
+
+Telemetry and runtime-probe integrity are intentionally independent.
+
+Examples:
+
+```text
+telemetry sequence gap
+→ telemetry temporal claims unsafe
+→ runtime-probe temporal claims remain usable
+
+runtime probe exchanges dropped
+→ probe temporal claims unsafe
+→ complete telemetry remains usable
+```
+
+An observation without tick/sequence/timestamp can still support a current-state
+claim, but it cannot safely prove temporal ordering.
+
+Causal synthesis retains observed outcome nodes even when temporal integrity is
+incomplete, but does not let those observations upgrade causal confidence or
+root-cause evidence level.
+
+### Evidence origins
+
+Normalized runtime evidence can identify its source channel:
+
+```text
+static
+telemetry
+runtime-probe
+native
+external
+```
+
+This origin is preserved into causal observations so continuity failures are
+applied only to the channel that actually produced the evidence.
