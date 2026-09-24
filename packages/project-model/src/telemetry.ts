@@ -49,6 +49,22 @@ export interface ArenaDoubleStartTelemetryEvent extends TelemetryEventBase {
   startOperationIds?: readonly string[];
 }
 
+export type ArenaGenerationAnomalyKind =
+  | "generation-regression"
+  | "generation-overlap"
+  | "reuse-before-reset"
+  | "stale-terminal";
+
+export interface ArenaGenerationAnomalyTelemetryEvent
+  extends TelemetryEventBase {
+  kind: "arena-generation-anomaly";
+  anomaly: ArenaGenerationAnomalyKind;
+  arenaId: string;
+  observedGeneration: number;
+  currentGeneration?: number;
+  priorGeneration?: number;
+}
+
 export interface StaleCallbackTelemetryEvent extends TelemetryEventBase {
   kind: "stale-callback";
   subsystem: string;
@@ -116,6 +132,7 @@ export type TelemetryEvent =
   | EntityStallTelemetryEvent
   | TeleportFallbackTelemetryEvent
   | ArenaDoubleStartTelemetryEvent
+  | ArenaGenerationAnomalyTelemetryEvent
   | StaleCallbackTelemetryEvent
   | ReviveAnomalyTelemetryEvent
   | StateDriftTelemetryEvent
