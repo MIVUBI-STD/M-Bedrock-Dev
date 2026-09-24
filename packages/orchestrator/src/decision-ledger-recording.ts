@@ -48,7 +48,9 @@ export function recordDiagnosticRepairDecision(
         ? []
         : ["root-cause:" + decision.selectedCandidateId]),
     ],
-    evidenceIds: context.evidenceIds,
+    ...(context.evidenceIds === undefined
+      ? {}
+      : { evidenceIds: context.evidenceIds }),
   });
 }
 
@@ -63,11 +65,15 @@ export function recordRepairAdmissionDecision(
     kind: "repair-admission",
     transactionId,
     basis: context.basis,
-    inputIds: context.upstreamDecisionIds,
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : { inputIds: context.upstreamDecisionIds }),
     outputIds: [
       "repair-admission:" + decision.disposition,
     ],
-    evidenceIds: context.evidenceIds,
+    ...(context.evidenceIds === undefined
+      ? {}
+      : { evidenceIds: context.evidenceIds }),
   });
 }
 
@@ -110,7 +116,9 @@ export function recordPackageVerificationDecision(
     kind: "package-verification",
     transactionId,
     basis: context.basis,
-    inputIds: context.upstreamDecisionIds,
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : { inputIds: context.upstreamDecisionIds }),
     outputIds: [
       "package-verification:" +
         (result.ok ? "passed" : "failed"),
@@ -137,10 +145,14 @@ export function recordReleaseDecision(
     kind: "release-admission",
     transactionId: context.transactionId,
     basis: context.basis,
-    inputIds: context.upstreamDecisionIds,
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : { inputIds: context.upstreamDecisionIds }),
     outputIds: [
       "release:" + decision.disposition,
     ],
-    evidenceIds: context.evidenceIds,
+    ...(context.evidenceIds === undefined
+      ? {}
+      : { evidenceIds: context.evidenceIds }),
   });
 }
