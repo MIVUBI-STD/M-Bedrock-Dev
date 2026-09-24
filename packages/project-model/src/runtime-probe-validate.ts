@@ -699,21 +699,18 @@ export function validateRuntimeProbeRequestBundle(
       requestIds.add(request.requestId);
     }
 
-    if (incidentIds.size > 0 && record(request)) {
-      if (!nonEmpty(request.incidentId)) {
-        errors.push(
-          "Runtime probe request bundle request " +
-          index +
-          " must declare incidentId when bundle incidentIds are present.",
-        );
-      } else if (!incidentIds.has(request.incidentId)) {
-        errors.push(
-          "Runtime probe request bundle request " +
-          index +
-          " incidentId is not declared by the bundle: " +
-          request.incidentId,
-        );
-      }
+    if (
+      incidentIds.size > 0 &&
+      record(request) &&
+      nonEmpty(request.incidentId) &&
+      !incidentIds.has(request.incidentId)
+    ) {
+      errors.push(
+        "Runtime probe request bundle request " +
+        index +
+        " incidentId is not declared by the bundle: " +
+        request.incidentId,
+      );
     }
   }
 
