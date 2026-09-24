@@ -50,6 +50,13 @@ export function applyRuntimeProbeResponse(
     );
   }
 
+  if (!response.ok) {
+    throw new Error(
+      "Runtime probe execution failed; investigation state is unchanged: " +
+        (response.error ?? "unknown runtime probe error"),
+    );
+  }
+
   if (
     issuedRequest.runtimeTick !== undefined &&
     response.runtimeTick < issuedRequest.runtimeTick
