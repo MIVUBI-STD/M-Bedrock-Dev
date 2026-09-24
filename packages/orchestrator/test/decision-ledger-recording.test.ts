@@ -16,8 +16,12 @@ import type {
 import type {
   RepairProofBundle,
 } from "../src/repair-proof-bundle.js";
+import {
+  CONTRACT_REGISTRY_REVISION,
+} from "../../project-model/src/contract-registry-revision.js";
 
 const basis = {
+  contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
   sourceFingerprint: "source-a",
   graphFingerprint: "graph-a",
   invariantRegistryRevision: "inv-a",
