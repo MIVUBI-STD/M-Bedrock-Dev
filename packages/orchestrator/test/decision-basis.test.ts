@@ -213,4 +213,11 @@ describe("decision basis", () => {
     expect(left.runtimeEvidenceRevision)
       .toBe(right.runtimeEvidenceRevision);
   });
+
+  it("always binds the canonical contract registry revision", () => {
+    const basis = buildDecisionBasis({});
+    expect(basis.contractRegistryRevision)
+      .toMatch(/^[a-f0-9]{64}$/);
+  });
+
 });
