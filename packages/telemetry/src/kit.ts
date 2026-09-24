@@ -40,6 +40,8 @@ import type {
 
 export interface TelemetryInstrumentationKitOptions {
   producer?: TelemetryProducer;
+  sessionId?: string;
+  artifactId?: string;
   maxEvents?: number;
   baseScope?: RuntimeScope;
   initialScope?: RuntimeScope;
@@ -48,6 +50,7 @@ export interface TelemetryInstrumentationKitOptions {
   timestampProvider?: () => string | undefined;
   idFactory?: TelemetryIdFactory;
   transportSink?: TelemetrySink;
+  validateEvents?: boolean;
 }
 
 export interface TelemetryInstrumentationKit {
@@ -85,7 +88,7 @@ function mergeRuntimeScope(
 export function createTelemetryInstrumentationKit(
   options: TelemetryInstrumentationKitOptions = {},
 ): TelemetryInstrumentationKit {
-  const scope = createTelemetryScopeLease(options.initialScope);
+  const scope = createTelemetryScopeLease(options.initialScope ?? {});
   const buffer = createBufferedTelemetrySink(
     options.maxEvents ?? 1000,
   );
@@ -93,7 +96,9 @@ export function createTelemetryInstrumentationKit(
   const fanout = options.transportSink
     ? createFanoutTelemetrySink([buffer, options.transportSink])
     : buffer;
-  const sink = createValidatingTelemetrySink(fanout);
+  const sink = options.validateEvents === false
+    ? fanout
+    : createValidatingTelemetrySink(fanout);
 
   const emitter = createTelemetryEmitter({
     producer: options.producer ?? "instrumentation",
@@ -120,7 +125,7 @@ export function createTelemetryInstrumentationKit(
   const arenaStart = createArenaStartGuard(emitter);
   const revive = createReviveTelemetryGuard(emitter);
   const stateMirror = createStateMirrorProbe(emitter);
-  const entityProgressProbes: EntityProgressProbe[] = [];
+  const entityProgressProbes = new Set<EntityProgressProbe>();
 
   const resetRuntimeState = (): void => {
     scope.clear();
@@ -128,6 +133,7 @@ export function createTelemetryInstrumentationKit(
     revive.reset();
     stateMirror.reset();
     for (const probe of entityProgressProbes) probe.clear();
+    entityProgressProbes.clear();
   };
 
   return {
@@ -147,12 +153,19 @@ export function createTelemetryInstrumentationKit(
         emitter,
         probeOptions,
       );
-      entityProgressProbes.push(probe);
+      entityProgressProbes.add(probe);
       return probe;
     },
 
-    batch(input) {
-      return buffer.batch(input);
+    batch(input = {}) {
+      return buffer.batch({
+        ...(input.sessionId ?? options.sessionId
+          ? { sessionId: input.sessionId ?? options.sessionId }
+          : {}),
+        ...(input.artifactId ?? options.artifactId
+          ? { artifactId: input.artifactId ?? options.artifactId }
+          : {}),
+      });
     },
 
     resetRuntimeState,
