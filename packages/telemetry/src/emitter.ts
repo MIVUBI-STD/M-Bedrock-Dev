@@ -1,6 +1,5 @@
 import type {
   TelemetryEvent,
-  TelemetryEventBase,
 } from "../../project-model/src/telemetry.js";
 import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
 import type {
