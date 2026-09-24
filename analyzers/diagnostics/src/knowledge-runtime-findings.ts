@@ -59,8 +59,18 @@ export function knowledgeRuntimeDiagnostics(
     )].sort();
 
     const predicateSourceKeys: Record<string, string[]> = {};
+    const predicateObservations: Record<
+      string,
+      Array<{ tick?: number; sequence?: number; timestamp?: string }>
+    > = {};
     for (const record of records) {
       if (record.state !== "present") continue;
+      if (record.observedAt) {
+        predicateObservations[record.predicate] = [
+          ...(predicateObservations[record.predicate] ?? []),
+          record.observedAt,
+        ];
+      }
       const keys = record.sourceRefs?.map(sourceKey) ?? [];
       if (keys.length === 0) continue;
       predicateSourceKeys[record.predicate] = [
@@ -124,6 +134,7 @@ export function knowledgeRuntimeDiagnostics(
             ? {}
             : { causalCorroborators: assessment.causalCorroborators }),
           predicateSourceKeys,
+          predicateObservations,
           ...(assessment.causalOutcomePredicates === undefined
             ? {}
             : { causalOutcomePredicates: assessment.causalOutcomePredicates }),
