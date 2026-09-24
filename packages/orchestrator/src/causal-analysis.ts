@@ -145,8 +145,9 @@ export function synthesizeCausalChains(
     }
   }
 
+  const severityRank = { info: 0, minor: 1, medium: 2, critical: 3 } as const;
   return [...deduped.values()].sort((a, b) =>
-    b.severity.localeCompare(a.severity) ||
+    severityRank[b.severity] - severityRank[a.severity] ||
     a.id.localeCompare(b.id)
   );
 }
