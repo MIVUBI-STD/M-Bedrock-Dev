@@ -95,6 +95,7 @@ import { synthesizeCausalChains } from "./causal-analysis.js";
 import { synthesizeCausalIncidents } from "./causal-incident-analysis.js";
 import { telemetryRuntimeEvidence } from "./telemetry-evidence.js";
 import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
+import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";
 import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
@@ -169,6 +170,13 @@ export async function inspectDirectory(
   telemetryDroppedEvents = 0,
 ): Promise<InspectDirectoryResult> {
   const telemetryEvidence = telemetryRuntimeEvidence(telemetryEvents);
+  const telemetryContinuity = analyzeTelemetryContinuity({
+    schemaVersion: 1,
+    ...(telemetryDroppedEvents === 0
+      ? {}
+      : { droppedEvents: telemetryDroppedEvents }),
+    events: telemetryEvents,
+  });
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
 
@@ -212,6 +220,55 @@ export async function inspectDirectory(
         telemetryDroppedEvents +
         " event(s); causal/runtime evidence may be incomplete.",
       data: { droppedEvents: telemetryDroppedEvents },
+    });
+  }
+  if (telemetryContinuity.missingSequences > 0) {
+    diagnostics.push({
+      id: "diag_telemetry_sequence_gap_" +
+        telemetryContinuity.missingSequences,
+      code: "TELEMETRY_SEQUENCE_GAP",
+      severity: "minor",
+      message:
+        "Telemetry sequence continuity has " +
+        telemetryContinuity.missingSequences +
+        " missing event sequence value(s).",
+      data: {
+        missingSequences: telemetryContinuity.missingSequences,
+      },
+    });
+  }
+  if (
+    telemetryContinuity.duplicateSequences > 0 ||
+    telemetryContinuity.nonMonotonicTransitions > 0
+  ) {
+    diagnostics.push({
+      id: "diag_telemetry_sequence_conflict_" +
+        telemetryContinuity.duplicateSequences +
+        "_" +
+        telemetryContinuity.nonMonotonicTransitions,
+      code: "TELEMETRY_SEQUENCE_CONFLICT",
+      severity: "medium",
+      message:
+        "Telemetry sequence order contains duplicate or non-monotonic values; event ordering evidence is unreliable.",
+      data: {
+        duplicateSequences: telemetryContinuity.duplicateSequences,
+        nonMonotonicTransitions:
+          telemetryContinuity.nonMonotonicTransitions,
+      },
+    });
+  }
+  if (telemetryContinuity.unidentifiedStreamEvents > 0) {
+    diagnostics.push({
+      id: "diag_telemetry_stream_unidentified_" +
+        telemetryContinuity.unidentifiedStreamEvents,
+      code: "TELEMETRY_STREAM_UNIDENTIFIED",
+      severity: "info",
+      message:
+        "Sequenced telemetry events are missing streamId; continuity cannot distinguish independent emitters.",
+      data: {
+        unidentifiedStreamEvents:
+          telemetryContinuity.unidentifiedStreamEvents,
+      },
     });
   }
   let parsedStructures = 0;
@@ -862,6 +919,18 @@ export async function inspectDirectory(
       evidenceRecords: telemetryEvidence.length,
       droppedEvents: telemetryDroppedEvents,
       byKind: telemetryEventKinds(telemetryEvents),
+      continuity: {
+        sequencedEvents: telemetryContinuity.sequencedEvents,
+        unsequencedEvents: telemetryContinuity.unsequencedEvents,
+        unidentifiedStreamEvents:
+          telemetryContinuity.unidentifiedStreamEvents,
+        streams: telemetryContinuity.streams.length,
+        missingSequences: telemetryContinuity.missingSequences,
+        duplicateSequences: telemetryContinuity.duplicateSequences,
+        nonMonotonicTransitions:
+          telemetryContinuity.nonMonotonicTransitions,
+        incomplete: telemetryContinuity.incomplete,
+      },
     },
     worldDatabase: {
       present: dbFiles.length > 0,
