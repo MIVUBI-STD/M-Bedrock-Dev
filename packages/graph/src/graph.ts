@@ -69,6 +69,23 @@ export class SemanticGraph {
     return this.nodes.get(id);
   }
 
+  allNodes(): SemanticNode[] {
+    return [...this.nodes.values()]
+      .map((node) => ({ ...node }))
+      .sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  allEdges(): SemanticEdge[] {
+    return [...this.edges.values()]
+      .map((edge) => ({
+        ...edge,
+        ...(edge.candidates === undefined
+          ? {}
+          : { candidates: [...edge.candidates] }),
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id));
+  }
+
   findByKind(kind: ComponentKind): SemanticNode[] {
     return [...(this.byKind.get(kind) ?? [])]
       .map((id) => this.nodes.get(id))
