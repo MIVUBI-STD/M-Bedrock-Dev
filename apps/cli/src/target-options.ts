@@ -1,10 +1,13 @@
 import type { InspectTargetProfile } from "../../../packages/orchestrator/src/types.js";
+import type { DiagnosticExecutionContext } from "../../../packages/project-model/src/diagnostic-probe.js";
 
 export interface ParsedCliTargetOptions {
   positionals: string[];
   target: InspectTargetProfile;
   telemetryPath?: string;
   probeTranscriptPath?: string;
+  probeBindingsPath?: string;
+  probeContext?: DiagnosticExecutionContext;
 }
 
 export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetOptions {
@@ -13,6 +16,8 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
   const target: InspectTargetProfile = {};
   let telemetryPath: string | undefined;
   let probeTranscriptPath: string | undefined;
+  let probeBindingsPath: string | undefined;
+  let probeContext: DiagnosticExecutionContext | undefined;
 
   for (let index = 0; index < args.length; index += 1) {
     const token = args[index]!;
@@ -67,6 +72,33 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
       continue;
     }
 
+    if (token === "--probe-bindings") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--probe-bindings requires a JSON file path");
+      }
+      probeBindingsPath = value;
+      index += 1;
+      continue;
+    }
+
+    if (token === "--probe-context") {
+      const value = args[index + 1];
+      if (
+        value !== "REMOTE_GITHUB" &&
+        value !== "LOCAL_ARTIFACT" &&
+        value !== "LOCAL_MINECRAFT" &&
+        value !== "LIVE_MINECRAFT"
+      ) {
+        throw new Error(
+          "--probe-context requires REMOTE_GITHUB, LOCAL_ARTIFACT, LOCAL_MINECRAFT, or LIVE_MINECRAFT",
+        );
+      }
+      probeContext = value;
+      index += 1;
+      continue;
+    }
+
     if (token.startsWith("--")) {
       throw new Error("Unknown option: " + token);
     }
@@ -82,5 +114,11 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
     ...(probeTranscriptPath === undefined
       ? {}
       : { probeTranscriptPath }),
+    ...(probeBindingsPath === undefined
+      ? {}
+      : { probeBindingsPath }),
+    ...(probeContext === undefined
+      ? {}
+      : { probeContext }),
   };
 }
