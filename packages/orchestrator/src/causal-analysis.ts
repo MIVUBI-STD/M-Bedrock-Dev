@@ -19,6 +19,23 @@ function asStringArray(value: unknown): string[] {
     : [];
 }
 
+function asCorroboratorMap(
+  value: unknown,
+): Readonly<Record<string, readonly string[]>> {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value)
+  ) return {};
+
+  const output: Record<string, string[]> = {};
+  for (const [risk, predicates] of Object.entries(value)) {
+    const normalized = asStringArray(predicates);
+    if (normalized.length > 0) output[risk] = normalized;
+  }
+  return output;
+}
+
 function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefined {
   if (
     finding.code !== "KNOWLEDGE_RELATION_VIOLATION" &&
@@ -36,6 +53,8 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
 
   const consequences = asStringArray(data.causalConsequences);
   if (consequences.length === 0) return undefined;
+  const presentPredicates = new Set(asStringArray(data.presentPredicates));
+  const corroborators = asCorroboratorMap(data.causalCorroborators);
 
   const violation = finding.code === "KNOWLEDGE_RELATION_VIOLATION";
   const subjectNodeId = idFor([finding.id, "subject"]);
@@ -80,21 +99,32 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
       : "The required state is not yet proven by available evidence.",
   }];
 
+  let hasCorroboratedRisk = false;
   for (const consequence of consequences) {
     const riskNodeId = idFor([finding.id, "risk", consequence]);
+    const requiredPredicates = corroborators[consequence] ?? [];
+    const corroborated =
+      requiredPredicates.length > 0 &&
+      requiredPredicates.every((predicate) => presentPredicates.has(predicate));
+    if (corroborated) hasCorroboratedRisk = true;
+
     nodes.push({
       id: riskNodeId,
       kind: "downstream-risk",
       label: consequence,
       diagnosticIds: [finding.id],
+      ...(corroborated
+        ? { corroboratingPredicates: requiredPredicates }
+        : {}),
     });
     links.push({
       from: statusNodeId,
       to: riskNodeId,
-      strength: "risk-only",
+      strength: corroborated ? "corroborated-risk" : "risk-only",
       relationId,
-      rationale:
-        "Project knowledge marks this as a downstream risk, not as an observed outcome.",
+      rationale: corroborated
+        ? "Independent evidence in the same runtime scope corroborates this downstream risk, but the outcome itself is still not observed."
+        : "Project knowledge marks this as a downstream risk, not as an observed outcome.",
     });
   }
 
@@ -102,13 +132,15 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
     id: idFor([scopeKey ?? "global", relationId, finding.id]),
     ...(scopeKey === undefined ? {} : { scopeKey }),
     severity: finding.severity,
-    confidence: violation ? "high" : "low",
+    confidence: violation ? "high" : hasCorroboratedRisk ? "medium" : "low",
     title: violation
       ? subject + " → missing " + object
       : subject + " → unproven " + object,
     summary: violation
       ? "A required dependency is explicitly violated; downstream items remain risk projections unless separately observed."
-      : "Available evidence establishes the initiating state but cannot prove the required dependency; downstream items are risk-only.",
+      : hasCorroboratedRisk
+        ? "The required dependency is still unproven, but independent evidence in the same scope corroborates at least one downstream risk."
+        : "Available evidence establishes the initiating state but cannot prove the required dependency; downstream items are risk-only.",
     nodes,
     links,
     relatedDiagnosticIds: [finding.id],
