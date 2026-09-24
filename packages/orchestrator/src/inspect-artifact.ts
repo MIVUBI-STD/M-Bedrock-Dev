@@ -10,7 +10,7 @@ import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { analyzeWorldDbNative } from "./world-db-analysis.js";
 import { worldDbRuntimeEvidence } from "./world-db-runtime-evidence.js";
 import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";
-import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
+import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -22,10 +22,26 @@ export async function inspectArtifact(
   path: string,
   target: InspectTargetProfile = {},
   knowledgeCatalog?: KnowledgeCatalog,
-  telemetryEvents: readonly TelemetryEvent[] = [],
+  telemetry: readonly TelemetryEvent[] | TelemetryBatch = [],
 ): Promise<InspectArtifactResult> {
   const fingerprint = await sha256File(path);
   const artifactId = artifactIdFromFingerprint(fingerprint);
+  const telemetryEvents = Array.isArray(telemetry)
+    ? telemetry
+    : telemetry.events;
+  if (
+    !Array.isArray(telemetry) &&
+    telemetry.artifactId !== undefined &&
+    telemetry.artifactId !== artifactId
+  ) {
+    throw new Error(
+      "Telemetry artifactId " +
+      telemetry.artifactId +
+      " does not match inspected artifact " +
+      artifactId +
+      ".",
+    );
+  }
   const sessionRoot = await mkdtemp(join(tmpdir(), "m-bedrock-inspect-"));
   const sourceRoot = join(sessionRoot, "source");
   const workingRoot = join(sessionRoot, "working");
