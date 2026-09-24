@@ -269,6 +269,15 @@ export function validateRepairProofBundle(
 
   if (
     proof.claimStrength === "proven-runtime" &&
+    !proof.decisionBasis.runtimeEvidenceRevision?.trim()
+  ) {
+    errors.push(
+      "proven-runtime repair proof requires a runtime evidence revision in decision basis.",
+    );
+  }
+
+  if (
+    proof.claimStrength === "proven-runtime" &&
     proof.effectiveEvidenceLevel !== "proven-with-observed-outcome"
   ) {
     errors.push(
