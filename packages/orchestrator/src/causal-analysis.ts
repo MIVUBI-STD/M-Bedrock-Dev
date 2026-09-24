@@ -87,6 +87,12 @@ interface ObservationPoint {
   streamId?: string;
   sequence?: number;
   timestamp?: string;
+  origin?:
+    | "static"
+    | "telemetry"
+    | "runtime-probe"
+    | "native"
+    | "external";
 }
 
 function asObservationMap(
@@ -124,6 +130,15 @@ function asObservationMap(
       }
       if (typeof record.timestamp === "string") {
         point.timestamp = record.timestamp;
+      }
+      if (
+        record.origin === "static" ||
+        record.origin === "telemetry" ||
+        record.origin === "runtime-probe" ||
+        record.origin === "native" ||
+        record.origin === "external"
+      ) {
+        point.origin = record.origin;
       }
       if (
         point.tick !== undefined ||
@@ -230,7 +245,16 @@ function asCorroboratorMap(
 }
 
 export interface CausalSynthesisOptions {
+  /**
+   * Global override retained for compatibility/tests. False means no temporal
+   * observation may strengthen causality.
+   */
   temporalEvidenceReliable?: boolean;
+  /**
+   * Controls only telemetry-origin observations. Runtime-probe/static evidence
+   * remains independent from unrelated telemetry continuity failures.
+   */
+  telemetryTemporalReliable?: boolean;
 }
 
 function knowledgeFindingChain(
@@ -366,8 +390,16 @@ function knowledgeFindingChain(
         subjectObservations,
         outcomeObservations,
       );
+      const usesTelemetryObservation = [
+        ...subjectObservations,
+        ...outcomeObservations,
+      ].some((observation) => observation.origin === "telemetry");
       const temporalEvidenceReliable =
-        options.temporalEvidenceReliable !== false;
+        options.temporalEvidenceReliable !== false &&
+        !(
+          usesTelemetryObservation &&
+          options.telemetryTemporalReliable === false
+        );
       if (
         temporalEvidenceReliable &&
         timing !== "before-subject"
@@ -400,11 +432,14 @@ function knowledgeFindingChain(
         relationId,
         temporalStatus: timing,
         temporalIntegrity:
-          options.temporalEvidenceReliable === false
-            ? "incomplete"
-            : "complete",
-        rationale: options.temporalEvidenceReliable === false
-          ? "The downstream outcome is observed, but telemetry continuity is incomplete; the observation is retained without using its temporal position as causal support."
+          temporalEvidenceReliable
+            ? "complete"
+            : "incomplete",
+        rationale: !temporalEvidenceReliable
+          ? usesTelemetryObservation &&
+            options.telemetryTemporalReliable === false
+            ? "The downstream outcome is observed, but telemetry-origin timing is not trustworthy because telemetry continuity is incomplete; the observation is retained without using temporal position as causal support."
+            : "The downstream outcome is observed, but temporal evidence is explicitly marked unreliable; the observation is retained without using temporal position as causal support."
           : timing === "before-subject"
             ? "The downstream outcome is observed in the same scope, but available timing places it before the initiating subject; it is not counted as causal support."
             : timing === "after-subject"
