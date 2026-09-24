@@ -18,3 +18,5 @@ export * from "./framing.js";
 export * from "./frame-collector.js";
 
 export * from "./active-probe.js";
+
+export * from "./probe-responder.js";
