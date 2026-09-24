@@ -335,7 +335,11 @@
       "sourceIds": [
         "mivubi-round-integrity-policy-v1"
       ],
-      "diagnosticSeverity": "critical"
+      "diagnosticSeverity": "critical",
+      "causalConsequences": [
+        "duplicate-or-invalid-reward-risk",
+        "progression-corruption-risk"
+      ]
     },
     {
       "id": "round-policy.relation-reward-gates-cleanup",
