@@ -71,7 +71,9 @@ export interface TelemetryInstrumentationKit {
     artifactId?: string;
   }): TelemetryBatch;
 
-  clear(): void;
+  resetRuntimeState(): void;
+  clearBuffer(): void;
+  clearAll(): void;
 }
 
 function mergeRuntimeScope(
@@ -118,6 +120,15 @@ export function createTelemetryInstrumentationKit(
   const arenaStart = createArenaStartGuard(emitter);
   const revive = createReviveTelemetryGuard(emitter);
   const stateMirror = createStateMirrorProbe(emitter);
+  const entityProgressProbes: EntityProgressProbe[] = [];
+
+  const resetRuntimeState = (): void => {
+    scope.clear();
+    arenaStart.clear();
+    revive.reset();
+    stateMirror.reset();
+    for (const probe of entityProgressProbes) probe.clear();
+  };
 
   return {
     emitter,
@@ -132,19 +143,27 @@ export function createTelemetryInstrumentationKit(
     },
 
     entityProgress(probeOptions) {
-      return createEntityProgressProbe(emitter, probeOptions);
+      const probe = createEntityProgressProbe(
+        emitter,
+        probeOptions,
+      );
+      entityProgressProbes.push(probe);
+      return probe;
     },
 
     batch(input) {
       return buffer.batch(input);
     },
 
-    clear() {
+    resetRuntimeState,
+
+    clearBuffer() {
       buffer.clear();
-      scope.clear();
-      arenaStart.clear();
-      revive.reset();
-      stateMirror.reset();
+    },
+
+    clearAll() {
+      resetRuntimeState();
+      buffer.clear();
     },
   };
 }
