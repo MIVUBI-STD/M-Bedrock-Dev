@@ -188,6 +188,26 @@ export function decideRepairReleaseWithLineage(
 ): RepairReleaseLineageResult {
   const lifecycleDecision = decideRepairRelease(lifecycle);
 
+  if (
+    proof.claimStrength === "proven-runtime" &&
+    !proof.decisionBasis.runtimeEvidenceRevision?.trim()
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Runtime-proven repair proof has no runtimeEvidenceRevision.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Runtime-proven repair proof must be bound to the runtime evidence snapshot that authorized it.",
+      ],
+    };
+  }
+
   if (proof.transactionId !== lifecycle.transactionId) {
     return {
       decision: {
