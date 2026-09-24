@@ -142,7 +142,12 @@ export function validateKnowledgeCatalog(
 
     validateApplicability(`Knowledge fact ${fact.id}`, fact.applicability, errors);
 
-    const factSourceIds: string[] = Array.isArray(fact.sourceIds)\n      ? fact.sourceIds.filter((sourceId: unknown): sourceId is string => typeof sourceId === "string")\n      : [];
+    const factSourceIds: string[] = Array.isArray(fact.sourceIds)
+      ? fact.sourceIds.filter(
+          (sourceId: unknown): sourceId is string =>
+            typeof sourceId === "string",
+        )
+      : [];
     if (factSourceIds.length === 0) {
       errors.push(`Knowledge fact has no source: ${fact.id}`);
     }
@@ -358,7 +363,12 @@ export function validateKnowledgeCatalog(
 
     validateApplicability(`Knowledge relation ${relation.id}`, relation.applicability, errors);
 
-    const relationSourceIds: string[] = Array.isArray(relation.sourceIds)\n      ? relation.sourceIds.filter((sourceId: unknown): sourceId is string => typeof sourceId === "string")\n      : [];
+    const relationSourceIds: string[] = Array.isArray(relation.sourceIds)
+      ? relation.sourceIds.filter(
+          (sourceId: unknown): sourceId is string =>
+            typeof sourceId === "string",
+        )
+      : [];
     if (relationSourceIds.length === 0) {
       errors.push(`Knowledge relation has no source: ${relation.id}`);
     }
