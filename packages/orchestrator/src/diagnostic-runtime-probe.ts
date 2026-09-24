@@ -1,5 +1,6 @@
 import type { DiagnosticProbeDefinition } from "../../project-model/src/diagnostic-probe.js";
 import type { RuntimeProbeRequest, RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
+import { runtimeScopeContains } from "../../project-model/src/runtime-evidence.js";
 import { parseRuntimeProbeResponse } from "../../project-model/src/runtime-probe-validate.js";
 import type { DiagnosticInvestigationState } from "./diagnostic-investigation.js";
 import { applyDiagnosticProbeObservation } from "./diagnostic-investigation.js";
@@ -46,6 +47,26 @@ export function applyRuntimeProbeResponse(
   if (response.evidence.predicate !== issuedRequest.predicate) {
     throw new Error(
       "Runtime probe response predicate does not match issued request.",
+    );
+  }
+
+  if (
+    issuedRequest.runtimeTick !== undefined &&
+    response.runtimeTick < issuedRequest.runtimeTick
+  ) {
+    throw new Error(
+      "Runtime probe response runtimeTick predates issued request.",
+    );
+  }
+
+  if (
+    !runtimeScopeContains(
+      response.evidence.scope,
+      issuedRequest.scope,
+    )
+  ) {
+    throw new Error(
+      "Runtime probe response evidence scope does not match issued request scope.",
     );
   }
 
