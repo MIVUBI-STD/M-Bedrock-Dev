@@ -12,6 +12,53 @@ function finite(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+function validateScope(
+  value: unknown,
+  label: string,
+  errors: string[],
+): void {
+  if (value === undefined) return;
+  if (!record(value)) {
+    errors.push(label + " must be an object.");
+    return;
+  }
+
+  for (const key of [
+    "arenaId",
+    "playerKey",
+    "entityKey",
+    "operationId",
+  ]) {
+    const item = value[key];
+    if (
+      item !== undefined &&
+      (typeof item !== "string" || item.trim().length === 0)
+    ) {
+      errors.push(label + "." + key + " must be a non-empty string.");
+    }
+  }
+
+  for (const key of [
+    "arenaGeneration",
+    "connectionGeneration",
+    "lifeGeneration",
+    "entityGeneration",
+    "subsystemGeneration",
+  ]) {
+    const item = value[key];
+    if (
+      item !== undefined &&
+      (
+        typeof item !== "number" ||
+        !Number.isInteger(item) ||
+        item < 0
+      )
+    ) {
+      errors.push(label + "." + key + " must be a non-negative integer.");
+    }
+  }
+}
+
 export function validateRuntimeProbeRequest(input: unknown): string[] {
   if (!record(input)) return ["Runtime probe request must be an object."];
   const errors: string[] = [];
@@ -20,6 +67,8 @@ export function validateRuntimeProbeRequest(input: unknown): string[] {
   if (!nonEmpty(input.requestId)) errors.push("requestId must be a non-empty string.");
   if (!nonEmpty(input.probeId)) errors.push("probeId must be a non-empty string.");
   if (!nonEmpty(input.predicate)) errors.push("predicate must be a non-empty string.");
+
+  validateScope(input.scope, "scope", errors);
 
   if (
     input.runtimeTick !== undefined &&
@@ -155,6 +204,7 @@ export function validateRuntimeProbeResponse(input: unknown): string[] {
     ) {
       errors.push("evidence.state must be present, absent, or unknown.");
     }
+    validateScope(input.evidence.scope, "evidence.scope", errors);
     if (
       input.evidence.confidence !== "observed" &&
       input.evidence.confidence !== "derived" &&
@@ -180,6 +230,18 @@ export function validateRuntimeProbeResponse(input: unknown): string[] {
   }
   if (input.error !== undefined && typeof input.error !== "string") {
     errors.push("error must be a string.");
+  }
+
+  if (input.ok === false) {
+    if (input.state !== "unknown") {
+      errors.push("ok=false responses must use unknown state.");
+    }
+    if (!nonEmpty(input.error)) {
+      errors.push("ok=false responses require a non-empty error.");
+    }
+  }
+  if (input.ok === true && input.error !== undefined) {
+    errors.push("ok=true responses must not include error.");
   }
 
   return errors;
