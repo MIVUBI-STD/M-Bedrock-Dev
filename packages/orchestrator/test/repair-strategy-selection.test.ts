@@ -32,6 +32,36 @@ function transaction(
   });
 }
 
+function invariantRegistry() {
+  return {
+    schemaVersion: 1 as const,
+    revision: "inv-r1",
+    profileKey: "bedrock:1.26.40",
+    entries: [{
+      id: "invariant:ready",
+      source: {
+        kind: "manual-policy" as const,
+        id: "ready-policy",
+        revision: "r1",
+      },
+      enforcement: "runtime-state" as const,
+      minimumRepairClaim: "proven-runtime" as const,
+      stateRequirements: [{
+        id: "invariant:ready",
+        predicate: "ready",
+        expectedState: "present" as const,
+      }],
+      temporalRequirements: [],
+      revalidationLayers: [
+        "static" as const,
+        "transitive" as const,
+        "runtime" as const,
+        "package" as const,
+      ],
+    }],
+  };
+}
+
 function graphFixture() {
   const graph = new SemanticGraph();
 
@@ -132,6 +162,7 @@ describe("repair strategy selection", () => {
         addressesCandidateIds: ["cause-1"],
       }],
       {
+        invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
       },
     );
@@ -168,6 +199,7 @@ describe("repair strategy selection", () => {
         addressesCandidateIds: ["cause-1"],
       }],
       {
+        invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
       },
     );
@@ -195,6 +227,7 @@ describe("repair strategy selection", () => {
         addressesCandidateIds: ["other-cause"],
       }],
       {
+        invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
       },
     );
@@ -228,7 +261,10 @@ describe("repair strategy selection", () => {
       graph,
       guardedDiagnostic,
       [candidate],
-      { requiredInvariantIds: ["invariant:ready"] },
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+      },
     ).status).toBe("none-eligible");
 
     expect(selectRepairStrategy(
@@ -236,6 +272,7 @@ describe("repair strategy selection", () => {
       guardedDiagnostic,
       [candidate],
       {
+        invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
         allowGuarded: true,
       },
@@ -260,15 +297,19 @@ describe("repair strategy selection", () => {
         strategyId: "same",
         transaction: txA,
         changedNodeIds: ["function:p:independent-a"],
-        supportingInvariantIds: [],
+        supportingInvariantIds: ["invariant:ready"],
         addressesCandidateIds: ["cause-1"],
       }, {
         strategyId: "same",
         transaction: txB,
         changedNodeIds: ["function:p:independent-b"],
-        supportingInvariantIds: [],
+        supportingInvariantIds: ["invariant:ready"],
         addressesCandidateIds: ["cause-1"],
       }],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+      },
     )).toThrow(/Duplicate repair strategy id/);
   });
 
@@ -318,6 +359,7 @@ describe("repair strategy selection", () => {
         addressesCandidateIds: ["cause-1"],
       }],
       {
+        invariantRegistry: invariantRegistry(),
         requiredInvariantIds: ["invariant:ready"],
       },
     );
@@ -329,6 +371,109 @@ describe("repair strategy selection", () => {
         "few-nodes-more-ops",
         "more-nodes-fewer-ops",
       ]);
+  });
+
+
+  it("rejects empty or unknown required invariant configuration", () => {
+    const graph = graphFixture();
+    const candidate = {
+      strategyId: "candidate",
+      transaction: transaction(
+        "candidate",
+        "functions/caller.mcfunction",
+      ),
+      changedNodeIds: ["function:p:caller"],
+      supportingInvariantIds: ["invariant:ready"],
+      addressesCandidateIds: ["cause-1"],
+    };
+
+    expect(() => selectRepairStrategy(
+      graph,
+      diagnostic,
+      [candidate],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: [],
+      },
+    )).toThrow(/at least one required invariant/);
+
+    expect(() => selectRepairStrategy(
+      graph,
+      diagnostic,
+      [candidate],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["missing"],
+      },
+    )).toThrow(/not present in invariant registry/);
+  });
+
+  it("rejects diagnostic-only invariants for automatic strategy selection", () => {
+    const graph = graphFixture();
+    const registry = invariantRegistry();
+    const diagnosticOnly = {
+      ...registry,
+      revision: "inv-r2",
+      entries: [{
+        ...registry.entries[0]!,
+        id: "invariant:diagnostic-only",
+        enforcement: "diagnostic-only" as const,
+        minimumRepairClaim: "hypothesis" as const,
+        stateRequirements: [],
+        revalidationLayers: ["static" as const],
+      }],
+    };
+
+    const result = selectRepairStrategy(
+      graph,
+      diagnostic,
+      [{
+        strategyId: "candidate",
+        transaction: transaction(
+          "candidate",
+          "functions/caller.mcfunction",
+        ),
+        changedNodeIds: ["function:p:caller"],
+        supportingInvariantIds: ["invariant:diagnostic-only"],
+        addressesCandidateIds: ["cause-1"],
+      }],
+      {
+        invariantRegistry: diagnosticOnly,
+        requiredInvariantIds: ["invariant:diagnostic-only"],
+      },
+    );
+
+    expect(result.status).toBe("none-eligible");
+    expect(result.assessments[0]?.reasons.join(" "))
+      .toMatch(/diagnostic-only/);
+  });
+
+  it("binds selected repair proof to invariant registry revision", () => {
+    const result = selectRepairStrategy(
+      graphFixture(),
+      diagnostic,
+      [{
+        strategyId: "candidate",
+        transaction: transaction(
+          "candidate",
+          "functions/caller.mcfunction",
+        ),
+        changedNodeIds: ["function:p:caller"],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+      }],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+      },
+    );
+
+    expect(result.status).toBe("selected");
+    if (result.status !== "selected") return;
+    expect(
+      result.selected.pipeline.proof.decisionBasis
+        .invariantRegistryRevision,
+    ).toBe("inv-r1");
   });
 
 });
