@@ -25,10 +25,11 @@ export * from "./bedrock.js";
 export * from "./transport.js";
 export * from "./observers.js";
 export {
-  createEntityProgressMonitor,
-  type Position3,
-  type EntityProgressMonitorOptions,
-  type EntityProgressMonitor,
+  createEntityProgressMonitor as createLegacyEntityProgressMonitor,
+  type Position3 as LegacyPosition3,
+  type EntityProgressSample as LegacyEntityProgressSample,
+  type EntityProgressMonitorOptions as LegacyEntityProgressMonitorOptions,
+  type EntityProgressMonitor as LegacyEntityProgressMonitor,
 } from "./entity-progress.js";
 
 export * from "./mutation-lifecycle.js";
@@ -43,8 +44,24 @@ export * from "./runtime-probe-bundle-runner.js";
 
 export * from "./bedrock-bridge.js";
 
-export * from "./monitors.js";
+export {
+  createEntityProgressMonitor,
+  createStateMirrorMonitor,
+  type PositionSample,
+  type EntityProgressSample as EntityProgressMonitorSample,
+  type EntityProgressMonitorOptions,
+  type EntityProgressMonitor,
+  type StateMirrorSample as StateMirrorMonitorSample,
+  type StateMirrorMonitor,
+} from "./monitors.js";
 
-export * from "./revive-monitor.js";
+export {
+  createReviveTransactionMonitor,
+  type ReviveStartObservation,
+  type ReviveCompletionObservation as ReviveTransactionCompletionObservation,
+  type ReviveDeathObservation,
+  type ReviveGenerationObservation,
+  type ReviveTransactionMonitor,
+} from "./revive-monitor.js";
 
 export * from "./budget.js";
