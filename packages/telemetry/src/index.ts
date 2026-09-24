@@ -20,3 +20,7 @@ export * from "./frame-collector.js";
 export * from "./active-probe.js";
 
 export * from "./probe-responder.js";
+
+export * from "./bedrock.js";
+export * from "./transport.js";
+export * from "./observers.js";
