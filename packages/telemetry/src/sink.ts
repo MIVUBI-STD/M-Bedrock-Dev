@@ -68,6 +68,11 @@ export function createBufferedTelemetrySink(
         events: this.snapshot(),
       };
     },
+    drainBatch(input = {}): TelemetryBatch {
+      const batch = this.batch(input);
+      this.clear();
+      return batch;
+    },
   };
 }
 
