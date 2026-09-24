@@ -101,4 +101,30 @@ describe("runtime evidence integrity", () => {
     expect(report.unlocatedObservedRecords).toBe(1);
     expect(report.safeForTemporalViolationClaims).toBe(false);
   });
+  it("aggregates integrity per scope without cross-scope false conflicts", async () => {
+    const { assessRuntimeEvidenceSetIntegrity } = await import(
+      "../src/runtime-evidence-integrity.js"
+    );
+
+    const report = assessRuntimeEvidenceSetIntegrity([
+      {
+        predicate: "route-ready",
+        state: "present",
+        confidence: "observed",
+        scope: { operationId: "op-a" },
+        observedAt: { tick: 10 },
+      },
+      {
+        predicate: "route-ready",
+        state: "absent",
+        confidence: "observed",
+        scope: { operationId: "op-b" },
+        observedAt: { tick: 10 },
+      },
+    ]);
+
+    expect(report.unresolvedConflictPredicates).toEqual([]);
+    expect(report.safeForCurrentStateClaims).toBe(true);
+    expect(report.safeForTemporalViolationClaims).toBe(true);
+  });
 });
