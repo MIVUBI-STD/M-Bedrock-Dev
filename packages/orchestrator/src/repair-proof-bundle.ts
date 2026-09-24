@@ -297,6 +297,16 @@ export function validateRepairProofBundle(
   if (
     (proof.admissionDisposition === "eligible" ||
       proof.admissionDisposition === "guarded") &&
+    !proof.decisionBasis.contractRegistryRevision?.trim()
+  ) {
+    errors.push(
+      "Mutation-authorizing proof requires contract registry revision.",
+    );
+  }
+
+  if (
+    (proof.admissionDisposition === "eligible" ||
+      proof.admissionDisposition === "guarded") &&
     !proof.selectedCandidateId
   ) {
     errors.push(
