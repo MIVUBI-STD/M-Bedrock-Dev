@@ -89,6 +89,7 @@ function decisionBasisMismatch(
     "invariantRegistryRevision",
     "targetProfileFingerprint",
     "probeBindingRevision",
+    "runtimeEvidenceRevision",
   ] as const) {
     const expectedValue = expected[key];
     if (expectedValue === undefined) continue;
@@ -159,6 +160,7 @@ function proofBasisMismatch(
     "invariantRegistryRevision",
     "targetProfileFingerprint",
     "probeBindingRevision",
+    "runtimeEvidenceRevision",
   ] as const) {
     const expected = proof.decisionBasis[key];
     if (
