@@ -16,6 +16,7 @@ export interface KnowledgeGraphEdge {
   classification: KnowledgeRelation["classification"];
   diagnosticHint?: string;
   diagnosticSeverity?: KnowledgeRelation["diagnosticSeverity"];
+  causalConsequences?: readonly string[];
 }
 
 export interface KnowledgeGraphPath {
@@ -77,6 +78,9 @@ export function buildKnowledgeGraph(
     ...(relation.diagnosticSeverity === undefined
       ? {}
       : { diagnosticSeverity: relation.diagnosticSeverity }),
+    ...(relation.causalConsequences === undefined
+      ? {}
+      : { causalConsequences: relation.causalConsequences }),
   }));
 
   const nodes = new Set<string>();
