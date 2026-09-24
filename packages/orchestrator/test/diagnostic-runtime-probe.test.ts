@@ -184,4 +184,105 @@ describe("runtime probe investigation adapter", () => {
     )).toThrow(/requestId does not match issued request/);
   });
 
+  it("rejects a response older than the issued probe", () => {
+    const request = {
+      ...issuedRequest("req-old"),
+      runtimeTick: 200,
+    };
+
+    expect(() => applyRuntimeProbeResponse(
+      createDiagnosticInvestigation(incident),
+      probes,
+      request,
+      {
+        schemaVersion: 1,
+        requestId: "req-old",
+        probeId: "chunk-readiness",
+        runtimeTick: 199,
+        ok: true,
+        state: "present",
+        outcomeId: "ready",
+        evidence: {
+          predicate: "target-chunk-loaded",
+          state: "present",
+          confidence: "observed",
+        },
+      },
+    )).toThrow(/predates issued request/);
+  });
+
+  it("rejects cross-scope evidence for a scoped probe request", () => {
+    const request = {
+      ...issuedRequest("req-scope"),
+      runtimeTick: 200,
+      scope: {
+        arenaId: "arena-1",
+        arenaGeneration: 7,
+        operationId: "load-7",
+      },
+    };
+
+    expect(() => applyRuntimeProbeResponse(
+      createDiagnosticInvestigation(incident),
+      probes,
+      request,
+      {
+        schemaVersion: 1,
+        requestId: "req-scope",
+        probeId: "chunk-readiness",
+        runtimeTick: 201,
+        ok: true,
+        state: "present",
+        outcomeId: "ready",
+        evidence: {
+          predicate: "target-chunk-loaded",
+          state: "present",
+          confidence: "observed",
+          scope: {
+            arenaId: "arena-1",
+            arenaGeneration: 8,
+            operationId: "load-7",
+          },
+        },
+      },
+    )).toThrow(/scope does not match issued request/);
+  });
+
+  it("accepts evidence that preserves the issued scope and adds narrower identity", () => {
+    const request = {
+      ...issuedRequest("req-narrow"),
+      runtimeTick: 200,
+      scope: {
+        arenaId: "arena-1",
+        arenaGeneration: 7,
+      },
+    };
+
+    const result = applyRuntimeProbeResponse(
+      createDiagnosticInvestigation(incident),
+      probes,
+      request,
+      {
+        schemaVersion: 1,
+        requestId: "req-narrow",
+        probeId: "chunk-readiness",
+        runtimeTick: 201,
+        ok: true,
+        state: "present",
+        outcomeId: "ready",
+        evidence: {
+          predicate: "target-chunk-loaded",
+          state: "present",
+          confidence: "observed",
+          scope: {
+            arenaId: "arena-1",
+            arenaGeneration: 7,
+            operationId: "chunk-check",
+          },
+        },
+      },
+    );
+
+    expect(result.investigation.activeCandidateIds).toEqual(["route"]);
+  });
 });
