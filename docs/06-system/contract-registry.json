@@ -2,6 +2,20 @@
   "schemaVersion": 1,
   "contracts": [
     {
+      "id": "contract-registry-revision",
+      "symbol": "CONTRACT_REGISTRY_REVISION",
+      "owner": "packages/project-model/src/contract-registry-revision.ts",
+      "producers": [
+        "tooling/repository"
+      ],
+      "consumers": [
+        "packages/orchestrator"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "decision-freshness",
+      "status": "canonical"
+    },
+    {
       "id": "decision-basis-revision",
       "symbol": "DecisionBasisRevision",
       "owner": "packages/project-model/src/decision-ledger.ts",
