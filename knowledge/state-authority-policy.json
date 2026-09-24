@@ -330,7 +330,15 @@
       "causalConsequences": [
         "stale-gameplay-mirror-risk",
         "incorrect-state-decision-risk"
-      ]
+      ],
+      "causalOutcomePredicates": {
+        "stale-gameplay-mirror-risk": [
+          "state-drift-observed"
+        ],
+        "incorrect-state-decision-risk": [
+          "state-drift-observed"
+        ]
+      }
     },
     {
       "id": "state-policy.relation-mirror-requires-authority",
