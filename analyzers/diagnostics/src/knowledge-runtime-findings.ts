@@ -94,6 +94,9 @@ export function knowledgeRuntimeDiagnostics(
           ...(assessment.causalCorroborators === undefined
             ? {}
             : { causalCorroborators: assessment.causalCorroborators }),
+          ...(assessment.causalOutcomePredicates === undefined
+            ? {}
+            : { causalOutcomePredicates: assessment.causalOutcomePredicates }),
         },
       });
     }
