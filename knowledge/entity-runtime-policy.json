@@ -410,6 +410,9 @@
         "fallback-recovery-risk": [
           "teleport-fallback-observed"
         ]
+      },
+      "causalCorroborationMinSources": {
+        "navigation-stall-risk": 2
       }
     }
   ]
