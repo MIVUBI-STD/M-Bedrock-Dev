@@ -165,4 +165,53 @@ describe("temporal telemetry causal reasoning", () => {
       }),
     ]));
   });
+  it("does not promote temporal support when continuity is incomplete", () => {
+    const records = telemetryRuntimeEvidence([{
+      schemaVersion: 1,
+      eventId: "mutation-1",
+      kind: "mutation-applied",
+      producer: "instrumentation",
+      scope: { operationId: "route-op" },
+      tick: 100,
+      streamId: "runtime-main",
+      sequence: 1,
+      mutationKind: "fill",
+      routeId: "bridge",
+    }, {
+      schemaVersion: 1,
+      eventId: "stall-1",
+      kind: "entity-stall",
+      producer: "instrumentation",
+      scope: { operationId: "route-op" },
+      tick: 120,
+      streamId: "runtime-main",
+      sequence: 3,
+      entityKey: "demo:zombie",
+      routeId: "bridge",
+    }]);
+
+    const diagnostics = knowledgeRuntimeDiagnostics({
+      catalog,
+      profile: { edition: "bedrock" },
+      snapshot: { schemaVersion: 1, records },
+    });
+    const chain = synthesizeCausalChains(diagnostics, {
+      temporalEvidenceReliable: false,
+    })[0]!;
+
+    expect(chain.confidence).toBe("low");
+    expect(chain.links).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        strength: "direct-evidence",
+        temporalStatus: "after-subject",
+        temporalIntegrity: "incomplete",
+      }),
+    ]));
+    expect(chain.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "observed-state",
+        label: "navigation-stall-observed",
+      }),
+    ]));
+  });
 });
