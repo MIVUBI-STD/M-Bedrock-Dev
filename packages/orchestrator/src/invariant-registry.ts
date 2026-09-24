@@ -6,6 +6,9 @@ import type {
   InvariantRegistryEntry,
   InvariantRegistrySnapshot,
 } from "../../project-model/src/invariant-registry.js";
+import {
+  assertInvariantRegistrySnapshot,
+} from "../../project-model/src/invariant-registry-validate.js";
 import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
 
 function canonicalJson(value: unknown): string {
@@ -158,10 +161,12 @@ export function materializeInvariantRegistry(
     }))
     .digest("hex");
 
-  return {
+  const snapshot: InvariantRegistrySnapshot = {
     schemaVersion: 1,
     revision,
     profileKey: options.profileKey,
     entries,
   };
+  assertInvariantRegistrySnapshot(snapshot);
+  return snapshot;
 }
