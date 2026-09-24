@@ -119,3 +119,5 @@ export * from "./repair-strategy-selection.js";
 export * from "./repair-release-lineage.js";
 
 export * from "./evidence-recovery.js";
+export * from "./repair-invariant-derivation.js";
+export * from "./causal-repair-strategy-selection.js";
