@@ -36,6 +36,11 @@ export function knowledgeRuntimeDiagnostics(
       sourceRefs,
       relatedNodeIds,
     } = mergeRuntimeEvidenceRecords(records);
+    const presentPredicates = [...new Set(
+      records
+        .filter((record) => record.state === "present")
+        .map((record) => record.predicate),
+    )].sort();
 
     for (const predicate of conflicts) {
       findings.push({
@@ -82,9 +87,13 @@ export function knowledgeRuntimeDiagnostics(
           knowledgeSourceIds: assessment.knowledgeSourceIds,
           evidenceSourceIds: assessment.evidenceSourceIds,
           evidenceConflicts: conflicts,
+          presentPredicates,
           ...(assessment.causalConsequences === undefined
             ? {}
             : { causalConsequences: assessment.causalConsequences }),
+          ...(assessment.causalCorroborators === undefined
+            ? {}
+            : { causalCorroborators: assessment.causalCorroborators }),
         },
       });
     }
