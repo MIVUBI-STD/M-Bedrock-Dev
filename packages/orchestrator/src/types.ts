@@ -10,6 +10,7 @@ import type { CausalChain, CausalIncident } from "../../project-model/src/causal
 import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import type { DiagnosticProbeAnalysis } from "./diagnostic-probe-analysis.js";
+import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -95,6 +96,10 @@ export interface InspectDirectoryResult {
     unknown: number;
     failed: number;
     droppedExchanges: number;
+  };
+  evidenceIntegrity: {
+    telemetry: RuntimeEvidenceIntegrityReport;
+    runtimeProbe: RuntimeEvidenceIntegrityReport;
   };
   diagnosticProbeAnalysis: DiagnosticProbeAnalysis;
   worldDatabase: {
