@@ -15,6 +15,11 @@ export interface TelemetryFrameOptions {
   maxPayloadCharacters: number;
 }
 
+export interface TelemetryFrameSet {
+  schemaVersion: 1;
+  frames: readonly TelemetryFrame[];
+}
+
 function fnv1a32(value: string): string {
   let hash = 0x811c9dc5;
   for (let index = 0; index < value.length; index += 1) {
@@ -163,4 +168,27 @@ export function reassembleTelemetryFrames(
   }
 
   return parseTelemetryBatch(parsed);
+}
+
+
+export function frameTelemetryBatchSet(
+  batch: TelemetryBatch,
+  options: TelemetryFrameOptions,
+): TelemetryFrameSet {
+  return {
+    schemaVersion: 1,
+    frames: frameTelemetryBatch(batch, options),
+  };
+}
+
+export function reassembleTelemetryFrameSet(
+  set: TelemetryFrameSet,
+): TelemetryBatch {
+  if (set.schemaVersion !== 1) {
+    throw new Error("Telemetry frame set schemaVersion must be 1.");
+  }
+  if (!Array.isArray(set.frames)) {
+    throw new Error("Telemetry frame set frames must be an array.");
+  }
+  return reassembleTelemetryFrames(set.frames);
 }
