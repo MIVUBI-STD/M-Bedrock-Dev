@@ -797,6 +797,26 @@ export async function inspectDirectory(
           item.nodes.filter((node) => node.kind === "downstream-risk").length,
         0,
       ),
+      corroboratedRisks: causalChains.reduce(
+        (sum, item) =>
+          sum +
+          item.links.filter(
+            (link) => link.strength === "corroborated-risk",
+          ).length,
+        0,
+      ),
+      observedOutcomes: causalChains.reduce((sum, item) => {
+        const nodesById = new Map(item.nodes.map((node) => [node.id, node]));
+        return sum + item.links.filter((link) => {
+          const from = nodesById.get(link.from);
+          const to = nodesById.get(link.to);
+          return (
+            link.strength === "direct-evidence" &&
+            from?.kind === "downstream-risk" &&
+            to?.kind === "observed-state"
+          );
+        }).length;
+      }, 0),
     },
     worldDatabase: {
       present: dbFiles.length > 0,
