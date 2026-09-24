@@ -78,6 +78,37 @@ function activeAncestorsOfKind(
     );
 }
 
+function decisionBasisMismatch(
+  entry: DecisionLedgerEntry,
+  expected: DecisionBasisRevision,
+): string | undefined {
+  for (const key of [
+    "sourceFingerprint",
+    "graphFingerprint",
+    "knowledgeRevision",
+    "invariantRegistryRevision",
+    "targetProfileFingerprint",
+    "probeBindingRevision",
+  ] as const) {
+    const expectedValue = expected[key];
+    if (expectedValue === undefined) continue;
+    if (entry.basis[key] !== expectedValue) {
+      return (
+        "Decision " +
+        entry.id +
+        " does not carry current proof basis " +
+        key +
+        ": expected " +
+        expectedValue +
+        ", received " +
+        String(entry.basis[key] ?? "<missing>") +
+        "."
+      );
+    }
+  }
+  return undefined;
+}
+
 function uniqueActiveStage(
   ledger: DecisionLedgerSnapshot,
   transactionId: string,
@@ -478,14 +509,26 @@ export function decideRepairReleaseWithLineage(
     );
   }
 
-  const lineageDecisionIds = [
-    ...authorizationEntries.map((entry) => entry.id),
-    strategyEntry.id,
-    admissionEntry.id,
-    ...(transitiveEntry ? [transitiveEntry.id] : []),
-    runtimeEntry.id,
-    packageEntry.id,
-  ].sort();
+  const lineageEntries = [
+    ...authorizationEntries,
+    strategyEntry,
+    admissionEntry,
+    ...(transitiveEntry ? [transitiveEntry] : []),
+    runtimeEntry,
+    packageEntry,
+  ];
+
+  for (const entry of lineageEntries) {
+    const mismatch = decisionBasisMismatch(
+      entry,
+      proof.decisionBasis,
+    );
+    if (mismatch) lineageErrors.push(mismatch);
+  }
+
+  const lineageDecisionIds = lineageEntries
+    .map((entry) => entry.id)
+    .sort();
 
   if (lineageErrors.length > 0) {
     return {
