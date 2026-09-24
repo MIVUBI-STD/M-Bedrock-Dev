@@ -26,6 +26,7 @@ export interface KnowledgeRelationAssessment {
   evidenceSourceIds: readonly string[];
   diagnosticSeverity?: "info" | "minor" | "medium" | "critical";
   causalConsequences?: readonly string[];
+  causalCorroborators?: Readonly<Record<string, readonly string[]>>;
 }
 
 function evidenceFor(
@@ -79,6 +80,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalConsequences === undefined
           ? {}
           : { causalConsequences: relation.causalConsequences }),
+        ...(relation.causalCorroborators === undefined
+          ? {}
+          : { causalCorroborators: relation.causalCorroborators }),
       });
       continue;
     }
@@ -109,6 +113,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalConsequences === undefined
           ? {}
           : { causalConsequences: relation.causalConsequences }),
+        ...(relation.causalCorroborators === undefined
+          ? {}
+          : { causalCorroborators: relation.causalCorroborators }),
       });
       continue;
     }
@@ -137,6 +144,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalConsequences === undefined
           ? {}
           : { causalConsequences: relation.causalConsequences }),
+        ...(relation.causalCorroborators === undefined
+          ? {}
+          : { causalCorroborators: relation.causalCorroborators }),
       });
       continue;
     }
@@ -161,6 +171,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalConsequences === undefined
           ? {}
           : { causalConsequences: relation.causalConsequences }),
+        ...(relation.causalCorroborators === undefined
+          ? {}
+          : { causalCorroborators: relation.causalCorroborators }),
       });
       continue;
     }
@@ -189,6 +202,9 @@ export function assessKnowledgeRelations(
         ...(relation.causalConsequences === undefined
           ? {}
           : { causalConsequences: relation.causalConsequences }),
+        ...(relation.causalCorroborators === undefined
+          ? {}
+          : { causalCorroborators: relation.causalCorroborators }),
       });
     }
   }
