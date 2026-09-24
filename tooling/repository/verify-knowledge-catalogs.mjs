@@ -175,6 +175,35 @@ for (const path of files) {
       );
     }
     if (
+      relation.causalCorroborators !== undefined &&
+      (
+        typeof relation.causalCorroborators !== "object" ||
+        relation.causalCorroborators === null ||
+        Array.isArray(relation.causalCorroborators)
+      )
+    ) {
+      throw new Error(
+        `${path}: relation ${relation.id} causalCorroborators must be an object`,
+      );
+    }
+    for (const [risk, predicates] of Object.entries(
+      relation.causalCorroborators ?? {},
+    )) {
+      if (!risk.trim() || !Array.isArray(predicates) || predicates.length === 0) {
+        throw new Error(
+          `${path}: relation ${relation.id} has invalid corroborator ${risk}`,
+        );
+      }
+      for (const predicate of predicates) {
+        if (typeof predicate !== "string" || predicate.trim().length === 0) {
+          throw new Error(
+            `${path}: relation ${relation.id} has empty corroborator predicate`,
+          );
+        }
+      }
+    }
+
+    if (
       relation.causalConsequences !== undefined &&
       !Array.isArray(relation.causalConsequences)
     ) {
