@@ -3,6 +3,7 @@ import { discoverInspectionPacks } from "./inspect-packs.js";
 import { indexInspectionSources } from "./inspect-source-index.js";
 import { analyzeInspectionScriptCompatibility } from "./inspect-script-compatibility.js";
 import { populateInspectionScriptImportGraph } from "./inspect-script-import-graph.js";
+import { enrichInspectionSemanticGraph } from "./inspect-graph-enrichment.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
 import {
@@ -18,12 +19,9 @@ import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
 import { educationRequirementDiagnostic } from "../../../analyzers/diagnostics/src/education-findings.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
-import type { SemanticNode } from "../../graph/src/types.js";
 import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";
-import { semanticNodeId } from "../../project-model/src/identity.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
-import { populateFunctionEdges } from "../../../analyzers/references/src/populate-function-edges.js";
 import type {
   InspectDirectoryResult,
   InspectTargetProfile,
@@ -69,8 +67,6 @@ import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.
 import { buildDecisionBasis } from "./decision-basis.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
-import { embeddedCommandStateIdentifiers, populateEmbeddedStructureCommandGraph } from "./embedded-structure-graph.js";
-import { createDialogueSceneNodes, dialogueStateIdentifiers, populateDialogueCommandGraph, type DialogueGraphDocument } from "./dialogue-graph.js";
 import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
 import { deriveScriptApiUsage } from "./script-api-usage.js";
 import {
@@ -130,69 +126,15 @@ export async function inspectDirectory(
   );
   diagnostics.push(...sourceDiagnostics);
 
-  const dialogueGraphDocuments: DialogueGraphDocument[] = parsedDialogueDocuments
-    .filter((item): item is NonNullable<typeof item> => item !== undefined)
-    .map((document) => createDialogueSceneNodes(graph, document, nodes));
-
-  const scoreboardIds = new Set<string>();
-  const tagIds = new Set<string>();
-
-  const dialogueIds = dialogueStateIdentifiers(dialogueGraphDocuments);
-  for (const objective of dialogueIds.scoreboardObjectives) scoreboardIds.add(objective);
-  for (const tag of dialogueIds.tags) tagIds.add(tag);
-  for (const structure of parsedStructureModels) {
-    const identifiers = embeddedCommandStateIdentifiers(structure.embeddedCommands);
-    for (const objective of identifiers.scoreboardObjectives) scoreboardIds.add(objective);
-    for (const tag of identifiers.tags) tagIds.add(tag);
-  }
-  for (const { parsed } of parsedFunctions) {
-    for (const ref of parsed.references) {
-      if ("objective" in ref) scoreboardIds.add(ref.objective);
-      if ("tag" in ref) tagIds.add(ref.tag);
-    }
-  }
-
-  for (const objective of scoreboardIds) {
-    const node: SemanticNode = {
-      id: semanticNodeId("scoreboard_objective", "project", objective),
-      identity: { kind: "scoreboard_objective", scope: "project", identifier: objective },
-      kind: "scoreboard_objective",
-      identifier: objective,
-      source: { artifactId, relativePath: "<derived>" },
-    };
-    graph.addNode(node);
-    nodes.push(node);
-  }
-
-  for (const tag of tagIds) {
-    const node: SemanticNode = {
-      id: semanticNodeId("tag", "project", tag),
-      identity: { kind: "tag", scope: "project", identifier: tag },
-      kind: "tag",
-      identifier: tag,
-      source: { artifactId, relativePath: "<derived>" },
-    };
-    graph.addNode(node);
-    nodes.push(node);
-  }
-
-  for (const item of parsedFunctions) {
-    populateFunctionEdges(graph, item.node, item.parsed, nodes);
-  }
-
-  for (const dialogue of dialogueGraphDocuments) {
-    populateDialogueCommandGraph(graph, dialogue, nodes);
-  }
-
-  for (const structure of parsedStructureModels) {
-    populateEmbeddedStructureCommandGraph(
+  const { dialogueGraphDocuments } =
+    enrichInspectionSemanticGraph({
       graph,
-      structure.node,
-      structure.identifier,
-      structure.embeddedCommands,
       nodes,
-    );
-  }
+      artifactId,
+      parsedFunctions,
+      parsedDialogueDocuments,
+      parsedStructureModels,
+    });
 
   populateInspectionScriptImportGraph(
     graph,
