@@ -41,6 +41,9 @@ function proof(
     decisionBasis: {
       sourceFingerprint: "abc",
       graphFingerprint: "graph-current",
+      ...(disposition === "guarded"
+        ? {}
+        : { runtimeEvidenceRevision: "evidence-current" }),
     },
     incidentId: "incident-1",
     selectedCandidateId: "candidate",
@@ -77,6 +80,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
     )).toMatchObject({
       authorized: true,
