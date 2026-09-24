@@ -258,4 +258,35 @@ describe("repair strategy provider registry", () => {
       .not.toBe(repairStrategyProviderRegistryRevision(second));
   });
 
+
+  it("rejects duplicate provider capabilities and empty rationale", () => {
+    const registry: RepairStrategyProviderRegistry = {
+      schemaVersion: 1,
+      providers: [{
+        id: "duplicates",
+        version: "1",
+        owner: "provider",
+        deterministic: true,
+        evidenceClass: "runtime-causal",
+        selectionMode: "causal-auto",
+        supportedDiagnosticCodes: [
+          "KNOWLEDGE_RELATION_VIOLATION",
+          "KNOWLEDGE_RELATION_VIOLATION",
+        ],
+        mutationKinds: [
+          "replace-command",
+          "replace-command",
+        ],
+        requiresExactSourceEvidence: true,
+        rationale: " ",
+      }],
+    };
+
+    const errors =
+      validateRepairStrategyProviderRegistry(registry).join(" ");
+    expect(errors).toMatch(/Duplicate supported diagnostic code/);
+    expect(errors).toMatch(/Duplicate mutation kind/);
+    expect(errors).toMatch(/rationale must be non-empty/);
+  });
+
 });
