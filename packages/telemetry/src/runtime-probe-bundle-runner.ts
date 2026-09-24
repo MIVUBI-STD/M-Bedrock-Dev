@@ -27,7 +27,6 @@ export function executeRuntimeProbeBundle(
 
   if (
     options.expectedArtifactId !== undefined &&
-    bundle.artifactId !== undefined &&
     bundle.artifactId !== options.expectedArtifactId
   ) {
     throw new Error(
@@ -41,7 +40,6 @@ export function executeRuntimeProbeBundle(
 
   if (
     options.expectedSessionId !== undefined &&
-    bundle.sessionId !== undefined &&
     bundle.sessionId !== options.expectedSessionId
   ) {
     throw new Error(
