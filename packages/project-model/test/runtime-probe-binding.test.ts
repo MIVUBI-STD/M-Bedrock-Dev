@@ -64,6 +64,7 @@ describe("runtime probe binding and request bundles", () => {
   it("accepts generic and incident-specific bindings for the same probe", () => {
     const generic = {
       probeId: "chunk-ready",
+      incidentId: "incident-1",
       predicate: "loaded-target-chunk",
       query: {
         kind: "chunk-loaded",
