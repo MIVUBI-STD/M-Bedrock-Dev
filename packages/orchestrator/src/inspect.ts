@@ -7,6 +7,7 @@ import {
 } from "./inspect-identifiers.js";
 export { structureIdentifier } from "./inspect-identifiers.js";
 import { discoverInspectionPacks } from "./inspect-packs.js";
+import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
 import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/compatibility.js";
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
@@ -52,7 +53,6 @@ import { SemanticGraph } from "../../graph/src/graph.js";
 import type { SemanticNode } from "../../graph/src/types.js";
 import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";
 import { semanticNodeId } from "../../project-model/src/identity.js";
-import type { DiagnosticFinding } from "../../diagnostics/src/types.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { populateFunctionEdges } from "../../../analyzers/references/src/populate-function-edges.js";
@@ -97,13 +97,8 @@ import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { synthesizeCausalChains } from "./causal-analysis.js";
 import { synthesizeCausalIncidents } from "./causal-incident-analysis.js";
 import { analyzeDiagnosticProbes } from "./diagnostic-probe-analysis.js";
-import { telemetryRuntimeEvidence } from "./telemetry-evidence.js";
-import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
-import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";
-import { assessRuntimeEvidenceSetIntegrity } from "./runtime-evidence-integrity.js";
-import { planEvidenceRecovery } from "./evidence-recovery.js";
 import { buildDecisionBasis } from "./decision-basis.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
@@ -136,41 +131,20 @@ export async function inspectDirectory(
   runtimeProbeResponses: readonly RuntimeProbeResponse[] = [],
   runtimeProbeDroppedExchanges = 0,
 ): Promise<InspectDirectoryResult> {
-  const telemetryEvidence = telemetryRuntimeEvidence(telemetryEvents);
-  const runtimeProbeEvidence =
-    runtimeProbeResponseEvidence(runtimeProbeResponses);
-  const telemetryContinuity = analyzeTelemetryContinuity({
-    schemaVersion: 1,
-    ...(telemetryDroppedEvents === 0
-      ? {}
-      : { droppedEvents: telemetryDroppedEvents }),
-    events: telemetryEvents,
-  });
-  const telemetryEvidenceIntegrity =
-    assessRuntimeEvidenceSetIntegrity(
-      telemetryEvidence,
-      telemetryContinuity,
-    );
-  const runtimeProbeEvidenceIntegrityBase =
-    assessRuntimeEvidenceSetIntegrity(
-      runtimeProbeEvidence.records,
-    );
-  const runtimeProbeEvidenceIntegrity =
-    runtimeProbeDroppedExchanges === 0
-      ? runtimeProbeEvidenceIntegrityBase
-      : {
-          ...runtimeProbeEvidenceIntegrityBase,
-          continuityComplete: false,
-          safeForTemporalViolationClaims: false,
-          reasons: [
-            ...runtimeProbeEvidenceIntegrityBase.reasons,
-            "Runtime probe exchanges were dropped; missing probe observations cannot safely establish temporal absence or ordering.",
-          ],
-        };
-  const evidenceRecovery = planEvidenceRecovery(
+  const {
+    telemetryEvidence,
+    runtimeProbeEvidence,
+    telemetryContinuity,
     telemetryEvidenceIntegrity,
     runtimeProbeEvidenceIntegrity,
-  );
+    evidenceRecovery,
+    diagnostics,
+  } = prepareInspectionRuntimeEvidence({
+    telemetryEvents,
+    telemetryDroppedEvents,
+    runtimeProbeResponses,
+    runtimeProbeDroppedExchanges,
+  });
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
 
@@ -187,84 +161,6 @@ export async function inspectDirectory(
   const parsedEntities: Array<{ node: SemanticNode; parsed: ReturnType<typeof parseEntityDefinition> }> = [];
   const parsedDialogueDocuments: ReturnType<typeof parseDialogueDocument>[] = [];
   const parsedStructureModels: Array<{ identifier: string; node: SemanticNode; size?: { x: number; y: number; z: number }; semantics: ReturnType<typeof deriveMcStructureSemantics>; embeddedCommands: ReturnType<typeof analyzeEmbeddedStructureCommands>; queuedTickPositions: number }> = [];
-  const diagnostics: DiagnosticFinding[] = [];
-  if (telemetryDroppedEvents > 0) {
-    diagnostics.push({
-      id: "diag_telemetry_dropped_" + telemetryDroppedEvents,
-      code: "TELEMETRY_EVENTS_DROPPED",
-      severity: "minor",
-      message:
-        "Runtime telemetry buffer dropped " +
-        telemetryDroppedEvents +
-        " event(s); causal/runtime evidence may be incomplete.",
-      data: { droppedEvents: telemetryDroppedEvents },
-    });
-  }
-  if (telemetryContinuity.missingSequences > 0) {
-    diagnostics.push({
-      id: "diag_telemetry_sequence_gap_" +
-        telemetryContinuity.missingSequences,
-      code: "TELEMETRY_SEQUENCE_GAP",
-      severity: "minor",
-      message:
-        "Telemetry sequence continuity has " +
-        telemetryContinuity.missingSequences +
-        " missing event sequence value(s).",
-      data: {
-        missingSequences: telemetryContinuity.missingSequences,
-      },
-    });
-  }
-  if (
-    telemetryContinuity.duplicateSequences > 0 ||
-    telemetryContinuity.nonMonotonicTransitions > 0
-  ) {
-    diagnostics.push({
-      id: "diag_telemetry_sequence_conflict_" +
-        telemetryContinuity.duplicateSequences +
-        "_" +
-        telemetryContinuity.nonMonotonicTransitions,
-      code: "TELEMETRY_SEQUENCE_CONFLICT",
-      severity: "medium",
-      message:
-        "Telemetry sequence order contains duplicate or non-monotonic values; event ordering evidence is unreliable.",
-      data: {
-        duplicateSequences: telemetryContinuity.duplicateSequences,
-        nonMonotonicTransitions:
-          telemetryContinuity.nonMonotonicTransitions,
-      },
-    });
-  }
-  if (telemetryContinuity.unidentifiedStreamEvents > 0) {
-    diagnostics.push({
-      id: "diag_telemetry_stream_unidentified_" +
-        telemetryContinuity.unidentifiedStreamEvents,
-      code: "TELEMETRY_STREAM_UNIDENTIFIED",
-      severity: "info",
-      message:
-        "Sequenced telemetry events are missing streamId; continuity cannot distinguish independent emitters.",
-      data: {
-        unidentifiedStreamEvents:
-          telemetryContinuity.unidentifiedStreamEvents,
-      },
-    });
-  }
-  if (runtimeProbeDroppedExchanges > 0) {
-    diagnostics.push({
-      id:
-        "diag_runtime_probe_dropped_" +
-        runtimeProbeDroppedExchanges,
-      code: "RUNTIME_PROBE_EXCHANGES_DROPPED",
-      severity: "minor",
-      message:
-        "Runtime probe transcript dropped " +
-        runtimeProbeDroppedExchanges +
-        " exchange(s); runtime proof coverage is incomplete.",
-      data: {
-        droppedExchanges: runtimeProbeDroppedExchanges,
-      },
-    });
-  }
   let parsedStructures = 0;
 
   for (const file of files) {
