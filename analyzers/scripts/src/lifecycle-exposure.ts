@@ -2,7 +2,7 @@ import ts from "typescript";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
 import {
   SCRIPT_METHOD_SYMBOL_RULES,
-} from "../../../packages/compatibility/src/script-method-matrix.js";
+} from "../../../packages/compatibility/src/index.js";
 import type {
   ScriptLifecycleMemberExposure,
   ScriptMethodCall,

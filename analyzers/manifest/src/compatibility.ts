@@ -1,6 +1,6 @@
 import type { ManifestModel } from "./types.js";
-import { classifyScriptApiVersion } from "../../../packages/compatibility/src/script-api.js";
-import { parseGameVersion } from "../../../packages/compatibility/src/version.js";
+import { classifyScriptApiVersion } from "../../../packages/compatibility/src/index.js";
+import { parseGameVersion } from "../../../packages/compatibility/src/index.js";
 
 export interface ManifestCompatibilityFacts {
   minEngineVersion?: ReturnType<typeof parseGameVersion>;

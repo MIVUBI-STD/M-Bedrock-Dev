@@ -1,5 +1,5 @@
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
-import type { ScriptArgumentKind } from "../../../packages/compatibility/src/script-signature-matrix.js";
+import type { ScriptArgumentKind } from "../../../packages/compatibility/src/index.js";
 
 export interface ScriptImport {
   module: string;

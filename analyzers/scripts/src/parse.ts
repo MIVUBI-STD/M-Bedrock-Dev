@@ -21,7 +21,7 @@ import {
   inferScriptPropertyAccesses,
   inferScriptPropertyWrites,
 } from "./receiver-inference.js";
-import { findScriptExecutionPrivilegeRule } from "../../../packages/compatibility/src/script-execution-privilege-matrix.js";
+import { findScriptExecutionPrivilegeRule } from "../../../packages/compatibility/src/index.js";
 import { inferScriptLifecycleMemberExposures } from "./lifecycle-exposure.js";
 
 function scriptKind(path: string): ts.ScriptKind {

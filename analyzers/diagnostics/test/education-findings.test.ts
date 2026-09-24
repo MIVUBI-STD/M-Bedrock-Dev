@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveEducationProfile } from "../../../packages/compatibility/src/education.js";
+import { deriveEducationProfile } from "../../../packages/compatibility/src/index.js";
 import { educationRequirementDiagnostic } from "../src/education-findings.js";
 
 describe("Education diagnostics", () => {

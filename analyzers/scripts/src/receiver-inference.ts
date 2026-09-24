@@ -7,7 +7,7 @@ import type {
   ScriptPropertyAccess,
   ScriptPropertyWrite,
 } from "./types.js";
-import type { ScriptArgumentKind } from "../../../packages/compatibility/src/script-signature-matrix.js";
+import type { ScriptArgumentKind } from "../../../packages/compatibility/src/index.js";
 
 type ReceiverValueType =
   | ScriptApiReceiverType

@@ -1,12 +1,12 @@
 import type { ManifestCompatibilityFacts } from "../../manifest/src/index.js";
 import type { ParsedScriptFile } from "../../scripts/src/types.js";
-import { findScriptPropertyRule } from "../../../packages/compatibility/src/script-property-matrix.js";
-import { findScriptEnumMemberRule } from "../../../packages/compatibility/src/script-enum-matrix.js";
-import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/script-lifecycle.js";
+import { findScriptPropertyRule } from "../../../packages/compatibility/src/index.js";
+import { findScriptEnumMemberRule } from "../../../packages/compatibility/src/index.js";
+import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/index.js";
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
-import type { ScriptApiTrack } from "../../../packages/compatibility/src/script-api.js";
+import type { ScriptApiTrack } from "../../../packages/compatibility/src/index.js";
 
 function serverModule(
   compatibility: ManifestCompatibilityFacts,

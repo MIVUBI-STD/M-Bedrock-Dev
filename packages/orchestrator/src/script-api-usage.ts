@@ -2,22 +2,22 @@ import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import {
   findScriptEventRule,
   scriptEventSymbol,
-} from "../../compatibility/src/script-event-matrix.js";
-import { findScriptMethodRule } from "../../compatibility/src/script-method-matrix.js";
-import type { ScriptSymbolLifecycle } from "../../compatibility/src/script-lifecycle.js";
-import { findScriptPropertyRule } from "../../compatibility/src/script-property-matrix.js";
+} from "../../compatibility/src/index.js";
+import { findScriptMethodRule } from "../../compatibility/src/index.js";
+import type { ScriptSymbolLifecycle } from "../../compatibility/src/index.js";
+import { findScriptPropertyRule } from "../../compatibility/src/index.js";
 import {
   findScriptEnumMemberRule,
   isKnownScriptEnum,
-} from "../../compatibility/src/script-enum-matrix.js";
+} from "../../compatibility/src/index.js";
 import {
   findScriptSignatureRule,
   type ScriptArgumentKind,
-} from "../../compatibility/src/script-signature-matrix.js";
-import { findScriptReturnContractRule } from "../../compatibility/src/script-return-contract-matrix.js";
-import { findScriptTypeRule } from "../../compatibility/src/script-type-matrix.js";
-import { findScriptPropertyMutabilityRule } from "../../compatibility/src/script-property-mutability-matrix.js";
-import { findScriptEnumValueRule } from "../../compatibility/src/script-enum-value-matrix.js";
+} from "../../compatibility/src/index.js";
+import { findScriptReturnContractRule } from "../../compatibility/src/index.js";
+import { findScriptTypeRule } from "../../compatibility/src/index.js";
+import { findScriptPropertyMutabilityRule } from "../../compatibility/src/index.js";
+import { findScriptEnumValueRule } from "../../compatibility/src/index.js";
 
 export type ScriptApiUsageKind = "event" | "method" | "property" | "enum" | "type";
 export type ScriptApiKnowledgeState = "known" | "unclassified";

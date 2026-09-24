@@ -3,8 +3,8 @@ import type { ParsedScriptFile } from "../../scripts/src/types.js";
 import {
   checkScriptMethodSymbol,
   findScriptMethodRule,
-} from "../../../packages/compatibility/src/script-method-matrix.js";
-import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/script-lifecycle.js";
+} from "../../../packages/compatibility/src/index.js";
+import { evaluateScriptSymbolLifecycle } from "../../../packages/compatibility/src/index.js";
 import { createDiagnostic } from "../../../packages/diagnostics/src/create.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 
