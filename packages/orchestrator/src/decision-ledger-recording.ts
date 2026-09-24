@@ -229,11 +229,19 @@ export function recordReleaseDecision(
 }
 
 
+export interface RepairStrategyDecisionRecordContext
+  extends DecisionRecordContext {
+  providerProvenance?: readonly {
+    providerId: string;
+    providerVersion: string;
+  }[];
+}
+
 export function recordRepairStrategySelection(
   ledger: DecisionLedgerSnapshot,
   selection: RepairStrategySelection,
   transactionId: string | undefined,
-  context: DecisionRecordContext,
+  context: RepairStrategyDecisionRecordContext,
 ): DecisionLedgerSnapshot {
   const outputIds =
     selection.status === "selected"
@@ -264,6 +272,15 @@ export function recordRepairStrategySelection(
     ...(context.upstreamDecisionIds === undefined
       ? {}
       : { upstreamDecisionIds: context.upstreamDecisionIds }),
+    inputIds: [
+      ...(context.providerProvenance ?? []).map(
+        (provider) =>
+          "repair-provider:" +
+          provider.providerId +
+          "@" +
+          provider.providerVersion,
+      ),
+    ],
     outputIds,
     ...(context.evidenceIds === undefined
       ? {}
