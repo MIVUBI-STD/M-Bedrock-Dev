@@ -1,3 +1,4 @@
+import { createVerificationReporter, type VerificationReporter } from "./reporters.js";
 import type {
   TelemetryBatch,
   TelemetryProducer,
@@ -60,6 +61,7 @@ export interface TelemetryInstrumentationKit {
   readonly arenaStart: ArenaStartGuard;
   readonly revive: ReviveTelemetryGuard;
   readonly stateMirror: StateMirrorProbe;
+  readonly verify: VerificationReporter;
 
   captureGeneration(
     input: DeferredGenerationCapture,
@@ -70,6 +72,11 @@ export interface TelemetryInstrumentationKit {
   ): EntityProgressProbe;
 
   batch(input?: {
+    sessionId?: string;
+    artifactId?: string;
+  }): TelemetryBatch;
+
+  drainBatch(input?: {
     sessionId?: string;
     artifactId?: string;
   }): TelemetryBatch;
@@ -125,6 +132,7 @@ export function createTelemetryInstrumentationKit(
   const arenaStart = createArenaStartGuard(emitter);
   const revive = createReviveTelemetryGuard(emitter);
   const stateMirror = createStateMirrorProbe(emitter);
+  const verify = createVerificationReporter(emitter);
   const entityProgressProbes = new Set<EntityProgressProbe>();
 
   const resetRuntimeState = (): void => {
@@ -143,6 +151,7 @@ export function createTelemetryInstrumentationKit(
     arenaStart,
     revive,
     stateMirror,
+    verify,
 
     captureGeneration(input) {
       return captureDeferredGeneration(emitter, input);
