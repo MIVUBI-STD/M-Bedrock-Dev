@@ -160,6 +160,12 @@ export function deriveReliabilityFingerprint(
   if (input.diagnostics.some((finding) => finding.code === "UNRESOLVED_REFERENCE")) {
     riskSurfaces.add("reference-integrity");
   }
+  if (input.diagnostics.some(
+    (finding) => finding.code === "TELEMETRY_EVENTS_DROPPED",
+  )) {
+    capabilityTags.add("telemetry-truncated");
+    riskSurfaces.add("runtime-evidence-incomplete");
+  }
   if (input.diagnostics.some((finding) => finding.code === "STRUCTURE_PARSE_FAILED")) {
     riskSurfaces.add("structure-binary");
   }
