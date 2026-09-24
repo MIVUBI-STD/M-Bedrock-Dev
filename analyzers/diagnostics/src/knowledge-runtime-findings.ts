@@ -57,6 +57,9 @@ export function knowledgeRuntimeDiagnostics(
         .filter((record) => record.state === "present")
         .map((record) => record.predicate),
     )].sort();
+    const runtimeScope = records.find(
+      (record) => record.scope !== undefined,
+    )?.scope;
 
     const predicateSourceKeys: Record<string, string[]> = {};
     const predicateObservations: Record<
@@ -96,6 +99,9 @@ export function knowledgeRuntimeDiagnostics(
         ...(relatedNodeIds.length === 0 ? {} : { relatedNodeIds }),
         data: {
           scopeKey,
+          ...(runtimeScope === undefined
+            ? {}
+            : { runtimeScope }),
           predicate,
           status: "unknown",
           evidenceConflict: true,
@@ -123,6 +129,9 @@ export function knowledgeRuntimeDiagnostics(
         ...(relatedNodeIds.length === 0 ? {} : { relatedNodeIds }),
         data: {
           scopeKey,
+          ...(runtimeScope === undefined
+            ? {}
+            : { runtimeScope }),
           relationId: assessment.relationId,
           relationKind: assessment.kind,
           subject: assessment.subject,
