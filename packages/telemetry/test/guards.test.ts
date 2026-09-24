@@ -42,6 +42,13 @@ describe("telemetry instrumentation guards", () => {
       }),
     ]);
 
+    guard.observeStart({
+      arenaId: "arena-1",
+      arenaGeneration: 4,
+      operationId: "start-extra",
+    });
+    expect(buffer.size).toBe(1);
+
     guard.reset("arena-1", 4);
     guard.observeStart({
       arenaId: "arena-1",
