@@ -255,6 +255,11 @@ export interface CausalSynthesisOptions {
    * remains independent from unrelated telemetry continuity failures.
    */
   telemetryTemporalReliable?: boolean;
+  /**
+   * Controls only runtime-probe-origin observations. Dropped probe exchanges
+   * cannot invalidate unrelated telemetry/static temporal evidence.
+   */
+  runtimeProbeTemporalReliable?: boolean;
 }
 
 function knowledgeFindingChain(
@@ -390,15 +395,25 @@ function knowledgeFindingChain(
         subjectObservations,
         outcomeObservations,
       );
-      const usesTelemetryObservation = [
+      const temporalObservations = [
         ...subjectObservations,
         ...outcomeObservations,
-      ].some((observation) => observation.origin === "telemetry");
+      ];
+      const usesTelemetryObservation = temporalObservations.some(
+        (observation) => observation.origin === "telemetry",
+      );
+      const usesRuntimeProbeObservation = temporalObservations.some(
+        (observation) => observation.origin === "runtime-probe",
+      );
       const temporalEvidenceReliable =
         options.temporalEvidenceReliable !== false &&
         !(
           usesTelemetryObservation &&
           options.telemetryTemporalReliable === false
+        ) &&
+        !(
+          usesRuntimeProbeObservation &&
+          options.runtimeProbeTemporalReliable === false
         );
       if (
         temporalEvidenceReliable &&
@@ -439,7 +454,10 @@ function knowledgeFindingChain(
           ? usesTelemetryObservation &&
             options.telemetryTemporalReliable === false
             ? "The downstream outcome is observed, but telemetry-origin timing is not trustworthy because telemetry continuity is incomplete; the observation is retained without using temporal position as causal support."
-            : "The downstream outcome is observed, but temporal evidence is explicitly marked unreliable; the observation is retained without using temporal position as causal support."
+            : usesRuntimeProbeObservation &&
+                options.runtimeProbeTemporalReliable === false
+              ? "The downstream outcome is observed, but runtime-probe timing is not trustworthy because probe exchanges were dropped; the observation is retained without using temporal position as causal support."
+              : "The downstream outcome is observed, but temporal evidence is explicitly marked unreliable; the observation is retained without using temporal position as causal support."
           : timing === "before-subject"
             ? "The downstream outcome is observed in the same scope, but available timing places it before the initiating subject; it is not counted as causal support."
             : timing === "after-subject"
