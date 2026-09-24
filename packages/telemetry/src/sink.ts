@@ -16,16 +16,22 @@ export function createBufferedTelemetrySink(
   }
 
   const events: TelemetryEvent[] = [];
+  let dropped = 0;
 
   return {
     emit(event) {
       events.push(event);
       if (events.length > maxEvents) {
-        events.splice(0, events.length - maxEvents);
+        const overflow = events.length - maxEvents;
+        events.splice(0, overflow);
+        dropped += overflow;
       }
     },
     get size() {
       return events.length;
+    },
+    get dropped() {
+      return dropped;
     },
     snapshot() {
       return events.map((event) => ({
@@ -35,6 +41,7 @@ export function createBufferedTelemetrySink(
     },
     clear() {
       events.length = 0;
+      dropped = 0;
     },
     batch(input = {}): TelemetryBatch {
       return {
@@ -45,6 +52,7 @@ export function createBufferedTelemetrySink(
         ...(input.artifactId === undefined
           ? {}
           : { artifactId: input.artifactId }),
+        ...(dropped === 0 ? {} : { droppedEvents: dropped }),
         events: this.snapshot(),
       };
     },
