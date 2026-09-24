@@ -203,6 +203,42 @@ export function validateKnowledgeCatalog(
       );
     }
     if (
+      relation.causalOutcomePredicates !== undefined &&
+      (
+        typeof relation.causalOutcomePredicates !== "object" ||
+        relation.causalOutcomePredicates === null ||
+        Array.isArray(relation.causalOutcomePredicates)
+      )
+    ) {
+      errors.push(
+        `Knowledge relation ${relation.id} causalOutcomePredicates must be an object.`,
+      );
+    } else {
+      for (const [risk, predicates] of Object.entries(
+        relation.causalOutcomePredicates ?? {},
+      )) {
+        if (!risk.trim()) {
+          errors.push(
+            `Knowledge relation ${relation.id} has empty outcome risk key.`,
+          );
+        }
+        if (!Array.isArray(predicates) || predicates.length === 0) {
+          errors.push(
+            `Knowledge relation ${relation.id} outcome ${risk} requires predicates.`,
+          );
+          continue;
+        }
+        for (const predicate of predicates) {
+          if (typeof predicate !== "string" || !predicate.trim()) {
+            errors.push(
+              `Knowledge relation ${relation.id} outcome ${risk} has empty predicate.`,
+            );
+          }
+        }
+      }
+    }
+
+    if (
       relation.causalCorroborators !== undefined &&
       (
         typeof relation.causalCorroborators !== "object" ||
