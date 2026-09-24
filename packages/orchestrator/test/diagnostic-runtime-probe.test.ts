@@ -111,7 +111,7 @@ describe("runtime probe investigation adapter", () => {
         evidence: {
           predicate: "target-chunk-loaded",
           state: "unknown",
-          confidence: "unknown",
+          confidence: "observed",
         },
       },
     )).toThrow(/no explicit bound outcome/);
