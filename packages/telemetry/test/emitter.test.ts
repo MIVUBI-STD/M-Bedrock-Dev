@@ -115,6 +115,7 @@ describe("telemetry emitter sdk", () => {
     const emitter = createTelemetryEmitter({
       producer: "runtime",
       sink: buffer,
+      idFactory: createCounterTelemetryIdFactory("runtime"),
     });
 
     emitter.routeRevalidation({
@@ -166,6 +167,28 @@ describe("telemetry emitter sdk", () => {
       routeId: "bridge",
       result: "failed",
     })).toThrow(/Duplicate telemetry eventId/);
+  });
+
+  it("keeps default ids unique across emitter instances", () => {
+    const left = createTelemetryEmitter({
+      producer: "instrumentation",
+      sink: createBufferedTelemetrySink(),
+    });
+    const right = createTelemetryEmitter({
+      producer: "instrumentation",
+      sink: createBufferedTelemetrySink(),
+    });
+
+    const a = left.routeRevalidation({
+      routeId: "a",
+      result: "passed",
+    });
+    const b = right.routeRevalidation({
+      routeId: "b",
+      result: "passed",
+    });
+
+    expect(a.eventId).not.toBe(b.eventId);
   });
 
   it("supports validating, fanout, callback, and json-line sinks", () => {
