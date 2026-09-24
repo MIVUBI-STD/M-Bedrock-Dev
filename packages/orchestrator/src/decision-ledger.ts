@@ -183,10 +183,25 @@ export function supersedeDecisionLedgerEntry(
   entryId: string,
   supersededBy: string,
 ): DecisionLedgerSnapshot {
-  if (!snapshot.entries.some((entry) => entry.id === supersededBy)) {
+  const replacement = snapshot.entries.find(
+    (entry) => entry.id === supersededBy,
+  );
+  if (!replacement) {
     throw new Error(
       "Superseding decision ledger entry does not exist: " +
         supersededBy,
+    );
+  }
+
+  const original = snapshot.entries.find(
+    (entry) => entry.id === entryId,
+  );
+  if (
+    original &&
+    replacement.createdSequence <= original.createdSequence
+  ) {
+    throw new Error(
+      "Superseding decision must be newer than the decision it replaces.",
     );
   }
 
