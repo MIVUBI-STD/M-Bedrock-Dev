@@ -40,7 +40,8 @@ export type DiagnosticCode =
   | "SCRIPT_API_ENUM_VALUE_INCOMPATIBLE"
   | "KNOWLEDGE_RELATION_VIOLATION"
   | "KNOWLEDGE_EVIDENCE_GAP"
-  | "TELEMETRY_EVENTS_DROPPED";
+  | "TELEMETRY_EVENTS_DROPPED"
+  | "TELEMETRY_SEQUENCE_GAP";
 
 export interface DiagnosticFinding {
   id: string;
