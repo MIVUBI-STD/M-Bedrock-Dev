@@ -51,10 +51,7 @@ export function decideRepairBlastRadius(
     );
   }
 
-  if (
-    impact.unknownChangedNodeIds.length > 0 ||
-    !impact.graphCoverageComplete
-  ) {
+  if (!impact.graphCoverageComplete) {
     return {
       transactionId: impact.transactionId,
       disposition: "indeterminate",
@@ -65,6 +62,23 @@ export function decideRepairBlastRadius(
       reasons: reasons.length > 0
         ? reasons
         : ["Semantic graph coverage is incomplete for the proposed repair."],
+    };
+  }
+
+  const policyAllowsUnresolved =
+    !policy.blockOnUnresolvedTopology || impact.unresolvedEdgeIds.length === 0;
+  const policyAllowsAmbiguous =
+    !policy.blockOnAmbiguousTopology || impact.ambiguousEdgeIds.length === 0;
+
+  if (!policyAllowsUnresolved || !policyAllowsAmbiguous) {
+    return {
+      transactionId: impact.transactionId,
+      disposition: "indeterminate",
+      affectedNodes: impact.affectedNodeIds.length,
+      affectedPaths: impact.affectedPaths.length,
+      affectedKinds: impact.affectedKinds,
+      sensitiveKinds,
+      reasons,
     };
   }
 
