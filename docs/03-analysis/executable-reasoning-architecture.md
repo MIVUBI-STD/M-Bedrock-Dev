@@ -445,3 +445,115 @@ VERIFY
 produces explicit absent verification evidence and can become a high-severity relation violation.
 
 Unresolved recursion/call depth/unknown execution paths remain evidence gaps.
+
+
+## Multi-source causal corroboration
+
+Causal analysis now distinguishes four evidence layers:
+
+```text
+risk projection
+↓
+corroborated risk
+↓
+observed downstream outcome
+↓
+scoped causal incident / root-cause candidate
+```
+
+### Risk projection
+
+A relation may declare `causalConsequences`.
+
+This only means the consequence is a project-known downstream risk. It is not reported as an observed failure.
+
+### Scoped corroboration
+
+A relation may declare:
+
+```text
+causalCorroborators
+causalCorroborationMinSources
+```
+
+Corroborator predicates must be PRESENT in the same runtime scope. When a minimum provenance count is configured, the predicates must collectively contain that many distinct source references before the risk becomes `corroborated-risk`.
+
+Example for an authored AI route:
+
+```text
+route mutation overlaps corridor
++
+route explicitly links demo:zombie
++
+demo:zombie has navigation
++
+demo:zombie has configured target acquisition
++
+mutation source and entity source are distinct
+↓
+navigation-stall-risk = corroborated
+```
+
+This still does not mean a stall was observed.
+
+### Observed downstream outcomes
+
+A relation may map a risk to `causalOutcomePredicates`.
+
+For example:
+
+```text
+navigation-stall-risk
+→ navigation-stall-observed
+
+fallback-recovery-risk
+→ teleport-fallback-observed
+```
+
+If runtime/QA evidence supplies the observed predicate in the same scope, the causal chain contains an explicit observed-state node.
+
+An observed downstream outcome does not by itself prove that the dependency gap is the sole cause. If the initiating dependency is still unproven, chain confidence remains bounded.
+
+### Route/entity provenance
+
+`RouteCorridorContract` may include `entityKeys`.
+
+Route mutation evidence only uses navigation/targeting evidence from those linked entities. Unrelated entities elsewhere in the project do not corroborate the route chain.
+
+### Causal incidents
+
+Chains sharing a runtime scope are grouped into a `CausalIncident`.
+
+Each incident contains deterministic `RootCauseCandidate` entries with evidence levels:
+
+```text
+proven-with-observed-outcome
+proven-dependency-violation
+corroborated-candidate
+unproven-candidate
+```
+
+Ordering uses evidence level first, then diagnostic severity, then confidence. It intentionally avoids arbitrary weighted scores.
+
+### Reliability and update comparison
+
+Causal evidence quality contributes compact fingerprint tags such as:
+
+```text
+causal-analysis
+causal-high-confidence
+causal-corroborated-risk
+causal-observed-outcome
+root-cause-candidate
+```
+
+Artifact comparison also reports explicit causal deltas:
+
+- chain/incident count;
+- confidence count changes;
+- corroborated-risk delta;
+- observed-outcome delta;
+- root-cause candidate delta;
+- added/removed candidate labels.
+
+This allows update analysis to distinguish a map whose static code is unchanged but whose runtime evidence has become stronger or weaker.
