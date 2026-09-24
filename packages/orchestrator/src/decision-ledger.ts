@@ -131,16 +131,18 @@ function mismatchReason(
     "runtimeEvidenceRevision",
   ] as const) {
     const expected = basis[key];
+    const actual = current[key];
     if (
       expected !== undefined &&
-      current[key] !== expected
+      actual !== undefined &&
+      actual !== expected
     ) {
       return (
         key +
         " changed from " +
         expected +
         " to " +
-        String(current[key] ?? "<missing>") +
+        String(actual) +
         "."
       );
     }
