@@ -6,9 +6,11 @@ import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/load.js"
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/script-api-usage.js";
 import { parseCliTargetOptions } from "./target-options.js";
 import { loadTelemetryFile } from "../../../packages/orchestrator/src/telemetry-load.js";
-import { loadRuntimeProbeTranscript } from "../../../packages/orchestrator/src/runtime-probe-load.js";
+import { loadRuntimeProbeTranscript, assertRuntimeProbeTranscriptArtifact } from "../../../packages/orchestrator/src/runtime-probe-load.js";
 import { loadRuntimeProbeBindings } from "../../../packages/orchestrator/src/runtime-probe-binding-load.js";
 import { prepareRuntimeProbeBundle } from "../../../packages/orchestrator/src/runtime-probe-bundle.js";
+import { replayRuntimeProbeTranscript } from "../../../packages/orchestrator/src/runtime-probe-replay.js";
+import { compileRuntimeProbeRequests } from "../../../packages/orchestrator/src/runtime-probe-request-compiler.js";
 
 async function main(): Promise<void> {
   const [, , command, ...rawArgs] = process.argv;
@@ -78,6 +80,106 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "probe-replay" && input) {
+    if (!probeTranscriptPath) {
+      throw new Error(
+        "probe-replay requires --probe-transcript <probes.json>",
+      );
+    }
+    if (!probeContext) {
+      throw new Error(
+        "probe-replay requires --probe-context",
+      );
+    }
+
+    const telemetry = telemetryPath
+      ? await loadTelemetryFile(resolve(telemetryPath))
+      : undefined;
+    const transcript = await loadRuntimeProbeTranscript(
+      resolve(probeTranscriptPath),
+    );
+    const bindings = probeBindingsPath
+      ? await loadRuntimeProbeBindings(resolve(probeBindingsPath))
+      : undefined;
+
+    const baseline = await inspectArtifact(
+      resolve(input),
+      target,
+      knowledge,
+      telemetry ?? [],
+    );
+    assertRuntimeProbeTranscriptArtifact(
+      transcript,
+      baseline.artifactId,
+    );
+
+    const incidentsById = new Map(
+      baseline.causalAnalysis.incidents.map((incident) => [
+        incident.id,
+        incident,
+      ]),
+    );
+    const replays = baseline.diagnosticProbeAnalysis.incidents
+      .flatMap((analysis) => {
+        const incident = incidentsById.get(analysis.incidentId);
+        if (!incident) return [];
+
+        const replay = replayRuntimeProbeTranscript(
+          incident,
+          analysis.definitions,
+          transcript,
+          {
+            availableContext: probeContext,
+          },
+        );
+
+        const nextCompilation = bindings
+          ? compileRuntimeProbeRequests(
+              replay.nextPlan,
+              analysis.definitions,
+              bindings.bindings,
+              {
+                requestId: (probeId, index) =>
+                  replay.incident.id +
+                  "::" +
+                  probeId +
+                  "::retry-" +
+                  (transcript.exchanges.length + index + 1),
+              },
+            )
+          : undefined;
+
+        return [{
+          incidentId: incident.id,
+          replay,
+          ...(nextCompilation === undefined
+            ? {}
+            : { nextCompilation }),
+        }];
+      });
+
+    const knownIncidentIds = new Set(
+      baseline.causalAnalysis.incidents.map((incident) => incident.id),
+    );
+    const transcriptIncidentIds = new Set(
+      transcript.exchanges
+        .map((exchange) => exchange.request.incidentId)
+        .filter((id): id is string => typeof id === "string"),
+    );
+    const orphanTranscriptIncidentIds = [...transcriptIncidentIds]
+      .filter((id) => !knownIncidentIds.has(id))
+      .sort();
+
+    console.log(JSON.stringify({
+      artifactId: baseline.artifactId,
+      transcriptIncomplete:
+        (transcript.droppedExchanges ?? 0) > 0,
+      orphanTranscriptIncidentIds,
+      replays,
+    }, null, 2));
+    return;
+  }
+
   if (command === "inspect" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
@@ -103,7 +205,8 @@ async function main(): Promise<void> {
   if (
     (telemetryPath || probeTranscriptPath) &&
     command !== "inspect" &&
-    command !== "probe-plan"
+    command !== "probe-plan" &&
+    command !== "probe-replay"
   ) {
     throw new Error(
       "Telemetry and runtime probe transcript inputs are only supported by inspect or probe-plan.",
@@ -112,10 +215,11 @@ async function main(): Promise<void> {
 
   if (
     (probeBindingsPath || probeContext) &&
-    command !== "probe-plan"
+    command !== "probe-plan" &&
+    command !== "probe-replay"
   ) {
     throw new Error(
-      "Probe binding/context options are only supported by probe-plan.",
+      "Probe binding/context options are only supported by probe-plan or probe-replay.",
     );
   }
 
@@ -161,6 +265,7 @@ async function main(): Promise<void> {
     "Usage:",
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
     "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...]",
     "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...]",
     "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version> [--edition ...] [--experiment id]",
