@@ -353,3 +353,61 @@ payload
 - invalid reconstructed telemetry batches.
 
 Framing limits JavaScript string characters, not encoded transport bytes. Byte-limited transports should choose a conservative frame size or add a transport-specific byte envelope outside this package.
+
+
+## Temporal ordering
+
+SDK helper events receive a monotonic local `sequence` automatically.
+
+```text
+tick
+sequence
+timestamp
+```
+
+have different roles:
+
+- `tick` identifies engine tick when the integration can provide it;
+- `sequence` orders helper-emitted events from one emitter, including multiple events in the same tick;
+- `timestamp` is optional wall-clock metadata.
+
+Sequence is owned by the emitter helper API and cannot be overridden through typed helper inputs. Low-level `emit(event)` remains available for already-constructed canonical events.
+
+### Mutation apply observation
+
+Use `mutationApplied` when the mutation has actually been applied/requested at the runtime instrumentation point:
+
+```ts
+kit.emitter.mutationApplied({
+  mutationKind: "fill",
+  routeId: "bridge-route",
+  scope: {
+    arenaId,
+    arenaGeneration,
+    operationId: mutationOperationId,
+  },
+});
+```
+
+This produces runtime evidence such as:
+
+```text
+world-mutation-observed
+mutation-apply
+route-affecting-world-mutation   // only when routeId is supplied
+```
+
+When an `entity-stall` or other downstream event shares the same scope, causal reasoning compares tick/sequence ordering.
+
+```text
+mutation tick 100 sequence 1
+stall    tick 120 sequence 2
+→ after-subject
+
+stall    tick 80
+mutation tick 100
+→ before-subject
+→ stall is observed, but not counted as causal support
+```
+
+If one side lacks comparable temporal metadata, status remains `unresolved`; it is not fabricated.
