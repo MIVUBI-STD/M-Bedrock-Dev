@@ -93,6 +93,9 @@ import {
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import { synthesizeCausalChains } from "./causal-analysis.js";
 import { synthesizeCausalIncidents } from "./causal-incident-analysis.js";
+import { telemetryRuntimeEvidence } from "./telemetry-evidence.js";
+import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
+import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";
 import { commandChainDiagnostics } from "../../../analyzers/diagnostics/src/command-chain-findings.js";
@@ -162,7 +165,9 @@ export async function inspectDirectory(
   sourceFingerprint?: string,
   knowledgeCatalog?: KnowledgeCatalog,
   externalEvidence: readonly RuntimeEvidenceRecord[] = [],
+  telemetryEvents: readonly TelemetryEvent[] = [],
 ): Promise<InspectDirectoryResult> {
+  const telemetryEvidence = telemetryRuntimeEvidence(telemetryEvents);
   const files = await buildFilesystemInventory(root);
   for (const file of files) file.kindHint = classifyContentPath(file.relativePath).kindHint;
 
@@ -675,6 +680,7 @@ export async function inspectDirectory(
         scriptCommandTransactions,
       ),
       ...externalEvidence,
+      ...telemetryEvidence,
     ],
     parsedScripts.map((item) => item.parsed),
     parsedEntities.map((item) => ({
@@ -832,6 +838,11 @@ export async function inspectDirectory(
         (sum, incident) => sum + incident.rootCauseCandidates.length,
         0,
       ),
+    },
+    telemetryAnalysis: {
+      events: telemetryEvents.length,
+      evidenceRecords: telemetryEvidence.length,
+      byKind: telemetryEventKinds(telemetryEvents),
     },
     worldDatabase: {
       present: dbFiles.length > 0,
