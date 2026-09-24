@@ -2,8 +2,8 @@ import { buildKnowledgeGraph } from "./graph.js";
 import type {
   EffectiveKnowledgeProfile,
   KnowledgeCatalog,
-  KnowledgeGraphEdge,
-} from "./index.js";
+} from "./types.js";
+import type { KnowledgeGraphEdge } from "./graph.js";
 export type CompiledInvariantKind =
   | "requires-state"
   | "requires-any-state"
