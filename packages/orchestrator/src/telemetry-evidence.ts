@@ -27,6 +27,9 @@ function base(
         : {
             observedAt: {
               ...(event.tick === undefined ? {} : { tick: event.tick }),
+              ...(event.streamId === undefined
+                ? {}
+                : { streamId: event.streamId }),
               ...(event.sequence === undefined
                 ? {}
                 : { sequence: event.sequence }),
