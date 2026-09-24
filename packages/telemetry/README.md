@@ -130,3 +130,61 @@ runtime-evidence-incomplete
 ```
 
 so incomplete capture is never silent.
+
+
+## Runtime probes
+
+### Entity progress / stall
+
+```ts
+const progress = createEntityProgressProbe(telemetry, {
+  stallTicks: 40,
+  minProgressDistance: 0.25,
+});
+
+progress.observe({
+  entityKey: entity.id,
+  routeId: "bridge-route",
+  tick: system.currentTick,
+  position: entity.location,
+  expectedToProgress: hasActiveTarget,
+  scope: {
+    arenaId,
+    arenaGeneration,
+    operationId: routeOperationId,
+  },
+});
+```
+
+The probe:
+
+- only counts time while `expectedToProgress` is true;
+- emits one stall event per no-progress episode;
+- rearms after meaningful movement;
+- resets safely if tick order moves backwards;
+- requires explicit route/runtime scope from the caller.
+
+It does not decide whether the entity *should* have a target. That remains gameplay/AI authority outside telemetry.
+
+### State mirror drift
+
+```ts
+const mirrors = createStateMirrorProbe(telemetry);
+
+mirrors.observe({
+  contractId: "ready-state",
+  authority: {
+    surface: { kind: "scoreboard", key: "ready" },
+    value: readyScore,
+    revision: authorityRevision,
+  },
+  mirror: {
+    surface: { kind: "tag", key: "ready" },
+    value: readyTag,
+    revision: mirrorRevision,
+  },
+  scope: { arenaId, arenaGeneration },
+});
+```
+
+Repeated identical drift is deduplicated. A changed drift state emits a new observation, and a consistent observation rearms the probe.
