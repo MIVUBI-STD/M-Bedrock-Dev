@@ -117,3 +117,5 @@ export * from "./decision-basis.js";
 export * from "./decision-ledger-recording.js";
 export * from "./repair-strategy-selection.js";
 export * from "./repair-release-lineage.js";
+
+export * from "./evidence-recovery.js";
