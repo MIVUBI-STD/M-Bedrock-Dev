@@ -11,6 +11,7 @@ import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
 import type { DiagnosticProbeAnalysis } from "./diagnostic-probe-analysis.js";
 import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
+import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 
 export interface InspectTargetProfile {
@@ -236,6 +237,7 @@ export interface InspectDirectoryResult {
     fingerprintId: string;
     fingerprint: MapCompatibilityFingerprint;
   };
+  decisionBasis: DecisionBasisRevision;
   repairCandidates: InspectionRepairCandidate[];
   targetCompatibility: {
     edition: MinecraftEdition | "unknown";
