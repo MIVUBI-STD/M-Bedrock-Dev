@@ -6,7 +6,6 @@ import {
 } from "./repair-counterfactual.js";
 import {
   decideRepairBlastRadius,
-  type RepairBlastRadiusPolicy,
 } from "./repair-blast-radius.js";
 import {
   decideRepairAdmission,
@@ -17,6 +16,7 @@ import {
 } from "./repair-proof-bundle.js";
 import type {
   RepairBlastRadiusDecision,
+  RepairBlastRadiusPolicy,
   RepairCounterfactualImpact,
 } from "./repair-counterfactual-types.js";
 import type {
