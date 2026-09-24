@@ -1,6 +1,9 @@
 import type { SemanticGraph } from "../../graph/src/graph.js";
 import type { DiagnosticRepairDecision, DiagnosticClaimStrength } from "../../project-model/src/diagnostic-decision.js";
 import type { InvariantRegistrySnapshot } from "../../project-model/src/invariant-registry.js";
+import {
+  validateInvariantRegistrySnapshot,
+} from "../../project-model/src/invariant-registry-validate.js";
 import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import {
@@ -158,6 +161,16 @@ export function selectRepairStrategy(
   candidates: readonly RepairStrategyCandidate[],
   policy: RepairStrategySelectionPolicy,
 ): RepairStrategySelection {
+  const registryErrors = validateInvariantRegistrySnapshot(
+    policy.invariantRegistry,
+  );
+  if (registryErrors.length > 0) {
+    throw new Error(
+      "Invalid invariant registry for repair strategy selection: " +
+        registryErrors.join("; "),
+    );
+  }
+
   const strategyIds = new Set<string>();
   const transactionIds = new Set<string>();
   for (const candidate of candidates) {
