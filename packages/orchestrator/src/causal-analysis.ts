@@ -37,6 +37,126 @@ function asNumberMap(
   return output;
 }
 
+interface ObservationPoint {
+  tick?: number;
+  sequence?: number;
+  timestamp?: string;
+}
+
+function asObservationMap(
+  value: unknown,
+): Readonly<Record<string, readonly ObservationPoint[]>> {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value)
+  ) return {};
+
+  const output: Record<string, ObservationPoint[]> = {};
+  for (const [predicate, items] of Object.entries(value)) {
+    if (!Array.isArray(items)) continue;
+    const normalized: ObservationPoint[] = [];
+    for (const item of items) {
+      if (
+        typeof item !== "object" ||
+        item === null ||
+        Array.isArray(item)
+      ) continue;
+      const record = item as Record<string, unknown>;
+      const point: ObservationPoint = {};
+      if (typeof record.tick === "number" && Number.isFinite(record.tick)) {
+        point.tick = record.tick;
+      }
+      if (
+        typeof record.sequence === "number" &&
+        Number.isFinite(record.sequence)
+      ) {
+        point.sequence = record.sequence;
+      }
+      if (typeof record.timestamp === "string") {
+        point.timestamp = record.timestamp;
+      }
+      if (
+        point.tick !== undefined ||
+        point.sequence !== undefined ||
+        point.timestamp !== undefined
+      ) {
+        normalized.push(point);
+      }
+    }
+    if (normalized.length > 0) output[predicate] = normalized;
+  }
+  return output;
+}
+
+function compareObservation(
+  subject: ObservationPoint,
+  outcome: ObservationPoint,
+): -1 | 0 | 1 | undefined {
+  if (
+    subject.tick !== undefined &&
+    outcome.tick !== undefined
+  ) {
+    if (outcome.tick > subject.tick) return 1;
+    if (outcome.tick < subject.tick) return -1;
+    if (
+      subject.sequence !== undefined &&
+      outcome.sequence !== undefined
+    ) {
+      if (outcome.sequence > subject.sequence) return 1;
+      if (outcome.sequence < subject.sequence) return -1;
+    }
+    return 0;
+  }
+
+  if (
+    subject.sequence !== undefined &&
+    outcome.sequence !== undefined
+  ) {
+    if (outcome.sequence > subject.sequence) return 1;
+    if (outcome.sequence < subject.sequence) return -1;
+    return 0;
+  }
+
+  if (
+    subject.timestamp !== undefined &&
+    outcome.timestamp !== undefined
+  ) {
+    const subjectTime = Date.parse(subject.timestamp);
+    const outcomeTime = Date.parse(outcome.timestamp);
+    if (
+      Number.isFinite(subjectTime) &&
+      Number.isFinite(outcomeTime)
+    ) {
+      if (outcomeTime > subjectTime) return 1;
+      if (outcomeTime < subjectTime) return -1;
+      return 0;
+    }
+  }
+
+  return undefined;
+}
+
+function temporalStatus(
+  subjects: readonly ObservationPoint[],
+  outcomes: readonly ObservationPoint[],
+): "after-subject" | "before-subject" | "same-moment" | "unresolved" {
+  const comparisons: Array<-1 | 0 | 1> = [];
+
+  for (const subject of subjects) {
+    for (const outcome of outcomes) {
+      const comparison = compareObservation(subject, outcome);
+      if (comparison !== undefined) comparisons.push(comparison);
+    }
+  }
+
+  if (comparisons.length === 0) return "unresolved";
+  if (comparisons.every((item) => item === 1)) return "after-subject";
+  if (comparisons.every((item) => item === -1)) return "before-subject";
+  if (comparisons.every((item) => item === 0)) return "same-moment";
+  return "unresolved";
+}
+
 function asCorroboratorMap(
   value: unknown,
 ): Readonly<Record<string, readonly string[]>> {
@@ -78,6 +198,10 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
     data.causalCorroborationMinSources,
   );
   const predicateSourceKeys = asCorroboratorMap(data.predicateSourceKeys);
+  const predicateObservations = asObservationMap(
+    data.predicateObservations,
+  );
+  const subjectObservations = predicateObservations[subject] ?? [];
 
   const violation = finding.code === "KNOWLEDGE_RELATION_VIOLATION";
   const subjectNodeId = idFor([finding.id, "subject"]);
@@ -173,7 +297,15 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
     );
 
     for (const predicate of observed) {
-      hasObservedOutcome = true;
+      const outcomeObservations =
+        predicateObservations[predicate] ?? [];
+      const timing = temporalStatus(
+        subjectObservations,
+        outcomeObservations,
+      );
+      if (timing !== "before-subject") {
+        hasObservedOutcome = true;
+      }
       const observedNodeId = idFor([
         finding.id,
         "observed-outcome",
@@ -198,8 +330,12 @@ function knowledgeFindingChain(finding: DiagnosticFinding): CausalChain | undefi
         to: observedNodeId,
         strength: "direct-evidence",
         relationId,
-        rationale:
-          "Runtime evidence in the same scope reports the downstream outcome directly; causal attribution remains bounded by the dependency evidence.",
+        temporalStatus: timing,
+        rationale: timing === "before-subject"
+          ? "The downstream outcome is observed in the same scope, but available timing places it before the initiating subject; it is not counted as causal support."
+          : timing === "after-subject"
+            ? "Runtime evidence reports the downstream outcome after the initiating subject in the same scope; causal attribution remains bounded by the dependency evidence."
+            : "Runtime evidence in the same scope reports the downstream outcome directly, but temporal ordering is not fully resolved.",
       });
     }
   }
