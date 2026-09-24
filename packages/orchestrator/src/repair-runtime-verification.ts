@@ -126,12 +126,24 @@ export function verifyRepairRuntimeEvidence(
     }
   }
 
+  const hasRequirements =
+    plan.stateRequirements.length > 0 ||
+    plan.temporalRequirements.length > 0;
+
   const passed =
+    hasRequirements &&
     failedStateRequirementIds.length === 0 &&
-    failedTemporal.length === 0;
+    failedTemporal.length === 0 &&
+    selectedEvidence.size > 0;
 
   const ids = [...selectedEvidence.keys()].sort();
   const reasons: string[] = [];
+
+  if (!hasRequirements) {
+    reasons.push(
+      "Runtime verification plan must contain at least one state or temporal requirement.",
+    );
+  }
 
   if (failedStateRequirementIds.length > 0) {
     reasons.push(
@@ -172,9 +184,7 @@ export function verifyRepairRuntimeEvidence(
             transactionId: plan.transactionId,
             kind: "runtime" as const,
             passed: true,
-            evidenceIds: ids.length > 0
-              ? ids
-              : ["runtime:empty-plan"],
+            evidenceIds: ids,
           },
         }
       : {}),
