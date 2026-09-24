@@ -142,6 +142,7 @@ export interface KnowledgeRelation {
   causalConsequences?: readonly string[];
   causalCorroborators?: Readonly<Record<string, readonly string[]>>;
   causalOutcomePredicates?: Readonly<Record<string, readonly string[]>>;
+  causalCorroborationMinSources?: Readonly<Record<string, number>>;
 }
 
 export interface KnowledgeCatalog {
