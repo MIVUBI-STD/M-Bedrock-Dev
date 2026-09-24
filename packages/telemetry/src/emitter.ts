@@ -78,6 +78,9 @@ function buildEvent<K extends Kind>(
     kind,
     producer: options.producer,
     scope,
+    ...(options.streamId === undefined
+      ? {}
+      : { streamId: options.streamId }),
     sequence,
     ...rest,
     ...(tick === undefined ? {} : { tick }),
