@@ -74,6 +74,14 @@ export function validateRuntimeProbeRequest(input: unknown): string[] {
   if (input.schemaVersion !== 1) errors.push("schemaVersion must be 1.");
   if (!nonEmpty(input.requestId)) errors.push("requestId must be a non-empty string.");
   if (!nonEmpty(input.probeId)) errors.push("probeId must be a non-empty string.");
+  if (
+    input.incidentId !== undefined &&
+    !nonEmpty(input.incidentId)
+  ) {
+    errors.push(
+      "request incidentId must be a non-empty string when provided.",
+    );
+  }
   if (!nonEmpty(input.predicate)) errors.push("predicate must be a non-empty string.");
 
   validateScope(input.scope, "scope", errors);
