@@ -1,9 +1,9 @@
 export { structureIdentifier } from "./inspect-identifiers.js";
 import { discoverInspectionPacks } from "./inspect-packs.js";
 import { indexInspectionSources } from "./inspect-source-index.js";
+import { analyzeInspectionScriptCompatibility } from "./inspect-script-compatibility.js";
 import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js";
 import { classifyContentPath } from "../../../analyzers/discovery/src/classify.js";
-import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/compatibility.js";
 import {
   entityHasNavigation,
   entityHasConfiguredTargeting,
@@ -15,20 +15,6 @@ import { analyzeEntityTransitionReachability } from "../../../analyzers/entities
 import { resolveScriptImports } from "../../../analyzers/scripts/src/resolve.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/reference-findings.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/manifest-findings.js";
-import { undeclaredMinecraftModuleDiagnostics } from "../../../analyzers/diagnostics/src/script-findings.js";
-import { scriptExecutionPrivilegeDiagnostics } from "../../../analyzers/diagnostics/src/script-privilege-findings.js";
-import { scriptVersionDiagnostics } from "../../../analyzers/diagnostics/src/script-version-findings.js";
-import { scriptEventSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-event-findings.js";
-import { scriptMethodSymbolDiagnostics } from "../../../analyzers/diagnostics/src/script-method-findings.js";
-import {
-  scriptEnumLifecycleDiagnostics,
-  scriptPropertyLifecycleDiagnostics,
-} from "../../../analyzers/diagnostics/src/script-member-findings.js";
-import { scriptSignatureDiagnostics } from "../../../analyzers/diagnostics/src/script-signature-findings.js";
-import { scriptReturnContractDiagnostics } from "../../../analyzers/diagnostics/src/script-return-contract-findings.js";
-import { scriptImportedTypeLifecycleDiagnostics } from "../../../analyzers/diagnostics/src/script-type-findings.js";
-import { scriptEnumValueDiagnostics } from "../../../analyzers/diagnostics/src/script-enum-value-findings.js";
-import { scriptPropertyWriteDiagnostics } from "../../../analyzers/diagnostics/src/script-property-write-findings.js";
 import { deriveEducationProfile } from "../../compatibility/src/education.js";
 import { educationRequirementDiagnostic } from "../../../analyzers/diagnostics/src/education-findings.js";
 import { SemanticGraph } from "../../graph/src/graph.js";
@@ -91,10 +77,6 @@ import {
   deriveEntityEventExternalEvidence,
   externalEventRootsForEntity,
 } from "./entity-event-evidence.js";
-
-function isWithinPack(relativePath: string, packRoot: string): boolean {
-  return relativePath === packRoot || relativePath.startsWith(packRoot.replace(/\/$/, "") + "/");
-}
 
 export async function inspectDirectory(
   root: string,
@@ -248,55 +230,12 @@ export async function inspectDirectory(
     });
   }
 
-  for (const { root: packRoot, manifest } of manifests) {
-    const scripts = parsedScripts
-      .filter((item) => isWithinPack(item.parsed.source.relativePath, packRoot))
-      .map((item) => item.parsed);
-
-    diagnostics.push(...undeclaredMinecraftModuleDiagnostics(manifest, scripts));
-    diagnostics.push(...scriptExecutionPrivilegeDiagnostics(scripts));
-    const scriptCompatibility = deriveManifestCompatibilityFacts(manifest);
-    diagnostics.push(...scriptVersionDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptEventSymbolDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptMethodSymbolDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptPropertyLifecycleDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptEnumLifecycleDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptSignatureDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptReturnContractDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptImportedTypeLifecycleDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptEnumValueDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-    diagnostics.push(...scriptPropertyWriteDiagnostics(
-      scriptCompatibility,
-      scripts,
-    ));
-  }
+  diagnostics.push(
+    ...analyzeInspectionScriptCompatibility(
+      manifests,
+      parsedScripts,
+    ),
+  );
 
   const parsedFunctionModelsForKnowledge = parsedFunctions.map((item) => item.parsed);
   const manifestModelsForKnowledge = manifests.map((item) => item.manifest);
