@@ -54,3 +54,11 @@ export interface RuntimeProbeResponse {
   value?: string | number | boolean;
   error?: string;
 }
+
+
+export interface RuntimeProbeBinding {
+  probeId: string;
+  predicate: string;
+  query: RuntimeProbeQuery;
+  outcomeByState: RuntimeProbeOutcomeMap;
+}
