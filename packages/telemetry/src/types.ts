@@ -1,7 +1,6 @@
 import type {
   TelemetryBatch,
   TelemetryEvent,
-  TelemetryEventBase,
   TelemetryProducer,
 } from "../../project-model/src/telemetry.js";
 import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
