@@ -7,6 +7,10 @@ import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/sr
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
 import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
+import {
+  entityHasNavigation,
+  entityRuntimeKey,
+} from "../../../analyzers/entities/src/runtime-evidence.js";
 import { parseDialogueDocument } from "../../../analyzers/dialogue/src/parse.js";
 import { entityKnowledgeDiagnostics } from "../../../analyzers/diagnostics/src/entity-knowledge-findings.js";
 import { entityTransitionDiagnostics } from "../../../analyzers/diagnostics/src/entity-transition-findings.js";
@@ -603,6 +607,12 @@ export async function inspectDirectory(
     structureProofs,
     target.staticExecutionDimension,
   );
+  const navigatingEntityKeys = new Set(
+    parsedEntities
+      .map((item) => item.parsed)
+      .filter(entityHasNavigation)
+      .map(entityRuntimeKey),
+  );
   const mutationTransactions = analyzeMutationTransactionOrdering(
     parsedFunctionModels,
     structureProofs,
@@ -635,7 +645,10 @@ export async function inspectDirectory(
         structureRuntime,
         parsedFunctionModels,
       ),
-      ...routeMutationRuntimeEvidence(routeCorrelations),
+      ...routeMutationRuntimeEvidence(
+        routeCorrelations,
+        navigatingEntityKeys,
+      ),
       ...mutationTransactionRuntimeEvidence(
         mutationTransactions.assessments,
       ),
