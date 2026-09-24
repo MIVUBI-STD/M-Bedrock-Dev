@@ -752,6 +752,8 @@ export async function inspectDirectory(
     broadStateWrites: topology.broadWrites,
     repeatedTopologyCandidates: topology.candidates.length,
     diagnostics,
+    causalChains,
+    causalIncidents,
     target,
   });
 
