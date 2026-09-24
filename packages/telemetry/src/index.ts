@@ -24,3 +24,4 @@ export * from "./probe-responder.js";
 export * from "./bedrock.js";
 export * from "./transport.js";
 export * from "./observers.js";
+export * from "./entity-progress.js";
