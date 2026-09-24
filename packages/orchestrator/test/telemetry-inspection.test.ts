@@ -118,6 +118,7 @@ describe("standard telemetry inspection", () => {
       expect(result.telemetryAnalysis).toEqual({
         events: 3,
         evidenceRecords: 10,
+        droppedEvents: 0,
         byKind: {
           "arena-double-start": 1,
           "stale-callback": 1,
@@ -231,6 +232,43 @@ describe("standard telemetry inspection", () => {
 
       expect(failed.knowledgeRuntime.violations).toBe(1);
       expect(failed.causalAnalysis.highConfidence).toBe(1);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+  it("reports truncated telemetry captures as incomplete runtime evidence", async () => {
+    const root = await mkdtemp(join(tmpdir(), "m-bedrock-telemetry-drop-test-"));
+    try {
+      await mkdir(join(root, "behavior_pack", "functions"), {
+        recursive: true,
+      });
+      await writeFile(
+        join(root, "behavior_pack", "functions", "noop.mcfunction"),
+        "say ready\n",
+        "utf8",
+      );
+
+      const result = await inspectDirectory(
+        root,
+        "artifact-drop",
+        { edition: "bedrock" },
+        "fingerprint-drop",
+        catalog,
+        [],
+        [],
+        3,
+      );
+
+      expect(result.telemetryAnalysis.droppedEvents).toBe(3);
+      expect(result.diagnostics).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          code: "TELEMETRY_EVENTS_DROPPED",
+          severity: "minor",
+          data: { droppedEvents: 3 },
+        }),
+      ]));
+      expect(result.reliability.fingerprint.riskSurfaces)
+        .toContain("runtime-evidence-incomplete");
     } finally {
       await rm(root, { recursive: true, force: true });
     }
