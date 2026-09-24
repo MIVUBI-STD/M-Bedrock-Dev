@@ -8,6 +8,7 @@ import {
   validateDecisionLedgerSnapshot,
 } from "../../project-model/src/decision-ledger-validate.js";
 import type { RepairLifecycleState } from "./repair-lifecycle.js";
+import type { RepairProofBundle } from "./repair-proof-bundle.js";
 import {
   invalidateStaleDecisionLedger,
 } from "./decision-ledger.js";
@@ -58,24 +59,23 @@ function ancestorIds(
   return output;
 }
 
-function hasAncestorKind(
+function activeAncestorsOfKind(
   ledger: DecisionLedgerSnapshot,
   entry: DecisionLedgerEntry,
   kind: DecisionLedgerKind,
-): boolean {
+): DecisionLedgerEntry[] {
   const byId = new Map(
     ledger.entries.map((item) => [item.id, item]),
   );
-  for (const id of ancestorIds(ledger, entry)) {
-    const ancestor = byId.get(id);
-    if (
-      ancestor?.status === "active" &&
-      ancestor.kind === kind
-    ) {
-      return true;
-    }
-  }
-  return false;
+
+  return [...ancestorIds(ledger, entry)]
+    .map((id) => byId.get(id))
+    .filter(
+      (ancestor): ancestor is DecisionLedgerEntry =>
+        ancestor !== undefined &&
+        ancestor.status === "active" &&
+        ancestor.kind === kind,
+    );
 }
 
 function uniqueActiveStage(
@@ -117,12 +117,81 @@ function uniqueActiveStage(
   return { entry: entries[0]! };
 }
 
+function proofBasisMismatch(
+  proof: RepairProofBundle,
+  currentBasis: DecisionBasisRevision,
+): string | undefined {
+  for (const key of [
+    "sourceFingerprint",
+    "graphFingerprint",
+    "knowledgeRevision",
+    "invariantRegistryRevision",
+    "targetProfileFingerprint",
+    "probeBindingRevision",
+  ] as const) {
+    const expected = proof.decisionBasis[key];
+    if (
+      expected !== undefined &&
+      currentBasis[key] !== expected
+    ) {
+      return (
+        key +
+        " changed from " +
+        expected +
+        " to " +
+        String(currentBasis[key] ?? "<missing>") +
+        "."
+      );
+    }
+  }
+  return undefined;
+}
+
 export function decideRepairReleaseWithLineage(
   lifecycle: RepairLifecycleState,
+  proof: RepairProofBundle,
   ledgerSnapshot: DecisionLedgerSnapshot,
   currentBasis: DecisionBasisRevision,
 ): RepairReleaseLineageResult {
   const lifecycleDecision = decideRepairRelease(lifecycle);
+
+  if (proof.transactionId !== lifecycle.transactionId) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof does not belong to the lifecycle transaction.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Repair proof transactionId does not match lifecycle transactionId.",
+      ],
+    };
+  }
+
+  const basisMismatch = proofBasisMismatch(
+    proof,
+    currentBasis,
+  );
+  if (basisMismatch) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof decision basis is stale.",
+          basisMismatch,
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [basisMismatch],
+    };
+  }
+
   const ledgerErrors = validateDecisionLedgerSnapshot(
     ledgerSnapshot,
   );
@@ -178,9 +247,24 @@ export function decideRepairReleaseWithLineage(
     "package-verification",
   );
 
+  const needsTransitiveRevalidation =
+    proof.requiredRevalidationNodeIds.length > 0 ||
+    proof.requiredRevalidationPaths.length > 0;
+
+  const transitive = needsTransitiveRevalidation
+    ? uniqueActiveStage(
+        ledger,
+        transactionId,
+        "transitive-revalidation",
+      )
+    : {};
+
   const stageErrors = [
     strategy.error,
     admission.error,
+    ...(needsTransitiveRevalidation
+      ? [transitive.error]
+      : []),
     runtime.error,
     packageVerification.error,
   ].filter((value): value is string => value !== undefined);
@@ -205,18 +289,36 @@ export function decideRepairReleaseWithLineage(
   const admissionEntry = admission.entry!;
   const runtimeEntry = runtime.entry!;
   const packageEntry = packageVerification.entry!;
+  const transitiveEntry = needsTransitiveRevalidation
+    ? transitive.entry!
+    : undefined;
+
+  const authorizationEntries = activeAncestorsOfKind(
+    ledger,
+    strategyEntry,
+    "repair-authorization",
+  );
 
   const lineageErrors: string[] = [];
 
+  if (authorizationEntries.length !== 1) {
+    lineageErrors.push(
+      authorizationEntries.length === 0
+        ? "Repair strategy selection is not descended from an active repair authorization."
+        : "Repair strategy selection has multiple active repair authorization ancestors.",
+    );
+  }
+
   if (
-    !hasAncestorKind(
-      ledger,
-      strategyEntry,
-      "repair-authorization",
+    proof.selectedCandidateId !== undefined &&
+    !authorizationEntries.some((entry) =>
+      entry.outputIds.includes(
+        "root-cause:" + proof.selectedCandidateId,
+      )
     )
   ) {
     lineageErrors.push(
-      "Repair strategy selection is not descended from an active repair authorization.",
+      "Repair authorization lineage does not prove the root cause selected by the repair proof.",
     );
   }
 
@@ -227,26 +329,6 @@ export function decideRepairReleaseWithLineage(
   if (!admissionAncestors.has(strategyEntry.id)) {
     lineageErrors.push(
       "Repair admission is not descended from the selected repair strategy.",
-    );
-  }
-
-  const runtimeAncestors = ancestorIds(
-    ledger,
-    runtimeEntry,
-  );
-  if (!runtimeAncestors.has(admissionEntry.id)) {
-    lineageErrors.push(
-      "Runtime verification is not descended from repair admission.",
-    );
-  }
-
-  const packageAncestors = ancestorIds(
-    ledger,
-    packageEntry,
-  );
-  if (!packageAncestors.has(admissionEntry.id)) {
-    lineageErrors.push(
-      "Package verification is not descended from repair admission.",
     );
   }
 
@@ -261,15 +343,118 @@ export function decideRepairReleaseWithLineage(
   }
 
   if (
-    !admissionEntry.outputIds.includes(
-      "repair-admission:eligible",
-    ) &&
-    !admissionEntry.outputIds.includes(
-      "repair-admission:guarded",
+    !strategyEntry.outputIds.includes(
+      "repair-transaction:" + transactionId,
     )
   ) {
     lineageErrors.push(
-      "Active repair admission decision does not authorize mutation.",
+      "Active repair strategy decision does not bind the selected strategy to this transaction.",
+    );
+  }
+
+  for (const invariantId of proof.supportingInvariantIds) {
+    if (
+      !strategyEntry.outputIds.includes(
+        "repair-invariant:" + invariantId,
+      )
+    ) {
+      lineageErrors.push(
+        "Repair strategy lineage does not carry supporting invariant: " +
+          invariantId +
+          ".",
+      );
+    }
+  }
+
+  if (transitiveEntry) {
+    const transitiveAncestors = ancestorIds(
+      ledger,
+      transitiveEntry,
+    );
+    if (!transitiveAncestors.has(admissionEntry.id)) {
+      lineageErrors.push(
+        "Transitive revalidation is not descended from repair admission.",
+      );
+    }
+
+    if (
+      !transitiveEntry.outputIds.includes(
+        "transitive-revalidation:passed",
+      )
+    ) {
+      lineageErrors.push(
+        "Active transitive revalidation decision is not a passing decision.",
+      );
+    }
+
+    for (const nodeId of proof.requiredRevalidationNodeIds) {
+      if (
+        !transitiveEntry.inputIds.includes(
+          "revalidation-node:" + nodeId,
+        )
+      ) {
+        lineageErrors.push(
+          "Transitive revalidation lineage does not cover required node: " +
+            nodeId +
+            ".",
+        );
+      }
+    }
+
+    for (const revalidationPath of proof.requiredRevalidationPaths) {
+      if (
+        !transitiveEntry.inputIds.includes(
+          "revalidation-path:" + revalidationPath,
+        )
+      ) {
+        lineageErrors.push(
+          "Transitive revalidation lineage does not cover required path: " +
+            revalidationPath +
+            ".",
+        );
+      }
+    }
+  }
+
+  const requiredVerificationParent =
+    transitiveEntry?.id ?? admissionEntry.id;
+
+  const runtimeAncestors = ancestorIds(
+    ledger,
+    runtimeEntry,
+  );
+  if (!runtimeAncestors.has(requiredVerificationParent)) {
+    lineageErrors.push(
+      "Runtime verification is not descended from " +
+        (transitiveEntry
+          ? "transitive revalidation."
+          : "repair admission."),
+    );
+  }
+
+  const packageAncestors = ancestorIds(
+    ledger,
+    packageEntry,
+  );
+  if (!packageAncestors.has(requiredVerificationParent)) {
+    lineageErrors.push(
+      "Package verification is not descended from " +
+        (transitiveEntry
+          ? "transitive revalidation."
+          : "repair admission."),
+    );
+  }
+
+  const expectedAdmission =
+    proof.admissionDisposition === "guarded"
+      ? "repair-admission:guarded"
+      : "repair-admission:eligible";
+
+  if (
+    !admissionEntry.outputIds.includes(expectedAdmission)
+  ) {
+    lineageErrors.push(
+      "Repair admission lineage does not match proof admission disposition.",
     );
   }
 
@@ -293,6 +478,15 @@ export function decideRepairReleaseWithLineage(
     );
   }
 
+  const lineageDecisionIds = [
+    ...authorizationEntries.map((entry) => entry.id),
+    strategyEntry.id,
+    admissionEntry.id,
+    ...(transitiveEntry ? [transitiveEntry.id] : []),
+    runtimeEntry.id,
+    packageEntry.id,
+  ].sort();
+
   if (lineageErrors.length > 0) {
     return {
       decision: {
@@ -304,28 +498,10 @@ export function decideRepairReleaseWithLineage(
         ],
       },
       ledger,
-      lineageDecisionIds: [
-        strategyEntry.id,
-        admissionEntry.id,
-        runtimeEntry.id,
-        packageEntry.id,
-      ].sort(),
+      lineageDecisionIds,
       reasons: lineageErrors,
     };
   }
-
-  const authorizationIds = [...ancestorIds(
-    ledger,
-    strategyEntry,
-  )]
-    .map((id) => ledger.entries.find((entry) => entry.id === id))
-    .filter(
-      (entry): entry is DecisionLedgerEntry =>
-        entry !== undefined &&
-        entry.status === "active" &&
-        entry.kind === "repair-authorization",
-    )
-    .map((entry) => entry.id);
 
   return {
     decision: {
@@ -333,17 +509,11 @@ export function decideRepairReleaseWithLineage(
       disposition: "release-eligible",
       reasons: [
         ...lifecycleDecision.reasons,
-        "Active decision lineage proves repair authorization, strategy selection, admission, runtime verification, and package verification.",
+        "Active decision lineage is complete, current, causally authorized, invariant-bound, and verified through runtime/package evidence.",
       ],
     },
     ledger,
-    lineageDecisionIds: [
-      ...authorizationIds,
-      strategyEntry.id,
-      admissionEntry.id,
-      runtimeEntry.id,
-      packageEntry.id,
-    ].sort(),
+    lineageDecisionIds,
     reasons: [],
   };
 }
