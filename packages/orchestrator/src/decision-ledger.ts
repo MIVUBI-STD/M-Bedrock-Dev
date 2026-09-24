@@ -99,6 +99,7 @@ function mismatchReason(
     "invariantRegistryRevision",
     "targetProfileFingerprint",
     "probeBindingRevision",
+    "runtimeEvidenceRevision",
   ] as const) {
     const expected = basis[key];
     if (
