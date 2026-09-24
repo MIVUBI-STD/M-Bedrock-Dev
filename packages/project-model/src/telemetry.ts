@@ -19,6 +19,7 @@ export interface TelemetryEventBase {
   producer: TelemetryProducer;
   scope: RuntimeScope;
   tick?: number;
+  sequence?: number;
   timestamp?: string;
   sourceRefs?: readonly SourceRef[];
   note?: string;
