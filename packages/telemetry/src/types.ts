@@ -50,6 +50,11 @@ export interface TelemetryEmitter {
       Extract<TelemetryEvent, { kind: "arena-double-start" }>
     >,
   ): Extract<TelemetryEvent, { kind: "arena-double-start" }>;
+  arenaGenerationAnomaly(
+    input: TelemetryEventInput<
+      Extract<TelemetryEvent, { kind: "arena-generation-anomaly" }>
+    >,
+  ): Extract<TelemetryEvent, { kind: "arena-generation-anomaly" }>;
   staleCallback(
     input: TelemetryEventInput<
       Extract<TelemetryEvent, { kind: "stale-callback" }>
