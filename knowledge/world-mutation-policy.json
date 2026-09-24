@@ -351,7 +351,11 @@
       "sourceIds": [
         "mivubi-world-mutation-policy-v1"
       ],
-      "diagnosticSeverity": "critical"
+      "diagnosticSeverity": "critical",
+      "causalConsequences": [
+        "premature-teleport-spawn-or-gameplay-risk",
+        "partial-world-state-exposure-risk"
+      ]
     },
     {
       "id": "world-policy.relation-script-mutation-candidate-requires-verification",
@@ -369,7 +373,11 @@
       "sourceIds": [
         "mivubi-world-mutation-policy-v1"
       ],
-      "diagnosticSeverity": "critical"
+      "diagnosticSeverity": "critical",
+      "causalConsequences": [
+        "premature-script-dependent-action-risk",
+        "partial-world-state-exposure-risk"
+      ]
     },
     {
       "id": "world-policy.relation-incomplete-order-proof-requires-more-evidence",
