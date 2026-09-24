@@ -88,6 +88,7 @@ function exchange(input: {
   state: "present" | "absent" | "unknown";
   outcomeId?: string;
   ok?: boolean;
+  incidentId?: string;
 }): RuntimeProbeExchange {
   const ok = input.ok ?? true;
   const outcomeByState =
@@ -108,6 +109,9 @@ function exchange(input: {
       schemaVersion: 1,
       requestId: input.requestId,
       probeId: input.probeId,
+      ...(input.incidentId === undefined
+        ? {}
+        : { incidentId: input.incidentId }),
       predicate: input.probeId,
       runtimeTick: 90,
       query: {
@@ -228,6 +232,37 @@ describe("adaptive runtime probe transcript replay", () => {
 
     expect(result.incident.rootCauseCandidates).toEqual([]);
     expect(result.nextPlan.stopCondition).toBe("candidate-set-exhausted");
+  });
+
+  it("ignores exchanges explicitly bound to another incident", () => {
+    const transcript: RuntimeProbeTranscript = {
+      schemaVersion: 1,
+      exchanges: [exchange({
+        requestId: "req-other",
+        probeId: "chunk-ready",
+        incidentId: "incident-other",
+        state: "present",
+        outcomeId: "ready",
+      }), exchange({
+        requestId: "req-current",
+        probeId: "route-valid",
+        incidentId: "incident-1",
+        state: "present",
+        outcomeId: "valid",
+      })],
+    };
+
+    const result = replayRuntimeProbeTranscript(
+      incident(),
+      probes,
+      transcript,
+      { availableContext: "LIVE_MINECRAFT" },
+    );
+
+    expect(result.ignoredIncidentExchanges).toBe(1);
+    expect(result.successfulProbeIds).toEqual(["route-valid"]);
+    expect(result.incident.rootCauseCandidates.map((item) => item.id))
+      .toEqual(["chunk"]);
   });
 
   it("marks replay incomplete when the transcript dropped earlier exchanges", () => {
