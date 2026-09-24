@@ -1,4 +1,5 @@
 import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
+import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
 import type { PatchTransaction } from "../../repair/src/types.js";
 import type {
   RepairBlastRadiusDecision,
@@ -11,6 +12,7 @@ export interface RepairProofBundle {
   transactionId: string;
   sourceFingerprint: string;
   graphFingerprint: string;
+  decisionBasis: DecisionBasisRevision;
   incidentId: string;
   selectedCandidateId?: string;
   diagnosticDisposition: DiagnosticRepairDecision["disposition"];
@@ -33,7 +35,7 @@ export function createRepairProofBundle(
   impact: RepairCounterfactualImpact,
   blastRadius: RepairBlastRadiusDecision,
   admission: RepairAdmissionDecision,
-  graphFingerprint: string,
+  decisionBasis: DecisionBasisRevision,
   supportingInvariantIds: readonly string[] = [],
 ): RepairProofBundle {
   for (const [label, id] of [
@@ -62,14 +64,24 @@ export function createRepairProofBundle(
     .filter((path) => !changedPaths.has(path))
     .sort();
 
-  if (!graphFingerprint.trim()) {
-    throw new Error("Repair proof bundle requires a semantic graph fingerprint.");
+  if (
+    decisionBasis.sourceFingerprint !== transaction.sourceFingerprint
+  ) {
+    throw new Error(
+      "Repair proof decision basis source fingerprint does not match transaction.",
+    );
+  }
+  if (!decisionBasis.graphFingerprint?.trim()) {
+    throw new Error(
+      "Repair proof bundle requires a semantic graph fingerprint in decision basis.",
+    );
   }
 
   return {
     transactionId: transaction.id,
     sourceFingerprint: transaction.sourceFingerprint,
-    graphFingerprint,
+    graphFingerprint: decisionBasis.graphFingerprint,
+    decisionBasis: { ...decisionBasis },
     incidentId: diagnostic.incidentId,
     ...(diagnostic.selectedCandidateId === undefined
       ? {}
@@ -121,6 +133,24 @@ export function validateRepairProofBundle(
   if (proof.sourceFingerprint !== transaction.sourceFingerprint) {
     errors.push(
       "Repair proof source fingerprint does not match the patch transaction.",
+    );
+  }
+
+  if (
+    proof.decisionBasis.sourceFingerprint !==
+      transaction.sourceFingerprint
+  ) {
+    errors.push(
+      "Repair proof decision basis source fingerprint does not match the patch transaction.",
+    );
+  }
+
+  if (
+    proof.decisionBasis.graphFingerprint !==
+      proof.graphFingerprint
+  ) {
+    errors.push(
+      "Repair proof decision basis graph fingerprint does not match proof graph fingerprint.",
     );
   }
 
