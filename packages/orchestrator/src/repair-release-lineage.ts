@@ -172,26 +172,6 @@ export function decideRepairReleaseWithLineage(
     };
   }
 
-  const basisMismatch = proofBasisMismatch(
-    proof,
-    currentBasis,
-  );
-  if (basisMismatch) {
-    return {
-      decision: {
-        transactionId: lifecycle.transactionId,
-        disposition: "blocked",
-        reasons: [
-          "Repair proof decision basis is stale.",
-          basisMismatch,
-        ],
-      },
-      ledger: ledgerSnapshot,
-      lineageDecisionIds: [],
-      reasons: [basisMismatch],
-    };
-  }
-
   const ledgerErrors = validateDecisionLedgerSnapshot(
     ledgerSnapshot,
   );
@@ -215,6 +195,26 @@ export function decideRepairReleaseWithLineage(
     ledgerSnapshot,
     currentBasis,
   );
+
+  const basisMismatch = proofBasisMismatch(
+    proof,
+    currentBasis,
+  );
+  if (basisMismatch) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof decision basis is stale.",
+          basisMismatch,
+        ],
+      },
+      ledger,
+      lineageDecisionIds: [],
+      reasons: [basisMismatch],
+    };
+  }
 
   if (lifecycleDecision.disposition !== "release-eligible") {
     return {
