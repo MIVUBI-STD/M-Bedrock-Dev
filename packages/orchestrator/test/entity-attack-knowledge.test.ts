@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
+import { parseEntityDefinition } from "../../../analyzers/entities/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/types.js";
 import { analyzeEntityWithKnowledge } from "../src/entity-knowledge-analysis.js";
 

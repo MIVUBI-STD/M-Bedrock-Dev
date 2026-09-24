@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
-import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
+import { parseEntityDefinition } from "../../../analyzers/entities/src/index.js";
 import { parseDialogueDocument } from "../../../analyzers/dialogue/src/index.js";
 import { dialogueDocumentDiagnostics } from "../../../analyzers/diagnostics/src/dialogue-findings.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/embedded-structure-command-findings.js";

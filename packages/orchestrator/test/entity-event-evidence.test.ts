@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseMcFunction } from "../../../analyzers/functions/src/parse.js";
 import { parseScriptFile } from "../../../analyzers/scripts/src/parse.js";
-import { parseEntityDefinition } from "../../../analyzers/entities/src/parse.js";
+import { parseEntityDefinition } from "../../../analyzers/entities/src/index.js";
 import {
   deriveEntityEventExternalEvidence,
   externalEventRootsForEntity,

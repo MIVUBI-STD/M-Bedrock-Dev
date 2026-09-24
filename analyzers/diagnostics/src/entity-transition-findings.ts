@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
-import type { EntityTransitionReachability } from "../../entities/src/reachability.js";
+import type { EntityTransitionReachability } from "../../entities/src/index.js";
 
 function idFor(source: SourceRef, suffix: string): string {
   return "diag_" + createHash("sha256")

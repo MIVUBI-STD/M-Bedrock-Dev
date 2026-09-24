@@ -2,7 +2,7 @@ import {
   entityHasConfiguredTargeting,
   entityHasNavigation,
   entityRuntimeKey,
-} from "../../../analyzers/entities/src/runtime-evidence.js";
+} from "../../../analyzers/entities/src/index.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/structure-runtime-findings.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { InspectTargetProfile } from "./types.js";

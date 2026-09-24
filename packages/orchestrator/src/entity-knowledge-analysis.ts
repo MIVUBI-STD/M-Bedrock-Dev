@@ -4,13 +4,13 @@ import {
   type EntityKnowledgeFinding,
 } from "../../knowledge/src/entity-reasoning.js";
 import type { EffectiveKnowledgeProfile } from "../../knowledge/src/types.js";
-import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/types.js";
-import { deriveEntityStateGraph } from "../../../analyzers/entities/src/state-graph.js";
-import { extractNavigationCapabilities } from "../../../analyzers/entities/src/navigation.js";
-import { extractTargetingSemantics } from "../../../analyzers/entities/src/targeting.js";
-import { extractAttackSemantics } from "../../../analyzers/entities/src/attack.js";
-import { extractSensorSemantics } from "../../../analyzers/entities/src/sensors.js";
-import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/reachability.js";
+import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/index.js";
+import { deriveEntityStateGraph } from "../../../analyzers/entities/src/index.js";
+import { extractNavigationCapabilities } from "../../../analyzers/entities/src/index.js";
+import { extractTargetingSemantics } from "../../../analyzers/entities/src/index.js";
+import { extractAttackSemantics } from "../../../analyzers/entities/src/index.js";
+import { extractSensorSemantics } from "../../../analyzers/entities/src/index.js";
+import { analyzeEntityTransitionReachability } from "../../../analyzers/entities/src/index.js";
 
 export interface EntityStateKnowledgeFinding extends EntityKnowledgeFinding {
   stateId: string;

@@ -17,8 +17,8 @@ import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
 import { functionRuntimeEvidence } from "../../../analyzers/functions/src/runtime-evidence.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import { scriptRuntimeEvidence } from "../../../analyzers/scripts/src/runtime-evidence.js";
-import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/types.js";
-import { entityRuntimeEvidence } from "../../../analyzers/entities/src/runtime-evidence.js";
+import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/index.js";
+import { entityRuntimeEvidence } from "../../../analyzers/entities/src/index.js";
 import {
   knowledgeRuntimeDiagnostics,
 } from "../../../analyzers/diagnostics/src/knowledge-runtime-findings.js";

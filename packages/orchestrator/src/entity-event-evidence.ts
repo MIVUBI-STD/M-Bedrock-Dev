@@ -3,7 +3,7 @@ import { flattenCommandEffects } from "../../../analyzers/commands/src/flatten.j
 import type { ParsedFunction } from "../../../analyzers/functions/src/types.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/types.js";
 import type { SourceRef } from "../../project-model/src/source-ref.js";
-import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/types.js";
+import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/index.js";
 
 export interface EntityEventExternalEvidence {
   event: string;

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "archive reliability-search orchestrator public entrypoint migration",
+  "generatedFrom": "analyzers/entities public entrypoint migration",
   "policy": "Cross-owner deep-import debt may decrease but must not increase without an explicit baseline update.",
   "owners": {
     "packages/project-model": 309,
@@ -14,7 +14,7 @@
     "analyzers/diagnostics": 27,
     "packages/repair": 26,
     "analyzers/manifest": 21,
-    "analyzers/entities": 18,
+    "analyzers/entities": 0,
     "packages/reliability": 17,
     "adapters/mcstructure": 15,
     "analyzers/topology": 12,
