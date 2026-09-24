@@ -11,6 +11,22 @@ import {
 import { mergeRuntimeEvidenceRecords } from "./runtime-evidence-merge.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/types.js";
 
+function sourceKey(source: {
+  artifactId: string;
+  relativePath: string;
+  range?: {
+    lineStart?: number;
+    columnStart?: number;
+  };
+}): string {
+  return [
+    source.artifactId,
+    source.relativePath,
+    source.range?.lineStart ?? 0,
+    source.range?.columnStart ?? 0,
+  ].join(":");
+}
+
 function idFor(scopeKey: string, relationId: string, status: string): string {
   return "diag_" + createHash("sha256")
     .update(`knowledge:${scopeKey}:${relationId}:${status}`)
@@ -41,6 +57,19 @@ export function knowledgeRuntimeDiagnostics(
         .filter((record) => record.state === "present")
         .map((record) => record.predicate),
     )].sort();
+
+    const predicateSourceKeys: Record<string, string[]> = {};
+    for (const record of records) {
+      if (record.state !== "present") continue;
+      const keys = record.sourceRefs?.map(sourceKey) ?? [];
+      if (keys.length === 0) continue;
+      predicateSourceKeys[record.predicate] = [
+        ...new Set([
+          ...(predicateSourceKeys[record.predicate] ?? []),
+          ...keys,
+        ]),
+      ].sort();
+    }
 
     for (const predicate of conflicts) {
       findings.push({
@@ -94,9 +123,16 @@ export function knowledgeRuntimeDiagnostics(
           ...(assessment.causalCorroborators === undefined
             ? {}
             : { causalCorroborators: assessment.causalCorroborators }),
+          predicateSourceKeys,
           ...(assessment.causalOutcomePredicates === undefined
             ? {}
             : { causalOutcomePredicates: assessment.causalOutcomePredicates }),
+          ...(assessment.causalCorroborationMinSources === undefined
+            ? {}
+            : {
+                causalCorroborationMinSources:
+                  assessment.causalCorroborationMinSources,
+              }),
         },
       });
     }
