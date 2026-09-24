@@ -35,10 +35,23 @@ export function parseTelemetryText(
     };
   }
 
+  let topLevelJson: unknown;
+  let topLevelParsed = false;
   try {
-    return parseTelemetryBatch(parseJson(trimmed));
+    topLevelJson = parseJson(trimmed);
+    topLevelParsed = true;
   } catch {
-    // Fall through to JSONL parsing.
+    // Not a single JSON document; continue as JSONL.
+  }
+
+  if (
+    topLevelParsed &&
+    typeof topLevelJson === "object" &&
+    topLevelJson !== null &&
+    !Array.isArray(topLevelJson) &&
+    "events" in topLevelJson
+  ) {
+    return parseTelemetryBatch(topLevelJson);
   }
 
   const events: TelemetryEvent[] = [];
