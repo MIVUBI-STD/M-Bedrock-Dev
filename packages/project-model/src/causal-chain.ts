@@ -22,6 +22,7 @@ export interface CausalNode {
   sourceRefs?: readonly SourceRef[];
   diagnosticIds?: readonly string[];
   corroboratingPredicates?: readonly string[];
+  corroboratingSourceKeys?: readonly string[];
 }
 
 export interface CausalLink {
