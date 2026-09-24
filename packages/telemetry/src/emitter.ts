@@ -88,12 +88,22 @@ export function createTelemetryEmitter(
 ): TelemetryEmitter {
   const idFactory =
     options.idFactory ?? createCounterTelemetryIdFactory(options.producer);
+  let localSequence = 0;
 
   const emitBuilt = <K extends Kind>(
     kind: K,
     input: TelemetryEventInput<EventFor<K>>,
   ): EventFor<K> => {
-    const event = buildEvent(kind, input, options, idFactory);
+    localSequence += 1;
+    const event = buildEvent(
+      kind,
+      {
+        ...input,
+        sequence: input.sequence ?? localSequence,
+      } as TelemetryEventInput<EventFor<K>>,
+      options,
+      idFactory,
+    );
     options.sink.emit(event);
     return event;
   };
