@@ -62,3 +62,16 @@ export interface RuntimeProbeBinding {
   query: RuntimeProbeQuery;
   outcomeByState: RuntimeProbeOutcomeMap;
 }
+
+
+export interface RuntimeProbeExchange {
+  request: RuntimeProbeRequest;
+  response: RuntimeProbeResponse;
+}
+
+export interface RuntimeProbeTranscript {
+  schemaVersion: 1;
+  sessionId?: string;
+  artifactId?: string;
+  exchanges: readonly RuntimeProbeExchange[];
+}
