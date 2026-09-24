@@ -128,6 +128,7 @@ export function authorizeRepairMutation(
   }
 
   for (const key of [
+    "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
     "targetProfileFingerprint",
