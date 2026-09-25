@@ -10,7 +10,7 @@ import {
   groupRuntimeEvidenceByScope,
   type RuntimeEvidenceRecord,
   type RuntimeEvidenceSnapshot,
-} from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
 import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
 import { manifestRuntimeEvidence } from "../../../analyzers/manifest/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";

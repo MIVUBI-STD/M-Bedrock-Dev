@@ -1,8 +1,8 @@
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import type {
   StateAuthorityContract,
   StateValueObservation,
-} from "../../project-model/src/state-authority-contract.js";
+} from "../../project-model/src/index.js";
 import {
   correlateStateAuthority,
   stateAuthorityRuntimeEvidence,

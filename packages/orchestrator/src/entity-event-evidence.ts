@@ -2,7 +2,7 @@ import { analyzeCommand } from "../../../analyzers/commands/src/index.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/index.js";
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
-import type { SourceRef } from "../../project-model/src/source-ref.js";
+import type { SourceRef } from "../../project-model/src/index.js";
 import type { ParsedEntityDefinition } from "../../../analyzers/entities/src/index.js";
 
 export interface EntityEventExternalEvidence {

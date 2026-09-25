@@ -1,5 +1,5 @@
-import type { SourceRef } from "../../project-model/src/source-ref.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import type { SourceRef } from "../../project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import type { analyzeStructureAndChunkRuntime } from "./structure-runtime-analysis.js";
 import type { derivePlacementProofs } from "./structure-proof-analysis.js";
 

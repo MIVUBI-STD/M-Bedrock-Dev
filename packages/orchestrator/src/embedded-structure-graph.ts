@@ -1,6 +1,6 @@
 import { SemanticGraph } from "../../graph/src/index.js";
 import type { SemanticNode } from "../../graph/src/index.js";
-import { semanticNodeId } from "../../project-model/src/identity.js";
+import { semanticNodeId } from "../../project-model/src/index.js";
 import type { EmbeddedStructureCommandAnalysis } from "./embedded-structure-commands.js";
 import { commandEffectStateIdentifiers, populateCommandEffectEdges } from "./command-effect-graph.js";
 
