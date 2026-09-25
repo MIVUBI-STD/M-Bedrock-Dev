@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const root = "reliability/catalogs";
@@ -34,6 +34,23 @@ for (const item of coverage.coverage) {
   const key = `${item.domain}:${item.lane}`;
   if (coverageKeys.has(key)) fail(`Duplicate coverage entry: ${key}`);
   coverageKeys.add(key);
+
+  if (item.state === "partial" || item.state === "covered") {
+    if (!item.evidence || !String(item.evidence).trim()) {
+      fail(`Coverage ${key} requires evidence for state ${item.state}.`);
+    }
+    if (!Array.isArray(item.proofPaths) || item.proofPaths.length === 0) {
+      fail(`Coverage ${key} requires proofPaths for state ${item.state}.`);
+    }
+    for (const proofPath of item.proofPaths) {
+      if (typeof proofPath !== "string" || !proofPath.trim()) {
+        fail(`Coverage ${key} has an invalid proof path.`);
+      }
+      if (!existsSync(proofPath)) {
+        fail(`Coverage ${key} proof path does not exist: ${proofPath}`);
+      }
+    }
+  }
 }
 
 const updatesRoot = join(root, "minecraft-updates");
