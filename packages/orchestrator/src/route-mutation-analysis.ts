@@ -1,10 +1,10 @@
 import type {
   BlockVolume,
   RouteCorridorContract,
-} from "../../project-model/src/route-corridor.js";
-import { blockVolumesOverlap } from "../../project-model/src/route-corridor.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
-import type { SourceRef } from "../../project-model/src/source-ref.js";
+} from "../../project-model/src/index.js";
+import { blockVolumesOverlap } from "../../project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
+import type { SourceRef } from "../../project-model/src/index.js";
 import type { analyzeFunctionTopology } from "./topology-analysis.js";
 import type { derivePlacementProofs } from "./structure-proof-analysis.js";
 

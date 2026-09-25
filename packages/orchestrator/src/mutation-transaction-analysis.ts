@@ -6,12 +6,12 @@ import {
 } from "../../../analyzers/commands/src/index.js";
 import type { Coordinate3 } from "../../../analyzers/commands/src/index.js";
 import type { derivePlacementProofs, PlacementBounds } from "./structure-proof-analysis.js";
-import type { SourceRef } from "../../project-model/src/source-ref.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import type { SourceRef } from "../../project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import {
   mutationDependentActionLabel,
   type MutationDependentActionContract,
-} from "../../project-model/src/mutation-dependent-action.js";
+} from "../../project-model/src/index.js";
 
 export type MutationTransactionStepKind =
   | "apply"

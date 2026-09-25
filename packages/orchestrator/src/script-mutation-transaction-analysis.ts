@@ -3,12 +3,12 @@ import type {
   ScriptLocalFunctionCall,
   ScriptMethodCall,
 } from "../../../analyzers/scripts/src/index.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
-import type { SourceRef } from "../../project-model/src/source-ref.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
+import type { SourceRef } from "../../project-model/src/index.js";
 import {
   mutationDependentActionLabel,
   type MutationDependentActionContract,
-} from "../../project-model/src/mutation-dependent-action.js";
+} from "../../project-model/src/index.js";
 
 export type ScriptMutationOrderingStatus =
   | "verified-before-dependent"

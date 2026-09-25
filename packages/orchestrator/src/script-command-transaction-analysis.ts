@@ -9,13 +9,13 @@ import type { CommandEffect } from "../../../analyzers/commands/src/index.js";
 import type { Coordinate3 } from "../../../analyzers/commands/src/index.js";
 import { parseBlockVerificationSemantics } from "../../../analyzers/commands/src/index.js";
 import { parseStructureLoadSemantics } from "../../../analyzers/commands/src/index.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
-import type { SourceRef } from "../../project-model/src/source-ref.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
+import type { SourceRef } from "../../project-model/src/index.js";
 import type { ParsedStructureSummary } from "./structure-runtime-analysis.js";
 import {
   mutationDependentActionLabel,
   type MutationDependentActionContract,
-} from "../../project-model/src/mutation-dependent-action.js";
+} from "../../project-model/src/index.js";
 import {
   deriveStructurePlacementBounds,
   type PlacementBounds,

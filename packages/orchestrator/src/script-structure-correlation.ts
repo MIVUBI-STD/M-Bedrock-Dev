@@ -1,7 +1,7 @@
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import { parseStructureLoadSemantics } from "../../../analyzers/commands/src/index.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
-import type { SourceRef } from "../../project-model/src/source-ref.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
+import type { SourceRef } from "../../project-model/src/index.js";
 import type { ParsedStructureSummary } from "./structure-runtime-analysis.js";
 
 function operationId(source: SourceRef): string {
