@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
+import { basename, dirname, extname, resolve } from "node:path";
 
 function canonicalJson(value) {
   if (Array.isArray(value)) {
@@ -70,6 +71,55 @@ const ids = new Set();
 const canonicalSymbols = new Map();
 const allowedStatuses = new Set(["canonical", "deprecated"]);
 const requiredArrayFields = ["producers", "consumers"];
+const EXPORT_FROM_RE =
+  /export\s+(?:\*|\{[^}]*\})\s+from\s+["']([^"']+)["']/g;
+
+function sourceCandidates(base) {
+  if (extname(base)) return [base];
+  return [
+    base + ".ts",
+    base + ".tsx",
+    base + ".mts",
+    base + ".cts",
+    resolve(base, "index.ts"),
+  ];
+}
+
+function resolveExportTarget(fromFile, specifier) {
+  if (!specifier.startsWith(".")) return undefined;
+  let raw = resolve(dirname(fromFile), specifier);
+  if (/\.js$/.test(raw)) raw = raw.slice(0, -3);
+  for (const candidate of sourceCandidates(raw)) {
+    if (existsSync(candidate)) return candidate;
+  }
+  return undefined;
+}
+
+function publicEntrypointForOwner(ownerPath) {
+  const marker = "/src/";
+  const normalized = ownerPath.replaceAll("\\", "/");
+  const index = normalized.indexOf(marker);
+  if (index < 0) return undefined;
+  return normalized.slice(0, index + marker.length) + "index.ts";
+}
+
+function isReachableFromEntrypoint(entrypoint, ownerPath, seen = new Set()) {
+  const entry = entrypoint.replaceAll("\\", "/");
+  const owner = ownerPath.replaceAll("\\", "/");
+  if (entry === owner) return true;
+  if (seen.has(entry) || !existsSync(entry)) return false;
+  seen.add(entry);
+
+  const text = readFileSync(entry, "utf8");
+  for (const match of text.matchAll(EXPORT_FROM_RE)) {
+    const target = resolveExportTarget(entry, match[1]);
+    if (!target) continue;
+    const normalized = target.replaceAll("\\", "/");
+    if (normalized === owner) return true;
+    if (isReachableFromEntrypoint(normalized, owner, seen)) return true;
+  }
+  return false;
+}
 
 function duplicateValue(values) {
   const seen = new Set();
@@ -144,6 +194,22 @@ for (const contract of registry.contracts) {
   }
 
   if (contract.status === "canonical") {
+    const entrypoint = publicEntrypointForOwner(contract.owner);
+    if (!entrypoint || !existsSync(entrypoint)) {
+      console.error(
+        "Canonical contract " + contract.id +
+          " has no canonical package entrypoint for owner " + contract.owner + ".",
+      );
+      process.exit(1);
+    }
+    if (!isReachableFromEntrypoint(entrypoint, contract.owner)) {
+      console.error(
+        "Canonical contract " + contract.id + " owner " + contract.owner +
+          " is not reachable from " + entrypoint + ".",
+      );
+      process.exit(1);
+    }
+
     const current = canonicalSymbols.get(contract.symbol);
     if (current && current !== contract.owner) {
       console.error("Canonical contract symbol has multiple owners: " + contract.symbol + " -> " + current + " and " + contract.owner);
