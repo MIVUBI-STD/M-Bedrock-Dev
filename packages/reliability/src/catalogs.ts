@@ -80,6 +80,19 @@ export function validateCoverageCatalog(
     if (!["covered", "partial", "unknown", "not-applicable"].includes(item.state)) {
       errors.push(`Invalid coverage state for ${key}: ${item.state}`);
     }
+
+    if (item.state === "partial" || item.state === "covered") {
+      if (!item.evidence?.trim()) {
+        errors.push(`Coverage ${key} requires evidence for state ${item.state}.`);
+      }
+      if (
+        !Array.isArray(item.proofPaths) ||
+        item.proofPaths.length === 0 ||
+        item.proofPaths.some((value) => typeof value !== "string" || !value.trim())
+      ) {
+        errors.push(`Coverage ${key} requires non-empty proofPaths for state ${item.state}.`);
+      }
+    }
   }
 
   return errors;
