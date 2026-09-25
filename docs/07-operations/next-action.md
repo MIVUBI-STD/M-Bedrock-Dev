@@ -20,10 +20,10 @@ Do not add another generalized static subsystem without new evidence.
 
 Next work should use one of these lanes:
 
-1. **Runtime proof** — import/load the maps in the target Minecraft build and validate entity AI, event timing, chunks, saved ticks, and multiplayer behavior.
+1. **Runtime proof** — use the existing partial multiplayer and chunk proof harnesses against the target Minecraft build. The remaining gap is real multi-client execution, chunk lifecycle chaos/recovery, entity AI/event timing, and saved-tick behavior.
 2. **Controlled API migration** — choose an explicit target `@minecraft/server` line first. Defense V2 currently exposes 57 `runCommandAsync` member calls (10 exact, 47 lexical-only) and 16 `isValid` calls (5 exact, 11 lexical-only); do not bulk-rewrite them without runtime validation.
 3. **Update differential** — run `compare-update` on real before/after Minecraft-update artifacts.
 4. **Entity-event proof** — add runtime/project evidence for informational event-reachability gaps when a reported bug points at those events.
 5. **Knowledge expansion** — only when production usage or a new official API change exposes a new unclassified surface.
 
-The current bottleneck is Minecraft runtime evidence, not static source intelligence.
+The current bottleneck is real Minecraft runtime execution and differential evidence, not static source intelligence.
