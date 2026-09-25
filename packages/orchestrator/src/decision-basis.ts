@@ -3,23 +3,23 @@ import type { SemanticGraph } from "../../graph/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import type {
   InvariantRegistrySnapshot,
-} from "../../project-model/src/invariant-registry.js";
+} from "../../project-model/src/index.js";
 import type {
   DecisionBasisRevision,
-} from "../../project-model/src/decision-ledger.js";
+} from "../../project-model/src/index.js";
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/contract-registry-revision.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeProbeBinding,
-} from "../../project-model/src/runtime-probe.js";
+} from "../../project-model/src/index.js";
 import {
   runtimeScopeKey,
   type RuntimeEvidenceRecord,
-} from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
-} from "../../project-model/src/runtime-evidence-integrity.js";
+} from "../../project-model/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 

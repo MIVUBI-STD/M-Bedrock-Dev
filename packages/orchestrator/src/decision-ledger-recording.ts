@@ -1,10 +1,10 @@
 import type {
   DecisionBasisRevision,
   DecisionLedgerSnapshot,
-} from "../../project-model/src/decision-ledger.js";
+} from "../../project-model/src/index.js";
 import type {
   DiagnosticRepairDecision,
-} from "../../project-model/src/diagnostic-decision.js";
+} from "../../project-model/src/index.js";
 import type {
   RepairAdmissionDecision,
 } from "./repair-admission.js";
