@@ -100,6 +100,7 @@ export interface BlindspotCoverage {
   lane: ReliabilityLane;
   state: CoverageState;
   evidence?: string;
+  proofPaths?: readonly string[];
 }
 
 export type RetestPriority = "P0" | "P1" | "P2" | "P3";
