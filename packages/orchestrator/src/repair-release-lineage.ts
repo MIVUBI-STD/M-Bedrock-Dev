@@ -1,15 +1,15 @@
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/contract-registry-revision.js";
+} from "../../project-model/src/index.js";
 import type {
   DecisionBasisRevision,
   DecisionLedgerEntry,
   DecisionLedgerKind,
   DecisionLedgerSnapshot,
-} from "../../project-model/src/decision-ledger.js";
+} from "../../project-model/src/index.js";
 import {
   validateDecisionLedgerSnapshot,
-} from "../../project-model/src/decision-ledger-validate.js";
+} from "../../project-model/src/index.js";
 import type { RepairLifecycleState } from "./repair-lifecycle.js";
 import type { RepairProofBundle } from "./repair-proof-bundle.js";
 import {

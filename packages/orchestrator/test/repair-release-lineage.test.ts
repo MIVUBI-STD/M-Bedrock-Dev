@@ -14,7 +14,7 @@ import type {
 } from "../src/repair-proof-bundle.js";
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/contract-registry-revision.js";
+} from "../../project-model/src/index.js";
 
 const lifecycle: RepairLifecycleState = {
   transactionId: "tx-1",
