@@ -7,7 +7,7 @@ import {
 } from "../../../analyzers/manifest/src/index.js";
 import { deriveManifestCompatibilityFacts } from "../../../analyzers/manifest/src/index.js";
 import type { ManifestModel } from "../../../analyzers/manifest/src/index.js";
-import type { FileInventoryEntry } from "../../project-model/src/project.js";
+import type { FileInventoryEntry } from "../../project-model/src/index.js";
 import type { InspectedPack } from "./types.js";
 
 export interface InspectionPackDiscovery {

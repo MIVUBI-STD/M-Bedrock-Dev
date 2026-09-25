@@ -1,11 +1,11 @@
 import type {
   TelemetryBatch,
   TelemetryEvent,
-} from "../../project-model/src/telemetry.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeEvidenceRecord,
   RuntimeScope,
-} from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
 
 function base(
   event: TelemetryEvent,

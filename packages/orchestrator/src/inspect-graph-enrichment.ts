@@ -2,7 +2,7 @@ import { populateFunctionEdges } from "../../../analyzers/references/src/index.j
 import type { ParsedFunction } from "../../../analyzers/functions/src/index.js";
 import type { SemanticGraph } from "../../graph/src/index.js";
 import type { SemanticNode } from "../../graph/src/index.js";
-import { semanticNodeId } from "../../project-model/src/identity.js";
+import { semanticNodeId } from "../../project-model/src/index.js";
 import {
   createDialogueSceneNodes,
   dialogueStateIdentifiers,

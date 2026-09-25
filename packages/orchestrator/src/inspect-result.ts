@@ -1,7 +1,7 @@
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
-import type { FileInventoryEntry } from "../../project-model/src/project.js";
-import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
-import { telemetryEventKinds } from "../../project-model/src/telemetry-validate.js";
+import type { FileInventoryEntry } from "../../project-model/src/index.js";
+import type { TelemetryEvent } from "../../project-model/src/index.js";
+import { telemetryEventKinds } from "../../project-model/src/index.js";
 import type {
   InspectDirectoryResult,
   InspectedPack,

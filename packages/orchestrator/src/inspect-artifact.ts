@@ -10,9 +10,9 @@ import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import { analyzeWorldDbNative } from "./world-db-analysis.js";
 import { worldDbRuntimeEvidence } from "./world-db-runtime-evidence.js";
 import { correlateEmbeddedCommandsWithNativeChunks } from "./embedded-native-correlation.js";
-import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
+import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/index.js";
 import { isTelemetryBatch, resolveTelemetryEventsForArtifact } from "./telemetry-load.js";
-import type { RuntimeProbeTranscript } from "../../project-model/src/runtime-probe.js";
+import type { RuntimeProbeTranscript } from "../../project-model/src/index.js";
 import { assertRuntimeProbeTranscriptArtifact } from "./runtime-probe-load.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {

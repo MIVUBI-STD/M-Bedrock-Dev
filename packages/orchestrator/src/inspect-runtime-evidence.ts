@@ -1,7 +1,7 @@
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
-import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
-import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
-import { analyzeTelemetryContinuity } from "../../project-model/src/telemetry-continuity.js";
+import type { RuntimeProbeResponse } from "../../project-model/src/index.js";
+import type { TelemetryEvent } from "../../project-model/src/index.js";
+import { analyzeTelemetryContinuity } from "../../project-model/src/index.js";
 import { telemetryRuntimeEvidence } from "./telemetry-evidence.js";
 import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
 import { assessRuntimeEvidenceSetIntegrity } from "./runtime-evidence-integrity.js";

@@ -19,8 +19,8 @@ import { analyzeCommandBlockChains } from "../../../adapters/mcstructure/src/ind
 import { SemanticGraph } from "../../graph/src/index.js";
 import type { SemanticNode } from "../../graph/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
-import type { FileInventoryEntry } from "../../project-model/src/project.js";
-import { semanticNodeId } from "../../project-model/src/identity.js";
+import type { FileInventoryEntry } from "../../project-model/src/index.js";
+import { semanticNodeId } from "../../project-model/src/index.js";
 import { analyzeEmbeddedStructureCommands } from "./embedded-structure-commands.js";
 import {
   functionIdentifier,

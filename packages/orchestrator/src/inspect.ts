@@ -13,8 +13,8 @@ import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js"
 import { classifyContentPath } from "../../../analyzers/discovery/src/index.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
-import { buildFilesystemInventory } from "../../project-model/src/filesystem-inventory.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import { buildFilesystemInventory } from "../../project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import type {
   InspectDirectoryResult,
@@ -29,8 +29,8 @@ import { scriptMutationTransactionRuntimeEvidence } from "./script-mutation-tran
 import { scriptCommandMutationRuntimeEvidence } from "./script-command-transaction-analysis.js";
 import { routeMutationRuntimeEvidence } from "./route-mutation-analysis.js";
 import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
-import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
-import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/telemetry.js";
+import type { RuntimeProbeResponse } from "../../project-model/src/index.js";
+import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/index.js";
 import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 
 export async function inspectDirectory(

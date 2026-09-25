@@ -1,11 +1,11 @@
 import {
   parseTelemetryBatch,
   validateTelemetryEvent,
-} from "../../project-model/src/telemetry-validate.js";
+} from "../../project-model/src/index.js";
 import type {
   TelemetryBatch,
   TelemetryEvent,
-} from "../../project-model/src/telemetry.js";
+} from "../../project-model/src/index.js";
 
 export interface TelemetryTextParseOptions {
   linePrefix?: string;

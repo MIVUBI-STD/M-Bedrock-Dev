@@ -3,16 +3,16 @@ import type { SemanticGraph } from "../../graph/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
-} from "../../project-model/src/runtime-evidence-integrity.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeEvidenceRecord,
-} from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
 import type {
   InspectTargetProfile,
 } from "./types.js";
 import type {
   analyzeTelemetryContinuity,
-} from "../../project-model/src/telemetry-continuity.js";
+} from "../../project-model/src/index.js";
 import type {
   analyzeKnowledgeRuntime,
 } from "./knowledge-runtime-analysis.js";
