@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
+import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/index.js";
 import { planEvidenceRecovery } from "../src/evidence-recovery.js";
 
 function integrity(

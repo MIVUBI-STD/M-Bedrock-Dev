@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { DiagnosticProbeDefinition } from "../../project-model/src/diagnostic-probe.js";
+import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
 import { bindDiagnosticProbeToRuntime } from "../src/diagnostic-runtime-binding.js";
 
 const probe: DiagnosticProbeDefinition = {

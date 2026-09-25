@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
-import type { CausalIncident } from "../../project-model/src/causal-chain.js";
+import type { CausalIncident } from "../../project-model/src/index.js";
 import type { ValidationCase } from "../../knowledge/src/index.js";
 import { deriveDiagnosticProbeDefinitions } from "../src/diagnostic-probe-derivation.js";
 

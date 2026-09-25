@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CausalIncident } from "../../project-model/src/causal-chain.js";
+import type { CausalIncident } from "../../project-model/src/index.js";
 import {
   capRootCauseEvidenceLevel,
   decideDiagnosticRepair,
