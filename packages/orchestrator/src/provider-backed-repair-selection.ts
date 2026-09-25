@@ -3,13 +3,13 @@ import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type {
   CausalChain,
   CausalIncident,
-} from "../../project-model/src/causal-chain.js";
+} from "../../project-model/src/index.js";
 import type {
   DiagnosticRepairDecision,
-} from "../../project-model/src/diagnostic-decision.js";
+} from "../../project-model/src/index.js";
 import type {
   InvariantRegistrySnapshot,
-} from "../../project-model/src/invariant-registry.js";
+} from "../../project-model/src/index.js";
 import {
   selectRepairStrategyForIncident,
   type CausalRepairStrategyPolicy,

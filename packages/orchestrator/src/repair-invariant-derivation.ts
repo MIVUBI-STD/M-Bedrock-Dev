@@ -2,14 +2,14 @@ import type {
   CausalChain,
   CausalIncident,
   RootCauseCandidate,
-} from "../../project-model/src/causal-chain.js";
+} from "../../project-model/src/index.js";
 import type {
   DiagnosticRepairDecision,
-} from "../../project-model/src/diagnostic-decision.js";
+} from "../../project-model/src/index.js";
 import type {
   InvariantRegistryEntry,
   InvariantRegistrySnapshot,
-} from "../../project-model/src/invariant-registry.js";
+} from "../../project-model/src/index.js";
 
 export interface RepairInvariantDerivation {
   incidentId: string;
