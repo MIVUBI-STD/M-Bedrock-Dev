@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "packages/diagnostics public entrypoint migration",
-  "policy": "Cross-owner deep-import debt may decrease but must not increase without an explicit baseline update.",
+  "generatedFrom": "zero-debt public API migration complete",
+  "policy": "Cross-owner deep imports are forbidden. Every owner baseline must remain zero.",
   "owners": {
     "packages/project-model": 0,
     "packages/diagnostics": 0,

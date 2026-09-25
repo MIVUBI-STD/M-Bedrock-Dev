@@ -35,6 +35,21 @@ const baseline = existsSync(BASELINE_PATH)
   ? JSON.parse(readFileSync(BASELINE_PATH, "utf8"))
   : { owners: {} };
 
+if (baseline.schemaVersion !== 1 || typeof baseline.owners !== "object") {
+  console.error("Invalid public API baseline registry.");
+  process.exit(1);
+}
+
+const nonZeroBaseline = Object.entries(baseline.owners ?? {})
+  .filter(([, value]) => Number(value) !== 0);
+if (nonZeroBaseline.length > 0) {
+  console.error("Public API baseline must remain zero-debt:");
+  for (const [ownerName, value] of nonZeroBaseline) {
+    console.error(`- ${ownerName}: ${value}`);
+  }
+  process.exit(1);
+}
+
 const findings = [];
 
 for (const rootName of SOURCE_ROOTS) {
@@ -129,36 +144,14 @@ for (const [target, items] of [...grouped.entries()].sort((a,b) =>
   if (items.length > 500) console.log(`  - ... and ${items.length - 500} more`);
 }
 
-const regressions = [];
-for (const [ownerName, items] of grouped.entries()) {
-  const allowed = Number(baseline.owners?.[ownerName] ?? 0);
-  if (items.length > allowed) {
-    regressions.push({
-      owner: ownerName,
-      current: items.length,
-      baseline: allowed,
-    });
-  }
-}
-
-for (const [ownerName, allowed] of Object.entries(baseline.owners ?? {})) {
-  if (!grouped.has(ownerName) && Number(allowed) < 0) {
-    regressions.push({
-      owner: ownerName,
-      current: 0,
-      baseline: Number(allowed),
-    });
-  }
-}
-
 console.log("");
-if (regressions.length > 0) {
-  console.error("Public API debt regressions:");
-  for (const item of regressions.sort((a,b) => a.owner.localeCompare(b.owner))) {
-    console.error(`- ${item.owner}: ${item.current} > baseline ${item.baseline}`);
+if (findings.length > 0) {
+  console.error("Cross-owner deep imports are forbidden:");
+  for (const item of findings) {
+    console.error(`- ${item.from} -> ${item.import}`);
   }
   process.exit(1);
 }
 
-console.log("Public API debt ratchet passed: no owner exceeded its baseline.");
-console.log("Reduce baseline counts after migrations; do not raise them to bypass a regression.");
+console.log("Public API zero-debt verification passed: no cross-owner deep imports.");
+
