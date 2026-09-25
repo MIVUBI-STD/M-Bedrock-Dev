@@ -6,7 +6,7 @@ import {
 import type { RepairProofBundle } from "../src/repair-proof-bundle.js";
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/contract-registry-revision.js";
+} from "../../project-model/src/index.js";
 
 function transaction(validation = true) {
   return createPatchTransaction({
