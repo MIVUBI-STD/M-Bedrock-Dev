@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SemanticGraph } from "../src/graph.js";
-import type { ComponentKind } from "../../project-model/src/component.js";
+import type { ComponentKind } from "../../project-model/src/index.js";
 
 const source = {
   artifactId: "art_demo",

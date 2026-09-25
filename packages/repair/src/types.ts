@@ -1,4 +1,4 @@
-import type { SourceRef } from "../../project-model/src/source-ref.js";
+import type { SourceRef } from "../../project-model/src/index.js";
 import type { ValidationStep } from "../../validation/src/index.js";
 
 export type PatchOperation =

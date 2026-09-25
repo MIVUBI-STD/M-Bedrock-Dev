@@ -1,4 +1,4 @@
-import type { SourceRef } from "../../project-model/src/source-ref.js";
+import type { SourceRef } from "../../project-model/src/index.js";
 import { createPatchTransaction } from "./create.js";
 import type { PatchTransaction } from "./types.js";
 

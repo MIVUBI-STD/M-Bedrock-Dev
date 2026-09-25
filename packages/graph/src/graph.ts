@@ -1,4 +1,4 @@
-import type { ComponentKind } from "../../project-model/src/component.js";
+import type { ComponentKind } from "../../project-model/src/index.js";
 import { semanticEdgeId } from "./edge-id.js";
 import type {
   EdgeType,

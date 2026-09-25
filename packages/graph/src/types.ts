@@ -1,5 +1,5 @@
-import type { SourceRef } from "../../project-model/src/source-ref.js";
-import type { ProjectComponent } from "../../project-model/src/component.js";
+import type { SourceRef } from "../../project-model/src/index.js";
+import type { ProjectComponent } from "../../project-model/src/index.js";
 
 export type NodeId = string;
 

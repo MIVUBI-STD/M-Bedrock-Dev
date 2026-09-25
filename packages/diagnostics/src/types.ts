@@ -1,5 +1,5 @@
 import type { Severity } from "../../common/src/index.js";
-import type { SourceRef } from "../../project-model/src/source-ref.js";
+import type { SourceRef } from "../../project-model/src/index.js";
 
 export type DiagnosticSeverity = Severity;
 
