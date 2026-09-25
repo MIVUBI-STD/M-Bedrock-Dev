@@ -1,5 +1,5 @@
-import type { CausalIncident } from "../../project-model/src/causal-chain.js";
-import type { DiagnosticProbeDefinition } from "../../project-model/src/diagnostic-probe.js";
+import type { CausalIncident } from "../../project-model/src/index.js";
+import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
 
 export interface DiagnosticProbeObservation {
   probeId: string;

@@ -1,5 +1,5 @@
-import type { DiagnosticExecutionContext } from "../../project-model/src/diagnostic-probe.js";
-import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
+import type { DiagnosticExecutionContext } from "../../project-model/src/index.js";
+import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/index.js";
 
 export type EvidenceChannel = "telemetry" | "runtime-probe";
 

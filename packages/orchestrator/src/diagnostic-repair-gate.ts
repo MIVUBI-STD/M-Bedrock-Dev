@@ -2,14 +2,14 @@ import type {
   CausalIncident,
   RootCauseCandidate,
   RootCauseEvidenceLevel,
-} from "../../project-model/src/causal-chain.js";
+} from "../../project-model/src/index.js";
 import type {
   DiagnosticClaimStrength,
   DiagnosticEvidenceCeiling,
   DiagnosticRepairDecision,
-} from "../../project-model/src/diagnostic-decision.js";
-import type { DiagnosticExecutionContext } from "../../project-model/src/diagnostic-probe.js";
-import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
+} from "../../project-model/src/index.js";
+import type { DiagnosticExecutionContext } from "../../project-model/src/index.js";
+import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/index.js";
 import type { DiagnosticInvestigationState } from "./diagnostic-investigation.js";
 
 const evidenceRank: Readonly<Record<RootCauseEvidenceLevel, number>> = {

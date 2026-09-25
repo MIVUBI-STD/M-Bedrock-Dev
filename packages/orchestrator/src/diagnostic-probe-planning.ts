@@ -1,10 +1,10 @@
-import type { CausalIncident } from "../../project-model/src/causal-chain.js";
+import type { CausalIncident } from "../../project-model/src/index.js";
 import type {
   DiagnosticExecutionContext,
   DiagnosticProbeDefinition,
   DiagnosticProbePlan,
   DiagnosticProbePlanItem,
-} from "../../project-model/src/diagnostic-probe.js";
+} from "../../project-model/src/index.js";
 
 const contextRank: Readonly<Record<DiagnosticExecutionContext, number>> = {
   REMOTE_GITHUB: 0,

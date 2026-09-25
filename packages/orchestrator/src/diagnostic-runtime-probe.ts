@@ -1,6 +1,6 @@
-import type { DiagnosticProbeDefinition } from "../../project-model/src/diagnostic-probe.js";
-import type { RuntimeProbeRequest, RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
-import { parseRuntimeProbeExchange } from "../../project-model/src/runtime-probe-validate.js";
+import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
+import type { RuntimeProbeRequest, RuntimeProbeResponse } from "../../project-model/src/index.js";
+import { parseRuntimeProbeExchange } from "../../project-model/src/index.js";
 import type { DiagnosticInvestigationState } from "./diagnostic-investigation.js";
 import { applyDiagnosticProbeObservation } from "./diagnostic-investigation.js";
 

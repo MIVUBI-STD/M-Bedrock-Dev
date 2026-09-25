@@ -1,5 +1,5 @@
-import type { DiagnosticProbeDefinition } from "../../project-model/src/diagnostic-probe.js";
-import type { RuntimeProbeBinding } from "../../project-model/src/runtime-probe.js";
+import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
+import type { RuntimeProbeBinding } from "../../project-model/src/index.js";
 
 export interface BoundRuntimeDiagnosticProbe {
   probeId: string;

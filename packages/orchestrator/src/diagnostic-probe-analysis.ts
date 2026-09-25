@@ -1,15 +1,15 @@
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { ValidationCase } from "../../knowledge/src/index.js";
-import type { CausalIncident } from "../../project-model/src/causal-chain.js";
+import type { CausalIncident } from "../../project-model/src/index.js";
 import type {
   DiagnosticExecutionContext,
   DiagnosticProbeDefinition,
   DiagnosticProbePlan,
-} from "../../project-model/src/diagnostic-probe.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeProbeBinding,
   RuntimeProbeRequest,
-} from "../../project-model/src/runtime-probe.js";
+} from "../../project-model/src/index.js";
 import { deriveDiagnosticProbeDefinitions } from "./diagnostic-probe-derivation.js";
 import { planDiagnosticProbes } from "./diagnostic-probe-planning.js";
 import {
