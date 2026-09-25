@@ -104,8 +104,8 @@ function publicEntrypointForOwner(ownerPath) {
 }
 
 function isReachableFromEntrypoint(entrypoint, ownerPath, seen = new Set()) {
-  const entry = entrypoint.replaceAll("\\", "/");
-  const owner = ownerPath.replaceAll("\\", "/");
+  const entry = resolve(entrypoint).replaceAll("\\", "/");
+  const owner = resolve(ownerPath).replaceAll("\\", "/");
   if (entry === owner) return true;
   if (seen.has(entry) || !existsSync(entry)) return false;
   seen.add(entry);
