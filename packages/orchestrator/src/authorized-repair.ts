@@ -1,8 +1,8 @@
 import type { SemanticGraph } from "../../graph/src/index.js";
-import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
+import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/contract-registry-revision.js";
+} from "../../project-model/src/index.js";
 import type {
   ApplyTransactionContext,
   ApplyTransactionResult,

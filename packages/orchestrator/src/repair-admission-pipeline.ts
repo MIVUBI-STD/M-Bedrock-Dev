@@ -1,9 +1,9 @@
 import type { SemanticGraph } from "../../graph/src/index.js";
-import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
+import type { DiagnosticRepairDecision } from "../../project-model/src/index.js";
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/contract-registry-revision.js";
-import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
+} from "../../project-model/src/index.js";
+import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
 import {
   analyzeRepairCounterfactual,

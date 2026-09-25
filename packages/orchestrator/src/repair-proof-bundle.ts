@@ -1,5 +1,5 @@
-import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
-import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
+import type { DiagnosticRepairDecision } from "../../project-model/src/index.js";
+import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
 import type {
   RepairBlastRadiusDecision,

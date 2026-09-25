@@ -1,4 +1,4 @@
-import type { DiagnosticRepairDecision } from "../../project-model/src/diagnostic-decision.js";
+import type { DiagnosticRepairDecision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
 import type { RepairBlastRadiusDecision } from "./repair-counterfactual-types.js";
 
