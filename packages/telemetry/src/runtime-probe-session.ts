@@ -2,8 +2,8 @@ import type {
   RuntimeProbeRequest,
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
-} from "../../project-model/src/runtime-probe.js";
-import { parseRuntimeProbeExchange } from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
+import { parseRuntimeProbeExchange } from "../../project-model/src/index.js";
 import type { RuntimeProbeExecutor } from "./runtime-probe-executor.js";
 
 export interface RuntimeProbeSessionOptions {

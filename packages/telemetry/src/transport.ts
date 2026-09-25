@@ -1,4 +1,4 @@
-import type { TelemetryBatch } from "../../project-model/src/telemetry.js";
+import type { TelemetryBatch } from "../../project-model/src/index.js";
 import type { BufferedTelemetrySink } from "./types.js";
 
 export interface TelemetryBatchTransport {

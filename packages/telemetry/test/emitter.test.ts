@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseTelemetryBatch } from "../../project-model/src/telemetry-validate.js";
+import { parseTelemetryBatch } from "../../project-model/src/index.js";
 import {
   createBufferedTelemetrySink,
   createCallbackTelemetrySink,

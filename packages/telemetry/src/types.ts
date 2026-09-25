@@ -2,8 +2,8 @@ import type {
   TelemetryBatch,
   TelemetryEvent,
   TelemetryProducer,
-} from "../../project-model/src/telemetry.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 
 export type TelemetryEventInput<T extends TelemetryEvent> =
   Omit<

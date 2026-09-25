@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseRuntimeProbeRequest } from "../../project-model/src/runtime-probe-validate.js";
+import { parseRuntimeProbeRequest } from "../../project-model/src/index.js";
 import { createActiveRuntimeProbeClient } from "../src/active-probe.js";
 
 describe("active runtime probe client", () => {

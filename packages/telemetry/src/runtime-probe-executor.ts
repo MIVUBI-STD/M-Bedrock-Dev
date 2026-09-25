@@ -3,8 +3,8 @@ import type {
   RuntimeProbeRequest,
   RuntimeProbeResponse,
   RuntimeProbeState,
-} from "../../project-model/src/runtime-probe.js";
-import { parseRuntimeProbeRequest } from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
+import { parseRuntimeProbeRequest } from "../../project-model/src/index.js";
 
 export type RuntimeProbeLookup<T> =
   | { status: "value"; value: T }

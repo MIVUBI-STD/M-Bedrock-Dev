@@ -2,8 +2,8 @@ import type {
   RuntimeProbeRequestBundle,
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
-} from "../../project-model/src/runtime-probe.js";
-import { parseRuntimeProbeRequestBundle } from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
+import { parseRuntimeProbeRequestBundle } from "../../project-model/src/index.js";
 import type { RuntimeProbeExecutor } from "./runtime-probe-executor.js";
 import { createRuntimeProbeSession } from "./runtime-probe-session.js";
 

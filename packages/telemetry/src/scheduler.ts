@@ -1,6 +1,6 @@
 import type {
   TelemetryBatch,
-} from "../../project-model/src/telemetry.js";
+} from "../../project-model/src/index.js";
 import type { TelemetryFlushController } from "./transport.js";
 
 export interface TelemetryIntervalScheduler {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
+import type { TelemetryEvent } from "../../project-model/src/index.js";
 import {
   createBufferedTelemetrySink,
   createProfileTelemetrySink,
