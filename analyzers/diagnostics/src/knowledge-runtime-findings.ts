@@ -9,7 +9,7 @@ import {
   runtimeScopeContains,
   type RuntimeEvidenceRecord,
   type RuntimeEvidenceSnapshot,
-} from "../../../packages/project-model/src/runtime-evidence.js";
+} from "../../../packages/project-model/src/index.js";
 import { mergeRuntimeEvidenceRecords } from "./runtime-evidence-merge.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 

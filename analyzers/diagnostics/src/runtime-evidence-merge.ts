@@ -1,10 +1,10 @@
 import type { KnowledgeEvidence, KnowledgeEvidenceMap } from "../../../packages/knowledge/src/index.js";
-import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { SourceRef } from "../../../packages/project-model/src/index.js";
 import type {
   RuntimeEvidenceConfidence,
   RuntimeEvidenceRecord,
   RuntimeObservationPoint,
-} from "../../../packages/project-model/src/runtime-evidence.js";
+} from "../../../packages/project-model/src/index.js";
 
 export interface RuntimeEvidenceConflictResolution {
   predicate: string;

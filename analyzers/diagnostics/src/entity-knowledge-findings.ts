@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { SourceRef } from "../../../packages/project-model/src/index.js";
 import type { DiagnosticFinding } from "../../../packages/diagnostics/src/index.js";
 
 export interface EntityKnowledgeDiagnosticInput {
