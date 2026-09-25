@@ -2,8 +2,8 @@ import type {
   RuntimeProbeQuery,
   RuntimeProbeRequest,
   RuntimeProbeOutcomeMap,
-} from "../../project-model/src/runtime-probe.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 
 export interface ActiveRuntimeProbeTransport {
   send(request: RuntimeProbeRequest): void;

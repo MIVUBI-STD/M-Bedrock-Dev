@@ -1,7 +1,7 @@
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 import type {
   ArenaGenerationAnomalyKind,
-} from "../../project-model/src/telemetry.js";
+} from "../../project-model/src/index.js";
 import type { TelemetryEmitter } from "./types.js";
 
 export interface ArenaGenerationStartObservation {

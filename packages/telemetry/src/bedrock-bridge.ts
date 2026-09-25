@@ -1,5 +1,5 @@
-import { validateTelemetryEvent } from "../../project-model/src/telemetry-validate.js";
-import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
+import { validateTelemetryEvent } from "../../project-model/src/index.js";
+import type { TelemetryEvent } from "../../project-model/src/index.js";
 import type { TelemetrySink } from "./types.js";
 
 export interface BedrockSystemTelemetryLike {

@@ -1,4 +1,4 @@
-import type { TelemetryBatch } from "../../project-model/src/telemetry.js";
+import type { TelemetryBatch } from "../../project-model/src/index.js";
 import {
   createBedrockScriptEventTelemetryCollector,
   type BedrockScriptEventSignalLike,
