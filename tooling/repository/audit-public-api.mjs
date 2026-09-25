@@ -69,7 +69,9 @@ for (const rootName of SOURCE_ROOTS) {
 
       findings.push({
         from: normalizePath(relative(ROOT, file)),
+        fromOwner,
         toOwner,
+        target: normalizedTarget,
         import: specifier,
       });
     }
@@ -86,6 +88,35 @@ for (const item of findings) {
 console.log("Public API surface audit (report-only)");
 console.log("  cross-owner deep imports:", findings.length);
 console.log("  target owners:", grouped.size);
+
+const byConsumerOwner = new Map();
+const byTargetFile = new Map();
+for (const item of findings) {
+  byConsumerOwner.set(
+    item.fromOwner,
+    (byConsumerOwner.get(item.fromOwner) ?? 0) + 1,
+  );
+  byTargetFile.set(
+    item.target,
+    (byTargetFile.get(item.target) ?? 0) + 1,
+  );
+}
+
+console.log("");
+console.log("Debt by consumer owner:");
+for (const [name, count] of [...byConsumerOwner.entries()].sort(
+  (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+)) {
+  console.log(`  ${name}: ${count}`);
+}
+
+console.log("");
+console.log("Debt by target contract file:");
+for (const [name, count] of [...byTargetFile.entries()].sort(
+  (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+)) {
+  console.log(`  ${name}: ${count}`);
+}
 
 for (const [target, items] of [...grouped.entries()].sort((a,b) =>
   b[1].length - a[1].length || a[0].localeCompare(b[0])
