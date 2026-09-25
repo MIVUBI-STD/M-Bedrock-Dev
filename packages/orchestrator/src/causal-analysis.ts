@@ -4,8 +4,8 @@ import type {
   CausalChain,
   CausalLink,
   CausalNode,
-} from "../../project-model/src/causal-chain.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 
 function idFor(parts: readonly string[]): string {
   return "cause_" + createHash("sha256")

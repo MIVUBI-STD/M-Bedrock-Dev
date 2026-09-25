@@ -5,7 +5,7 @@ import type {
   CausalIncident,
   RootCauseCandidate,
   RootCauseEvidenceLevel,
-} from "../../project-model/src/causal-chain.js";
+} from "../../project-model/src/index.js";
 
 const severityRank: Readonly<Record<DiagnosticSeverity, number>> = {
   info: 0,

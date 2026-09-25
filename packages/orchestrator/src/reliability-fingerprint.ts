@@ -15,7 +15,7 @@ import type { InspectedPack, InspectTargetProfile } from "./types.js";
 import type {
   CausalChain,
   CausalIncident,
-} from "../../project-model/src/causal-chain.js";
+} from "../../project-model/src/index.js";
 
 export interface ReliabilityFingerprintInput {
   mapId: string;

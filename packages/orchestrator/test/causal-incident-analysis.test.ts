@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CausalChain } from "../../project-model/src/causal-chain.js";
+import type { CausalChain } from "../../project-model/src/index.js";
 import { synthesizeCausalIncidents } from "../src/causal-incident-analysis.js";
 
 function chain(input: {
