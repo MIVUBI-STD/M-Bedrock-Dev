@@ -1,5 +1,5 @@
 import type { SemanticGraph } from "../../graph/src/index.js";
-import type { ComponentKind } from "../../project-model/src/component.js";
+import type { ComponentKind } from "../../project-model/src/index.js";
 import type {
   RepairCounterfactualImpact,
   RepairCounterfactualInput,

@@ -1,4 +1,4 @@
-import type { ComponentKind } from "../../project-model/src/component.js";
+import type { ComponentKind } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
 
 export interface RepairImpactTrace {

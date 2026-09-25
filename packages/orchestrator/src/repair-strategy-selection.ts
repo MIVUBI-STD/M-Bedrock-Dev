@@ -1,10 +1,10 @@
 import type { SemanticGraph } from "../../graph/src/index.js";
-import type { DiagnosticRepairDecision, DiagnosticClaimStrength } from "../../project-model/src/diagnostic-decision.js";
-import type { InvariantRegistrySnapshot } from "../../project-model/src/invariant-registry.js";
+import type { DiagnosticRepairDecision, DiagnosticClaimStrength } from "../../project-model/src/index.js";
+import type { InvariantRegistrySnapshot } from "../../project-model/src/index.js";
 import {
   validateInvariantRegistrySnapshot,
-} from "../../project-model/src/invariant-registry-validate.js";
-import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
+} from "../../project-model/src/index.js";
+import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
 import {
   evaluateRepairAdmissionPipeline,
