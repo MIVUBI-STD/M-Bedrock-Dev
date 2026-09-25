@@ -4,14 +4,14 @@ import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { ScriptApiUsageInventory } from "./script-api-usage.js";
-import type { RouteCorridorContract } from "../../project-model/src/route-corridor.js";
-import type { MutationDependentActionContract } from "../../project-model/src/mutation-dependent-action.js";
-import type { CausalChain, CausalIncident } from "../../project-model/src/causal-chain.js";
-import type { TelemetryEvent } from "../../project-model/src/telemetry.js";
-import type { RuntimeProbeResponse } from "../../project-model/src/runtime-probe.js";
+import type { RouteCorridorContract } from "../../project-model/src/index.js";
+import type { MutationDependentActionContract } from "../../project-model/src/index.js";
+import type { CausalChain, CausalIncident } from "../../project-model/src/index.js";
+import type { TelemetryEvent } from "../../project-model/src/index.js";
+import type { RuntimeProbeResponse } from "../../project-model/src/index.js";
 import type { DiagnosticProbeAnalysis } from "./diagnostic-probe-analysis.js";
-import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
-import type { DecisionBasisRevision } from "../../project-model/src/decision-ledger.js";
+import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/index.js";
+import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 
 export interface InspectTargetProfile {
@@ -251,7 +251,7 @@ export interface InspectDirectoryResult {
 
 
 export interface InspectEvidenceInput {
-  records?: readonly import("../../project-model/src/runtime-evidence.js").RuntimeEvidenceRecord[];
+  records?: readonly import("../../project-model/src/index.js").RuntimeEvidenceRecord[];
   telemetryEvents?: readonly TelemetryEvent[];
   runtimeProbeResponses?: readonly RuntimeProbeResponse[];
 }
