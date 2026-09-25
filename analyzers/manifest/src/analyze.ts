@@ -1,5 +1,5 @@
 import type { ManifestDependency, ManifestModel, ManifestModule, ManifestModuleType } from "./types.js";
-import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { SourceRef } from "../../../packages/project-model/src/index.js";
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
   return typeof value === "object" && value !== null && !Array.isArray(value)

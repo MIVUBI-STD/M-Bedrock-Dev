@@ -1,6 +1,6 @@
 import type { EffectiveKnowledgeProfile } from "../../../packages/knowledge/src/index.js";
-import type { ProjectSession } from "../../../packages/project-model/src/session.js";
-import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/runtime-evidence.js";
+import type { ProjectSession } from "../../../packages/project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/index.js";
 import { formatGameVersion } from "../../../packages/compatibility/src/index.js";
 import { deriveManifestCompatibilityFacts } from "./compatibility.js";
 import type { ManifestModel } from "./types.js";

@@ -1,5 +1,5 @@
 import ts from "typescript";
-import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { SourceRef } from "../../../packages/project-model/src/index.js";
 import type {
   DynamicPropertyAccess,
   ParsedScriptFile,

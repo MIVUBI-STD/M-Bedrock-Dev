@@ -1,4 +1,4 @@
-import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { SourceRef } from "../../../packages/project-model/src/index.js";
 
 export type SelectorScope = "self" | "nearest" | "all_players" | "all_entities" | "filtered" | "unknown";
 
