@@ -5,25 +5,40 @@
       "domain": "commands",
       "lane": "static",
       "state": "partial",
-      "evidence": "High-value command grammar, selectors, state access and topology effects are covered; the full Bedrock command surface is not."
+      "evidence": "High-value command grammar, selectors, state access and topology effects are covered; the full Bedrock command surface is not.",
+      "proofPaths": [
+        "analyzers/commands/src/index.ts",
+        "analyzers/commands/test/parse.test.ts"
+      ]
     },
     {
       "domain": "structures",
       "lane": "static",
       "state": "partial",
-      "evidence": "mcstructure NBT, palette/index normalization and layer-length invariants are covered; full block/entity semantics are not."
+      "evidence": "mcstructure NBT, palette/index normalization and layer-length invariants are covered; full block/entity semantics are not.",
+      "proofPaths": [
+        "adapters/mcstructure/src/index.ts",
+        "adapters/mcstructure/test/mcstructure.test.ts"
+      ]
     },
     {
       "domain": "scripts",
       "lane": "static",
       "state": "partial",
-      "evidence": "Imports, module usage, events and dynamic-property calls are statically extracted without code execution."
+      "evidence": "Imports, module usage, events and dynamic-property calls are statically extracted without code execution.",
+      "proofPaths": [
+        "analyzers/scripts/src/index.ts",
+        "analyzers/scripts/test/parse.test.ts"
+      ]
     },
     {
       "domain": "world-db",
       "lane": "static",
       "state": "partial",
-      "evidence": "Database presence and transport boundaries exist; most record families remain opaque."
+      "evidence": "Database presence and transport boundaries exist; most record families remain opaque.",
+      "proofPaths": [
+        "analyzers/world-db/src/index.ts"
+      ]
     },
     {
       "domain": "entities",
@@ -41,19 +56,36 @@
       "domain": "multiplayer",
       "lane": "static",
       "state": "partial",
-      "evidence": "Broad scoreboard/tag writes are detected as cross-scope risk; session intent is not fully inferred."
+      "evidence": "Broad scoreboard/tag writes are detected as cross-scope risk; session intent is not fully inferred.",
+      "proofPaths": [
+        "analyzers/topology/src/state-scope.ts",
+        "packages/orchestrator/src/state-authority-analysis.ts"
+      ]
     },
     {
       "domain": "multiplayer",
       "lane": "generative",
-      "state": "unknown",
-      "evidence": "State-machine/concurrency sequence generation is not implemented yet."
+      "state": "partial",
+      "evidence": "Property-based session sequences, bounded state exploration and interleaving reduction are implemented and tested; generated scenarios still execute against an abstract session model rather than real Minecraft clients.",
+      "proofPaths": [
+        "packages/reliability/src/session-generators.ts",
+        "packages/reliability/test/session-model.test.ts",
+        "packages/reliability-search/src/session-bounded-domain.ts",
+        "packages/reliability-search/test/interleaving-scale.test.ts"
+      ]
     },
     {
       "domain": "multiplayer",
       "lane": "runtime",
-      "state": "unknown",
-      "evidence": "Automated multi-client runtime scenarios are not integrated yet."
+      "state": "partial",
+      "evidence": "Bedrock observation capture, runtime control records, model/runtime comparison and live regression incident capture are implemented and tested; automated multi-client Minecraft execution is not integrated yet.",
+      "proofPaths": [
+        "packages/reliability/src/bedrock-runtime-emitter.ts",
+        "packages/reliability/src/live-regression-runner.ts",
+        "packages/reliability/src/runtime-control.ts",
+        "packages/reliability/test/live-regression-runner.test.ts",
+        "packages/reliability/test/bedrock-runtime-emitter.test.ts"
+      ]
     },
     {
       "domain": "chunks",
