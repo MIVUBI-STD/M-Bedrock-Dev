@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RuntimeTemporalAssessment } from "../../project-model/src/runtime-temporal.js";
+import type { RuntimeTemporalAssessment } from "../../project-model/src/index.js";
 import { identifyFirstWrongTransition } from "../src/first-wrong-transition.js";
 
 function violation(

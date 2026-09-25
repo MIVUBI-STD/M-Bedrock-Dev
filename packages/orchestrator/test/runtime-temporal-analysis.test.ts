@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import {
   assessRuntimeTemporalRequirement,
 } from "../src/runtime-temporal-analysis.js";

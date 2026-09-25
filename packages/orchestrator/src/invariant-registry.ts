@@ -5,11 +5,11 @@ import type {
 import type {
   InvariantRegistryEntry,
   InvariantRegistrySnapshot,
-} from "../../project-model/src/invariant-registry.js";
+} from "../../project-model/src/index.js";
 import {
   assertInvariantRegistrySnapshot,
-} from "../../project-model/src/invariant-registry-validate.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 
 function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import { assessRuntimeEvidenceIntegrity } from "../src/runtime-evidence-integrity.js";
 
 const observed: RuntimeEvidenceRecord = {

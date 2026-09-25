@@ -1,6 +1,6 @@
 import type { CompiledDiagnosticInvariant } from "../../knowledge/src/index.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
-import type { RuntimeTemporalRequirement } from "../../project-model/src/runtime-temporal.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
+import type { RuntimeTemporalRequirement } from "../../project-model/src/index.js";
 
 export interface CompiledInvariantRuntimePlan {
   temporalRequirements: readonly RuntimeTemporalRequirement[];

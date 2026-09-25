@@ -1,10 +1,10 @@
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import type {
   StateAuthorityContract,
   StateObservedValue,
   StateValueObservation,
-} from "../../project-model/src/state-authority-contract.js";
-import { stateSurfaceKey } from "../../project-model/src/state-authority-contract.js";
+} from "../../project-model/src/index.js";
+import { stateSurfaceKey } from "../../project-model/src/index.js";
 
 export type StateMirrorStatus =
   | "consistent"

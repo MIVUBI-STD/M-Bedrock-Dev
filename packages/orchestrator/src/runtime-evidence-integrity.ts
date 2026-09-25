@@ -5,9 +5,9 @@ import {
 import {
   groupRuntimeEvidenceByScope,
   type RuntimeEvidenceRecord,
-} from "../../project-model/src/runtime-evidence.js";
-import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/runtime-evidence-integrity.js";
-import type { TelemetryContinuityReport } from "../../project-model/src/telemetry-continuity.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/index.js";
+import type { TelemetryContinuityReport } from "../../project-model/src/index.js";
 
 export function assessRuntimeEvidenceIntegrity(
   records: readonly RuntimeEvidenceRecord[],

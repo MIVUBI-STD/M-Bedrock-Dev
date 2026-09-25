@@ -1,12 +1,12 @@
 import type {
   RuntimeEvidenceRecord,
   RuntimeObservationPoint,
-} from "../../project-model/src/runtime-evidence.js";
-import { runtimeScopeContains } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import { runtimeScopeContains } from "../../project-model/src/index.js";
 import type {
   RuntimeTemporalAssessment,
   RuntimeTemporalRequirement,
-} from "../../project-model/src/runtime-temporal.js";
+} from "../../project-model/src/index.js";
 
 type Order = "before" | "same" | "after" | "unresolved";
 

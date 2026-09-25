@@ -1,9 +1,9 @@
 import type {
   RuntimeFirstWrongCandidate,
   RuntimeFirstWrongTransition,
-} from "../../project-model/src/runtime-first-wrong.js";
-import type { RuntimeObservationPoint } from "../../project-model/src/runtime-evidence.js";
-import type { RuntimeTemporalAssessment } from "../../project-model/src/runtime-temporal.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeObservationPoint } from "../../project-model/src/index.js";
+import type { RuntimeTemporalAssessment } from "../../project-model/src/index.js";
 
 type Order = "before" | "same" | "after" | "unresolved";
 
