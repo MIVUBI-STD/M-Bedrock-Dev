@@ -5,8 +5,6 @@ on:
   push:
     branches:
       - Local
-    paths:
-      - ".github/workflows/package-source.yml"
   workflow_dispatch:
 
 permissions:
@@ -34,6 +32,23 @@ jobs:
           mkdir -p .portable-node
           cp "$(command -v node)" .portable-node/node
           .portable-node/node --version
+
+      - name: Write exact-source provenance
+        shell: bash
+        run: |
+          lock_sha="$(sha256sum package-lock.json | awk '{print $1}')"
+          cat > .portable-provenance.json <<EOF
+          {
+            "schemaVersion": 1,
+            "repository": "${GITHUB_REPOSITORY}",
+            "branch": "${GITHUB_REF_NAME}",
+            "commit": "${GITHUB_SHA}",
+            "node": "$(node --version)",
+            "npm": "$(npm --version)",
+            "packageLockSha256": "${lock_sha}"
+          }
+          EOF
+          cat .portable-provenance.json
 
       - name: Upload portable workspace
         uses: actions/upload-artifact@v7
