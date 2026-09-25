@@ -90,8 +90,14 @@
     {
       "domain": "chunks",
       "lane": "runtime",
-      "state": "unknown",
-      "evidence": "Chunk lifecycle chaos/runtime coverage is not integrated yet."
+      "state": "partial",
+      "evidence": "Targeted chunk readiness observation using Dimension.isChunkLoaded is implemented with fail-closed unknown handling and tests; automated chunk lifecycle chaos, recovery lease execution, and real Minecraft runtime orchestration are not integrated yet.",
+      "proofPaths": [
+        "packages/reliability/src/chunk-runtime-observation.ts",
+        "packages/reliability/test/chunk-runtime-observation.test.ts",
+        "packages/orchestrator/src/area-loaded-proof.ts",
+        "packages/orchestrator/test/area-loaded-proof.test.ts"
+      ]
     },
     {
       "domain": "compatibility",
