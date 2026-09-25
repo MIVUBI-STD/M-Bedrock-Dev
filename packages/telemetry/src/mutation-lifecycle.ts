@@ -1,7 +1,7 @@
 import type {
   MutationTelemetryKind,
-} from "../../project-model/src/telemetry.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 import type { TelemetryEmitter } from "./types.js";
 
 export interface MutationLifecycleInput {

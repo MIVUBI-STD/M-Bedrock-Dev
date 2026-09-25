@@ -8,8 +8,8 @@ import { frameTelemetryBatch, type TelemetryFrame } from "./framing.js";
 import type {
   TelemetryBatch,
   TelemetryProducer,
-} from "../../project-model/src/telemetry.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 import {
   createTelemetryEmitter,
   createTelemetryScopeLease,

@@ -1,9 +1,9 @@
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
-import { runtimeScopeKey } from "../../project-model/src/runtime-evidence.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
+import { runtimeScopeKey } from "../../project-model/src/index.js";
 import type {
   StateObservedValue,
   StateSurfaceRef,
-} from "../../project-model/src/state-authority-contract.js";
+} from "../../project-model/src/index.js";
 import type { TelemetryEmitter } from "./types.js";
 
 export interface Vector3Sample {

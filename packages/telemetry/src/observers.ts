@@ -1,8 +1,8 @@
 import type {
   StateObservedValue,
   StateSurfaceRef,
-} from "../../project-model/src/state-authority-contract.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 import type { TelemetryEmitter } from "./types.js";
 
 export interface StateMirrorObservation {

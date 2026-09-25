@@ -1,7 +1,7 @@
 import type {
   TelemetryBatch,
   TelemetryEvent,
-} from "../../project-model/src/telemetry.js";
+} from "../../project-model/src/index.js";
 import {
   telemetryEventPriority,
   type TelemetryEventPriority,

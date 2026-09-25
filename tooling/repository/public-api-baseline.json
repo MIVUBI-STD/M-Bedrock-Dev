@@ -3,7 +3,7 @@
   "generatedFrom": "packages/diagnostics public entrypoint migration",
   "policy": "Cross-owner deep-import debt may decrease but must not increase without an explicit baseline update.",
   "owners": {
-    "packages/project-model": 291,
+    "packages/project-model": 275,
     "packages/diagnostics": 0,
     "packages/knowledge": 0,
     "analyzers/commands": 0,
