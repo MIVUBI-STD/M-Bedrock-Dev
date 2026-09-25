@@ -1,5 +1,5 @@
-import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/runtime-evidence.js";
-import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { RuntimeEvidenceRecord } from "../../../packages/project-model/src/index.js";
+import type { SourceRef } from "../../../packages/project-model/src/index.js";
 import type { CommandAnalysis, CommandEffect } from "./effects.js";
 import { flattenCommandEffects } from "./flatten.js";
 import { parseStructureLoadSemantics } from "./structure-semantics.js";

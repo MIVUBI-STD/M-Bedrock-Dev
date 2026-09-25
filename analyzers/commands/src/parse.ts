@@ -1,4 +1,4 @@
-import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { SourceRef } from "../../../packages/project-model/src/index.js";
 import { parseCoordinate3 } from "./coordinates.js";
 import type { CommandAnalysis, CommandEffect, ScoreboardAccessMode } from "./effects.js";
 import { parseSelector } from "./selectors.js";
