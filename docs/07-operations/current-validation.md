@@ -61,8 +61,8 @@ Entity-event reachability findings remain informational static limits where no i
 - genuine Minecraft import/load acceptance;
 - target-build runtime behavior;
 - entity AI and event timing;
-- chunk/load/saved-tick behavior;
-- multiplayer/session interleavings;
+- chunk/load/saved-tick behavior beyond targeted readiness probes;
+- real multi-client Minecraft session execution beyond the current generative/live-regression harness;
 - semantic behavior changes with identical source syntax;
 - controlled migration of the four legacy Defense V2 API usages if the target module line is upgraded.
 
@@ -110,3 +110,20 @@ Repository policy, module shape, dependency graph, production dependency classif
 The stable `@8crafter/leveldb-zlib@1.6.0` dependency currently resolves through `cmake-js@7.4.0`, whose build dependency chain includes deprecated `tar@6.2.1`.
 
 Do not force an unverified `tar@7` override: the corresponding `cmake-js@8` line is a breaking major. Track upstream-compatible updates through Dependabot and validate any native-build dependency change through the normal exact-toolchain CI lane before adoption.
+
+
+## Runtime harness progress — 2026-09-25
+
+Repository runtime proof is no longer entirely unknown:
+
+- multiplayer generative coverage is partial through property-based session sequences, bounded state exploration, and interleaving reduction;
+- multiplayer runtime coverage is partial through Bedrock observation capture, runtime control records, model/runtime comparison, and live regression incident capture;
+- chunk runtime coverage is partial through targeted `Dimension.isChunkLoaded` readiness observations with fail-closed unknown handling.
+
+Still unproven in automated real Minecraft execution:
+
+- multi-client orchestration;
+- chunk lifecycle chaos / unload-reload timing;
+- recovery lease allocation and cleanup under real engine contention;
+- saved-tick semantics;
+- entity AI/event timing under live runtime conditions.
