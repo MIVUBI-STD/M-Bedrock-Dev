@@ -1,14 +1,14 @@
-import type { CausalIncident } from "../../project-model/src/causal-chain.js";
-import type { DiagnosticProbeDefinition } from "../../project-model/src/diagnostic-probe.js";
+import type { CausalIncident } from "../../project-model/src/index.js";
+import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
 import type {
   RuntimeProbeRequest,
   RuntimeProbeResponse,
-} from "../../project-model/src/runtime-probe.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import {
   parseRuntimeProbeRequest,
   parseRuntimeProbeResponse,
-} from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
 import {
   createDiagnosticInvestigation,
   investigationIncident,

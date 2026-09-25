@@ -1,13 +1,13 @@
 import type {
   DiagnosticExecutionContext,
   DiagnosticProbePlan,
-} from "../../project-model/src/diagnostic-probe.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeProbeBinding,
   RuntimeProbeRequest,
   RuntimeProbeRequestBundle,
-} from "../../project-model/src/runtime-probe.js";
-import { parseRuntimeProbeRequestBundle } from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
+import { parseRuntimeProbeRequestBundle } from "../../project-model/src/index.js";
 import type { InspectDirectoryResult } from "./types.js";
 import { planDiagnosticProbes } from "./diagnostic-probe-planning.js";
 import {

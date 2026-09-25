@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { parseRuntimeProbeBindingSet } from "../../project-model/src/runtime-probe-validate.js";
-import type { RuntimeProbeBindingSet } from "../../project-model/src/runtime-probe.js";
+import { parseRuntimeProbeBindingSet } from "../../project-model/src/index.js";
+import type { RuntimeProbeBindingSet } from "../../project-model/src/index.js";
 
 export async function loadRuntimeProbeBindings(
   path: string,

@@ -1,13 +1,13 @@
 import type {
   DiagnosticProbeDefinition,
   DiagnosticProbePlan,
-} from "../../project-model/src/diagnostic-probe.js";
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 import type {
   RuntimeProbeBinding,
   RuntimeProbeRequest,
-} from "../../project-model/src/runtime-probe.js";
-import { parseRuntimeProbeRequest } from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
+import { parseRuntimeProbeRequest } from "../../project-model/src/index.js";
 
 export type RuntimeProbeCompilationIssueKind =
   | "missing-probe-definition"

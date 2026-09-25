@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
-import type { RuntimeProbeBinding } from "../../project-model/src/runtime-probe.js";
+import type { RuntimeProbeBinding } from "../../project-model/src/index.js";
 import {
   createRuntimeProbeExecutor,
   executeRuntimeProbeBundle,

@@ -1,15 +1,15 @@
-import type { CausalIncident } from "../../project-model/src/causal-chain.js";
+import type { CausalIncident } from "../../project-model/src/index.js";
 import type {
   DiagnosticExecutionContext,
   DiagnosticProbeDefinition,
   DiagnosticProbePlan,
-} from "../../project-model/src/diagnostic-probe.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
-} from "../../project-model/src/runtime-probe.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
-import { parseRuntimeProbeTranscript } from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
+import { parseRuntimeProbeTranscript } from "../../project-model/src/index.js";
 import {
   createRuntimeProbeInvestigationSession,
   type RuntimeProbeInvestigationSessionOptions,

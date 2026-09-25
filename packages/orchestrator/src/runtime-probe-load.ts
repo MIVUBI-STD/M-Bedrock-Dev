@@ -1,10 +1,10 @@
 import { readFile } from "node:fs/promises";
 import {
   parseRuntimeProbeTranscript,
-} from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeProbeTranscript,
-} from "../../project-model/src/runtime-probe.js";
+} from "../../project-model/src/index.js";
 
 export async function loadRuntimeProbeTranscript(
   path: string,

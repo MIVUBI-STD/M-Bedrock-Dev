@@ -1,12 +1,12 @@
 import {
   parseRuntimeProbeResponse,
   parseRuntimeProbeTranscript,
-} from "../../project-model/src/runtime-probe-validate.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
-} from "../../project-model/src/runtime-probe.js";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 
 export interface RuntimeProbeResponseSummary {
   responses: number;

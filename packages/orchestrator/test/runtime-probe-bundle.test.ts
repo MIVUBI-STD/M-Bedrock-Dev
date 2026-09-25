@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { CausalIncident } from "../../project-model/src/causal-chain.js";
+import type { CausalIncident } from "../../project-model/src/index.js";
 import type {
   DiagnosticProbeDefinition,
   DiagnosticProbePlan,
-} from "../../project-model/src/diagnostic-probe.js";
-import type { RuntimeProbeBinding } from "../../project-model/src/runtime-probe.js";
+} from "../../project-model/src/index.js";
+import type { RuntimeProbeBinding } from "../../project-model/src/index.js";
 import type { DiagnosticProbeAnalysis } from "../src/diagnostic-probe-analysis.js";
 import { prepareRuntimeProbeBundle } from "../src/runtime-probe-bundle.js";
 
