@@ -2,14 +2,14 @@ import type {
   RuntimeEvidenceRecord,
   RuntimeEvidenceState,
   RuntimeScope,
-} from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
 import {
   runtimeScopeContains,
   runtimeScopeKey,
-} from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
 import type {
   RuntimeTemporalRequirement,
-} from "../../project-model/src/runtime-temporal.js";
+} from "../../project-model/src/index.js";
 import type {
   RepairVerificationReceipt,
 } from "./repair-lifecycle.js";

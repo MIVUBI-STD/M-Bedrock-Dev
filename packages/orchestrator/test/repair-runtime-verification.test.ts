@@ -4,7 +4,7 @@ import {
 } from "../src/repair-runtime-verification.js";
 import type {
   RuntimeEvidenceRecord,
-} from "../../project-model/src/runtime-evidence.js";
+} from "../../project-model/src/index.js";
 
 const records: RuntimeEvidenceRecord[] = [{
   predicate: "target-ready",
