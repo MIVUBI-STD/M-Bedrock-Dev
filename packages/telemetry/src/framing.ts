@@ -1,5 +1,5 @@
-import { parseTelemetryBatch } from "../../project-model/src/telemetry-validate.js";
-import type { TelemetryBatch } from "../../project-model/src/telemetry.js";
+import { parseTelemetryBatch } from "../../project-model/src/index.js";
+import type { TelemetryBatch } from "../../project-model/src/index.js";
 
 export interface TelemetryFrame {
   schemaVersion: 1;

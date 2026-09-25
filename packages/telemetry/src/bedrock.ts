@@ -1,4 +1,4 @@
-import type { RuntimeScope } from "../../project-model/src/runtime-evidence.js";
+import type { RuntimeScope } from "../../project-model/src/index.js";
 import {
   createTelemetryEmitter,
   createTelemetryScopeLease,
