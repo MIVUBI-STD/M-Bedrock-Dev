@@ -1,4 +1,4 @@
-import type { FileInventoryEntry } from "../../../packages/project-model/src/project.js";
+import type { FileInventoryEntry } from "../../../packages/project-model/src/index.js";
 
 export interface PackCandidate {
   root: string;

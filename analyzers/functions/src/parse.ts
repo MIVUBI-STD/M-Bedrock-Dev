@@ -1,5 +1,5 @@
 import type { ParsedFunction, FunctionReference } from "./types.js";
-import type { SourceRef } from "../../../packages/project-model/src/source-ref.js";
+import type { SourceRef } from "../../../packages/project-model/src/index.js";
 import { analyzeCommand } from "../../commands/src/index.js";
 import { flattenCommandEffects } from "../../commands/src/index.js";
 import { scoreboardAccesses, tagAccesses } from "../../commands/src/index.js";
