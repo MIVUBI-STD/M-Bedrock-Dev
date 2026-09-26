@@ -3,6 +3,7 @@ import type { FileInventoryEntry } from "../../project-model/src/index.js";
 import type { TelemetryEvent } from "../../project-model/src/index.js";
 import { semanticIrSummary, type SemanticIr } from "../../semantic-ir/src/index.js";
 import { telemetryEventKinds } from "../../project-model/src/index.js";
+import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
 import type {
   InspectDirectoryResult,
   InspectedPack,
@@ -50,6 +51,7 @@ export interface InspectionResultInput {
   knowledgeCatalogPresent: boolean;
   sourceIndex: SourceIndex;
   semanticIr: SemanticIr;
+  gameplayIntent: GameplayIntentModel;
   runtimeEvidenceStage: RuntimeEvidenceStage;
   entityKnowledge: EntityKnowledgeStage;
   knowledgeRuntime: KnowledgeRuntimeStage;
@@ -348,6 +350,21 @@ export function buildInspectionResult(
     worldDatabase: {
       present: dbFiles.length > 0,
       fileCount: dbFiles.length,
+    },
+    gameplayIntent: {
+      model: input.gameplayIntent,
+      nodes: input.gameplayIntent.nodes.length,
+      authoredNodes: input.gameplayIntent.nodes.filter(
+        (node) => node.status === "authored",
+      ).length,
+      inferredNodes: input.gameplayIntent.nodes.filter(
+        (node) => node.status === "inferred",
+      ).length,
+      hypothesisNodes: input.gameplayIntent.nodes.filter(
+        (node) => node.status === "hypothesis",
+      ).length,
+      invariants: input.gameplayIntent.invariants.length,
+      unknowns: input.gameplayIntent.unknowns.length,
     },
     semanticIr: semanticIrSummary(input.semanticIr),
     stateAnalysis: {

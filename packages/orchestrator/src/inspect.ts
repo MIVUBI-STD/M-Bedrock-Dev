@@ -34,6 +34,7 @@ import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/ind
 import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 import { buildInspectionSemanticIr } from "./semantic-ir-stage.js";
 import { semanticIrDiagnostics } from "./semantic-ir-diagnostics.js";
+import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
 
 export async function inspectDirectory(
   root: string,
@@ -98,6 +99,12 @@ export async function inspectDirectory(
   diagnostics.push(
     ...semanticIrDiagnostics(semanticIr),
   );
+
+  const gameplayIntent = buildGameplayIntentModel({
+    id: "gameplay-intent:" + artifactId,
+    artifactId,
+    parsedScripts,
+  });
 
   enrichInspectionSemanticGraph({
     graph,
@@ -259,6 +266,7 @@ export async function inspectDirectory(
       knowledgeCatalog !== undefined,
     sourceIndex,
     semanticIr,
+    gameplayIntent,
     runtimeEvidenceStage,
     entityKnowledge,
     knowledgeRuntime,

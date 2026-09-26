@@ -14,6 +14,7 @@ import type { DiagnosticProbeAnalysis } from "./diagnostic-probe-analysis.js";
 import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
+import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -133,6 +134,15 @@ export interface InspectDirectoryResult {
       chunkSignalsTruncated: boolean;
       failure?: string;
     };
+  };
+  gameplayIntent: {
+    model: GameplayIntentModel;
+    nodes: number;
+    authoredNodes: number;
+    inferredNodes: number;
+    hypothesisNodes: number;
+    invariants: number;
+    unknowns: number;
   };
   semanticIr: {
     executionRegions: number;
