@@ -1,61 +1,46 @@
 # Current Validation
 
-Status: REMOTE STATIC SOURCE GREEN THROUGH ADVERSARIAL INVARIANT GATE; SEMANTIC TRACE DIFF PENDING CURRENT CI; RUNTIME PROOF DEFERRED
+Status: REMOTE STATIC SOURCE GREEN THROUGH PROPERTY-DIAGNOSTIC BRIDGE; RUNTIME-CLASS OVERLAY UPDATE PENDING CURRENT CI; RUNTIME PROOF DEFERRED
 
-## Static reasoning stack
-
-The repository now contains:
+## Current static reasoning stack
 
 - Semantic IR;
 - Behavioral World Model;
 - scoped Minecraft overlays;
-- behavior provenance/evidence ceilings;
+- claim provenance/evidence ceilings;
+- runtime-class semantic overlay framework;
 - Diagnostic Reasoning;
+- property-to-symptom evidence binding;
 - happens-before-aware reliability search;
-- adversarial invariant falsification receipts;
-- Runtime Lab control plane;
-- semantic trace differential preservation.
+- adversarial invariant falsification;
+- semantic trace differential preservation;
+- Runtime Lab control plane.
 
-## Invariant promotion
+## Runtime semantic isolation
 
-A mined candidate cannot be promoted merely because it is `supported`.
-
-Required path:
+The repository now treats these as distinct semantic classes:
 
 ```text
-support
-→ challenge
-→ relevant mutation exercise
-→ no surviving relevant mutation
-→ no historical contradiction
-→ passed falsification receipt
-→ promotion draft
+bedrock-retail-client
+bedrock-listen-server
+bedrock-dedicated-server
+bedrock-realm
+bedrock-preview-client
+education-host
+editor
 ```
 
-## Semantic trace preservation
+No claim is inherited between them unless that exact claim ID is explicitly listed in an inheritance declaration.
 
-The preservation layer can compare complete before/after traces at semantic checkpoints.
-
-It distinguishes:
-
-```text
-must-preserve
-must-change
-allowed-change
-unexpected
-```
-
-and separately checks checkpoint timing drift.
-
-A missing checkpoint or incomplete trace results in `unknown`, not pass.
+A missing claim resolves to no result/unknown rather than being guessed from another runtime class.
 
 ## Still unproven
 
-- actual Bedrock scheduler ordering;
-- Education-specific ordering differences;
-- runtime replayability;
-- AI/pathfinding semantics;
+- actual semantic differences for most runtime classes;
+- complete official knowledge coverage;
+- observed-vs-documented conflict resolution;
+- runtime scheduler/fairness behavior;
+- replayability;
+- AI/pathfinding behavior;
 - real chunk lifecycle;
-- completeness of diagnostic hypotheses;
-- semantic checkpoint extraction from arbitrary maps;
 - real multi-client execution.

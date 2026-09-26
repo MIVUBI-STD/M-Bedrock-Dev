@@ -1,56 +1,60 @@
 # Next Action
 
-M-Bedrock-Dev now has behavior provenance, happens-before concurrency semantics, adversarial invariant promotion gates, and semantic before/after trace comparison.
+M-Bedrock-Dev now has behavior provenance, happens-before concurrency semantics, adversarial invariant promotion gates, semantic before/after trace comparison, property-to-diagnostic evidence binding, and explicit runtime-class semantic overlays.
 
-## Current lane — Preservation Intelligence Before Runtime Testing
+## Current lane — Host/Edition Semantics Before Runtime Testing
 
 Do not expand local/live Minecraft testing yet.
 
-### Completed reliability hardening
+### Completed semantic separation
 
-- behavior claims carry provenance and evidence ceilings;
-- Minecraft overlays remain `project-policy / designed`;
-- interleaving exploration can use happens-before plus hidden engine surfaces;
-- cyclic happens-before graphs are rejected;
-- invariant promotion requires a passed adversarial falsification receipt;
-- passive support alone cannot authorize promotion.
+- Bedrock retail client;
+- Bedrock listen server;
+- Bedrock Dedicated Server;
+- Realm;
+- Bedrock Preview client;
+- Minecraft Education host;
+- Editor;
 
-### Completed semantic differential preservation
+are represented as distinct semantic runtime classes.
 
-Before/after behavior is compared by semantic checkpoint and occurrence, not raw tick index.
+Claims do not flow between runtime classes automatically.
 
-A trace policy can declare:
+Inheritance is allowed only when a target overlay explicitly names:
 
-- required checkpoints;
-- must-preserve state keys;
-- must-change state keys;
-- allowed-change state keys;
-- timing tolerance.
+```text
+source overlay
++
+specific claim IDs
+```
 
-The comparator reports:
+This prevents broad assumptions such as `Education = Bedrock + flags` or `BDS = listen-server semantics`.
 
-- intended deltas;
-- unexpected deltas;
-- must-preserve drift;
-- missing checkpoints;
-- timing drift;
-- unchanged must-change keys.
+### Completed reasoning bridge
 
-Incomplete traces or missing required checkpoint instances remain `unknown`; they cannot prove equivalence.
+Temporal/property evaluation can become diagnostic symptom evidence while preserving:
+
+```text
+violated  → present symptom
+satisfied → absent symptom
+unknown   → unknown symptom
+```
+
+A property violation may support a declared hypothesis but never creates an automatic root-cause conclusion.
 
 ## Next architecture order
 
-1. bind semantic checkpoints to Behavioral World Model transitions and temporal properties;
-2. connect property violations to Diagnostic Reasoning hypotheses;
-3. add edition/host semantic overlays for Bedrock retail, BDS, and Education;
-4. strengthen partial-order reduction using full causal closure and generation semantics;
-5. add calibration corpus design for future probabilistic belief;
+1. build a versioned semantic-claim registry for runtime overlays;
+2. bind official/documented knowledge to claims where evidence exists;
+3. add explicit conflict detection between documented and observed claims;
+4. strengthen partial-order reduction with causal closure/generation equivalence;
+5. build calibration-corpus contracts for future probabilistic belief;
 6. only then connect physical Minecraft runtime channels.
 
 ## Safety
 
-- specification is not engine truth;
-- passing passive observations is not enough for invariant promotion;
-- read/write disjointness is not enough for independence;
-- missing semantic trace coverage cannot prove preservation;
-- intended repair success does not excuse unrelated state or timing drift.
+- runtime-class inheritance is explicit per claim;
+- absence of a claim means unknown, not false;
+- Education/BDS/Preview semantics must not be inferred from retail semantics by default;
+- symptom evidence is not causation;
+- designed overlays remain specifications until stronger provenance is attached.
