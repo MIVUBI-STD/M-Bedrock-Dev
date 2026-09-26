@@ -285,7 +285,7 @@ function localExecutionRegionId(
 }
 
 function callbackExecutionRegionId(
-  node: ts.ArrowFunction | ts.FunctionExpression,
+  node: ts.Node,
   file: ts.SourceFile,
 ): string {
   const start = file.getLineAndCharacterOfPosition(node.getStart(file));
