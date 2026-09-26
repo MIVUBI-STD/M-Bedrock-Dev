@@ -1,6 +1,7 @@
 import type { Severity } from "../../common/src/index.js";
 import type { SourceRef } from "./source-ref.js";
 import type { RuntimeScope } from "./runtime-evidence.js";
+import type { CausalProof } from "./causal-proof.js";
 
 export type CausalLinkStrength =
   | "direct-evidence"
@@ -70,6 +71,8 @@ export interface RootCauseCandidate {
   id: string;
   label: string;
   evidenceLevel: RootCauseEvidenceLevel;
+  /** V2 causal proof. Legacy evidenceLevel remains readable during migration. */
+  proof?: CausalProof;
   severity: Severity;
   confidence: "high" | "medium" | "low";
   chainIds: readonly string[];

@@ -72,6 +72,7 @@ function setup() {
     disposition: "repair-eligible" as const,
     selectedCandidateId: "candidate",
     effectiveEvidenceLevel: "proven-with-observed-outcome" as const,
+    proofState: "causal" as const,
     claimStrength: "proven-runtime" as const,
     reasons: ["runtime proof"],
   };

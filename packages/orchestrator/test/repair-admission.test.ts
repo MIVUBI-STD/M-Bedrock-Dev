@@ -24,12 +24,13 @@ const diagnostic = {
   disposition: "repair-eligible" as const,
   selectedCandidateId: "candidate",
   effectiveEvidenceLevel: "proven-with-observed-outcome" as const,
+  proofState: "causal" as const,
   claimStrength: "proven-runtime" as const,
-  reasons: ["runtime proof"],
+  reasons: ["causal runtime proof"],
 };
 
 describe("repair admission", () => {
-  it("admits a proven repair with bounded semantic impact", () => {
+  it("admits a causal repair candidate with bounded semantic impact", () => {
     expect(decideRepairAdmission(
       transaction,
       diagnostic,
@@ -43,6 +44,22 @@ describe("repair admission", () => {
         reasons: ["bounded"],
       },
     ).disposition).toBe("eligible");
+  });
+
+  it("blocks spoofed full authorization without causal proof-state", () => {
+    expect(decideRepairAdmission(
+      transaction,
+      { ...diagnostic, proofState: "correlated" },
+      {
+        transactionId: transaction.id,
+        disposition: "minimal",
+        affectedNodes: 1,
+        affectedPaths: 1,
+        affectedKinds: ["function"],
+        sensitiveKinds: [],
+        reasons: [],
+      },
+    ).disposition).toBe("blocked");
   });
 
   it("blocks mutation when diagnosis is only proposal-level", () => {
@@ -77,13 +94,13 @@ describe("repair admission", () => {
     ).disposition).toBe("review-required");
   });
 
-  it("preserves guarded authorization from diagnostic evidence", () => {
+  it("preserves guarded authorization only for intervention-supported proof", () => {
     expect(decideRepairAdmission(
       transaction,
       {
         ...diagnostic,
         disposition: "guarded-repair-eligible",
-        effectiveEvidenceLevel: "proven-dependency-violation",
+        proofState: "intervention-supported",
         claimStrength: "proven-static",
       },
       {

@@ -85,6 +85,32 @@ describe("decision basis", () => {
     );
   });
 
+  it("changes runtime evidence revision when target binding changes", () => {
+    const base = {
+      predicate: "route-ready",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "runtime-probe" as const,
+      observedAt: { tick: 10 },
+    };
+
+    const left = buildDecisionBasis({
+      runtimeEvidence: [{
+        ...base,
+        targetProfileFingerprint: "profile-a",
+      }],
+    });
+    const right = buildDecisionBasis({
+      runtimeEvidence: [{
+        ...base,
+        targetProfileFingerprint: "profile-b",
+      }],
+    });
+
+    expect(left.runtimeEvidenceRevision)
+      .not.toBe(right.runtimeEvidenceRevision);
+  });
+
   it("changes runtime evidence revision when observed state or integrity changes", () => {
     const base = {
       predicate: "route-ready",

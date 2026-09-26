@@ -1,4 +1,7 @@
-import type { DiagnosticRepairDecision } from "../../project-model/src/index.js";
+import {
+  causalProofAtLeast,
+  type DiagnosticRepairDecision,
+} from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
 import type { RepairBlastRadiusDecision } from "./repair-counterfactual-types.js";
 
@@ -44,6 +47,32 @@ export function decideRepairAdmission(
   }
 
   if (
+    diagnostic.disposition === "repair-eligible" &&
+    !causalProofAtLeast(diagnostic.proofState, "causal")
+  ) {
+    return {
+      transactionId: transaction.id,
+      disposition: "blocked",
+      reasons: [
+        "Full repair admission requires explicit causal proof-state evidence.",
+      ],
+    };
+  }
+
+  if (
+    diagnostic.disposition === "guarded-repair-eligible" &&
+    !causalProofAtLeast(diagnostic.proofState, "intervention-supported")
+  ) {
+    return {
+      transactionId: transaction.id,
+      disposition: "blocked",
+      reasons: [
+        "Guarded repair admission requires intervention-supported proof or stronger.",
+      ],
+    };
+  }
+
+  if (
     blastRadius.disposition === "blocked" ||
     blastRadius.disposition === "indeterminate"
   ) {
@@ -73,7 +102,7 @@ export function decideRepairAdmission(
       transactionId: transaction.id,
       disposition: "guarded",
       reasons: [
-        "Repair is authorized only as a guarded mutation.",
+        "Repair is authorized only as a guarded working-copy mutation.",
         ...diagnostic.reasons,
         ...blastRadius.reasons,
       ],
@@ -84,7 +113,7 @@ export function decideRepairAdmission(
     transactionId: transaction.id,
     disposition: "eligible",
     reasons: [
-      "Diagnostic evidence authorizes repair and the semantic blast radius is bounded.",
+      "Causal diagnostic evidence authorizes a repair candidate and the semantic blast radius is bounded.",
       ...diagnostic.reasons,
       ...blastRadius.reasons,
     ],

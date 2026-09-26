@@ -1,4 +1,7 @@
-import type { DiagnosticRepairDecision } from "../../project-model/src/index.js";
+import {
+  causalProofAtLeast,
+  type DiagnosticRepairDecision,
+} from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
 import type {
@@ -18,6 +21,7 @@ export interface RepairProofBundle {
   diagnosticDisposition: DiagnosticRepairDecision["disposition"];
   claimStrength: DiagnosticRepairDecision["claimStrength"];
   effectiveEvidenceLevel?: DiagnosticRepairDecision["effectiveEvidenceLevel"];
+  proofState?: DiagnosticRepairDecision["proofState"];
   blastRadiusDisposition: RepairBlastRadiusDecision["disposition"];
   admissionDisposition: RepairAdmissionDecision["disposition"];
   supportingInvariantIds: readonly string[];
@@ -91,6 +95,9 @@ export function createRepairProofBundle(
     ...(diagnostic.effectiveEvidenceLevel === undefined
       ? {}
       : { effectiveEvidenceLevel: diagnostic.effectiveEvidenceLevel }),
+    ...(diagnostic.proofState === undefined
+      ? {}
+      : { proofState: diagnostic.proofState }),
     blastRadiusDisposition: blastRadius.disposition,
     admissionDisposition: admission.disposition,
     supportingInvariantIds: [...new Set(supportingInvariantIds)].sort(),
@@ -248,11 +255,29 @@ export function validateRepairProofBundle(
   }
 
   if (
+    proof.admissionDisposition === "eligible" &&
+    !causalProofAtLeast(proof.proofState, "causal")
+  ) {
+    errors.push(
+      "Eligible admission requires causal proof-state evidence or stronger.",
+    );
+  }
+
+  if (
     proof.admissionDisposition === "guarded" &&
     proof.diagnosticDisposition !== "guarded-repair-eligible"
   ) {
     errors.push(
       "Guarded admission requires guarded-repair-eligible diagnostic authorization.",
+    );
+  }
+
+  if (
+    proof.admissionDisposition === "guarded" &&
+    !causalProofAtLeast(proof.proofState, "intervention-supported")
+  ) {
+    errors.push(
+      "Guarded admission requires intervention-supported proof-state evidence or stronger.",
     );
   }
 

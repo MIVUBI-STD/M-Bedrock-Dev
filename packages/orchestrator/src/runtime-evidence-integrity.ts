@@ -4,15 +4,45 @@ import {
 } from "../../../analyzers/diagnostics/src/index.js";
 import {
   groupRuntimeEvidenceByScope,
+  type RuntimeEvidenceIntegrityRequirements,
   type RuntimeEvidenceRecord,
 } from "../../project-model/src/index.js";
 import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/index.js";
 import type { TelemetryContinuityReport } from "../../project-model/src/index.js";
 
+function targetProfileCounts(
+  records: readonly RuntimeEvidenceRecord[],
+  expected: string | undefined,
+): {
+  complete: boolean;
+  mismatch: number;
+  unbound: number;
+} {
+  if (!expected) return { complete: true, mismatch: 0, unbound: 0 };
+
+  let mismatch = 0;
+  let unbound = 0;
+  for (const record of records) {
+    if (record.confidence !== "observed") continue;
+    if (!record.targetProfileFingerprint) {
+      unbound += 1;
+    } else if (record.targetProfileFingerprint !== expected) {
+      mismatch += 1;
+    }
+  }
+
+  return {
+    complete: mismatch === 0 && unbound === 0,
+    mismatch,
+    unbound,
+  };
+}
+
 export function assessRuntimeEvidenceIntegrity(
   records: readonly RuntimeEvidenceRecord[],
   merged: MergedRuntimeEvidence,
   continuity?: TelemetryContinuityReport,
+  requirements: RuntimeEvidenceIntegrityRequirements = {},
 ): RuntimeEvidenceIntegrityReport {
   const observedRecords = records.filter(
     (record) => record.confidence === "observed",
@@ -28,17 +58,42 @@ export function assessRuntimeEvidenceIntegrity(
       record.confidence === "observed" &&
       record.observedAt === undefined,
   ).length;
+  const minimumObservedRecords = requirements.minimumObservedRecords ?? 1;
+  const enoughObservedEvidence = observedRecords >= minimumObservedRecords;
+  const target = targetProfileCounts(
+    records,
+    requirements.expectedTargetProfileFingerprint,
+  );
   const telemetryContinuityComplete = continuity?.incomplete !== true;
-  const safeForCurrentStateClaims = merged.conflicts.length === 0;
+  const safeForCurrentStateClaims =
+    enoughObservedEvidence &&
+    unknownConfidenceRecords === 0 &&
+    merged.conflicts.length === 0 &&
+    target.complete;
   const safeForTemporalViolationClaims =
     safeForCurrentStateClaims &&
     telemetryContinuityComplete &&
     unlocatedObservedRecords === 0;
 
   const reasons: string[] = [];
+  if (!enoughObservedEvidence) {
+    reasons.push(
+      "Observed runtime evidence is insufficient for the requested claim class.",
+    );
+  }
+  if (unknownConfidenceRecords > 0) {
+    reasons.push(
+      "Unknown-confidence runtime evidence prevents a closed current-state claim.",
+    );
+  }
   if (merged.conflicts.length > 0) {
     reasons.push(
       "Unresolved conflicting runtime evidence prevents a reliable current-state claim.",
+    );
+  }
+  if (!target.complete) {
+    reasons.push(
+      "Runtime evidence is not completely bound to the expected target profile.",
     );
   }
   if (!telemetryContinuityComplete) {
@@ -52,7 +107,9 @@ export function assessRuntimeEvidenceIntegrity(
     );
   }
   if (reasons.length === 0) {
-    reasons.push("No evidence-integrity blocker is detected for the assessed claim classes.");
+    reasons.push(
+      "Evidence meets the configured sufficiency, target-binding, conflict, and continuity requirements.",
+    );
   }
 
   return {
@@ -67,48 +124,47 @@ export function assessRuntimeEvidenceIntegrity(
     telemetryContinuityComplete,
     safeForCurrentStateClaims,
     safeForTemporalViolationClaims,
+    minimumObservedRecords,
+    targetProfileEvidenceComplete: target.complete,
+    targetProfileMismatchRecords: target.mismatch,
+    targetProfileUnboundRecords: target.unbound,
     reasons,
   };
 }
 
-
 export function assessRuntimeEvidenceSetIntegrity(
   records: readonly RuntimeEvidenceRecord[],
   continuity?: TelemetryContinuityReport,
+  requirements: RuntimeEvidenceIntegrityRequirements = {},
 ): RuntimeEvidenceIntegrityReport {
-  const reports = [...groupRuntimeEvidenceByScope({
+  const groups = [...groupRuntimeEvidenceByScope({
     schemaVersion: 1,
     records,
-  }).values()].map((scopedRecords) =>
+  }).values()];
+
+  if (groups.length === 0) {
+    return assessRuntimeEvidenceIntegrity(
+      [],
+      {
+        map: {},
+        conflicts: [],
+        resolvedConflicts: [],
+        sourceRefs: [],
+        relatedNodeIds: [],
+      },
+      continuity,
+      requirements,
+    );
+  }
+
+  const reports = groups.map((scopedRecords) =>
     assessRuntimeEvidenceIntegrity(
       scopedRecords,
       mergeRuntimeEvidenceRecords(scopedRecords),
       continuity,
+      requirements,
     )
   );
-
-  if (reports.length === 0) {
-    return {
-      records: 0,
-      observedRecords: 0,
-      derivedRecords: 0,
-      unknownConfidenceRecords: 0,
-      unlocatedObservedRecords: 0,
-      unresolvedConflictPredicates: [],
-      resolvedConflictCount: 0,
-      continuityComplete: continuity?.incomplete !== true,
-      telemetryContinuityComplete: continuity?.incomplete !== true,
-      safeForCurrentStateClaims: true,
-      safeForTemporalViolationClaims: continuity?.incomplete !== true,
-      reasons: continuity?.incomplete === true
-        ? [
-            "Telemetry continuity is incomplete; no temporal claim should rely on absence/order from this channel.",
-          ]
-        : [
-            "No evidence-integrity blocker is detected for the assessed claim classes.",
-          ],
-    };
-  }
 
   const unresolvedConflictPredicates = [...new Set(
     reports.flatMap((report) => report.unresolvedConflictPredicates),
@@ -140,13 +196,29 @@ export function assessRuntimeEvidenceSetIntegrity(
       (sum, report) => sum + report.resolvedConflictCount,
       0,
     ),
-    continuityComplete: continuity?.incomplete !== true,
-    telemetryContinuityComplete: continuity?.incomplete !== true,
+    continuityComplete: reports.every(
+      (report) => report.continuityComplete,
+    ),
+    telemetryContinuityComplete: reports.every(
+      (report) => report.telemetryContinuityComplete,
+    ),
     safeForCurrentStateClaims: reports.every(
       (report) => report.safeForCurrentStateClaims,
     ),
     safeForTemporalViolationClaims: reports.every(
       (report) => report.safeForTemporalViolationClaims,
+    ),
+    minimumObservedRecords: requirements.minimumObservedRecords ?? 1,
+    targetProfileEvidenceComplete: reports.every(
+      (report) => report.targetProfileEvidenceComplete !== false,
+    ),
+    targetProfileMismatchRecords: reports.reduce(
+      (sum, report) => sum + (report.targetProfileMismatchRecords ?? 0),
+      0,
+    ),
+    targetProfileUnboundRecords: reports.reduce(
+      (sum, report) => sum + (report.targetProfileUnboundRecords ?? 0),
+      0,
     ),
     reasons,
   };

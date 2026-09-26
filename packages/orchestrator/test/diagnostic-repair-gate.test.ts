@@ -1,13 +1,21 @@
 import { describe, expect, it } from "vitest";
-import type { CausalIncident } from "../../project-model/src/index.js";
+import type {
+  CausalIncident,
+  CausalProofState,
+  RuntimeEvidenceIntegrityReport,
+} from "../../project-model/src/index.js";
 import {
+  capCausalProofState,
   capRootCauseEvidenceLevel,
   decideDiagnosticRepair,
   diagnosticEvidenceCeiling,
 } from "../src/diagnostic-repair-gate.js";
 import type { DiagnosticInvestigationState } from "../src/diagnostic-investigation.js";
 
-function incident(level: CausalIncident["rootCauseCandidates"][number]["evidenceLevel"]): CausalIncident {
+function incident(
+  level: CausalIncident["rootCauseCandidates"][number]["evidenceLevel"],
+  proofState?: CausalProofState,
+): CausalIncident {
   return {
     id: "incident-1",
     scopeKey: "arena:1",
@@ -21,6 +29,9 @@ function incident(level: CausalIncident["rootCauseCandidates"][number]["evidence
       id: "chunk",
       label: "chunk-not-ready",
       evidenceLevel: level,
+      ...(proofState === undefined
+        ? {}
+        : { proof: { state: proofState } }),
       severity: "critical",
       confidence: "high",
       chainIds: [],
@@ -45,21 +56,55 @@ function investigation(supported: boolean): DiagnosticInvestigationState {
   };
 }
 
-describe("diagnostic repair gate", () => {
-  it("caps runtime proof claims in remote/static contexts", () => {
+const cleanRuntimeIntegrity: RuntimeEvidenceIntegrityReport = {
+  records: 2,
+  observedRecords: 2,
+  derivedRecords: 0,
+  unknownConfidenceRecords: 0,
+  unlocatedObservedRecords: 0,
+  unresolvedConflictPredicates: [],
+  resolvedConflictCount: 0,
+  continuityComplete: true,
+  telemetryContinuityComplete: true,
+  safeForCurrentStateClaims: true,
+  safeForTemporalViolationClaims: true,
+  reasons: ["evidence complete"],
+};
+
+describe("diagnostic repair gate v2", () => {
+  it("caps proof claims in remote/static contexts", () => {
     expect(capRootCauseEvidenceLevel(
       "proven-with-observed-outcome",
       "REMOTE_GITHUB",
     )).toBe("proven-dependency-violation");
 
+    expect(capCausalProofState(
+      "causal",
+      "REMOTE_GITHUB",
+    )).toBe("localized");
+
     expect(diagnosticEvidenceCeiling("REMOTE_GITHUB"))
       .toMatchObject({
         maximumClaimStrength: "proven-static",
         maximumEvidenceLevel: "proven-dependency-violation",
+        maximumProofState: "localized",
       });
   });
 
-  it("does not authorize repair merely because one candidate remains", () => {
+  it("treats legacy runtime-observed outcome as correlation, not causation", () => {
+    expect(decideDiagnosticRepair(
+      incident("proven-with-observed-outcome"),
+      investigation(true),
+      "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
+    )).toMatchObject({
+      disposition: "proposal-only",
+      proofState: "correlated",
+      claimStrength: "corroborated",
+    });
+  });
+
+  it("does not authorize mutation merely because one candidate remains", () => {
     expect(decideDiagnosticRepair(
       incident("corroborated-candidate"),
       investigation(true),
@@ -67,36 +112,54 @@ describe("diagnostic repair gate", () => {
     ).disposition).toBe("proposal-only");
   });
 
-  it("requires explicit investigation support for repair authorization", () => {
+  it("requires explicit investigation support", () => {
     expect(decideDiagnosticRepair(
-      incident("proven-with-observed-outcome"),
+      incident("proven-with-observed-outcome", "causal"),
       investigation(false),
       "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
     ).disposition).toBe("proposal-only");
   });
 
-  it("allows only guarded repair for a proven dependency violation", () => {
+  it("allows only guarded working-copy mutation for intervention-supported proof", () => {
     expect(decideDiagnosticRepair(
-      incident("proven-dependency-violation"),
-      investigation(true),
-      "REMOTE_GITHUB",
-    ).disposition).toBe("guarded-repair-eligible");
-  });
-
-  it("allows full repair only with runtime-observed outcome and probe support", () => {
-    expect(decideDiagnosticRepair(
-      incident("proven-with-observed-outcome"),
+      incident("proven-with-observed-outcome", "intervention-supported"),
       investigation(true),
       "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
+    )).toMatchObject({
+      disposition: "guarded-repair-eligible",
+      proofState: "intervention-supported",
+    });
+  });
+
+  it("allows a repair candidate only after explicit causal proof", () => {
+    expect(decideDiagnosticRepair(
+      incident("proven-with-observed-outcome", "causal"),
+      investigation(true),
+      "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
     )).toMatchObject({
       disposition: "repair-eligible",
       selectedCandidateId: "chunk",
+      proofState: "causal",
       claimStrength: "proven-runtime",
     });
   });
 
+  it("requires an integrity report for mutation-level runtime proof", () => {
+    const decision = decideDiagnosticRepair(
+      incident("proven-with-observed-outcome", "causal"),
+      investigation(true),
+      "LIVE_MINECRAFT",
+    );
+
+    expect(decision.disposition).toBe("proposal-only");
+    expect(decision.reasons.join(" ")).toMatch(/integrity report/i);
+  });
+
   it("keeps repair closed while multiple candidates remain", () => {
-    const base = incident("proven-with-observed-outcome");
+    const base = incident("proven-with-observed-outcome", "causal");
     const multi: CausalIncident = {
       ...base,
       rootCauseCandidates: [
@@ -118,24 +181,18 @@ describe("diagnostic repair gate", () => {
       multi,
       state,
       "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
     ).disposition).toBe("observe-only");
   });
 
-  it("blocks runtime repair when current-state evidence integrity is unsafe", () => {
+  it("blocks mutation-level proof when current-state evidence is unsafe", () => {
     const decision = decideDiagnosticRepair(
-      incident("proven-with-observed-outcome"),
+      incident("proven-with-observed-outcome", "causal"),
       investigation(true),
       "LIVE_MINECRAFT",
       {
-        records: 2,
-        observedRecords: 2,
-        derivedRecords: 0,
-        unknownConfidenceRecords: 0,
-        unlocatedObservedRecords: 0,
+        ...cleanRuntimeIntegrity,
         unresolvedConflictPredicates: ["chunk-ready"],
-        resolvedConflictCount: 0,
-        continuityComplete: true,
-        telemetryContinuityComplete: true,
         safeForCurrentStateClaims: false,
         safeForTemporalViolationClaims: false,
         reasons: ["Unresolved conflicting runtime evidence."],
@@ -146,22 +203,14 @@ describe("diagnostic repair gate", () => {
     expect(decision.reasons.join(" ")).toMatch(/integrity/i);
   });
 
-  it("downgrades full runtime repair when temporal integrity is unsafe", () => {
+  it("downgrades mutation-level proof when temporal integrity is unsafe", () => {
     const decision = decideDiagnosticRepair(
-      incident("proven-with-observed-outcome"),
+      incident("proven-with-observed-outcome", "causal"),
       investigation(true),
       "LIVE_MINECRAFT",
       {
-        records: 2,
-        observedRecords: 2,
-        derivedRecords: 0,
-        unknownConfidenceRecords: 0,
+        ...cleanRuntimeIntegrity,
         unlocatedObservedRecords: 1,
-        unresolvedConflictPredicates: [],
-        resolvedConflictCount: 0,
-        continuityComplete: true,
-        telemetryContinuityComplete: true,
-        safeForCurrentStateClaims: true,
         safeForTemporalViolationClaims: false,
         reasons: [
           "Observed runtime evidence lacks a safe temporal observation point.",
@@ -170,12 +219,9 @@ describe("diagnostic repair gate", () => {
     );
 
     expect(decision).toMatchObject({
-      disposition: "guarded-repair-eligible",
-      effectiveEvidenceLevel: "proven-dependency-violation",
+      disposition: "proposal-only",
+      proofState: "localized",
       claimStrength: "proven-static",
     });
-    expect(decision.reasons.join(" ")).toMatch(
-      /temporal evidence integrity is unsafe/i,
-    );
   });
 });

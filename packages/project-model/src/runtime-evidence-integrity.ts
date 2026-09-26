@@ -1,3 +1,8 @@
+export interface RuntimeEvidenceIntegrityRequirements {
+  minimumObservedRecords?: number;
+  expectedTargetProfileFingerprint?: string;
+}
+
 export interface RuntimeEvidenceIntegrityReport {
   records: number;
   observedRecords: number;
@@ -12,5 +17,9 @@ export interface RuntimeEvidenceIntegrityReport {
   telemetryContinuityComplete: boolean;
   safeForCurrentStateClaims: boolean;
   safeForTemporalViolationClaims: boolean;
+  minimumObservedRecords?: number;
+  targetProfileEvidenceComplete?: boolean;
+  targetProfileMismatchRecords?: number;
+  targetProfileUnboundRecords?: number;
   reasons: readonly string[];
 }

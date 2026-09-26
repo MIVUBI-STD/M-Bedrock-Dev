@@ -63,6 +63,10 @@ function proof(
       disposition === "guarded"
         ? "proven-dependency-violation"
         : "proven-with-observed-outcome",
+    proofState:
+      disposition === "guarded"
+        ? "intervention-supported"
+        : "causal",
     blastRadiusDisposition: "minimal",
     admissionDisposition: disposition,
     supportingInvariantIds: [],

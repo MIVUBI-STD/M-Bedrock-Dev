@@ -15,6 +15,7 @@ export * from "./state-authority-contract.js";
 export * from "./mutation-dependent-action.js";
 
 export * from "./causal-chain.js";
+export * from "./causal-proof.js";
 
 export * from "./telemetry.js";
 

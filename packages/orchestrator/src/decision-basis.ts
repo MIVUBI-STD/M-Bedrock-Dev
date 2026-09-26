@@ -52,6 +52,7 @@ function normalizedRuntimeEvidence(
       state: record.state,
       confidence: record.confidence,
       origin: record.origin ?? null,
+      targetProfileFingerprint: record.targetProfileFingerprint ?? null,
       scopeKey: runtimeScopeKey(record.scope),
       observedAt: record.observedAt ?? null,
       sourceRefs: [...(record.sourceRefs ?? [])]
@@ -105,6 +106,13 @@ function normalizedEvidenceIntegrity(
             report.safeForCurrentStateClaims,
           safeForTemporalViolationClaims:
             report.safeForTemporalViolationClaims,
+          minimumObservedRecords: report.minimumObservedRecords ?? null,
+          targetProfileEvidenceComplete:
+            report.targetProfileEvidenceComplete ?? null,
+          targetProfileMismatchRecords:
+            report.targetProfileMismatchRecords ?? null,
+          targetProfileUnboundRecords:
+            report.targetProfileUnboundRecords ?? null,
         },
       ]),
   );

@@ -6,6 +6,8 @@ export type RuntimeEvidenceOrigin =
   | "static"
   | "telemetry"
   | "runtime-probe"
+  | "controlled-experiment"
+  | "differential-experiment"
   | "native"
   | "external";
 
@@ -33,6 +35,8 @@ export interface RuntimeEvidenceRecord {
   state: RuntimeEvidenceState;
   confidence: RuntimeEvidenceConfidence;
   origin?: RuntimeEvidenceOrigin;
+  /** Exact runtime profile fingerprint when the observation is target-bound. */
+  targetProfileFingerprint?: string;
   scope?: RuntimeScope;
   sourceRefs?: readonly SourceRef[];
   relatedNodeIds?: readonly string[];

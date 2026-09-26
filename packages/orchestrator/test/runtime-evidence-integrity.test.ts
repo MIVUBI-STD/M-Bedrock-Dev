@@ -10,6 +10,17 @@ const observed: RuntimeEvidenceRecord = {
 };
 
 describe("runtime evidence integrity", () => {
+  it("fails closed when no observed runtime evidence exists", async () => {
+    const { assessRuntimeEvidenceSetIntegrity } = await import(
+      "../src/runtime-evidence-integrity.js"
+    );
+    const report = assessRuntimeEvidenceSetIntegrity([]);
+
+    expect(report.safeForCurrentStateClaims).toBe(false);
+    expect(report.safeForTemporalViolationClaims).toBe(false);
+    expect(report.reasons.join(" ")).toMatch(/insufficient/i);
+  });
+
   it("allows current-state and temporal claims for clean continuous evidence", () => {
     const report = assessRuntimeEvidenceIntegrity(
       [observed],
@@ -101,6 +112,26 @@ describe("runtime evidence integrity", () => {
     expect(report.unlocatedObservedRecords).toBe(1);
     expect(report.safeForTemporalViolationClaims).toBe(false);
   });
+  it("rejects unbound observations when an exact target profile is required", () => {
+    const report = assessRuntimeEvidenceIntegrity(
+      [observed],
+      {
+        map: {},
+        conflicts: [],
+        resolvedConflicts: [],
+        sourceRefs: [],
+        relatedNodeIds: [],
+      },
+      undefined,
+      {
+        expectedTargetProfileFingerprint: "target-profile-a",
+      },
+    );
+
+    expect(report.safeForCurrentStateClaims).toBe(false);
+    expect(report.targetProfileUnboundRecords).toBe(1);
+  });
+
   it("aggregates integrity per scope without cross-scope false conflicts", async () => {
     const { assessRuntimeEvidenceSetIntegrity } = await import(
       "../src/runtime-evidence-integrity.js"
