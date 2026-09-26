@@ -1,41 +1,49 @@
 # Current Validation
 
-Status: REMOTE STATIC SOURCE GREEN THROUGH PROPERTY-DIAGNOSTIC BRIDGE; RUNTIME-CLASS OVERLAY UPDATE PENDING CURRENT CI; RUNTIME PROOF DEFERRED
+Status: GAMEPLAY INTENT FOUNDATION STATICALLY IMPLEMENTED; INTENT-AWARE DIAGNOSTIC GATE ADDED; CALIBRATION AND RUNTIME PROOF PENDING
 
 ## Current static reasoning stack
 
 - Semantic IR;
+- Gameplay Intent Model;
+- evidence-grounded intent graph and authored invariants;
+- explicit unresolved intent/ambiguity representation;
 - Behavioral World Model;
-- scoped Minecraft overlays;
+- scoped Minecraft runtime overlays;
 - claim provenance/evidence ceilings;
-- runtime-class semantic overlay framework;
 - Diagnostic Reasoning;
+- intent-aware diagnostic classification gate;
 - property-to-symptom evidence binding;
 - happens-before-aware reliability search;
 - adversarial invariant falsification;
 - semantic trace differential preservation;
 - Runtime Lab control plane.
 
-## Runtime semantic isolation
+## Diagnostic safety added
 
-The repository now treats these as distinct semantic classes:
+The diagnostic layer can now distinguish designed behavior, engine constraints, compatibility differences, insufficient evidence, ambiguous intent, runtime-proof-required observations, probable defects, and confirmed defects.
+
+Confirmed defect classification requires:
 
 ```text
-bedrock-retail-client
-bedrock-listen-server
-bedrock-dedicated-server
-bedrock-realm
-bedrock-preview-client
-education-host
-editor
+grounded intent subject
++
+authored invariant
++
+observation evidence
++
+contradiction evidence
++
+runtime proof when the claim requires runtime semantics
 ```
 
-No claim is inherited between them unless that exact claim ID is explicitly listed in an inheritance declaration.
-
-A missing claim resolves to no result/unknown rather than being guessed from another runtime class.
+Inferred intent is capped at probable defect.
 
 ## Still unproven
 
+- automatic gameplay-intent extraction from the supplied map corpus;
+- coverage quality on bundled/minified map scripts;
+- cross-version historical intent reconstruction;
 - actual semantic differences for most runtime classes;
 - complete official knowledge coverage;
 - observed-vs-documented conflict resolution;

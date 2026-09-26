@@ -19,6 +19,7 @@ Artifact
 → physical inventory
 → normalized project model
 → semantic dependency graph
+→ gameplay intent reconstruction
 → analyzers / diagnostics
 → patch plan
 → transactional working-copy mutation

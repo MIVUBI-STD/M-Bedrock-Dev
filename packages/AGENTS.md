@@ -33,6 +33,7 @@ compatibility  → edition/version/capability evaluation
 runtime-profile → exact target Minecraft product/host/module/environment identity
 knowledge       → versioned evidence-backed Minecraft claims and applicability
 semantic-ir     → normalized execution/state/temporal semantics; parser-independent and non-mutating
+gameplay-intent  → evidence-backed authored/inferred game meaning, mechanics, lifecycle, spatial semantics, and diagnostic ambiguity gates
 preservation    → pre-mutation baselines, must-change/must-preserve contracts, and preservation receipts
 runtime-lab     → controlled runtime experiment definitions, trials, qualification, and evidence provenance
 repair         → patch transactions / preconditions / working-copy mutation

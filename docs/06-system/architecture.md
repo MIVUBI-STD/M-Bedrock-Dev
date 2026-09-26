@@ -13,6 +13,8 @@ analyzers
         ↓
 semantic graph + Semantic IR
         ↓
+Gameplay Intent Model
+        ↓
 Behavioral World Model
         ↓
 Diagnostic Reasoning
@@ -78,6 +80,8 @@ Happens-before graphs must be acyclic. A cycle is a model error, not an empty va
 The semantic graph owns references/dependencies.
 
 Semantic IR owns normalized source execution/state/scheduling structure.
+
+Gameplay Intent owns evidence-backed reconstruction of authored mechanics, actors, objectives, phases, lifecycles, resources, spatial semantics, policies, outcomes, and explicit unknowns. It does not declare root cause.
 
 The Behavioral World Model owns explicit semantic state, transitions, nondeterminism declarations, and temporal properties.
 

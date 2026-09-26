@@ -1,60 +1,69 @@
 # Next Action
 
-M-Bedrock-Dev now has behavior provenance, happens-before concurrency semantics, adversarial invariant promotion gates, semantic before/after trace comparison, property-to-diagnostic evidence binding, and explicit runtime-class semantic overlays.
+M-Bedrock-Dev now has a first-class Gameplay Intent Model and an intent-aware diagnostic gate.
 
-## Current lane — Host/Edition Semantics Before Runtime Testing
+## Current lane — Artifact Understanding Before Defect Classification
 
-Do not expand local/live Minecraft testing yet.
+The immediate architecture priority is no longer broader bug-rule accumulation.
 
-### Completed semantic separation
+For each representative map family:
 
-- Bedrock retail client;
-- Bedrock listen server;
-- Bedrock Dedicated Server;
-- Realm;
-- Bedrock Preview client;
-- Minecraft Education host;
-- Editor;
+1. extract evidence-backed gameplay concepts from source, commands, scoreboards, tags, dialogue, structures, and world state;
+2. reconstruct mechanics, phases, lifecycles, ownership, resources, objectives, recovery/reset policy, and spatial semantics;
+3. preserve unknown intent explicitly instead of guessing;
+4. bind authored invariants to concrete evidence;
+5. only then allow Diagnostic Reasoning to classify an observation.
 
-are represented as distinct semantic runtime classes.
-
-Claims do not flow between runtime classes automatically.
-
-Inheritance is allowed only when a target overlay explicitly names:
+The diagnostic gate now distinguishes:
 
 ```text
-source overlay
+confirmed-defect
+probable-defect
+designed-behavior
+engine-constraint
+compatibility-difference
+insufficient-evidence
+ambiguous-intent
+runtime-proof-required
+```
+
+A confirmed defect requires an evidenced contradiction against authored intent. Inferred intent can support only a probable defect. Open intent ambiguity blocks defect classification.
+
+## Calibration corpus
+
+Use the supplied representative worlds as a calibration corpus, beginning with source-explicit maps before compiled/minified maps.
+
+Recommended progression:
+
+```text
+explicit source intent
+→ modular compiled source
+→ bundled/minified source
+→ historical differential
+→ runtime differential
+```
+
+The goal is not map-specific hardcoding. The goal is to prove that one parser-independent intent model can reconstruct meaning across heterogeneous authored worlds.
+
+## Runtime semantics
+
+Continue the runtime-class claim registry work, but consume it as a separate authority:
+
+```text
+artifact intent
 +
-specific claim IDs
+Minecraft runtime semantics
++
+observed behavior
+→ diagnostic reasoning
 ```
 
-This prevents broad assumptions such as `Education = Bedrock + flags` or `BDS = listen-server semantics`.
-
-### Completed reasoning bridge
-
-Temporal/property evaluation can become diagnostic symptom evidence while preserving:
-
-```text
-violated  → present symptom
-satisfied → absent symptom
-unknown   → unknown symptom
-```
-
-A property violation may support a declared hypothesis but never creates an automatic root-cause conclusion.
-
-## Next architecture order
-
-1. build a versioned semantic-claim registry for runtime overlays;
-2. bind official/documented knowledge to claims where evidence exists;
-3. add explicit conflict detection between documented and observed claims;
-4. strengthen partial-order reduction with causal closure/generation equivalence;
-5. build calibration-corpus contracts for future probabilistic belief;
-6. only then connect physical Minecraft runtime channels.
+Do not infer Education/BDS/Preview behavior from Retail by default.
 
 ## Safety
 
-- runtime-class inheritance is explicit per claim;
-- absence of a claim means unknown, not false;
-- Education/BDS/Preview semantics must not be inferred from retail semantics by default;
-- symptom evidence is not causation;
-- designed overlays remain specifications until stronger provenance is attached.
+- AI/inference may propose intent claims but cannot silently promote them to authored facts;
+- unknown intent remains unknown;
+- diagnosis strength cannot exceed intent evidence strength;
+- static evidence never implies runtime correctness;
+- severity is assigned only after defect classification.

@@ -11,6 +11,7 @@ Use this before broad repository search.
 | Runtime telemetry emission helpers / sinks / instrumentation guards | packages/telemetry/ |
 | Semantic dependency graph/invalidation | packages/graph/ |
 | Execution/state/temporal Semantic IR contracts and queries | packages/semantic-ir/ |
+| Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | packages/gameplay-intent/ |
 | Formal behavioral state/transition/temporal property kernel + Minecraft overlays | packages/behavior-model/ |
 | Competing hypotheses, falsifiers, and diagnostic probe discrimination | packages/diagnostic-reasoning/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
