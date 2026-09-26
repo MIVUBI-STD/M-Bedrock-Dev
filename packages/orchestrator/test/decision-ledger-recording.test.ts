@@ -6,6 +6,7 @@ import {
 import {
   recordDiagnosticRepairDecision,
   recordPackageVerificationDecision,
+  recordPreservationVerificationDecision,
   recordReleaseDecision,
   recordRepairAdmissionDecision,
   recordRuntimeVerificationDecision,
@@ -26,6 +27,8 @@ const basis = {
   graphFingerprint: "graph-a",
   invariantRegistryRevision: "inv-a",
   runtimeEvidenceRevision: "runtime-a",
+  preservationContractRevision: "preservation-contract-a",
+  preservationBaselineRevision: "preservation-baseline-a",
 };
 
 const lifecycle: RepairLifecycleState = {
@@ -35,6 +38,7 @@ const lifecycle: RepairLifecycleState = {
   localStaticValidationPassed: true,
   transitiveRevalidationComplete: true,
   runtimeVerificationComplete: true,
+  preservationVerificationComplete: true,
   packageVerificationComplete: true,
   pendingNodeIds: [],
   pendingPaths: [],
@@ -52,8 +56,15 @@ const proof: RepairProofBundle = {
   claimStrength: "proven-runtime",
   effectiveEvidenceLevel:
     "proven-with-observed-outcome",
+  proofState: "causal",
   blastRadiusDisposition: "minimal",
   admissionDisposition: "eligible",
+  preservationContractId: "preserve:tx-1",
+  preservationReadinessDisposition: "ready",
+  preservationBaselineEvidenceIds: [
+    "baseline:broken",
+    "baseline:healthy",
+  ],
   supportingInvariantIds: ["invariant:ready"],
   changedNodeIds: ["node-1"],
   affectedNodeIds: ["node-1"],
@@ -75,6 +86,7 @@ function ledgerBeforeRelease() {
       selectedCandidateId: "candidate-1",
       effectiveEvidenceLevel:
         "proven-with-observed-outcome",
+      proofState: "causal",
       claimStrength: "proven-runtime",
       reasons: ["proof"],
     },
@@ -138,6 +150,32 @@ function ledgerBeforeRelease() {
     },
   );
 
+  ledger = recordPreservationVerificationDecision(
+    ledger,
+    {
+      passed: true,
+      verifiedMustChangeInvariantIds: ["invariant:ready"],
+      verifiedMustPreserveInvariantIds: ["invariant:stable"],
+      failedInvariantIds: [],
+      evidenceIds: ["preservation:pass"],
+      receipt: {
+        contractId: "preserve:tx-1",
+        transactionId: "tx-1",
+        passed: true,
+        verifiedMustChangeInvariantIds: ["invariant:ready"],
+        verifiedMustPreserveInvariantIds: ["invariant:stable"],
+        evidenceIds: ["preservation:pass"],
+      },
+      reasons: ["passed"],
+    },
+    "tx-1",
+    {
+      decisionId: "decision-preservation",
+      basis,
+      upstreamDecisionIds: ["decision-admission"],
+    },
+  );
+
   ledger = recordPackageVerificationDecision(
     ledger,
     {
@@ -187,6 +225,7 @@ describe("decision ledger recording", () => {
         "decision-strategy",
         "decision-admission",
         "decision-runtime",
+        "decision-preservation",
         "decision-package",
         "decision-release",
       ]);
@@ -198,6 +237,7 @@ describe("decision ledger recording", () => {
       "decision-admission",
       "decision-auth",
       "decision-package",
+      "decision-preservation",
       "decision-runtime",
       "decision-strategy",
     ]);
