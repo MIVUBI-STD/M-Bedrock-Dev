@@ -1,3 +1,7 @@
+import type {
+  BehaviorClaimProvenance,
+} from "./provenance.js";
+
 export type BehaviorScalar =
   | string
   | number
@@ -19,6 +23,7 @@ export interface BehaviorVariable {
   valueType: "string" | "number" | "boolean" | "nullable";
   authority: "engine" | "script" | "command" | "derived" | "unknown";
   description?: string;
+  provenance?: BehaviorClaimProvenance;
 }
 
 export interface BehaviorState {
@@ -118,6 +123,7 @@ export interface BehaviorTransition {
   effects: readonly BehaviorEffect[];
   nondeterminismSurfaces?: readonly NondeterminismSurface[];
   description?: string;
+  provenance?: BehaviorClaimProvenance;
 }
 
 export type TemporalProperty =
@@ -126,6 +132,7 @@ export type TemporalProperty =
       kind: "always";
       predicate: BehaviorPredicate;
       description?: string;
+      provenance?: BehaviorClaimProvenance;
     }
   | {
       id: string;
@@ -133,6 +140,7 @@ export type TemporalProperty =
       predicate: BehaviorPredicate;
       withinTicks?: number;
       description?: string;
+      provenance?: BehaviorClaimProvenance;
     }
   | {
       id: string;
@@ -141,6 +149,7 @@ export type TemporalProperty =
       consequence: BehaviorPredicate;
       withinTicks?: number;
       description?: string;
+      provenance?: BehaviorClaimProvenance;
     }
   | {
       id: string;
@@ -149,6 +158,7 @@ export type TemporalProperty =
       until: BehaviorPredicate;
       withinTicks?: number;
       description?: string;
+      provenance?: BehaviorClaimProvenance;
     };
 
 export interface BehaviorModelFragment {

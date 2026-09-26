@@ -1,72 +1,55 @@
 # Current Validation
 
-Status: REMOTE STATIC SOURCE GREEN; FORMAL BEHAVIOR + DIAGNOSTIC REASONING STATIC ONLY; RUNTIME PROOF PENDING
+Status: REMOTE STATIC SOURCE GREEN THROUGH DIAGNOSTIC REASONING; PROVENANCE + CONCURRENCY UPDATE PENDING CURRENT CI; RUNTIME PROOF DEFERRED
 
-## Behavioral World Model — 2026-09-27
+## Established static layers
 
-Static contracts now cover:
+The repository now contains:
 
-- typed semantic variables and authority labels;
-- scoped state identities for multiple players/entities/arenas;
-- composable boolean predicates;
-- explicit transition preconditions/effects;
-- declared Minecraft nondeterminism surfaces;
-- unknown-by-default runtime control/replay capability profiles;
-- initial Minecraft session/entity/chunk/scheduler overlays;
-- ALWAYS / EVENTUALLY / LEADS-TO / UNTIL;
-- bounded tick deadlines;
-- three-valued `satisfied / violated / unknown` results.
+- Semantic IR;
+- Behavioral World Model;
+- scoped Minecraft session/entity/chunk/scheduler overlays;
+- conservative temporal evaluation;
+- Diagnostic Reasoning with competing hypotheses;
+- Runtime Lab control plane and read-only host adapter.
 
-The proof rule remains fail-closed:
+## Provenance model
 
-```text
-clean incomplete prefix != proven property
-```
+Behavior claims now distinguish how they are justified.
 
-## Diagnostic Reasoning — 2026-09-27
-
-A new semantic owner exists at:
+Current Minecraft overlay claims are intentionally marked:
 
 ```text
-packages/diagnostic-reasoning/
+kind             project-policy
+evidence ceiling designed
 ```
 
-It can represent several plausible explanations for one symptom and distinguish:
+This prevents those abstractions from being interpreted as documented, observed, or causal Minecraft behavior.
+
+Unbound claims are visible through provenance audit results.
+
+## Concurrency model
+
+The interleaving engine can now incorporate:
 
 ```text
-open
-supported under declared evidence contract
-eliminated by explicit contradiction/falsifier
+explicit happens-before
+hidden engine dependency surfaces
+declared read/write resources
 ```
 
-Probe planning compares expected outcomes across currently viable hypotheses and scores how many hypothesis pairs a probe can separate, with cost/risk penalties.
+This fixes the unsafe assumption that two operations are independent merely because explicit resources do not overlap.
 
-This is deliberately not a probability/confidence engine.
-
-The current planner does not claim:
-
-- calibrated priors;
-- posterior probability;
-- completeness of alternative explanations;
-- causal identification;
-- real information gain in the Shannon/Bayesian sense.
-
-## Existing Runtime Lab
-
-The source-verified Runtime Lab host remains available but local/live Minecraft execution is intentionally deferred.
-
-No new Minecraft runtime claim is created by the behavior or diagnostic-reasoning work.
+The model also rejects happens-before cycles.
 
 ## Still unproven
 
-- complete Bedrock behavioral semantics;
-- complete Education behavioral semantics;
-- engine scheduler/fairness behavior;
-- deterministic runtime replay;
-- formal happens-before model for engine events;
-- AI/pathfinding transition semantics;
-- real chunk lifecycle behavior;
-- completeness of generated competing hypotheses;
-- calibrated causal belief;
-- real multi-client execution;
-- semantic before/after repair equivalence.
+- actual Bedrock scheduler ordering;
+- actual Education ordering differences;
+- replayability of Minecraft nondeterminism;
+- real chunk residency transitions;
+- AI/pathfinding semantics;
+- completeness of hypothesis alternatives;
+- adversarially verified invariants;
+- semantic before/after repair equivalence;
+- real multi-client execution.

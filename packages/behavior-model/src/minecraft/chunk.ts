@@ -1,7 +1,15 @@
+import {
+  projectPolicyProvenance,
+} from "../provenance.js";
 import type {
   BehaviorModelFragment,
   BehaviorVariable,
 } from "../types.js";
+
+const provenance = projectPolicyProvenance(
+  "behavior-spec:minecraft-chunk-v1",
+  "Designed chunk residency abstraction; exact host semantics remain unproven.",
+);
 
 const VARIABLES: readonly BehaviorVariable[] = [
   {
@@ -9,16 +17,21 @@ const VARIABLES: readonly BehaviorVariable[] = [
     scope: "chunk",
     valueType: "boolean",
     authority: "engine",
+    provenance,
   },
   {
     id: "chunk.generation",
     scope: "chunk",
     valueType: "number",
     authority: "derived",
+    provenance,
   },
 ];
 
-function loaded(chunkKey: string, value: boolean) {
+function loaded(
+  chunkKey: string,
+  value: boolean,
+) {
   return {
     kind: "condition" as const,
     condition: {
@@ -34,7 +47,10 @@ export function createChunkResidencyBehavior(
   chunkKey: string,
 ): BehaviorModelFragment {
   const id = (suffix: string) =>
-    "minecraft.chunk:" + chunkKey + ":" + suffix;
+    "minecraft.chunk:" +
+    chunkKey +
+    ":" +
+    suffix;
 
   return {
     variables: VARIABLES,
@@ -42,7 +58,9 @@ export function createChunkResidencyBehavior(
       {
         id: id("load"),
         owner: "engine",
-        preconditions: [loaded(chunkKey, false)],
+        preconditions: [
+          loaded(chunkKey, false),
+        ],
         effects: [
           {
             kind: "set",
@@ -62,11 +80,14 @@ export function createChunkResidencyBehavior(
           "chunk-residency",
           "tick-scheduling",
         ],
+        provenance,
       },
       {
         id: id("unload"),
         owner: "engine",
-        preconditions: [loaded(chunkKey, true)],
+        preconditions: [
+          loaded(chunkKey, true),
+        ],
         effects: [
           {
             kind: "set",
@@ -86,6 +107,7 @@ export function createChunkResidencyBehavior(
           "chunk-residency",
           "tick-scheduling",
         ],
+        provenance,
       },
     ],
   };

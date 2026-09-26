@@ -1,8 +1,17 @@
+import {
+  projectPolicyProvenance,
+} from "../provenance.js";
 import type {
   BehaviorModelFragment,
   BehaviorPredicate,
   BehaviorVariable,
 } from "../types.js";
+
+const SPEC = "behavior-spec:minecraft-session-v1";
+const provenance = projectPolicyProvenance(
+  SPEC,
+  "Designed session semantics; requires source/knowledge/runtime binding before being treated as Minecraft engine truth.",
+);
 
 const VARIABLES: readonly BehaviorVariable[] = [
   {
@@ -12,6 +21,7 @@ const VARIABLES: readonly BehaviorVariable[] = [
     authority: "engine",
     description:
       "Whether the player is currently connected to the observed host.",
+    provenance,
   },
   {
     id: "player.phase",
@@ -20,6 +30,7 @@ const VARIABLES: readonly BehaviorVariable[] = [
     authority: "script",
     description:
       "Project session lifecycle phase.",
+    provenance,
   },
   {
     id: "player.arena",
@@ -28,6 +39,7 @@ const VARIABLES: readonly BehaviorVariable[] = [
     authority: "script",
     description:
       "Arena assignment owned by the project session system.",
+    provenance,
   },
   {
     id: "player.progress",
@@ -36,6 +48,7 @@ const VARIABLES: readonly BehaviorVariable[] = [
     authority: "script",
     description:
       "Project-defined active session progress.",
+    provenance,
   },
   {
     id: "player.connection-generation",
@@ -44,6 +57,7 @@ const VARIABLES: readonly BehaviorVariable[] = [
     authority: "derived",
     description:
       "Monotonic generation distinguishing reconnect lifetimes.",
+    provenance,
   },
   {
     id: "arena.ready",
@@ -52,6 +66,7 @@ const VARIABLES: readonly BehaviorVariable[] = [
     authority: "derived",
     description:
       "Whether the arena prerequisites for starting this player are satisfied.",
+    provenance,
   },
 ];
 
@@ -126,6 +141,7 @@ export function createPlayerSessionBehavior(
             value: 0,
           },
         ],
+        provenance,
       },
       {
         id: id("request-start"),
@@ -147,6 +163,7 @@ export function createPlayerSessionBehavior(
           "event-ordering",
           "chunk-residency",
         ],
+        provenance,
       },
       {
         id: id("begin-playing"),
@@ -166,6 +183,7 @@ export function createPlayerSessionBehavior(
           "deferred-callback-order",
           "event-ordering",
         ],
+        provenance,
       },
       {
         id: id("disconnect"),
@@ -203,6 +221,7 @@ export function createPlayerSessionBehavior(
           "network-input-order",
           "event-ordering",
         ],
+        provenance,
       },
       {
         id: id("reconnect"),
@@ -240,6 +259,7 @@ export function createPlayerSessionBehavior(
           "network-input-order",
           "event-ordering",
         ],
+        provenance,
       },
     ],
     properties: [
@@ -247,6 +267,7 @@ export function createPlayerSessionBehavior(
         id: id("playing-requires-session"),
         kind: "always",
         predicate: playingRequiresConnected,
+        provenance,
       },
       {
         id: id("starting-leads-to-playing"),
@@ -267,6 +288,7 @@ export function createPlayerSessionBehavior(
               withinTicks:
                 options.startDeadlineTicks,
             }),
+        provenance,
       },
       {
         id: id("disconnect-resets-progress"),
@@ -284,6 +306,7 @@ export function createPlayerSessionBehavior(
             0,
           ),
         },
+        provenance,
       },
     ],
   };

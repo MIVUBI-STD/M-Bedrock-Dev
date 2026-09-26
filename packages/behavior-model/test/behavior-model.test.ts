@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyBehaviorTransition,
+  auditBehaviorModelProvenance,
   behaviorStateKey,
   composeBehavioralWorldModel,
   createChunkResidencyBehavior,
@@ -193,7 +194,7 @@ describe("behavioral world model", () => {
     expect(p1).not.toBe(p2);
   });
 
-  it("composes multiple player overlays without duplicating semantic variable definitions", () => {
+  it("composes minecraft overlays with explicit designed provenance", () => {
     const composed =
       composeBehavioralWorldModel(
         "two-player",
@@ -227,6 +228,23 @@ describe("behavioral world model", () => {
     expect(
       validateBehavioralWorldModel(composed),
     ).toEqual([]);
+    expect(
+      auditBehaviorModelProvenance(composed),
+    ).toEqual([]);
+    expect(
+      composed.properties.every(
+        (property) =>
+          property.provenance
+            ?.evidenceCeiling === "designed",
+      ),
+    ).toBe(true);
+  });
+
+  it("reports provenance gaps instead of silently trusting unbound claims", () => {
+    expect(
+      auditBehaviorModelProvenance(model)
+        .length,
+    ).toBeGreaterThan(0);
   });
 
   it("keeps unproven runtime nondeterminism capabilities unknown", () => {

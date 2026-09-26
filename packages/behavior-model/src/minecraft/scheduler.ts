@@ -1,7 +1,15 @@
+import {
+  projectPolicyProvenance,
+} from "../provenance.js";
 import type {
   BehaviorModelFragment,
   BehaviorVariable,
 } from "../types.js";
+
+const provenance = projectPolicyProvenance(
+  "behavior-spec:minecraft-scheduler-v1",
+  "Designed generation-ownership safety property; scheduler ordering remains host-specific.",
+);
 
 const VARIABLES: readonly BehaviorVariable[] = [
   {
@@ -9,18 +17,21 @@ const VARIABLES: readonly BehaviorVariable[] = [
     scope: "subsystem",
     valueType: "number",
     authority: "script",
+    provenance,
   },
   {
     id: "callback.current-generation",
     scope: "subsystem",
     valueType: "number",
     authority: "derived",
+    provenance,
   },
   {
     id: "callback.mutation-applied",
     scope: "subsystem",
     valueType: "boolean",
     authority: "derived",
+    provenance,
   },
 ];
 
@@ -50,7 +61,10 @@ export function createDeferredCallbackBehavior(
 ): BehaviorModelFragment {
   const c = options.callbackKey;
   const id = (suffix: string) =>
-    "minecraft.callback:" + c + ":" + suffix;
+    "minecraft.callback:" +
+    c +
+    ":" +
+    suffix;
 
   return {
     variables: VARIABLES,
@@ -73,6 +87,7 @@ export function createDeferredCallbackBehavior(
           false,
         ),
       },
+      provenance,
     }],
   };
 }

@@ -9,6 +9,7 @@ export * from "./guided-search.js";
 export * from "./history-analysis.js";
 export * from "./history-log.js";
 export * from "./history-storage.js";
+export * from "./happens-before.js";
 export * from "./interleaving.js";
 export * from "./invariant-challenge.js";
 export * from "./invariant-diversity.js";

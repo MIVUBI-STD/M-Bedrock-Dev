@@ -1,7 +1,15 @@
+import {
+  projectPolicyProvenance,
+} from "../provenance.js";
 import type {
   BehaviorModelFragment,
   BehaviorVariable,
 } from "../types.js";
+
+const provenance = projectPolicyProvenance(
+  "behavior-spec:minecraft-entity-v1",
+  "Designed entity lifecycle/navigation semantics; not an observed engine guarantee.",
+);
 
 const VARIABLES: readonly BehaviorVariable[] = [
   {
@@ -9,30 +17,35 @@ const VARIABLES: readonly BehaviorVariable[] = [
     scope: "entity",
     valueType: "boolean",
     authority: "engine",
+    provenance,
   },
   {
     id: "entity.alive",
     scope: "entity",
     valueType: "boolean",
     authority: "engine",
+    provenance,
   },
   {
     id: "entity.owner-generation",
     scope: "entity",
     valueType: "number",
     authority: "script",
+    provenance,
   },
   {
     id: "entity.navigation-active",
     scope: "entity",
     valueType: "boolean",
     authority: "engine",
+    provenance,
   },
   {
     id: "entity.navigation-generation",
     scope: "entity",
     valueType: "number",
     authority: "derived",
+    provenance,
   },
 ];
 
@@ -97,6 +110,7 @@ export function createEntityLifecycleBehavior(
           "entity-tick-order",
           "chunk-residency",
         ],
+        provenance,
       },
       {
         id: id("navigation-replan"),
@@ -117,6 +131,7 @@ export function createEntityLifecycleBehavior(
           "ai-goal-arbitration",
           "entity-tick-order",
         ],
+        provenance,
       },
     ],
     properties: [{
@@ -137,6 +152,7 @@ export function createEntityLifecycleBehavior(
           ],
         },
       },
+      provenance,
     }],
   };
 }

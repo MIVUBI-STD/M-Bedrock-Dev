@@ -1,6 +1,18 @@
+import {
+  happensBefore,
+  operationIsEnabledByHappensBefore,
+  validateConcurrencySemantics,
+  type ConcurrencySemantics,
+} from "./happens-before.js";
+
 export interface OperationFootprint {
   reads: readonly string[];
   writes: readonly string[];
+  /**
+   * Engine/runtime surfaces that may create implicit dependency outside
+   * declared state reads/writes.
+   */
+  semanticSurfaces?: readonly string[];
 }
 
 export interface ScheduledOperation<T> {
@@ -12,28 +24,75 @@ export interface ScheduledOperation<T> {
 export interface InterleavingOptions {
   maxSchedules: number;
   maxExploredNodes?: number;
+  concurrency?: ConcurrencySemantics;
 }
 
 export interface InterleavingResult<T> {
   schedules: ScheduledOperation<T>[][];
   exploredNodes: number;
   reducedEquivalentBranches: number;
+  blockedByHappensBefore: number;
   truncated: boolean;
 }
 
-function intersects(a: readonly string[], b: ReadonlySet<string>): boolean {
+function intersects(
+  a: readonly string[],
+  b: ReadonlySet<string>,
+): boolean {
   return a.some((value) => b.has(value));
+}
+
+function sharesHiddenDependencySurface<T>(
+  a: ScheduledOperation<T>,
+  b: ScheduledOperation<T>,
+  semantics: ConcurrencySemantics | undefined,
+): boolean {
+  const hidden = new Set(
+    semantics?.hiddenDependencySurfaces ?? [],
+  );
+  if (hidden.size === 0) return false;
+
+  const aSurfaces = new Set(
+    (a.footprint.semanticSurfaces ?? [])
+      .filter((surface) => hidden.has(surface)),
+  );
+  return (b.footprint.semanticSurfaces ?? [])
+    .some((surface) => aSurfaces.has(surface));
 }
 
 export function operationsIndependent<T>(
   a: ScheduledOperation<T>,
   b: ScheduledOperation<T>,
+  semantics?: ConcurrencySemantics,
 ): boolean {
+  if (
+    happensBefore(a.id, b.id, semantics) ||
+    happensBefore(b.id, a.id, semantics)
+  ) {
+    return false;
+  }
+
+  if (
+    sharesHiddenDependencySurface(
+      a,
+      b,
+      semantics,
+    )
+  ) {
+    return false;
+  }
+
   const aWrites = new Set(a.footprint.writes);
   const bWrites = new Set(b.footprint.writes);
   return !intersects(a.footprint.writes, bWrites) &&
-    !intersects(a.footprint.writes, new Set(b.footprint.reads)) &&
-    !intersects(b.footprint.writes, new Set(a.footprint.reads)) &&
+    !intersects(
+      a.footprint.writes,
+      new Set(b.footprint.reads),
+    ) &&
+    !intersects(
+      b.footprint.writes,
+      new Set(a.footprint.reads),
+    ) &&
     !intersects(b.footprint.writes, aWrites);
 }
 
@@ -43,7 +102,10 @@ function assertUniqueOperationIds<T>(
   const seen = new Set<string>();
   for (const operation of operations) {
     if (seen.has(operation.id)) {
-      throw new Error(`Interleaving operation ids must be unique: ${operation.id}`);
+      throw new Error(
+        "Interleaving operation ids must be unique: " +
+          operation.id,
+      );
     }
     seen.add(operation.id);
   }
@@ -52,13 +114,22 @@ function assertUniqueOperationIds<T>(
 function branchIsEquivalentToEarlierChoice<T>(
   remaining: readonly ScheduledOperation<T>[],
   index: number,
+  semantics: ConcurrencySemantics | undefined,
 ): boolean {
   const candidate = remaining[index]!;
-  for (let earlierIndex = 0; earlierIndex < index; earlierIndex += 1) {
+  for (
+    let earlierIndex = 0;
+    earlierIndex < index;
+    earlierIndex += 1
+  ) {
     const earlier = remaining[earlierIndex]!;
     if (
       earlier.id.localeCompare(candidate.id) < 0 &&
-      operationsIndependent(earlier, candidate)
+      operationsIndependent(
+        earlier,
+        candidate,
+        semantics,
+      )
     ) {
       return true;
     }
@@ -70,26 +141,55 @@ export function exploreInterleavings<T>(
   operations: readonly ScheduledOperation<T>[],
   options: InterleavingOptions,
 ): InterleavingResult<T> {
-  if (!Number.isInteger(options.maxSchedules) || options.maxSchedules < 1) {
-    throw new Error("maxSchedules must be a positive integer.");
+  if (
+    !Number.isInteger(options.maxSchedules) ||
+    options.maxSchedules < 1
+  ) {
+    throw new Error(
+      "maxSchedules must be a positive integer.",
+    );
   }
-  const maxExploredNodes = options.maxExploredNodes ?? 100_000;
-  if (!Number.isInteger(maxExploredNodes) || maxExploredNodes < 1) {
-    throw new Error("maxExploredNodes must be a positive integer.");
+  const maxExploredNodes =
+    options.maxExploredNodes ?? 100_000;
+  if (
+    !Number.isInteger(maxExploredNodes) ||
+    maxExploredNodes < 1
+  ) {
+    throw new Error(
+      "maxExploredNodes must be a positive integer.",
+    );
   }
 
   assertUniqueOperationIds(operations);
+  const operationIds = new Set(
+    operations.map((item) => item.id),
+  );
+  const semanticErrors =
+    validateConcurrencySemantics(
+      operationIds,
+      options.concurrency ?? {},
+    );
+  if (semanticErrors.length > 0) {
+    throw new Error(
+      "Invalid concurrency semantics: " +
+        semanticErrors.join("; "),
+    );
+  }
 
   const schedules: ScheduledOperation<T>[][] = [];
   let exploredNodes = 0;
   let reducedEquivalentBranches = 0;
+  let blockedByHappensBefore = 0;
   let truncated = false;
 
   const visit = (
     prefix: ScheduledOperation<T>[],
     remaining: ScheduledOperation<T>[],
   ): void => {
-    if (schedules.length >= options.maxSchedules || exploredNodes >= maxExploredNodes) {
+    if (
+      schedules.length >= options.maxSchedules ||
+      exploredNodes >= maxExploredNodes
+    ) {
       truncated = remaining.length > 0;
       return;
     }
@@ -101,22 +201,57 @@ export function exploreInterleavings<T>(
       return;
     }
 
-    const ordered = [...remaining].sort((a, b) => a.id.localeCompare(b.id));
+    const ordered = [...remaining].sort(
+      (a, b) => a.id.localeCompare(b.id),
+    );
+    const scheduledIds = new Set(
+      prefix.map((item) => item.id),
+    );
 
-    for (let index = 0; index < ordered.length; index += 1) {
-      if (branchIsEquivalentToEarlierChoice(ordered, index)) {
+    for (
+      let index = 0;
+      index < ordered.length;
+      index += 1
+    ) {
+      const next = ordered[index]!;
+
+      if (
+        !operationIsEnabledByHappensBefore(
+          next.id,
+          scheduledIds,
+          options.concurrency,
+        )
+      ) {
+        blockedByHappensBefore += 1;
+        continue;
+      }
+
+      if (
+        branchIsEquivalentToEarlierChoice(
+          ordered,
+          index,
+          options.concurrency,
+        )
+      ) {
         reducedEquivalentBranches += 1;
         continue;
       }
 
-      const next = ordered[index]!;
       visit(
         [...prefix, next],
-        ordered.filter((_, itemIndex) => itemIndex !== index),
+        ordered.filter(
+          (_, itemIndex) =>
+            itemIndex !== index,
+        ),
       );
 
-      if (schedules.length >= options.maxSchedules || exploredNodes >= maxExploredNodes) {
-        truncated = index + 1 < ordered.length || truncated;
+      if (
+        schedules.length >= options.maxSchedules ||
+        exploredNodes >= maxExploredNodes
+      ) {
+        truncated =
+          index + 1 < ordered.length ||
+          truncated;
         break;
       }
     }
@@ -128,6 +263,7 @@ export function exploreInterleavings<T>(
     schedules,
     exploredNodes,
     reducedEquivalentBranches,
+    blockedByHappensBefore,
     truncated,
   };
 }
