@@ -10,7 +10,9 @@ function script(): ParsedScriptFile {
   return {
     identifier: "domain/session-state-machine.ts",
     source: {
-      relativePath:
+      artifactId: "art_test",
+      artifactId: "art_test",
+    relativePath:
         "behavior_packs/demo/src/domain/session-state-machine.ts",
     },
     imports: [],

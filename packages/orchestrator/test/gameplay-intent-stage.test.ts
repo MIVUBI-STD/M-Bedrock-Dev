@@ -7,6 +7,7 @@ import {
 } from "../src/gameplay-intent-stage.js";
 
 const source = {
+  artifactId: "art_test",
   relativePath:
     "behavior_packs/mtt_bp/src/domain/session-state-machine.ts",
 };
@@ -84,7 +85,7 @@ describe("gameplay intent stage", () => {
     const empty: ParsedScriptFile = {
       ...parsed(),
       identifier: "main",
-      source: { relativePath: "behavior_packs/demo/scripts/main.js" },
+      source: { artifactId: "art_test", relativePath: "behavior_packs/demo/scripts/main.js" },
       localFunctionCalls: [],
       lifecycleMemberExposures: [],
       enumValueComparisons: [],
