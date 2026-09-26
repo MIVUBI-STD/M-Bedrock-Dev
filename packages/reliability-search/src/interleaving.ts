@@ -3,6 +3,7 @@ import {
   operationIsEnabledByHappensBefore,
   validateConcurrencySemantics,
   type ConcurrencySemantics,
+  type HappensBeforeEdge,
 } from "./happens-before.js";
 
 export interface OperationFootprint {
@@ -15,10 +16,26 @@ export interface OperationFootprint {
   semanticSurfaces?: readonly string[];
 }
 
+export interface OperationCausalContext {
+  /**
+   * Explicit causal parents. These become happens-before edges.
+   */
+  parentOperationIds?: readonly string[];
+  /**
+   * Lifetime/generation identities such as player connection generation,
+   * arena generation, entity generation, or subsystem generation.
+   *
+   * Different values for the same generation key imply dependency, but do
+   * not by themselves imply ordering.
+   */
+  generationTokens?: Readonly<Record<string, string | number>>;
+}
+
 export interface ScheduledOperation<T> {
   id: string;
   value: T;
   footprint: OperationFootprint;
+  causal?: OperationCausalContext;
 }
 
 export interface InterleavingOptions {
@@ -32,6 +49,7 @@ export interface InterleavingResult<T> {
   exploredNodes: number;
   reducedEquivalentBranches: number;
   blockedByHappensBefore: number;
+  generationDependencyPairs: number;
   truncated: boolean;
 }
 
@@ -60,6 +78,77 @@ function sharesHiddenDependencySurface<T>(
     .some((surface) => aSurfaces.has(surface));
 }
 
+export function operationsHaveGenerationConflict<T>(
+  a: ScheduledOperation<T>,
+  b: ScheduledOperation<T>,
+): boolean {
+  const left = a.causal?.generationTokens;
+  const right = b.causal?.generationTokens;
+  if (!left || !right) return false;
+
+  for (const key of Object.keys(left)) {
+    const leftValue = left[key];
+    const rightValue = right[key];
+    if (
+      rightValue !== undefined &&
+      leftValue !== rightValue
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function effectiveConcurrencySemantics<T>(
+  operations: readonly ScheduledOperation<T>[],
+  declared: ConcurrencySemantics | undefined,
+): ConcurrencySemantics {
+  const edges = new Map<string, HappensBeforeEdge>();
+
+  for (const edge of declared?.happensBefore ?? []) {
+    edges.set(
+      edge.before + "->" + edge.after,
+      edge,
+    );
+  }
+
+  for (const operation of operations) {
+    for (
+      const parent of
+        operation.causal?.parentOperationIds ?? []
+    ) {
+      const edge: HappensBeforeEdge = {
+        before: parent,
+        after: operation.id,
+        reason: "causal-parent",
+      };
+      const key =
+        edge.before + "->" + edge.after;
+      if (!edges.has(key)) {
+        edges.set(key, edge);
+      }
+    }
+  }
+
+  return {
+    ...(edges.size === 0
+      ? {}
+      : {
+          happensBefore: [
+            ...edges.values(),
+          ],
+        }),
+    ...(declared?.hiddenDependencySurfaces ===
+      undefined
+      ? {}
+      : {
+          hiddenDependencySurfaces:
+            declared.hiddenDependencySurfaces,
+        }),
+  };
+}
+
 export function operationsIndependent<T>(
   a: ScheduledOperation<T>,
   b: ScheduledOperation<T>,
@@ -68,6 +157,12 @@ export function operationsIndependent<T>(
   if (
     happensBefore(a.id, b.id, semantics) ||
     happensBefore(b.id, a.id, semantics)
+  ) {
+    return false;
+  }
+
+  if (
+    operationsHaveGenerationConflict(a, b)
   ) {
     return false;
   }
@@ -164,10 +259,15 @@ export function exploreInterleavings<T>(
   const operationIds = new Set(
     operations.map((item) => item.id),
   );
+  const concurrency =
+    effectiveConcurrencySemantics(
+      operations,
+      options.concurrency,
+    );
   const semanticErrors =
     validateConcurrencySemantics(
       operationIds,
-      options.concurrency ?? {},
+      concurrency,
     );
   if (semanticErrors.length > 0) {
     throw new Error(
@@ -175,6 +275,21 @@ export function exploreInterleavings<T>(
         semanticErrors.join("; "),
     );
   }
+
+  const generationDependencyPairs =
+    operations.reduce(
+      (count, operation, index) =>
+        count +
+        operations
+          .slice(index + 1)
+          .filter((other) =>
+            operationsHaveGenerationConflict(
+              operation,
+              other,
+            )
+          ).length,
+      0,
+    );
 
   const schedules: ScheduledOperation<T>[][] = [];
   let exploredNodes = 0;
@@ -219,7 +334,7 @@ export function exploreInterleavings<T>(
         !operationIsEnabledByHappensBefore(
           next.id,
           scheduledIds,
-          options.concurrency,
+          concurrency,
         )
       ) {
         blockedByHappensBefore += 1;
@@ -230,7 +345,7 @@ export function exploreInterleavings<T>(
         branchIsEquivalentToEarlierChoice(
           ordered,
           index,
-          options.concurrency,
+          concurrency,
         )
       ) {
         reducedEquivalentBranches += 1;
@@ -264,6 +379,7 @@ export function exploreInterleavings<T>(
     exploredNodes,
     reducedEquivalentBranches,
     blockedByHappensBefore,
+    generationDependencyPairs,
     truncated,
   };
 }
