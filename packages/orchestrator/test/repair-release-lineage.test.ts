@@ -54,6 +54,7 @@ function proof(
     claimStrength: "proven-runtime",
     effectiveEvidenceLevel:
       "proven-with-observed-outcome",
+    proofState: "causal",
     blastRadiusDisposition: "minimal",
     admissionDisposition: "eligible",
     preservationContractId: "preserve:tx-1",
@@ -201,6 +202,24 @@ describe("repair release lineage", () => {
       "runtime",
       "strategy",
     ]);
+  });
+
+  it("blocks guarded intervention proof from release", () => {
+    const repairProof = proof({
+      diagnosticDisposition: "guarded-repair-eligible",
+      proofState: "intervention-supported",
+      admissionDisposition: "guarded",
+    });
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      completeLedger(proof()),
+      basis,
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/causal root-cause proof/);
   });
 
   it("blocks stale proof and returns transitively invalidated lineage", () => {
