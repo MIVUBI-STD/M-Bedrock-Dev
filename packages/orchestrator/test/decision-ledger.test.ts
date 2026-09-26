@@ -144,6 +144,8 @@ describe("decision ledger", () => {
       kind: "release-admission",
       basis: {
         runtimeEvidenceRevision: "runtime-r1",
+        preservationContractRevision: "preservation-contract-r1",
+        preservationBaselineRevision: "preservation-baseline-r1",
       },
       upstreamDecisionIds: ["child"],
     });
@@ -247,6 +249,8 @@ describe("decision ledger", () => {
       kind: "release-admission",
       basis: {
         runtimeEvidenceRevision: "runtime-r1",
+        preservationContractRevision: "preservation-contract-r1",
+        preservationBaselineRevision: "preservation-baseline-r1",
       },
       upstreamDecisionIds: ["contract-bound"],
     });
