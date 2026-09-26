@@ -31,6 +31,7 @@ Use this before broad repository search.
 | Bedrock LevelDB snapshot/transport | adapters/leveldb/ |
 | World DB semantic decoding | analyzers/world-db/ |
 | Script source/module/capability analysis | analyzers/scripts/ |
+| Gameplay-intent signal extraction from authored source evidence | analyzers/gameplay-intent/ |
 | File/path discovery | analyzers/discovery/ |
 | Manifest semantics + compatibility fact extraction | analyzers/manifest/ |
 | Function source/reference extraction | analyzers/functions/ |

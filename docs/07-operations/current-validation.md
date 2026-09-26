@@ -41,7 +41,7 @@ Inferred intent is capped at probable defect.
 
 ## Still unproven
 
-- automatic gameplay-intent extraction from the supplied map corpus;
+- full automatic gameplay-intent extraction from the supplied map corpus; a first static source-signal extractor now exists;
 - coverage quality on bundled/minified map scripts;
 - cross-version historical intent reconstruction;
 - actual semantic differences for most runtime classes;

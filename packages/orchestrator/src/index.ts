@@ -128,3 +128,4 @@ export * from "./provider-backed-repair-workflow.js";
 export * from "./semantic-ir-stage.js";
 export * from "./semantic-ir-diagnostics.js";
 export * from "./repair-preservation-verification.js";
+export * from "./gameplay-intent-stage.js";
