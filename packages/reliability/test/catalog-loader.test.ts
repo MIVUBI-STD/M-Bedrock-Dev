@@ -34,7 +34,9 @@ describe("reliability catalog loader", () => {
       coverage: [{
         domain: "commands",
         lane: "static",
-        state: "partial"
+        state: "partial",
+        evidence: "Fixture proves the loader accepts evidence-backed partial coverage.",
+        proofPaths: ["fixture://commands-static"]
       }]
     }));
 
