@@ -54,6 +54,18 @@ function script(): ParsedScriptFile {
       literal: "active",
       source,
     }],
+    stateMutations: [{
+      target: "session.state",
+      targetName: "state",
+      value: {
+        kind: "member",
+        owner: "SessionState",
+        member: "Active",
+        symbol: "SessionState.Active",
+      },
+      executionRegion: "function:resetArena",
+      source,
+    }],
     capabilities: [],
   };
 }
@@ -83,6 +95,15 @@ describe("gameplay intent analyzer", () => {
       result.signals.some(
         (signal) =>
           signal.subjectKey === "resource:coins",
+      ),
+    ).toBe(true);
+
+    expect(
+      result.relations.some(
+        (relation) =>
+          relation.edgeKind === "transitions-to" &&
+          relation.toSubjectKey ===
+            "state:session-state-active",
       ),
     ).toBe(true);
   });

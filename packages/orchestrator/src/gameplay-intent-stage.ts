@@ -1,5 +1,6 @@
 import {
   extractGameplayIntentSignals,
+  type GameplayIntentRelationSignal,
   type GameplayIntentSignal,
 } from "../../../analyzers/gameplay-intent/src/index.js";
 import type {
@@ -7,6 +8,7 @@ import type {
 } from "../../../analyzers/scripts/src/index.js";
 import {
   validateGameplayIntentModel,
+  type GameplayIntentEdge,
   type GameplayIntentEvidence,
   type GameplayIntentModel,
   type GameplayIntentNode,
@@ -27,7 +29,9 @@ const STATUS_RANK: Readonly<Record<GameplayIntentStatus, number>> = {
   authored: 2,
 };
 
-function evidenceId(signal: GameplayIntentSignal): string {
+function evidenceId(
+  signal: GameplayIntentSignal | GameplayIntentRelationSignal,
+): string {
   return "intent-evidence:" + signal.id;
 }
 
@@ -40,6 +44,7 @@ export function buildGameplayIntentModel(
 
   const evidence = new Map<string, GameplayIntentEvidence>();
   const nodes = new Map<string, GameplayIntentNode>();
+  const edges = new Map<string, GameplayIntentEdge>();
 
   for (const signal of extracted.signals) {
     const id = evidenceId(signal);
@@ -76,6 +81,32 @@ export function buildGameplayIntentModel(
     });
   }
 
+  for (const relation of extracted.relations) {
+    if (
+      !nodes.has(relation.fromSubjectKey) ||
+      !nodes.has(relation.toSubjectKey)
+    ) {
+      continue;
+    }
+
+    const id = evidenceId(relation);
+    evidence.set(id, {
+      id,
+      origin: relation.evidenceOrigin,
+      locator: relation.locator,
+      summary: relation.summary,
+    });
+
+    edges.set(relation.id, {
+      id: relation.id,
+      from: relation.fromSubjectKey,
+      to: relation.toSubjectKey,
+      kind: relation.edgeKind,
+      status: relation.status,
+      evidenceIds: [id],
+    });
+  }
+
   const model: GameplayIntentModel = {
     schemaVersion: 1,
     id: input.id,
@@ -88,7 +119,9 @@ export function buildGameplayIntentModel(
     nodes: [...nodes.values()].sort(
       (a, b) => a.id.localeCompare(b.id),
     ),
-    edges: [],
+    edges: [...edges.values()].sort(
+      (a, b) => a.id.localeCompare(b.id),
+    ),
     invariants: [],
     unknowns:
       nodes.size === 0

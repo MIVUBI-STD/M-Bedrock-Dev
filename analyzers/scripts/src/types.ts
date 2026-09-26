@@ -212,5 +212,6 @@ export interface ParsedScriptFile {
   moduleMemberAccesses: ScriptModuleMemberAccess[];
   importedSymbols: ScriptImportedSymbol[];
   enumValueComparisons: ScriptEnumValueComparison[];
+  stateMutations?: ScriptStateMutation[];
   capabilities: ScriptCapabilityUse[];
 }

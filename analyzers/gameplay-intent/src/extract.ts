@@ -5,6 +5,7 @@ import type {
   GameplayIntentNodeKind,
 } from "../../../packages/gameplay-intent/src/index.js";
 import type {
+  GameplayIntentRelationSignal,
   GameplayIntentSignal,
   GameplayIntentSignalSet,
 } from "./types.js";
@@ -129,6 +130,15 @@ export function extractGameplayIntentSignals(
   scripts: readonly ParsedScriptFile[],
 ): GameplayIntentSignalSet {
   const signals = new Map<string, GameplayIntentSignal>();
+  const relations = new Map<string, GameplayIntentRelationSignal>();
+
+  const pushRelation = (
+    relation: GameplayIntentRelationSignal,
+  ): void => {
+    if (!relations.has(relation.id)) {
+      relations.set(relation.id, relation);
+    }
+  };
 
   for (const script of scripts) {
     const path = script.source.relativePath;
@@ -178,8 +188,80 @@ export function extractGameplayIntentSignals(
     }
 
     for (const call of script.localFunctionCalls) {
-      const signal = lexicalSignal(path, call.targetName);
-      if (signal) pushSignal(signals, signal);
+      const target = lexicalSignal(path, call.targetName);
+      if (target) pushSignal(signals, target);
+
+      const callerName = call.callerRegion.replace(/^function:/, "");
+      const caller =
+        call.callerRegion === "module"
+          ? undefined
+          : lexicalSignal(path, callerName);
+      if (caller) pushSignal(signals, caller);
+
+      if (caller && target) {
+        pushRelation({
+          id:
+            "relation:requires:" +
+            caller.subjectKey + ":" +
+            target.subjectKey + ":" +
+            slug(path),
+          fromSubjectKey: caller.subjectKey,
+          toSubjectKey: target.subjectKey,
+          edgeKind: "requires",
+          status: "inferred",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "A semantically classified source region directly calls another classified gameplay region.",
+        });
+      }
+    }
+
+    for (const mutation of script.stateMutations ?? []) {
+      const sourceName =
+        mutation.executionRegion === "module"
+          ? undefined
+          : mutation.executionRegion.replace(/^function:/, "");
+      const sourceSignal = sourceName
+        ? lexicalSignal(path, sourceName)
+        : undefined;
+      if (sourceSignal) pushSignal(signals, sourceSignal);
+
+      const rawValue =
+        mutation.value.kind === "member"
+          ? mutation.value.owner + " " + mutation.value.member
+          : mutation.targetName + " " + mutation.value.literal;
+      const stateKey = "state:" + slug(rawValue);
+      const stateSignal: GameplayIntentSignal = {
+        id: "signal:" + stateKey + ":" + slug(path),
+        subjectKey: stateKey,
+        nodeKind: "state",
+        label: title(rawValue),
+        status: "authored",
+        evidenceOrigin: "source-code",
+        locator: path,
+        summary:
+          "Source explicitly assigns a gameplay state-like variable to this value.",
+      };
+      pushSignal(signals, stateSignal);
+
+      if (sourceSignal) {
+        pushRelation({
+          id:
+            "relation:transitions-to:" +
+            sourceSignal.subjectKey + ":" +
+            stateKey + ":" +
+            slug(path),
+          fromSubjectKey: sourceSignal.subjectKey,
+          toSubjectKey: stateKey,
+          edgeKind: "transitions-to",
+          status: "inferred",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "A classified gameplay source region explicitly assigns the target state value.",
+        });
+      }
     }
 
     for (const event of script.events) {
@@ -219,6 +301,9 @@ export function extractGameplayIntentSignals(
     schemaVersion: 1,
     signals: [...signals.values()].sort(
       (a, b) => a.subjectKey.localeCompare(b.subjectKey),
+    ),
+    relations: [...relations.values()].sort(
+      (a, b) => a.id.localeCompare(b.id),
     ),
   };
 }

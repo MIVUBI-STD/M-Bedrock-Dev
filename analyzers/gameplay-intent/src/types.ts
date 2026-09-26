@@ -1,4 +1,5 @@
 import type {
+  GameplayIntentEdgeKind,
   GameplayIntentEvidenceOrigin,
   GameplayIntentNodeKind,
   GameplayIntentStatus,
@@ -15,7 +16,19 @@ export interface GameplayIntentSignal {
   summary: string;
 }
 
+export interface GameplayIntentRelationSignal {
+  id: string;
+  fromSubjectKey: string;
+  toSubjectKey: string;
+  edgeKind: GameplayIntentEdgeKind;
+  status: GameplayIntentStatus;
+  evidenceOrigin: GameplayIntentEvidenceOrigin;
+  locator: string;
+  summary: string;
+}
+
 export interface GameplayIntentSignalSet {
   schemaVersion: 1;
   signals: readonly GameplayIntentSignal[];
+  relations: readonly GameplayIntentRelationSignal[];
 }

@@ -51,6 +51,18 @@ function parsed(): ParsedScriptFile {
       literal: "active",
       source,
     }],
+    stateMutations: [{
+      target: "session.state",
+      targetName: "state",
+      value: {
+        kind: "member",
+        owner: "SessionState",
+        member: "Active",
+        symbol: "SessionState.Active",
+      },
+      executionRegion: "function:resetSession",
+      source,
+    }],
     capabilities: [],
   };
 }
@@ -75,6 +87,14 @@ describe("gameplay intent stage", () => {
         (node) =>
           node.kind === "lifecycle" &&
           node.status === "authored",
+      ),
+    ).toBe(true);
+
+    expect(
+      model.edges.some(
+        (edge) =>
+          edge.kind === "transitions-to" &&
+          edge.to === "state:session-state-active",
       ),
     ).toBe(true);
 

@@ -15,6 +15,7 @@ import type {
   ScriptImportedSymbol,
   ScriptModuleMemberAccess,
   ScriptEnumValueComparison,
+  ScriptStateMutation,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -652,6 +653,7 @@ export function parseScriptFile(
   const moduleMemberAccesses: ScriptModuleMemberAccess[] = [];
   const importedSymbols: ScriptImportedSymbol[] = [];
   const enumValueComparisons: ScriptEnumValueComparison[] = [];
+  const stateMutations: ScriptStateMutation[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
   const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
   const canonicalMinecraftMember = (
@@ -684,6 +686,73 @@ export function parseScriptFile(
       };
     }
 
+    return undefined;
+  };
+
+  const STATE_TARGET_PATTERN = /(?:^|[_$.-])(state|status|phase|stage|mode)(?:$|[_$.-])/i;
+
+  const stateMutationTarget = (
+    expression: ts.Expression,
+  ): { target: string; targetName: string } | undefined => {
+    if (ts.isIdentifier(expression)) {
+      if (!STATE_TARGET_PATTERN.test(expression.text)) return undefined;
+      return {
+        target: expression.text,
+        targetName: expression.text,
+      };
+    }
+    if (ts.isPropertyAccessExpression(expression)) {
+      const target = expression.getText(file);
+      const targetName = expression.name.text;
+      if (!STATE_TARGET_PATTERN.test(targetName)) return undefined;
+      return { target, targetName };
+    }
+    return undefined;
+  };
+
+  const stateMutationValue = (
+    expression: ts.Expression,
+  ): ScriptStateMutation["value"] | undefined => {
+    if (
+      ts.isStringLiteralLike(expression) ||
+      ts.isNoSubstitutionTemplateLiteral(expression)
+    ) {
+      return {
+        kind: "literal",
+        literal: expression.text,
+      };
+    }
+    if (ts.isNumericLiteral(expression)) {
+      return {
+        kind: "literal",
+        literal: expression.text,
+      };
+    }
+    if (
+      expression.kind === ts.SyntaxKind.TrueKeyword ||
+      expression.kind === ts.SyntaxKind.FalseKeyword
+    ) {
+      return {
+        kind: "literal",
+        literal:
+          expression.kind === ts.SyntaxKind.TrueKeyword
+            ? "true"
+            : "false",
+      };
+    }
+    if (ts.isPropertyAccessExpression(expression)) {
+      const chain = propertyAccessChain(expression);
+      if (chain.length < 2) return undefined;
+      const owner = chain.slice(0, -1).join(".");
+      const member = chain.at(-1);
+      if (!member) return undefined;
+      return {
+        kind: "member",
+        owner,
+        member,
+        symbol: chain.join("."),
+      };
+    }
     return undefined;
   };
 
@@ -831,6 +900,19 @@ export function parseScriptFile(
     }
 
     if (ts.isBinaryExpression(node)) {
+      if (node.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+        const target = stateMutationTarget(node.left);
+        const value = stateMutationValue(node.right);
+        if (target && value) {
+          stateMutations.push({
+            ...target,
+            value,
+            executionRegion: localExecutionRegionId(node, file),
+            source: lineSource(file, node, source),
+          });
+        }
+      }
+
       const operatorKind = node.operatorToken.kind;
       const operator =
         operatorKind === ts.SyntaxKind.EqualsEqualsToken ? "==" :
@@ -1085,6 +1167,7 @@ export function parseScriptFile(
     moduleMemberAccesses,
     importedSymbols,
     enumValueComparisons,
+    stateMutations,
     capabilities,
   };
 }
