@@ -181,12 +181,13 @@ describe("authorized repair mutation", () => {
 
   it("blocks causal mutation when preservation readiness is missing", () => {
     const tx = transaction();
-    const withoutPreservation: RepairProofBundle = {
-      ...proof(tx.id, "eligible"),
-      preservationContractId: undefined,
-      preservationReadinessDisposition: undefined,
-      preservationBaselineEvidenceIds: undefined,
-    };
+    const original = proof(tx.id, "eligible");
+    const {
+      preservationContractId: _contractId,
+      preservationReadinessDisposition: _readiness,
+      preservationBaselineEvidenceIds: _baselineEvidence,
+      ...withoutPreservation
+    } = original;
 
     expect(authorizeRepairMutation(
       tx,
