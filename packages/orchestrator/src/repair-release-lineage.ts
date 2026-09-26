@@ -1,5 +1,6 @@
 import {
   CONTRACT_REGISTRY_REVISION,
+  causalProofAtLeast,
 } from "../../project-model/src/index.js";
 import type {
   DecisionBasisRevision,
@@ -277,6 +278,23 @@ export function decideRepairReleaseWithLineage(
       lineageDecisionIds: [],
       reasons: [
         "Release requires preservationContractRevision and preservationBaselineRevision in the repair proof decision basis.",
+      ],
+    };
+  }
+
+  if (!causalProofAtLeast(proof.proofState, "causal")) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Release requires causal root-cause proof; guarded intervention evidence is not releaseable.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Repair proof state must be causal or stronger before release.",
       ],
     };
   }
