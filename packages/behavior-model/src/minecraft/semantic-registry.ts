@@ -360,10 +360,12 @@ export function resolveMinecraftSemanticClaimRevision(
     };
   }
 
+  const resolved = chosenScope[0]!;
+
   return {
     query,
     entries: chosenScope,
-    resolved: chosenScope[0],
+    resolved,
     reasons: [
       "Exactly one active semantic claim revision matches the requested scope.",
     ],
