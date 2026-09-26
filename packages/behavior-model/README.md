@@ -20,39 +20,44 @@ The kernel owns:
 - deterministic transition preconditions/effects;
 - declared Minecraft nondeterminism surfaces;
 - finite execution traces;
-- temporal properties:
-  - ALWAYS;
-  - EVENTUALLY;
-  - LEADS-TO;
-  - UNTIL;
-- conservative three-valued evaluation:
-  - satisfied;
-  - violated;
-  - unknown.
+- temporal properties;
+- conservative three-valued evaluation.
 
 Incomplete traces must not prove open-ended temporal claims.
 
-## Minecraft overlays
+## Minecraft semantic overlays
 
-Initial model fragments cover:
+Runtime classes are separate:
 
-- player/session lifecycle;
-- entity lifecycle/navigation ownership;
-- chunk loaded-for-script residency;
-- deferred callback generation safety.
+- Bedrock retail client;
+- listen server;
+- dedicated server;
+- Realm;
+- Preview;
+- Education host;
+- Editor.
 
-These fragments are specification templates, not claims that Minecraft implements the transition exactly as written.
+Claims do not inherit across runtime classes unless inheritance names the source overlay and explicit claim IDs.
 
-A concrete analysis must bind each semantic variable/transition to source, documented knowledge, project policy, or runtime evidence before using it as engine truth.
+## Versioned semantic-claim registry
 
-## Composition
+Runtime/version-specific claim revisions are stored independently from overlays.
 
-Multiple scoped fragments can share one semantic variable declaration while operating on distinct state instances.
+The registry:
 
-This avoids the common modeling error where two players or two arenas collapse into a single abstract state cell.
+- keeps exact runtime-class and Minecraft-version scope;
+- retains provenance/evidence ceiling;
+- supports explicit supersession;
+- detects active contradictory dispositions;
+- refuses automatic resolution while conflict remains;
+- prefers exact-version claims over unversioned fallback claims.
 
-## Non-goals
+A documented claim and a contradictory runtime observation are not silently ranked. They remain an explicit conflict until a stronger reconciled revision supersedes both.
 
-The current package is not a complete Minecraft simulator, model checker, causal engine, or runtime oracle.
+## Safety
 
-It does not assume Bedrock and Education have identical semantics.
+Designed model fragments remain specifications.
+
+Observed behavior does not automatically become a general engine fact.
+
+Absence of a claim is unknown, not false.
