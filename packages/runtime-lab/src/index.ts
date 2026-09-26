@@ -7,3 +7,4 @@ export * from "./promotion.js";
 export * from "./runner.js";
 export * from "./catalog.js";
 export * from "./bedrock-profile.js";
+export * from "./bedrock-host.js";

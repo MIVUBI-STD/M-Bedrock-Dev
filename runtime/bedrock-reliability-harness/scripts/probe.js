@@ -157,36 +157,44 @@ system.runInterval(() => {
 
     try {
       const result = execute(request);
+      const ok = result.state !== "unknown";
       emit({
         schemaVersion: 1,
         requestId: request.requestId,
         probeId: request.probeId,
         runtimeTick: system.currentTick,
-        ok: true,
+        ok,
         state: result.state,
-        ...(outcomeId(request, result.state) === undefined
-          ? {}
-          : { outcomeId: outcomeId(request, result.state) }),
+        ...(ok && outcomeId(request, result.state) !== undefined
+          ? { outcomeId: outcomeId(request, result.state) }
+          : {}),
         evidence: evidence(
           request,
           result.state,
           result.note
         ),
-        ...(result.value === undefined ? {} : { value: result.value })
+        ...(result.value === undefined ? {} : { value: result.value }),
+        ...(ok
+          ? {}
+          : {
+              error:
+                result.note ??
+                "Runtime probe returned unknown."
+            })
       });
     } catch (error) {
-      const state = "unknown";
       emit({
         schemaVersion: 1,
         requestId: request.requestId,
         probeId: request.probeId,
         runtimeTick: system.currentTick,
         ok: false,
-        state,
-        ...(outcomeId(request, state) === undefined
-          ? {}
-          : { outcomeId: outcomeId(request, state) }),
-        evidence: evidence(request, state, String(error)),
+        state: "unknown",
+        evidence: evidence(
+          request,
+          "unknown",
+          String(error)
+        ),
         error: String(error)
       });
     }

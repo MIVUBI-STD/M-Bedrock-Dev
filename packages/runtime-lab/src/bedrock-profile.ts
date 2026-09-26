@@ -9,6 +9,7 @@ export const BEDROCK_PROFILE_PREFIX =
 
 export interface BedrockHarnessProfileAnnouncement {
   schemaVersion: 1;
+  bindingId: string;
   runtimeTick: number;
   profile: MinecraftRuntimeProfile;
   binding: {
@@ -50,6 +51,8 @@ export function parseBedrockHarnessProfileAnnouncement(
   if (
     !isRecord(parsed) ||
     parsed.schemaVersion !== 1 ||
+    typeof parsed.bindingId !== "string" ||
+    !parsed.bindingId.trim() ||
     !Number.isInteger(parsed.runtimeTick) ||
     !isRecord(parsed.profile) ||
     !isRecord(parsed.binding) ||
@@ -75,6 +78,8 @@ export function captureBedrockHarnessProfile(
         {
           id:
             "bedrock-harness:profile-binding:" +
+            announcement.bindingId +
+            ":" +
             announcement.runtimeTick,
           kind: "runtime-observation",
           detail:

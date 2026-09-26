@@ -7,6 +7,7 @@ import {
 
 const payload = {
   schemaVersion: 1,
+  bindingId: "binding:1",
   runtimeTick: 42,
   profile: {
     schemaVersion: 2,
@@ -62,20 +63,17 @@ describe("bedrock target profile adapter", () => {
     });
     expect(capture?.fingerprint)
       .toMatch(/^sha256:[0-9a-f]{64}$/);
-    expect(capture?.evidence[0]?.kind)
-      .toBe("runtime-observation");
+    expect(capture?.evidence[0]?.id)
+      .toContain("binding:1");
   });
 
-  it("rejects announcements without an explicit session binding", () => {
+  it("rejects announcements without correlation identity", () => {
     expect(() =>
       parseBedrockHarnessProfileAnnouncement(
         BEDROCK_PROFILE_PREFIX +
           JSON.stringify({
             ...payload,
-            binding: {
-              source: "script-event",
-              sessionBound: false,
-            },
+            bindingId: "",
           }),
       )
     ).toThrow(/Invalid Bedrock runtime profile announcement/);

@@ -8,7 +8,7 @@ The deterministic contracts live in:
 packages/runtime-lab/
 ```
 
-The runtime directory owns host-specific fixtures, adapters, and experiment assets that eventually execute those contracts in Minecraft.
+The runtime directory owns host-specific fixtures, adapters, and experiment assets that execute those contracts in Minecraft.
 
 ## Safety model
 
@@ -30,61 +30,71 @@ experiment definition
 
 A single trial cannot be promoted as repeatable knowledge.
 
-A control/treatment campaign cannot be called intervention-supported when:
-
-- the experiment definition changed between trials;
-- target profile or fixture differs;
-- environment fingerprints differ;
-- arm/run identities are duplicated;
-- outcome evidence is unknown;
-- minimum repetitions were not completed;
-- control and treatment do not differ on a declared factor.
-
 ## Target-profile binding
 
 The Bedrock reliability harness does not claim a Minecraft version, edition, or host from a hard-coded default.
 
-A controller must explicitly bind a schema-version 2 runtime profile to the active script session with:
+Each trial binds a schema-version 2 runtime profile with a correlation identity:
 
-```text
-/scriptevent m-bedrock:target-profile <runtime-profile-json>
+```json
+{
+  "schemaVersion": 1,
+  "bindingId": "<experiment:arm:run:profile>",
+  "profile": { "...": "MinecraftRuntimeProfile v2" }
+}
 ```
 
-The harness then emits:
+through:
+
+```text
+m-bedrock:target-profile
+```
+
+The harness acknowledges with:
 
 ```text
 [M-BEDROCK-PROFILE]{...}
 ```
 
-The repository adapter validates the profile and computes the stable target-profile fingerprint. Volatile player count is excluded from target identity so joining/leaving players cannot silently change the experiment target.
+The host accepts only the matching `bindingId`, validates the returned profile, and compares its canonical fingerprint with the experiment target.
 
-This binding proves that the declared profile was attached to the active runtime session. It does not independently prove that every operator-supplied field is engine-introspected.
+Volatile player count is excluded from target identity so player joins/leaves cannot silently change the target fingerprint.
 
-## Runtime host boundary
+This proves profile/session binding. It does not independently prove that every declared profile field is engine-introspected.
 
-`RuntimeExperimentHost` is an adapter boundary.
+## First Bedrock host executor
 
-Future hosts may include:
+`createBedrockHarnessExperimentHost()` implements the Runtime Lab host contract over a `BedrockHarnessChannel`.
 
-- Minecraft Bedrock local client;
-- Minecraft Education local host;
-- Bedrock Dedicated Server;
-- controlled multi-client runners.
+The channel owns only physical I/O:
 
-The host executes protocol action IDs and returns trial evidence. The core lab validates the returned identity and evidence instead of trusting the host blindly.
+```text
+sendScriptEvent(id, payload)
+waitForLine(prefix, correlation, timeout)
+```
+
+The host owns experiment semantics and currently accepts read-only, observe-only steps:
+
+- `probe.chunk-loaded`;
+- `probe.entity-resolvable`;
+- `probe.tag-present`;
+- `probe.scoreboard-value`.
+
+Factor values may be referenced as `$factor.<id>` in protocol parameters. Request IDs include experiment, arm, run, and step identities.
+
+Unknown probe results fail closed as unknown evidence. They are not converted into absent evidence.
 
 ## Current proof ceiling
 
-Repository/CI work proves only:
+Repository/CI can prove:
 
-- experiment schema;
-- deterministic planning;
-- revision binding;
-- trial validation;
-- qualification logic;
-- evidence provenance semantics;
-- target-profile capture/export and Bedrock profile-log parsing.
+- experiment schema and qualification logic;
+- target-profile capture/fingerprint semantics;
+- per-trial profile correlation;
+- deterministic protocol-to-probe translation;
+- runtime exchange validation;
+- host refusal on profile drift or unsupported mutation.
 
-It does **not** prove that any experiment has run successfully inside Minecraft.
+Repository/CI still cannot prove Minecraft runtime behavior by itself.
 
-Until target-runtime trial evidence exists, runtime reliability coverage remains unknown/partial exactly as declared elsewhere.
+A real client/BDS/Education channel must execute these messages and return actual runtime output before evidence can be called LOCAL GAME VERIFIED or LIVE GAME VERIFIED.

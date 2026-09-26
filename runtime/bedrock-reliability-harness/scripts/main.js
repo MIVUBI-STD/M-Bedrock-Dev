@@ -145,22 +145,27 @@ function emit(snapshot) {
 function bindRuntimeProfile(message) {
   if (
     !message ||
-    message.schemaVersion !== 2 ||
-    !message.product ||
-    message.product.family !== "bedrock-engine" ||
-    !message.product.version ||
-    !message.host ||
-    !message.scriptModules ||
-    !message.inventory
+    message.schemaVersion !== 1 ||
+    typeof message.bindingId !== "string" ||
+    !message.bindingId ||
+    !message.profile ||
+    message.profile.schemaVersion !== 2 ||
+    !message.profile.product ||
+    message.profile.product.family !== "bedrock-engine" ||
+    !message.profile.product.version ||
+    !message.profile.host ||
+    !message.profile.scriptModules ||
+    !message.profile.inventory
   ) {
     throw new Error(
-      "Runtime profile script event requires a complete schemaVersion 2 target profile."
+      "Runtime profile script event requires a bindingId and complete schemaVersion 2 target profile."
     );
   }
 
-  activeRuntimeProfile = message;
+  activeRuntimeProfile = message.profile;
   console.warn(`${PROFILE_PREFIX}${JSON.stringify({
     schemaVersion: 1,
+    bindingId: message.bindingId,
     runtimeTick: system.currentTick,
     profile: activeRuntimeProfile,
     binding: {
@@ -199,6 +204,9 @@ world.afterEvents.scriptEventReceive.subscribe((event) => {
           predicate: "runtime-probe-request-valid",
           state: "unknown",
           confidence: "unknown",
+          observedAt: {
+            tick: system.currentTick
+          },
           note: String(error)
         },
         error: String(error)
