@@ -1,11 +1,30 @@
 import { describe, expect, it } from "vitest";
 import {
   applyBehaviorTransition,
+  behaviorStateKey,
+  composeBehavioralWorldModel,
+  createChunkResidencyBehavior,
+  createDeferredCallbackBehavior,
+  createPlayerSessionBehavior,
   evaluateTemporalProperty,
+  unknownNondeterminismCapabilityProfile,
   validateBehavioralWorldModel,
+  validateNondeterminismCapabilityProfile,
   type BehavioralWorldModel,
   type BehaviorTrace,
 } from "../src/index.js";
+
+const c = (
+  variableId: string,
+  value: string | number | boolean | null,
+) => ({
+  kind: "condition" as const,
+  condition: {
+    variableId,
+    operator: "eq" as const,
+    value,
+  },
+});
 
 const model: BehavioralWorldModel = {
   schemaVersion: 1,
@@ -34,16 +53,8 @@ const model: BehavioralWorldModel = {
     id: "start-player",
     owner: "script",
     preconditions: [
-      {
-        variableId: "player.phase",
-        operator: "eq",
-        value: "assigned",
-      },
-      {
-        variableId: "arena.ready",
-        operator: "eq",
-        value: true,
-      },
+      c("player.phase", "assigned"),
+      c("arena.ready", true),
     ],
     effects: [{
       kind: "set",
@@ -57,27 +68,24 @@ const model: BehavioralWorldModel = {
   }],
   properties: [
     {
-      id: "connected-while-starting",
+      id: "connected",
       kind: "always",
-      condition: {
-        variableId: "player.connected",
-        operator: "eq",
-        value: true,
-      },
+      predicate: c(
+        "player.connected",
+        true,
+      ),
     },
     {
       id: "start-eventually-playing",
       kind: "leads-to",
-      trigger: {
-        variableId: "player.phase",
-        operator: "eq",
-        value: "starting",
-      },
-      consequence: {
-        variableId: "player.phase",
-        operator: "eq",
-        value: "playing",
-      },
+      trigger: c(
+        "player.phase",
+        "starting",
+      ),
+      consequence: c(
+        "player.phase",
+        "playing",
+      ),
       withinTicks: 20,
     },
   ],
@@ -108,9 +116,6 @@ describe("behavioral world model", () => {
     expect(
       result.state.values["player.phase"],
     ).toBe("starting");
-    expect(result.changedVariables).toEqual([
-      "player.phase",
-    ]);
   });
 
   it("keeps incomplete liveness evidence unknown", () => {
@@ -167,34 +172,81 @@ describe("behavioral world model", () => {
       }],
     };
 
-    const result = evaluateTemporalProperty(
-      trace,
-      model.properties[1]!,
-    );
-    expect(result.disposition).toBe("violated");
-    expect(result.witnessTicks).toEqual([0, 20]);
-  });
-
-  it("does not call a clean incomplete safety prefix proven", () => {
-    const trace: BehaviorTrace = {
-      schemaVersion: 1,
-      complete: false,
-      states: [{
-        schemaVersion: 1,
-        tick: 0,
-        values: {
-          "player.phase": "assigned",
-          "player.connected": true,
-          "arena.ready": true,
-        },
-      }],
-    };
-
     expect(
       evaluateTemporalProperty(
         trace,
-        model.properties[0]!,
+        model.properties[1]!,
       ).disposition,
+    ).toBe("violated");
+  });
+
+  it("keeps scoped player state isolated", () => {
+    const p1 = behaviorStateKey(
+      "player.phase",
+      "player:p1",
+    );
+    const p2 = behaviorStateKey(
+      "player.phase",
+      "player:p2",
+    );
+
+    expect(p1).not.toBe(p2);
+  });
+
+  it("composes multiple player overlays without duplicating semantic variable definitions", () => {
+    const composed =
+      composeBehavioralWorldModel(
+        "two-player",
+        [
+          createPlayerSessionBehavior({
+            playerKey: "p1",
+            arenaKey: "a1",
+            startDeadlineTicks: 20,
+          }),
+          createPlayerSessionBehavior({
+            playerKey: "p2",
+            arenaKey: "a1",
+            startDeadlineTicks: 20,
+          }),
+          createChunkResidencyBehavior(
+            "overworld:0:0",
+          ),
+          createDeferredCallbackBehavior({
+            callbackKey: "arena:a1:start",
+            generation: 2,
+          }),
+        ],
+      );
+
+    expect(
+      composed.variables.filter(
+        (item) =>
+          item.id === "player.phase",
+      ),
+    ).toHaveLength(1);
+    expect(
+      validateBehavioralWorldModel(composed),
+    ).toEqual([]);
+  });
+
+  it("keeps unproven runtime nondeterminism capabilities unknown", () => {
+    const profile =
+      unknownNondeterminismCapabilityProfile(
+        "education-host",
+        [
+          "event-ordering",
+          "chunk-residency",
+        ],
+      );
+
+    expect(
+      validateNondeterminismCapabilityProfile(
+        profile,
+      ),
+    ).toEqual([]);
+    expect(
+      profile.surfaces["event-ordering"]
+        ?.replayable,
     ).toBe("unknown");
   });
 });

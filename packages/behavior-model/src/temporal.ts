@@ -1,5 +1,5 @@
 import {
-  evaluateBehaviorCondition,
+  evaluateBehaviorPredicate,
 } from "./condition.js";
 import type {
   BehaviorTrace,
@@ -40,9 +40,9 @@ export function evaluateTemporalProperty(
   if (property.kind === "always") {
     const violation = states.find(
       (state) =>
-        !evaluateBehaviorCondition(
+        !evaluateBehaviorPredicate(
           state,
-          property.condition,
+          property.predicate,
         ),
     );
 
@@ -52,7 +52,7 @@ export function evaluateTemporalProperty(
         disposition: "violated",
         witnessTicks: [violation.tick],
         reason:
-          "The ALWAYS condition is false at an observed state.",
+          "The ALWAYS predicate is false at an observed state.",
       };
     }
 
@@ -63,7 +63,7 @@ export function evaluateTemporalProperty(
         : "unknown",
       witnessTicks: states.map((state) => state.tick),
       reason: trace.complete
-        ? "The ALWAYS condition held for the complete trace."
+        ? "The ALWAYS predicate held for the complete trace."
         : "The observed prefix satisfies ALWAYS so far, but the trace is incomplete.",
     };
   }
@@ -72,9 +72,9 @@ export function evaluateTemporalProperty(
     const startTick = states[0]!.tick;
     const witness = states.find(
       (state) =>
-        evaluateBehaviorCondition(
+        evaluateBehaviorPredicate(
           state,
-          property.condition,
+          property.predicate,
         ),
     );
 
@@ -89,7 +89,7 @@ export function evaluateTemporalProperty(
           disposition: "violated",
           witnessTicks: [witness.tick],
           reason:
-            "The EVENTUALLY condition became true only after its deadline.",
+            "The EVENTUALLY predicate became true only after its deadline.",
         };
       }
       return {
@@ -97,7 +97,7 @@ export function evaluateTemporalProperty(
         disposition: "satisfied",
         witnessTicks: [witness.tick],
         reason:
-          "The EVENTUALLY condition was observed.",
+          "The EVENTUALLY predicate was observed.",
       };
     }
 
@@ -117,7 +117,7 @@ export function evaluateTemporalProperty(
       witnessTicks: [lastTick],
       reason:
         expired || trace.complete
-          ? "The EVENTUALLY condition was not reached."
+          ? "The EVENTUALLY predicate was not reached."
           : "The trace ended before EVENTUALLY could be decided.",
     };
   }
@@ -128,7 +128,7 @@ export function evaluateTemporalProperty(
     for (let index = 0; index < states.length; index += 1) {
       const triggerState = states[index]!;
       if (
-        !evaluateBehaviorCondition(
+        !evaluateBehaviorPredicate(
           triggerState,
           property.trigger,
         )
@@ -139,7 +139,7 @@ export function evaluateTemporalProperty(
       const consequence = states
         .slice(index)
         .find((candidate) =>
-          evaluateBehaviorCondition(
+          evaluateBehaviorPredicate(
             candidate,
             property.consequence,
           )
@@ -213,7 +213,7 @@ export function evaluateTemporalProperty(
   let startTick: number | undefined;
   for (const state of states) {
     if (
-      evaluateBehaviorCondition(
+      evaluateBehaviorPredicate(
         state,
         property.until,
       )
@@ -226,14 +226,14 @@ export function evaluateTemporalProperty(
             ? [state.tick]
             : [startTick, state.tick],
         reason:
-          "The UNTIL terminal condition was reached while the hold condition remained valid.",
+          "The UNTIL terminal predicate was reached while the hold predicate remained valid.",
       };
     }
 
     startTick ??= state.tick;
 
     if (
-      !evaluateBehaviorCondition(
+      !evaluateBehaviorPredicate(
         state,
         property.hold,
       )
@@ -243,7 +243,7 @@ export function evaluateTemporalProperty(
         disposition: "violated",
         witnessTicks: [state.tick],
         reason:
-          "The UNTIL hold condition failed before the terminal condition.",
+          "The UNTIL hold predicate failed before the terminal predicate.",
       };
     }
 
@@ -259,7 +259,7 @@ export function evaluateTemporalProperty(
         disposition: "violated",
         witnessTicks: [startTick, state.tick],
         reason:
-          "The UNTIL terminal condition missed its deadline.",
+          "The UNTIL terminal predicate missed its deadline.",
       };
     }
   }
@@ -274,7 +274,7 @@ export function evaluateTemporalProperty(
       states.at(-1)!.tick,
     ],
     reason: trace.complete
-      ? "The UNTIL terminal condition was never reached."
+      ? "The UNTIL terminal predicate was never reached."
       : "The UNTIL obligation remains open in an incomplete trace.",
   };
 }

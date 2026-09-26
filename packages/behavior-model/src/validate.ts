@@ -1,6 +1,7 @@
 import type {
   BehavioralWorldModel,
   BehaviorCondition,
+  BehaviorPredicate,
   TemporalProperty,
 } from "./types.js";
 
@@ -26,6 +27,15 @@ function validateCondition(
         " references unknown variable: " +
         condition.variableId +
         ".",
+    );
+  }
+  if (
+    condition.scopeKey !== undefined &&
+    !condition.scopeKey.trim()
+  ) {
+    errors.push(
+      label +
+        " scopeKey must be non-empty when provided.",
     );
   }
 
@@ -59,6 +69,65 @@ function validateCondition(
   }
 }
 
+function validatePredicate(
+  predicate: BehaviorPredicate,
+  variables: ReadonlySet<string>,
+  label: string,
+  errors: string[],
+): void {
+  switch (predicate.kind) {
+    case "condition":
+      validateCondition(
+        predicate.condition,
+        variables,
+        label,
+        errors,
+      );
+      break;
+    case "all":
+    case "any":
+      if (predicate.predicates.length === 0) {
+        errors.push(
+          label +
+            " " +
+            predicate.kind +
+            " predicate must not be empty.",
+        );
+      }
+      predicate.predicates.forEach((item, index) =>
+        validatePredicate(
+          item,
+          variables,
+          label + "[" + index + "]",
+          errors,
+        )
+      );
+      break;
+    case "not":
+      validatePredicate(
+        predicate.predicate,
+        variables,
+        label + ".not",
+        errors,
+      );
+      break;
+    case "implies":
+      validatePredicate(
+        predicate.if,
+        variables,
+        label + ".if",
+        errors,
+      );
+      validatePredicate(
+        predicate.then,
+        variables,
+        label + ".then",
+        errors,
+      );
+      break;
+  }
+}
+
 function validateTemporal(
   property: TemporalProperty,
   variables: ReadonlySet<string>,
@@ -82,15 +151,15 @@ function validateTemporal(
   switch (property.kind) {
     case "always":
     case "eventually":
-      validateCondition(
-        property.condition,
+      validatePredicate(
+        property.predicate,
         variables,
         "Temporal property " + property.id,
         errors,
       );
       break;
     case "leads-to":
-      validateCondition(
+      validatePredicate(
         property.trigger,
         variables,
         "Temporal property " +
@@ -98,7 +167,7 @@ function validateTemporal(
           " trigger",
         errors,
       );
-      validateCondition(
+      validatePredicate(
         property.consequence,
         variables,
         "Temporal property " +
@@ -108,7 +177,7 @@ function validateTemporal(
       );
       break;
     case "until":
-      validateCondition(
+      validatePredicate(
         property.hold,
         variables,
         "Temporal property " +
@@ -116,7 +185,7 @@ function validateTemporal(
           " hold",
         errors,
       );
-      validateCondition(
+      validatePredicate(
         property.until,
         variables,
         "Temporal property " +
@@ -175,9 +244,9 @@ export function validateBehavioralWorldModel(
   );
 
   for (const transition of model.transitions) {
-    for (const condition of transition.preconditions) {
-      validateCondition(
-        condition,
+    for (const predicate of transition.preconditions) {
+      validatePredicate(
+        predicate,
         variables,
         "Transition " + transition.id,
         errors,
@@ -191,6 +260,16 @@ export function validateBehavioralWorldModel(
             " effect references unknown variable: " +
             effect.variableId +
             ".",
+        );
+      }
+      if (
+        effect.scopeKey !== undefined &&
+        !effect.scopeKey.trim()
+      ) {
+        errors.push(
+          "Transition " +
+            transition.id +
+            " effect scopeKey must be non-empty when provided.",
         );
       }
       if (

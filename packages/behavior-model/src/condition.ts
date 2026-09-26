@@ -1,5 +1,9 @@
+import {
+  behaviorStateKey,
+} from "./state-key.js";
 import type {
   BehaviorCondition,
+  BehaviorPredicate,
   BehaviorScalar,
   BehaviorState,
 } from "./types.js";
@@ -27,11 +31,15 @@ export function evaluateBehaviorCondition(
   state: BehaviorState,
   condition: BehaviorCondition,
 ): boolean {
+  const key = behaviorStateKey(
+    condition.variableId,
+    condition.scopeKey,
+  );
   const has = Object.prototype.hasOwnProperty.call(
     state.values,
-    condition.variableId,
+    key,
   );
-  const actual = state.values[condition.variableId];
+  const actual = state.values[key];
 
   switch (condition.operator) {
     case "exists":
@@ -70,5 +78,42 @@ export function evaluateBehaviorCondition(
       );
       return comparison !== undefined && comparison <= 0;
     }
+  }
+}
+
+export function evaluateBehaviorPredicate(
+  state: BehaviorState,
+  predicate: BehaviorPredicate,
+): boolean {
+  switch (predicate.kind) {
+    case "condition":
+      return evaluateBehaviorCondition(
+        state,
+        predicate.condition,
+      );
+    case "all":
+      return predicate.predicates.every((item) =>
+        evaluateBehaviorPredicate(state, item)
+      );
+    case "any":
+      return predicate.predicates.some((item) =>
+        evaluateBehaviorPredicate(state, item)
+      );
+    case "not":
+      return !evaluateBehaviorPredicate(
+        state,
+        predicate.predicate,
+      );
+    case "implies":
+      return (
+        !evaluateBehaviorPredicate(
+          state,
+          predicate.if,
+        ) ||
+        evaluateBehaviorPredicate(
+          state,
+          predicate.then,
+        )
+      );
   }
 }

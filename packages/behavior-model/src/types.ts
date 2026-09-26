@@ -39,23 +39,50 @@ export type BehaviorComparisonOperator =
 
 export interface BehaviorCondition {
   variableId: string;
+  scopeKey?: string;
   operator: BehaviorComparisonOperator;
   value?: BehaviorScalar;
 }
+
+export type BehaviorPredicate =
+  | {
+      kind: "condition";
+      condition: BehaviorCondition;
+    }
+  | {
+      kind: "all";
+      predicates: readonly BehaviorPredicate[];
+    }
+  | {
+      kind: "any";
+      predicates: readonly BehaviorPredicate[];
+    }
+  | {
+      kind: "not";
+      predicate: BehaviorPredicate;
+    }
+  | {
+      kind: "implies";
+      if: BehaviorPredicate;
+      then: BehaviorPredicate;
+    };
 
 export type BehaviorEffect =
   | {
       kind: "set";
       variableId: string;
+      scopeKey?: string;
       value: BehaviorScalar;
     }
   | {
       kind: "delete";
       variableId: string;
+      scopeKey?: string;
     }
   | {
       kind: "increment";
       variableId: string;
+      scopeKey?: string;
       amount: number;
     };
 
@@ -87,7 +114,7 @@ export type NondeterminismSurface =
 export interface BehaviorTransition {
   id: string;
   owner: BehaviorTransitionOwner;
-  preconditions: readonly BehaviorCondition[];
+  preconditions: readonly BehaviorPredicate[];
   effects: readonly BehaviorEffect[];
   nondeterminismSurfaces?: readonly NondeterminismSurface[];
   description?: string;
@@ -97,32 +124,38 @@ export type TemporalProperty =
   | {
       id: string;
       kind: "always";
-      condition: BehaviorCondition;
+      predicate: BehaviorPredicate;
       description?: string;
     }
   | {
       id: string;
       kind: "eventually";
-      condition: BehaviorCondition;
+      predicate: BehaviorPredicate;
       withinTicks?: number;
       description?: string;
     }
   | {
       id: string;
       kind: "leads-to";
-      trigger: BehaviorCondition;
-      consequence: BehaviorCondition;
+      trigger: BehaviorPredicate;
+      consequence: BehaviorPredicate;
       withinTicks?: number;
       description?: string;
     }
   | {
       id: string;
       kind: "until";
-      hold: BehaviorCondition;
-      until: BehaviorCondition;
+      hold: BehaviorPredicate;
+      until: BehaviorPredicate;
       withinTicks?: number;
       description?: string;
     };
+
+export interface BehaviorModelFragment {
+  variables?: readonly BehaviorVariable[];
+  transitions?: readonly BehaviorTransition[];
+  properties?: readonly TemporalProperty[];
+}
 
 export interface BehavioralWorldModel {
   schemaVersion: 1;

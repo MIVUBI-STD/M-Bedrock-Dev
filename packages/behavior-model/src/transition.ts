@@ -1,6 +1,9 @@
 import {
-  evaluateBehaviorCondition,
+  evaluateBehaviorPredicate,
 } from "./condition.js";
+import {
+  behaviorStateKey,
+} from "./state-key.js";
 import type {
   BehaviorState,
   BehaviorTransition,
@@ -27,8 +30,8 @@ export function applyBehaviorTransition(
   }
 
   const enabled = transition.preconditions.every(
-    (condition) =>
-      evaluateBehaviorCondition(state, condition),
+    (predicate) =>
+      evaluateBehaviorPredicate(state, predicate),
   );
 
   if (!enabled) {
@@ -43,27 +46,32 @@ export function applyBehaviorTransition(
   const changed = new Set<string>();
 
   for (const effect of transition.effects) {
+    const key = behaviorStateKey(
+      effect.variableId,
+      effect.scopeKey,
+    );
+
     switch (effect.kind) {
       case "set":
-        values[effect.variableId] = effect.value;
-        changed.add(effect.variableId);
+        values[key] = effect.value;
+        changed.add(key);
         break;
       case "delete":
-        delete values[effect.variableId];
-        changed.add(effect.variableId);
+        delete values[key];
+        changed.add(key);
         break;
       case "increment": {
-        const current = values[effect.variableId];
+        const current = values[key];
         if (typeof current !== "number") {
           throw new Error(
             "Increment effect requires numeric state: " +
-              effect.variableId +
+              key +
               ".",
           );
         }
-        values[effect.variableId] =
+        values[key] =
           current + effect.amount;
-        changed.add(effect.variableId);
+        changed.add(key);
         break;
       }
     }
