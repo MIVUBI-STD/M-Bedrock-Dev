@@ -6,87 +6,77 @@ It is separate from:
 
 - analyzers: interpret project content;
 - compatibility: evaluate target compatibility;
-- reliability: plan proof/search/retest;
-- repair: mutate a working copy.
+- runtime-profile: identifies the exact target product/host/module/environment;
+- reliability: plans proof/search/retest;
+- repair: mutates a working copy.
 
 Knowledge answers:
 
-> What documented, observed, derived, or project-owned Minecraft behavior is relevant to interpreting this content?
+> What documented, observed, derived, project-owned, or still-unknown Minecraft behavior is relevant to interpreting this exact target?
 
-## Authority order
+## Epistemic rule
 
-1. official Microsoft/Mojang documentation;
-2. official samples/templates;
-3. curated community research;
-4. observed project/runtime behavior;
-5. explicit MIVUBI project policy.
+Knowledge is not an authority ladder where one source silently overrides another.
 
-Lower tiers may add evidence but must not silently override stronger authority.
+Official documentation describes a contract or documented behavior.
+Runtime observations describe what a specific runtime actually did.
+Controlled experiments describe reproducible behavior under declared conditions.
+Project policy describes intended MIVUBI behavior.
 
-## Fact classification
+When these disagree, the disagreement is evidence. It must remain visible as a version/environment discrepancy or unresolved contradiction.
 
-- `engine-fact`: documented or observed Minecraft behavior.
-- `derived-rule`: bounded reasoning derived from evidence.
-- `project-policy`: MIVUBI operational design, not an engine guarantee.
-- `open-assumption`: unresolved assumption requiring stronger evidence.
+## Legacy catalog classification
 
-Project-policy facts require an explicit `project-policy` source.
+Schema v1 remains supported during migration:
 
-## Runtime knowledge coverage
+- `engine-fact`
+- `derived-rule`
+- `project-policy`
+- `open-assumption`
 
-The knowledge base now covers these major runtime families:
+New knowledge should move toward schema v2 claims with:
 
-### Engine and content foundations
+- typed subject / predicate / object;
+- explicit runtime applicability;
+- immutable source revisions;
+- evidence appropriate to the claim class;
+- lifecycle and certainty state;
+- contradictions and falsifiers.
 
-- commands / selectors / scoreboard
-- entities / entity events / AI / navigation
-- structures / world mutation
-- Script API
-- chunks / residency
-- LevelDB and world-db evidence
-- compatibility / manifest / module / experiment profiles
+## Runtime identity
 
-### Player and multiplayer lifecycle
+A claim must not assume that all Bedrock-engine environments are equivalent.
 
-- player session / reconnect / respawn
-- multiplayer arena concurrency
-- state authority and mirrors
-- player life / downed / revive
-- permissions / gamemode / developer access
-- input gesture / item-use lifecycle
-- interaction / forms / input locks
-- cinematic / camera lifecycle
-- client feedback reconstruction
+The v2 runtime profile distinguishes at least:
 
-### World and arena integrity
+- Bedrock Retail;
+- Bedrock Preview;
+- Minecraft Education;
+- client/listen-server;
+- Bedrock Dedicated Server;
+- Realms;
+- Education host;
+- Editor;
+- Minecraft product version;
+- Script API module versions and tracks;
+- experiments;
+- world settings and inventory completeness.
 
-- teleport / spawn safety
-- physics / velocity / knockback
-- spatial containment / void recovery
-- mounts / riders / passengers
-- entity population / spawn / despawn
-- effects / attributes / component groups
-- combat / projectile attribution / friendly fire
-- environmental hazards / explosions
-- interactive blocks / containers / doors / gates
-- redstone / command-block / block-driven automation
-- loot / drops / pickup / economy
-- objective / scoring / round terminal integrity
-- arena cleanup / repeatability
-- world-global state isolation
-
-### Reliability and validation
-
-- event ordering / tick visibility
-- persistence / restart / crash recovery
-- scheduler / performance / watchdog
-- observability / traces / invariants
-- validation / future GameTest readiness
-- Education-specific runtime profile
+Absence from an incomplete inventory is **UNKNOWN**, not false.
 
 ## Design principle
 
-The knowledge base deliberately distinguishes:
+The knowledge system distinguishes:
+
+```text
+documented contract
+observed implementation
+derived rule
+project policy
+hypothesis
+```
+
+and independently:
 
 ```text
 request
@@ -96,17 +86,36 @@ verified state
 committed gameplay state
 ```
 
-and consistently models ownership using session, arena, life/entity, operation, or subsystem generations where stale asynchronous work can exist.
+Observed runtime behavior is not automatically causal proof.
 
 ## Coverage status
 
-The high-severity general runtime foundation is now considered **broadly covered**.
+Do **not** describe the general Bedrock/Education runtime as broadly covered.
 
-Remaining additions should normally be triggered by:
+Current knowledge is a partial corpus with uneven depth. Coverage must be reported by capability and proof lane, for example:
+
+```text
+domain
+→ static representation
+→ semantic model
+→ runtime observation
+→ differential proof
+→ target-edition proof
+```
+
+Missing proof is represented explicitly as partial or unknown.
+
+New knowledge may be triggered by:
 
 - a concrete map mechanic not represented here;
-- a new Minecraft/Education version or API surface;
+- a new Minecraft/Education version or Script API surface;
 - a newly observed runtime failure;
-- a specialized content family such as trading, recipes/crafting, chemistry, or project-specific custom systems.
+- a controlled runtime experiment;
+- a contradiction between documentation and runtime;
+- a specialized content family.
 
-See `docs/03-analysis/runtime-coverage-audit.md` for the coverage audit and next engineering priorities.
+## Migration
+
+Schema v1 catalogs remain readable while v2 claims and runtime-profile contracts are introduced.
+
+Do not bulk-convert v1 facts mechanically. Promotion to v2 should preserve provenance, target scope, uncertainty, and contradictions rather than merely changing JSON shape.

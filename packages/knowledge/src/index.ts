@@ -12,3 +12,6 @@ export * from "./registry.js";
 export * from "./evaluate.js";
 export * from "./validation-plan.js";
 export * from "./invariant-compiler.js";
+
+export * from "./applicability-v2.js";
+export * from "./claims-v2.js";

@@ -1,29 +1,22 @@
 # Next Action
 
-Remote static analysis is complete for the current representative production portfolio.
+The repository is moving from broad static/runtime heuristics toward an evidence-bounded Minecraft knowledge architecture.
 
-Final production proof:
+## Immediate lane
 
-```text
-2 production mcworld artifacts
-570 Script API occurrences
-82 unique symbols
-82 known
-0 unclassified
-0 promotion candidates
-0 unknown singleton-root symbols
-0 unresolved references
-0 known analyzer false-positive findings in the repaired precision cases
-```
+1. **Restore exact-head verification** — fix stale reliability proof references without weakening repository checks.
+2. **Epistemic foundation v2** — introduce an exact runtime profile, tri-state knowledge applicability, independent Script API/product version semantics, and evidence-backed typed knowledge claims.
+3. **Preserve compatibility** — keep schema-v1 knowledge and the legacy capability engine operational while v2 becomes authoritative incrementally.
+4. **Do not broaden automatic repair authority yet** — current observed-runtime evidence remains insufficient as a general causal proof.
+5. **Next after the foundation is green** — redesign evidence/claim strength, then build execution/state/temporal Semantic IR before expanding runtime automation.
 
-Do not add another generalized static subsystem without new evidence.
+## Safety constraints
 
-Next work should use one of these lanes:
+- Bedrock Retail, Preview, BDS, Realms, Editor, and Education are not assumed equivalent.
+- Missing data in an incomplete inventory is UNKNOWN, not absent.
+- Documentation and runtime observations are distinct evidence classes; disagreement is retained.
+- Observation is not causation.
+- AI may propose hypotheses and probes but does not promote claims or authorize repair.
+- Automatic production repair will later require preservation contracts and target-runtime proof.
 
-1. **Runtime proof** — use the existing partial multiplayer and chunk proof harnesses against the target Minecraft build. The remaining gap is real multi-client execution, chunk lifecycle chaos/recovery, entity AI/event timing, and saved-tick behavior.
-2. **Controlled API migration** — choose an explicit target `@minecraft/server` line first. Defense V2 currently exposes 57 `runCommandAsync` member calls (10 exact, 47 lexical-only) and 16 `isValid` calls (5 exact, 11 lexical-only); do not bulk-rewrite them without runtime validation.
-3. **Update differential** — run `compare-update` on real before/after Minecraft-update artifacts.
-4. **Entity-event proof** — add runtime/project evidence for informational event-reachability gaps when a reported bug points at those events.
-5. **Knowledge expansion** — only when production usage or a new official API change exposes a new unclassified surface.
-
-The current bottleneck is real Minecraft runtime execution and differential evidence, not static source intelligence.
+The current bottleneck is epistemic precision: knowing exactly what environment a claim applies to, what evidence supports it, and what remains unknown.

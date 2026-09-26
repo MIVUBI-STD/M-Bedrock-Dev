@@ -18,7 +18,7 @@
       "evidence": "mcstructure NBT, palette/index normalization and layer-length invariants are covered; full block/entity semantics are not.",
       "proofPaths": [
         "adapters/mcstructure/src/index.ts",
-        "adapters/mcstructure/test/mcstructure.test.ts"
+        "adapters/mcstructure/test/indexing.test.ts"
       ]
     },
     {

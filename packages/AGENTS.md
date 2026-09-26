@@ -30,6 +30,8 @@ diagnostics    → diagnostic contract and stable identifiers
 validation     → post-mutation validation contracts/results
 reliability    → invariants / regression metadata / map fingerprints / update deltas / retest planning
 compatibility  → edition/version/capability evaluation
+runtime-profile → exact target Minecraft product/host/module/environment identity
+knowledge       → versioned evidence-backed Minecraft claims and applicability
 repair         → patch transactions / preconditions / working-copy mutation
 orchestrator   → composition only; no duplicated parser/repair semantics
 ```

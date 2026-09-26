@@ -15,6 +15,8 @@ Use this before broad repository search.
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | packages/reliability/ |
 | Reliability search/corpus/interleavings/minimization | packages/reliability-search/ |
 | Compatibility engine/version/track contracts | packages/compatibility/ |
+| Exact target Minecraft runtime identity and inventory completeness | packages/runtime-profile/ |
+| Versioned evidence-backed Minecraft knowledge and applicability | packages/knowledge/ + knowledge/ |
 | Education edition/feature profile | packages/compatibility/education* |
 | Repair transactions/preconditions/application | packages/repair/ |
 | Cross-owner inspect/repair-validation orchestration | packages/orchestrator/ |
