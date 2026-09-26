@@ -52,12 +52,23 @@ function prefixedEntry(
 } {
   return {
     stateRequirements: entry.stateRequirements.map((requirement) => ({
-      ...requirement,
       id: entry.id + "::" + requirement.id,
+      predicate: requirement.predicate,
+      expectedState: requirement.expectedState,
+      ...(requirement.scope === undefined
+        ? {}
+        : { scope: requirement.scope }),
     })),
     temporalRequirements: entry.temporalRequirements.map((requirement) => ({
-      ...requirement,
       id: entry.id + "::" + requirement.id,
+      beforePredicate: requirement.beforePredicate,
+      afterPredicate: requirement.afterPredicate,
+      ...(requirement.maxTickDelta === undefined
+        ? {}
+        : { maxTickDelta: requirement.maxTickDelta }),
+      ...(requirement.scope === undefined
+        ? {}
+        : { scope: requirement.scope }),
     })),
   };
 }
