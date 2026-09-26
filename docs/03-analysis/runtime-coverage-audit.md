@@ -2,13 +2,15 @@
 
 ## Status
 
-The current knowledge base now covers the major high-severity failure families needed for a Bedrock/Education map analyzer and bug finder.
+This document is a capability inventory, **not a proof that the listed runtime behaviors are fully understood or verified**.
 
-This is not a claim that every Minecraft feature has been documented. It means the architecture now has coverage for the principal runtime failure mechanisms that can corrupt multiplayer arena logic.
+Earlier wording that described major runtime families as "covered" was too broad. A domain can have knowledge entries while still lacking semantic representation, runtime observation, differential proof, or target-edition validation.
+
+Interpret every section below as a catalog of represented concepts. Actual proof status belongs to the reliability coverage lanes and exact runtime evidence.
 
 ## Coverage map
 
-### 1. Identity, ownership, and authority — covered
+### 1. Identity, ownership, and authority — represented
 
 - player session generation
 - arena/round generation
@@ -27,7 +29,7 @@ Primary failure classes covered:
 - cross-arena state mutation
 - stale handles
 
-### 2. Time and asynchronous execution — covered
+### 2. Time and asynchronous execution — represented
 
 - before/after event restrictions
 - system.run/runInterval/runJob
@@ -47,7 +49,7 @@ Primary failure classes:
 - timing race
 - retry storm
 
-### 3. World residency and mutation — covered
+### 3. World residency and mutation — represented
 
 - chunk readiness
 - entity residency
@@ -68,7 +70,7 @@ Primary failure classes:
 - stale container
 - boundary corruption
 
-### 4. Player lifecycle — covered
+### 4. Player lifecycle — represented
 
 - join / initial spawn / respawn / leave
 - downed / revive / death
@@ -89,7 +91,7 @@ Primary failure classes:
 - velocity leakage
 - camera/control leakage
 
-### 5. Entity lifecycle — covered
+### 5. Entity lifecycle — represented
 
 - spawn source classification
 - population caps / density
@@ -111,7 +113,7 @@ Primary failure classes:
 - stale projectile
 - route invalid after mutation
 
-### 6. Arena lifecycle — covered
+### 6. Arena lifecycle — represented
 
 - ready/start concurrency
 - setup
@@ -133,7 +135,7 @@ Primary failure classes:
 - dirty arena reuse
 - first-run-only success
 
-### 7. Multi-arena isolation — covered
+### 7. Multi-arena isolation — represented
 
 - selector scope
 - state ownership
@@ -153,7 +155,7 @@ Primary failure classes:
 - projectile/entity leakage
 - broad admin side effects
 
-### 8. Persistence and recovery — covered
+### 8. Persistence and recovery — represented
 
 - dynamic/durable state
 - boot generation
@@ -172,7 +174,7 @@ Primary failure classes:
 - duplicate replay
 - stale durable session state
 
-### 9. Performance and observability — covered
+### 9. Performance and observability — represented
 
 - per-arena/global work budgets
 - query fan-out
@@ -190,7 +192,7 @@ Primary failure classes:
 - unreproducible race
 - instrumentation spam
 
-### 10. Compatibility and Education — covered at runtime-foundation level
+### 10. Compatibility and Education — represented at runtime-foundation level
 
 - manifest / pack graph
 - module versions

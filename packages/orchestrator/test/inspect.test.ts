@@ -39,5 +39,9 @@ describe("inspectDirectory", () => {
     expect(result.functions).toBe(1);
     expect(result.structures).toBe(1);
     expect(result.unresolvedReferences).toBeGreaterThan(0);
+    expect(result.semanticIr.executionRegions).toBeGreaterThan(0);
+    expect(result.semanticIr.executionEdges).toBeGreaterThan(0);
+    expect(result.semanticIr.unresolvedExecutionTargets).toBeGreaterThan(0);
+    expect(result.decisionBasis.semanticIrRevision).toMatch(/^[a-f0-9]{64}$/);
   });
 });

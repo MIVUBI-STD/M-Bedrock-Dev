@@ -10,6 +10,7 @@ Use this before broad repository search.
 | Workspace/session/file inventory + telemetry data contracts | packages/project-model/ |
 | Runtime telemetry emission helpers / sinks / instrumentation guards | packages/telemetry/ |
 | Semantic dependency graph/invalidation | packages/graph/ |
+| Execution/state/temporal Semantic IR contracts and queries | packages/semantic-ir/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Validation step/result contracts | packages/validation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | packages/reliability/ |

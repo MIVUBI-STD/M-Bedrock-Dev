@@ -1,6 +1,7 @@
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { FileInventoryEntry } from "../../project-model/src/index.js";
 import type { TelemetryEvent } from "../../project-model/src/index.js";
+import { semanticIrSummary, type SemanticIr } from "../../semantic-ir/src/index.js";
 import { telemetryEventKinds } from "../../project-model/src/index.js";
 import type {
   InspectDirectoryResult,
@@ -48,6 +49,7 @@ export interface InspectionResultInput {
   target: InspectTargetProfile;
   knowledgeCatalogPresent: boolean;
   sourceIndex: SourceIndex;
+  semanticIr: SemanticIr;
   runtimeEvidenceStage: RuntimeEvidenceStage;
   entityKnowledge: EntityKnowledgeStage;
   knowledgeRuntime: KnowledgeRuntimeStage;
@@ -347,6 +349,7 @@ export function buildInspectionResult(
       present: dbFiles.length > 0,
       fileCount: dbFiles.length,
     },
+    semanticIr: semanticIrSummary(input.semanticIr),
     stateAnalysis: {
       accesses: topology.stateAccesses.length,
       broadWrites: topology.broadWrites,

@@ -23,7 +23,9 @@ project-model
         ↓
 analyzers
         ↓
-graph + diagnostics
+semantic graph + semantic IR
+        ↓
+diagnostics / causality
         ↓
 repair
         ↓
@@ -47,7 +49,9 @@ These constraints are checked by `tooling/repository/verify-boundaries.mjs`.
 
 ## Semantic boundaries
 
-Artifact graph, physical inventory, normalized project model, semantic graph, diagnostics, patch transactions, and runtime proof are separate authorities.
+Artifact graph, physical inventory, normalized project model, semantic graph, Semantic IR, diagnostics, patch transactions, and runtime proof are separate authorities.
+
+The semantic graph owns cross-component dependency/reference topology. Semantic IR separately owns normalized execution regions, state operations/authority surfaces, and temporal relations. Do not collapse either representation into the other: a file/reference dependency is not automatically an execution or temporal fact.
 
 Do not collapse these into one global project state object.
 

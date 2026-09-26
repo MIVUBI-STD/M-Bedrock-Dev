@@ -124,3 +124,5 @@ export * from "./causal-repair-strategy-selection.js";
 export * from "./repair-strategy-provider.js";
 export * from "./provider-backed-repair-selection.js";
 export * from "./provider-backed-repair-workflow.js";
+
+export * from "./semantic-ir-stage.js";

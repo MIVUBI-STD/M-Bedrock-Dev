@@ -240,6 +240,59 @@ describe("decision basis", () => {
       .toBe(right.runtimeEvidenceRevision);
   });
 
+  it("changes semantic IR revision when execution semantics change", () => {
+    const source = {
+      artifactId: "a",
+      relativePath: "scripts/main.js",
+    };
+    const base = {
+      schemaVersion: 1 as const,
+      execution: {
+        regions: [{
+          id: "exec:a",
+          kind: "script-module" as const,
+          ownerId: "main",
+          label: "module",
+          source,
+        }],
+        edges: [],
+      },
+      state: {
+        surfaces: [],
+        operations: [],
+        authorityBindings: [],
+      },
+      temporal: {
+        relations: [],
+      },
+    };
+
+    const changed = {
+      ...base,
+      execution: {
+        ...base.execution,
+        regions: [
+          ...base.execution.regions,
+          {
+            id: "exec:b",
+            kind: "script-callback" as const,
+            ownerId: "main",
+            label: "callback",
+            source,
+          },
+        ],
+      },
+    };
+
+    expect(buildDecisionBasis({
+      semanticIr: base,
+    }).semanticIrRevision).not.toBe(
+      buildDecisionBasis({
+        semanticIr: changed,
+      }).semanticIrRevision,
+    );
+  });
+
   it("always binds the canonical contract registry revision", () => {
     const basis = buildDecisionBasis({});
     expect(basis.contractRegistryRevision)

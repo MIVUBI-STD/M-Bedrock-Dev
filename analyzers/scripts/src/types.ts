@@ -12,6 +12,9 @@ export interface ScriptEventSubscription {
   root: "world" | "system" | "unknown";
   phase: "beforeEvents" | "afterEvents" | "unknown";
   event: string;
+  executionRegion?: string;
+  callbackRegion?: string;
+  callbackSource?: SourceRef;
   source: SourceRef;
 }
 
@@ -115,6 +118,8 @@ export interface ScriptLocalFunctionCall {
 export interface ScriptDeferredCallback {
   scheduler: "run" | "runTimeout" | "runInterval" | "runJob";
   source: SourceRef;
+  callerRegion?: string;
+  callbackRegion?: string;
   callbackSource?: SourceRef;
   guardEvidence: "explicit-generation-check" | "unresolved";
   guardIdentifiers: string[];

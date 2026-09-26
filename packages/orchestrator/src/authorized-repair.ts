@@ -143,6 +143,7 @@ export function authorizeRepairMutation(
   }
 
   for (const key of [
+    "semanticIrRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
     "repairProviderRegistryRevision",

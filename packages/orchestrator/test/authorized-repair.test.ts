@@ -45,6 +45,7 @@ function proof(
       contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
       sourceFingerprint: "abc",
       graphFingerprint: "graph-current",
+      semanticIrRevision: "semantic-ir-current",
       ...(disposition === "guarded"
         ? {}
         : { runtimeEvidenceRevision: "evidence-current" }),
@@ -88,6 +89,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
         runtimeEvidenceRevision: "evidence-current",
       },
     )).toMatchObject({
@@ -104,6 +106,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
       },
     ).authorized).toBe(false);
   });
@@ -116,6 +119,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
       },
     ).authorized).toBe(false);
     expect(authorizeRepairMutation(
@@ -124,6 +128,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
       },
     ).authorized).toBe(false);
   });
@@ -138,6 +143,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
       },
     ).authorized).toBe(false);
 
@@ -147,6 +153,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
       },
       { allowGuarded: true },
     )).toMatchObject({
@@ -163,6 +170,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
       },
     ).authorized).toBe(false);
   });
@@ -175,6 +183,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-new",
+        semanticIrRevision: "semantic-ir-current",
       },
     )).toMatchObject({
       authorized: false,
@@ -189,6 +198,23 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "new-source",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
+      },
+    )).toMatchObject({
+      authorized: false,
+    });
+  });
+
+  it("rejects stale semantic IR proof", () => {
+    const tx = transaction();
+    expect(authorizeRepairMutation(
+      tx,
+      proof(tx.id, "eligible"),
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-new",
+        runtimeEvidenceRevision: "evidence-current",
       },
     )).toMatchObject({
       authorized: false,
@@ -211,6 +237,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
         runtimeEvidenceRevision: "evidence-b",
       },
     )).toMatchObject({
@@ -234,6 +261,7 @@ describe("authorized repair mutation", () => {
       {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
         runtimeEvidenceRevision: "evidence-a",
       },
     )).toMatchObject({

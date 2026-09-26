@@ -32,6 +32,7 @@ import { topologyRuntimeEvidence } from "./topology-runtime-evidence.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/index.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/index.js";
 import { externalEventRootsForEntity } from "./entity-event-evidence.js";
+import { buildInspectionSemanticIr } from "./semantic-ir-stage.js";
 
 export async function inspectDirectory(
   root: string,
@@ -85,6 +86,13 @@ export async function inspectDirectory(
     diagnostics: sourceDiagnostics,
   } = sourceIndex;
   diagnostics.push(...sourceDiagnostics);
+
+  const semanticIr = buildInspectionSemanticIr({
+    parsedFunctions,
+    parsedScripts,
+    stateAuthorityContracts:
+      target.stateAuthorityContracts ?? [],
+  });
 
   enrichInspectionSemanticGraph({
     graph,
@@ -216,6 +224,7 @@ export async function inspectDirectory(
       ? {}
       : { sourceFingerprint }),
     graph,
+    semanticIr,
     ...(knowledgeCatalog === undefined
       ? {}
       : { knowledgeCatalog }),
@@ -244,6 +253,7 @@ export async function inspectDirectory(
     knowledgeCatalogPresent:
       knowledgeCatalog !== undefined,
     sourceIndex,
+    semanticIr,
     runtimeEvidenceStage,
     entityKnowledge,
     knowledgeRuntime,

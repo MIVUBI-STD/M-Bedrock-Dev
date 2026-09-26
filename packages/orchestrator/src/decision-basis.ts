@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { SemanticGraph } from "../../graph/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
+import type { SemanticIr } from "../../semantic-ir/src/index.js";
 import type {
   InvariantRegistrySnapshot,
 } from "../../project-model/src/index.js";
@@ -121,6 +122,7 @@ function normalizedEvidenceIntegrity(
 export interface DecisionBasisInput {
   sourceFingerprint?: string;
   graph?: SemanticGraph;
+  semanticIr?: SemanticIr;
   knowledge?: KnowledgeCatalog;
   invariantRegistry?: InvariantRegistrySnapshot;
   target?: InspectTargetProfile;
@@ -140,6 +142,9 @@ export function buildDecisionBasis(
     ...(input.graph === undefined
       ? {}
       : { graphFingerprint: semanticGraphFingerprint(input.graph) }),
+    ...(input.semanticIr === undefined
+      ? {}
+      : { semanticIrRevision: fingerprint(input.semanticIr) }),
     ...(input.knowledge === undefined
       ? {}
       : { knowledgeRevision: fingerprint(input.knowledge) }),

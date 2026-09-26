@@ -1,22 +1,46 @@
 # Next Action
 
-The repository is moving from broad static/runtime heuristics toward an evidence-bounded Minecraft knowledge architecture.
+M-Bedrock-Dev is now migrating from source-centric reasoning toward an evidence-bounded Minecraft Semantic IR.
 
-## Immediate lane
+## Completed foundations
 
-1. **Restore exact-head verification** — fix stale reliability proof references without weakening repository checks.
-2. **Epistemic foundation v2** — introduce an exact runtime profile, tri-state knowledge applicability, independent Script API/product version semantics, and evidence-backed typed knowledge claims.
-3. **Preserve compatibility** — keep schema-v1 knowledge and the legacy capability engine operational while v2 becomes authoritative incrementally.
-4. **Do not broaden automatic repair authority yet** — current observed-runtime evidence remains insufficient as a general causal proof.
-5. **Next after the foundation is green** — redesign evidence/claim strength, then build execution/state/temporal Semantic IR before expanding runtime automation.
+- exact runtime-profile v2 and tri-state applicability;
+- evidence-backed knowledge-claim v2 contracts;
+- causal proof ladder where observation is not causation;
+- causal/intervention repair gates;
+- evidence sufficiency and target-profile binding;
+- initial parser-independent Semantic IR contracts for execution, state, and temporal semantics.
 
-## Safety constraints
+## Current lane — Semantic IR integration
 
-- Bedrock Retail, Preview, BDS, Realms, Editor, and Education are not assumed equivalent.
-- Missing data in an incomplete inventory is UNKNOWN, not absent.
-- Documentation and runtime observations are distinct evidence classes; disagreement is retained.
-- Observation is not causation.
-- AI may propose hypotheses and probes but does not promote claims or authorize repair.
-- Automatic production repair will later require preservation contracts and target-runtime proof.
+1. **Execution IR** — normalize script modules/functions/callbacks, event dispatch, deferred schedulers, and mcfunction call flow.
+2. **State IR** — normalize scoreboard, tag, and dynamic-property reads/writes and bind explicit state-authority contracts.
+3. **Temporal IR** — classify synchronous, event-dispatch, deferred, and periodic relations without inventing undocumented tick guarantees.
+4. **Decision-basis binding** — Semantic IR revision is part of exact decision context so semantic reinterpretation can invalidate stale repair reasoning.
+5. **Next integration** — consume Semantic IR in first-wrong-transition and causal probe planning rather than adding more string-level heuristics.
 
-The current bottleneck is epistemic precision: knowing exactly what environment a claim applies to, what evidence supports it, and what remains unknown.
+## Explicit limits
+
+The initial Semantic IR is intentionally partial.
+
+It does not yet claim complete semantics for:
+
+- arbitrary JavaScript control/data flow;
+- all Script API state methods;
+- implicit player/entity/arena scope inference;
+- entity AI/navigation;
+- spatial/chunk execution;
+- undocumented Minecraft scheduler ordering.
+
+Unresolved targets and incomplete scope remain explicit unknowns.
+
+## Safety
+
+- semantic graph and Semantic IR remain separate authorities;
+- analyzers produce observations; Semantic IR normalizes them;
+- Semantic IR never mutates artifacts;
+- unresolved execution targets are retained rather than guessed;
+- deferred callbacks retain generation-guard evidence;
+- repair authorization must not infer causation from IR topology alone.
+
+The next highest-value work is to connect first-wrong-transition and diagnostic probe planning to the new IR so probes target the earliest unresolved semantic boundary.

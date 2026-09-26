@@ -1,6 +1,7 @@
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { SemanticGraph } from "../../graph/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
+import type { SemanticIr } from "../../semantic-ir/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
 } from "../../project-model/src/index.js";
@@ -24,6 +25,7 @@ import { analyzeDiagnosticProbes } from "./diagnostic-probe-analysis.js";
 export interface InspectionCausalityInput {
   sourceFingerprint?: string;
   graph: SemanticGraph;
+  semanticIr: SemanticIr;
   knowledgeCatalog?: KnowledgeCatalog;
   target: InspectTargetProfile;
   externalEvidence: readonly RuntimeEvidenceRecord[];
@@ -55,6 +57,7 @@ export function analyzeInspectionCausality(
             input.sourceFingerprint,
         }),
     graph: input.graph,
+    semanticIr: input.semanticIr,
     ...(input.knowledgeCatalog === undefined
       ? {}
       : { knowledge: input.knowledgeCatalog }),

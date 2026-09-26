@@ -284,6 +284,14 @@ function localExecutionRegionId(
   return "module";
 }
 
+function callbackExecutionRegionId(
+  node: ts.ArrowFunction | ts.FunctionExpression,
+  file: ts.SourceFile,
+): string {
+  const start = file.getLineAndCharacterOfPosition(node.getStart(file));
+  return "callback@" + (start.line + 1) + ":" + (start.character + 1);
+}
+
 function requiredTrueCalls(
   expression: ts.Expression,
 ): ts.CallExpression[] {
@@ -905,8 +913,12 @@ export function parseScriptFile(
         deferredCallbacks.push({
           scheduler,
           source: lineSource(file, node, source),
+          callerRegion: localExecutionRegionId(node, file),
           ...(callback
-            ? { callbackSource: lineSource(file, callback, source) }
+            ? {
+                callbackRegion: callbackExecutionRegionId(callback, file),
+                callbackSource: lineSource(file, callback, source),
+              }
             : {}),
           guardEvidence: guardIdentifiers.length > 0
             ? "explicit-generation-check"
@@ -962,10 +974,18 @@ export function parseScriptFile(
 
         if (event) {
           const eventSource = lineSource(file, node, source);
+          const eventCallback = callbackNode(node);
           events.push({
             root: normalizedRoot,
             phase: normalizedPhase,
             event,
+            executionRegion: localExecutionRegionId(node, file),
+            ...(eventCallback
+              ? {
+                  callbackRegion: callbackExecutionRegionId(eventCallback, file),
+                  callbackSource: lineSource(file, eventCallback, source),
+                }
+              : {}),
             source: eventSource,
           });
           capabilities.push({
@@ -984,13 +1004,12 @@ export function parseScriptFile(
               source: eventSource,
             });
 
-            const callback = callbackNode(node);
             const isStartup =
               normalizedRoot === "system" && event === "startup";
-            if (callback && !isStartup) {
+            if (eventCallback && !isStartup) {
               restrictedMutations.push(
                 ...scanRestrictedMutations(
-                  callback,
+                  eventCallback,
                   normalizedRoot,
                   "before-event",
                   event,

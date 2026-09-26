@@ -5,6 +5,7 @@ import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { ScriptApiUsageInventory } from "./script-api-usage.js";
 import type { RouteCorridorContract } from "../../project-model/src/index.js";
+import type { StateAuthorityContract } from "../../project-model/src/index.js";
 import type { MutationDependentActionContract } from "../../project-model/src/index.js";
 import type { CausalChain, CausalIncident } from "../../project-model/src/index.js";
 import type { TelemetryEvent } from "../../project-model/src/index.js";
@@ -22,6 +23,7 @@ export interface InspectTargetProfile {
   experiments?: readonly string[];
   routeCorridors?: readonly RouteCorridorContract[];
   mutationDependentActions?: readonly MutationDependentActionContract[];
+  stateAuthorityContracts?: readonly StateAuthorityContract[];
   staticExecutionDimension?: string;
 }
 
@@ -131,6 +133,22 @@ export interface InspectDirectoryResult {
       chunkSignalsTruncated: boolean;
       failure?: string;
     };
+  };
+  semanticIr: {
+    executionRegions: number;
+    executionEdges: number;
+    unresolvedExecutionTargets: number;
+    eventDispatches: number;
+    deferredEdges: number;
+    stateSurfaces: number;
+    stateOperations: number;
+    stateReads: number;
+    stateWrites: number;
+    stateDeletes: number;
+    authorityContracts: number;
+    temporalRelations: number;
+    guardedDeferredRelations: number;
+    unguardedDeferredRelations: number;
   };
   stateAnalysis: {
     accesses: number;
