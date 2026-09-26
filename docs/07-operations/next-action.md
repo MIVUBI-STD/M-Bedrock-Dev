@@ -1,61 +1,66 @@
 # Next Action
 
-M-Bedrock-Dev now has a Behavioral World Model kernel in addition to the existing evidence, preservation, search, and Runtime Lab foundations.
+M-Bedrock-Dev now has a formal Behavioral World Model kernel, scoped Minecraft model overlays, and an explicit competing-hypothesis reasoning layer.
 
-## Current lane — Behavioral Semantics Before Runtime Testing
+## Current lane — Diagnostic Reasoning Before Runtime Testing
 
 Do not expand local/live Minecraft testing yet.
 
-The next goal is to make the reasoning model strong enough to interpret runtime evidence without confusing absence of counterexamples with proof.
+The next goal is to make diagnosis choose evidence because it separates plausible causes, not because a probe happens to exist.
 
-### Completed kernel
+### Completed behavioral foundation
 
-- typed semantic state variables;
-- explicit state authority;
+- typed/scoped semantic state variables;
+- multiple player/entity/arena instances without state aliasing;
+- composable predicates including implication;
 - deterministic precondition/effect transitions;
 - Minecraft nondeterminism-surface taxonomy;
-- finite behavior traces;
-- conservative three-valued temporal evaluation;
-- ALWAYS;
-- EVENTUALLY;
-- bounded EVENTUALLY;
-- LEADS-TO;
-- bounded LEADS-TO;
-- UNTIL;
-- bounded UNTIL.
+- capability profiles that default unproven observability/control/replay/simulation to unknown;
+- player/session overlay;
+- entity lifecycle/navigation overlay;
+- chunk residency overlay;
+- deferred-callback generation safety overlay;
+- ALWAYS / EVENTUALLY / LEADS-TO / UNTIL with conservative finite-trace semantics.
+
+### Completed diagnostic-reasoning foundation
+
+- explicit competing hypotheses;
+- required evidence predicates;
+- supporting predicates;
+- falsifiers;
+- expected intervention outcomes;
+- open / supported / eliminated assessment;
+- probe outcome predictions per hypothesis;
+- discriminative-power scoring;
+- explicit probe cost/risk penalty;
+- no fabricated Bayesian confidence.
 
 ### Current proof ceiling
 
-Repository CI can prove only the deterministic model contracts and finite-trace evaluator.
+Repository CI proves deterministic contracts only.
 
-The kernel is not yet a complete Bedrock/Education model and must not be described as one.
+A behavioral model is still a specification, not Minecraft engine truth.
+A supported hypothesis is not a causal conclusion.
+Probe utility is not confidence.
 
 No runtime coverage state should be upgraded from this work.
 
 ## Next architecture order
 
-1. build Minecraft domain overlays for:
-   - player/session lifecycle;
-   - arena ownership/generation;
-   - entity lifecycle/navigation ownership;
-   - chunk residency/readiness;
-   - scheduler/deferred callbacks;
-2. add host/edition-specific nondeterminism capabilities:
-   - observable;
-   - controllable;
-   - replayable;
-   - simulatable;
-   - unknown;
-3. build a Hypothesis Graph:
-   - competing explanations;
-   - required evidence;
-   - falsifiers;
-   - expected intervention outcomes;
-4. add experiment selection by discriminative power/information gain;
-5. strengthen concurrency exploration with happens-before semantics rather than declared read/write overlap alone;
-6. make invariant promotion require adversarial falsification, not passive support alone;
-7. introduce semantic trace comparison for before/after repair;
-8. only then connect physical Minecraft runtime channels.
+1. add provenance to every behavioral transition/property binding:
+   - source inference;
+   - official knowledge;
+   - project policy;
+   - runtime evidence;
+2. build evidence-to-hypothesis adapters without losing unknown/contradictory states;
+3. strengthen concurrency exploration:
+   - happens-before edges;
+   - dependency from semantic state/engine surfaces;
+   - no read/write-only independence assumption;
+4. require adversarial falsification before invariant promotion;
+5. add semantic before/after trace comparison for preservation;
+6. add calibrated belief only after a training/calibration corpus exists;
+7. only then connect physical Minecraft runtime channels.
 
 ## Safety
 
@@ -63,5 +68,6 @@ No runtime coverage state should be upgraded from this work.
 - a behavioral specification is not engine proof;
 - an incomplete trace is not a liveness proof;
 - absence of a counterexample is not an invariant proof;
-- declared nondeterminism is not automatically controllable;
+- an unlisted alternative explanation remains a blind spot;
+- a high probe utility does not mean the predicted hypothesis is true;
 - Bedrock and Education semantics require independent overlays where behavior differs.

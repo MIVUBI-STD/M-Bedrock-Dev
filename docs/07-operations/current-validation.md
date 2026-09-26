@@ -1,57 +1,61 @@
 # Current Validation
 
-Status: REMOTE STATIC SOURCE + REPRESENTATIVE PRODUCTION PORTFOLIO GREEN; FORMAL BEHAVIOR KERNEL STATIC ONLY; RUNTIME PROOF PENDING
-
-The established repository lanes remain:
-
-```text
-Repository Policy
-source boundaries
-TypeScript
-Vitest
-source/package verification
-```
+Status: REMOTE STATIC SOURCE GREEN; FORMAL BEHAVIOR + DIAGNOSTIC REASONING STATIC ONLY; RUNTIME PROOF PENDING
 
 ## Behavioral World Model — 2026-09-27
 
-A new deterministic semantic owner now exists at:
-
-```text
-packages/behavior-model/
-```
-
-Static contracts cover:
+Static contracts now cover:
 
 - typed semantic variables and authority labels;
+- scoped state identities for multiple players/entities/arenas;
+- composable boolean predicates;
 - explicit transition preconditions/effects;
-- declared nondeterminism surfaces;
-- finite behavior traces;
+- declared Minecraft nondeterminism surfaces;
+- unknown-by-default runtime control/replay capability profiles;
+- initial Minecraft session/entity/chunk/scheduler overlays;
 - ALWAYS / EVENTUALLY / LEADS-TO / UNTIL;
 - bounded tick deadlines;
 - three-valued `satisfied / violated / unknown` results.
 
-The most important proof rule is fail-closed temporal reasoning:
+The proof rule remains fail-closed:
 
 ```text
 clean incomplete prefix != proven property
 ```
 
-A temporal obligation remains `unknown` until it has a positive witness, a valid counterexample/deadline violation, or a complete trace that permits a decision.
+## Diagnostic Reasoning — 2026-09-27
 
-This prevents the passive-observation error where no observed counterexample is mistaken for behavioral proof.
+A new semantic owner exists at:
 
-## Existing runtime harness status
+```text
+packages/diagnostic-reasoning/
+```
+
+It can represent several plausible explanations for one symptom and distinguish:
+
+```text
+open
+supported under declared evidence contract
+eliminated by explicit contradiction/falsifier
+```
+
+Probe planning compares expected outcomes across currently viable hypotheses and scores how many hypothesis pairs a probe can separate, with cost/risk penalties.
+
+This is deliberately not a probability/confidence engine.
+
+The current planner does not claim:
+
+- calibrated priors;
+- posterior probability;
+- completeness of alternative explanations;
+- causal identification;
+- real information gain in the Shannon/Bayesian sense.
+
+## Existing Runtime Lab
 
 The source-verified Runtime Lab host remains available but local/live Minecraft execution is intentionally deferred.
 
-Its current supported probe path remains read-only:
-
-- chunk loaded;
-- entity resolvable;
-- tag present;
-- scoreboard value.
-
-No new Minecraft runtime claim is created by the Behavioral World Model work.
+No new Minecraft runtime claim is created by the behavior or diagnostic-reasoning work.
 
 ## Still unproven
 
@@ -62,6 +66,7 @@ No new Minecraft runtime claim is created by the Behavioral World Model work.
 - formal happens-before model for engine events;
 - AI/pathfinding transition semantics;
 - real chunk lifecycle behavior;
-- causal hypothesis discrimination;
+- completeness of generated competing hypotheses;
+- calibrated causal belief;
 - real multi-client execution;
 - semantic before/after repair equivalence.
