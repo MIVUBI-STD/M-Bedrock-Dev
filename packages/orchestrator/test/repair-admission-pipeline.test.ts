@@ -71,6 +71,18 @@ describe("repair admission pipeline", () => {
       supportingInvariantIds: ["invariant::ready"],
       decisionBasis: {
         runtimeEvidenceRevision: "evidence-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+      },
+      preservationReadiness: {
+        contractId: "preserve:" + transaction.id,
+        transactionId: transaction.id,
+        disposition: "ready",
+        baselineEvidenceIds: [
+          "baseline:broken",
+          "baseline:healthy",
+        ],
+        reasons: ["ready"],
       },
     });
 
@@ -78,6 +90,10 @@ describe("repair admission pipeline", () => {
     expect(result.admission.disposition).toBe("eligible");
     expect(result.proof.supportingInvariantIds)
       .toEqual(["invariant::ready"]);
+    expect(result.proof.preservationReadinessDisposition)
+      .toBe("ready");
+    expect(result.proof.preservationBaselineEvidenceIds)
+      .toEqual(["baseline:broken", "baseline:healthy"]);
     expect(result.proof.requiredRevalidationNodeIds)
       .toEqual(["function:p:caller"]);
   });
