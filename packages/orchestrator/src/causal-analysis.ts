@@ -91,6 +91,8 @@ interface ObservationPoint {
     | "static"
     | "telemetry"
     | "runtime-probe"
+    | "controlled-experiment"
+    | "differential-experiment"
     | "native"
     | "external";
 }
@@ -135,6 +137,8 @@ function asObservationMap(
         record.origin === "static" ||
         record.origin === "telemetry" ||
         record.origin === "runtime-probe" ||
+        record.origin === "controlled-experiment" ||
+        record.origin === "differential-experiment" ||
         record.origin === "native" ||
         record.origin === "external"
       ) {

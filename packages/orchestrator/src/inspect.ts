@@ -33,6 +33,7 @@ import type { RuntimeProbeResponse } from "../../project-model/src/index.js";
 import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/index.js";
 import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 import { buildInspectionSemanticIr } from "./semantic-ir-stage.js";
+import { semanticIrDiagnostics } from "./semantic-ir-diagnostics.js";
 
 export async function inspectDirectory(
   root: string,
@@ -93,6 +94,10 @@ export async function inspectDirectory(
     stateAuthorityContracts:
       target.stateAuthorityContracts ?? [],
   });
+
+  diagnostics.push(
+    ...semanticIrDiagnostics(semanticIr),
+  );
 
   enrichInspectionSemanticGraph({
     graph,

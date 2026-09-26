@@ -301,6 +301,34 @@ describe("causal chain synthesis", () => {
     ]));
   });
 
+  it("turns Semantic IR unknowns into low-confidence evidence-gap chains only", () => {
+    const chains = synthesizeCausalChains([{
+      id: "semantic-gap",
+      code: "SEMANTIC_IR_DEFERRED_STATE_GUARD_UNKNOWN",
+      severity: "minor",
+      message: "deferred state ownership is unknown",
+      data: {
+        subject: "deferred-state-mutation:time-1",
+        object: "current-generation-ownership-proof",
+        semanticIrRelationId: "time-1",
+      },
+    }]);
+
+    expect(chains).toHaveLength(1);
+    expect(chains[0]).toMatchObject({
+      confidence: "low",
+      scopeKey: "semantic-ir:time-1",
+    });
+    expect(chains[0]?.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "evidence-gap",
+      }),
+    ]));
+    expect(chains[0]?.nodes.some(
+      (node) => node.kind === "violation" || node.kind === "downstream-risk",
+    )).toBe(false);
+  });
+
   it("does not synthesize risk chains without explicit consequence metadata", () => {
     const item = finding("KNOWLEDGE_RELATION_VIOLATION");
     item.data = {

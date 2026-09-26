@@ -91,6 +91,52 @@ describe("diagnostic probe derivation", () => {
     expect(probes[0]?.costUnits).toBe(1);
   });
 
+  it("derives bounded Semantic IR probes without treating the gap as a bug", () => {
+    const semanticFinding: DiagnosticFinding = {
+      id: "semantic-diag",
+      code: "SEMANTIC_IR_DEFERRED_STATE_GUARD_UNKNOWN",
+      severity: "minor",
+      message: "ownership guard unknown",
+      data: {
+        subject: "deferred-state-mutation:time-1",
+        object: "current-generation-ownership-proof",
+        semanticIrRelationId: "time-1",
+      },
+    };
+    const semanticIncident: CausalIncident = {
+      ...incident,
+      relatedDiagnosticIds: ["semantic-diag"],
+      rootCauseCandidates: [{
+        ...incident.rootCauseCandidates[0]!,
+        id: "semantic-candidate",
+        label: "deferred-state-mutation:time-1",
+        relatedDiagnosticIds: ["semantic-diag"],
+      }],
+    };
+
+    const probes = deriveDiagnosticProbeDefinitions(
+      semanticIncident,
+      [semanticFinding],
+    );
+
+    expect(probes).toEqual([
+      expect.objectContaining({
+        requiredContext: "LIVE_MINECRAFT",
+        mutationRisk: "read-only",
+        outcomes: [
+          expect.objectContaining({
+            id: "current-generation",
+            rejectsCandidateIds: ["semantic-candidate"],
+          }),
+          expect.objectContaining({
+            id: "stale-or-unbound-generation",
+            supportsCandidateIds: ["semantic-candidate"],
+          }),
+        ],
+      }),
+    ]);
+  });
+
   it("does not generate a probe for diagnostics outside the incident", () => {
     expect(deriveDiagnosticProbeDefinitions(
       { ...incident, relatedDiagnosticIds: [] },

@@ -126,3 +126,4 @@ export * from "./provider-backed-repair-selection.js";
 export * from "./provider-backed-repair-workflow.js";
 
 export * from "./semantic-ir-stage.js";
+export * from "./semantic-ir-diagnostics.js";

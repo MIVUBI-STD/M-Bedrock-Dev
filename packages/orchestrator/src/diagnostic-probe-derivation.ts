@@ -138,6 +138,64 @@ function evidenceGapProbe(
   return undefined;
 }
 
+function semanticIrProbe(
+  incident: CausalIncident,
+  finding: DiagnosticFinding,
+): DiagnosticProbeDefinition | undefined {
+  if (
+    finding.code !== "SEMANTIC_IR_EXECUTION_TARGET_UNRESOLVED" &&
+    finding.code !== "SEMANTIC_IR_DEFERRED_STATE_GUARD_UNKNOWN"
+  ) {
+    return undefined;
+  }
+
+  const subject = stringData(finding, "subject");
+  if (!subject) return undefined;
+  const candidateId = candidateIdForSubject(incident, subject);
+  if (!candidateId) return undefined;
+
+  if (finding.code === "SEMANTIC_IR_EXECUTION_TARGET_UNRESOLVED") {
+    return {
+      id: "probe::semantic-ir::" + finding.id,
+      label: "Resolve semantic execution target: " +
+        (stringData(finding, "targetLabel") ?? subject),
+      requiredContext: "LOCAL_ARTIFACT",
+      costUnits: 1,
+      mutationRisk: "read-only",
+      rationale:
+        "Resolve the execution target from source/import/function evidence before making downstream execution claims.",
+      outcomes: [{
+        id: "resolved",
+        observation: "Execution target resolves to a unique semantic region",
+        rejectsCandidateIds: [candidateId],
+      }, {
+        id: "still-unresolved",
+        observation: "Execution target remains unresolved after bounded source resolution",
+        supportsCandidateIds: [candidateId],
+      }],
+    };
+  }
+
+  return {
+    id: "probe::semantic-ir::" + finding.id,
+    label: "Observe deferred callback generation ownership",
+    requiredContext: "LIVE_MINECRAFT",
+    costUnits: 2,
+    mutationRisk: "read-only",
+    rationale:
+      "Observe the callback's session/arena/subsystem generation at execution before treating stale deferred work as causal.",
+    outcomes: [{
+      id: "current-generation",
+      observation: "Deferred callback executes under the current owning generation",
+      rejectsCandidateIds: [candidateId],
+    }, {
+      id: "stale-or-unbound-generation",
+      observation: "Deferred callback executes under a stale or unbound generation",
+      supportsCandidateIds: [candidateId],
+    }],
+  };
+}
+
 export function deriveDiagnosticProbeDefinitions(
   incident: CausalIncident,
   diagnostics: readonly DiagnosticFinding[],
@@ -148,7 +206,9 @@ export function deriveDiagnosticProbeDefinitions(
 
   for (const finding of diagnostics) {
     if (!relatedIds.has(finding.id)) continue;
-    const probe = evidenceGapProbe(incident, finding, validationCases);
+    const probe =
+      evidenceGapProbe(incident, finding, validationCases) ??
+      semanticIrProbe(incident, finding);
     if (!probe) continue;
     byId.set(probe.id, probe);
   }

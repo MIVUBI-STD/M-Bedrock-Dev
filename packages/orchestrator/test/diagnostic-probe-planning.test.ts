@@ -135,13 +135,28 @@ describe("diagnostic probe planning", () => {
     );
   });
 
-  it("does not request more evidence after a candidate is proven with outcome", () => {
+  it("does not mistake legacy observed outcome for causal proof", () => {
     const base = incident();
     const input: CausalIncident = {
       ...base,
       rootCauseCandidates: [{
         ...base.rootCauseCandidates[0]!,
         evidenceLevel: "proven-with-observed-outcome",
+      }],
+    };
+    const plan = planDiagnosticProbes(input, probes, "LIVE_MINECRAFT");
+    expect(plan.unresolvedCandidateIds).toEqual(["chunk"]);
+    expect(plan.recommended.length).toBeGreaterThan(0);
+  });
+
+  it("stops requesting evidence only after explicit causal proof", () => {
+    const base = incident();
+    const input: CausalIncident = {
+      ...base,
+      rootCauseCandidates: [{
+        ...base.rootCauseCandidates[0]!,
+        evidenceLevel: "proven-with-observed-outcome",
+        proof: { state: "causal" },
       }],
     };
     const plan = planDiagnosticProbes(input, probes, "LIVE_MINECRAFT");

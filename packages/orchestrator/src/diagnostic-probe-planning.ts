@@ -1,4 +1,8 @@
-import type { CausalIncident } from "../../project-model/src/index.js";
+import {
+  causalProofAtLeast,
+  legacyEvidenceToCausalProofState,
+  type CausalIncident,
+} from "../../project-model/src/index.js";
 import type {
   DiagnosticExecutionContext,
   DiagnosticProbeDefinition,
@@ -100,7 +104,11 @@ export function planDiagnosticProbes(
 ): DiagnosticProbePlan {
   const unresolvedCandidateIds = incident.rootCauseCandidates
     .filter((candidate) =>
-      candidate.evidenceLevel !== "proven-with-observed-outcome"
+      !causalProofAtLeast(
+        candidate.proof?.state ??
+          legacyEvidenceToCausalProofState(candidate.evidenceLevel),
+        "causal",
+      )
     )
     .map((candidate) => candidate.id)
     .sort();
