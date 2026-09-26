@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   assessInvariantFalsification,
   draftInvariantPromotion,
+  type CampaignHistoryRecord,
   type MinedInvariantCandidate,
 } from "../src/index.js";
 
@@ -30,9 +31,9 @@ const candidate: MinedInvariantCandidate = {
 
 function campaign(
   status: "killed" | "survived",
-) {
+): CampaignHistoryRecord {
   return {
-    schemaVersion: 1 as const,
+    schemaVersion: 1,
     campaignId: "campaign-1",
     createdAt: "2026-09-27T00:00:00Z",
     blindspotTasks: [],
