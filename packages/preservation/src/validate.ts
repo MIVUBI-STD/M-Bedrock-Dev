@@ -3,7 +3,9 @@ import type {
   RepairPreservationContract,
 } from "./types.js";
 
-function duplicate(values: readonly string[]): string | undefined {
+function duplicate(
+  values: readonly string[],
+): string | undefined {
   const seen = new Set<string>();
   for (const value of values) {
     if (seen.has(value)) return value;
@@ -12,8 +14,14 @@ function duplicate(values: readonly string[]): string | undefined {
   return undefined;
 }
 
-function nonEmpty(values: readonly string[]): boolean {
-  return values.every((value) => typeof value === "string" && value.trim().length > 0);
+function nonEmpty(
+  values: readonly string[],
+): boolean {
+  return values.every(
+    (value) =>
+      typeof value === "string" &&
+      value.trim().length > 0,
+  );
 }
 
 export function validateRepairPreservationContract(
@@ -22,53 +30,107 @@ export function validateRepairPreservationContract(
   const errors: string[] = [];
 
   if (contract.schemaVersion !== 1) {
-    errors.push("Preservation contract schemaVersion must be 1.");
+    errors.push(
+      "Preservation contract schemaVersion must be 1.",
+    );
   }
   if (!contract.id.trim()) {
-    errors.push("Preservation contract id must be non-empty.");
+    errors.push(
+      "Preservation contract id must be non-empty.",
+    );
   }
   if (!contract.transactionId.trim()) {
-    errors.push("Preservation contract transactionId must be non-empty.");
+    errors.push(
+      "Preservation contract transactionId must be non-empty.",
+    );
   }
-  if (contract.mustChangeInvariantIds.length === 0) {
-    errors.push("Preservation contract requires at least one must-change invariant.");
+  if (
+    contract.semanticTracePolicyId !== undefined &&
+    !contract.semanticTracePolicyId.trim()
+  ) {
+    errors.push(
+      "Preservation contract semanticTracePolicyId must be non-empty when provided.",
+    );
   }
-  if (contract.mustPreserveInvariantIds.length === 0) {
-    errors.push("Preservation contract requires at least one must-preserve invariant.");
+  if (
+    contract.mustChangeInvariantIds.length === 0
+  ) {
+    errors.push(
+      "Preservation contract requires at least one must-change invariant.",
+    );
+  }
+  if (
+    contract.mustPreserveInvariantIds.length === 0
+  ) {
+    errors.push(
+      "Preservation contract requires at least one must-preserve invariant.",
+    );
   }
 
   for (const [label, values] of [
-    ["mustChangeInvariantIds", contract.mustChangeInvariantIds],
-    ["mustPreserveInvariantIds", contract.mustPreserveInvariantIds],
-    ["allowedSideEffectIds", contract.allowedSideEffectIds ?? []],
-    ["forbiddenSideEffectIds", contract.forbiddenSideEffectIds ?? []],
+    [
+      "mustChangeInvariantIds",
+      contract.mustChangeInvariantIds,
+    ],
+    [
+      "mustPreserveInvariantIds",
+      contract.mustPreserveInvariantIds,
+    ],
+    [
+      "allowedSideEffectIds",
+      contract.allowedSideEffectIds ?? [],
+    ],
+    [
+      "forbiddenSideEffectIds",
+      contract.forbiddenSideEffectIds ?? [],
+    ],
   ] as const) {
     if (!nonEmpty(values)) {
-      errors.push(label + " must contain only non-empty strings.");
+      errors.push(
+        label +
+          " must contain only non-empty strings.",
+      );
     }
     const repeated = duplicate(values);
     if (repeated) {
-      errors.push(label + " contains duplicate value: " + repeated + ".");
+      errors.push(
+        label +
+          " contains duplicate value: " +
+          repeated +
+          ".",
+      );
     }
   }
 
-  const preserve = new Set(contract.mustPreserveInvariantIds);
-  const overlap = contract.mustChangeInvariantIds.filter((id) => preserve.has(id));
+  const preserve = new Set(
+    contract.mustPreserveInvariantIds,
+  );
+  const overlap =
+    contract.mustChangeInvariantIds.filter(
+      (id) => preserve.has(id),
+    );
   if (overlap.length > 0) {
     errors.push(
       "An invariant cannot be both must-change and must-preserve: " +
-        [...new Set(overlap)].sort().join(", ") +
+        [...new Set(overlap)]
+          .sort()
+          .join(", ") +
         ".",
     );
   }
 
-  const allowed = new Set(contract.allowedSideEffectIds ?? []);
-  const sideEffectOverlap = (contract.forbiddenSideEffectIds ?? [])
-    .filter((id) => allowed.has(id));
+  const allowed = new Set(
+    contract.allowedSideEffectIds ?? [],
+  );
+  const sideEffectOverlap = (
+    contract.forbiddenSideEffectIds ?? []
+  ).filter((id) => allowed.has(id));
   if (sideEffectOverlap.length > 0) {
     errors.push(
       "A side effect cannot be both allowed and forbidden: " +
-        [...new Set(sideEffectOverlap)].sort().join(", ") +
+        [...new Set(sideEffectOverlap)]
+          .sort()
+          .join(", ") +
         ".",
     );
   }
@@ -82,16 +144,25 @@ export function validateRepairPreservationBaseline(
   const errors: string[] = [];
 
   if (baseline.schemaVersion !== 1) {
-    errors.push("Preservation baseline schemaVersion must be 1.");
+    errors.push(
+      "Preservation baseline schemaVersion must be 1.",
+    );
   }
   if (!baseline.contractId.trim()) {
-    errors.push("Preservation baseline contractId must be non-empty.");
+    errors.push(
+      "Preservation baseline contractId must be non-empty.",
+    );
   }
   if (!baseline.sourceFingerprint.trim()) {
-    errors.push("Preservation baseline sourceFingerprint must be non-empty.");
+    errors.push(
+      "Preservation baseline sourceFingerprint must be non-empty.",
+    );
   }
 
-  const ids = baseline.invariantResults.map((result) => result.invariantId);
+  const ids =
+    baseline.invariantResults.map(
+      (result) => result.invariantId,
+    );
   const repeated = duplicate(ids);
   if (repeated) {
     errors.push(
@@ -103,7 +174,9 @@ export function validateRepairPreservationBaseline(
 
   for (const result of baseline.invariantResults) {
     if (!result.invariantId.trim()) {
-      errors.push("Preservation baseline invariantId must be non-empty.");
+      errors.push(
+        "Preservation baseline invariantId must be non-empty.",
+      );
     }
     if (
       result.state !== "satisfied" &&

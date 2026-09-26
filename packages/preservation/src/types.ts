@@ -17,6 +17,7 @@ export interface RepairPreservationContract {
   mustPreserveInvariantIds: readonly string[];
   allowedSideEffectIds?: readonly string[];
   forbiddenSideEffectIds?: readonly string[];
+  semanticTracePolicyId?: string;
 }
 
 export interface RepairPreservationBaseline {
@@ -46,4 +47,12 @@ export interface PreservationVerificationReceipt {
   verifiedMustChangeInvariantIds: readonly string[];
   verifiedMustPreserveInvariantIds: readonly string[];
   evidenceIds: readonly string[];
+  semanticTraceDisposition?:
+    | "equivalent"
+    | "changed-as-intended"
+    | "violated"
+    | "unknown";
+  unexpectedBehaviorKeys?: readonly string[];
+  observedForbiddenSideEffectIds?: readonly string[];
+  reasons?: readonly string[];
 }
