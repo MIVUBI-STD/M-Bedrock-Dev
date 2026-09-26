@@ -257,7 +257,9 @@ describe("provider-backed repair workflow", () => {
       }],
       ledger,
       decisionId: "blocked",
-      decisionBasis: {},
+      decisionBasis: {
+        runtimeEvidenceRevision: "evidence-current",
+      },
       policy: { allowGuarded: true },
     });
 
