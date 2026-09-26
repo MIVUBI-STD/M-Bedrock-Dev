@@ -1,49 +1,56 @@
 # Next Action
 
-M-Bedrock-Dev now has formal behavior provenance and an initial happens-before concurrency model in addition to the Behavioral World Model and Diagnostic Reasoning layers.
+M-Bedrock-Dev now has behavior provenance, happens-before concurrency semantics, adversarial invariant promotion gates, and semantic before/after trace comparison.
 
-## Current lane — Adversarial Verification Before Runtime Testing
+## Current lane — Preservation Intelligence Before Runtime Testing
 
 Do not expand local/live Minecraft testing yet.
 
-### Completed provenance work
+### Completed reliability hardening
 
-- behavior variables/transitions/properties can carry claim provenance;
-- explicit evidence ceilings;
-- provenance-gap audit;
-- Minecraft domain overlays are marked `project-policy / designed`;
-- designed specifications cannot masquerade as observed engine truth.
+- behavior claims carry provenance and evidence ceilings;
+- Minecraft overlays remain `project-policy / designed`;
+- interleaving exploration can use happens-before plus hidden engine surfaces;
+- cyclic happens-before graphs are rejected;
+- invariant promotion requires a passed adversarial falsification receipt;
+- passive support alone cannot authorize promotion.
 
-### Completed concurrency work
+### Completed semantic differential preservation
 
-- explicit happens-before edges;
-- transitive happens-before queries;
-- cycle rejection;
-- causal/program/generation/event ordering reasons;
-- hidden engine dependency surfaces;
-- interleaving reduction consults semantic dependency as well as read/write footprints;
-- session operations now expose engine-sensitive semantic surfaces.
+Before/after behavior is compared by semantic checkpoint and occurrence, not raw tick index.
 
-### Current proof ceiling
+A trace policy can declare:
 
-These are deterministic architecture contracts only.
+- required checkpoints;
+- must-preserve state keys;
+- must-change state keys;
+- allowed-change state keys;
+- timing tolerance.
 
-They do not prove actual Bedrock/Education event ordering, chunk behavior, or scheduler behavior.
+The comparator reports:
+
+- intended deltas;
+- unexpected deltas;
+- must-preserve drift;
+- missing checkpoints;
+- timing drift;
+- unchanged must-change keys.
+
+Incomplete traces or missing required checkpoint instances remain `unknown`; they cannot prove equivalence.
 
 ## Next architecture order
 
-1. enforce adversarial falsification before invariant promotion;
-2. add semantic trace comparison for before/after repair;
-3. connect behavioral property violations to diagnostic hypotheses;
-4. create edition/host semantic overlays for Bedrock retail, BDS, and Education without assuming parity;
-5. add stronger partial-order reduction using causal/happens-before closure rather than the current bounded reduction heuristic;
-6. add calibrated probabilistic belief only after a real calibration corpus exists;
-7. only then connect physical Minecraft runtime channels.
+1. bind semantic checkpoints to Behavioral World Model transitions and temporal properties;
+2. connect property violations to Diagnostic Reasoning hypotheses;
+3. add edition/host semantic overlays for Bedrock retail, BDS, and Education;
+4. strengthen partial-order reduction using full causal closure and generation semantics;
+5. add calibration corpus design for future probabilistic belief;
+6. only then connect physical Minecraft runtime channels.
 
 ## Safety
 
-- provenance ceiling limits what a claim may authorize;
-- read/write disjointness does not imply Minecraft independence;
-- shared hidden engine surfaces prevent unsafe schedule collapsing;
-- a cyclic happens-before model is invalid;
-- designed semantics remain specifications until supported by stronger evidence.
+- specification is not engine truth;
+- passing passive observations is not enough for invariant promotion;
+- read/write disjointness is not enough for independence;
+- missing semantic trace coverage cannot prove preservation;
+- intended repair success does not excuse unrelated state or timing drift.
