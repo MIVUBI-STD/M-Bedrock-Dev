@@ -135,6 +135,7 @@ const diagnostic = {
   selectedCandidateId: "cause-1",
   effectiveEvidenceLevel:
     "proven-with-observed-outcome" as const,
+  proofState: "causal" as const,
   claimStrength: "proven-runtime" as const,
   reasons: ["runtime proof"],
 };
@@ -256,8 +257,9 @@ describe("repair strategy selection", () => {
       ...diagnostic,
       disposition: "guarded-repair-eligible" as const,
       effectiveEvidenceLevel:
-        "proven-dependency-violation" as const,
-      claimStrength: "proven-static" as const,
+        "proven-with-observed-outcome" as const,
+      proofState: "intervention-supported" as const,
+      claimStrength: "proven-runtime" as const,
     };
     const candidate = {
       strategyId: "guarded",
@@ -291,6 +293,9 @@ describe("repair strategy selection", () => {
         invariantRegistry: invariantRegistry("proven-static"),
         requiredInvariantIds: ["invariant:ready"],
         allowGuarded: true,
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
       },
     ).status).toBe("selected");
   });

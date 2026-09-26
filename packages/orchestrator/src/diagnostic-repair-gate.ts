@@ -87,7 +87,9 @@ export function capCausalProofState(
 function claimStrengthFor(
   proofState: CausalProofState,
 ): DiagnosticClaimStrength {
-  if (causalProofAtLeast(proofState, "causal")) return "proven-runtime";
+  if (causalProofAtLeast(proofState, "intervention-supported")) {
+    return "proven-runtime";
+  }
   if (causalProofAtLeast(proofState, "localized")) return "proven-static";
   if (causalProofAtLeast(proofState, "supported")) return "corroborated";
   return "hypothesis";

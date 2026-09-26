@@ -63,8 +63,9 @@ describe("repair admission pipeline", () => {
         disposition: "repair-eligible",
         selectedCandidateId: "candidate",
         effectiveEvidenceLevel: "proven-with-observed-outcome",
+        proofState: "causal",
         claimStrength: "proven-runtime",
-        reasons: ["runtime proof"],
+        reasons: ["causal runtime proof"],
       },
       changedNodeIds: ["function:p:target"],
       supportingInvariantIds: ["invariant::ready"],
@@ -120,7 +121,7 @@ describe("repair admission pipeline", () => {
     })).toThrow(/runtimeEvidenceRevision/);
   });
 
-  it("does not require runtime evidence revision for static guarded repair", () => {
+  it("admits guarded intervention proof only when runtime evidence is bound", () => {
     const { graph, transaction } = fixture();
     const result = evaluateRepairAdmissionPipeline({
       graph,
@@ -130,11 +131,15 @@ describe("repair admission pipeline", () => {
         activeCandidateIds: ["candidate"],
         disposition: "guarded-repair-eligible",
         selectedCandidateId: "candidate",
-        effectiveEvidenceLevel: "proven-dependency-violation",
-        claimStrength: "proven-static",
-        reasons: ["static proof"],
+        effectiveEvidenceLevel: "proven-with-observed-outcome",
+        proofState: "intervention-supported",
+        claimStrength: "proven-runtime",
+        reasons: ["intervention-supported runtime proof"],
       },
       changedNodeIds: ["function:p:target"],
+      decisionBasis: {
+        runtimeEvidenceRevision: "evidence-current",
+      },
     });
 
     expect(result.admission.disposition).toBe("guarded");

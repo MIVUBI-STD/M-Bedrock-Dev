@@ -77,8 +77,9 @@ const diagnostic = {
   disposition: "guarded-repair-eligible" as const,
   selectedCandidateId: "cause-1",
   effectiveEvidenceLevel:
-    "proven-dependency-violation" as const,
-  claimStrength: "proven-static" as const,
+    "proven-with-observed-outcome" as const,
+  proofState: "intervention-supported" as const,
+  claimStrength: "proven-runtime" as const,
   reasons: ["proof"],
 };
 
@@ -166,7 +167,12 @@ describe("causal repair strategy selection", () => {
       diagnostic,
       registry,
       [candidate],
-      { allowGuarded: true },
+      {
+        allowGuarded: true,
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      },
     );
 
     expect(result.status).toBe("evaluated");
@@ -215,6 +221,7 @@ describe("causal repair strategy selection", () => {
       disposition: "repair-eligible" as const,
       effectiveEvidenceLevel:
         "proven-with-observed-outcome" as const,
+      proofState: "causal" as const,
       claimStrength: "proven-runtime" as const,
     };
 

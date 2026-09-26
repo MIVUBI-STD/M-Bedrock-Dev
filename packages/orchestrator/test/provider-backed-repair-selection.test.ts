@@ -86,8 +86,9 @@ const diagnosticDecision = {
   disposition: "guarded-repair-eligible" as const,
   selectedCandidateId: "cause-1",
   effectiveEvidenceLevel:
-    "proven-dependency-violation" as const,
-  claimStrength: "proven-static" as const,
+    "proven-with-observed-outcome" as const,
+  proofState: "intervention-supported" as const,
+  claimStrength: "proven-runtime" as const,
   reasons: ["proof"],
 };
 
@@ -208,7 +209,12 @@ describe("provider-backed repair selection", () => {
             addressesCandidateIds: ["cause-1"],
           },
         }],
-        { allowGuarded: true },
+        {
+          allowGuarded: true,
+          decisionBasis: {
+            runtimeEvidenceRevision: "evidence-current",
+          },
+        },
       );
 
     expect(result.status).toBe("evaluated");

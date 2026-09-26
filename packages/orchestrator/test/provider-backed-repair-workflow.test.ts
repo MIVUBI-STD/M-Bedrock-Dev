@@ -79,8 +79,9 @@ const diagnostic = {
   disposition: "guarded-repair-eligible" as const,
   selectedCandidateId: "cause-1",
   effectiveEvidenceLevel:
-    "proven-dependency-violation" as const,
-  claimStrength: "proven-static" as const,
+    "proven-with-observed-outcome" as const,
+  proofState: "intervention-supported" as const,
+  claimStrength: "proven-runtime" as const,
   reasons: ["proof"],
 };
 
@@ -206,6 +207,7 @@ describe("provider-backed repair workflow", () => {
       decisionBasis: {
         sourceFingerprint: "source",
         invariantRegistryRevision: "inv-r1",
+        runtimeEvidenceRevision: "evidence-current",
       },
       policy: { allowGuarded: true },
     });
