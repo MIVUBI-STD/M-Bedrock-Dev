@@ -4,6 +4,7 @@ import {
 } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
+import type { PreservationReadinessResult } from "../../preservation/src/index.js";
 import type {
   RepairBlastRadiusDecision,
   RepairCounterfactualImpact,
@@ -24,6 +25,9 @@ export interface RepairProofBundle {
   proofState?: DiagnosticRepairDecision["proofState"];
   blastRadiusDisposition: RepairBlastRadiusDecision["disposition"];
   admissionDisposition: RepairAdmissionDecision["disposition"];
+  preservationContractId?: string;
+  preservationReadinessDisposition?: PreservationReadinessResult["disposition"];
+  preservationBaselineEvidenceIds?: readonly string[];
   supportingInvariantIds: readonly string[];
   changedNodeIds: readonly string[];
   affectedNodeIds: readonly string[];
@@ -41,6 +45,7 @@ export function createRepairProofBundle(
   admission: RepairAdmissionDecision,
   decisionBasis: DecisionBasisRevision,
   supportingInvariantIds: readonly string[] = [],
+  preservationReadiness?: PreservationReadinessResult,
 ): RepairProofBundle {
   for (const [label, id] of [
     ["counterfactual impact", impact.transactionId],
@@ -100,6 +105,15 @@ export function createRepairProofBundle(
       : { proofState: diagnostic.proofState }),
     blastRadiusDisposition: blastRadius.disposition,
     admissionDisposition: admission.disposition,
+    ...(preservationReadiness === undefined
+      ? {}
+      : {
+          preservationContractId: preservationReadiness.contractId,
+          preservationReadinessDisposition:
+            preservationReadiness.disposition,
+          preservationBaselineEvidenceIds:
+            [...preservationReadiness.baselineEvidenceIds],
+        }),
     supportingInvariantIds: [...new Set(supportingInvariantIds)].sort(),
     changedNodeIds: [...impact.changedNodeIds],
     affectedNodeIds: [...impact.affectedNodeIds],
@@ -337,6 +351,39 @@ export function validateRepairProofBundle(
     errors.push(
       "Mutation-authorizing proof requires a selected root-cause candidate.",
     );
+  }
+
+  if (
+    causalProofAtLeast(proof.proofState, "intervention-supported") &&
+    proof.claimStrength !== "proven-runtime"
+  ) {
+    errors.push(
+      "Intervention-supported or stronger causal proof requires proven-runtime claim strength.",
+    );
+  }
+
+  if (
+    proof.admissionDisposition === "eligible" ||
+    proof.admissionDisposition === "guarded"
+  ) {
+    if (
+      proof.preservationReadinessDisposition !== "ready" ||
+      !proof.preservationContractId?.trim() ||
+      !Array.isArray(proof.preservationBaselineEvidenceIds) ||
+      proof.preservationBaselineEvidenceIds.length === 0
+    ) {
+      errors.push(
+        "Mutation-authorizing proof requires ready preservation baseline evidence.",
+      );
+    }
+    if (
+      !proof.decisionBasis.preservationContractRevision?.trim() ||
+      !proof.decisionBasis.preservationBaselineRevision?.trim()
+    ) {
+      errors.push(
+        "Mutation-authorizing proof requires preservation contract and baseline revisions.",
+      );
+    }
   }
 
   return errors;

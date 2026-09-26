@@ -5,6 +5,7 @@ export type DecisionLedgerKind =
   | "repair-strategy-selection"
   | "transitive-revalidation"
   | "runtime-verification"
+  | "preservation-verification"
   | "package-verification"
   | "release-admission";
 
@@ -17,6 +18,8 @@ export interface DecisionBasisRevision {
   sourceFingerprint?: string;
   graphFingerprint?: string;
   semanticIrRevision?: string;
+  preservationContractRevision?: string;
+  preservationBaselineRevision?: string;
   contractRegistryRevision?: string;
   knowledgeRevision?: string;
   invariantRegistryRevision?: string;

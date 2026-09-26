@@ -88,6 +88,7 @@ function decisionBasisMismatch(
   for (const key of [
     "sourceFingerprint",
     "graphFingerprint",
+    "semanticIrRevision",
     "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
@@ -95,6 +96,8 @@ function decisionBasisMismatch(
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
+    "preservationContractRevision",
+    "preservationBaselineRevision",
   ] as const) {
     const expectedValue = expected[key];
     if (expectedValue === undefined) continue;
@@ -161,6 +164,7 @@ function proofBasisMismatch(
   for (const key of [
     "sourceFingerprint",
     "graphFingerprint",
+    "semanticIrRevision",
     "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
@@ -168,6 +172,8 @@ function proofBasisMismatch(
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
+    "preservationContractRevision",
+    "preservationBaselineRevision",
   ] as const) {
     const expected = proof.decisionBasis[key];
     if (
@@ -251,6 +257,48 @@ export function decideRepairReleaseWithLineage(
       lineageDecisionIds: [],
       reasons: [
         "Runtime-proven repair proof must be bound to the runtime evidence snapshot that authorized it.",
+      ],
+    };
+  }
+
+  if (
+    !proof.decisionBasis.preservationContractRevision?.trim() ||
+    !proof.decisionBasis.preservationBaselineRevision?.trim()
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Release proof is not bound to a preservation contract and baseline.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Release requires preservationContractRevision and preservationBaselineRevision in the repair proof decision basis.",
+      ],
+    };
+  }
+
+  if (
+    proof.preservationReadinessDisposition !== "ready" ||
+    !proof.preservationContractId?.trim() ||
+    !Array.isArray(proof.preservationBaselineEvidenceIds) ||
+    proof.preservationBaselineEvidenceIds.length === 0
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof does not carry a ready preservation baseline.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Release requires pre-mutation preservation readiness and explicit baseline evidence.",
       ],
     };
   }
@@ -341,6 +389,11 @@ export function decideRepairReleaseWithLineage(
     transactionId,
     "runtime-verification",
   );
+  const preservationVerification = uniqueActiveStage(
+    ledger,
+    transactionId,
+    "preservation-verification",
+  );
   const packageVerification = uniqueActiveStage(
     ledger,
     transactionId,
@@ -366,6 +419,7 @@ export function decideRepairReleaseWithLineage(
       ? [transitive.error]
       : []),
     runtime.error,
+    preservationVerification.error,
     packageVerification.error,
   ].filter((value): value is string => value !== undefined);
 
@@ -388,6 +442,7 @@ export function decideRepairReleaseWithLineage(
   const strategyEntry = strategy.entry!;
   const admissionEntry = admission.entry!;
   const runtimeEntry = runtime.entry!;
+  const preservationEntry = preservationVerification.entry!;
   const packageEntry = packageVerification.entry!;
   const transitiveEntry = needsTransitiveRevalidation
     ? transitive.entry!
@@ -543,6 +598,19 @@ export function decideRepairReleaseWithLineage(
     );
   }
 
+  const preservationAncestors = ancestorIds(
+    ledger,
+    preservationEntry,
+  );
+  if (!preservationAncestors.has(requiredVerificationParent)) {
+    lineageErrors.push(
+      "Preservation verification is not descended from " +
+        (transitiveEntry
+          ? "transitive revalidation."
+          : "repair admission."),
+    );
+  }
+
   const packageAncestors = ancestorIds(
     ledger,
     packageEntry,
@@ -580,6 +648,16 @@ export function decideRepairReleaseWithLineage(
   }
 
   if (
+    !preservationEntry.outputIds.includes(
+      "preservation-verification:passed",
+    )
+  ) {
+    lineageErrors.push(
+      "Active preservation verification decision is not a passing decision.",
+    );
+  }
+
+  if (
     !packageEntry.outputIds.includes(
       "package-verification:passed",
     )
@@ -595,6 +673,7 @@ export function decideRepairReleaseWithLineage(
     admissionEntry,
     ...(transitiveEntry ? [transitiveEntry] : []),
     runtimeEntry,
+    preservationEntry,
     packageEntry,
   ];
 
@@ -632,7 +711,7 @@ export function decideRepairReleaseWithLineage(
       disposition: "release-eligible",
       reasons: [
         ...lifecycleDecision.reasons,
-        "Active decision lineage is complete, current, causally authorized, invariant-bound, and verified through runtime/package evidence.",
+        "Active decision lineage is complete, current, causally authorized, invariant-bound, and verified through runtime/preservation/package evidence.",
       ],
     },
     ledger,

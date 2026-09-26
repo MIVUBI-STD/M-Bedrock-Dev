@@ -122,6 +122,7 @@ function mismatchReason(
   for (const key of [
     "sourceFingerprint",
     "graphFingerprint",
+    "semanticIrRevision",
     "contractRegistryRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
@@ -129,6 +130,8 @@ function mismatchReason(
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
+    "preservationContractRevision",
+    "preservationBaselineRevision",
   ] as const) {
     const expected = basis[key];
     const actual = current[key];

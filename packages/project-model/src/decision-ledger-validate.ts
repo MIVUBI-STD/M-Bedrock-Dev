@@ -12,6 +12,7 @@ const KINDS = new Set<DecisionLedgerKind>([
   "repair-strategy-selection",
   "transitive-revalidation",
   "runtime-verification",
+  "preservation-verification",
   "package-verification",
   "release-admission",
 ]);
@@ -25,6 +26,7 @@ const STATUSES = new Set<DecisionLedgerStatus>([
 const BASIS_FIELDS = new Set([
   "sourceFingerprint",
   "graphFingerprint",
+  "semanticIrRevision",
   "contractRegistryRevision",
   "knowledgeRevision",
   "invariantRegistryRevision",
@@ -32,6 +34,8 @@ const BASIS_FIELDS = new Set([
   "targetProfileFingerprint",
   "probeBindingRevision",
   "runtimeEvidenceRevision",
+  "preservationContractRevision",
+  "preservationBaselineRevision",
 ]);
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -129,12 +133,26 @@ function validateEntrySemantics(
   }
 
   if (
-    value.kind === "runtime-verification" &&
+    (value.kind === "runtime-verification" ||
+      value.kind === "preservation-verification") &&
     !nonEmpty(value.basis.runtimeEvidenceRevision)
   ) {
     errors.push(
       "entries[" + index +
-        "] runtime-verification requires runtimeEvidenceRevision.",
+        "] runtime/preservation verification requires runtimeEvidenceRevision.",
+    );
+  }
+
+  if (
+    value.kind === "preservation-verification" &&
+    (
+      !nonEmpty(value.basis.preservationContractRevision) ||
+      !nonEmpty(value.basis.preservationBaselineRevision)
+    )
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] preservation-verification requires preservation contract and baseline revisions.",
     );
   }
 
@@ -145,6 +163,19 @@ function validateEntrySemantics(
     errors.push(
       "entries[" + index +
         "] release-admission requires runtimeEvidenceRevision.",
+    );
+  }
+
+  if (
+    value.kind === "release-admission" &&
+    (
+      !nonEmpty(value.basis.preservationContractRevision) ||
+      !nonEmpty(value.basis.preservationBaselineRevision)
+    )
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] release-admission requires preservation contract and baseline revisions.",
     );
   }
 

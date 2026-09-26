@@ -5,6 +5,7 @@ import {
 } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
+import type { PreservationReadinessResult } from "../../preservation/src/index.js";
 import {
   analyzeRepairCounterfactual,
 } from "./repair-counterfactual.js";
@@ -39,6 +40,7 @@ export interface RepairAdmissionPipelineInput {
     "sourceFingerprint" | "graphFingerprint"
   >;
   blastRadiusPolicy?: RepairBlastRadiusPolicy;
+  preservationReadiness?: PreservationReadinessResult;
 }
 
 export interface RepairAdmissionPipelineResult {
@@ -94,6 +96,7 @@ export function evaluateRepairAdmissionPipeline(
     admission,
     decisionBasis,
     input.supportingInvariantIds ?? [],
+    input.preservationReadiness,
   );
 
   return {

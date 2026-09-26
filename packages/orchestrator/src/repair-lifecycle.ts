@@ -1,4 +1,7 @@
 import type {
+  PreservationVerificationReceipt,
+} from "../../preservation/src/index.js";
+import type {
   AuthorizedRepairApplyResult,
 } from "./authorized-repair.js";
 
@@ -32,6 +35,7 @@ export interface RepairLifecycleState {
   localStaticValidationPassed: boolean;
   transitiveRevalidationComplete: boolean;
   runtimeVerificationComplete: boolean;
+  preservationVerificationComplete: boolean;
   packageVerificationComplete: boolean;
   pendingNodeIds: readonly string[];
   pendingPaths: readonly string[];
@@ -52,6 +56,7 @@ export function repairLifecycleFromApplyResult(
         localStaticValidationPassed: false,
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
+        preservationVerificationComplete: false,
         packageVerificationComplete: false,
         pendingNodeIds: [],
         pendingPaths: [],
@@ -66,6 +71,7 @@ export function repairLifecycleFromApplyResult(
         localStaticValidationPassed: false,
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
+        preservationVerificationComplete: false,
         packageVerificationComplete: false,
         pendingNodeIds: [],
         pendingPaths: [],
@@ -82,6 +88,7 @@ export function repairLifecycleFromApplyResult(
         localStaticValidationPassed: false,
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
+        preservationVerificationComplete: false,
         packageVerificationComplete: false,
         pendingNodeIds: [],
         pendingPaths: [],
@@ -101,6 +108,7 @@ export function repairLifecycleFromApplyResult(
         localStaticValidationPassed: false,
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
+        preservationVerificationComplete: false,
         packageVerificationComplete: false,
         pendingNodeIds: [],
         pendingPaths: [],
@@ -118,6 +126,7 @@ export function repairLifecycleFromApplyResult(
         localStaticValidationPassed: true,
         transitiveRevalidationComplete: false,
         runtimeVerificationComplete: false,
+        preservationVerificationComplete: false,
         packageVerificationComplete: false,
         pendingNodeIds: [...result.pendingNodeIds],
         pendingPaths: [...result.pendingPaths],
@@ -134,6 +143,7 @@ export function repairLifecycleFromApplyResult(
         localStaticValidationPassed: true,
         transitiveRevalidationComplete: true,
         runtimeVerificationComplete: false,
+        preservationVerificationComplete: false,
         packageVerificationComplete: false,
         pendingNodeIds: [],
         pendingPaths: [],
@@ -263,6 +273,54 @@ export function markRepairRuntimeVerified(
   };
 }
 
+export function markRepairPreservationVerified(
+  state: RepairLifecycleState,
+  receipt: PreservationVerificationReceipt,
+): RepairLifecycleState {
+  if (
+    state.stage !== "static-validated" ||
+    !state.localStaticValidationPassed ||
+    !state.transitiveRevalidationComplete
+  ) {
+    throw new Error(
+      "Preservation verification cannot be credited before static and transitive repair validation complete.",
+    );
+  }
+  if (receipt.transactionId !== state.transactionId) {
+    throw new Error(
+      "Preservation verification receipt belongs to another transaction.",
+    );
+  }
+  if (!receipt.passed) {
+    throw new Error(
+      "Failed preservation verification cannot advance repair lifecycle.",
+    );
+  }
+  if (
+    receipt.verifiedMustChangeInvariantIds.length === 0 ||
+    receipt.verifiedMustPreserveInvariantIds.length === 0
+  ) {
+    throw new Error(
+      "Preservation verification receipt must prove both must-change and must-preserve invariants.",
+    );
+  }
+  if (receipt.evidenceIds.length === 0) {
+    throw new Error(
+      "Preservation verification receipt requires explicit evidence ids.",
+    );
+  }
+
+  return {
+    ...state,
+    preservationVerificationComplete: true,
+    reasons: [
+      ...state.reasons,
+      "Preservation verification evidence has been accepted: " +
+        [...new Set(receipt.evidenceIds)].sort().join(", "),
+    ],
+  };
+}
+
 export function markRepairPackageVerified(
   state: RepairLifecycleState,
   receipt: RepairVerificationReceipt,
@@ -297,6 +355,7 @@ export function repairReleaseEligible(
     state.localStaticValidationPassed &&
     state.transitiveRevalidationComplete &&
     state.runtimeVerificationComplete &&
+    state.preservationVerificationComplete &&
     state.packageVerificationComplete
   );
 }

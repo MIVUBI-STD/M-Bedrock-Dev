@@ -293,6 +293,54 @@ describe("decision basis", () => {
     );
   });
 
+  it("fingerprints preservation contract and baseline independently", () => {
+    const contract = {
+      schemaVersion: 1 as const,
+      id: "preserve:tx-1",
+      transactionId: "tx-1",
+      mustChangeInvariantIds: ["inv:broken"],
+      mustPreserveInvariantIds: ["inv:healthy"],
+    };
+    const baseline = {
+      schemaVersion: 1 as const,
+      contractId: contract.id,
+      sourceFingerprint: "source-a",
+      invariantResults: [{
+        invariantId: "inv:broken",
+        state: "violated" as const,
+        evidenceIds: ["before:broken"],
+      }, {
+        invariantId: "inv:healthy",
+        state: "satisfied" as const,
+        evidenceIds: ["before:healthy"],
+      }],
+    };
+
+    const left = buildDecisionBasis({
+      preservationContract: contract,
+      preservationBaseline: baseline,
+    });
+    const changedContract = buildDecisionBasis({
+      preservationContract: {
+        ...contract,
+        mustPreserveInvariantIds: ["inv:healthy", "inv:other"],
+      },
+      preservationBaseline: baseline,
+    });
+    const changedBaseline = buildDecisionBasis({
+      preservationContract: contract,
+      preservationBaseline: {
+        ...baseline,
+        sourceFingerprint: "source-b",
+      },
+    });
+
+    expect(left.preservationContractRevision)
+      .not.toBe(changedContract.preservationContractRevision);
+    expect(left.preservationBaselineRevision)
+      .not.toBe(changedBaseline.preservationBaselineRevision);
+  });
+
   it("always binds the canonical contract registry revision", () => {
     const basis = buildDecisionBasis({});
     expect(basis.contractRegistryRevision)

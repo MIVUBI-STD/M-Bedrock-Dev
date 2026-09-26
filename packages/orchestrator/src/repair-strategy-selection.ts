@@ -6,6 +6,7 @@ import {
 } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
+import type { PreservationReadinessResult } from "../../preservation/src/index.js";
 import {
   evaluateRepairAdmissionPipeline,
   type RepairAdmissionPipelineResult,
@@ -27,6 +28,7 @@ export interface RepairStrategySelectionPolicy {
   requiredInvariantIds: readonly string[];
   allowGuarded?: boolean;
   blastRadiusPolicy?: RepairBlastRadiusPolicy;
+  preservationReadiness?: PreservationReadinessResult;
   decisionBasis?: Omit<
     DecisionBasisRevision,
     "sourceFingerprint" | "graphFingerprint" | "invariantRegistryRevision"
@@ -257,6 +259,12 @@ export function selectRepairStrategy(
         ...(policy.blastRadiusPolicy === undefined
           ? {}
           : { blastRadiusPolicy: policy.blastRadiusPolicy }),
+        ...(policy.preservationReadiness === undefined
+          ? {}
+          : {
+              preservationReadiness:
+                policy.preservationReadiness,
+            }),
       });
 
       const reasons: string[] = [];

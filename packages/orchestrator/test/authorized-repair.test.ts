@@ -46,9 +46,9 @@ function proof(
       sourceFingerprint: "abc",
       graphFingerprint: "graph-current",
       semanticIrRevision: "semantic-ir-current",
-      ...(disposition === "guarded"
-        ? {}
-        : { runtimeEvidenceRevision: "evidence-current" }),
+      preservationContractRevision: "preservation-contract-current",
+      preservationBaselineRevision: "preservation-baseline-current",
+      runtimeEvidenceRevision: "evidence-current",
     },
     incidentId: "incident-1",
     selectedCandidateId: "candidate",
@@ -56,20 +56,20 @@ function proof(
       disposition === "guarded"
         ? "guarded-repair-eligible"
         : "repair-eligible",
-    claimStrength:
-      disposition === "guarded"
-        ? "proven-static"
-        : "proven-runtime",
-    effectiveEvidenceLevel:
-      disposition === "guarded"
-        ? "proven-dependency-violation"
-        : "proven-with-observed-outcome",
+    claimStrength: "proven-runtime",
+    effectiveEvidenceLevel: "proven-with-observed-outcome",
     proofState:
       disposition === "guarded"
         ? "intervention-supported"
         : "causal",
     blastRadiusDisposition: "minimal",
     admissionDisposition: disposition,
+    preservationContractId: "preserve:" + txId,
+    preservationReadinessDisposition: "ready",
+    preservationBaselineEvidenceIds: [
+      "baseline:broken",
+      "baseline:healthy",
+    ],
     supportingInvariantIds: [],
     changedNodeIds: ["function:p:demo"],
     affectedNodeIds: ["function:p:demo"],
@@ -90,6 +90,8 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
         runtimeEvidenceRevision: "evidence-current",
       },
     )).toMatchObject({
@@ -107,6 +109,9 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
     ).authorized).toBe(false);
   });
@@ -120,6 +125,9 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
     ).authorized).toBe(false);
     expect(authorizeRepairMutation(
@@ -129,6 +137,9 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
     ).authorized).toBe(false);
   });
@@ -144,6 +155,9 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
     ).authorized).toBe(false);
 
@@ -154,6 +168,9 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
       { allowGuarded: true },
     )).toMatchObject({
@@ -171,6 +188,9 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
     ).authorized).toBe(false);
   });
@@ -184,6 +204,9 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-new",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
     )).toMatchObject({
       authorized: false,
@@ -199,6 +222,9 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "new-source",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
       },
     )).toMatchObject({
       authorized: false,
@@ -214,6 +240,26 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-new",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
+      },
+    )).toMatchObject({
+      authorized: false,
+    });
+  });
+
+  it("rejects stale preservation baseline proof", () => {
+    const tx = transaction();
+    expect(authorizeRepairMutation(
+      tx,
+      proof(tx.id, "eligible"),
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-new",
         runtimeEvidenceRevision: "evidence-current",
       },
     )).toMatchObject({
@@ -238,6 +284,8 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
         runtimeEvidenceRevision: "evidence-b",
       },
     )).toMatchObject({
@@ -262,6 +310,8 @@ describe("authorized repair mutation", () => {
         currentSourceFingerprint: "abc",
         currentGraphFingerprint: "graph-current",
         semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
         runtimeEvidenceRevision: "evidence-a",
       },
     )).toMatchObject({

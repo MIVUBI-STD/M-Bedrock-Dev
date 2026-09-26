@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   markRepairPackageVerified,
+  markRepairPreservationVerified,
   markRepairRuntimeVerified,
   markRepairTransitiveRevalidated,
   repairLifecycleFromApplyResult,
@@ -41,6 +42,7 @@ function staticValidated(): RepairLifecycleState {
     localStaticValidationPassed: true,
     transitiveRevalidationComplete: true,
     runtimeVerificationComplete: false,
+    preservationVerificationComplete: false,
     packageVerificationComplete: false,
     pendingNodeIds: [],
     pendingPaths: [],
@@ -91,6 +93,16 @@ describe("repair lifecycle", () => {
       kind: "runtime",
       passed: true,
       evidenceIds: ["runtime:invariant-pass"],
+    });
+    expect(repairReleaseEligible(state)).toBe(false);
+
+    state = markRepairPreservationVerified(state, {
+      contractId: "preserve:tx-1",
+      transactionId: "tx-1",
+      passed: true,
+      verifiedMustChangeInvariantIds: ["inv:fixed"],
+      verifiedMustPreserveInvariantIds: ["inv:healthy"],
+      evidenceIds: ["preservation:pass"],
     });
     expect(repairReleaseEligible(state)).toBe(true);
   });

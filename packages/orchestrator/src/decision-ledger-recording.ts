@@ -12,6 +12,9 @@ import type {
   RepairRuntimeVerificationResult,
 } from "./repair-runtime-verification.js";
 import type {
+  RepairPreservationVerificationResult,
+} from "./repair-preservation-verification.js";
+import type {
   StagedPackageVerificationResult,
 } from "./repair-package-verification.js";
 import type {
@@ -137,6 +140,52 @@ export function recordRuntimeVerificationDecision(
       : { upstreamDecisionIds: context.upstreamDecisionIds }),
     outputIds: [
       "runtime-verification:" +
+        (result.passed ? "passed" : "failed"),
+    ],
+    evidenceIds: [
+      ...result.evidenceIds,
+      ...(context.evidenceIds ?? []),
+    ],
+  });
+}
+
+export function recordPreservationVerificationDecision(
+  ledger: DecisionLedgerSnapshot,
+  result: RepairPreservationVerificationResult,
+  transactionId: string,
+  context: DecisionRecordContext,
+): DecisionLedgerSnapshot {
+  requireRuntimeEvidenceRevision(
+    context.basis,
+    "Preservation verification decision",
+  );
+  if (
+    !context.basis.preservationContractRevision?.trim() ||
+    !context.basis.preservationBaselineRevision?.trim()
+  ) {
+    throw new Error(
+      "Preservation verification decision requires preservation contract and baseline revisions in the decision basis.",
+    );
+  }
+
+  return appendDecisionLedgerEntry(ledger, {
+    id: context.decisionId,
+    kind: "preservation-verification",
+    transactionId,
+    basis: context.basis,
+    inputIds: [
+      ...result.verifiedMustChangeInvariantIds.map(
+        (id) => "must-change-invariant:" + id,
+      ),
+      ...result.verifiedMustPreserveInvariantIds.map(
+        (id) => "must-preserve-invariant:" + id,
+      ),
+    ],
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : { upstreamDecisionIds: context.upstreamDecisionIds }),
+    outputIds: [
+      "preservation-verification:" +
         (result.passed ? "passed" : "failed"),
     ],
     evidenceIds: [

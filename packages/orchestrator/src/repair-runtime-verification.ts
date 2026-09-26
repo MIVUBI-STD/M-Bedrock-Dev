@@ -30,6 +30,10 @@ export interface RepairRuntimeVerificationPlan {
   temporalRequirements: readonly RuntimeTemporalRequirement[];
 }
 
+export interface RepairRuntimeVerificationOptions {
+  expectedTargetProfileFingerprint?: string;
+}
+
 export interface RepairRuntimeVerificationResult {
   passed: boolean;
   satisfiedStateRequirementIds: readonly string[];
@@ -59,11 +63,17 @@ function evidenceId(record: RuntimeEvidenceRecord): string {
 function matchingObservedEvidence(
   records: readonly RuntimeEvidenceRecord[],
   requirement: RepairRuntimeStateRequirement,
+  options: RepairRuntimeVerificationOptions,
 ): RuntimeEvidenceRecord[] {
   return records.filter((record) =>
     record.confidence === "observed" &&
     record.predicate === requirement.predicate &&
     record.state === requirement.expectedState &&
+    (
+      options.expectedTargetProfileFingerprint === undefined ||
+      record.targetProfileFingerprint ===
+        options.expectedTargetProfileFingerprint
+    ) &&
     runtimeScopeContains(record.scope, requirement.scope)
   );
 }
@@ -72,6 +82,7 @@ export function verifyRepairRuntimeEvidence(
   plan: RepairRuntimeVerificationPlan,
   records: readonly RuntimeEvidenceRecord[],
   continuityComplete = true,
+  options: RepairRuntimeVerificationOptions = {},
 ): RepairRuntimeVerificationResult {
   const satisfiedStateRequirementIds: string[] = [];
   const failedStateRequirementIds: string[] = [];
@@ -81,6 +92,7 @@ export function verifyRepairRuntimeEvidence(
     const matches = matchingObservedEvidence(
       records,
       requirement,
+      options,
     );
 
     if (matches.length === 0) {
@@ -100,7 +112,13 @@ export function verifyRepairRuntimeEvidence(
   const temporalAssessments =
     assessRuntimeTemporalRequirements(
       records.filter(
-        (record) => record.confidence === "observed",
+        (record) =>
+          record.confidence === "observed" &&
+          (
+            options.expectedTargetProfileFingerprint === undefined ||
+            record.targetProfileFingerprint ===
+              options.expectedTargetProfileFingerprint
+          ),
       ),
       plan.temporalRequirements,
       continuityComplete,

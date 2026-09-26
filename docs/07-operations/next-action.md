@@ -1,46 +1,40 @@
 # Next Action
 
-M-Bedrock-Dev is now migrating from source-centric reasoning toward an evidence-bounded Minecraft Semantic IR.
+M-Bedrock-Dev now has an evidence-bounded knowledge/runtime profile, causal repair gate, and initial execution/state/temporal Semantic IR.
 
 ## Completed foundations
 
-- exact runtime-profile v2 and tri-state applicability;
-- evidence-backed knowledge-claim v2 contracts;
+- runtime-profile v2 and tri-state applicability;
+- evidence-backed knowledge claims;
 - causal proof ladder where observation is not causation;
-- causal/intervention repair gates;
-- evidence sufficiency and target-profile binding;
-- initial parser-independent Semantic IR contracts for execution, state, and temporal semantics.
+- Semantic IR for execution, state, and temporal boundaries;
+- Semantic IR evidence gaps feeding causal/probe planning;
+- repair decision basis bound to source, graph, Semantic IR, runtime evidence, and target context.
 
-## Current lane — Semantic IR integration
+## Current lane — Preservation Engine
 
-1. **Execution IR** — normalize script modules/functions/callbacks, event dispatch, deferred schedulers, and mcfunction call flow.
-2. **State IR** — normalize scoreboard, tag, and dynamic-property reads/writes and bind explicit state-authority contracts.
-3. **Temporal IR** — classify synchronous, event-dispatch, deferred, and periodic relations without inventing undocumented tick guarantees.
-4. **Decision-basis binding** — Semantic IR revision is part of exact decision context so semantic reinterpretation can invalidate stale repair reasoning.
-5. **Next integration** — consume Semantic IR in first-wrong-transition and causal probe planning rather than adding more string-level heuristics.
+1. **Pre-mutation baseline** — every autonomous repair must identify invariants that are broken and invariants that are already healthy.
+2. **Must-change / must-preserve contract** — an invariant cannot belong to both sets, and diagnostic-only rules cannot authorize preservation proof.
+3. **Mutation authorization gate** — working-copy mutation requires a current preservation contract/baseline with explicit baseline evidence.
+4. **Post-repair preservation verification** — the intended broken invariants and known-good invariants must both pass after repair.
+5. **Forbidden side effects** — declared forbidden effects require complete observation and must not occur.
+6. **Release gate** — static, transitive, runtime, preservation, and package proof are all required for release eligibility.
+7. **Proof staleness** — changes to preservation contract/baseline or Semantic IR invalidate old decision lineage.
 
 ## Explicit limits
 
-The initial Semantic IR is intentionally partial.
+Preservation proof is only as strong as its invariant registry and observations.
 
-It does not yet claim complete semantics for:
+The current engine does not infer every known-good behavior automatically. Missing baseline coverage remains a blocker for autonomous mutation/release rather than being guessed.
 
-- arbitrary JavaScript control/data flow;
-- all Script API state methods;
-- implicit player/entity/arena scope inference;
-- entity AI/navigation;
-- spatial/chunk execution;
-- undocumented Minecraft scheduler ordering.
+## Next after Preservation Engine
 
-Unresolved targets and incomplete scope remain explicit unknowns.
+Build the Runtime Laboratory:
 
-## Safety
+- controlled micro-world experiments;
+- exact Bedrock/Education/BDS runtime profiles;
+- repeatable observation capture;
+- entity/chunk/scheduler experiments;
+- empirical knowledge promotion.
 
-- semantic graph and Semantic IR remain separate authorities;
-- analyzers produce observations; Semantic IR normalizes them;
-- Semantic IR never mutates artifacts;
-- unresolved execution targets are retained rather than guessed;
-- deferred callbacks retain generation-guard evidence;
-- repair authorization must not infer causation from IR topology alone.
-
-The next highest-value work is to connect first-wrong-transition and diagnostic probe planning to the new IR so probes target the earliest unresolved semantic boundary.
+The immediate safety target is simple: a repair may not be called safe merely because the reported symptom disappears. It must also prove that declared known-good behavior remains intact.

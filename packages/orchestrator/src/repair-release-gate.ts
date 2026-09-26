@@ -64,6 +64,9 @@ export function decideRepairRelease(
     if (!state.runtimeVerificationComplete) {
       missing.push("runtime verification");
     }
+    if (!state.preservationVerificationComplete) {
+      missing.push("preservation verification");
+    }
     if (!state.packageVerificationComplete) {
       missing.push("package verification");
     }
@@ -84,7 +87,7 @@ export function decideRepairRelease(
     transactionId: state.transactionId,
     disposition: "release-eligible",
     reasons: [
-      "Static validation, transitive revalidation, runtime verification, and package verification are all complete.",
+      "Static validation, transitive revalidation, runtime verification, preservation verification, and package verification are all complete.",
     ],
   };
 }

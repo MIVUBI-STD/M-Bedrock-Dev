@@ -17,6 +17,7 @@ function lifecycle(
     localStaticValidationPassed: stage === "static-validated",
     transitiveRevalidationComplete: stage === "static-validated",
     runtimeVerificationComplete: false,
+    preservationVerificationComplete: false,
     packageVerificationComplete: false,
     pendingNodeIds: [],
     pendingPaths: [],

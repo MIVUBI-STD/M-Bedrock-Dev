@@ -3,6 +3,10 @@ import type { SemanticGraph } from "../../graph/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
 import type { SemanticIr } from "../../semantic-ir/src/index.js";
 import type {
+  RepairPreservationBaseline,
+  RepairPreservationContract,
+} from "../../preservation/src/index.js";
+import type {
   InvariantRegistrySnapshot,
 } from "../../project-model/src/index.js";
 import type {
@@ -123,6 +127,8 @@ export interface DecisionBasisInput {
   sourceFingerprint?: string;
   graph?: SemanticGraph;
   semanticIr?: SemanticIr;
+  preservationContract?: RepairPreservationContract;
+  preservationBaseline?: RepairPreservationBaseline;
   knowledge?: KnowledgeCatalog;
   invariantRegistry?: InvariantRegistrySnapshot;
   target?: InspectTargetProfile;
@@ -145,6 +151,18 @@ export function buildDecisionBasis(
     ...(input.semanticIr === undefined
       ? {}
       : { semanticIrRevision: fingerprint(input.semanticIr) }),
+    ...(input.preservationContract === undefined
+      ? {}
+      : {
+          preservationContractRevision:
+            fingerprint(input.preservationContract),
+        }),
+    ...(input.preservationBaseline === undefined
+      ? {}
+      : {
+          preservationBaselineRevision:
+            fingerprint(input.preservationBaseline),
+        }),
     ...(input.knowledge === undefined
       ? {}
       : { knowledgeRevision: fingerprint(input.knowledge) }),

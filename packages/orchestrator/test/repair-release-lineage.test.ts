@@ -23,6 +23,7 @@ const lifecycle: RepairLifecycleState = {
   localStaticValidationPassed: true,
   transitiveRevalidationComplete: true,
   runtimeVerificationComplete: true,
+  preservationVerificationComplete: true,
   packageVerificationComplete: true,
   pendingNodeIds: [],
   pendingPaths: [],
@@ -35,6 +36,8 @@ const basis = {
   graphFingerprint: "graph",
   invariantRegistryRevision: "inv-r1",
   runtimeEvidenceRevision: "runtime-r1",
+  preservationContractRevision: "preservation-contract-r1",
+  preservationBaselineRevision: "preservation-baseline-r1",
 };
 
 function proof(
@@ -53,6 +56,12 @@ function proof(
       "proven-with-observed-outcome",
     blastRadiusDisposition: "minimal",
     admissionDisposition: "eligible",
+    preservationContractId: "preserve:tx-1",
+    preservationReadinessDisposition: "ready",
+    preservationBaselineEvidenceIds: [
+      "baseline:broken",
+      "baseline:healthy",
+    ],
     supportingInvariantIds: ["invariant:ready"],
     changedNodeIds: ["function:p:target"],
     affectedNodeIds: ["function:p:target"],
@@ -146,6 +155,20 @@ function completeLedger(
   });
 
   ledger = appendDecisionLedgerEntry(ledger, {
+    id: "preservation",
+    kind: "preservation-verification",
+    transactionId: "tx-1",
+    basis,
+    upstreamDecisionIds: [verificationParent],
+    inputIds: [
+      "must-change-invariant:invariant:ready",
+      "must-preserve-invariant:invariant:stable",
+    ],
+    outputIds: ["preservation-verification:passed"],
+    evidenceIds: ["preservation:pass"],
+  });
+
+  ledger = appendDecisionLedgerEntry(ledger, {
     id: "package",
     kind: "package-verification",
     transactionId: "tx-1",
@@ -174,6 +197,7 @@ describe("repair release lineage", () => {
       "admission",
       "auth",
       "package",
+      "preservation",
       "runtime",
       "strategy",
     ]);
@@ -226,6 +250,15 @@ describe("repair release lineage", () => {
       basis,
       upstreamDecisionIds: ["admission"],
       outputIds: ["runtime-verification:passed"],
+    });
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "preservation",
+      kind: "preservation-verification",
+      transactionId: "tx-1",
+      basis,
+      upstreamDecisionIds: ["admission"],
+      outputIds: ["preservation-verification:passed"],
+      evidenceIds: ["preservation:pass"],
     });
     ledger = appendDecisionLedgerEntry(ledger, {
       id: "package",
@@ -397,6 +430,8 @@ describe("repair release lineage", () => {
                 sourceFingerprint: "source",
                 graphFingerprint: "graph",
                 runtimeEvidenceRevision: "runtime-r1",
+                preservationContractRevision: "preservation-contract-r1",
+                preservationBaselineRevision: "preservation-baseline-r1",
               },
             }
           : entry
@@ -460,6 +495,8 @@ describe("repair release lineage", () => {
         sourceFingerprint: "source",
         graphFingerprint: "graph",
         invariantRegistryRevision: "inv-r1",
+        preservationContractRevision: "preservation-contract-r1",
+        preservationBaselineRevision: "preservation-baseline-r1",
       },
     });
 

@@ -5,6 +5,7 @@ import {
 } from "../src/repair-release-gate.js";
 import {
   markRepairPackageVerified,
+  markRepairPreservationVerified,
   markRepairRuntimeVerified,
   type RepairLifecycleState,
 } from "../src/repair-lifecycle.js";
@@ -17,6 +18,7 @@ function state(): RepairLifecycleState {
     localStaticValidationPassed: true,
     transitiveRevalidationComplete: true,
     runtimeVerificationComplete: false,
+    preservationVerificationComplete: false,
     packageVerificationComplete: false,
     pendingNodeIds: [],
     pendingPaths: [],
@@ -58,6 +60,17 @@ describe("repair release gate", () => {
       kind: "runtime",
       passed: true,
       evidenceIds: ["runtime:invariant-pass"],
+    });
+    expect(decideRepairRelease(current).disposition)
+      .toBe("blocked");
+
+    current = markRepairPreservationVerified(current, {
+      contractId: "preserve:tx-1",
+      transactionId: "tx-1",
+      passed: true,
+      verifiedMustChangeInvariantIds: ["inv:fixed"],
+      verifiedMustPreserveInvariantIds: ["inv:healthy"],
+      evidenceIds: ["preservation:pass"],
     });
     expect(decideRepairRelease(current).disposition)
       .toBe("release-eligible");

@@ -33,6 +33,7 @@ compatibility  → edition/version/capability evaluation
 runtime-profile → exact target Minecraft product/host/module/environment identity
 knowledge       → versioned evidence-backed Minecraft claims and applicability
 semantic-ir     → normalized execution/state/temporal semantics; parser-independent and non-mutating
+preservation    → pre-mutation baselines, must-change/must-preserve contracts, and preservation receipts
 repair         → patch transactions / preconditions / working-copy mutation
 orchestrator   → composition only; no duplicated parser/repair semantics
 ```

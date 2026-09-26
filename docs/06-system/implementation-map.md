@@ -13,6 +13,7 @@ Use this before broad repository search.
 | Execution/state/temporal Semantic IR contracts and queries | packages/semantic-ir/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Validation step/result contracts | packages/validation/ |
+| Repair preservation contracts, baselines, and verification receipts | packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | packages/reliability/ |
 | Reliability search/corpus/interleavings/minimization | packages/reliability-search/ |
 | Compatibility engine/version/track contracts | packages/compatibility/ |

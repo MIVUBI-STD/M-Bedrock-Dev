@@ -144,6 +144,8 @@ export function authorizeRepairMutation(
 
   for (const key of [
     "semanticIrRevision",
+    "preservationContractRevision",
+    "preservationBaselineRevision",
     "knowledgeRevision",
     "invariantRegistryRevision",
     "repairProviderRegistryRevision",
