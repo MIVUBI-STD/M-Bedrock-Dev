@@ -133,13 +133,22 @@ function validateEntrySemantics(
   }
 
   if (
-    (value.kind === "runtime-verification" ||
-      value.kind === "preservation-verification") &&
+    value.kind === "runtime-verification" &&
     !nonEmpty(value.basis.runtimeEvidenceRevision)
   ) {
     errors.push(
       "entries[" + index +
-        "] runtime/preservation verification requires runtimeEvidenceRevision.",
+        "] runtime-verification requires runtimeEvidenceRevision.",
+    );
+  }
+
+  if (
+    value.kind === "preservation-verification" &&
+    !nonEmpty(value.basis.runtimeEvidenceRevision)
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] preservation-verification requires runtimeEvidenceRevision.",
     );
   }
 
