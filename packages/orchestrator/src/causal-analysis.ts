@@ -500,6 +500,76 @@ function knowledgeFindingChain(
   };
 }
 
+function semanticIrFindingChain(
+  finding: DiagnosticFinding,
+): CausalChain | undefined {
+  if (
+    finding.code !== "SEMANTIC_IR_EXECUTION_TARGET_UNRESOLVED" &&
+    finding.code !== "SEMANTIC_IR_DEFERRED_STATE_GUARD_UNKNOWN"
+  ) {
+    return undefined;
+  }
+
+  const data = finding.data ?? {};
+  const subject =
+    typeof data.subject === "string" ? data.subject : undefined;
+  const object =
+    typeof data.object === "string" ? data.object : undefined;
+  if (!subject || !object) return undefined;
+
+  const subjectNodeId = idFor([finding.id, "subject"]);
+  const requirementNodeId = idFor([finding.id, "requirement"]);
+  const gapNodeId = idFor([finding.id, "semantic-gap"]);
+  const scopeKey =
+    typeof data.semanticIrRelationId === "string"
+      ? "semantic-ir:" + data.semanticIrRelationId
+      : typeof data.semanticIrEdgeId === "string"
+        ? "semantic-ir:" + data.semanticIrEdgeId
+        : "semantic-ir:" + finding.id;
+
+  return {
+    id: idFor([scopeKey, finding.id]),
+    scopeKey,
+    severity: finding.severity,
+    confidence: "low",
+    title: subject + " → unproven " + object,
+    summary:
+      "Semantic IR exposes an unresolved execution/ownership boundary. This is an evidence gap, not proof that the boundary is violated.",
+    nodes: [{
+      id: subjectNodeId,
+      kind: "observed-state",
+      label: subject,
+      ...(finding.source ? { sourceRefs: [finding.source] } : {}),
+      diagnosticIds: [finding.id],
+    }, {
+      id: requirementNodeId,
+      kind: "missing-requirement",
+      label: object,
+      ...(finding.source ? { sourceRefs: [finding.source] } : {}),
+      diagnosticIds: [finding.id],
+    }, {
+      id: gapNodeId,
+      kind: "evidence-gap",
+      label: "Semantic boundary remains unproven",
+      ...(finding.source ? { sourceRefs: [finding.source] } : {}),
+      diagnosticIds: [finding.id],
+    }],
+    links: [{
+      from: subjectNodeId,
+      to: requirementNodeId,
+      strength: "dependency-supported",
+      rationale: finding.message,
+    }, {
+      from: requirementNodeId,
+      to: gapNodeId,
+      strength: "dependency-supported",
+      rationale:
+        "Semantic IR retains this boundary as unresolved and does not infer a missing target or stale callback as fact.",
+    }],
+    relatedDiagnosticIds: [finding.id],
+  };
+}
+
 function chainKey(chain: CausalChain): string {
   return [
     chain.scopeKey ?? "global",
@@ -513,7 +583,10 @@ export function synthesizeCausalChains(
   options: CausalSynthesisOptions = {},
 ): CausalChain[] {
   const chains = diagnostics
-    .map((finding) => knowledgeFindingChain(finding, options))
+    .map((finding) =>
+      knowledgeFindingChain(finding, options) ??
+      semanticIrFindingChain(finding)
+    )
     .filter((item): item is CausalChain => item !== undefined);
 
   const deduped = new Map<string, CausalChain>();
