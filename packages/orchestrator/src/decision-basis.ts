@@ -57,6 +57,7 @@ function normalizedRuntimeEvidence(
       state: record.state,
       confidence: record.confidence,
       origin: record.origin ?? null,
+      provenanceKey: record.provenanceKey ?? null,
       targetProfileFingerprint: record.targetProfileFingerprint ?? null,
       scopeKey: runtimeScopeKey(record.scope),
       observedAt: record.observedAt ?? null,

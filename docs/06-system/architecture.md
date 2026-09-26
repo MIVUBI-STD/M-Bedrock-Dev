@@ -106,3 +106,25 @@ The implementation lives in `tooling/repository/verify-dependency-graph.mjs`.
 The inspection implementation keeps one public composition path in `packages/orchestrator/src/inspect.ts` and delegates bounded stages for pack discovery, source indexing, graph enrichment, script resolution/compatibility, entity knowledge, runtime analysis, education compatibility, causality, and result projection.
 
 Do not split the orchestrator into additional packages based on line count or fan-out alone. A new semantic owner requires an independently meaningful responsibility and dependency boundary.
+
+
+## Controlled runtime laboratory
+
+Runtime experiment semantics are split deliberately:
+
+```text
+packages/runtime-lab
+  → experiment definitions
+  → protocol/arm/repetition planning
+  → trial identity validation
+  → repeatability/intervention qualification
+  → evidence provenance
+
+runtime/lab
+  → host-specific Minecraft fixtures and adapters
+```
+
+The core runtime-lab package does not import `@minecraft/server`.
+A host adapter may execute an experiment only at its declared execution context.
+
+Experiment qualification never promotes evidence directly to CAUSAL. Controlled control/treatment contrast is capped at INTERVENTION_SUPPORTED until the causal engine has excluded relevant alternative explanations.

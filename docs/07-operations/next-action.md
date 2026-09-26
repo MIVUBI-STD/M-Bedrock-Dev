@@ -1,40 +1,62 @@
 # Next Action
 
-M-Bedrock-Dev now has an evidence-bounded knowledge/runtime profile, causal repair gate, and initial execution/state/temporal Semantic IR.
+M-Bedrock-Dev now has four safety foundations:
 
-## Completed foundations
+1. exact runtime-profile + evidence-bounded knowledge;
+2. causal proof ladder where observation is not causation;
+3. execution/state/temporal Semantic IR feeding probe planning;
+4. preservation contracts that gate mutation and release.
 
-- runtime-profile v2 and tri-state applicability;
-- evidence-backed knowledge claims;
-- causal proof ladder where observation is not causation;
-- Semantic IR for execution, state, and temporal boundaries;
-- Semantic IR evidence gaps feeding causal/probe planning;
-- repair decision basis bound to source, graph, Semantic IR, runtime evidence, and target context.
+## Current lane — Runtime Laboratory
 
-## Current lane — Preservation Engine
+The next work is to make Minecraft runtime truth reproducible rather than anecdotal.
 
-1. **Pre-mutation baseline** — every autonomous repair must identify invariants that are broken and invariants that are already healthy.
-2. **Must-change / must-preserve contract** — an invariant cannot belong to both sets, and diagnostic-only rules cannot authorize preservation proof.
-3. **Mutation authorization gate** — working-copy mutation requires a current preservation contract/baseline with explicit baseline evidence.
-4. **Post-repair preservation verification** — the intended broken invariants and known-good invariants must both pass after repair.
-5. **Forbidden side effects** — declared forbidden effects require complete observation and must not occur.
-6. **Release gate** — static, transitive, runtime, preservation, and package proof are all required for release eligibility.
-7. **Proof staleness** — changes to preservation contract/baseline or Semantic IR invalidate old decision lineage.
+### Runtime Lab foundation
 
-## Explicit limits
+- versioned experiment definitions;
+- explicit setup/stimulus/observe/teardown protocol action IDs;
+- controlled factors;
+- control/treatment arms;
+- exact target-profile fingerprint;
+- fixture fingerprint;
+- environment fingerprint;
+- deterministic repetition planning;
+- definition revision binding;
+- trial validation;
+- repeatability/intervention qualification;
+- experiment evidence provenance;
+- explicit knowledge-promotion boundary.
 
-Preservation proof is only as strong as its invariant registry and observations.
+### Current proof ceiling
 
-The current engine does not infer every known-good behavior automatically. Missing baseline coverage remains a blocker for autonomous mutation/release rather than being guessed.
+Repository CI can verify the Runtime Lab control plane only.
 
-## Next after Preservation Engine
+It cannot claim that Minecraft Bedrock, Education, BDS, entities, chunks, or multiplayer behavior has been empirically proven until an actual runtime host returns validated trials.
 
-Build the Runtime Laboratory:
+Therefore existing runtime coverage states must not be upgraded merely because the laboratory framework exists.
 
-- controlled micro-world experiments;
-- exact Bedrock/Education/BDS runtime profiles;
-- repeatable observation capture;
-- entity/chunk/scheduler experiments;
-- empirical knowledge promotion.
+## Next runtime implementation order
 
-The immediate safety target is simple: a repair may not be called safe merely because the reported symptom disappears. It must also prove that declared known-good behavior remains intact.
+1. build a target-profile capture/export path;
+2. implement the first real host adapter;
+3. start with low-risk read-only micro-experiments:
+   - scheduler callback reachability;
+   - event ordering;
+   - entity resolvability;
+   - chunk loaded-for-script state;
+   - scoreboard/tag state visibility;
+4. persist exact trial evidence;
+5. only then expand to:
+   - chunk unload/recovery;
+   - entity navigation;
+   - restart/persistence;
+   - multiplayer concurrency.
+
+## Safety
+
+- one observation is not repeatability;
+- repeatability is not automatically causation;
+- control/treatment contrast is capped at INTERVENTION_SUPPORTED;
+- different environments cannot be compared as one controlled campaign;
+- changing experiment definition invalidates old trial identity;
+- experiment evidence does not automatically become knowledge.

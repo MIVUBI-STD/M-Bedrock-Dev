@@ -16,6 +16,7 @@ Use this before broad repository search.
 | Repair preservation contracts, baselines, and verification receipts | packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | packages/reliability/ |
 | Reliability search/corpus/interleavings/minimization | packages/reliability-search/ |
+| Controlled Minecraft experiment planning/qualification/provenance | packages/runtime-lab/ + runtime/lab/ |
 | Compatibility engine/version/track contracts | packages/compatibility/ |
 | Exact target Minecraft runtime identity and inventory completeness | packages/runtime-profile/ |
 | Versioned evidence-backed Minecraft knowledge and applicability | packages/knowledge/ + knowledge/ |

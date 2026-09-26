@@ -35,6 +35,8 @@ export interface RuntimeEvidenceRecord {
   state: RuntimeEvidenceState;
   confidence: RuntimeEvidenceConfidence;
   origin?: RuntimeEvidenceOrigin;
+  /** Stable provenance identity for the observation campaign/trial/source. */
+  provenanceKey?: string;
   /** Exact runtime profile fingerprint when the observation is target-bound. */
   targetProfileFingerprint?: string;
   scope?: RuntimeScope;

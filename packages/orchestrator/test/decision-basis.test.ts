@@ -111,6 +111,33 @@ describe("decision basis", () => {
       .not.toBe(right.runtimeEvidenceRevision);
   });
 
+  it("changes runtime evidence revision when experiment provenance changes", () => {
+    const base = {
+      predicate: "route-ready",
+      state: "present" as const,
+      confidence: "observed" as const,
+      origin: "controlled-experiment" as const,
+      targetProfileFingerprint: "profile-a",
+      observedAt: { tick: 10 },
+    };
+
+    const left = buildDecisionBasis({
+      runtimeEvidence: [{
+        ...base,
+        provenanceKey: "experiment:a:trial:1",
+      }],
+    });
+    const right = buildDecisionBasis({
+      runtimeEvidence: [{
+        ...base,
+        provenanceKey: "experiment:b:trial:1",
+      }],
+    });
+
+    expect(left.runtimeEvidenceRevision)
+      .not.toBe(right.runtimeEvidenceRevision);
+  });
+
   it("changes runtime evidence revision when observed state or integrity changes", () => {
     const base = {
       predicate: "route-ready",
