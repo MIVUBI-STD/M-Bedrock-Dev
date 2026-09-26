@@ -179,6 +179,31 @@ describe("authorized repair mutation", () => {
     });
   });
 
+  it("blocks causal mutation when preservation readiness is missing", () => {
+    const tx = transaction();
+    const withoutPreservation: RepairProofBundle = {
+      ...proof(tx.id, "eligible"),
+      preservationContractId: undefined,
+      preservationReadinessDisposition: undefined,
+      preservationBaselineEvidenceIds: undefined,
+    };
+
+    expect(authorizeRepairMutation(
+      tx,
+      withoutPreservation,
+      {
+        currentSourceFingerprint: "abc",
+        currentGraphFingerprint: "graph-current",
+        semanticIrRevision: "semantic-ir-current",
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+        runtimeEvidenceRevision: "evidence-current",
+      },
+    )).toMatchObject({
+      authorized: false,
+    });
+  });
+
   it("refuses repair without concrete validation steps", () => {
     const tx = transaction(false);
     expect(authorizeRepairMutation(
