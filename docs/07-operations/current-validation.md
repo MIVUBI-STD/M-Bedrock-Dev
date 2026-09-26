@@ -68,7 +68,6 @@ Entity-event reachability findings remain informational static limits where no i
 
 These require local Minecraft or controlled runtime/differential evidence.
 
-
 ## Lifecycle migration exposure
 
 Production migration inventory additionally measures deprecated member names whose receivers cannot always be reconstructed from bundled JavaScript.
@@ -111,17 +110,24 @@ The stable `@8crafter/leveldb-zlib@1.6.0` dependency currently resolves through 
 
 Do not force an unverified `tar@7` override: the corresponding `cmake-js@8` line is a breaking major. Track upstream-compatible updates through Dependabot and validate any native-build dependency change through the normal exact-toolchain CI lane before adoption.
 
+## Runtime harness progress — 2026-09-27
 
-## Runtime harness progress — 2026-09-25
-
-Repository runtime proof is no longer entirely unknown:
+Repository runtime proof remains partial, but target identity handling is stricter:
 
 - multiplayer generative coverage is partial through property-based session sequences, bounded state exploration, and interleaving reduction;
 - multiplayer runtime coverage is partial through Bedrock observation capture, runtime control records, model/runtime comparison, and live regression incident capture;
-- chunk runtime coverage is partial through targeted `Dimension.isChunkLoaded` readiness observations with fail-closed unknown handling.
+- chunk runtime coverage is partial through targeted `Dimension.isChunkLoaded` readiness observations with fail-closed unknown handling;
+- runtime profiles now have canonical SHA-256 target fingerprints;
+- volatile player count is excluded from target-profile identity;
+- the Bedrock harness no longer emits a hard-coded Minecraft version as runtime evidence;
+- target version/edition/host/module inventory must be explicitly session-bound through `m-bedrock:target-profile`;
+- the profile announcement adapter validates the declared profile before it can become a target fingerprint.
+
+The session binding proves that a declared target profile is attached to the active script session. It does not yet prove that every declared field is independently engine-introspected.
 
 Still unproven in automated real Minecraft execution:
 
+- executable experiment protocol transport;
 - multi-client orchestration;
 - chunk lifecycle chaos / unload-reload timing;
 - recovery lease allocation and cleanup under real engine contention;

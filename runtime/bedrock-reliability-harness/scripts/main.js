@@ -3,11 +3,12 @@ import { enqueueControlAction } from "./control.js";
 import { enqueueProbeRequest } from "./probe.js";
 
 const PREFIX = "[M-BEDROCK-OBS]";
+const PROFILE_PREFIX = "[M-BEDROCK-PROFILE]";
+const PROFILE_INPUT_PREFIX = "[M-BEDROCK-PROFILE-IN]";
 const CONTROL_INPUT_PREFIX = "[M-BEDROCK-CTRL-IN]";
 
 const CONFIG = {
   intervalTicks: 1,
-  minecraftVersion: "1.26.40",
   artifactFingerprint: "",
   playerObjectives: ["session_progress"],
   arenaObjectives: ["cutscene_active", "round"],
@@ -19,6 +20,8 @@ const CONFIG = {
     { dimension: "overworld", arenaTagPrefix: "arena:" }
   ]
 };
+
+let activeRuntimeProfile;
 
 function safeTags(subject, entity, issues) {
   try {
@@ -117,13 +120,18 @@ function capture() {
   return {
     schemaVersion: 1,
     tick: system.currentTick,
-    ...(CONFIG.minecraftVersion ? { minecraftVersion: CONFIG.minecraftVersion } : {}),
-    ...(CONFIG.artifactFingerprint ? { artifactFingerprint: CONFIG.artifactFingerprint } : {}),
+    ...(activeRuntimeProfile
+      ? { minecraftVersion: activeRuntimeProfile.product.version }
+      : {}),
+    ...(CONFIG.artifactFingerprint
+      ? { artifactFingerprint: CONFIG.artifactFingerprint }
+      : {}),
     players: capturePlayers(issues),
     arenas: captureArenas(issues),
     entities: captureEntities(issues),
     metadata: {
       harness: "m-bedrock-reliability",
+      targetProfileBound: activeRuntimeProfile !== undefined,
       captureIssueCount: issues.length,
       issues
     }
@@ -134,7 +142,48 @@ function emit(snapshot) {
   console.warn(`${PREFIX}${JSON.stringify(snapshot)}`);
 }
 
+function bindRuntimeProfile(message) {
+  if (
+    !message ||
+    message.schemaVersion !== 2 ||
+    !message.product ||
+    message.product.family !== "bedrock-engine" ||
+    !message.product.version ||
+    !message.host ||
+    !message.scriptModules ||
+    !message.inventory
+  ) {
+    throw new Error(
+      "Runtime profile script event requires a complete schemaVersion 2 target profile."
+    );
+  }
+
+  activeRuntimeProfile = message;
+  console.warn(`${PROFILE_PREFIX}${JSON.stringify({
+    schemaVersion: 1,
+    runtimeTick: system.currentTick,
+    profile: activeRuntimeProfile,
+    binding: {
+      source: "script-event",
+      sessionBound: true
+    }
+  })}`);
+}
+
 world.afterEvents.scriptEventReceive.subscribe((event) => {
+  if (event.id === "m-bedrock:target-profile") {
+    try {
+      bindRuntimeProfile(JSON.parse(event.message));
+    } catch (error) {
+      console.warn(`${PROFILE_INPUT_PREFIX}${JSON.stringify({
+        ok: false,
+        tick: system.currentTick,
+        error: String(error)
+      })}`);
+    }
+    return;
+  }
+
   if (event.id === "m-bedrock:probe") {
     try {
       enqueueProbeRequest(JSON.parse(event.message));

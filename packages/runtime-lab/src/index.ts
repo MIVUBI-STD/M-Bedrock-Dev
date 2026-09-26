@@ -6,3 +6,4 @@ export * from "./revision.js";
 export * from "./promotion.js";
 export * from "./runner.js";
 export * from "./catalog.js";
+export * from "./bedrock-profile.js";

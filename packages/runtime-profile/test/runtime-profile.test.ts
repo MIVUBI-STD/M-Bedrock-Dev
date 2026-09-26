@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  captureMinecraftRuntimeProfile,
   compareDottedNumericVersions,
   compareScriptSemver,
+  exportCapturedMinecraftRuntimeProfile,
+  runtimeProfileFingerprint,
   validateMinecraftRuntimeProfile,
   type MinecraftRuntimeProfile,
 } from "../src/index.js";
@@ -52,5 +55,58 @@ describe("runtime profile", () => {
     })).toContain(
       "Runtime profile script module version must be valid semver: @minecraft/server",
     );
+  });
+
+  it("fingerprints stable target identity without volatile player count", () => {
+    const left = runtimeProfileFingerprint({
+      ...profile,
+      runtime: {
+        playerCount: 1,
+        platform: "win32",
+      },
+    });
+    const right = runtimeProfileFingerprint({
+      ...profile,
+      runtime: {
+        playerCount: 5,
+        platform: "win32",
+      },
+    });
+    expect(left).toBe(right);
+    expect(left).toMatch(/^sha256:[0-9a-f]{64}$/);
+  });
+
+  it("changes the fingerprint when target identity changes", () => {
+    expect(runtimeProfileFingerprint(profile)).not.toBe(
+      runtimeProfileFingerprint({
+        ...profile,
+        host: "client",
+      }),
+    );
+  });
+
+  it("exports a capture only when its fingerprint still matches", () => {
+    const capture = captureMinecraftRuntimeProfile(
+      profile,
+      {
+        evidence: [{
+          id: "fixture",
+          kind: "configuration",
+        }],
+      },
+    );
+
+    expect(
+      JSON.parse(
+        exportCapturedMinecraftRuntimeProfile(capture),
+      ).fingerprint,
+    ).toBe(capture.fingerprint);
+
+    expect(() =>
+      exportCapturedMinecraftRuntimeProfile({
+        ...capture,
+        fingerprint: "sha256:stale",
+      })
+    ).toThrow(/fingerprint does not match/);
   });
 });

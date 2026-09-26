@@ -40,6 +40,26 @@ A control/treatment campaign cannot be called intervention-supported when:
 - minimum repetitions were not completed;
 - control and treatment do not differ on a declared factor.
 
+## Target-profile binding
+
+The Bedrock reliability harness does not claim a Minecraft version, edition, or host from a hard-coded default.
+
+A controller must explicitly bind a schema-version 2 runtime profile to the active script session with:
+
+```text
+/scriptevent m-bedrock:target-profile <runtime-profile-json>
+```
+
+The harness then emits:
+
+```text
+[M-BEDROCK-PROFILE]{...}
+```
+
+The repository adapter validates the profile and computes the stable target-profile fingerprint. Volatile player count is excluded from target identity so joining/leaving players cannot silently change the experiment target.
+
+This binding proves that the declared profile was attached to the active runtime session. It does not independently prove that every operator-supplied field is engine-introspected.
+
 ## Runtime host boundary
 
 `RuntimeExperimentHost` is an adapter boundary.
@@ -62,7 +82,8 @@ Repository/CI work proves only:
 - revision binding;
 - trial validation;
 - qualification logic;
-- evidence provenance semantics.
+- evidence provenance semantics;
+- target-profile capture/export and Bedrock profile-log parsing.
 
 It does **not** prove that any experiment has run successfully inside Minecraft.
 
