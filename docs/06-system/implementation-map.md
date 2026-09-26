@@ -11,6 +11,7 @@ Use this before broad repository search.
 | Runtime telemetry emission helpers / sinks / instrumentation guards | packages/telemetry/ |
 | Semantic dependency graph/invalidation | packages/graph/ |
 | Execution/state/temporal Semantic IR contracts and queries | packages/semantic-ir/ |
+| Formal behavioral state/transition/temporal property kernel | packages/behavior-model/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Validation step/result contracts | packages/validation/ |
 | Repair preservation contracts, baselines, and verification receipts | packages/preservation/ |

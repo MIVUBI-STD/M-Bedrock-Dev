@@ -1,137 +1,67 @@
 # Current Validation
 
-Status: REMOTE STATIC SOURCE + REPRESENTATIVE PRODUCTION PORTFOLIO GREEN; RUNTIME PROOF PENDING
+Status: REMOTE STATIC SOURCE + REPRESENTATIVE PRODUCTION PORTFOLIO GREEN; FORMAL BEHAVIOR KERNEL STATIC ONLY; RUNTIME PROOF PENDING
 
-Latest production proof on 2026-09-23 used the exact `Local` portable workspace and Node `v24.21.0`.
-
-The branch has source verification through GitHub Actions:
+The established repository lanes remain:
 
 ```text
-Repository Policy   VERIFIED
-source boundaries   VERIFIED
-TypeScript           VERIFIED
-Vitest               VERIFIED
+Repository Policy
+source boundaries
+TypeScript
+Vitest
+source/package verification
 ```
 
-## Representative production portfolio
+## Behavioral World Model — 2026-09-27
 
-Two real production `.mcworld` artifacts were analyzed.
-
-Combined result:
+A new deterministic semantic owner now exists at:
 
 ```text
-maps                  2
-occurrences         570
-unique symbols       82
-known symbols        82
-unclassified          0
-promotion candidates  0
-unknown.* symbols     0
+packages/behavior-model/
 ```
 
-Artifact-level:
+Static contracts cover:
+
+- typed semantic variables and authority labels;
+- explicit transition preconditions/effects;
+- declared nondeterminism surfaces;
+- finite behavior traces;
+- ALWAYS / EVENTUALLY / LEADS-TO / UNTIL;
+- bounded tick deadlines;
+- three-valued `satisfied / violated / unknown` results.
+
+The most important proof rule is fail-closed temporal reasoning:
 
 ```text
-Defense V1   67 / 67 known, 0 unclassified, 0 unresolved refs
-Defense V2   66 / 66 known, 0 unclassified, 0 unresolved refs
+clean incomplete prefix != proven property
 ```
 
-Precision fixes verified by production rerun:
+A temporal obligation remains `unknown` until it has a positive witness, a valid counterexample/deadline violation, or a complete trace that permits a decision.
 
-- Defense V1 restricted-execution false positives: `2 → 0`;
-- Defense V2 return-contract false positives: `2 → 0`;
-- bundled/minified singleton alias gaps: eliminated;
-- Script API unclassified portfolio symbols: `63 → 16 → 0`.
+This prevents the passive-observation error where no observed counterexample is mistaken for behavioral proof.
 
-## Remaining real findings
+## Existing runtime harness status
 
-Defense V2 retains four genuine 1.x deprecation findings:
+The source-verified Runtime Lab host remains available but local/live Minecraft execution is intentionally deferred.
 
-- `world.afterEvents.entityHurt`;
-- `Entity.isValid()`;
-- `Entity.runCommandAsync`;
-- `Dimension.runCommandAsync`.
+Its current supported probe path remains read-only:
 
-They are not auto-repaired because a safe fix depends on the intended target Script API line and runtime semantics.
+- chunk loaded;
+- entity resolvable;
+- tag present;
+- scoreboard value.
 
-Entity-event reachability findings remain informational static limits where no internal, engine, command, or script trigger evidence is observed.
+No new Minecraft runtime claim is created by the Behavioral World Model work.
 
-## Remaining proof lanes
+## Still unproven
 
-- genuine Minecraft import/load acceptance;
-- target-build runtime behavior;
-- entity AI and event timing;
-- chunk/load/saved-tick behavior beyond targeted readiness probes;
-- real multi-client Minecraft session execution beyond the current generative/live-regression harness;
-- semantic behavior changes with identical source syntax;
-- controlled migration of the four legacy Defense V2 API usages if the target module line is upgraded.
-
-These require local Minecraft or controlled runtime/differential evidence.
-
-## Lifecycle migration exposure
-
-Production migration inventory additionally measures deprecated member names whose receivers cannot always be reconstructed from bundled JavaScript.
-
-Defense V2:
-
-```text
-runCommandAsync  57 total = 10 exact + 47 lexical-only
-isValid          16 total =  5 exact + 11 lexical-only
-playSound         2 total =  0 exact +  2 lexical-only
-```
-
-Defense V1 has two lexical-only `playSound` candidates and no exact deprecated Script API finding.
-
-Lexical-only counts are evidence for migration planning and never generate diagnostics by themselves.
-
-A partial `runCommandAsync` rewrite was rejected as a final map repair because it changed only a small portion of the 57-call exposure and would risk changing asynchronous gameplay semantics.
-
-## Repository engineering baseline — 2026-09-24
-
-Exact `Local` repository verification now includes:
-
-```text
-Node developer/build     24.21.0
-npm developer/build      11.19.0
-package-lock             v3 / mandatory
-locked package entries   213
-production source files  419
-orphan candidates        0
-first-level modules      29
-module edges             74
-dependency cycles        0
-```
-
-Repository policy, module shape, dependency graph, production dependency classification, source boundaries, TypeScript, Vitest, source hygiene, and portable source packaging are green on the deterministic lockfile/toolchain lane.
-
-### Dependency maintenance watch
-
-The stable `@8crafter/leveldb-zlib@1.6.0` dependency currently resolves through `cmake-js@7.4.0`, whose build dependency chain includes deprecated `tar@6.2.1`.
-
-Do not force an unverified `tar@7` override: the corresponding `cmake-js@8` line is a breaking major. Track upstream-compatible updates through Dependabot and validate any native-build dependency change through the normal exact-toolchain CI lane before adoption.
-
-## Runtime harness progress — 2026-09-27
-
-Target identity and read-only Runtime Lab execution are now source-verifiable:
-
-- runtime profiles have canonical SHA-256 target fingerprints;
-- volatile player count is excluded from target-profile identity;
-- the Bedrock harness no longer emits a hard-coded Minecraft version as runtime evidence;
-- each trial binds a profile with a unique `bindingId`;
-- profile acknowledgement must correlate to that binding before probes execute;
-- the Runtime Lab host translates four read-only probe actions into the existing harness;
-- factor substitution is deterministic per experiment arm;
-- request/response exchange validation rejects mismatched request IDs, probe IDs, predicates, ticks, and outcome mappings;
-- unknown tag/scoreboard/probe states now remain fail-closed unknown evidence rather than successful observations.
-
-This is STATIC VERIFIED adapter behavior only.
-
-Still unproven in automated real Minecraft execution:
-
-- a physical client/BDS/Education channel for the new Runtime Lab host;
-- repeated real campaigns using the target-profile binding;
-- multi-client orchestration;
-- chunk lifecycle chaos / unload-reload timing;
-- recovery lease allocation and cleanup under real engine contention;
-- saved-tick semantics;
-- entity AI/event timing under live runtime conditions.
+- complete Bedrock behavioral semantics;
+- complete Education behavioral semantics;
+- engine scheduler/fairness behavior;
+- deterministic runtime replay;
+- formal happens-before model for engine events;
+- AI/pathfinding transition semantics;
+- real chunk lifecycle behavior;
+- causal hypothesis discrimination;
+- real multi-client execution;
+- semantic before/after repair equivalence.

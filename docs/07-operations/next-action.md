@@ -1,68 +1,67 @@
 # Next Action
 
-M-Bedrock-Dev now has five safety foundations:
+M-Bedrock-Dev now has a Behavioral World Model kernel in addition to the existing evidence, preservation, search, and Runtime Lab foundations.
 
-1. exact runtime-profile + evidence-bounded knowledge;
-2. causal proof ladder where observation is not causation;
-3. execution/state/temporal Semantic IR feeding probe planning;
-4. preservation contracts that gate mutation and release;
-5. session-bound target-profile capture plus a read-only Bedrock Runtime Lab host executor.
+## Current lane — Behavioral Semantics Before Runtime Testing
 
-## Current lane — First Live Micro-Experiments
+Do not expand local/live Minecraft testing yet.
 
-The Runtime Lab can now translate observe-only protocol steps into the existing Bedrock probe harness while preserving exact experiment/arm/run correlation.
+The next goal is to make the reasoning model strong enough to interpret runtime evidence without confusing absence of counterexamples with proof.
 
-### Completed Runtime Lab host path
+### Completed kernel
 
-- canonical target-profile fingerprint/export;
-- explicit profile binding with per-trial `bindingId`;
-- profile acknowledgement validation before a probe may run;
-- environment fingerprint binding;
-- deterministic request IDs per experiment/arm/run/step;
-- factor substitution through `$factor.<id>`;
-- supported read-only probe actions:
-  - `probe.chunk-loaded`;
-  - `probe.entity-resolvable`;
-  - `probe.tag-present`;
-  - `probe.scoreboard-value`;
-- runtime probe exchange validation against request identity;
-- fail-closed profile drift handling;
-- fail-closed unknown probe results;
-- no guarded/mutating protocol execution yet.
+- typed semantic state variables;
+- explicit state authority;
+- deterministic precondition/effect transitions;
+- Minecraft nondeterminism-surface taxonomy;
+- finite behavior traces;
+- conservative three-valued temporal evaluation;
+- ALWAYS;
+- EVENTUALLY;
+- bounded EVENTUALLY;
+- LEADS-TO;
+- bounded LEADS-TO;
+- UNTIL;
+- bounded UNTIL.
 
 ### Current proof ceiling
 
-Repository CI can verify the host state machine, protocol translation, profile correlation, and probe exchange validation with deterministic fake channels.
+Repository CI can prove only the deterministic model contracts and finite-trace evaluator.
 
-It still cannot claim a real Minecraft experiment has executed until a LOCAL_MINECRAFT/LIVE_MINECRAFT channel is connected to an actual client/BDS/Education session and returns runtime output.
+The kernel is not yet a complete Bedrock/Education model and must not be described as one.
 
-## Next runtime implementation order
+No runtime coverage state should be upgraded from this work.
 
-1. bind a physical runtime channel:
-   - Bedrock client content-log/script-event bridge;
-   - BDS stdin/stdout bridge where supported;
-   - explicit Education host path rather than assuming Bedrock parity;
-2. register the first real read-only experiment definitions:
-   - scheduler callback reachability;
-   - entity resolvability;
-   - chunk loaded-for-script state;
-   - scoreboard/tag state visibility;
-3. run repeated campaigns and persist exact trial evidence;
-4. add event-ordering instrumentation that cannot be represented by a single state probe;
-5. only then expand to:
-   - chunk unload/recovery;
-   - entity navigation;
-   - restart/persistence;
-   - multiplayer concurrency;
-   - guarded/mutating experiments.
+## Next architecture order
+
+1. build Minecraft domain overlays for:
+   - player/session lifecycle;
+   - arena ownership/generation;
+   - entity lifecycle/navigation ownership;
+   - chunk residency/readiness;
+   - scheduler/deferred callbacks;
+2. add host/edition-specific nondeterminism capabilities:
+   - observable;
+   - controllable;
+   - replayable;
+   - simulatable;
+   - unknown;
+3. build a Hypothesis Graph:
+   - competing explanations;
+   - required evidence;
+   - falsifiers;
+   - expected intervention outcomes;
+4. add experiment selection by discriminative power/information gain;
+5. strengthen concurrency exploration with happens-before semantics rather than declared read/write overlap alone;
+6. make invariant promotion require adversarial falsification, not passive support alone;
+7. introduce semantic trace comparison for before/after repair;
+8. only then connect physical Minecraft runtime channels.
 
 ## Safety
 
-- configured target identity is not the same as engine-introspected identity;
-- a fake/in-memory channel proves adapter logic, not Minecraft behavior;
-- one observation is not repeatability;
-- repeatability is not automatically causation;
-- control/treatment contrast is capped at INTERVENTION_SUPPORTED;
-- different environments cannot be compared as one controlled campaign;
-- changing experiment definition invalidates old trial identity;
-- experiment evidence does not automatically become knowledge.
+- source structure is not behavioral truth;
+- a behavioral specification is not engine proof;
+- an incomplete trace is not a liveness proof;
+- absence of a counterexample is not an invariant proof;
+- declared nondeterminism is not automatically controllable;
+- Bedrock and Education semantics require independent overlays where behavior differs.

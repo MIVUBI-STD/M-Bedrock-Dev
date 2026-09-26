@@ -14,7 +14,7 @@ packages/* + analyzers/*
 adapters / rules / schemas
 ```
 
-More precisely:
+The semantic reasoning path is:
 
 ```text
 artifact + archive
@@ -23,11 +23,15 @@ project-model
         ↓
 analyzers
         ↓
-semantic graph + semantic IR
+semantic graph + Semantic IR
         ↓
-diagnostics / causality
+Behavioral World Model
         ↓
-repair
+diagnostics / causality / reliability search
+        ↓
+Runtime Lab evidence
+        ↓
+repair + preservation verification
         ↓
 orchestrator composition
         ↓
@@ -49,16 +53,42 @@ These constraints are checked by `tooling/repository/verify-boundaries.mjs`.
 
 ## Semantic boundaries
 
-Artifact graph, physical inventory, normalized project model, semantic graph, Semantic IR, diagnostics, patch transactions, and runtime proof are separate authorities.
+Artifact graph, physical inventory, normalized project model, semantic graph, Semantic IR, Behavioral World Model, diagnostics, patch transactions, and runtime proof are separate authorities.
 
-The semantic graph owns cross-component dependency/reference topology. Semantic IR separately owns normalized execution regions, state operations/authority surfaces, and temporal relations. Do not collapse either representation into the other: a file/reference dependency is not automatically an execution or temporal fact.
+The semantic graph owns cross-component dependency/reference topology.
+
+Semantic IR owns normalized source-level execution regions, state operations/authority surfaces, and scheduling/temporal relations.
+
+The Behavioral World Model owns executable semantic state, transitions, declared nondeterminism surfaces, and temporal properties.
+
+Do not collapse these representations:
+
+- a reference edge is not automatically an execution fact;
+- an execution edge is not automatically a behavioral transition;
+- a behavioral transition is not automatically a proven Minecraft engine fact;
+- a runtime observation is not automatically a causal rule.
 
 Do not collapse these into one global project state object.
+
+## Behavioral specification
+
+The formal kernel lives in:
+
+```text
+packages/behavior-model
+```
+
+It must remain independent from Minecraft runtime APIs and analyzers.
+
+Domain-specific mapping into this kernel must preserve whether semantics came from source inference, documented knowledge, designed project policy, or runtime evidence.
+
+Temporal evaluation is deliberately three-valued. Incomplete finite traces must remain `unknown` for open obligations rather than being treated as proof.
+
+See `docs/06-system/behavioral-world-model.md`.
 
 ## Interface rule
 
 CLI, future MCP, future desktop, CI, and automation are clients of the same deterministic engine. No interface gets a private implementation of Bedrock semantics.
-
 
 ## Telemetry runtime instrumentation
 
@@ -97,16 +127,11 @@ The graph audit fails on:
 
 Fan-in and fan-out are reported as maintenance signals only. They are not threshold-gated until a repository-specific baseline justifies one.
 
-The implementation lives in `tooling/repository/verify-dependency-graph.mjs`.
-
 ## Orchestrator composition
 
 `packages/orchestrator` is intentionally a high-fan-out composition root. Repository dependency reports may show substantially higher fan-out here than in ordinary modules; this is a maintenance signal, not an automatic violation.
 
-The inspection implementation keeps one public composition path in `packages/orchestrator/src/inspect.ts` and delegates bounded stages for pack discovery, source indexing, graph enrichment, script resolution/compatibility, entity knowledge, runtime analysis, education compatibility, causality, and result projection.
-
 Do not split the orchestrator into additional packages based on line count or fan-out alone. A new semantic owner requires an independently meaningful responsibility and dependency boundary.
-
 
 ## Controlled runtime laboratory
 
