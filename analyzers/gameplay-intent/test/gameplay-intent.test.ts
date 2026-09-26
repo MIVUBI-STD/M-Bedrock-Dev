@@ -6,15 +6,16 @@ import type {
   ParsedScriptFile,
 } from "../../scripts/src/index.js";
 
+const source = {
+  artifactId: "art_test",
+  relativePath:
+    "behavior_packs/demo/src/domain/session-state-machine.ts",
+};
+
 function script(): ParsedScriptFile {
   return {
     identifier: "domain/session-state-machine.ts",
-    source: {
-      artifactId: "art_test",
-      artifactId: "art_test",
-    relativePath:
-        "behavior_packs/demo/src/domain/session-state-machine.ts",
-    },
+    source,
     imports: [],
     events: [],
     dynamicProperties: [],
@@ -24,10 +25,7 @@ function script(): ParsedScriptFile {
       callerRegion: "module",
       targetRegion: "function:resetArena",
       targetName: "resetArena",
-      source: {
-        relativePath:
-          "behavior_packs/demo/src/domain/session-state-machine.ts",
-      },
+      source,
     }],
     blockMatchGuards: [],
     methodCalls: [],
@@ -36,20 +34,14 @@ function script(): ParsedScriptFile {
     entityEventTriggers: [],
     commandLiterals: [{
       command: "scoreboard players add @s coins 1",
-      source: {
-        relativePath:
-          "behavior_packs/demo/src/domain/session-state-machine.ts",
-      },
+      source,
     }],
     lifecycleMemberExposures: [{
       member: "recoveryPolicy",
       candidateSymbols: ["RecoveryPolicy"],
       evidence: "exact-symbol",
       exactSymbol: "RecoveryPolicy",
-      source: {
-        relativePath:
-          "behavior_packs/demo/src/domain/session-state-machine.ts",
-      },
+      source,
     }],
     moduleMemberAccesses: [],
     importedSymbols: [],
@@ -60,10 +52,7 @@ function script(): ParsedScriptFile {
       symbol: "SessionState.Active",
       operator: "===",
       literal: "active",
-      source: {
-        relativePath:
-          "behavior_packs/demo/src/domain/session-state-machine.ts",
-      },
+      source,
     }],
     capabilities: [],
   };
