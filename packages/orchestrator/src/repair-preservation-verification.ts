@@ -150,10 +150,12 @@ export function verifyRepairPreservation(
       },
       runtimeRecords,
       input.continuityComplete ?? true,
-      {
-        expectedTargetProfileFingerprint:
-          input.expectedTargetProfileFingerprint,
-      },
+      input.expectedTargetProfileFingerprint === undefined
+        ? {}
+        : {
+            expectedTargetProfileFingerprint:
+              input.expectedTargetProfileFingerprint,
+          },
     );
 
     if (!result.passed) {
