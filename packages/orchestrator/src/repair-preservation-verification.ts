@@ -40,14 +40,18 @@ function prefixedEntry(
     id: string;
     predicate: string;
     expectedState: "present" | "absent";
-    scope?: InvariantRegistryEntry["stateRequirements"][number]["scope"];
+    scope?: NonNullable<
+      InvariantRegistryEntry["stateRequirements"][number]["scope"]
+    >;
   }[];
   temporalRequirements: {
     id: string;
     beforePredicate: string;
     afterPredicate: string;
     maxTickDelta?: number;
-    scope?: InvariantRegistryEntry["temporalRequirements"][number]["scope"];
+    scope?: NonNullable<
+      InvariantRegistryEntry["temporalRequirements"][number]["scope"]
+    >;
   }[];
 } {
   return {
