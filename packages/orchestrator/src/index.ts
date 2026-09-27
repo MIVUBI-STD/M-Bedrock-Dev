@@ -149,3 +149,4 @@ export * from "./portfolio-release-gate.js";
 export * from "./portfolio-release-report.js";
 export * from "./portfolio-release-history.js";
 export * from "./portfolio-release-intelligence.js";
+export * from "./history-driven-qa-recommendation.js";
