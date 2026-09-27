@@ -3,6 +3,7 @@ import {
   captureMinecraftRuntimeProfile,
 } from "../../runtime-profile/src/index.js";
 import {
+  BEDROCK_ACTION_PREFIX,
   BEDROCK_PROFILE_PREFIX,
   BEDROCK_PROBE_PREFIX,
   createBedrockHarnessExperimentHost,
@@ -96,6 +97,20 @@ function fakeChannel(): BedrockHarnessChannel {
                 source: "script-event",
                 sessionBound: true,
               },
+            }),
+        );
+        return;
+      }
+
+      if (id === "m-bedrock:action") {
+        lines.push(
+          BEDROCK_ACTION_PREFIX +
+            JSON.stringify({
+              schemaVersion: 1,
+              requestId: payload.requestId,
+              actionId: payload.actionId,
+              runtimeTick: tick++,
+              ok: true,
             }),
         );
         return;
@@ -211,6 +226,85 @@ describe("bedrock runtime experiment host", () => {
       ),
     ).rejects.toThrow(
       /target profile fingerprint does not match/,
+    );
+  });
+});
+
+
+describe("bedrock runtime mutating action protocol", () => {
+  it("executes acknowledged stimulus actions before observation", async () => {
+    const mutating: RuntimeExperimentDefinition = {
+      ...definition,
+      id: "exp:mutating-repro",
+      title: "Mutating reproduction",
+      domain: "multiplayer",
+      mutationRisk: "mutating",
+      protocol: [
+        {
+          id: "stimulus",
+          phase: "stimulus",
+          actionId: "test.join-arena",
+          parameters: {
+            arenaId: "a1",
+          },
+        },
+        definition.protocol[0]!,
+      ],
+    };
+
+    const result =
+      await executeRuntimeExperimentCampaign(
+        mutating,
+        createBedrockHarnessExperimentHost({
+          channel: fakeChannel(),
+          targetProfile,
+        }),
+      );
+
+    expect(result.invalidTrialErrors).toEqual([]);
+    expect(
+      result.trials.every(
+        (trial) => trial.status === "completed",
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects mutating execution outside LIVE_MINECRAFT", async () => {
+    const base = fakeChannel();
+    const localChannel: BedrockHarnessChannel = {
+      ...base,
+      context: "LOCAL_MINECRAFT",
+    };
+    const mutating: RuntimeExperimentDefinition = {
+      ...definition,
+      id: "exp:mutating-local",
+      mutationRisk: "mutating",
+      protocol: [
+        {
+          id: "stimulus",
+          phase: "stimulus",
+          actionId: "test.join-arena",
+        },
+        definition.protocol[0]!,
+      ],
+    };
+
+    const result =
+      await executeRuntimeExperimentCampaign(
+        mutating,
+        createBedrockHarnessExperimentHost({
+          channel: localChannel,
+          targetProfile,
+        }),
+      );
+
+    expect(
+      result.trials.every(
+        (trial) => trial.status === "failed",
+      ),
+    ).toBe(true);
+    expect(result.trials[0]?.error).toMatch(
+      /require LIVE_MINECRAFT/,
     );
   });
 });

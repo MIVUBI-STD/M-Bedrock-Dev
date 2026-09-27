@@ -10,6 +10,11 @@ import type {
   CapturedMinecraftRuntimeProfile,
 } from "../../runtime-profile/src/index.js";
 import {
+  BEDROCK_ACTION_PREFIX,
+  parseBedrockRuntimeActionResponse,
+  type BedrockRuntimeActionRequest,
+} from "./bedrock-action.js";
+import {
   BEDROCK_PROFILE_PREFIX,
   captureBedrockHarnessProfile,
   parseBedrockHarnessProfileAnnouncement,
@@ -400,6 +405,73 @@ async function bindTargetProfile(
   }
 }
 
+async function executeAction(
+  options: BedrockHarnessHostOptions,
+  definition: RuntimeExperimentDefinition,
+  identity: RuntimeExperimentTrialIdentity,
+  step: RuntimeExperimentProtocolStep,
+): Promise<number> {
+  const arm = armFor(definition, identity.armId);
+  const parameters = resolvedParameters(step, arm);
+  const request: BedrockRuntimeActionRequest = {
+    schemaVersion: 1,
+    requestId: [
+      definition.id,
+      identity.armId,
+      identity.runIndex,
+      step.id,
+    ].join(":"),
+    actionId: step.actionId,
+    parameters,
+  };
+
+  await options.channel.sendScriptEvent(
+    "m-bedrock:action",
+    JSON.stringify(request),
+  );
+
+  const line = await options.channel.waitForLine({
+    prefix: BEDROCK_ACTION_PREFIX,
+    timeoutMs: options.timeoutMs ?? 5000,
+    accept(candidate) {
+      try {
+        const offset = candidate.indexOf(
+          BEDROCK_ACTION_PREFIX,
+        );
+        if (offset < 0) return false;
+        const response =
+          parseBedrockRuntimeActionResponse(
+            candidate.slice(
+              offset + BEDROCK_ACTION_PREFIX.length,
+            ),
+          );
+        return response.requestId ===
+          request.requestId;
+      } catch {
+        return false;
+      }
+    },
+  });
+
+  const offset = line.indexOf(BEDROCK_ACTION_PREFIX);
+  const response = parseBedrockRuntimeActionResponse(
+    line.slice(offset + BEDROCK_ACTION_PREFIX.length),
+  );
+  if (!response.ok) {
+    throw new Error(
+      "Bedrock runtime action failed: " +
+        response.actionId +
+        (response.error ? " - " + response.error : ""),
+    );
+  }
+  if (response.actionId !== request.actionId) {
+    throw new Error(
+      "Bedrock runtime action acknowledgement actionId mismatch.",
+    );
+  }
+  return response.runtimeTick;
+}
+
 async function executeProbe(
   options: BedrockHarnessHostOptions,
   request: RuntimeProbeRequest,
@@ -466,9 +538,12 @@ export function createBedrockHarnessExperimentHost(
       definition,
       identity,
     ): Promise<RuntimeExperimentTrial> {
-      if (definition.mutationRisk !== "read-only") {
+      if (
+        definition.mutationRisk !== "read-only" &&
+        options.channel.context !== "LIVE_MINECRAFT"
+      ) {
         throw new Error(
-          "The first Bedrock Runtime Lab host supports read-only experiments only.",
+          "Mutating Bedrock Runtime Lab experiments require LIVE_MINECRAFT.",
         );
       }
 
@@ -483,24 +558,36 @@ export function createBedrockHarnessExperimentHost(
       let endTick: number | undefined;
 
       for (const step of definition.protocol) {
-        if (step.phase !== "observe") {
+        if (step.phase === "observe") {
+          const response = await executeProbe(
+            options,
+            requestFor(
+              definition,
+              identity,
+              step,
+            ),
+          );
+
+          startTick ??= response.runtimeTick;
+          endTick = response.runtimeTick;
+          evidence.push(response.evidence);
+          continue;
+        }
+
+        if (definition.mutationRisk === "read-only") {
           throw new Error(
-            "The first Bedrock Runtime Lab host supports observe-only protocol steps.",
+            "Read-only experiment cannot execute setup, stimulus, or teardown actions.",
           );
         }
 
-        const response = await executeProbe(
+        const actionTick = await executeAction(
           options,
-          requestFor(
-            definition,
-            identity,
-            step,
-          ),
+          definition,
+          identity,
+          step,
         );
-
-        startTick ??= response.runtimeTick;
-        endTick = response.runtimeTick;
-        evidence.push(response.evidence);
+        startTick ??= actionTick;
+        endTick = actionTick;
       }
 
       return {

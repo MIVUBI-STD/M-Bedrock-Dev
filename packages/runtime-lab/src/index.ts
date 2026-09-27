@@ -9,3 +9,4 @@ export * from "./catalog.js";
 export * from "./bedrock-profile.js";
 export * from "./bedrock-host.js";
 export * from "./counterexample-scenario.js";
+export * from "./bedrock-action.js";

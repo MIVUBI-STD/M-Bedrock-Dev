@@ -61,6 +61,22 @@ export function validateRuntimeExperimentDefinition(
   if (!definition.protocol.some((step) => step.phase === "observe")) {
     errors.push("Runtime experiment protocol requires at least one observe step.");
   }
+  if (
+    definition.mutationRisk === "read-only" &&
+    definition.protocol.some((step) => step.phase !== "observe")
+  ) {
+    errors.push(
+      "Read-only runtime experiment may contain observe steps only.",
+    );
+  }
+  if (
+    definition.protocol.some((step) => step.phase !== "observe") &&
+    definition.requiredContext !== "LIVE_MINECRAFT"
+  ) {
+    errors.push(
+      "Runtime experiment with setup/stimulus/teardown steps requires LIVE_MINECRAFT.",
+    );
+  }
 
   if (definition.arms.length < 2) {
     errors.push("Runtime experiment requires at least one control and one treatment arm.");
