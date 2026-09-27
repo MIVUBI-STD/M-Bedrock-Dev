@@ -10,6 +10,12 @@ import type {
   CapturedMinecraftRuntimeProfile,
 } from "../../runtime-profile/src/index.js";
 import {
+  BEDROCK_CAPABILITIES_PREFIX,
+  compareRuntimeActionRegistries,
+  parseBedrockCapabilityAnnouncement,
+  type BedrockCapabilityDiscoveryRequest,
+} from "./bedrock-capabilities.js";
+import {
   BEDROCK_ACTION_PREFIX,
   parseBedrockRuntimeActionResponse,
   type BedrockRuntimeActionRequest,
@@ -410,8 +416,76 @@ async function bindTargetProfile(
   }
 }
 
+async function discoverActionCapabilities(
+  options: BedrockHarnessHostOptions,
+  definition: RuntimeExperimentDefinition,
+  identity: RuntimeExperimentTrialIdentity,
+): Promise<RuntimeActionCapabilityRegistry> {
+  const request: BedrockCapabilityDiscoveryRequest = {
+    schemaVersion: 1,
+    requestId: [
+      definition.id,
+      identity.armId,
+      identity.runIndex,
+      "capabilities",
+    ].join(":"),
+  };
+
+  await options.channel.sendScriptEvent(
+    "m-bedrock:capabilities",
+    JSON.stringify(request),
+  );
+
+  const line = await options.channel.waitForLine({
+    prefix: BEDROCK_CAPABILITIES_PREFIX,
+    timeoutMs: options.timeoutMs ?? 5000,
+    accept(candidate) {
+      try {
+        const offset = candidate.indexOf(
+          BEDROCK_CAPABILITIES_PREFIX,
+        );
+        if (offset < 0) return false;
+        return parseBedrockCapabilityAnnouncement(
+          candidate.slice(
+            offset +
+              BEDROCK_CAPABILITIES_PREFIX.length,
+          ),
+        ).requestId === request.requestId;
+      } catch {
+        return false;
+      }
+    },
+  });
+
+  const offset = line.indexOf(
+    BEDROCK_CAPABILITIES_PREFIX,
+  );
+  const announcement =
+    parseBedrockCapabilityAnnouncement(
+      line.slice(
+        offset + BEDROCK_CAPABILITIES_PREFIX.length,
+      ),
+    );
+
+  if (options.actionCapabilities) {
+    const errors = compareRuntimeActionRegistries(
+      options.actionCapabilities,
+      announcement.registry,
+    );
+    if (errors.length > 0) {
+      throw new Error(
+        "Bedrock runtime capability handshake mismatch: " +
+          errors.join("; "),
+      );
+    }
+  }
+
+  return announcement.registry;
+}
+
 async function executeAction(
   options: BedrockHarnessHostOptions,
+  actionCapabilities: RuntimeActionCapabilityRegistry,
   definition: RuntimeExperimentDefinition,
   identity: RuntimeExperimentTrialIdentity,
   step: RuntimeExperimentProtocolStep,
@@ -423,13 +497,8 @@ async function executeAction(
       "Read-only runtime experiment cannot execute a mutating action.",
     );
   }
-  if (!options.actionCapabilities) {
-    throw new Error(
-      "Bedrock mutating action requires an explicit action capability registry.",
-    );
-  }
   const validation = validateRuntimeActionInvocation(
-    options.actionCapabilities,
+    actionCapabilities,
     {
       actionId: step.actionId,
       phase: step.phase as Exclude<
@@ -588,6 +657,15 @@ export function createBedrockHarnessExperimentHost(
         identity,
       );
 
+      const actionCapabilities =
+        definition.mutationRisk === "read-only"
+          ? undefined
+          : await discoverActionCapabilities(
+              options,
+              definition,
+              identity,
+            );
+
       const evidence = [];
       let startTick: number | undefined;
       let endTick: number | undefined;
@@ -617,6 +695,7 @@ export function createBedrockHarnessExperimentHost(
 
         const actionTick = await executeAction(
           options,
+          actionCapabilities!,
           definition,
           identity,
           step,

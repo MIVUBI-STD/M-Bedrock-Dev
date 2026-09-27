@@ -4,6 +4,7 @@ import {
 } from "../../runtime-profile/src/index.js";
 import {
   BEDROCK_ACTION_PREFIX,
+  BEDROCK_CAPABILITIES_PREFIX,
   BEDROCK_PROFILE_PREFIX,
   BEDROCK_PROBE_PREFIX,
   createBedrockHarnessExperimentHost,
@@ -111,6 +112,19 @@ function fakeChannel(): BedrockHarnessChannel {
                 source: "script-event",
                 sessionBound: true,
               },
+            }),
+        );
+        return;
+      }
+
+      if (id === "m-bedrock:capabilities") {
+        lines.push(
+          BEDROCK_CAPABILITIES_PREFIX +
+            JSON.stringify({
+              schemaVersion: 1,
+              requestId: payload.requestId,
+              runtimeTick: tick++,
+              registry: actionCapabilities,
             }),
         );
         return;
