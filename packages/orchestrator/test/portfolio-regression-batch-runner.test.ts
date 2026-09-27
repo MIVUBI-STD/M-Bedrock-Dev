@@ -70,6 +70,15 @@ const capabilities: RuntimeActionCapabilityRegistry = {
     requiredParameters: {
       arenaId: "string",
     },
+  }, {
+    id: "probe.scoreboard-value",
+    requiredContext: "LOCAL_MINECRAFT",
+    mutationRisk: "read-only",
+    phases: ["observe"],
+    requiredParameters: {
+      objectiveId: "string",
+      participant: "string",
+    },
   }],
 };
 
