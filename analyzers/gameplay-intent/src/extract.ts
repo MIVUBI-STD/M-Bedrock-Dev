@@ -15,6 +15,12 @@ const KIND_TERMS: ReadonlyArray<{
   terms: readonly string[];
 }> = [
   {
+    kind: "role",
+    terms: [
+      "team", "teams", "spectator", "spectating",
+    ],
+  },
+  {
     kind: "phase",
     terms: [
       "lobby", "queue", "countdown", "prepare", "preparing",
@@ -37,6 +43,8 @@ const KIND_TERMS: ReadonlyArray<{
       "score", "scoring", "coin", "currency", "resource", "resources", "ledger",
       "inventory", "palette", "health", "points", "kit", "scoreboard",
       "tick", "ticks", "time", "timer", "timers", "seconds",
+      "armor", "armors", "sword", "wool", "iron", "gold",
+      "diamond", "emerald",
     ],
   },
   {
@@ -50,7 +58,8 @@ const KIND_TERMS: ReadonlyArray<{
     kind: "objective",
     terms: [
       "objective", "flag", "capture", "target", "goal", "win",
-      "victory", "defeat", "similarity",
+      "winner", "victory", "defeat", "similarity",
+      "bed", "beds", "eliminate", "eliminated", "elimination",
     ],
   },
   {
@@ -67,6 +76,7 @@ const KIND_TERMS: ReadonlyArray<{
       "revive", "upgrade", "similarity", "clone", "feedback",
       "hologram", "combat", "hud", "schematic", "wave",
       "knockdown", "reviver", "reviving", "effect", "effects",
+      "generator", "generators", "forge", "parkour", "selector",
     ],
   },
 ];
@@ -84,6 +94,10 @@ function slug(value: string): string {
 }
 
 const HELPER_VERBS = new Set([
+  "show",
+  "hide",
+  "cancel",
+  "add",
   "prepare",
   "skip",
   "process",
@@ -158,6 +172,7 @@ function classify(value: string): GameplayIntentNodeKind | undefined {
   const priority: GameplayIntentNodeKind[] = helperLike
     ? [
         "policy",
+        "role",
         "resource",
         "objective",
         "mechanic",
@@ -166,6 +181,7 @@ function classify(value: string): GameplayIntentNodeKind | undefined {
       ]
     : [
         "lifecycle",
+        "role",
         "policy",
         "resource",
         "spatial-region",

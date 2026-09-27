@@ -891,6 +891,106 @@ describe("gameplay intent analyzer", () => {
     });
   });
 
+  it("classifies generic bedwars gameplay vocabulary from bundled members", () => {
+    const base = script();
+    const bundled: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [
+        "team",
+        "spectator",
+        "breakBed",
+        "winner",
+        "eliminated",
+        "diamondGenerators",
+        "shop",
+        "armor",
+        "wool",
+        "respawnTimers",
+      ].map((member) => ({
+        member,
+        memberKind: "method" as const,
+        containerHint: "A",
+        source: base.source,
+      })),
+    };
+
+    const result = extractGameplayIntentSignals([bundled]);
+    const ids = new Set(
+      result.signals.map((signal) => signal.subjectKey),
+    );
+
+    expect(ids.has("role:team")).toBe(true);
+    expect(ids.has("role:spectator")).toBe(true);
+    expect(ids.has("objective:break-bed")).toBe(true);
+    expect(ids.has("objective:winner")).toBe(true);
+    expect(ids.has("objective:eliminated")).toBe(true);
+    expect(ids.has("mechanic:diamond-generators")).toBe(true);
+    expect(ids.has("mechanic:shop")).toBe(true);
+    expect(ids.has("resource:armor")).toBe(true);
+    expect(ids.has("resource:wool")).toBe(true);
+    expect(ids.has("lifecycle:respawn-timers")).toBe(true);
+  });
+
+  it("suppresses countdown and finish helper actions while retaining parkour mechanics", () => {
+    const base = script();
+    const bundled: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [
+        "addCountdownActionBars",
+        "cancelCountdown",
+        "hideParkourSelectorAtFinish",
+        "showParkourSelectorAtFinish",
+      ].map((member) => ({
+        member,
+        memberKind: "method" as const,
+        containerHint: "A",
+        source: base.source,
+      })),
+    };
+
+    const result = extractGameplayIntentSignals([bundled]);
+    const ids = new Set(
+      result.signals.map((signal) => signal.subjectKey),
+    );
+
+    expect(ids.has("phase:add-countdown-action-bars")).toBe(false);
+    expect(ids.has("phase:cancel-countdown")).toBe(false);
+    expect(ids.has("mechanic:hide-parkour-selector-at-finish"))
+      .toBe(true);
+    expect(ids.has("mechanic:show-parkour-selector-at-finish"))
+      .toBe(true);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {
