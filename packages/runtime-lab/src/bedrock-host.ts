@@ -22,6 +22,10 @@ import {
 import type {
   RuntimeExperimentHost,
 } from "./runner.js";
+import {
+  validateRuntimeActionInvocation,
+  type RuntimeActionCapabilityRegistry,
+} from "./action-capability.js";
 import type {
   RuntimeExperimentArm,
   RuntimeExperimentDefinition,
@@ -57,6 +61,7 @@ export interface BedrockHarnessChannel {
 export interface BedrockHarnessHostOptions {
   channel: BedrockHarnessChannel;
   targetProfile: CapturedMinecraftRuntimeProfile;
+  actionCapabilities?: RuntimeActionCapabilityRegistry;
   timeoutMs?: number;
 }
 
@@ -413,6 +418,36 @@ async function executeAction(
 ): Promise<number> {
   const arm = armFor(definition, identity.armId);
   const parameters = resolvedParameters(step, arm);
+  if (definition.mutationRisk === "read-only") {
+    throw new Error(
+      "Read-only runtime experiment cannot execute a mutating action.",
+    );
+  }
+  if (!options.actionCapabilities) {
+    throw new Error(
+      "Bedrock mutating action requires an explicit action capability registry.",
+    );
+  }
+  const validation = validateRuntimeActionInvocation(
+    options.actionCapabilities,
+    {
+      actionId: step.actionId,
+      phase: step.phase as Exclude<
+        RuntimeExperimentProtocolStep["phase"],
+        "observe"
+      >,
+      parameters,
+      context: options.channel.context,
+      mutationRisk: definition.mutationRisk,
+    },
+  );
+  if (!validation.ok) {
+    throw new Error(
+      "Bedrock runtime action capability validation failed: " +
+        validation.errors.join("; "),
+    );
+  }
+
   const request: BedrockRuntimeActionRequest = {
     schemaVersion: 1,
     requestId: [

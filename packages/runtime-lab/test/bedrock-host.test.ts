@@ -10,6 +10,7 @@ import {
   executeRuntimeExperimentCampaign,
   type BedrockHarnessChannel,
   type BedrockHarnessWaitOptions,
+  type RuntimeActionCapabilityRegistry,
   type RuntimeExperimentDefinition,
 } from "../src/index.js";
 
@@ -35,6 +36,19 @@ const targetProfile = captureMinecraftRuntimeProfile({
     packs: "partial",
   },
 });
+
+const actionCapabilities: RuntimeActionCapabilityRegistry = {
+  schemaVersion: 1,
+  actions: [{
+    id: "test.join-arena",
+    requiredContext: "LIVE_MINECRAFT",
+    mutationRisk: "mutating",
+    phases: ["stimulus"],
+    optionalParameters: {
+      arenaId: "string",
+    },
+  }],
+};
 
 const definition: RuntimeExperimentDefinition = {
   schemaVersion: 1,
@@ -180,6 +194,7 @@ describe("bedrock runtime experiment host", () => {
         createBedrockHarnessExperimentHost({
           channel: fakeChannel(),
           targetProfile,
+          actionCapabilities,
         }),
       );
 
@@ -258,6 +273,7 @@ describe("bedrock runtime mutating action protocol", () => {
         createBedrockHarnessExperimentHost({
           channel: fakeChannel(),
           targetProfile,
+          actionCapabilities,
         }),
       );
 
@@ -289,22 +305,17 @@ describe("bedrock runtime mutating action protocol", () => {
       ],
     };
 
-    const result =
-      await executeRuntimeExperimentCampaign(
+    await expect(
+      executeRuntimeExperimentCampaign(
         mutating,
         createBedrockHarnessExperimentHost({
           channel: localChannel,
           targetProfile,
+          actionCapabilities,
         }),
-      );
-
-    expect(
-      result.trials.every(
-        (trial) => trial.status === "failed",
       ),
-    ).toBe(true);
-    expect(result.trials[0]?.error).toMatch(
-      /require LIVE_MINECRAFT/,
+    ).rejects.toThrow(
+      /requires LIVE_MINECRAFT but host provides LOCAL_MINECRAFT/,
     );
   });
 });
