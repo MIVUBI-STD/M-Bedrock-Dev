@@ -95,6 +95,13 @@ function parsed(): ParsedScriptFile {
       executionRegion: "function:decideReconnect",
       conditionText: "state.pendingCleanup",
       conditionIdentifiers: ["state", "state.pendingCleanup"],
+      predicate: {
+        kind: "truthy",
+        operand: {
+          kind: "path",
+          path: "state.pendingCleanup",
+        },
+      },
       propertyName: "action",
       value: "cleanup",
       conditionSource: source,
@@ -167,6 +174,14 @@ describe("gameplay intent stage", () => {
           edge.kind === "requires" &&
           edge.status === "authored" &&
           edge.to.startsWith("policy:"),
+      ),
+    ).toBe(true);
+
+    expect(
+      model.nodes.some(
+        (node) =>
+          node.kind === "policy" &&
+          node.policyPredicate?.kind === "truthy",
       ),
     ).toBe(true);
 

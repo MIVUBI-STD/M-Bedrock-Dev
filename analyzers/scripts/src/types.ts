@@ -212,10 +212,45 @@ export interface ScriptReturnOutcome {
   source: SourceRef;
 }
 
+export type ScriptGuardScalar =
+  | string
+  | number
+  | boolean
+  | null;
+
+export type ScriptGuardOperand =
+  | { kind: "path"; path: string }
+  | { kind: "literal"; value: ScriptGuardScalar };
+
+export type ScriptGuardPredicate =
+  | {
+      kind: "truthy";
+      operand: ScriptGuardOperand;
+    }
+  | {
+      kind: "falsy";
+      operand: ScriptGuardOperand;
+    }
+  | {
+      kind: "comparison";
+      operator: "eq" | "neq" | "lt" | "lte" | "gt" | "gte";
+      left: ScriptGuardOperand;
+      right: ScriptGuardOperand;
+    }
+  | {
+      kind: "all" | "any";
+      predicates: readonly ScriptGuardPredicate[];
+    }
+  | {
+      kind: "unknown";
+      text: string;
+    };
+
 export interface ScriptGuardedOutcome {
   executionRegion: string;
   conditionText: string;
   conditionIdentifiers: readonly string[];
+  predicate: ScriptGuardPredicate;
   propertyName: string;
   value: string;
   conditionSource: SourceRef;

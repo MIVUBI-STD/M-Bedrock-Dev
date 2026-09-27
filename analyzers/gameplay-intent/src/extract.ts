@@ -434,6 +434,7 @@ export function extractGameplayIntentSignals(
         locator: path,
         summary:
           "Source directly guards this return branch with the recorded condition.",
+        policyPredicate: guarded.predicate,
       };
       pushSignal(signals, policySignal);
 

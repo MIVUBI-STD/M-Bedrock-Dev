@@ -74,6 +74,17 @@ export function validateGameplayIntentModel(
       `nodes.${node.id}.evidenceIds`,
       node.evidenceIds,
     );
+
+    if (
+      node.policyPredicate !== undefined &&
+      node.kind !== "policy"
+    ) {
+      issues.push({
+        path: `nodes.${node.id}.policyPredicate`,
+        message:
+          "Policy predicates are valid only on policy intent nodes.",
+      });
+    }
   }
 
   for (const edge of model.edges) {

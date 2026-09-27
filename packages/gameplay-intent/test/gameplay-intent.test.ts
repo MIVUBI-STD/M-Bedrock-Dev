@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assessGameplayIntentGrounding,
+  evaluateGameplayPolicyPredicate,
   validateGameplayIntentModel,
   type GameplayIntentModel,
 } from "../src/index.js";
@@ -73,6 +74,86 @@ describe("gameplay intent", () => {
         ["mechanic:plot-build"],
       ).disposition,
     ).toBe("grounded");
+  });
+
+  it("evaluates structured policy predicates deterministically", () => {
+    expect(
+      evaluateGameplayPolicyPredicate(
+        {
+          kind: "truthy",
+          operand: {
+            kind: "path",
+            path: "state.pendingCleanup",
+          },
+        },
+        {
+          state: {
+            pendingCleanup: true,
+            phase: "active",
+          },
+        },
+      ),
+    ).toBe("satisfied");
+
+    expect(
+      evaluateGameplayPolicyPredicate(
+        {
+          kind: "comparison",
+          operator: "eq",
+          left: {
+            kind: "path",
+            path: "state.phase",
+          },
+          right: {
+            kind: "literal",
+            value: "active",
+          },
+        },
+        {
+          state: {
+            phase: "countdown",
+          },
+        },
+      ),
+    ).toBe("violated");
+
+    expect(
+      evaluateGameplayPolicyPredicate(
+        {
+          kind: "comparison",
+          operator: "neq",
+          left: {
+            kind: "path",
+            path: "record.generation",
+          },
+          right: {
+            kind: "path",
+            path: "session.generation",
+          },
+        },
+        {
+          record: {
+            generation: 3,
+          },
+          session: {
+            generation: 4,
+          },
+        },
+      ),
+    ).toBe("satisfied");
+
+    expect(
+      evaluateGameplayPolicyPredicate(
+        {
+          kind: "truthy",
+          operand: {
+            kind: "path",
+            path: "missing.value",
+          },
+        },
+        {},
+      ),
+    ).toBe("unknown");
   });
 
   it("blocks diagnosis when an open intent question affects the subject", () => {

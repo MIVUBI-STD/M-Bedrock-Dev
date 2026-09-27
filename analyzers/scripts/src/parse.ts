@@ -20,6 +20,8 @@ import type {
   ScriptTypeProperty,
   ScriptReturnOutcome,
   ScriptGuardedOutcome,
+  ScriptGuardOperand,
+  ScriptGuardPredicate,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -360,6 +362,152 @@ function conditionIdentifiers(
   };
   visit(expression);
   return [...values].sort();
+}
+
+function guardOperand(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+): ScriptGuardOperand | undefined {
+  const value =
+    ts.isParenthesizedExpression(expression)
+      ? expression.expression
+      : expression;
+
+  if (
+    ts.isIdentifier(value) ||
+    ts.isPropertyAccessExpression(value)
+  ) {
+    return {
+      kind: "path",
+      path: value.getText(file),
+    };
+  }
+
+  if (
+    ts.isStringLiteralLike(value) ||
+    ts.isNoSubstitutionTemplateLiteral(value)
+  ) {
+    return {
+      kind: "literal",
+      value: value.text,
+    };
+  }
+
+  if (ts.isNumericLiteral(value)) {
+    return {
+      kind: "literal",
+      value: Number(value.text),
+    };
+  }
+
+  if (value.kind === ts.SyntaxKind.TrueKeyword) {
+    return { kind: "literal", value: true };
+  }
+  if (value.kind === ts.SyntaxKind.FalseKeyword) {
+    return { kind: "literal", value: false };
+  }
+  if (value.kind === ts.SyntaxKind.NullKeyword) {
+    return { kind: "literal", value: null };
+  }
+
+  return undefined;
+}
+
+function guardPredicate(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+): ScriptGuardPredicate {
+  const value =
+    ts.isParenthesizedExpression(expression)
+      ? expression.expression
+      : expression;
+
+  if (
+    ts.isPrefixUnaryExpression(value) &&
+    value.operator === ts.SyntaxKind.ExclamationToken
+  ) {
+    const operand = guardOperand(value.operand, file);
+    return operand
+      ? { kind: "falsy", operand }
+      : { kind: "unknown", text: value.getText(file) };
+  }
+
+  if (ts.isBinaryExpression(value)) {
+    if (
+      value.operatorToken.kind ===
+      ts.SyntaxKind.AmpersandAmpersandToken
+    ) {
+      return {
+        kind: "all",
+        predicates: [
+          guardPredicate(value.left, file),
+          guardPredicate(value.right, file),
+        ],
+      };
+    }
+
+    if (
+      value.operatorToken.kind ===
+      ts.SyntaxKind.BarBarToken
+    ) {
+      return {
+        kind: "any",
+        predicates: [
+          guardPredicate(value.left, file),
+          guardPredicate(value.right, file),
+        ],
+      };
+    }
+
+    const operator: Extract<
+      ScriptGuardPredicate,
+      { kind: "comparison" }
+    >["operator"] | undefined =
+      value.operatorToken.kind ===
+      ts.SyntaxKind.EqualsEqualsToken ||
+      value.operatorToken.kind ===
+      ts.SyntaxKind.EqualsEqualsEqualsToken
+        ? "eq"
+        : value.operatorToken.kind ===
+            ts.SyntaxKind.ExclamationEqualsToken ||
+          value.operatorToken.kind ===
+            ts.SyntaxKind.ExclamationEqualsEqualsToken
+        ? "neq"
+        : value.operatorToken.kind ===
+            ts.SyntaxKind.LessThanToken
+        ? "lt"
+        : value.operatorToken.kind ===
+            ts.SyntaxKind.LessThanEqualsToken
+        ? "lte"
+        : value.operatorToken.kind ===
+            ts.SyntaxKind.GreaterThanToken
+        ? "gt"
+        : value.operatorToken.kind ===
+            ts.SyntaxKind.GreaterThanEqualsToken
+        ? "gte"
+        : undefined;
+
+    if (operator) {
+      const left = guardOperand(value.left, file);
+      const right = guardOperand(value.right, file);
+      if (left && right) {
+        return {
+          kind: "comparison",
+          operator,
+          left,
+          right,
+        };
+      }
+    }
+  }
+
+  const operand = guardOperand(value, file);
+  if (operand) return { kind: "truthy", operand };
+
+  return {
+    kind: "unknown",
+    text: value.getText(file),
+  };
 }
 
 function requiredTrueCalls(
@@ -910,6 +1058,7 @@ export function parseScriptFile(
             executionRegion: localExecutionRegionId(node, file),
             conditionText,
             conditionIdentifiers: identifiers,
+            predicate: guardPredicate(node.expression, file),
             propertyName: outcome.propertyName,
             value: outcome.value,
             conditionSource: lineSource(file, node.expression, source),

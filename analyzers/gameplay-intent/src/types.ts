@@ -2,6 +2,7 @@ import type {
   GameplayIntentEdgeKind,
   GameplayIntentEvidenceOrigin,
   GameplayIntentNodeKind,
+  GameplayIntentPolicyPredicate,
   GameplayIntentStatus,
 } from "../../../packages/gameplay-intent/src/index.js";
 
@@ -14,6 +15,7 @@ export interface GameplayIntentSignal {
   evidenceOrigin: GameplayIntentEvidenceOrigin;
   locator: string;
   summary: string;
+  policyPredicate?: GameplayIntentPolicyPredicate;
 }
 
 export interface GameplayIntentRelationSignal {

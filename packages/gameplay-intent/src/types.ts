@@ -57,6 +57,40 @@ export interface GameplayIntentEvidence {
   summary: string;
 }
 
+export type GameplayIntentScalar =
+  | string
+  | number
+  | boolean
+  | null;
+
+export type GameplayIntentPolicyOperand =
+  | { kind: "path"; path: string }
+  | { kind: "literal"; value: GameplayIntentScalar };
+
+export type GameplayIntentPolicyPredicate =
+  | {
+      kind: "truthy";
+      operand: GameplayIntentPolicyOperand;
+    }
+  | {
+      kind: "falsy";
+      operand: GameplayIntentPolicyOperand;
+    }
+  | {
+      kind: "comparison";
+      operator: "eq" | "neq" | "lt" | "lte" | "gt" | "gte";
+      left: GameplayIntentPolicyOperand;
+      right: GameplayIntentPolicyOperand;
+    }
+  | {
+      kind: "all" | "any";
+      predicates: readonly GameplayIntentPolicyPredicate[];
+    }
+  | {
+      kind: "unknown";
+      text: string;
+    };
+
 export interface GameplayIntentNode {
   id: string;
   kind: GameplayIntentNodeKind;
@@ -64,6 +98,7 @@ export interface GameplayIntentNode {
   status: GameplayIntentStatus;
   evidenceIds: readonly string[];
   description?: string;
+  policyPredicate?: GameplayIntentPolicyPredicate;
 }
 
 export interface GameplayIntentEdge {

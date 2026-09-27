@@ -107,6 +107,13 @@ function script(): ParsedScriptFile {
       executionRegion: "function:decideReconnect",
       conditionText: "state.pendingCleanup",
       conditionIdentifiers: ["state", "state.pendingCleanup"],
+      predicate: {
+        kind: "truthy",
+        operand: {
+          kind: "path",
+          path: "state.pendingCleanup",
+        },
+      },
       propertyName: "action",
       value: "cleanup",
       conditionSource: source,
@@ -186,7 +193,8 @@ describe("gameplay intent analyzer", () => {
       result.signals.some(
         (signal) =>
           signal.nodeKind === "policy" &&
-          signal.subjectKey.includes("pending-cleanup"),
+          signal.subjectKey.includes("pending-cleanup") &&
+          signal.policyPredicate?.kind === "truthy",
       ),
     ).toBe(true);
 

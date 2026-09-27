@@ -3,6 +3,9 @@ import type {
   GameplayIntentModel,
   GameplayIntentNode,
   GameplayIntentNodeKind,
+  GameplayIntentPolicyOperand,
+  GameplayIntentPolicyPredicate,
+  GameplayIntentScalar,
   IntentGroundingAssessment,
 } from "./types.js";
 
@@ -103,4 +106,125 @@ export function assessGameplayIntentGrounding(
     unsupportedIds: [],
     reasons: ["All requested intent subjects are evidence-grounded."],
   };
+}
+
+export type GameplayPolicyEvaluation =
+  | "satisfied"
+  | "violated"
+  | "unknown";
+
+function resolvePolicyOperand(
+  operand: GameplayIntentPolicyOperand,
+  values: Readonly<Record<string, unknown>>,
+): GameplayIntentScalar | undefined {
+  if (operand.kind === "literal") return operand.value;
+  if (Object.prototype.hasOwnProperty.call(values, operand.path)) {
+    const value = values[operand.path];
+    return (
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean" ||
+      value === null
+    )
+      ? value
+      : undefined;
+  }
+
+  const parts = operand.path.split(".");
+  let current: unknown = values;
+  for (const part of parts) {
+    if (
+      typeof current !== "object" ||
+      current === null ||
+      !Object.prototype.hasOwnProperty.call(current, part)
+    ) {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[part];
+  }
+
+  return (
+    typeof current === "string" ||
+    typeof current === "number" ||
+    typeof current === "boolean" ||
+    current === null
+  )
+    ? current
+    : undefined;
+}
+
+function compareScalars(
+  operator: Extract<
+    GameplayIntentPolicyPredicate,
+    { kind: "comparison" }
+  >["operator"],
+  left: GameplayIntentScalar,
+  right: GameplayIntentScalar,
+): boolean | undefined {
+  if (operator === "eq") return left === right;
+  if (operator === "neq") return left !== right;
+
+  if (
+    typeof left !== "number" ||
+    typeof right !== "number"
+  ) {
+    return undefined;
+  }
+
+  if (operator === "lt") return left < right;
+  if (operator === "lte") return left <= right;
+  if (operator === "gt") return left > right;
+  return left >= right;
+}
+
+export function evaluateGameplayPolicyPredicate(
+  predicate: GameplayIntentPolicyPredicate,
+  values: Readonly<Record<string, unknown>>,
+): GameplayPolicyEvaluation {
+  if (predicate.kind === "unknown") return "unknown";
+
+  if (
+    predicate.kind === "truthy" ||
+    predicate.kind === "falsy"
+  ) {
+    const value = resolvePolicyOperand(predicate.operand, values);
+    if (value === undefined) return "unknown";
+    const truthy = Boolean(value);
+    const satisfied =
+      predicate.kind === "truthy" ? truthy : !truthy;
+    return satisfied ? "satisfied" : "violated";
+  }
+
+  if (predicate.kind === "comparison") {
+    const left = resolvePolicyOperand(predicate.left, values);
+    const right = resolvePolicyOperand(predicate.right, values);
+    if (left === undefined || right === undefined) {
+      return "unknown";
+    }
+    const result = compareScalars(
+      predicate.operator,
+      left,
+      right,
+    );
+    if (result === undefined) return "unknown";
+    return result ? "satisfied" : "violated";
+  }
+
+  const evaluations = predicate.predicates.map((child) =>
+    evaluateGameplayPolicyPredicate(child, values)
+  );
+
+  if (predicate.kind === "all") {
+    if (evaluations.includes("violated")) return "violated";
+    if (evaluations.every((item) => item === "satisfied")) {
+      return "satisfied";
+    }
+    return "unknown";
+  }
+
+  if (evaluations.includes("satisfied")) return "satisfied";
+  if (evaluations.every((item) => item === "violated")) {
+    return "violated";
+  }
+  return "unknown";
 }

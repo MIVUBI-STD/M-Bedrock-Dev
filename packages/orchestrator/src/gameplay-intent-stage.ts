@@ -66,6 +66,9 @@ export function buildGameplayIntentModel(
         label: signal.label,
         status: signal.status,
         evidenceIds: [id],
+        ...(signal.policyPredicate === undefined
+          ? {}
+          : { policyPredicate: signal.policyPredicate }),
       });
       continue;
     }
@@ -81,6 +84,11 @@ export function buildGameplayIntentModel(
           ? signal.status
           : existing.status,
       evidenceIds: mergedEvidence,
+      ...(existing.policyPredicate !== undefined
+        ? { policyPredicate: existing.policyPredicate }
+        : signal.policyPredicate !== undefined
+        ? { policyPredicate: signal.policyPredicate }
+        : {}),
     });
   }
 
