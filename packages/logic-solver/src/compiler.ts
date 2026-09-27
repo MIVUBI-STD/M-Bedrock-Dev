@@ -64,7 +64,9 @@ function invariantProblem(
         id,
         kind: "invariant",
         predicate: property.predicate,
-        description: property.description,
+        ...(property.description === undefined
+          ? {}
+          : { description: property.description }),
       },
       budget,
     },
