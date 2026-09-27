@@ -5,7 +5,8 @@ import type {
   BehaviorState,
 } from "../../behavior-model/src/index.js";
 import {
-  behaviorStateKey,\n  boundedBehaviorSolver,
+  behaviorStateKey,
+  boundedBehaviorSolver,
 } from "../src/index.js";
 
 const active: BehaviorPredicate = {

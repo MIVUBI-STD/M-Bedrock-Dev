@@ -4,7 +4,8 @@ import type {
   BehaviorState,
 } from "../../behavior-model/src/index.js";
 import {
-  behaviorStateKey,\n  compileAndSolveBehaviorConstraints,
+  behaviorStateKey,
+  compileAndSolveBehaviorConstraints,
   compileBehaviorConstraints,
 } from "../src/index.js";
 
