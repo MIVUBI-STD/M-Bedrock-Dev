@@ -157,6 +157,14 @@ function classify(value: string): GameplayIntentNodeKind | undefined {
 
   if (matches.size === 0) return undefined;
 
+  if (
+    words.has("generator") ||
+    words.has("generators") ||
+    words.has("forge")
+  ) {
+    return "mechanic";
+  }
+
   const helperLike =
     wordList[0] !== undefined &&
     HELPER_VERBS.has(wordList[0]);
