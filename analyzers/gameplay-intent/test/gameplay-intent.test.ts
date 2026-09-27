@@ -632,14 +632,15 @@ describe("gameplay intent analyzer", () => {
 
   it("aggregates authored route points into typed spatial intent profiles", () => {
     const base = script();
+    const routeSource = {
+      artifactId: "art_test",
+      relativePath:
+        "behavior_packs/demo/scripts/main.js",
+    };
     const routes: ParsedScriptFile = {
       ...base,
       identifier: "scripts/main",
-      source: {
-        artifactId: "art_test",
-        relativePath:
-          "behavior_packs/demo/scripts/main.js",
-      },
+      source: routeSource,
       localFunctionCalls: [],
       lifecycleMemberExposures: [],
       enumValueComparisons: [],
@@ -710,14 +711,15 @@ describe("gameplay intent analyzer", () => {
 
   it("promotes route coordinate space to local only with proven offset transform use", () => {
     const base = script();
+    const routeSource = {
+      artifactId: "art_test",
+      relativePath:
+        "behavior_packs/demo/scripts/main.js",
+    };
     const routes: ParsedScriptFile = {
       ...base,
       identifier: "scripts/main",
-      source: {
-        artifactId: "art_test",
-        relativePath:
-          "behavior_packs/demo/scripts/main.js",
-      },
+      source: routeSource,
       localFunctionCalls: [],
       lifecycleMemberExposures: [],
       enumValueComparisons: [],
@@ -733,20 +735,20 @@ describe("gameplay intent analyzer", () => {
         location: { x: 1, y: 2, z: 3 },
         index: 0,
         collectionHint: "routes",
-        source: base.source,
+        source: routeSource,
       }],
       spatialOffsetTransforms: [{
         functionName: "applyOffset",
         pointParameter: "point",
         contextParameter: "arena",
         offsetPath: "gameplayOffset",
-        source: base.source,
+        source: routeSource,
       }],
       spatialTransformUses: [{
         functionName: "applyOffset",
         pointExpression: "definition.location",
         contextExpression: "arena",
-        source: base.source,
+        source: routeSource,
       }],
     };
 
@@ -796,14 +798,14 @@ describe("gameplay intent analyzer", () => {
         routeId: "main",
         location: { x: 1, y: 2, z: 3 },
         index: 0,
-        source: base.source,
+        source: routeSource,
       }],
       spatialOffsetTransforms: [{
         functionName: "applyOffset",
         pointParameter: "point",
         contextParameter: "arena",
         offsetPath: "gameplayOffset",
-        source: base.source,
+        source: routeSource,
       }],
       spatialTransformUses: [],
     };
