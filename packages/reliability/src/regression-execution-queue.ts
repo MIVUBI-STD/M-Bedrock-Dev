@@ -85,103 +85,99 @@ export function buildRegressionExecutionQueue(
     ]),
   );
 
-  const selected = regressions
-    .map((regression) => {
-      const matchedCapabilityTags =
-        regression.capabilityTags
-          .filter((tag) =>
-            mapCapabilities.has(tag)
-          )
-          .sort();
-      const domainMatched =
-        mapDomains.has(regression.domain);
-      const overlaps = updateOverlapIds(
-        regression,
-        delta,
-      );
+  const selected: RegressionExecutionQueueItem[] = [];
 
-      const relevant =
-        matchedCapabilityTags.length > 0 ||
-        domainMatched ||
-        overlaps.length > 0;
-
-      if (!relevant) return undefined;
-
-      const binding =
-        bindingByRegression.get(regression.id);
-      const priorityWeight = selectionWeight({
-        capabilityMatches:
-          matchedCapabilityTags.length,
-        domainMatched,
-        updateOverlaps: overlaps.length,
-      });
-
-      return {
-        regressionId: regression.id,
-        title: regression.title,
-        domain: regression.domain,
-        priorityWeight,
-        matchedCapabilityTags,
-        domainMatched,
-        updateOverlapIds: overlaps,
-        disposition:
-          binding === undefined
-            ? "manual-required" as const
-            : "runtime-ready" as const,
-        ...(binding === undefined
-          ? {}
-          : {
-              scenarioId:
-                binding.scenarioId,
-            }),
-        reasons: [
-          ...(matchedCapabilityTags.length === 0
-            ? []
-            : [
-                "Capability overlap: " +
-                  matchedCapabilityTags.join(", ") +
-                  ".",
-              ]),
-          ...(domainMatched
-            ? [
-                "Map domain matches historical regression domain: " +
-                  regression.domain +
-                  ".",
-              ]
-            : []),
-          ...(overlaps.length === 0
-            ? []
-            : [
-                "Minecraft update overlap: " +
-                  overlaps.join(", ") +
-                  ".",
-              ]),
-          ...(binding === undefined
-            ? [
-                "No explicit runtime scenario binding is registered; manual execution is required.",
-              ]
-            : [
-                "Explicit runtime scenario binding is available: " +
-                  binding.scenarioId +
-                  ".",
-              ]),
-        ],
-      } satisfies RegressionExecutionQueueItem;
-    })
-    .filter(
-      (
-        item,
-      ): item is RegressionExecutionQueueItem =>
-        item !== undefined,
-    )
-    .sort(
-      (a, b) =>
-        b.priorityWeight -
-          a.priorityWeight ||
-        a.regressionId.localeCompare(
-          b.regressionId,
-        ),
+  for (const regression of regressions) {
+    const matchedCapabilityTags =
+      regression.capabilityTags
+        .filter((tag) =>
+          mapCapabilities.has(tag)
+        )
+        .sort();
+    const domainMatched =
+      mapDomains.has(regression.domain);
+    const overlaps = updateOverlapIds(
+      regression,
+      delta,
     );
+
+    const relevant =
+      matchedCapabilityTags.length > 0 ||
+      domainMatched ||
+      overlaps.length > 0;
+
+    if (!relevant) continue;
+
+    const binding =
+      bindingByRegression.get(regression.id);
+    const priorityWeight = selectionWeight({
+      capabilityMatches:
+        matchedCapabilityTags.length,
+      domainMatched,
+      updateOverlaps: overlaps.length,
+    });
+
+    selected.push({
+      regressionId: regression.id,
+      title: regression.title,
+      domain: regression.domain,
+      priorityWeight,
+      matchedCapabilityTags,
+      domainMatched,
+      updateOverlapIds: overlaps,
+      disposition:
+        binding === undefined
+          ? "manual-required"
+          : "runtime-ready",
+      ...(binding === undefined
+        ? {}
+        : {
+            scenarioId:
+              binding.scenarioId,
+          }),
+      reasons: [
+        ...(matchedCapabilityTags.length === 0
+          ? []
+          : [
+              "Capability overlap: " +
+                matchedCapabilityTags.join(", ") +
+                ".",
+            ]),
+        ...(domainMatched
+          ? [
+              "Map domain matches historical regression domain: " +
+                regression.domain +
+                ".",
+            ]
+          : []),
+        ...(overlaps.length === 0
+          ? []
+          : [
+              "Minecraft update overlap: " +
+                overlaps.join(", ") +
+                ".",
+            ]),
+        ...(binding === undefined
+          ? [
+              "No explicit runtime scenario binding is registered; manual execution is required.",
+            ]
+          : [
+              "Explicit runtime scenario binding is available: " +
+                binding.scenarioId +
+                ".",
+            ]),
+      ],
+    });
+  }
+
+  selected.sort(
+    (a, b) =>
+      b.priorityWeight -
+        a.priorityWeight ||
+      a.regressionId.localeCompare(
+        b.regressionId,
+      ),
+  );
 
   return {
     mapId: fingerprint.mapId,
