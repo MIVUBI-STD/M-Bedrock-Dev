@@ -630,6 +630,80 @@ describe("gameplay intent analyzer", () => {
     ).toBe(false);
   });
 
+  it("aggregates authored route points into typed spatial intent profiles", () => {
+    const base = script();
+    const routes: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      spatialRoutePoints: [
+        {
+          routeId: "main",
+          location: { x: 0, y: 64, z: 0 },
+          index: 0,
+          collectionHint: "routes",
+          source: base.source,
+        },
+        {
+          routeId: "main",
+          location: { x: 10, y: 64, z: 0 },
+          index: 1,
+          collectionHint: "routes",
+          source: base.source,
+        },
+        {
+          routeId: "bridge",
+          location: { x: 10, y: 64, z: 5 },
+          index: 600,
+          collectionHint: "routes",
+          source: base.source,
+        },
+      ],
+    };
+
+    const result = extractGameplayIntentSignals([routes]);
+    const main = result.signals.find(
+      (signal) =>
+        signal.subjectKey === "spatial-region:route-main",
+    );
+    const bridge = result.signals.find(
+      (signal) =>
+        signal.subjectKey ===
+        "spatial-region:route-bridge",
+    );
+
+    expect(main).toEqual(expect.objectContaining({
+      nodeKind: "spatial-region",
+      status: "authored",
+      spatialProfile: expect.objectContaining({
+        coordinateSpace: "unknown",
+        routeId: "main",
+        collectionHint: "routes",
+        points: [
+          { x: 0, y: 64, z: 0, index: 0 },
+          { x: 10, y: 64, z: 0, index: 1 },
+        ],
+      }),
+    }));
+    expect(bridge?.spatialProfile?.points).toEqual([
+      { x: 10, y: 64, z: 5, index: 600 },
+    ]);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {

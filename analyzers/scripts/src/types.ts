@@ -219,6 +219,18 @@ export interface ScriptDeclaredMember {
   source: SourceRef;
 }
 
+export interface ScriptSpatialRoutePoint {
+  routeId: string;
+  location: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  index?: number;
+  collectionHint?: string;
+  source: SourceRef;
+}
+
 export type ScriptGuardScalar =
   | string
   | number
@@ -322,5 +334,6 @@ export interface ParsedScriptFile {
   returnOutcomes?: ScriptReturnOutcome[];
   guardedOutcomes?: ScriptGuardedOutcome[];
   declaredMembers?: ScriptDeclaredMember[];
+  spatialRoutePoints?: ScriptSpatialRoutePoint[];
   capabilities: ScriptCapabilityUse[];
 }

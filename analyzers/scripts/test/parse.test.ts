@@ -741,6 +741,65 @@ class A {
     ]));
   });
 
+  it("captures authored spatial route-point tables", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+const routePoints = [
+  {
+    location: { x: -17.5, y: -28.5, z: -110.51 },
+    pathIndex: 0,
+    route: "main",
+  },
+  {
+    location: { x: 98.5, y: -28.5, z: 0.5 },
+    pathIndex: 600,
+    route: "bridge",
+  },
+  {
+    location: { x: -69, y: -26.5, z: -8 },
+    pathIndex: 500,
+    route: "windmill",
+  },
+];
+`,
+      source,
+    );
+
+    expect(parsed.spatialRoutePoints).toEqual([
+      expect.objectContaining({
+        routeId: "main",
+        location: {
+          x: -17.5,
+          y: -28.5,
+          z: -110.51,
+        },
+        index: 0,
+        collectionHint: "routePoints",
+      }),
+      expect.objectContaining({
+        routeId: "bridge",
+        location: {
+          x: 98.5,
+          y: -28.5,
+          z: 0.5,
+        },
+        index: 600,
+        collectionHint: "routePoints",
+      }),
+      expect.objectContaining({
+        routeId: "windmill",
+        location: {
+          x: -69,
+          y: -26.5,
+          z: -8,
+        },
+        index: 500,
+        collectionHint: "routePoints",
+      }),
+    ]);
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

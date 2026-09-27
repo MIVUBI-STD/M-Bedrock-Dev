@@ -105,6 +105,20 @@ export type GameplayIntentPolicyPredicate =
       text: string;
     };
 
+export interface GameplayIntentSpatialPoint {
+  x: number;
+  y: number;
+  z: number;
+  index?: number;
+}
+
+export interface GameplayIntentSpatialProfile {
+  coordinateSpace: "unknown" | "local" | "world";
+  routeId: string;
+  collectionHint?: string;
+  points: readonly GameplayIntentSpatialPoint[];
+}
+
 export interface GameplayIntentNode {
   id: string;
   kind: GameplayIntentNodeKind;
@@ -113,6 +127,7 @@ export interface GameplayIntentNode {
   evidenceIds: readonly string[];
   description?: string;
   policyPredicate?: GameplayIntentPolicyPredicate;
+  spatialProfile?: GameplayIntentSpatialProfile;
 }
 
 export interface GameplayIntentEdge {

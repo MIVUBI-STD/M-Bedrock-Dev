@@ -85,6 +85,28 @@ export function validateGameplayIntentModel(
           "Policy predicates are valid only on policy intent nodes.",
       });
     }
+
+    if (
+      node.spatialProfile !== undefined &&
+      node.kind !== "spatial-region"
+    ) {
+      issues.push({
+        path: `nodes.${node.id}.spatialProfile`,
+        message:
+          "Spatial profiles are valid only on spatial-region intent nodes.",
+      });
+    }
+
+    if (
+      node.spatialProfile !== undefined &&
+      node.spatialProfile.points.length === 0
+    ) {
+      issues.push({
+        path: `nodes.${node.id}.spatialProfile.points`,
+        message:
+          "Spatial route profiles require at least one point.",
+      });
+    }
   }
 
   for (const edge of model.edges) {

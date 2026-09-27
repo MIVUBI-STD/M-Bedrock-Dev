@@ -23,6 +23,7 @@ import type {
   ScriptGuardOperand,
   ScriptGuardPredicate,
   ScriptDeclaredMember,
+  ScriptSpatialRoutePoint,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -377,6 +378,140 @@ function declarationContainerHint(
     return parent.name.text;
   }
   return undefined;
+}
+
+function numericLiteralValue(
+  expression: ts.Expression,
+): number | undefined {
+  const value =
+    ts.isParenthesizedExpression(expression)
+      ? expression.expression
+      : expression;
+
+  if (ts.isNumericLiteral(value)) {
+    const parsed = Number(value.text);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  if (
+    ts.isPrefixUnaryExpression(value) &&
+    (
+      value.operator === ts.SyntaxKind.MinusToken ||
+      value.operator === ts.SyntaxKind.PlusToken
+    ) &&
+    ts.isNumericLiteral(value.operand)
+  ) {
+    const parsed = Number(value.operand.text);
+    if (!Number.isFinite(parsed)) return undefined;
+    return value.operator === ts.SyntaxKind.MinusToken
+      ? -parsed
+      : parsed;
+  }
+
+  return undefined;
+}
+
+function objectPropertyAssignment(
+  object: ts.ObjectLiteralExpression,
+  names: readonly string[],
+): ts.PropertyAssignment | undefined {
+  const allowed = new Set(names);
+  return object.properties.find((property) => {
+    if (!ts.isPropertyAssignment(property)) return false;
+    const name = declarationMemberName(property.name);
+    return name !== undefined && allowed.has(name);
+  }) as ts.PropertyAssignment | undefined;
+}
+
+function spatialRouteCollectionHint(
+  node: ts.ObjectLiteralExpression,
+): string | undefined {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (ts.isVariableDeclaration(current)) {
+      return ts.isIdentifier(current.name)
+        ? current.name.text
+        : undefined;
+    }
+    if (ts.isPropertyAssignment(current)) {
+      return declarationMemberName(current.name);
+    }
+    if (
+      ts.isFunctionDeclaration(current) ||
+      ts.isMethodDeclaration(current) ||
+      ts.isFunctionExpression(current) ||
+      ts.isArrowFunction(current) ||
+      ts.isSourceFile(current)
+    ) {
+      break;
+    }
+    current = current.parent;
+  }
+  return undefined;
+}
+
+function spatialRoutePointFromObject(
+  node: ts.ObjectLiteralExpression,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptSpatialRoutePoint | undefined {
+  const routeProperty = objectPropertyAssignment(
+    node,
+    ["route", "routeId", "lane", "pathRoute"],
+  );
+  if (
+    !routeProperty ||
+    !ts.isStringLiteralLike(routeProperty.initializer)
+  ) {
+    return undefined;
+  }
+
+  const locationProperty = objectPropertyAssignment(
+    node,
+    ["location", "position", "point"],
+  );
+  if (
+    !locationProperty ||
+    !ts.isObjectLiteralExpression(
+      locationProperty.initializer,
+    )
+  ) {
+    return undefined;
+  }
+
+  const location = locationProperty.initializer;
+  const xProperty = objectPropertyAssignment(location, ["x"]);
+  const yProperty = objectPropertyAssignment(location, ["y"]);
+  const zProperty = objectPropertyAssignment(location, ["z"]);
+  if (!xProperty || !yProperty || !zProperty) {
+    return undefined;
+  }
+
+  const x = numericLiteralValue(xProperty.initializer);
+  const y = numericLiteralValue(yProperty.initializer);
+  const z = numericLiteralValue(zProperty.initializer);
+  if (x === undefined || y === undefined || z === undefined) {
+    return undefined;
+  }
+
+  const indexProperty = objectPropertyAssignment(
+    node,
+    ["pathIndex", "index", "order", "sequence"],
+  );
+  const index = indexProperty
+    ? numericLiteralValue(indexProperty.initializer)
+    : undefined;
+  const collectionHint = spatialRouteCollectionHint(node);
+
+  return {
+    routeId: routeProperty.initializer.text,
+    location: { x, y, z },
+    ...(index === undefined ? {} : { index }),
+    ...(collectionHint === undefined
+      ? {}
+      : { collectionHint }),
+    source: lineSource(file, node, source),
+  };
 }
 
 function conditionIdentifiers(
@@ -1046,6 +1181,7 @@ export function parseScriptFile(
   const returnOutcomes: ScriptReturnOutcome[] = [];
   const guardedOutcomes: ScriptGuardedOutcome[] = [];
   const declaredMembers: ScriptDeclaredMember[] = [];
+  const spatialRoutePoints: ScriptSpatialRoutePoint[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
   const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
   const canonicalMinecraftMember = (
@@ -1193,6 +1329,15 @@ export function parseScriptFile(
   ];
 
   const visit = (node: ts.Node): void => {
+    if (ts.isObjectLiteralExpression(node)) {
+      const routePoint = spatialRoutePointFromObject(
+        node,
+        file,
+        source,
+      );
+      if (routePoint) spatialRoutePoints.push(routePoint);
+    }
+
     if (
       ts.isMethodDeclaration(node) ||
       ts.isPropertyDeclaration(node)
@@ -1711,6 +1856,7 @@ export function parseScriptFile(
     returnOutcomes,
     guardedOutcomes,
     declaredMembers,
+    spatialRoutePoints,
     capabilities,
   };
 }

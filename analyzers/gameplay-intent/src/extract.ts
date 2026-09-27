@@ -287,6 +287,55 @@ export function extractGameplayIntentSignals(
     }
   >();
 
+  const spatialRouteGroups = new Map<
+    string,
+    {
+      routeId: string;
+      collectionHint?: string;
+      locators: Set<string>;
+      points: Map<
+        string,
+        {
+          x: number;
+          y: number;
+          z: number;
+          index?: number;
+        }
+      >;
+    }
+  >();
+
+  for (const script of scripts) {
+    for (const point of script.spatialRoutePoints ?? []) {
+      const groupKey =
+        point.routeId + "\u0000" +
+        (point.collectionHint ?? "");
+      const group = spatialRouteGroups.get(groupKey) ?? {
+        routeId: point.routeId,
+        ...(point.collectionHint === undefined
+          ? {}
+          : { collectionHint: point.collectionHint }),
+        locators: new Set<string>(),
+        points: new Map(),
+      };
+
+      group.locators.add(point.source.relativePath);
+      const pointKey = [
+        point.index ?? "",
+        point.location.x,
+        point.location.y,
+        point.location.z,
+      ].join("|");
+      group.points.set(pointKey, {
+        ...point.location,
+        ...(point.index === undefined
+          ? {}
+          : { index: point.index }),
+      });
+      spatialRouteGroups.set(groupKey, group);
+    }
+  }
+
   const pushRelation = (
     relation: GameplayIntentRelationSignal,
   ): void => {
@@ -307,6 +356,74 @@ export function extractGameplayIntentSignals(
     else current.directlyGuardedReturnSites += 1;
     outcomeCoverage.set(outcomeSubjectKey, current);
   };
+
+  const routeIdGroupCounts = new Map<string, number>();
+  for (const group of spatialRouteGroups.values()) {
+    routeIdGroupCounts.set(
+      group.routeId,
+      (routeIdGroupCounts.get(group.routeId) ?? 0) + 1,
+    );
+  }
+
+  for (const group of spatialRouteGroups.values()) {
+    const ambiguous =
+      (routeIdGroupCounts.get(group.routeId) ?? 0) > 1;
+    const disambiguator =
+      ambiguous && group.collectionHint
+        ? "-" + slug(group.collectionHint)
+        : "";
+    const subjectKey =
+      "spatial-region:route-" +
+      slug(group.routeId) +
+      disambiguator;
+    const points = [...group.points.values()].sort(
+      (a, b) =>
+        (a.index ?? Number.MAX_SAFE_INTEGER) -
+          (b.index ?? Number.MAX_SAFE_INTEGER) ||
+        a.x - b.x ||
+        a.y - b.y ||
+        a.z - b.z,
+    );
+    const indexes = points
+      .map((point) => point.index)
+      .filter((value): value is number =>
+        value !== undefined
+      );
+    const locator =
+      [...group.locators].sort()[0] ?? "unknown";
+
+    pushSignal(signals, {
+      id:
+        "signal:" +
+        subjectKey + ":" +
+        slug(locator),
+      subjectKey,
+      nodeKind: "spatial-region",
+      label: "Route " + title(group.routeId),
+      status: "authored",
+      evidenceOrigin: "source-code",
+      locator,
+      summary:
+        "Authored route-point data declares " +
+        points.length +
+        " unique point(s)" +
+        (indexes.length === 0
+          ? ""
+          : " with index range " +
+            Math.min(...indexes) +
+            ".." +
+            Math.max(...indexes)) +
+        ". Coordinate space remains unresolved until transform usage is proven.",
+      spatialProfile: {
+        coordinateSpace: "unknown",
+        routeId: group.routeId,
+        ...(group.collectionHint === undefined
+          ? {}
+          : { collectionHint: group.collectionHint }),
+        points,
+      },
+    });
+  }
 
   for (const script of scripts) {
     const path = script.source.relativePath;

@@ -75,6 +75,9 @@ export function buildGameplayIntentModel(
         ...(signal.policyPredicate === undefined
           ? {}
           : { policyPredicate: signal.policyPredicate }),
+        ...(signal.spatialProfile === undefined
+          ? {}
+          : { spatialProfile: signal.spatialProfile }),
       });
       continue;
     }
@@ -94,6 +97,11 @@ export function buildGameplayIntentModel(
         ? { policyPredicate: existing.policyPredicate }
         : signal.policyPredicate !== undefined
         ? { policyPredicate: signal.policyPredicate }
+        : {}),
+      ...(existing.spatialProfile !== undefined
+        ? { spatialProfile: existing.spatialProfile }
+        : signal.spatialProfile !== undefined
+        ? { spatialProfile: signal.spatialProfile }
         : {}),
     });
   }

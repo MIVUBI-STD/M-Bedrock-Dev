@@ -329,6 +329,58 @@ describe("gameplay intent stage", () => {
     expect(matching[0]?.evidenceIds).toHaveLength(2);
   });
 
+  it("preserves typed authored spatial route profiles", () => {
+    const withRoute: ParsedScriptFile = {
+      ...parsed(),
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      spatialRoutePoints: [
+        {
+          routeId: "bridge",
+          location: { x: 0, y: 64, z: 0 },
+          index: 600,
+          collectionHint: "routePoints",
+          source,
+        },
+        {
+          routeId: "bridge",
+          location: { x: 10, y: 64, z: 5 },
+          index: 601,
+          collectionHint: "routePoints",
+          source,
+        },
+      ],
+    };
+
+    const model = buildGameplayIntentModel({
+      id: "route-model",
+      parsedScripts: [{ parsed: withRoute }],
+    });
+
+    expect(
+      model.nodes.find(
+        (node) =>
+          node.id === "spatial-region:route-bridge",
+      )?.spatialProfile,
+    ).toEqual({
+      coordinateSpace: "unknown",
+      routeId: "bridge",
+      collectionHint: "routePoints",
+      points: [
+        { x: 0, y: 64, z: 0, index: 600 },
+        { x: 10, y: 64, z: 5, index: 601 },
+      ],
+    });
+  });
+
   it("does not invent intent when no grounded signal exists", () => {
     const empty: ParsedScriptFile = {
       ...parsed(),
