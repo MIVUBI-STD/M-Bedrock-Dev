@@ -1,6 +1,6 @@
 # Gameplay Understanding Calibration Corpus
 
-Status baseline: `bf30dcbbd06247878156da2b79bcf13c5102ce51`
+Status baseline: `6bec916ed904fd06f064a799731de4021432e12d`
 
 The supplied representative worlds are now treated as an external calibration corpus for gameplay understanding.
 
@@ -41,29 +41,29 @@ The following values are observations from one engine revision. They are not pas
 
 | Case | Intent nodes | Authored | Inferred | Unknown | Invariants | State | Lifecycle | Mechanic | Resource | Policy | Outcome | Spatial | Route profiles / points |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Beach Bedwars | 71 | 13 | 58 | 0 | 0 | 11 | 34 | 3 | 8 | 4 | 0 | 8 | 0 / 0 |
-| BlitzBuild | 112 | 45 | 67 | 0 | 22 | 21 | 17 | 10 | 13 | 15 | 10 | 14 | 0 / 0 |
-| The Circuit | 287 | 38 | 249 | 2 | 1 | 33 | 38 | 46 | 74 | 4 | 3 | 53 | 0 / 0 |
-| Defense L2 | 99 | 15 | 84 | 0 | 4 | 4 | 12 | 17 | 31 | 4 | 4 | 21 | 0 / 0 |
-| Five Nights L1 | 173 | 14 | 159 | 0 | 4 | 3 | 30 | 33 | 57 | 5 | 4 | 32 | 3 / 67 |
-| Marathon Test of Tactics L2 | 82 | 22 | 60 | 0 | 14 | 10 | 27 | 1 | 10 | 8 | 4 | 19 | 0 / 0 |
-| Orb of the Illusioner L1 | 176 | 31 | 145 | 0 | 9 | 10 | 25 | 35 | 57 | 10 | 9 | 18 | 0 / 0 |
-| Fall of the Pillager L1 | 105 | 5 | 100 | 0 | 0 | 6 | 19 | 24 | 40 | 1 | 0 | 8 | 0 / 0 |
+| Beach Bedwars | 82 | 13 | 69 | 0 | 0 | 11 | 34 | 4 | 9 | 4 | 0 | 8 | 0 / 0 |
+| BlitzBuild | 113 | 45 | 68 | 0 | 22 | 21 | 17 | 11 | 13 | 15 | 10 | 14 | 0 / 0 |
+| The Circuit | 287 | 38 | 249 | 2 | 1 | 33 | 38 | 48 | 74 | 4 | 3 | 51 | 0 / 0 |
+| Defense L2 | 106 | 15 | 91 | 0 | 4 | 4 | 12 | 17 | 35 | 4 | 4 | 21 | 0 / 0 |
+| Five Nights L1 | 179 | 14 | 165 | 0 | 4 | 3 | 30 | 33 | 61 | 5 | 4 | 32 | 3 / 67 |
+| Marathon Test of Tactics L2 | 85 | 22 | 63 | 0 | 14 | 10 | 27 | 1 | 8 | 8 | 4 | 18 | 0 / 0 |
+| Orb of the Illusioner L1 | 185 | 31 | 154 | 0 | 9 | 10 | 25 | 43 | 61 | 10 | 9 | 18 | 0 / 0 |
+| Fall of the Pillager L1 | 111 | 5 | 106 | 0 | 0 | 6 | 19 | 24 | 44 | 1 | 0 | 8 | 0 / 0 |
 
 Corpus aggregate at this revision:
 
 ```text
 cases                 8
-intent nodes          1105
+intent nodes          1148
 authored nodes        183
-inferred nodes        922
+inferred nodes        965
 unknown intent        2
 maps with unknowns    1
 route profile cases   1
 authored route points 67
 ```
 
-All eight cases currently expose lifecycle, mechanic, resource, policy, spatial-region, state, and phase concepts.
+All eight cases expose lifecycle, mechanic, resource, policy, spatial-region, and state concepts. Seven expose an explicit phase concept; Orb intentionally no longer counts countdown/finish helper actions as phases.
 
 Six of eight expose authored/inferred outcome concepts.
 
@@ -120,3 +120,14 @@ The corpus also tells us where understanding is still weak.
 - Runtime semantics such as real navigation target, route reachability, chunk availability, scheduler behavior, and multi-client ordering still require runtime evidence.
 
 These blind spots should drive generic architecture work, not map-specific patches.
+
+
+## Reviewed semantic corrections
+
+At reviewed baseline `6bec916ed904fd06f064a799731de4021432e12d`:
+
+- Beach Bedwars gained generic role/team and bed-objective recovery without map-name rules.
+- generator/forge semantics are modeled as mechanics even when resource material names are present.
+- Orb lost previous phase-kind presence because those nodes were helper actions; this is an intentional semantic correction, not loss of authored phase evidence.
+- unknown intent remains 2 and is isolated to The Circuit.
+- Five Nights L1 retains 3 route profiles and 67 authored route points.

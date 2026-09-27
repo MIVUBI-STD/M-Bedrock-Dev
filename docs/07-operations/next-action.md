@@ -88,3 +88,15 @@ Primary next work after each corpus run:
 3. inspect bundled/minified maps where authored evidence remains weak;
 4. expand generic source/command/dialogue/world-state recovery only when multiple corpus cases justify it;
 5. keep runtime evidence separate from static authored intent.
+
+
+## Historical differential is now the next corpus lane
+
+The current-world eight-map corpus has been reviewed at `6bec916ed904fd06f064a799731de4021432e12d`.
+
+Next generic learning priority:
+
+1. compare current vs Old Version / Raw Dev where artifacts actually exist;
+2. identify stable contracts, deliberate changes, migration leftovers, and legacy paths;
+3. preserve reachability uncertainty—history alone cannot prove dead code or a defect;
+4. keep runtime-differential proof separate from static historical inference.

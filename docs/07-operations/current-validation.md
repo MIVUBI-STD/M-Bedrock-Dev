@@ -58,13 +58,13 @@ Inferred intent is capped at probable defect.
 
 The current external corpus contains eight representative worlds spanning explicit source, modular compiled source, and bundled/minified source.
 
-Baseline revision `bf30dcbbd06247878156da2b79bcf13c5102ce51` produced:
+Reviewed baseline revision `6bec916ed904fd06f064a799731de4021432e12d` produced:
 
 ```text
 cases                 8
-intent nodes          1105
+intent nodes          1148
 authored nodes        183
-inferred nodes        922
+inferred nodes        965
 unknown intent        2
 maps with unknowns    1
 route profile cases   1
@@ -74,3 +74,11 @@ authored route points 67
 This proves the same inspection/intent pipeline can recover non-empty gameplay semantics across all eight sample families.
 
 It does not prove that every recovered semantic classification is correct. Corpus drift and false-semantic review remain required.
+
+
+## Reviewed semantic corrections
+
+- Bedwars role/team and bed-objective concepts are recovered generically from bundled semantics.
+- Resource generators are classified as mechanics rather than raw resources.
+- Orb countdown/finish helper actions are no longer counted as gameplay phases; phase/stage state remains represented as state evidence.
+- Authored nodes remain 183, unknown intent remains 2, and Five Nights route proof remains 67 authored route points.
