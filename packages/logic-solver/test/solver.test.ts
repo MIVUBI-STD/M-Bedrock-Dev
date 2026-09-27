@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  behaviorStateKey,
   type BehavioralWorldModel,
   type BehaviorPredicate,
   type BehaviorState,
