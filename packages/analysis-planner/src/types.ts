@@ -11,10 +11,29 @@ export type AnalysisGoal =
   | "structural-consistency"
   | "semantic-consistency"
   | "intent-classification"
+  | "authored-intent"
   | "contradiction-proof"
   | "runtime-evidence-integrity"
   | "runtime-behavior"
   | "causal-repair";
+
+export type AnalysisEvidenceQuality =
+  | "usable"
+  | "stale"
+  | "conflicting"
+  | "target-mismatch"
+  | "incomplete";
+
+export type AnalysisEvidenceTrait =
+  | "artifact-identity"
+  | "structural-proof"
+  | "semantic-model"
+  | "intent-grounded"
+  | "authored-intent"
+  | "contradiction"
+  | "runtime-observation"
+  | "runtime-integrity"
+  | "intervention";
 
 export type AnalysisExecutionContext =
   | "REMOTE_GITHUB"
@@ -35,12 +54,15 @@ export interface AnalysisCapability {
   tags: readonly string[];
   deterministic: boolean;
   contexts: readonly AnalysisExecutionContext[];
+  producesTraits?: readonly AnalysisEvidenceTrait[];
   prerequisites?: readonly string[];
 }
 
 export interface AnalysisEvidenceSnapshot {
   level: AnalysisEvidenceLevel;
   evidenceIds: readonly string[];
+  quality: AnalysisEvidenceQuality;
+  traits: readonly AnalysisEvidenceTrait[];
 }
 
 export interface MinimumSufficientAnalysisInput {
@@ -68,7 +90,9 @@ export interface PlannedAnalysisStep {
 export interface MinimumSufficientAnalysisPlan {
   goal: AnalysisGoal;
   requiredEvidenceLevel: AnalysisEvidenceLevel;
+  requiredEvidenceTraits: readonly AnalysisEvidenceTrait[];
   currentEvidenceLevel?: AnalysisEvidenceLevel;
+  missingEvidenceTraits: readonly AnalysisEvidenceTrait[];
   disposition: AnalysisPlanDisposition;
   steps: readonly PlannedAnalysisStep[];
   skippedCapabilityIds: readonly string[];
