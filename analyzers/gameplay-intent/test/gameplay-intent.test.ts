@@ -776,14 +776,15 @@ describe("gameplay intent analyzer", () => {
 
   it("keeps route coordinate space unknown when transform definition is unused", () => {
     const base = script();
+    const routeSource = {
+      artifactId: "art_test",
+      relativePath:
+        "behavior_packs/demo/scripts/main.js",
+    };
     const routes: ParsedScriptFile = {
       ...base,
       identifier: "scripts/main",
-      source: {
-        artifactId: "art_test",
-        relativePath:
-          "behavior_packs/demo/scripts/main.js",
-      },
+      source: routeSource,
       localFunctionCalls: [],
       lifecycleMemberExposures: [],
       enumValueComparisons: [],
