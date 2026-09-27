@@ -151,10 +151,16 @@ function updateLeadsToMonitor(
 function monitorIdentity(
   state: BehaviorState,
   monitor: LeadsToMonitor,
+  property: Extract<TemporalProperty, { kind: "leads-to" }>,
 ): string {
+  const monitorState = !monitor.open
+    ? "closed"
+    : property.withinTicks === undefined
+      ? "open"
+      : "open:" + monitor.age;
   return canonicalState(state) +
     "|obligation:" +
-    (monitor.open ? "open:" + monitor.age : "closed");
+    monitorState;
 }
 
 function solveLeadsToProperty(
@@ -174,6 +180,7 @@ function solveLeadsToProperty(
   const initialProduct = monitorIdentity(
     initialState,
     initialMonitor,
+    property,
   );
   const queue: LeadsToPathNode[] = [{
     state: initialState,
@@ -253,6 +260,7 @@ function solveLeadsToProperty(
       const product = monitorIdentity(
         successor.state,
         nextMonitor,
+        property,
       );
 
       if (node.productPath.includes(product)) {
