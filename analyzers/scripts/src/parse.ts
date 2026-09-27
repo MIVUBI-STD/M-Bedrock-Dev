@@ -1181,17 +1181,16 @@ export function parseScriptFile(
     ) {
       const member = declarationMemberName(node.name);
       if (member) {
+        const containerHint =
+          declarationContainerHint(node);
         declaredMembers.push({
           member,
           memberKind: ts.isMethodDeclaration(node)
             ? "method"
             : "property",
-          ...(declarationContainerHint(node) === undefined
+          ...(containerHint === undefined
             ? {}
-            : {
-                containerHint:
-                  declarationContainerHint(node),
-              }),
+            : { containerHint }),
           source: lineSource(file, node, source),
         });
       }
