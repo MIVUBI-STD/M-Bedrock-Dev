@@ -704,6 +704,38 @@ class Session {
     ]));
   });
 
+  it("captures bounded intra-class method calls", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+class Session {
+  cleanup() {}
+  reset() {
+    this.cleanup();
+    this.externalApi();
+  }
+}
+`,
+      source,
+    );
+
+    expect(parsed.localFunctionCalls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          callerRegion: "function:reset",
+          targetRegion: "function:cleanup",
+          targetName: "cleanup",
+        }),
+      ]),
+    );
+
+    expect(
+      parsed.localFunctionCalls.some(
+        (call) => call.targetName === "externalApi",
+      ),
+    ).toBe(false);
+  });
+
   it("captures declared class members from bundled source", () => {
     const parsed = parseScriptFile(
       "scripts/main",

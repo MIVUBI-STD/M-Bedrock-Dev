@@ -273,6 +273,44 @@ function generationGuardIdentifiers(node: ts.Node): string[] {
   return [...identifiers].sort();
 }
 
+function enclosingClassLike(
+  node: ts.Node,
+): ts.ClassDeclaration | ts.ClassExpression | undefined {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (
+      ts.isClassDeclaration(current) ||
+      ts.isClassExpression(current)
+    ) {
+      return current;
+    }
+    current = current.parent;
+  }
+  return undefined;
+}
+
+function directThisMethodTarget(
+  call: ts.CallExpression,
+): string | undefined {
+  if (!ts.isPropertyAccessExpression(call.expression)) {
+    return undefined;
+  }
+  if (call.expression.expression.kind !== ts.SyntaxKind.ThisKeyword) {
+    return undefined;
+  }
+
+  const methodName = call.expression.name.text;
+  const container = enclosingClassLike(call);
+  if (!container) return undefined;
+
+  const declared = container.members.some((member) => {
+    if (!ts.isMethodDeclaration(member)) return false;
+    return declarationMemberName(member.name) === methodName;
+  });
+
+  return declared ? methodName : undefined;
+}
+
 function localExecutionRegionId(
   node: ts.Node,
   file: ts.SourceFile,
@@ -2151,6 +2189,16 @@ export function parseScriptFile(
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const chain = propertyAccessChain(node.expression);
       const methodName = node.expression.name.text;
+
+      const localMethodTarget = directThisMethodTarget(node);
+      if (localMethodTarget) {
+        localFunctionCalls.push({
+          callerRegion: localExecutionRegionId(node, file),
+          targetRegion: "function:" + localMethodTarget,
+          targetName: localMethodTarget,
+          source: lineSource(file, node, source),
+        });
+      }
 
       if (methodName === "runCommand" || methodName === "runCommandAsync") {
         const argument = node.arguments[0];
