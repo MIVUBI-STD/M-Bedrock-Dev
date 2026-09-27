@@ -5,6 +5,7 @@ import {
   evaluateGameplayPolicyPredicate,
   gameplayOutcomePolicyRequirements,
   planGameplayOutcomeRuntimeObservations,
+  resolveGameplayRouteIndex,
   unresolvedGameplayPolicyOperands,
   validateGameplayIntentModel,
   type GameplayIntentModel,
