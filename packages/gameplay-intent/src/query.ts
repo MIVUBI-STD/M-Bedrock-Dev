@@ -951,7 +951,9 @@ export function projectGameplayRoutePoint(
       routeId: profile.routeId,
       routeIndex,
       disposition: "unresolved",
-      reason: contextResolution.reason,
+      ...(contextResolution.reason === undefined
+        ? {}
+        : { reason: contextResolution.reason }),
     };
   }
 
