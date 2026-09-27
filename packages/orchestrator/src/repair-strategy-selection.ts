@@ -11,6 +11,10 @@ import {
   evaluateRepairAdmissionPipeline,
   type RepairAdmissionPipelineResult,
 } from "./repair-admission-pipeline.js";
+import {
+  decideRepairAdmission,
+  type RepairAdmissionDecision,
+} from "./repair-admission.js";
 import type {
   RepairBlastRadiusPolicy,
 } from "./repair-counterfactual-types.js";
@@ -42,6 +46,7 @@ export interface RepairStrategyAssessment {
   admissible: boolean;
   reasons: readonly string[];
   pipeline: RepairAdmissionPipelineResult;
+  selectionAdmission: RepairAdmissionDecision;
   metrics: {
     admissionRank: number;
     blastRadiusRank: number;
@@ -277,7 +282,22 @@ export function selectRepairStrategy(
         ),
       });
 
-      const reasons: string[] = [];
+      const selectionAdmission =
+        decideRepairAdmission(
+          candidate.transaction,
+          diagnostic,
+          pipeline.blastRadius,
+        );
+
+      const reasons: string[] = [
+        "Strategy selection evaluates causal fit and blast radius separately from mutation authorization.",
+        ...(pipeline.admission.disposition === "blocked" &&
+        selectionAdmission.disposition !== "blocked"
+          ? [
+              "This strategy may be selected as the best proposal, but mutation remains blocked until preservation readiness and proof authorization are complete.",
+            ]
+          : []),
+      ];
 
       if (
         candidate.preservationReadiness !== undefined &&
@@ -353,16 +373,16 @@ export function selectRepairStrategy(
       }
 
       const admissionAllowed =
-        pipeline.admission.disposition === "eligible" ||
+        selectionAdmission.disposition === "eligible" ||
         (
-          pipeline.admission.disposition === "guarded" &&
+          selectionAdmission.disposition === "guarded" &&
           policy.allowGuarded === true
         );
 
       if (!admissionAllowed) {
         reasons.push(
           "Repair admission disposition is not selectable under the current strategy policy: " +
-            pipeline.admission.disposition +
+            selectionAdmission.disposition +
             ".",
         );
       }
@@ -382,9 +402,10 @@ export function selectRepairStrategy(
           admissionAllowed,
         reasons,
         pipeline,
+        selectionAdmission,
         metrics: {
           admissionRank: admissionRank(
-            pipeline.admission.disposition,
+            selectionAdmission.disposition,
           ),
           blastRadiusRank: blastRadiusRank(
             pipeline.blastRadius.disposition,
