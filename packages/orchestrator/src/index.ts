@@ -146,3 +146,4 @@ export * from "./regression-execution-queue-runner.js";
 export * from "./regression-batch-retest-feedback.js";
 export * from "./portfolio-regression-batch-runner.js";
 export * from "./portfolio-release-gate.js";
+export * from "./portfolio-release-report.js";
