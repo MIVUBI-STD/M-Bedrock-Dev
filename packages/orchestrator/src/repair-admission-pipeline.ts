@@ -75,11 +75,31 @@ export function evaluateRepairAdmissionPipeline(
     input.blastRadiusPolicy,
   );
 
-  const admission = decideRepairAdmission(
+  const rawAdmission = decideRepairAdmission(
     input.transaction,
     input.diagnostic,
     blastRadius,
   );
+
+  const admission: RepairAdmissionDecision =
+    (
+      rawAdmission.disposition === "eligible" ||
+      rawAdmission.disposition === "guarded"
+    ) &&
+    (
+      input.preservationReadiness === undefined ||
+      input.preservationReadiness.disposition !== "ready" ||
+      input.preservationReadiness.baselineEvidenceIds.length === 0
+    )
+      ? {
+          transactionId: input.transaction.id,
+          disposition: "blocked",
+          reasons: [
+            "Mutation-authorizing repair admission requires preservation readiness and explicit baseline evidence before mutation can be considered safe.",
+            ...(input.preservationReadiness?.reasons ?? []),
+          ],
+        }
+      : rawAdmission;
 
   const decisionBasis: DecisionBasisRevision = {
     ...(input.decisionBasis ?? {}),
