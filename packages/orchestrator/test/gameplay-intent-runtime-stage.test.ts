@@ -294,6 +294,20 @@ describe("gameplay intent runtime stage", () => {
           routeIndex: 606,
         }),
       }),
+      observationNeeds: expect.arrayContaining([
+        expect.objectContaining({
+          kind: "entity-motion-series",
+        }),
+        expect.objectContaining({
+          kind: "navigation-target",
+        }),
+        expect.objectContaining({
+          kind: "route-reachability",
+        }),
+        expect.objectContaining({
+          kind: "chunk-route-availability",
+        }),
+      ]),
     }));
   });
 
@@ -321,6 +335,16 @@ describe("gameplay intent runtime stage", () => {
     expect(
       result.routeStallAssessments[0]?.disposition,
     ).toBe("no-route-observation");
+    expect(
+      result.routeStallAssessments[0]?.observationNeeds,
+    ).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "route-target-assignment",
+      }),
+      expect.objectContaining({
+        kind: "entity-motion-series",
+      }),
+    ]));
   });
 
   it("does not correlate a future route observation to an earlier stall", () => {

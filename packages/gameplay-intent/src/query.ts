@@ -1377,3 +1377,124 @@ export function assessGameplayRouteObservation(
     reasons,
   };
 }
+
+
+export type GameplayRouteRuntimeObservationNeedKind =
+  | "route-context"
+  | "route-target-assignment"
+  | "entity-motion-series"
+  | "navigation-target"
+  | "route-reachability"
+  | "chunk-route-availability";
+
+export interface GameplayRouteRuntimeObservationNeed {
+  kind: GameplayRouteRuntimeObservationNeedKind;
+  reason: string;
+}
+
+export function planGameplayRouteRuntimeObservations(
+  assessment: GameplayRouteObservationAssessment,
+): GameplayRouteRuntimeObservationNeed[] {
+  const needs = new Map<
+    GameplayRouteRuntimeObservationNeedKind,
+    GameplayRouteRuntimeObservationNeed
+  >();
+
+  const add = (
+    kind: GameplayRouteRuntimeObservationNeedKind,
+    reason: string,
+  ): void => {
+    if (!needs.has(kind)) {
+      needs.set(kind, { kind, reason });
+    }
+  };
+
+  if (assessment.disposition === "ambiguous") {
+    add(
+      "route-context",
+      "Multiple authored routes satisfy the observed target index; observe the entity's route assignment at the same runtime scope/tick.",
+    );
+    return [...needs.values()];
+  }
+
+  if (assessment.disposition === "unresolved") {
+    if (assessment.routeId === undefined) {
+      add(
+        "route-context",
+        "Authored route context is unresolved; observe the entity's route assignment.",
+      );
+    }
+    if (assessment.routeIndex === undefined) {
+      add(
+        "route-target-assignment",
+        "Authored target path is unresolved; observe the current route target/index.",
+      );
+    }
+    add(
+      "entity-motion-series",
+      "Collect consecutive entity positions so a single unresolved observation is not mistaken for a navigation failure.",
+    );
+    return [...needs.values()];
+  }
+
+  const target = assessment.target;
+  const nearest = assessment.nearest;
+
+  if (target && nearest) {
+    const sameTarget =
+      target.routeId === nearest.routeId &&
+      target.routeIndex === nearest.routeIndex;
+
+    if (sameTarget) {
+      add(
+        "entity-motion-series",
+        "Target assignment and nearest authored route point agree; observe movement across consecutive ticks.",
+      );
+      add(
+        "navigation-target",
+        "Observe the engine navigation target/path request to determine whether runtime navigation agrees with authored intent.",
+      );
+      add(
+        "route-reachability",
+        "Verify that the resolved authored target is currently reachable under engine navigation/pathfinding semantics.",
+      );
+      add(
+        "chunk-route-availability",
+        "Verify that the route target and required path neighborhood are loaded/available at runtime.",
+      );
+    } else {
+      add(
+        "route-target-assignment",
+        "The resolved target differs from the nearest authored route point; observe route/path progression state before attributing the stall to engine navigation.",
+      );
+      add(
+        "route-context",
+        "Verify the active route assignment in the same entity/arena scope.",
+      );
+      add(
+        "entity-motion-series",
+        "Collect consecutive positions to determine whether the entity is progressing toward the authored target or another route segment.",
+      );
+    }
+  } else if (target) {
+    add(
+      "entity-motion-series",
+      "The authored target resolves but nearest-route comparison is incomplete; collect consecutive position observations.",
+    );
+    add(
+      "navigation-target",
+      "Observe the engine navigation target/path request for comparison with the authored target.",
+    );
+  } else if (nearest) {
+    add(
+      "route-target-assignment",
+      "The nearest authored route point is known but target assignment is unresolved.",
+    );
+    add(
+      "entity-motion-series",
+      "Collect consecutive positions to establish route progression.",
+    );
+  }
+
+  return [...needs.values()];
+}

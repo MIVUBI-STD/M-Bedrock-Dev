@@ -5,8 +5,10 @@ import {
 import {
   assessGameplayRouteObservation,
   planGameplayOutcomeRuntimeObservations,
+  planGameplayRouteRuntimeObservations,
   type GameplayIntentModel,
   type GameplayRouteObservationAssessment,
+  type GameplayRouteRuntimeObservationNeed,
   type GameplayRuntimeObservationNeed,
 } from "../../gameplay-intent/src/index.js";
 import {
@@ -41,6 +43,7 @@ export interface GameplayRouteStallRuntimeAssessment {
   stallObservation: RuntimeNavigationStallObservation;
   disposition: GameplayRouteStallDisposition;
   routeAssessment?: GameplayIntentRouteRuntimeAssessment;
+  observationNeeds: readonly GameplayRouteRuntimeObservationNeed[];
   reasons: readonly string[];
 }
 
@@ -168,13 +171,25 @@ function assessRouteStall(
     );
 
   if (!selected.assessment) {
+    const unresolvedAssessment:
+      GameplayRouteObservationAssessment = {
+        disposition: "unresolved",
+        ...(stall.routeId === undefined
+          ? {}
+          : { routeId: stall.routeId }),
+        reasons: [
+          selected.reason ??
+            "No compatible route observation is available.",
+        ],
+      };
     return {
       stallObservation: stall,
       disposition: "no-route-observation",
-      reasons: [
-        selected.reason ??
-          "No compatible route observation is available.",
-      ],
+      observationNeeds:
+        planGameplayRouteRuntimeObservations(
+          unresolvedAssessment,
+        ),
+      reasons: unresolvedAssessment.reasons,
     };
   }
 
@@ -186,6 +201,10 @@ function assessRouteStall(
       stallObservation: stall,
       disposition: "ambiguous-route-context",
       routeAssessment: route,
+      observationNeeds:
+        planGameplayRouteRuntimeObservations(
+          assessment,
+        ),
       reasons: [
         ...assessment.reasons,
         "Stall cannot be assigned to one authored target without additional route context.",
@@ -198,6 +217,10 @@ function assessRouteStall(
       stallObservation: stall,
       disposition: "unresolved-route-evidence",
       routeAssessment: route,
+      observationNeeds:
+        planGameplayRouteRuntimeObservations(
+          assessment,
+        ),
       reasons: [
         ...assessment.reasons,
         "Stall route evidence is incomplete.",
@@ -219,6 +242,10 @@ function assessRouteStall(
         ? "target-nearest-match"
         : "target-nearest-divergence",
       routeAssessment: route,
+      observationNeeds:
+        planGameplayRouteRuntimeObservations(
+          assessment,
+        ),
       reasons: [
         ...assessment.reasons,
         matches
@@ -233,6 +260,10 @@ function assessRouteStall(
       stallObservation: stall,
       disposition: "target-resolved",
       routeAssessment: route,
+      observationNeeds:
+        planGameplayRouteRuntimeObservations(
+          assessment,
+        ),
       reasons: [
         ...assessment.reasons,
         "Authored target is resolved but no nearest-route comparison is available.",
@@ -245,6 +276,10 @@ function assessRouteStall(
       stallObservation: stall,
       disposition: "nearest-only",
       routeAssessment: route,
+      observationNeeds:
+        planGameplayRouteRuntimeObservations(
+          assessment,
+        ),
       reasons: [
         ...assessment.reasons,
         "Nearest authored route point is known but target path is not resolved.",
@@ -256,6 +291,10 @@ function assessRouteStall(
     stallObservation: stall,
     disposition: "unresolved-route-evidence",
     routeAssessment: route,
+    observationNeeds:
+      planGameplayRouteRuntimeObservations(
+        assessment,
+      ),
     reasons: [
       ...assessment.reasons,
       "Resolved route assessment contains neither a target nor nearest point.",
