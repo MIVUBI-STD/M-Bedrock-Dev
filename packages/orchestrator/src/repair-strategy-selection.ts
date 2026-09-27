@@ -21,6 +21,7 @@ export interface RepairStrategyCandidate {
   changedNodeIds: readonly string[];
   supportingInvariantIds: readonly string[];
   addressesCandidateIds: readonly string[];
+  preservationReadiness?: PreservationReadinessResult;
 }
 
 export interface RepairStrategySelectionPolicy {
@@ -259,15 +260,46 @@ export function selectRepairStrategy(
         ...(policy.blastRadiusPolicy === undefined
           ? {}
           : { blastRadiusPolicy: policy.blastRadiusPolicy }),
-        ...(policy.preservationReadiness === undefined
-          ? {}
-          : {
-              preservationReadiness:
-                policy.preservationReadiness,
-            }),
+        ...(
+          candidate.preservationReadiness !== undefined
+            ? {
+                preservationReadiness:
+                  candidate.preservationReadiness,
+              }
+            : policy.preservationReadiness !== undefined &&
+              policy.preservationReadiness.transactionId ===
+                candidate.transaction.id
+            ? {
+                preservationReadiness:
+                  policy.preservationReadiness,
+              }
+            : {}
+        ),
       });
 
       const reasons: string[] = [];
+
+      if (
+        candidate.preservationReadiness !== undefined &&
+        candidate.preservationReadiness.transactionId !==
+          candidate.transaction.id
+      ) {
+        reasons.push(
+          "Strategy preservation readiness belongs to a different patch transaction.",
+        );
+      }
+
+      if (
+        candidate.preservationReadiness === undefined &&
+        policy.preservationReadiness !== undefined &&
+        policy.preservationReadiness.transactionId !==
+          candidate.transaction.id
+      ) {
+        reasons.push(
+          "Policy-level preservation readiness was not applied because it belongs to a different patch transaction.",
+        );
+      }
+
       const addressesSelectedCandidate =
         diagnostic.selectedCandidateId !== undefined &&
         candidate.addressesCandidateIds.includes(
@@ -342,6 +374,11 @@ export function selectRepairStrategy(
           addressesSelectedCandidate &&
           invariantCoverage &&
           candidate.transaction.validation.length > 0 &&
+          (
+            candidate.preservationReadiness === undefined ||
+            candidate.preservationReadiness.transactionId ===
+              candidate.transaction.id
+          ) &&
           admissionAllowed,
         reasons,
         pipeline,
