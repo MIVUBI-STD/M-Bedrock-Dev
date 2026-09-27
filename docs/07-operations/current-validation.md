@@ -1,6 +1,6 @@
 # Current Validation
 
-Status: GAMEPLAY INTENT FOUNDATION STATICALLY IMPLEMENTED; INTENT-AWARE DIAGNOSTIC GATE ADDED; CALIBRATION AND RUNTIME PROOF PENDING
+Status: GAMEPLAY INTENT + INTENT-AWARE DIAGNOSTICS IMPLEMENTED; 8-MAP UNDERSTANDING CORPUS BASELINED; RUNTIME PROOF EXPANDING
 
 ## Current static reasoning stack
 
@@ -41,7 +41,7 @@ Inferred intent is capped at probable defect.
 
 ## Still unproven
 
-- full automatic gameplay-intent extraction from the supplied map corpus; a first static source-signal extractor now exists;
+- complete semantic correctness across the supplied corpus; extraction now runs across all eight sample families, but false-semantic review remains necessary;
 - coverage quality on bundled/minified map scripts;
 - cross-version historical intent reconstruction;
 - actual semantic differences for most runtime classes;
@@ -52,3 +52,25 @@ Inferred intent is capped at probable defect.
 - AI/pathfinding behavior;
 - real chunk lifecycle;
 - real multi-client execution.
+
+
+## Calibration corpus proof
+
+The current external corpus contains eight representative worlds spanning explicit source, modular compiled source, and bundled/minified source.
+
+Baseline revision `bf30dcbbd06247878156da2b79bcf13c5102ce51` produced:
+
+```text
+cases                 8
+intent nodes          1105
+authored nodes        183
+inferred nodes        922
+unknown intent        2
+maps with unknowns    1
+route profile cases   1
+authored route points 67
+```
+
+This proves the same inspection/intent pipeline can recover non-empty gameplay semantics across all eight sample families.
+
+It does not prove that every recovered semantic classification is correct. Corpus drift and false-semantic review remain required.

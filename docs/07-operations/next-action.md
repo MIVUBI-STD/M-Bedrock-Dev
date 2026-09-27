@@ -67,3 +67,24 @@ Do not infer Education/BDS/Preview behavior from Retail by default.
 - diagnosis strength cannot exceed intent evidence strength;
 - static evidence never implies runtime correctness;
 - severity is assigned only after defect classification.
+
+
+## Calibration corpus is now a first-class regression surface
+
+All supplied representative sample worlds should be exercised through the gameplay-understanding corpus runner.
+
+The corpus must remain external-artifact based:
+
+- do not commit proprietary worlds;
+- keep only descriptors and normalized fingerprints in the repository;
+- compare understanding drift across engine revisions;
+- use drift to identify generic blind spots;
+- never convert map names or observed node IDs into semantic rules.
+
+Primary next work after each corpus run:
+
+1. inspect maps with new unknown intent;
+2. inspect semantic kinds that disappear from a previously understood source style;
+3. inspect bundled/minified maps where authored evidence remains weak;
+4. expand generic source/command/dialogue/world-state recovery only when multiple corpus cases justify it;
+5. keep runtime evidence separate from static authored intent.

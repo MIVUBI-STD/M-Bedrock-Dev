@@ -1,0 +1,122 @@
+# Gameplay Understanding Calibration Corpus
+
+Status baseline: `bf30dcbbd06247878156da2b79bcf13c5102ce51`
+
+The supplied representative worlds are now treated as an external calibration corpus for gameplay understanding.
+
+No production world binary is committed to the repository.
+
+## Why this corpus exists
+
+The corpus tests whether one parser-independent understanding pipeline can recover meaning from different authoring styles:
+
+```text
+explicit source
+→ modular compiled source
+→ bundled/minified source
+→ spatially authored route data
+→ runtime evidence
+```
+
+The corpus is not a map-name rule database.
+
+A map may teach the engine that a semantic pattern exists, but the engine must rediscover that pattern from evidence in every artifact.
+
+## Cases
+
+| Case | Source shape | Primary learning dimensions |
+| --- | --- | --- |
+| Marathon Test of Tactics L2 | explicit source | state machine, session lifecycle, reconnect recovery, ownership, resource lifecycle |
+| Builder's Memory / BlitzBuild | modular compiled | build policy, reconnect, membership, scoring, plot semantics, water interaction |
+| The Circuit | modular compiled | multi-mode gameplay, trial state machines, arena sessions, shop/loadout, capture/fortify/last-stand |
+| Fall of the Pillager L1 | bundled/minified | class-member recovery, revive/knockdown, shop/upgrade, inventory/kit, reconnect, waves |
+| Beach Bedwars | bundled/minified | team lifecycle, bed objective, economy, combat session, protocol-vs-gameplay state |
+| Five Nights at Z Village L1 | bundled/minified | route topology, path-index ambiguity, arena transforms, entity navigation, runtime route evidence |
+| Orb of the Illusioner L1 | bundled/minified | party state, hologram status, puzzle/stage flow, waves, player session lifecycle |
+| Five Nights Defense L2 | bundled/minified | multi-arena defense, shop/upgrade, revive, route/spawn, score/economy, reset |
+
+## Observed baseline
+
+The following values are observations from one engine revision. They are not pass/fail thresholds.
+
+| Case | Intent nodes | Authored | Inferred | Unknown | Invariants | State | Lifecycle | Mechanic | Resource | Policy | Outcome | Spatial | Route profiles / points |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Beach Bedwars | 71 | 13 | 58 | 0 | 0 | 11 | 34 | 3 | 8 | 4 | 0 | 8 | 0 / 0 |
+| BlitzBuild | 112 | 45 | 67 | 0 | 22 | 21 | 17 | 10 | 13 | 15 | 10 | 14 | 0 / 0 |
+| The Circuit | 287 | 38 | 249 | 2 | 1 | 33 | 38 | 46 | 74 | 4 | 3 | 53 | 0 / 0 |
+| Defense L2 | 99 | 15 | 84 | 0 | 4 | 4 | 12 | 17 | 31 | 4 | 4 | 21 | 0 / 0 |
+| Five Nights L1 | 173 | 14 | 159 | 0 | 4 | 3 | 30 | 33 | 57 | 5 | 4 | 32 | 3 / 67 |
+| Marathon Test of Tactics L2 | 82 | 22 | 60 | 0 | 14 | 10 | 27 | 1 | 10 | 8 | 4 | 19 | 0 / 0 |
+| Orb of the Illusioner L1 | 176 | 31 | 145 | 0 | 9 | 10 | 25 | 35 | 57 | 10 | 9 | 18 | 0 / 0 |
+| Fall of the Pillager L1 | 105 | 5 | 100 | 0 | 0 | 6 | 19 | 24 | 40 | 1 | 0 | 8 | 0 / 0 |
+
+Corpus aggregate at this revision:
+
+```text
+cases                 8
+intent nodes          1105
+authored nodes        183
+inferred nodes        922
+unknown intent        2
+maps with unknowns    1
+route profile cases   1
+authored route points 67
+```
+
+All eight cases currently expose lifecycle, mechanic, resource, policy, spatial-region, state, and phase concepts.
+
+Six of eight expose authored/inferred outcome concepts.
+
+## How to use the corpus
+
+Materialize the sample worlds into one local directory. The filenames are described by:
+
+```text
+fixtures/calibration/gameplay-understanding-samples.json
+```
+
+Then run:
+
+```text
+npm run cli -- corpus-calibrate \
+  fixtures/calibration/gameplay-understanding-samples.json \
+  <artifact-root>
+```
+
+The command returns:
+
+- a normalized gameplay-understanding fingerprint per artifact;
+- source-shape coverage;
+- learning-dimension coverage;
+- authored/inferred/unknown distribution;
+- intent-kind coverage;
+- policy/outcome coverage;
+- spatial route richness.
+
+## Interpretation rules
+
+Do not optimize for the largest node count.
+
+A useful calibration review asks:
+
+- Did a previously authored concept disappear?
+- Did a new unknown intent blocker appear?
+- Did a semantic kind disappear entirely?
+- Did route profiles or authored route points disappear?
+- Did a false semantic category get corrected?
+- Did bundled/minified coverage improve without increasing protocol/helper noise?
+- Did one fix improve one map while degrading another source style?
+
+A fingerprint drift is an investigation signal. It is not automatically a regression.
+
+## Current blind spots exposed by the corpus
+
+The corpus also tells us where understanding is still weak.
+
+- The Circuit still has two unresolved intent questions and is the broadest mixed-mode stress case.
+- Pillager remains predominantly inferred because bundled/minified source loses stronger authored type/state evidence.
+- Bedwars deliberately has no gameplay outcomes in the current model after protocol status was reclassified as state.
+- Five Nights is currently the strongest spatial calibration case; other maps still need richer typed geometry extraction.
+- Runtime semantics such as real navigation target, route reachability, chunk availability, scheduler behavior, and multi-client ordering still require runtime evidence.
+
+These blind spots should drive generic architecture work, not map-specific patches.

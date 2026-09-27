@@ -11,6 +11,9 @@ import { loadRuntimeProbeBindings } from "../../../packages/orchestrator/src/ind
 import { prepareRuntimeProbeBundle } from "../../../packages/orchestrator/src/index.js";
 import { replayRuntimeProbeTranscript } from "../../../packages/orchestrator/src/index.js";
 import { compileRuntimeProbeRequests } from "../../../packages/orchestrator/src/index.js";
+import {
+  calibrateGameplayCorpusFromFile,
+} from "../../../packages/orchestrator/src/index.js";
 
 async function main(): Promise<void> {
   const [, , command, ...rawArgs] = process.argv;
@@ -180,6 +183,20 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "corpus-calibrate" && input) {
+    const report =
+      await calibrateGameplayCorpusFromFile(
+        resolve(input),
+        secondInput === undefined
+          ? undefined
+          : resolve(secondInput),
+        target,
+        knowledge,
+      );
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
   if (command === "inspect" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
@@ -263,6 +280,7 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
+    "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...]",
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
