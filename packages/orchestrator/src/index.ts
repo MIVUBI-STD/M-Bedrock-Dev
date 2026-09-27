@@ -143,3 +143,4 @@ export * from "./runtime-classified-repair-pipeline.js";
 export * from "./post-repair-closure.js";
 export * from "./closed-repair-regression.js";
 export * from "./regression-execution-queue-runner.js";
+export * from "./regression-batch-retest-feedback.js";
