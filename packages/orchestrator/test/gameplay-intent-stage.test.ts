@@ -206,6 +206,68 @@ describe("gameplay intent stage", () => {
     ).toBe(true);
   });
 
+  it("prefers typed authored transitions over duplicate untyped runtime transitions", () => {
+    const runtimeParsed: ParsedScriptFile = {
+      ...parsed(),
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/mtt_bp/scripts/domain/session-state-machine.js",
+      },
+      typeProperties: [],
+      transitionDeclarations: [{
+        tableName: "TRANSITIONS",
+        from: "active",
+        to: ["finishing", "failed"],
+        source: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/mtt_bp/scripts/domain/session-state-machine.js",
+        },
+      }],
+    };
+
+    const authoredParsed: ParsedScriptFile = {
+      ...parsed(),
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/mtt_bp/src/domain/session-state-machine.ts",
+      },
+      transitionDeclarations: [{
+        tableName: "TRANSITIONS",
+        stateType: "SessionPhase",
+        from: "active",
+        to: ["finishing", "failed"],
+        source: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/mtt_bp/src/domain/session-state-machine.ts",
+        },
+      }],
+    };
+
+    const model = buildGameplayIntentModel({
+      id: "typed-transition",
+      parsedScripts: [{ parsed: runtimeParsed }],
+      authoredScripts: [{ parsed: authoredParsed }],
+    });
+
+    expect(
+      model.nodes.some(
+        (node) =>
+          node.id === "state:session-phase-active",
+      ),
+    ).toBe(true);
+
+    expect(
+      model.nodes.some(
+        (node) =>
+          node.id === "state:transitions-active",
+      ),
+    ).toBe(false);
+  });
+
   it("does not invent intent when no grounded signal exists", () => {
     const empty: ParsedScriptFile = {
       ...parsed(),

@@ -53,6 +53,7 @@ export interface InspectionResultInput {
   sourceIndex: SourceIndex;
   semanticIr: SemanticIr;
   gameplayIntent: GameplayIntentModel;
+  authoredIntentSources: number;
   gameplayIntentRuntime: GameplayIntentRuntimeAnalysis;
   runtimeEvidenceStage: RuntimeEvidenceStage;
   entityKnowledge: EntityKnowledgeStage;
@@ -355,6 +356,7 @@ export function buildInspectionResult(
     },
     gameplayIntent: {
       model: input.gameplayIntent,
+      authoredSourceFiles: input.authoredIntentSources,
       nodes: input.gameplayIntent.nodes.length,
       authoredNodes: input.gameplayIntent.nodes.filter(
         (node) => node.status === "authored",

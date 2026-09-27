@@ -131,6 +131,23 @@ export function extractGameplayIntentSignals(
 ): GameplayIntentSignalSet {
   const signals = new Map<string, GameplayIntentSignal>();
   const relations = new Map<string, GameplayIntentRelationSignal>();
+  const typedTransitionSignatures = new Set(
+    scripts.flatMap((script) =>
+      (script.transitionDeclarations ?? [])
+        .filter(
+          (transition) =>
+            transition.stateType !== undefined,
+        )
+        .map(
+          (transition) =>
+            transition.tableName +
+            "::" +
+            transition.from +
+            "::" +
+            transition.to.join(","),
+        ),
+    ),
+  );
   const outcomeCoverage = new Map<
     string,
     {
@@ -342,6 +359,21 @@ export function extractGameplayIntentSignals(
     }
 
     for (const transition of script.transitionDeclarations ?? []) {
+      const transitionSignature =
+        transition.tableName +
+        "::" +
+        transition.from +
+        "::" +
+        transition.to.join(",");
+      if (
+        transition.stateType === undefined &&
+        typedTransitionSignatures.has(
+          transitionSignature,
+        )
+      ) {
+        continue;
+      }
+
       const stateType =
         transition.stateType ?? transition.tableName;
       const fromKey =

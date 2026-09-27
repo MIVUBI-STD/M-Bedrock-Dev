@@ -22,6 +22,9 @@ export interface GameplayIntentStageInput {
   parsedScripts: readonly {
     parsed: ParsedScriptFile;
   }[];
+  authoredScripts?: readonly {
+    parsed: ParsedScriptFile;
+  }[];
 }
 
 const STATUS_RANK: Readonly<Record<GameplayIntentStatus, number>> = {
@@ -39,9 +42,12 @@ function evidenceId(
 export function buildGameplayIntentModel(
   input: GameplayIntentStageInput,
 ): GameplayIntentModel {
-  const extracted = extractGameplayIntentSignals(
-    input.parsedScripts.map((item) => item.parsed),
-  );
+  const extracted = extractGameplayIntentSignals([
+    ...input.parsedScripts.map((item) => item.parsed),
+    ...(input.authoredScripts ?? []).map(
+      (item) => item.parsed,
+    ),
+  ]);
 
   const evidence = new Map<string, GameplayIntentEvidence>();
   const nodes = new Map<string, GameplayIntentNode>();

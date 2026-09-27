@@ -138,6 +138,7 @@ export interface InspectDirectoryResult {
   };
   gameplayIntent: {
     model: GameplayIntentModel;
+    authoredSourceFiles: number;
     nodes: number;
     authoredNodes: number;
     inferredNodes: number;

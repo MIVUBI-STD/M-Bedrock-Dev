@@ -35,6 +35,7 @@ import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 import { buildInspectionSemanticIr } from "./semantic-ir-stage.js";
 import { semanticIrDiagnostics } from "./semantic-ir-diagnostics.js";
 import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
+import { indexAuthoredIntentSources } from "./inspect-authored-intent-source.js";
 import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js";
 
 export async function inspectDirectory(
@@ -90,6 +91,13 @@ export async function inspectDirectory(
   } = sourceIndex;
   diagnostics.push(...sourceDiagnostics);
 
+  const authoredIntentSources =
+    await indexAuthoredIntentSources(
+      root,
+      artifactId,
+      files,
+    );
+
   const semanticIr = buildInspectionSemanticIr({
     parsedFunctions,
     parsedScripts,
@@ -105,6 +113,7 @@ export async function inspectDirectory(
     id: "gameplay-intent:" + artifactId,
     artifactId,
     parsedScripts,
+    authoredScripts: authoredIntentSources,
   });
 
   const gameplayIntentRuntime = analyzeGameplayIntentRuntime(
@@ -274,6 +283,8 @@ export async function inspectDirectory(
     sourceIndex,
     semanticIr,
     gameplayIntent,
+    authoredIntentSources:
+      authoredIntentSources.length,
     gameplayIntentRuntime,
     runtimeEvidenceStage,
     entityKnowledge,
