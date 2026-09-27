@@ -113,24 +113,15 @@ export type GameplayPolicyEvaluation =
   | "violated"
   | "unknown";
 
-function resolvePolicyOperand(
-  operand: GameplayIntentPolicyOperand,
+function resolvePolicyPath(
+  path: string,
   values: Readonly<Record<string, unknown>>,
-): GameplayIntentScalar | undefined {
-  if (operand.kind === "literal") return operand.value;
-  if (Object.prototype.hasOwnProperty.call(values, operand.path)) {
-    const value = values[operand.path];
-    return (
-      typeof value === "string" ||
-      typeof value === "number" ||
-      typeof value === "boolean" ||
-      value === null
-    )
-      ? value
-      : undefined;
+): { found: boolean; value?: unknown } {
+  if (Object.prototype.hasOwnProperty.call(values, path)) {
+    return { found: true, value: values[path] };
   }
 
-  const parts = operand.path.split(".");
+  const parts = path.split(".");
   let current: unknown = values;
   for (const part of parts) {
     if (
@@ -138,19 +129,49 @@ function resolvePolicyOperand(
       current === null ||
       !Object.prototype.hasOwnProperty.call(current, part)
     ) {
-      return undefined;
+      return { found: false };
     }
     current = (current as Record<string, unknown>)[part];
   }
 
-  return (
-    typeof current === "string" ||
-    typeof current === "number" ||
-    typeof current === "boolean" ||
-    current === null
-  )
-    ? current
-    : undefined;
+  return { found: true, value: current };
+}
+
+function resolvePolicyOperand(
+  operand: GameplayIntentPolicyOperand,
+  values: Readonly<Record<string, unknown>>,
+): { found: boolean; value?: unknown } {
+  if (operand.kind === "literal") {
+    return { found: true, value: operand.value };
+  }
+
+  if (operand.kind === "path") {
+    return resolvePolicyPath(operand.path, values);
+  }
+
+  const base = resolvePolicyOperand(operand.base, values);
+  const key = resolvePolicyOperand(operand.key, values);
+  if (!base.found || !key.found) return { found: false };
+
+  if (
+    (typeof base.value !== "object" || base.value === null) ||
+    (
+      typeof key.value !== "string" &&
+      typeof key.value !== "number"
+    )
+  ) {
+    return { found: false };
+  }
+
+  const property = String(key.value);
+  if (!Object.prototype.hasOwnProperty.call(base.value, property)) {
+    return { found: false };
+  }
+
+  return {
+    found: true,
+    value: (base.value as Record<string, unknown>)[property],
+  };
 }
 
 function compareScalars(
@@ -187,9 +208,12 @@ export function evaluateGameplayPolicyPredicate(
     predicate.kind === "truthy" ||
     predicate.kind === "falsy"
   ) {
-    const value = resolvePolicyOperand(predicate.operand, values);
-    if (value === undefined) return "unknown";
-    const truthy = Boolean(value);
+    const resolved = resolvePolicyOperand(
+      predicate.operand,
+      values,
+    );
+    if (!resolved.found) return "unknown";
+    const truthy = Boolean(resolved.value);
     const satisfied =
       predicate.kind === "truthy" ? truthy : !truthy;
     return satisfied ? "satisfied" : "violated";
@@ -198,22 +222,51 @@ export function evaluateGameplayPolicyPredicate(
   if (predicate.kind === "comparison") {
     const left = resolvePolicyOperand(predicate.left, values);
     const right = resolvePolicyOperand(predicate.right, values);
-    if (left === undefined || right === undefined) {
+    if (!left.found || !right.found) {
+      return "unknown";
+    }
+    if (
+      !(
+        typeof left.value === "string" ||
+        typeof left.value === "number" ||
+        typeof left.value === "boolean" ||
+        left.value === null
+      ) ||
+      !(
+        typeof right.value === "string" ||
+        typeof right.value === "number" ||
+        typeof right.value === "boolean" ||
+        right.value === null
+      )
+    ) {
       return "unknown";
     }
     const result = compareScalars(
       predicate.operator,
-      left,
-      right,
+      left.value,
+      right.value,
     );
     if (result === undefined) return "unknown";
     return result ? "satisfied" : "violated";
   }
 
   if (predicate.kind === "in") {
-    const value = resolvePolicyOperand(predicate.operand, values);
-    if (value === undefined) return "unknown";
-    return predicate.values.includes(value)
+    const resolved = resolvePolicyOperand(
+      predicate.operand,
+      values,
+    );
+    if (!resolved.found) return "unknown";
+    if (
+      !(
+        typeof resolved.value === "string" ||
+        typeof resolved.value === "number" ||
+        typeof resolved.value === "boolean" ||
+        resolved.value === null
+      )
+    ) {
+      return "unknown";
+    }
+    return predicate.values.includes(resolved.value)
       ? "satisfied"
       : "violated";
   }

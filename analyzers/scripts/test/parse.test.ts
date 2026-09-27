@@ -640,6 +640,22 @@ function decideRecovery(record, session, arena) {
           ),
       ),
     ).toBe(true);
+
+    expect(
+      parsed.guardedOutcomes?.some(
+        (item) =>
+          item.value === "cleanup" &&
+          item.conditionText.includes(
+            "session.roster[record.playerId]",
+          ) &&
+          item.predicate.kind === "falsy" &&
+          item.predicate.operand.kind === "index" &&
+          item.predicate.operand.base.kind === "path" &&
+          item.predicate.operand.base.path === "session.roster" &&
+          item.predicate.operand.key.kind === "path" &&
+          item.predicate.operand.key.path === "record.playerId",
+      ),
+    ).toBe(true);
   });
 
   it("resolves relative script imports and summarizes Minecraft modules", () => {

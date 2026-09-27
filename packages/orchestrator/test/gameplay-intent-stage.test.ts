@@ -268,6 +268,67 @@ describe("gameplay intent stage", () => {
     ).toBe(false);
   });
 
+  it("merges duplicate semantic relations from runtime and authored sources", () => {
+    const runtimeParsed: ParsedScriptFile = {
+      ...parsed(),
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/recovery.js",
+      },
+      localFunctionCalls: [{
+        callerRegion: "function:decideReconnect",
+        targetRegion: "function:cleanupSession",
+        targetName: "cleanupSession",
+        source: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/demo/scripts/recovery.js",
+        },
+      }],
+      typeProperties: [],
+      transitionDeclarations: [],
+      stateMutations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+    };
+
+    const authoredParsed: ParsedScriptFile = {
+      ...runtimeParsed,
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/src/recovery.ts",
+      },
+      localFunctionCalls: [{
+        callerRegion: "function:decideReconnect",
+        targetRegion: "function:cleanupSession",
+        targetName: "cleanupSession",
+        source: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/demo/src/recovery.ts",
+        },
+      }],
+    };
+
+    const model = buildGameplayIntentModel({
+      id: "relation-merge",
+      parsedScripts: [{ parsed: runtimeParsed }],
+      authoredScripts: [{ parsed: authoredParsed }],
+    });
+
+    const matching = model.edges.filter(
+      (edge) =>
+        edge.kind === "requires" &&
+        edge.from === "lifecycle:decide-reconnect" &&
+        edge.to === "lifecycle:cleanup-session",
+    );
+
+    expect(matching).toHaveLength(1);
+    expect(matching[0]?.evidenceIds).toHaveLength(2);
+  });
+
   it("does not invent intent when no grounded signal exists", () => {
     const empty: ParsedScriptFile = {
       ...parsed(),

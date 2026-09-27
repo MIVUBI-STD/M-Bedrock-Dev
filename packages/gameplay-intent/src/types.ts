@@ -65,7 +65,12 @@ export type GameplayIntentScalar =
 
 export type GameplayIntentPolicyOperand =
   | { kind: "path"; path: string }
-  | { kind: "literal"; value: GameplayIntentScalar };
+  | { kind: "literal"; value: GameplayIntentScalar }
+  | {
+      kind: "index";
+      base: GameplayIntentPolicyOperand;
+      key: GameplayIntentPolicyOperand;
+    };
 
 export type GameplayIntentPolicyPredicate =
   | {

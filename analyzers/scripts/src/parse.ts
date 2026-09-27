@@ -375,13 +375,27 @@ function guardOperand(
 
   if (
     ts.isIdentifier(value) ||
-    ts.isPropertyAccessExpression(value) ||
-    ts.isElementAccessExpression(value)
+    ts.isPropertyAccessExpression(value)
   ) {
     return {
       kind: "path",
       path: value.getText(file),
     };
+  }
+
+  if (ts.isElementAccessExpression(value)) {
+    const base = guardOperand(value.expression, file);
+    const argument = value.argumentExpression
+      ? guardOperand(value.argumentExpression, file)
+      : undefined;
+    if (base && argument) {
+      return {
+        kind: "index",
+        base,
+        key: argument,
+      };
+    }
+    return undefined;
   }
 
   if (

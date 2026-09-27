@@ -215,6 +215,65 @@ describe("gameplay intent", () => {
     ).toBe("unknown");
   });
 
+  it("evaluates indexed policy operands from runtime state", () => {
+    const predicate = {
+      kind: "falsy" as const,
+      operand: {
+        kind: "index" as const,
+        base: {
+          kind: "path" as const,
+          path: "session.roster",
+        },
+        key: {
+          kind: "path" as const,
+          path: "record.playerId",
+        },
+      },
+    };
+
+    expect(
+      evaluateGameplayPolicyPredicate(
+        predicate,
+        {
+          record: { playerId: "player-a" },
+          session: {
+            roster: {
+              "player-a": true,
+            },
+          },
+        },
+      ),
+    ).toBe("violated");
+
+    expect(
+      evaluateGameplayPolicyPredicate(
+        predicate,
+        {
+          record: { playerId: "player-a" },
+          session: {
+            roster: {
+              "player-a": false,
+            },
+          },
+        },
+      ),
+    ).toBe("satisfied");
+
+    expect(
+      evaluateGameplayPolicyPredicate(
+        predicate,
+        {
+          record: { playerId: "player-b" },
+          session: {
+            roster: {
+              "player-a": true,
+            },
+          },
+        },
+      ),
+    ).toBe("unknown");
+  });
+
   it("evaluates outcome admissibility across authored policy guards", () => {
     const policyModel: GameplayIntentModel = {
       schemaVersion: 1,

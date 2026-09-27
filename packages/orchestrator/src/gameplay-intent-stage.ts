@@ -114,13 +114,39 @@ export function buildGameplayIntentModel(
       summary: relation.summary,
     });
 
-    edges.set(relation.id, {
-      id: relation.id,
-      from: relation.fromSubjectKey,
-      to: relation.toSubjectKey,
-      kind: relation.edgeKind,
-      status: relation.status,
-      evidenceIds: [id],
+    const semanticKey = [
+      relation.edgeKind,
+      relation.fromSubjectKey,
+      relation.toSubjectKey,
+    ].join("::");
+
+    const existing = edges.get(semanticKey);
+    if (!existing) {
+      edges.set(semanticKey, {
+        id:
+          "intent-edge:" +
+          relation.edgeKind + ":" +
+          relation.fromSubjectKey + ":" +
+          relation.toSubjectKey,
+        from: relation.fromSubjectKey,
+        to: relation.toSubjectKey,
+        kind: relation.edgeKind,
+        status: relation.status,
+        evidenceIds: [id],
+      });
+      continue;
+    }
+
+    edges.set(semanticKey, {
+      ...existing,
+      status:
+        STATUS_RANK[relation.status] >
+        STATUS_RANK[existing.status]
+          ? relation.status
+          : existing.status,
+      evidenceIds: [
+        ...new Set([...existing.evidenceIds, id]),
+      ].sort(),
     });
   }
 

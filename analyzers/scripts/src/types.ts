@@ -220,7 +220,12 @@ export type ScriptGuardScalar =
 
 export type ScriptGuardOperand =
   | { kind: "path"; path: string }
-  | { kind: "literal"; value: ScriptGuardScalar };
+  | { kind: "literal"; value: ScriptGuardScalar }
+  | {
+      kind: "index";
+      base: ScriptGuardOperand;
+      key: ScriptGuardOperand;
+    };
 
 export type ScriptGuardPredicate =
   | {
