@@ -35,6 +35,14 @@ export function routeIntentDiagnosticNextAnalysis(
           "Runtime semantics must be observed before classification can advance.",
       };
 
+    case "runtime-evidence-integrity":
+      return {
+        disposition: "analyze",
+        goal: "runtime-evidence-integrity",
+        reason:
+          "Conflicting or incomplete runtime evidence must be resolved before classification can advance.",
+      };
+
     case "contradiction-proof":
       return {
         disposition: "analyze",
