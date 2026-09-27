@@ -26,3 +26,14 @@ Results are three-valued:
 Absence of a counterexample inside a truncated search is never reported as proof.
 
 The package is backend-neutral. A future SAT/SMT backend may implement the same contract without becoming the semantic owner.
+
+## Automatic compilation
+
+The compiler translates evidence-bearing formal model structure into solver work without guessing semantics from variable names.
+
+Currently it compiles:
+
+- every `always` temporal property into an invariant proof query;
+- every transition precondition set into an enablement/reachability query.
+
+Unsupported open-ended temporal properties are returned explicitly instead of being weakened into a false bounded proof.
