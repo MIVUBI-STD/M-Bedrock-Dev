@@ -7,6 +7,8 @@ export interface BlockVolume {
 
 export interface RouteCorridorContract {
   id: string;
+  /** Canonical gameplay route identity when id is segment/context specific. */
+  routeId?: string;
   dimension?: string;
   volume: BlockVolume;
   sourceRefs?: readonly SourceRef[];

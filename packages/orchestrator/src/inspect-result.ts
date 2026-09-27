@@ -157,6 +157,8 @@ export function buildInspectionResult(
     placedEmbeddedCommands,
     topology,
     routeCorrelations,
+    effectiveRouteCorridors,
+    derivedGameplayRouteCorridors,
     mutationTransactions,
     scriptMutationTransactions,
     scriptCommandTransactions,
@@ -593,7 +595,13 @@ export function buildInspectionResult(
     },
     routeAnalysis: {
       contracts:
+        effectiveRouteCorridors.length,
+      explicitContracts:
         input.target.routeCorridors?.length ?? 0,
+      derivedContracts:
+        derivedGameplayRouteCorridors.length,
+      effectiveContracts:
+        effectiveRouteCorridors.length,
       overlaps: routeCorrelations.filter(
         (item) => item.status === "overlap",
       ).length,

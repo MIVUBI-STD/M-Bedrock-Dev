@@ -19,6 +19,23 @@ const structureRuntime = analyzeStructureAndChunkRuntime([fn]);
 const proofs = derivePlacementProofs(structureRuntime, [fn]);
 
 describe("route mutation correlation", () => {
+  it("keeps canonical route identity separate from segment contract identity", () => {
+    const correlations = correlateRouteMutations([{
+      id: "intent-route:main:arena_1:0-1",
+      routeId: "main",
+      volume: {
+        min: { x: 0, y: 60, z: 0 },
+        max: { x: 30, y: 80, z: 30 },
+      },
+    }], topology, proofs);
+
+    expect(correlations[0]).toEqual(expect.objectContaining({
+      routeId: "main",
+      contractId: "intent-route:main:arena_1:0-1",
+      status: "overlap",
+    }));
+  });
+
   it("proves overlap for a dimension-agnostic route contract", () => {
     const correlations = correlateRouteMutations([{
       id: "bridge",

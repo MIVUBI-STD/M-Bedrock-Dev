@@ -18,6 +18,7 @@ export type RouteMutationCorrelationStatus =
 
 export interface RouteMutationCorrelation {
   routeId: string;
+  contractId: string;
   mutationId: string;
   status: RouteMutationCorrelationStatus;
   source?: SourceRef;
@@ -133,7 +134,8 @@ export function correlateRouteMutations(
       }
 
       output.push({
-        routeId: route.id,
+        routeId: route.routeId ?? route.id,
+        contractId: route.id,
         mutationId: mutation.id,
         status,
         ...(mutation.source === undefined ? {} : { source: mutation.source }),
@@ -166,7 +168,12 @@ export function routeMutationRuntimeEvidence(
       confidence: "derived",
       scope: { operationId: item.mutationId },
       ...(item.source === undefined ? {} : { sourceRefs: [item.source] }),
-      note: "Mutation overlaps route corridor " + item.routeId + ".",
+      note:
+        "Mutation overlaps route corridor " +
+        item.routeId +
+        " via contract " +
+        item.contractId +
+        ".",
     }, {
       predicate: "route-corridor-contract",
       state: "present",

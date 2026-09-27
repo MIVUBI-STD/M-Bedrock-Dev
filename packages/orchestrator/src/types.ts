@@ -282,6 +282,9 @@ export interface InspectDirectoryResult {
   };
   routeAnalysis: {
     contracts: number;
+    explicitContracts: number;
+    derivedContracts: number;
+    effectiveContracts: number;
     overlaps: number;
     dimensionUnresolved: number;
   };

@@ -186,6 +186,7 @@ export async function inspectDirectory(
   const runtimeAnalysis =
     analyzeInspectionRuntimeState({
       target,
+      gameplayIntent,
       parsedFunctions,
       parsedScripts,
       parsedEntities,
