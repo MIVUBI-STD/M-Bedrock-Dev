@@ -134,5 +134,9 @@ export function createTelemetryEmitter(
     routeRevalidation: (input) => emitBuilt("route-revalidation", input),
     mutationApplied: (input) => emitBuilt("mutation-applied", input),
     mutationVerification: (input) => emitBuilt("mutation-verification", input),
+    stateObservation: (input) =>
+      emitBuilt("state-observation", input),
+    gameplayOutcome: (input) =>
+      emitBuilt("gameplay-outcome", input),
   };
 }

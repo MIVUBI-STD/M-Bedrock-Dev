@@ -85,6 +85,16 @@ export interface TelemetryEmitter {
       Extract<TelemetryEvent, { kind: "mutation-verification" }>
     >,
   ): Extract<TelemetryEvent, { kind: "mutation-verification" }>;
+  stateObservation(
+    input: TelemetryEventInput<
+      Extract<TelemetryEvent, { kind: "state-observation" }>
+    >,
+  ): Extract<TelemetryEvent, { kind: "state-observation" }>;
+  gameplayOutcome(
+    input: TelemetryEventInput<
+      Extract<TelemetryEvent, { kind: "gameplay-outcome" }>
+    >,
+  ): Extract<TelemetryEvent, { kind: "gameplay-outcome" }>;
 }
 
 export interface BufferedTelemetrySink extends TelemetrySink {

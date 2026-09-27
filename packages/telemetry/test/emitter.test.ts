@@ -215,4 +215,62 @@ describe("telemetry emitter sdk", () => {
       kind: "mutation-verification",
     });
   });
+  it("emits gameplay state and outcome events with shared scope", () => {
+    const events: any[] = [];
+    const emitter = createTelemetryEmitter({
+      producer: "instrumentation",
+      sink: {
+        emit(event) {
+          events.push(event);
+        },
+      },
+      baseScope: {
+        arenaId: "arena-1",
+        arenaGeneration: 4,
+      },
+      tickProvider: () => 120,
+      idNamespace: "intent",
+    });
+
+    const state = emitter.stateObservation({
+      path: "session.phase",
+      value: "active",
+      scope: {
+        playerKey: "player-a",
+      },
+    });
+
+    const outcome = emitter.gameplayOutcome({
+      outcomeId: "outcome:decide-reconnect-resume",
+      scope: {
+        playerKey: "player-a",
+      },
+    });
+
+    expect(state).toEqual(expect.objectContaining({
+      kind: "state-observation",
+      path: "session.phase",
+      value: "active",
+      tick: 120,
+      scope: {
+        arenaId: "arena-1",
+        arenaGeneration: 4,
+        playerKey: "player-a",
+      },
+    }));
+
+    expect(outcome).toEqual(expect.objectContaining({
+      kind: "gameplay-outcome",
+      outcomeId: "outcome:decide-reconnect-resume",
+      tick: 120,
+      scope: {
+        arenaId: "arena-1",
+        arenaGeneration: 4,
+        playerKey: "player-a",
+      },
+    }));
+
+    expect(events).toHaveLength(2);
+  });
+
 });
