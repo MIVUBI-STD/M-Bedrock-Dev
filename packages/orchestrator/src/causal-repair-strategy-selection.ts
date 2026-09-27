@@ -85,6 +85,12 @@ export function selectRepairStrategyForIncident(
               blastRadiusPolicy:
                 policy.blastRadiusPolicy,
             }),
+        ...(policy.preservationReadiness === undefined
+          ? {}
+          : {
+              preservationReadiness:
+                policy.preservationReadiness,
+            }),
         ...(policy.decisionBasis === undefined
           ? {}
           : { decisionBasis: policy.decisionBasis }),
