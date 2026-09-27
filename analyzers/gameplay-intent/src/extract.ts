@@ -177,15 +177,11 @@ function acceptsOutcomeDiscriminant(
   propertyName: string,
   sourceClassified: boolean,
 ): boolean {
-  if (
-    /^(?:action|outcome|result|status)$/i.test(propertyName)
-  ) {
-    return true;
-  }
-
   return (
     sourceClassified &&
-    /^(?:kind|type)$/i.test(propertyName)
+    /^(?:action|outcome|result|status|kind|type)$/i.test(
+      propertyName,
+    )
   );
 }
 

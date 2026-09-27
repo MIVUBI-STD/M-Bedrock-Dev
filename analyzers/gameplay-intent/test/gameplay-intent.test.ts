@@ -448,6 +448,64 @@ describe("gameplay intent analyzer", () => {
     ).toBe(false);
   });
 
+  it("ignores generic status discriminants outside classified gameplay functions", () => {
+    const base = script();
+    const internal: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      returnOutcomes: [{
+        executionRegion: "function:readPage",
+        propertyName: "status",
+        value: "ready",
+        source: base.source,
+      }],
+      guardedOutcomes: [{
+        executionRegion: "function:readPage",
+        conditionText: "page.nextPage",
+        conditionIdentifiers: ["page", "page.nextPage"],
+        predicate: {
+          kind: "truthy",
+          operand: {
+            kind: "path",
+            path: "page.nextPage",
+          },
+        },
+        propertyName: "status",
+        value: "reading",
+        conditionSource: base.source,
+        outcomeSource: base.source,
+      }],
+    };
+
+    const result = extractGameplayIntentSignals([internal]);
+
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey === "outcome:read-page-ready" ||
+          signal.subjectKey === "outcome:read-page-reading",
+      ),
+    ).toBe(false);
+    expect(
+      result.signals.some(
+        (signal) => signal.nodeKind === "policy",
+      ),
+    ).toBe(false);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {
