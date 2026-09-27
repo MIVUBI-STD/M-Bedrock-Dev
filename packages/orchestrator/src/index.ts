@@ -142,3 +142,4 @@ export * from "./runtime-reclassification-repair-gate.js";
 export * from "./runtime-classified-repair-pipeline.js";
 export * from "./post-repair-closure.js";
 export * from "./closed-repair-regression.js";
+export * from "./regression-execution-queue-runner.js";
