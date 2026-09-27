@@ -6,7 +6,11 @@ import type {
   AnalysisExecutionContext,
   AnalysisGoal,
 } from "../../analysis-planner/src/index.js";
+import type {
+  ConstraintProblem,
+} from "../../logic-solver/src/index.js";
 import {
+  createContradictionProofDiagnosisExecutor,
   runProgressiveDiagnosis,
   type DiagnosisExecutorRegistry,
   type DiagnosisPayloadProvider,
@@ -36,6 +40,7 @@ export interface BuiltinDiagnosisInput {
   relevantTags: readonly string[];
   context: AnalysisExecutionContext;
   artifact: BuiltinDiagnosisArtifactContext;
+  contradictionProblem?: ConstraintProblem;
   maxSteps?: number;
 }
 
@@ -61,6 +66,9 @@ function requiredOutput(
 
 export function createBuiltinDiagnosisRuntime(
   artifact: BuiltinDiagnosisArtifactContext,
+  options: {
+    contradictionProblem?: ConstraintProblem;
+  } = {},
 ): BuiltinDiagnosisRuntime {
   const executorRegistry: DiagnosisExecutorRegistry = {
     schemaVersion: 1,
@@ -69,6 +77,7 @@ export function createBuiltinDiagnosisRuntime(
       createSemanticIrDiagnosisExecutor(),
       createIntentGroundingDiagnosisExecutor(),
       createAuthoredIntentDiagnosisExecutor(),
+      createContradictionProofDiagnosisExecutor(),
     ],
   };
 
@@ -122,6 +131,21 @@ export function createBuiltinDiagnosisRuntime(
             ),
           };
 
+        case "diagnosis.contradiction-proof":
+          if (
+            options.contradictionProblem ===
+            undefined
+          ) {
+            throw new Error(
+              "Formal contradiction proof requires an explicit ConstraintProblem; the built-in runtime never invents one.",
+            );
+          }
+
+          return {
+            problem:
+              options.contradictionProblem,
+          };
+
         default:
           throw new Error(
             "No built-in diagnosis payload binding exists for capability " +
@@ -144,6 +168,14 @@ export async function runBuiltinDiagnosis(
   const runtime =
     createBuiltinDiagnosisRuntime(
       input.artifact,
+      {
+        ...(input.contradictionProblem === undefined
+          ? {}
+          : {
+              contradictionProblem:
+                input.contradictionProblem,
+            }),
+      },
     );
 
   return await runProgressiveDiagnosis({
