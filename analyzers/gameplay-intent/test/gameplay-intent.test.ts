@@ -506,6 +506,57 @@ describe("gameplay intent analyzer", () => {
     ).toBe(false);
   });
 
+  it("treats bare phase/state members as state surfaces and phase helper verbs as helpers", () => {
+    const base = script();
+    const bundled: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [
+        "phase",
+        "stage",
+        "completeCurrentStage",
+        "processCinematicGroup",
+        "skipToStage",
+        "prepareCinematicPlayers",
+      ].map((member) => ({
+        member,
+        memberKind: "method" as const,
+        containerHint: "A",
+        source: base.source,
+      })),
+    };
+
+    const result = extractGameplayIntentSignals([bundled]);
+    const ids = new Set(
+      result.signals.map((signal) => signal.subjectKey),
+    );
+
+    expect(ids.has("state:phase")).toBe(true);
+    expect(ids.has("state:stage")).toBe(true);
+    expect(
+      [...ids].some((id) =>
+        id.startsWith("phase:complete-current-stage") ||
+        id.startsWith("phase:process-cinematic-group") ||
+        id.startsWith("phase:skip-to-stage") ||
+        id.startsWith("phase:prepare-cinematic-players")
+      ),
+    ).toBe(false);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {

@@ -84,6 +84,10 @@ function slug(value: string): string {
 }
 
 const HELPER_VERBS = new Set([
+  "prepare",
+  "skip",
+  "process",
+  "complete",
   "update",
   "teleport",
   "stop",
@@ -118,6 +122,16 @@ const HELPER_VERBS = new Set([
 function classify(value: string): GameplayIntentNodeKind | undefined {
   const wordList =
     normalize(value).split(/\s+/).filter(Boolean);
+
+  if (
+    wordList.length === 1 &&
+    ["phase", "stage", "state", "status"].includes(
+      wordList[0]!,
+    )
+  ) {
+    return "state";
+  }
+
   const words = new Set(wordList);
   const matches = new Set<GameplayIntentNodeKind>();
 
