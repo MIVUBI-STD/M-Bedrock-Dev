@@ -991,6 +991,72 @@ describe("gameplay intent analyzer", () => {
       .toBe(true);
   });
 
+  it("ignores structural helper return discriminants while preserving lifecycle decisions", () => {
+    const base = script();
+    const sample: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/domain/helpers",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/domain/helpers.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      returnOutcomes: [
+        {
+          executionRegion:
+            "function:createKitTrialPerformance",
+          propertyName: "outcome",
+          value: "pending",
+          source: base.source,
+        },
+        {
+          executionRegion:
+            "function:resolveInventoryTarget",
+          propertyName: "kind",
+          value: "inventory",
+          source: base.source,
+        },
+        {
+          executionRegion:
+            "function:decideReconnect",
+          propertyName: "kind",
+          value: "cleanup_to_lobby",
+          source: base.source,
+        },
+      ],
+      guardedOutcomes: [],
+    };
+
+    const result = extractGameplayIntentSignals([sample]);
+    const ids = new Set(
+      result.signals.map((signal) => signal.subjectKey),
+    );
+
+    expect(
+      ids.has(
+        "outcome:create-kit-trial-performance-pending",
+      ),
+    ).toBe(false);
+    expect(
+      ids.has(
+        "outcome:resolve-inventory-target-inventory",
+      ),
+    ).toBe(false);
+    expect(
+      ids.has(
+        "outcome:decide-reconnect-cleanup-to-lobby",
+      ),
+    ).toBe(true);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {

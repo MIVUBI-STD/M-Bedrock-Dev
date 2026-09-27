@@ -213,14 +213,46 @@ function classify(value: string): GameplayIntentNodeKind | undefined {
 
 function acceptsOutcomeDiscriminant(
   propertyName: string,
-  sourceClassified: boolean,
+  sourceSignal: GameplayIntentSignal | undefined,
+  sourceName: string | undefined,
 ): boolean {
-  return (
-    sourceClassified &&
-    /^(?:action|outcome|result|kind|type)$/i.test(
+  if (
+    sourceSignal === undefined ||
+    !/^(?:action|outcome|result|kind|type)$/i.test(
       propertyName,
     )
-  );
+  ) {
+    return false;
+  }
+
+  if (/^action$/i.test(propertyName)) return true;
+
+  const firstWord =
+    sourceName === undefined
+      ? undefined
+      : normalize(sourceName).split(/\s+/).filter(Boolean)[0];
+  const structuralHelper =
+    firstWord !== undefined &&
+    [
+      "build",
+      "create",
+      "format",
+      "normalize",
+      "resolve",
+    ].includes(firstWord);
+
+  if (
+    structuralHelper &&
+    (
+      sourceSignal.nodeKind === "resource" ||
+      sourceSignal.nodeKind === "mechanic" ||
+      sourceSignal.nodeKind === "spatial-region"
+    )
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 function acceptsStatusDiscriminant(
@@ -902,7 +934,8 @@ export function extractGameplayIntentSignals(
       if (
         !acceptsOutcomeDiscriminant(
           guarded.propertyName,
-          sourceSignal !== undefined,
+          sourceSignal,
+          sourceName,
         ) &&
         !acceptsStatusDiscriminant(
           guarded.propertyName,
@@ -1097,7 +1130,8 @@ export function extractGameplayIntentSignals(
       if (
         !acceptsOutcomeDiscriminant(
           outcome.propertyName,
-          sourceSignal !== undefined,
+          sourceSignal,
+          sourceName,
         )
       ) {
         continue;
