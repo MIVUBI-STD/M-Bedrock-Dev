@@ -20,12 +20,25 @@ export type GameplayCalibrationSourceStyle =
   | "bundled-minified"
   | "mixed";
 
+export interface GameplayCalibrationAssertions {
+  maxPhaseNodes?: number;
+  minStateNodes?: number;
+  maxOutcomeNodes?: number;
+  minOutcomeNodes?: number;
+  minRouteProfiles?: number;
+  minRoutePoints?: number;
+  minDerivedRouteContracts?: number;
+  minUnknownPolicyPredicates?: number;
+  maxUnknownIntent?: number;
+}
+
 export interface GameplayCalibrationCase {
   id: string;
   label: string;
   artifactFile: string;
   sourceStyle: GameplayCalibrationSourceStyle;
   learningDimensions: readonly string[];
+  assertions?: GameplayCalibrationAssertions;
   note?: string;
 }
 
@@ -40,6 +53,8 @@ export interface GameplayCalibrationCaseReport {
   label: string;
   sourceStyle: GameplayCalibrationSourceStyle;
   learningDimensions: readonly string[];
+  assertions?: GameplayCalibrationAssertions;
+  assertionFailures: readonly string[];
   note?: string;
   fingerprint: GameplayUnderstandingFingerprint;
 }
@@ -84,6 +99,65 @@ function nonEmptyString(
     typeof value === "string" &&
     value.trim().length > 0
   );
+}
+
+function parseAssertions(
+  raw: unknown,
+  caseId: string,
+): GameplayCalibrationAssertions | undefined {
+  if (raw === undefined) return undefined;
+  if (!isRecord(raw)) {
+    throw new Error(
+      "Gameplay calibration case " +
+      caseId +
+      " assertions must be an object.",
+    );
+  }
+
+  const allowed = [
+    "maxPhaseNodes",
+    "minStateNodes",
+    "maxOutcomeNodes",
+    "minOutcomeNodes",
+    "minRouteProfiles",
+    "minRoutePoints",
+    "minDerivedRouteContracts",
+    "minUnknownPolicyPredicates",
+    "maxUnknownIntent",
+  ] as const;
+
+  const output: Record<string, number> = {};
+  for (const key of allowed) {
+    const value = raw[key];
+    if (value === undefined) continue;
+    if (
+      typeof value !== "number" ||
+      !Number.isInteger(value) ||
+      value < 0
+    ) {
+      throw new Error(
+        "Gameplay calibration case " +
+        caseId +
+        " assertion " +
+        key +
+        " must be a non-negative integer.",
+      );
+    }
+    output[key] = value;
+  }
+
+  for (const key of Object.keys(raw)) {
+    if (!(allowed as readonly string[]).includes(key)) {
+      throw new Error(
+        "Gameplay calibration case " +
+        caseId +
+        " has unsupported assertion: " +
+        key,
+      );
+    }
+  }
+
+  return output as GameplayCalibrationAssertions;
 }
 
 export function parseGameplayCalibrationManifest(
@@ -183,6 +257,9 @@ export function parseGameplayCalibrationManifest(
         );
       }
 
+      const assertions =
+        parseAssertions(raw.assertions, raw.id);
+
       return {
         id: raw.id,
         label: raw.label,
@@ -191,6 +268,9 @@ export function parseGameplayCalibrationManifest(
         learningDimensions: [
           ...new Set(raw.learningDimensions),
         ].sort(),
+        ...(assertions === undefined
+          ? {}
+          : { assertions }),
         ...(raw.note === undefined
           ? {}
           : { note: raw.note }),
@@ -303,6 +383,51 @@ function aggregateGameplayCalibration(
   };
 }
 
+export function evaluateCalibrationAssertions(
+  fingerprint: GameplayUnderstandingFingerprint,
+  assertions: GameplayCalibrationAssertions | undefined,
+): string[] {
+  if (!assertions) return [];
+
+  const checks: Array<{
+    key: keyof GameplayCalibrationAssertions;
+    actual: number;
+    relation: "min" | "max";
+  }> = [
+    { key: "maxPhaseNodes", actual: fingerprint.nodeKinds.phase, relation: "max" },
+    { key: "minStateNodes", actual: fingerprint.nodeKinds.state, relation: "min" },
+    { key: "maxOutcomeNodes", actual: fingerprint.nodeKinds.outcome, relation: "max" },
+    { key: "minOutcomeNodes", actual: fingerprint.nodeKinds.outcome, relation: "min" },
+    { key: "minRouteProfiles", actual: fingerprint.spatial.routeProfiles, relation: "min" },
+    { key: "minRoutePoints", actual: fingerprint.spatial.routePoints, relation: "min" },
+    { key: "minDerivedRouteContracts", actual: fingerprint.spatial.derivedRouteContracts, relation: "min" },
+    { key: "minUnknownPolicyPredicates", actual: fingerprint.policy.unknownPredicates, relation: "min" },
+    { key: "maxUnknownIntent", actual: fingerprint.totals.unknowns, relation: "max" },
+  ];
+
+  const failures: string[] = [];
+  for (const check of checks) {
+    const expected = assertions[check.key];
+    if (expected === undefined) continue;
+    const failed =
+      check.relation === "min"
+        ? check.actual < expected
+        : check.actual > expected;
+    if (failed) {
+      failures.push(
+        String(check.key) +
+        ": expected " +
+        check.relation +
+        " " +
+        expected +
+        ", observed " +
+        check.actual,
+      );
+    }
+  }
+  return failures.sort();
+}
+
 export async function calibrateGameplayCorpus(
   manifest: GameplayCalibrationManifest,
   artifactRoot: string,
@@ -318,19 +443,30 @@ export async function calibrateGameplayCorpus(
       knowledgeCatalog,
     );
 
+    const fingerprint =
+      deriveGameplayUnderstandingFingerprint(
+        result,
+      );
+    const assertionFailures =
+      evaluateCalibrationAssertions(
+        fingerprint,
+        item.assertions,
+      );
+
     cases.push({
       id: item.id,
       label: item.label,
       sourceStyle: item.sourceStyle,
       learningDimensions:
         item.learningDimensions,
+      ...(item.assertions === undefined
+        ? {}
+        : { assertions: item.assertions }),
+      assertionFailures,
       ...(item.note === undefined
         ? {}
         : { note: item.note }),
-      fingerprint:
-        deriveGameplayUnderstandingFingerprint(
-          result,
-        ),
+      fingerprint,
     });
   }
 
