@@ -5,6 +5,7 @@ import {
 } from "../../../analyzers/entities/src/index.js";
 import { structureRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
+import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
 import type { InspectionSourceIndex } from "./inspect-source-index.js";
 import { analyzeFunctionTopology } from "./topology-analysis.js";
@@ -13,12 +14,14 @@ import { correlateScriptStructureLoads } from "./script-structure-correlation.js
 import { derivePlacedEmbeddedCommands } from "./structure-placement-analysis.js";
 import { derivePlacementProofs } from "./structure-proof-analysis.js";
 import { correlateRouteMutations } from "./route-mutation-analysis.js";
+import { deriveGameplayRouteCorridors } from "./gameplay-route-corridor.js";
 import { analyzeMutationTransactionOrdering } from "./mutation-transaction-analysis.js";
 import { analyzeScriptMutationTransactions } from "./script-mutation-transaction-analysis.js";
 import { analyzeScriptCommandMutationTransactions } from "./script-command-transaction-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
+  gameplayIntent?: GameplayIntentModel;
   parsedFunctions: InspectionSourceIndex["parsedFunctions"];
   parsedScripts: InspectionSourceIndex["parsedScripts"];
   parsedEntities: InspectionSourceIndex["parsedEntities"];
@@ -133,8 +136,43 @@ export function analyzeInspectionRuntimeState(
     parsedFunctionModels,
   );
 
+  const explicitRouteCorridors =
+    input.target.routeCorridors ?? [];
+  const explicitRouteIds = new Set(
+    explicitRouteCorridors.map(
+      (route) => route.routeId ?? route.id,
+    ),
+  );
+
+  const derivedGameplayRouteCorridors =
+    (input.gameplayIntent === undefined
+      ? []
+      : deriveGameplayRouteCorridors(
+          input.gameplayIntent,
+          {
+            ...(input.target.staticExecutionDimension === undefined
+              ? {}
+              : {
+                  dimension:
+                    input.target.staticExecutionDimension,
+                }),
+          },
+        )).filter(
+      (item) =>
+        !explicitRouteIds.has(
+          item.contract.routeId ?? item.contract.id,
+        ),
+    );
+
+  const effectiveRouteCorridors = [
+    ...explicitRouteCorridors,
+    ...derivedGameplayRouteCorridors.map(
+      (item) => item.contract,
+    ),
+  ];
+
   const routeCorrelations = correlateRouteMutations(
-    input.target.routeCorridors ?? [],
+    effectiveRouteCorridors,
     topology,
     structureProofs,
     input.target.staticExecutionDimension,
@@ -190,6 +228,8 @@ export function analyzeInspectionRuntimeState(
     topology,
     structureProofs,
     routeCorrelations,
+    effectiveRouteCorridors,
+    derivedGameplayRouteCorridors,
     navigatingEntities,
     targetDrivenEntities,
     mutationTransactions,
