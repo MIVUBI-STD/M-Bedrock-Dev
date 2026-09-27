@@ -12,6 +12,10 @@ import type {
 import {
   boundedBehaviorSolver,
 } from "./solver.js";
+import {
+  solveTemporalProperties,
+  type TemporalSolverResult,
+} from "./temporal-solver.js";
 
 export type CompiledConstraintKind =
   | "temporal-invariant"
@@ -42,6 +46,7 @@ export interface ConstraintBatchResult {
     constraint: CompiledConstraint;
     result: SolverResult;
   }[];
+  temporalResults: readonly TemporalSolverResult[];
   unsupported: readonly UnsupportedConstraint[];
 }
 
@@ -125,12 +130,9 @@ export function compileBehaviorConstraints(
       continue;
     }
 
-    unsupported.push({
-      sourceId: property.id,
-      sourceKind: property.kind,
-      reason:
-        "Logic Solver v1 does not yet translate open-ended temporal obligations into bounded proof claims.",
-    });
+    // Temporal Solver v2 owns EVENTUALLY, LEADS-TO, and UNTIL.
+    // They are evaluated over execution paths rather than weakened into
+    // single-state predicates.
   }
 
   for (const transition of model.transitions) {
@@ -155,6 +157,7 @@ export function solveCompiledBehaviorConstraints(
       constraint,
       result: boundedBehaviorSolver.solve(constraint.problem),
     })),
+    temporalResults: [],
     unsupported: compilation.unsupported,
   };
 }
@@ -164,11 +167,25 @@ export function compileAndSolveBehaviorConstraints(
   initialState: BehaviorState,
   budget: SolverBudget,
 ): ConstraintBatchResult {
-  return solveCompiledBehaviorConstraints(
+  const compiled = solveCompiledBehaviorConstraints(
     compileBehaviorConstraints(
       model,
       initialState,
       budget,
     ),
   );
+  return {
+    ...compiled,
+    temporalResults: solveTemporalProperties(
+      model,
+      initialState,
+      model.properties.filter(
+        (property): property is Exclude<
+          TemporalProperty,
+          { kind: "always" }
+        > => property.kind !== "always",
+      ),
+      budget,
+    ),
+  };
 }

@@ -37,3 +37,13 @@ Currently it compiles:
 - every transition precondition set into an enablement/reachability query.
 
 Unsupported open-ended temporal properties are returned explicitly instead of being weakened into a false bounded proof.
+
+## Temporal proof v2
+
+The temporal verifier explores execution paths and reuses the Behavioral World Model's canonical temporal evaluator for `eventually`, `leads-to`, and `until`.
+
+- finite exhausted path spaces can prove temporal obligations;
+- a concrete violating prefix disproves an obligation;
+- EVENTUALLY/UNTIL can produce reachable lasso counterexamples when a cycle can repeat forever without discharging the obligation;
+- cyclic LEADS-TO remains `unknown` until a monitor-automaton backend can safely reason across loop boundaries;
+- budget exhaustion remains `unknown`.
