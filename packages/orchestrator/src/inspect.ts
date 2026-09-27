@@ -122,6 +122,16 @@ export async function inspectDirectory(
     runtimeEvidenceStage.runtimeOutcomeObservations,
     runtimeEvidenceStage.runtimeRouteObservations,
     runtimeEvidenceStage.runtimeNavigationStallObservations,
+    runtimeEvidenceStage.runtimeNavigationTargetObservations,
+    runtimeEvidenceStage.runtimeRouteReachabilityObservations,
+    {
+      ...(target.staticExecutionDimension === undefined
+        ? {}
+        : {
+            dimension:
+              target.staticExecutionDimension,
+          }),
+    },
   );
 
   enrichInspectionSemanticGraph({

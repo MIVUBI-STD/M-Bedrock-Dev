@@ -138,5 +138,11 @@ export function createTelemetryEmitter(
       emitBuilt("state-observation", input),
     gameplayOutcome: (input) =>
       emitBuilt("gameplay-outcome", input),
+    routeObservation: (input) =>
+      emitBuilt("route-observation", input),
+    navigationTargetObservation: (input) =>
+      emitBuilt("navigation-target-observation", input),
+    routeReachabilityObservation: (input) =>
+      emitBuilt("route-reachability-observation", input),
   };
 }

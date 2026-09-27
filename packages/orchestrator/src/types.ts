@@ -165,6 +165,12 @@ export interface InspectDirectoryResult {
     routeAmbiguous: number;
     routeUnresolved: number;
     runtimeNavigationStallObservations: number;
+    runtimeNavigationTargetObservations: number;
+    runtimeRouteReachabilityObservations: number;
+    routeEvidenceSatisfied: number;
+    routeInstrumentationRequired: number;
+    routeProbeRequests: number;
+    routeEvidenceBlocked: number;
     stallTargetNearestMatch: number;
     stallTargetNearestDivergence: number;
     stallAmbiguous: number;

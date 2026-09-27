@@ -40,3 +40,5 @@ export * from "./runtime-state.js";
 export * from "./runtime-outcome.js";
 export * from "./runtime-route-observation.js";
 export * from "./runtime-navigation-stall.js";
+export * from "./runtime-navigation-target.js";
+export * from "./runtime-route-reachability.js";

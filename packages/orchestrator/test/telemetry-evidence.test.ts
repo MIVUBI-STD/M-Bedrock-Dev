@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   telemetryRuntimeEvidence,
   telemetryRuntimeNavigationStallObservations,
+  telemetryRuntimeNavigationTargetObservations,
   telemetryRuntimeOutcomeObservations,
   telemetryRuntimeRouteObservations,
+  telemetryRuntimeRouteReachabilityObservations,
   telemetryRuntimeStateObservations,
 } from "../src/telemetry-evidence.js";
 
@@ -81,6 +83,98 @@ describe("telemetry evidence adapter", () => {
         state: "present",
       }),
     ]);
+  });
+
+  it("maps navigation target and reachability into typed evidence", () => {
+    const events = [
+      {
+        schemaVersion: 1 as const,
+        eventId: "nav-1",
+        kind: "navigation-target-observation" as const,
+        producer: "instrumentation" as const,
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+        },
+        tick: 222,
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        targetLocation: {
+          x: 1778,
+          y: -28.5,
+          z: 0.5,
+        },
+        mechanism: "moveToLocation",
+      },
+      {
+        schemaVersion: 1 as const,
+        eventId: "reach-1",
+        kind: "route-reachability-observation" as const,
+        producer: "instrumentation" as const,
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+        },
+        tick: 223,
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        reachable: true,
+        mechanism: "gametest-path-check",
+      },
+    ];
+
+    expect(
+      telemetryRuntimeNavigationTargetObservations(events),
+    ).toEqual([{
+      entityKey: "demo:zombie",
+      targetLocation: {
+        x: 1778,
+        y: -28.5,
+        z: 0.5,
+      },
+      routeId: "bridge",
+      routeIndex: 606,
+      mechanism: "moveToLocation",
+      scope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+        entityKey: "demo:zombie",
+      },
+      observedAt: { tick: 222 },
+      evidenceId: "telemetry-navigation-target:nav-1",
+    }]);
+
+    expect(
+      telemetryRuntimeRouteReachabilityObservations(events),
+    ).toEqual([{
+      entityKey: "demo:zombie",
+      reachable: true,
+      routeId: "bridge",
+      routeIndex: 606,
+      mechanism: "gametest-path-check",
+      scope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+        entityKey: "demo:zombie",
+      },
+      observedAt: { tick: 223 },
+      evidenceId: "telemetry-route-reachability:reach-1",
+    }]);
+
+    expect(telemetryRuntimeEvidence(events)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          predicate: "navigation-target-observed",
+          state: "present",
+        }),
+        expect.objectContaining({
+          predicate: "route-target-reachable",
+          state: "present",
+        }),
+      ]),
+    );
   });
 
   it("maps entity stalls into typed navigation stall observations", () => {

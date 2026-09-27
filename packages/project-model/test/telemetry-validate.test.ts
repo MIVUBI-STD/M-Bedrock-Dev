@@ -119,6 +119,88 @@ describe("telemetry validation", () => {
     ]));
   });
 
+  it("accepts navigation target and reachability telemetry", () => {
+    const batch = parseTelemetryBatch({
+      schemaVersion: 1,
+      events: [
+        {
+          schemaVersion: 1,
+          eventId: "nav-1",
+          kind: "navigation-target-observation",
+          producer: "instrumentation",
+          scope: {
+            arenaId: "arena_6",
+            arenaGeneration: 3,
+          },
+          entityKey: "demo:zombie",
+          routeId: "bridge",
+          routeIndex: 606,
+          targetLocation: {
+            x: 1778,
+            y: -28.5,
+            z: 0.5,
+          },
+          mechanism: "moveToLocation",
+        },
+        {
+          schemaVersion: 1,
+          eventId: "reach-1",
+          kind: "route-reachability-observation",
+          producer: "instrumentation",
+          scope: {
+            arenaId: "arena_6",
+            arenaGeneration: 3,
+          },
+          entityKey: "demo:zombie",
+          routeId: "bridge",
+          routeIndex: 606,
+          reachable: true,
+          mechanism: "gametest-path-check",
+        },
+      ],
+    });
+
+    expect(batch.events.map((event) => event.kind)).toEqual([
+      "navigation-target-observation",
+      "route-reachability-observation",
+    ]);
+  });
+
+  it("rejects malformed navigation evidence", () => {
+    const errors = validateTelemetryBatch({
+      schemaVersion: 1,
+      events: [
+        {
+          schemaVersion: 1,
+          eventId: "nav-bad",
+          kind: "navigation-target-observation",
+          producer: "qa",
+          scope: {},
+          entityKey: "demo:zombie",
+          targetLocation: {
+            x: 1,
+            y: "bad",
+            z: 2,
+          },
+        },
+        {
+          schemaVersion: 1,
+          eventId: "reach-bad",
+          kind: "route-reachability-observation",
+          producer: "qa",
+          scope: {},
+          entityKey: "demo:zombie",
+          reachable: "yes",
+        },
+      ],
+    });
+
+    expect(errors).toEqual(expect.arrayContaining([
+      expect.stringMatching(/targetLocation\.y/),
+      expect.stringMatching(/reachable must be boolean/),
+    ]));
+  });
+
   it("rejects duplicate event ids and malformed event payloads", () => {
     const errors = validateTelemetryBatch({
       schemaVersion: 1,

@@ -154,6 +154,30 @@ export interface RouteObservationTelemetryEvent
   };
 }
 
+export interface NavigationTargetTelemetryEvent
+  extends TelemetryEventBase {
+  kind: "navigation-target-observation";
+  entityKey: string;
+  targetLocation: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  routeId?: string;
+  routeIndex?: number;
+  mechanism?: string;
+}
+
+export interface RouteReachabilityTelemetryEvent
+  extends TelemetryEventBase {
+  kind: "route-reachability-observation";
+  entityKey: string;
+  reachable: boolean;
+  routeId?: string;
+  routeIndex?: number;
+  mechanism?: string;
+}
+
 export type TelemetryEvent =
   | EntityStallTelemetryEvent
   | TeleportFallbackTelemetryEvent
@@ -167,7 +191,9 @@ export type TelemetryEvent =
   | MutationVerificationTelemetryEvent
   | StateObservationTelemetryEvent
   | GameplayOutcomeTelemetryEvent
-  | RouteObservationTelemetryEvent;
+  | RouteObservationTelemetryEvent
+  | NavigationTargetTelemetryEvent
+  | RouteReachabilityTelemetryEvent;
 
 export interface TelemetryBatch {
   schemaVersion: 1;

@@ -18,12 +18,14 @@ export interface EntityProgressSample {
   position: Vector3Sample;
   expectedToProgress: boolean;
   routeId?: string;
+  routeIndex?: number;
   scope?: RuntimeScope;
 }
 
 export interface EntityProgressProbeOptions {
   stallTicks: number;
   minProgressDistance?: number;
+  emitRouteObservations?: boolean;
 }
 
 export type EntityProgressStatus =
@@ -96,6 +98,25 @@ export function createEntityProgressProbe(
 
       const key = progressKey(sample);
       const current = states.get(key);
+
+      if (options.emitRouteObservations === true) {
+        telemetry.routeObservation({
+          entityKey: sample.entityKey,
+          ...(sample.routeId === undefined
+            ? {}
+            : { routeId: sample.routeId }),
+          ...(sample.routeIndex === undefined
+            ? {}
+            : { routeIndex: sample.routeIndex }),
+          worldLocation: {
+            ...sample.position,
+          },
+          ...(sample.scope === undefined
+            ? {}
+            : { scope: sample.scope }),
+          tick: sample.tick,
+        });
+      }
 
       if (!sample.expectedToProgress) {
         states.set(key, {

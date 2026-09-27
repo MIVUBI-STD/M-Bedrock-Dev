@@ -12,10 +12,16 @@ import {
   type GameplayRuntimeObservationNeed,
 } from "../../gameplay-intent/src/index.js";
 import {
+  planGameplayRouteRuntimeEvidence,
+  type GameplayRouteRuntimeEvidencePlan,
+} from "./gameplay-route-runtime-plan.js";
+import {
   resolveRuntimeStateSnapshot,
   type RuntimeNavigationStallObservation,
+  type RuntimeNavigationTargetObservation,
   type RuntimeOutcomeObservation,
   type RuntimeRouteObservation,
+  type RuntimeRouteReachabilityObservation,
   type RuntimeStateObservation,
 } from "../../project-model/src/index.js";
 
@@ -39,13 +45,30 @@ export type GameplayRouteStallDisposition =
   | "unresolved-route-evidence"
   | "no-route-observation";
 
+export interface GameplayRouteMotionSeries {
+  sampleCount: number;
+  evidenceIds: readonly string[];
+  firstTick?: number;
+  lastTick?: number;
+  displacement?: number;
+}
+
 export interface GameplayRouteStallRuntimeAssessment {
   stallObservation: RuntimeNavigationStallObservation;
   disposition: GameplayRouteStallDisposition;
   routeAssessment?: GameplayIntentRouteRuntimeAssessment;
+  motionSeries?: GameplayRouteMotionSeries;
+  navigationTargetObservation?: RuntimeNavigationTargetObservation;
+  reachabilityObservation?: RuntimeRouteReachabilityObservation;
+  navigationTargetDistanceToAuthoredTarget?: number;
+  navigationTargetRouteMatchesAuthoredTarget?: boolean;
   observationNeeds: readonly GameplayRouteRuntimeObservationNeed[];
+  evidencePlan: GameplayRouteRuntimeEvidencePlan;
   reasons: readonly string[];
 }
+
+type GameplayRouteStallAssessmentBase =
+  Omit<GameplayRouteStallRuntimeAssessment, "evidencePlan">;
 
 export interface GameplayIntentRuntimeAnalysis {
   assessments: readonly GameplayIntentRuntimeAssessment[];
@@ -163,7 +186,7 @@ function assessRouteStall(
   stall: RuntimeNavigationStallObservation,
   routeAssessments:
     readonly GameplayIntentRouteRuntimeAssessment[],
-): GameplayRouteStallRuntimeAssessment {
+): GameplayRouteStallAssessmentBase {
   const selected =
     selectRouteAssessmentForStall(
       stall,
@@ -302,6 +325,205 @@ function assessRouteStall(
   };
 }
 
+function sameRouteRuntimeScope(
+  stall: RuntimeNavigationStallObservation,
+  scope: {
+    arenaId?: string;
+    arenaGeneration?: number;
+    entityKey?: string;
+  },
+  entityKey: string,
+): boolean {
+  if (entityKey !== stall.entityKey) return false;
+  if (
+    stall.scope.arenaId !== undefined &&
+    scope.arenaId !== undefined &&
+    stall.scope.arenaId !== scope.arenaId
+  ) {
+    return false;
+  }
+  if (
+    stall.scope.arenaGeneration !== undefined &&
+    scope.arenaGeneration !== undefined &&
+    stall.scope.arenaGeneration !== scope.arenaGeneration
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function atOrBeforeStall(
+  stall: RuntimeNavigationStallObservation,
+  observedTick: number | undefined,
+): boolean {
+  const stallTick = stall.observedAt?.tick;
+  if (stallTick === undefined) return true;
+  return observedTick !== undefined && observedTick <= stallTick;
+}
+
+function latestByTick<T>(
+  items: readonly T[],
+  tick: (item: T) => number | undefined,
+): T | undefined {
+  if (items.length === 0) return undefined;
+  const withTick = items.filter(
+    (item) => tick(item) !== undefined,
+  );
+  if (withTick.length === items.length) {
+    const latest = Math.max(
+      ...withTick.map((item) => tick(item)!),
+    );
+    const latestItems = withTick.filter(
+      (item) => tick(item) === latest,
+    );
+    return latestItems.length === 1
+      ? latestItems[0]
+      : undefined;
+  }
+  return items.length === 1 ? items[0] : undefined;
+}
+
+function selectLatestNavigationTargetForStall(
+  stall: RuntimeNavigationStallObservation,
+  observations: readonly RuntimeNavigationTargetObservation[],
+): RuntimeNavigationTargetObservation | undefined {
+  const compatible = observations.filter((item) =>
+    sameRouteRuntimeScope(
+      stall,
+      item.scope,
+      item.entityKey,
+    ) &&
+    atOrBeforeStall(
+      stall,
+      item.observedAt?.tick,
+    )
+  );
+  return latestByTick(
+    compatible,
+    (item) => item.observedAt?.tick,
+  );
+}
+
+function selectLatestReachabilityForStall(
+  stall: RuntimeNavigationStallObservation,
+  observations: readonly RuntimeRouteReachabilityObservation[],
+): RuntimeRouteReachabilityObservation | undefined {
+  const compatible = observations.filter((item) =>
+    sameRouteRuntimeScope(
+      stall,
+      item.scope,
+      item.entityKey,
+    ) &&
+    atOrBeforeStall(
+      stall,
+      item.observedAt?.tick,
+    )
+  );
+  return latestByTick(
+    compatible,
+    (item) => item.observedAt?.tick,
+  );
+}
+
+function routeMotionSeriesForStall(
+  stall: RuntimeNavigationStallObservation,
+  observations: readonly RuntimeRouteObservation[],
+): GameplayRouteMotionSeries | undefined {
+  const compatible = observations
+    .filter((item) =>
+      sameRouteRuntimeScope(
+        stall,
+        item.scope,
+        item.entityKey,
+      ) &&
+      atOrBeforeStall(
+        stall,
+        item.observedAt?.tick,
+      ) &&
+      (
+        stall.routeId === undefined ||
+        item.routeId === undefined ||
+        stall.routeId === item.routeId
+      )
+    )
+    .sort(
+      (a, b) =>
+        (a.observedAt?.tick ?? Number.MIN_SAFE_INTEGER) -
+        (b.observedAt?.tick ?? Number.MIN_SAFE_INTEGER),
+    );
+
+  if (compatible.length < 2) return undefined;
+
+  const first = compatible[0]!;
+  const last = compatible[compatible.length - 1]!;
+  const dx =
+    last.worldLocation.x - first.worldLocation.x;
+  const dy =
+    last.worldLocation.y - first.worldLocation.y;
+  const dz =
+    last.worldLocation.z - first.worldLocation.z;
+
+  return {
+    sampleCount: compatible.length,
+    evidenceIds: compatible.map(
+      (item) => item.evidenceId,
+    ),
+    ...(first.observedAt?.tick === undefined
+      ? {}
+      : { firstTick: first.observedAt.tick }),
+    ...(last.observedAt?.tick === undefined
+      ? {}
+      : { lastTick: last.observedAt.tick }),
+    displacement: Math.sqrt(
+      dx * dx + dy * dy + dz * dz,
+    ),
+  };
+}
+
+function navigationTargetComparison(
+  routeAssessment:
+    GameplayIntentRouteRuntimeAssessment | undefined,
+  navigationTarget:
+    RuntimeNavigationTargetObservation | undefined,
+): {
+  distance?: number;
+  routeMatches?: boolean;
+} {
+  const target = routeAssessment?.assessment.target;
+  if (!target || !navigationTarget) return {};
+
+  const dx =
+    navigationTarget.targetLocation.x -
+    target.worldPoint.x;
+  const dy =
+    navigationTarget.targetLocation.y -
+    target.worldPoint.y;
+  const dz =
+    navigationTarget.targetLocation.z -
+    target.worldPoint.z;
+
+  const routeMatches =
+    (
+      navigationTarget.routeId === undefined ||
+      navigationTarget.routeId === target.routeId
+    ) &&
+    (
+      navigationTarget.routeIndex === undefined ||
+      navigationTarget.routeIndex === target.routeIndex
+    );
+
+  return {
+    distance: Math.sqrt(
+      dx * dx + dy * dy + dz * dz,
+    ),
+    routeMatches,
+  };
+}
+
+export interface GameplayIntentRuntimeOptions {
+  dimension?: string;
+}
+
 export function analyzeGameplayIntentRuntime(
   intent: GameplayIntentModel,
   stateObservations: readonly RuntimeStateObservation[],
@@ -309,6 +531,11 @@ export function analyzeGameplayIntentRuntime(
   routeObservations: readonly RuntimeRouteObservation[] = [],
   navigationStallObservations:
     readonly RuntimeNavigationStallObservation[] = [],
+  navigationTargetObservations:
+    readonly RuntimeNavigationTargetObservation[] = [],
+  routeReachabilityObservations:
+    readonly RuntimeRouteReachabilityObservation[] = [],
+  options: GameplayIntentRuntimeOptions = {},
 ): GameplayIntentRuntimeAnalysis {
   const stateSnapshot = {
     schemaVersion: 1 as const,
@@ -408,11 +635,125 @@ export function analyzeGameplayIntentRuntime(
 
   const routeStallAssessments =
     navigationStallObservations.map(
-      (stall) =>
-        assessRouteStall(
+      (stall): GameplayRouteStallRuntimeAssessment => {
+        const baseAssessment = assessRouteStall(
           stall,
           routeAssessments,
-        ),
+        );
+        const motionSeries =
+          routeMotionSeriesForStall(
+            stall,
+            routeObservations,
+          );
+        const navigationTargetObservation =
+          selectLatestNavigationTargetForStall(
+            stall,
+            navigationTargetObservations,
+          );
+        const reachabilityObservation =
+          selectLatestReachabilityForStall(
+            stall,
+            routeReachabilityObservations,
+          );
+        const navigationComparison =
+          navigationTargetComparison(
+            baseAssessment.routeAssessment,
+            navigationTargetObservation,
+          );
+
+        const fulfilled = new Map<
+          GameplayRouteRuntimeObservationNeed["kind"],
+          {
+            evidenceIds: readonly string[];
+            reason: string;
+          }
+        >();
+
+        if (motionSeries) {
+          fulfilled.set("entity-motion-series", {
+            evidenceIds: motionSeries.evidenceIds,
+            reason:
+              "At least two scoped route-position observations exist at or before the stall.",
+          });
+        }
+
+        const routeObservation =
+          baseAssessment.routeAssessment
+            ?.routeObservation;
+        if (routeObservation?.routeId !== undefined) {
+          fulfilled.set("route-context", {
+            evidenceIds: [routeObservation.evidenceId],
+            reason:
+              "A scoped runtime route observation includes routeId.",
+          });
+        }
+        if (
+          routeObservation?.routeIndex !== undefined
+        ) {
+          fulfilled.set("route-target-assignment", {
+            evidenceIds: [routeObservation.evidenceId],
+            reason:
+              "A scoped runtime route observation includes routeIndex.",
+          });
+        }
+
+        if (navigationTargetObservation) {
+          fulfilled.set("navigation-target", {
+            evidenceIds: [
+              navigationTargetObservation.evidenceId,
+            ],
+            reason:
+              "A scoped navigation-target observation exists at or before the stall.",
+          });
+        }
+
+        if (reachabilityObservation) {
+          fulfilled.set("route-reachability", {
+            evidenceIds: [
+              reachabilityObservation.evidenceId,
+            ],
+            reason:
+              "A scoped route-reachability observation exists at or before the stall.",
+          });
+        }
+
+        return {
+          ...baseAssessment,
+          ...(motionSeries === undefined
+            ? {}
+            : { motionSeries }),
+          ...(navigationTargetObservation === undefined
+            ? {}
+            : { navigationTargetObservation }),
+          ...(reachabilityObservation === undefined
+            ? {}
+            : { reachabilityObservation }),
+          ...(navigationComparison.distance === undefined
+            ? {}
+            : {
+                navigationTargetDistanceToAuthoredTarget:
+                  navigationComparison.distance,
+              }),
+          ...(navigationComparison.routeMatches === undefined
+            ? {}
+            : {
+                navigationTargetRouteMatchesAuthoredTarget:
+                  navigationComparison.routeMatches,
+              }),
+          evidencePlan:
+            planGameplayRouteRuntimeEvidence({
+              stall,
+              routeAssessment:
+                baseAssessment.routeAssessment
+                  ?.assessment,
+              needs: baseAssessment.observationNeeds,
+              fulfilled,
+              ...(options.dimension === undefined
+                ? {}
+                : { dimension: options.dimension }),
+            }),
+        };
+      },
     );
 
   return {

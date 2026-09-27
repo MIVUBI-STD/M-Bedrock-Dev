@@ -399,6 +399,36 @@ export function buildInspectionResult(
       runtimeNavigationStallObservations:
         input.runtimeEvidenceStage
           .runtimeNavigationStallObservations.length,
+      runtimeNavigationTargetObservations:
+        input.runtimeEvidenceStage
+          .runtimeNavigationTargetObservations.length,
+      runtimeRouteReachabilityObservations:
+        input.runtimeEvidenceStage
+          .runtimeRouteReachabilityObservations.length,
+      routeEvidenceSatisfied:
+        input.gameplayIntentRuntime.routeStallAssessments.reduce(
+          (sum, item) =>
+            sum + item.evidencePlan.satisfied.length,
+          0,
+        ),
+      routeInstrumentationRequired:
+        input.gameplayIntentRuntime.routeStallAssessments.reduce(
+          (sum, item) =>
+            sum + item.evidencePlan.instrumentation.length,
+          0,
+        ),
+      routeProbeRequests:
+        input.gameplayIntentRuntime.routeStallAssessments.reduce(
+          (sum, item) =>
+            sum + item.evidencePlan.runtimeProbeRequests.length,
+          0,
+        ),
+      routeEvidenceBlocked:
+        input.gameplayIntentRuntime.routeStallAssessments.reduce(
+          (sum, item) =>
+            sum + item.evidencePlan.blocked.length,
+          0,
+        ),
       stallTargetNearestMatch:
         input.gameplayIntentRuntime
           .stallTargetNearestMatch,

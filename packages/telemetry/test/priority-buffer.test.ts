@@ -90,6 +90,43 @@ describe("priority telemetry buffer", () => {
     }))).toBe("critical");
   });
 
+  it("classifies route diagnostic observations above raw route samples", () => {
+    expect(
+      telemetryEventPriority(
+        event("route-sample", "route-observation", {
+          entityKey: "demo:zombie",
+          worldLocation: { x: 0, y: 0, z: 0 },
+        }),
+      ),
+    ).toBe("low");
+
+    expect(
+      telemetryEventPriority(
+        event(
+          "nav-target",
+          "navigation-target-observation",
+          {
+            entityKey: "demo:zombie",
+            targetLocation: { x: 1, y: 2, z: 3 },
+          },
+        ),
+      ),
+    ).toBe("normal");
+
+    expect(
+      telemetryEventPriority(
+        event(
+          "reachability",
+          "route-reachability-observation",
+          {
+            entityKey: "demo:zombie",
+            reachable: true,
+          },
+        ),
+      ),
+    ).toBe("normal");
+  });
+
   it("preserves dropped count in exported batches", () => {
     const buffer = createPriorityBufferedTelemetrySink(1);
     buffer.emit(event("low-1", "mutation-applied", {

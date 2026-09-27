@@ -18,6 +18,8 @@ const KINDS = new Set([
   "state-observation",
   "gameplay-outcome",
   "route-observation",
+  "navigation-target-observation",
+  "route-reachability-observation",
 ]);
 
 const PRODUCERS = new Set<TelemetryProducer>([
@@ -367,6 +369,88 @@ export function validateTelemetryEvent(
         "route-observation worldLocation",
         errors,
       );
+      break;
+    case "navigation-target-observation":
+      stringField(input, "entityKey", errors);
+      validateVector3(
+        input.targetLocation,
+        "navigation-target-observation targetLocation",
+        errors,
+      );
+      if (
+        input.routeId !== undefined &&
+        (
+          typeof input.routeId !== "string" ||
+          input.routeId.trim().length === 0
+        )
+      ) {
+        errors.push(
+          "navigation-target-observation routeId must be a non-empty string when provided.",
+        );
+      }
+      if (
+        input.routeIndex !== undefined &&
+        (
+          typeof input.routeIndex !== "number" ||
+          !Number.isInteger(input.routeIndex)
+        )
+      ) {
+        errors.push(
+          "navigation-target-observation routeIndex must be an integer when provided.",
+        );
+      }
+      if (
+        input.mechanism !== undefined &&
+        (
+          typeof input.mechanism !== "string" ||
+          input.mechanism.trim().length === 0
+        )
+      ) {
+        errors.push(
+          "navigation-target-observation mechanism must be a non-empty string when provided.",
+        );
+      }
+      break;
+    case "route-reachability-observation":
+      stringField(input, "entityKey", errors);
+      if (typeof input.reachable !== "boolean") {
+        errors.push(
+          "route-reachability-observation reachable must be boolean.",
+        );
+      }
+      if (
+        input.routeId !== undefined &&
+        (
+          typeof input.routeId !== "string" ||
+          input.routeId.trim().length === 0
+        )
+      ) {
+        errors.push(
+          "route-reachability-observation routeId must be a non-empty string when provided.",
+        );
+      }
+      if (
+        input.routeIndex !== undefined &&
+        (
+          typeof input.routeIndex !== "number" ||
+          !Number.isInteger(input.routeIndex)
+        )
+      ) {
+        errors.push(
+          "route-reachability-observation routeIndex must be an integer when provided.",
+        );
+      }
+      if (
+        input.mechanism !== undefined &&
+        (
+          typeof input.mechanism !== "string" ||
+          input.mechanism.trim().length === 0
+        )
+      ) {
+        errors.push(
+          "route-reachability-observation mechanism must be a non-empty string when provided.",
+        );
+      }
       break;
   }
 

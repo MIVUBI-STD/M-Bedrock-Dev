@@ -5,8 +5,10 @@ import type {
 import type {
   RuntimeEvidenceRecord,
   RuntimeNavigationStallObservation,
+  RuntimeNavigationTargetObservation,
   RuntimeOutcomeObservation,
   RuntimeRouteObservation,
+  RuntimeRouteReachabilityObservation,
   RuntimeScope,
   RuntimeStateObservation,
 } from "../../project-model/src/index.js";
@@ -301,6 +303,65 @@ function recordsForEvent(event: TelemetryEvent): RuntimeEvidenceRecord[] {
         ),
       ];
     }
+
+    case "navigation-target-observation": {
+      const scoped = {
+        ...event,
+        scope: ensureEntityScope(
+          event.scope,
+          event.entityKey,
+        ),
+      };
+      return [
+        base(
+          scoped,
+          "navigation-target-observed",
+          "present",
+          [
+            event.routeId === undefined
+              ? undefined
+              : "route=" + event.routeId,
+            event.routeIndex === undefined
+              ? undefined
+              : "routeIndex=" + event.routeIndex,
+            "x=" + event.targetLocation.x,
+            "y=" + event.targetLocation.y,
+            "z=" + event.targetLocation.z,
+            event.mechanism === undefined
+              ? undefined
+              : "mechanism=" + event.mechanism,
+          ].filter(Boolean).join(";"),
+        ),
+      ];
+    }
+
+    case "route-reachability-observation": {
+      const scoped = {
+        ...event,
+        scope: ensureEntityScope(
+          event.scope,
+          event.entityKey,
+        ),
+      };
+      return [
+        base(
+          scoped,
+          "route-target-reachable",
+          event.reachable ? "present" : "absent",
+          [
+            event.routeId === undefined
+              ? undefined
+              : "route=" + event.routeId,
+            event.routeIndex === undefined
+              ? undefined
+              : "routeIndex=" + event.routeIndex,
+            event.mechanism === undefined
+              ? undefined
+              : "mechanism=" + event.mechanism,
+          ].filter(Boolean).join(";"),
+        ),
+      ];
+    }
   }
 }
 
@@ -334,6 +395,118 @@ export function telemetryRuntimeStateObservations(
             },
           }),
       evidenceId: "telemetry-state:" + event.eventId,
+    }];
+  });
+}
+
+export function telemetryRuntimeNavigationTargetObservations(
+  events: readonly TelemetryEvent[],
+): RuntimeNavigationTargetObservation[] {
+  return events.flatMap((event) => {
+    if (
+      event.kind !==
+      "navigation-target-observation"
+    ) {
+      return [];
+    }
+
+    const scope = ensureEntityScope(
+      event.scope,
+      event.entityKey,
+    );
+
+    return [{
+      entityKey: event.entityKey,
+      targetLocation: event.targetLocation,
+      ...(event.routeId === undefined
+        ? {}
+        : { routeId: event.routeId }),
+      ...(event.routeIndex === undefined
+        ? {}
+        : { routeIndex: event.routeIndex }),
+      ...(event.mechanism === undefined
+        ? {}
+        : { mechanism: event.mechanism }),
+      scope,
+      ...(event.tick === undefined &&
+          event.sequence === undefined &&
+          event.timestamp === undefined
+        ? {}
+        : {
+            observedAt: {
+              ...(event.tick === undefined
+                ? {}
+                : { tick: event.tick }),
+              ...(event.streamId === undefined
+                ? {}
+                : { streamId: event.streamId }),
+              ...(event.sequence === undefined
+                ? {}
+                : { sequence: event.sequence }),
+              ...(event.timestamp === undefined
+                ? {}
+                : { timestamp: event.timestamp }),
+            },
+          }),
+      evidenceId:
+        "telemetry-navigation-target:" +
+        event.eventId,
+    }];
+  });
+}
+
+export function telemetryRuntimeRouteReachabilityObservations(
+  events: readonly TelemetryEvent[],
+): RuntimeRouteReachabilityObservation[] {
+  return events.flatMap((event) => {
+    if (
+      event.kind !==
+      "route-reachability-observation"
+    ) {
+      return [];
+    }
+
+    const scope = ensureEntityScope(
+      event.scope,
+      event.entityKey,
+    );
+
+    return [{
+      entityKey: event.entityKey,
+      reachable: event.reachable,
+      ...(event.routeId === undefined
+        ? {}
+        : { routeId: event.routeId }),
+      ...(event.routeIndex === undefined
+        ? {}
+        : { routeIndex: event.routeIndex }),
+      ...(event.mechanism === undefined
+        ? {}
+        : { mechanism: event.mechanism }),
+      scope,
+      ...(event.tick === undefined &&
+          event.sequence === undefined &&
+          event.timestamp === undefined
+        ? {}
+        : {
+            observedAt: {
+              ...(event.tick === undefined
+                ? {}
+                : { tick: event.tick }),
+              ...(event.streamId === undefined
+                ? {}
+                : { streamId: event.streamId }),
+              ...(event.sequence === undefined
+                ? {}
+                : { sequence: event.sequence }),
+              ...(event.timestamp === undefined
+                ? {}
+                : { timestamp: event.timestamp }),
+            },
+          }),
+      evidenceId:
+        "telemetry-route-reachability:" +
+        event.eventId,
     }];
   });
 }

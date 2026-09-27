@@ -115,7 +115,9 @@ export function telemetryEventPriority(
 
   if (
     event.kind === "route-revalidation" ||
-    event.kind === "mutation-verification"
+    event.kind === "mutation-verification" ||
+    event.kind === "navigation-target-observation" ||
+    event.kind === "route-reachability-observation"
   ) {
     return "normal";
   }

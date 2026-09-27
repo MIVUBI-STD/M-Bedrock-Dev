@@ -95,6 +95,21 @@ export interface TelemetryEmitter {
       Extract<TelemetryEvent, { kind: "gameplay-outcome" }>
     >,
   ): Extract<TelemetryEvent, { kind: "gameplay-outcome" }>;
+  routeObservation(
+    input: TelemetryEventInput<
+      Extract<TelemetryEvent, { kind: "route-observation" }>
+    >,
+  ): Extract<TelemetryEvent, { kind: "route-observation" }>;
+  navigationTargetObservation(
+    input: TelemetryEventInput<
+      Extract<TelemetryEvent, { kind: "navigation-target-observation" }>
+    >,
+  ): Extract<TelemetryEvent, { kind: "navigation-target-observation" }>;
+  routeReachabilityObservation(
+    input: TelemetryEventInput<
+      Extract<TelemetryEvent, { kind: "route-reachability-observation" }>
+    >,
+  ): Extract<TelemetryEvent, { kind: "route-reachability-observation" }>;
 }
 
 export interface BufferedTelemetrySink extends TelemetrySink {

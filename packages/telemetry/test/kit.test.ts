@@ -136,6 +136,126 @@ describe("development telemetry instrumentation kit", () => {
     expect(kit.buffer.size).toBe(1);
   });
 
+  it("can emit route samples from entity progress monitoring", () => {
+    const kit = createTelemetryInstrumentationKit({
+      initialScope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+      },
+    });
+    const progress = kit.entityProgress({
+      stallTicks: 10,
+      minProgressDistance: 0.5,
+      emitRouteObservations: true,
+    });
+
+    progress.observe({
+      entityKey: "demo:zombie",
+      tick: 100,
+      position: {
+        x: 1777.5,
+        y: -30,
+        z: 0,
+      },
+      expectedToProgress: true,
+      routeId: "bridge",
+      routeIndex: 606,
+    });
+    progress.observe({
+      entityKey: "demo:zombie",
+      tick: 105,
+      position: {
+        x: 1778,
+        y: -30,
+        z: 0,
+      },
+      expectedToProgress: true,
+      routeId: "bridge",
+      routeIndex: 606,
+    });
+
+    expect(
+      kit.buffer.snapshot().filter(
+        (event) =>
+          event.kind === "route-observation",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        kind: "route-observation",
+        tick: 100,
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1777.5,
+          y: -30,
+          z: 0,
+        },
+        scope: expect.objectContaining({
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+        }),
+      }),
+      expect.objectContaining({
+        kind: "route-observation",
+        tick: 105,
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1778,
+          y: -30,
+          z: 0,
+        },
+      }),
+    ]);
+  });
+
+  it("emits navigation target and route reachability observations", () => {
+    let tick = 200;
+    const kit = createTelemetryInstrumentationKit({
+      initialScope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+      },
+      tickProvider: () => tick,
+    });
+
+    kit.emitter.navigationTargetObservation({
+      entityKey: "demo:zombie",
+      routeId: "bridge",
+      routeIndex: 606,
+      targetLocation: {
+        x: 1778,
+        y: -28.5,
+        z: 0.5,
+      },
+      mechanism: "moveToLocation",
+    });
+
+    tick = 201;
+    kit.emitter.routeReachabilityObservation({
+      entityKey: "demo:zombie",
+      routeId: "bridge",
+      routeIndex: 606,
+      reachable: true,
+      mechanism: "gametest-path-check",
+    });
+
+    expect(kit.buffer.snapshot()).toEqual([
+      expect.objectContaining({
+        kind: "navigation-target-observation",
+        tick: 200,
+        mechanism: "moveToLocation",
+      }),
+      expect.objectContaining({
+        kind: "route-reachability-observation",
+        tick: 201,
+        reachable: true,
+      }),
+    ]);
+  });
+
   it("reports verification and drains batches atomically", () => {
     const kit = createTelemetryInstrumentationKit({
       maxEvents: 1,
