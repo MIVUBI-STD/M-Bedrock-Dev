@@ -35,6 +35,7 @@ describe("diagnosis planned-step execution", () => {
         quality: "usable" as const,
         traits: ["structural-proof" as const],
       }],
+      output: { indexed: true },
     }));
 
     const result =
@@ -77,6 +78,7 @@ describe("diagnosis planned-step execution", () => {
                 quality: "usable",
                 traits: [],
               }],
+              output: {},
             }),
           }],
         },
