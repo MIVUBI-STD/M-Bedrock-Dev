@@ -39,6 +39,7 @@ const GOAL_LEVEL: Readonly<Record<
   "structural-consistency": "static",
   "semantic-consistency": "semantic",
   "intent-classification": "semantic",
+  "contradiction-proof": "formal",
   "runtime-behavior": "runtime",
   "causal-repair": "runtime",
 };

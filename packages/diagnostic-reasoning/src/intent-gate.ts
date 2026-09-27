@@ -13,6 +13,14 @@ export type IntentDiagnosticDisposition =
   | "ambiguous-intent"
   | "runtime-proof-required";
 
+export type IntentDiagnosticNextEvidenceNeed =
+  | "none"
+  | "intent-grounding"
+  | "intent-clarification"
+  | "authored-intent"
+  | "contradiction-proof"
+  | "runtime-proof";
+
 export interface IntentDiagnosticGateInput {
   intent: GameplayIntentModel;
   subjectIds: readonly string[];
@@ -30,6 +38,7 @@ export interface IntentDiagnosticGateResult {
   subjectIds: readonly string[];
   basisInvariantIds: readonly string[];
   evidenceIds: readonly string[];
+  nextEvidenceNeed: IntentDiagnosticNextEvidenceNeed;
   reasons: readonly string[];
 }
 
@@ -47,6 +56,7 @@ export function gateIntentDiagnostic(
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
       evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "intent-grounding",
       reasons: grounding.reasons,
     };
   }
@@ -57,6 +67,7 @@ export function gateIntentDiagnostic(
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
       evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "intent-clarification",
       reasons: grounding.reasons,
     };
   }
@@ -72,6 +83,7 @@ export function gateIntentDiagnostic(
         ...input.observationEvidenceIds,
         ...(input.compatibilityDifferenceEvidenceIds ?? []),
       ],
+      nextEvidenceNeed: "none",
       reasons: [
         "Observed behavior is explained by an evidenced target compatibility difference.",
       ],
@@ -87,6 +99,7 @@ export function gateIntentDiagnostic(
         ...input.observationEvidenceIds,
         ...(input.engineConstraintEvidenceIds ?? []),
       ],
+      nextEvidenceNeed: "none",
       reasons: [
         "Observed behavior is explained by an evidenced engine constraint.",
       ],
@@ -102,6 +115,7 @@ export function gateIntentDiagnostic(
         ...input.observationEvidenceIds,
         ...(input.designMatchEvidenceIds ?? []),
       ],
+      nextEvidenceNeed: "none",
       reasons: [
         "Observed behavior has direct evidence matching the authored or inferred design.",
       ],
@@ -117,6 +131,7 @@ export function gateIntentDiagnostic(
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
       evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "runtime-proof",
       reasons: [
         "This behavior depends on runtime semantics that static evidence cannot prove.",
       ],
@@ -150,6 +165,7 @@ export function gateIntentDiagnostic(
         ...(input.contradictionEvidenceIds ?? []),
         ...(input.runtimeProofEvidenceIds ?? []),
       ],
+      nextEvidenceNeed: "none",
       reasons: [
         "Observed evidence contradicts an evidence-grounded authored invariant.",
       ],
@@ -170,6 +186,7 @@ export function gateIntentDiagnostic(
         ...(input.contradictionEvidenceIds ?? []),
         ...(input.runtimeProofEvidenceIds ?? []),
       ],
+      nextEvidenceNeed: "authored-intent",
       reasons: [
         "Observed evidence contradicts inferred intent, but authored intent is not yet strong enough for confirmation.",
       ],
@@ -184,7 +201,8 @@ export function gateIntentDiagnostic(
       ...input.observationEvidenceIds,
       ...(input.runtimeProofEvidenceIds ?? []),
     ],
-    reasons: [
+    nextEvidenceNeed: "contradiction-proof",
+      reasons: [
       "No evidenced contradiction or design match is strong enough to classify the observation.",
     ],
   };
