@@ -262,6 +262,80 @@ function acceptsStatusDiscriminant(
   return sourceClassified && /^status$/i.test(propertyName);
 }
 
+function policyOperandPaths(
+  operand: {
+    kind: string;
+    path?: string;
+    base?: unknown;
+    key?: unknown;
+  },
+): string[] {
+  if (operand.kind === "path" && operand.path) {
+    return [operand.path];
+  }
+  if (operand.kind === "index") {
+    return [
+      ...policyOperandPaths(
+        operand.base as Parameters<typeof policyOperandPaths>[0],
+      ),
+      ...policyOperandPaths(
+        operand.key as Parameters<typeof policyOperandPaths>[0],
+      ),
+    ];
+  }
+  return [];
+}
+
+function policyPredicatePaths(
+  predicate: NonNullable<
+    GameplayIntentSignal["policyPredicate"]
+  >,
+): string[] {
+  if (
+    predicate.kind === "truthy" ||
+    predicate.kind === "falsy"
+  ) {
+    return policyOperandPaths(predicate.operand);
+  }
+  if (predicate.kind === "comparison") {
+    return [
+      ...policyOperandPaths(predicate.left),
+      ...policyOperandPaths(predicate.right),
+    ];
+  }
+  if (predicate.kind === "in") {
+    return policyOperandPaths(predicate.operand);
+  }
+  if (predicate.kind === "all" || predicate.kind === "any") {
+    return predicate.predicates.flatMap(
+      policyPredicatePaths,
+    );
+  }
+  if (predicate.kind === "fallback") {
+    return predicate.excludedPredicates.flatMap(
+      policyPredicatePaths,
+    );
+  }
+  return [];
+}
+
+function predicateUsesOnlyMinifiedRoots(
+  predicate: NonNullable<
+    GameplayIntentSignal["policyPredicate"]
+  >,
+): boolean {
+  const paths = policyPredicatePaths(predicate);
+  if (paths.length === 0) return false;
+
+  const roots = paths.map(
+    (path) =>
+      path.split(/[.[]/, 1)[0] ?? "",
+  );
+  return roots.every(
+    (root) => /^[A-Za-z_$]$/.test(root),
+  );
+}
+
 function contiguousIndexRanges(
   values: readonly number[],
 ): Array<{ min: number; max: number }> {
@@ -719,10 +793,10 @@ export function extractGameplayIntentSignals(
 
     const normalizedPath =
       "/" + path.replaceAll("\\", "/");
-    if (
+    const bundledExecutable =
       declaredMemberRecoveryEnabled &&
-      normalizedPath.includes("/scripts/")
-    ) {
+      normalizedPath.includes("/scripts/");
+    if (bundledExecutable) {
       for (const member of script.declaredMembers ?? []) {
         const signal =
           declaredMemberSignal(path, member);
@@ -1018,6 +1092,11 @@ export function extractGameplayIntentSignals(
             "Source explicitly returns this discriminated status value from a classified gameplay function.",
         });
 
+        const minifiedGuard =
+          bundledExecutable &&
+          predicateUsesOnlyMinifiedRoots(
+            guarded.predicate,
+          );
         const policyKey =
           "policy:" +
           slug(sourceName + " " + guarded.conditionText);
@@ -1025,13 +1104,29 @@ export function extractGameplayIntentSignals(
           id: "signal:" + policyKey + ":" + slug(path),
           subjectKey: policyKey,
           nodeKind: "policy",
-          label: title(sourceName + " when " + guarded.conditionText),
+          label: minifiedGuard
+            ? title(
+                sourceName +
+                " guarded " +
+                guarded.value,
+              )
+            : title(
+                sourceName +
+                " when " +
+                guarded.conditionText,
+              ),
           status: "authored",
           evidenceOrigin: "source-code",
           locator: path,
-          summary:
-            "Source directly guards this status branch with the recorded condition.",
-          policyPredicate: guarded.predicate,
+          summary: minifiedGuard
+            ? "Source directly guards this status branch, but predicate operands are minified and cannot safely bind to runtime state."
+            : "Source directly guards this status branch with the recorded condition.",
+          policyPredicate: minifiedGuard
+            ? {
+                kind: "unknown",
+                text: guarded.conditionText,
+              }
+            : guarded.predicate,
         });
 
         pushRelation({
@@ -1088,6 +1183,11 @@ export function extractGameplayIntentSignals(
       };
       pushSignal(signals, outcomeSignal);
 
+      const minifiedGuard =
+        bundledExecutable &&
+        predicateUsesOnlyMinifiedRoots(
+          guarded.predicate,
+        );
       const policyKey =
         "policy:" +
         slug(sourceName + " " + guarded.conditionText);
@@ -1095,13 +1195,29 @@ export function extractGameplayIntentSignals(
         id: "signal:" + policyKey + ":" + slug(path),
         subjectKey: policyKey,
         nodeKind: "policy",
-        label: title(sourceName + " when " + guarded.conditionText),
+        label: minifiedGuard
+          ? title(
+              sourceName +
+              " guarded " +
+              guarded.value,
+            )
+          : title(
+              sourceName +
+              " when " +
+              guarded.conditionText,
+            ),
         status: "authored",
         evidenceOrigin: "source-code",
         locator: path,
-        summary:
-          "Source directly guards this return branch with the recorded condition.",
-        policyPredicate: guarded.predicate,
+        summary: minifiedGuard
+          ? "Source directly guards this return branch, but predicate operands are minified and cannot safely bind to runtime state."
+          : "Source directly guards this return branch with the recorded condition.",
+        policyPredicate: minifiedGuard
+          ? {
+              kind: "unknown",
+              text: guarded.conditionText,
+            }
+          : guarded.predicate,
       };
       pushSignal(signals, policySignal);
 

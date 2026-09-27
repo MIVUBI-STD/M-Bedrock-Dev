@@ -124,6 +124,155 @@ function script(): ParsedScriptFile {
 }
 
 describe("gameplay intent analyzer", () => {
+  it("downgrades minified bundled guard predicates to unknown", () => {
+    const base = script();
+    const bundled: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      commandLiterals: [],
+      declaredMembers: [{
+        member: "readRecovery",
+        memberKind: "method",
+        source: base.source,
+      }],
+      returnOutcomes: [{
+        executionRegion: "function:readRecovery",
+        propertyName: "status",
+        value: "reading",
+        source: base.source,
+      }],
+      guardedOutcomes: [{
+        executionRegion: "function:readRecovery",
+        conditionText: "o.nextPage < o.header.pages",
+        conditionIdentifiers: [
+          "o",
+          "o.nextPage",
+          "o.header",
+          "o.header.pages",
+        ],
+        predicate: {
+          kind: "comparison",
+          operator: "lt",
+          left: {
+            kind: "path",
+            path: "o.nextPage",
+          },
+          right: {
+            kind: "path",
+            path: "o.header.pages",
+          },
+        },
+        propertyName: "status",
+        value: "reading",
+        conditionSource: base.source,
+        outcomeSource: base.source,
+      }],
+    };
+
+    const result =
+      extractGameplayIntentSignals([bundled]);
+    const policy = result.signals.find(
+      (signal) =>
+        signal.nodeKind === "policy" &&
+        signal.subjectKey.includes("read-recovery"),
+    );
+
+    expect(policy?.policyPredicate).toEqual({
+      kind: "unknown",
+      text: "o.nextPage < o.header.pages",
+    });
+    expect(policy?.label).toBe(
+      "Read Recovery Guarded Reading",
+    );
+  });
+
+  it("preserves stable bundled guard predicates with named roots", () => {
+    const base = script();
+    const bundled: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      commandLiterals: [],
+      declaredMembers: [{
+        member: "decideReconnect",
+        memberKind: "method",
+        source: base.source,
+      }],
+      returnOutcomes: [{
+        executionRegion: "function:decideReconnect",
+        propertyName: "action",
+        value: "resume",
+        source: base.source,
+      }],
+      guardedOutcomes: [{
+        executionRegion: "function:decideReconnect",
+        conditionText: 'session.phase === "active"',
+        conditionIdentifiers: [
+          "session",
+          "session.phase",
+        ],
+        predicate: {
+          kind: "comparison",
+          operator: "eq",
+          left: {
+            kind: "path",
+            path: "session.phase",
+          },
+          right: {
+            kind: "literal",
+            value: "active",
+          },
+        },
+        propertyName: "action",
+        value: "resume",
+        conditionSource: base.source,
+        outcomeSource: base.source,
+      }],
+    };
+
+    const result =
+      extractGameplayIntentSignals([bundled]);
+    const policy = result.signals.find(
+      (signal) =>
+        signal.nodeKind === "policy" &&
+        signal.subjectKey.includes("decide-reconnect"),
+    );
+
+    expect(policy?.policyPredicate).toEqual({
+      kind: "comparison",
+      operator: "eq",
+      left: {
+        kind: "path",
+        path: "session.phase",
+      },
+      right: {
+        kind: "literal",
+        value: "active",
+      },
+    });
+  });
+
   it("treats phase-like declared properties as state or resource surfaces", () => {
     const base = script();
     const bundled: ParsedScriptFile = {
