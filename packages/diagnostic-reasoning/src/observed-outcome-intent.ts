@@ -28,6 +28,7 @@ export function gateObservedOutcomeAgainstIntent(
       subjectIds: [input.outcomeId],
       basisInvariantIds: [],
       evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "intent-clarification",
       reasons: grounding.reasons,
     };
   }
@@ -38,6 +39,7 @@ export function gateObservedOutcomeAgainstIntent(
       subjectIds: [input.outcomeId],
       basisInvariantIds: [],
       evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "intent-grounding",
       reasons: grounding.reasons,
     };
   }
@@ -54,6 +56,7 @@ export function gateObservedOutcomeAgainstIntent(
       subjectIds: [input.outcomeId],
       basisInvariantIds: [],
       evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "none",
       reasons: assessment.reasons,
     };
   }
@@ -64,6 +67,7 @@ export function gateObservedOutcomeAgainstIntent(
       subjectIds: [input.outcomeId],
       basisInvariantIds: [],
       evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "contradiction-proof",
       reasons: assessment.reasons,
     };
   }
@@ -81,6 +85,7 @@ export function gateObservedOutcomeAgainstIntent(
     basisInvariantIds:
       admissibilityInvariants.map((item) => item.id),
     evidenceIds: [...input.observationEvidenceIds],
+    nextEvidenceNeed: "authored-intent",
     reasons: [
       ...assessment.reasons,
       "The admissibility contract is inferred from complete recognized direct-guard coverage, so this cannot be promoted to confirmed defect without stronger evidence.",
