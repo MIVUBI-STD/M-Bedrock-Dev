@@ -53,12 +53,19 @@ export function routeIntentDiagnosticNextAnalysis(
 
     case "intent-grounding":
     case "intent-clarification":
-    case "authored-intent":
       return {
         disposition: "analyze",
         goal: "intent-classification",
         reason:
           "Gameplay intent evidence must be strengthened before defect classification can advance.",
+      };
+
+    case "authored-intent":
+      return {
+        disposition: "analyze",
+        goal: "authored-intent",
+        reason:
+          "Authored gameplay intent evidence is required before a probable defect can be promoted.",
       };
   }
 }
