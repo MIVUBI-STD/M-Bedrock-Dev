@@ -5,6 +5,7 @@ import type {
 import type {
   RuntimeEvidenceRecord,
   RuntimeScope,
+  RuntimeStateObservation,
 } from "../../project-model/src/index.js";
 
 function base(
@@ -249,7 +250,51 @@ function recordsForEvent(event: TelemetryEvent): RuntimeEvidenceRecord[] {
       ];
       return records;
     }
+
+    case "state-observation":
+      return [
+        base(
+          event,
+          "runtime-state-observed:" + event.path,
+          "present",
+          String(event.value),
+        ),
+      ];
   }
+}
+
+export function telemetryRuntimeStateObservations(
+  events: readonly TelemetryEvent[],
+): RuntimeStateObservation[] {
+  return events.flatMap((event) => {
+    if (event.kind !== "state-observation") return [];
+    return [{
+      path: event.path,
+      value: event.value,
+      confidence: "observed" as const,
+      origin: "telemetry" as const,
+      scope: event.scope,
+      ...(event.tick === undefined &&
+          event.sequence === undefined &&
+          event.timestamp === undefined
+        ? {}
+        : {
+            observedAt: {
+              ...(event.tick === undefined ? {} : { tick: event.tick }),
+              ...(event.streamId === undefined
+                ? {}
+                : { streamId: event.streamId }),
+              ...(event.sequence === undefined
+                ? {}
+                : { sequence: event.sequence }),
+              ...(event.timestamp === undefined
+                ? {}
+                : { timestamp: event.timestamp }),
+            },
+          }),
+      evidenceId: "telemetry-state:" + event.eventId,
+    }];
+  });
 }
 
 export function telemetryRuntimeEvidence(

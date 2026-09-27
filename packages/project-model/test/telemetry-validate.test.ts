@@ -29,6 +29,26 @@ describe("telemetry validation", () => {
     expect(batch.events).toHaveLength(1);
   });
 
+  it("accepts typed state observation telemetry", () => {
+    const batch = parseTelemetryBatch({
+      schemaVersion: 1,
+      events: [{
+        schemaVersion: 1,
+        eventId: "state-1",
+        kind: "state-observation",
+        producer: "instrumentation",
+        scope: {
+          arenaId: "arena-1",
+          arenaGeneration: 2,
+        },
+        path: "session.phase",
+        value: "active",
+      }],
+    });
+
+    expect(batch.events[0]?.kind).toBe("state-observation");
+  });
+
   it("rejects duplicate event ids and malformed event payloads", () => {
     const errors = validateTelemetryBatch({
       schemaVersion: 1,

@@ -111,6 +111,51 @@ describe("runtime state outcome intent gate", () => {
     ).toBe("probable-defect");
   });
 
+  it("selects state from the requested runtime scope", () => {
+    const snapshot: RuntimeStateSnapshot = {
+      schemaVersion: 1,
+      observations: [
+        {
+          path: "record.pendingCleanup",
+          value: false,
+          confidence: "observed",
+          origin: "telemetry",
+          scope: {
+            arenaId: "arena-1",
+            arenaGeneration: 2,
+          },
+          observedAt: { tick: 10 },
+          evidenceId: "e:arena-1",
+        },
+        {
+          path: "record.pendingCleanup",
+          value: true,
+          confidence: "observed",
+          origin: "telemetry",
+          scope: {
+            arenaId: "arena-2",
+            arenaGeneration: 1,
+          },
+          observedAt: { tick: 10 },
+          evidenceId: "e:arena-2",
+        },
+      ],
+    };
+
+    expect(
+      gateRuntimeStateOutcomeAgainstIntent({
+        intent: model(),
+        outcomeId: "outcome:cleanup",
+        stateSnapshot: snapshot,
+        scope: {
+          arenaId: "arena-2",
+          arenaGeneration: 1,
+        },
+        observationEvidenceIds: ["e:observed-outcome"],
+      }).disposition,
+    ).toBe("designed-behavior");
+  });
+
   it("fails closed on conflicting runtime state", () => {
     const snapshot: RuntimeStateSnapshot = {
       schemaVersion: 1,

@@ -128,6 +128,13 @@ export interface MutationVerificationTelemetryEvent extends TelemetryEventBase {
   mechanism?: string;
 }
 
+export interface StateObservationTelemetryEvent
+  extends TelemetryEventBase {
+  kind: "state-observation";
+  path: string;
+  value: StateObservedValue;
+}
+
 export type TelemetryEvent =
   | EntityStallTelemetryEvent
   | TeleportFallbackTelemetryEvent
@@ -138,7 +145,8 @@ export type TelemetryEvent =
   | StateDriftTelemetryEvent
   | RouteRevalidationTelemetryEvent
   | MutationAppliedTelemetryEvent
-  | MutationVerificationTelemetryEvent;
+  | MutationVerificationTelemetryEvent
+  | StateObservationTelemetryEvent;
 
 export interface TelemetryBatch {
   schemaVersion: 1;

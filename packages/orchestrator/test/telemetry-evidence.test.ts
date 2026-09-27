@@ -1,7 +1,48 @@
 import { describe, expect, it } from "vitest";
-import { telemetryRuntimeEvidence } from "../src/telemetry-evidence.js";
+import {
+  telemetryRuntimeEvidence,
+  telemetryRuntimeStateObservations,
+} from "../src/telemetry-evidence.js";
 
 describe("telemetry evidence adapter", () => {
+  it("maps state observations into typed runtime state", () => {
+    const event = {
+      schemaVersion: 1 as const,
+      eventId: "phase-1",
+      kind: "state-observation" as const,
+      producer: "instrumentation" as const,
+      scope: {
+        arenaId: "arena-1",
+        arenaGeneration: 4,
+      },
+      tick: 120,
+      path: "session.phase",
+      value: "active",
+    };
+
+    expect(telemetryRuntimeStateObservations([event])).toEqual([
+      {
+        path: "session.phase",
+        value: "active",
+        confidence: "observed",
+        origin: "telemetry",
+        scope: {
+          arenaId: "arena-1",
+          arenaGeneration: 4,
+        },
+        observedAt: { tick: 120 },
+        evidenceId: "telemetry-state:phase-1",
+      },
+    ]);
+
+    expect(telemetryRuntimeEvidence([event])).toEqual([
+      expect.objectContaining({
+        predicate: "runtime-state-observed:session.phase",
+        state: "present",
+      }),
+    ]);
+  });
+
   it("maps observed route outcomes into scoped causal evidence", () => {
     const records = telemetryRuntimeEvidence([{
       schemaVersion: 1,

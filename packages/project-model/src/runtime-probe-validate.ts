@@ -237,6 +237,14 @@ export function validateRuntimeProbeResponse(input: unknown): string[] {
   }
 
   if (
+    input.statePath !== undefined &&
+    input.ok === true &&
+    input.value === undefined
+  ) {
+    errors.push("successful statePath responses require value.");
+  }
+
+  if (
     input.value !== undefined &&
     typeof input.value !== "string" &&
     typeof input.value !== "number" &&
@@ -323,6 +331,9 @@ export function validateRuntimeProbeExchange(
   }
   if (response.evidence.predicate !== request.predicate) {
     errors.push("evidence predicate mismatch.");
+  }
+  if (response.statePath !== request.statePath) {
+    errors.push("statePath mismatch.");
   }
   if (
     !runtimeScopeContains(

@@ -2,7 +2,10 @@ import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { RuntimeProbeResponse } from "../../project-model/src/index.js";
 import type { TelemetryEvent } from "../../project-model/src/index.js";
 import { analyzeTelemetryContinuity } from "../../project-model/src/index.js";
-import { telemetryRuntimeEvidence } from "./telemetry-evidence.js";
+import {
+  telemetryRuntimeEvidence,
+  telemetryRuntimeStateObservations,
+} from "./telemetry-evidence.js";
 import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
 import { assessRuntimeEvidenceSetIntegrity } from "./runtime-evidence-integrity.js";
 import { planEvidenceRecovery } from "./evidence-recovery.js";
@@ -19,8 +22,14 @@ export function prepareInspectionRuntimeEvidence(
 ) {
   const telemetryEvidence =
     telemetryRuntimeEvidence(input.telemetryEvents);
+  const telemetryStateObservations =
+    telemetryRuntimeStateObservations(input.telemetryEvents);
   const runtimeProbeEvidence =
     runtimeProbeResponseEvidence(input.runtimeProbeResponses);
+  const runtimeStateObservations = [
+    ...telemetryStateObservations,
+    ...runtimeProbeEvidence.stateObservations,
+  ];
 
   const telemetryContinuity = analyzeTelemetryContinuity({
     schemaVersion: 1,
@@ -151,6 +160,7 @@ export function prepareInspectionRuntimeEvidence(
   return {
     telemetryEvidence,
     runtimeProbeEvidence,
+    runtimeStateObservations,
     telemetryContinuity,
     telemetryEvidenceIntegrity,
     runtimeProbeEvidenceIntegrity,

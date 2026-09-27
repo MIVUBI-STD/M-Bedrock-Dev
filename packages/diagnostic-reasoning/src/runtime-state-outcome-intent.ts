@@ -1,5 +1,6 @@
 import {
   resolveRuntimeStateSnapshot,
+  type RuntimeScope,
   type RuntimeStateSnapshot,
 } from "../../project-model/src/index.js";
 import type {
@@ -17,6 +18,8 @@ export interface RuntimeStateOutcomeIntentInput {
   intent: GameplayIntentModel;
   outcomeId: string;
   stateSnapshot: RuntimeStateSnapshot;
+  scope?: RuntimeScope;
+  atOrBeforeTick?: number;
   observationEvidenceIds: readonly string[];
 }
 
@@ -25,6 +28,14 @@ export function gateRuntimeStateOutcomeAgainstIntent(
 ): IntentDiagnosticGateResult {
   const resolution = resolveRuntimeStateSnapshot(
     input.stateSnapshot,
+    {
+      ...(input.scope === undefined
+        ? {}
+        : { scope: input.scope }),
+      ...(input.atOrBeforeTick === undefined
+        ? {}
+        : { atOrBeforeTick: input.atOrBeforeTick }),
+    },
   );
 
   if (resolution.conflicts.length > 0) {

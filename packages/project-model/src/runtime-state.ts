@@ -1,6 +1,7 @@
-import type {
-  RuntimeObservationPoint,
-  RuntimeScope,
+import {
+  runtimeScopeContains,
+  type RuntimeObservationPoint,
+  type RuntimeScope,
 } from "./runtime-evidence.js";
 
 export type RuntimeStateScalar =
@@ -26,6 +27,11 @@ export interface RuntimeStateObservation {
 export interface RuntimeStateSnapshot {
   schemaVersion: 1;
   observations: readonly RuntimeStateObservation[];
+}
+
+export interface RuntimeStateResolutionOptions {
+  scope?: RuntimeScope;
+  atOrBeforeTick?: number;
 }
 
 export interface RuntimeStateResolution {
@@ -65,13 +71,36 @@ function assignPath(
 
 export function resolveRuntimeStateSnapshot(
   snapshot: RuntimeStateSnapshot,
+  options: RuntimeStateResolutionOptions = {},
 ): RuntimeStateResolution {
+  const applicable = snapshot.observations.filter(
+    (observation) => {
+      if (
+        options.scope !== undefined &&
+        !runtimeScopeContains(
+          observation.scope,
+          options.scope,
+        )
+      ) {
+        return false;
+      }
+      if (
+        options.atOrBeforeTick !== undefined &&
+        observation.observedAt?.tick !== undefined &&
+        observation.observedAt.tick > options.atOrBeforeTick
+      ) {
+        return false;
+      }
+      return true;
+    },
+  );
+
   const byPath = new Map<
     string,
     RuntimeStateObservation[]
   >();
 
-  for (const observation of snapshot.observations) {
+  for (const observation of applicable) {
     const list = byPath.get(observation.path) ?? [];
     list.push(observation);
     byPath.set(observation.path, list);
@@ -82,13 +111,37 @@ export function resolveRuntimeStateSnapshot(
   const conflicts: RuntimeStateResolution["conflicts"][number][] = [];
 
   for (const [path, observations] of byPath) {
+    let candidates = [...observations];
+
+    const withTick = candidates.filter(
+      (item) => item.observedAt?.tick !== undefined,
+    );
+    if (withTick.length === candidates.length && candidates.length > 0) {
+      const latestTick = Math.max(
+        ...withTick.map((item) => item.observedAt!.tick!),
+      );
+      candidates = withTick.filter(
+        (item) => item.observedAt!.tick === latestTick,
+      );
+    } else if (candidates.length > 1) {
+      const timestamps = candidates.map(
+        (item) => item.observedAt?.timestamp,
+      );
+      if (timestamps.every((value): value is string => value !== undefined)) {
+        const latest = [...timestamps].sort().at(-1)!;
+        candidates = candidates.filter(
+          (item) => item.observedAt?.timestamp === latest,
+        );
+      }
+    }
+
     const uniqueValues = [
-      ...new Set(observations.map((item) =>
+      ...new Set(candidates.map((item) =>
         JSON.stringify(item.value)
       )),
     ];
 
-    for (const observation of observations) {
+    for (const observation of candidates) {
       evidenceIds.add(observation.evidenceId);
     }
 
@@ -98,7 +151,7 @@ export function resolveRuntimeStateSnapshot(
         values: uniqueValues.map((item) =>
           JSON.parse(item) as RuntimeStateScalar
         ),
-        evidenceIds: observations.map(
+        evidenceIds: candidates.map(
           (item) => item.evidenceId,
         ),
       });
@@ -108,7 +161,7 @@ export function resolveRuntimeStateSnapshot(
     assignPath(
       values,
       path,
-      observations[observations.length - 1]!.value,
+      candidates[candidates.length - 1]!.value,
     );
   }
 

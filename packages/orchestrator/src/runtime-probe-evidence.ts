@@ -5,6 +5,7 @@ import {
 import type {
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
+  RuntimeStateObservation,
 } from "../../project-model/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 
@@ -18,6 +19,7 @@ export interface RuntimeProbeResponseSummary {
 
 export interface RuntimeProbeResponseEvidence {
   records: RuntimeEvidenceRecord[];
+  stateObservations: RuntimeStateObservation[];
   summary: RuntimeProbeResponseSummary;
 }
 
@@ -25,6 +27,7 @@ export function runtimeProbeResponseEvidence(
   responses: readonly RuntimeProbeResponse[],
 ): RuntimeProbeResponseEvidence {
   const records: RuntimeEvidenceRecord[] = [];
+  const stateObservations: RuntimeStateObservation[] = [];
   let present = 0;
   let absent = 0;
   let unknown = 0;
@@ -53,10 +56,33 @@ export function runtimeProbeResponseEvidence(
         tick: response.runtimeTick,
       },
     });
+
+    if (
+      response.statePath !== undefined &&
+      response.value !== undefined &&
+      response.ok === true
+    ) {
+      stateObservations.push({
+        path: response.statePath,
+        value: response.value,
+        confidence: "observed",
+        origin: "runtime-probe",
+        ...(response.evidence.scope === undefined
+          ? {}
+          : { scope: response.evidence.scope }),
+        observedAt: {
+          ...(response.evidence.observedAt ?? {}),
+          tick: response.runtimeTick,
+        },
+        evidenceId:
+          "runtime-probe-state:" + response.requestId,
+      });
+    }
   }
 
   return {
     records,
+    stateObservations,
     summary: {
       responses: responses.length,
       present,

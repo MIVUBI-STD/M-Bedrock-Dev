@@ -27,6 +27,59 @@ describe("runtime probe contracts", () => {
     }).query.kind).toBe("chunk-loaded");
   });
 
+  it("binds statePath consistently across a runtime probe exchange", () => {
+    const request = {
+      schemaVersion: 1 as const,
+      requestId: "req-state",
+      probeId: "phase",
+      predicate: "session-phase-observed",
+      statePath: "session.phase",
+      query: {
+        kind: "scoreboard-value" as const,
+        objectiveId: "phase",
+        participant: "arena-1",
+      },
+      outcomeByState: {
+        present: "known",
+        absent: "missing",
+      },
+    };
+    const response = {
+      schemaVersion: 1 as const,
+      requestId: "req-state",
+      probeId: "phase",
+      runtimeTick: 20,
+      ok: true,
+      state: "present" as const,
+      outcomeId: "known",
+      statePath: "session.phase",
+      evidence: {
+        predicate: "session-phase-observed",
+        state: "present" as const,
+        confidence: "observed" as const,
+      },
+      value: 3,
+    };
+
+    expect(validateRuntimeProbeTranscript({
+      schemaVersion: 1,
+      exchanges: [{ request, response }],
+    })).toEqual([]);
+
+    expect(validateRuntimeProbeTranscript({
+      schemaVersion: 1,
+      exchanges: [{
+        request,
+        response: {
+          ...response,
+          statePath: "record.phase",
+        },
+      }],
+    })).toEqual(expect.arrayContaining([
+      expect.stringContaining("statePath mismatch"),
+    ]));
+  });
+
   it("rejects arbitrary execution query kinds", () => {
     expect(validateRuntimeProbeRequest({
       schemaVersion: 1,

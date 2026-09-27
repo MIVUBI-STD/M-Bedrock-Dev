@@ -75,6 +75,7 @@ describe("runtime probe request compiler", () => {
       probes,
       [binding({
         incidentId: "incident-1",
+        statePath: "session.phase",
         scope: {
           arenaId: "arena-1",
           arenaGeneration: 4,
@@ -92,6 +93,7 @@ describe("runtime probe request compiler", () => {
         requestId: "incident-1::chunk-readiness::1",
         probeId: "chunk-readiness",
         predicate: "loaded-target-chunk",
+        statePath: "session.phase",
         runtimeTick: 100,
         scope: {
           arenaId: "arena-1",

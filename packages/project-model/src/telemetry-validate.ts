@@ -15,6 +15,7 @@ const KINDS = new Set([
   "route-revalidation",
   "mutation-applied",
   "mutation-verification",
+  "state-observation",
 ]);
 
 const PRODUCERS = new Set<TelemetryProducer>([
@@ -301,6 +302,12 @@ export function validateTelemetryEvent(
     case "mutation-verification":
       if (input.result !== "passed" && input.result !== "failed") {
         errors.push("mutation-verification result must be passed or failed.");
+      }
+      break;
+    case "state-observation":
+      stringField(input, "path", errors);
+      if (!validStateValue(input.value)) {
+        errors.push("state-observation value must be a scalar or null.");
       }
       break;
   }

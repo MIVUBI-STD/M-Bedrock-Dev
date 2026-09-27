@@ -213,6 +213,9 @@ export function compileRuntimeProbeRequests(
       probeId: item.probeId,
       incidentId: plan.incidentId,
       predicate: binding.predicate,
+      ...(binding.statePath === undefined
+        ? {}
+        : { statePath: binding.statePath }),
       ...(mergedScope === undefined
         ? {}
         : { scope: mergedScope }),

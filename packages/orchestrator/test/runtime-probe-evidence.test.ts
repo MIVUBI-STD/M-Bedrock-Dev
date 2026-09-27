@@ -11,13 +11,14 @@ describe("runtime probe response evidence", () => {
       ok: true,
       state: "present",
       outcomeId: "ready",
+      statePath: "session.phase",
       evidence: {
         predicate: "loaded-target-chunk",
         state: "present",
         confidence: "observed",
         scope: { operationId: "mutation-op" },
       },
-      value: true,
+      value: "active",
     }, {
       schemaVersion: 1,
       requestId: "req-failed",
@@ -53,5 +54,16 @@ describe("runtime probe response evidence", () => {
       confidence: "unknown",
       observedAt: { tick: 101 },
     }));
+    expect(result.stateObservations).toEqual([
+      {
+        path: "session.phase",
+        value: "active",
+        confidence: "observed",
+        origin: "runtime-probe",
+        scope: { operationId: "mutation-op" },
+        observedAt: { tick: 100 },
+        evidenceId: "runtime-probe-state:req-present",
+      },
+    ]);
   });
 });

@@ -37,6 +37,7 @@ export interface RuntimeProbeRequest {
   probeId: string;
   incidentId?: string;
   predicate: string;
+  statePath?: string;
   scope?: RuntimeScope;
   runtimeTick?: number;
   query: RuntimeProbeQuery;
@@ -51,6 +52,7 @@ export interface RuntimeProbeResponse {
   ok: boolean;
   state: RuntimeProbeState;
   outcomeId?: string;
+  statePath?: string;
   evidence: RuntimeEvidenceRecord;
   value?: string | number | boolean;
   error?: string;
@@ -60,6 +62,7 @@ export interface RuntimeProbeResponse {
 export interface RuntimeProbeBinding {
   probeId: string;
   predicate: string;
+  statePath?: string;
   query: RuntimeProbeQuery;
   outcomeByState: RuntimeProbeOutcomeMap;
   incidentId?: string;
