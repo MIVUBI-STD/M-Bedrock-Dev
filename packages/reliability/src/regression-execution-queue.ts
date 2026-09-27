@@ -103,8 +103,7 @@ export function buildRegressionExecutionQueue(
 
     const relevant =
       matchedCapabilityTags.length > 0 ||
-      domainMatched ||
-      overlaps.length > 0;
+      domainMatched;
 
     if (!relevant) continue;
 
