@@ -18,14 +18,8 @@ export interface RuntimeActionCapability {
     DiagnosticExecutionContext,
     "LOCAL_MINECRAFT" | "LIVE_MINECRAFT"
   >;
-  mutationRisk: Exclude<
-    RuntimeExperimentMutationRisk,
-    "read-only"
-  >;
-  phases: readonly Exclude<
-    RuntimeExperimentProtocolPhase,
-    "observe"
-  >[];
+  mutationRisk: RuntimeExperimentMutationRisk;
+  phases: readonly RuntimeExperimentProtocolPhase[];
   requiredParameters?: Readonly<
     Record<string, RuntimeActionParameterType>
   >;
@@ -58,10 +52,11 @@ const CONTEXT_RANK: Readonly<
 };
 
 const RISK_RANK: Readonly<
-  Record<Exclude<RuntimeExperimentMutationRisk, "read-only">, number>
+  Record<RuntimeExperimentMutationRisk, number>
 > = {
-  guarded: 0,
-  mutating: 1,
+  "read-only": 0,
+  guarded: 1,
+  mutating: 2,
 };
 
 export function validateRuntimeActionCapabilityRegistry(
@@ -102,6 +97,17 @@ export function validateRuntimeActionCapabilityRegistry(
         "Runtime action capability " +
           action.id +
           " contains duplicate phases.",
+      );
+    }
+
+    if (
+      action.phases.includes("observe") &&
+      action.mutationRisk !== "read-only"
+    ) {
+      errors.push(
+        "Runtime observe capability " +
+          action.id +
+          " must declare read-only mutation risk.",
       );
     }
 
@@ -146,10 +152,7 @@ export function validateRuntimeActionInvocation(
   registry: RuntimeActionCapabilityRegistry,
   input: {
     actionId: string;
-    phase: Exclude<
-      RuntimeExperimentProtocolPhase,
-      "observe"
-    >;
+    phase: RuntimeExperimentProtocolPhase;
     parameters: Readonly<
       Record<string, string | number | boolean>
     >;
@@ -157,10 +160,7 @@ export function validateRuntimeActionInvocation(
       DiagnosticExecutionContext,
       "LOCAL_MINECRAFT" | "LIVE_MINECRAFT"
     >;
-    mutationRisk: Exclude<
-      RuntimeExperimentMutationRisk,
-      "read-only"
-    >;
+    mutationRisk: RuntimeExperimentMutationRisk;
   },
 ): RuntimeActionValidation {
   const errors = validateRuntimeActionCapabilityRegistry(
