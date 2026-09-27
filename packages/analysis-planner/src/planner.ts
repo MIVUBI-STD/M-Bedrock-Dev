@@ -2,6 +2,7 @@ import type {
   AnalysisCapability,
   AnalysisCostClass,
   AnalysisEvidenceLevel,
+  AnalysisEvidenceTrait,
   AnalysisExecutionContext,
   AnalysisGoal,
   MinimumSufficientAnalysisInput,
@@ -31,29 +32,82 @@ const COST_ORDER: Readonly<Record<
   "very-expensive": 3,
 };
 
-const GOAL_LEVEL: Readonly<Record<
+interface GoalRequirement {
+  level: AnalysisEvidenceLevel;
+  traits: readonly AnalysisEvidenceTrait[];
+}
+
+const GOAL_REQUIREMENT: Readonly<Record<
   AnalysisGoal,
-  AnalysisEvidenceLevel
+  GoalRequirement
 >> = {
-  "artifact-fact": "metadata",
-  "structural-consistency": "static",
-  "semantic-consistency": "semantic",
-  "intent-classification": "semantic",
-  "contradiction-proof": "formal",
-  "runtime-evidence-integrity": "runtime",
-  "runtime-behavior": "runtime",
-  "causal-repair": "runtime",
+  "artifact-fact": {
+    level: "metadata",
+    traits: ["artifact-identity"],
+  },
+  "structural-consistency": {
+    level: "static",
+    traits: ["structural-proof"],
+  },
+  "semantic-consistency": {
+    level: "semantic",
+    traits: ["semantic-model"],
+  },
+  "intent-classification": {
+    level: "semantic",
+    traits: ["intent-grounded"],
+  },
+  "authored-intent": {
+    level: "semantic",
+    traits: ["authored-intent"],
+  },
+  "contradiction-proof": {
+    level: "formal",
+    traits: ["contradiction"],
+  },
+  "runtime-evidence-integrity": {
+    level: "runtime",
+    traits: ["runtime-integrity"],
+  },
+  "runtime-behavior": {
+    level: "runtime",
+    traits: ["runtime-observation"],
+  },
+  "causal-repair": {
+    level: "runtime",
+    traits: [
+      "runtime-observation",
+      "runtime-integrity",
+    ],
+  },
 };
+
+function usableEvidence(
+  input: MinimumSufficientAnalysisInput,
+) {
+  return (input.availableEvidence ?? []).filter(
+    (item) =>
+      item.quality === "usable" &&
+      item.evidenceIds.length > 0,
+  );
+}
 
 function highestEvidenceLevel(
   input: MinimumSufficientAnalysisInput,
 ): AnalysisEvidenceLevel | undefined {
-  const usable = (input.availableEvidence ?? [])
-    .filter((item) => item.evidenceIds.length > 0)
+  return usableEvidence(input)
     .map((item) => item.level)
-    .sort((a, b) => LEVEL_ORDER[b] - LEVEL_ORDER[a]);
+    .sort((a, b) => LEVEL_ORDER[b] - LEVEL_ORDER[a])[0];
+}
 
-  return usable[0];
+function availableTraits(
+  input: MinimumSufficientAnalysisInput,
+): Set<AnalysisEvidenceTrait> {
+  return new Set(
+    usableEvidence(input).flatMap(
+      (item) => item.traits,
+    ),
+  );
 }
 
 function contextCanReach(
@@ -78,10 +132,20 @@ function relevant(
   return capability.tags.some((tag) => wanted.has(tag));
 }
 
+function producesMissingTrait(
+  capability: AnalysisCapability,
+  missingTraits: readonly AnalysisEvidenceTrait[],
+): boolean {
+  const missing = new Set(missingTraits);
+  return (capability.producesTraits ?? [])
+    .some((trait) => missing.has(trait));
+}
+
 function candidateCapabilities(
   input: MinimumSufficientAnalysisInput,
   currentEvidenceLevel: AnalysisEvidenceLevel | undefined,
   requiredEvidenceLevel: AnalysisEvidenceLevel,
+  missingTraits: readonly AnalysisEvidenceTrait[],
 ): AnalysisCapability[] {
   const currentOrder =
     currentEvidenceLevel === undefined
@@ -89,21 +153,34 @@ function candidateCapabilities(
       : LEVEL_ORDER[currentEvidenceLevel];
   const requiredOrder =
     LEVEL_ORDER[requiredEvidenceLevel];
+  const completed = new Set(
+    input.completedCapabilityIds ?? [],
+  );
 
   return input.capabilities
     .filter((capability) => {
       const order =
         LEVEL_ORDER[capability.evidenceLevel];
-      return (
+      const advancesLevel =
         order > currentOrder &&
+        order <= requiredOrder;
+      const advancesTrait =
         order <= requiredOrder &&
+        producesMissingTrait(
+          capability,
+          missingTraits,
+        );
+
+      return (
+        !completed.has(capability.id) &&
         capability.contexts.includes(
           input.context,
         ) &&
         relevant(
           capability,
           input.relevantTags,
-        )
+        ) &&
+        (advancesLevel || advancesTrait)
       );
     })
     .sort(
@@ -158,6 +235,7 @@ function prerequisiteChoice(
       if (completed.has(prerequisiteId)) {
         continue;
       }
+
       const prerequisite =
         byId.get(prerequisiteId);
       if (!prerequisite) {
@@ -169,6 +247,7 @@ function prerequisiteChoice(
             ".",
         );
       }
+
       if (
         !prerequisite.contexts.includes(
           input.context,
@@ -182,16 +261,19 @@ function prerequisiteChoice(
             ".",
         );
       }
+
       const nested = resolve(prerequisite);
       if (nested) {
         visiting.delete(item.id);
         return nested;
       }
+
       if (!completed.has(prerequisiteId)) {
         visiting.delete(item.id);
         return prerequisite;
       }
     }
+
     visiting.delete(item.id);
     return item;
   };
@@ -214,33 +296,54 @@ function prerequisiteChoice(
 export function requiredEvidenceLevelForGoal(
   goal: AnalysisGoal,
 ): AnalysisEvidenceLevel {
-  return GOAL_LEVEL[goal];
+  return GOAL_REQUIREMENT[goal].level;
+}
+
+export function requiredEvidenceTraitsForGoal(
+  goal: AnalysisGoal,
+): readonly AnalysisEvidenceTrait[] {
+  return GOAL_REQUIREMENT[goal].traits;
 }
 
 export function planMinimumSufficientAnalysis(
   input: MinimumSufficientAnalysisInput,
 ): MinimumSufficientAnalysisPlan {
+  const requirement =
+    GOAL_REQUIREMENT[input.goal];
   const requiredEvidenceLevel =
-    requiredEvidenceLevelForGoal(input.goal);
+    requirement.level;
+  const requiredEvidenceTraits =
+    [...requirement.traits];
   const currentEvidenceLevel =
     highestEvidenceLevel(input);
+  const traits = availableTraits(input);
+  const missingEvidenceTraits =
+    requiredEvidenceTraits.filter(
+      (trait) => !traits.has(trait),
+    );
 
-  if (
+  const levelSatisfied =
     currentEvidenceLevel !== undefined &&
     LEVEL_ORDER[currentEvidenceLevel] >=
-      LEVEL_ORDER[requiredEvidenceLevel]
+      LEVEL_ORDER[requiredEvidenceLevel];
+
+  if (
+    levelSatisfied &&
+    missingEvidenceTraits.length === 0
   ) {
     return {
       goal: input.goal,
       requiredEvidenceLevel,
+      requiredEvidenceTraits,
       currentEvidenceLevel,
+      missingEvidenceTraits: [],
       disposition: "stop-sufficient",
       steps: [],
       skippedCapabilityIds:
         input.capabilities.map((item) => item.id).sort(),
       reasons: [
-        "Existing evidence already meets or exceeds the minimum evidence level required for this analysis goal.",
-        "No additional analysis should run unless the existing evidence is stale, contradictory, or target-mismatched.",
+        "Existing usable evidence meets both the minimum evidence level and all required evidence traits for this analysis goal.",
+        "Stale, conflicting, incomplete, or target-mismatched evidence is never counted toward stop conditions.",
       ],
     };
   }
@@ -254,9 +357,11 @@ export function planMinimumSufficientAnalysis(
     return {
       goal: input.goal,
       requiredEvidenceLevel,
+      requiredEvidenceTraits,
       ...(currentEvidenceLevel === undefined
         ? {}
         : { currentEvidenceLevel }),
+      missingEvidenceTraits,
       disposition: "requires-runtime-context",
       steps: [],
       skippedCapabilityIds:
@@ -271,21 +376,31 @@ export function planMinimumSufficientAnalysis(
     input,
     currentEvidenceLevel,
     requiredEvidenceLevel,
+    missingEvidenceTraits,
   );
 
   if (candidates.length === 0) {
     return {
       goal: input.goal,
       requiredEvidenceLevel,
+      requiredEvidenceTraits,
       ...(currentEvidenceLevel === undefined
         ? {}
         : { currentEvidenceLevel }),
+      missingEvidenceTraits,
       disposition: "capability-gap",
       steps: [],
       skippedCapabilityIds:
         input.capabilities.map((item) => item.id).sort(),
       reasons: [
-        "No relevant capability available in the current context can advance evidence toward the minimum level required for this analysis goal.",
+        "No relevant capability available in the current context can advance the required evidence level or missing evidence traits.",
+        ...(missingEvidenceTraits.length === 0
+          ? []
+          : [
+              "Missing evidence traits: " +
+                missingEvidenceTraits.join(", ") +
+                ".",
+            ]),
       ],
     };
   }
@@ -299,9 +414,11 @@ export function planMinimumSufficientAnalysis(
     return {
       goal: input.goal,
       requiredEvidenceLevel,
+      requiredEvidenceTraits,
       ...(currentEvidenceLevel === undefined
         ? {}
         : { currentEvidenceLevel }),
+      missingEvidenceTraits,
       disposition: "capability-gap",
       steps: [],
       skippedCapabilityIds:
@@ -319,7 +436,7 @@ export function planMinimumSufficientAnalysis(
     evidenceLevel: selected.evidenceLevel,
     cost: selected.cost,
     reasons: [
-      "Selected as the next lowest-cost relevant evidence escalation.",
+      "Selected as the next lowest-cost relevant evidence action.",
       ...(selected.deterministic
         ? ["Deterministic capability preferred."]
         : []),
@@ -334,9 +451,11 @@ export function planMinimumSufficientAnalysis(
   return {
     goal: input.goal,
     requiredEvidenceLevel,
+    requiredEvidenceTraits,
     ...(currentEvidenceLevel === undefined
       ? {}
       : { currentEvidenceLevel }),
+    missingEvidenceTraits,
     disposition: "execute",
     steps: [step],
     skippedCapabilityIds: input.capabilities
@@ -345,8 +464,9 @@ export function planMinimumSufficientAnalysis(
       .sort(),
     reasons: [
       "Only one next-best analysis action is scheduled.",
-      "Re-plan after this step so newly collected evidence can stop escalation before more expensive analysis runs.",
-      "The repair authority remains outside the analysis planner; reaching the evidence level does not authorize mutation.",
+      "Re-plan after this step so new usable evidence can stop escalation before more expensive analysis runs.",
+      "Evidence must satisfy both level and trait requirements; a high-level but wrong-kind or invalid evidence record cannot stop analysis.",
+      "The repair authority remains outside the analysis planner; satisfying analysis requirements does not authorize mutation.",
     ],
   };
 }
