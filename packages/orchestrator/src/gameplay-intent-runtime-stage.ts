@@ -16,6 +16,10 @@ import {
   type GameplayRouteRuntimeEvidencePlan,
 } from "./gameplay-route-runtime-plan.js";
 import {
+  analyzeGameplayRouteCauseCandidates,
+  type GameplayRouteCauseAnalysis,
+} from "./gameplay-route-candidate-analysis.js";
+import {
   resolveRuntimeStateSnapshot,
   type RuntimeNavigationStallObservation,
   type RuntimeNavigationTargetObservation,
@@ -76,13 +80,14 @@ export interface GameplayRouteStallRuntimeAssessment {
   observationNeeds: readonly GameplayRouteRuntimeObservationNeed[];
   evidencePlan: GameplayRouteRuntimeEvidencePlan;
   investigationDirection: GameplayRouteStallInvestigationDirection;
+  candidateAnalysis: GameplayRouteCauseAnalysis;
   reasons: readonly string[];
 }
 
 type GameplayRouteStallAssessmentBase =
   Omit<
     GameplayRouteStallRuntimeAssessment,
-    "evidencePlan" | "investigationDirection"
+    "evidencePlan" | "investigationDirection" | "candidateAnalysis"
   >;
 
 export interface GameplayIntentRuntimeAnalysis {
@@ -831,7 +836,7 @@ export function analyzeGameplayIntentRuntime(
             chunkAvailabilityObservation,
           );
 
-        return {
+        const completeAssessment = {
           ...baseAssessment,
           ...(motionSeries === undefined
             ? {}
@@ -874,6 +879,14 @@ export function analyzeGameplayIntentRuntime(
                 ? {}
                 : { dimension: options.dimension }),
             }),
+        };
+
+        return {
+          ...completeAssessment,
+          candidateAnalysis:
+            analyzeGameplayRouteCauseCandidates(
+              completeAssessment,
+            ),
         };
       },
     );

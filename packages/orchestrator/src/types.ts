@@ -183,6 +183,11 @@ export interface InspectDirectoryResult {
     stallNavigationTargetDivergence: number;
     stallNavigationRuntimeSuspect: number;
     stallEvidenceIncomplete: number;
+    routeSupportedCandidates: number;
+    routeUnresolvedCandidates: number;
+    routeCauseSupportedStops: number;
+    navigationRuntimeCandidateIsolatedStops: number;
+    routeEvidenceCollectionContinuingStops: number;
   };
   semanticIr: {
     executionRegions: number;

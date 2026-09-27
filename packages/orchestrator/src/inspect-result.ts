@@ -484,6 +484,40 @@ export function buildInspectionResult(
             item.investigationDirection ===
             "evidence-incomplete",
         ).length,
+      routeSupportedCandidates:
+        input.gameplayIntentRuntime.routeStallAssessments.reduce(
+          (sum, item) =>
+            sum +
+            item.candidateAnalysis
+              .supportedCandidateIds.length,
+          0,
+        ),
+      routeUnresolvedCandidates:
+        input.gameplayIntentRuntime.routeStallAssessments.reduce(
+          (sum, item) =>
+            sum +
+            item.candidateAnalysis
+              .unresolvedCandidateIds.length,
+          0,
+        ),
+      routeCauseSupportedStops:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.candidateAnalysis.stopCondition ===
+            "route-cause-supported",
+        ).length,
+      navigationRuntimeCandidateIsolatedStops:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.candidateAnalysis.stopCondition ===
+            "navigation-runtime-candidate-isolated",
+        ).length,
+      routeEvidenceCollectionContinuingStops:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.candidateAnalysis.stopCondition ===
+            "continue-evidence-collection",
+        ).length,
     },
     semanticIr: semanticIrSummary(input.semanticIr),
     stateAnalysis: {

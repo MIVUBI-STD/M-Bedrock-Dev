@@ -634,6 +634,17 @@ describe("gameplay intent runtime stage", () => {
       .toBe("loaded");
     expect(stall.investigationDirection)
       .toBe("navigation-runtime-suspect");
+    expect(stall.candidateAnalysis).toEqual(
+      expect.objectContaining({
+        supportedCandidateIds: [
+          "engine-navigation-runtime",
+        ],
+        leadingCandidateId:
+          "engine-navigation-runtime",
+        stopCondition:
+          "navigation-runtime-candidate-isolated",
+      }),
+    );
     expect(stall.evidencePlan.runtimeProbeRequests)
       .toEqual([]);
     expect(stall.evidencePlan.blocked).toEqual([]);
@@ -710,6 +721,18 @@ describe("gameplay intent runtime stage", () => {
     const stall = result.routeStallAssessments[0]!;
     expect(stall.investigationDirection)
       .toBe("route-chunk-unavailable");
+    expect(stall.candidateAnalysis).toEqual(
+      expect.objectContaining({
+        leadingCandidateId: "chunk-availability",
+        stopCondition: "route-cause-supported",
+      }),
+    );
+    expect(
+      stall.candidateAnalysis.candidates.find(
+        (item) =>
+          item.id === "chunk-availability",
+      )?.status,
+    ).toBe("supported");
     expect(stall.evidencePlan.runtimeProbeRequests)
       .toEqual([]);
     expect(stall.evidencePlan.satisfied).toEqual(

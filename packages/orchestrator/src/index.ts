@@ -132,3 +132,4 @@ export * from "./gameplay-intent-stage.js";
 export * from "./gameplay-intent-runtime-stage.js";
 export * from "./inspect-authored-intent-source.js";
 export * from "./gameplay-route-runtime-plan.js";
+export * from "./gameplay-route-candidate-analysis.js";
