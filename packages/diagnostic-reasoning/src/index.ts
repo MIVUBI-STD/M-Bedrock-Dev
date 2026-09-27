@@ -7,3 +7,4 @@ export * from "./knowledge-semantics.js";
 export * from "./intent-gate.js";
 export * from "./observed-outcome-intent.js";
 export * from "./runtime-state-outcome-intent.js";
+export * from "./counterexample-explanation.js";

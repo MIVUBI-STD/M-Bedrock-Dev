@@ -21,6 +21,7 @@ export * from "./minimize-graph.js";
 export * from "./minimize-source.js";
 export * from "./minimize-timing.js";
 export * from "./minimize.js";
+export * from "./logic-counterexample-minimizer.js";
 export * from "./mutation-runner.js";
 export * from "./mutation-types.js";
 export * from "./operator-effectiveness.js";
