@@ -37,3 +37,4 @@ export * from "./decision-ledger-validate.js";
 export * from "./contract-registry-revision.js";
 export * from "./invariant-registry-validate.js";
 export * from "./runtime-state.js";
+export * from "./runtime-outcome.js";

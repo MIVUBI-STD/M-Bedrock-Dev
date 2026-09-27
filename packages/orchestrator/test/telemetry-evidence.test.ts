@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   telemetryRuntimeEvidence,
+  telemetryRuntimeOutcomeObservations,
   telemetryRuntimeStateObservations,
 } from "../src/telemetry-evidence.js";
 
@@ -38,6 +39,43 @@ describe("telemetry evidence adapter", () => {
     expect(telemetryRuntimeEvidence([event])).toEqual([
       expect.objectContaining({
         predicate: "runtime-state-observed:session.phase",
+        state: "present",
+      }),
+    ]);
+  });
+
+  it("maps gameplay outcomes into typed runtime outcome observations", () => {
+    const event = {
+      schemaVersion: 1 as const,
+      eventId: "outcome-1",
+      kind: "gameplay-outcome" as const,
+      producer: "instrumentation" as const,
+      scope: {
+        arenaId: "arena-1",
+        arenaGeneration: 4,
+        playerKey: "player-a",
+      },
+      tick: 121,
+      outcomeId: "outcome:decide-reconnect-cleanup",
+    };
+
+    expect(telemetryRuntimeOutcomeObservations([event])).toEqual([
+      {
+        outcomeId: "outcome:decide-reconnect-cleanup",
+        scope: {
+          arenaId: "arena-1",
+          arenaGeneration: 4,
+          playerKey: "player-a",
+        },
+        observedAt: { tick: 121 },
+        evidenceId: "telemetry-outcome:outcome-1",
+      },
+    ]);
+
+    expect(telemetryRuntimeEvidence([event])).toEqual([
+      expect.objectContaining({
+        predicate:
+          "gameplay-outcome-observed:outcome:decide-reconnect-cleanup",
         state: "present",
       }),
     ]);

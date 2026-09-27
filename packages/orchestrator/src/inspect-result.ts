@@ -4,6 +4,7 @@ import type { TelemetryEvent } from "../../project-model/src/index.js";
 import { semanticIrSummary, type SemanticIr } from "../../semantic-ir/src/index.js";
 import { telemetryEventKinds } from "../../project-model/src/index.js";
 import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
+import type { GameplayIntentRuntimeAnalysis } from "./gameplay-intent-runtime-stage.js";
 import type {
   InspectDirectoryResult,
   InspectedPack,
@@ -52,6 +53,7 @@ export interface InspectionResultInput {
   sourceIndex: SourceIndex;
   semanticIr: SemanticIr;
   gameplayIntent: GameplayIntentModel;
+  gameplayIntentRuntime: GameplayIntentRuntimeAnalysis;
   runtimeEvidenceStage: RuntimeEvidenceStage;
   entityKnowledge: EntityKnowledgeStage;
   knowledgeRuntime: KnowledgeRuntimeStage;
@@ -365,6 +367,21 @@ export function buildInspectionResult(
       ).length,
       invariants: input.gameplayIntent.invariants.length,
       unknowns: input.gameplayIntent.unknowns.length,
+    },
+    gameplayIntentRuntime: {
+      assessments: input.gameplayIntentRuntime.assessments,
+      designedBehavior:
+        input.gameplayIntentRuntime.designedBehavior,
+      probableDefects:
+        input.gameplayIntentRuntime.probableDefects,
+      ambiguousIntent:
+        input.gameplayIntentRuntime.ambiguousIntent,
+      insufficientEvidence:
+        input.gameplayIntentRuntime.insufficientEvidence,
+      runtimeStateObservations:
+        input.runtimeEvidenceStage.runtimeStateObservations.length,
+      runtimeOutcomeObservations:
+        input.runtimeEvidenceStage.runtimeOutcomeObservations.length,
     },
     semanticIr: semanticIrSummary(input.semanticIr),
     stateAnalysis: {

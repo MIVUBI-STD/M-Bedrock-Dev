@@ -4,6 +4,7 @@ import type {
 } from "../../project-model/src/index.js";
 import type {
   RuntimeEvidenceRecord,
+  RuntimeOutcomeObservation,
   RuntimeScope,
   RuntimeStateObservation,
 } from "../../project-model/src/index.js";
@@ -260,6 +261,16 @@ function recordsForEvent(event: TelemetryEvent): RuntimeEvidenceRecord[] {
           String(event.value),
         ),
       ];
+
+    case "gameplay-outcome":
+      return [
+        base(
+          event,
+          "gameplay-outcome-observed:" + event.outcomeId,
+          "present",
+          event.outcomeId,
+        ),
+      ];
   }
 }
 
@@ -293,6 +304,37 @@ export function telemetryRuntimeStateObservations(
             },
           }),
       evidenceId: "telemetry-state:" + event.eventId,
+    }];
+  });
+}
+
+export function telemetryRuntimeOutcomeObservations(
+  events: readonly TelemetryEvent[],
+): RuntimeOutcomeObservation[] {
+  return events.flatMap((event) => {
+    if (event.kind !== "gameplay-outcome") return [];
+    return [{
+      outcomeId: event.outcomeId,
+      scope: event.scope,
+      ...(event.tick === undefined &&
+          event.sequence === undefined &&
+          event.timestamp === undefined
+        ? {}
+        : {
+            observedAt: {
+              ...(event.tick === undefined ? {} : { tick: event.tick }),
+              ...(event.streamId === undefined
+                ? {}
+                : { streamId: event.streamId }),
+              ...(event.sequence === undefined
+                ? {}
+                : { sequence: event.sequence }),
+              ...(event.timestamp === undefined
+                ? {}
+                : { timestamp: event.timestamp }),
+            },
+          }),
+      evidenceId: "telemetry-outcome:" + event.eventId,
     }];
   });
 }

@@ -35,6 +35,7 @@ import { externalEventRootsForEntity } from "./entity-event-evidence.js";
 import { buildInspectionSemanticIr } from "./semantic-ir-stage.js";
 import { semanticIrDiagnostics } from "./semantic-ir-diagnostics.js";
 import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
+import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js";
 
 export async function inspectDirectory(
   root: string,
@@ -105,6 +106,12 @@ export async function inspectDirectory(
     artifactId,
     parsedScripts,
   });
+
+  const gameplayIntentRuntime = analyzeGameplayIntentRuntime(
+    gameplayIntent,
+    runtimeEvidenceStage.runtimeStateObservations,
+    runtimeEvidenceStage.runtimeOutcomeObservations,
+  );
 
   enrichInspectionSemanticGraph({
     graph,
@@ -267,6 +274,7 @@ export async function inspectDirectory(
     sourceIndex,
     semanticIr,
     gameplayIntent,
+    gameplayIntentRuntime,
     runtimeEvidenceStage,
     entityKnowledge,
     knowledgeRuntime,

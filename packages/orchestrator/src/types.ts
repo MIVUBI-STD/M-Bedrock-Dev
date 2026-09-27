@@ -15,6 +15,7 @@ import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/ind
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
+import type { GameplayIntentRuntimeAssessment } from "./gameplay-intent-runtime-stage.js";
 
 export interface InspectTargetProfile {
   edition?: MinecraftEdition;
@@ -143,6 +144,15 @@ export interface InspectDirectoryResult {
     hypothesisNodes: number;
     invariants: number;
     unknowns: number;
+  };
+  gameplayIntentRuntime: {
+    assessments: readonly GameplayIntentRuntimeAssessment[];
+    designedBehavior: number;
+    probableDefects: number;
+    ambiguousIntent: number;
+    insufficientEvidence: number;
+    runtimeStateObservations: number;
+    runtimeOutcomeObservations: number;
   };
   semanticIr: {
     executionRegions: number;

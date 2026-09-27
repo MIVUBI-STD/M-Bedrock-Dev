@@ -16,6 +16,7 @@ const KINDS = new Set([
   "mutation-applied",
   "mutation-verification",
   "state-observation",
+  "gameplay-outcome",
 ]);
 
 const PRODUCERS = new Set<TelemetryProducer>([
@@ -309,6 +310,9 @@ export function validateTelemetryEvent(
       if (!validStateValue(input.value)) {
         errors.push("state-observation value must be a scalar or null.");
       }
+      break;
+    case "gameplay-outcome":
+      stringField(input, "outcomeId", errors);
       break;
   }
 

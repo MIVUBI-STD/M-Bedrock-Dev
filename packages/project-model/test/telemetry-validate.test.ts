@@ -49,6 +49,25 @@ describe("telemetry validation", () => {
     expect(batch.events[0]?.kind).toBe("state-observation");
   });
 
+  it("accepts gameplay outcome telemetry", () => {
+    const batch = parseTelemetryBatch({
+      schemaVersion: 1,
+      events: [{
+        schemaVersion: 1,
+        eventId: "outcome-1",
+        kind: "gameplay-outcome",
+        producer: "instrumentation",
+        scope: {
+          arenaId: "arena-1",
+          arenaGeneration: 2,
+        },
+        outcomeId: "outcome:decide-reconnect-cleanup",
+      }],
+    });
+
+    expect(batch.events[0]?.kind).toBe("gameplay-outcome");
+  });
+
   it("rejects duplicate event ids and malformed event payloads", () => {
     const errors = validateTelemetryBatch({
       schemaVersion: 1,

@@ -135,6 +135,12 @@ export interface StateObservationTelemetryEvent
   value: StateObservedValue;
 }
 
+export interface GameplayOutcomeTelemetryEvent
+  extends TelemetryEventBase {
+  kind: "gameplay-outcome";
+  outcomeId: string;
+}
+
 export type TelemetryEvent =
   | EntityStallTelemetryEvent
   | TeleportFallbackTelemetryEvent
@@ -146,7 +152,8 @@ export type TelemetryEvent =
   | RouteRevalidationTelemetryEvent
   | MutationAppliedTelemetryEvent
   | MutationVerificationTelemetryEvent
-  | StateObservationTelemetryEvent;
+  | StateObservationTelemetryEvent
+  | GameplayOutcomeTelemetryEvent;
 
 export interface TelemetryBatch {
   schemaVersion: 1;
