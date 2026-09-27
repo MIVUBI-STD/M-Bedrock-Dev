@@ -92,6 +92,10 @@ function reclassification(
       subjectIds: ["arena"],
       basisInvariantIds: ["invariant::ready"],
       evidenceIds: ["runtime:evidence"],
+      nextEvidenceNeed:
+        disposition === "probable-defect"
+          ? "authored-intent"
+          : "none",
       reasons: [],
     },
     matchedPredicates: {
