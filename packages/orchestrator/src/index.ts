@@ -138,3 +138,4 @@ export * from "./gameplay-calibration-corpus.js";
 export * from "./gameplay-route-corridor.js";
 export * from "./runtime-experiment-diagnostic-evidence.js";
 export * from "./runtime-intent-diagnostic-reclassification.js";
+export * from "./runtime-reclassification-repair-gate.js";
