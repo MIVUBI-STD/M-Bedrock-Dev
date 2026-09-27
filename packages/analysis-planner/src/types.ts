@@ -12,6 +12,7 @@ export type AnalysisGoal =
   | "semantic-consistency"
   | "intent-classification"
   | "contradiction-proof"
+  | "runtime-evidence-integrity"
   | "runtime-behavior"
   | "causal-repair";
 
