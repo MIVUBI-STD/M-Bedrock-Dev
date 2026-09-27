@@ -112,11 +112,17 @@ export interface GameplayIntentSpatialPoint {
   index?: number;
 }
 
+export interface GameplayIntentSpatialIndexRange {
+  min: number;
+  max: number;
+}
+
 export interface GameplayIntentSpatialProfile {
   coordinateSpace: "unknown" | "local" | "world";
   routeId: string;
   collectionHint?: string;
   points: readonly GameplayIntentSpatialPoint[];
+  indexRanges?: readonly GameplayIntentSpatialIndexRange[];
 }
 
 export interface GameplayIntentNode {

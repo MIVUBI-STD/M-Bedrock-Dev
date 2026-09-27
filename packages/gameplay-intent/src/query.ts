@@ -694,3 +694,63 @@ export function planGameplayOutcomeRuntimeObservations(
     a.expression.localeCompare(b.expression)
   );
 }
+
+
+export type GameplayRouteIndexResolutionDisposition =
+  | "unique"
+  | "ambiguous"
+  | "unresolved";
+
+export interface GameplayRouteIndexResolution {
+  index: number;
+  disposition: GameplayRouteIndexResolutionDisposition;
+  routeNodeIds: readonly string[];
+  routeIds: readonly string[];
+}
+
+export function resolveGameplayRouteIndex(
+  model: GameplayIntentModel,
+  index: number,
+): GameplayRouteIndexResolution {
+  const matches = model.nodes.filter((node) => {
+    const profile = node.spatialProfile;
+    if (
+      node.kind !== "spatial-region" ||
+      profile === undefined
+    ) {
+      return false;
+    }
+
+    if (profile.indexRanges !== undefined) {
+      return profile.indexRanges.some(
+        (range) =>
+          index >= range.min && index <= range.max,
+      );
+    }
+
+    return profile.points.some(
+      (point) => point.index === index,
+    );
+  });
+
+  return {
+    index,
+    disposition:
+      matches.length === 0
+        ? "unresolved"
+        : matches.length === 1
+        ? "unique"
+        : "ambiguous",
+    routeNodeIds: matches.map((node) => node.id).sort(),
+    routeIds: [
+      ...new Set(
+        matches
+          .map((node) => node.spatialProfile?.routeId)
+          .filter(
+            (routeId): routeId is string =>
+              routeId !== undefined,
+          ),
+      ),
+    ].sort(),
+  };
+}

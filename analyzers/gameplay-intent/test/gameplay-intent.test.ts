@@ -697,10 +697,14 @@ describe("gameplay intent analyzer", () => {
           { x: 0, y: 64, z: 0, index: 0 },
           { x: 10, y: 64, z: 0, index: 1 },
         ],
+        indexRanges: [{ min: 0, max: 1 }],
       }),
     }));
     expect(bridge?.spatialProfile?.points).toEqual([
       { x: 10, y: 64, z: 5, index: 600 },
+    ]);
+    expect(bridge?.spatialProfile?.indexRanges).toEqual([
+      { min: 600, max: 600 },
     ]);
   });
 

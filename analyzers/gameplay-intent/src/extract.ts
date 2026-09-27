@@ -206,6 +206,31 @@ function acceptsStatusDiscriminant(
   return sourceClassified && /^status$/i.test(propertyName);
 }
 
+function contiguousIndexRanges(
+  values: readonly number[],
+): Array<{ min: number; max: number }> {
+  const sorted = [...new Set(values)].sort(
+    (a, b) => a - b,
+  );
+  if (sorted.length === 0) return [];
+
+  const ranges: Array<{ min: number; max: number }> = [];
+  let min = sorted[0]!;
+  let max = min;
+
+  for (const value of sorted.slice(1)) {
+    if (value === max + 1) {
+      max = value;
+      continue;
+    }
+    ranges.push({ min, max });
+    min = value;
+    max = value;
+  }
+  ranges.push({ min, max });
+  return ranges;
+}
+
 function title(value: string): string {
   return normalize(value)
     .split(" ")
@@ -421,6 +446,12 @@ export function extractGameplayIntentSignals(
           ? {}
           : { collectionHint: group.collectionHint }),
         points,
+        ...(indexes.length === 0
+          ? {}
+          : {
+              indexRanges:
+                contiguousIndexRanges(indexes),
+            }),
       },
     });
   }

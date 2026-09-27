@@ -378,6 +378,7 @@ describe("gameplay intent stage", () => {
         { x: 0, y: 64, z: 0, index: 600 },
         { x: 10, y: 64, z: 5, index: 601 },
       ],
+      indexRanges: [{ min: 600, max: 601 }],
     });
   });
 

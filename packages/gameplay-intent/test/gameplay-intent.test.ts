@@ -577,6 +577,109 @@ describe("gameplay intent", () => {
     ).toBe("unknown");
   });
 
+  it("resolves route-index ambiguity without guessing", () => {
+    const routeModel: GameplayIntentModel = {
+      schemaVersion: 1,
+      id: "routes",
+      evidence: [{
+        id: "e:routes",
+        origin: "source-code",
+        locator: "scripts/routes.js",
+        summary: "Authored route points.",
+      }],
+      nodes: [
+        {
+          id: "spatial-region:route-main",
+          kind: "spatial-region",
+          label: "Route Main",
+          status: "authored",
+          evidenceIds: ["e:routes"],
+          spatialProfile: {
+            coordinateSpace: "unknown",
+            routeId: "main",
+            points: [
+              { x: 0, y: 0, z: 0, index: 9 },
+            ],
+            indexRanges: [{ min: 0, max: 18 }],
+          },
+        },
+        {
+          id: "spatial-region:route-bridge",
+          kind: "spatial-region",
+          label: "Route Bridge",
+          status: "authored",
+          evidenceIds: ["e:routes"],
+          spatialProfile: {
+            coordinateSpace: "unknown",
+            routeId: "bridge",
+            points: [
+              { x: 1, y: 0, z: 0, index: 9 },
+              { x: 2, y: 0, z: 0, index: 600 },
+            ],
+            indexRanges: [
+              { min: 3, max: 13 },
+              { min: 600, max: 610 },
+            ],
+          },
+        },
+        {
+          id: "spatial-region:route-windmill",
+          kind: "spatial-region",
+          label: "Route Windmill",
+          status: "authored",
+          evidenceIds: ["e:routes"],
+          spatialProfile: {
+            coordinateSpace: "unknown",
+            routeId: "windmill",
+            points: [
+              { x: 3, y: 0, z: 0, index: 9 },
+            ],
+            indexRanges: [
+              { min: 6, max: 9 },
+              { min: 500, max: 503 },
+            ],
+          },
+        },
+      ],
+      edges: [],
+      invariants: [],
+      unknowns: [],
+    };
+
+    expect(
+      resolveGameplayRouteIndex(routeModel, 9),
+    ).toEqual({
+      index: 9,
+      disposition: "ambiguous",
+      routeNodeIds: [
+        "spatial-region:route-bridge",
+        "spatial-region:route-main",
+        "spatial-region:route-windmill",
+      ],
+      routeIds: ["bridge", "main", "windmill"],
+    });
+
+    expect(
+      resolveGameplayRouteIndex(routeModel, 600),
+    ).toEqual({
+      index: 600,
+      disposition: "unique",
+      routeNodeIds: [
+        "spatial-region:route-bridge",
+      ],
+      routeIds: ["bridge"],
+    });
+
+    expect(
+      resolveGameplayRouteIndex(routeModel, 999),
+    ).toEqual({
+      index: 999,
+      disposition: "unresolved",
+      routeNodeIds: [],
+      routeIds: [],
+    });
+  });
+
   it("blocks diagnosis when an open intent question affects the subject", () => {
     const ambiguous: GameplayIntentModel = {
       ...model,
