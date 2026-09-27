@@ -343,9 +343,7 @@ describe("gameplay intent analyzer", () => {
 
   it("keeps phase classification for state-like names but not phase helper actions", () => {
     const base = script();
-    const helper = (
-      member: string,
-    ): ParsedScriptFile => ({
+    const bundled: ParsedScriptFile = {
       ...base,
       identifier: "scripts/main",
       source: {
@@ -362,26 +360,26 @@ describe("gameplay intent analyzer", () => {
       returnOutcomes: [],
       guardedOutcomes: [],
       commandLiterals: [],
-      declaredMembers: [{
+      declaredMembers: [
+        "active",
+        "cinematic",
+        "finishStage1",
+        "startStageTimers",
+        "updateStageTimers",
+        "stopCountdown",
+        "refreshLobbyEffects",
+        "teleportLobby",
+        "clearPlayerHudForLobbyReturn",
+        "countdownFeedback",
+      ].map((member) => ({
         member,
-        memberKind: "method",
+        memberKind: "method" as const,
         containerHint: "A",
         source: base.source,
-      }],
-    });
+      })),
+    };
 
-    const result = extractGameplayIntentSignals([
-      helper("active"),
-      helper("cinematic"),
-      helper("finishStage1"),
-      helper("startStageTimers"),
-      helper("updateStageTimers"),
-      helper("stopCountdown"),
-      helper("refreshLobbyEffects"),
-      helper("teleportLobby"),
-      helper("clearPlayerHudForLobbyReturn"),
-      helper("countdownFeedback"),
-    ]);
+    const result = extractGameplayIntentSignals([bundled]);
 
     const ids = new Set(
       result.signals.map((signal) => signal.subjectKey),
