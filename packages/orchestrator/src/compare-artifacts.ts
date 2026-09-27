@@ -3,6 +3,10 @@ import { inspectArtifact, type InspectArtifactResult } from "./inspect-artifact.
 import type { InspectTargetProfile } from "./types.js";
 import { diffWorldDbNative, type WorldDbNativeDiff } from "./world-db-diff.js";
 import { compareCausalAnalysis, type CausalComparison } from "./causal-comparison.js";
+import {
+  compareGameplayIntentModels,
+  type GameplayIntentModelComparison,
+} from "../../gameplay-intent/src/index.js";
 
 export interface ArtifactComparisonResult {
   before: {
@@ -22,6 +26,8 @@ export interface ArtifactComparisonResult {
     reason: string;
   };
   causal: CausalComparison;
+  gameplayIntent: GameplayIntentModelComparison;
+  artifactChangedIntentStable: boolean;
 }
 
 function summarize(result: InspectArtifactResult) {
@@ -49,9 +55,17 @@ export async function compareArtifacts(
   const beforeNative = before.worldDatabase.nativeScan;
   const afterNative = after.worldDatabase.nativeScan;
 
+  const gameplayIntent = compareGameplayIntentModels(
+    before.gameplayIntent.model,
+    after.gameplayIntent.model,
+  );
+
+  const beforeSummary = summarize(before);
+  const afterSummary = summarize(after);
+
   return {
-    before: summarize(before),
-    after: summarize(after),
+    before: beforeSummary,
+    after: afterSummary,
     nativeWorld:
       beforeNative && afterNative
         ? diffWorldDbNative(beforeNative, afterNative)
@@ -60,5 +74,9 @@ export async function compareArtifacts(
             reason: "Both artifacts must expose native LevelDB summaries.",
           },
     causal: compareCausalAnalysis(before, after),
+    gameplayIntent,
+    artifactChangedIntentStable:
+      beforeSummary.fingerprint !== afterSummary.fingerprint &&
+      gameplayIntent.semanticallyStable,
   };
 }
