@@ -124,6 +124,135 @@ function script(): ParsedScriptFile {
 }
 
 describe("gameplay intent analyzer", () => {
+  it("avoids treating build-prefixed helper functions as gameplay phases", () => {
+    const base = script();
+    const helper = (
+      relativePath: string,
+      identifier: string,
+    ): ParsedScriptFile => ({
+      ...base,
+      identifier,
+      source: {
+        artifactId: "art_test",
+        relativePath,
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+    });
+
+    const result = extractGameplayIntentSignals([
+      helper(
+        "behavior_packs/demo/scripts/domain/buildInventory.js",
+        "scripts/domain/buildInventory",
+      ),
+      helper(
+        "behavior_packs/demo/scripts/domain/buildMutationPolicy.js",
+        "scripts/domain/buildMutationPolicy",
+      ),
+      helper(
+        "behavior_packs/demo/scripts/ui/buildHud.js",
+        "scripts/ui/buildHud",
+      ),
+    ]);
+
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey === "resource:build-inventory",
+      ),
+    ).toBe(true);
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey === "policy:build-mutation-policy",
+      ),
+    ).toBe(true);
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey === "mechanic:build-hud",
+      ),
+    ).toBe(true);
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey.startsWith("phase:build-"),
+      ),
+    ).toBe(false);
+  });
+
+  it("accepts kind/type return discriminants only for classified gameplay functions", () => {
+    const base = script();
+    const reconnect: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/domain/reconnect",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/domain/reconnect.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      commandLiterals: [],
+      returnOutcomes: [
+        {
+          executionRegion: "function:decideReconnect",
+          propertyName: "kind",
+          value: "cleanup_to_lobby",
+          source: base.source,
+        },
+        {
+          executionRegion: "function:helper",
+          propertyName: "kind",
+          value: "internal",
+          source: base.source,
+        },
+      ],
+      guardedOutcomes: [{
+        executionRegion: "function:decideReconnect",
+        conditionText: "membership === undefined",
+        conditionIdentifiers: ["membership"],
+        predicate: {
+          kind: "comparison",
+          operator: "eq",
+          left: { kind: "path", path: "membership" },
+          right: { kind: "literal", value: null },
+        },
+        propertyName: "kind",
+        value: "cleanup_to_lobby",
+        conditionSource: base.source,
+        outcomeSource: base.source,
+      }],
+    };
+
+    const result = extractGameplayIntentSignals([reconnect]);
+
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey ===
+          "outcome:decide-reconnect-cleanup-to-lobby",
+      ),
+    ).toBe(true);
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey === "outcome:helper-internal",
+      ),
+    ).toBe(false);
+  });
+
   it("extracts authored and inferred intent signals without map-specific names", () => {
     const result = extractGameplayIntentSignals([script()]);
 

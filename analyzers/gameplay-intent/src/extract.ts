@@ -18,7 +18,7 @@ const KIND_TERMS: ReadonlyArray<{
     kind: "phase",
     terms: [
       "lobby", "queue", "countdown", "prepare", "preparing",
-      "observation", "observe", "building", "build", "active",
+      "observation", "observe", "building", "active",
       "round", "transition", "finishing", "finish", "cinematic",
       "staging", "combat", "fortify", "laststand",
     ],
@@ -53,11 +53,18 @@ const KIND_TERMS: ReadonlyArray<{
     ],
   },
   {
+    kind: "policy",
+    terms: [
+      "policy", "permission", "permissions", "rule", "rules",
+      "restriction", "guard",
+    ],
+  },
+  {
     kind: "mechanic",
     terms: [
       "interaction", "placement", "water", "craft", "shop",
       "revive", "upgrade", "similarity", "clone", "feedback",
-      "hologram", "combat",
+      "hologram", "combat", "hud", "schematic",
     ],
   },
 ];
@@ -80,6 +87,22 @@ function classify(value: string): GameplayIntentNodeKind | undefined {
     if (entry.terms.some((term) => words.has(term))) return entry.kind;
   }
   return undefined;
+}
+
+function acceptsOutcomeDiscriminant(
+  propertyName: string,
+  sourceClassified: boolean,
+): boolean {
+  if (
+    /^(?:action|outcome|result|status)$/i.test(propertyName)
+  ) {
+    return true;
+  }
+
+  return (
+    sourceClassified &&
+    /^(?:kind|type)$/i.test(propertyName)
+  );
 }
 
 function title(value: string): string {
@@ -423,18 +446,24 @@ export function extractGameplayIntentSignals(
     }
 
     for (const guarded of script.guardedOutcomes ?? []) {
-      if (
-        !/^(?:action|outcome|result|status)$/i.test(
-          guarded.propertyName,
-        )
-      ) {
-        continue;
-      }
-
       const sourceName =
         guarded.executionRegion === "module"
           ? guarded.propertyName
           : guarded.executionRegion.replace(/^function:/, "");
+      const sourceSignal =
+        guarded.executionRegion === "module"
+          ? undefined
+          : lexicalSignal(path, sourceName);
+      if (
+        !acceptsOutcomeDiscriminant(
+          guarded.propertyName,
+          sourceSignal !== undefined,
+        )
+      ) {
+        continue;
+      }
+      if (sourceSignal) pushSignal(signals, sourceSignal);
+
       const outcomeKey =
         "outcome:" +
         slug(sourceName + " " + guarded.value);
@@ -488,14 +517,6 @@ export function extractGameplayIntentSignals(
     }
 
     for (const outcome of script.returnOutcomes ?? []) {
-      if (
-        !/^(?:action|outcome|result|status)$/i.test(
-          outcome.propertyName,
-        )
-      ) {
-        continue;
-      }
-
       const sourceName =
         outcome.executionRegion === "module"
           ? undefined
@@ -503,6 +524,14 @@ export function extractGameplayIntentSignals(
       const sourceSignal = sourceName
         ? lexicalSignal(path, sourceName)
         : undefined;
+      if (
+        !acceptsOutcomeDiscriminant(
+          outcome.propertyName,
+          sourceSignal !== undefined,
+        )
+      ) {
+        continue;
+      }
       if (sourceSignal) pushSignal(signals, sourceSignal);
 
       const outcomeKey =
