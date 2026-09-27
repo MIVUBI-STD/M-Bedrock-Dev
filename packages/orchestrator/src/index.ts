@@ -136,3 +136,4 @@ export * from "./gameplay-route-candidate-analysis.js";
 export * from "./gameplay-understanding-fingerprint.js";
 export * from "./gameplay-calibration-corpus.js";
 export * from "./gameplay-route-corridor.js";
+export * from "./runtime-experiment-diagnostic-evidence.js";
