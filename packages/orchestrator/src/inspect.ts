@@ -121,6 +121,7 @@ export async function inspectDirectory(
     runtimeEvidenceStage.runtimeStateObservations,
     runtimeEvidenceStage.runtimeOutcomeObservations,
     runtimeEvidenceStage.runtimeRouteObservations,
+    runtimeEvidenceStage.runtimeNavigationStallObservations,
   );
 
   enrichInspectionSemanticGraph({

@@ -374,6 +374,8 @@ export function buildInspectionResult(
       assessments: input.gameplayIntentRuntime.assessments,
       routeAssessments:
         input.gameplayIntentRuntime.routeAssessments,
+      routeStallAssessments:
+        input.gameplayIntentRuntime.routeStallAssessments,
       designedBehavior:
         input.gameplayIntentRuntime.designedBehavior,
       probableDefects:
@@ -394,6 +396,19 @@ export function buildInspectionResult(
         input.gameplayIntentRuntime.routeAmbiguous,
       routeUnresolved:
         input.gameplayIntentRuntime.routeUnresolved,
+      runtimeNavigationStallObservations:
+        input.runtimeEvidenceStage
+          .runtimeNavigationStallObservations.length,
+      stallTargetNearestMatch:
+        input.gameplayIntentRuntime
+          .stallTargetNearestMatch,
+      stallTargetNearestDivergence:
+        input.gameplayIntentRuntime
+          .stallTargetNearestDivergence,
+      stallAmbiguous:
+        input.gameplayIntentRuntime.stallAmbiguous,
+      stallUnresolved:
+        input.gameplayIntentRuntime.stallUnresolved,
     },
     semanticIr: semanticIrSummary(input.semanticIr),
     stateAnalysis: {

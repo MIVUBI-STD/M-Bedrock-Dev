@@ -4,6 +4,7 @@ import type {
 } from "../../project-model/src/index.js";
 import type {
   RuntimeEvidenceRecord,
+  RuntimeNavigationStallObservation,
   RuntimeOutcomeObservation,
   RuntimeRouteObservation,
   RuntimeScope,
@@ -333,6 +334,55 @@ export function telemetryRuntimeStateObservations(
             },
           }),
       evidenceId: "telemetry-state:" + event.eventId,
+    }];
+  });
+}
+
+export function telemetryRuntimeNavigationStallObservations(
+  events: readonly TelemetryEvent[],
+): RuntimeNavigationStallObservation[] {
+  return events.flatMap((event) => {
+    if (event.kind !== "entity-stall") return [];
+
+    const scope = ensureEntityScope(
+      event.scope,
+      event.entityKey,
+    );
+
+    return [{
+      entityKey: event.entityKey,
+      ...(event.routeId === undefined
+        ? {}
+        : { routeId: event.routeId }),
+      ...(event.stalledTicks === undefined
+        ? {}
+        : { stalledTicks: event.stalledTicks }),
+      ...(event.distanceDelta === undefined
+        ? {}
+        : { distanceDelta: event.distanceDelta }),
+      scope,
+      ...(event.tick === undefined &&
+          event.sequence === undefined &&
+          event.timestamp === undefined
+        ? {}
+        : {
+            observedAt: {
+              ...(event.tick === undefined
+                ? {}
+                : { tick: event.tick }),
+              ...(event.streamId === undefined
+                ? {}
+                : { streamId: event.streamId }),
+              ...(event.sequence === undefined
+                ? {}
+                : { sequence: event.sequence }),
+              ...(event.timestamp === undefined
+                ? {}
+                : { timestamp: event.timestamp }),
+            },
+          }),
+      evidenceId:
+        "telemetry-stall:" + event.eventId,
     }];
   });
 }

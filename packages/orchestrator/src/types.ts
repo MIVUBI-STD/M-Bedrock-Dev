@@ -18,6 +18,7 @@ import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
+  GameplayRouteStallRuntimeAssessment,
 } from "./gameplay-intent-runtime-stage.js";
 
 export interface InspectTargetProfile {
@@ -152,6 +153,7 @@ export interface InspectDirectoryResult {
   gameplayIntentRuntime: {
     assessments: readonly GameplayIntentRuntimeAssessment[];
     routeAssessments: readonly GameplayIntentRouteRuntimeAssessment[];
+    routeStallAssessments: readonly GameplayRouteStallRuntimeAssessment[];
     designedBehavior: number;
     probableDefects: number;
     ambiguousIntent: number;
@@ -162,6 +164,11 @@ export interface InspectDirectoryResult {
     routeResolved: number;
     routeAmbiguous: number;
     routeUnresolved: number;
+    runtimeNavigationStallObservations: number;
+    stallTargetNearestMatch: number;
+    stallTargetNearestDivergence: number;
+    stallAmbiguous: number;
+    stallUnresolved: number;
   };
   semanticIr: {
     executionRegions: number;

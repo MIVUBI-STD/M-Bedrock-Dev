@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   telemetryRuntimeEvidence,
+  telemetryRuntimeNavigationStallObservations,
   telemetryRuntimeOutcomeObservations,
   telemetryRuntimeRouteObservations,
   telemetryRuntimeStateObservations,
@@ -80,6 +81,40 @@ describe("telemetry evidence adapter", () => {
         state: "present",
       }),
     ]);
+  });
+
+  it("maps entity stalls into typed navigation stall observations", () => {
+    const event = {
+      schemaVersion: 1 as const,
+      eventId: "stall-typed-1",
+      kind: "entity-stall" as const,
+      producer: "instrumentation" as const,
+      scope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+      },
+      tick: 225,
+      entityKey: "demo:zombie",
+      routeId: "bridge",
+      stalledTicks: 80,
+      distanceDelta: 0.1,
+    };
+
+    expect(
+      telemetryRuntimeNavigationStallObservations([event]),
+    ).toEqual([{
+      entityKey: "demo:zombie",
+      routeId: "bridge",
+      stalledTicks: 80,
+      distanceDelta: 0.1,
+      scope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+        entityKey: "demo:zombie",
+      },
+      observedAt: { tick: 225 },
+      evidenceId: "telemetry-stall:stall-typed-1",
+    }]);
   });
 
   it("maps route observations into typed scoped route evidence", () => {

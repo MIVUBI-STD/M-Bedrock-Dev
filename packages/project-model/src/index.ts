@@ -39,3 +39,4 @@ export * from "./invariant-registry-validate.js";
 export * from "./runtime-state.js";
 export * from "./runtime-outcome.js";
 export * from "./runtime-route-observation.js";
+export * from "./runtime-navigation-stall.js";

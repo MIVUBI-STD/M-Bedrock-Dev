@@ -242,6 +242,128 @@ describe("gameplay intent runtime stage", () => {
     ).toMatch(/missing scope\.arenaId/);
   });
 
+  it("correlates a stall with the latest compatible route observation", () => {
+    const result = analyzeGameplayIntentRuntime(
+      routeIntent,
+      [],
+      [],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1778,
+          y: -30,
+          z: 0,
+        },
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 220 },
+        evidenceId: "e:route",
+      }],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        stalledTicks: 80,
+        distanceDelta: 0.1,
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 225 },
+        evidenceId: "e:stall",
+      }],
+    );
+
+    expect(result.stallTargetNearestMatch).toBe(1);
+    expect(result.stallTargetNearestDivergence).toBe(0);
+    expect(result.stallAmbiguous).toBe(0);
+    expect(result.stallUnresolved).toBe(0);
+    expect(
+      result.routeStallAssessments[0],
+    ).toEqual(expect.objectContaining({
+      disposition: "target-nearest-match",
+      routeAssessment: expect.objectContaining({
+        assessment: expect.objectContaining({
+          disposition: "resolved",
+          routeId: "bridge",
+          routeIndex: 606,
+        }),
+      }),
+    }));
+  });
+
+  it("keeps a stall unresolved when no compatible route observation exists", () => {
+    const result = analyzeGameplayIntentRuntime(
+      routeIntent,
+      [],
+      [],
+      [],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        stalledTicks: 80,
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 225 },
+        evidenceId: "e:stall",
+      }],
+    );
+
+    expect(result.stallUnresolved).toBe(1);
+    expect(
+      result.routeStallAssessments[0]?.disposition,
+    ).toBe("no-route-observation");
+  });
+
+  it("does not correlate a future route observation to an earlier stall", () => {
+    const result = analyzeGameplayIntentRuntime(
+      routeIntent,
+      [],
+      [],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1778,
+          y: -30,
+          z: 0,
+        },
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 230 },
+        evidenceId: "e:route-future",
+      }],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        stalledTicks: 80,
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 225 },
+        evidenceId: "e:stall",
+      }],
+    );
+
+    expect(
+      result.routeStallAssessments[0]?.disposition,
+    ).toBe("no-route-observation");
+  });
+
   it("reports policy violation as probable defect, not confirmed defect", () => {
     const result = analyzeGameplayIntentRuntime(
       intent,
