@@ -89,6 +89,12 @@ function script(): ParsedScriptFile {
       to: ["finishing", "failed"],
       source,
     }],
+    returnOutcomes: [{
+      executionRegion: "function:decideReconnect",
+      propertyName: "action",
+      value: "cleanup",
+      source,
+    }],
     capabilities: [],
   };
 }
@@ -147,6 +153,15 @@ describe("gameplay intent analyzer", () => {
             "state:session-phase-active" &&
           relation.toSubjectKey ===
             "state:session-phase-finishing",
+      ),
+    ).toBe(true);
+
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.nodeKind === "outcome" &&
+          signal.subjectKey ===
+            "outcome:decide-reconnect-cleanup",
       ),
     ).toBe(true);
   });

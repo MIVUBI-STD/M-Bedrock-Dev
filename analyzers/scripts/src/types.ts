@@ -205,6 +205,13 @@ export interface ScriptTransitionDeclaration {
   source: SourceRef;
 }
 
+export interface ScriptReturnOutcome {
+  executionRegion: string;
+  propertyName: string;
+  value: string;
+  source: SourceRef;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
@@ -246,5 +253,6 @@ export interface ParsedScriptFile {
   stateMutations?: ScriptStateMutation[];
   typeProperties?: ScriptTypeProperty[];
   transitionDeclarations?: ScriptTransitionDeclaration[];
+  returnOutcomes?: ScriptReturnOutcome[];
   capabilities: ScriptCapabilityUse[];
 }

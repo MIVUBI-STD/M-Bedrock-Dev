@@ -370,6 +370,59 @@ export function extractGameplayIntentSignals(
       }
     }
 
+    for (const outcome of script.returnOutcomes ?? []) {
+      if (
+        !/^(?:action|outcome|result|status)$/i.test(
+          outcome.propertyName,
+        )
+      ) {
+        continue;
+      }
+
+      const sourceName =
+        outcome.executionRegion === "module"
+          ? undefined
+          : outcome.executionRegion.replace(/^function:/, "");
+      const sourceSignal = sourceName
+        ? lexicalSignal(path, sourceName)
+        : undefined;
+      if (sourceSignal) pushSignal(signals, sourceSignal);
+
+      const outcomeKey =
+        "outcome:" +
+        slug((sourceName ?? outcome.propertyName) + " " + outcome.value);
+      const outcomeSignal: GameplayIntentSignal = {
+        id: "signal:" + outcomeKey + ":" + slug(path),
+        subjectKey: outcomeKey,
+        nodeKind: "outcome",
+        label: title((sourceName ?? outcome.propertyName) + " " + outcome.value),
+        status: "authored",
+        evidenceOrigin: "source-code",
+        locator: path,
+        summary:
+          "Source explicitly returns this discriminated gameplay outcome.",
+      };
+      pushSignal(signals, outcomeSignal);
+
+      if (sourceSignal) {
+        pushRelation({
+          id:
+            "relation:produces:" +
+            sourceSignal.subjectKey + ":" +
+            outcomeKey + ":" +
+            slug(path),
+          fromSubjectKey: sourceSignal.subjectKey,
+          toSubjectKey: outcomeKey,
+          edgeKind: "produces",
+          status: "inferred",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "A classified gameplay function explicitly returns this outcome; the gameplay meaning of the function remains inferred.",
+        });
+      }
+    }
+
     for (const event of script.events) {
       const signal = lexicalSignal(path, event.event);
       if (signal) pushSignal(signals, signal);

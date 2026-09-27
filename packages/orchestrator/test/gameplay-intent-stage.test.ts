@@ -77,6 +77,12 @@ function parsed(): ParsedScriptFile {
       to: ["finishing", "failed"],
       source,
     }],
+    returnOutcomes: [{
+      executionRegion: "function:decideReconnect",
+      propertyName: "action",
+      value: "cleanup",
+      source,
+    }],
     capabilities: [],
   };
 }
@@ -128,6 +134,14 @@ describe("gameplay intent stage", () => {
           invariant.status === "inferred",
       ),
     ).toBe(true);
+
+    expect(
+      model.nodes.some(
+        (node) =>
+          node.id === "outcome:decide-reconnect-cleanup" &&
+          node.status === "authored",
+      ),
+    ).toBe(true);
   });
 
   it("does not invent intent when no grounded signal exists", () => {
@@ -141,6 +155,7 @@ describe("gameplay intent stage", () => {
       stateMutations: [],
       typeProperties: [],
       transitionDeclarations: [],
+      returnOutcomes: [],
     };
 
     const model = buildGameplayIntentModel({

@@ -18,6 +18,7 @@ import type {
   ScriptStateMutation,
   ScriptTransitionDeclaration,
   ScriptTypeProperty,
+  ScriptReturnOutcome,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -658,6 +659,7 @@ export function parseScriptFile(
   const stateMutations: ScriptStateMutation[] = [];
   const typeProperties: ScriptTypeProperty[] = [];
   const transitionDeclarations: ScriptTransitionDeclaration[] = [];
+  const returnOutcomes: ScriptReturnOutcome[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
   const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
   const canonicalMinecraftMember = (
@@ -818,6 +820,38 @@ export function parseScriptFile(
           executionRegion: localExecutionRegionId(node, file),
           source: lineSource(file, node, source),
         });
+      }
+    }
+
+    if (ts.isReturnStatement(node) && node.expression) {
+      const expression =
+        ts.isParenthesizedExpression(node.expression)
+          ? node.expression.expression
+          : node.expression;
+      if (ts.isObjectLiteralExpression(expression)) {
+        for (const property of expression.properties) {
+          if (!ts.isPropertyAssignment(property)) continue;
+          const propertyName =
+            ts.isIdentifier(property.name) ||
+            ts.isStringLiteralLike(property.name)
+              ? property.name.text
+              : undefined;
+          if (!propertyName) continue;
+
+          const value =
+            ts.isStringLiteralLike(property.initializer) ||
+            ts.isNoSubstitutionTemplateLiteral(property.initializer)
+              ? property.initializer.text
+              : undefined;
+          if (value === undefined) continue;
+
+          returnOutcomes.push({
+            executionRegion: localExecutionRegionId(node, file),
+            propertyName,
+            value,
+            source: lineSource(file, property, source),
+          });
+        }
       }
     }
 
@@ -1262,6 +1296,7 @@ export function parseScriptFile(
     stateMutations,
     typeProperties,
     transitionDeclarations,
+    returnOutcomes,
     capabilities,
   };
 }
