@@ -405,6 +405,9 @@ export function buildInspectionResult(
       runtimeRouteReachabilityObservations:
         input.runtimeEvidenceStage
           .runtimeRouteReachabilityObservations.length,
+      runtimeRouteChunkAvailabilityObservations:
+        input.runtimeEvidenceStage
+          .runtimeRouteChunkAvailabilityObservations.length,
       routeEvidenceSatisfied:
         input.gameplayIntentRuntime.routeStallAssessments.reduce(
           (sum, item) =>
@@ -439,6 +442,48 @@ export function buildInspectionResult(
         input.gameplayIntentRuntime.stallAmbiguous,
       stallUnresolved:
         input.gameplayIntentRuntime.stallUnresolved,
+      stallRouteContextIncomplete:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.investigationDirection ===
+            "route-context-incomplete",
+        ).length,
+      stallTargetAssignmentDivergence:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.investigationDirection ===
+            "target-assignment-divergence",
+        ).length,
+      stallRouteChunkUnavailable:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.investigationDirection ===
+            "route-chunk-unavailable",
+        ).length,
+      stallRouteUnreachable:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.investigationDirection ===
+            "route-unreachable",
+        ).length,
+      stallNavigationTargetDivergence:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.investigationDirection ===
+            "navigation-target-divergence",
+        ).length,
+      stallNavigationRuntimeSuspect:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.investigationDirection ===
+            "navigation-runtime-suspect",
+        ).length,
+      stallEvidenceIncomplete:
+        input.gameplayIntentRuntime.routeStallAssessments.filter(
+          (item) =>
+            item.investigationDirection ===
+            "evidence-incomplete",
+        ).length,
     },
     semanticIr: semanticIrSummary(input.semanticIr),
     stateAnalysis: {

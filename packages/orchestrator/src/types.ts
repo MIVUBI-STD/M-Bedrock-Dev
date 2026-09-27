@@ -167,6 +167,7 @@ export interface InspectDirectoryResult {
     runtimeNavigationStallObservations: number;
     runtimeNavigationTargetObservations: number;
     runtimeRouteReachabilityObservations: number;
+    runtimeRouteChunkAvailabilityObservations: number;
     routeEvidenceSatisfied: number;
     routeInstrumentationRequired: number;
     routeProbeRequests: number;
@@ -175,6 +176,13 @@ export interface InspectDirectoryResult {
     stallTargetNearestDivergence: number;
     stallAmbiguous: number;
     stallUnresolved: number;
+    stallRouteContextIncomplete: number;
+    stallTargetAssignmentDivergence: number;
+    stallRouteChunkUnavailable: number;
+    stallRouteUnreachable: number;
+    stallNavigationTargetDivergence: number;
+    stallNavigationRuntimeSuspect: number;
+    stallEvidenceIncomplete: number;
   };
   semanticIr: {
     executionRegions: number;

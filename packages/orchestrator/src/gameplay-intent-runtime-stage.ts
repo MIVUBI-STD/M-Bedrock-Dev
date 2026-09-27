@@ -20,6 +20,7 @@ import {
   type RuntimeNavigationStallObservation,
   type RuntimeNavigationTargetObservation,
   type RuntimeOutcomeObservation,
+  type RuntimeRouteChunkAvailabilityObservation,
   type RuntimeRouteObservation,
   type RuntimeRouteReachabilityObservation,
   type RuntimeStateObservation,
@@ -53,6 +54,15 @@ export interface GameplayRouteMotionSeries {
   displacement?: number;
 }
 
+export type GameplayRouteStallInvestigationDirection =
+  | "route-context-incomplete"
+  | "target-assignment-divergence"
+  | "route-chunk-unavailable"
+  | "route-unreachable"
+  | "navigation-target-divergence"
+  | "navigation-runtime-suspect"
+  | "evidence-incomplete";
+
 export interface GameplayRouteStallRuntimeAssessment {
   stallObservation: RuntimeNavigationStallObservation;
   disposition: GameplayRouteStallDisposition;
@@ -60,10 +70,12 @@ export interface GameplayRouteStallRuntimeAssessment {
   motionSeries?: GameplayRouteMotionSeries;
   navigationTargetObservation?: RuntimeNavigationTargetObservation;
   reachabilityObservation?: RuntimeRouteReachabilityObservation;
+  chunkAvailabilityObservation?: RuntimeRouteChunkAvailabilityObservation;
   navigationTargetDistanceToAuthoredTarget?: number;
   navigationTargetRouteMatchesAuthoredTarget?: boolean;
   observationNeeds: readonly GameplayRouteRuntimeObservationNeed[];
   evidencePlan: GameplayRouteRuntimeEvidencePlan;
+  investigationDirection: GameplayRouteStallInvestigationDirection;
   reasons: readonly string[];
 }
 
@@ -480,6 +492,75 @@ function routeMotionSeriesForStall(
   };
 }
 
+function chunkAvailabilityForStall(
+  stall: RuntimeNavigationStallObservation,
+  observations:
+    readonly RuntimeRouteChunkAvailabilityObservation[],
+): RuntimeRouteChunkAvailabilityObservation | undefined {
+  const requestId =
+    "route-stall::" +
+    stall.evidenceId +
+    "::chunk-route-availability";
+  const matches = observations.filter(
+    (item) => item.requestId === requestId,
+  );
+  return matches.length === 1
+    ? matches[0]
+    : undefined;
+}
+
+function routeStallInvestigationDirection(
+  base: GameplayRouteStallAssessmentBase,
+  motionSeries: GameplayRouteMotionSeries | undefined,
+  navigationTarget:
+    RuntimeNavigationTargetObservation | undefined,
+  navigationTargetRouteMatches:
+    boolean | undefined,
+  reachability:
+    RuntimeRouteReachabilityObservation | undefined,
+  chunkAvailability:
+    RuntimeRouteChunkAvailabilityObservation | undefined,
+): GameplayRouteStallInvestigationDirection {
+  if (
+    base.disposition === "ambiguous-route-context" ||
+    base.disposition === "no-route-observation" ||
+    base.disposition === "unresolved-route-evidence"
+  ) {
+    return "route-context-incomplete";
+  }
+
+  if (
+    base.disposition === "target-nearest-divergence"
+  ) {
+    return "target-assignment-divergence";
+  }
+
+  if (chunkAvailability?.state === "not-loaded") {
+    return "route-chunk-unavailable";
+  }
+
+  if (reachability?.reachable === false) {
+    return "route-unreachable";
+  }
+
+  if (navigationTargetRouteMatches === false) {
+    return "navigation-target-divergence";
+  }
+
+  if (
+    base.disposition === "target-nearest-match" &&
+    motionSeries !== undefined &&
+    navigationTarget !== undefined &&
+    navigationTargetRouteMatches === true &&
+    reachability?.reachable === true &&
+    chunkAvailability?.state === "loaded"
+  ) {
+    return "navigation-runtime-suspect";
+  }
+
+  return "evidence-incomplete";
+}
+
 function navigationTargetComparison(
   routeAssessment:
     GameplayIntentRouteRuntimeAssessment | undefined,
@@ -535,6 +616,8 @@ export function analyzeGameplayIntentRuntime(
     readonly RuntimeNavigationTargetObservation[] = [],
   routeReachabilityObservations:
     readonly RuntimeRouteReachabilityObservation[] = [],
+  routeChunkAvailabilityObservations:
+    readonly RuntimeRouteChunkAvailabilityObservation[] = [],
   options: GameplayIntentRuntimeOptions = {},
 ): GameplayIntentRuntimeAnalysis {
   const stateSnapshot = {
@@ -655,6 +738,11 @@ export function analyzeGameplayIntentRuntime(
             stall,
             routeReachabilityObservations,
           );
+        const chunkAvailabilityObservation =
+          chunkAvailabilityForStall(
+            stall,
+            routeChunkAvailabilityObservations,
+          );
         const navigationComparison =
           navigationTargetComparison(
             baseAssessment.routeAssessment,
@@ -717,6 +805,29 @@ export function analyzeGameplayIntentRuntime(
           });
         }
 
+        if (
+          chunkAvailabilityObservation &&
+          chunkAvailabilityObservation.state !== "unknown"
+        ) {
+          fulfilled.set("chunk-route-availability", {
+            evidenceIds: [
+              chunkAvailabilityObservation.evidenceId,
+            ],
+            reason:
+              "The generated chunk-availability runtime probe returned a definitive loaded/not-loaded result.",
+          });
+        }
+
+        const investigationDirection =
+          routeStallInvestigationDirection(
+            baseAssessment,
+            motionSeries,
+            navigationTargetObservation,
+            navigationComparison.routeMatches,
+            reachabilityObservation,
+            chunkAvailabilityObservation,
+          );
+
         return {
           ...baseAssessment,
           ...(motionSeries === undefined
@@ -728,6 +839,9 @@ export function analyzeGameplayIntentRuntime(
           ...(reachabilityObservation === undefined
             ? {}
             : { reachabilityObservation }),
+          ...(chunkAvailabilityObservation === undefined
+            ? {}
+            : { chunkAvailabilityObservation }),
           ...(navigationComparison.distance === undefined
             ? {}
             : {
@@ -740,6 +854,7 @@ export function analyzeGameplayIntentRuntime(
                 navigationTargetRouteMatchesAuthoredTarget:
                   navigationComparison.routeMatches,
               }),
+          investigationDirection,
           evidencePlan:
             planGameplayRouteRuntimeEvidence({
               stall,

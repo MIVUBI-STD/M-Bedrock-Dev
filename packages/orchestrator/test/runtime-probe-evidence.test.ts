@@ -65,5 +65,87 @@ describe("runtime probe response evidence", () => {
         evidenceId: "runtime-probe-state:req-present",
       },
     ]);
+    expect(
+      result.routeChunkAvailabilityObservations,
+    ).toEqual([]);
+  });
+
+  it("extracts typed route chunk availability observations", () => {
+    const loaded = runtimeProbeResponseEvidence([{
+      schemaVersion: 1,
+      requestId:
+        "route-stall::telemetry-stall:stall-225::chunk-route-availability",
+      probeId: "gameplay-route-chunk-availability",
+      runtimeTick: 226,
+      ok: true,
+      state: "present",
+      outcomeId: "route-target-chunk-loaded",
+      evidence: {
+        predicate: "route-target-chunk-loaded",
+        state: "present",
+        confidence: "observed",
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+      },
+    }]);
+
+    expect(
+      loaded.routeChunkAvailabilityObservations,
+    ).toEqual([{
+      requestId:
+        "route-stall::telemetry-stall:stall-225::chunk-route-availability",
+      state: "loaded",
+      scope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+        entityKey: "demo:zombie",
+      },
+      observedAt: { tick: 226 },
+      evidenceId:
+        "runtime-probe-route-chunk:route-stall::telemetry-stall:stall-225::chunk-route-availability",
+    }]);
+
+    const notLoaded = runtimeProbeResponseEvidence([{
+      schemaVersion: 1,
+      requestId:
+        "route-stall::telemetry-stall:stall-225::chunk-route-availability",
+      probeId: "gameplay-route-chunk-availability",
+      runtimeTick: 226,
+      ok: true,
+      state: "absent",
+      outcomeId: "route-target-chunk-not-loaded",
+      evidence: {
+        predicate: "route-target-chunk-loaded",
+        state: "absent",
+        confidence: "observed",
+      },
+    }]);
+
+    expect(
+      notLoaded.routeChunkAvailabilityObservations[0]?.state,
+    ).toBe("not-loaded");
+
+    const unknown = runtimeProbeResponseEvidence([{
+      schemaVersion: 1,
+      requestId:
+        "route-stall::telemetry-stall:stall-225::chunk-route-availability",
+      probeId: "gameplay-route-chunk-availability",
+      runtimeTick: 226,
+      ok: false,
+      state: "unknown",
+      evidence: {
+        predicate: "route-target-chunk-loaded",
+        state: "unknown",
+        confidence: "unknown",
+      },
+      error: "probe unavailable",
+    }]);
+
+    expect(
+      unknown.routeChunkAvailabilityObservations[0]?.state,
+    ).toBe("unknown");
   });
 });

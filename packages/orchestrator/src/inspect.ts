@@ -124,6 +124,7 @@ export async function inspectDirectory(
     runtimeEvidenceStage.runtimeNavigationStallObservations,
     runtimeEvidenceStage.runtimeNavigationTargetObservations,
     runtimeEvidenceStage.runtimeRouteReachabilityObservations,
+    runtimeEvidenceStage.runtimeRouteChunkAvailabilityObservations,
     {
       ...(target.staticExecutionDimension === undefined
         ? {}

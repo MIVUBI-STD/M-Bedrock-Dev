@@ -474,6 +474,7 @@ describe("gameplay intent runtime stage", () => {
         observedAt: { tick: 223 },
         evidenceId: "e:reachability",
       }],
+      [],
       { dimension: "overworld" },
     );
 
@@ -525,6 +526,200 @@ describe("gameplay intent runtime stage", () => {
       }),
     ]);
     expect(stall.evidencePlan.blocked).toEqual([]);
+  });
+
+  it("closes route evidence when the target chunk is loaded", () => {
+    const result = analyzeGameplayIntentRuntime(
+      routeIntent,
+      [],
+      [],
+      [
+        {
+          entityKey: "demo:zombie",
+          routeId: "bridge",
+          routeIndex: 606,
+          worldLocation: {
+            x: 1777.5,
+            y: -30,
+            z: 0,
+          },
+          scope: {
+            arenaId: "arena_6",
+            arenaGeneration: 3,
+            entityKey: "demo:zombie",
+          },
+          observedAt: { tick: 210 },
+          evidenceId: "e:route-a",
+        },
+        {
+          entityKey: "demo:zombie",
+          routeId: "bridge",
+          routeIndex: 606,
+          worldLocation: {
+            x: 1778,
+            y: -30,
+            z: 0,
+          },
+          scope: {
+            arenaId: "arena_6",
+            arenaGeneration: 3,
+            entityKey: "demo:zombie",
+          },
+          observedAt: { tick: 220 },
+          evidenceId: "e:route-b",
+        },
+      ],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        stalledTicks: 80,
+        distanceDelta: 0.1,
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 225 },
+        evidenceId: "telemetry-stall:stall-225",
+      }],
+      [{
+        entityKey: "demo:zombie",
+        targetLocation: {
+          x: 1778,
+          y: -28.5,
+          z: 0.5,
+        },
+        routeId: "bridge",
+        routeIndex: 606,
+        mechanism: "moveToLocation",
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 222 },
+        evidenceId: "e:navigation-target",
+      }],
+      [{
+        entityKey: "demo:zombie",
+        reachable: true,
+        routeId: "bridge",
+        routeIndex: 606,
+        mechanism: "gametest-path-check",
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 223 },
+        evidenceId: "e:reachability",
+      }],
+      [{
+        requestId:
+          "route-stall::telemetry-stall:stall-225::chunk-route-availability",
+        state: "loaded",
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 226 },
+        evidenceId: "e:chunk-loaded",
+      }],
+      { dimension: "overworld" },
+    );
+
+    const stall = result.routeStallAssessments[0]!;
+    expect(stall.chunkAvailabilityObservation?.state)
+      .toBe("loaded");
+    expect(stall.investigationDirection)
+      .toBe("navigation-runtime-suspect");
+    expect(stall.evidencePlan.runtimeProbeRequests)
+      .toEqual([]);
+    expect(stall.evidencePlan.blocked).toEqual([]);
+    expect(stall.evidencePlan.satisfied).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          need: "entity-motion-series",
+        }),
+        expect.objectContaining({
+          need: "navigation-target",
+        }),
+        expect.objectContaining({
+          need: "route-reachability",
+        }),
+        expect.objectContaining({
+          need: "chunk-route-availability",
+          evidenceIds: ["e:chunk-loaded"],
+        }),
+      ]),
+    );
+  });
+
+  it("redirects investigation when the authored target chunk is not loaded", () => {
+    const result = analyzeGameplayIntentRuntime(
+      routeIntent,
+      [],
+      [],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1778,
+          y: -30,
+          z: 0,
+        },
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 220 },
+        evidenceId: "e:route",
+      }],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        stalledTicks: 80,
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 225 },
+        evidenceId: "telemetry-stall:stall-225",
+      }],
+      [],
+      [],
+      [{
+        requestId:
+          "route-stall::telemetry-stall:stall-225::chunk-route-availability",
+        state: "not-loaded",
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 226 },
+        evidenceId: "e:chunk-not-loaded",
+      }],
+      { dimension: "overworld" },
+    );
+
+    const stall = result.routeStallAssessments[0]!;
+    expect(stall.investigationDirection)
+      .toBe("route-chunk-unavailable");
+    expect(stall.evidencePlan.runtimeProbeRequests)
+      .toEqual([]);
+    expect(stall.evidencePlan.satisfied).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          need: "chunk-route-availability",
+          evidenceIds: ["e:chunk-not-loaded"],
+        }),
+      ]),
+    );
   });
 
   it("reports policy violation as probable defect, not confirmed defect", () => {

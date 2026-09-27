@@ -51,6 +51,9 @@ export function prepareInspectionRuntimeEvidence(
     ...telemetryStateObservations,
     ...runtimeProbeEvidence.stateObservations,
   ];
+  const runtimeRouteChunkAvailabilityObservations =
+    runtimeProbeEvidence
+      .routeChunkAvailabilityObservations;
 
   const telemetryContinuity = analyzeTelemetryContinuity({
     schemaVersion: 1,
@@ -187,6 +190,7 @@ export function prepareInspectionRuntimeEvidence(
     runtimeNavigationStallObservations,
     runtimeNavigationTargetObservations,
     runtimeRouteReachabilityObservations,
+    runtimeRouteChunkAvailabilityObservations,
     telemetryContinuity,
     telemetryEvidenceIntegrity,
     runtimeProbeEvidenceIntegrity,

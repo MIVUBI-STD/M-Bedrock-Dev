@@ -5,6 +5,7 @@ import {
 import type {
   RuntimeProbeResponse,
   RuntimeProbeTranscript,
+  RuntimeRouteChunkAvailabilityObservation,
   RuntimeStateObservation,
 } from "../../project-model/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
@@ -20,6 +21,8 @@ export interface RuntimeProbeResponseSummary {
 export interface RuntimeProbeResponseEvidence {
   records: RuntimeEvidenceRecord[];
   stateObservations: RuntimeStateObservation[];
+  routeChunkAvailabilityObservations:
+    RuntimeRouteChunkAvailabilityObservation[];
   summary: RuntimeProbeResponseSummary;
 }
 
@@ -28,6 +31,8 @@ export function runtimeProbeResponseEvidence(
 ): RuntimeProbeResponseEvidence {
   const records: RuntimeEvidenceRecord[] = [];
   const stateObservations: RuntimeStateObservation[] = [];
+  const routeChunkAvailabilityObservations:
+    RuntimeRouteChunkAvailabilityObservation[] = [];
   let present = 0;
   let absent = 0;
   let unknown = 0;
@@ -58,6 +63,32 @@ export function runtimeProbeResponseEvidence(
     });
 
     if (
+      response.probeId ===
+      "gameplay-route-chunk-availability"
+    ) {
+      routeChunkAvailabilityObservations.push({
+        requestId: response.requestId,
+        state:
+          response.ok !== true ||
+          response.state === "unknown"
+            ? "unknown"
+            : response.state === "present"
+            ? "loaded"
+            : "not-loaded",
+        ...(response.evidence.scope === undefined
+          ? {}
+          : { scope: response.evidence.scope }),
+        observedAt: {
+          ...(response.evidence.observedAt ?? {}),
+          tick: response.runtimeTick,
+        },
+        evidenceId:
+          "runtime-probe-route-chunk:" +
+          response.requestId,
+      });
+    }
+
+    if (
       response.statePath !== undefined &&
       response.value !== undefined &&
       response.ok === true
@@ -83,6 +114,7 @@ export function runtimeProbeResponseEvidence(
   return {
     records,
     stateObservations,
+    routeChunkAvailabilityObservations,
     summary: {
       responses: responses.length,
       present,
