@@ -47,3 +47,7 @@ The temporal verifier explores execution paths and reuses the Behavioral World M
 - EVENTUALLY/UNTIL can produce reachable lasso counterexamples when a cycle can repeat forever without discharging the obligation;
 - cyclic LEADS-TO remains `unknown` until a monitor-automaton backend can safely reason across loop boundaries;
 - budget exhaustion remains `unknown`.
+
+## LEADS-TO monitor automaton
+
+LEADS-TO now explores a product state consisting of the behavioral state plus an explicit obligation monitor. The monitor tracks whether a trigger has opened an obligation and its age for bounded deadlines. A repeated product state with an open obligation is a lasso counterexample; a repeated product state with no outstanding obligation closes that branch safely.

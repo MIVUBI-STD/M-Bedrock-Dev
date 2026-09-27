@@ -5,7 +5,7 @@ import type {
   BehaviorState,
 } from "../../behavior-model/src/index.js";
 import {
-  boundedBehaviorSolver,
+  behaviorStateKey,\n  boundedBehaviorSolver,
 } from "../src/index.js";
 
 const active: BehaviorPredicate = {
@@ -36,8 +36,8 @@ const initial: BehaviorState = {
   schemaVersion: 1,
   tick: 0,
   values: {
-    "arena.state@arena:1": "idle",
-    "arena.members@arena:1": 0,
+    [behaviorStateKey("arena.state", "arena:1")]: "idle",
+    [behaviorStateKey("arena.members", "arena:1")]: 0,
   },
 };
 

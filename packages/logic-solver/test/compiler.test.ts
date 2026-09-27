@@ -4,7 +4,7 @@ import type {
   BehaviorState,
 } from "../../behavior-model/src/index.js";
 import {
-  compileAndSolveBehaviorConstraints,
+  behaviorStateKey,\n  compileAndSolveBehaviorConstraints,
   compileBehaviorConstraints,
 } from "../src/index.js";
 
@@ -12,8 +12,8 @@ const initial: BehaviorState = {
   schemaVersion: 1,
   tick: 0,
   values: {
-    "arena.state@arena:1": "idle",
-    "arena.members@arena:1": 0,
+    [behaviorStateKey("arena.state", "arena:1")]: "idle",
+    [behaviorStateKey("arena.members", "arena:1")]: 0,
   },
 };
 
@@ -126,12 +126,7 @@ describe("constraint compiler", () => {
       "transition-enabled:join",
       "transition-enabled:impossible-start",
     ]);
-    expect(compilation.unsupported).toEqual([
-      expect.objectContaining({
-        sourceId: "eventually-idle",
-        sourceKind: "eventually",
-      }),
-    ]);
+    expect(compilation.unsupported).toEqual([]);
   });
 
   it("solves the compiled invariant and transition reachability batch", () => {
@@ -157,5 +152,11 @@ describe("constraint compiler", () => {
     expect(
       byId.get("transition-enabled:impossible-start")?.disposition,
     ).toBe("disproved");
+    expect(batch.temporalResults).toEqual([
+      expect.objectContaining({
+        propertyId: "eventually-idle",
+        disposition: "proved",
+      }),
+    ]);
   });
 });

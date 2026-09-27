@@ -176,7 +176,7 @@ describe("temporal solver", () => {
     expect(result.disposition).toBe("proved");
   });
 
-  it("returns UNKNOWN for unresolved cyclic LEADS-TO semantics", () => {
+  it("disproves cyclic LEADS-TO when the obligation stays open", () => {
     const result = solveTemporalProperty(
       model([{
         id: "spin",
@@ -205,6 +205,72 @@ describe("temporal solver", () => {
       { maxDepth: 4, maxStates: 32 },
     );
 
-    expect(result.disposition).toBe("unknown");
+    expect(result.disposition).toBe("disproved");
+  });
+
+  it("proves cyclic LEADS-TO when every trigger is discharged before the loop closes", () => {
+    const result = solveTemporalProperty(
+      model([
+        {
+          id: "trigger",
+          owner: "script",
+          preconditions: [{
+            kind: "condition",
+            condition: {
+              variableId: "phase",
+              operator: "eq",
+              value: "idle",
+            },
+          }],
+          effects: [{
+            kind: "set",
+            variableId: "phase",
+            value: "finished",
+          }],
+        },
+        {
+          id: "cleanup",
+          owner: "script",
+          preconditions: [{
+            kind: "condition",
+            condition: {
+              variableId: "phase",
+              operator: "eq",
+              value: "finished",
+            },
+          }],
+          effects: [
+            {
+              kind: "set",
+              variableId: "cleanup",
+              value: true,
+            },
+            {
+              kind: "set",
+              variableId: "phase",
+              value: "idle",
+            },
+          ],
+        },
+      ]),
+      initial,
+      {
+        id: "finished-leads-cleanup",
+        kind: "leads-to",
+        trigger: {
+          kind: "condition",
+          condition: {
+            variableId: "phase",
+            operator: "eq",
+            value: "finished",
+          },
+        },
+        consequence: eventuallyCleanup.predicate,
+      },
+      { maxDepth: 6, maxStates: 64 },
+    );
+
+    expect(result.disposition).toBe("proved");
+    expect(result.proof.completeExploration).toBe(true);
   });
 });
