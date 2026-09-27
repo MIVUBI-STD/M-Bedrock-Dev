@@ -34,7 +34,7 @@ const KIND_TERMS: ReadonlyArray<{
   {
     kind: "resource",
     terms: [
-      "score", "scoring", "coin", "currency", "resource", "ledger",
+      "score", "scoring", "coin", "currency", "resource", "resources", "ledger",
       "inventory", "palette", "health", "points", "kit",
     ],
   },
