@@ -158,7 +158,7 @@ describe("built-in diagnosis runtime", () => {
         files: [],
       });
 
-    await expect(
+    expect(() =>
       runtime.payloadProvider.payloadFor({
         capabilityId:
           "diagnosis.contradiction-proof",
@@ -167,8 +167,8 @@ describe("built-in diagnosis runtime", () => {
         completedCapabilityIds: [],
         evidence: [],
         outputs: {},
-      }),
-    ).rejects.toThrow(
+      })
+    ).toThrow(
       /requires an explicit ConstraintProblem/,
     );
 
