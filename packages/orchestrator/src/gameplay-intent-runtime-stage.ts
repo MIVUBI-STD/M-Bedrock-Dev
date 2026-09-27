@@ -743,9 +743,13 @@ export function analyzeGameplayIntentRuntime(
           evidencePlan:
             planGameplayRouteRuntimeEvidence({
               stall,
-              routeAssessment:
-                baseAssessment.routeAssessment
-                  ?.assessment,
+              ...(baseAssessment.routeAssessment === undefined
+                ? {}
+                : {
+                    routeAssessment:
+                      baseAssessment.routeAssessment
+                        .assessment,
+                  }),
               needs: baseAssessment.observationNeeds,
               fulfilled,
               ...(options.dimension === undefined
