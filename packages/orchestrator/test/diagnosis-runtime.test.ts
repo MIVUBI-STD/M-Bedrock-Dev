@@ -213,7 +213,7 @@ describe("built-in diagnosis runtime", () => {
         },
       );
 
-    await expect(
+    expect(
       withProblem.payloadProvider.payloadFor({
         capabilityId:
           "diagnosis.contradiction-proof",
@@ -223,7 +223,7 @@ describe("built-in diagnosis runtime", () => {
         evidence: [],
         outputs: {},
       }),
-    ).resolves.toEqual({
+    ).toEqual({
       problem,
     });
 
