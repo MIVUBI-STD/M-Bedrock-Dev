@@ -95,7 +95,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   prerequisites: ["diagnosis.intent-grounding"],
 }, {
   id: "diagnosis.contradiction-proof",
-  owner: "packages/logic-solver/src/index.ts",
+  owner: "packages/diagnosis-pipeline/src/contradiction-executor.ts",
   executorId: "diagnosis.contradiction-proof",
   evidenceLevel: "formal",
   cost: "expensive",
