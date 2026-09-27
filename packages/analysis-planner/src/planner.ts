@@ -40,6 +40,7 @@ const GOAL_LEVEL: Readonly<Record<
   "semantic-consistency": "semantic",
   "intent-classification": "semantic",
   "contradiction-proof": "formal",
+  "runtime-evidence-integrity": "runtime",
   "runtime-behavior": "runtime",
   "causal-repair": "runtime",
 };
@@ -196,7 +197,10 @@ function prerequisiteChoice(
   };
 
   try {
-    return { capability: resolve(capability) };
+    const resolved = resolve(capability);
+    return resolved === undefined
+      ? {}
+      : { capability: resolved };
   } catch (error) {
     return {
       error:
