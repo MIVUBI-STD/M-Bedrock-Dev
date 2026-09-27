@@ -12,3 +12,4 @@ export * from "./counterexample-scenario.js";
 export * from "./bedrock-action.js";
 export * from "./action-capability.js";
 export * from "./bedrock-capabilities.js";
+export * from "./scenario-requirements.js";
