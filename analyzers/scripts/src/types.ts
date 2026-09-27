@@ -174,6 +174,21 @@ export interface ScriptEnumValueComparison {
   source: SourceRef;
 }
 
+export interface ScriptStateMutation {
+  target: string;
+  targetName: string;
+  value:
+    | { kind: "literal"; literal: string }
+    | {
+        kind: "member";
+        owner: string;
+        member: string;
+        symbol: string;
+      };
+  executionRegion: string;
+  source: SourceRef;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
