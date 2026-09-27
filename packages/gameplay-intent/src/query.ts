@@ -1201,3 +1201,179 @@ export function findNearestGameplayRoutePoint(
     nearest,
   };
 }
+
+
+export interface GameplayRouteObservationInput {
+  context: number | string;
+  routeIndex?: number;
+  routeId?: string;
+  worldLocation?: {
+    x: number;
+    y: number;
+    z: number;
+  };
+}
+
+export interface GameplayRouteObservationAssessment {
+  disposition: "resolved" | "ambiguous" | "unresolved";
+  routeIndex?: number;
+  routeId?: string;
+  target?: GameplayRouteTargetCandidate;
+  targetCandidates?: readonly GameplayRouteTargetCandidate[];
+  nearest?: GameplayNearestRoutePoint;
+  distanceToTarget?: number;
+  reasons: readonly string[];
+}
+
+export function assessGameplayRouteObservation(
+  model: GameplayIntentModel,
+  input: GameplayRouteObservationInput,
+): GameplayRouteObservationAssessment {
+  let target: GameplayRouteTargetCandidate | undefined;
+  let targetCandidates:
+    | readonly GameplayRouteTargetCandidate[]
+    | undefined;
+  const reasons: string[] = [];
+
+  if (input.routeIndex !== undefined) {
+    const targetResolution = resolveGameplayRouteTarget(
+      model,
+      input.routeIndex,
+      input.context,
+      input.routeId,
+    );
+
+    if (targetResolution.disposition === "ambiguous") {
+      return {
+        disposition: "ambiguous",
+        routeIndex: input.routeIndex,
+        ...(input.routeId === undefined
+          ? {}
+          : { routeId: input.routeId }),
+        targetCandidates: targetResolution.candidates,
+        reasons: [
+          targetResolution.reason ??
+            "Route context is ambiguous.",
+        ],
+      };
+    }
+
+    if (targetResolution.disposition === "unresolved") {
+      return {
+        disposition: "unresolved",
+        routeIndex: input.routeIndex,
+        ...(input.routeId === undefined
+          ? {}
+          : { routeId: input.routeId }),
+        reasons: [
+          targetResolution.reason ??
+            "Authored route target cannot be resolved.",
+        ],
+      };
+    }
+
+    target = targetResolution.candidates[0];
+    targetCandidates = targetResolution.candidates;
+    if (target) {
+      reasons.push(
+        "Authored target path resolves to route " +
+        target.routeId +
+        " index " +
+        String(target.routeIndex) +
+        ".",
+      );
+    }
+  }
+
+  let nearest: GameplayNearestRoutePoint | undefined;
+  if (input.worldLocation !== undefined) {
+    const nearestAssessment =
+      findNearestGameplayRoutePoint(
+        model,
+        input.context,
+        input.worldLocation,
+        input.routeId,
+      );
+    if (
+      nearestAssessment.disposition === "resolved" &&
+      nearestAssessment.nearest !== undefined
+    ) {
+      nearest = nearestAssessment.nearest;
+      reasons.push(
+        "Nearest authored route point is " +
+        nearest.routeId +
+        ":" +
+        String(nearest.routeIndex) +
+        " at distance " +
+        nearest.distance.toFixed(3) +
+        ".",
+      );
+    } else {
+      reasons.push(
+        nearestAssessment.reason ??
+          "Nearest authored route point is unresolved.",
+      );
+    }
+  }
+
+  let distanceToTarget: number | undefined;
+  if (
+    target !== undefined &&
+    input.worldLocation !== undefined
+  ) {
+    const dx =
+      input.worldLocation.x - target.worldPoint.x;
+    const dy =
+      input.worldLocation.y - target.worldPoint.y;
+    const dz =
+      input.worldLocation.z - target.worldPoint.z;
+    distanceToTarget = Math.sqrt(
+      dx * dx + dy * dy + dz * dz,
+    );
+    reasons.push(
+      "Observed position is " +
+      distanceToTarget.toFixed(3) +
+      " block(s) from the resolved authored target.",
+    );
+  }
+
+  if (
+    target === undefined &&
+    nearest === undefined
+  ) {
+    return {
+      disposition: "unresolved",
+      ...(input.routeIndex === undefined
+        ? {}
+        : { routeIndex: input.routeIndex }),
+      ...(input.routeId === undefined
+        ? {}
+        : { routeId: input.routeId }),
+      reasons:
+        reasons.length > 0
+          ? reasons
+          : [
+              "Observation does not contain enough authored route evidence to resolve a target or nearest point.",
+            ],
+    };
+  }
+
+  return {
+    disposition: "resolved",
+    ...(input.routeIndex === undefined
+      ? {}
+      : { routeIndex: input.routeIndex }),
+    ...(input.routeId === undefined
+      ? {}
+      : { routeId: input.routeId }),
+    ...(target === undefined ? {} : { target }),
+    ...(targetCandidates === undefined
+      ? {}
+      : { targetCandidates }),
+    ...(nearest === undefined ? {} : { nearest }),
+    ...(distanceToTarget === undefined
+      ? {}
+      : { distanceToTarget }),
+    reasons,
+  };
+}

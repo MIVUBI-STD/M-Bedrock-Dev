@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assessGameplayIntentGrounding,
+  assessGameplayRouteObservation,
   evaluateGameplayOutcomeAdmissibility,
   evaluateGameplayPolicyPredicate,
   gameplayOutcomePolicyRequirements,
@@ -939,6 +940,150 @@ describe("gameplay intent", () => {
       }),
     );
     expect(nearest.nearest?.distance).toBeCloseTo(
+      Math.sqrt(2.5),
+    );
+  });
+
+  it("assesses observed route position without inventing a bug threshold", () => {
+    const routeModel: GameplayIntentModel = {
+      schemaVersion: 1,
+      id: "route-observation",
+      evidence: [{
+        id: "e:route",
+        origin: "source-code",
+        locator: "scripts/main.js",
+        summary: "Authored route projection.",
+      }],
+      nodes: [
+        {
+          id: "spatial-region:route-main",
+          kind: "spatial-region",
+          label: "Route Main",
+          status: "authored",
+          evidenceIds: ["e:route"],
+          spatialProfile: {
+            coordinateSpace: "local",
+            routeId: "main",
+            points: [{
+              x: -66,
+              y: -27.5,
+              z: -26,
+              index: 9,
+            }],
+            indexRanges: [{ min: 9, max: 9 }],
+            transform: {
+              kind: "offset",
+              offsetPath: "gameplayOffset",
+              functionName: "M",
+            },
+            contextSeries: {
+              collectionName: "arenas",
+              contextCount: 6,
+              offsetPath: "gameplayOffset",
+              offsetBase: { x: 0, y: 0, z: 0 },
+              offsetStride: { x: 351, y: 0, z: 0 },
+              contextIdPrefix: "arena_",
+              contextIdIndexBase: 1,
+            },
+          },
+        },
+        {
+          id: "spatial-region:route-bridge",
+          kind: "spatial-region",
+          label: "Route Bridge",
+          status: "authored",
+          evidenceIds: ["e:route"],
+          spatialProfile: {
+            coordinateSpace: "local",
+            routeId: "bridge",
+            points: [
+              {
+                x: 30,
+                y: -28.5,
+                z: -4,
+                index: 9,
+              },
+              {
+                x: 23,
+                y: -28.5,
+                z: 0.5,
+                index: 606,
+              },
+            ],
+            indexRanges: [
+              { min: 9, max: 9 },
+              { min: 606, max: 606 },
+            ],
+            transform: {
+              kind: "offset",
+              offsetPath: "gameplayOffset",
+              functionName: "M",
+            },
+            contextSeries: {
+              collectionName: "arenas",
+              contextCount: 6,
+              offsetPath: "gameplayOffset",
+              offsetBase: { x: 0, y: 0, z: 0 },
+              offsetStride: { x: 351, y: 0, z: 0 },
+              contextIdPrefix: "arena_",
+              contextIdIndexBase: 1,
+            },
+          },
+        },
+      ],
+      edges: [],
+      invariants: [],
+      unknowns: [],
+    };
+
+    expect(
+      assessGameplayRouteObservation(
+        routeModel,
+        {
+          context: "arena_6",
+          routeIndex: 9,
+          worldLocation: {
+            x: 1778,
+            y: -30,
+            z: 0,
+          },
+        },
+      ).disposition,
+    ).toBe("ambiguous");
+
+    const bridge = assessGameplayRouteObservation(
+      routeModel,
+      {
+        context: "arena_6",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1778,
+          y: -30,
+          z: 0,
+        },
+      },
+    );
+
+    expect(bridge.disposition).toBe("resolved");
+    expect(bridge.target).toEqual(
+      expect.objectContaining({
+        routeId: "bridge",
+        routeIndex: 606,
+        worldPoint: {
+          x: 1778,
+          y: -28.5,
+          z: 0.5,
+        },
+      }),
+    );
+    expect(bridge.nearest).toEqual(
+      expect.objectContaining({
+        routeId: "bridge",
+        routeIndex: 606,
+      }),
+    );
+    expect(bridge.distanceToTarget).toBeCloseTo(
       Math.sqrt(2.5),
     );
   });
