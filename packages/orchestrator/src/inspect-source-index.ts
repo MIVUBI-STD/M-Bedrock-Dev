@@ -28,6 +28,19 @@ import {
   structureIdentifier,
 } from "./inspect-identifiers.js";
 
+export interface InspectionSourceParseFailure {
+  relativePath: string;
+  kind: "entity" | "structure";
+  reason: string;
+}
+
+export interface InspectionSourceCoverage {
+  relevantFiles: number;
+  indexedFiles: number;
+  parseFailures: readonly InspectionSourceParseFailure[];
+  complete: boolean;
+}
+
 export interface InspectionSourceIndex {
   graph: SemanticGraph;
   nodes: SemanticNode[];
@@ -60,6 +73,7 @@ export interface InspectionSourceIndex {
   }>;
   parsedStructures: number;
   diagnostics: DiagnosticFinding[];
+  coverage: InspectionSourceCoverage;
 }
 
 export async function indexInspectionSources(
@@ -77,11 +91,15 @@ export async function indexInspectionSources(
   const parsedStructureModels:
     InspectionSourceIndex["parsedStructureModels"] = [];
   const diagnostics: DiagnosticFinding[] = [];
+  const parseFailures: InspectionSourceParseFailure[] = [];
+  let relevantFiles = 0;
+  let indexedFiles = 0;
   let parsedStructures = 0;
 
   for (const file of files) {
     const fnId = functionIdentifier(file.relativePath);
     if (fnId) {
+      relevantFiles += 1;
       const node: SemanticNode = {
         id: semanticNodeId("function", "project", fnId),
         identity: {
@@ -109,11 +127,13 @@ export async function indexInspectionSources(
           node.source,
         ),
       });
+      indexedFiles += 1;
       continue;
     }
 
     const scriptId = scriptIdentifier(file.relativePath);
     if (scriptId) {
+      relevantFiles += 1;
       const node: SemanticNode = {
         id: semanticNodeId(
           "script_file",
@@ -145,6 +165,7 @@ export async function indexInspectionSources(
           node.source,
         ),
       });
+      indexedFiles += 1;
       continue;
     }
 
@@ -155,6 +176,7 @@ export async function indexInspectionSources(
       normalizedPath.endsWith(".json");
 
     if (isEntityJson) {
+      relevantFiles += 1;
       try {
         const raw = JSON.parse(
           await readFile(
@@ -186,9 +208,23 @@ export async function indexInspectionSources(
           graph.addNode(node);
           nodes.push(node);
           parsedEntities.push({ node, parsed });
+          indexedFiles += 1;
+        } else {
+          parseFailures.push({
+            relativePath: file.relativePath,
+            kind: "entity",
+            reason: "Entity definition has no identifier.",
+          });
         }
-      } catch {
-        // Generic malformed JSON handling remains outside entity knowledge diagnostics.
+      } catch (error) {
+        parseFailures.push({
+          relativePath: file.relativePath,
+          kind: "entity",
+          reason:
+            error instanceof Error
+              ? error.message
+              : String(error),
+        });
       }
       continue;
     }
@@ -222,6 +258,8 @@ export async function indexInspectionSources(
       structureIdentifier(file.relativePath);
     if (!structureId) continue;
 
+    relevantFiles += 1;
+
     const node: SemanticNode = {
       id: semanticNodeId(
         "structure",
@@ -251,6 +289,7 @@ export async function indexInspectionSources(
         file.relativePath,
       );
       parsedStructures += 1;
+      indexedFiles += 1;
 
       const runtimeContent =
         extractStructureRuntimeContent(structure);
@@ -304,6 +343,14 @@ export async function indexInspectionSources(
         ),
       );
     } catch (error) {
+      parseFailures.push({
+        relativePath: file.relativePath,
+        kind: "structure",
+        reason:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      });
       diagnostics.push(
         structureParseFailedDiagnostic(
           node.source,
@@ -323,5 +370,17 @@ export async function indexInspectionSources(
     parsedStructureModels,
     parsedStructures,
     diagnostics,
+    coverage: {
+      relevantFiles,
+      indexedFiles,
+      parseFailures: [...parseFailures]
+        .sort((a, b) =>
+          a.relativePath.localeCompare(b.relativePath) ||
+          a.kind.localeCompare(b.kind)
+        ),
+      complete:
+        parseFailures.length === 0 &&
+        indexedFiles === relevantFiles,
+    },
   };
 }
