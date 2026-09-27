@@ -448,6 +448,79 @@ describe("gameplay intent analyzer", () => {
     ).toBe(false);
   });
 
+  it("models classified status returns as state values instead of gameplay outcomes", () => {
+    const base = script();
+    const recovery: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/recovery",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/recovery.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      returnOutcomes: [
+        {
+          executionRegion: "function:readRecovery",
+          propertyName: "status",
+          value: "ready",
+          source: base.source,
+        },
+        {
+          executionRegion: "function:readRecovery",
+          propertyName: "status",
+          value: "clean",
+          source: base.source,
+        },
+      ],
+      guardedOutcomes: [{
+        executionRegion: "function:readRecovery",
+        conditionText: "record === undefined",
+        conditionIdentifiers: ["record"],
+        predicate: {
+          kind: "comparison",
+          operator: "eq",
+          left: { kind: "path", path: "record" },
+          right: { kind: "literal", value: null },
+        },
+        propertyName: "status",
+        value: "clean",
+        conditionSource: base.source,
+        outcomeSource: base.source,
+      }],
+    };
+
+    const result = extractGameplayIntentSignals([recovery]);
+    const ids = new Set(
+      result.signals.map((signal) => signal.subjectKey),
+    );
+
+    expect(ids.has("state:read-recovery:ready")).toBe(true);
+    expect(ids.has("state:read-recovery:clean")).toBe(true);
+    expect(
+      [...ids].some((id) =>
+        id.startsWith("outcome:read-recovery-")
+      ),
+    ).toBe(false);
+
+    expect(
+      result.relations.some(
+        (relation) =>
+          relation.fromSubjectKey ===
+            "state:read-recovery:clean" &&
+          relation.edgeKind === "requires" &&
+          relation.status === "authored",
+      ),
+    ).toBe(true);
+  });
+
   it("ignores generic status discriminants outside classified gameplay functions", () => {
     const base = script();
     const internal: ParsedScriptFile = {

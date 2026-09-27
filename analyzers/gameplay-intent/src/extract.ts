@@ -193,10 +193,17 @@ function acceptsOutcomeDiscriminant(
 ): boolean {
   return (
     sourceClassified &&
-    /^(?:action|outcome|result|status|kind|type)$/i.test(
+    /^(?:action|outcome|result|kind|type)$/i.test(
       propertyName,
     )
   );
+}
+
+function acceptsStatusDiscriminant(
+  propertyName: string,
+  sourceClassified: boolean,
+): boolean {
+  return sourceClassified && /^status$/i.test(propertyName);
 }
 
 function title(value: string): string {
@@ -577,11 +584,89 @@ export function extractGameplayIntentSignals(
         !acceptsOutcomeDiscriminant(
           guarded.propertyName,
           sourceSignal !== undefined,
+        ) &&
+        !acceptsStatusDiscriminant(
+          guarded.propertyName,
+          sourceSignal !== undefined,
         )
       ) {
         continue;
       }
       if (sourceSignal) pushSignal(signals, sourceSignal);
+
+      if (
+        acceptsStatusDiscriminant(
+          guarded.propertyName,
+          sourceSignal !== undefined,
+        )
+      ) {
+        const stateKey =
+          "state:" +
+          slug(sourceName) + ":" +
+          slug(guarded.value);
+        pushSignal(signals, {
+          id: "signal:" + stateKey + ":" + slug(path),
+          subjectKey: stateKey,
+          nodeKind: "state",
+          label: title(sourceName + " " + guarded.value),
+          status: "authored",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "Source explicitly returns this discriminated status value from a classified gameplay function.",
+        });
+
+        const policyKey =
+          "policy:" +
+          slug(sourceName + " " + guarded.conditionText);
+        pushSignal(signals, {
+          id: "signal:" + policyKey + ":" + slug(path),
+          subjectKey: policyKey,
+          nodeKind: "policy",
+          label: title(sourceName + " when " + guarded.conditionText),
+          status: "authored",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "Source directly guards this status branch with the recorded condition.",
+          policyPredicate: guarded.predicate,
+        });
+
+        pushRelation({
+          id:
+            "relation:requires:" +
+            stateKey + ":" +
+            policyKey + ":" +
+            slug(path),
+          fromSubjectKey: stateKey,
+          toSubjectKey: policyKey,
+          edgeKind: "requires",
+          status: "authored",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "This returned status state is control-flow guarded by the authored condition.",
+        });
+
+        if (sourceSignal) {
+          pushRelation({
+            id:
+              "relation:produces:" +
+              sourceSignal.subjectKey + ":" +
+              stateKey + ":" +
+              slug(path),
+            fromSubjectKey: sourceSignal.subjectKey,
+            toSubjectKey: stateKey,
+            edgeKind: "produces",
+            status: "inferred",
+            evidenceOrigin: "source-code",
+            locator: path,
+            summary:
+              "A classified gameplay function explicitly returns this status state.",
+          });
+        }
+        continue;
+      }
 
       const outcomeKey =
         "outcome:" +
@@ -643,6 +728,53 @@ export function extractGameplayIntentSignals(
       const sourceSignal = sourceName
         ? lexicalSignal(path, sourceName)
         : undefined;
+
+      if (
+        acceptsStatusDiscriminant(
+          outcome.propertyName,
+          sourceSignal !== undefined,
+        )
+      ) {
+        if (sourceSignal) pushSignal(signals, sourceSignal);
+        const stateKey =
+          "state:" +
+          slug(sourceName ?? outcome.propertyName) + ":" +
+          slug(outcome.value);
+        pushSignal(signals, {
+          id: "signal:" + stateKey + ":" + slug(path),
+          subjectKey: stateKey,
+          nodeKind: "state",
+          label: title(
+            (sourceName ?? outcome.propertyName) +
+            " " +
+            outcome.value,
+          ),
+          status: "authored",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "Source explicitly returns this discriminated status value from a classified gameplay function.",
+        });
+        if (sourceSignal) {
+          pushRelation({
+            id:
+              "relation:produces:" +
+              sourceSignal.subjectKey + ":" +
+              stateKey + ":" +
+              slug(path),
+            fromSubjectKey: sourceSignal.subjectKey,
+            toSubjectKey: stateKey,
+            edgeKind: "produces",
+            status: "inferred",
+            evidenceOrigin: "source-code",
+            locator: path,
+            summary:
+              "A classified gameplay function explicitly returns this status state.",
+          });
+        }
+        continue;
+      }
+
       if (
         !acceptsOutcomeDiscriminant(
           outcome.propertyName,
