@@ -139,7 +139,8 @@ function selectRouteAssessmentForStall(
   }
 
   if (candidates.length === 1) {
-    return { assessment: candidates[0] };
+    const assessment = candidates[0];
+    if (assessment) return { assessment };
   }
 
   if (candidates.length === 0) {
