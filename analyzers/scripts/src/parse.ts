@@ -350,34 +350,35 @@ function outcomePropertiesFromReturn(
   return output;
 }
 
+function declarationMemberName(
+  node: ts.PropertyName | undefined,
+): string | undefined {
+  if (!node) return undefined;
+  if (ts.isIdentifier(node) || ts.isStringLiteralLike(node)) {
+    return node.text;
+  }
+  return undefined;
+}
+
+function declarationContainerHint(
+  node: ts.Node,
+): string | undefined {
+  const parent = node.parent;
+  if (
+    parent &&
+    (ts.isClassDeclaration(parent) ||
+      ts.isClassExpression(parent)) &&
+    parent.name
+  ) {
+    return parent.name.text;
+  }
+  return undefined;
+}
+
 function conditionIdentifiers(
   expression: ts.Expression,
 ): string[] {
   const values = new Set<string>();
-  const declarationMemberName = (
-    node: ts.PropertyName | undefined,
-  ): string | undefined => {
-    if (!node) return undefined;
-    if (ts.isIdentifier(node) || ts.isStringLiteralLike(node)) {
-      return node.text;
-    }
-    return undefined;
-  };
-
-  const declarationContainerHint = (
-    node: ts.Node,
-  ): string | undefined => {
-    const parent = node.parent;
-    if (
-      parent &&
-      (ts.isClassDeclaration(parent) ||
-        ts.isClassExpression(parent)) &&
-      parent.name
-    ) {
-      return parent.name.text;
-    }
-    return undefined;
-  };
 
   const visit = (node: ts.Node): void => {
     if (ts.isIdentifier(node)) values.add(node.text);
