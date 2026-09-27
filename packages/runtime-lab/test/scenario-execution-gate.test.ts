@@ -71,6 +71,15 @@ const capabilities: RuntimeActionCapabilityRegistry = {
       arenaId: "string",
       playerId: "string",
     },
+  }, {
+    id: "probe.scoreboard-value",
+    requiredContext: "LOCAL_MINECRAFT",
+    mutationRisk: "read-only",
+    phases: ["observe"],
+    requiredParameters: {
+      objectiveId: "string",
+      participant: "string",
+    },
   }],
 };
 
@@ -124,6 +133,38 @@ describe("counterexample scenario execution gate", () => {
     expect(result.plan.readiness).toBe(
       "CAPABILITY_GAP",
     );
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it("blocks before executor invocation when assertion observation capability is missing", async () => {
+    const execute = vi.fn(async () => ({
+      ok: true,
+    }));
+
+    const result =
+      await executeCounterexampleScenarioWithGate(
+        {
+          scenario,
+          announcedCapabilities: {
+            schemaVersion: 1,
+            actions: [
+              capabilities.actions[0]!,
+            ],
+          },
+          context: "LIVE_MINECRAFT",
+          mutationRisk: "guarded",
+          runtimeProfileMatches: true,
+        },
+        { execute },
+      );
+
+    expect(result.status).toBe("blocked");
+    expect(result.plan.readiness).toBe(
+      "CAPABILITY_GAP",
+    );
+    expect(result.plan.missingActionIds).toEqual([
+      "probe.scoreboard-value",
+    ]);
     expect(execute).not.toHaveBeenCalled();
   });
 
