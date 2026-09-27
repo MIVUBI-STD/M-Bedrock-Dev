@@ -89,12 +89,20 @@ function script(): ParsedScriptFile {
       to: ["finishing", "failed"],
       source,
     }],
-    returnOutcomes: [{
-      executionRegion: "function:decideReconnect",
-      propertyName: "action",
-      value: "cleanup",
-      source,
-    }],
+    returnOutcomes: [
+      {
+        executionRegion: "function:decideReconnect",
+        propertyName: "action",
+        value: "cleanup",
+        source,
+      },
+      {
+        executionRegion: "function:decideReconnect",
+        propertyName: "action",
+        value: "lobby",
+        source,
+      },
+    ],
     guardedOutcomes: [{
       executionRegion: "function:decideReconnect",
       conditionText: "state.pendingCleanup",
@@ -192,5 +200,29 @@ describe("gameplay intent analyzer", () => {
           relation.toSubjectKey.startsWith("policy:"),
       ),
     ).toBe(true);
+
+    expect(
+      result.outcomePolicyCoverage.find(
+        (item) =>
+          item.outcomeSubjectKey ===
+          "outcome:decide-reconnect-cleanup",
+      ),
+    ).toEqual(expect.objectContaining({
+      totalLiteralReturnSites: 1,
+      directlyGuardedReturnSites: 1,
+      completeDirectGuardCoverage: true,
+    }));
+
+    expect(
+      result.outcomePolicyCoverage.find(
+        (item) =>
+          item.outcomeSubjectKey ===
+          "outcome:decide-reconnect-lobby",
+      ),
+    ).toEqual(expect.objectContaining({
+      totalLiteralReturnSites: 1,
+      directlyGuardedReturnSites: 0,
+      completeDirectGuardCoverage: false,
+    }));
   });
 });

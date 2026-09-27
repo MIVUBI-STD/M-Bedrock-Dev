@@ -27,8 +27,16 @@ export interface GameplayIntentRelationSignal {
   summary: string;
 }
 
+export interface GameplayOutcomePolicyCoverage {
+  outcomeSubjectKey: string;
+  totalLiteralReturnSites: number;
+  directlyGuardedReturnSites: number;
+  completeDirectGuardCoverage: boolean;
+}
+
 export interface GameplayIntentSignalSet {
   schemaVersion: 1;
   signals: readonly GameplayIntentSignal[];
   relations: readonly GameplayIntentRelationSignal[];
+  outcomePolicyCoverage: readonly GameplayOutcomePolicyCoverage[];
 }

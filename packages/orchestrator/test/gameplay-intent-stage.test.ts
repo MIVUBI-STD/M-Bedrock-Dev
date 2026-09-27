@@ -77,12 +77,20 @@ function parsed(): ParsedScriptFile {
       to: ["finishing", "failed"],
       source,
     }],
-    returnOutcomes: [{
-      executionRegion: "function:decideReconnect",
-      propertyName: "action",
-      value: "cleanup",
-      source,
-    }],
+    returnOutcomes: [
+      {
+        executionRegion: "function:decideReconnect",
+        propertyName: "action",
+        value: "cleanup",
+        source,
+      },
+      {
+        executionRegion: "function:decideReconnect",
+        propertyName: "action",
+        value: "lobby",
+        source,
+      },
+    ],
     guardedOutcomes: [{
       executionRegion: "function:decideReconnect",
       conditionText: "state.pendingCleanup",
@@ -159,6 +167,26 @@ describe("gameplay intent stage", () => {
           edge.kind === "requires" &&
           edge.status === "authored" &&
           edge.to.startsWith("policy:"),
+      ),
+    ).toBe(true);
+
+    expect(
+      model.invariants.some(
+        (invariant) =>
+          invariant.id ===
+          "inv:admissible-policy:outcome:decide-reconnect-cleanup" &&
+          invariant.status === "inferred",
+      ),
+    ).toBe(true);
+
+    expect(
+      model.unknowns.some(
+        (unknown) =>
+          unknown.id ===
+          "unknown:outcome-policy-coverage:outcome:decide-reconnect-lobby" &&
+          unknown.blockedSubjectIds.includes(
+            "outcome:decide-reconnect-lobby",
+          ),
       ),
     ).toBe(true);
   });

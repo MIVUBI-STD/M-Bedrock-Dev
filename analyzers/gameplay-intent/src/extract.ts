@@ -131,6 +131,13 @@ export function extractGameplayIntentSignals(
 ): GameplayIntentSignalSet {
   const signals = new Map<string, GameplayIntentSignal>();
   const relations = new Map<string, GameplayIntentRelationSignal>();
+  const outcomeCoverage = new Map<
+    string,
+    {
+      totalLiteralReturnSites: number;
+      directlyGuardedReturnSites: number;
+    }
+  >();
 
   const pushRelation = (
     relation: GameplayIntentRelationSignal,
@@ -138,6 +145,19 @@ export function extractGameplayIntentSignals(
     if (!relations.has(relation.id)) {
       relations.set(relation.id, relation);
     }
+  };
+
+  const recordOutcomeCoverage = (
+    outcomeSubjectKey: string,
+    kind: "total" | "guarded",
+  ): void => {
+    const current = outcomeCoverage.get(outcomeSubjectKey) ?? {
+      totalLiteralReturnSites: 0,
+      directlyGuardedReturnSites: 0,
+    };
+    if (kind === "total") current.totalLiteralReturnSites += 1;
+    else current.directlyGuardedReturnSites += 1;
+    outcomeCoverage.set(outcomeSubjectKey, current);
   };
 
   for (const script of scripts) {
@@ -386,6 +406,8 @@ export function extractGameplayIntentSignals(
       const outcomeKey =
         "outcome:" +
         slug(sourceName + " " + guarded.value);
+      recordOutcomeCoverage(outcomeKey, "guarded");
+
       const outcomeSignal: GameplayIntentSignal = {
         id: "signal:" + outcomeKey + ":" + slug(path),
         subjectKey: outcomeKey,
@@ -453,6 +475,8 @@ export function extractGameplayIntentSignals(
       const outcomeKey =
         "outcome:" +
         slug((sourceName ?? outcome.propertyName) + " " + outcome.value);
+      recordOutcomeCoverage(outcomeKey, "total");
+
       const outcomeSignal: GameplayIntentSignal = {
         id: "signal:" + outcomeKey + ":" + slug(path),
         subjectKey: outcomeKey,
@@ -526,5 +550,22 @@ export function extractGameplayIntentSignals(
     relations: [...relations.values()].sort(
       (a, b) => a.id.localeCompare(b.id),
     ),
+    outcomePolicyCoverage: [...outcomeCoverage.entries()]
+      .map(([outcomeSubjectKey, counts]) => ({
+        outcomeSubjectKey,
+        totalLiteralReturnSites:
+          counts.totalLiteralReturnSites,
+        directlyGuardedReturnSites:
+          counts.directlyGuardedReturnSites,
+        completeDirectGuardCoverage:
+          counts.totalLiteralReturnSites > 0 &&
+          counts.totalLiteralReturnSites ===
+            counts.directlyGuardedReturnSites,
+      }))
+      .sort((a, b) =>
+        a.outcomeSubjectKey.localeCompare(
+          b.outcomeSubjectKey,
+        ),
+      ),
   };
 }

@@ -47,6 +47,7 @@ export function buildGameplayIntentModel(
   const nodes = new Map<string, GameplayIntentNode>();
   const edges = new Map<string, GameplayIntentEdge>();
   const invariants = new Map<string, GameplayIntentInvariant>();
+  const intentUnknowns: GameplayIntentModel["unknowns"][number][] = [];
 
   for (const signal of extracted.signals) {
     const id = evidenceId(signal);
@@ -150,6 +151,61 @@ export function buildGameplayIntentModel(
     });
   }
 
+  for (const coverage of extracted.outcomePolicyCoverage) {
+    const policyEdges = [...edges.values()].filter(
+      (edge) =>
+        edge.from === coverage.outcomeSubjectKey &&
+        edge.kind === "requires" &&
+        edge.status === "authored" &&
+        nodes.get(edge.to)?.kind === "policy",
+    );
+
+    if (
+      coverage.completeDirectGuardCoverage &&
+      policyEdges.length > 0
+    ) {
+      const policyLabels = policyEdges
+        .map((edge) => nodes.get(edge.to)?.label ?? edge.to)
+        .sort();
+      const evidenceIds = [
+        ...new Set(
+          policyEdges.flatMap((edge) => edge.evidenceIds),
+        ),
+      ].sort();
+
+      invariants.set(
+        "inv:admissible-policy:" +
+          coverage.outcomeSubjectKey,
+        {
+          id:
+            "inv:admissible-policy:" +
+            coverage.outcomeSubjectKey,
+          statement:
+            (nodes.get(coverage.outcomeSubjectKey)?.label ??
+              coverage.outcomeSubjectKey) +
+            " is statically observed only under one of these direct guards: " +
+            policyLabels.join(" OR "),
+          strength: "must",
+          status: "inferred",
+          subjectIds: [coverage.outcomeSubjectKey],
+          evidenceIds,
+        },
+      );
+      continue;
+    }
+
+    if (coverage.totalLiteralReturnSites > 0) {
+      intentUnknowns.push({
+        id:
+          "unknown:outcome-policy-coverage:" +
+          coverage.outcomeSubjectKey,
+        question:
+          "Not every recognized literal return site for this outcome is controlled by a directly modeled if-guard; switch/default/nested or other control flow may still define admissibility.",
+        blockedSubjectIds: [coverage.outcomeSubjectKey],
+      });
+    }
+  }
+
   const model: GameplayIntentModel = {
     schemaVersion: 1,
     id: input.id,
@@ -168,15 +224,17 @@ export function buildGameplayIntentModel(
     invariants: [...invariants.values()].sort(
       (a, b) => a.id.localeCompare(b.id),
     ),
-    unknowns:
-      nodes.size === 0
+    unknowns: [
+      ...(nodes.size === 0
         ? [{
             id: "unknown:no-intent-signals",
             question:
               "No gameplay-intent signal could be grounded from the available static script evidence.",
-            blockedSubjectIds: [],
+            blockedSubjectIds: [] as readonly string[],
           }]
-        : [],
+        : []),
+      ...intentUnknowns,
+    ],
   };
 
   const errors = validateGameplayIntentModel(model);
