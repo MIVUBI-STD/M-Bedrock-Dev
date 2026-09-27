@@ -196,6 +196,71 @@ describe("gameplay calibration corpus", () => {
     ]);
   });
 
+  it("surfaces reviewed assertion failures as regression signals", () => {
+    const baseCase = {
+      id: "map-a",
+      label: "Map A",
+      sourceStyle: "bundled-minified" as const,
+      learningDimensions: ["recovery"],
+      assertionFailures: [] as string[],
+      fingerprint: fingerprint(3),
+    };
+
+    const aggregate = {
+      caseCount: 1,
+      casesWithAssertionFailures: 0,
+      totalAssertionFailures: 0,
+      sourceStyles: {
+        "bundled-minified": 1,
+      },
+      learningDimensions: {
+        recovery: 1,
+      },
+      mapsWithUnknownIntent: 0,
+      totalUnknownIntent: 0,
+      totalNodes: 3,
+      totalAuthoredNodes: 2,
+      totalInferredNodes: 1,
+      intentKindPresence: {
+        lifecycle: 1,
+        mechanic: 1,
+        state: 1,
+      },
+      routeProfileCases: 0,
+      routePointTotal: 0,
+    };
+
+    const baseline: GameplayCalibrationReport = {
+      schemaVersion: 1,
+      corpusId: "sample-corpus",
+      cases: [baseCase],
+      aggregate,
+    };
+    const current: GameplayCalibrationReport = {
+      ...baseline,
+      cases: [{
+        ...baseCase,
+        assertionFailures: [
+          "maxPhaseNodes: expected max 0, observed 1",
+        ],
+      }],
+      aggregate: {
+        ...aggregate,
+        casesWithAssertionFailures: 1,
+        totalAssertionFailures: 1,
+      },
+    };
+
+    expect(
+      compareGameplayCalibrationReports(
+        baseline,
+        current,
+      ).regressionSignals,
+    ).toContain(
+      "reviewed-semantic-assertion-failed",
+    );
+  });
+
   it("compares corpus reports case-by-case", () => {
     const baseline: GameplayCalibrationReport = {
       schemaVersion: 1,

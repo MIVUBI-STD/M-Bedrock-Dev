@@ -194,6 +194,11 @@ async function main(): Promise<void> {
         knowledge,
       );
     console.log(JSON.stringify(report, null, 2));
+    if (
+      report.aggregate.totalAssertionFailures > 0
+    ) {
+      process.exitCode = 1;
+    }
     return;
   }
 

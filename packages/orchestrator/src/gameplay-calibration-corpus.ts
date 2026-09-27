@@ -578,6 +578,16 @@ export function compareGameplayCalibrationReports(
     ) {
       regressionSignals.add(signal);
     }
+
+    const currentCase = currentById.get(item.id);
+    if (
+      currentCase !== undefined &&
+      currentCase.assertionFailures.length > 0
+    ) {
+      regressionSignals.add(
+        "reviewed-semantic-assertion-failed",
+      );
+    }
   }
 
   return {

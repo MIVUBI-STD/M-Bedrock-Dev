@@ -1,6 +1,8 @@
 # Gameplay Understanding Calibration Corpus
 
-Status baseline: `2aaf14bf81856c995cdcaed9b8af330ec7c4065c`
+Historical corpus table baseline: `2aaf14bf81856c995cdcaed9b8af330ec7c4065c`
+
+Latest targeted semantic verification: `6e982f7e9bed9ff057bfd21c57dd94a4d5ecfe79`
 
 The supplied representative worlds are now treated as an external calibration corpus for gameplay understanding.
 
@@ -93,6 +95,31 @@ The command returns:
 - policy/outcome coverage;
 - spatial route richness.
 
+## Latest targeted semantic verification
+
+At `6e982f7e9bed9ff057bfd21c57dd94a4d5ecfe79`, the reviewed bundled subset was re-run through the production corpus-calibration path.
+
+```text
+cases                           3
+cases with assertion failures  0
+total assertion failures       0
+unknown intent                  0
+```
+
+Reviewed case checks:
+
+| Case | Reviewed properties | Result |
+| --- | --- | --- |
+| Beach Bedwars | phase ≤ 1; state ≥ 12; gameplay outcomes = 0; minified/unknown policy predicates ≥ 3; unknown intent = 0 | PASS |
+| Five Nights L1 | phase = 0; state ≥ 5; route profiles ≥ 3; route points ≥ 67; derived route contracts ≥ 366; unknown intent = 0 | PASS |
+| Orb L1 | phase = 0; state ≥ 10; outcomes ≥ 9; unknown intent = 0 | PASS |
+
+Five Nights route-corridor derivation is gap-preserving: authored index gaps are not bridged into one large bounding corridor. The current artifact produces 366 narrow multi-arena segment contracts from 3 route profiles and 67 authored points.
+
+Bedwars block-journal recovery branches remain authored, but guards whose runtime operands are minified one-letter roots fail closed as unknown predicates instead of being treated as runtime-bindable state paths.
+
+The corpus CLI now returns a non-zero exit code when a reviewed semantic assertion fails. Ordinary fingerprint drift remains an investigation signal rather than an automatic semantic failure.
+
 ## Interpretation rules
 
 Do not optimize for the largest node count.
@@ -130,7 +157,9 @@ At reviewed baseline `6bec916ed904fd06f064a799731de4021432e12d`:
 - generator/forge semantics are modeled as mechanics even when resource material names are present.
 - Orb lost previous phase-kind presence because those nodes were helper actions; this is an intentional semantic correction, not loss of authored phase evidence.
 - The Circuit structural return variants are no longer misclassified as gameplay outcomes; corpus unknown intent is now 0.
-- Five Nights L1 retains 3 route profiles and 67 authored route points.
+- Five Nights L1 retains 3 route profiles and 67 authored route points; those profiles now derive 366 narrow multi-arena route-segment contracts without bridging authored index gaps.
+- Phase-like bundled properties such as stage indexes/names and countdown/cinematic state surfaces are no longer promoted to false gameplay phases.
+- Beach Bedwars minified block-journal recovery guards fail closed for runtime policy evaluation rather than exposing minified operand names as trusted state paths.
 
 
 ## Historical intent comparison
