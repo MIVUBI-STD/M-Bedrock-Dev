@@ -255,7 +255,7 @@ describe("gameplay intent analyzer", () => {
       result.signals.some(
         (signal) =>
           signal.subjectKey ===
-          "mechanic:get-combat-phase-countdown-seconds",
+          "resource:get-combat-phase-countdown-seconds",
       ),
     ).toBe(true);
 
