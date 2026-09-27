@@ -22,6 +22,10 @@ function reclassification(
       subjectIds: ["arena"],
       basisInvariantIds: ["inv"],
       evidenceIds: ["e"],
+      nextEvidenceNeed:
+        disposition === "probable-defect"
+          ? "authored-intent"
+          : "none",
       reasons: [],
     },
     matchedPredicates: {
