@@ -995,3 +995,209 @@ export function projectGameplayRoutePoint(
     worldPoint,
   };
 }
+
+
+export interface GameplayRouteTargetCandidate {
+  routeNodeId: string;
+  routeId: string;
+  routeIndex: number;
+  localPoint: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  worldPoint: {
+    x: number;
+    y: number;
+    z: number;
+  };
+}
+
+export interface GameplayRouteTargetResolution {
+  routeIndex: number;
+  disposition: "resolved" | "ambiguous" | "unresolved";
+  candidates: readonly GameplayRouteTargetCandidate[];
+  reason?: string;
+}
+
+export function resolveGameplayRouteTarget(
+  model: GameplayIntentModel,
+  routeIndex: number,
+  context: number | string,
+  routeId?: string,
+): GameplayRouteTargetResolution {
+  const routeNodes = model.nodes.filter((node) => {
+    const profile = node.spatialProfile;
+    if (
+      node.kind !== "spatial-region" ||
+      profile === undefined
+    ) {
+      return false;
+    }
+    if (
+      routeId !== undefined &&
+      profile.routeId !== routeId
+    ) {
+      return false;
+    }
+    return profile.points.some(
+      (point) => point.index === routeIndex,
+    );
+  });
+
+  const candidates = routeNodes.flatMap(
+    (node): GameplayRouteTargetCandidate[] => {
+      const projected = projectGameplayRoutePoint(
+        model,
+        node.id,
+        routeIndex,
+        context,
+      );
+      if (
+        projected.disposition !== "resolved" ||
+        projected.routeId === undefined ||
+        projected.localPoint === undefined ||
+        projected.worldPoint === undefined
+      ) {
+        return [];
+      }
+      return [{
+        routeNodeId: node.id,
+        routeId: projected.routeId,
+        routeIndex,
+        localPoint: projected.localPoint,
+        worldPoint: projected.worldPoint,
+      }];
+    },
+  );
+
+  if (candidates.length === 1) {
+    return {
+      routeIndex,
+      disposition: "resolved",
+      candidates,
+    };
+  }
+
+  if (candidates.length > 1) {
+    return {
+      routeIndex,
+      disposition: "ambiguous",
+      candidates: candidates.sort(
+        (a, b) =>
+          a.routeId.localeCompare(b.routeId),
+      ),
+      reason:
+        "Multiple authored routes contain this path index; route context is required.",
+    };
+  }
+
+  return {
+    routeIndex,
+    disposition: "unresolved",
+    candidates: [],
+    reason:
+      routeId === undefined
+        ? "No authored projected route contains this path index."
+        : "The requested authored route does not contain this path index or cannot be projected.",
+  };
+}
+
+export interface GameplayNearestRoutePoint {
+  routeNodeId: string;
+  routeId: string;
+  routeIndex: number;
+  worldPoint: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  distance: number;
+}
+
+export interface GameplayNearestRouteAssessment {
+  disposition: "resolved" | "unresolved";
+  nearest?: GameplayNearestRoutePoint;
+  reason?: string;
+}
+
+export function findNearestGameplayRoutePoint(
+  model: GameplayIntentModel,
+  context: number | string,
+  worldLocation: {
+    x: number;
+    y: number;
+    z: number;
+  },
+  routeId?: string,
+): GameplayNearestRouteAssessment {
+  const candidates: GameplayNearestRoutePoint[] = [];
+
+  for (const node of model.nodes) {
+    const profile = node.spatialProfile;
+    if (
+      node.kind !== "spatial-region" ||
+      profile === undefined ||
+      (
+        routeId !== undefined &&
+        profile.routeId !== routeId
+      )
+    ) {
+      continue;
+    }
+
+    for (const point of profile.points) {
+      if (point.index === undefined) continue;
+      const projected = projectGameplayRoutePoint(
+        model,
+        node.id,
+        point.index,
+        context,
+      );
+      if (
+        projected.disposition !== "resolved" ||
+        projected.routeId === undefined ||
+        projected.worldPoint === undefined
+      ) {
+        continue;
+      }
+
+      const dx =
+        worldLocation.x - projected.worldPoint.x;
+      const dy =
+        worldLocation.y - projected.worldPoint.y;
+      const dz =
+        worldLocation.z - projected.worldPoint.z;
+      candidates.push({
+        routeNodeId: node.id,
+        routeId: projected.routeId,
+        routeIndex: point.index,
+        worldPoint: projected.worldPoint,
+        distance: Math.sqrt(
+          dx * dx + dy * dy + dz * dz,
+        ),
+      });
+    }
+  }
+
+  candidates.sort(
+    (a, b) =>
+      a.distance - b.distance ||
+      a.routeId.localeCompare(b.routeId) ||
+      a.routeIndex - b.routeIndex,
+  );
+
+  const nearest = candidates[0];
+  if (!nearest) {
+    return {
+      disposition: "unresolved",
+      reason:
+        "No projected authored route point is available for this context.",
+    };
+  }
+
+  return {
+    disposition: "resolved",
+    nearest,
+  };
+}

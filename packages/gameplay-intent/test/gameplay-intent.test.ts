@@ -5,8 +5,10 @@ import {
   evaluateGameplayPolicyPredicate,
   gameplayOutcomePolicyRequirements,
   planGameplayOutcomeRuntimeObservations,
+  findNearestGameplayRoutePoint,
   projectGameplayRoutePoint,
   resolveGameplayRouteIndex,
+  resolveGameplayRouteTarget,
   resolveGameplaySpatialContext,
   unresolvedGameplayPolicyOperands,
   validateGameplayIntentModel,
@@ -784,6 +786,161 @@ describe("gameplay intent", () => {
         "arena_3",
       ).disposition,
     ).toBe("unresolved");
+  });
+
+  it("resolves route targets only when route context is sufficient", () => {
+    const routeModel: GameplayIntentModel = {
+      schemaVersion: 1,
+      id: "route-targets",
+      evidence: [{
+        id: "e:route",
+        origin: "source-code",
+        locator: "scripts/main.js",
+        summary: "Authored route targets.",
+      }],
+      nodes: [
+        {
+          id: "spatial-region:route-main",
+          kind: "spatial-region",
+          label: "Route Main",
+          status: "authored",
+          evidenceIds: ["e:route"],
+          spatialProfile: {
+            coordinateSpace: "local",
+            routeId: "main",
+            points: [{
+              x: -66,
+              y: -27.5,
+              z: -26,
+              index: 9,
+            }],
+            indexRanges: [{ min: 9, max: 9 }],
+            transform: {
+              kind: "offset",
+              offsetPath: "gameplayOffset",
+              functionName: "M",
+            },
+            contextSeries: {
+              collectionName: "arenas",
+              contextCount: 6,
+              offsetPath: "gameplayOffset",
+              offsetBase: { x: 0, y: 0, z: 0 },
+              offsetStride: { x: 351, y: 0, z: 0 },
+              contextIdPrefix: "arena_",
+              contextIdIndexBase: 1,
+            },
+          },
+        },
+        {
+          id: "spatial-region:route-bridge",
+          kind: "spatial-region",
+          label: "Route Bridge",
+          status: "authored",
+          evidenceIds: ["e:route"],
+          spatialProfile: {
+            coordinateSpace: "local",
+            routeId: "bridge",
+            points: [
+              {
+                x: 30,
+                y: -28.5,
+                z: -4,
+                index: 9,
+              },
+              {
+                x: 23,
+                y: -28.5,
+                z: 0.5,
+                index: 606,
+              },
+            ],
+            indexRanges: [
+              { min: 9, max: 9 },
+              { min: 606, max: 606 },
+            ],
+            transform: {
+              kind: "offset",
+              offsetPath: "gameplayOffset",
+              functionName: "M",
+            },
+            contextSeries: {
+              collectionName: "arenas",
+              contextCount: 6,
+              offsetPath: "gameplayOffset",
+              offsetBase: { x: 0, y: 0, z: 0 },
+              offsetStride: { x: 351, y: 0, z: 0 },
+              contextIdPrefix: "arena_",
+              contextIdIndexBase: 1,
+            },
+          },
+        },
+      ],
+      edges: [],
+      invariants: [],
+      unknowns: [],
+    };
+
+    expect(
+      resolveGameplayRouteTarget(
+        routeModel,
+        9,
+        "arena_6",
+      ).disposition,
+    ).toBe("ambiguous");
+
+    expect(
+      resolveGameplayRouteTarget(
+        routeModel,
+        9,
+        "arena_6",
+        "bridge",
+      ),
+    ).toEqual({
+      routeIndex: 9,
+      disposition: "resolved",
+      candidates: [{
+        routeNodeId: "spatial-region:route-bridge",
+        routeId: "bridge",
+        routeIndex: 9,
+        localPoint: {
+          x: 30,
+          y: -28.5,
+          z: -4,
+        },
+        worldPoint: {
+          x: 1785,
+          y: -28.5,
+          z: -4,
+        },
+      }],
+    });
+
+    const nearest = findNearestGameplayRoutePoint(
+      routeModel,
+      "arena_6",
+      {
+        x: 1778,
+        y: -30,
+        z: 0,
+      },
+      "bridge",
+    );
+
+    expect(nearest.disposition).toBe("resolved");
+    expect(nearest.nearest).toEqual(
+      expect.objectContaining({
+        routeId: "bridge",
+        routeIndex: 606,
+        worldPoint: {
+          x: 1778,
+          y: -28.5,
+          z: 0.5,
+        },
+      }),
+    );
+    expect(nearest.nearest?.distance).toBeCloseTo(
+      Math.sqrt(2.5),
+    );
   });
 
   it("blocks diagnosis when an open intent question affects the subject", () => {
