@@ -23,6 +23,7 @@ export type DiagnosisExecutorResult =
     }
   | {
       status: "blocked";
+      output?: unknown;
       reasons: readonly string[];
     };
 
@@ -51,6 +52,7 @@ export type DiagnosisPlannedStepExecution =
       status: "blocked";
       capabilityId?: string;
       executorId?: string;
+      output?: unknown;
       reasons: readonly string[];
     };
 
@@ -298,6 +300,9 @@ export async function executePlannedDiagnosisStep(
       status: "blocked",
       capabilityId: capability.id,
       executorId: capability.executorId,
+      ...(result.output === undefined
+        ? {}
+        : { output: result.output }),
       reasons: [...result.reasons],
     };
   }
