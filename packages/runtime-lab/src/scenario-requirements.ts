@@ -22,10 +22,7 @@ export type ScenarioReadiness =
 
 export interface ScenarioCapabilityRequirement {
   actionId: string;
-  phase: Exclude<
-    RuntimeExperimentProtocolPhase,
-    "observe"
-  >;
+  phase: RuntimeExperimentProtocolPhase;
   parameters: Readonly<
     Record<string, string | number | boolean>
   >;
@@ -61,10 +58,7 @@ function requirementsFromScenario(
   const byAction = new Map<
     string,
     {
-      phase: Exclude<
-        RuntimeExperimentProtocolPhase,
-        "observe"
-      >;
+      phase: RuntimeExperimentProtocolPhase;
       parameters: Readonly<
         Record<string, string | number | boolean>
       >;
@@ -76,7 +70,6 @@ function requirementsFromScenario(
     const binding = step.runtimeBinding;
     if (!binding) continue;
     const phase = binding.phase ?? "stimulus";
-    if (phase === "observe") continue;
 
     const key = JSON.stringify([
       binding.actionId,
@@ -96,6 +89,26 @@ function requirementsFromScenario(
     });
   }
 
+  const assertionBinding =
+    scenario.assertion.runtimeBinding;
+
+  if (assertionBinding) {
+    const key = JSON.stringify([
+      assertionBinding.actionId,
+      "observe",
+      assertionBinding.parameters ?? {},
+    ]);
+    const current = byAction.get(key);
+    if (!current) {
+      byAction.set(key, {
+        phase: "observe",
+        parameters:
+          assertionBinding.parameters ?? {},
+        transitionIds: [],
+      });
+    }
+  }
+
   return [...byAction.entries()]
     .map(([key, value]) => ({
       actionId: JSON.parse(key)[0] as string,
@@ -104,8 +117,8 @@ function requirementsFromScenario(
       transitionIds: [...value.transitionIds].sort(),
     }))
     .sort((a, b) =>
-      a.actionId.localeCompare(b.actionId) ||
-      a.phase.localeCompare(b.phase)
+      a.phase.localeCompare(b.phase) ||
+      a.actionId.localeCompare(b.actionId)
     );
 }
 
@@ -177,7 +190,10 @@ export function planCounterexampleScenarioRequirements(
         phase: requirement.phase,
         parameters: requirement.parameters,
         context: input.context,
-        mutationRisk: input.mutationRisk,
+        mutationRisk:
+          requirement.phase === "observe"
+            ? "read-only"
+            : input.mutationRisk,
       },
     );
     validationErrors.push(...validation.errors);
@@ -214,7 +230,7 @@ export function planCounterexampleScenarioRequirements(
     missingActionIds: [],
     validationErrors: [],
     reasons: [
-      "All bound mutating actions are supported by the announced runtime capability registry.",
+      "All bound runtime actions, including observation assertions, are supported by the announced runtime capability registry.",
     ],
   };
 }
