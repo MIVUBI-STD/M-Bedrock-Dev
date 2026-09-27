@@ -49,6 +49,7 @@ export function gateRuntimeStateOutcomeAgainstIntent(
           ...resolution.evidenceIds,
         ]),
       ].sort(),
+      nextEvidenceNeed: "runtime-evidence-integrity",
       reasons: resolution.conflicts.map(
         (conflict) =>
           "Conflicting runtime state observations for " +
