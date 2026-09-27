@@ -185,6 +185,18 @@ function candidateCapabilities(
     })
     .sort(
       (a, b) =>
+        Number(
+          !producesMissingTrait(
+            a,
+            missingTraits,
+          ),
+        ) -
+          Number(
+            !producesMissingTrait(
+              b,
+              missingTraits,
+            ),
+          ) ||
         LEVEL_ORDER[a.evidenceLevel] -
           LEVEL_ORDER[b.evidenceLevel] ||
         COST_ORDER[a.cost] -
