@@ -35,3 +35,4 @@ export * from "./update-delta.js";
 export * from "./update-evidence.js";
 
 export * from "./chunk-runtime-observation.js";
+export * from "./catalog-writer.js";
