@@ -87,6 +87,15 @@ const capabilities: RuntimeActionCapabilityRegistry = {
       arenaId: "string",
       playerId: "string",
     },
+  }, {
+    id: "probe.scoreboard-value",
+    requiredContext: "LOCAL_MINECRAFT",
+    mutationRisk: "read-only",
+    phases: ["observe"],
+    requiredParameters: {
+      objectiveId: "string",
+      participant: "string",
+    },
   }],
 };
 
@@ -107,7 +116,10 @@ describe("scenario requirement planner", () => {
     expect(plan.missingActionIds).toEqual([]);
     expect(plan.requiredActions.map(
       (item) => item.actionId,
-    )).toEqual(["test.join-arena"]);
+    )).toEqual([
+      "probe.scoreboard-value",
+      "test.join-arena",
+    ]);
   });
 
   it("reports a missing runtime capability before execution", () => {
@@ -127,7 +139,34 @@ describe("scenario requirement planner", () => {
       "CAPABILITY_GAP",
     );
     expect(plan.missingActionIds).toEqual([
+      "probe.scoreboard-value",
       "test.join-arena",
+    ]);
+  });
+
+  it("reports a missing observation capability before execution", () => {
+    const stimulusOnly:
+      RuntimeActionCapabilityRegistry = {
+        schemaVersion: 1,
+        actions: [
+          capabilities.actions[0]!,
+        ],
+      };
+
+    const plan =
+      planCounterexampleScenarioRequirements({
+        scenario: scenario(true),
+        announcedCapabilities: stimulusOnly,
+        context: "LIVE_MINECRAFT",
+        mutationRisk: "guarded",
+        runtimeProfileMatches: true,
+      });
+
+    expect(plan.readiness).toBe(
+      "CAPABILITY_GAP",
+    );
+    expect(plan.missingActionIds).toEqual([
+      "probe.scoreboard-value",
     ]);
   });
 
