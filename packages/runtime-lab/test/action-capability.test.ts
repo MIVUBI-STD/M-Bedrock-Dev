@@ -19,6 +19,15 @@ const registry: RuntimeActionCapabilityRegistry = {
     optionalParameters: {
       resetProgress: "boolean",
     },
+  }, {
+    id: "probe.scoreboard-value",
+    requiredContext: "LOCAL_MINECRAFT",
+    mutationRisk: "read-only",
+    phases: ["observe"],
+    requiredParameters: {
+      objectiveId: "string",
+      participant: "string",
+    },
   }],
 };
 
@@ -84,4 +93,39 @@ describe("runtime action capability registry", () => {
       /arenaId must be string/,
     );
   });
+  it("validates read-only observation capabilities", () => {
+    expect(
+      validateRuntimeActionInvocation(registry, {
+        actionId: "probe.scoreboard-value",
+        phase: "observe",
+        parameters: {
+          objectiveId: "members",
+          participant: "a1",
+        },
+        context: "LIVE_MINECRAFT",
+        mutationRisk: "read-only",
+      }),
+    ).toEqual({
+      ok: true,
+      errors: [],
+    });
+  });
+
+  it("rejects observe capabilities that declare mutation risk", () => {
+    const errors =
+      validateRuntimeActionCapabilityRegistry({
+        schemaVersion: 1,
+        actions: [{
+          id: "bad.observe",
+          requiredContext: "LOCAL_MINECRAFT",
+          mutationRisk: "guarded",
+          phases: ["observe"],
+        }],
+      });
+
+    expect(errors.join(" ")).toMatch(
+      /observe capability.*read-only/i,
+    );
+  });
+
 });
