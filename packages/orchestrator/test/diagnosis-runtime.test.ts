@@ -12,6 +12,7 @@ import {
   it,
 } from "vitest";
 import {
+  createBuiltinDiagnosisRuntime,
   runBuiltinDiagnosis,
 } from "../src/diagnosis-runtime.js";
 
@@ -149,4 +150,89 @@ describe("built-in diagnosis runtime", () => {
       });
     }
   });
+  it("requires an explicit formal problem for contradiction proof wiring", async () => {
+    const runtime =
+      createBuiltinDiagnosisRuntime({
+        root: "/tmp",
+        artifactId: "artifact:test",
+        files: [],
+      });
+
+    await expect(
+      runtime.payloadProvider.payloadFor({
+        capabilityId:
+          "diagnosis.contradiction-proof",
+        goal: "contradiction-proof",
+        context: "LOCAL_ARTIFACT",
+        completedCapabilityIds: [],
+        evidence: [],
+        outputs: {},
+      }),
+    ).rejects.toThrow(
+      /requires an explicit ConstraintProblem/,
+    );
+
+    const problem = {
+      id: "problem:test",
+      model: {
+        schemaVersion: 1 as const,
+        id: "model:test",
+        variables: [],
+        transitions: [],
+        properties: [],
+      },
+      initialState: {
+        schemaVersion: 1 as const,
+        tick: 0,
+        values: {},
+      },
+      query: {
+        id: "inv:test",
+        kind: "invariant" as const,
+        predicate: {
+          kind: "all" as const,
+          predicates: [],
+        },
+      },
+      budget: {
+        maxDepth: 1,
+        maxStates: 1,
+      },
+    };
+
+    const withProblem =
+      createBuiltinDiagnosisRuntime(
+        {
+          root: "/tmp",
+          artifactId: "artifact:test",
+          files: [],
+        },
+        {
+          contradictionProblem:
+            problem,
+        },
+      );
+
+    await expect(
+      withProblem.payloadProvider.payloadFor({
+        capabilityId:
+          "diagnosis.contradiction-proof",
+        goal: "contradiction-proof",
+        context: "LOCAL_ARTIFACT",
+        completedCapabilityIds: [],
+        evidence: [],
+        outputs: {},
+      }),
+    ).resolves.toEqual({
+      problem,
+    });
+
+    expect(
+      withProblem.executorRegistry.executors
+        .map((item) => item.executorId),
+    ).toContain(
+      "diagnosis.contradiction-proof",
+    );
+  });
+
 });
