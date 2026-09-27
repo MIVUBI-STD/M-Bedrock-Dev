@@ -8,3 +8,4 @@ export * from "./runner.js";
 export * from "./catalog.js";
 export * from "./bedrock-profile.js";
 export * from "./bedrock-host.js";
+export * from "./counterexample-scenario.js";
