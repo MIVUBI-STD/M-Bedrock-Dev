@@ -5,6 +5,7 @@ import { analyzeTelemetryContinuity } from "../../project-model/src/index.js";
 import {
   telemetryRuntimeEvidence,
   telemetryRuntimeOutcomeObservations,
+  telemetryRuntimeRouteObservations,
   telemetryRuntimeStateObservations,
 } from "./telemetry-evidence.js";
 import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
@@ -27,6 +28,8 @@ export function prepareInspectionRuntimeEvidence(
     telemetryRuntimeStateObservations(input.telemetryEvents);
   const runtimeOutcomeObservations =
     telemetryRuntimeOutcomeObservations(input.telemetryEvents);
+  const runtimeRouteObservations =
+    telemetryRuntimeRouteObservations(input.telemetryEvents);
   const runtimeProbeEvidence =
     runtimeProbeResponseEvidence(input.runtimeProbeResponses);
   const runtimeStateObservations = [
@@ -165,6 +168,7 @@ export function prepareInspectionRuntimeEvidence(
     runtimeProbeEvidence,
     runtimeStateObservations,
     runtimeOutcomeObservations,
+    runtimeRouteObservations,
     telemetryContinuity,
     telemetryEvidenceIntegrity,
     runtimeProbeEvidenceIntegrity,

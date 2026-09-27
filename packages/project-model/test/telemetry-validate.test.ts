@@ -68,6 +68,57 @@ describe("telemetry validation", () => {
     expect(batch.events[0]?.kind).toBe("gameplay-outcome");
   });
 
+  it("accepts route observation telemetry", () => {
+    const batch = parseTelemetryBatch({
+      schemaVersion: 1,
+      events: [{
+        schemaVersion: 1,
+        eventId: "route-1",
+        kind: "route-observation",
+        producer: "instrumentation",
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+        },
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1778,
+          y: -30,
+          z: 0,
+        },
+      }],
+    });
+
+    expect(batch.events[0]?.kind).toBe("route-observation");
+  });
+
+  it("rejects malformed route observation coordinates", () => {
+    const errors = validateTelemetryBatch({
+      schemaVersion: 1,
+      events: [{
+        schemaVersion: 1,
+        eventId: "route-bad",
+        kind: "route-observation",
+        producer: "qa",
+        scope: {},
+        entityKey: "demo:zombie",
+        routeIndex: 1.5,
+        worldLocation: {
+          x: 1,
+          y: "bad",
+          z: 2,
+        },
+      }],
+    });
+
+    expect(errors).toEqual(expect.arrayContaining([
+      expect.stringMatching(/routeIndex must be an integer/),
+      expect.stringMatching(/worldLocation\.y/),
+    ]));
+  });
+
   it("rejects duplicate event ids and malformed event payloads", () => {
     const errors = validateTelemetryBatch({
       schemaVersion: 1,

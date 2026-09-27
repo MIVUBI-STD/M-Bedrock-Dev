@@ -120,6 +120,7 @@ export async function inspectDirectory(
     gameplayIntent,
     runtimeEvidenceStage.runtimeStateObservations,
     runtimeEvidenceStage.runtimeOutcomeObservations,
+    runtimeEvidenceStage.runtimeRouteObservations,
   );
 
   enrichInspectionSemanticGraph({

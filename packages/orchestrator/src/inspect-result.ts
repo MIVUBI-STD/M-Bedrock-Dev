@@ -372,6 +372,8 @@ export function buildInspectionResult(
     },
     gameplayIntentRuntime: {
       assessments: input.gameplayIntentRuntime.assessments,
+      routeAssessments:
+        input.gameplayIntentRuntime.routeAssessments,
       designedBehavior:
         input.gameplayIntentRuntime.designedBehavior,
       probableDefects:
@@ -384,6 +386,14 @@ export function buildInspectionResult(
         input.runtimeEvidenceStage.runtimeStateObservations.length,
       runtimeOutcomeObservations:
         input.runtimeEvidenceStage.runtimeOutcomeObservations.length,
+      runtimeRouteObservations:
+        input.runtimeEvidenceStage.runtimeRouteObservations.length,
+      routeResolved:
+        input.gameplayIntentRuntime.routeResolved,
+      routeAmbiguous:
+        input.gameplayIntentRuntime.routeAmbiguous,
+      routeUnresolved:
+        input.gameplayIntentRuntime.routeUnresolved,
     },
     semanticIr: semanticIrSummary(input.semanticIr),
     stateAnalysis: {

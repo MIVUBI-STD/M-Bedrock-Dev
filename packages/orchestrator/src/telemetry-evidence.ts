@@ -5,6 +5,7 @@ import type {
 import type {
   RuntimeEvidenceRecord,
   RuntimeOutcomeObservation,
+  RuntimeRouteObservation,
   RuntimeScope,
   RuntimeStateObservation,
 } from "../../project-model/src/index.js";
@@ -271,6 +272,34 @@ function recordsForEvent(event: TelemetryEvent): RuntimeEvidenceRecord[] {
           event.outcomeId,
         ),
       ];
+
+    case "route-observation": {
+      const scoped = {
+        ...event,
+        scope: ensureEntityScope(
+          event.scope,
+          event.entityKey,
+        ),
+      };
+      return [
+        base(
+          scoped,
+          "route-observation-observed",
+          "present",
+          [
+            event.routeId === undefined
+              ? undefined
+              : "route=" + event.routeId,
+            event.routeIndex === undefined
+              ? undefined
+              : "routeIndex=" + event.routeIndex,
+            "x=" + event.worldLocation.x,
+            "y=" + event.worldLocation.y,
+            "z=" + event.worldLocation.z,
+          ].filter(Boolean).join(";"),
+        ),
+      ];
+    }
   }
 }
 
@@ -304,6 +333,53 @@ export function telemetryRuntimeStateObservations(
             },
           }),
       evidenceId: "telemetry-state:" + event.eventId,
+    }];
+  });
+}
+
+export function telemetryRuntimeRouteObservations(
+  events: readonly TelemetryEvent[],
+): RuntimeRouteObservation[] {
+  return events.flatMap((event) => {
+    if (event.kind !== "route-observation") return [];
+
+    const scope = ensureEntityScope(
+      event.scope,
+      event.entityKey,
+    );
+
+    return [{
+      entityKey: event.entityKey,
+      ...(event.routeId === undefined
+        ? {}
+        : { routeId: event.routeId }),
+      ...(event.routeIndex === undefined
+        ? {}
+        : { routeIndex: event.routeIndex }),
+      worldLocation: event.worldLocation,
+      scope,
+      ...(event.tick === undefined &&
+          event.sequence === undefined &&
+          event.timestamp === undefined
+        ? {}
+        : {
+            observedAt: {
+              ...(event.tick === undefined
+                ? {}
+                : { tick: event.tick }),
+              ...(event.streamId === undefined
+                ? {}
+                : { streamId: event.streamId }),
+              ...(event.sequence === undefined
+                ? {}
+                : { sequence: event.sequence }),
+              ...(event.timestamp === undefined
+                ? {}
+                : { timestamp: event.timestamp }),
+            },
+          }),
+      evidenceId:
+        "telemetry-route:" + event.eventId,
     }];
   });
 }

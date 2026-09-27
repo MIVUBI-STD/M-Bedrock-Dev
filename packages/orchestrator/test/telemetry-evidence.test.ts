@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   telemetryRuntimeEvidence,
   telemetryRuntimeOutcomeObservations,
+  telemetryRuntimeRouteObservations,
   telemetryRuntimeStateObservations,
 } from "../src/telemetry-evidence.js";
 
@@ -77,6 +78,59 @@ describe("telemetry evidence adapter", () => {
         predicate:
           "gameplay-outcome-observed:outcome:decide-reconnect-cleanup",
         state: "present",
+      }),
+    ]);
+  });
+
+  it("maps route observations into typed scoped route evidence", () => {
+    const event = {
+      schemaVersion: 1 as const,
+      eventId: "route-1",
+      kind: "route-observation" as const,
+      producer: "instrumentation" as const,
+      scope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+      },
+      tick: 220,
+      entityKey: "demo:zombie",
+      routeId: "bridge",
+      routeIndex: 606,
+      worldLocation: {
+        x: 1778,
+        y: -30,
+        z: 0,
+      },
+    };
+
+    expect(
+      telemetryRuntimeRouteObservations([event]),
+    ).toEqual([{
+      entityKey: "demo:zombie",
+      routeId: "bridge",
+      routeIndex: 606,
+      worldLocation: {
+        x: 1778,
+        y: -30,
+        z: 0,
+      },
+      scope: {
+        arenaId: "arena_6",
+        arenaGeneration: 3,
+        entityKey: "demo:zombie",
+      },
+      observedAt: { tick: 220 },
+      evidenceId: "telemetry-route:route-1",
+    }]);
+
+    expect(telemetryRuntimeEvidence([event])).toEqual([
+      expect.objectContaining({
+        predicate: "route-observation-observed",
+        state: "present",
+        scope: expect.objectContaining({
+          arenaId: "arena_6",
+          entityKey: "demo:zombie",
+        }),
       }),
     ]);
   });

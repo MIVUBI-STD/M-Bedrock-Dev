@@ -57,6 +57,52 @@ const intent: GameplayIntentModel = {
   unknowns: [],
 };
 
+const routeIntent: GameplayIntentModel = {
+  schemaVersion: 1,
+  id: "routes",
+  evidence: [{
+    id: "e:route",
+    origin: "source-code",
+    locator: "scripts/main.js",
+    summary: "Authored bridge route.",
+  }],
+  nodes: [{
+    id: "spatial-region:route-bridge",
+    kind: "spatial-region",
+    label: "Route Bridge",
+    status: "authored",
+    evidenceIds: ["e:route"],
+    spatialProfile: {
+      coordinateSpace: "local",
+      routeId: "bridge",
+      points: [{
+        x: 23,
+        y: -28.5,
+        z: 0.5,
+        index: 606,
+      }],
+      indexRanges: [{ min: 606, max: 606 }],
+      transform: {
+        kind: "offset",
+        offsetPath: "gameplayOffset",
+        functionName: "M",
+      },
+      contextSeries: {
+        collectionName: "arenas",
+        contextCount: 6,
+        offsetPath: "gameplayOffset",
+        offsetBase: { x: 0, y: 0, z: 0 },
+        offsetStride: { x: 351, y: 0, z: 0 },
+        contextIdPrefix: "arena_",
+        contextIdIndexBase: 1,
+      },
+    },
+  }],
+  edges: [],
+  invariants: [],
+  unknowns: [],
+};
+
 describe("gameplay intent runtime stage", () => {
   it("evaluates observed outcomes against scoped state at the outcome tick", () => {
     const result = analyzeGameplayIntentRuntime(
@@ -126,6 +172,74 @@ describe("gameplay intent runtime stage", () => {
         deferred: false,
       }),
     ]);
+  });
+
+  it("evaluates runtime route observations against authored route geometry", () => {
+    const result = analyzeGameplayIntentRuntime(
+      routeIntent,
+      [],
+      [],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1778,
+          y: -30,
+          z: 0,
+        },
+        scope: {
+          arenaId: "arena_6",
+          arenaGeneration: 3,
+          entityKey: "demo:zombie",
+        },
+        observedAt: { tick: 220 },
+        evidenceId: "e:route-observation",
+      }],
+    );
+
+    expect(result.routeResolved).toBe(1);
+    expect(result.routeAmbiguous).toBe(0);
+    expect(result.routeUnresolved).toBe(0);
+    expect(
+      result.routeAssessments[0]?.assessment,
+    ).toEqual(expect.objectContaining({
+      disposition: "resolved",
+      routeId: "bridge",
+      routeIndex: 606,
+      distanceToTarget: expect.any(Number),
+      nearest: expect.objectContaining({
+        routeId: "bridge",
+        routeIndex: 606,
+      }),
+    }));
+  });
+
+  it("keeps route observations unresolved without arena scope", () => {
+    const result = analyzeGameplayIntentRuntime(
+      routeIntent,
+      [],
+      [],
+      [{
+        entityKey: "demo:zombie",
+        routeId: "bridge",
+        routeIndex: 606,
+        worldLocation: {
+          x: 1778,
+          y: -30,
+          z: 0,
+        },
+        scope: {
+          entityKey: "demo:zombie",
+        },
+        evidenceId: "e:no-arena",
+      }],
+    );
+
+    expect(result.routeUnresolved).toBe(1);
+    expect(
+      result.routeAssessments[0]?.assessment.reasons[0],
+    ).toMatch(/missing scope\.arenaId/);
   });
 
   it("reports policy violation as probable defect, not confirmed defect", () => {

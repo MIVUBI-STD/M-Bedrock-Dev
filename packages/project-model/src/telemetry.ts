@@ -141,6 +141,19 @@ export interface GameplayOutcomeTelemetryEvent
   outcomeId: string;
 }
 
+export interface RouteObservationTelemetryEvent
+  extends TelemetryEventBase {
+  kind: "route-observation";
+  entityKey: string;
+  routeId?: string;
+  routeIndex?: number;
+  worldLocation: {
+    x: number;
+    y: number;
+    z: number;
+  };
+}
+
 export type TelemetryEvent =
   | EntityStallTelemetryEvent
   | TeleportFallbackTelemetryEvent
@@ -153,7 +166,8 @@ export type TelemetryEvent =
   | MutationAppliedTelemetryEvent
   | MutationVerificationTelemetryEvent
   | StateObservationTelemetryEvent
-  | GameplayOutcomeTelemetryEvent;
+  | GameplayOutcomeTelemetryEvent
+  | RouteObservationTelemetryEvent;
 
 export interface TelemetryBatch {
   schemaVersion: 1;

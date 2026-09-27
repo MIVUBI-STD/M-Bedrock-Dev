@@ -17,6 +17,7 @@ const KINDS = new Set([
   "mutation-verification",
   "state-observation",
   "gameplay-outcome",
+  "route-observation",
 ]);
 
 const PRODUCERS = new Set<TelemetryProducer>([
@@ -101,6 +102,29 @@ function validStateValue(value: unknown): boolean {
     (typeof value === "number" && Number.isFinite(value)) ||
     typeof value === "boolean"
   );
+}
+
+function validateVector3(
+  value: unknown,
+  label: string,
+  errors: string[],
+): void {
+  if (!isRecord(value)) {
+    errors.push(label + " must be an object.");
+    return;
+  }
+  for (const axis of ["x", "y", "z"]) {
+    const component = value[axis];
+    if (
+      typeof component !== "number" ||
+      !Number.isFinite(component)
+    ) {
+      errors.push(
+        label + "." + axis +
+        " must be a finite number.",
+      );
+    }
+  }
 }
 
 function validateStateSurface(
@@ -313,6 +337,36 @@ export function validateTelemetryEvent(
       break;
     case "gameplay-outcome":
       stringField(input, "outcomeId", errors);
+      break;
+    case "route-observation":
+      stringField(input, "entityKey", errors);
+      if (
+        input.routeId !== undefined &&
+        (
+          typeof input.routeId !== "string" ||
+          input.routeId.trim().length === 0
+        )
+      ) {
+        errors.push(
+          "route-observation routeId must be a non-empty string when provided.",
+        );
+      }
+      if (
+        input.routeIndex !== undefined &&
+        (
+          typeof input.routeIndex !== "number" ||
+          !Number.isInteger(input.routeIndex)
+        )
+      ) {
+        errors.push(
+          "route-observation routeIndex must be an integer when provided.",
+        );
+      }
+      validateVector3(
+        input.worldLocation,
+        "route-observation worldLocation",
+        errors,
+      );
       break;
   }
 
