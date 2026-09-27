@@ -22,6 +22,7 @@ import type {
   ScriptGuardedOutcome,
   ScriptGuardOperand,
   ScriptGuardPredicate,
+  ScriptDeclaredMember,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -353,6 +354,31 @@ function conditionIdentifiers(
   expression: ts.Expression,
 ): string[] {
   const values = new Set<string>();
+  const declarationMemberName = (
+    node: ts.PropertyName | undefined,
+  ): string | undefined => {
+    if (!node) return undefined;
+    if (ts.isIdentifier(node) || ts.isStringLiteralLike(node)) {
+      return node.text;
+    }
+    return undefined;
+  };
+
+  const declarationContainerHint = (
+    node: ts.Node,
+  ): string | undefined => {
+    const parent = node.parent;
+    if (
+      parent &&
+      (ts.isClassDeclaration(parent) ||
+        ts.isClassExpression(parent)) &&
+      parent.name
+    ) {
+      return parent.name.text;
+    }
+    return undefined;
+  };
+
   const visit = (node: ts.Node): void => {
     if (ts.isIdentifier(node)) values.add(node.text);
     if (ts.isPropertyAccessExpression(node)) {
@@ -1000,6 +1026,7 @@ export function parseScriptFile(
   const transitionDeclarations: ScriptTransitionDeclaration[] = [];
   const returnOutcomes: ScriptReturnOutcome[] = [];
   const guardedOutcomes: ScriptGuardedOutcome[] = [];
+  const declaredMembers: ScriptDeclaredMember[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
   const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
   const canonicalMinecraftMember = (
@@ -1147,6 +1174,28 @@ export function parseScriptFile(
   ];
 
   const visit = (node: ts.Node): void => {
+    if (
+      ts.isMethodDeclaration(node) ||
+      ts.isPropertyDeclaration(node)
+    ) {
+      const member = declarationMemberName(node.name);
+      if (member) {
+        declaredMembers.push({
+          member,
+          memberKind: ts.isMethodDeclaration(node)
+            ? "method"
+            : "property",
+          ...(declarationContainerHint(node) === undefined
+            ? {}
+            : {
+                containerHint:
+                  declarationContainerHint(node),
+              }),
+          source: lineSource(file, node, source),
+        });
+      }
+    }
+
     if (ts.isStringLiteralLike(node)) {
       const command = node.text.trim();
       const runCommandContext = runCommandStringContext(node, file);
@@ -1643,6 +1692,7 @@ export function parseScriptFile(
     transitionDeclarations,
     returnOutcomes,
     guardedOutcomes,
+    declaredMembers,
     capabilities,
   };
 }

@@ -212,6 +212,13 @@ export interface ScriptReturnOutcome {
   source: SourceRef;
 }
 
+export interface ScriptDeclaredMember {
+  member: string;
+  memberKind: "method" | "property";
+  containerHint?: string;
+  source: SourceRef;
+}
+
 export type ScriptGuardScalar =
   | string
   | number
@@ -314,5 +321,6 @@ export interface ParsedScriptFile {
   transitionDeclarations?: ScriptTransitionDeclaration[];
   returnOutcomes?: ScriptReturnOutcome[];
   guardedOutcomes?: ScriptGuardedOutcome[];
+  declaredMembers?: ScriptDeclaredMember[];
   capabilities: ScriptCapabilityUse[];
 }

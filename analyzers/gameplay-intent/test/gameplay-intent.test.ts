@@ -269,6 +269,78 @@ describe("gameplay intent analyzer", () => {
     ).toBe(false);
   });
 
+  it("recovers gameplay concepts from declared bundled class members", () => {
+    const base = script();
+    const bundled: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [
+        {
+          member: "phase",
+          memberKind: "property",
+          containerHint: "A",
+          source: base.source,
+        },
+        {
+          member: "reconnect",
+          memberKind: "method",
+          containerHint: "A",
+          source: base.source,
+        },
+        {
+          member: "disconnect",
+          memberKind: "method",
+          containerHint: "A",
+          source: base.source,
+        },
+        {
+          member: "clearPlayerInventory",
+          memberKind: "method",
+          containerHint: "B",
+          source: base.source,
+        },
+        {
+          member: "getNearbyReviver",
+          memberKind: "method",
+          containerHint: "C",
+          source: base.source,
+        },
+        {
+          member: "initializeScoreboard",
+          memberKind: "method",
+          containerHint: "C",
+          source: base.source,
+        },
+      ],
+    };
+
+    const result = extractGameplayIntentSignals([bundled]);
+    const ids = new Set(
+      result.signals.map((signal) => signal.subjectKey),
+    );
+
+    expect(ids.has("phase:phase")).toBe(true);
+    expect(ids.has("lifecycle:reconnect")).toBe(true);
+    expect(ids.has("lifecycle:disconnect")).toBe(true);
+    expect(ids.has("resource:clear-player-inventory")).toBe(true);
+    expect(ids.has("mechanic:get-nearby-reviver")).toBe(true);
+    expect(ids.has("resource:initialize-scoreboard")).toBe(true);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {

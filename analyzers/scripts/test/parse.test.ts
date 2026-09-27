@@ -658,6 +658,43 @@ function decideRecovery(record, session, arena) {
     ).toBe(true);
   });
 
+  it("captures declared class members from bundled source", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+class A {
+  phase = "waiting";
+  reconnect(player) {}
+  disconnect(player) {}
+  clearPlayerInventory(player) {}
+  getNearbyReviver(player) {}
+  initializeScoreboard() {}
+}
+`,
+      source,
+    );
+
+    expect(parsed.declaredMembers).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        member: "phase",
+        memberKind: "property",
+        containerHint: "A",
+      }),
+      expect.objectContaining({
+        member: "reconnect",
+        memberKind: "method",
+      }),
+      expect.objectContaining({
+        member: "clearPlayerInventory",
+        memberKind: "method",
+      }),
+      expect.objectContaining({
+        member: "getNearbyReviver",
+        memberKind: "method",
+      }),
+    ]));
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

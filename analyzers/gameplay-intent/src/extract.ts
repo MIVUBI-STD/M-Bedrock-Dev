@@ -18,7 +18,7 @@ const KIND_TERMS: ReadonlyArray<{
     kind: "phase",
     terms: [
       "lobby", "queue", "countdown", "prepare", "preparing",
-      "observation", "observe", "building", "active",
+      "observation", "observe", "building", "active", "phase", "stage",
       "round", "transition", "finishing", "finish", "cinematic",
       "staging", "combat", "fortify", "laststand",
     ],
@@ -28,14 +28,14 @@ const KIND_TERMS: ReadonlyArray<{
     terms: [
       "reset", "cleanup", "cleaning", "reconnect", "disconnect",
       "recovery", "recover", "respawn", "admission", "membership",
-      "session", "rollback", "restore", "release",
+      "session", "rollback", "restore", "release", "join", "leave",
     ],
   },
   {
     kind: "resource",
     terms: [
       "score", "scoring", "coin", "currency", "resource", "resources", "ledger",
-      "inventory", "palette", "health", "points", "kit",
+      "inventory", "palette", "health", "points", "kit", "scoreboard",
     ],
   },
   {
@@ -65,6 +65,7 @@ const KIND_TERMS: ReadonlyArray<{
       "interaction", "placement", "water", "craft", "shop",
       "revive", "upgrade", "similarity", "clone", "feedback",
       "hologram", "combat", "hud", "schematic", "wave",
+      "knockdown", "reviver", "reviving",
     ],
   },
 ];
@@ -82,6 +83,10 @@ function slug(value: string): string {
 }
 
 const HELPER_VERBS = new Set([
+  "setup",
+  "clear",
+  "bootstrap",
+  "apply",
   "build",
   "calculate",
   "create",
@@ -268,6 +273,17 @@ export function extractGameplayIntentSignals(
       const base = part.replace(/\.[^.]+$/, "");
       const signal = lexicalSignal(path, base);
       if (signal) pushSignal(signals, signal);
+    }
+
+    for (const member of script.declaredMembers ?? []) {
+      const signal = lexicalSignal(path, member.member);
+      if (signal) {
+        pushSignal(signals, {
+          ...signal,
+          summary:
+            "A declared class member name survives bundling and provides bounded authored-structure intent evidence.",
+        });
+      }
     }
 
     for (const exposure of script.lifecycleMemberExposures) {
