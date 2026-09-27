@@ -311,6 +311,55 @@ function pushSignal(
   }
 }
 
+function declaredMemberSignal(
+  sourcePath: string,
+  member: NonNullable<
+    ParsedScriptFile["declaredMembers"]
+  >[number],
+): GameplayIntentSignal | undefined {
+  const base = lexicalSignal(
+    sourcePath,
+    member.member,
+  );
+  if (!base || member.memberKind !== "property") {
+    return base;
+  }
+
+  if (base.nodeKind !== "phase") {
+    return base;
+  }
+
+  const words =
+    normalize(member.member).split(/\s+/).filter(Boolean);
+  const measurementWords = new Set([
+    "index",
+    "indexes",
+    "name",
+    "names",
+    "count",
+    "total",
+    "ticks",
+    "time",
+    "times",
+    "list",
+    "map",
+    "ids",
+    "id",
+  ]);
+
+  const nodeKind: GameplayIntentNodeKind =
+    words.some((word) => measurementWords.has(word))
+      ? "resource"
+      : "state";
+
+  return {
+    ...base,
+    subjectKey:
+      nodeKind + ":" + slug(member.member),
+    nodeKind,
+  };
+}
+
 function lexicalSignal(
   sourcePath: string,
   symbol: string,
@@ -675,7 +724,8 @@ export function extractGameplayIntentSignals(
       normalizedPath.includes("/scripts/")
     ) {
       for (const member of script.declaredMembers ?? []) {
-        const signal = lexicalSignal(path, member.member);
+        const signal =
+          declaredMemberSignal(path, member);
         if (signal) {
           pushSignal(signals, {
             ...signal,

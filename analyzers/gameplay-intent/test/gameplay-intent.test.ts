@@ -124,6 +124,70 @@ function script(): ParsedScriptFile {
 }
 
 describe("gameplay intent analyzer", () => {
+  it("treats phase-like declared properties as state or resource surfaces", () => {
+    const base = script();
+    const bundled: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [
+        {
+          member: "currentStageIndex",
+          memberKind: "property",
+          source: base.source,
+        },
+        {
+          member: "stageNames",
+          memberKind: "property",
+          source: base.source,
+        },
+        {
+          member: "countdownRunning",
+          memberKind: "property",
+          source: base.source,
+        },
+        {
+          member: "activeCinematics",
+          memberKind: "property",
+          source: base.source,
+        },
+        {
+          member: "startCountdown",
+          memberKind: "method",
+          source: base.source,
+        },
+      ],
+    };
+
+    const result =
+      extractGameplayIntentSignals([bundled]);
+    const ids = new Set(
+      result.signals.map((signal) => signal.subjectKey),
+    );
+
+    expect(ids.has("resource:current-stage-index")).toBe(true);
+    expect(ids.has("resource:stage-names")).toBe(true);
+    expect(ids.has("state:countdown-running")).toBe(true);
+    expect(ids.has("state:active-cinematics")).toBe(true);
+    expect(ids.has("phase:current-stage-index")).toBe(false);
+    expect(ids.has("phase:stage-names")).toBe(false);
+    expect(ids.has("phase:countdown-running")).toBe(false);
+    expect(ids.has("phase:active-cinematics")).toBe(false);
+  });
+
   it("avoids treating build-prefixed helper functions as gameplay phases", () => {
     const base = script();
     const helper = (
