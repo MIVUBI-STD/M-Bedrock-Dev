@@ -140,3 +140,4 @@ export * from "./runtime-experiment-diagnostic-evidence.js";
 export * from "./runtime-intent-diagnostic-reclassification.js";
 export * from "./runtime-reclassification-repair-gate.js";
 export * from "./runtime-classified-repair-pipeline.js";
+export * from "./post-repair-closure.js";
