@@ -41,6 +41,15 @@ describe("diagnostic analysis routing", () => {
       disposition: "analyze",
       goal: "runtime-behavior",
     });
+
+    expect(
+      routeIntentDiagnosticNextAnalysis(
+        result("runtime-evidence-integrity"),
+      ),
+    ).toMatchObject({
+      disposition: "analyze",
+      goal: "runtime-evidence-integrity",
+    });
   });
 
   it("routes contradiction proof separately from intent evidence", () => {
