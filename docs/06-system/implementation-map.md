@@ -12,7 +12,7 @@ Use this before broad repository search.
 | Semantic dependency graph/invalidation | packages/graph/ |
 | Execution/state/temporal Semantic IR contracts and queries | packages/semantic-ir/ |
 | Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | packages/gameplay-intent/ |
-| Formal behavioral state/transition/temporal property kernel + Minecraft overlays | packages/behavior-model/ |
+| Formal behavioral state/transition/temporal property kernel + Minecraft overlays | packages/behavior-model/ |\n| Constraint-backed reachability, invariant proof, and counterexample traces | packages/logic-solver/ |
 | Competing hypotheses, falsifiers, and diagnostic probe discrimination | packages/diagnostic-reasoning/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Validation step/result contracts | packages/validation/ |
