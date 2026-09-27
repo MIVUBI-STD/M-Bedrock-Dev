@@ -92,7 +92,7 @@ export class BoundedBehaviorSolver implements SolverBackend {
     let maxDepthReached = 0;
 
     while (cursor < queue.length) {
-      const node = queue[cursor++];
+      const node = queue[cursor++]!;
       maxDepthReached = Math.max(maxDepthReached, node.depth);
       const satisfied = querySatisfied(problem, node.state);
 
