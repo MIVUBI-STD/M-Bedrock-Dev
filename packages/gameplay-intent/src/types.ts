@@ -123,6 +123,24 @@ export interface GameplayIntentSpatialOffsetTransform {
   functionName: string;
 }
 
+export interface GameplayIntentSpatialContextSeries {
+  collectionName: string;
+  contextCount: number;
+  offsetPath: string;
+  offsetBase: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  offsetStride: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  contextIdPrefix?: string;
+  contextIdIndexBase?: number;
+}
+
 export interface GameplayIntentSpatialProfile {
   coordinateSpace: "unknown" | "local" | "world";
   routeId: string;
@@ -130,6 +148,7 @@ export interface GameplayIntentSpatialProfile {
   points: readonly GameplayIntentSpatialPoint[];
   indexRanges?: readonly GameplayIntentSpatialIndexRange[];
   transform?: GameplayIntentSpatialOffsetTransform;
+  contextSeries?: GameplayIntentSpatialContextSeries;
 }
 
 export interface GameplayIntentNode {

@@ -107,6 +107,32 @@ export function validateGameplayIntentModel(
           "Spatial route profiles require at least one point.",
       });
     }
+
+    if (
+      node.spatialProfile?.contextSeries !== undefined
+    ) {
+      if (
+        node.spatialProfile.coordinateSpace !== "local" ||
+        node.spatialProfile.transform?.kind !== "offset"
+      ) {
+        issues.push({
+          path:
+            `nodes.${node.id}.spatialProfile.contextSeries`,
+          message:
+            "Spatial context series requires a proven local offset transform.",
+        });
+      } else if (
+        node.spatialProfile.contextSeries.offsetPath !==
+        node.spatialProfile.transform.offsetPath
+      ) {
+        issues.push({
+          path:
+            `nodes.${node.id}.spatialProfile.contextSeries.offsetPath`,
+          message:
+            "Spatial context series offsetPath must match the proven transform offsetPath.",
+        });
+      }
+    }
   }
 
   for (const edge of model.edges) {

@@ -246,6 +246,26 @@ export interface ScriptSpatialTransformUse {
   source: SourceRef;
 }
 
+export interface ScriptSpatialContextOffsetSeries {
+  collectionName: string;
+  sourceCollectionName: string;
+  contextCount: number;
+  offsetPath: string;
+  offsetBase: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  offsetStride: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  contextIdPrefix?: string;
+  contextIdIndexBase?: number;
+  source: SourceRef;
+}
+
 export type ScriptGuardScalar =
   | string
   | number
@@ -352,5 +372,6 @@ export interface ParsedScriptFile {
   spatialRoutePoints?: ScriptSpatialRoutePoint[];
   spatialOffsetTransforms?: ScriptSpatialOffsetTransform[];
   spatialTransformUses?: ScriptSpatialTransformUse[];
+  spatialContextOffsetSeries?: ScriptSpatialContextOffsetSeries[];
   capabilities: ScriptCapabilityUse[];
 }

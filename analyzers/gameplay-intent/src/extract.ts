@@ -312,6 +312,43 @@ export function extractGameplayIntentSignals(
     }
   >();
 
+  const spatialContextSeriesByPath = new Map<
+    string,
+    {
+      collectionName: string;
+      contextCount: number;
+      offsetPath: string;
+      offsetBase: { x: number; y: number; z: number };
+      offsetStride: { x: number; y: number; z: number };
+      contextIdPrefix?: string;
+      contextIdIndexBase?: number;
+    }[]
+  >();
+
+  for (const script of scripts) {
+    const items = (script.spatialContextOffsetSeries ?? []).map(
+      (item) => ({
+        collectionName: item.collectionName,
+        contextCount: item.contextCount,
+        offsetPath: item.offsetPath,
+        offsetBase: item.offsetBase,
+        offsetStride: item.offsetStride,
+        ...(item.contextIdPrefix === undefined
+          ? {}
+          : { contextIdPrefix: item.contextIdPrefix }),
+        ...(item.contextIdIndexBase === undefined
+          ? {}
+          : { contextIdIndexBase: item.contextIdIndexBase }),
+      }),
+    );
+    if (items.length > 0) {
+      spatialContextSeriesByPath.set(
+        script.source.relativePath,
+        items,
+      );
+    }
+  }
+
   const spatialTransformByPath = new Map<
     string,
     {
@@ -485,6 +522,30 @@ export function extractGameplayIntentSignals(
     const coordinateSpace =
       transform === undefined ? "unknown" : "local";
 
+    const contextSeriesCandidates =
+      transform === undefined
+        ? []
+        : [...group.locators]
+            .flatMap(
+              (path) =>
+                spatialContextSeriesByPath.get(path) ?? [],
+            )
+            .filter(
+              (item) =>
+                item.offsetPath === transform.offsetPath,
+            );
+    const contextSeriesKeys = [
+      ...new Set(
+        contextSeriesCandidates.map((item) =>
+          JSON.stringify(item)
+        ),
+      ),
+    ];
+    const contextSeries =
+      contextSeriesKeys.length === 1
+        ? contextSeriesCandidates[0]
+        : undefined;
+
     pushSignal(signals, {
       id:
         "signal:" +
@@ -535,6 +596,9 @@ export function extractGameplayIntentSignals(
                 functionName: transform.functionName,
               },
             }),
+        ...(contextSeries === undefined
+          ? {}
+          : { contextSeries }),
       },
     });
   }

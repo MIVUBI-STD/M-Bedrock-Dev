@@ -820,6 +820,77 @@ describe("gameplay intent analyzer", () => {
     ).toBe("unknown");
   });
 
+  it("attaches compatible context offset series to local route profiles", () => {
+    const base = script();
+    const routeSource = {
+      artifactId: "art_test",
+      relativePath:
+        "behavior_packs/demo/scripts/main.js",
+    };
+    const routes: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: routeSource,
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      spatialRoutePoints: [{
+        routeId: "main",
+        location: { x: -17.5, y: -28.5, z: -110.5 },
+        index: 0,
+        collectionHint: "routes",
+        source: routeSource,
+      }],
+      spatialOffsetTransforms: [{
+        functionName: "applyOffset",
+        pointParameter: "point",
+        contextParameter: "arena",
+        offsetPath: "gameplayOffset",
+        source: routeSource,
+      }],
+      spatialTransformUses: [{
+        functionName: "applyOffset",
+        pointExpression: "definition.location",
+        contextExpression: "arena",
+        source: routeSource,
+      }],
+      spatialContextOffsetSeries: [{
+        collectionName: "arenas",
+        sourceCollectionName: "joins",
+        contextCount: 6,
+        offsetPath: "gameplayOffset",
+        offsetBase: { x: 0, y: 0, z: 0 },
+        offsetStride: { x: 351, y: 0, z: 0 },
+        contextIdPrefix: "arena_",
+        contextIdIndexBase: 1,
+        source: routeSource,
+      }],
+    };
+
+    const result = extractGameplayIntentSignals([routes]);
+    const profile = result.signals.find(
+      (signal) =>
+        signal.subjectKey === "spatial-region:route-main",
+    )?.spatialProfile;
+
+    expect(profile?.contextSeries).toEqual({
+      collectionName: "arenas",
+      contextCount: 6,
+      offsetPath: "gameplayOffset",
+      offsetBase: { x: 0, y: 0, z: 0 },
+      offsetStride: { x: 351, y: 0, z: 0 },
+      contextIdPrefix: "arena_",
+      contextIdIndexBase: 1,
+    });
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {

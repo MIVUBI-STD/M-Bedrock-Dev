@@ -837,6 +837,50 @@ function resolvePath(definition, arena) {
     ]);
   });
 
+  it("captures indexed context offset series from authored arena maps", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+const ARENA_STRIDE = 351;
+const joins = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+  [10, 11, 12],
+  [13, 14, 15],
+  [16, 17, 18],
+];
+
+const arenas = joins.map((entry, index) => {
+  const number = index + 1;
+  const offsetX = index * ARENA_STRIDE;
+  return {
+    id: \`arena_\${number}\`,
+    gameplayOffset: {
+      x: offsetX,
+      y: 0,
+      z: 0,
+    },
+  };
+});
+`,
+      source,
+    );
+
+    expect(parsed.spatialContextOffsetSeries).toEqual([
+      expect.objectContaining({
+        collectionName: "arenas",
+        sourceCollectionName: "joins",
+        contextCount: 6,
+        offsetPath: "gameplayOffset",
+        offsetBase: { x: 0, y: 0, z: 0 },
+        offsetStride: { x: 351, y: 0, z: 0 },
+        contextIdPrefix: "arena_",
+        contextIdIndexBase: 1,
+      }),
+    ]);
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

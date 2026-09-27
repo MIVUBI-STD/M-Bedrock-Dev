@@ -5,7 +5,9 @@ import {
   evaluateGameplayPolicyPredicate,
   gameplayOutcomePolicyRequirements,
   planGameplayOutcomeRuntimeObservations,
+  projectGameplayRoutePoint,
   resolveGameplayRouteIndex,
+  resolveGameplaySpatialContext,
   unresolvedGameplayPolicyOperands,
   validateGameplayIntentModel,
   type GameplayIntentModel,
@@ -679,6 +681,109 @@ describe("gameplay intent", () => {
       routeNodeIds: [],
       routeIds: [],
     });
+  });
+
+  it("projects local route points into authored arena world coordinates", () => {
+    const routeModel: GameplayIntentModel = {
+      schemaVersion: 1,
+      id: "projected-routes",
+      evidence: [{
+        id: "e:route",
+        origin: "source-code",
+        locator: "scripts/main.js",
+        summary: "Authored route + arena offset series.",
+      }],
+      nodes: [{
+        id: "spatial-region:route-main",
+        kind: "spatial-region",
+        label: "Route Main",
+        status: "authored",
+        evidenceIds: ["e:route"],
+        spatialProfile: {
+          coordinateSpace: "local",
+          routeId: "main",
+          points: [
+            {
+              x: -17.5,
+              y: -28.5,
+              z: -110.5,
+              index: 0,
+            },
+          ],
+          indexRanges: [{ min: 0, max: 0 }],
+          transform: {
+            kind: "offset",
+            offsetPath: "gameplayOffset",
+            functionName: "applyOffset",
+          },
+          contextSeries: {
+            collectionName: "arenas",
+            contextCount: 6,
+            offsetPath: "gameplayOffset",
+            offsetBase: { x: 0, y: 0, z: 0 },
+            offsetStride: { x: 351, y: 0, z: 0 },
+            contextIdPrefix: "arena_",
+            contextIdIndexBase: 1,
+          },
+        },
+      }],
+      edges: [],
+      invariants: [],
+      unknowns: [],
+    };
+
+    expect(
+      resolveGameplaySpatialContext(
+        routeModel,
+        "spatial-region:route-main",
+        "arena_3",
+      ),
+    ).toEqual({
+      routeNodeId: "spatial-region:route-main",
+      disposition: "resolved",
+      contextIndex: 2,
+      contextId: "arena_3",
+    });
+
+    expect(
+      projectGameplayRoutePoint(
+        routeModel,
+        "spatial-region:route-main",
+        0,
+        "arena_3",
+      ),
+    ).toEqual({
+      routeNodeId: "spatial-region:route-main",
+      routeId: "main",
+      routeIndex: 0,
+      disposition: "resolved",
+      contextIndex: 2,
+      contextId: "arena_3",
+      localPoint: {
+        x: -17.5,
+        y: -28.5,
+        z: -110.5,
+      },
+      offset: {
+        x: 702,
+        y: 0,
+        z: 0,
+      },
+      worldPoint: {
+        x: 684.5,
+        y: -28.5,
+        z: -110.5,
+      },
+    });
+
+    expect(
+      projectGameplayRoutePoint(
+        routeModel,
+        "spatial-region:route-main",
+        999,
+        "arena_3",
+      ).disposition,
+    ).toBe("unresolved");
   });
 
   it("blocks diagnosis when an open intent question affects the subject", () => {

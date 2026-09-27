@@ -754,3 +754,242 @@ export function resolveGameplayRouteIndex(
     ].sort(),
   };
 }
+
+
+export interface GameplaySpatialContextResolution {
+  routeNodeId: string;
+  disposition: "resolved" | "unresolved";
+  contextIndex?: number;
+  contextId?: string;
+  reason?: string;
+}
+
+export function resolveGameplaySpatialContext(
+  model: GameplayIntentModel,
+  routeNodeId: string,
+  context: number | string,
+): GameplaySpatialContextResolution {
+  const node = model.nodes.find(
+    (item) => item.id === routeNodeId,
+  );
+  const series = node?.spatialProfile?.contextSeries;
+
+  if (!node || !series) {
+    return {
+      routeNodeId,
+      disposition: "unresolved",
+      reason:
+        "Route has no authored context offset series.",
+    };
+  }
+
+  let contextIndex: number | undefined;
+  let contextId: string | undefined;
+
+  if (typeof context === "number") {
+    if (
+      !Number.isInteger(context) ||
+      context < 0 ||
+      context >= series.contextCount
+    ) {
+      return {
+        routeNodeId,
+        disposition: "unresolved",
+        reason:
+          "Context index is outside the authored series.",
+      };
+    }
+    contextIndex = context;
+
+    if (
+      series.contextIdPrefix !== undefined &&
+      series.contextIdIndexBase !== undefined
+    ) {
+      contextId =
+        series.contextIdPrefix +
+        String(
+          context + series.contextIdIndexBase,
+        );
+    }
+  } else {
+    if (
+      series.contextIdPrefix === undefined ||
+      series.contextIdIndexBase === undefined ||
+      !context.startsWith(series.contextIdPrefix)
+    ) {
+      return {
+        routeNodeId,
+        disposition: "unresolved",
+        reason:
+          "Context ID does not match the authored ID series.",
+      };
+    }
+
+    const suffix = context.slice(
+      series.contextIdPrefix.length,
+    );
+    if (!/^-?\d+$/.test(suffix)) {
+      return {
+        routeNodeId,
+        disposition: "unresolved",
+        reason:
+          "Context ID suffix is not an integer.",
+      };
+    }
+
+    const authoredIndex = Number(suffix);
+    contextIndex =
+      authoredIndex - series.contextIdIndexBase;
+    if (
+      !Number.isInteger(contextIndex) ||
+      contextIndex < 0 ||
+      contextIndex >= series.contextCount
+    ) {
+      return {
+        routeNodeId,
+        disposition: "unresolved",
+        reason:
+          "Context ID is outside the authored series.",
+      };
+    }
+    contextId = context;
+  }
+
+  return {
+    routeNodeId,
+    disposition: "resolved",
+    contextIndex,
+    ...(contextId === undefined ? {} : { contextId }),
+  };
+}
+
+export interface GameplayRouteProjection {
+  routeNodeId: string;
+  routeId?: string;
+  routeIndex: number;
+  disposition: "resolved" | "unresolved";
+  contextIndex?: number;
+  contextId?: string;
+  localPoint?: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  offset?: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  worldPoint?: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  reason?: string;
+}
+
+export function projectGameplayRoutePoint(
+  model: GameplayIntentModel,
+  routeNodeId: string,
+  routeIndex: number,
+  context: number | string,
+): GameplayRouteProjection {
+  const node = model.nodes.find(
+    (item) => item.id === routeNodeId,
+  );
+  const profile = node?.spatialProfile;
+  if (!node || !profile) {
+    return {
+      routeNodeId,
+      routeIndex,
+      disposition: "unresolved",
+      reason: "Route spatial profile is unavailable.",
+    };
+  }
+
+  if (
+    profile.coordinateSpace !== "local" ||
+    profile.transform?.kind !== "offset" ||
+    profile.contextSeries === undefined
+  ) {
+    return {
+      routeNodeId,
+      routeId: profile.routeId,
+      routeIndex,
+      disposition: "unresolved",
+      reason:
+        "Route does not have a proven local-to-context offset projection.",
+    };
+  }
+
+  const point = profile.points.find(
+    (item) => item.index === routeIndex,
+  );
+  if (!point) {
+    return {
+      routeNodeId,
+      routeId: profile.routeId,
+      routeIndex,
+      disposition: "unresolved",
+      reason:
+        "Route index is not authored for this route.",
+    };
+  }
+
+  const contextResolution =
+    resolveGameplaySpatialContext(
+      model,
+      routeNodeId,
+      context,
+    );
+  if (
+    contextResolution.disposition !== "resolved" ||
+    contextResolution.contextIndex === undefined
+  ) {
+    return {
+      routeNodeId,
+      routeId: profile.routeId,
+      routeIndex,
+      disposition: "unresolved",
+      reason: contextResolution.reason,
+    };
+  }
+
+  const index = contextResolution.contextIndex;
+  const series = profile.contextSeries;
+  const offset = {
+    x:
+      series.offsetBase.x +
+      series.offsetStride.x * index,
+    y:
+      series.offsetBase.y +
+      series.offsetStride.y * index,
+    z:
+      series.offsetBase.z +
+      series.offsetStride.z * index,
+  };
+  const localPoint = {
+    x: point.x,
+    y: point.y,
+    z: point.z,
+  };
+  const worldPoint = {
+    x: localPoint.x + offset.x,
+    y: localPoint.y + offset.y,
+    z: localPoint.z + offset.z,
+  };
+
+  return {
+    routeNodeId,
+    routeId: profile.routeId,
+    routeIndex,
+    disposition: "resolved",
+    contextIndex: index,
+    ...(contextResolution.contextId === undefined
+      ? {}
+      : { contextId: contextResolution.contextId }),
+    localPoint,
+    offset,
+    worldPoint,
+  };
+}

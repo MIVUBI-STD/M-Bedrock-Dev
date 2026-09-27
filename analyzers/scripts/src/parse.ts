@@ -26,6 +26,7 @@ import type {
   ScriptSpatialRoutePoint,
   ScriptSpatialOffsetTransform,
   ScriptSpatialTransformUse,
+  ScriptSpatialContextOffsetSeries,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -638,6 +639,353 @@ function spatialOffsetTransformsFromFile(
     );
     if (transform) output.push(transform);
   }
+  return output;
+}
+
+interface AffineScalar {
+  base: number;
+  stride: number;
+}
+
+function affineExpression(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+  values: ReadonlyMap<string, AffineScalar>,
+  constants: ReadonlyMap<string, number>,
+): AffineScalar | undefined {
+  const value =
+    ts.isParenthesizedExpression(expression)
+      ? expression.expression
+      : expression;
+
+  const numeric = numericLiteralValue(value);
+  if (numeric !== undefined) {
+    return { base: numeric, stride: 0 };
+  }
+
+  if (ts.isIdentifier(value)) {
+    const local = values.get(value.text);
+    if (local) return local;
+    const constant = constants.get(value.text);
+    return constant === undefined
+      ? undefined
+      : { base: constant, stride: 0 };
+  }
+
+  if (!ts.isBinaryExpression(value)) return undefined;
+
+  const left = affineExpression(
+    value.left,
+    file,
+    values,
+    constants,
+  );
+  const right = affineExpression(
+    value.right,
+    file,
+    values,
+    constants,
+  );
+  if (!left || !right) return undefined;
+
+  switch (value.operatorToken.kind) {
+    case ts.SyntaxKind.PlusToken:
+      return {
+        base: left.base + right.base,
+        stride: left.stride + right.stride,
+      };
+    case ts.SyntaxKind.MinusToken:
+      return {
+        base: left.base - right.base,
+        stride: left.stride - right.stride,
+      };
+    case ts.SyntaxKind.AsteriskToken:
+      if (left.stride === 0) {
+        return {
+          base: left.base * right.base,
+          stride: left.base * right.stride,
+        };
+      }
+      if (right.stride === 0) {
+        return {
+          base: right.base * left.base,
+          stride: right.base * left.stride,
+        };
+      }
+      return undefined;
+    case ts.SyntaxKind.SlashToken:
+      if (right.stride !== 0 || right.base === 0) {
+        return undefined;
+      }
+      return {
+        base: left.base / right.base,
+        stride: left.stride / right.base,
+      };
+    default:
+      return undefined;
+  }
+}
+
+function topLevelNumericConstants(
+  file: ts.SourceFile,
+): Map<string, number> {
+  const constants = new Map<string, number>();
+  for (const statement of file.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (
+        !ts.isIdentifier(declaration.name) ||
+        !declaration.initializer
+      ) {
+        continue;
+      }
+      const numeric = numericLiteralValue(
+        declaration.initializer,
+      );
+      if (numeric !== undefined) {
+        constants.set(declaration.name.text, numeric);
+      }
+    }
+  }
+  return constants;
+}
+
+function topLevelArrayCounts(
+  file: ts.SourceFile,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const statement of file.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (
+        ts.isIdentifier(declaration.name) &&
+        declaration.initializer &&
+        ts.isArrayLiteralExpression(
+          declaration.initializer,
+        )
+      ) {
+        counts.set(
+          declaration.name.text,
+          declaration.initializer.elements.length,
+        );
+      }
+    }
+  }
+  return counts;
+}
+
+function spatialContextOffsetSeriesFromDeclaration(
+  declaration: ts.VariableDeclaration,
+  file: ts.SourceFile,
+  source: SourceRef,
+  constants: ReadonlyMap<string, number>,
+  arrayCounts: ReadonlyMap<string, number>,
+): ScriptSpatialContextOffsetSeries | undefined {
+  if (
+    !ts.isIdentifier(declaration.name) ||
+    !declaration.initializer ||
+    !ts.isCallExpression(declaration.initializer) ||
+    !ts.isPropertyAccessExpression(
+      declaration.initializer.expression,
+    ) ||
+    declaration.initializer.expression.name.text !== "map"
+  ) {
+    return undefined;
+  }
+
+  const sourceExpression =
+    declaration.initializer.expression.expression;
+  if (!ts.isIdentifier(sourceExpression)) {
+    return undefined;
+  }
+  const contextCount = arrayCounts.get(
+    sourceExpression.text,
+  );
+  if (contextCount === undefined) return undefined;
+
+  const callback = declaration.initializer.arguments[0];
+  if (
+    !callback ||
+    !(
+      ts.isArrowFunction(callback) ||
+      ts.isFunctionExpression(callback)
+    ) ||
+    callback.parameters.length < 2
+  ) {
+    return undefined;
+  }
+
+  const indexParameterNode = callback.parameters[1]?.name;
+  if (
+    !indexParameterNode ||
+    !ts.isIdentifier(indexParameterNode)
+  ) {
+    return undefined;
+  }
+
+  const values = new Map<string, AffineScalar>();
+  values.set(indexParameterNode.text, {
+    base: 0,
+    stride: 1,
+  });
+
+  let returned: ts.Expression | undefined;
+  if (ts.isBlock(callback.body)) {
+    for (const statement of callback.body.statements) {
+      if (ts.isVariableStatement(statement)) {
+        for (const local of statement.declarationList.declarations) {
+          if (
+            !ts.isIdentifier(local.name) ||
+            !local.initializer
+          ) {
+            continue;
+          }
+          const affine = affineExpression(
+            local.initializer,
+            file,
+            values,
+            constants,
+          );
+          if (affine) values.set(local.name.text, affine);
+        }
+      } else if (ts.isReturnStatement(statement)) {
+        returned = statement.expression;
+      }
+    }
+  } else {
+    returned = callback.body;
+  }
+
+  if (
+    !returned ||
+    !ts.isObjectLiteralExpression(returned)
+  ) {
+    return undefined;
+  }
+
+  const offsetProperty = returned.properties.find(
+    (property): property is ts.PropertyAssignment =>
+      ts.isPropertyAssignment(property) &&
+      declarationMemberName(property.name) !== undefined &&
+      /offset/i.test(
+        declarationMemberName(property.name)!,
+      ) &&
+      ts.isObjectLiteralExpression(property.initializer),
+  );
+  if (
+    !offsetProperty ||
+    !ts.isObjectLiteralExpression(
+      offsetProperty.initializer,
+    )
+  ) {
+    return undefined;
+  }
+
+  const offsetPath = declarationMemberName(
+    offsetProperty.name,
+  );
+  if (!offsetPath) return undefined;
+
+  const axis = (
+    name: "x" | "y" | "z",
+  ): AffineScalar | undefined => {
+    const property = objectPropertyAssignment(
+      offsetProperty.initializer as ts.ObjectLiteralExpression,
+      [name],
+    );
+    return property
+      ? affineExpression(
+          property.initializer,
+          file,
+          values,
+          constants,
+        )
+      : undefined;
+  };
+
+  const x = axis("x");
+  const y = axis("y");
+  const z = axis("z");
+  if (!x || !y || !z) return undefined;
+
+  let contextIdPrefix: string | undefined;
+  let contextIdIndexBase: number | undefined;
+  const idProperty = objectPropertyAssignment(
+    returned,
+    ["id", "arenaId", "contextId"],
+  );
+  if (
+    idProperty &&
+    ts.isTemplateExpression(idProperty.initializer) &&
+    idProperty.initializer.templateSpans.length === 1
+  ) {
+    const span =
+      idProperty.initializer.templateSpans[0]!;
+    const idValue = affineExpression(
+      span.expression,
+      file,
+      values,
+      constants,
+    );
+    if (
+      idValue &&
+      idValue.stride === 1 &&
+      span.literal.text.length === 0
+    ) {
+      contextIdPrefix =
+        idProperty.initializer.head.text;
+      contextIdIndexBase = idValue.base;
+    }
+  }
+
+  return {
+    collectionName: declaration.name.text,
+    sourceCollectionName: sourceExpression.text,
+    contextCount,
+    offsetPath,
+    offsetBase: {
+      x: x.base,
+      y: y.base,
+      z: z.base,
+    },
+    offsetStride: {
+      x: x.stride,
+      y: y.stride,
+      z: z.stride,
+    },
+    ...(contextIdPrefix === undefined
+      ? {}
+      : { contextIdPrefix }),
+    ...(contextIdIndexBase === undefined
+      ? {}
+      : { contextIdIndexBase }),
+    source: lineSource(file, declaration, source),
+  };
+}
+
+function spatialContextOffsetSeriesFromFile(
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptSpatialContextOffsetSeries[] {
+  const constants = topLevelNumericConstants(file);
+  const arrayCounts = topLevelArrayCounts(file);
+  const output: ScriptSpatialContextOffsetSeries[] = [];
+
+  for (const statement of file.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      const series =
+        spatialContextOffsetSeriesFromDeclaration(
+          declaration,
+          file,
+          source,
+          constants,
+          arrayCounts,
+        );
+      if (series) output.push(series);
+    }
+  }
+
   return output;
 }
 
@@ -1312,6 +1660,8 @@ export function parseScriptFile(
   const spatialOffsetTransforms =
     spatialOffsetTransformsFromFile(file, source);
   const spatialTransformUses: ScriptSpatialTransformUse[] = [];
+  const spatialContextOffsetSeries =
+    spatialContextOffsetSeriesFromFile(file, source);
   const spatialTransformNames = new Set(
     spatialOffsetTransforms.map((item) => item.functionName),
   );
@@ -2018,6 +2368,7 @@ export function parseScriptFile(
     spatialRoutePoints,
     spatialOffsetTransforms,
     spatialTransformUses,
+    spatialContextOffsetSeries,
     capabilities,
   };
 }
