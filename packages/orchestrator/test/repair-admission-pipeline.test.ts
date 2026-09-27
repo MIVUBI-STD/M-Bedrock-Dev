@@ -137,7 +137,7 @@ describe("repair admission pipeline", () => {
     })).toThrow(/runtimeEvidenceRevision/);
   });
 
-  it("admits guarded intervention proof only when runtime evidence is bound", () => {
+  it("blocks guarded intervention proof until preservation baseline is ready", () => {
     const { graph, transaction } = fixture();
     const result = evaluateRepairAdmissionPipeline({
       graph,
@@ -155,6 +155,47 @@ describe("repair admission pipeline", () => {
       changedNodeIds: ["function:p:target"],
       decisionBasis: {
         runtimeEvidenceRevision: "evidence-current",
+      },
+    });
+
+    expect(result.admission.disposition).toBe("blocked");
+    expect(result.admission.reasons.join(" ")).toMatch(
+      /preservation readiness/,
+    );
+  });
+
+  it("admits guarded intervention proof only after preservation baseline is ready", () => {
+    const { graph, transaction } = fixture();
+    const result = evaluateRepairAdmissionPipeline({
+      graph,
+      transaction,
+      diagnostic: {
+        incidentId: "incident-1",
+        activeCandidateIds: ["candidate"],
+        disposition: "guarded-repair-eligible",
+        selectedCandidateId: "candidate",
+        effectiveEvidenceLevel: "proven-with-observed-outcome",
+        proofState: "intervention-supported",
+        claimStrength: "proven-runtime",
+        reasons: ["intervention-supported runtime proof"],
+      },
+      changedNodeIds: ["function:p:target"],
+      decisionBasis: {
+        runtimeEvidenceRevision: "evidence-current",
+        preservationContractRevision:
+          "preservation-contract-current",
+        preservationBaselineRevision:
+          "preservation-baseline-current",
+      },
+      preservationReadiness: {
+        contractId: "preserve:" + transaction.id,
+        transactionId: transaction.id,
+        disposition: "ready",
+        baselineEvidenceIds: [
+          "baseline:broken",
+          "baseline:healthy",
+        ],
+        reasons: ["ready"],
       },
     });
 
