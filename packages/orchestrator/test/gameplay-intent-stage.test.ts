@@ -63,6 +63,20 @@ function parsed(): ParsedScriptFile {
       executionRegion: "function:resetSession",
       source,
     }],
+    typeProperties: [{
+      containerName: "ResourceRecord",
+      propertyName: "owner",
+      typeText: "SessionToken",
+      optional: false,
+      source,
+    }],
+    transitionDeclarations: [{
+      tableName: "TRANSITIONS",
+      stateType: "SessionPhase",
+      from: "active",
+      to: ["finishing", "failed"],
+      source,
+    }],
     capabilities: [],
   };
 }
@@ -98,7 +112,22 @@ describe("gameplay intent stage", () => {
       ),
     ).toBe(true);
 
-    expect(model.invariants).toEqual([]);
+    expect(
+      model.edges.some(
+        (edge) =>
+          edge.kind === "owns" &&
+          edge.status === "authored",
+      ),
+    ).toBe(true);
+
+    expect(
+      model.invariants.some(
+        (invariant) =>
+          invariant.id ===
+            "inv:allowed-transitions:state:session-phase-active" &&
+          invariant.status === "inferred",
+      ),
+    ).toBe(true);
   });
 
   it("does not invent intent when no grounded signal exists", () => {
@@ -109,6 +138,9 @@ describe("gameplay intent stage", () => {
       localFunctionCalls: [],
       lifecycleMemberExposures: [],
       enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
     };
 
     const model = buildGameplayIntentModel({

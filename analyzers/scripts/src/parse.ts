@@ -16,6 +16,8 @@ import type {
   ScriptModuleMemberAccess,
   ScriptEnumValueComparison,
   ScriptStateMutation,
+  ScriptTransitionDeclaration,
+  ScriptTypeProperty,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -654,6 +656,8 @@ export function parseScriptFile(
   const importedSymbols: ScriptImportedSymbol[] = [];
   const enumValueComparisons: ScriptEnumValueComparison[] = [];
   const stateMutations: ScriptStateMutation[] = [];
+  const typeProperties: ScriptTypeProperty[] = [];
+  const transitionDeclarations: ScriptTransitionDeclaration[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
   const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
   const canonicalMinecraftMember = (
@@ -756,6 +760,32 @@ export function parseScriptFile(
     return undefined;
   };
 
+  const recordStateType = (
+    node: ts.TypeNode | undefined,
+  ): string | undefined => {
+    if (!node) return undefined;
+    const text = node.getText(file);
+    const match = text.match(/Record\s*<\s*([A-Za-z_$][\w$]*)\s*,/);
+    return match?.[1];
+  };
+
+  const transitionArray = (
+    expression: ts.Expression,
+  ): string[] | undefined => {
+    const value =
+      ts.isAsExpression(expression) ||
+      ts.isTypeAssertionExpression(expression)
+        ? expression.expression
+        : expression;
+    if (!ts.isArrayLiteralExpression(value)) return undefined;
+    const items: string[] = [];
+    for (const element of value.elements) {
+      if (!ts.isStringLiteralLike(element)) return undefined;
+      items.push(element.text);
+    }
+    return items;
+  };
+
   const capabilities: ScriptCapabilityUse[] = [
     ...methodCalls.map((call) => ({
       capability: "api-method" as const,
@@ -788,6 +818,68 @@ export function parseScriptFile(
           executionRegion: localExecutionRegionId(node, file),
           source: lineSource(file, node, source),
         });
+      }
+    }
+
+    if (ts.isInterfaceDeclaration(node)) {
+      for (const member of node.members) {
+        if (!ts.isPropertySignature(member) || !member.type || !member.name) {
+          continue;
+        }
+        const propertyName =
+          ts.isIdentifier(member.name) ||
+          ts.isStringLiteralLike(member.name)
+            ? member.name.text
+            : undefined;
+        if (!propertyName) continue;
+        typeProperties.push({
+          containerName: node.name.text,
+          propertyName,
+          typeText: member.type.getText(file),
+          optional: member.questionToken !== undefined,
+          source: lineSource(file, member, source),
+        });
+      }
+    }
+
+    if (ts.isVariableStatement(node)) {
+      for (const declaration of node.declarationList.declarations) {
+        if (
+          !ts.isIdentifier(declaration.name) ||
+          !declaration.initializer ||
+          !/transition/i.test(declaration.name.text)
+        ) {
+          continue;
+        }
+
+        const initializer =
+          ts.isAsExpression(declaration.initializer) ||
+          ts.isTypeAssertionExpression(declaration.initializer)
+            ? declaration.initializer.expression
+            : declaration.initializer;
+        if (!ts.isObjectLiteralExpression(initializer)) continue;
+
+        const tableName = declaration.name.text;
+        const stateType = recordStateType(declaration.type);
+
+        for (const property of initializer.properties) {
+          if (!ts.isPropertyAssignment(property)) continue;
+          const from =
+            ts.isIdentifier(property.name) ||
+            ts.isStringLiteralLike(property.name)
+              ? property.name.text
+              : undefined;
+          if (!from) continue;
+          const to = transitionArray(property.initializer);
+          if (!to) continue;
+          transitionDeclarations.push({
+            tableName,
+            ...(stateType === undefined ? {} : { stateType }),
+            from,
+            to,
+            source: lineSource(file, property, source),
+          });
+        }
       }
     }
 
@@ -1168,6 +1260,8 @@ export function parseScriptFile(
     importedSymbols,
     enumValueComparisons,
     stateMutations,
+    typeProperties,
+    transitionDeclarations,
     capabilities,
   };
 }

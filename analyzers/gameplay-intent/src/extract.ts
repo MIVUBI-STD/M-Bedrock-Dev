@@ -264,6 +264,112 @@ export function extractGameplayIntentSignals(
       }
     }
 
+    for (const property of script.typeProperties ?? []) {
+      const container = lexicalSignal(path, property.containerName);
+      if (container) pushSignal(signals, container);
+
+      const referencedType = property.typeText.match(
+        /\b([A-Z][A-Za-z0-9_$]*)\b/,
+      )?.[1];
+      const target = referencedType
+        ? lexicalSignal(path, referencedType)
+        : undefined;
+      if (target) pushSignal(signals, target);
+
+      if (
+        property.propertyName === "owner" &&
+        container &&
+        target
+      ) {
+        pushRelation({
+          id:
+            "relation:owns:" +
+            target.subjectKey + ":" +
+            container.subjectKey + ":" +
+            slug(path),
+          fromSubjectKey: target.subjectKey,
+          toSubjectKey: container.subjectKey,
+          edgeKind: "owns",
+          status: "authored",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "An authored type property explicitly declares the owner type of this gameplay record.",
+        });
+      } else if (
+        /^(?:resources|roster|members|players|arenas|sessions)$/i.test(
+          property.propertyName,
+        ) &&
+        container &&
+        target
+      ) {
+        pushRelation({
+          id:
+            "relation:owns:" +
+            container.subjectKey + ":" +
+            target.subjectKey + ":" +
+            slug(path),
+          fromSubjectKey: container.subjectKey,
+          toSubjectKey: target.subjectKey,
+          edgeKind: "owns",
+          status: "inferred",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "An authored aggregate property structurally contains gameplay records; lifecycle ownership remains inferred.",
+        });
+      }
+    }
+
+    for (const transition of script.transitionDeclarations ?? []) {
+      const stateType =
+        transition.stateType ?? transition.tableName;
+      const fromKey =
+        "state:" + slug(stateType + " " + transition.from);
+      const fromSignal: GameplayIntentSignal = {
+        id: "signal:" + fromKey + ":" + slug(path),
+        subjectKey: fromKey,
+        nodeKind: "state",
+        label: title(stateType + " " + transition.from),
+        status: "authored",
+        evidenceOrigin: "source-code",
+        locator: path,
+        summary:
+          "Source explicitly declares this state as a transition-table key.",
+      };
+      pushSignal(signals, fromSignal);
+
+      for (const targetState of transition.to) {
+        const toKey =
+          "state:" + slug(stateType + " " + targetState);
+        const toSignal: GameplayIntentSignal = {
+          id: "signal:" + toKey + ":" + slug(path),
+          subjectKey: toKey,
+          nodeKind: "state",
+          label: title(stateType + " " + targetState),
+          status: "authored",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "Source explicitly declares this state as a transition-table target.",
+        };
+        pushSignal(signals, toSignal);
+        pushRelation({
+          id:
+            "relation:transitions-to:" +
+            fromKey + ":" + toKey + ":" + slug(path),
+          fromSubjectKey: fromKey,
+          toSubjectKey: toKey,
+          edgeKind: "transitions-to",
+          status: "authored",
+          evidenceOrigin: "source-code",
+          locator: path,
+          summary:
+            "An authored transition table explicitly permits this state transition.",
+        });
+      }
+    }
+
     for (const event of script.events) {
       const signal = lexicalSignal(path, event.event);
       if (signal) pushSignal(signals, signal);

@@ -189,6 +189,22 @@ export interface ScriptStateMutation {
   source: SourceRef;
 }
 
+export interface ScriptTypeProperty {
+  containerName: string;
+  propertyName: string;
+  typeText: string;
+  optional: boolean;
+  source: SourceRef;
+}
+
+export interface ScriptTransitionDeclaration {
+  tableName: string;
+  stateType?: string;
+  from: string;
+  to: readonly string[];
+  source: SourceRef;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
@@ -228,5 +244,7 @@ export interface ParsedScriptFile {
   importedSymbols: ScriptImportedSymbol[];
   enumValueComparisons: ScriptEnumValueComparison[];
   stateMutations?: ScriptStateMutation[];
+  typeProperties?: ScriptTypeProperty[];
+  transitionDeclarations?: ScriptTransitionDeclaration[];
   capabilities: ScriptCapabilityUse[];
 }

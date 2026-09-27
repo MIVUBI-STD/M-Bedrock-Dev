@@ -10,6 +10,7 @@ import {
   validateGameplayIntentModel,
   type GameplayIntentEdge,
   type GameplayIntentEvidence,
+  type GameplayIntentInvariant,
   type GameplayIntentModel,
   type GameplayIntentNode,
   type GameplayIntentStatus,
@@ -45,6 +46,7 @@ export function buildGameplayIntentModel(
   const evidence = new Map<string, GameplayIntentEvidence>();
   const nodes = new Map<string, GameplayIntentNode>();
   const edges = new Map<string, GameplayIntentEdge>();
+  const invariants = new Map<string, GameplayIntentInvariant>();
 
   for (const signal of extracted.signals) {
     const id = evidenceId(signal);
@@ -107,6 +109,47 @@ export function buildGameplayIntentModel(
     });
   }
 
+  const authoredTransitionsByFrom = new Map<
+    string,
+    GameplayIntentEdge[]
+  >();
+
+  for (const edge of edges.values()) {
+    if (
+      edge.kind !== "transitions-to" ||
+      edge.status !== "authored"
+    ) {
+      continue;
+    }
+    const list =
+      authoredTransitionsByFrom.get(edge.from) ?? [];
+    list.push(edge);
+    authoredTransitionsByFrom.set(edge.from, list);
+  }
+
+  for (const [from, transitions] of authoredTransitionsByFrom) {
+    const targetLabels = transitions
+      .map((edge) => nodes.get(edge.to)?.label ?? edge.to)
+      .sort();
+    const evidenceIds = [
+      ...new Set(
+        transitions.flatMap((edge) => edge.evidenceIds),
+      ),
+    ].sort();
+
+    invariants.set("inv:allowed-transitions:" + from, {
+      id: "inv:allowed-transitions:" + from,
+      statement:
+        (nodes.get(from)?.label ?? from) +
+        " transitions only to declared successors: " +
+        targetLabels.join(", "),
+      strength: "must",
+      status: "inferred",
+      subjectIds: [from],
+      evidenceIds,
+    });
+  }
+
   const model: GameplayIntentModel = {
     schemaVersion: 1,
     id: input.id,
@@ -122,7 +165,9 @@ export function buildGameplayIntentModel(
     edges: [...edges.values()].sort(
       (a, b) => a.id.localeCompare(b.id),
     ),
-    invariants: [],
+    invariants: [...invariants.values()].sort(
+      (a, b) => a.id.localeCompare(b.id),
+    ),
     unknowns:
       nodes.size === 0
         ? [{

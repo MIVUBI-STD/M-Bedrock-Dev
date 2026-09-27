@@ -66,6 +66,29 @@ function script(): ParsedScriptFile {
       executionRegion: "function:resetArena",
       source,
     }],
+    typeProperties: [
+      {
+        containerName: "ResourceRecord",
+        propertyName: "owner",
+        typeText: "SessionToken",
+        optional: false,
+        source,
+      },
+      {
+        containerName: "GameSession",
+        propertyName: "resources",
+        typeText: "ResourceRecord[]",
+        optional: false,
+        source,
+      },
+    ],
+    transitionDeclarations: [{
+      tableName: "TRANSITIONS",
+      stateType: "SessionPhase",
+      from: "active",
+      to: ["finishing", "failed"],
+      source,
+    }],
     capabilities: [],
   };
 }
@@ -104,6 +127,26 @@ describe("gameplay intent analyzer", () => {
           relation.edgeKind === "transitions-to" &&
           relation.toSubjectKey ===
             "state:session-state-active",
+      ),
+    ).toBe(true);
+
+    expect(
+      result.relations.some(
+        (relation) =>
+          relation.edgeKind === "owns" &&
+          relation.status === "authored",
+      ),
+    ).toBe(true);
+
+    expect(
+      result.relations.some(
+        (relation) =>
+          relation.edgeKind === "transitions-to" &&
+          relation.status === "authored" &&
+          relation.fromSubjectKey ===
+            "state:session-phase-active" &&
+          relation.toSubjectKey ===
+            "state:session-phase-finishing",
       ),
     ).toBe(true);
   });
