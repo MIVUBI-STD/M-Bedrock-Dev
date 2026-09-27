@@ -174,8 +174,12 @@ export function reclassifyIntentDiagnosticFromRuntime(
       engineConstraints.evidenceIds,
     compatibilityDifferenceEvidenceIds:
       compatibilityDifferences.evidenceIds,
-    runtimeProofRequired:
-      input.runtimeProofRequired,
+    ...(input.runtimeProofRequired === undefined
+      ? {}
+      : {
+          runtimeProofRequired:
+            input.runtimeProofRequired,
+        }),
     runtimeProofEvidenceIds:
       runtimeProof.evidenceIds,
   });
