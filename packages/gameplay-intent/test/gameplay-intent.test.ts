@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assessGameplayIntentGrounding,
+  evaluateGameplayOutcomeAdmissibility,
   evaluateGameplayPolicyPredicate,
   validateGameplayIntentModel,
   type GameplayIntentModel,
@@ -153,6 +154,90 @@ describe("gameplay intent", () => {
         },
         {},
       ),
+    ).toBe("unknown");
+  });
+
+  it("evaluates outcome admissibility across authored policy guards", () => {
+    const policyModel: GameplayIntentModel = {
+      schemaVersion: 1,
+      id: "reconnect-policy",
+      evidence: [{
+        id: "e:policy",
+        origin: "source-code",
+        locator: "src/recovery-policy.ts",
+        summary: "Direct guarded cleanup outcome.",
+      }],
+      nodes: [
+        {
+          id: "outcome:cleanup",
+          kind: "outcome",
+          label: "Cleanup",
+          status: "authored",
+          evidenceIds: ["e:policy"],
+        },
+        {
+          id: "policy:pending-cleanup",
+          kind: "policy",
+          label: "Pending Cleanup",
+          status: "authored",
+          evidenceIds: ["e:policy"],
+          policyPredicate: {
+            kind: "truthy",
+            operand: {
+              kind: "path",
+              path: "state.pendingCleanup",
+            },
+          },
+        },
+      ],
+      edges: [{
+        id: "edge:cleanup-policy",
+        from: "outcome:cleanup",
+        to: "policy:pending-cleanup",
+        kind: "requires",
+        status: "authored",
+        evidenceIds: ["e:policy"],
+      }],
+      invariants: [{
+        id: "inv:cleanup-policy",
+        statement: "Cleanup is admissible only under known guards.",
+        strength: "must",
+        status: "inferred",
+        subjectIds: ["outcome:cleanup"],
+        evidenceIds: ["e:policy"],
+      }],
+      unknowns: [],
+    };
+
+    expect(
+      evaluateGameplayOutcomeAdmissibility(
+        policyModel,
+        "outcome:cleanup",
+        { state: { pendingCleanup: true } },
+      ).disposition,
+    ).toBe("admissible");
+
+    expect(
+      evaluateGameplayOutcomeAdmissibility(
+        policyModel,
+        "outcome:cleanup",
+        { state: { pendingCleanup: false } },
+      ).disposition,
+    ).toBe("inadmissible");
+
+    expect(
+      evaluateGameplayOutcomeAdmissibility(
+        {
+          ...policyModel,
+          unknowns: [{
+            id: "unknown:coverage",
+            question: "Other cleanup branches are unresolved.",
+            blockedSubjectIds: ["outcome:cleanup"],
+          }],
+        },
+        "outcome:cleanup",
+        { state: { pendingCleanup: false } },
+      ).disposition,
     ).toBe("unknown");
   });
 

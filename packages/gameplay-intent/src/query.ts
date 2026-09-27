@@ -228,3 +228,111 @@ export function evaluateGameplayPolicyPredicate(
   }
   return "unknown";
 }
+
+export type GameplayOutcomeAdmissibility =
+  | "admissible"
+  | "inadmissible"
+  | "unknown";
+
+export interface GameplayOutcomePolicyAssessment {
+  outcomeId: string;
+  disposition: GameplayOutcomeAdmissibility;
+  policies: readonly {
+    policyId: string;
+    evaluation: GameplayPolicyEvaluation;
+  }[];
+  reasons: readonly string[];
+}
+
+export function evaluateGameplayOutcomeAdmissibility(
+  model: GameplayIntentModel,
+  outcomeId: string,
+  values: Readonly<Record<string, unknown>>,
+): GameplayOutcomePolicyAssessment {
+  const blockingUnknowns = model.unknowns.filter((unknown) =>
+    unknown.blockedSubjectIds.includes(outcomeId)
+  );
+  if (blockingUnknowns.length > 0) {
+    return {
+      outcomeId,
+      disposition: "unknown",
+      policies: [],
+      reasons: blockingUnknowns.map(
+        (unknown) =>
+          `Intent remains unresolved: ${unknown.question}`,
+      ),
+    };
+  }
+
+  const policyEdges = model.edges.filter(
+    (edge) =>
+      edge.from === outcomeId &&
+      edge.kind === "requires" &&
+      edge.status === "authored" &&
+      model.nodes.find((node) => node.id === edge.to)?.kind === "policy",
+  );
+
+  if (policyEdges.length === 0) {
+    return {
+      outcomeId,
+      disposition: "unknown",
+      policies: [],
+      reasons: [
+        "No authored policy edge is available for this outcome.",
+      ],
+    };
+  }
+
+  const policies = policyEdges.map((edge) => {
+    const node = model.nodes.find((item) => item.id === edge.to);
+    return {
+      policyId: edge.to,
+      evaluation:
+        node?.policyPredicate === undefined
+          ? "unknown" as const
+          : evaluateGameplayPolicyPredicate(
+              node.policyPredicate,
+              values,
+            ),
+    };
+  });
+
+  if (
+    policies.some(
+      (policy) => policy.evaluation === "satisfied",
+    )
+  ) {
+    return {
+      outcomeId,
+      disposition: "admissible",
+      policies,
+      reasons: [
+        "At least one authored direct guard for the outcome is satisfied.",
+      ],
+    };
+  }
+
+  if (
+    policies.every(
+      (policy) => policy.evaluation === "violated",
+    )
+  ) {
+    return {
+      outcomeId,
+      disposition: "inadmissible",
+      policies,
+      reasons: [
+        "All authored direct guards for the outcome are violated.",
+      ],
+    };
+  }
+
+  return {
+    outcomeId,
+    disposition: "unknown",
+    policies,
+    reasons: [
+      "No guard is satisfied and at least one policy evaluation is unknown.",
+    ],
+  };
+}
