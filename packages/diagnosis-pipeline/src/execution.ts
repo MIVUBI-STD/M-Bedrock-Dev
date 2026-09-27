@@ -18,6 +18,7 @@ export type DiagnosisExecutorResult =
   | {
       status: "completed";
       evidence: readonly AnalysisEvidenceSnapshot[];
+      output: unknown;
       reasons?: readonly string[];
     }
   | {
@@ -43,6 +44,7 @@ export type DiagnosisPlannedStepExecution =
       capabilityId: string;
       executorId: string;
       evidence: readonly AnalysisEvidenceSnapshot[];
+      output: unknown;
       reasons: readonly string[];
     }
   | {
@@ -324,6 +326,7 @@ export async function executePlannedDiagnosisStep(
     capabilityId: capability.id,
     executorId: capability.executorId,
     evidence: [...result.evidence],
+    output: result.output,
     reasons: [...(result.reasons ?? [])],
   };
 }
