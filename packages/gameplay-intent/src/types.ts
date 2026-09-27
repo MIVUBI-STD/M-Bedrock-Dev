@@ -117,12 +117,19 @@ export interface GameplayIntentSpatialIndexRange {
   max: number;
 }
 
+export interface GameplayIntentSpatialOffsetTransform {
+  kind: "offset";
+  offsetPath: string;
+  functionName: string;
+}
+
 export interface GameplayIntentSpatialProfile {
   coordinateSpace: "unknown" | "local" | "world";
   routeId: string;
   collectionHint?: string;
   points: readonly GameplayIntentSpatialPoint[];
   indexRanges?: readonly GameplayIntentSpatialIndexRange[];
+  transform?: GameplayIntentSpatialOffsetTransform;
 }
 
 export interface GameplayIntentNode {

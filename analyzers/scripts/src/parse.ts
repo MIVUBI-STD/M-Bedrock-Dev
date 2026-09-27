@@ -24,6 +24,8 @@ import type {
   ScriptGuardPredicate,
   ScriptDeclaredMember,
   ScriptSpatialRoutePoint,
+  ScriptSpatialOffsetTransform,
+  ScriptSpatialTransformUse,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -512,6 +514,131 @@ function spatialRoutePointFromObject(
       : { collectionHint }),
     source: lineSource(file, node, source),
   };
+}
+
+function spatialOffsetTransformFromFunction(
+  node: ts.FunctionDeclaration,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptSpatialOffsetTransform | undefined {
+  if (!node.name || !node.body || node.parameters.length < 2) {
+    return undefined;
+  }
+
+  const pointParameterNode = node.parameters[0]?.name;
+  const contextParameterNode = node.parameters[1]?.name;
+  if (
+    !pointParameterNode ||
+    !contextParameterNode ||
+    !ts.isIdentifier(pointParameterNode) ||
+    !ts.isIdentifier(contextParameterNode)
+  ) {
+    return undefined;
+  }
+
+  const returnStatement = node.body.statements.find(
+    ts.isReturnStatement,
+  );
+  const returned = returnStatement?.expression;
+  if (!returned || !ts.isObjectLiteralExpression(returned)) {
+    return undefined;
+  }
+
+  const pointParameter = pointParameterNode.text;
+  const contextParameter = contextParameterNode.text;
+  let offsetPath: string | undefined;
+
+  const axisMatches = (axis: "x" | "y" | "z"): boolean => {
+    const property = objectPropertyAssignment(returned, [axis]);
+    if (!property || !ts.isBinaryExpression(property.initializer)) {
+      return false;
+    }
+    if (
+      property.initializer.operatorToken.kind !==
+      ts.SyntaxKind.PlusToken
+    ) {
+      return false;
+    }
+
+    const matchesPair = (
+      pointSide: ts.Expression,
+      offsetSide: ts.Expression,
+    ): boolean => {
+      if (
+        !ts.isPropertyAccessExpression(pointSide) ||
+        pointSide.name.text !== axis ||
+        !ts.isIdentifier(pointSide.expression) ||
+        pointSide.expression.text !== pointParameter
+      ) {
+        return false;
+      }
+
+      const chain = propertyAccessChain(offsetSide);
+      if (
+        chain.length !== 3 ||
+        chain[0] !== contextParameter ||
+        chain[2] !== axis
+      ) {
+        return false;
+      }
+
+      const candidateOffsetPath = chain[1];
+      if (!candidateOffsetPath) return false;
+      if (
+        offsetPath !== undefined &&
+        offsetPath !== candidateOffsetPath
+      ) {
+        return false;
+      }
+      offsetPath = candidateOffsetPath;
+      return true;
+    };
+
+    return (
+      matchesPair(
+        property.initializer.left,
+        property.initializer.right,
+      ) ||
+      matchesPair(
+        property.initializer.right,
+        property.initializer.left,
+      )
+    );
+  };
+
+  if (
+    !axisMatches("x") ||
+    !axisMatches("y") ||
+    !axisMatches("z") ||
+    offsetPath === undefined
+  ) {
+    return undefined;
+  }
+
+  return {
+    functionName: node.name.text,
+    pointParameter,
+    contextParameter,
+    offsetPath,
+    source: lineSource(file, node, source),
+  };
+}
+
+function spatialOffsetTransformsFromFile(
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptSpatialOffsetTransform[] {
+  const output: ScriptSpatialOffsetTransform[] = [];
+  for (const statement of file.statements) {
+    if (!ts.isFunctionDeclaration(statement)) continue;
+    const transform = spatialOffsetTransformFromFunction(
+      statement,
+      file,
+      source,
+    );
+    if (transform) output.push(transform);
+  }
+  return output;
 }
 
 function conditionIdentifiers(
@@ -1182,6 +1309,12 @@ export function parseScriptFile(
   const guardedOutcomes: ScriptGuardedOutcome[] = [];
   const declaredMembers: ScriptDeclaredMember[] = [];
   const spatialRoutePoints: ScriptSpatialRoutePoint[] = [];
+  const spatialOffsetTransforms =
+    spatialOffsetTransformsFromFile(file, source);
+  const spatialTransformUses: ScriptSpatialTransformUse[] = [];
+  const spatialTransformNames = new Set(
+    spatialOffsetTransforms.map((item) => item.functionName),
+  );
   const namedMinecraftBindings = minecraftNamedBindings(file);
   const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
   const canonicalMinecraftMember = (
@@ -1629,6 +1762,32 @@ export function parseScriptFile(
     if (
       ts.isCallExpression(node) &&
       ts.isIdentifier(node.expression) &&
+      spatialTransformNames.has(node.expression.text) &&
+      node.arguments.length >= 2
+    ) {
+      const pointExpression = node.arguments[0];
+      const contextExpression = node.arguments[1];
+      if (pointExpression && contextExpression) {
+        const pointText = pointExpression.getText(file);
+        if (
+          /(?:^|\.)(?:location|position|point)$/.test(
+            pointText,
+          )
+        ) {
+          spatialTransformUses.push({
+            functionName: node.expression.text,
+            pointExpression: pointText,
+            contextExpression:
+              contextExpression.getText(file),
+            source: lineSource(file, node, source),
+          });
+        }
+      }
+    }
+
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
       topLevelFunctionNames.has(node.expression.text)
     ) {
       localFunctionCalls.push({
@@ -1857,6 +2016,8 @@ export function parseScriptFile(
     guardedOutcomes,
     declaredMembers,
     spatialRoutePoints,
+    spatialOffsetTransforms,
+    spatialTransformUses,
     capabilities,
   };
 }

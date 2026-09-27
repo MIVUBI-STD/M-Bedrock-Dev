@@ -382,6 +382,65 @@ describe("gameplay intent stage", () => {
     });
   });
 
+  it("preserves proven local route transform metadata", () => {
+    const withRoute: ParsedScriptFile = {
+      ...parsed(),
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      spatialRoutePoints: [{
+        routeId: "main",
+        location: { x: 1, y: 2, z: 3 },
+        index: 0,
+        source,
+      }],
+      spatialOffsetTransforms: [{
+        functionName: "applyOffset",
+        pointParameter: "point",
+        contextParameter: "arena",
+        offsetPath: "gameplayOffset",
+        source,
+      }],
+      spatialTransformUses: [{
+        functionName: "applyOffset",
+        pointExpression: "definition.location",
+        contextExpression: "arena",
+        source,
+      }],
+    };
+
+    const model = buildGameplayIntentModel({
+      id: "local-route-model",
+      parsedScripts: [{ parsed: withRoute }],
+    });
+
+    expect(
+      model.nodes.find(
+        (node) =>
+          node.id === "spatial-region:route-main",
+      )?.spatialProfile,
+    ).toEqual({
+      coordinateSpace: "local",
+      routeId: "main",
+      points: [
+        { x: 1, y: 2, z: 3, index: 0 },
+      ],
+      indexRanges: [{ min: 0, max: 0 }],
+      transform: {
+        kind: "offset",
+        offsetPath: "gameplayOffset",
+        functionName: "applyOffset",
+      },
+    });
+  });
+
   it("does not invent intent when no grounded signal exists", () => {
     const empty: ParsedScriptFile = {
       ...parsed(),

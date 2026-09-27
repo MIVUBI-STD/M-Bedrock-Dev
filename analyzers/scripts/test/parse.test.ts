@@ -800,6 +800,43 @@ const routePoints = [
     ]);
   });
 
+  it("captures local-to-context spatial offset transforms and uses", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+function applyOffset(point, arena) {
+  return {
+    x: point.x + arena.gameplayOffset.x,
+    y: point.y + arena.gameplayOffset.y,
+    z: point.z + arena.gameplayOffset.z,
+  };
+}
+
+function resolvePath(definition, arena) {
+  return applyOffset(definition.location, arena);
+}
+`,
+      source,
+    );
+
+    expect(parsed.spatialOffsetTransforms).toEqual([
+      expect.objectContaining({
+        functionName: "applyOffset",
+        pointParameter: "point",
+        contextParameter: "arena",
+        offsetPath: "gameplayOffset",
+      }),
+    ]);
+
+    expect(parsed.spatialTransformUses).toEqual([
+      expect.objectContaining({
+        functionName: "applyOffset",
+        pointExpression: "definition.location",
+        contextExpression: "arena",
+      }),
+    ]);
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

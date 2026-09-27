@@ -312,6 +312,48 @@ export function extractGameplayIntentSignals(
     }
   >();
 
+  const spatialTransformByPath = new Map<
+    string,
+    {
+      functionName: string;
+      offsetPath: string;
+    }
+  >();
+
+  for (const script of scripts) {
+    const usedFunctions = new Set(
+      (script.spatialTransformUses ?? []).map(
+        (item) => item.functionName,
+      ),
+    );
+    const candidates =
+      (script.spatialOffsetTransforms ?? []).filter(
+        (item) => usedFunctions.has(item.functionName),
+      );
+
+    const offsetPaths = [
+      ...new Set(
+        candidates.map((item) => item.offsetPath),
+      ),
+    ];
+    if (
+      candidates.length > 0 &&
+      offsetPaths.length === 1
+    ) {
+      const chosen = [...candidates].sort(
+        (a, b) =>
+          a.functionName.localeCompare(b.functionName),
+      )[0]!;
+      spatialTransformByPath.set(
+        script.source.relativePath,
+        {
+          functionName: chosen.functionName,
+          offsetPath: chosen.offsetPath,
+        },
+      );
+    }
+  }
+
   const spatialRouteGroups = new Map<
     string,
     {
@@ -416,6 +458,32 @@ export function extractGameplayIntentSignals(
       );
     const locator =
       [...group.locators].sort()[0] ?? "unknown";
+    const transformCandidates = [
+      ...group.locators,
+    ]
+      .map((path) => spatialTransformByPath.get(path))
+      .filter(
+        (
+          item,
+        ): item is {
+          functionName: string;
+          offsetPath: string;
+        } => item !== undefined,
+      );
+    const transformKeys = [
+      ...new Set(
+        transformCandidates.map(
+          (item) =>
+            item.functionName + "::" + item.offsetPath,
+        ),
+      ),
+    ];
+    const transform =
+      transformKeys.length === 1
+        ? transformCandidates[0]
+        : undefined;
+    const coordinateSpace =
+      transform === undefined ? "unknown" : "local";
 
     pushSignal(signals, {
       id:
@@ -438,9 +506,15 @@ export function extractGameplayIntentSignals(
             Math.min(...indexes) +
             ".." +
             Math.max(...indexes)) +
-        ". Coordinate space remains unresolved until transform usage is proven.",
+        (transform === undefined
+          ? ". Coordinate space remains unresolved until transform usage is proven."
+          : ". Source proves these authored points are offset from local coordinates through " +
+            transform.functionName +
+            " using context." +
+            transform.offsetPath +
+            "."),
       spatialProfile: {
-        coordinateSpace: "unknown",
+        coordinateSpace,
         routeId: group.routeId,
         ...(group.collectionHint === undefined
           ? {}
@@ -451,6 +525,15 @@ export function extractGameplayIntentSignals(
           : {
               indexRanges:
                 contiguousIndexRanges(indexes),
+            }),
+        ...(transform === undefined
+          ? {}
+          : {
+              transform: {
+                kind: "offset",
+                offsetPath: transform.offsetPath,
+                functionName: transform.functionName,
+              },
             }),
       },
     });

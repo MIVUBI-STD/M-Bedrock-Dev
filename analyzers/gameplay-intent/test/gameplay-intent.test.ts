@@ -708,6 +708,115 @@ describe("gameplay intent analyzer", () => {
     ]);
   });
 
+  it("promotes route coordinate space to local only with proven offset transform use", () => {
+    const base = script();
+    const routes: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      spatialRoutePoints: [{
+        routeId: "main",
+        location: { x: 1, y: 2, z: 3 },
+        index: 0,
+        collectionHint: "routes",
+        source: base.source,
+      }],
+      spatialOffsetTransforms: [{
+        functionName: "applyOffset",
+        pointParameter: "point",
+        contextParameter: "arena",
+        offsetPath: "gameplayOffset",
+        source: base.source,
+      }],
+      spatialTransformUses: [{
+        functionName: "applyOffset",
+        pointExpression: "definition.location",
+        contextExpression: "arena",
+        source: base.source,
+      }],
+    };
+
+    const result = extractGameplayIntentSignals([routes]);
+    const route = result.signals.find(
+      (signal) =>
+        signal.subjectKey === "spatial-region:route-main",
+    );
+
+    expect(route?.spatialProfile).toEqual({
+      coordinateSpace: "local",
+      routeId: "main",
+      collectionHint: "routes",
+      points: [
+        { x: 1, y: 2, z: 3, index: 0 },
+      ],
+      indexRanges: [{ min: 0, max: 0 }],
+      transform: {
+        kind: "offset",
+        offsetPath: "gameplayOffset",
+        functionName: "applyOffset",
+      },
+    });
+  });
+
+  it("keeps route coordinate space unknown when transform definition is unused", () => {
+    const base = script();
+    const routes: ParsedScriptFile = {
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [],
+      spatialRoutePoints: [{
+        routeId: "main",
+        location: { x: 1, y: 2, z: 3 },
+        index: 0,
+        source: base.source,
+      }],
+      spatialOffsetTransforms: [{
+        functionName: "applyOffset",
+        pointParameter: "point",
+        contextParameter: "arena",
+        offsetPath: "gameplayOffset",
+        source: base.source,
+      }],
+      spatialTransformUses: [],
+    };
+
+    const result = extractGameplayIntentSignals([routes]);
+    expect(
+      result.signals.find(
+        (signal) =>
+          signal.subjectKey === "spatial-region:route-main",
+      )?.spatialProfile?.coordinateSpace,
+    ).toBe("unknown");
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {
