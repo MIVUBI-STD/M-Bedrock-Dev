@@ -19,6 +19,7 @@ import type {
   ScriptTransitionDeclaration,
   ScriptTypeProperty,
   ScriptReturnOutcome,
+  ScriptGuardedOutcome,
 } from "./types.js";
 import {
   inferScriptMethodCalls,
@@ -294,6 +295,71 @@ function callbackExecutionRegionId(
 ): string {
   const start = file.getLineAndCharacterOfPosition(node.getStart(file));
   return "callback@" + (start.line + 1) + ":" + (start.character + 1);
+}
+
+function directReturnStatements(
+  statement: ts.Statement,
+): ts.ReturnStatement[] {
+  if (ts.isReturnStatement(statement)) return [statement];
+  if (!ts.isBlock(statement)) return [];
+  return statement.statements.filter(ts.isReturnStatement);
+}
+
+function outcomePropertiesFromReturn(
+  node: ts.ReturnStatement,
+): Array<{ propertyName: string; value: string; sourceNode: ts.Node }> {
+  const expression = node.expression &&
+    (ts.isParenthesizedExpression(node.expression)
+      ? node.expression.expression
+      : node.expression);
+  if (!expression || !ts.isObjectLiteralExpression(expression)) return [];
+
+  const output: Array<{
+    propertyName: string;
+    value: string;
+    sourceNode: ts.Node;
+  }> = [];
+
+  for (const property of expression.properties) {
+    if (!ts.isPropertyAssignment(property)) continue;
+    const propertyName =
+      ts.isIdentifier(property.name) ||
+      ts.isStringLiteralLike(property.name)
+        ? property.name.text
+        : undefined;
+    if (!propertyName) continue;
+
+    const initializer = property.initializer;
+    const value =
+      ts.isStringLiteralLike(initializer) ||
+      ts.isNoSubstitutionTemplateLiteral(initializer)
+        ? initializer.text
+        : undefined;
+    if (value === undefined) continue;
+
+    output.push({
+      propertyName,
+      value,
+      sourceNode: property,
+    });
+  }
+
+  return output;
+}
+
+function conditionIdentifiers(
+  expression: ts.Expression,
+): string[] {
+  const values = new Set<string>();
+  const visit = (node: ts.Node): void => {
+    if (ts.isIdentifier(node)) values.add(node.text);
+    if (ts.isPropertyAccessExpression(node)) {
+      values.add(node.getText());
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(expression);
+  return [...values].sort();
 }
 
 function requiredTrueCalls(
@@ -660,6 +726,7 @@ export function parseScriptFile(
   const typeProperties: ScriptTypeProperty[] = [];
   const transitionDeclarations: ScriptTransitionDeclaration[] = [];
   const returnOutcomes: ScriptReturnOutcome[] = [];
+  const guardedOutcomes: ScriptGuardedOutcome[] = [];
   const namedMinecraftBindings = minecraftNamedBindings(file);
   const namespaceMinecraftBindings = minecraftNamespaceBindings(file);
   const canonicalMinecraftMember = (
@@ -824,32 +891,29 @@ export function parseScriptFile(
     }
 
     if (ts.isReturnStatement(node) && node.expression) {
-      const expression =
-        ts.isParenthesizedExpression(node.expression)
-          ? node.expression.expression
-          : node.expression;
-      if (ts.isObjectLiteralExpression(expression)) {
-        for (const property of expression.properties) {
-          if (!ts.isPropertyAssignment(property)) continue;
-          const propertyName =
-            ts.isIdentifier(property.name) ||
-            ts.isStringLiteralLike(property.name)
-              ? property.name.text
-              : undefined;
-          if (!propertyName) continue;
+      for (const outcome of outcomePropertiesFromReturn(node)) {
+        returnOutcomes.push({
+          executionRegion: localExecutionRegionId(node, file),
+          propertyName: outcome.propertyName,
+          value: outcome.value,
+          source: lineSource(file, outcome.sourceNode, source),
+        });
+      }
+    }
 
-          const value =
-            ts.isStringLiteralLike(property.initializer) ||
-            ts.isNoSubstitutionTemplateLiteral(property.initializer)
-              ? property.initializer.text
-              : undefined;
-          if (value === undefined) continue;
-
-          returnOutcomes.push({
+    if (ts.isIfStatement(node)) {
+      const conditionText = node.expression.getText(file);
+      const identifiers = conditionIdentifiers(node.expression);
+      for (const returnNode of directReturnStatements(node.thenStatement)) {
+        for (const outcome of outcomePropertiesFromReturn(returnNode)) {
+          guardedOutcomes.push({
             executionRegion: localExecutionRegionId(node, file),
-            propertyName,
-            value,
-            source: lineSource(file, property, source),
+            conditionText,
+            conditionIdentifiers: identifiers,
+            propertyName: outcome.propertyName,
+            value: outcome.value,
+            conditionSource: lineSource(file, node.expression, source),
+            outcomeSource: lineSource(file, outcome.sourceNode, source),
           });
         }
       }
@@ -1297,6 +1361,7 @@ export function parseScriptFile(
     typeProperties,
     transitionDeclarations,
     returnOutcomes,
+    guardedOutcomes,
     capabilities,
   };
 }

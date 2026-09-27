@@ -95,6 +95,15 @@ function script(): ParsedScriptFile {
       value: "cleanup",
       source,
     }],
+    guardedOutcomes: [{
+      executionRegion: "function:decideReconnect",
+      conditionText: "state.pendingCleanup",
+      conditionIdentifiers: ["state", "state.pendingCleanup"],
+      propertyName: "action",
+      value: "cleanup",
+      conditionSource: source,
+      outcomeSource: source,
+    }],
     capabilities: [],
   };
 }
@@ -162,6 +171,25 @@ describe("gameplay intent analyzer", () => {
           signal.nodeKind === "outcome" &&
           signal.subjectKey ===
             "outcome:decide-reconnect-cleanup",
+      ),
+    ).toBe(true);
+
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.nodeKind === "policy" &&
+          signal.subjectKey.includes("pending-cleanup"),
+      ),
+    ).toBe(true);
+
+    expect(
+      result.relations.some(
+        (relation) =>
+          relation.edgeKind === "requires" &&
+          relation.status === "authored" &&
+          relation.fromSubjectKey ===
+            "outcome:decide-reconnect-cleanup" &&
+          relation.toSubjectKey.startsWith("policy:"),
       ),
     ).toBe(true);
   });

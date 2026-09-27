@@ -83,6 +83,15 @@ function parsed(): ParsedScriptFile {
       value: "cleanup",
       source,
     }],
+    guardedOutcomes: [{
+      executionRegion: "function:decideReconnect",
+      conditionText: "state.pendingCleanup",
+      conditionIdentifiers: ["state", "state.pendingCleanup"],
+      propertyName: "action",
+      value: "cleanup",
+      conditionSource: source,
+      outcomeSource: source,
+    }],
     capabilities: [],
   };
 }
@@ -142,6 +151,16 @@ describe("gameplay intent stage", () => {
           node.status === "authored",
       ),
     ).toBe(true);
+
+    expect(
+      model.edges.some(
+        (edge) =>
+          edge.from === "outcome:decide-reconnect-cleanup" &&
+          edge.kind === "requires" &&
+          edge.status === "authored" &&
+          edge.to.startsWith("policy:"),
+      ),
+    ).toBe(true);
   });
 
   it("does not invent intent when no grounded signal exists", () => {
@@ -156,6 +175,7 @@ describe("gameplay intent stage", () => {
       typeProperties: [],
       transitionDeclarations: [],
       returnOutcomes: [],
+      guardedOutcomes: [],
     };
 
     const model = buildGameplayIntentModel({

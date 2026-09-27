@@ -529,6 +529,56 @@ player.isValid();
     ]));
   });
 
+  it("captures direct guarded return outcomes without crossing nested functions", () => {
+    const parsed = parseScriptFile(
+      "scripts/recovery-policy",
+      `
+function decideReconnect(state) {
+  if (state.pendingCleanup) {
+    return { action: "cleanup", reason: "pending" };
+  }
+
+  if (state.phase === "active") return { action: "resume" };
+
+  if (state.phase === "countdown") {
+    const nested = () => ({ action: "ignore" });
+    return { action: "wait" };
+  }
+
+  return { action: "lobby" };
+}
+`,
+      source,
+    );
+
+    expect(parsed.guardedOutcomes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        executionRegion: "function:decideReconnect",
+        conditionText: "state.pendingCleanup",
+        propertyName: "action",
+        value: "cleanup",
+      }),
+      expect.objectContaining({
+        executionRegion: "function:decideReconnect",
+        conditionText: 'state.phase === "active"',
+        propertyName: "action",
+        value: "resume",
+      }),
+      expect.objectContaining({
+        executionRegion: "function:decideReconnect",
+        conditionText: 'state.phase === "countdown"',
+        propertyName: "action",
+        value: "wait",
+      }),
+    ]));
+
+    expect(
+      parsed.guardedOutcomes?.some(
+        (item) => item.value === "ignore",
+      ),
+    ).toBe(false);
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

@@ -212,6 +212,16 @@ export interface ScriptReturnOutcome {
   source: SourceRef;
 }
 
+export interface ScriptGuardedOutcome {
+  executionRegion: string;
+  conditionText: string;
+  conditionIdentifiers: readonly string[];
+  propertyName: string;
+  value: string;
+  conditionSource: SourceRef;
+  outcomeSource: SourceRef;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
@@ -254,5 +264,6 @@ export interface ParsedScriptFile {
   typeProperties?: ScriptTypeProperty[];
   transitionDeclarations?: ScriptTransitionDeclaration[];
   returnOutcomes?: ScriptReturnOutcome[];
+  guardedOutcomes?: ScriptGuardedOutcome[];
   capabilities: ScriptCapabilityUse[];
 }

@@ -370,6 +370,68 @@ export function extractGameplayIntentSignals(
       }
     }
 
+    for (const guarded of script.guardedOutcomes ?? []) {
+      if (
+        !/^(?:action|outcome|result|status)$/i.test(
+          guarded.propertyName,
+        )
+      ) {
+        continue;
+      }
+
+      const sourceName =
+        guarded.executionRegion === "module"
+          ? guarded.propertyName
+          : guarded.executionRegion.replace(/^function:/, "");
+      const outcomeKey =
+        "outcome:" +
+        slug(sourceName + " " + guarded.value);
+      const outcomeSignal: GameplayIntentSignal = {
+        id: "signal:" + outcomeKey + ":" + slug(path),
+        subjectKey: outcomeKey,
+        nodeKind: "outcome",
+        label: title(sourceName + " " + guarded.value),
+        status: "authored",
+        evidenceOrigin: "source-code",
+        locator: path,
+        summary:
+          "Source explicitly returns this discriminated outcome under a direct guard.",
+      };
+      pushSignal(signals, outcomeSignal);
+
+      const policyKey =
+        "policy:" +
+        slug(sourceName + " " + guarded.conditionText);
+      const policySignal: GameplayIntentSignal = {
+        id: "signal:" + policyKey + ":" + slug(path),
+        subjectKey: policyKey,
+        nodeKind: "policy",
+        label: title(sourceName + " when " + guarded.conditionText),
+        status: "authored",
+        evidenceOrigin: "source-code",
+        locator: path,
+        summary:
+          "Source directly guards this return branch with the recorded condition.",
+      };
+      pushSignal(signals, policySignal);
+
+      pushRelation({
+        id:
+          "relation:requires:" +
+          outcomeKey + ":" +
+          policyKey + ":" +
+          slug(path),
+        fromSubjectKey: outcomeKey,
+        toSubjectKey: policyKey,
+        edgeKind: "requires",
+        status: "authored",
+        evidenceOrigin: "source-code",
+        locator: path,
+        summary:
+          "This direct outcome branch is control-flow guarded by the authored condition.",
+      });
+    }
+
     for (const outcome of script.returnOutcomes ?? []) {
       if (
         !/^(?:action|outcome|result|status)$/i.test(
