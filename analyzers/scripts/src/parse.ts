@@ -375,7 +375,8 @@ function guardOperand(
 
   if (
     ts.isIdentifier(value) ||
-    ts.isPropertyAccessExpression(value)
+    ts.isPropertyAccessExpression(value) ||
+    ts.isElementAccessExpression(value)
   ) {
     return {
       kind: "path",
@@ -430,6 +431,40 @@ function guardPredicate(
     return operand
       ? { kind: "falsy", operand }
       : { kind: "unknown", text: value.getText(file) };
+  }
+
+  if (
+    ts.isCallExpression(value) &&
+    ts.isPropertyAccessExpression(value.expression) &&
+    value.expression.name.text === "includes" &&
+    value.arguments.length === 1 &&
+    ts.isArrayLiteralExpression(value.expression.expression)
+  ) {
+    const operand = value.arguments[0]
+      ? guardOperand(value.arguments[0], file)
+      : undefined;
+    const members: Array<
+      string | number | boolean | null
+    > = [];
+
+    for (const element of value.expression.expression.elements) {
+      const member = guardOperand(element as ts.Expression, file);
+      if (!member || member.kind !== "literal") {
+        return {
+          kind: "unknown",
+          text: value.getText(file),
+        };
+      }
+      members.push(member.value);
+    }
+
+    if (operand) {
+      return {
+        kind: "in",
+        operand,
+        values: members,
+      };
+    }
   }
 
   if (ts.isBinaryExpression(value)) {
@@ -508,6 +543,82 @@ function guardPredicate(
     kind: "unknown",
     text: value.getText(file),
   };
+}
+
+function inferFallbackGuardedOutcomes(
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptGuardedOutcome[] {
+  const output: ScriptGuardedOutcome[] = [];
+
+  for (const statement of file.statements) {
+    if (!ts.isFunctionDeclaration(statement) || !statement.body) {
+      continue;
+    }
+
+    const priorTerminalGuards: ScriptGuardPredicate[] = [];
+    const priorGuardTexts: string[] = [];
+
+    for (const inner of statement.body.statements) {
+      if (ts.isIfStatement(inner)) {
+        const returns = directReturnStatements(
+          inner.thenStatement,
+        );
+        if (returns.length > 0) {
+          priorTerminalGuards.push(
+            guardPredicate(inner.expression, file),
+          );
+          priorGuardTexts.push(
+            inner.expression.getText(file),
+          );
+        }
+        continue;
+      }
+
+      if (
+        ts.isReturnStatement(inner) &&
+        priorTerminalGuards.length > 0
+      ) {
+        for (const outcome of outcomePropertiesFromReturn(inner)) {
+          output.push({
+            executionRegion: statement.name
+              ? "function:" + statement.name.text
+              : "anonymous-function",
+            conditionText:
+              "fallback after: " +
+              priorGuardTexts.join(" | "),
+            conditionIdentifiers: [
+              ...new Set(
+                priorGuardTexts.flatMap((text) =>
+                  text.match(/[A-Za-z_$][\w$]*/g) ?? []
+                ),
+              ),
+            ].sort(),
+            predicate: {
+              kind: "fallback",
+              excludedPredicates: [
+                ...priorTerminalGuards,
+              ],
+            },
+            propertyName: outcome.propertyName,
+            value: outcome.value,
+            conditionSource: lineSource(
+              file,
+              inner,
+              source,
+            ),
+            outcomeSource: lineSource(
+              file,
+              outcome.sourceNode,
+              source,
+            ),
+          });
+        }
+      }
+    }
+  }
+
+  return output;
 }
 
 function requiredTrueCalls(
@@ -1486,6 +1597,13 @@ export function parseScriptFile(
   };
 
   visit(file);
+
+  for (const fallback of inferFallbackGuardedOutcomes(
+    file,
+    source,
+  )) {
+    guardedOutcomes.push(fallback);
+  }
 
   return {
     identifier,

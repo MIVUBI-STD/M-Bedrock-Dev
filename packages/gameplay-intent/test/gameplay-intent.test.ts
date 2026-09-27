@@ -146,6 +146,64 @@ describe("gameplay intent", () => {
     expect(
       evaluateGameplayPolicyPredicate(
         {
+          kind: "in",
+          operand: {
+            kind: "path",
+            path: "state.phase",
+          },
+          values: [
+            "countdown",
+            "preparing",
+            "resetting",
+            "cinematic",
+          ],
+        },
+        {
+          state: {
+            phase: "preparing",
+          },
+        },
+      ),
+    ).toBe("satisfied");
+
+    expect(
+      evaluateGameplayPolicyPredicate(
+        {
+          kind: "fallback",
+          excludedPredicates: [
+            {
+              kind: "comparison",
+              operator: "eq",
+              left: {
+                kind: "path",
+                path: "state.phase",
+              },
+              right: {
+                kind: "literal",
+                value: "active",
+              },
+            },
+            {
+              kind: "in",
+              operand: {
+                kind: "path",
+                path: "state.phase",
+              },
+              values: ["countdown", "preparing"],
+            },
+          ],
+        },
+        {
+          state: {
+            phase: "finishing",
+          },
+        },
+      ),
+    ).toBe("satisfied");
+
+    expect(
+      evaluateGameplayPolicyPredicate(
+        {
           kind: "truthy",
           operand: {
             kind: "path",

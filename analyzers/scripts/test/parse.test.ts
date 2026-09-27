@@ -579,6 +579,69 @@ function decideReconnect(state) {
     ).toBe(false);
   });
 
+  it("models recovery fallback and membership guards from authored control flow", () => {
+    const parsed = parseScriptFile(
+      "src/domain/recovery-policy",
+      `
+function decideRecovery(record, session, arena) {
+  if (!record) return { action: "lobby", reason: "no recovery record" };
+  if (record.pendingCleanup) return { action: "cleanup", reason: "pending cleanup" };
+  if (!session || !arena) return { action: "cleanup", reason: "missing owner" };
+  if (
+    session.sessionId !== record.sessionId ||
+    session.generation !== record.generation ||
+    session.arenaId !== record.arenaId
+  ) {
+    return { action: "cleanup", reason: "ownership changed" };
+  }
+  if (!session.roster[record.playerId]) {
+    return { action: "cleanup", reason: "membership missing" };
+  }
+  if (
+    session.phase === "active" ||
+    session.phase === "round_transition"
+  ) {
+    return { action: "resume" };
+  }
+  if (
+    ["countdown", "preparing", "resetting", "cinematic"]
+      .includes(session.phase)
+  ) {
+    return { action: "wait" };
+  }
+  return { action: "cleanup", reason: "phase fallback" };
+}
+`,
+      source,
+    );
+
+    expect(
+      parsed.guardedOutcomes?.some(
+        (item) =>
+          item.value === "wait" &&
+          item.predicate.kind === "in",
+      ),
+    ).toBe(true);
+
+    expect(
+      parsed.guardedOutcomes?.some(
+        (item) =>
+          item.value === "cleanup" &&
+          item.predicate.kind === "fallback",
+      ),
+    ).toBe(true);
+
+    expect(
+      parsed.guardedOutcomes?.some(
+        (item) =>
+          item.value === "cleanup" &&
+          item.conditionText.includes(
+            "session.generation !== record.generation",
+          ),
+      ),
+    ).toBe(true);
+  });
+
   it("resolves relative script imports and summarizes Minecraft modules", () => {
     const main = parseScriptFile(
       "scripts/main",

@@ -242,6 +242,15 @@ export type ScriptGuardPredicate =
       predicates: readonly ScriptGuardPredicate[];
     }
   | {
+      kind: "in";
+      operand: ScriptGuardOperand;
+      values: readonly ScriptGuardScalar[];
+    }
+  | {
+      kind: "fallback";
+      excludedPredicates: readonly ScriptGuardPredicate[];
+    }
+  | {
       kind: "unknown";
       text: string;
     };

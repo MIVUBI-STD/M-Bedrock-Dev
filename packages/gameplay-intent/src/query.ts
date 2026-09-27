@@ -210,6 +210,26 @@ export function evaluateGameplayPolicyPredicate(
     return result ? "satisfied" : "violated";
   }
 
+  if (predicate.kind === "in") {
+    const value = resolvePolicyOperand(predicate.operand, values);
+    if (value === undefined) return "unknown";
+    return predicate.values.includes(value)
+      ? "satisfied"
+      : "violated";
+  }
+
+  if (predicate.kind === "fallback") {
+    const evaluations = predicate.excludedPredicates.map(
+      (child) =>
+        evaluateGameplayPolicyPredicate(child, values),
+    );
+    if (evaluations.includes("satisfied")) return "violated";
+    if (evaluations.every((item) => item === "violated")) {
+      return "satisfied";
+    }
+    return "unknown";
+  }
+
   const evaluations = predicate.predicates.map((child) =>
     evaluateGameplayPolicyPredicate(child, values)
   );

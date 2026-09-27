@@ -87,6 +87,15 @@ export type GameplayIntentPolicyPredicate =
       predicates: readonly GameplayIntentPolicyPredicate[];
     }
   | {
+      kind: "in";
+      operand: GameplayIntentPolicyOperand;
+      values: readonly GameplayIntentScalar[];
+    }
+  | {
+      kind: "fallback";
+      excludedPredicates: readonly GameplayIntentPolicyPredicate[];
+    }
+  | {
       kind: "unknown";
       text: string;
     };
