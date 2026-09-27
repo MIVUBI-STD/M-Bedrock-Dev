@@ -152,3 +152,4 @@ export * from "./portfolio-release-intelligence.js";
 export * from "./history-driven-qa-recommendation.js";
 export * from "./qa-execution-budget.js";
 export * from "./diagnosis-source-index-executor.js";
+export * from "./diagnosis-semantic-ir-executor.js";
