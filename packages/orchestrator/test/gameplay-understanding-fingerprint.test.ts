@@ -11,6 +11,14 @@ function result(): InspectArtifactResult {
     scripts: 2,
     functions: 3,
     entities: 1,
+    routeAnalysis: {
+      contracts: 2,
+      explicitContracts: 0,
+      derivedContracts: 2,
+      effectiveContracts: 2,
+      overlaps: 0,
+      dimensionUnresolved: 0,
+    },
     gameplayIntent: {
       authoredSourceFiles: 1,
       nodes: 4,
@@ -57,6 +65,10 @@ function result(): InspectArtifactResult {
             label: "Cleanup policy",
             status: "authored",
             evidenceIds: ["e:1"],
+            policyPredicate: {
+              kind: "unknown",
+              text: "minified guard",
+            },
           },
           {
             id: "spatial-region:route-main",
@@ -135,6 +147,8 @@ describe("gameplay understanding fingerprint", () => {
       spatial: expect.objectContaining({
         routeProfiles: 1,
         routePoints: 2,
+        derivedRouteContracts: 2,
+        effectiveRouteContracts: 2,
         localProfiles: 1,
         contextSeries: 1,
       }),
@@ -145,6 +159,7 @@ describe("gameplay understanding fingerprint", () => {
         unknownsPerNode: 0,
       },
     }));
+    expect(fingerprint.policy.unknownPredicates).toBe(1);
     expect(fingerprint.nodeKinds.state).toBe(1);
     expect(fingerprint.nodeKinds.lifecycle).toBe(1);
     expect(fingerprint.evidenceOrigins).toEqual({

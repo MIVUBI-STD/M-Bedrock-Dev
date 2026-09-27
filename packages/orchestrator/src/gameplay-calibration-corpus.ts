@@ -46,6 +46,8 @@ export interface GameplayCalibrationCaseReport {
 
 export interface GameplayCalibrationAggregate {
   caseCount: number;
+  casesWithAssertionFailures: number;
+  totalAssertionFailures: number;
   sourceStyles: Readonly<Record<string, number>>;
   learningDimensions: Readonly<Record<string, number>>;
   mapsWithUnknownIntent: number;
@@ -221,6 +223,8 @@ function aggregateGameplayCalibration(
 
   let mapsWithUnknownIntent = 0;
   let totalUnknownIntent = 0;
+  let casesWithAssertionFailures = 0;
+  let totalAssertionFailures = 0;
   let totalNodes = 0;
   let totalAuthoredNodes = 0;
   let totalInferredNodes = 0;
@@ -228,6 +232,12 @@ function aggregateGameplayCalibration(
   let routePointTotal = 0;
 
   for (const item of cases) {
+    if (item.assertionFailures.length > 0) {
+      casesWithAssertionFailures += 1;
+      totalAssertionFailures +=
+        item.assertionFailures.length;
+    }
+
     sourceStyles[item.sourceStyle] =
       (sourceStyles[item.sourceStyle] ?? 0) + 1;
 
@@ -276,6 +286,8 @@ function aggregateGameplayCalibration(
 
   return {
     caseCount: cases.length,
+    casesWithAssertionFailures,
+    totalAssertionFailures,
     sourceStyles: sorted(sourceStyles),
     learningDimensions:
       sorted(learningDimensions),

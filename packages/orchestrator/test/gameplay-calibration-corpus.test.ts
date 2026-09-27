@@ -80,6 +80,8 @@ function fingerprint(
       profiledRegions: 0,
       routeProfiles: 0,
       routePoints: 0,
+      derivedRouteContracts: 0,
+      effectiveRouteContracts: 0,
       localProfiles: 0,
       worldProfiles: 0,
       unknownProfiles: 0,
@@ -88,6 +90,7 @@ function fingerprint(
     policy: {
       policies: 0,
       outcomes: 0,
+      unknownPredicates: 0,
       authoredPolicyEdges: 0,
       admissibilityInvariants: 0,
       coverageUnknowns: 0,
@@ -136,6 +139,63 @@ describe("gameplay calibration corpus", () => {
     });
   });
 
+  it("evaluates reviewed semantic assertions as review signals", async () => {
+    const {
+      evaluateCalibrationAssertions,
+    } = await import(
+      "../src/gameplay-calibration-corpus.js"
+    );
+
+    const sample = fingerprint(3);
+    const reviewed = {
+      ...sample,
+      nodeKinds: {
+        ...sample.nodeKinds,
+        phase: 0,
+        state: 5,
+        outcome: 0,
+      },
+      spatial: {
+        ...sample.spatial,
+        routeProfiles: 3,
+        routePoints: 67,
+        derivedRouteContracts: 366,
+      },
+      policy: {
+        ...sample.policy,
+        unknownPredicates: 3,
+      },
+    };
+
+    expect(
+      evaluateCalibrationAssertions(
+        reviewed,
+        {
+          maxPhaseNodes: 0,
+          minStateNodes: 5,
+          maxOutcomeNodes: 0,
+          minRouteProfiles: 3,
+          minRoutePoints: 67,
+          minDerivedRouteContracts: 366,
+          minUnknownPolicyPredicates: 3,
+          maxUnknownIntent: 0,
+        },
+      ),
+    ).toEqual([]);
+
+    expect(
+      evaluateCalibrationAssertions(
+        reviewed,
+        {
+          minDerivedRouteContracts: 367,
+          maxPhaseNodes: 0,
+        },
+      ),
+    ).toEqual([
+      "minDerivedRouteContracts: expected min 367, observed 366",
+    ]);
+  });
+
   it("compares corpus reports case-by-case", () => {
     const baseline: GameplayCalibrationReport = {
       schemaVersion: 1,
@@ -146,11 +206,14 @@ describe("gameplay calibration corpus", () => {
           label: "Map A",
           sourceStyle: "bundled-minified",
           learningDimensions: ["recovery"],
+          assertionFailures: [],
           fingerprint: fingerprint(3),
         },
       ],
       aggregate: {
         caseCount: 1,
+        casesWithAssertionFailures: 0,
+        totalAssertionFailures: 0,
         sourceStyles: {
           "bundled-minified": 1,
         },

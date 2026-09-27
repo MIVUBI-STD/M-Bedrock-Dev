@@ -38,3 +38,18 @@ A change in a baseline is an investigation signal, not semantic truth. In partic
 - intentional semantic corrections may legitimately change the fingerprint.
 
 Calibration must never become map-name hardcoding.
+
+
+## Reviewed assertions
+
+A case may declare bounded `assertions` for reviewed semantic properties, such as:
+
+- a maximum false phase count after a precision correction;
+- a minimum authored route profile/point count;
+- a minimum derived route-corridor count;
+- retention of a reviewed state/outcome surface;
+- fail-closed handling of unresolved/minified policy predicates.
+
+Assertions are **review signals**, not map-specific gameplay truth. They must describe generic semantic properties discovered from evidence, and they should be revised when stronger extraction legitimately improves the model.
+
+A failed assertion requires investigation. It does not by itself prove a product defect or a parser regression.

@@ -71,6 +71,8 @@ export interface GameplayUnderstandingFingerprint {
     profiledRegions: number;
     routeProfiles: number;
     routePoints: number;
+    derivedRouteContracts: number;
+    effectiveRouteContracts: number;
     localProfiles: number;
     worldProfiles: number;
     unknownProfiles: number;
@@ -79,6 +81,7 @@ export interface GameplayUnderstandingFingerprint {
   policy: {
     policies: number;
     outcomes: number;
+    unknownPredicates: number;
     authoredPolicyEdges: number;
     admissibilityInvariants: number;
     coverageUnknowns: number;
@@ -204,6 +207,10 @@ export function deriveGameplayUnderstandingFingerprint(
           (node.spatialProfile?.points.length ?? 0),
         0,
       ),
+      derivedRouteContracts:
+        result.routeAnalysis.derivedContracts,
+      effectiveRouteContracts:
+        result.routeAnalysis.effectiveContracts,
       localProfiles: spatialNodes.filter(
         (node) =>
           node.spatialProfile?.coordinateSpace ===
@@ -228,6 +235,10 @@ export function deriveGameplayUnderstandingFingerprint(
     policy: {
       policies: policies.length,
       outcomes: outcomes.length,
+      unknownPredicates: policies.filter(
+        (node) =>
+          node.policyPredicate?.kind === "unknown",
+      ).length,
       authoredPolicyEdges:
         authoredPolicyEdges.length,
       admissibilityInvariants:
@@ -263,6 +274,8 @@ export interface GameplayUnderstandingFingerprintDrift {
   invariantDelta: number;
   routeProfileDelta: number;
   routePointDelta: number;
+  derivedRouteContractDelta: number;
+  unknownPolicyPredicateDelta: number;
   kindDeltas: Readonly<Record<GameplayIntentNodeKind, number>>;
   lostKinds: readonly GameplayIntentNodeKind[];
   gainedKinds: readonly GameplayIntentNodeKind[];
@@ -325,6 +338,14 @@ export function compareGameplayUnderstandingFingerprints(
       "authored-route-point-count-decreased",
     );
   }
+  if (
+    current.spatial.derivedRouteContracts <
+    baseline.spatial.derivedRouteContracts
+  ) {
+    regressionSignals.push(
+      "derived-route-contract-count-decreased",
+    );
+  }
   if (lostKinds.length > 0) {
     regressionSignals.push(
       "intent-kind-coverage-lost",
@@ -353,6 +374,12 @@ export function compareGameplayUnderstandingFingerprints(
     routePointDelta:
       current.spatial.routePoints -
       baseline.spatial.routePoints,
+    derivedRouteContractDelta:
+      current.spatial.derivedRouteContracts -
+      baseline.spatial.derivedRouteContracts,
+    unknownPolicyPredicateDelta:
+      current.policy.unknownPredicates -
+      baseline.policy.unknownPredicates,
     kindDeltas,
     lostKinds,
     gainedKinds,
