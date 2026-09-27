@@ -64,7 +64,7 @@ const KIND_TERMS: ReadonlyArray<{
     terms: [
       "interaction", "placement", "water", "craft", "shop",
       "revive", "upgrade", "similarity", "clone", "feedback",
-      "hologram", "combat", "hud", "schematic",
+      "hologram", "combat", "hud", "schematic", "wave",
     ],
   },
 ];
@@ -81,12 +81,73 @@ function slug(value: string): string {
   return normalize(value).replace(/\s+/g, "-");
 }
 
+const HELPER_VERBS = new Set([
+  "build",
+  "calculate",
+  "create",
+  "finalize",
+  "format",
+  "get",
+  "initialize",
+  "is",
+  "make",
+  "mark",
+  "normalize",
+  "record",
+  "resolve",
+  "select",
+  "should",
+  "translate",
+]);
+
 function classify(value: string): GameplayIntentNodeKind | undefined {
-  const words = new Set(normalize(value).split(/\s+/).filter(Boolean));
+  const wordList =
+    normalize(value).split(/\s+/).filter(Boolean);
+  const words = new Set(wordList);
+  const matches = new Set<GameplayIntentNodeKind>();
+
   for (const entry of KIND_TERMS) {
-    if (entry.terms.some((term) => words.has(term))) return entry.kind;
+    if (entry.terms.some((term) => words.has(term))) {
+      matches.add(entry.kind);
+    }
   }
-  return undefined;
+
+  if (matches.size === 0) return undefined;
+
+  const helperLike =
+    wordList[0] !== undefined &&
+    HELPER_VERBS.has(wordList[0]);
+
+  const priority: GameplayIntentNodeKind[] = helperLike
+    ? [
+        "policy",
+        "resource",
+        "objective",
+        "mechanic",
+        "spatial-region",
+        "lifecycle",
+      ]
+    : [
+        "lifecycle",
+        "phase",
+        "policy",
+        "resource",
+        "spatial-region",
+        "objective",
+        "mechanic",
+      ];
+
+  for (const kind of priority) {
+    if (matches.has(kind)) return kind;
+  }
+
+  // Helper-like symbols that only mention a phase name are
+  // implementation helpers, not reliable evidence of a gameplay phase.
+  if (helperLike && matches.has("phase")) {
+    return undefined;
+  }
+
+  return matches.values().next().value;
 }
 
 function acceptsOutcomeDiscriminant(

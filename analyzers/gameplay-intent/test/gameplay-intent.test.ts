@@ -188,6 +188,87 @@ describe("gameplay intent analyzer", () => {
     ).toBe(false);
   });
 
+  it("classifies helper verbs by their specific gameplay noun instead of phase keywords", () => {
+    const base = script();
+    const helper = (
+      relativePath: string,
+      identifier: string,
+    ): ParsedScriptFile => ({
+      ...base,
+      identifier,
+      source: {
+        artifactId: "art_test",
+        relativePath,
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+    });
+
+    const result = extractGameplayIntentSignals([
+      helper(
+        "behavior_packs/demo/scripts/domain/calculateCombatQuality.js",
+        "scripts/domain/calculateCombatQuality",
+      ),
+      helper(
+        "behavior_packs/demo/scripts/domain/getFortifyWaveSize.js",
+        "scripts/domain/getFortifyWaveSize",
+      ),
+      helper(
+        "behavior_packs/demo/scripts/domain/getFortifyTierResources.js",
+        "scripts/domain/getFortifyTierResources",
+      ),
+      helper(
+        "behavior_packs/demo/scripts/domain/getCombatPhaseCountdownSeconds.js",
+        "scripts/domain/getCombatPhaseCountdownSeconds",
+      ),
+    ]);
+
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey ===
+          "mechanic:calculate-combat-quality",
+      ),
+    ).toBe(true);
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey ===
+          "mechanic:get-fortify-wave-size",
+      ),
+    ).toBe(true);
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey ===
+          "resource:get-fortify-tier-resources",
+      ),
+    ).toBe(true);
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey ===
+          "mechanic:get-combat-phase-countdown-seconds",
+      ),
+    ).toBe(true);
+
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey.startsWith("phase:calculate-") ||
+          signal.subjectKey.startsWith("phase:get-fortify-") ||
+          signal.subjectKey.startsWith("phase:get-combat-"),
+      ),
+    ).toBe(false);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {
