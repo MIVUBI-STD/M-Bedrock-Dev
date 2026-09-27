@@ -19,7 +19,8 @@ export type IntentDiagnosticNextEvidenceNeed =
   | "intent-clarification"
   | "authored-intent"
   | "contradiction-proof"
-  | "runtime-proof";
+  | "runtime-proof"
+  | "runtime-evidence-integrity";
 
 export interface IntentDiagnosticGateInput {
   intent: GameplayIntentModel;
