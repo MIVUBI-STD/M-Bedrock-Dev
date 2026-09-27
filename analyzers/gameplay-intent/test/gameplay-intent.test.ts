@@ -407,6 +407,49 @@ describe("gameplay intent analyzer", () => {
     expect(ids.has("mechanic:countdown-feedback")).toBe(true);
   });
 
+  it("suppresses bundled member recovery for modular script sets", () => {
+    const base = script();
+    const modular = (index: number): ParsedScriptFile => ({
+      ...base,
+      identifier: "scripts/chunks/chunk-" + index,
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/chunks/chunk-" +
+          index +
+          ".js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [{
+        member: "reconnect",
+        memberKind: "method",
+        containerHint: "A",
+        source: base.source,
+      }],
+    });
+
+    const result = extractGameplayIntentSignals([
+      modular(1),
+      modular(2),
+      modular(3),
+    ]);
+
+    expect(
+      result.signals.some(
+        (signal) =>
+          signal.subjectKey === "lifecycle:reconnect",
+      ),
+    ).toBe(false);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {

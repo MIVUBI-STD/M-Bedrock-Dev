@@ -238,6 +238,13 @@ export function extractGameplayIntentSignals(
 ): GameplayIntentSignalSet {
   const signals = new Map<string, GameplayIntentSignal>();
   const relations = new Map<string, GameplayIntentRelationSignal>();
+  const executableScriptCount = scripts.filter((script) => {
+    const normalized =
+      "/" + script.source.relativePath.replaceAll("\\", "/");
+    return normalized.includes("/scripts/");
+  }).length;
+  const declaredMemberRecoveryEnabled =
+    executableScriptCount <= 2;
   const typedTransitionSignatures = new Set(
     scripts.flatMap((script) =>
       (script.transitionDeclarations ?? [])
@@ -293,14 +300,21 @@ export function extractGameplayIntentSignals(
       if (signal) pushSignal(signals, signal);
     }
 
-    for (const member of script.declaredMembers ?? []) {
-      const signal = lexicalSignal(path, member.member);
-      if (signal) {
-        pushSignal(signals, {
-          ...signal,
-          summary:
-            "A declared class member name survives bundling and provides bounded authored-structure intent evidence.",
-        });
+    const normalizedPath =
+      "/" + path.replaceAll("\\", "/");
+    if (
+      declaredMemberRecoveryEnabled &&
+      normalizedPath.includes("/scripts/")
+    ) {
+      for (const member of script.declaredMembers ?? []) {
+        const signal = lexicalSignal(path, member.member);
+        if (signal) {
+          pushSignal(signals, {
+            ...signal,
+            summary:
+              "A declared class member name survives bundling and provides bounded authored-structure intent evidence.",
+          });
+        }
       }
     }
 
