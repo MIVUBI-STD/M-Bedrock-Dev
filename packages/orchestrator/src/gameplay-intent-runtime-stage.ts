@@ -2,17 +2,21 @@ import {
   gateRuntimeStateOutcomeAgainstIntent,
   type IntentDiagnosticGateResult,
 } from "../../diagnostic-reasoning/src/index.js";
-import type {
-  GameplayIntentModel,
+import {
+  planGameplayOutcomeRuntimeObservations,
+  type GameplayIntentModel,
+  type GameplayRuntimeObservationNeed,
 } from "../../gameplay-intent/src/index.js";
-import type {
-  RuntimeOutcomeObservation,
-  RuntimeStateObservation,
+import {
+  resolveRuntimeStateSnapshot,
+  type RuntimeOutcomeObservation,
+  type RuntimeStateObservation,
 } from "../../project-model/src/index.js";
 
 export interface GameplayIntentRuntimeAssessment {
   outcomeObservation: RuntimeOutcomeObservation;
   result: IntentDiagnosticGateResult;
+  observationNeeds: readonly GameplayRuntimeObservationNeed[];
 }
 
 export interface GameplayIntentRuntimeAnalysis {
@@ -28,16 +32,32 @@ export function analyzeGameplayIntentRuntime(
   stateObservations: readonly RuntimeStateObservation[],
   outcomeObservations: readonly RuntimeOutcomeObservation[],
 ): GameplayIntentRuntimeAnalysis {
+  const stateSnapshot = {
+    schemaVersion: 1 as const,
+    observations: stateObservations,
+  };
+
   const assessments = outcomeObservations.map(
-    (outcomeObservation): GameplayIntentRuntimeAssessment => ({
-      outcomeObservation,
-      result: gateRuntimeStateOutcomeAgainstIntent({
+    (outcomeObservation): GameplayIntentRuntimeAssessment => {
+      const resolution = resolveRuntimeStateSnapshot(
+        stateSnapshot,
+        {
+          ...(outcomeObservation.scope === undefined
+            ? {}
+            : { scope: outcomeObservation.scope }),
+          ...(outcomeObservation.observedAt?.tick === undefined
+            ? {}
+            : {
+                atOrBeforeTick:
+                  outcomeObservation.observedAt.tick,
+              }),
+        },
+      );
+
+      const result = gateRuntimeStateOutcomeAgainstIntent({
         intent,
         outcomeId: outcomeObservation.outcomeId,
-        stateSnapshot: {
-          schemaVersion: 1,
-          observations: stateObservations,
-        },
+        stateSnapshot,
         ...(outcomeObservation.scope === undefined
           ? {}
           : { scope: outcomeObservation.scope }),
@@ -50,8 +70,22 @@ export function analyzeGameplayIntentRuntime(
         observationEvidenceIds: [
           outcomeObservation.evidenceId,
         ],
-      }),
-    }),
+      });
+
+      return {
+        outcomeObservation,
+        result,
+        observationNeeds:
+          result.disposition === "insufficient-evidence" ||
+          result.disposition === "ambiguous-intent"
+            ? planGameplayOutcomeRuntimeObservations(
+                intent,
+                outcomeObservation.outcomeId,
+                resolution.values,
+              )
+            : [],
+      };
+    },
   );
 
   return {

@@ -400,12 +400,297 @@ export function evaluateGameplayOutcomeAdmissibility(
     };
   }
 
+  const unresolved = policyEdges.flatMap((edge) => {
+    const node = model.nodes.find(
+      (item) => item.id === edge.to,
+    );
+    if (!node?.policyPredicate) return [];
+    return unresolvedGameplayPolicyOperands(
+      node.policyPredicate,
+      values,
+    ).map(describeGameplayPolicyOperand);
+  });
+
   return {
     outcomeId,
     disposition: "unknown",
     policies,
     reasons: [
       "No guard is satisfied and at least one policy evaluation is unknown.",
+      ...(unresolved.length === 0
+        ? []
+        : [
+            "Required runtime state is unresolved: " +
+            [...new Set(unresolved)].sort().join(", "),
+          ]),
     ],
   };
+}
+
+export function describeGameplayPolicyOperand(
+  operand: GameplayIntentPolicyOperand,
+): string {
+  if (operand.kind === "path") return operand.path;
+  if (operand.kind === "literal") {
+    return JSON.stringify(operand.value);
+  }
+  return (
+    describeGameplayPolicyOperand(operand.base) +
+    "[" +
+    describeGameplayPolicyOperand(operand.key) +
+    "]"
+  );
+}
+
+export function unresolvedGameplayPolicyOperands(
+  predicate: GameplayIntentPolicyPredicate,
+  values: Readonly<Record<string, unknown>>,
+): GameplayIntentPolicyOperand[] {
+  const unresolved = new Map<
+    string,
+    GameplayIntentPolicyOperand
+  >();
+
+  const add = (operand: GameplayIntentPolicyOperand): void => {
+    if (operand.kind === "literal") return;
+    if (!resolvePolicyOperand(operand, values).found) {
+      unresolved.set(
+        describeGameplayPolicyOperand(operand),
+        operand,
+      );
+    }
+  };
+
+  const visit = (
+    current: GameplayIntentPolicyPredicate,
+  ): void => {
+    if (current.kind === "unknown") return;
+
+    if (
+      current.kind === "truthy" ||
+      current.kind === "falsy"
+    ) {
+      add(current.operand);
+      return;
+    }
+
+    if (current.kind === "comparison") {
+      add(current.left);
+      add(current.right);
+      return;
+    }
+
+    if (current.kind === "in") {
+      add(current.operand);
+      return;
+    }
+
+    const children =
+      current.kind === "fallback"
+        ? current.excludedPredicates
+        : current.predicates;
+
+    for (const child of children) {
+      if (
+        evaluateGameplayPolicyPredicate(
+          child,
+          values,
+        ) === "unknown"
+      ) {
+        visit(child);
+      }
+    }
+  };
+
+  visit(predicate);
+  return [...unresolved.values()];
+}
+
+export interface GameplayOutcomePolicyRequirement {
+  policyId: string;
+  predicate: GameplayIntentPolicyPredicate;
+  operands: readonly GameplayIntentPolicyOperand[];
+}
+
+function policyOperands(
+  predicate: GameplayIntentPolicyPredicate,
+): GameplayIntentPolicyOperand[] {
+  const found = new Map<
+    string,
+    GameplayIntentPolicyOperand
+  >();
+
+  const add = (operand: GameplayIntentPolicyOperand): void => {
+    if (operand.kind === "literal") return;
+    found.set(describeGameplayPolicyOperand(operand), operand);
+  };
+
+  const visit = (
+    current: GameplayIntentPolicyPredicate,
+  ): void => {
+    if (current.kind === "unknown") return;
+    if (
+      current.kind === "truthy" ||
+      current.kind === "falsy"
+    ) {
+      add(current.operand);
+      return;
+    }
+    if (current.kind === "comparison") {
+      add(current.left);
+      add(current.right);
+      return;
+    }
+    if (current.kind === "in") {
+      add(current.operand);
+      return;
+    }
+    for (const child of (
+      current.kind === "fallback"
+        ? current.excludedPredicates
+        : current.predicates
+    )) {
+      visit(child);
+    }
+  };
+
+  visit(predicate);
+  return [...found.values()];
+}
+
+export function gameplayOutcomePolicyRequirements(
+  model: GameplayIntentModel,
+  outcomeId: string,
+): GameplayOutcomePolicyRequirement[] {
+  return model.edges.flatMap((edge) => {
+    if (
+      edge.from !== outcomeId ||
+      edge.kind !== "requires" ||
+      edge.status !== "authored"
+    ) {
+      return [];
+    }
+
+    const policy = model.nodes.find(
+      (node) =>
+        node.id === edge.to &&
+        node.kind === "policy",
+    );
+    if (!policy?.policyPredicate) return [];
+
+    return [{
+      policyId: policy.id,
+      predicate: policy.policyPredicate,
+      operands: policyOperands(
+        policy.policyPredicate,
+      ),
+    }];
+  });
+}
+
+export interface GameplayRuntimeObservationNeed {
+  policyId: string;
+  expression: string;
+  operand: GameplayIntentPolicyOperand;
+  paths: readonly string[];
+  deferred: boolean;
+}
+
+function leafOperandPaths(
+  operand: GameplayIntentPolicyOperand,
+): string[] {
+  if (operand.kind === "path") return [operand.path];
+  if (operand.kind === "literal") return [];
+  return [
+    ...leafOperandPaths(operand.base),
+    ...leafOperandPaths(operand.key),
+  ];
+}
+
+function observationPathsForOperand(
+  operand: GameplayIntentPolicyOperand,
+  values: Readonly<Record<string, unknown>>,
+): {
+  paths: string[];
+  deferred: boolean;
+} {
+  if (operand.kind === "path") {
+    return {
+      paths: [operand.path],
+      deferred: false,
+    };
+  }
+
+  if (operand.kind === "literal") {
+    return {
+      paths: [],
+      deferred: false,
+    };
+  }
+
+  const key = resolvePolicyOperand(operand.key, values);
+  if (
+    key.found &&
+    (
+      typeof key.value === "string" ||
+      typeof key.value === "number"
+    ) &&
+    operand.base.kind === "path"
+  ) {
+    return {
+      paths: [
+        operand.base.path + "." + String(key.value),
+      ],
+      deferred: false,
+    };
+  }
+
+  const keyDependencies = leafOperandPaths(operand.key);
+  return {
+    paths: [...new Set(keyDependencies)].sort(),
+    deferred: true,
+  };
+}
+
+export function planGameplayOutcomeRuntimeObservations(
+  model: GameplayIntentModel,
+  outcomeId: string,
+  values: Readonly<Record<string, unknown>>,
+): GameplayRuntimeObservationNeed[] {
+  const needs = new Map<
+    string,
+    GameplayRuntimeObservationNeed
+  >();
+
+  for (const requirement of gameplayOutcomePolicyRequirements(
+    model,
+    outcomeId,
+  )) {
+    const unresolved = unresolvedGameplayPolicyOperands(
+      requirement.predicate,
+      values,
+    );
+
+    for (const operand of unresolved) {
+      const expression =
+        describeGameplayPolicyOperand(operand);
+      const observation =
+        observationPathsForOperand(operand, values);
+      const key =
+        requirement.policyId + "::" + expression;
+
+      needs.set(key, {
+        policyId: requirement.policyId,
+        expression,
+        operand,
+        paths: observation.paths,
+        deferred: observation.deferred,
+      });
+    }
+  }
+
+  return [...needs.values()].sort((a, b) =>
+    a.policyId.localeCompare(b.policyId) ||
+    a.expression.localeCompare(b.expression)
+  );
 }

@@ -3,6 +3,9 @@ import {
   assessGameplayIntentGrounding,
   evaluateGameplayOutcomeAdmissibility,
   evaluateGameplayPolicyPredicate,
+  gameplayOutcomePolicyRequirements,
+  planGameplayOutcomeRuntimeObservations,
+  unresolvedGameplayPolicyOperands,
   validateGameplayIntentModel,
   type GameplayIntentModel,
 } from "../src/index.js";
@@ -272,6 +275,222 @@ describe("gameplay intent", () => {
         },
       ),
     ).toBe("unknown");
+  });
+
+  it("reports exact unresolved runtime policy operands", () => {
+    const predicate = {
+      kind: "all" as const,
+      predicates: [
+        {
+          kind: "comparison" as const,
+          operator: "neq" as const,
+          left: {
+            kind: "path" as const,
+            path: "record.generation",
+          },
+          right: {
+            kind: "path" as const,
+            path: "session.generation",
+          },
+        },
+        {
+          kind: "falsy" as const,
+          operand: {
+            kind: "index" as const,
+            base: {
+              kind: "path" as const,
+              path: "session.roster",
+            },
+            key: {
+              kind: "path" as const,
+              path: "record.playerId",
+            },
+          },
+        },
+      ],
+    };
+
+    const unresolved = unresolvedGameplayPolicyOperands(
+      predicate,
+      {
+        record: {
+          generation: 4,
+          playerId: "player-a",
+        },
+      },
+    );
+
+    expect(unresolved).toEqual(expect.arrayContaining([
+      {
+        kind: "path",
+        path: "session.generation",
+      },
+      {
+        kind: "index",
+        base: {
+          kind: "path",
+          path: "session.roster",
+        },
+        key: {
+          kind: "path",
+          path: "record.playerId",
+        },
+      },
+    ]));
+  });
+
+  it("lists policy requirements for targeted runtime observation", () => {
+    const policyModel: GameplayIntentModel = {
+      schemaVersion: 1,
+      id: "requirements",
+      evidence: [{
+        id: "e:policy",
+        origin: "source-code",
+        locator: "recovery-policy.ts",
+        summary: "Recovery guard.",
+      }],
+      nodes: [
+        {
+          id: "outcome:resume",
+          kind: "outcome",
+          label: "Resume",
+          status: "authored",
+          evidenceIds: ["e:policy"],
+        },
+        {
+          id: "policy:active",
+          kind: "policy",
+          label: "Active phase",
+          status: "authored",
+          evidenceIds: ["e:policy"],
+          policyPredicate: {
+            kind: "comparison",
+            operator: "eq",
+            left: {
+              kind: "path",
+              path: "session.phase",
+            },
+            right: {
+              kind: "literal",
+              value: "active",
+            },
+          },
+        },
+      ],
+      edges: [{
+        id: "edge:resume-active",
+        from: "outcome:resume",
+        to: "policy:active",
+        kind: "requires",
+        status: "authored",
+        evidenceIds: ["e:policy"],
+      }],
+      invariants: [],
+      unknowns: [],
+    };
+
+    expect(
+      gameplayOutcomePolicyRequirements(
+        policyModel,
+        "outcome:resume",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        policyId: "policy:active",
+        operands: [{
+          kind: "path",
+          path: "session.phase",
+        }],
+      }),
+    ]);
+  });
+
+  it("plans concrete and deferred runtime observations for missing policy state", () => {
+    const policyModel: GameplayIntentModel = {
+      schemaVersion: 1,
+      id: "runtime-needs",
+      evidence: [{
+        id: "e:policy",
+        origin: "source-code",
+        locator: "recovery-policy.ts",
+        summary: "Membership and phase guards.",
+      }],
+      nodes: [
+        {
+          id: "outcome:cleanup",
+          kind: "outcome",
+          label: "Cleanup",
+          status: "authored",
+          evidenceIds: ["e:policy"],
+        },
+        {
+          id: "policy:membership",
+          kind: "policy",
+          label: "Missing membership",
+          status: "authored",
+          evidenceIds: ["e:policy"],
+          policyPredicate: {
+            kind: "falsy",
+            operand: {
+              kind: "index",
+              base: {
+                kind: "path",
+                path: "session.roster",
+              },
+              key: {
+                kind: "path",
+                path: "record.playerId",
+              },
+            },
+          },
+        },
+      ],
+      edges: [{
+        id: "edge:membership",
+        from: "outcome:cleanup",
+        to: "policy:membership",
+        kind: "requires",
+        status: "authored",
+        evidenceIds: ["e:policy"],
+      }],
+      invariants: [],
+      unknowns: [],
+    };
+
+    expect(
+      planGameplayOutcomeRuntimeObservations(
+        policyModel,
+        "outcome:cleanup",
+        {
+          record: {
+            playerId: "player-a",
+          },
+        },
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        policyId: "policy:membership",
+        expression:
+          "session.roster[record.playerId]",
+        paths: ["session.roster.player-a"],
+        deferred: false,
+      }),
+    ]);
+
+    expect(
+      planGameplayOutcomeRuntimeObservations(
+        policyModel,
+        "outcome:cleanup",
+        {},
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        expression:
+          "session.roster[record.playerId]",
+        paths: ["record.playerId"],
+        deferred: true,
+      }),
+    ]);
   });
 
   it("evaluates outcome admissibility across authored policy guards", () => {

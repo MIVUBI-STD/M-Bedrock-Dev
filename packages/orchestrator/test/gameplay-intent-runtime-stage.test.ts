@@ -104,6 +104,30 @@ describe("gameplay intent runtime stage", () => {
       .toBe("designed-behavior");
   });
 
+  it("emits targeted observation needs when runtime state is missing", () => {
+    const result = analyzeGameplayIntentRuntime(
+      intent,
+      [],
+      [{
+        outcomeId: "outcome:cleanup",
+        observedAt: { tick: 20 },
+        evidenceId: "e:outcome",
+      }],
+    );
+
+    expect(result.insufficientEvidence).toBe(1);
+    expect(
+      result.assessments[0]?.observationNeeds,
+    ).toEqual([
+      expect.objectContaining({
+        policyId: "policy:pending-cleanup",
+        expression: "record.pendingCleanup",
+        paths: ["record.pendingCleanup"],
+        deferred: false,
+      }),
+    ]);
+  });
+
   it("reports policy violation as probable defect, not confirmed defect", () => {
     const result = analyzeGameplayIntentRuntime(
       intent,
