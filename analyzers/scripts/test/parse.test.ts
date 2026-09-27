@@ -658,6 +658,52 @@ function decideRecovery(record, session, arena) {
     ).toBe(true);
   });
 
+  it("assigns class-method execution regions to guarded outcomes and fallbacks", () => {
+    const parsed = parseScriptFile(
+      "scripts/main",
+      `
+class Session {
+  decideReconnect(state) {
+    if (state.pendingCleanup) {
+      return { kind: "cleanup" };
+    }
+    return { kind: "resume" };
+  }
+}
+`,
+      source,
+    );
+
+    expect(parsed.returnOutcomes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        executionRegion: "function:decideReconnect",
+        propertyName: "kind",
+        value: "cleanup",
+      }),
+      expect.objectContaining({
+        executionRegion: "function:decideReconnect",
+        propertyName: "kind",
+        value: "resume",
+      }),
+    ]));
+
+    expect(parsed.guardedOutcomes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        executionRegion: "function:decideReconnect",
+        propertyName: "kind",
+        value: "cleanup",
+      }),
+      expect.objectContaining({
+        executionRegion: "function:decideReconnect",
+        propertyName: "kind",
+        value: "resume",
+        predicate: expect.objectContaining({
+          kind: "fallback",
+        }),
+      }),
+    ]));
+  });
+
   it("captures declared class members from bundled source", () => {
     const parsed = parseScriptFile(
       "scripts/main",

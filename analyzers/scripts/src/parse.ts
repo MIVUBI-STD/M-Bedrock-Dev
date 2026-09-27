@@ -280,6 +280,10 @@ function localExecutionRegionId(
         ? "function:" + current.name.text
         : "anonymous-function";
     }
+    if (ts.isMethodDeclaration(current)) {
+      const name = declarationMemberName(current.name);
+      if (name) return "function:" + name;
+    }
     if (
       ts.isArrowFunction(current) ||
       ts.isFunctionExpression(current)
@@ -592,15 +596,14 @@ function inferFallbackGuardedOutcomes(
 ): ScriptGuardedOutcome[] {
   const output: ScriptGuardedOutcome[] = [];
 
-  for (const statement of file.statements) {
-    if (!ts.isFunctionDeclaration(statement) || !statement.body) {
-      continue;
-    }
-
+  const scanBody = (
+    body: ts.Block,
+    executionRegion: string,
+  ): void => {
     const priorTerminalGuards: ScriptGuardPredicate[] = [];
     const priorGuardTexts: string[] = [];
 
-    for (const inner of statement.body.statements) {
+    for (const inner of body.statements) {
       if (ts.isIfStatement(inner)) {
         const returns = directReturnStatements(
           inner.thenStatement,
@@ -622,9 +625,7 @@ function inferFallbackGuardedOutcomes(
       ) {
         for (const outcome of outcomePropertiesFromReturn(inner)) {
           output.push({
-            executionRegion: statement.name
-              ? "function:" + statement.name.text
-              : "anonymous-function",
+            executionRegion,
             conditionText:
               "fallback after: " +
               priorGuardTexts.join(" | "),
@@ -657,8 +658,25 @@ function inferFallbackGuardedOutcomes(
         }
       }
     }
-  }
+  };
 
+  const visit = (node: ts.Node): void => {
+    if (ts.isFunctionDeclaration(node) && node.body) {
+      scanBody(
+        node.body,
+        node.name
+          ? "function:" + node.name.text
+          : "anonymous-function",
+      );
+    } else if (ts.isMethodDeclaration(node) && node.body) {
+      const name = declarationMemberName(node.name);
+      if (name) scanBody(node.body, "function:" + name);
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
   return output;
 }
 
