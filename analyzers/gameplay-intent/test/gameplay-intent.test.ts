@@ -341,6 +341,72 @@ describe("gameplay intent analyzer", () => {
     expect(ids.has("resource:initialize-scoreboard")).toBe(true);
   });
 
+  it("keeps phase classification for state-like names but not phase helper actions", () => {
+    const base = script();
+    const helper = (
+      member: string,
+    ): ParsedScriptFile => ({
+      ...base,
+      identifier: "scripts/main",
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/main.js",
+      },
+      localFunctionCalls: [],
+      lifecycleMemberExposures: [],
+      enumValueComparisons: [],
+      stateMutations: [],
+      typeProperties: [],
+      transitionDeclarations: [],
+      returnOutcomes: [],
+      guardedOutcomes: [],
+      commandLiterals: [],
+      declaredMembers: [{
+        member,
+        memberKind: "method",
+        containerHint: "A",
+        source: base.source,
+      }],
+    });
+
+    const result = extractGameplayIntentSignals([
+      helper("active"),
+      helper("cinematic"),
+      helper("finishStage1"),
+      helper("startStageTimers"),
+      helper("updateStageTimers"),
+      helper("stopCountdown"),
+      helper("refreshLobbyEffects"),
+      helper("teleportLobby"),
+      helper("clearPlayerHudForLobbyReturn"),
+      helper("countdownFeedback"),
+    ]);
+
+    const ids = new Set(
+      result.signals.map((signal) => signal.subjectKey),
+    );
+
+    expect(ids.has("phase:active")).toBe(true);
+    expect(ids.has("phase:cinematic")).toBe(true);
+
+    expect(ids.has("phase:finish-stage1")).toBe(false);
+    expect(ids.has("phase:start-stage-timers")).toBe(false);
+    expect(ids.has("phase:update-stage-timers")).toBe(false);
+    expect(ids.has("phase:stop-countdown")).toBe(false);
+    expect(ids.has("phase:refresh-lobby-effects")).toBe(false);
+    expect(ids.has("phase:teleport-lobby")).toBe(false);
+    expect(ids.has("phase:clear-player-hud-for-lobby-return")).toBe(false);
+    expect(ids.has("phase:countdown-feedback")).toBe(false);
+
+    expect(ids.has("resource:start-stage-timers")).toBe(true);
+    expect(ids.has("resource:update-stage-timers")).toBe(true);
+    expect(ids.has("mechanic:refresh-lobby-effects")).toBe(true);
+    expect(ids.has("spatial-region:teleport-lobby")).toBe(true);
+    expect(ids.has("mechanic:clear-player-hud-for-lobby-return")).toBe(true);
+    expect(ids.has("mechanic:countdown-feedback")).toBe(true);
+  });
+
   it("accepts kind/type return discriminants only for classified gameplay functions", () => {
     const base = script();
     const reconnect: ParsedScriptFile = {

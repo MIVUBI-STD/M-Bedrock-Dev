@@ -36,6 +36,7 @@ const KIND_TERMS: ReadonlyArray<{
     terms: [
       "score", "scoring", "coin", "currency", "resource", "resources", "ledger",
       "inventory", "palette", "health", "points", "kit", "scoreboard",
+      "tick", "ticks", "time", "timer", "timers", "seconds",
     ],
   },
   {
@@ -65,7 +66,7 @@ const KIND_TERMS: ReadonlyArray<{
       "interaction", "placement", "water", "craft", "shop",
       "revive", "upgrade", "similarity", "clone", "feedback",
       "hologram", "combat", "hud", "schematic", "wave",
-      "knockdown", "reviver", "reviving",
+      "knockdown", "reviver", "reviving", "effect", "effects",
     ],
   },
 ];
@@ -83,6 +84,15 @@ function slug(value: string): string {
 }
 
 const HELPER_VERBS = new Set([
+  "update",
+  "teleport",
+  "stop",
+  "start",
+  "spawn",
+  "refresh",
+  "finish",
+  "check",
+  "auto",
   "setup",
   "clear",
   "bootstrap",
@@ -123,6 +133,14 @@ function classify(value: string): GameplayIntentNodeKind | undefined {
     wordList[0] !== undefined &&
     HELPER_VERBS.has(wordList[0]);
 
+  if (
+    !helperLike &&
+    wordList.length === 1 &&
+    matches.has("phase")
+  ) {
+    return "phase";
+  }
+
   const priority: GameplayIntentNodeKind[] = helperLike
     ? [
         "policy",
@@ -134,12 +152,12 @@ function classify(value: string): GameplayIntentNodeKind | undefined {
       ]
     : [
         "lifecycle",
-        "phase",
         "policy",
         "resource",
         "spatial-region",
         "objective",
         "mechanic",
+        "phase",
       ];
 
   for (const kind of priority) {
