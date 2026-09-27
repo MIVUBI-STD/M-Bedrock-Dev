@@ -333,7 +333,7 @@ describe("gameplay intent analyzer", () => {
       result.signals.map((signal) => signal.subjectKey),
     );
 
-    expect(ids.has("phase:phase")).toBe(true);
+    expect(ids.has("state:phase")).toBe(true);
     expect(ids.has("lifecycle:reconnect")).toBe(true);
     expect(ids.has("lifecycle:disconnect")).toBe(true);
     expect(ids.has("resource:clear-player-inventory")).toBe(true);
