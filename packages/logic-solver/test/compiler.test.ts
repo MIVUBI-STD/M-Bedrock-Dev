@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  behaviorStateKey,
   type BehavioralWorldModel,
   type BehaviorState,
 } from "../../behavior-model/src/index.js";
