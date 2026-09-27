@@ -1,10 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type {
-  BehavioralWorldModel,
-  BehaviorState,
+import {
+  type BehavioralWorldModel,
+  type BehaviorState,
 } from "../../behavior-model/src/index.js";
 import {
-  behaviorStateKey,
   compileAndSolveBehaviorConstraints,
   compileBehaviorConstraints,
 } from "../src/index.js";

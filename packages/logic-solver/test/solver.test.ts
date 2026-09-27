@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type {
-  BehavioralWorldModel,
-  BehaviorPredicate,
-  BehaviorState,
+import {
+  type BehavioralWorldModel,
+  type BehaviorPredicate,
+  type BehaviorState,
 } from "../../behavior-model/src/index.js";
 import {
-  behaviorStateKey,
   boundedBehaviorSolver,
 } from "../src/index.js";
 
