@@ -15,6 +15,7 @@ const capabilities: AnalysisCapability[] = [{
   cost: "cheap",
   tags: ["artifact"],
   deterministic: true,
+  producesTraits: ["artifact-identity"],
   contexts: [
     "LOCAL_ARTIFACT",
     "LOCAL_MINECRAFT",
@@ -26,6 +27,7 @@ const capabilities: AnalysisCapability[] = [{
   cost: "cheap",
   tags: ["session", "state"],
   deterministic: true,
+  producesTraits: ["structural-proof"],
   contexts: [
     "LOCAL_ARTIFACT",
     "LOCAL_MINECRAFT",
@@ -37,6 +39,24 @@ const capabilities: AnalysisCapability[] = [{
   cost: "moderate",
   tags: ["session", "state"],
   deterministic: true,
+  producesTraits: [
+    "semantic-model",
+    "intent-grounded",
+  ],
+  prerequisites: ["source-graph"],
+  contexts: [
+    "LOCAL_ARTIFACT",
+    "LOCAL_MINECRAFT",
+    "LIVE_MINECRAFT",
+  ],
+}, {
+  id: "intent-authorship",
+  evidenceLevel: "semantic",
+  cost: "moderate",
+  tags: ["session", "state"],
+  deterministic: true,
+  producesTraits: ["authored-intent"],
+  prerequisites: ["semantic-lifecycle"],
   contexts: [
     "LOCAL_ARTIFACT",
     "LOCAL_MINECRAFT",
@@ -48,6 +68,7 @@ const capabilities: AnalysisCapability[] = [{
   cost: "expensive",
   tags: ["session"],
   deterministic: true,
+  producesTraits: ["semantic-model"],
   contexts: ["LOCAL_ARTIFACT"],
 }, {
   id: "formal-search",
@@ -55,6 +76,8 @@ const capabilities: AnalysisCapability[] = [{
   cost: "expensive",
   tags: ["session", "state"],
   deterministic: true,
+  producesTraits: ["contradiction"],
+  prerequisites: ["semantic-lifecycle"],
   contexts: [
     "LOCAL_ARTIFACT",
     "LOCAL_MINECRAFT",
@@ -66,6 +89,19 @@ const capabilities: AnalysisCapability[] = [{
   cost: "expensive",
   tags: ["session", "state"],
   deterministic: false,
+  producesTraits: ["runtime-observation"],
+  contexts: [
+    "LOCAL_MINECRAFT",
+    "LIVE_MINECRAFT",
+  ],
+}, {
+  id: "runtime-integrity-check",
+  evidenceLevel: "runtime",
+  cost: "moderate",
+  tags: ["session", "state"],
+  deterministic: true,
+  producesTraits: ["runtime-integrity"],
+  prerequisites: ["runtime-probe"],
   contexts: [
     "LOCAL_MINECRAFT",
     "LIVE_MINECRAFT",
@@ -76,6 +112,7 @@ const capabilities: AnalysisCapability[] = [{
   cost: "very-expensive",
   tags: ["session"],
   deterministic: false,
+  producesTraits: ["intervention"],
   contexts: ["LIVE_MINECRAFT"],
 }, {
   id: "dialogue-analyzer",
@@ -83,6 +120,7 @@ const capabilities: AnalysisCapability[] = [{
   cost: "cheap",
   tags: ["dialogue"],
   deterministic: true,
+  producesTraits: ["semantic-model"],
   contexts: ["LOCAL_ARTIFACT"],
 }];
 
@@ -90,7 +128,7 @@ describe(
   "minimum sufficient analysis planner",
   () => {
     it(
-      "stops immediately when existing evidence is already sufficient",
+      "stops only when usable evidence has the required level and trait",
       () => {
         const plan =
           planMinimumSufficientAnalysis({
@@ -100,6 +138,8 @@ describe(
             availableEvidence: [{
               level: "semantic",
               evidenceIds: ["semantic:e1"],
+              quality: "usable",
+              traits: ["semantic-model"],
             }],
             capabilities,
           });
@@ -112,7 +152,44 @@ describe(
     );
 
     it(
-      "selects the cheapest relevant route and skips unrelated analyzers",
+      "does not trust stale or wrong-kind high-level evidence",
+      () => {
+        const plan =
+          planMinimumSufficientAnalysis({
+            goal: "authored-intent",
+            relevantTags: ["session"],
+            context: "LOCAL_ARTIFACT",
+            availableEvidence: [{
+              level: "semantic",
+              evidenceIds: ["semantic:inferred"],
+              quality: "usable",
+              traits: ["intent-grounded"],
+            }, {
+              level: "formal",
+              evidenceIds: ["formal:stale"],
+              quality: "stale",
+              traits: ["authored-intent"],
+            }],
+            completedCapabilityIds: [
+              "source-graph",
+              "semantic-lifecycle",
+            ],
+            capabilities,
+          });
+
+        expect(plan.disposition).toBe(
+          "execute",
+        );
+        expect(
+          plan.steps[0]?.capabilityId,
+        ).toBe("intent-authorship");
+        expect(plan.missingEvidenceTraits)
+          .toEqual(["authored-intent"]);
+      },
+    );
+
+    it(
+      "selects one cheapest relevant next action and skips unrelated analyzers",
       () => {
         const plan =
           planMinimumSufficientAnalysis({
@@ -159,7 +236,7 @@ describe(
     );
 
     it(
-      "escalates only above already-proven evidence levels",
+      "selects the capability that closes the missing runtime trait",
       () => {
         const plan =
           planMinimumSufficientAnalysis({
@@ -169,6 +246,8 @@ describe(
             availableEvidence: [{
               level: "formal",
               evidenceIds: ["formal:e1"],
+              quality: "usable",
+              traits: ["contradiction"],
             }],
             capabilities,
           });
@@ -184,7 +263,7 @@ describe(
     );
 
     it(
-      "uses runtime evidence as the planner threshold while leaving repair authority to the repair gate",
+      "uses runtime evidence as planner threshold while repair authority remains separate",
       () => {
         expect(
           requiredEvidenceLevelForGoal(
@@ -198,9 +277,14 @@ describe(
             relevantTags: ["session"],
             context: "LOCAL_MINECRAFT",
             availableEvidence: [{
-              level: "formal",
-              evidenceIds: ["formal:e1"],
+              level: "runtime",
+              evidenceIds: ["runtime:e1"],
+              quality: "usable",
+              traits: ["runtime-observation"],
             }],
+            completedCapabilityIds: [
+              "runtime-probe",
+            ],
             capabilities,
           });
 
@@ -209,33 +293,22 @@ describe(
             (item) => item.capabilityId,
           ),
         ).toEqual([
-          "runtime-probe",
+          "runtime-integrity-check",
         ]);
+        expect(plan.missingEvidenceTraits)
+          .toEqual(["runtime-integrity"]);
       },
     );
+
     it(
       "runs unmet prerequisites before the requested capability",
       () => {
-        const withPrerequisite =
-          capabilities.map((item) =>
-            item.id === "semantic-lifecycle"
-              ? {
-                  ...item,
-                  prerequisites: ["source-graph"],
-                }
-              : item
-          );
-
         const plan =
           planMinimumSufficientAnalysis({
             goal: "semantic-consistency",
             relevantTags: ["session"],
             context: "LOCAL_ARTIFACT",
-            availableEvidence: [{
-              level: "static",
-              evidenceIds: ["static:e1"],
-            }],
-            capabilities: withPrerequisite,
+            capabilities,
           });
 
         expect(
@@ -243,6 +316,5 @@ describe(
         ).toBe("source-graph");
       },
     );
-
   },
 );
