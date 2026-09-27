@@ -58,15 +58,15 @@ Inferred intent is capped at probable defect.
 
 The current external corpus contains eight representative worlds spanning explicit source, modular compiled source, and bundled/minified source.
 
-Reviewed baseline revision `6bec916ed904fd06f064a799731de4021432e12d` produced:
+Reviewed baseline revision `2aaf14bf81856c995cdcaed9b8af330ec7c4065c` produced:
 
 ```text
 cases                 8
-intent nodes          1148
-authored nodes        183
-inferred nodes        965
-unknown intent        2
-maps with unknowns    1
+intent nodes          1145
+authored nodes        181
+inferred nodes        964
+unknown intent        0
+maps with unknowns    0
 route profile cases   1
 authored route points 67
 ```
@@ -81,4 +81,21 @@ It does not prove that every recovered semantic classification is correct. Corpu
 - Bedwars role/team and bed-objective concepts are recovered generically from bundled semantics.
 - Resource generators are classified as mechanics rather than raw resources.
 - Orb countdown/finish helper actions are no longer counted as gameplay phases; phase/stage state remains represented as state evidence.
-- Authored nodes remain 183, unknown intent remains 2, and Five Nights route proof remains 67 authored route points.
+- Two false authored structural outcomes were removed from The Circuit; authored nodes are now 181, unknown intent is 0, and Five Nights route proof remains 67 authored route points.
+
+
+## Historical comparison proof
+
+Marathon Test of Tactics v1.0.2 → v2.2.0 was compared under one engine revision:
+
+```text
+artifact fingerprint changed      yes
+gameplay intent disposition       stable
+added intent nodes                0
+removed intent nodes              0
+node status changes               0
+invariant changes                 0
+artifactChangedIntentStable       true
+```
+
+This proves packaging/implementation change can be distinguished from authored gameplay-intent change.

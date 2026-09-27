@@ -1,6 +1,6 @@
 # Gameplay Understanding Calibration Corpus
 
-Status baseline: `6bec916ed904fd06f064a799731de4021432e12d`
+Status baseline: `2aaf14bf81856c995cdcaed9b8af330ec7c4065c`
 
 The supplied representative worlds are now treated as an external calibration corpus for gameplay understanding.
 
@@ -43,7 +43,7 @@ The following values are observations from one engine revision. They are not pas
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Beach Bedwars | 82 | 13 | 69 | 0 | 0 | 11 | 34 | 4 | 9 | 4 | 0 | 8 | 0 / 0 |
 | BlitzBuild | 113 | 45 | 68 | 0 | 22 | 21 | 17 | 11 | 13 | 15 | 10 | 14 | 0 / 0 |
-| The Circuit | 287 | 38 | 249 | 2 | 1 | 33 | 38 | 48 | 74 | 4 | 3 | 51 | 0 / 0 |
+| The Circuit | 284 | 36 | 248 | 0 | 1 | 33 | 38 | 48 | 74 | 4 | 1 | 51 | 0 / 0 |
 | Defense L2 | 106 | 15 | 91 | 0 | 4 | 4 | 12 | 17 | 35 | 4 | 4 | 21 | 0 / 0 |
 | Five Nights L1 | 179 | 14 | 165 | 0 | 4 | 3 | 30 | 33 | 61 | 5 | 4 | 32 | 3 / 67 |
 | Marathon Test of Tactics L2 | 85 | 22 | 63 | 0 | 14 | 10 | 27 | 1 | 8 | 8 | 4 | 18 | 0 / 0 |
@@ -54,11 +54,11 @@ Corpus aggregate at this revision:
 
 ```text
 cases                 8
-intent nodes          1148
-authored nodes        183
-inferred nodes        965
-unknown intent        2
-maps with unknowns    1
+intent nodes          1145
+authored nodes        181
+inferred nodes        964
+unknown intent        0
+maps with unknowns    0
 route profile cases   1
 authored route points 67
 ```
@@ -129,5 +129,22 @@ At reviewed baseline `6bec916ed904fd06f064a799731de4021432e12d`:
 - Beach Bedwars gained generic role/team and bed-objective recovery without map-name rules.
 - generator/forge semantics are modeled as mechanics even when resource material names are present.
 - Orb lost previous phase-kind presence because those nodes were helper actions; this is an intentional semantic correction, not loss of authored phase evidence.
-- unknown intent remains 2 and is isolated to The Circuit.
+- The Circuit structural return variants are no longer misclassified as gameplay outcomes; corpus unknown intent is now 0.
 - Five Nights L1 retains 3 route profiles and 67 authored route points.
+
+
+## Historical intent comparison
+
+Artifact history is compared semantically, not only by archive fingerprint.
+
+The current comparator reports stable/expanded/reduced/changed gameplay intent, node/edge/invariant additions and removals, status changes, and evidence-origin changes.
+
+Verified Marathon example:
+
+```text
+v1.0.2 artifact fingerprint != v2.2.0 artifact fingerprint
+gameplay intent = stable
+artifactChangedIntentStable = true
+```
+
+History alone does not prove dead code or a defect; reachability and runtime evidence remain separate requirements.

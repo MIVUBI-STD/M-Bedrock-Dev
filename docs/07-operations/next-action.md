@@ -100,3 +100,15 @@ Next generic learning priority:
 2. identify stable contracts, deliberate changes, migration leftovers, and legacy paths;
 3. preserve reachability uncertainty—history alone cannot prove dead code or a defect;
 4. keep runtime-differential proof separate from static historical inference.
+
+
+## Current corpus blocker status
+
+Reviewed baseline `2aaf14bf81856c995cdcaed9b8af330ec7c4065c` has:
+
+```text
+maps with unknown intent  0 / 8
+total unknown intent      0
+```
+
+Next priority is no longer unknown-intent elimination. It is evidence-strength improvement for bundled/minified maps and broader historical/runtime differential proof.
