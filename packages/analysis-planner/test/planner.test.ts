@@ -131,7 +131,6 @@ describe(
           ),
         ).toEqual([
           "source-graph",
-          "semantic-lifecycle",
         ]);
         expect(
           plan.skippedCapabilityIds,
@@ -185,22 +184,22 @@ describe(
     );
 
     it(
-      "requires intervention evidence for causal repair authority",
+      "uses runtime evidence as the planner threshold while leaving repair authority to the repair gate",
       () => {
         expect(
           requiredEvidenceLevelForGoal(
             "causal-repair",
           ),
-        ).toBe("intervention");
+        ).toBe("runtime");
 
         const plan =
           planMinimumSufficientAnalysis({
             goal: "causal-repair",
             relevantTags: ["session"],
-            context: "LIVE_MINECRAFT",
+            context: "LOCAL_MINECRAFT",
             availableEvidence: [{
-              level: "runtime",
-              evidenceIds: ["runtime:e1"],
+              level: "formal",
+              evidenceIds: ["formal:e1"],
             }],
             capabilities,
           });
@@ -210,9 +209,40 @@ describe(
             (item) => item.capabilityId,
           ),
         ).toEqual([
-          "controlled-intervention",
+          "runtime-probe",
         ]);
       },
     );
+    it(
+      "runs unmet prerequisites before the requested capability",
+      () => {
+        const withPrerequisite =
+          capabilities.map((item) =>
+            item.id === "semantic-lifecycle"
+              ? {
+                  ...item,
+                  prerequisites: ["source-graph"],
+                }
+              : item
+          );
+
+        const plan =
+          planMinimumSufficientAnalysis({
+            goal: "semantic-consistency",
+            relevantTags: ["session"],
+            context: "LOCAL_ARTIFACT",
+            availableEvidence: [{
+              level: "static",
+              evidenceIds: ["static:e1"],
+            }],
+            capabilities: withPrerequisite,
+          });
+
+        expect(
+          plan.steps[0]?.capabilityId,
+        ).toBe("source-graph");
+      },
+    );
+
   },
 );

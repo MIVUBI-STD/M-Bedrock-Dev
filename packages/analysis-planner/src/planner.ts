@@ -40,7 +40,7 @@ const GOAL_LEVEL: Readonly<Record<
   "semantic-consistency": "semantic",
   "intent-classification": "semantic",
   "runtime-behavior": "runtime",
-  "causal-repair": "intervention",
+  "causal-repair": "runtime",
 };
 
 function highestEvidenceLevel(
@@ -76,46 +76,134 @@ function relevant(
   return capability.tags.some((tag) => wanted.has(tag));
 }
 
-function chooseCheapestForLevel(
-  capabilities: readonly AnalysisCapability[],
-  level: AnalysisEvidenceLevel,
-  context: AnalysisExecutionContext,
-  relevantTags: readonly string[],
-): AnalysisCapability | undefined {
-  return capabilities
-    .filter(
-      (capability) =>
-        capability.evidenceLevel === level &&
-        capability.contexts.includes(context) &&
-        relevant(capability, relevantTags),
-    )
+function candidateCapabilities(
+  input: MinimumSufficientAnalysisInput,
+  currentEvidenceLevel: AnalysisEvidenceLevel | undefined,
+  requiredEvidenceLevel: AnalysisEvidenceLevel,
+): AnalysisCapability[] {
+  const currentOrder =
+    currentEvidenceLevel === undefined
+      ? -1
+      : LEVEL_ORDER[currentEvidenceLevel];
+  const requiredOrder =
+    LEVEL_ORDER[requiredEvidenceLevel];
+
+  return input.capabilities
+    .filter((capability) => {
+      const order =
+        LEVEL_ORDER[capability.evidenceLevel];
+      return (
+        order > currentOrder &&
+        order <= requiredOrder &&
+        capability.contexts.includes(
+          input.context,
+        ) &&
+        relevant(
+          capability,
+          input.relevantTags,
+        )
+      );
+    })
     .sort(
       (a, b) =>
-        COST_ORDER[a.cost] - COST_ORDER[b.cost] ||
+        LEVEL_ORDER[a.evidenceLevel] -
+          LEVEL_ORDER[b.evidenceLevel] ||
+        COST_ORDER[a.cost] -
+          COST_ORDER[b.cost] ||
         Number(!a.deterministic) -
           Number(!b.deterministic) ||
         a.id.localeCompare(b.id),
-    )[0];
+    );
 }
 
-function levelsBetween(
-  current: AnalysisEvidenceLevel | undefined,
-  required: AnalysisEvidenceLevel,
-): AnalysisEvidenceLevel[] {
-  const from =
-    current === undefined
-      ? 0
-      : LEVEL_ORDER[current] + 1;
-  const to = LEVEL_ORDER[required];
+function prerequisiteChoice(
+  capability: AnalysisCapability,
+  input: MinimumSufficientAnalysisInput,
+): {
+  capability?: AnalysisCapability;
+  error?: string;
+} {
+  const completed = new Set(
+    input.completedCapabilityIds ?? [],
+  );
+  const byId = new Map(
+    input.capabilities.map((item) => [
+      item.id,
+      item,
+    ]),
+  );
+  const visiting = new Set<string>();
 
-  return (
-    Object.keys(LEVEL_ORDER) as AnalysisEvidenceLevel[]
-  )
-    .filter((level) => {
-      const order = LEVEL_ORDER[level];
-      return order >= from && order <= to;
-    })
-    .sort((a, b) => LEVEL_ORDER[a] - LEVEL_ORDER[b]);
+  const resolve = (
+    item: AnalysisCapability,
+  ): AnalysisCapability | undefined => {
+    if (completed.has(item.id)) {
+      return undefined;
+    }
+
+    if (visiting.has(item.id)) {
+      throw new Error(
+        "Analysis capability prerequisite cycle detected at " +
+          item.id +
+          ".",
+      );
+    }
+
+    visiting.add(item.id);
+    for (const prerequisiteId of [
+      ...(item.prerequisites ?? []),
+    ].sort()) {
+      if (completed.has(prerequisiteId)) {
+        continue;
+      }
+      const prerequisite =
+        byId.get(prerequisiteId);
+      if (!prerequisite) {
+        throw new Error(
+          "Analysis capability " +
+            item.id +
+            " references missing prerequisite " +
+            prerequisiteId +
+            ".",
+        );
+      }
+      if (
+        !prerequisite.contexts.includes(
+          input.context,
+        )
+      ) {
+        throw new Error(
+          "Analysis capability prerequisite " +
+            prerequisiteId +
+            " is unavailable in execution context " +
+            input.context +
+            ".",
+        );
+      }
+      const nested = resolve(prerequisite);
+      if (nested) {
+        visiting.delete(item.id);
+        return nested;
+      }
+      if (!completed.has(prerequisiteId)) {
+        visiting.delete(item.id);
+        return prerequisite;
+      }
+    }
+    visiting.delete(item.id);
+    return item;
+  };
+
+  try {
+    return { capability: resolve(capability) };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Analysis prerequisite resolution failed.",
+    };
+  }
 }
 
 export function requiredEvidenceLevelForGoal(
@@ -169,34 +257,18 @@ export function planMinimumSufficientAnalysis(
       skippedCapabilityIds:
         input.capabilities.map((item) => item.id).sort(),
       reasons: [
-        "The requested analysis goal requires runtime or intervention evidence, but the current execution context cannot produce it.",
+        "The requested analysis goal requires runtime evidence, but the current execution context cannot produce it.",
       ],
     };
   }
 
-  const selected: AnalysisCapability[] = [];
-
-  for (const level of levelsBetween(
+  const candidates = candidateCapabilities(
+    input,
     currentEvidenceLevel,
     requiredEvidenceLevel,
-  )) {
-    const choice = chooseCheapestForLevel(
-      input.capabilities,
-      level,
-      input.context,
-      input.relevantTags,
-    );
-    if (!choice) continue;
-    selected.push(choice);
-  }
-
-  const canReachRequired = selected.some(
-    (item) =>
-      LEVEL_ORDER[item.evidenceLevel] >=
-      LEVEL_ORDER[requiredEvidenceLevel],
   );
 
-  if (!canReachRequired) {
+  if (candidates.length === 0) {
     return {
       goal: input.goal,
       requiredEvidenceLevel,
@@ -208,29 +280,51 @@ export function planMinimumSufficientAnalysis(
       skippedCapabilityIds:
         input.capabilities.map((item) => item.id).sort(),
       reasons: [
-        "No relevant capability available in the current context can reach the minimum evidence level required for this analysis goal.",
+        "No relevant capability available in the current context can advance evidence toward the minimum level required for this analysis goal.",
       ],
     };
   }
 
-  const selectedIds = new Set(
-    selected.map((item) => item.id),
+  const resolved = prerequisiteChoice(
+    candidates[0]!,
+    input,
   );
 
-  const steps: PlannedAnalysisStep[] =
-    selected.map((item) => ({
-      capabilityId: item.id,
-      evidenceLevel: item.evidenceLevel,
-      cost: item.cost,
+  if (!resolved.capability) {
+    return {
+      goal: input.goal,
+      requiredEvidenceLevel,
+      ...(currentEvidenceLevel === undefined
+        ? {}
+        : { currentEvidenceLevel }),
+      disposition: "capability-gap",
+      steps: [],
+      skippedCapabilityIds:
+        input.capabilities.map((item) => item.id).sort(),
       reasons: [
-        "Selected as the lowest-cost relevant capability for evidence level " +
-          item.evidenceLevel +
-          ".",
-        ...(item.deterministic
-          ? ["Deterministic capability preferred."]
-          : []),
+        resolved.error ??
+          "No executable analysis capability could be resolved.",
       ],
-    }));
+    };
+  }
+
+  const selected = resolved.capability;
+  const step: PlannedAnalysisStep = {
+    capabilityId: selected.id,
+    evidenceLevel: selected.evidenceLevel,
+    cost: selected.cost,
+    reasons: [
+      "Selected as the next lowest-cost relevant evidence escalation.",
+      ...(selected.deterministic
+        ? ["Deterministic capability preferred."]
+        : []),
+      ...(selected.id === candidates[0]!.id
+        ? []
+        : [
+            "Selected because it is an unmet prerequisite of the next analysis capability.",
+          ]),
+    ],
+  };
 
   return {
     goal: input.goal,
@@ -239,14 +333,15 @@ export function planMinimumSufficientAnalysis(
       ? {}
       : { currentEvidenceLevel }),
     disposition: "execute",
-    steps,
+    steps: [step],
     skippedCapabilityIds: input.capabilities
       .map((item) => item.id)
-      .filter((id) => !selectedIds.has(id))
+      .filter((id) => id !== selected.id)
       .sort(),
     reasons: [
-      "Plan contains only the minimum relevant evidence escalation needed to reach the requested analysis goal.",
-      "Higher-cost or unrelated capabilities are skipped until evidence proves escalation is necessary.",
+      "Only one next-best analysis action is scheduled.",
+      "Re-plan after this step so newly collected evidence can stop escalation before more expensive analysis runs.",
+      "The repair authority remains outside the analysis planner; reaching the evidence level does not authorize mutation.",
     ],
   };
 }

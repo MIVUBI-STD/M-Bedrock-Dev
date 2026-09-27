@@ -46,6 +46,7 @@ export interface MinimumSufficientAnalysisInput {
   relevantTags: readonly string[];
   context: AnalysisExecutionContext;
   availableEvidence?: readonly AnalysisEvidenceSnapshot[];
+  completedCapabilityIds?: readonly string[];
   capabilities: readonly AnalysisCapability[];
 }
 
