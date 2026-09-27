@@ -80,7 +80,10 @@ export interface GameplayRouteStallRuntimeAssessment {
 }
 
 type GameplayRouteStallAssessmentBase =
-  Omit<GameplayRouteStallRuntimeAssessment, "evidencePlan">;
+  Omit<
+    GameplayRouteStallRuntimeAssessment,
+    "evidencePlan" | "investigationDirection"
+  >;
 
 export interface GameplayIntentRuntimeAnalysis {
   assessments: readonly GameplayIntentRuntimeAssessment[];
