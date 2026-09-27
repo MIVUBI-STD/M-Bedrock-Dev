@@ -68,7 +68,7 @@ describe("diagnostic analysis routing", () => {
       ),
     ).toMatchObject({
       disposition: "analyze",
-      goal: "intent-classification",
+      goal: "authored-intent",
     });
   });
 });
