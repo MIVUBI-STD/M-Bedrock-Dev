@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveSchedulerGenerationGuardTransformHints,
+  deriveSessionGenerationGuardTransformHints,
   parseScriptFile,
   SCRIPT_REPAIR_HINT_ANALYZER_ID,
   SCRIPT_REPAIR_HINT_ANALYZER_REVISION,
@@ -54,7 +55,6 @@ describe("scheduler generation guard repair hints", () => {
         "system.run(() => this.mutate())",
       supportedPredicateIds: [
         "stale-callback-observed",
-        "cancelled-callback-mutation-observed",
       ],
       supportedFactorIds: [
         "generation-guard-enabled",
@@ -93,6 +93,77 @@ describe("scheduler generation guard repair hints", () => {
       expectedText:
         "system.run(() => this.mutate())",
     });
+  });
+
+  it("classifies connection, life, and participation generation captures as session guard hints", () => {
+    const cases = [{
+      captured: "capturedConnectionGeneration",
+      current: "this.connectionGeneration",
+      predicate:
+        "stale-session-mutation-observed",
+      factor:
+        "connection-generation-guard-enabled",
+    }, {
+      captured: "capturedLifeGeneration",
+      current: "this.lifeGeneration",
+      predicate:
+        "stale-life-join-mutation-observed",
+      factor:
+        "life-generation-guard-enabled",
+    }, {
+      captured:
+        "capturedParticipationGeneration",
+      current: "this.participationGeneration",
+      predicate:
+        "stale-join-transition-observed",
+      factor:
+        "membership-guard-enabled",
+    }];
+
+    for (const item of cases) {
+      const text = [
+        'import { system } from "@minecraft/server";',
+        "class SessionController {",
+        "  " +
+          item.current.slice("this.".length) +
+          " = 0;",
+        "  mutate() {}",
+        "  schedule() {",
+        "    const " +
+          item.captured +
+          " = " +
+          item.current +
+          ";",
+        "    system.run(() => this.mutate());",
+        "  }",
+        "}",
+      ].join("\n");
+
+      const hints =
+        deriveSessionGenerationGuardTransformHints(
+          "session-controller",
+          text,
+          source,
+        );
+
+      expect(hints).toHaveLength(1);
+      expect(hints[0]).toMatchObject({
+        family: "session-generation-guard",
+        supportedPredicateIds: [
+          item.predicate,
+        ],
+        supportedFactorIds: [
+          item.factor,
+        ],
+      });
+      expect(hints[0]?.replacementText).toContain(
+        "if (" +
+          item.captured +
+          " !== " +
+          item.current +
+          ") return;",
+      );
+    }
   });
 
   it("supports aliased system imports without changing causal semantics", () => {
