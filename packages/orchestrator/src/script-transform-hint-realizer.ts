@@ -40,6 +40,7 @@ export interface RepairTransformHintProposal {
   realizerId: string;
   realizerVersion: string;
   hintId: string;
+  hintFamily: RepairSourceTransformHint["family"];
   strategy: RepairStrategyCandidate;
 }
 
@@ -330,6 +331,7 @@ function realizeGenerationGuardHint(
       realizerId: realizer.id,
       realizerVersion: realizer.version,
       hintId: hint.id,
+      hintFamily: hint.family,
       strategy: {
         strategyId:
           sourceId + ":" + transaction.id,
@@ -345,6 +347,7 @@ function realizeGenerationGuardHint(
           sourceDefinition.repairClass,
         causalBinding:
           enumeration.envelope.causalBinding,
+        postTransformProofRequired: true,
         validationObligations: {
           invariantIds:
             enumeration.envelope.invariantIds,
