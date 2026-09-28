@@ -40,6 +40,59 @@ describe("runtime temporal analysis", () => {
     ).status).toBe("satisfied");
   });
 
+  it("enforces minimum tick separation when the temporal contract requires a later tick", () => {
+    const strict = {
+      ...requirement,
+      minTickDelta: 1,
+    };
+
+    expect(assessRuntimeTemporalRequirement(
+      [
+        {
+          ...record("mutation-verification-passed", 10),
+          observedAt: {
+            streamId: "stream-1",
+            sequence: 10,
+            tick: 20,
+          },
+        },
+        {
+          ...record("dependent-action-observed", 11),
+          observedAt: {
+            streamId: "stream-1",
+            sequence: 11,
+            tick: 20,
+          },
+        },
+      ],
+      strict,
+      true,
+    ).status).not.toBe("satisfied");
+
+    expect(assessRuntimeTemporalRequirement(
+      [
+        {
+          ...record("mutation-verification-passed", 10),
+          observedAt: {
+            streamId: "stream-1",
+            sequence: 10,
+            tick: 20,
+          },
+        },
+        {
+          ...record("dependent-action-observed", 11),
+          observedAt: {
+            streamId: "stream-1",
+            sequence: 11,
+            tick: 21,
+          },
+        },
+      ],
+      strict,
+      true,
+    ).status).toBe("satisfied");
+  });
+
   it("detects reversed ordering on a complete stream", () => {
     expect(assessRuntimeTemporalRequirement(
       [
