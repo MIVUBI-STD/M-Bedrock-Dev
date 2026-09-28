@@ -120,3 +120,31 @@ control arm absent + treatment arm present
 Runtime evidence IDs are record-specific even when multiple records share one trial-level provenance key, preventing accidental evidence loss through deduplication.
 
 GitHub Actions Verify run `36380666955` completed successfully: repository policy, source hygiene, public API audit, typecheck, and full test suite all passed.
+
+
+## Expected contrast direction proof
+
+Controlled runtime experiments now support explicit expected contrast direction per outcome predicate:
+
+```text
+predicate
++ control expected state
++ treatment expected state
+→ definition revision authority
+```
+
+Qualification now records arm roles, observed control/treatment direction, expected-direction matches, and expected-direction mismatches. Diagnostic reclassification can bind evidence by semantic role and required state rather than by arm name alone, and may require both deterministic intervention contrast and a matched expected direction before using the evidence.
+
+Validated source revision: `e20d986c5a8f4455b98eafe8eaf9d694660fb3dd`.
+
+GitHub Actions Verify run `36381222614` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
+
+This proves the role/direction contracts compile and pass the current repository regression surface. It does not by itself prove Minecraft runtime semantics outside the experiments actually executed.
