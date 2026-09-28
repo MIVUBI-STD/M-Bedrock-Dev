@@ -177,6 +177,20 @@ export function authorizeRepairMutation(
     }
   }
 
+  if (
+    transaction.requiredProofs?.includes(
+      "post-transform",
+    ) &&
+    !proof.decisionBasis.postTransformProofRevision?.trim()
+  ) {
+    return {
+      authorized: false,
+      reasons: [
+        "Patch transaction requires a proven post-transform semantic proof before mutation.",
+      ],
+    };
+  }
+
   if (proof.transactionId !== transaction.id) {
     return {
       authorized: false,
