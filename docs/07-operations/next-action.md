@@ -197,3 +197,34 @@ Next priorities:
 5. define compatibility/invalidation behavior for target runtime updates, fixture evolution, and predicate-contract revisions.
 
 Fail closed when only a subset of the causal experiment envelope has been reverified.
+
+
+## Next lane — runtime-domain proof expansion
+
+Causal experiment provenance, multi-contract post-repair coverage, compatible successor semantics, and release invalidation are now structurally enforced.
+
+The next bottleneck is no longer proof transport. It is real Minecraft runtime coverage.
+
+Prioritize controlled experiment families in this order:
+
+1. chunk lifecycle and ticking-area readiness;
+2. scheduler / deferred callback / event ordering;
+3. entity AI and pathfinding stall/recovery;
+4. multiplayer session concurrency, disconnect/reconnect, join/leave races, and cross-arena isolation;
+5. persistence and restart/reload state;
+6. runtime-profile differentials across Retail, Dedicated Server, Education, and other explicitly supported targets.
+
+For every runtime class:
+
+```text
+documented/runtime hypothesis
+→ controlled factors
+→ control/treatment arms
+→ explicit expected contrast
+→ repeatable observation
+→ evidence integrity
+→ causal predicate binding
+→ regression fixture
+```
+
+Do not promote a runtime-class assumption into a reusable rule until the controlled experiment surface proves it across the applicable target profile.
