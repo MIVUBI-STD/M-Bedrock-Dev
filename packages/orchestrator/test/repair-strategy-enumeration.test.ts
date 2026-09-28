@@ -15,6 +15,7 @@ import {
   deriveRepairOpportunityEnvelope,
   enumerateRepairStrategySources,
   realizeProviderRepairStrategy,
+  repairStrategySemanticFingerprint,
   selectProviderBackedRepairStrategyForIncident,
   type RepairStrategyProviderRegistry,
 } from "../src/index.js";
@@ -405,6 +406,16 @@ describe("repair strategy enumeration and realization", () => {
       repairClass: "implementation-repair",
       reversible: true,
       idempotent: true,
+      validationObligations: {
+        invariantIds: [
+          "invariant::relation-session-guard",
+        ],
+        runtimeExperimentIds: ["exp:reconnect"],
+        validationKinds: [
+          "reparse",
+          "rerun-diagnostic",
+        ],
+      },
       causalBinding: {
         interventionIds: ["exp:reconnect"],
         predicateIds: [
@@ -520,6 +531,97 @@ describe("repair strategy enumeration and realization", () => {
     if (selected.result.status !== "evaluated") return;
     expect(selected.result.selection.status)
       .toBe("selected");
+  });
+
+  it("keeps semantic equivalence independent of provider/title but sensitive to validation contract", () => {
+    const enumeration =
+      enumerateRepairStrategySources(
+        envelope(),
+        diagnostics,
+        providerRegistry,
+      );
+
+    const a = realizeProviderRepairStrategy(
+      enumeration,
+      providerRegistry,
+      {
+        sourceId: "session-guard-a",
+        sourceVersion: "1",
+        transaction: transaction("title-a"),
+        changedNodeIds: ["function:p:session"],
+        repairClass: "implementation-repair",
+        reversible: true,
+        idempotent: true,
+      },
+    );
+    const b = realizeProviderRepairStrategy(
+      enumeration,
+      providerRegistry,
+      {
+        sourceId: "session-guard-b",
+        sourceVersion: "1",
+        transaction: transaction("title-b"),
+        changedNodeIds: ["function:p:session"],
+        repairClass: "implementation-repair",
+        reversible: true,
+        idempotent: true,
+      },
+    );
+
+    expect(a.status).toBe("realized");
+    expect(b.status).toBe("realized");
+    if (
+      a.status !== "realized" ||
+      b.status !== "realized"
+    ) return;
+
+    expect(
+      repairStrategySemanticFingerprint(a.proposal),
+    ).toBe(
+      repairStrategySemanticFingerprint(b.proposal),
+    );
+
+    const changedTx = createPatchTransaction({
+      title: "different validation",
+      sourceFingerprint: "source-a",
+      operations: [{
+        kind: "replace-text",
+        source,
+        expected: "function old_session_mutation",
+        replacement:
+          "execute if score @s connection_gen = @s captured_gen run function guarded_session_mutation",
+      }],
+      preconditions: [{
+        kind: "source-fingerprint",
+        expected: "source-a",
+      }],
+      validation: [{
+        kind: "rebuild-graph",
+      }],
+    });
+    const changed = realizeProviderRepairStrategy(
+      enumeration,
+      providerRegistry,
+      {
+        sourceId: "session-guard-a",
+        sourceVersion: "1",
+        transaction: changedTx,
+        changedNodeIds: ["function:p:session"],
+        repairClass: "implementation-repair",
+        reversible: true,
+        idempotent: true,
+      },
+    );
+
+    expect(changed.status).toBe("realized");
+    if (changed.status !== "realized") return;
+    expect(
+      repairStrategySemanticFingerprint(
+        changed.proposal,
+      ),
+    ).not.toBe(
+      repairStrategySemanticFingerprint(a.proposal),
+    );
   });
 
   it("reports explicit strategy coverage gaps", () => {
