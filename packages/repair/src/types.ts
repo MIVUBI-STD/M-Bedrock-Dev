@@ -21,10 +21,14 @@ export interface PatchPrecondition {
   expected: string;
 }
 
+export type PatchRequiredProof =
+  | "post-transform";
+
 export interface PatchTransaction {
   id: string;
   title: string;
   sourceFingerprint: string;
+  requiredProofs?: readonly PatchRequiredProof[];
   operations: PatchOperation[];
   preconditions: PatchPrecondition[];
   validation: ValidationStep[];
