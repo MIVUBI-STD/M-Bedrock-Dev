@@ -25,8 +25,8 @@ export interface RepairStrategySourceDefinition {
   selectionMode: RepairStrategySourceSelectionMode;
   repairClass: RepairStrategyClass;
   supportedDiagnosticCodes?: readonly DiagnosticCode[];
-  requiredPredicateIds?: readonly string[];
-  requiredFactorIds?: readonly string[];
+  supportedPredicateIds?: readonly string[];
+  supportedFactorIds?: readonly string[];
   requiresExactSourceEvidence: boolean;
   rationale: string;
 }
@@ -104,8 +104,8 @@ export function validateRepairStrategySourceRegistry(
     }
     if (
       (source.supportedDiagnosticCodes?.length ?? 0) === 0 &&
-      (source.requiredPredicateIds?.length ?? 0) === 0 &&
-      (source.requiredFactorIds?.length ?? 0) === 0
+      (source.supportedPredicateIds?.length ?? 0) === 0 &&
+      (source.supportedFactorIds?.length ?? 0) === 0
     ) {
       errors.push(
         "Repair strategy source " +
@@ -165,12 +165,12 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       deterministic: false,
       selectionMode: "proposal-only",
       repairClass: "implementation-repair",
-      requiredPredicateIds: [
+      supportedPredicateIds: [
         "stale-session-mutation-observed",
         "stale-life-join-mutation-observed",
         "stale-join-transition-observed",
       ],
-      requiredFactorIds: [
+      supportedFactorIds: [
         "connection-generation-guard-enabled",
         "life-generation-guard-enabled",
         "membership-guard-enabled",
@@ -187,11 +187,11 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       deterministic: false,
       selectionMode: "proposal-only",
       repairClass: "implementation-repair",
-      requiredPredicateIds: [
+      supportedPredicateIds: [
         "arena-capacity-overflow-observed",
         "arena-start-ownership-violation-observed",
       ],
-      requiredFactorIds: [
+      supportedFactorIds: [
         "capacity-guard-enabled",
         "start-ownership-guard-enabled",
       ],
@@ -207,10 +207,10 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       deterministic: false,
       selectionMode: "proposal-only",
       repairClass: "runtime-recovery-mitigation",
-      requiredPredicateIds: [
+      supportedPredicateIds: [
         "movement-resumed-after-recovery",
       ],
-      requiredFactorIds: [
+      supportedFactorIds: [
         "recovery-enabled",
       ],
       requiresExactSourceEvidence: false,
