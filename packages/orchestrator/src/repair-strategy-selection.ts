@@ -19,12 +19,28 @@ import type {
   RepairBlastRadiusPolicy,
 } from "./repair-counterfactual-types.js";
 
+export type RepairStrategyClass =
+  | "implementation-repair"
+  | "configuration-repair"
+  | "compatibility-workaround"
+  | "runtime-recovery-mitigation";
+
+export interface RepairStrategyCausalBinding {
+  interventionIds?: readonly string[];
+  predicateIds?: readonly string[];
+  factorIds?: readonly string[];
+}
+
 export interface RepairStrategyCandidate {
   strategyId: string;
   transaction: PatchTransaction;
   changedNodeIds: readonly string[];
   supportingInvariantIds: readonly string[];
   addressesCandidateIds: readonly string[];
+  repairClass?: RepairStrategyClass;
+  causalBinding?: RepairStrategyCausalBinding;
+  reversible?: boolean;
+  idempotent?: boolean;
   preservationReadiness?: PreservationReadinessResult;
 }
 
@@ -34,6 +50,9 @@ export interface RepairStrategySelectionPolicy {
   allowGuarded?: boolean;
   blastRadiusPolicy?: RepairBlastRadiusPolicy;
   preservationReadiness?: PreservationReadinessResult;
+  allowedRepairClasses?: readonly RepairStrategyClass[];
+  preferReversible?: boolean;
+  preferIdempotent?: boolean;
   decisionBasis?: Omit<
     DecisionBasisRevision,
     "sourceFingerprint" | "graphFingerprint" | "invariantRegistryRevision"
@@ -56,6 +75,16 @@ export interface RepairStrategyAssessment {
     impactDepth: number;
     changedNodes: number;
     operations: number;
+    preservationRiskRank: number;
+    runtimeRetestBurden: number;
+    reversibilityRank: number;
+    idempotencyRank: number;
+  };
+  intelligence: {
+    repairClass: RepairStrategyClass | "unspecified";
+    causalBindingSatisfied: boolean;
+    causalBindingReasons: readonly string[];
+    authorizingRuntimeExperiments: readonly string[];
   };
 }
 
@@ -124,6 +153,126 @@ function blastRadiusRank(
   }
 }
 
+function declaredSet(
+  values: readonly string[] | undefined,
+): Set<string> {
+  return new Set(values ?? []);
+}
+
+function causalBindingAssessment(
+  diagnostic: DiagnosticRepairDecision,
+  candidate: RepairStrategyCandidate,
+): {
+  satisfied: boolean;
+  reasons: string[];
+  interventionIds: string[];
+} {
+  const provenance =
+    diagnostic.causalProof?.interventionProvenance ?? [];
+  if (provenance.length === 0) {
+    return {
+      satisfied: true,
+      reasons: [
+        "Diagnostic has no controlled-intervention provenance requiring exact strategy binding.",
+      ],
+      interventionIds: [],
+    };
+  }
+
+  const requiredInterventions = [
+    ...new Set(provenance.map((item) => item.interventionId)),
+  ].sort();
+  const requiredPredicates = [
+    ...new Set(
+      provenance
+        .map((item) => item.predicateId)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  ].sort();
+  const requiredFactors = [
+    ...new Set(
+      provenance.flatMap(
+        (item) => item.controlledFactorIds ?? [],
+      ),
+    ),
+  ].sort();
+
+  if (!candidate.causalBinding) {
+    return {
+      satisfied: false,
+      reasons: [
+        "Runtime-causal repair strategy is missing exact causalBinding metadata.",
+      ],
+      interventionIds: requiredInterventions,
+    };
+  }
+
+  const interventions = declaredSet(
+    candidate.causalBinding.interventionIds,
+  );
+  const predicates = declaredSet(
+    candidate.causalBinding.predicateIds,
+  );
+  const factors = declaredSet(
+    candidate.causalBinding.factorIds,
+  );
+  const reasons: string[] = [];
+
+  const missingInterventions = requiredInterventions.filter(
+    (id) => !interventions.has(id),
+  );
+  const missingPredicates = requiredPredicates.filter(
+    (id) => !predicates.has(id),
+  );
+  const missingFactors = requiredFactors.filter(
+    (id) => !factors.has(id),
+  );
+
+  if (missingInterventions.length > 0) {
+    reasons.push(
+      "Strategy causal binding is missing intervention(s): " +
+        missingInterventions.join(", ") +
+        ".",
+    );
+  }
+  if (missingPredicates.length > 0) {
+    reasons.push(
+      "Strategy causal binding is missing predicate(s): " +
+        missingPredicates.join(", ") +
+        ".",
+    );
+  }
+  if (missingFactors.length > 0) {
+    reasons.push(
+      "Strategy causal binding is missing controlled factor(s): " +
+        missingFactors.join(", ") +
+        ".",
+    );
+  }
+
+  return {
+    satisfied: reasons.length === 0,
+    reasons:
+      reasons.length === 0
+        ? [
+            "Strategy causal binding covers the full controlled-intervention provenance.",
+          ]
+        : reasons,
+    interventionIds: requiredInterventions,
+  };
+}
+
+function preservationRiskRank(
+  pipeline: RepairAdmissionPipelineResult,
+): number {
+  const sensitive =
+    pipeline.blastRadius.sensitiveKinds.length;
+  const revalidation =
+    pipeline.impact.affectedNodeIds.length +
+    pipeline.impact.affectedPaths.length;
+  return sensitive * 100 + revalidation;
+}
+
 function coversRequiredInvariants(
   actual: readonly string[],
   required: readonly string[],
@@ -142,6 +291,10 @@ function metricVector(
     item.metrics.affectedNodes,
     item.metrics.affectedPaths,
     item.metrics.impactDepth,
+    item.metrics.preservationRiskRank,
+    item.metrics.runtimeRetestBurden,
+    item.metrics.reversibilityRank,
+    item.metrics.idempotencyRank,
     item.metrics.changedNodes,
     item.metrics.operations,
   ];
@@ -250,6 +403,18 @@ export function selectRepairStrategy(
 
   const assessments = candidates
     .map((candidate): RepairStrategyAssessment => {
+      const causalBinding =
+        causalBindingAssessment(
+          diagnostic,
+          candidate,
+        );
+      const repairClassAllowed =
+        candidate.repairClass === undefined ||
+        policy.allowedRepairClasses === undefined ||
+        policy.allowedRepairClasses.includes(
+          candidate.repairClass,
+        );
+
       const pipeline = evaluateRepairAdmissionPipeline({
         graph,
         transaction: candidate.transaction,
@@ -290,7 +455,15 @@ export function selectRepairStrategy(
         );
 
       const reasons: string[] = [
-        "Strategy selection evaluates causal fit and blast radius separately from mutation authorization.",
+        "Strategy selection evaluates causal fit, semantic blast radius, preservation risk, reversibility, idempotency, and retest burden before mutation authorization.",
+        ...causalBinding.reasons,
+        ...(repairClassAllowed
+          ? []
+          : [
+              "Strategy repair class is not allowed by the current selection policy: " +
+                candidate.repairClass +
+                ".",
+            ]),
         ...(pipeline.admission.disposition === "blocked" &&
         selectionAdmission.disposition !== "blocked"
           ? [
@@ -392,6 +565,8 @@ export function selectRepairStrategy(
         transactionId: candidate.transaction.id,
         admissible:
           addressesSelectedCandidate &&
+          causalBinding.satisfied &&
+          repairClassAllowed &&
           invariantCoverage &&
           candidate.transaction.validation.length > 0 &&
           (
@@ -417,8 +592,36 @@ export function selectRepairStrategy(
           sensitiveKinds:
             pipeline.blastRadius.sensitiveKinds.length,
           impactDepth: pipeline.impact.maxImpactDepth,
+          preservationRiskRank:
+            preservationRiskRank(pipeline),
+          runtimeRetestBurden:
+            causalBinding.interventionIds.length +
+            pipeline.impact.affectedNodeIds.length +
+            pipeline.impact.affectedPaths.length,
+          reversibilityRank:
+            candidate.reversible === true
+              ? 0
+              : candidate.reversible === false
+                ? 2
+                : 1,
+          idempotencyRank:
+            candidate.idempotent === true
+              ? 0
+              : candidate.idempotent === false
+                ? 2
+                : 1,
           changedNodes: candidate.changedNodeIds.length,
           operations: candidate.transaction.operations.length,
+        },
+        intelligence: {
+          repairClass:
+            candidate.repairClass ?? "unspecified",
+          causalBindingSatisfied:
+            causalBinding.satisfied,
+          causalBindingReasons:
+            causalBinding.reasons,
+          authorizingRuntimeExperiments:
+            causalBinding.interventionIds,
         },
       };
     })
