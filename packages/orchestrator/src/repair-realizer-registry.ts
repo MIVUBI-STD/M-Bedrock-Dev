@@ -203,6 +203,17 @@ export const BUILTIN_REPAIR_REALIZERS:
       rationale:
         "Applies only analyzer-owned exact terminal arena capacity transform hints with a direct authored capacity operand.",
     }, {
+      id: "arena-start-ownership-guard-realizer",
+      version: "1",
+      sourceKind: "built-in-planner",
+      sourceId: "arena-ownership-guard-template",
+      owner:
+        "packages/orchestrator/src/script-transform-hint-realizer.ts",
+      deterministic: true,
+      repairClass: "implementation-repair",
+      rationale:
+        "Applies only analyzer-owned exact start-owner hints backed by an authored null/undefined sentinel and current arena generation token.",
+    }, {
       id: "linear-topology-repair-realizer",
       version: "1",
       sourceKind: "provider",
