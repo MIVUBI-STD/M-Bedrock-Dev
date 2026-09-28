@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { SemanticGraph } from "../../graph/src/index.js";
 import type {
   CausalChain,
   CausalIncident,
@@ -117,8 +118,36 @@ describe("topology repair strategy realizer", () => {
       }),
     ]);
 
+    const graph = new SemanticGraph();
+    graph.addNode({
+      id: "function:p:arena",
+      identity: {
+        kind: "function",
+        scope: "p",
+        identifier: "arena",
+      },
+      kind: "function",
+      identifier: "arena",
+      source: {
+        artifactId: source.artifactId,
+        relativePath: source.relativePath,
+      },
+    });
+    graph.addNode({
+      id: "command:p:arena:3",
+      identity: {
+        kind: "command",
+        scope: "p",
+        identifier: "arena:3",
+      },
+      kind: "command",
+      identifier: "arena:3",
+      source,
+    });
+
     const result = realizeLinearTopologyRepairStrategy(
       enumeration,
+      graph,
       BUILTIN_REPAIR_STRATEGY_PROVIDERS,
       {
         outlier: {
@@ -159,7 +188,6 @@ describe("topology repair strategy realizer", () => {
           directTopLevel: true,
         },
       },
-      ["function:p:arena"],
     );
 
     expect(result.status).toBe("realized");
@@ -174,6 +202,10 @@ describe("topology repair strategy realizer", () => {
         repairClass: "implementation-repair",
         reversible: true,
         idempotent: false,
+        changedNodeIds: [
+          "command:p:arena:3",
+          "function:p:arena",
+        ],
       },
     });
     expect(
