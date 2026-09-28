@@ -763,3 +763,70 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Repair opportunity enumeration and deterministic realization proof
+
+Repair candidate generation now begins from a typed `RepairOpportunityEnvelope` derived from the selected causal candidate.
+
+The envelope retains:
+
+```text
+incident/candidate identity
+causal chain ids
+knowledge relation ids
+required invariant ids
+diagnostic ids + codes
+source fingerprint
+source evidence
+exact single-line source evidence
+controlled intervention ids
+causal predicates
+controlled factors
+target runtime profile fingerprints
+```
+
+Registered repair providers are enumerated against that envelope before any transaction exists. Enumeration does not grant selection or mutation authority.
+
+Provider realization fails closed when:
+
+```text
+provider was not enumerated as applicable
+provider version drifted
+source fingerprint is stale
+mutation kind exceeds provider declaration
+operation source is outside causal source evidence
+exact-source provider lacks exact matching source evidence
+transaction contains no operations
+```
+
+Realized candidates receive authoritative metadata from the opportunity rather than trusting provider-supplied guesses:
+
+```text
+selected causal candidate id
+required invariant ids
+repair class
+causal intervention/predicate/factor binding
+reversibility
+idempotency
+validation obligations
+runtime experiment retest obligations
+```
+
+Semantic candidate deduplication now collapses equivalent repairs from different providers while preserving every equivalent provider/version as provenance. Equivalence ignores provider identity, strategy title, and transaction id, but remains sensitive to patch semantics, source fingerprint, invariants, causal binding, repair class, reversibility/idempotency, and validation/retest obligations.
+
+Provider-backed selection retains provenance from all providers that independently realized an equivalent candidate.
+
+A concrete internal realizer now connects `analyzeFunctionTopology()` repairable candidates to the existing `planLinearTopologyRepair()` planner. The built-in topology provider remains proposal-only because its diagnostic evidence is heuristic; deterministic realization does not elevate its evidence authority.
+
+Validated source revision: `42e716545dc01035d8ac54b272dabcfa4d2a815c`.
+
+GitHub Actions Verify run `36416908849` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
