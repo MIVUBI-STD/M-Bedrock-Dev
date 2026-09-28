@@ -334,6 +334,7 @@ export interface ScriptArenaAuthorityEvidence {
     | "capacity-operand"
     | "capacity-check"
     | "arena-generation-operand"
+    | "start-owner-guard"
     | "start-owner-acquire"
     | "start-state-commit";
   arenaExpression: string;
@@ -354,10 +355,22 @@ export interface ScriptArenaAuthorityPath {
   capacityOperand?: ScriptArenaAuthorityEvidence;
   capacityCheck?: ScriptArenaAuthorityEvidence;
   generationOperand?: ScriptArenaAuthorityEvidence;
+  startOwnerGuard?: ScriptArenaAuthorityEvidence;
   startOwnerAcquire?: ScriptArenaAuthorityEvidence;
   startStateCommit?: ScriptArenaAuthorityEvidence;
   capacityAuthorityProven: boolean;
   startAuthorityProven: boolean;
+  startGuardProven: boolean;
+}
+
+export interface ScriptPersistenceIdempotencyGuard {
+  propertyKey: string;
+  appliedExpression: string;
+  journalExpression: string;
+  sideEffectExpression: string;
+  executionRegion: string;
+  conditionSource: SourceRef;
+  sideEffectSource: SourceRef;
 }
 
 export interface ScriptCapabilityUse {
@@ -411,5 +424,6 @@ export interface ParsedScriptFile {
   repairTransformHints?: RepairSourceTransformHint[];
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
+  persistenceIdempotencyGuards?: ScriptPersistenceIdempotencyGuard[];
   capabilities: ScriptCapabilityUse[];
 }
