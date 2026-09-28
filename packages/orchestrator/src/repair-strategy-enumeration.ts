@@ -2,8 +2,10 @@ import type {
   DiagnosticFinding,
 } from "../../diagnostics/src/index.js";
 import type {
-  PatchTransaction,
   SourceRef,
+} from "../../project-model/src/index.js";
+import type {
+  PatchTransaction,
 } from "../../repair/src/index.js";
 import type {
   RepairOpportunityEnvelope,
