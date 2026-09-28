@@ -169,3 +169,29 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Controlled factor value provenance proof
+
+Controlled-intervention provenance now records exact factor value contrasts, not only factor IDs:
+
+```text
+factor id
++ control value
++ treatment value
+→ causal intervention provenance
+```
+
+Root-cause candidates may declare exact `causalFactorIds`. Experiment-backed mutation is downgraded to proposal-only when the candidate's claimed causal factors are not covered by controlled factor value provenance.
+
+Validated source revision: `2a8710c9afe257794e2d381b9f73b548d116449d`.
+
+GitHub Actions Verify run `36382109755` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
