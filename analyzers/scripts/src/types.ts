@@ -347,6 +347,19 @@ export interface ScriptArenaAuthorityEvidence {
   source: SourceRef;
 }
 
+export interface ScriptArenaAuthorityPath {
+  arenaExpression: string;
+  executionRegion: string;
+  membershipCommit?: ScriptArenaAuthorityEvidence;
+  capacityOperand?: ScriptArenaAuthorityEvidence;
+  capacityCheck?: ScriptArenaAuthorityEvidence;
+  generationOperand?: ScriptArenaAuthorityEvidence;
+  startOwnerAcquire?: ScriptArenaAuthorityEvidence;
+  startStateCommit?: ScriptArenaAuthorityEvidence;
+  capacityAuthorityProven: boolean;
+  startAuthorityProven: boolean;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
@@ -397,5 +410,6 @@ export interface ParsedScriptFile {
   spatialContextOffsetSeries?: ScriptSpatialContextOffsetSeries[];
   repairTransformHints?: RepairSourceTransformHint[];
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
+  arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
   capabilities: ScriptCapabilityUse[];
 }
