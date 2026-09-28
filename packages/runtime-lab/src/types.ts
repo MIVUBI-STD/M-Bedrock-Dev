@@ -47,6 +47,18 @@ export interface RuntimeExperimentArm {
   factorValues: Readonly<Record<string, string | number | boolean>>;
 }
 
+export interface RuntimeExperimentExpectedContrast {
+  predicateId: string;
+  controlState: "present" | "absent";
+  treatmentState: "present" | "absent";
+}
+
+export interface RuntimeExperimentObservedContrast {
+  predicateId: string;
+  controlState: "present" | "absent";
+  treatmentState: "present" | "absent";
+}
+
 export interface RuntimeExperimentDefinition {
   schemaVersion: 1;
   id: string;
@@ -64,6 +76,7 @@ export interface RuntimeExperimentDefinition {
   factors: readonly RuntimeExperimentFactor[];
   arms: readonly RuntimeExperimentArm[];
   outcomePredicateIds: readonly string[];
+  expectedContrasts?: readonly RuntimeExperimentExpectedContrast[];
   preservationInvariantIds?: readonly string[];
   minimumRunsPerArm: number;
 }
@@ -122,6 +135,10 @@ export interface RuntimeExperimentQualification {
   completedRunsByArm: Readonly<Record<string, number>>;
   unknownOutcomes: number;
   controlTreatmentContrastPredicates: readonly string[];
+  armRoles?: Readonly<Record<string, RuntimeExperimentArm["role"]>>;
+  observedContrasts?: readonly RuntimeExperimentObservedContrast[];
+  expectedContrastMatches?: readonly string[];
+  expectedContrastMismatches?: readonly string[];
   evidenceIds: readonly string[];
   reasons: readonly string[];
 }
