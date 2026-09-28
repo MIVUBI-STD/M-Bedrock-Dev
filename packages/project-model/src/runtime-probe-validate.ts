@@ -53,6 +53,7 @@ function validateScope(
     "participationGeneration",
     "entityGeneration",
     "subsystemGeneration",
+    "bootGeneration",
   ]) {
     const item = value[key];
     if (
