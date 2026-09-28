@@ -9,7 +9,7 @@
   import { mockHistory, mockMap, mockRecentMaps } from "./mock.js";
   import { reviewProjectionFixture } from "./review-projection-fixture.js";
   import { buildReviewUiViewModel, type ReviewUiItem } from "./view-model.js";
-  import { createReviewRuntimeClient, type ReviewRecentArtifact } from "./runtime-client.js";
+  import { createReviewRuntimeClient, type ReviewHistoryEvent, type ReviewRecentArtifact } from "./runtime-client.js";
   import { ReviewRuntimeController, type ReviewRuntimeState } from "./runtime-controller.js";
 
   type AppScreen = "library" | "workspace";
@@ -25,6 +25,9 @@
   let runtimeState: ReviewRuntimeState = runtimeController.state();
   let recentMode: "recent" | "examples" = "examples";
   let recentArtifacts: readonly ReviewRecentArtifact[] = [];
+  let historyEvents: readonly ReviewHistoryEvent[] = [];
+  let historyMode: "preview" | "runtime" = "preview";
+  let historyError = "";
   let libraryBusy = false;
   let libraryError = "";
   let activeMapName = mockMap.name;
@@ -91,6 +94,9 @@
   }
 
   function openExampleMap() {
+    historyMode = "preview";
+    historyEvents = [];
+    historyError = "";
     activeMapName = mockMap.name;
     activeMapVersion = mockMap.version;
     reviewModel = fixtureModel;
@@ -99,6 +105,27 @@
     screen = "workspace";
     view = "review";
     detailOpen = false;
+  }
+
+  async function refreshHistory() {
+    if (historyMode !== "runtime") {
+      historyEvents = [];
+      historyError = "";
+      return;
+    }
+
+    try {
+      historyEvents = await runtimeController.history(
+        reviewModel.artifact.id,
+      );
+      historyError = "";
+    } catch (error) {
+      historyEvents = [];
+      historyError =
+        error instanceof Error && error.message.trim()
+          ? error.message.trim()
+          : "History could not be loaded.";
+    }
   }
 
   async function refreshRecent() {
@@ -132,6 +159,7 @@
 
     if (next.phase === "ready") {
       reviewModel = next.model;
+      historyMode = "runtime";
       activeMapName = recent.label.replace(
         /\.(mcworld|zip)$/i,
         "",
@@ -144,7 +172,10 @@
       detailOpen = false;
       screen = "workspace";
       view = "review";
-      await refreshRecent();
+      await Promise.all([
+        refreshRecent(),
+        refreshHistory(),
+      ]);
       return;
     }
 
@@ -174,6 +205,7 @@
 
     if (next.phase === "ready") {
       reviewModel = next.model;
+      historyMode = "runtime";
       activeMapName = file.name.replace(/\.(mcworld|zip)$/i, "");
       activeMapVersion = "";
       selectedId = reviewModel.items[0]?.id ?? "";
@@ -183,6 +215,10 @@
       detailOpen = false;
       screen = "workspace";
       view = "review";
+      await Promise.all([
+        refreshRecent(),
+        refreshHistory(),
+      ]);
       return;
     }
 
@@ -208,6 +244,14 @@
         detailOpen = false;
         technicalOpen = false;
       }
+      await refreshHistory();
+    }
+  }
+
+  function changeView(next: WorkspaceView) {
+    view = next;
+    if (next === "history") {
+      void refreshHistory();
     }
   }
 
@@ -244,7 +288,7 @@
       target={reviewModel.artifact.targetLabel}
       {view}
       onBack={backToMaps}
-      onViewChange={(next) => (view = next)}
+      onViewChange={changeView}
       onAnalyze={analyze}
       analyzing={runtimeState.phase === "loading"}
     />
@@ -294,7 +338,13 @@
         />
       </main>
     {:else}
-      <HistoryView mapName={activeMapName} events={mockHistory} />
+      <HistoryView
+        mapName={activeMapName}
+        runtimeEvents={historyEvents}
+        previewEvents={mockHistory}
+        runtimeMode={historyMode === "runtime"}
+        error={historyError}
+      />
     {/if}
   {/if}
 </div>

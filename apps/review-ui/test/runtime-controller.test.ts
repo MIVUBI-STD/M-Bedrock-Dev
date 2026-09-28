@@ -62,6 +62,9 @@ describe("review runtime controller", () => {
       async recent() {
         return [];
       },
+      async history() {
+        return [];
+      },
       analyzeConfigured() {
         return new Promise((resolve) => {
           resolveAnalyze = resolve;
@@ -117,6 +120,9 @@ describe("review runtime controller", () => {
       async recent() {
         return [];
       },
+      async history() {
+        return [];
+      },
       async analyzeConfigured() {
         configuredCalls += 1;
         return model;
@@ -170,6 +176,9 @@ describe("review runtime controller", () => {
       async recent() {
         return [];
       },
+      async history() {
+        return [];
+      },
       async analyzeConfigured() {
         return model;
       },
@@ -219,6 +228,9 @@ describe("review runtime controller", () => {
       async recent() {
         return [];
       },
+      async history() {
+        return [];
+      },
       async analyzeConfigured() {
         return model;
       },
@@ -262,6 +274,9 @@ describe("review runtime controller", () => {
       async recent() {
         return [];
       },
+      async history() {
+        return [];
+      },
       async analyzeConfigured() {
         throw new Error("Map could not be read.");
       },
@@ -290,6 +305,9 @@ describe("review runtime controller", () => {
         throw new Error("not available");
       },
       async recent() {
+        throw new Error("not available");
+      },
+      async history() {
         throw new Error("not available");
       },
       async analyzeConfigured() {

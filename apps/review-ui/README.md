@@ -10,6 +10,7 @@ Current status:
 - the Vite development server exposes a controlled local runtime endpoint when `M_BEDROCK_REVIEW_ARTIFACT` is configured;
 - browser file selection supports `.mcworld` and `.zip` through a streamed local-development upload boundary;
 - successfully opened maps are copied into a managed local recent store under `.cache/review-ui/recent/`;
+- successful analysis operations are recorded as bounded per-artifact history under `.cache/review-ui/history/`;
 - canonical diagnosis, priority, proof, repair, and validation truth remains in core/orchestrator owners.
 
 Commands:
@@ -53,3 +54,10 @@ The current upload limit is 1 GB and only `.mcworld` / `.zip` are accepted. Rece
 Recent maps use managed local copies rather than arbitrary original filesystem paths. The store keeps up to 8 artifacts under `.cache/review-ui/recent/`, which is already ignored by Git.
 
 Opening a recent item re-validates the managed copy. Missing cached artifacts are reported as unavailable instead of silently falling back to another file.
+
+
+## History
+
+Runtime History records only actions that actually exist today: successful analysis from file open, recent-map open, re-analysis, or the configured development artifact. Repair and validation events are intentionally absent until those actions are wired to the UI.
+
+History is bounded to 40 events per artifact and 240 total events.

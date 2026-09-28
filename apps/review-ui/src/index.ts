@@ -3,6 +3,7 @@ export type ReviewUiPrototypeStatus = {
   readonly runtimeConnected: true;
   readonly filePickerConnected: true;
   readonly recentMapPersistenceConnected: true;
+  readonly historyConnected: true;
 };
 
 export const reviewUiPrototypeStatus: ReviewUiPrototypeStatus = {
@@ -10,6 +11,7 @@ export const reviewUiPrototypeStatus: ReviewUiPrototypeStatus = {
   runtimeConnected: true,
   filePickerConnected: true,
   recentMapPersistenceConnected: true,
+  historyConnected: true,
 };
 
 export * from "./load-review.js";

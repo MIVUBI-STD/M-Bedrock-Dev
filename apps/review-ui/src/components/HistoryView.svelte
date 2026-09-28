@@ -15,6 +15,7 @@
   export let previewEvents:
     readonly HistoryPreviewEvent[] = [];
   export let runtimeMode = false;
+  export let error = "";
 
   function titleFor(
     event: ReviewHistoryEvent,
@@ -59,7 +60,12 @@
   </header>
 
   {#if runtimeMode}
-    {#if runtimeEvents.length > 0}
+    {#if error}
+      <div class="history-error" role="alert">
+        <strong>History could not load</strong>
+        <span>{error}</span>
+      </div>
+    {:else if runtimeEvents.length > 0}
       <h2>Recent</h2>
       {#each runtimeEvents as event (event.id)}
         <article>
@@ -95,7 +101,7 @@
   .history article{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;padding:15px 0;border-top:1px solid #20252a}
   .history article div{display:grid;gap:2px}
   .history article span,.history time{color:#8e969f;font-size:12px}
-  .empty{display:grid;gap:4px;margin-top:24px;padding:22px 0;border-top:1px solid #20252a;color:#858e97}
+  .history-error{display:grid;gap:3px;margin-top:24px;padding:12px 14px;border:1px solid #5a3035;border-radius:9px;background:#1a1113;color:#d6a2a6}.history-error strong{color:#efb1b5;font-size:13px}.history-error span{font-size:12px}.empty{display:grid;gap:4px;margin-top:24px;padding:22px 0;border-top:1px solid #20252a;color:#858e97}
   .empty strong{color:#c4c9ce;font-size:13px}.empty span{font-size:12px}
   @media(max-width:759px){
     .history{width:calc(100% - 32px)}
