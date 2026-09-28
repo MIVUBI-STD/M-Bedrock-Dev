@@ -139,6 +139,7 @@ export interface RuntimeExperimentQualification {
   observedContrasts?: readonly RuntimeExperimentObservedContrast[];
   expectedContrastMatches?: readonly string[];
   expectedContrastMismatches?: readonly string[];
+  outcomeEvidenceIdsByPredicate?: Readonly<Record<string, readonly string[]>>;
   evidenceIds: readonly string[];
   reasons: readonly string[];
 }
