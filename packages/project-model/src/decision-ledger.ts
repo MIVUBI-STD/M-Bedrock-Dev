@@ -25,6 +25,7 @@ export interface DecisionBasisRevision {
   knowledgeRevision?: string;
   invariantRegistryRevision?: string;
   repairProviderRegistryRevision?: string;
+  repairStrategySourceRegistryRevision?: string;
   repairRealizerRegistryRevision?: string;
   targetProfileFingerprint?: string;
   probeBindingRevision?: string;
