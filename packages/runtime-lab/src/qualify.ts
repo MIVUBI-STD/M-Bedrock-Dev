@@ -14,6 +14,7 @@ import type {
   RuntimeExperimentQualification,
   RuntimeExperimentTrial,
   RuntimeExperimentTrialOutcome,
+  RuntimeExperimentObservedContrast,
 } from "./types.js";
 
 function evidenceId(
@@ -69,6 +70,73 @@ function consistentState(
   return only === "present" || only === "absent"
     ? only
     : undefined;
+}
+
+function armRoles(
+  definition: RuntimeExperimentDefinition,
+): Readonly<Record<string, "control" | "treatment">> {
+  return Object.fromEntries(
+    definition.arms.map((arm) => [arm.id, arm.role]),
+  );
+}
+
+function observedContrasts(
+  definition: RuntimeExperimentDefinition,
+  outcomes: readonly RuntimeExperimentTrialOutcome[],
+): RuntimeExperimentObservedContrast[] {
+  const controls = definition.arms.filter(
+    (arm) => arm.role === "control",
+  );
+  const treatments = definition.arms.filter(
+    (arm) => arm.role === "treatment",
+  );
+
+  return definition.outcomePredicateIds.flatMap(
+    (predicateId) => {
+      const controlStates = new Set(
+        controls.map((arm) =>
+          consistentState(
+            outcomes.filter(
+              (outcome) =>
+                outcome.armId === arm.id &&
+                outcome.predicateId === predicateId,
+            ),
+          )
+        ),
+      );
+      const treatmentStates = new Set(
+        treatments.map((arm) =>
+          consistentState(
+            outcomes.filter(
+              (outcome) =>
+                outcome.armId === arm.id &&
+                outcome.predicateId === predicateId,
+            ),
+          )
+        ),
+      );
+      if (
+        controlStates.size !== 1 ||
+        treatmentStates.size !== 1
+      ) {
+        return [];
+      }
+      const controlState = [...controlStates][0];
+      const treatmentState = [...treatmentStates][0];
+      if (
+        (controlState !== "present" && controlState !== "absent") ||
+        (treatmentState !== "present" && treatmentState !== "absent") ||
+        controlState === treatmentState
+      ) {
+        return [];
+      }
+      return [{
+        predicateId,
+        controlState,
+        treatmentState,
+      }];
+    },
+  );
 }
 
 export function qualifyRuntimeExperiment(
@@ -204,39 +272,30 @@ export function qualifyRuntimeExperiment(
     };
   }
 
-  const controls = definition.arms.filter(
-    (arm) => arm.role === "control",
+  const contrasts = observedContrasts(
+    definition,
+    outcomes,
   );
-  const treatments = definition.arms.filter(
-    (arm) => arm.role === "treatment",
+  const contrast = contrasts.map(
+    (item) => item.predicateId,
   );
-  const contrast = definition.outcomePredicateIds.filter(
-    (predicateId) => {
-      const controlStates = new Set(
-        controls.map((arm) =>
-          consistentState(outcomes.filter(
-            (outcome) =>
-              outcome.armId === arm.id &&
-              outcome.predicateId === predicateId,
-          ))
-        ),
-      );
-      const treatmentStates = new Set(
-        treatments.map((arm) =>
-          consistentState(outcomes.filter(
-            (outcome) =>
-              outcome.armId === arm.id &&
-              outcome.predicateId === predicateId,
-          ))
-        ),
-      );
-      return (
-        controlStates.size === 1 &&
-        treatmentStates.size === 1 &&
-        [...controlStates][0] !== [...treatmentStates][0]
-      );
-    },
-  );
+  const expectedMatches: string[] = [];
+  const expectedMismatches: string[] = [];
+
+  for (const expected of definition.expectedContrasts ?? []) {
+    const observed = contrasts.find(
+      (item) => item.predicateId === expected.predicateId,
+    );
+    if (
+      observed &&
+      observed.controlState === expected.controlState &&
+      observed.treatmentState === expected.treatmentState
+    ) {
+      expectedMatches.push(expected.predicateId);
+    } else {
+      expectedMismatches.push(expected.predicateId);
+    }
+  }
 
   return {
     experimentId: definition.id,
@@ -247,10 +306,19 @@ export function qualifyRuntimeExperiment(
     completedRunsByArm,
     unknownOutcomes,
     controlTreatmentContrastPredicates: contrast,
+    armRoles: armRoles(definition),
+    observedContrasts: contrasts,
+    expectedContrastMatches: expectedMatches.sort(),
+    expectedContrastMismatches: expectedMismatches.sort(),
     evidenceIds,
     reasons: contrast.length > 0
       ? [
           "Control and treatment arms are internally repeatable and show a deterministic outcome contrast.",
+          ...(expectedMismatches.length === 0
+            ? []
+            : [
+                "One or more deterministic contrasts do not match the direction declared by the experiment definition.",
+              ]),
         ]
       : [
           "All experiment arms are internally repeatable, but no control/treatment outcome contrast is established.",
