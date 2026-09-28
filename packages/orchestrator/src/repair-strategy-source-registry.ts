@@ -234,12 +234,12 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
         "Allows a terminal membership capacity guard only when the script analyzer proves a two-statement authored arena path with a direct capacity operand and no intervening side effects.",
     }, {
       id: "arena-ownership-guard-template",
-      version: "2",
+      version: "3",
       kind: "built-in-planner",
       owner:
-        "analyzers/scripts/src/arena-authority-evidence.ts",
-      deterministic: false,
-      selectionMode: "proposal-only",
+        "analyzers/scripts/src/arena-repair-transform-hints.ts",
+      deterministic: true,
+      selectionMode: "causal-auto",
       repairClass: "implementation-repair",
       supportedPredicateIds: [
         "arena-start-ownership-violation-observed",
@@ -249,7 +249,7 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       ],
       requiresExactSourceEvidence: true,
       rationale:
-        "Represents arena start-owner acquisition repairs. It remains proposal-only until the analyzer proves a safe owner sentinel/acquisition transform.",
+        "Allows exact start-owner acquisition guards only when the script analyzer proves an authored null/undefined owner sentinel, current generation token, owner assignment, and start-state commit in one side-effect-free method path.",
     }, {
       id: "navigation-recovery-configuration",
       version: "1",
