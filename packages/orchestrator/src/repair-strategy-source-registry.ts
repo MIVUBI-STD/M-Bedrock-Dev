@@ -157,6 +157,24 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
   RepairStrategySourceRegistry = {
     schemaVersion: 1,
     sources: [{
+      id: "scheduler-generation-guard-template",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "analyzers/scripts/src/repair-transform-hints.ts",
+      deterministic: true,
+      selectionMode: "causal-auto",
+      repairClass: "implementation-repair",
+      supportedPredicateIds: [
+        "stale-callback-observed",
+      ],
+      supportedFactorIds: [
+        "generation-guard-enabled",
+      ],
+      requiresExactSourceEvidence: true,
+      rationale:
+        "Exact scheduler generation guard insertion is allowed only when the script analyzer emits a validated single-line source-transform hint from an explicit captured generation token.",
+    }, {
       id: "session-generation-guard-template",
       version: "1",
       kind: "built-in-planner",
