@@ -33,6 +33,9 @@ import type {
 import type {
   ProviderBackedRepairStrategySelection,
 } from "./provider-backed-repair-selection.js";
+import type {
+  RepairRealizationCoverageReport,
+} from "./repair-realization-coverage.js";
 import {
   appendDecisionLedgerEntry,
 } from "./decision-ledger.js";
@@ -303,6 +306,58 @@ export function recordReleaseDecision(
   };
 }
 
+
+export function recordRepairRealizationCoverage(
+  ledger: DecisionLedgerSnapshot,
+  report: RepairRealizationCoverageReport,
+  context: DecisionRecordContext,
+): DecisionLedgerSnapshot {
+  if (
+    !context.basis.repairRealizerRegistryRevision?.trim()
+  ) {
+    throw new Error(
+      "Repair realization coverage requires repairRealizerRegistryRevision in the decision basis.",
+    );
+  }
+
+  return appendDecisionLedgerEntry(ledger, {
+    id: context.decisionId,
+    kind: "repair-strategy-realization",
+    incidentId: report.incidentId,
+    basis: context.basis,
+    ...(context.upstreamDecisionIds === undefined
+      ? {}
+      : {
+          upstreamDecisionIds:
+            context.upstreamDecisionIds,
+        }),
+    inputIds: [
+      "root-cause:" + report.candidateId,
+    ],
+    outputIds: [
+      "repair-realization:realized:" +
+        report.realizedCount,
+      "repair-realization:blocked:" +
+        report.blockedCount,
+      "repair-realization:missing-realizer:" +
+        report.missingRealizerCount,
+      "repair-realization:no-implementation-coverage:" +
+        String(report.noImplementationCoverage),
+      ...report.items.map(
+        (item) =>
+          "repair-realization-source:" +
+          item.sourceId +
+          "@" +
+          item.sourceVersion +
+          ":" +
+          item.disposition,
+      ),
+    ],
+    ...(context.evidenceIds === undefined
+      ? {}
+      : { evidenceIds: context.evidenceIds }),
+  });
+}
 
 export interface RepairStrategyDecisionRecordContext
   extends DecisionRecordContext {
