@@ -130,6 +130,7 @@ function mismatchReason(
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
+    "runtimeExperimentContractRevision",
     "preservationContractRevision",
     "preservationBaselineRevision",
   ] as const) {
