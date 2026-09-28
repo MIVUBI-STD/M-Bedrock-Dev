@@ -12,6 +12,9 @@ import {
 import type {
   RepairTransformHintProposal,
 } from "./script-transform-hint-realizer.js";
+import {
+  patchTransactionSemanticFingerprint,
+} from "../../repair/src/index.js";
 
 export interface ScriptTransformPostconditionProof {
   status: "proven" | "blocked";
@@ -414,6 +417,12 @@ export function bindScriptTransformPostconditionProof(
           family: proof.family,
           proofFingerprint:
             proof.proofFingerprint!,
+          transactionId:
+            proposal.strategy.transaction.id,
+          transactionFingerprint:
+            patchTransactionSemanticFingerprint(
+              proposal.strategy.transaction,
+            ),
         },
       },
     },
