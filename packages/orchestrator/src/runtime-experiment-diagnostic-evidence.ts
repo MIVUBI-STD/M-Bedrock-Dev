@@ -20,6 +20,7 @@ export type RuntimeDiagnosticEvidenceCeiling =
 
 export interface RuntimeDiagnosticArmObservation {
   armId: string;
+  role?: "control" | "treatment";
   observation: DiagnosticEvidenceObservation;
   sourceEvidenceIds: readonly string[];
 }
@@ -31,6 +32,11 @@ export interface RuntimeDiagnosticPredicateEvidence {
   sourceEvidenceIds: readonly string[];
   armObservations?: readonly RuntimeDiagnosticArmObservation[];
   interventionContrast?: boolean;
+  expectedContrastDisposition?: "matched" | "mismatched" | "unspecified";
+  observedContrast?: {
+    controlState: "present" | "absent";
+    treatmentState: "present" | "absent";
+  };
 }
 
 export interface RuntimeExperimentDiagnosticBridge {
@@ -114,6 +120,7 @@ function armObservationsFor(
   experimentId: string,
   predicate: string,
   records: readonly RuntimePredicateRecord[],
+  armRoles: Readonly<Record<string, "control" | "treatment">> | undefined,
 ): RuntimeDiagnosticArmObservation[] {
   const byArm = new Map<string, RuntimePredicateRecord[]>();
 
@@ -130,6 +137,9 @@ function armObservationsFor(
       );
       return {
         armId,
+        ...(armRoles?.[armId] === undefined
+          ? {}
+          : { role: armRoles[armId] }),
         observation: {
           predicate,
           state,
@@ -195,7 +205,18 @@ export function runtimeExperimentDiagnosticEvidence(
         qualification.experimentId,
         predicate,
         records,
+        qualification.armRoles,
       );
+      const observedContrast =
+        qualification.observedContrasts?.find(
+          (item) => item.predicateId === predicate,
+        );
+      const expectedContrastDisposition =
+        qualification.expectedContrastMatches?.includes(predicate)
+          ? "matched"
+          : qualification.expectedContrastMismatches?.includes(predicate)
+            ? "mismatched"
+            : "unspecified";
       const observation: DiagnosticEvidenceObservation = {
         predicate,
         state,
@@ -217,6 +238,15 @@ export function runtimeExperimentDiagnosticEvidence(
           qualification.controlTreatmentContrastPredicates.includes(
             predicate,
           ),
+        expectedContrastDisposition,
+        ...(observedContrast === undefined
+          ? {}
+          : {
+              observedContrast: {
+                controlState: observedContrast.controlState,
+                treatmentState: observedContrast.treatmentState,
+              },
+            }),
       };
     })
     .sort((a, b) =>
