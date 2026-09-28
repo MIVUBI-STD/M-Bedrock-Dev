@@ -704,7 +704,31 @@ export function createBedrockHarnessExperimentHost(
         startTick ??= actionResponse.runtimeTick;
         endTick = actionResponse.runtimeTick;
         evidence.push(
-          ...(actionResponse.evidence ?? []),
+          ...(actionResponse.evidence ?? []).map(
+            (record, index) => ({
+              ...record,
+              origin: "controlled-experiment" as const,
+              targetProfileFingerprint:
+                definition.targetProfileFingerprint,
+              provenanceKey:
+                record.provenanceKey ??
+                [
+                  "runtime-experiment",
+                  definition.id,
+                  identity.definitionRevision,
+                  identity.armId,
+                  String(identity.runIndex),
+                  step.id,
+                  "action-evidence",
+                  String(index),
+                ].join(":"),
+              relatedNodeIds: [
+                ...(record.relatedNodeIds ?? []),
+                "runtime-experiment:" + definition.id,
+                "runtime-experiment-step:" + step.id,
+              ],
+            }),
+          ),
         );
       }
 
