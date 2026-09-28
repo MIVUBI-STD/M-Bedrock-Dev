@@ -15,11 +15,15 @@ import {
 import type {
   RepairStrategyProviderRegistry,
 } from "./repair-strategy-provider.js";
+import type {
+  RepairRealizerRegistry,
+} from "./repair-realizer-registry.js";
 
 export function realizeLinearTopologyRepairStrategy(
   enumeration: RepairStrategyEnumeration,
   graph: SemanticGraph,
   registry: RepairStrategyProviderRegistry,
+  realizerRegistry: RepairRealizerRegistry,
   candidate: RepairableTopologyCandidate,
 ): ProviderRepairRealization {
   if (
@@ -62,6 +66,7 @@ export function realizeLinearTopologyRepairStrategy(
     graph,
     enumeration,
     registry,
+    realizerRegistry,
     {
       sourceId: "linear-topology-repair",
       sourceVersion:
