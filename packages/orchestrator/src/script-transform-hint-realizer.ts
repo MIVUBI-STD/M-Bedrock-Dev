@@ -125,7 +125,8 @@ function realizeGenerationGuardHint(
   expectedFamily:
     | "scheduler-generation-guard"
     | "session-generation-guard"
-    | "persistence-idempotency-guard",
+    | "persistence-idempotency-guard"
+    | "arena-ownership-guard",
   sourceId: string,
   label: string,
 ): RepairTransformHintRealization {
@@ -421,5 +422,25 @@ export function realizePersistenceIdempotencyGuardHint(
     "persistence-idempotency-guard",
     "persistence-idempotency-guard-template",
     "Persistence idempotency guard",
+  );
+}
+
+
+export function realizeArenaCapacityGuardHint(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  hint: RepairSourceTransformHint,
+): RepairTransformHintRealization {
+  return realizeGenerationGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    hint,
+    "arena-ownership-guard",
+    "arena-capacity-guard-template",
+    "Arena capacity guard",
   );
 }
