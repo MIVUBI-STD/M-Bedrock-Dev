@@ -26,6 +26,10 @@ import type {
   RuntimeEvidenceIntegrityReport,
 } from "../../project-model/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
+import {
+  repairRealizerRegistryRevision,
+  type RepairRealizerRegistry,
+} from "./repair-realizer-registry.js";
 import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 
 function canonical(value: unknown): unknown {
@@ -136,6 +140,7 @@ export interface DecisionBasisInput {
   probeBindings?: readonly RuntimeProbeBinding[];
   runtimeEvidence?: readonly RuntimeEvidenceRecord[];
   evidenceIntegrity?: Readonly<Record<string, RuntimeEvidenceIntegrityReport>>;
+  repairRealizerRegistry?: RepairRealizerRegistry;
 }
 
 export function buildDecisionBasis(
@@ -176,6 +181,14 @@ export function buildDecisionBasis(
     ...(input.target === undefined
       ? {}
       : { targetProfileFingerprint: fingerprint(input.target) }),
+    ...(input.repairRealizerRegistry === undefined
+      ? {}
+      : {
+          repairRealizerRegistryRevision:
+            repairRealizerRegistryRevision(
+              input.repairRealizerRegistry,
+            ),
+        }),
     ...(input.probeBindings === undefined
       ? {}
       : {
