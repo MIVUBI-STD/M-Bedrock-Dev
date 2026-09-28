@@ -1,5 +1,5 @@
 import type { RootCauseEvidenceLevel } from "./causal-chain.js";
-import type { CausalProofState } from "./causal-proof.js";
+import type { CausalProof, CausalProofState } from "./causal-proof.js";
 import type { DiagnosticExecutionContext } from "./diagnostic-probe.js";
 
 export type DiagnosticClaimStrength =
@@ -28,6 +28,7 @@ export interface DiagnosticRepairDecision {
   selectedCandidateId?: string;
   effectiveEvidenceLevel?: RootCauseEvidenceLevel;
   proofState?: CausalProofState;
+  causalProof?: CausalProof;
   claimStrength: DiagnosticClaimStrength;
   reasons: readonly string[];
 }
