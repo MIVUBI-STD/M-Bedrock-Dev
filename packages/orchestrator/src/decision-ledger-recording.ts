@@ -75,7 +75,15 @@ export function recordDiagnosticRepairDecision(
     id: context.decisionId,
     kind: "repair-authorization",
     incidentId: decision.incidentId,
-    basis: context.basis,
+    basis: {
+      ...context.basis,
+      ...(selectedPostTransformProof === undefined
+        ? {}
+        : {
+            postTransformProofRevision:
+              selectedPostTransformProof.proofFingerprint,
+          }),
+    },
     inputIds: [
       ...decision.activeCandidateIds,
     ],
@@ -382,6 +390,23 @@ export function recordRepairStrategySelection(
   transactionId: string | undefined,
   context: RepairStrategyDecisionRecordContext,
 ): DecisionLedgerSnapshot {
+  const selectedPostTransformProof =
+    selection.status === "selected"
+      ? selection.selected.intelligence
+          .postTransformProof
+      : undefined;
+
+  if (
+    selectedPostTransformProof !== undefined &&
+    context.basis.postTransformProofRevision !== undefined &&
+    context.basis.postTransformProofRevision !==
+      selectedPostTransformProof.proofFingerprint
+  ) {
+    throw new Error(
+      "Decision basis post-transform proof revision does not match the selected strategy proof.",
+    );
+  }
+
   const outputIds =
     selection.status === "selected"
       ? [
@@ -450,6 +475,12 @@ export function recordRepairStrategySelection(
           "@" +
           realizer.realizerVersion,
       ),
+      ...(selectedPostTransformProof === undefined
+        ? []
+        : [
+            "post-transform-proof:" +
+              selectedPostTransformProof.proofFingerprint,
+          ]),
     ],
     outputIds,
     ...(context.evidenceIds === undefined
