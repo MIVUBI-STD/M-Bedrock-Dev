@@ -429,6 +429,7 @@ function startOwnerEvidence(
     kind: "start-owner-acquire",
     arenaExpression:
       target.owner.getText(file),
+    subjectExpression: target.text,
     ownerExpression,
     ...(GENERATION_PROPERTY.test(
       ownerExpression,
@@ -443,6 +444,78 @@ function startOwnerEvidence(
     source: lineSource(
       file,
       value.statement,
+      source,
+    ),
+  };
+}
+
+function isNullOrUndefined(
+  expression: ts.Expression,
+): boolean {
+  return (
+    expression.kind === ts.SyntaxKind.NullKeyword ||
+    (
+      ts.isIdentifier(expression) &&
+      expression.text === "undefined"
+    )
+  );
+}
+
+function startOwnerGuardEvidence(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence | undefined {
+  if (!ts.isIfStatement(node)) return undefined;
+  const condition = node.expression;
+  if (
+    !ts.isBinaryExpression(condition) ||
+    ![
+      ts.SyntaxKind.ExclamationEqualsToken,
+      ts.SyntaxKind.ExclamationEqualsEqualsToken,
+    ].includes(condition.operatorToken.kind)
+  ) {
+    return undefined;
+  }
+
+  const left = directProperty(condition.left);
+  const right = directProperty(condition.right);
+
+  const ownerTarget =
+    left &&
+    START_OWNER_PROPERTY.test(left.property) &&
+    isNullOrUndefined(condition.right)
+      ? left
+      : right &&
+          START_OWNER_PROPERTY.test(right.property) &&
+          isNullOrUndefined(condition.left)
+        ? right
+        : undefined;
+
+  if (!ownerTarget) return undefined;
+
+  const thenStatement = node.thenStatement;
+  const directReturn =
+    ts.isReturnStatement(thenStatement) ||
+    (
+      ts.isBlock(thenStatement) &&
+      thenStatement.statements.length === 1 &&
+      ts.isReturnStatement(
+        thenStatement.statements[0]!,
+      )
+    );
+  if (!directReturn) return undefined;
+
+  return {
+    kind: "start-owner-guard",
+    arenaExpression:
+      ownerTarget.owner.getText(file),
+    subjectExpression: ownerTarget.text,
+    executionRegion:
+      localExecutionRegionId(node, file),
+    source: lineSource(
+      file,
+      condition,
       source,
     ),
   };
@@ -559,6 +632,13 @@ export function deriveScriptArenaAuthorityEvidence(
     );
     if (capacity) output.push(capacity);
 
+    const ownerGuard = startOwnerGuardEvidence(
+      node,
+      file,
+      source,
+    );
+    if (ownerGuard) output.push(ownerGuard);
+
     const owner = startOwnerEvidence(
       node,
       file,
@@ -638,6 +718,11 @@ export function correlateScriptArenaAuthorityPaths(
           item.kind ===
             "arena-generation-operand",
       );
+      const startOwnerGuard = items.find(
+        (item) =>
+          item.kind ===
+            "start-owner-guard",
+      );
       const startOwnerAcquire = items.find(
         (item) =>
           item.kind ===
@@ -680,6 +765,12 @@ export function correlateScriptArenaAuthorityPaths(
             undefined ||
           generationOperand !== undefined
         );
+      const startGuardProven =
+        startAuthorityProven &&
+        startOwnerGuard !== undefined &&
+        startOwnerGuard.subjectExpression !== undefined &&
+        startOwnerGuard.subjectExpression ===
+          startOwnerAcquire?.subjectExpression;
 
       return {
         arenaExpression:
@@ -698,6 +789,9 @@ export function correlateScriptArenaAuthorityPaths(
         ...(generationOperand
           ? { generationOperand }
           : {}),
+        ...(startOwnerGuard
+          ? { startOwnerGuard }
+          : {}),
         ...(startOwnerAcquire
           ? { startOwnerAcquire }
           : {}),
@@ -706,6 +800,7 @@ export function correlateScriptArenaAuthorityPaths(
           : {}),
         capacityAuthorityProven,
         startAuthorityProven,
+        startGuardProven,
       };
     })
     .filter(
