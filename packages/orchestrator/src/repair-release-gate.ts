@@ -61,6 +61,15 @@ export function decideRepairRelease(
     if (!state.transitiveRevalidationComplete) {
       missing.push("transitive revalidation");
     }
+    if (
+      state.staticPreservationRequired === true &&
+      (
+        state.staticPreservationComplete !== true ||
+        !state.staticPreservationProofFingerprint?.trim()
+      )
+    ) {
+      missing.push("static graph preservation");
+    }
     if (!state.runtimeVerificationComplete) {
       missing.push("runtime verification");
     }
@@ -87,7 +96,7 @@ export function decideRepairRelease(
     transactionId: state.transactionId,
     disposition: "release-eligible",
     reasons: [
-      "Static validation, transitive revalidation, runtime verification, preservation verification, and package verification are all complete.",
+      "Static validation, required static graph preservation, transitive revalidation, runtime verification, preservation verification, and package verification are all complete.",
     ],
   };
 }
