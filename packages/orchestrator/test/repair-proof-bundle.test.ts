@@ -125,6 +125,11 @@ describe("repair proof bundle", () => {
           experimentRevision: "rev-1",
           predicateId: "chunk-not-ready",
           controlledFactorIds: ["chunk-loaded"],
+          controlledFactorContrasts: [{
+            factorId: "chunk-loaded",
+            controlValue: false,
+            treatmentValue: true,
+          }],
           controlState: "absent" as const,
           treatmentState: "present" as const,
           expectedContrastDisposition: "matched" as const,
@@ -149,6 +154,11 @@ describe("repair proof bundle", () => {
         interventionId: "exp:chunk",
         predicateId: "chunk-not-ready",
         controlledFactorIds: ["chunk-loaded"],
+        controlledFactorContrasts: [{
+          factorId: "chunk-loaded",
+          controlValue: false,
+          treatmentValue: true,
+        }],
       }),
     ]);
   });
