@@ -627,3 +627,62 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Runtime-profile differential proof
+
+The orchestrator can now compare the same logical controlled experiment across independently qualified runtime profiles without mixing evidence before qualification.
+
+Cross-profile comparison requires:
+
+```text
+same experiment id
+same fixture
+same protocol
+same factors/arms
+same outcomes
+same evidence requirements
+same minimum run contract
+different targetProfileFingerprint allowed
+```
+
+A profile-independent experiment contract revision normalizes only the target runtime fingerprint. Any other experiment drift blocks comparison as insufficient evidence.
+
+Every profile case must independently reach `repeatable` or `intervention-supported` before it can contribute to a profile differential. Single-run or otherwise merely observed evidence is not sufficient.
+
+Comparison is role-aware:
+
+```text
+predicate @ control
+predicate @ treatment
+```
+
+so deterministic control/treatment experiments are not collapsed into global unknown observations.
+
+Differential provenance retains the exact captured runtime profile metadata:
+
+```text
+profile fingerprint
+edition
+host
+Minecraft version
+Script API modules/tracks
+enabled experiments
+arm/role
+state
+evidence ids
+```
+
+Validated divergence is routed through intent diagnostic reasoning as `compatibility-difference`, with no contradiction evidence. Runtime-profile divergence therefore cannot become `confirmed-defect` merely because Retail, Dedicated Server, or Education behave differently.
+
+Validated source revision: `ab38b041596c729d0b1cc3ba948a4ace944b1737`.
+
+GitHub Actions Verify run `36398015843` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
