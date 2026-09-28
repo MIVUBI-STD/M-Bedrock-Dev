@@ -124,7 +124,8 @@ function realizeGenerationGuardHint(
   hint: RepairSourceTransformHint,
   expectedFamily:
     | "scheduler-generation-guard"
-    | "session-generation-guard",
+    | "session-generation-guard"
+    | "persistence-idempotency-guard",
   sourceId: string,
   label: string,
 ): RepairTransformHintRealization {
@@ -283,8 +284,7 @@ function realizeGenerationGuardHint(
   const transaction = createPatchTransaction({
     title:
       "insert " +
-      label.toLowerCase() +
-      " ownership guard",
+      label.toLowerCase(),
     sourceFingerprint:
       enumeration.envelope.sourceFingerprint,
     operations: [{
@@ -401,5 +401,25 @@ export function realizeSessionGenerationGuardHint(
     "session-generation-guard",
     "session-generation-guard-template",
     "Session generation guard",
+  );
+}
+
+
+export function realizePersistenceIdempotencyGuardHint(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  hint: RepairSourceTransformHint,
+): RepairTransformHintRealization {
+  return realizeGenerationGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    hint,
+    "persistence-idempotency-guard",
+    "persistence-idempotency-guard-template",
+    "Persistence idempotency guard",
   );
 }
