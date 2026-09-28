@@ -77,6 +77,8 @@ export interface RootCauseCandidate {
   confidence: "high" | "medium" | "low";
   chainIds: readonly string[];
   relatedDiagnosticIds: readonly string[];
+  /** Exact runtime predicates this candidate claims as causal support. */
+  causalPredicateIds?: readonly string[];
   support: {
     dependencyViolations: number;
     evidenceGaps: number;
