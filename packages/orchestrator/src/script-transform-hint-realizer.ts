@@ -289,6 +289,7 @@ function realizeGenerationGuardHint(
       label.toLowerCase(),
     sourceFingerprint:
       enumeration.envelope.sourceFingerprint,
+    requiredProofs: ["post-transform"],
     operations: [{
       kind: "replace-text",
       source: hint.source,
