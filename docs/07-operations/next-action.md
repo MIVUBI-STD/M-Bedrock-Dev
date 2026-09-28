@@ -228,3 +228,29 @@ documented/runtime hypothesis
 ```
 
 Do not promote a runtime-class assumption into a reusable rule until the controlled experiment surface proves it across the applicable target profile.
+
+
+## Next lane — scheduler and event-ordering runtime proof
+
+Chunk readiness experiment contracts are now structurally ready for real host execution.
+
+Next runtime domain:
+
+1. deferred callback generation ownership;
+2. stale callback after reset/session replacement;
+3. same-tick vs next-tick ordering;
+4. event-before-state / state-before-event ordering;
+5. cancellation and cleanup of scheduled work;
+6. cross-arena scheduler isolation.
+
+The controlled experiment should distinguish:
+
+```text
+expected generation/current-session callback
+vs
+stale generation/previous-session callback
+```
+
+and preserve exact runtime tick/sequence evidence so happens-before claims never derive from unordered observations.
+
+Do not convert scheduler timing assumptions into rules until repeated controlled runtime evidence establishes the applicable target-profile semantics.
