@@ -37,6 +37,12 @@ export interface RepairStrategyValidationObligations {
   validationKinds: readonly string[];
 }
 
+export interface RepairStrategyPostTransformProof {
+  hintId: string;
+  family: string;
+  proofFingerprint: string;
+}
+
 export interface RepairStrategyCandidate {
   strategyId: string;
   transaction: PatchTransaction;
@@ -46,6 +52,8 @@ export interface RepairStrategyCandidate {
   repairClass?: RepairStrategyClass;
   causalBinding?: RepairStrategyCausalBinding;
   validationObligations?: RepairStrategyValidationObligations;
+  postTransformProofRequired?: boolean;
+  postTransformProof?: RepairStrategyPostTransformProof;
   reversible?: boolean;
   idempotent?: boolean;
   preservationReadiness?: PreservationReadinessResult;
@@ -93,6 +101,8 @@ export interface RepairStrategyAssessment {
     causalBindingReasons: readonly string[];
     authorizingRuntimeExperiments: readonly string[];
     validationObligations?: RepairStrategyValidationObligations;
+    postTransformProofRequired: boolean;
+    postTransformProof?: RepairStrategyPostTransformProof;
   };
 }
 
@@ -478,6 +488,12 @@ export function selectRepairStrategy(
           ...(policy.decisionBasis ?? {}),
           invariantRegistryRevision:
             policy.invariantRegistry.revision,
+          ...(candidate.postTransformProof?.proofFingerprint === undefined
+            ? {}
+            : {
+                postTransformProofRevision:
+                  candidate.postTransformProof.proofFingerprint,
+              }),
         },
         ...(policy.blastRadiusPolicy === undefined
           ? {}
@@ -591,6 +607,18 @@ export function selectRepairStrategy(
         );
       }
 
+      const postTransformProofSatisfied =
+        candidate.postTransformProofRequired !== true ||
+        (
+          candidate.postTransformProof !== undefined &&
+          candidate.postTransformProof.proofFingerprint.trim().length > 0
+        );
+      if (!postTransformProofSatisfied) {
+        reasons.push(
+          "Strategy requires a proven isolated post-transform semantic proof before selection.",
+        );
+      }
+
       if (candidate.transaction.validation.length === 0) {
         reasons.push(
           "Strategy has no concrete post-mutation validation step.",
@@ -620,6 +648,7 @@ export function selectRepairStrategy(
           causalBinding.satisfied &&
           repairClassAllowed &&
           invariantCoverage &&
+          postTransformProofSatisfied &&
           candidate.transaction.validation.length > 0 &&
           (
             candidate.preservationReadiness === undefined ||
@@ -683,6 +712,14 @@ export function selectRepairStrategy(
             : {
                 validationObligations:
                   candidate.validationObligations,
+              }),
+          postTransformProofRequired:
+            candidate.postTransformProofRequired === true,
+          ...(candidate.postTransformProof === undefined
+            ? {}
+            : {
+                postTransformProof:
+                  candidate.postTransformProof,
               }),
         },
       };
