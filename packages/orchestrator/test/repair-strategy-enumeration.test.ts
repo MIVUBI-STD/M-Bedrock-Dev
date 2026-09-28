@@ -708,6 +708,54 @@ describe("repair strategy enumeration and realization", () => {
     });
   });
 
+  it("does not deduplicate identical edits when their pre-mutation proof obligations differ", () => {
+    const enumeration =
+      enumerateRepairStrategySources(
+        envelope(),
+        diagnostics,
+        providerRegistry,
+      );
+
+    const realized = realizeProviderRepairStrategy(
+      enumeration,
+      providerRegistry,
+      {
+        sourceId: "session-guard-a",
+        sourceVersion: "1",
+        transaction: transaction("guard-a"),
+        changedNodeIds: ["function:p:session"],
+        repairClass: "implementation-repair",
+        reversible: true,
+        idempotent: true,
+      },
+    );
+
+    expect(realized.status).toBe("realized");
+    if (realized.status !== "realized") return;
+
+    const proofBound = {
+      ...realized.proposal,
+      strategy: {
+        ...realized.proposal.strategy,
+        transaction: {
+          ...realized.proposal.strategy.transaction,
+          requiredProofs: [
+            "post-transform" as const,
+          ],
+        },
+      },
+    };
+
+    const dedup =
+      deduplicateRepairStrategyProposals([
+        realized.proposal,
+        proofBound,
+      ]);
+
+    expect(dedup.duplicateCount).toBe(0);
+    expect(dedup.proposals).toHaveLength(2);
+  });
+
   it("reports explicit strategy coverage gaps", () => {
     const emptyRegistry:
       RepairStrategyProviderRegistry = {
