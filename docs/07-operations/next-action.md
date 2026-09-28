@@ -142,3 +142,28 @@ Next priorities:
 5. require preservation/retest plans to reference the same causal experiment contract when a repair is justified by controlled runtime evidence.
 
 A controlled difference is evidence only for the predicate and intervention contract that produced it. Do not promote experiment-level status into unrelated causal claims.
+
+
+## Next lane — controlled-factor and repair provenance continuity
+
+Experiment-backed causal proof is now predicate-bound and carried into repair proof bundles.
+
+Next priorities:
+
+1. bind root-cause candidates to the exact controlled factor values that discriminated control and treatment, not only factor IDs;
+2. verify that the candidate mechanism actually depends on those factor values before promotion from guarded repair to full causal repair eligibility;
+3. carry experiment revision, runtime profile, fixture fingerprint, factor values, and predicate evidence into repair admission decision basis;
+4. require post-repair retest plans to replay the same experiment contract or a stricter compatible successor;
+5. reject repair verification if the retest silently changes runtime profile, fixture, intervention definition, or expected contrast direction.
+
+The next goal is end-to-end provenance continuity:
+
+```text
+experiment definition
+→ causal predicate
+→ controlled factor/value contrast
+→ root-cause candidate
+→ repair authorization
+→ repair proof bundle
+→ post-repair retest
+```
