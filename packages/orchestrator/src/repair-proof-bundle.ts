@@ -18,7 +18,7 @@ import type { RepairAdmissionDecision } from "./repair-admission.js";
 
 export interface RepairProofPostTransformBinding {
   transactionId: string;
-  transactionFingerprint: string;
+  transactionFingerprint?: string;
 }
 
 export interface RepairProofBundle {
@@ -196,6 +196,7 @@ export function validateRepairProofBundle(
       transaction,
     );
   if (
+    proof.transactionFingerprint !== undefined &&
     proof.transactionFingerprint !==
       transactionFingerprint
   ) {
@@ -209,6 +210,14 @@ export function validateRepairProofBundle(
       "post-transform",
     )
   ) {
+    if (
+      proof.transactionFingerprint !==
+        transactionFingerprint
+    ) {
+      errors.push(
+        "Post-transform repair proof requires the exact patch transaction fingerprint.",
+      );
+    }
     if (!proof.postTransformProofBinding) {
       errors.push(
         "Patch transaction requires an explicit post-transform proof binding.",
