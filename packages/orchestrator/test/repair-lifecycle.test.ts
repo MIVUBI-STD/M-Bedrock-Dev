@@ -107,6 +107,42 @@ describe("repair lifecycle", () => {
     expect(repairReleaseEligible(state)).toBe(true);
   });
 
+  it("retains the executed runtime experiment contract in lifecycle state", () => {
+    const state = markRepairRuntimeVerified(
+      staticValidated(),
+      {
+        transactionId: "tx-1",
+        kind: "runtime",
+        passed: true,
+        evidenceIds: ["runtime:pass"],
+        runtimeExperimentContract: {
+          interventionId: "exp:chunk",
+          experimentRevision: "rev-2",
+          compatibleWithRevisions: ["rev-1"],
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          predicateIds: ["target-ready"],
+          factorContrasts: [{
+            factorId: "chunk-loaded",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          expectedContrasts: [{
+            predicateId: "target-ready",
+            controlState: "absent",
+            treatmentState: "present",
+          }],
+        },
+      },
+    );
+
+    expect(state.runtimeVerificationContract).toMatchObject({
+      interventionId: "exp:chunk",
+      experimentRevision: "rev-2",
+      compatibleWithRevisions: ["rev-1"],
+    });
+  });
+
   it("rejects empty, failed, or cross-transaction verification receipts", () => {
     const state = staticValidated();
 
