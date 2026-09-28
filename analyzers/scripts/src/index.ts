@@ -6,3 +6,5 @@ export * from "./types.js";
 export * from "./runtime-evidence.js";
 
 export * from "./repair-transform-hints.js";
+
+export * from "./arena-authority-evidence.js";
