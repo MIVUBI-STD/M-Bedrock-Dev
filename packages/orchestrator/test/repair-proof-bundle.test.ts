@@ -113,6 +113,46 @@ describe("repair proof bundle", () => {
     ]));
   });
 
+  it("retains causal intervention provenance in the repair proof bundle", () => {
+    const { graph, transaction, impact, blast, diagnostic, admission } = setup();
+    const withProvenance = {
+      ...diagnostic,
+      causalProof: {
+        state: "causal" as const,
+        interventionIds: ["exp:chunk"],
+        interventionProvenance: [{
+          interventionId: "exp:chunk",
+          experimentRevision: "rev-1",
+          predicateId: "chunk-not-ready",
+          controlledFactorIds: ["chunk-loaded"],
+          controlState: "absent" as const,
+          treatmentState: "present" as const,
+          expectedContrastDisposition: "matched" as const,
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          evidenceIds: ["e:1"],
+        }],
+      },
+    };
+
+    const bundle = createRepairProofBundle(
+      transaction,
+      withProvenance,
+      impact,
+      blast,
+      admission,
+      decisionBasis(graph),
+    );
+
+    expect(bundle.causalInterventionProvenance).toEqual([
+      expect.objectContaining({
+        interventionId: "exp:chunk",
+        predicateId: "chunk-not-ready",
+        controlledFactorIds: ["chunk-loaded"],
+      }),
+    ]);
+  });
+
   it("fails closed when decisions belong to a different transaction", () => {
     const { graph, transaction, impact, blast, diagnostic, admission } = setup();
 
