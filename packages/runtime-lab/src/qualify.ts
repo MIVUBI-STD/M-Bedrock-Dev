@@ -366,9 +366,13 @@ export function targetBoundObservedEvidence(
     }));
 }
 
-function controlledFactorIds(
+function controlledFactorContrasts(
   definition: RuntimeExperimentDefinition,
-): string[] {
+): {
+  factorId: string;
+  controlValue: string | number | boolean;
+  treatmentValue: string | number | boolean;
+}[] {
   const controls = definition.arms.filter(
     (arm) => arm.role === "control",
   );
@@ -376,18 +380,45 @@ function controlledFactorIds(
     (arm) => arm.role === "treatment",
   );
 
-  return definition.factors
-    .filter((factor) =>
-      controls.some((control) =>
-        treatments.some(
-          (treatment) =>
-            control.factorValues[factor.id] !==
-              treatment.factorValues[factor.id],
-        )
-      )
-    )
-    .map((factor) => factor.id)
-    .sort();
+  return definition.factors.flatMap((factor) => {
+    const controlValues = new Set(
+      controls.map((arm) => arm.factorValues[factor.id]),
+    );
+    const treatmentValues = new Set(
+      treatments.map((arm) => arm.factorValues[factor.id]),
+    );
+
+    if (
+      controlValues.size !== 1 ||
+      treatmentValues.size !== 1
+    ) {
+      return [];
+    }
+
+    const controlValue = [...controlValues][0];
+    const treatmentValue = [...treatmentValues][0];
+
+    if (
+      controlValue === undefined ||
+      treatmentValue === undefined ||
+      controlValue === treatmentValue
+    ) {
+      return [];
+    }
+
+    return [{
+      factorId: factor.id,
+      controlValue,
+      treatmentValue,
+    }];
+  }).sort((a, b) => a.factorId.localeCompare(b.factorId));
+}
+
+function controlledFactorIds(
+  definition: RuntimeExperimentDefinition,
+): string[] {
+  return controlledFactorContrasts(definition)
+    .map((item) => item.factorId);
 }
 
 export function experimentQualificationCausalProof(
@@ -431,6 +462,8 @@ export function experimentQualificationCausalProof(
                   predicateId,
                   controlledFactorIds:
                     controlledFactorIds(definition),
+                  controlledFactorContrasts:
+                    controlledFactorContrasts(definition),
                   controlState: contrast.controlState,
                   treatmentState: contrast.treatmentState,
                   expectedContrastDisposition: "matched" as const,
