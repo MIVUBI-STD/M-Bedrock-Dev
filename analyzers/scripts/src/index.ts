@@ -10,3 +10,5 @@ export * from "./repair-transform-hints.js";
 export * from "./arena-authority-evidence.js";
 
 export * from "./arena-repair-transform-hints.js";
+
+export * from "./persistence-idempotency-evidence.js";
