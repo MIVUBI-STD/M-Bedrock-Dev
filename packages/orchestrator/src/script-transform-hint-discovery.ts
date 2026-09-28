@@ -17,6 +17,7 @@ import type {
 } from "./repair-strategy-source-registry.js";
 import {
   realizeArenaCapacityGuardHint,
+  realizeArenaStartOwnershipGuardHint,
   realizePersistenceIdempotencyGuardHint,
   realizeSchedulerGenerationGuardHint,
   realizeSessionGenerationGuardHint,
@@ -353,5 +354,67 @@ export function realizeArenaCapacityGuardFromParsedScripts(
     sourceRegistry,
     realizerRegistry,
     capacityHints[0]!,
+  );
+}
+
+
+export function realizeArenaStartOwnershipGuardFromParsedScripts(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  parsedScripts: readonly {
+    parsed: ParsedScriptFile;
+  }[],
+): RepairTransformHintRealization {
+  const discovery =
+    discoverApplicableRepairTransformHints(
+      parsedScripts,
+      enumeration,
+    );
+  const startHints =
+    discovery.applicable.filter(
+      (hint) =>
+        hint.family ===
+          "arena-ownership-guard" &&
+        hint.supportedPredicateIds.includes(
+          "arena-start-ownership-violation-observed",
+        ) &&
+        hint.supportedFactorIds.includes(
+          "start-ownership-guard-enabled",
+        ),
+    );
+
+  if (startHints.length === 0) {
+    return {
+      status: "blocked",
+      sourceId:
+        "arena-ownership-guard-template",
+      reasons: [
+        "No analyzer-owned arena start ownership transform hint matches the selected causal opportunity.",
+      ],
+    };
+  }
+
+  if (startHints.length > 1) {
+    return {
+      status: "blocked",
+      sourceId:
+        "arena-ownership-guard-template",
+      reasons: [
+        "Multiple exact arena start ownership transform hints match the selected causal opportunity; realization is ambiguous.",
+        ...startHints.map(
+          (hint) => "candidate-hint:" + hint.id,
+        ),
+      ],
+    };
+  }
+
+  return realizeArenaStartOwnershipGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    startHints[0]!,
   );
 }
