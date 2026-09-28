@@ -1,6 +1,8 @@
 import {
   CONTRACT_REGISTRY_REVISION,
   causalProofAtLeast,
+  runtimeVerificationExperimentContractCompatible,
+  runtimeVerificationExperimentContractsFromProvenance,
 } from "../../project-model/src/index.js";
 import type {
   DecisionBasisRevision,
@@ -390,6 +392,49 @@ export function decideRepairReleaseWithLineage(
       ledger,
       lineageDecisionIds: [],
       reasons: lifecycleDecision.reasons,
+    };
+  }
+
+  const authorizingRuntimeContracts =
+    runtimeVerificationExperimentContractsFromProvenance(
+      proof.causalInterventionProvenance ?? [],
+    );
+  const verifiedRuntimeContracts =
+    lifecycle.runtimeVerificationContracts ??
+    (lifecycle.runtimeVerificationContract === undefined
+      ? []
+      : [lifecycle.runtimeVerificationContract]);
+
+  const missingRuntimeContracts =
+    authorizingRuntimeContracts.filter(
+      (expected) =>
+        !verifiedRuntimeContracts.some((actual) =>
+          runtimeVerificationExperimentContractCompatible(
+            expected,
+            actual,
+          )
+        ),
+    );
+
+  if (missingRuntimeContracts.length > 0) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Runtime verification does not cover the complete repair-authorizing experiment envelope.",
+        ],
+      },
+      ledger,
+      lineageDecisionIds: [],
+      reasons: missingRuntimeContracts.map(
+        (contract) =>
+          "Missing compatible runtime verification for " +
+          contract.interventionId +
+          "@" +
+          contract.experimentRevision +
+          ".",
+      ),
     };
   }
 
