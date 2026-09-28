@@ -75,15 +75,7 @@ export function recordDiagnosticRepairDecision(
     id: context.decisionId,
     kind: "repair-authorization",
     incidentId: decision.incidentId,
-    basis: {
-      ...context.basis,
-      ...(selectedPostTransformProof === undefined
-        ? {}
-        : {
-            postTransformProofRevision:
-              selectedPostTransformProof.proofFingerprint,
-          }),
-    },
+    basis: context.basis,
     inputIds: [
       ...decision.activeCandidateIds,
     ],
@@ -447,7 +439,15 @@ export function recordRepairStrategySelection(
     ...(transactionId === undefined
       ? {}
       : { transactionId }),
-    basis: context.basis,
+    basis: {
+      ...context.basis,
+      ...(selectedPostTransformProof === undefined
+        ? {}
+        : {
+            postTransformProofRevision:
+              selectedPostTransformProof.proofFingerprint,
+          }),
+    },
     ...(context.upstreamDecisionIds === undefined
       ? {}
       : { upstreamDecisionIds: context.upstreamDecisionIds }),
