@@ -735,6 +735,114 @@ describe("repair strategy selection", () => {
       .toMatch(/repair class is not allowed/i);
   });
 
+  it("explains why a larger valid repair may be selected when a smaller raw patch is causally invalid", () => {
+    const runtimeDiagnostic = {
+      ...diagnostic,
+      causalProof: {
+        state: "causal" as const,
+        interventionIds: ["exp:session"],
+        interventionProvenance: [{
+          interventionId: "exp:session",
+          experimentRevision: "rev-1",
+          predicateId: "stale-session-mutation-observed",
+          controlledFactorIds: [
+            "connection-generation-guard-enabled",
+          ],
+          controlledFactorContrasts: [{
+            factorId:
+              "connection-generation-guard-enabled",
+            controlValue: true,
+            treatmentValue: false,
+          }],
+          controlState: "absent" as const,
+          treatmentState: "present" as const,
+          expectedContrastDisposition: "matched" as const,
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          evidenceIds: ["e:1"],
+        }],
+      },
+    };
+
+    const bigger = createPatchTransaction({
+      title: "bigger-causal-fix",
+      sourceFingerprint: "source",
+      operations: [{
+        kind: "replace-text",
+        source: source("functions/target.mcfunction"),
+        expected: "old-a",
+        replacement: "new-a",
+      }, {
+        kind: "replace-text",
+        source: source("functions/target.mcfunction"),
+        expected: "old-b",
+        replacement: "new-b",
+      }],
+      preconditions: [{
+        kind: "source-fingerprint",
+        expected: "source",
+      }],
+      validation: [{ kind: "rebuild-graph" }],
+    });
+
+    const result = selectRepairStrategy(
+      graphFixture(),
+      runtimeDiagnostic,
+      [{
+        strategyId: "small-but-unbound",
+        transaction: transaction(
+          "small-but-unbound",
+          "functions/caller.mcfunction",
+        ),
+        changedNodeIds: ["function:p:caller"],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+        repairClass: "implementation-repair",
+        reversible: true,
+        idempotent: true,
+      }, {
+        strategyId: "bigger-causal",
+        transaction: bigger,
+        changedNodeIds: ["function:p:target"],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+        repairClass: "implementation-repair",
+        causalBinding: {
+          interventionIds: ["exp:session"],
+          predicateIds: [
+            "stale-session-mutation-observed",
+          ],
+          factorIds: [
+            "connection-generation-guard-enabled",
+          ],
+        },
+        reversible: true,
+        idempotent: true,
+      }],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      },
+    );
+
+    expect(result.status).toBe("selected");
+    if (result.status !== "selected") return;
+    expect(result.selected.strategyId).toBe(
+      "bigger-causal",
+    );
+    expect(result.selectionRationale.join(" "))
+      .toMatch(/smaller raw mutation existed/i);
+    expect(result.rejectedAlternatives).toEqual([
+      expect.objectContaining({
+        strategyId: "small-but-unbound",
+        disposition: "inadmissible",
+      }),
+    ]);
+  });
+
   it("rejects proven-runtime strategy selection without evidence-bound decision basis", () => {
     const graph = graphFixture();
     const candidate = {
