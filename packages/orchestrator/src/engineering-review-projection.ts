@@ -1,11 +1,12 @@
 import type { IntentDiagnosticDisposition } from "../../diagnostic-reasoning/src/index.js";
 import { diagnosticDefinitions, type DiagnosticDefinition, type DiagnosticFinding } from "../../diagnostics/src/index.js";
-import type { CausalIncident } from "../../project-model/src/index.js";
+import type { CausalIncident, DecisionLedgerSnapshot } from "../../project-model/src/index.js";
 import type { InspectArtifactResult } from "./inspect-artifact.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { GameplayIntentRuntimeAssessment } from "./gameplay-intent-runtime-stage.js";
 import type { ValidationTraceReport } from "../../validation/src/index.js";
+import { buildEngineeringReviewInvalidationProjection, type EngineeringReviewInvalidationProjection } from "./engineering-review-invalidation.js";
 
 export type EngineeringReviewSource = Pick<
   InspectArtifactResult,
@@ -100,6 +101,7 @@ export interface EngineeringReviewProjection {
   evidenceRecovery: EvidenceRecoveryPlan;
   decisionBasis: EngineeringReviewSource["decisionBasis"];
   validationTrace?: ValidationTraceReport;
+  invalidation: EngineeringReviewInvalidationProjection;
 }
 
 const runtimeDispositions: readonly IntentDiagnosticDisposition[] = [
@@ -187,6 +189,7 @@ function attentionFrom(
 export function buildEngineeringReviewProjection(
   source: EngineeringReviewSource,
   validationTrace?: ValidationTraceReport,
+  decisionLedger?: DecisionLedgerSnapshot,
 ): EngineeringReviewProjection {
   const runtimeClassifications = countRuntimeClassifications(
     source.gameplayIntentRuntime.assessments,
@@ -254,5 +257,10 @@ export function buildEngineeringReviewProjection(
     ...(validationTrace === undefined
       ? {}
       : { validationTrace }),
+    invalidation: buildEngineeringReviewInvalidationProjection(
+      source.decisionBasis,
+      decisionLedger,
+      validationTrace,
+    ),
   };
 }

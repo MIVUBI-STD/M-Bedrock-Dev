@@ -199,3 +199,5 @@ export * from "./script-transform-semantic-impact.js";
 export * from "./static-graph-preservation-proof.js";
 
 export * from "./engineering-review-projection.js";
+
+export * from "./engineering-review-invalidation.js";
