@@ -28,6 +28,9 @@ import {
 import {
   RecentArtifactStore,
 } from "../../apps/review-ui/src/recent-artifact-store.ts";
+import {
+  ReviewHistoryStore,
+} from "../../apps/review-ui/src/review-history-store.ts";
 
 const appRoot = fileURLToPath(
   new URL("../../apps/review-ui/", import.meta.url),
@@ -119,6 +122,7 @@ async function receiveArtifact(req, path) {
 
 function reviewRuntimePlugin() {
   const recentStore = new RecentArtifactStore();
+  const historyStore = new ReviewHistoryStore();
   const artifactPath =
     process.env.M_BEDROCK_REVIEW_ARTIFACT?.trim();
 
@@ -129,6 +133,23 @@ function reviewRuntimePlugin() {
         "/__m-bedrock/review",
         async (req, res, next) => {
           const path = req.url?.split("?")[0];
+
+          if (req.method === "GET" && path === "/history") {
+            const artifactId =
+              typeof req.headers["x-m-bedrock-artifact-id"] === "string"
+                ? decodeURIComponent(req.headers["x-m-bedrock-artifact-id"])
+                : "";
+            if (!artifactId) {
+              sendJson(res, 400, {
+                error: "Artifact id is missing.",
+              });
+              return;
+            }
+            sendJson(res, 200, {
+              events: await historyStore.list(artifactId),
+            });
+            return;
+          }
 
           if (req.method === "GET" && path === "/recent") {
             sendJson(res, 200, {
@@ -160,6 +181,18 @@ function reviewRuntimePlugin() {
                   artifactPath: recent.artifactPath,
                   target: targetFromEnvironment(),
                 });
+              const triggerHeader =
+                req.headers["x-m-bedrock-analysis-trigger"];
+              const trigger =
+                triggerHeader === "reanalysis"
+                  ? "reanalysis"
+                  : "recent-open";
+              await historyStore.recordAnalysis({
+                artifactId: model.artifact.id,
+                trigger,
+                attentionCount: model.attentionCount,
+                targetLabel: model.artifact.targetLabel,
+              });
               sendJson(res, 200, {
                 model,
                 record: recent.record,
@@ -205,6 +238,12 @@ function reviewRuntimePlugin() {
                   artifactPath,
                   target: targetFromEnvironment(),
                 });
+              await historyStore.recordAnalysis({
+                artifactId: model.artifact.id,
+                trigger: "configured-artifact",
+                attentionCount: model.attentionCount,
+                targetLabel: model.artifact.targetLabel,
+              });
               sendJson(res, 200, model);
             } catch (error) {
               sendJson(res, 500, {
@@ -249,6 +288,12 @@ function reviewRuntimePlugin() {
                   attentionCount: model.attentionCount,
                 },
               );
+              await historyStore.recordAnalysis({
+                artifactId: model.artifact.id,
+                trigger: "file-open",
+                attentionCount: model.attentionCount,
+                targetLabel: model.artifact.targetLabel,
+              });
               sendJson(res, 200, {
                 model,
                 record,
