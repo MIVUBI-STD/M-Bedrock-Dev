@@ -27,13 +27,6 @@ function sameSource(
   return actual.range?.lineStart === expectedLine;
 }
 
-function scriptKind(path: string): ts.ScriptKind {
-  if (path.endsWith(".ts")) return ts.ScriptKind.TS;
-  if (path.endsWith(".tsx")) return ts.ScriptKind.TSX;
-  if (path.endsWith(".jsx")) return ts.ScriptKind.JSX;
-  return ts.ScriptKind.JS;
-}
-
 function scriptPath(path: string): boolean {
   return /\.(?:[cm]?js|jsx|[cm]?ts|tsx)$/i.test(path);
 }
@@ -63,21 +56,32 @@ async function validateReparse(
     }
 
     if (scriptPath(step.source.relativePath)) {
-      const file = ts.createSourceFile(
-        step.source.relativePath,
-        text,
-        ts.ScriptTarget.Latest,
-        true,
-        scriptKind(step.source.relativePath),
-      );
-      const parseDiagnostics =
-        file.parseDiagnostics ?? [];
-      if (parseDiagnostics.length > 0) {
+      const syntaxDiagnostics =
+        (
+          ts.transpileModule(text, {
+            fileName: step.source.relativePath,
+            reportDiagnostics: true,
+            compilerOptions: {
+              target: ts.ScriptTarget.ESNext,
+              module: ts.ModuleKind.ESNext,
+            },
+          }).diagnostics ?? []
+        ).filter(
+          (diagnostic) =>
+            diagnostic.category ===
+            ts.DiagnosticCategory.Error,
+        );
+
+      if (syntaxDiagnostics.length > 0) {
         return {
           step,
           ok: false,
           message:
-            "Affected script has TypeScript/JavaScript parse diagnostics after mutation.",
+            "Affected script has TypeScript/JavaScript parse diagnostics after mutation: " +
+            ts.flattenDiagnosticMessageText(
+              syntaxDiagnostics[0]!.messageText,
+              "\n",
+            ),
         };
       }
 
