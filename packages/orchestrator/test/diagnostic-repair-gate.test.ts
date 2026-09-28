@@ -121,6 +121,129 @@ describe("diagnostic repair gate v2", () => {
     ).disposition).toBe("proposal-only");
   });
 
+  it("blocks experiment-backed mutation when intervention provenance is missing", () => {
+    const base = incident(
+      "proven-with-observed-outcome",
+      "intervention-supported",
+    );
+    const experimental: CausalIncident = {
+      ...base,
+      rootCauseCandidates: [{
+        ...base.rootCauseCandidates[0]!,
+        causalPredicateIds: ["chunk-not-ready"],
+        proof: {
+          state: "intervention-supported",
+          interventionIds: ["exp:chunk"],
+        },
+      }],
+    };
+
+    const decision = decideDiagnosticRepair(
+      experimental,
+      investigation(true),
+      "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
+    );
+
+    expect(decision).toMatchObject({
+      disposition: "proposal-only",
+      proofState: "localized",
+    });
+    expect(decision.reasons.join(" ")).toMatch(
+      /missing provenance/i,
+    );
+  });
+
+  it("blocks experiment-backed mutation when provenance belongs to another predicate", () => {
+    const base = incident(
+      "proven-with-observed-outcome",
+      "intervention-supported",
+    );
+    const experimental: CausalIncident = {
+      ...base,
+      rootCauseCandidates: [{
+        ...base.rootCauseCandidates[0]!,
+        causalPredicateIds: ["chunk-not-ready"],
+        proof: {
+          state: "intervention-supported",
+          interventionIds: ["exp:chunk"],
+          interventionProvenance: [{
+            interventionId: "exp:chunk",
+            experimentRevision: "rev-1",
+            predicateId: "different-predicate",
+            controlledFactorIds: ["chunk-loaded"],
+            controlState: "absent",
+            treatmentState: "present",
+            expectedContrastDisposition: "matched",
+            targetProfileFingerprint: "profile-a",
+            fixtureFingerprint: "fixture-a",
+            evidenceIds: ["e:1"],
+          }],
+        },
+      }],
+    };
+
+    const decision = decideDiagnosticRepair(
+      experimental,
+      investigation(true),
+      "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
+    );
+
+    expect(decision).toMatchObject({
+      disposition: "proposal-only",
+      proofState: "localized",
+    });
+    expect(decision.reasons.join(" ")).toMatch(
+      /not covered by matched intervention provenance/i,
+    );
+  });
+
+  it("allows guarded mutation when experiment provenance is complete and bound to the candidate predicate", () => {
+    const base = incident(
+      "proven-with-observed-outcome",
+      "intervention-supported",
+    );
+    const experimental: CausalIncident = {
+      ...base,
+      rootCauseCandidates: [{
+        ...base.rootCauseCandidates[0]!,
+        causalPredicateIds: ["chunk-not-ready"],
+        proof: {
+          state: "intervention-supported",
+          interventionIds: ["exp:chunk"],
+          interventionProvenance: [{
+            interventionId: "exp:chunk",
+            experimentRevision: "rev-1",
+            predicateId: "chunk-not-ready",
+            controlledFactorIds: ["chunk-loaded"],
+            controlState: "absent",
+            treatmentState: "present",
+            expectedContrastDisposition: "matched",
+            targetProfileFingerprint: "profile-a",
+            fixtureFingerprint: "fixture-a",
+            evidenceIds: ["e:1"],
+          }],
+        },
+      }],
+    };
+
+    const decision = decideDiagnosticRepair(
+      experimental,
+      investigation(true),
+      "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
+    );
+
+    expect(decision).toMatchObject({
+      disposition: "guarded-repair-eligible",
+      proofState: "intervention-supported",
+    });
+    expect(
+      decision.causalProof?.interventionProvenance?.[0]?.predicateId,
+    ).toBe("chunk-not-ready");
+  });
+
   it("allows only guarded working-copy mutation for intervention-supported proof", () => {
     expect(decideDiagnosticRepair(
       incident("proven-with-observed-outcome", "intervention-supported"),
