@@ -40,6 +40,7 @@ export interface CausalInterventionProvenance {
   experimentRevision?: string;
   predicateId?: string;
   controlledFactorIds?: readonly string[];
+  controlledFactorContrasts?: readonly CausalControlledFactorContrast[];
   controlState?: "present" | "absent";
   treatmentState?: "present" | "absent";
   expectedContrastDisposition?: "matched" | "mismatched" | "unspecified";
