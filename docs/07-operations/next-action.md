@@ -529,3 +529,52 @@ causal opportunity
 ```
 
 The next quality bar is that the caller supplies causal evidence and current source state—not a hand-authored repair candidate.
+
+
+## Next lane — concrete runtime repair realizers
+
+Repair source discovery, realizer versioning, graph-bound changed-node derivation, realization coverage reporting, and realization audit provenance are now structurally enforced.
+
+The next bottleneck is concrete runtime repair realization.
+
+Priorities:
+
+1. add syntax-aware source analyzers that can identify exact mutation points for proven runtime causes before writing any repair;
+2. implement deterministic realizers only when the analyzer can produce an exact transform contract:
+   - session/connection/participation generation guard;
+   - scheduler owner-generation/cancellation guard;
+   - atomic arena capacity/start ownership guard;
+   - persistence reconciliation/idempotency guard;
+3. keep navigation recovery primarily configuration/runtime-mitigation unless an authored recovery surface is explicitly identified;
+4. require every concrete realizer to produce:
+   ```text
+   exact SourceRef
+   expected original text/command
+   deterministic replacement
+   source fingerprint precondition
+   static validation
+   causal runtime retest obligation
+   preservation obligation
+   ```
+5. never synthesize JavaScript/function syntax from a causal predicate alone;
+6. add a structured source-transform hint contract owned by analyzers, not by providers or callers;
+7. reject realizer execution when source syntax, parser version, or semantic owner no longer matches the hint;
+8. add realizer-specific revision tests so a generator logic change invalidates historical strategy decisions;
+9. expand concrete realizer coverage incrementally and expose remaining missing-realizer classes in the coverage report;
+10. only after deterministic realization is proven should these runtime repair sources move from proposal-only to causal-auto.
+
+Target flow:
+
+```text
+proven runtime cause
+→ exact syntax-aware source transform hint
+→ registered deterministic realizer
+→ graph-bound PatchTransaction
+→ strategy intelligence
+→ repair admission
+→ same causal experiment retest
+```
+
+The governing rule is:
+
+> Runtime causal proof identifies what must change; a syntax-aware analyzer must still prove exactly where and how the source can be changed safely.
