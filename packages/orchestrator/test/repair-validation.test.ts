@@ -66,6 +66,117 @@ describe("repair validation executor", () => {
     expect(validation.steps.every((step) => step.ok)).toBe(true);
   });
 
+  it("reparses JavaScript/TypeScript repair sources through the script analyzer", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-script-validation-"),
+    );
+    const sourceRoot = join(root, "source");
+    const workingRoot = join(root, "working");
+    const relativePath =
+      "behavior_packs/demo/scripts/session.ts";
+
+    await mkdir(
+      join(
+        workingRoot,
+        "behavior_packs/demo/scripts",
+      ),
+      { recursive: true },
+    );
+
+    const text = [
+      'import { system } from "@minecraft/server";',
+      "class Controller {",
+      "  generation = 1;",
+      "  run() {",
+      "    const capturedGeneration = this.generation;",
+      "    system.run(() => { if (capturedGeneration !== this.generation) return; });",
+      "  }",
+      "}",
+    ].join("\n");
+
+    await writeFile(
+      join(workingRoot, relativePath),
+      text,
+    );
+
+    const transaction = {
+      id: "patch_script_fixture",
+      title: "script fixture",
+      sourceFingerprint: "source-sha",
+      operations: [],
+      preconditions: [],
+      affectedPaths: [relativePath],
+      validation: [{
+        kind: "reparse" as const,
+        source: {
+          artifactId: "source-sha",
+          relativePath,
+          range: {
+            lineStart: 6,
+            lineEnd: 6,
+          },
+        },
+      }],
+    };
+
+    const validation = await validatePatchTransaction(
+      transaction,
+      { sourceRoot, workingRoot },
+    );
+
+    expect(validation.ok).toBe(true);
+    expect(validation.steps[0]?.ok).toBe(true);
+    expect(validation.steps[0]?.message)
+      .toMatch(/script reparsed/i);
+  });
+
+  it("rejects script reparse when the transformed source has syntax errors", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-script-validation-"),
+    );
+    const sourceRoot = join(root, "source");
+    const workingRoot = join(root, "working");
+    const relativePath =
+      "behavior_packs/demo/scripts/broken.ts";
+
+    await mkdir(
+      join(
+        workingRoot,
+        "behavior_packs/demo/scripts",
+      ),
+      { recursive: true },
+    );
+    await writeFile(
+      join(workingRoot, relativePath),
+      "function broken( {",
+    );
+
+    const transaction = {
+      id: "patch_broken_script_fixture",
+      title: "broken script fixture",
+      sourceFingerprint: "source-sha",
+      operations: [],
+      preconditions: [],
+      affectedPaths: [relativePath],
+      validation: [{
+        kind: "reparse" as const,
+        source: {
+          artifactId: "source-sha",
+          relativePath,
+        },
+      }],
+    };
+
+    const validation = await validatePatchTransaction(
+      transaction,
+      { sourceRoot, workingRoot },
+    );
+
+    expect(validation.ok).toBe(false);
+    expect(validation.steps[0]?.message)
+      .toMatch(/parse diagnostics/i);
+  });
+
   it("rejects validation when mutation did not remove the target diagnostic", async () => {
     const root = await mkdtemp(join(tmpdir(), "m-bedrock-validation-"));
     const sourceRoot = join(root, "source");
