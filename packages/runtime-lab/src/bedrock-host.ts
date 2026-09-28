@@ -19,6 +19,7 @@ import {
   BEDROCK_ACTION_PREFIX,
   parseBedrockRuntimeActionResponse,
   type BedrockRuntimeActionRequest,
+  type BedrockRuntimeActionResponse,
 } from "./bedrock-action.js";
 import {
   BEDROCK_PROFILE_PREFIX,
@@ -489,7 +490,7 @@ async function executeAction(
   definition: RuntimeExperimentDefinition,
   identity: RuntimeExperimentTrialIdentity,
   step: RuntimeExperimentProtocolStep,
-): Promise<number> {
+): Promise<BedrockRuntimeActionResponse> {
   const arm = armFor(definition, identity.armId);
   const parameters = resolvedParameters(step, arm);
   if (definition.mutationRisk === "read-only") {
@@ -573,7 +574,7 @@ async function executeAction(
       "Bedrock runtime action acknowledgement actionId mismatch.",
     );
   }
-  return response.runtimeTick;
+  return response;
 }
 
 async function executeProbe(
@@ -693,15 +694,18 @@ export function createBedrockHarnessExperimentHost(
           );
         }
 
-        const actionTick = await executeAction(
+        const actionResponse = await executeAction(
           options,
           actionCapabilities!,
           definition,
           identity,
           step,
         );
-        startTick ??= actionTick;
-        endTick = actionTick;
+        startTick ??= actionResponse.runtimeTick;
+        endTick = actionResponse.runtimeTick;
+        evidence.push(
+          ...(actionResponse.evidence ?? []),
+        );
       }
 
       return {
