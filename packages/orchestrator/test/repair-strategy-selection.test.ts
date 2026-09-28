@@ -509,6 +509,232 @@ describe("repair strategy selection", () => {
     ).toBe("inv-r1");
   });
 
+  it("rejects runtime-causal strategy without exact causal binding metadata", () => {
+    const runtimeDiagnostic = {
+      ...diagnostic,
+      causalProof: {
+        state: "causal" as const,
+        interventionIds: ["exp:session"],
+        interventionProvenance: [{
+          interventionId: "exp:session",
+          experimentRevision: "rev-1",
+          predicateId: "stale-session-mutation-observed",
+          controlledFactorIds: [
+            "connection-generation-guard-enabled",
+          ],
+          controlledFactorContrasts: [{
+            factorId:
+              "connection-generation-guard-enabled",
+            controlValue: true,
+            treatmentValue: false,
+          }],
+          controlState: "absent" as const,
+          treatmentState: "present" as const,
+          expectedContrastDisposition: "matched" as const,
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          evidenceIds: ["e:1"],
+        }],
+      },
+    };
+
+    const result = selectRepairStrategy(
+      graphFixture(),
+      runtimeDiagnostic,
+      [{
+        strategyId: "missing-binding",
+        transaction: transaction(
+          "missing-binding",
+          "functions/caller.mcfunction",
+        ),
+        changedNodeIds: ["function:p:caller"],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+        repairClass: "implementation-repair",
+        reversible: true,
+        idempotent: true,
+      }],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      },
+    );
+
+    expect(result.status).toBe("none-eligible");
+    expect(result.assessments[0]?.intelligence)
+      .toMatchObject({
+        causalBindingSatisfied: false,
+      });
+    expect(result.assessments[0]?.reasons.join(" "))
+      .toMatch(/missing exact causalBinding/i);
+  });
+
+  it("accepts runtime-causal strategy only when intervention, predicate, and factor binding cover the proof", () => {
+    const runtimeDiagnostic = {
+      ...diagnostic,
+      causalProof: {
+        state: "causal" as const,
+        interventionIds: ["exp:session"],
+        interventionProvenance: [{
+          interventionId: "exp:session",
+          experimentRevision: "rev-1",
+          predicateId: "stale-session-mutation-observed",
+          controlledFactorIds: [
+            "connection-generation-guard-enabled",
+          ],
+          controlledFactorContrasts: [{
+            factorId:
+              "connection-generation-guard-enabled",
+            controlValue: true,
+            treatmentValue: false,
+          }],
+          controlState: "absent" as const,
+          treatmentState: "present" as const,
+          expectedContrastDisposition: "matched" as const,
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          evidenceIds: ["e:1"],
+        }],
+      },
+    };
+
+    const result = selectRepairStrategy(
+      graphFixture(),
+      runtimeDiagnostic,
+      [{
+        strategyId: "exact-binding",
+        transaction: transaction(
+          "exact-binding",
+          "functions/caller.mcfunction",
+        ),
+        changedNodeIds: ["function:p:caller"],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+        repairClass: "implementation-repair",
+        causalBinding: {
+          interventionIds: ["exp:session"],
+          predicateIds: [
+            "stale-session-mutation-observed",
+          ],
+          factorIds: [
+            "connection-generation-guard-enabled",
+          ],
+        },
+        reversible: true,
+        idempotent: true,
+      }],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      },
+    );
+
+    expect(result.status).toBe("selected");
+    if (result.status !== "selected") return;
+    expect(result.selected.intelligence)
+      .toMatchObject({
+        repairClass: "implementation-repair",
+        causalBindingSatisfied: true,
+        authorizingRuntimeExperiments: [
+          "exp:session",
+        ],
+      });
+    expect(result.selected.metrics.runtimeRetestBurden)
+      .toBeGreaterThan(0);
+  });
+
+  it("prefers reversible and idempotent strategy when causal fit and graph impact are otherwise equal", () => {
+    const graph = graphFixture();
+
+    const result = selectRepairStrategy(
+      graph,
+      diagnostic,
+      [{
+        strategyId: "safer",
+        transaction: transaction(
+          "safer",
+          "functions/independent-a.mcfunction",
+        ),
+        changedNodeIds: [
+          "function:p:independent-a",
+        ],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+        repairClass: "implementation-repair",
+        reversible: true,
+        idempotent: true,
+      }, {
+        strategyId: "riskier",
+        transaction: transaction(
+          "riskier",
+          "functions/independent-b.mcfunction",
+        ),
+        changedNodeIds: [
+          "function:p:independent-b",
+        ],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+        repairClass: "implementation-repair",
+        reversible: false,
+        idempotent: false,
+      }],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      },
+    );
+
+    expect(result.status).toBe("selected");
+    if (result.status !== "selected") return;
+    expect(result.selected.strategyId).toBe("safer");
+    expect(result.selected.metrics.reversibilityRank).toBe(0);
+    expect(result.selected.metrics.idempotencyRank).toBe(0);
+  });
+
+  it("rejects a repair class excluded by policy even when its raw patch is smaller", () => {
+    const result = selectRepairStrategy(
+      graphFixture(),
+      diagnostic,
+      [{
+        strategyId: "workaround",
+        transaction: transaction(
+          "workaround",
+          "functions/caller.mcfunction",
+        ),
+        changedNodeIds: ["function:p:caller"],
+        supportingInvariantIds: ["invariant:ready"],
+        addressesCandidateIds: ["cause-1"],
+        repairClass: "compatibility-workaround",
+        reversible: true,
+        idempotent: true,
+      }],
+      {
+        invariantRegistry: invariantRegistry(),
+        requiredInvariantIds: ["invariant:ready"],
+        allowedRepairClasses: [
+          "implementation-repair",
+          "configuration-repair",
+        ],
+        decisionBasis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      },
+    );
+
+    expect(result.status).toBe("none-eligible");
+    expect(result.assessments[0]?.reasons.join(" "))
+      .toMatch(/repair class is not allowed/i);
+  });
+
   it("rejects proven-runtime strategy selection without evidence-bound decision basis", () => {
     const graph = graphFixture();
     const candidate = {
