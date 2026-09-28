@@ -48,5 +48,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Review UI build
+        run: npm run review-ui:build
+
       - name: Test
         run: npm test
