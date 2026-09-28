@@ -1023,3 +1023,78 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Persistence idempotency transform and realizer proof
+
+Persistence journal recovery now has a concrete syntax-aware causal-auto repair surface.
+
+The scripts analyzer emits a `persistence-idempotency-guard` transform hint only for a narrow authored pattern:
+
+```text
+const <appliedGeneration> =
+  <receiver>.getDynamicProperty("<applied-generation-key>");
+
+<single-line side-effect call>();
+
+<receiver>.setDynamicProperty(
+  "<same applied-generation-key>",
+  <journalGeneration>
+);
+```
+
+The detector requires:
+
+- the applied marker binding is `const`;
+- read and write use the exact same literal dynamic-property key;
+- the key name explicitly carries applied/committed + generation/revision/version semantics;
+- the journal operand explicitly carries journal/record/operation + generation/revision/version semantics;
+- the side effect is a direct single-line call immediately before the marker write;
+- the side effect itself is not a dynamic-property read/write;
+- exact single-line SourceRef evidence is available.
+
+When those constraints hold, the analyzer-owned replacement is limited to:
+
+```text
+if (<appliedGeneration> !== <journalGeneration>)
+  <existing side-effect call>();
+```
+
+The analyzer does not invent a journal key, generation variable, side effect, or storage authority.
+
+The normal parsed-script output now includes this hint family together with scheduler/session generation hints.
+
+A new causal-auto source and deterministic realizer are registered:
+
+```text
+persistence-idempotency-guard-template
+persistence-idempotency-guard-realizer
+```
+
+Automatic realization requires the causal opportunity to match:
+
+```text
+predicate:
+duplicate-apply-after-reload-observed
+
+controlled factor:
+idempotent-recovery-enabled
+```
+
+The realized candidate carries the original persistence runtime experiment as a retest obligation, current source fingerprint precondition, exact source replacement, graph-derived changed nodes, invariant obligations, and analyzer/parser revision binding.
+
+No transform hint is emitted when the applied marker is mutable, read/write keys differ, or generation/idempotency semantics are not explicit in authored source names.
+
+Validated source revision: `c18a37905ae6be3290463b43b342dbfcf01c074b`.
+
+GitHub Actions Verify run `36427139909` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
+
+Independent Package Source Snapshot verification on the same revision also passed TypeScript compilation and 12/12 focused persistence/generation realizer tests under Node 24.21.0.
