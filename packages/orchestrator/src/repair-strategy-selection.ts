@@ -599,17 +599,21 @@ export function selectRepairStrategy(
             pipeline.impact.affectedNodeIds.length +
             pipeline.impact.affectedPaths.length,
           reversibilityRank:
-            candidate.reversible === true
+            policy.preferReversible === false
               ? 0
-              : candidate.reversible === false
-                ? 2
-                : 1,
+              : candidate.reversible === true
+                ? 0
+                : candidate.reversible === false
+                  ? 2
+                  : 1,
           idempotencyRank:
-            candidate.idempotent === true
+            policy.preferIdempotent === false
               ? 0
-              : candidate.idempotent === false
-                ? 2
-                : 1,
+              : candidate.idempotent === true
+                ? 0
+                : candidate.idempotent === false
+                  ? 2
+                  : 1,
           changedNodes: candidate.changedNodeIds.length,
           operations: candidate.transaction.operations.length,
         },
