@@ -114,6 +114,17 @@ export function validateRuntimeExperimentDefinition(
     );
   }
 
+  for (const duplicate of duplicates(
+    (definition.evidenceRequirements ?? []).map(
+      (item) => item.id,
+    ),
+  )) {
+    errors.push(
+      "Duplicate runtime experiment evidence requirement id: " +
+        duplicate,
+    );
+  }
+
   const outcomePredicates = new Set(
     definition.outcomePredicateIds,
   );
@@ -131,6 +142,33 @@ export function validateRuntimeExperimentDefinition(
           expected.predicateId +
           ".",
       );
+    }
+  }
+
+  const armIds = new Set(
+    definition.arms.map((arm) => arm.id),
+  );
+  for (const requirement of definition.evidenceRequirements ?? []) {
+    if (!requirement.id.trim()) {
+      errors.push(
+        "Runtime experiment evidence requirement id must be non-empty.",
+      );
+    }
+    if (!requirement.predicateId.trim()) {
+      errors.push(
+        "Runtime experiment evidence requirement predicateId must be non-empty.",
+      );
+    }
+    for (const armId of requirement.armIds ?? []) {
+      if (!armIds.has(armId)) {
+        errors.push(
+          "Runtime experiment evidence requirement " +
+            requirement.id +
+            " references unknown arm " +
+            armId +
+            ".",
+        );
+      }
     }
   }
 
