@@ -173,6 +173,83 @@ describe("runtime probe contracts", () => {
     ]));
   });
 
+  it("treats participationGeneration as a validated runtime scope boundary", () => {
+    expect(validateRuntimeProbeRequest({
+      schemaVersion: 1,
+      requestId: "req-participation",
+      probeId: "session-scope",
+      predicate: "session-current",
+      scope: {
+        playerKey: "player-1",
+        connectionGeneration: 3,
+        participationGeneration: -1,
+      },
+      query: {
+        kind: "scoreboard-value",
+        objectiveId: "session",
+        participant: "player-1",
+      },
+      outcomeByState: {
+        present: "current",
+        absent: "stale",
+      },
+    })).toEqual(expect.arrayContaining([
+      expect.stringContaining(
+        "scope.participationGeneration",
+      ),
+    ]));
+
+    const request = {
+      schemaVersion: 1 as const,
+      requestId: "req-participation-match",
+      probeId: "session-scope",
+      predicate: "session-current",
+      scope: {
+        playerKey: "player-1",
+        connectionGeneration: 3,
+        participationGeneration: 9,
+      },
+      query: {
+        kind: "scoreboard-value" as const,
+        objectiveId: "session",
+        participant: "player-1",
+      },
+      outcomeByState: {
+        present: "current",
+        absent: "stale",
+      },
+    };
+
+    expect(validateRuntimeProbeTranscript({
+      schemaVersion: 1,
+      exchanges: [{
+        request,
+        response: {
+          schemaVersion: 1,
+          requestId: request.requestId,
+          probeId: request.probeId,
+          runtimeTick: 30,
+          ok: true,
+          state: "present",
+          outcomeId: "current",
+          evidence: {
+            predicate: request.predicate,
+            state: "present",
+            confidence: "observed",
+            scope: {
+              ...request.scope,
+              participationGeneration: 8,
+            },
+            observedAt: { tick: 30 },
+          },
+          value: 1,
+        },
+      }],
+    })).toEqual(expect.arrayContaining([
+      expect.stringContaining("evidence scope mismatch"),
+    ]));
+  });
+
   it("requires failed probes to return unknown state with an error", () => {
     expect(validateRuntimeProbeResponse({
       schemaVersion: 1,
