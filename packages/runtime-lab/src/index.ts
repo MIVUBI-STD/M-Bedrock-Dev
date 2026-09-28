@@ -14,3 +14,5 @@ export * from "./action-capability.js";
 export * from "./bedrock-capabilities.js";
 export * from "./scenario-requirements.js";
 export * from "./scenario-execution-gate.js";
+
+export * from "./chunk-readiness-experiment.js";
