@@ -16,6 +16,7 @@ export interface MockReviewItem {
   whatHappened: string;
   why: string;
   nextAction?: string;
+  technical?: { finding: string; source: string; proofBasis: string };
   section: "attention" | "understood";
 }
 
@@ -36,6 +37,11 @@ export const mockItems: readonly MockReviewItem[] = [
     whatHappened: "Water interactions can change blocks outside the active build plot.",
     why: "Runtime evidence contradicts the authored rule that build interactions are limited to the active plot.",
     nextAction: "Review repair",
+    technical: {
+      finding: "CROSS_SCOPE_STATE_RISK",
+      source: "scripts/arena/session.ts",
+      proofBasis: "mock-projection-v1",
+    },
     section: "attention",
   },
   {
