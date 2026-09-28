@@ -46,6 +46,7 @@ export interface RepairLifecycleState {
   preservationVerificationComplete: boolean;
   packageVerificationComplete: boolean;
   runtimeVerificationContract?: RuntimeVerificationExperimentContract;
+  runtimeVerificationContracts?: readonly RuntimeVerificationExperimentContract[];
   authorizingRuntimeExperimentContracts?: readonly RuntimeVerificationExperimentContract[];
   pendingNodeIds: readonly string[];
   pendingPaths: readonly string[];
@@ -285,38 +286,95 @@ export function markRepairRuntimeVerified(
 
   const expectedContracts =
     state.authorizingRuntimeExperimentContracts ?? [];
-  if (expectedContracts.length > 1) {
-    throw new Error(
-      "Runtime verification requires separate coverage for each authorizing experiment contract.",
-    );
-  }
-  if (expectedContracts.length === 1) {
-    const expected = expectedContracts[0]!;
-    if (
-      !runtimeVerificationExperimentContractCompatible(
-        expected,
-        receipt.runtimeExperimentContract,
-      )
-    ) {
+  const verifiedContracts = [
+    ...(state.runtimeVerificationContracts ?? []),
+  ];
+
+  if (expectedContracts.length > 0) {
+    const executed = receipt.runtimeExperimentContract;
+    if (!executed) {
       throw new Error(
-        "Runtime verification receipt experiment contract is not compatible with the repair-authorizing experiment contract.",
+        "Runtime verification receipt requires an experiment contract because the repair was authorized by controlled runtime experiments.",
       );
     }
+
+    const compatibleExpected = expectedContracts.filter((expected) =>
+      runtimeVerificationExperimentContractCompatible(
+        expected,
+        executed,
+      )
+    );
+
+    if (compatibleExpected.length === 0) {
+      throw new Error(
+        "Runtime verification receipt experiment contract is not compatible with any repair-authorizing experiment contract.",
+      );
+    }
+
+    const duplicateReceipt = verifiedContracts.some(
+      (contract) =>
+        contract.interventionId === executed.interventionId &&
+        contract.experimentRevision === executed.experimentRevision &&
+        contract.targetProfileFingerprint ===
+          executed.targetProfileFingerprint &&
+        contract.fixtureFingerprint === executed.fixtureFingerprint,
+    );
+    if (!duplicateReceipt) {
+      verifiedContracts.push(executed);
+    }
+  } else if (receipt.runtimeExperimentContract) {
+    verifiedContracts.push(receipt.runtimeExperimentContract);
   }
+
+  const runtimeVerificationComplete =
+    expectedContracts.length === 0
+      ? true
+      : expectedContracts.every((expected) =>
+          verifiedContracts.some((executed) =>
+            runtimeVerificationExperimentContractCompatible(
+              expected,
+              executed,
+            )
+          )
+        );
+
+  const covered = expectedContracts.filter((expected) =>
+    verifiedContracts.some((executed) =>
+      runtimeVerificationExperimentContractCompatible(
+        expected,
+        executed,
+      )
+    )
+  ).length;
 
   return {
     ...state,
-    runtimeVerificationComplete: true,
+    runtimeVerificationComplete,
     ...(receipt.runtimeExperimentContract === undefined
       ? {}
       : {
           runtimeVerificationContract:
             receipt.runtimeExperimentContract,
         }),
+    ...(verifiedContracts.length === 0
+      ? {}
+      : {
+          runtimeVerificationContracts:
+            verifiedContracts,
+        }),
     reasons: [
       ...state.reasons,
       "Runtime verification evidence has been accepted: " +
         [...new Set(receipt.evidenceIds)].sort().join(", "),
+      ...(expectedContracts.length === 0
+        ? []
+        : [
+            "Runtime experiment contract coverage: " +
+              covered +
+              "/" +
+              expectedContracts.length +
+              ".",
+          ]),
     ],
   };
 }
