@@ -1,4 +1,5 @@
 import type {
+  ReviewHistoryEvent,
   ReviewRecentArtifact,
   ReviewRuntimeClient,
   ReviewRuntimeInfo,
@@ -90,6 +91,12 @@ export class ReviewRuntimeController {
     readonly ReviewRecentArtifact[]
   > {
     return this.client.recent();
+  }
+
+  async history(
+    artifactId: string,
+  ): Promise<readonly ReviewHistoryEvent[]> {
+    return this.client.history(artifactId);
   }
 
   private async execute(

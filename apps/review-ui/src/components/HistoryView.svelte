@@ -1,33 +1,104 @@
 <script lang="ts">
-  export interface HistoryEvent {
+  import type {
+    ReviewHistoryEvent,
+  } from "../runtime-client.js";
+
+  export interface HistoryPreviewEvent {
     time: string;
     title: string;
     detail: string;
   }
 
   export let mapName: string;
-  export let events: readonly HistoryEvent[];
+  export let runtimeEvents:
+    readonly ReviewHistoryEvent[] = [];
+  export let previewEvents:
+    readonly HistoryPreviewEvent[] = [];
+  export let runtimeMode = false;
+
+  function titleFor(
+    event: ReviewHistoryEvent,
+  ): string {
+    switch (event.trigger) {
+      case "file-open":
+        return "Map opened and analyzed";
+      case "recent-open":
+        return "Recent map analyzed";
+      case "reanalysis":
+        return "Analysis completed";
+      case "configured-artifact":
+        return "Configured map analyzed";
+    }
+  }
+
+  function detailFor(
+    event: ReviewHistoryEvent,
+  ): string {
+    const attention = event.attentionCount === 0
+      ? "No items need attention"
+      : event.attentionCount +
+        (event.attentionCount === 1
+          ? " item needs attention"
+          : " items need attention");
+    return attention + " · " + event.targetLabel;
+  }
+
+  function timeFor(value: string): string {
+    return new Date(value).toLocaleString();
+  }
 </script>
 
 <main class="history">
   <header>
     <h1>History</h1>
-    <p>Recent analysis, repairs, and validation for {mapName}.</p>
+    <p>
+      {runtimeMode
+        ? "Recorded analysis activity for " + mapName + "."
+        : "Preview history for " + mapName + "."}
+    </p>
   </header>
-  <h2>Today</h2>
-  {#each events as event}
-    <article>
-      <time>{event.time}</time>
-      <div><strong>{event.title}</strong><span>{event.detail}</span></div>
-    </article>
-  {/each}
+
+  {#if runtimeMode}
+    {#if runtimeEvents.length > 0}
+      <h2>Recent</h2>
+      {#each runtimeEvents as event (event.id)}
+        <article>
+          <time>{timeFor(event.occurredAt)}</time>
+          <div>
+            <strong>{titleFor(event)}</strong>
+            <span>{detailFor(event)}</span>
+          </div>
+        </article>
+      {/each}
+    {:else}
+      <div class="empty">
+        <strong>No recorded history yet</strong>
+        <span>Run an analysis to create the first history event.</span>
+      </div>
+    {/if}
+  {:else}
+    <h2>Preview</h2>
+    {#each previewEvents as event}
+      <article>
+        <time>{event.time}</time>
+        <div><strong>{event.title}</strong><span>{event.detail}</span></div>
+      </article>
+    {/each}
+  {/if}
 </main>
 
 <style>
   .history{width:min(860px,calc(100% - 48px));margin:0 auto;padding:34px 0}
-  .history h1{margin:0;font-size:20px}.history header p{margin:2px 0 0;color:#8b939c;font-size:12px}
-  .history h2{color:#8c949e;font-size:12px}
-  .history article{display:grid;grid-template-columns:64px 1fr;gap:16px;padding:15px 0;border-top:1px solid #20252a}
-  .history article div{display:grid;gap:2px}.history article span,.history time{color:#8e969f;font-size:12px}
-  @media(max-width:759px){.history{width:calc(100% - 32px)}}
+  .history h1{margin:0;font-size:20px}
+  .history header p{margin:2px 0 0;color:#8b939c;font-size:12px}
+  .history h2{margin:30px 0 8px;color:#8c949e;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+  .history article{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;padding:15px 0;border-top:1px solid #20252a}
+  .history article div{display:grid;gap:2px}
+  .history article span,.history time{color:#8e969f;font-size:12px}
+  .empty{display:grid;gap:4px;margin-top:24px;padding:22px 0;border-top:1px solid #20252a;color:#858e97}
+  .empty strong{color:#c4c9ce;font-size:13px}.empty span{font-size:12px}
+  @media(max-width:759px){
+    .history{width:calc(100% - 32px)}
+    .history article{grid-template-columns:1fr;gap:4px}
+  }
 </style>

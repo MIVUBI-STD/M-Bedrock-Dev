@@ -20,6 +20,20 @@ export interface ReviewAnalysisEnvelope {
   record: Omit<ReviewRecentArtifact, "available">;
 }
 
+export interface ReviewHistoryEvent {
+  id: string;
+  artifactId: string;
+  kind: "analysis-completed";
+  trigger:
+    | "file-open"
+    | "recent-open"
+    | "reanalysis"
+    | "configured-artifact";
+  occurredAt: string;
+  attentionCount: number;
+  targetLabel: string;
+}
+
 export type ReviewRecentAnalysisTrigger =
   | "recent-open"
   | "reanalysis";
@@ -27,6 +41,7 @@ export type ReviewRecentAnalysisTrigger =
 export interface ReviewRuntimeClient {
   info(): Promise<ReviewRuntimeInfo>;
   recent(): Promise<readonly ReviewRecentArtifact[]>;
+  history(artifactId: string): Promise<readonly ReviewHistoryEvent[]>;
   analyzeConfigured(): Promise<ReviewUiViewModel>;
   analyzeFile(file: File): Promise<ReviewAnalysisEnvelope>;
   analyzeRecent(
@@ -63,6 +78,18 @@ export function createReviewRuntimeClient(
         items: readonly ReviewRecentArtifact[];
       }>(response);
       return result.items;
+    },
+    async history(artifactId) {
+      const response = await fetch(baseUrl + "/history", {
+        headers: {
+          "X-M-Bedrock-Artifact-Id":
+            encodeURIComponent(artifactId),
+        },
+      });
+      const result = await jsonOrError<{
+        events: readonly ReviewHistoryEvent[];
+      }>(response);
+      return result.events;
     },
     async analyzeConfigured() {
       const response = await fetch(baseUrl + "/analyze", {
