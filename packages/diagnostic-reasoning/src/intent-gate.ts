@@ -32,6 +32,7 @@ export interface IntentDiagnosticGateInput {
   compatibilityDifferenceEvidenceIds?: readonly string[];
   runtimeProofRequired?: boolean;
   runtimeProofEvidenceIds?: readonly string[];
+  runtimeEvidenceIntegritySatisfied?: boolean;
 }
 
 export interface IntentDiagnosticGateResult {
@@ -135,6 +136,26 @@ export function gateIntentDiagnostic(
       nextEvidenceNeed: "runtime-proof",
       reasons: [
         "This behavior depends on runtime semantics that static evidence cannot prove.",
+      ],
+    };
+  }
+
+  if (
+    input.runtimeProofRequired === true &&
+    (input.runtimeProofEvidenceIds?.length ?? 0) > 0 &&
+    input.runtimeEvidenceIntegritySatisfied === false
+  ) {
+    return {
+      disposition: "runtime-proof-required",
+      subjectIds: [...input.subjectIds],
+      basisInvariantIds: [],
+      evidenceIds: [
+        ...input.observationEvidenceIds,
+        ...(input.runtimeProofEvidenceIds ?? []),
+      ],
+      nextEvidenceNeed: "runtime-evidence-integrity",
+      reasons: [
+        "Runtime proof evidence exists, but its integrity is not sufficient for defect confirmation.",
       ],
     };
   }
