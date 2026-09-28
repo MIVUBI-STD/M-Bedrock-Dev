@@ -335,6 +335,45 @@ describe("decision ledger", () => {
   });
 
 
+  it("invalidates repair strategy decisions when source registry changes", () => {
+    let ledger = appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "source-registry-bound",
+        kind: "repair-strategy-realization",
+        basis: {
+          repairStrategySourceRegistryRevision:
+            "sources-a",
+        },
+        outputIds: [
+          "repair-realization:no-implementation-coverage:false",
+        ],
+      },
+    );
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "source-registry-downstream",
+      kind: "repair-strategy-selection",
+      transactionId: "tx-1",
+      basis: {},
+      upstreamDecisionIds: [
+        "source-registry-bound",
+      ],
+      outputIds: [
+        "repair-strategy:selected",
+      ],
+    });
+
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      repairStrategySourceRegistryRevision:
+        "sources-b",
+    });
+
+    expect(ledger.entries.map((entry) => entry.status))
+      .toEqual(["invalidated", "invalidated"]);
+    expect(ledger.entries[0]?.invalidationReason)
+      .toMatch(/repairStrategySourceRegistryRevision changed/);
+  });
+
   it("invalidates repair strategy decisions when realizer registry changes", () => {
     let ledger = appendDecisionLedgerEntry(
       createDecisionLedger(),
