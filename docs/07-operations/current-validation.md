@@ -17,7 +17,9 @@ Status: GAMEPLAY INTENT + INTENT-AWARE DIAGNOSTICS IMPLEMENTED; 8-MAP UNDERSTAND
 - happens-before-aware reliability search;
 - adversarial invariant falsification;
 - semantic trace differential preservation;
-- Runtime Lab control plane.
+- Runtime Lab control plane;
+- arm-scoped runtime experiment evidence with deterministic record-level evidence identity;
+- arm-scoped diagnostic bindings for contradiction, design-match, engine-constraint, compatibility, and runtime-proof evidence.
 
 ## Diagnostic safety added
 
@@ -99,3 +101,22 @@ artifactChangedIntentStable       true
 ```
 
 This proves packaging/implementation change can be distinguished from authored gameplay-intent change.
+
+
+## Arm-scoped runtime diagnostic proof
+
+Runtime experiment evidence now preserves per-arm predicate observations instead of collapsing deterministic control/treatment differences into an undifferentiated global state.
+
+Validated behavior at revision `8a542e953e86fcad4cab12f4f1aad2dab07983d7`:
+
+```text
+control arm absent + treatment arm present
+→ global predicate may remain unknown
+→ per-arm observations remain explicit
+→ treatment-scoped contradiction/runtime-proof bindings remain usable
+→ control evidence remains preserved as provenance context
+```
+
+Runtime evidence IDs are record-specific even when multiple records share one trial-level provenance key, preventing accidental evidence loss through deduplication.
+
+GitHub Actions Verify run `36380666955` completed successfully: repository policy, source hygiene, public API audit, typecheck, and full test suite all passed.
