@@ -30,3 +30,5 @@ export * from "./entity-navigation-experiment.js";
 export * from "./multiplayer-session-experiment.js";
 
 export * from "./multiplayer-concurrency-experiment.js";
+
+export * from "./persistence-recovery-experiment.js";
