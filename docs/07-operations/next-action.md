@@ -112,3 +112,18 @@ total unknown intent      0
 ```
 
 Next priority is no longer unknown-intent elimination. It is evidence-strength improvement for bundled/minified maps and broader historical/runtime differential proof.
+
+
+## Next runtime-evidence hardening lane
+
+Arm-scoped controlled-experiment evidence is now preserved and consumable by diagnostic reclassification.
+
+Next generic priorities:
+
+1. bind arm semantics to explicit control/treatment roles rather than relying only on arm IDs;
+2. model expected contrast direction so a diagnostic binding states which arm/state combination constitutes contradiction or design match;
+3. require intervention contrast explicitly for claims that depend on causal discrimination rather than simple runtime observation;
+4. carry arm-scoped evidence through causal proof and repair-decision provenance without flattening it;
+5. add runtime differential fixtures for scheduler, chunk lifecycle, entity AI/pathfinding, multiplayer, and persistence classes.
+
+Do not infer causal meaning merely because two arms differ. The experiment definition, arm roles, expected direction, target profile, evidence integrity, and diagnostic intent binding must agree before promoting the claim.
