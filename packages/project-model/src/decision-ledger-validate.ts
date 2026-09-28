@@ -100,6 +100,30 @@ function validateEntrySemantics(
   const providerBound = inputIds.some((id) =>
     id.startsWith("repair-provider:")
   );
+  const realizerBound = inputIds.some((id) =>
+    id.startsWith("repair-realizer:")
+  );
+  if (
+    realizerBound &&
+    !nonEmpty(value.basis.repairRealizerRegistryRevision)
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] realizer-bound decision requires repairRealizerRegistryRevision.",
+    );
+  }
+
+  if (
+    value.kind === "repair-strategy-selection" &&
+    nonEmpty(value.basis.repairRealizerRegistryRevision) &&
+    !realizerBound
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] realizer-bound repair strategy requires repair-realizer provenance.",
+    );
+  }
+
   if (
     providerBound &&
     !nonEmpty(value.basis.repairProviderRegistryRevision)
