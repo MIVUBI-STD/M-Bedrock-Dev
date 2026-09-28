@@ -18,12 +18,12 @@ import type { RepairAdmissionDecision } from "./repair-admission.js";
 
 export interface RepairProofPostTransformBinding {
   transactionId: string;
-  transactionFingerprint?: string;
+  transactionFingerprint: string;
 }
 
 export interface RepairProofBundle {
   transactionId: string;
-  transactionFingerprint: string;
+  transactionFingerprint?: string;
   sourceFingerprint: string;
   graphFingerprint: string;
   decisionBasis: DecisionBasisRevision;
