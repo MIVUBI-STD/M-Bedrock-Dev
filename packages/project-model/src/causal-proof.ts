@@ -114,13 +114,19 @@ export function validateCausalInterventionProvenance(
       );
       continue;
     }
-    if (matches.length > 1) {
-      errors.push(
-        "Causal intervention " + id + " has duplicate provenance entries.",
-      );
-    }
-
+    const seenPredicates = new Set<string>();
     for (const item of matches) {
+      const predicateKey = item.predicateId ?? "";
+      if (seenPredicates.has(predicateKey)) {
+        errors.push(
+          "Causal intervention " +
+            id +
+            " has duplicate provenance for predicate " +
+            (predicateKey || "<missing>") +
+            ".",
+        );
+      }
+      seenPredicates.add(predicateKey);
       if (!item.predicateId?.trim()) {
         errors.push(
           "Causal intervention " + id + " is missing predicate provenance.",
@@ -185,4 +191,19 @@ export function validateCausalInterventionProvenance(
   }
 
   return errors;
+}
+
+export function causalInterventionSupportsPredicates(
+  proof: CausalProof,
+  predicateIds: readonly string[],
+): boolean {
+  if (predicateIds.length === 0) return false;
+  const provenance = proof.interventionProvenance ?? [];
+  return predicateIds.every((predicateId) =>
+    provenance.some(
+      (item) =>
+        item.predicateId === predicateId &&
+        item.expectedContrastDisposition === "matched",
+    )
+  );
 }
