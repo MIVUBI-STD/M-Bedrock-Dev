@@ -99,6 +99,7 @@ export type AuthorizedRepairApplyResult =
       proof: RepairProofBundle;
       apply: ApplyTransactionResult;
       validation: TransactionValidationResult;
+      staticPreservation?: StaticGraphPreservationProof;
       pendingNodeIds: readonly string[];
       pendingPaths: readonly string[];
     }
@@ -107,6 +108,7 @@ export type AuthorizedRepairApplyResult =
       proof: RepairProofBundle;
       apply: ApplyTransactionResult;
       validation: TransactionValidationResult;
+      staticPreservation?: StaticGraphPreservationProof;
     };
 
 export function authorizeRepairMutation(
@@ -333,6 +335,10 @@ export async function applyAuthorizedRepair(
     };
   }
 
+  let staticPreservationProof:
+    | StaticGraphPreservationProof
+    | undefined;
+
   if (
     transaction.requiredProofs?.includes(
       "post-transform",
@@ -372,6 +378,9 @@ export async function applyAuthorizedRepair(
             },
           );
 
+    staticPreservationProof =
+      staticPreservation;
+
     if (
       staticPreservation.status !==
         "proven"
@@ -403,6 +412,12 @@ export async function applyAuthorizedRepair(
       proof,
       apply,
       validation,
+      ...(staticPreservationProof === undefined
+        ? {}
+        : {
+            staticPreservation:
+              staticPreservationProof,
+          }),
       pendingNodeIds: proof.requiredRevalidationNodeIds,
       pendingPaths: proof.requiredRevalidationPaths,
     };
@@ -413,5 +428,11 @@ export async function applyAuthorizedRepair(
     proof,
     apply,
     validation,
+    ...(staticPreservationProof === undefined
+      ? {}
+      : {
+          staticPreservation:
+            staticPreservationProof,
+        }),
   };
 }
