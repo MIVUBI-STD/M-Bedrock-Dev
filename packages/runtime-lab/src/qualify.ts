@@ -454,8 +454,12 @@ export function experimentQualificationCausalProof(
           ? {}
           : { interventionProvenance }),
         reproductionIds: [qualification.experimentId],
-        targetProfileFingerprint:
-          definition?.targetProfileFingerprint,
+        ...(definition === undefined
+          ? {}
+          : {
+              targetProfileFingerprint:
+                definition.targetProfileFingerprint,
+            }),
         note: qualification.reasons.join(" "),
       };
     }
