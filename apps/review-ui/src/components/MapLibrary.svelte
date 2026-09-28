@@ -12,6 +12,7 @@
   export let onOpenExample: (id?: string) => void;
   export let onOpenFile: (file: File) => void;
   export let busy = false;
+  export let error = "";
 
   let input: HTMLInputElement;
 
@@ -44,6 +45,13 @@
       {busy ? "Opening…" : "Open map"}
     </button>
   </header>
+
+  {#if error}
+    <div class="library-error" role="alert">
+      <strong>Map could not be opened</strong>
+      <span>{error}</span>
+    </div>
+  {/if}
 
   <section class="recent-maps" aria-labelledby="recent-maps-heading">
     <div class="section-title">
@@ -79,7 +87,7 @@
   .file-input{display:none}
   .primary{min-height:34px;padding:7px 12px;border:1px solid #878fff;border-radius:7px;background:#737cff;color:#0a0c0e;font-weight:650;cursor:pointer}
   .primary:disabled{opacity:.62;cursor:default}
-  .recent-maps{margin-top:8px}
+  .library-error{display:grid;gap:3px;margin:0 0 18px;padding:12px 14px;border:1px solid #5a3035;border-radius:9px;background:#1a1113;color:#d6a2a6}.library-error strong{color:#efb1b5;font-size:13px}.library-error span{font-size:12px}.recent-maps{margin-top:8px}
   .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .section-title h2{margin:0;color:#8f98a1;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
   .section-title p{margin:3px 0 0;color:#747d86;font-size:11px}

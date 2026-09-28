@@ -23,6 +23,10 @@
   );
 
   let runtimeState: ReviewRuntimeState = runtimeController.state();
+  let libraryBusy = false;
+  let libraryError = "";
+  let activeMapName = mockMap.name;
+  let activeMapVersion = mockMap.version;
   let reviewModel = fixtureModel;
   $: reviewItems = reviewModel.items;
 
@@ -64,10 +68,44 @@
     detailOpen = true;
   }
 
-  function openMap() {
+  function openExampleMap() {
+    activeMapName = mockMap.name;
+    activeMapVersion = mockMap.version;
+    reviewModel = fixtureModel;
+    selectedId = reviewModel.items[0]?.id ?? "";
+    libraryError = "";
     screen = "workspace";
     view = "review";
     detailOpen = false;
+  }
+
+  async function openFile(file: File) {
+    libraryBusy = true;
+    libraryError = "";
+
+    const pending = runtimeController.analyzeFile(file);
+    runtimeState = runtimeController.state();
+    const next = await pending;
+    runtimeState = next;
+    libraryBusy = false;
+
+    if (next.phase === "ready") {
+      reviewModel = next.model;
+      activeMapName = file.name.replace(/\.(mcworld|zip)$/i, "");
+      activeMapVersion = "";
+      selectedId = reviewModel.items[0]?.id ?? "";
+      query = "";
+      activeFilter = "all";
+      technicalOpen = false;
+      detailOpen = false;
+      screen = "workspace";
+      view = "review";
+      return;
+    }
+
+    if (next.phase === "error") {
+      libraryError = next.message;
+    }
   }
 
   async function analyze() {
@@ -105,11 +143,17 @@
 
 <div class="shell">
   {#if screen === "library"}
-    <MapLibrary maps={mockRecentMaps} onOpenMap={openMap} />
+    <MapLibrary
+      maps={mockRecentMaps}
+      onOpenExample={openExampleMap}
+      onOpenFile={openFile}
+      busy={libraryBusy}
+      error={libraryError}
+    />
   {:else}
     <MapHeader
-      name={mockMap.name}
-      version={mockMap.version}
+      name={activeMapName}
+      version={activeMapVersion}
       target={reviewModel.artifact.targetLabel}
       {view}
       onBack={backToMaps}
@@ -163,7 +207,7 @@
         />
       </main>
     {:else}
-      <HistoryView mapName={mockMap.name} events={mockHistory} />
+      <HistoryView mapName={activeMapName} events={mockHistory} />
     {/if}
   {/if}
 </div>
