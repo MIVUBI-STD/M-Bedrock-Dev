@@ -17,12 +17,18 @@ import {
 } from "../../repair/src/index.js";
 import {
   applyAuthorizedRepair,
-  enrichInspectionSemanticGraph,
-  indexInspectionSources,
-  populateInspectionScriptImportGraph,
   semanticGraphFingerprint,
   type RepairProofBundle,
 } from "../src/index.js";
+import {
+  indexInspectionSources,
+} from "../src/inspect-source-index.js";
+import {
+  enrichInspectionSemanticGraph,
+} from "../src/inspect-graph-enrichment.js";
+import {
+  populateInspectionScriptImportGraph,
+} from "../src/inspect-script-import-graph.js";
 
 async function buildGraph(
   root: string,
