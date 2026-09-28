@@ -165,3 +165,36 @@ export function runtimeVerificationExperimentContractsFromProvenance(
       a.experimentRevision.localeCompare(b.experimentRevision)
     );
 }
+
+export function runtimeVerificationExperimentEnvelopeRevision(
+  contracts: readonly RuntimeVerificationExperimentContract[],
+): string {
+  const canonical = contracts
+    .map((contract) => ({
+      interventionId: contract.interventionId,
+      experimentRevision: contract.experimentRevision,
+      targetProfileFingerprint: contract.targetProfileFingerprint,
+      fixtureFingerprint: contract.fixtureFingerprint,
+      predicateIds: [...new Set(contract.predicateIds)].sort(),
+      factorContrasts: [...contract.factorContrasts]
+        .map((item) => ({
+          factorId: item.factorId,
+          controlValue: item.controlValue,
+          treatmentValue: item.treatmentValue,
+        }))
+        .sort((a, b) => a.factorId.localeCompare(b.factorId)),
+      expectedContrasts: [...contract.expectedContrasts]
+        .map((item) => ({
+          predicateId: item.predicateId,
+          controlState: item.controlState,
+          treatmentState: item.treatmentState,
+        }))
+        .sort((a, b) => a.predicateId.localeCompare(b.predicateId)),
+    }))
+    .sort((a, b) =>
+      a.interventionId.localeCompare(b.interventionId) ||
+      a.experimentRevision.localeCompare(b.experimentRevision)
+    );
+
+  return "runtime-experiment-envelope:" + JSON.stringify(canonical);
+}
