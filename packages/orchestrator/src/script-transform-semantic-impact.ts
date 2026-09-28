@@ -58,6 +58,20 @@ function fingerprint(value: unknown): string {
     .digest("hex");
 }
 
+function normalizedSource(
+  source: SourceRef | undefined,
+): unknown {
+  if (!source) return null;
+  return {
+    artifactId: source.artifactId,
+    relativePath: source.relativePath,
+    lineStart:
+      source.range?.lineStart ?? null,
+    jsonPointer:
+      source.jsonPointer ?? null,
+  };
+}
+
 function structuralProjection(
   identifier: string,
   text: string,
@@ -76,36 +90,38 @@ function structuralProjection(
   return {
     executionRegions:
       ir.execution.regions.map((region) => ({
-        id: region.id,
         kind: region.kind,
         ownerId: region.ownerId,
         label: region.label,
-        source: region.source ?? null,
+        source: normalizedSource(
+          region.source,
+        ),
       })),
     executionEdges:
       ir.execution.edges.map((edge) => ({
-        id: edge.id,
         from: edge.from,
         kind: edge.kind,
         targetLabel: edge.targetLabel,
         resolution: edge.resolution,
         to: edge.to ?? null,
-        source: edge.source,
+        source: normalizedSource(
+          edge.source,
+        ),
         scheduler: edge.scheduler ?? null,
       })),
     stateSurfaces:
       ir.state.surfaces.map((surface) => ({
-        id: surface.id,
         ref: surface.ref,
       })),
     stateOperations:
       ir.state.operations.map((operation) => ({
-        id: operation.id,
         executionRegionId:
           operation.executionRegionId,
         surfaceId: operation.surfaceId,
         operation: operation.operation,
-        source: operation.source,
+        source: normalizedSource(
+          operation.source,
+        ),
         targetHint:
           operation.targetHint ?? null,
       })),
@@ -121,13 +137,14 @@ function structuralProjection(
       ),
     temporalRelations:
       ir.temporal.relations.map((relation) => ({
-        id: relation.id,
         from: relation.from,
         targetLabel: relation.targetLabel,
         resolution: relation.resolution,
         to: relation.to ?? null,
         kind: relation.kind,
-        source: relation.source,
+        source: normalizedSource(
+          relation.source,
+        ),
       })),
   };
 }
