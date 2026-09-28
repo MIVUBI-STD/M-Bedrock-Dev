@@ -327,6 +327,21 @@ export function recordRepairStrategySelection(
           ...selection.selected.pipeline.proof.supportingInvariantIds.map(
             (id) => "repair-invariant:" + id,
           ),
+          "repair-strategy-class:" +
+            selection.selected.intelligence.repairClass,
+          "repair-strategy-causal-binding:" +
+            (
+              selection.selected.intelligence.causalBindingSatisfied
+                ? "matched"
+                : "unmatched"
+            ),
+          ...selection.rejectedAlternatives.map(
+            (item) =>
+              "repair-strategy-rejected:" +
+              item.strategyId +
+              ":" +
+              item.disposition,
+          ),
         ]
       : selection.status === "ambiguous"
         ? [
