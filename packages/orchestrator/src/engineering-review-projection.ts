@@ -1,5 +1,5 @@
 import type { IntentDiagnosticDisposition } from "../../diagnostic-reasoning/src/index.js";
-import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
+import { diagnosticDefinitions, type DiagnosticDefinition, type DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { CausalIncident } from "../../project-model/src/index.js";
 import type { InspectArtifactResult } from "./inspect-artifact.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
@@ -93,6 +93,7 @@ export interface EngineeringReviewProjection {
   };
   runtimeClassifications: Record<IntentDiagnosticDisposition, number>;
   attention: EngineeringReviewAttention[];
+  diagnosticDefinitions: DiagnosticDefinition[];
   diagnostics: EngineeringReviewDiagnostic[];
   incidents: EngineeringReviewIncident[];
   repairCandidates: EngineeringReviewRepairCandidate[];
@@ -214,6 +215,9 @@ export function buildEngineeringReviewProjection(
     },
     runtimeClassifications,
     attention: attentionFrom(source, runtimeClassifications),
+    diagnosticDefinitions: diagnosticDefinitions(
+      source.diagnostics.map((finding) => finding.code),
+    ),
     diagnostics: source.diagnostics.map((finding) => ({
       id: finding.id,
       code: finding.code,
