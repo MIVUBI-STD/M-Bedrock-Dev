@@ -25,6 +25,7 @@ import {
   realizeSchedulerGenerationGuardHint,
   proveAndBindCompleteScriptTransform,
   recordRealizedRepairStrategySelection,
+  repairStrategyPostTransformProofRevision,
   selectRealizedRepairStrategyForIncident,
   type RepairStrategyProviderRegistry,
 } from "../src/index.js";
@@ -455,28 +456,23 @@ describe("script transform hint realizer", () => {
         },
       );
 
+    const proofRevision =
+      repairStrategyPostTransformProofRevision(
+        bound.proposal.strategy
+          .postTransformProof,
+      )!;
     expect(ledger.entries[0]?.inputIds).toEqual(
       expect.arrayContaining([
         "repair-source:built-in-planner:scheduler-generation-guard-template@1",
         "repair-realizer:scheduler-generation-guard-realizer@1",
         "post-transform-proof:" +
-          bound.proposal.strategy
-            .postTransformProof!.proofFingerprint +
-          ":" +
-          bound.proposal.strategy
-            .postTransformProof!.semanticImpactFingerprint,
+          proofRevision,
       ]),
     );
     expect(
       ledger.entries[0]?.basis
         .postTransformProofRevision,
-    ).toBe(
-      bound.proposal.strategy
-        .postTransformProof!.proofFingerprint +
-        ":" +
-        bound.proposal.strategy
-          .postTransformProof!.semanticImpactFingerprint,
-    );
+    ).toBe(proofRevision);
     expect(
       ledger.entries[0]?.basis
         .repairStrategySourceRegistryRevision,
@@ -485,6 +481,76 @@ describe("script transform hint realizer", () => {
       ledger.entries[0]?.basis
         .repairRealizerRegistryRevision,
     ).toBe(selected.realizerRegistryRevision);
+  });
+
+  it("does not allow a complete transform proof to be reused after transaction semantics change", () => {
+    const realization =
+      realizeSchedulerGenerationGuardHint(
+        graph(),
+        enumeration(),
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+        BUILTIN_REPAIR_REALIZERS,
+        hint,
+      );
+    expect(realization.status).toBe("realized");
+    if (realization.status !== "realized") return;
+
+    const bound =
+      proveAndBindCompleteScriptTransform(
+        realization.proposal,
+        "session-controller",
+        scriptText,
+        fileSource,
+        hint,
+      );
+    expect(bound.status).toBe("bound");
+    if (bound.status !== "bound") return;
+
+    const tampered = {
+      ...bound.proposal,
+      strategy: {
+        ...bound.proposal.strategy,
+        transaction: {
+          ...bound.proposal.strategy.transaction,
+          operations:
+            bound.proposal.strategy.transaction.operations.map(
+              (operation) => ({
+                ...operation,
+                replacement:
+                  operation.replacement +
+                  " /* changed */",
+              }),
+            ),
+        },
+      },
+    };
+
+    const selected =
+      selectRealizedRepairStrategyForIncident(
+        graph(),
+        incident,
+        [chain],
+        decision,
+        invariants,
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+        BUILTIN_REPAIR_REALIZERS,
+        [tampered],
+        {
+          decisionBasis: {
+            runtimeEvidenceRevision:
+              "runtime-current",
+          },
+        },
+      );
+
+    expect(selected.result.status).toBe("evaluated");
+    if (selected.result.status !== "evaluated") return;
+    expect(selected.result.selection.status)
+      .toBe("none-eligible");
+    expect(
+      selected.result.selection.assessments[0]
+        ?.reasons.join(" "),
+    ).toMatch(/exact selected patch transaction/i);
   });
 
   it("discovers the exact hint from parsed scripts so callers do not choose transform hints manually", () => {
