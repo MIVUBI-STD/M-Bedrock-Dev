@@ -25,6 +25,9 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import {
   loadReviewUiViewModel,
 } from "../../apps/review-ui/src/load-review.ts";
+import {
+  RecentArtifactStore,
+} from "../../apps/review-ui/src/recent-artifact-store.ts";
 
 const appRoot = fileURLToPath(
   new URL("../../apps/review-ui/", import.meta.url),
@@ -115,6 +118,7 @@ async function receiveArtifact(req, path) {
 }
 
 function reviewRuntimePlugin() {
+  const recentStore = new RecentArtifactStore();
   const artifactPath =
     process.env.M_BEDROCK_REVIEW_ARTIFACT?.trim();
 
@@ -125,6 +129,52 @@ function reviewRuntimePlugin() {
         "/__m-bedrock/review",
         async (req, res, next) => {
           const path = req.url?.split("?")[0];
+
+          if (req.method === "GET" && path === "/recent") {
+            sendJson(res, 200, {
+              items: await recentStore.list(),
+            });
+            return;
+          }
+
+          if (
+            req.method === "POST" &&
+            path === "/recent-analyze"
+          ) {
+            const recentId =
+              typeof req.headers["x-m-bedrock-recent-id"] === "string"
+                ? decodeURIComponent(req.headers["x-m-bedrock-recent-id"])
+                : "";
+            if (!recentId) {
+              sendJson(res, 400, {
+                error: "Recent map id is missing.",
+              });
+              return;
+            }
+
+            try {
+              const recent =
+                await recentStore.resolveArtifact(recentId);
+              const model =
+                await loadReviewUiViewModel({
+                  artifactPath: recent.artifactPath,
+                  target: targetFromEnvironment(),
+                });
+              sendJson(res, 200, {
+                model,
+                record: recent.record,
+              });
+            } catch (error) {
+              sendJson(res, 404, {
+                error:
+                  error instanceof Error &&
+                  error.message.trim()
+                    ? error.message.trim()
+                    : "Recent map could not be opened.",
+              });
+            }
+            return;
+          }
 
           if (req.method === "GET" && path === "/info") {
             sendJson(res, 200, {
@@ -190,7 +240,19 @@ function reviewRuntimePlugin() {
                   artifactPath: uploadedPath,
                   target: targetFromEnvironment(),
                 });
-              sendJson(res, 200, model);
+              const record = await recentStore.persist(
+                uploadedPath,
+                {
+                  id: model.artifact.id,
+                  label: upload.name,
+                  targetLabel: model.artifact.targetLabel,
+                  attentionCount: model.attentionCount,
+                },
+              );
+              sendJson(res, 200, {
+                model,
+                record,
+              });
             } catch (error) {
               const message =
                 error instanceof Error &&
