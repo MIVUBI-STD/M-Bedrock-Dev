@@ -30,6 +30,10 @@ import {
   repairRealizerRegistryRevision,
   type RepairRealizerRegistry,
 } from "./repair-realizer-registry.js";
+import {
+  repairStrategySourceRegistryRevision,
+  type RepairStrategySourceRegistry,
+} from "./repair-strategy-source-registry.js";
 import { semanticGraphFingerprint } from "./semantic-graph-fingerprint.js";
 
 function canonical(value: unknown): unknown {
@@ -141,6 +145,7 @@ export interface DecisionBasisInput {
   runtimeEvidence?: readonly RuntimeEvidenceRecord[];
   evidenceIntegrity?: Readonly<Record<string, RuntimeEvidenceIntegrityReport>>;
   repairRealizerRegistry?: RepairRealizerRegistry;
+  repairStrategySourceRegistry?: RepairStrategySourceRegistry;
 }
 
 export function buildDecisionBasis(
@@ -181,6 +186,14 @@ export function buildDecisionBasis(
     ...(input.target === undefined
       ? {}
       : { targetProfileFingerprint: fingerprint(input.target) }),
+    ...(input.repairStrategySourceRegistry === undefined
+      ? {}
+      : {
+          repairStrategySourceRegistryRevision:
+            repairStrategySourceRegistryRevision(
+              input.repairStrategySourceRegistry,
+            ),
+        }),
     ...(input.repairRealizerRegistry === undefined
       ? {}
       : {
