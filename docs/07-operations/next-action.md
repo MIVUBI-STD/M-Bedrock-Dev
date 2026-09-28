@@ -279,3 +279,35 @@ callback has no matching active owner generation
 ```
 
 Do not infer scheduler isolation from unique scoreboard names or source-level arena IDs. Isolation must be demonstrated by controlled concurrent runtime evidence.
+
+
+## Next lane — entity AI and pathfinding stall/recovery proof
+
+Scheduler generation ownership, temporal ordering, cancellation, and cross-arena isolation now have controlled proof contracts.
+
+Next runtime domain:
+
+1. entity movement progress over bounded tick windows;
+2. path stall detection without relying on visual judgment;
+3. target/goal retention during a stall;
+4. collision/crowding versus navigation failure discrimination;
+5. loaded-chunk readiness versus pathfinding failure discrimination;
+6. controlled recovery by relocation to the nearest valid path anchor;
+7. post-recovery movement resumption;
+8. duplicate/teleport-loop prevention;
+9. multi-entity crowding stress.
+
+Required evidence model:
+
+```text
+entity identity/generation
++ target identity
++ position samples
++ movement delta
++ runtime ticks
++ chunk readiness
++ path anchor identity
+→ stall classification
+```
+
+A stationary entity is not automatically a pathfinding defect. The experiment must distinguish waiting/target loss/collision/unloaded region from genuine navigation stall.
