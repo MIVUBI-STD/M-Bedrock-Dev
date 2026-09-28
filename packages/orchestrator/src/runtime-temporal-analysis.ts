@@ -62,12 +62,23 @@ function presentMatches(
 function satisfiesTickDelta(
   before: RuntimeEvidenceRecord,
   after: RuntimeEvidenceRecord,
+  minTickDelta: number | undefined,
   maxTickDelta: number | undefined,
 ): boolean {
-  if (maxTickDelta === undefined) return true;
+  if (
+    minTickDelta === undefined &&
+    maxTickDelta === undefined
+  ) {
+    return true;
+  }
   const a = before.observedAt?.tick;
   const b = after.observedAt?.tick;
-  return a !== undefined && b !== undefined && b - a <= maxTickDelta;
+  if (a === undefined || b === undefined) return false;
+  const delta = b - a;
+  return (
+    (minTickDelta === undefined || delta >= minTickDelta) &&
+    (maxTickDelta === undefined || delta <= maxTickDelta)
+  );
 }
 
 export function assessRuntimeTemporalRequirement(
@@ -97,6 +108,7 @@ export function assessRuntimeTemporalRequirement(
         satisfiesTickDelta(
           beforeRecord,
           afterRecord,
+          requirement.minTickDelta,
           requirement.maxTickDelta,
         )
       ) {
