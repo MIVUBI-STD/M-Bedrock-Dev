@@ -346,6 +346,9 @@ describe("decision ledger", () => {
           repairRealizerRegistryRevision:
             "realizers-a",
         },
+        inputIds: [
+          "repair-realizer:fixture-realizer@1",
+        ],
         outputIds: [
           "repair-strategy:selected",
         ],
