@@ -1,6 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
+import {
+  parseScriptFile,
+} from "../../../analyzers/scripts/src/index.js";
+import ts from "typescript";
 import { analyzeFunctionTopology } from "./topology-analysis.js";
 import { inspectDirectory } from "./inspect.js";
 import { summarizeValidation } from "../../validation/src/index.js";
@@ -23,31 +27,87 @@ function sameSource(
   return actual.range?.lineStart === expectedLine;
 }
 
+function scriptKind(path: string): ts.ScriptKind {
+  if (path.endsWith(".ts")) return ts.ScriptKind.TS;
+  if (path.endsWith(".tsx")) return ts.ScriptKind.TSX;
+  if (path.endsWith(".jsx")) return ts.ScriptKind.JSX;
+  return ts.ScriptKind.JS;
+}
+
+function scriptPath(path: string): boolean {
+  return /\.(?:[cm]?js|jsx|[cm]?ts|tsx)$/i.test(path);
+}
+
 async function validateReparse(
   workingRoot: string,
   step: Extract<ValidationStep, { kind: "reparse" }>,
 ): Promise<ValidationStepResult> {
-  if (!step.source.relativePath.endsWith(".mcfunction")) {
+  try {
+    const text = await readFile(
+      join(workingRoot, step.source.relativePath),
+      "utf8",
+    );
+
+    if (step.source.relativePath.endsWith(".mcfunction")) {
+      parseMcFunction(
+        step.source.relativePath,
+        text,
+        step.source,
+      );
+      return {
+        step,
+        ok: true,
+        message:
+          "Affected function reparsed successfully.",
+      };
+    }
+
+    if (scriptPath(step.source.relativePath)) {
+      const file = ts.createSourceFile(
+        step.source.relativePath,
+        text,
+        ts.ScriptTarget.Latest,
+        true,
+        scriptKind(step.source.relativePath),
+      );
+      const parseDiagnostics =
+        file.parseDiagnostics ?? [];
+      if (parseDiagnostics.length > 0) {
+        return {
+          step,
+          ok: false,
+          message:
+            "Affected script has TypeScript/JavaScript parse diagnostics after mutation.",
+        };
+      }
+
+      parseScriptFile(
+        step.source.relativePath,
+        text,
+        step.source,
+      );
+      return {
+        step,
+        ok: true,
+        message:
+          "Affected script reparsed and analyzer extraction completed successfully.",
+      };
+    }
+
     return {
       step,
       ok: false,
-      message: "No reparse validator is registered for this source type.",
+      message:
+        "No reparse validator is registered for this source type.",
     };
-  }
-
-  try {
-    const text = await readFile(join(workingRoot, step.source.relativePath), "utf8");
-    parseMcFunction(
-      step.source.relativePath,
-      text,
-      step.source,
-    );
-    return { step, ok: true, message: "Affected function reparsed successfully." };
   } catch (error) {
     return {
       step,
       ok: false,
-      message: error instanceof Error ? error.message : "Reparse failed.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Reparse failed.",
     };
   }
 }
