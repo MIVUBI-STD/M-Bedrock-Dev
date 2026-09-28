@@ -97,6 +97,7 @@ function decisionBasisMismatch(
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
+    "runtimeExperimentContractRevision",
     "preservationContractRevision",
     "preservationBaselineRevision",
   ] as const) {
@@ -173,6 +174,7 @@ function proofBasisMismatch(
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
+    "runtimeExperimentContractRevision",
     "preservationContractRevision",
     "preservationBaselineRevision",
   ] as const) {
