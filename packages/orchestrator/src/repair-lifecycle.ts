@@ -134,6 +134,44 @@ export function repairLifecycleFromApplyResult(
         ],
       };
 
+    case "static-preservation-failed":
+      return {
+        transactionId,
+        stage: "rolled-back-after-validation-failure",
+        mutationPresent: false,
+        localStaticValidationPassed: false,
+        transitiveRevalidationComplete: false,
+        runtimeVerificationComplete: false,
+        preservationVerificationComplete: false,
+        packageVerificationComplete: false,
+        pendingNodeIds: [],
+        pendingPaths: [],
+        reasons: [
+          "Post-transform static graph preservation proof failed.",
+          ...result.staticPreservation.reasons,
+          "Working-copy mutation was rolled back.",
+        ],
+      };
+
+    case "static-preservation-failed-rollback-failed":
+      return {
+        transactionId,
+        stage: "rollback-failed",
+        mutationPresent: true,
+        localStaticValidationPassed: false,
+        transitiveRevalidationComplete: false,
+        runtimeVerificationComplete: false,
+        preservationVerificationComplete: false,
+        packageVerificationComplete: false,
+        pendingNodeIds: [],
+        pendingPaths: [],
+        reasons: [
+          "Post-transform static graph preservation proof failed and rollback also failed.",
+          ...result.staticPreservation.reasons,
+          result.rollback.failure ?? "Rollback failure has no further detail.",
+        ],
+      };
+
     case "transitive-revalidation-pending":
       return {
         transactionId,
