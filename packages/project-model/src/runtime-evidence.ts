@@ -24,6 +24,7 @@ export interface RuntimeScope {
   playerKey?: string;
   connectionGeneration?: number;
   lifeGeneration?: number;
+  participationGeneration?: number;
   entityKey?: string;
   entityGeneration?: number;
   operationId?: string;
@@ -65,6 +66,7 @@ export function runtimeScopeKey(scope: RuntimeScope | undefined): string {
     stableScopePart(scope.playerKey),
     stableScopePart(scope.connectionGeneration),
     stableScopePart(scope.lifeGeneration),
+    stableScopePart(scope.participationGeneration),
     stableScopePart(scope.entityKey),
     stableScopePart(scope.entityGeneration),
     stableScopePart(scope.operationId),
@@ -99,6 +101,7 @@ export function runtimeScopeContains(
     "playerKey",
     "connectionGeneration",
     "lifeGeneration",
+    "participationGeneration",
     "entityKey",
     "entityGeneration",
     "operationId",
