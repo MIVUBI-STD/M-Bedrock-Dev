@@ -131,14 +131,25 @@ function fakeChannel(): BedrockHarnessChannel {
       }
 
       if (id === "m-bedrock:action") {
+        const actionTick = tick++;
         lines.push(
           BEDROCK_ACTION_PREFIX +
             JSON.stringify({
               schemaVersion: 1,
               requestId: payload.requestId,
               actionId: payload.actionId,
-              runtimeTick: tick++,
+              runtimeTick: actionTick,
               ok: true,
+              evidence: [{
+                predicate: "action-marker",
+                state: "present",
+                confidence: "observed",
+                observedAt: {
+                  streamId: "fake-actions",
+                  sequence: actionTick,
+                  tick: actionTick,
+                },
+              }],
             }),
         );
         return;
@@ -297,6 +308,22 @@ describe("bedrock runtime mutating action protocol", () => {
         (trial) => trial.status === "completed",
       ),
     ).toBe(true);
+    expect(result.trials[0]?.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          predicate: "action-marker",
+          origin: "controlled-experiment",
+          targetProfileFingerprint:
+            targetProfile.fingerprint,
+          provenanceKey: expect.stringContaining(
+            "runtime-experiment:exp:mutating-repro",
+          ),
+          observedAt: expect.objectContaining({
+            streamId: "fake-actions",
+          }),
+        }),
+      ]),
+    );
   });
 
   it("rejects mutating execution outside LIVE_MINECRAFT", async () => {
