@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveSchedulerGenerationGuardTransformHints,
+  parseScriptFile,
   SCRIPT_REPAIR_HINT_ANALYZER_ID,
   SCRIPT_REPAIR_HINT_ANALYZER_REVISION,
   SCRIPT_REPAIR_HINT_PARSER_ID,
@@ -65,6 +66,33 @@ describe("scheduler generation guard repair hints", () => {
     expect(hints[0]?.replacementText).toContain(
       "this.mutate();",
     );
+  });
+
+  it("publishes derived hints on the normal parsed-script output", () => {
+    const text = [
+      'import { system } from "@minecraft/server";',
+      "class SessionController {",
+      "  generation = 0;",
+      "  mutate() {}",
+      "  schedule() {",
+      "    const capturedGeneration = this.generation;",
+      "    system.run(() => this.mutate());",
+      "  }",
+      "}",
+    ].join("\n");
+
+    const parsed = parseScriptFile(
+      "session-controller",
+      text,
+      source,
+    );
+
+    expect(parsed.repairTransformHints).toHaveLength(1);
+    expect(parsed.repairTransformHints?.[0]).toMatchObject({
+      family: "scheduler-generation-guard",
+      expectedText:
+        "system.run(() => this.mutate())",
+    });
   });
 
   it("supports aliased system imports without changing causal semantics", () => {
