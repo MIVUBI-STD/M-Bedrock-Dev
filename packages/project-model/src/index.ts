@@ -43,3 +43,5 @@ export * from "./runtime-navigation-stall.js";
 export * from "./runtime-navigation-target.js";
 export * from "./runtime-route-reachability.js";
 export * from "./runtime-route-chunk-availability.js";
+
+export * from "./runtime-verification-contract.js";
