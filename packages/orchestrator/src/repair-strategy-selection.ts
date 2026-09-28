@@ -31,6 +31,12 @@ export interface RepairStrategyCausalBinding {
   factorIds?: readonly string[];
 }
 
+export interface RepairStrategyValidationObligations {
+  invariantIds: readonly string[];
+  runtimeExperimentIds: readonly string[];
+  validationKinds: readonly string[];
+}
+
 export interface RepairStrategyCandidate {
   strategyId: string;
   transaction: PatchTransaction;
@@ -39,6 +45,7 @@ export interface RepairStrategyCandidate {
   addressesCandidateIds: readonly string[];
   repairClass?: RepairStrategyClass;
   causalBinding?: RepairStrategyCausalBinding;
+  validationObligations?: RepairStrategyValidationObligations;
   reversible?: boolean;
   idempotent?: boolean;
   preservationReadiness?: PreservationReadinessResult;
@@ -85,6 +92,7 @@ export interface RepairStrategyAssessment {
     causalBindingSatisfied: boolean;
     causalBindingReasons: readonly string[];
     authorizingRuntimeExperiments: readonly string[];
+    validationObligations?: RepairStrategyValidationObligations;
   };
 }
 
@@ -670,6 +678,12 @@ export function selectRepairStrategy(
             causalBinding.reasons,
           authorizingRuntimeExperiments:
             causalBinding.interventionIds,
+          ...(candidate.validationObligations === undefined
+            ? {}
+            : {
+                validationObligations:
+                  candidate.validationObligations,
+              }),
         },
       };
     })
