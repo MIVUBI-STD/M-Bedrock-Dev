@@ -10,6 +10,7 @@ import type {
   RuntimeEvidenceIntegrityReport,
 } from "../../project-model/src/index.js";
 import {
+  causalInterventionSupportsFactors,
   causalInterventionSupportsPredicates,
   causalProofAtLeast,
   causalProofRank,
@@ -184,6 +185,14 @@ export function decideDiagnosticRepair(
         )
       : true;
 
+  const controlledFactorsBoundToCandidate =
+    selected.proof?.interventionIds?.length
+      ? causalInterventionSupportsFactors(
+          selected.proof,
+          selected.causalFactorIds ?? [],
+        )
+      : true;
+
   const base = {
     incidentId: incident.id,
     activeCandidateIds: active,
@@ -208,7 +217,8 @@ export function decideDiagnosticRepair(
     selected.proof?.interventionIds?.length &&
     (
       controlledInterventionErrors.length > 0 ||
-      !controlledInterventionBoundToCandidate
+      !controlledInterventionBoundToCandidate ||
+      !controlledFactorsBoundToCandidate
     )
   ) {
     proofState = capCausalProofState("localized", context);
@@ -228,6 +238,13 @@ export function decideDiagnosticRepair(
             ? []
             : [
                 "Root-cause candidate causal predicates are missing or are not covered by matched intervention provenance.",
+              ]
+        ),
+        ...(
+          controlledFactorsBoundToCandidate
+            ? []
+            : [
+                "Root-cause candidate causal factors are missing or are not covered by controlled factor value provenance.",
               ]
         ),
       ],
