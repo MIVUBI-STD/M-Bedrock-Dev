@@ -88,11 +88,20 @@ export interface RepairStrategyAssessment {
   };
 }
 
+export interface RepairStrategyRejectedAlternative {
+  strategyId: string;
+  disposition: "inadmissible" | "dominated";
+  reasons: readonly string[];
+  dominatedBy?: readonly string[];
+}
+
 export type RepairStrategySelection =
   | {
       status: "selected";
       selected: RepairStrategyAssessment;
       assessments: readonly RepairStrategyAssessment[];
+      selectionRationale: readonly string[];
+      rejectedAlternatives: readonly RepairStrategyRejectedAlternative[];
     }
   | {
       status: "ambiguous";
@@ -298,6 +307,41 @@ function metricVector(
     item.metrics.changedNodes,
     item.metrics.operations,
   ];
+}
+
+const METRIC_LABELS = [
+  "admission",
+  "blast-radius",
+  "sensitive-kinds",
+  "affected-nodes",
+  "affected-paths",
+  "impact-depth",
+  "preservation-risk",
+  "runtime-retest-burden",
+  "reversibility",
+  "idempotency",
+  "changed-nodes",
+  "operations",
+] as const;
+
+function dominanceReasons(
+  winner: RepairStrategyAssessment,
+  loser: RepairStrategyAssessment,
+): string[] {
+  const a = metricVector(winner);
+  const b = metricVector(loser);
+  return METRIC_LABELS.flatMap((label, index) =>
+    a[index]! < b[index]!
+      ? [
+          label +
+            " improves from " +
+            b[index] +
+            " to " +
+            a[index] +
+            ".",
+        ]
+      : []
+  );
 }
 
 function dominates(
@@ -667,9 +711,93 @@ export function selectRepairStrategy(
     };
   }
 
+  const selected = frontier[0]!;
+  const rejectedAlternatives:
+    RepairStrategyRejectedAlternative[] =
+      assessments
+        .filter(
+          (assessment) =>
+            assessment.strategyId !==
+              selected.strategyId,
+        )
+        .map((assessment) => {
+          if (!assessment.admissible) {
+            return {
+              strategyId: assessment.strategyId,
+              disposition: "inadmissible" as const,
+              reasons: assessment.reasons,
+            };
+          }
+
+          const dominators = admissible
+            .filter(
+              (other) =>
+                other.strategyId !==
+                  assessment.strategyId &&
+                dominates(other, assessment),
+            )
+            .map((other) => other.strategyId)
+            .sort();
+
+          return {
+            strategyId: assessment.strategyId,
+            disposition: "dominated" as const,
+            reasons:
+              dominators.includes(
+                selected.strategyId,
+              )
+                ? dominanceReasons(
+                    selected,
+                    assessment,
+                  )
+                : [
+                    "Strategy is outside the final non-dominated frontier.",
+                  ],
+            ...(dominators.length === 0
+              ? {}
+              : { dominatedBy: dominators }),
+          };
+        })
+        .sort((a, b) =>
+          a.strategyId.localeCompare(b.strategyId)
+        );
+
+  const smallerRawRejected =
+    rejectedAlternatives.filter((item) => {
+      const assessment = assessments.find(
+        (candidate) =>
+          candidate.strategyId === item.strategyId,
+      );
+      if (!assessment) return false;
+      return (
+        assessment.metrics.changedNodes <
+          selected.metrics.changedNodes ||
+        assessment.metrics.operations <
+          selected.metrics.operations
+      );
+    });
+
   return {
     status: "selected",
-    selected: frontier[0]!,
+    selected,
     assessments,
+    selectionRationale: [
+      "Selected strategy is the only admissible strategy on the Pareto frontier across causal fit, admission, semantic impact, preservation risk, retest burden, reversibility, idempotency, and mutation size.",
+      ...(smallerRawRejected.length === 0
+        ? []
+        : [
+            "A smaller raw mutation existed but was rejected for non-size reasons: " +
+              smallerRawRejected
+                .map((item) =>
+                  item.strategyId +
+                  " (" +
+                  item.disposition +
+                  ")"
+                )
+                .join(", ") +
+              ".",
+          ]),
+    ],
+    rejectedAlternatives,
   };
 }
