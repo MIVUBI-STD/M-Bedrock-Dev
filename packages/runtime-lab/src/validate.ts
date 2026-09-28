@@ -170,6 +170,80 @@ export function validateRuntimeExperimentDefinition(
         );
       }
     }
+
+    for (const [measurement, rule] of Object.entries(
+      requirement.measurements ?? {},
+    )) {
+      if (!measurement.trim()) {
+        errors.push(
+          "Runtime experiment evidence requirement " +
+            requirement.id +
+            " contains an empty measurement key.",
+        );
+      }
+      if (
+        rule.equals === undefined &&
+        rule.min === undefined &&
+        rule.max === undefined
+      ) {
+        errors.push(
+          "Runtime experiment evidence requirement " +
+            requirement.id +
+            " measurement " +
+            measurement +
+            " must declare equals, min, or max.",
+        );
+      }
+      for (const [label, value] of Object.entries(rule)) {
+        if (
+          value !== undefined &&
+          (
+            typeof value !== "number" ||
+            !Number.isFinite(value)
+          )
+        ) {
+          errors.push(
+            "Runtime experiment evidence requirement " +
+              requirement.id +
+              " measurement " +
+              measurement +
+              " " +
+              label +
+              " must be finite.",
+          );
+        }
+      }
+      if (
+        rule.min !== undefined &&
+        rule.max !== undefined &&
+        rule.min > rule.max
+      ) {
+        errors.push(
+          "Runtime experiment evidence requirement " +
+            requirement.id +
+            " measurement " +
+            measurement +
+            " min cannot exceed max.",
+        );
+      }
+      if (
+        rule.equals !== undefined &&
+        (
+          (rule.min !== undefined &&
+            rule.equals < rule.min) ||
+          (rule.max !== undefined &&
+            rule.equals > rule.max)
+        )
+      ) {
+        errors.push(
+          "Runtime experiment evidence requirement " +
+            requirement.id +
+            " measurement " +
+            measurement +
+            " equals must satisfy its min/max bounds.",
+        );
+      }
+    }
   }
 
   const factors = new Set(definition.factors.map((factor) => factor.id));
