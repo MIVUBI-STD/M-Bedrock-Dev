@@ -79,6 +79,8 @@ export interface RootCauseCandidate {
   relatedDiagnosticIds: readonly string[];
   /** Exact runtime predicates this candidate claims as causal support. */
   causalPredicateIds?: readonly string[];
+  /** Exact controlled factors this candidate claims as causal mechanism support. */
+  causalFactorIds?: readonly string[];
   support: {
     dependencyViolations: number;
     evidenceGaps: number;
