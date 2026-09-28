@@ -9,6 +9,9 @@ import type {
 import {
   validateRepairSourceTransformHint,
 } from "../../project-model/src/index.js";
+import type {
+  RepairTransformHintProposal,
+} from "./script-transform-hint-realizer.js";
 
 export interface ScriptTransformPostconditionProof {
   status: "proven" | "blocked";
