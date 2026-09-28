@@ -331,6 +331,30 @@ export function decideRepairReleaseWithLineage(
     };
   }
 
+  if (
+    proof.postTransformProofBinding !== undefined &&
+    (
+      lifecycle.staticPreservationRequired !== true ||
+      lifecycle.staticPreservationComplete !== true ||
+      !lifecycle.staticPreservationProofFingerprint?.trim()
+    )
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Transform-bound repair lifecycle does not carry a proven static graph preservation fingerprint.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Release requires static graph preservation proof for every post-transform-bound repair.",
+      ],
+    };
+  }
+
   if (proof.transactionId !== lifecycle.transactionId) {
     return {
       decision: {
