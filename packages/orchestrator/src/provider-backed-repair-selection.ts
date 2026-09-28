@@ -39,6 +39,12 @@ export type ProviderBackedRepairStrategySelection =
         providerId: string;
         providerVersion: string;
       }[];
+      realizerProvenance: readonly {
+        realizerId: string;
+        realizerVersion: string;
+        sourceKind: string;
+        sourceId: string;
+      }[];
     };
 
 export function selectProviderBackedRepairStrategyForIncident(
@@ -134,6 +140,25 @@ export function selectProviderBackedRepairStrategyForIncident(
   const providerRegistryRevision =
     repairStrategyProviderRegistryRevision(providerRegistry);
 
+  const realizerProvenance = [...new Map(
+    proposals
+      .map((proposal) => proposal.realizerProvenance)
+      .filter(
+        (
+          item,
+        ): item is NonNullable<
+          typeof item
+        > => item !== undefined,
+      )
+      .map((item) => [
+        item.realizerId + "@" + item.realizerVersion,
+        item,
+      ]),
+  ).values()].sort((a, b) =>
+    a.realizerId.localeCompare(b.realizerId) ||
+    a.realizerVersion.localeCompare(b.realizerVersion)
+  );
+
   const providerProvenance = [...new Map(
     proposals.flatMap((proposal) => [
       {
@@ -154,6 +179,7 @@ export function selectProviderBackedRepairStrategyForIncident(
     status: "evaluated",
     providerRegistryRevision,
     providerProvenance,
+    realizerProvenance,
     result: selectRepairStrategyForIncident(
       graph,
       incident,
