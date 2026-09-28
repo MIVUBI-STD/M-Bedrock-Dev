@@ -156,6 +156,14 @@ export function recordRuntimeVerificationDecision(
     outputIds: [
       "runtime-verification:" +
         (result.passed ? "passed" : "failed"),
+      ...(result.receipt?.runtimeExperimentContract === undefined
+        ? []
+        : [
+            "runtime-verification-contract:" +
+              result.receipt.runtimeExperimentContract.interventionId +
+              "@" +
+              result.receipt.runtimeExperimentContract.experimentRevision,
+          ]),
     ],
     evidenceIds: [
       ...result.evidenceIds,
