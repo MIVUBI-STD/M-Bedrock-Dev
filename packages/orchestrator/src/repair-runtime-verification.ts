@@ -13,6 +13,9 @@ import type {
 import type {
   RepairVerificationReceipt,
 } from "./repair-lifecycle.js";
+import type {
+  RepairProofBundle,
+} from "./repair-proof-bundle.js";
 import {
   assessRuntimeTemporalRequirements,
 } from "./runtime-temporal-analysis.js";
@@ -42,6 +45,62 @@ export interface RepairRuntimeVerificationPlan {
 export interface RepairRuntimeVerificationOptions {
   expectedTargetProfileFingerprint?: string;
   executedExperimentContract?: RepairRuntimeExperimentContract;
+}
+
+export function repairRuntimeExperimentContractsFromProof(
+  proof: RepairProofBundle,
+): RepairRuntimeExperimentContract[] {
+  const grouped = new Map<
+    string,
+    {
+      interventionId: string;
+      experimentRevision: string;
+      targetProfileFingerprint: string;
+      fixtureFingerprint: string;
+      predicateIds: string[];
+    }
+  >();
+
+  for (const item of proof.causalInterventionProvenance ?? []) {
+    if (
+      !item.experimentRevision?.trim() ||
+      !item.targetProfileFingerprint?.trim() ||
+      !item.fixtureFingerprint?.trim() ||
+      !item.predicateId?.trim()
+    ) {
+      continue;
+    }
+
+    const key = [
+      item.interventionId,
+      item.experimentRevision,
+      item.targetProfileFingerprint,
+      item.fixtureFingerprint,
+    ].join("::");
+    const current = grouped.get(key);
+    if (current) {
+      current.predicateIds.push(item.predicateId);
+      continue;
+    }
+
+    grouped.set(key, {
+      interventionId: item.interventionId,
+      experimentRevision: item.experimentRevision,
+      targetProfileFingerprint: item.targetProfileFingerprint,
+      fixtureFingerprint: item.fixtureFingerprint,
+      predicateIds: [item.predicateId],
+    });
+  }
+
+  return [...grouped.values()]
+    .map((item) => ({
+      ...item,
+      predicateIds: [...new Set(item.predicateIds)].sort(),
+    }))
+    .sort((a, b) =>
+      a.interventionId.localeCompare(b.interventionId) ||
+      a.experimentRevision.localeCompare(b.experimentRevision)
+    );
 }
 
 export interface RepairRuntimeVerificationResult {
