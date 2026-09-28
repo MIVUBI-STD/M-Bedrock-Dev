@@ -211,12 +211,13 @@ export function runtimeExperimentDiagnosticEvidence(
         qualification.observedContrasts?.find(
           (item) => item.predicateId === predicate,
         );
-      const expectedContrastDisposition =
-        qualification.expectedContrastMatches?.includes(predicate)
-          ? "matched"
-          : qualification.expectedContrastMismatches?.includes(predicate)
-            ? "mismatched"
-            : "unspecified";
+      const expectedContrastDisposition:
+        RuntimeDiagnosticPredicateEvidence["expectedContrastDisposition"] =
+          qualification.expectedContrastMatches?.includes(predicate)
+            ? "matched"
+            : qualification.expectedContrastMismatches?.includes(predicate)
+              ? "mismatched"
+              : "unspecified";
       const observation: DiagnosticEvidenceObservation = {
         predicate,
         state,
