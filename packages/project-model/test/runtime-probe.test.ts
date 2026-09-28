@@ -250,6 +250,76 @@ describe("runtime probe contracts", () => {
     ]));
   });
 
+  it("treats bootGeneration as a validated runtime scope boundary", () => {
+    expect(validateRuntimeProbeRequest({
+      schemaVersion: 1,
+      requestId: "req-boot",
+      probeId: "recovery-scope",
+      predicate: "boot-current",
+      scope: {
+        bootGeneration: -1,
+      },
+      query: {
+        kind: "scoreboard-value",
+        objectiveId: "boot",
+        participant: "world",
+      },
+      outcomeByState: {
+        present: "current",
+        absent: "stale",
+      },
+    })).toEqual(expect.arrayContaining([
+      expect.stringContaining("scope.bootGeneration"),
+    ]));
+
+    const request = {
+      schemaVersion: 1 as const,
+      requestId: "req-boot-match",
+      probeId: "recovery-scope",
+      predicate: "boot-current",
+      scope: {
+        bootGeneration: 12,
+      },
+      query: {
+        kind: "scoreboard-value" as const,
+        objectiveId: "boot",
+        participant: "world",
+      },
+      outcomeByState: {
+        present: "current",
+        absent: "stale",
+      },
+    };
+
+    expect(validateRuntimeProbeTranscript({
+      schemaVersion: 1,
+      exchanges: [{
+        request,
+        response: {
+          schemaVersion: 1,
+          requestId: request.requestId,
+          probeId: request.probeId,
+          runtimeTick: 40,
+          ok: true,
+          state: "present",
+          outcomeId: "current",
+          evidence: {
+            predicate: request.predicate,
+            state: "present",
+            confidence: "observed",
+            scope: {
+              bootGeneration: 11,
+            },
+            observedAt: { tick: 40 },
+          },
+          value: 1,
+        },
+      }],
+    })).toEqual(expect.arrayContaining([
+      expect.stringContaining("evidence scope mismatch"),
+    ]));
+  });
+
   it("requires failed probes to return unknown state with an error", () => {
     expect(validateRuntimeProbeResponse({
       schemaVersion: 1,
