@@ -310,6 +310,10 @@ export interface RepairStrategyDecisionRecordContext
     providerId: string;
     providerVersion: string;
   }[];
+  realizerProvenance?: readonly {
+    realizerId: string;
+    realizerVersion: string;
+  }[];
 }
 
 export function recordRepairStrategySelection(
@@ -369,6 +373,13 @@ export function recordRepairStrategySelection(
           provider.providerId +
           "@" +
           provider.providerVersion,
+      ),
+      ...(context.realizerProvenance ?? []).map(
+        (realizer) =>
+          "repair-realizer:" +
+          realizer.realizerId +
+          "@" +
+          realizer.realizerVersion,
       ),
     ],
     outputIds,
@@ -435,6 +446,17 @@ export function recordProviderBackedRepairStrategySelection(
     );
   }
 
+  const providedRealizerRevision =
+    context.basis.repairRealizerRegistryRevision;
+  if (
+    selection.realizerProvenance.length > 0 &&
+    !providedRealizerRevision?.trim()
+  ) {
+    throw new Error(
+      "Provider-backed strategy selection with realizer provenance requires repairRealizerRegistryRevision in the decision basis.",
+    );
+  }
+
   const providedRevision =
     context.basis.repairProviderRegistryRevision;
   if (
@@ -458,6 +480,13 @@ export function recordProviderBackedRepairStrategySelection(
           selection.providerRegistryRevision,
       },
       providerProvenance: selection.providerProvenance,
+      realizerProvenance:
+        selection.realizerProvenance.map(
+          (item) => ({
+            realizerId: item.realizerId,
+            realizerVersion: item.realizerVersion,
+          }),
+        ),
     },
   );
 }
