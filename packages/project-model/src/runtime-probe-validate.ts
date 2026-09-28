@@ -50,6 +50,7 @@ function validateScope(
     "arenaGeneration",
     "connectionGeneration",
     "lifeGeneration",
+    "participationGeneration",
     "entityGeneration",
     "subsystemGeneration",
   ]) {
