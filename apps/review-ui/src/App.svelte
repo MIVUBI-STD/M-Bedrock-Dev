@@ -5,28 +5,33 @@
   import ReviewList from "./components/ReviewList.svelte";
   import ReviewDetail from "./components/ReviewDetail.svelte";
   import HistoryView from "./components/HistoryView.svelte";
-  import { mockHistory, mockItems, mockMap, mockRecentMaps, type MockReviewItem } from "./mock.js";
+  import { mockHistory, mockMap, mockRecentMaps } from "./mock.js";
+  import { reviewProjectionFixture } from "./review-projection-fixture.js";
+  import { buildReviewUiViewModel, type ReviewUiItem } from "./view-model.js";
 
   type AppScreen = "library" | "workspace";
 
   let screen: AppScreen = "library";
   let view: WorkspaceView = "review";
-  let selectedId = mockItems[0]?.id ?? "";
+  const reviewModel = buildReviewUiViewModel(reviewProjectionFixture);
+  const reviewItems = reviewModel.items;
+
+  let selectedId = reviewItems[0]?.id ?? "";
   let query = "";
   let filterOpen = false;
   let activeFilter: ReviewFilter = "all";
   let technicalOpen = false;
   let detailOpen = false;
 
-  $: selected = mockItems.find((item) => item.id === selectedId) ?? mockItems[0];
+  $: selected = reviewItems.find((item) => item.id === selectedId) ?? reviewItems[0];
   $: filteredByQuery = query.trim()
-    ? mockItems.filter((item) =>
+    ? reviewItems.filter((item) =>
         [item.title, item.stateLabel, item.proof ?? "", item.severity ?? ""]
           .join(" ")
           .toLowerCase()
           .includes(query.trim().toLowerCase())
       )
-    : mockItems;
+    : reviewItems;
   $: filtered = activeFilter === "all"
     ? filteredByQuery
     : filteredByQuery.filter((item) => item.section === activeFilter);
@@ -43,7 +48,7 @@
     detailOpen = false;
   }
 
-  function choose(item: MockReviewItem) {
+  function choose(item: ReviewUiItem) {
     selectedId = item.id;
     technicalOpen = false;
     detailOpen = true;
@@ -69,7 +74,7 @@
     <MapHeader
       name={mockMap.name}
       version={mockMap.version}
-      target={mockMap.target}
+      target={reviewModel.artifact.targetLabel}
       {view}
       onBack={backToMaps}
       onViewChange={(next) => (view = next)}

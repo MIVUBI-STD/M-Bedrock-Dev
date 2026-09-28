@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type { MockReviewItem } from "../mock.js";
+  import type { ReviewUiItem } from "../view-model.js";
 
-  export let attention: readonly MockReviewItem[];
-  export let understood: readonly MockReviewItem[];
+  export let attention: readonly ReviewUiItem[];
+  export let understood: readonly ReviewUiItem[];
   export let filteredCount: number;
   export let selectedId: string;
-  export let onSelect: (item: MockReviewItem) => void;
+  export let onSelect: (item: ReviewUiItem) => void;
 
-  function tone(item: MockReviewItem) {
+  function tone(item: ReviewUiItem) {
     if (item.state === "confirmed-defect" || item.state === "outdated-proof") return "danger";
     if (item.state === "runtime-test-required" || item.state === "probable-defect") return "warning";
     return "quiet";

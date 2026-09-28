@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { MockReviewItem } from "../mock.js";
+  import type { ReviewUiItem } from "../view-model.js";
 
-  export let item: MockReviewItem | undefined;
+  export let item: ReviewUiItem | undefined;
   export let open: boolean;
   export let technicalOpen: boolean;
   export let onBack: () => void;
@@ -16,27 +16,13 @@
         <div class="badges">
           {#if item.severity}<span>{item.severity}</span>{/if}
           <span>{item.stateLabel}</span>
-          {#if item.proof}<span>{item.proof}</span>{/if}
+          
         </div>
       </header>
 
       <section><h2>What happened</h2><p>{item.whatHappened}</p></section>
       <section><h2>Why</h2><p>{item.why}</p></section>
 
-      {#if item.proof}
-        <section>
-          <h2>Evidence</h2>
-          <div class="proof" class:stale={item.state === "outdated-proof"}>
-            <b>{item.state === "outdated-proof" ? "!" : "✓"}</b>
-            <div>
-              <strong>{item.proof}</strong>
-              <span>{item.state === "outdated-proof"
-                ? "Previous proof exists, but it is no longer current for this map."
-                : "Current proof available for this review item."}</span>
-            </div>
-          </div>
-        </section>
-      {/if}
 
       {#if item.nextAction}
         <section class="next">
@@ -66,9 +52,12 @@
         <details bind:open={technicalOpen}>
           <summary>Technical details</summary>
           <dl>
-            <div><dt>Finding</dt><dd>{item.technical.finding}</dd></div>
-            <div><dt>Source</dt><dd>{item.technical.source}</dd></div>
-            <div><dt>Proof basis</dt><dd>{item.technical.proofBasis}</dd></div>
+            {#if item.technical.finding}<div><dt>Finding</dt><dd>{item.technical.finding}</dd></div>{/if}
+            {#if item.technical.source}<div><dt>Source</dt><dd>{item.technical.source}</dd></div>{/if}
+            {#if item.technical.evidenceIds?.length}<div><dt>Evidence</dt><dd>{item.technical.evidenceIds.join(", ")}</dd></div>{/if}
+            {#if item.technical.subjectIds?.length}<div><dt>Subjects</dt><dd>{item.technical.subjectIds.join(", ")}</dd></div>{/if}
+            {#if item.technical.basisInvariantIds?.length}<div><dt>Expected behavior</dt><dd>{item.technical.basisInvariantIds.join(", ")}</dd></div>{/if}
+            {#if item.technical.rawReason}<div><dt>Raw reason</dt><dd>{item.technical.rawReason}</dd></div>{/if}
           </dl>
         </details>
       {/if}
