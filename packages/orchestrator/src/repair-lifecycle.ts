@@ -1,4 +1,7 @@
 import type {
+  RuntimeVerificationExperimentContract,
+} from "../../project-model/src/index.js";
+import type {
   PreservationVerificationReceipt,
 } from "../../preservation/src/index.js";
 import type {
@@ -26,6 +29,7 @@ export interface RepairVerificationReceipt {
   kind: "runtime" | "package";
   passed: boolean;
   evidenceIds: readonly string[];
+  runtimeExperimentContract?: RuntimeVerificationExperimentContract;
 }
 
 export interface RepairLifecycleState {
@@ -37,6 +41,7 @@ export interface RepairLifecycleState {
   runtimeVerificationComplete: boolean;
   preservationVerificationComplete: boolean;
   packageVerificationComplete: boolean;
+  runtimeVerificationContract?: RuntimeVerificationExperimentContract;
   pendingNodeIds: readonly string[];
   pendingPaths: readonly string[];
   reasons: readonly string[];
@@ -265,6 +270,12 @@ export function markRepairRuntimeVerified(
   return {
     ...state,
     runtimeVerificationComplete: true,
+    ...(receipt.runtimeExperimentContract === undefined
+      ? {}
+      : {
+          runtimeVerificationContract:
+            receipt.runtimeExperimentContract,
+        }),
     reasons: [
       ...state.reasons,
       "Runtime verification evidence has been accepted: " +
