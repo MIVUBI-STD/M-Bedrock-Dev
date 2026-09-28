@@ -163,3 +163,5 @@ export * from "./runtime-scheduler-diagnostic-bindings.js";
 export * from "./runtime-multiplayer-diagnostic-bindings.js";
 
 export * from "./runtime-persistence-diagnostic-bindings.js";
+
+export * from "./runtime-profile-differential.js";
