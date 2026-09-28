@@ -1,23 +1,26 @@
+import type { SemanticGraph } from "../../graph/src/index.js";
 import type {
   RepairableTopologyCandidate,
 } from "./topology-analysis.js";
 import {
   planLinearTopologyRepair,
 } from "../../repair/src/index.js";
-import {
-  realizeProviderRepairStrategy,
-  type ProviderRepairRealization,
-  type RepairStrategyEnumeration,
+import type {
+  ProviderRepairRealization,
+  RepairStrategyEnumeration,
 } from "./repair-strategy-enumeration.js";
+import {
+  realizeProviderRepairStrategyFromGraph,
+} from "./repair-realizer-execution.js";
 import type {
   RepairStrategyProviderRegistry,
 } from "./repair-strategy-provider.js";
 
 export function realizeLinearTopologyRepairStrategy(
   enumeration: RepairStrategyEnumeration,
+  graph: SemanticGraph,
   registry: RepairStrategyProviderRegistry,
   candidate: RepairableTopologyCandidate,
-  changedNodeIds: readonly string[],
 ): ProviderRepairRealization {
   if (
     candidate.record.effect.kind !== "fill" &&
@@ -55,7 +58,8 @@ export function realizeLinearTopologyRepairStrategy(
     };
   }
 
-  return realizeProviderRepairStrategy(
+  return realizeProviderRepairStrategyFromGraph(
+    graph,
     enumeration,
     registry,
     {
@@ -67,7 +71,6 @@ export function realizeLinearTopologyRepairStrategy(
               "linear-topology-repair",
         )?.version ?? "",
       transaction: planned.transaction,
-      changedNodeIds,
       repairClass: "implementation-repair",
       reversible: true,
       idempotent: false,
