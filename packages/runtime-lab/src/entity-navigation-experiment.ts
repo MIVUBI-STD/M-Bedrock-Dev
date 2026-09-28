@@ -96,6 +96,7 @@ export const ENTITY_NAVIGATION_ACTION_CAPABILITIES:
       entityKey: "string",
       entityGeneration: "number",
       targetKey: "string",
+      operationId: "string",
       windowTicks: "number",
       stallDisplacementThreshold: "number",
     },
@@ -174,6 +175,7 @@ function commonSetup(
 function observeStep(
   input: EntityNavigationExperimentInput,
   id: string,
+  operationId: string,
 ) {
   return {
     id,
@@ -185,6 +187,7 @@ function observeStep(
       entityKey: input.subject.entityKey,
       entityGeneration: input.subject.entityGeneration,
       targetKey: input.subject.targetKey,
+      operationId,
       windowTicks: input.observationTicks ?? 20,
       stallDisplacementThreshold:
         input.stallDisplacementThreshold ?? 0.25,
@@ -224,25 +227,30 @@ function cleanupStep(
 
 function baselineRequirements(
   input: EntityNavigationExperimentInput,
+  operationId: string,
+  idPrefix: string,
 ) {
-  const subjectScope = scope(input.subject);
+  const subjectScope = {
+    ...scope(input.subject),
+    operationId,
+  };
   return [{
-    id: "target-valid",
+    id: idPrefix + "-target-valid",
     predicateId: "navigation-target-valid",
     state: "present" as const,
     scope: subjectScope,
   }, {
-    id: "goal-active",
+    id: idPrefix + "-goal-active",
     predicateId: "navigation-goal-active",
     state: "present" as const,
     scope: subjectScope,
   }, {
-    id: "chunk-ready",
+    id: idPrefix + "-chunk-ready",
     predicateId: "navigation-chunk-ready",
     state: "present" as const,
     scope: subjectScope,
   }, {
-    id: "progress-sampled",
+    id: idPrefix + "-progress-sampled",
     predicateId: "navigation-progress-sampled",
     state: "present" as const,
     scope: subjectScope,
@@ -265,7 +273,11 @@ export function createNavigationRecoveryExperiment(
       input.fixtureFingerprint,
     protocol: [
       ...commonSetup(input),
-      observeStep(input, "observe-pre-recovery"),
+      observeStep(
+        input,
+        "observe-pre-recovery",
+        "pre-recovery",
+      ),
       {
         id: "apply-path-anchor-recovery",
         phase: "stimulus",
@@ -281,7 +293,11 @@ export function createNavigationRecoveryExperiment(
           enabled: "$factor.recovery-enabled",
         },
       },
-      observeStep(input, "observe-post-recovery"),
+      observeStep(
+        input,
+        "observe-post-recovery",
+        "post-recovery",
+      ),
       completionProbe(input),
       cleanupStep(input),
     ],
@@ -312,12 +328,24 @@ export function createNavigationRecoveryExperiment(
       treatmentState: "present",
     }],
     evidenceRequirements: [
-      ...baselineRequirements(input),
+      ...baselineRequirements(
+        input,
+        "pre-recovery",
+        "pre-recovery",
+      ),
+      ...baselineRequirements(
+        input,
+        "post-recovery",
+        "post-recovery",
+      ),
       {
         id: "pre-recovery-stall",
         predicateId: "navigation-stall-observed",
         state: "present",
-        scope: scope(input.subject),
+        scope: {
+          ...scope(input.subject),
+          operationId: "pre-recovery",
+        },
       },
       {
         id: "control-recovery-not-applied",
@@ -371,7 +399,11 @@ export function createNavigationCrowdingExperiment(
             "$factor.nearby-entity-count",
         },
       },
-      observeStep(input, "observe-crowd-window"),
+      observeStep(
+        input,
+        "observe-crowd-window",
+        "crowd-window",
+      ),
       completionProbe(input),
       cleanupStep(input),
     ],
@@ -402,7 +434,11 @@ export function createNavigationCrowdingExperiment(
       treatmentState: "present",
     }],
     evidenceRequirements:
-      baselineRequirements(input),
+      baselineRequirements(
+        input,
+        "crowd-window",
+        "crowd-window",
+      ),
     minimumRunsPerArm:
       input.minimumRunsPerArm ?? 2,
   };
@@ -430,9 +466,15 @@ export function validateNavigationProgressEvidence(
   evidence: readonly RuntimeEvidenceRecord[],
   subject: EntityNavigationSubject,
   stallDisplacementThreshold = 0.25,
+  operationId?: string,
 ): string[] {
   const errors: string[] = [];
-  const expectedScope = scope(subject);
+  const expectedScope = {
+    ...scope(subject),
+    ...(operationId === undefined
+      ? {}
+      : { operationId }),
+  };
 
   for (const predicate of [
     "navigation-target-valid",
