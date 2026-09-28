@@ -146,6 +146,7 @@ export interface DecisionBasisInput {
   evidenceIntegrity?: Readonly<Record<string, RuntimeEvidenceIntegrityReport>>;
   repairRealizerRegistry?: RepairRealizerRegistry;
   repairStrategySourceRegistry?: RepairStrategySourceRegistry;
+  postTransformProofRevision?: string;
 }
 
 export function buildDecisionBasis(
@@ -201,6 +202,12 @@ export function buildDecisionBasis(
             repairRealizerRegistryRevision(
               input.repairRealizerRegistry,
             ),
+        }),
+    ...(input.postTransformProofRevision === undefined
+      ? {}
+      : {
+          postTransformProofRevision:
+            input.postTransformProofRevision,
         }),
     ...(input.probeBindings === undefined
       ? {}
