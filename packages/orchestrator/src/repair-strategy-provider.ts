@@ -35,6 +35,10 @@ export interface RepairStrategyProviderProposal {
   providerVersion: string;
   relatedDiagnosticIds: readonly string[];
   strategy: RepairStrategyCandidate;
+  equivalentProviderProvenance?: readonly {
+    providerId: string;
+    providerVersion: string;
+  }[];
 }
 
 function canonicalJson(value: unknown): string {
