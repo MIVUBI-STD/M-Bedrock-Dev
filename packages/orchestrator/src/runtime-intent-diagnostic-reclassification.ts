@@ -19,17 +19,30 @@ export interface RuntimeDiagnosticArmPredicateBinding {
   armId: string;
 }
 
+export interface RuntimeDiagnosticRolePredicateBinding {
+  predicate: string;
+  role: "control" | "treatment";
+  state: "present" | "absent";
+  requireInterventionContrast?: boolean;
+  requireExpectedContrast?: boolean;
+}
+
 export interface RuntimeDiagnosticPredicateBindings {
   contradictionPredicates?: readonly string[];
   contradictionArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
+  contradictionRolePredicates?: readonly RuntimeDiagnosticRolePredicateBinding[];
   designMatchPredicates?: readonly string[];
   designMatchArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
+  designMatchRolePredicates?: readonly RuntimeDiagnosticRolePredicateBinding[];
   engineConstraintPredicates?: readonly string[];
   engineConstraintArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
+  engineConstraintRolePredicates?: readonly RuntimeDiagnosticRolePredicateBinding[];
   compatibilityDifferencePredicates?: readonly string[];
   compatibilityDifferenceArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
+  compatibilityDifferenceRolePredicates?: readonly RuntimeDiagnosticRolePredicateBinding[];
   runtimeProofPredicates?: readonly string[];
   runtimeProofArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
+  runtimeProofRolePredicates?: readonly RuntimeDiagnosticRolePredicateBinding[];
 }
 
 export interface RuntimeIntentDiagnosticReclassificationInput {
@@ -168,6 +181,58 @@ function runtimeProofArmEvidenceIds(
   };
 }
 
+function roleEvidenceIds(
+  bindings: readonly RuntimeDiagnosticRolePredicateBinding[] | undefined,
+  evidence: ReadonlyMap<
+    string,
+    RuntimeDiagnosticPredicateEvidence
+  >,
+): {
+  predicates: string[];
+  evidenceIds: string[];
+} {
+  const matchedPredicates: string[] = [];
+  const evidenceIds: string[] = [];
+
+  for (const binding of bindings ?? []) {
+    const item = evidence.get(binding.predicate);
+    if (!item || item.ceiling === "unknown") continue;
+    if (
+      binding.requireInterventionContrast === true &&
+      item.interventionContrast !== true
+    ) {
+      continue;
+    }
+    if (
+      binding.requireExpectedContrast === true &&
+      item.expectedContrastDisposition !== "matched"
+    ) {
+      continue;
+    }
+
+    const arm = item.armObservations?.find(
+      (entry) =>
+        entry.role === binding.role &&
+        entry.observation.state === binding.state,
+    );
+    if (!arm) continue;
+
+    matchedPredicates.push(
+      binding.predicate +
+        "@role:" +
+        binding.role +
+        "=" +
+        binding.state,
+    );
+    evidenceIds.push(...arm.sourceEvidenceIds);
+  }
+
+  return {
+    predicates: [...new Set(matchedPredicates)].sort(),
+    evidenceIds: [...new Set(evidenceIds)].sort(),
+  };
+}
+
 function mergeMatches(
   ...matches: readonly {
     predicates: readonly string[];
@@ -254,6 +319,10 @@ export function reclassifyIntentDiagnosticFromRuntime(
       input.bindings.contradictionArmPredicates,
       evidence,
     ),
+    roleEvidenceIds(
+      input.bindings.contradictionRolePredicates,
+      evidence,
+    ),
   );
   const designMatches = mergeMatches(
     presentEvidenceIds(
@@ -262,6 +331,10 @@ export function reclassifyIntentDiagnosticFromRuntime(
     ),
     presentArmEvidenceIds(
       input.bindings.designMatchArmPredicates,
+      evidence,
+    ),
+    roleEvidenceIds(
+      input.bindings.designMatchRolePredicates,
       evidence,
     ),
   );
@@ -274,6 +347,10 @@ export function reclassifyIntentDiagnosticFromRuntime(
       input.bindings.engineConstraintArmPredicates,
       evidence,
     ),
+    roleEvidenceIds(
+      input.bindings.engineConstraintRolePredicates,
+      evidence,
+    ),
   );
   const compatibilityDifferences = mergeMatches(
     presentEvidenceIds(
@@ -284,6 +361,10 @@ export function reclassifyIntentDiagnosticFromRuntime(
       input.bindings.compatibilityDifferenceArmPredicates,
       evidence,
     ),
+    roleEvidenceIds(
+      input.bindings.compatibilityDifferenceRolePredicates,
+      evidence,
+    ),
   );
   const runtimeProof = mergeMatches(
     runtimeProofEvidenceIds(
@@ -292,6 +373,10 @@ export function reclassifyIntentDiagnosticFromRuntime(
     ),
     runtimeProofArmEvidenceIds(
       input.bindings.runtimeProofArmPredicates,
+      evidence,
+    ),
+    roleEvidenceIds(
+      input.bindings.runtimeProofRolePredicates,
       evidence,
     ),
   );
