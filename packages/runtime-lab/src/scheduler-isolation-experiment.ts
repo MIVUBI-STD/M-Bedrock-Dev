@@ -303,6 +303,156 @@ export function createSchedulerCrossArenaIsolationExperiment(
   };
 }
 
+export function validateSchedulerCancellationEvidence(
+  evidence: readonly RuntimeEvidenceRecord[],
+): string[] {
+  const errors: string[] = [];
+  const cancellation = evidence.find(
+    (record) =>
+      record.predicate ===
+        "scheduler-work-cancelled" &&
+      record.state === "present" &&
+      record.confidence === "observed",
+  );
+  const callbackAttempt = evidence.find(
+    (record) =>
+      record.predicate ===
+        "scheduler-callback-attempted" &&
+      record.state === "present" &&
+      record.confidence === "observed",
+  );
+  const mutation = evidence.find(
+    (record) =>
+      record.predicate ===
+        "cancelled-callback-mutation-observed" &&
+      record.state === "present" &&
+      record.confidence === "observed",
+  );
+
+  if (!cancellation) {
+    errors.push(
+      "Scheduler cancellation proof is missing explicit scheduler-work-cancelled evidence.",
+    );
+  }
+  if (callbackAttempt && !mutation) {
+    errors.push(
+      "Scheduler cancellation proof observed a callback attempt after cancellation without a matching mutation; classify this separately from successful cancellation.",
+    );
+  }
+
+  return errors;
+}
+
+export function createBidirectionalSchedulerIsolationExperiment(
+  input: SchedulerCrossArenaIsolationExperimentInput,
+): RuntimeExperimentDefinition {
+  const delayTicks = input.callbackDelayTicks ?? 2;
+  const generation = input.arenaGeneration ?? 1;
+
+  return {
+    schemaVersion: 1,
+    id: input.id,
+    title: input.title,
+    domain: "scheduler",
+    requiredContext: "LIVE_MINECRAFT",
+    mutationRisk: "guarded",
+    targetProfileFingerprint:
+      input.targetProfileFingerprint,
+    fixtureFingerprint:
+      input.fixtureFingerprint,
+    protocol: [{
+      id: "reset-owned-work",
+      phase: "setup",
+      actionId: "scheduler.reset-owned-work-fixture",
+      parameters: {
+        objectiveId: input.objectiveId,
+        participant: input.participant,
+      },
+    }, {
+      id: "schedule-arena-a-to-b",
+      phase: "stimulus",
+      actionId: "scheduler.schedule-owned-callback",
+      parameters: {
+        objectiveId: input.objectiveId,
+        participant: input.participant,
+        ownerArenaId: input.arenaA,
+        targetArenaId: input.arenaB,
+        arenaGeneration: generation,
+        delayTicks,
+        ownerGuardEnabled:
+          "$factor.owner-isolation-enabled",
+      },
+    }, {
+      id: "schedule-arena-b-to-a",
+      phase: "stimulus",
+      actionId: "scheduler.schedule-owned-callback",
+      parameters: {
+        objectiveId: input.objectiveId,
+        participant: input.participant,
+        ownerArenaId: input.arenaB,
+        targetArenaId: input.arenaA,
+        arenaGeneration: generation,
+        delayTicks,
+        ownerGuardEnabled:
+          "$factor.owner-isolation-enabled",
+      },
+    }, {
+      id: "allow-concurrent-callback-window",
+      phase: "stimulus",
+      actionId: "scheduler.advance-runtime-ticks",
+      parameters: {
+        ticks: delayTicks + 1,
+      },
+    }, {
+      id: "probe-cross-arena-mutation",
+      phase: "observe",
+      actionId: "probe.scoreboard-value",
+      parameters: {
+        objectiveId: input.objectiveId,
+        participant: input.participant,
+        expected: 1,
+        predicate: "cross-arena-mutation-observed",
+      },
+    }, {
+      id: "cleanup-owned-work",
+      phase: "teardown",
+      actionId: "scheduler.cleanup-owned-work-fixture",
+      parameters: {
+        objectiveId: input.objectiveId,
+        participant: input.participant,
+      },
+    }],
+    factors: [{
+      id: "owner-isolation-enabled",
+      description:
+        "Whether concurrently scheduled callbacks are prevented from mutating a different arena than their owner.",
+    }],
+    arms: [{
+      id: "control",
+      role: "control",
+      factorValues: {
+        "owner-isolation-enabled": true,
+      },
+    }, {
+      id: "treatment",
+      role: "treatment",
+      factorValues: {
+        "owner-isolation-enabled": false,
+      },
+    }],
+    outcomePredicateIds: [
+      "cross-arena-mutation-observed",
+    ],
+    expectedContrasts: [{
+      predicateId: "cross-arena-mutation-observed",
+      controlState: "absent",
+      treatmentState: "present",
+    }],
+    minimumRunsPerArm:
+      input.minimumRunsPerArm ?? 2,
+  };
+}
+
 export function validateCrossArenaSchedulerEvidence(
   evidence: readonly RuntimeEvidenceRecord[],
   expectedOwnerArenaId: string,
