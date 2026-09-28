@@ -79,4 +79,23 @@ describe("intent diagnostic gate", () => {
       designMatchEvidenceIds: ["source:cleanup-delay-policy"],
     }).disposition).toBe("designed-behavior");
   });
+  it("requires runtime evidence integrity before runtime-backed defect confirmation", () => {
+    const result = gateIntentDiagnostic({
+      intent: model("authored"),
+      subjectIds: ["lifecycle:cleanup"],
+      observationEvidenceIds: ["runtime:arena-not-reusable"],
+      contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
+      runtimeProofRequired: true,
+      runtimeProofEvidenceIds: ["runtime:cleanup-proof"],
+      runtimeEvidenceIntegritySatisfied: false,
+    });
+
+    expect(result.disposition).toBe("runtime-proof-required");
+    expect(result.nextEvidenceNeed).toBe("runtime-evidence-integrity");
+    expect(result.evidenceIds).toEqual([
+      "runtime:arena-not-reusable",
+      "runtime:cleanup-proof",
+    ]);
+  });
+
 });
