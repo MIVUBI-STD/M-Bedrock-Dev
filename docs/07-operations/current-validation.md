@@ -914,3 +914,112 @@ full test suite       pass
 ```
 
 Independent Package Source Snapshot verification on the same revision passed TypeScript compilation and 45/45 focused realizer/source-registry/ledger tests under Node 24.21.0.
+
+
+## Concrete scheduler and session generation guard realization proof
+
+The first runtime-causal source realizers are now concrete and syntax-aware.
+
+A new project-model contract, `RepairSourceTransformHint`, requires analyzer-owned repair hints to carry:
+
+```text
+family
+analyzer id/revision
+parser id/revision
+semantic owner id
+exact single-line SourceRef
+expected source text
+deterministic replacement text
+supported causal predicates
+supported controlled factors
+validation kinds
+```
+
+The scripts analyzer now derives these hints during normal `parseScriptFile()` processing.
+
+The current safe transform surface is intentionally narrow:
+
+```text
+const capturedGeneration = owner.generation;
+system.run(() => mutate());
+```
+
+or the equivalent `runTimeout` / `runInterval` inline callback.
+
+A hint is emitted only when:
+
+- the captured token is a `const`;
+- the current-generation expression is a pure property access;
+- capture and scheduler call are in the same statement block;
+- the scheduler call is single-line;
+- the callback is inline;
+- an equivalent generation comparison is not already present.
+
+Mutable captures, unrelated state, multi-line scheduler calls, unresolved syntax, or already-guarded callbacks produce no transform hint.
+
+Generation hints are classified from authored token identity:
+
+```text
+generic generation
+→ scheduler-generation-guard
+→ stale-callback-observed
+→ generation-guard-enabled
+
+connectionGeneration
+→ session-generation-guard
+→ stale-session-mutation-observed
+→ connection-generation-guard-enabled
+
+lifeGeneration
+→ session-generation-guard
+→ stale-life-join-mutation-observed
+→ life-generation-guard-enabled
+
+participation/membershipGeneration
+→ session-generation-guard
+→ stale-join-transition-observed
+→ membership-guard-enabled
+```
+
+Two causal-auto repair sources now have registered deterministic realizers:
+
+```text
+scheduler-generation-guard-template
+session-generation-guard-template
+```
+
+Realization fails closed unless:
+
+- the source is enumerated and automatic-realization eligible;
+- the analyzer/parser identity and revisions match the active implementation;
+- the hint source is exact causal source evidence;
+- every causal predicate and controlled factor in the opportunity is covered by the hint;
+- source and realizer definitions are deterministic causal-auto;
+- the resulting patch source maps to current SemanticGraph nodes.
+
+The realized PatchTransaction carries the current source fingerprint and performs only the analyzer-provided exact-text replacement. The realizer never synthesizes JavaScript from a runtime predicate.
+
+Normal parsed-script discovery now selects the applicable hint automatically. Zero matching hints blocks realization. Multiple matching hints are treated as ambiguity and also block realization; callers do not choose a hint manually.
+
+Non-provider realized candidates now flow through causal strategy selection with:
+
+```text
+repairStrategySourceRegistryRevision
+repairRealizerRegistryRevision
+repair-source provenance
+repair-realizer provenance
+```
+
+and those revisions participate in stale-decision invalidation.
+
+Validated source revision: `ae2b1da2efd8aaac967d00823c1fac4470ad1634`.
+
+GitHub Actions Verify run `36425173528` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
