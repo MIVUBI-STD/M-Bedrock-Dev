@@ -375,6 +375,256 @@ function hintId(
   ].join(":");
 }
 
+interface PersistenceMarkerPattern {
+  appliedIdentifier: string;
+  journalIdentifier: string;
+  propertyKey: string;
+  sideEffectStatement: ts.ExpressionStatement;
+}
+
+function stringLiteralArgument(
+  call: ts.CallExpression,
+  index: number,
+): string | undefined {
+  const arg = call.arguments[index];
+  return arg && ts.isStringLiteralLike(arg)
+    ? arg.text
+    : undefined;
+}
+
+function dynamicPropertyCall(
+  expression: ts.Expression,
+  method: "getDynamicProperty" | "setDynamicProperty",
+): ts.CallExpression | undefined {
+  if (!ts.isCallExpression(expression)) return undefined;
+  if (
+    !ts.isPropertyAccessExpression(expression.expression) ||
+    expression.expression.name.text !== method
+  ) {
+    return undefined;
+  }
+  return expression;
+}
+
+function persistenceMarkerPattern(
+  statement: ts.ExpressionStatement,
+): PersistenceMarkerPattern | undefined {
+  const parent = statement.parent;
+  if (!ts.isBlock(parent)) return undefined;
+
+  const index = parent.statements.indexOf(statement);
+  if (index < 1 || index + 1 >= parent.statements.length) {
+    return undefined;
+  }
+
+  const markerWriteStatement =
+    parent.statements[index + 1];
+  if (
+    !markerWriteStatement ||
+    !ts.isExpressionStatement(markerWriteStatement)
+  ) {
+    return undefined;
+  }
+
+  const markerWrite = dynamicPropertyCall(
+    markerWriteStatement.expression,
+    "setDynamicProperty",
+  );
+  if (!markerWrite) return undefined;
+
+  const propertyKey = stringLiteralArgument(
+    markerWrite,
+    0,
+  );
+  const journalArgument = markerWrite.arguments[1];
+  if (
+    !propertyKey ||
+    !/(?:applied|committed).*(?:generation|revision|version)/i.test(
+      propertyKey,
+    ) ||
+    !journalArgument ||
+    !ts.isIdentifier(journalArgument) ||
+    !/(?:journal|record|operation).*(?:generation|revision|version)/i.test(
+      journalArgument.text,
+    )
+  ) {
+    return undefined;
+  }
+
+  const journalIdentifier = journalArgument.text;
+  let appliedIdentifier: string | undefined;
+
+  for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+    const candidate = parent.statements[cursor]!;
+    if (!ts.isVariableStatement(candidate)) continue;
+
+    for (const declaration of candidate.declarationList.declarations) {
+      if (
+        !ts.isIdentifier(declaration.name) ||
+        !declaration.initializer
+      ) {
+        continue;
+      }
+      const read = dynamicPropertyCall(
+        declaration.initializer,
+        "getDynamicProperty",
+      );
+      if (!read) continue;
+      const readKey = stringLiteralArgument(read, 0);
+      if (
+        readKey === propertyKey &&
+        /(?:applied|committed).*(?:generation|revision|version)/i.test(
+          declaration.name.text,
+        )
+      ) {
+        appliedIdentifier = declaration.name.text;
+        break;
+      }
+    }
+    if (appliedIdentifier) break;
+  }
+
+  if (!appliedIdentifier) return undefined;
+
+  const sideEffectCall = statement.expression;
+  if (!ts.isCallExpression(sideEffectCall)) return undefined;
+  if (
+    dynamicPropertyCall(
+      sideEffectCall,
+      "setDynamicProperty",
+    ) ||
+    dynamicPropertyCall(
+      sideEffectCall,
+      "getDynamicProperty",
+    )
+  ) {
+    return undefined;
+  }
+
+  return {
+    appliedIdentifier,
+    journalIdentifier,
+    propertyKey,
+    sideEffectStatement: statement,
+  };
+}
+
+function derivePersistenceIdempotencyGuardTransformHintsFromFile(
+  identifier: string,
+  file: ts.SourceFile,
+  source: SourceRef,
+): RepairSourceTransformHint[] {
+  const output: RepairSourceTransformHint[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (!ts.isExpressionStatement(node)) {
+      ts.forEachChild(node, visit);
+      return;
+    }
+
+    const pattern = persistenceMarkerPattern(node);
+    if (!pattern) {
+      ts.forEachChild(node, visit);
+      return;
+    }
+
+    const statementSource = lineSource(
+      file,
+      node,
+      source,
+    );
+    if (
+      statementSource.range?.lineStart === undefined ||
+      statementSource.range.lineEnd === undefined ||
+      statementSource.range.lineStart !==
+        statementSource.range.lineEnd
+    ) {
+      ts.forEachChild(node, visit);
+      return;
+    }
+
+    const expectedText = node.getText(file);
+    const replacementText =
+      "if (" +
+      pattern.appliedIdentifier +
+      " !== " +
+      pattern.journalIdentifier +
+      ") " +
+      expectedText;
+
+    const hint: RepairSourceTransformHint = {
+      schemaVersion: 1,
+      id: [
+        "repair-hint",
+        "persistence-idempotency-guard",
+        encodeURIComponent(identifier),
+        encodeURIComponent(source.relativePath),
+        statementSource.range.lineStart,
+        statementSource.range.columnStart ?? 0,
+      ].join(":"),
+      family: "persistence-idempotency-guard",
+      analyzerId: SCRIPT_REPAIR_HINT_ANALYZER_ID,
+      analyzerRevision:
+        SCRIPT_REPAIR_HINT_ANALYZER_REVISION,
+      parserId: SCRIPT_REPAIR_HINT_PARSER_ID,
+      parserRevision:
+        SCRIPT_REPAIR_HINT_PARSER_REVISION,
+      semanticOwnerId:
+        "script:" +
+        identifier +
+        ":persistence:" +
+        pattern.propertyKey,
+      source: statementSource,
+      expectedText,
+      replacementText,
+      supportedPredicateIds: [
+        "duplicate-apply-after-reload-observed",
+      ],
+      supportedFactorIds: [
+        "idempotent-recovery-enabled",
+      ],
+      validationKinds: [
+        "reparse",
+        "rebuild-graph",
+      ],
+    };
+
+    if (
+      validateRepairSourceTransformHint(
+        hint,
+      ).length === 0
+    ) {
+      output.push(hint);
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+  return output.sort((a, b) =>
+    a.id.localeCompare(b.id)
+  );
+}
+
+export function derivePersistenceIdempotencyGuardTransformHints(
+  identifier: string,
+  text: string,
+  source: SourceRef,
+): RepairSourceTransformHint[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  return derivePersistenceIdempotencyGuardTransformHintsFromFile(
+    identifier,
+    file,
+    source,
+  );
+}
+
 export function deriveCapturedGenerationGuardTransformHints(
   identifier: string,
   text: string,
