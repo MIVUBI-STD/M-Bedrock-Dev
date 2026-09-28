@@ -346,3 +346,61 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Scheduler generation and temporal-ordering proof contracts
+
+Runtime Lab now contains two scheduler experiment surfaces:
+
+1. stale-generation callback ownership;
+2. nested system.run temporal ordering.
+
+Stale-generation proof:
+
+```text
+control
+generation guard enabled
+→ stale callback mutation absent
+
+treatment
+generation guard disabled
+→ stale callback mutation present
+
+→ repeated deterministic contrast
+→ expected direction matched
+→ intervention-supported causal provenance
+```
+
+Temporal ordering proof no longer derives ordering from harness request timing. Mutating runtime action acknowledgements may optionally return observed runtime evidence records. The Bedrock host binds those records to controlled-experiment provenance and target-profile identity while preserving the runtime-provided observation point.
+
+Nested scheduler ordering requires explicit timeline markers:
+
+```text
+scheduler-origin-marker
+scheduler-callback-marker
+```
+
+Both markers must carry comparable `streamId`, `sequence`, and `tick` metadata.
+
+Temporal requirements now support `minTickDelta` as well as `maxTickDelta`. The scheduler ordering plan currently requires:
+
+```text
+nesting depth 1 → callback >= 1 tick after origin
+nesting depth 2 → callback >= 2 ticks after origin
+```
+
+Arm-specific temporal requirements are assessed generically by the orchestrator. Same-tick observations cannot satisfy a contract that explicitly requires a later tick.
+
+Capability preflight continues to fail closed when required scheduler actions are unavailable.
+
+Validated source revision: `09e88bf27ce2ff973d549152f31404a3751f972a`.
+
+GitHub Actions Verify run `36385520987` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
