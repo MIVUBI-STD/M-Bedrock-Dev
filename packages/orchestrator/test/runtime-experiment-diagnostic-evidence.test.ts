@@ -107,6 +107,25 @@ describe("runtime experiment diagnostic evidence bridge", () => {
     expect(bridge.predicates[0]?.observation.state).toBe(
       "unknown",
     );
+    expect(
+      bridge.predicates[0]?.interventionContrast,
+    ).toBe(true);
+    expect(
+      bridge.predicates[0]?.armObservations,
+    ).toEqual([
+      expect.objectContaining({
+        armId: "control",
+        observation: expect.objectContaining({
+          state: "absent",
+        }),
+      }),
+      expect.objectContaining({
+        armId: "treatment",
+        observation: expect.objectContaining({
+          state: "present",
+        }),
+      }),
+    ]);
   });
 
   it("never hides conflicting trial observations behind a stronger ceiling", () => {
@@ -137,6 +156,49 @@ describe("runtime experiment diagnostic evidence bridge", () => {
     expect(bridge.predicates[0]?.ceiling).toBe(
       "repeatable",
     );
+  });
+
+  it("keeps evidence ids distinct for multiple records sharing trial provenance", () => {
+    const sharedProvenanceA: RuntimeEvidenceRecord = {
+      predicate: "cleanup-complete",
+      state: "present",
+      confidence: "observed",
+      origin: "controlled-experiment",
+      provenanceKey: "trial:shared",
+    };
+    const sharedProvenanceB: RuntimeEvidenceRecord = {
+      predicate: "cleanup-complete",
+      state: "present",
+      confidence: "observed",
+      origin: "controlled-experiment",
+      provenanceKey: "trial:shared",
+    };
+    const qualification: RuntimeExperimentQualification = {
+      experimentId: "exp",
+      state: "observed",
+      completedRunsByArm: { treatment: 1 },
+      unknownOutcomes: 0,
+      controlTreatmentContrastPredicates: [],
+      evidenceIds: [],
+      reasons: [],
+    };
+
+    const bridge = runtimeExperimentDiagnosticEvidence(
+      qualification,
+      [
+        trial(
+          "t1",
+          "treatment",
+          [sharedProvenanceA, sharedProvenanceB],
+        ),
+      ],
+    );
+
+    expect(
+      new Set(
+        bridge.predicates[0]?.sourceEvidenceIds ?? [],
+      ).size,
+    ).toBe(2);
   });
 
   it("reassesses diagnostic hypotheses using runtime observations", () => {
