@@ -9,6 +9,7 @@ import {
   recordPreservationVerificationDecision,
   recordReleaseDecision,
   recordRepairAdmissionDecision,
+  recordRepairRealizationCoverage,
   recordRuntimeVerificationDecision,
 } from "../src/decision-ledger-recording.js";
 import type {
@@ -307,6 +308,68 @@ describe("decision ledger recording", () => {
       ),
     ).toBe(true);
   });
+  it("records repair realization coverage with realizer registry revision", () => {
+    const ledger = recordRepairRealizationCoverage(
+      createDecisionLedger(),
+      {
+        incidentId: "incident-1",
+        candidateId: "candidate-1",
+        items: [{
+          sourceId: "session-generation-guard-template",
+          sourceVersion: "1",
+          disposition: "missing-realizer",
+          reasons: ["No concrete realizer."],
+        }],
+        realizedCount: 0,
+        blockedCount: 0,
+        missingRealizerCount: 1,
+        noImplementationCoverage: true,
+      },
+      {
+        decisionId: "decision-realization",
+        basis: {
+          repairRealizerRegistryRevision:
+            "realizers-r1",
+        },
+      },
+    );
+
+    expect(ledger.entries[0]).toMatchObject({
+      kind: "repair-strategy-realization",
+      incidentId: "incident-1",
+      basis: {
+        repairRealizerRegistryRevision:
+          "realizers-r1",
+      },
+    });
+    expect(ledger.entries[0]?.outputIds).toEqual(
+      expect.arrayContaining([
+        "repair-realization:missing-realizer:1",
+        "repair-realization:no-implementation-coverage:true",
+        "repair-realization-source:session-generation-guard-template@1:missing-realizer",
+      ]),
+    );
+
+    expect(() =>
+      recordRepairRealizationCoverage(
+        createDecisionLedger(),
+        {
+          incidentId: "incident-1",
+          candidateId: "candidate-1",
+          items: [],
+          realizedCount: 0,
+          blockedCount: 0,
+          missingRealizerCount: 0,
+          noImplementationCoverage: true,
+        },
+        {
+          decisionId: "missing-realizer-revision",
+          basis: {},
+        },
+      )
+    ).toThrow(/repairRealizerRegistryRevision/);
+  });
+
   it("rejects runtime decision recording without evidence revision", () => {
     expect(() => recordDiagnosticRepairDecision(
       createDecisionLedger(),
