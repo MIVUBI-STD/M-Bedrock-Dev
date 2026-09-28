@@ -41,6 +41,7 @@ export interface RepairStrategyPostTransformProof {
   hintId: string;
   family: string;
   proofFingerprint: string;
+  semanticImpactFingerprint?: string;
 }
 
 export interface RepairStrategyCandidate {
@@ -488,11 +489,14 @@ export function selectRepairStrategy(
           ...(policy.decisionBasis ?? {}),
           invariantRegistryRevision:
             policy.invariantRegistry.revision,
-          ...(candidate.postTransformProof?.proofFingerprint === undefined
+          ...(candidate.postTransformProof?.proofFingerprint === undefined ||
+          candidate.postTransformProof?.semanticImpactFingerprint === undefined
             ? {}
             : {
                 postTransformProofRevision:
-                  candidate.postTransformProof.proofFingerprint,
+                  candidate.postTransformProof.proofFingerprint +
+                  ":" +
+                  candidate.postTransformProof.semanticImpactFingerprint,
               }),
         },
         ...(policy.blastRadiusPolicy === undefined
@@ -611,11 +615,12 @@ export function selectRepairStrategy(
         candidate.postTransformProofRequired !== true ||
         (
           candidate.postTransformProof !== undefined &&
-          candidate.postTransformProof.proofFingerprint.trim().length > 0
+          candidate.postTransformProof.proofFingerprint.trim().length > 0 &&
+          candidate.postTransformProof.semanticImpactFingerprint?.trim().length > 0
         );
       if (!postTransformProofSatisfied) {
         reasons.push(
-          "Strategy requires a proven isolated post-transform semantic proof before selection.",
+          "Strategy requires both a proven isolated post-transform guard proof and a proven pre/post semantic-impact proof before selection.",
         );
       }
 
