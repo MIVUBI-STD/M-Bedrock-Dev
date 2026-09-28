@@ -35,7 +35,7 @@ import {
 } from "./receiver-inference.js";
 import { findScriptExecutionPrivilegeRule } from "../../../packages/compatibility/src/index.js";
 import { inferScriptLifecycleMemberExposures } from "./lifecycle-exposure.js";
-import { deriveSchedulerGenerationGuardTransformHints } from "./repair-transform-hints.js";
+import { deriveCapturedGenerationGuardTransformHints } from "./repair-transform-hints.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -2393,7 +2393,7 @@ export function parseScriptFile(
     identifier,
     source,
     repairTransformHints:
-      deriveSchedulerGenerationGuardTransformHints(
+      deriveCapturedGenerationGuardTransformHints(
         identifier,
         text,
         source,
