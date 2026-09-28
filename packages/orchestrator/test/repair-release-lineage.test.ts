@@ -374,7 +374,7 @@ describe("repair release lineage", () => {
 
     expect(result.decision.disposition).toBe("blocked");
     expect(result.decision.reasons.join(" "))
-      .toMatch(/Runtime verification is not descended/);
+      .toMatch(/Runtime verification .* is not descended/);
   });
 
   it("blocks release when strategy lineage omits a proof invariant", () => {
