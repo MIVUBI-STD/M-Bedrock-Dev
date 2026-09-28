@@ -335,6 +335,48 @@ describe("decision ledger", () => {
   });
 
 
+  it("invalidates repair strategy decisions when post-transform proof changes", () => {
+    let ledger = appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "post-transform-bound",
+        kind: "repair-strategy-selection",
+        transactionId: "tx-1",
+        basis: {
+          postTransformProofRevision:
+            "proof-a",
+        },
+        inputIds: [
+          "post-transform-proof:proof-a",
+        ],
+        outputIds: [
+          "repair-strategy:selected",
+        ],
+      },
+    );
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "post-transform-downstream",
+      kind: "repair-admission",
+      transactionId: "tx-1",
+      basis: {},
+      upstreamDecisionIds: [
+        "post-transform-bound",
+      ],
+    });
+
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      postTransformProofRevision:
+        "proof-b",
+    });
+
+    expect(
+      ledger.entries.map((entry) => entry.status),
+    ).toEqual(["invalidated", "invalidated"]);
+    expect(
+      ledger.entries[0]?.invalidationReason,
+    ).toMatch(/postTransformProofRevision changed/);
+  });
+
   it("invalidates repair strategy decisions when source registry changes", () => {
     let ledger = appendDecisionLedgerEntry(
       createDecisionLedger(),
