@@ -197,6 +197,24 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Allows exact connection/life/participation generation guard insertion only when the script analyzer emits a validated captured-generation transform hint.",
     }, {
+      id: "persistence-idempotency-guard-template",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "analyzers/scripts/src/repair-transform-hints.ts",
+      deterministic: true,
+      selectionMode: "causal-auto",
+      repairClass: "implementation-repair",
+      supportedPredicateIds: [
+        "duplicate-apply-after-reload-observed",
+      ],
+      supportedFactorIds: [
+        "idempotent-recovery-enabled",
+      ],
+      requiresExactSourceEvidence: true,
+      rationale:
+        "Allows exact replay/idempotency guard insertion only when the script analyzer proves an authored applied-generation marker around the side effect.",
+    }, {
       id: "arena-ownership-guard-template",
       version: "1",
       kind: "built-in-planner",
