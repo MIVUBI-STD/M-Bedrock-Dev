@@ -13,6 +13,13 @@ import type {
 import type {
   RepairStrategyClass,
 } from "./repair-strategy-selection.js";
+import type {
+  RepairRealizerSourceKind,
+} from "./repair-realizer-registry.js";
+import {
+  validateRepairStrategySourceRegistry,
+  type RepairStrategySourceRegistry,
+} from "./repair-strategy-source-registry.js";
 import {
   repairStrategyProvider,
   validateRepairStrategyProviderRegistry,
@@ -22,7 +29,7 @@ import {
 } from "./repair-strategy-provider.js";
 
 export interface EnumeratedRepairStrategySource {
-  sourceKind: "provider";
+  sourceKind: RepairRealizerSourceKind;
   sourceId: string;
   sourceVersion: string;
   selectionMode:
@@ -61,6 +68,7 @@ export function enumerateRepairStrategySources(
   envelope: RepairOpportunityEnvelope,
   diagnostics: readonly DiagnosticFinding[],
   registry: RepairStrategyProviderRegistry,
+  sourceRegistry?: RepairStrategySourceRegistry,
 ): RepairStrategyEnumeration {
   const registryErrors =
     validateRepairStrategyProviderRegistry(registry);
@@ -154,7 +162,109 @@ export function enumerateRepairStrategySources(
       a.sourceVersion.localeCompare(b.sourceVersion)
     );
 
-  const applicableSources = enumerated.filter(
+  const nativeRegistryErrors =
+    sourceRegistry === undefined
+      ? []
+      : validateRepairStrategySourceRegistry(
+          sourceRegistry,
+        );
+  if (nativeRegistryErrors.length > 0) {
+    throw new Error(
+      "Invalid repair strategy source registry: " +
+        nativeRegistryErrors.join("; "),
+    );
+  }
+
+  const nativeEnumerated =
+    (sourceRegistry?.sources ?? []).map(
+      (source): EnumeratedRepairStrategySource => {
+        const diagnosticMatch =
+          (source.supportedDiagnosticCodes?.length ?? 0) === 0 ||
+          source.supportedDiagnosticCodes!.some(
+            (code) =>
+              envelope.diagnosticCodes.includes(code),
+          );
+        const predicateMatch =
+          (source.supportedPredicateIds?.length ?? 0) === 0 ||
+          source.supportedPredicateIds!.some(
+            (id) =>
+              envelope.causalBinding.predicateIds?.includes(
+                id,
+              ) === true,
+          );
+        const factorMatch =
+          (source.supportedFactorIds?.length ?? 0) === 0 ||
+          source.supportedFactorIds!.some(
+            (id) =>
+              envelope.causalBinding.factorIds?.includes(
+                id,
+              ) === true,
+          );
+        const exactSourceSatisfied =
+          !source.requiresExactSourceEvidence ||
+          envelope.exactSourceRefs.length > 0;
+        const applicable =
+          diagnosticMatch &&
+          predicateMatch &&
+          factorMatch;
+
+        const reasons: string[] = [];
+        if (!diagnosticMatch) {
+          reasons.push(
+            "Source diagnostic applicability does not match the selected causal opportunity.",
+          );
+        }
+        if (!predicateMatch) {
+          reasons.push(
+            "Source predicate applicability does not match the selected causal opportunity.",
+          );
+        }
+        if (!factorMatch) {
+          reasons.push(
+            "Source factor applicability does not match the selected causal opportunity.",
+          );
+        }
+        if (!exactSourceSatisfied) {
+          reasons.push(
+            "Source requires exact source evidence but the opportunity has none.",
+          );
+        }
+
+        return {
+          sourceKind: source.kind,
+          sourceId: source.id,
+          sourceVersion: source.version,
+          selectionMode: source.selectionMode,
+          deterministic: source.deterministic,
+          applicableDiagnosticIds:
+            applicable
+              ? envelope.diagnosticIds
+              : [],
+          applicableDiagnosticCodes:
+            applicable
+              ? envelope.diagnosticCodes
+              : [],
+          automaticRealizationEligible:
+            applicable &&
+            exactSourceSatisfied &&
+            envelope.automaticRealizationAllowed &&
+            source.selectionMode === "causal-auto" &&
+            source.deterministic,
+          reasons,
+        };
+      },
+    );
+
+  const allEnumerated = [
+    ...enumerated,
+    ...nativeEnumerated,
+  ].sort((a, b) =>
+    a.sourceKind.localeCompare(b.sourceKind) ||
+    a.sourceId.localeCompare(b.sourceId) ||
+    a.sourceVersion.localeCompare(b.sourceVersion)
+  );
+
+  const applicableSources = allEnumerated.filter(
     (item) =>
       item.applicableDiagnosticIds.length > 0 &&
       (
@@ -162,7 +272,7 @@ export function enumerateRepairStrategySources(
         item.automaticRealizationEligible
       ),
   );
-  const inapplicableSources = enumerated.filter(
+  const inapplicableSources = allEnumerated.filter(
     (item) => !applicableSources.includes(item),
   );
 
