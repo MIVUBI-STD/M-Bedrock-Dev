@@ -48,12 +48,21 @@ export interface RuntimeExperimentArm {
   factorValues: Readonly<Record<string, string | number | boolean>>;
 }
 
+export interface RuntimeExperimentMeasurementRequirement {
+  equals?: number;
+  min?: number;
+  max?: number;
+}
+
 export interface RuntimeExperimentEvidenceRequirement {
   id: string;
   predicateId: string;
   state: "present" | "absent";
   armIds?: readonly string[];
   scope?: RuntimeScope;
+  measurements?: Readonly<
+    Record<string, RuntimeExperimentMeasurementRequirement>
+  >;
 }
 
 export interface RuntimeExperimentExpectedContrast {
