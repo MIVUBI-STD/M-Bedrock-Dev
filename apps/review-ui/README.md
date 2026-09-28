@@ -9,6 +9,7 @@ Current status:
 - the typed artifact loader exists and is proven through the CLI `review-model` path;
 - the Vite development server exposes a controlled local runtime endpoint when `M_BEDROCK_REVIEW_ARTIFACT` is configured;
 - browser file selection supports `.mcworld` and `.zip` through a streamed local-development upload boundary;
+- successfully opened maps are copied into a managed local recent store under `.cache/review-ui/recent/`;
 - canonical diagnosis, priority, proof, repair, and validation truth remains in core/orchestrator owners.
 
 Commands:
@@ -45,3 +46,10 @@ The browser cannot submit arbitrary local paths. The development server owns the
 In development mode, **Open map** uses the browser file picker. The selected file is streamed to a temporary local runtime file, analyzed, and then deleted. The browser never supplies an arbitrary filesystem path.
 
 The current upload limit is 1 GB and only `.mcworld` / `.zip` are accepted. Recent-map rows are still explicit prototype examples until persistence is implemented.
+
+
+## Recent maps
+
+Recent maps use managed local copies rather than arbitrary original filesystem paths. The store keeps up to 8 artifacts under `.cache/review-ui/recent/`, which is already ignored by Git.
+
+Opening a recent item re-validates the managed copy. Missing cached artifacts are reported as unavailable instead of silently falling back to another file.

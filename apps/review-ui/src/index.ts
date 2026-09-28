@@ -2,14 +2,14 @@ export type ReviewUiPrototypeStatus = {
   readonly phase: "runtime-prototype";
   readonly runtimeConnected: true;
   readonly filePickerConnected: true;
-  readonly recentMapPersistenceConnected: false;
+  readonly recentMapPersistenceConnected: true;
 };
 
 export const reviewUiPrototypeStatus: ReviewUiPrototypeStatus = {
   phase: "runtime-prototype",
   runtimeConnected: true,
   filePickerConnected: true,
-  recentMapPersistenceConnected: false,
+  recentMapPersistenceConnected: true,
 };
 
 export * from "./load-review.js";

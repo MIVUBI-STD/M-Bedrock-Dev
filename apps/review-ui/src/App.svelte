@@ -9,7 +9,7 @@
   import { mockHistory, mockMap, mockRecentMaps } from "./mock.js";
   import { reviewProjectionFixture } from "./review-projection-fixture.js";
   import { buildReviewUiViewModel, type ReviewUiItem } from "./view-model.js";
-  import { createReviewRuntimeClient } from "./runtime-client.js";
+  import { createReviewRuntimeClient, type ReviewRecentArtifact } from "./runtime-client.js";
   import { ReviewRuntimeController, type ReviewRuntimeState } from "./runtime-controller.js";
 
   type AppScreen = "library" | "workspace";
@@ -23,11 +23,33 @@
   );
 
   let runtimeState: ReviewRuntimeState = runtimeController.state();
+  let recentMode: "recent" | "examples" = "examples";
+  let recentArtifacts: readonly ReviewRecentArtifact[] = [];
   let libraryBusy = false;
   let libraryError = "";
   let activeMapName = mockMap.name;
   let activeMapVersion = mockMap.version;
   let reviewModel = fixtureModel;
+
+  $: recentMaps = recentArtifacts.map((item) => ({
+    id: item.id,
+    name: item.label.replace(/\.(mcworld|zip)$/i, ""),
+    subtitle: item.targetLabel,
+    updated: "Updated " + new Date(item.updatedAt).toLocaleString(),
+    state: item.available
+      ? item.attentionCount > 0
+        ? item.attentionCount + " need attention"
+        : "No current issues need attention"
+      : "Local copy unavailable",
+    tone: item.available
+      ? item.attentionCount > 0
+        ? "attention" as const
+        : "verified" as const
+      : "unavailable" as const,
+    available: item.available,
+  }));
+  $: libraryMaps =
+    recentMode === "recent" ? recentMaps : mockRecentMaps;
   $: reviewItems = reviewModel.items;
 
   let selectedId = reviewItems[0]?.id ?? "";
@@ -77,6 +99,67 @@
     screen = "workspace";
     view = "review";
     detailOpen = false;
+  }
+
+  async function refreshRecent() {
+    try {
+      recentArtifacts = await runtimeController.recent();
+      recentMode = "recent";
+    } catch {
+      recentMode = "examples";
+    }
+  }
+
+  async function openRecent(id: string) {
+    const recent = recentArtifacts.find(
+      (item) => item.id === id,
+    );
+    if (!recent || !recent.available) {
+      libraryError =
+        "This recent map is no longer available. Open the original file again.";
+      return;
+    }
+
+    libraryBusy = true;
+    libraryError = "";
+    const pending = runtimeController.analyzeRecent(
+      recent,
+    );
+    runtimeState = runtimeController.state();
+    const next = await pending;
+    runtimeState = next;
+    libraryBusy = false;
+
+    if (next.phase === "ready") {
+      reviewModel = next.model;
+      activeMapName = recent.label.replace(
+        /\.(mcworld|zip)$/i,
+        "",
+      );
+      activeMapVersion = "";
+      selectedId = reviewModel.items[0]?.id ?? "";
+      query = "";
+      activeFilter = "all";
+      technicalOpen = false;
+      detailOpen = false;
+      screen = "workspace";
+      view = "review";
+      await refreshRecent();
+      return;
+    }
+
+    if (next.phase === "error") {
+      libraryError = next.message;
+      await refreshRecent();
+    }
+  }
+
+  function openLibraryMap(id: string) {
+    if (recentMode === "recent") {
+      void openRecent(id);
+      return;
+    }
+    openExampleMap();
   }
 
   async function openFile(file: File) {
@@ -135,8 +218,11 @@
   }
 
   onMount(() => {
-    void runtimeController.discover().then((next) => {
+    void runtimeController.discover().then(async (next) => {
       runtimeState = next;
+      if (next.info?.uploadSupported) {
+        await refreshRecent();
+      }
     });
   });
 </script>
@@ -144,8 +230,9 @@
 <div class="shell">
   {#if screen === "library"}
     <MapLibrary
-      maps={mockRecentMaps}
-      onOpenExample={openExampleMap}
+      maps={libraryMaps}
+      mode={recentMode}
+      onOpenMap={openLibraryMap}
       onOpenFile={openFile}
       busy={libraryBusy}
       error={libraryError}

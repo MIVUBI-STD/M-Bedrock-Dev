@@ -50,6 +50,12 @@ describe("review runtime controller", () => {
       async analyzeFile() {
         return nextModel;
       },
+      async recent() {
+        return [];
+      },
+      async analyzeRecent() {
+        return nextModel;
+      },
     };
 
     const controller =
@@ -95,6 +101,12 @@ describe("review runtime controller", () => {
         receivedName = selected.name;
         return nextModel;
       },
+      async recent() {
+        return [];
+      },
+      async analyzeRecent() {
+        return nextModel;
+      },
     };
 
     const controller =
@@ -111,6 +123,59 @@ describe("review runtime controller", () => {
     });
   });
 
+  it("reopens a managed recent artifact by id", async () => {
+    let recentId = "";
+    const nextModel = {
+      ...model,
+      artifact: {
+        ...model.artifact,
+        id: "art:recent",
+      },
+    };
+    const client: ReviewRuntimeClient = {
+      async info() {
+        return {
+          configured: false,
+          uploadSupported: true,
+        };
+      },
+      async recent() {
+        return [{
+          id: "art:recent",
+          label: "Recent.mcworld",
+          targetLabel: "Bedrock",
+          attentionCount: 0,
+          updatedAt: "2026-09-28T00:00:00.000Z",
+          available: true,
+        }];
+      },
+      async analyze() {
+        return model;
+      },
+      async analyzeFile() {
+        return model;
+      },
+      async analyzeRecent(id) {
+        recentId = id;
+        return nextModel;
+      },
+    };
+
+    const controller =
+      new ReviewRuntimeController(client, model);
+    const state = await controller.analyzeRecent({
+      id: "art:recent",
+      label: "Recent.mcworld",
+    });
+
+    expect(recentId).toBe("art:recent");
+    expect(state).toMatchObject({
+      phase: "ready",
+      artifactLabel: "Recent.mcworld",
+      model: nextModel,
+    });
+  });
+
   it("keeps the previous review visible when analysis fails", async () => {
     const client: ReviewRuntimeClient = {
       async info() {
@@ -123,6 +188,12 @@ describe("review runtime controller", () => {
         throw new Error("Map could not be read.");
       },
       async analyzeFile() {
+        throw new Error("Map could not be read.");
+      },
+      async recent() {
+        return [];
+      },
+      async analyzeRecent() {
         throw new Error("Map could not be read.");
       },
     };
@@ -147,6 +218,12 @@ describe("review runtime controller", () => {
         return model;
       },
       async analyzeFile() {
+        return model;
+      },
+      async recent() {
+        return [];
+      },
+      async analyzeRecent() {
         return model;
       },
     };
