@@ -3,8 +3,12 @@ import {
   CHUNK_READINESS_CAPABILITY_REGISTRY,
   createPlayerLoaderChunkReadinessExperiment,
   createTickingAreaChunkRecoveryExperiment,
+  experimentQualificationCausalProof,
+  qualifyRuntimeExperiment,
+  runtimeExperimentDefinitionRevision,
   validateRuntimeActionCapabilityRegistry,
   validateRuntimeExperimentDefinition,
+  type RuntimeExperimentTrial,
 } from "../src/index.js";
 
 const base = {
@@ -85,6 +89,87 @@ describe("chunk readiness experiment families", () => {
         factorValues: {
           "ticking-area-enabled": true,
         },
+      }),
+    ]);
+  });
+
+  it("promotes repeated chunk readiness contrast into predicate-specific causal provenance", () => {
+    const definition =
+      createTickingAreaChunkRecoveryExperiment(base);
+
+    function trial(
+      id: string,
+      armId: string,
+      runIndex: number,
+      state: "present" | "absent",
+    ): RuntimeExperimentTrial {
+      return {
+        schemaVersion: 1,
+        id,
+        identity: {
+          experimentId: definition.id,
+          definitionRevision:
+            runtimeExperimentDefinitionRevision(
+              definition,
+            ),
+          armId,
+          runIndex,
+          targetProfileFingerprint:
+            definition.targetProfileFingerprint,
+          fixtureFingerprint:
+            definition.fixtureFingerprint,
+          environmentFingerprint: "env-a",
+        },
+        status: "completed",
+        evidence: [{
+          predicate: "target-chunk-ready",
+          state,
+          confidence: "observed",
+          observedAt: {
+            tick: 100 + runIndex,
+          },
+        }],
+      };
+    }
+
+    const qualification = qualifyRuntimeExperiment(
+      definition,
+      [
+        trial("c0", "control", 0, "absent"),
+        trial("c1", "control", 1, "absent"),
+        trial("t0", "treatment", 0, "present"),
+        trial("t1", "treatment", 1, "present"),
+      ],
+    );
+
+    expect(qualification).toMatchObject({
+      state: "intervention-supported",
+      expectedContrastMatches: [
+        "target-chunk-ready",
+      ],
+      expectedContrastMismatches: [],
+    });
+
+    const proof = experimentQualificationCausalProof(
+      qualification,
+      definition,
+    );
+
+    expect(proof.interventionProvenance).toEqual([
+      expect.objectContaining({
+        interventionId: definition.id,
+        predicateId: "target-chunk-ready",
+        controlledFactorIds: [
+          "ticking-area-enabled",
+        ],
+        controlledFactorContrasts: [{
+          factorId: "ticking-area-enabled",
+          controlValue: false,
+          treatmentValue: true,
+        }],
+        controlState: "absent",
+        treatmentState: "present",
+        expectedContrastDisposition: "matched",
       }),
     ]);
   });
