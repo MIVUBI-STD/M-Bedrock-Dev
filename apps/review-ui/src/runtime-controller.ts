@@ -5,6 +5,17 @@ import type {
 } from "./runtime-client.js";
 import type { ReviewUiViewModel } from "./view-model.js";
 
+type ReviewArtifactSource =
+  | {
+      kind: "configured";
+      label?: string;
+    }
+  | {
+      kind: "recent";
+      id: string;
+      label: string;
+    };
+
 export type ReviewRuntimeState =
   | {
       phase: "idle";
@@ -35,6 +46,8 @@ export class ReviewRuntimeController {
   private stateValue: ReviewRuntimeState = {
     phase: "idle",
   };
+  private currentSource:
+    ReviewArtifactSource | undefined;
 
   constructor(
     private readonly client: ReviewRuntimeClient,
@@ -59,6 +72,14 @@ export class ReviewRuntimeController {
         ...this.stateValue,
         info,
       };
+      if (info.configured && !this.currentSource) {
+        this.currentSource = {
+          kind: "configured",
+          ...(info.artifactLabel === undefined
+            ? {}
+            : { label: info.artifactLabel }),
+        };
+      }
     } catch {
       // Static production preview has no local runtime endpoint.
     }
@@ -116,9 +137,30 @@ export class ReviewRuntimeController {
   }
 
   async analyze(): Promise<ReviewRuntimeState> {
+    if (this.currentSource?.kind === "recent") {
+      const source = this.currentSource;
+      return this.execute(
+        async () => {
+          const result =
+            await this.client.analyzeRecent(
+              source.id,
+              "reanalysis",
+            );
+          this.currentSource = {
+            kind: "recent",
+            id: result.record.id,
+            label: result.record.label,
+          };
+          return result.model;
+        },
+        source.label,
+      );
+    }
+
     return this.execute(
-      () => this.client.analyze(),
-      this.stateValue.info?.artifactLabel,
+      () => this.client.analyzeConfigured(),
+      this.currentSource?.label ??
+        this.stateValue.info?.artifactLabel,
     );
   }
 
@@ -126,7 +168,16 @@ export class ReviewRuntimeController {
     file: File,
   ): Promise<ReviewRuntimeState> {
     return this.execute(
-      () => this.client.analyzeFile(file),
+      async () => {
+        const result =
+          await this.client.analyzeFile(file);
+        this.currentSource = {
+          kind: "recent",
+          id: result.record.id,
+          label: result.record.label,
+        };
+        return result.model;
+      },
       file.name,
     );
   }
@@ -135,7 +186,19 @@ export class ReviewRuntimeController {
     recent: Pick<ReviewRecentArtifact, "id" | "label">,
   ): Promise<ReviewRuntimeState> {
     return this.execute(
-      () => this.client.analyzeRecent(recent.id),
+      async () => {
+        const result =
+          await this.client.analyzeRecent(
+            recent.id,
+            "recent-open",
+          );
+        this.currentSource = {
+          kind: "recent",
+          id: result.record.id,
+          label: result.record.label,
+        };
+        return result.model;
+      },
       recent.label,
     );
   }

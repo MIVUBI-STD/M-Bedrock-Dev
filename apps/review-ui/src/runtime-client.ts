@@ -15,17 +15,24 @@ export interface ReviewRecentArtifact {
   available: boolean;
 }
 
-interface ReviewAnalysisEnvelope {
+export interface ReviewAnalysisEnvelope {
   model: ReviewUiViewModel;
   record: Omit<ReviewRecentArtifact, "available">;
 }
 
+export type ReviewRecentAnalysisTrigger =
+  | "recent-open"
+  | "reanalysis";
+
 export interface ReviewRuntimeClient {
   info(): Promise<ReviewRuntimeInfo>;
   recent(): Promise<readonly ReviewRecentArtifact[]>;
-  analyze(): Promise<ReviewUiViewModel>;
-  analyzeFile(file: File): Promise<ReviewUiViewModel>;
-  analyzeRecent(id: string): Promise<ReviewUiViewModel>;
+  analyzeConfigured(): Promise<ReviewUiViewModel>;
+  analyzeFile(file: File): Promise<ReviewAnalysisEnvelope>;
+  analyzeRecent(
+    id: string,
+    trigger?: ReviewRecentAnalysisTrigger,
+  ): Promise<ReviewAnalysisEnvelope>;
 }
 
 async function jsonOrError<T>(response: Response): Promise<T> {
@@ -57,7 +64,7 @@ export function createReviewRuntimeClient(
       }>(response);
       return result.items;
     },
-    async analyze() {
+    async analyzeConfigured() {
       const response = await fetch(baseUrl + "/analyze", {
         method: "POST",
       });
@@ -76,13 +83,11 @@ export function createReviewRuntimeClient(
           body: file,
         },
       );
-      const result =
-        await jsonOrError<ReviewAnalysisEnvelope>(
-          response,
-        );
-      return result.model;
+      return jsonOrError<ReviewAnalysisEnvelope>(
+        response,
+      );
     },
-    async analyzeRecent(id) {
+    async analyzeRecent(id, trigger = "recent-open") {
       const response = await fetch(
         baseUrl + "/recent-analyze",
         {
@@ -90,14 +95,13 @@ export function createReviewRuntimeClient(
           headers: {
             "X-M-Bedrock-Recent-Id":
               encodeURIComponent(id),
+            "X-M-Bedrock-Analysis-Trigger": trigger,
           },
         },
       );
-      const result =
-        await jsonOrError<ReviewAnalysisEnvelope>(
-          response,
-        );
-      return result.model;
+      return jsonOrError<ReviewAnalysisEnvelope>(
+        response,
+      );
     },
   };
 }
