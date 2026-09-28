@@ -6,7 +6,10 @@ import {
   runtimeVerificationExperimentEnvelopeRevision,
 } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
-import type { PatchTransaction } from "../../repair/src/index.js";
+import {
+  patchTransactionSemanticFingerprint,
+  type PatchTransaction,
+} from "../../repair/src/index.js";
 import type { PreservationReadinessResult } from "../../preservation/src/index.js";
 import {
   analyzeRepairCounterfactual,
@@ -43,6 +46,10 @@ export interface RepairAdmissionPipelineInput {
   >;
   blastRadiusPolicy?: RepairBlastRadiusPolicy;
   preservationReadiness?: PreservationReadinessResult;
+  postTransformProofBinding?: {
+    transactionId: string;
+    transactionFingerprint: string;
+  };
 }
 
 export interface RepairAdmissionPipelineResult {
@@ -83,15 +90,35 @@ export function evaluateRepairAdmissionPipeline(
     blastRadius,
   );
 
+  const transactionFingerprint =
+    patchTransactionSemanticFingerprint(
+      input.transaction,
+    );
+  const transformProofRequired =
+    input.transaction.requiredProofs?.includes(
+      "post-transform",
+    ) === true;
+  const transformProofBindingValid =
+    !transformProofRequired ||
+    (
+      input.postTransformProofBinding?.transactionId ===
+        input.transaction.id &&
+      input.postTransformProofBinding
+        .transactionFingerprint ===
+        transactionFingerprint
+    );
+
   const admission: RepairAdmissionDecision =
     (
-      rawAdmission.disposition === "eligible" ||
-      rawAdmission.disposition === "guarded"
-    ) &&
-    (
-      input.preservationReadiness === undefined ||
-      input.preservationReadiness.disposition !== "ready" ||
-      input.preservationReadiness.baselineEvidenceIds.length === 0
+      (
+        rawAdmission.disposition === "eligible" ||
+        rawAdmission.disposition === "guarded"
+      ) &&
+      (
+        input.preservationReadiness === undefined ||
+        input.preservationReadiness.disposition !== "ready" ||
+        input.preservationReadiness.baselineEvidenceIds.length === 0
+      )
     )
       ? {
           transactionId: input.transaction.id,
@@ -101,7 +128,21 @@ export function evaluateRepairAdmissionPipeline(
             ...(input.preservationReadiness?.reasons ?? []),
           ],
         }
-      : rawAdmission;
+      : (
+          (
+            rawAdmission.disposition === "eligible" ||
+            rawAdmission.disposition === "guarded"
+          ) &&
+          !transformProofBindingValid
+        )
+        ? {
+            transactionId: input.transaction.id,
+            disposition: "blocked",
+            reasons: [
+              "Mutation-authorizing repair admission requires post-transform proof bound to the exact patch transaction semantics.",
+            ],
+          }
+        : rawAdmission;
 
   const runtimeExperimentContracts =
     runtimeVerificationExperimentContractsFromProvenance(
@@ -132,6 +173,7 @@ export function evaluateRepairAdmissionPipeline(
     decisionBasis,
     input.supportingInvariantIds ?? [],
     input.preservationReadiness,
+    input.postTransformProofBinding,
   );
 
   return {
