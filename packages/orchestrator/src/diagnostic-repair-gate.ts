@@ -10,10 +10,12 @@ import type {
   RuntimeEvidenceIntegrityReport,
 } from "../../project-model/src/index.js";
 import {
+  causalInterventionSupportsPredicates,
   causalProofAtLeast,
   causalProofRank,
   legacyEvidenceToCausalProofState,
   lowerCausalProofState,
+  validateCausalInterventionProvenance,
 } from "../../project-model/src/index.js";
 import type { DiagnosticInvestigationState } from "./diagnostic-investigation.js";
 
@@ -170,6 +172,18 @@ export function decideDiagnosticRepair(
   const supportedByInvestigation =
     investigation.supportedCandidateIds.includes(selected.id);
 
+  const controlledInterventionErrors =
+    selected.proof?.interventionIds?.length
+      ? validateCausalInterventionProvenance(selected.proof)
+      : [];
+  const controlledInterventionBoundToCandidate =
+    selected.proof?.interventionIds?.length
+      ? causalInterventionSupportsPredicates(
+          selected.proof,
+          selected.causalPredicateIds ?? [],
+        )
+      : true;
+
   const base = {
     incidentId: incident.id,
     activeCandidateIds: active,
@@ -182,9 +196,40 @@ export function decideDiagnosticRepair(
       ...base,
       disposition: "proposal-only",
       proofState,
+      ...(selected.proof === undefined ? {} : { causalProof: selected.proof }),
       claimStrength: claimStrengthFor(proofState),
       reasons: [
         "Exactly one candidate remains, but it has not been explicitly supported by a discriminating probe outcome.",
+      ],
+    };
+  }
+
+  if (
+    selected.proof?.interventionIds?.length &&
+    (
+      controlledInterventionErrors.length > 0 ||
+      !controlledInterventionBoundToCandidate
+    )
+  ) {
+    proofState = capCausalProofState("localized", context);
+    return {
+      ...base,
+      disposition: "proposal-only",
+      proofState,
+      causalProof: selected.proof,
+      claimStrength: claimStrengthFor(proofState),
+      reasons: [
+        "Controlled-intervention proof is not sufficiently bound to this root-cause candidate.",
+        ...(controlledInterventionErrors.length === 0
+          ? []
+          : controlledInterventionErrors),
+        ...(
+          controlledInterventionBoundToCandidate
+            ? []
+            : [
+                "Root-cause candidate causal predicates are missing or are not covered by matched intervention provenance.",
+              ]
+        ),
       ],
     };
   }
@@ -250,6 +295,7 @@ export function decideDiagnosticRepair(
       ...base,
       disposition: "repair-eligible",
       proofState,
+      ...(selected.proof === undefined ? {} : { causalProof: selected.proof }),
       claimStrength: claimStrengthFor(proofState),
       reasons: [
         "Exactly one candidate remains and the investigation supports it.",
@@ -264,6 +310,7 @@ export function decideDiagnosticRepair(
       ...base,
       disposition: "guarded-repair-eligible",
       proofState,
+      ...(selected.proof === undefined ? {} : { causalProof: selected.proof }),
       claimStrength: claimStrengthFor(proofState),
       reasons: [
         "Exactly one candidate remains and the investigation supports it.",
