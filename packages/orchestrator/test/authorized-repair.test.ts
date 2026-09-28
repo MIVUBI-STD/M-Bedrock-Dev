@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createPatchTransaction } from "../../repair/src/index.js";
+import {
+  createPatchTransaction,
+  patchTransactionSemanticFingerprint,
+} from "../../repair/src/index.js";
 import {
   authorizeRepairMutation,
 } from "../src/authorized-repair.js";
@@ -142,12 +145,19 @@ describe("authorized repair mutation", () => {
     ).toMatchObject({
       authorized: false,
       reasons: expect.arrayContaining([
-        expect.stringMatching(/post-transform semantic proof/i),
+        expect.stringMatching(/post-transform|transaction fingerprint/i),
       ]),
     });
 
+    const fingerprint =
+      patchTransactionSemanticFingerprint(tx);
     const bound: RepairProofBundle = {
       ...missing,
+      transactionFingerprint: fingerprint,
+      postTransformProofBinding: {
+        transactionId: tx.id,
+        transactionFingerprint: fingerprint,
+      },
       decisionBasis: {
         ...missing.decisionBasis,
         postTransformProofRevision:
@@ -175,6 +185,97 @@ describe("authorized repair mutation", () => {
     ).toMatchObject({
       authorized: true,
       mode: "eligible",
+    });
+  });
+
+  it("rejects post-transform proof binding copied from another transaction", () => {
+    const txA = createPatchTransaction({
+      title: "transform-a",
+      sourceFingerprint: "abc",
+      requiredProofs: ["post-transform"],
+      operations: [{
+        kind: "replace-text",
+        source: {
+          artifactId: "art-1",
+          relativePath: "scripts/demo.ts",
+        },
+        expected: "old",
+        replacement: "new-a",
+      }],
+      preconditions: [{
+        kind: "source-fingerprint",
+        expected: "abc",
+      }],
+      validation: [{
+        kind: "rebuild-graph",
+      }],
+    });
+    const txB = createPatchTransaction({
+      title: "transform-b",
+      sourceFingerprint: "abc",
+      requiredProofs: ["post-transform"],
+      operations: [{
+        kind: "replace-text",
+        source: {
+          artifactId: "art-1",
+          relativePath: "scripts/demo.ts",
+        },
+        expected: "old",
+        replacement: "new-b",
+      }],
+      preconditions: [{
+        kind: "source-fingerprint",
+        expected: "abc",
+      }],
+      validation: [{
+        kind: "rebuild-graph",
+      }],
+    });
+
+    const fingerprintA =
+      patchTransactionSemanticFingerprint(txA);
+    const copied: RepairProofBundle = {
+      ...proof(txB.id, "eligible"),
+      transactionFingerprint: fingerprintA,
+      postTransformProofBinding: {
+        transactionId: txA.id,
+        transactionFingerprint: fingerprintA,
+      },
+      decisionBasis: {
+        ...proof(txB.id, "eligible").decisionBasis,
+        postTransformProofRevision:
+          "proof-a:impact-a",
+      },
+    };
+
+    const authorization =
+      authorizeRepairMutation(
+        txB,
+        copied,
+        {
+          currentSourceFingerprint: "abc",
+          currentGraphFingerprint:
+            "graph-current",
+          semanticIrRevision:
+            "semantic-ir-current",
+          preservationContractRevision:
+            "preservation-contract-current",
+          preservationBaselineRevision:
+            "preservation-baseline-current",
+          runtimeEvidenceRevision:
+            "evidence-current",
+          postTransformProofRevision:
+            "proof-a:impact-a",
+        },
+      );
+
+    expect(authorization).toMatchObject({
+      authorized: false,
+      reasons: expect.arrayContaining([
+        expect.stringMatching(
+          /transaction fingerprint|another patch transaction/i,
+        ),
+      ]),
     });
   });
 
