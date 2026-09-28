@@ -27,6 +27,14 @@ const PROOF_RANK: Readonly<Record<CausalProofState, number>> = {
   "target-release-proven": 10,
 };
 
+export type CausalControlledFactorValue = string | number | boolean;
+
+export interface CausalControlledFactorContrast {
+  factorId: string;
+  controlValue: CausalControlledFactorValue;
+  treatmentValue: CausalControlledFactorValue;
+}
+
 export interface CausalInterventionProvenance {
   interventionId: string;
   experimentRevision?: string;
