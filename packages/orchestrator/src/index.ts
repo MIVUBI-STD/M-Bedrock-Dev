@@ -185,3 +185,5 @@ export * from "./repair-realizer-execution.js";
 export * from "./repair-strategy-source-registry.js";
 
 export * from "./repair-realization-coverage.js";
+
+export * from "./script-transform-hint-realizer.js";
