@@ -99,7 +99,34 @@ function trial(
         sequence: 10 + runIndex,
         tick: 100 + runIndex,
       },
-    }],
+    }, ...(
+      predicate ===
+        "cancelled-callback-mutation-observed"
+        ? armId === "control"
+          ? [{
+              predicate: "scheduler-work-cancelled",
+              state: "present" as const,
+              confidence: "observed" as const,
+            }, {
+              predicate: "scheduler-callback-attempted",
+              state: "absent" as const,
+              confidence: "observed" as const,
+            }]
+          : [{
+              predicate: "scheduler-work-cancelled",
+              state: "absent" as const,
+              confidence: "observed" as const,
+            }]
+        : [{
+            predicate: "scheduler-callback-attempted",
+            state: "present" as const,
+            confidence: "observed" as const,
+            scope: {
+              arenaId: "arena-a",
+              arenaGeneration: 3,
+            },
+          }]
+    )],
   };
 }
 
