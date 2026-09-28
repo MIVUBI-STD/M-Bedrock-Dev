@@ -1,6 +1,7 @@
 import type {
   DiagnosticExecutionContext,
   RuntimeEvidenceRecord,
+  RuntimeScope,
 } from "../../project-model/src/index.js";
 
 export type RuntimeExperimentDomain =
@@ -47,6 +48,14 @@ export interface RuntimeExperimentArm {
   factorValues: Readonly<Record<string, string | number | boolean>>;
 }
 
+export interface RuntimeExperimentEvidenceRequirement {
+  id: string;
+  predicateId: string;
+  state: "present" | "absent";
+  armIds?: readonly string[];
+  scope?: RuntimeScope;
+}
+
 export interface RuntimeExperimentExpectedContrast {
   predicateId: string;
   controlState: "present" | "absent";
@@ -77,6 +86,7 @@ export interface RuntimeExperimentDefinition {
   arms: readonly RuntimeExperimentArm[];
   outcomePredicateIds: readonly string[];
   expectedContrasts?: readonly RuntimeExperimentExpectedContrast[];
+  evidenceRequirements?: readonly RuntimeExperimentEvidenceRequirement[];
   preservationInvariantIds?: readonly string[];
   minimumRunsPerArm: number;
 }
