@@ -34,6 +34,7 @@ const BASIS_FIELDS = new Set([
   "repairProviderRegistryRevision",
   "repairStrategySourceRegistryRevision",
   "repairRealizerRegistryRevision",
+  "postTransformProofRevision",
   "targetProfileFingerprint",
   "probeBindingRevision",
   "runtimeEvidenceRevision",
