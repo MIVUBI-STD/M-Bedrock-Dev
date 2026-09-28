@@ -1,3 +1,7 @@
+import type {
+  RuntimeEvidenceRecord,
+} from "../../project-model/src/index.js";
+
 export const BEDROCK_ACTION_PREFIX =
   "[M-BEDROCK-ACTION]";
 
@@ -16,6 +20,7 @@ export interface BedrockRuntimeActionResponse {
   actionId: string;
   runtimeTick: number;
   ok: boolean;
+  evidence?: readonly RuntimeEvidenceRecord[];
   error?: string;
 }
 
@@ -66,6 +71,32 @@ export function parseBedrockRuntimeActionResponse(
     throw new Error(
       "Bedrock runtime action response error must be a string when provided.",
     );
+  }
+  if (parsed.evidence !== undefined) {
+    if (!Array.isArray(parsed.evidence)) {
+      throw new Error(
+        "Bedrock runtime action response evidence must be an array when provided.",
+      );
+    }
+    for (const [index, record] of parsed.evidence.entries()) {
+      if (
+        typeof record !== "object" ||
+        record === null ||
+        typeof (record as RuntimeEvidenceRecord).predicate !== "string" ||
+        !["present", "absent", "unknown"].includes(
+          String((record as RuntimeEvidenceRecord).state),
+        ) ||
+        !["observed", "derived", "unknown"].includes(
+          String((record as RuntimeEvidenceRecord).confidence),
+        )
+      ) {
+        throw new Error(
+          "Bedrock runtime action response evidence[" +
+            index +
+            "] is invalid.",
+        );
+      }
+    }
   }
   return parsed as BedrockRuntimeActionResponse;
 }
