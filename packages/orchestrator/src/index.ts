@@ -167,3 +167,9 @@ export * from "./runtime-persistence-diagnostic-bindings.js";
 export * from "./runtime-profile-differential.js";
 
 export * from "./runtime-profile-differential-reclassification.js";
+
+export * from "./repair-opportunity-envelope.js";
+
+export * from "./repair-strategy-enumeration.js";
+
+export * from "./repair-strategy-deduplication.js";
