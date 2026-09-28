@@ -23,6 +23,7 @@ import {
   enumerateRepairStrategySources,
   realizeSchedulerGenerationGuardFromParsedScripts,
   realizeSchedulerGenerationGuardHint,
+  proveAndBindScriptTransformPostcondition,
   recordRealizedRepairStrategySelection,
   selectRealizedRepairStrategyForIncident,
   type RepairStrategyProviderRegistry,
@@ -371,7 +372,7 @@ describe("script transform hint realizer", () => {
         realization.proposal.strategy.strategyId,
     });
 
-    const selected =
+    const unproven =
       selectRealizedRepairStrategyForIncident(
         activeGraph,
         incident,
@@ -381,6 +382,40 @@ describe("script transform hint realizer", () => {
         BUILTIN_REPAIR_STRATEGY_SOURCES,
         BUILTIN_REPAIR_REALIZERS,
         [realization.proposal],
+        {
+          decisionBasis: {
+            runtimeEvidenceRevision:
+              "runtime-current",
+          },
+        },
+      );
+
+    expect(unproven.result.status).toBe("evaluated");
+    if (unproven.result.status !== "evaluated") return;
+    expect(unproven.result.selection.status)
+      .toBe("none-eligible");
+
+    const bound =
+      proveAndBindScriptTransformPostcondition(
+        realization.proposal,
+        "session-controller",
+        scriptText,
+        fileSource,
+        hint,
+      );
+    expect(bound.status).toBe("bound");
+    if (bound.status !== "bound") return;
+
+    const selected =
+      selectRealizedRepairStrategyForIncident(
+        activeGraph,
+        incident,
+        [chain],
+        decision,
+        invariants,
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+        BUILTIN_REPAIR_REALIZERS,
+        [bound.proposal],
         {
           decisionBasis: {
             runtimeEvidenceRevision:
@@ -424,8 +459,14 @@ describe("script transform hint realizer", () => {
       expect.arrayContaining([
         "repair-source:built-in-planner:scheduler-generation-guard-template@1",
         "repair-realizer:scheduler-generation-guard-realizer@1",
+        "post-transform-proof:" +
+          bound.proof.proofFingerprint,
       ]),
     );
+    expect(
+      ledger.entries[0]?.basis
+        .postTransformProofRevision,
+    ).toBe(bound.proof.proofFingerprint);
     expect(
       ledger.entries[0]?.basis
         .repairStrategySourceRegistryRevision,
