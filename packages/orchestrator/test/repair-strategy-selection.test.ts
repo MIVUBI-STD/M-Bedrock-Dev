@@ -720,6 +720,7 @@ describe("repair strategy selection", () => {
         decisionId: "strategy-decision",
         basis: {
           runtimeEvidenceRevision: "evidence-current",
+          invariantRegistryRevision: "inv-r1",
         },
       },
     );
