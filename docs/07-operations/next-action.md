@@ -441,3 +441,40 @@ causal candidate
 ```
 
 The selector should optimize for the smallest repair that directly addresses the proven cause while preserving authored behavior—not the smallest diff in raw line count.
+
+
+## Next lane — repair strategy enumeration and realization
+
+Repair strategy selection is now causal-, safety-, and audit-aware.
+
+The next bottleneck is candidate generation: the selector still depends on callers/providers to supply the candidate set.
+
+Next priorities:
+
+1. derive a repair opportunity envelope directly from the selected causal candidate and invariant set;
+2. enumerate every registered strategy source that is applicable to the exact diagnostic, causal predicates, factors, source locations, and target profile;
+3. distinguish strategy source from strategy authority — enumeration may discover a provider, template, configuration change, compatibility workaround, or recovery mitigation, but none is automatically preferred;
+4. report missing strategy coverage explicitly when a proven cause has no applicable implementation path;
+5. reject generated candidates that cannot bind to exact source evidence or the current source fingerprint;
+6. attach repairClass, causalBinding, reversibility, idempotency, and expected validation/retest obligations at generation time;
+7. deduplicate semantically equivalent candidates even if different providers produce them;
+8. preserve generator/provider provenance through strategy selection and decision ledger;
+9. require deterministic candidate realization before mutation;
+10. keep unsupported or speculative repair ideas as proposal-only rather than silently converting them into PatchTransactions.
+
+Target flow:
+
+```text
+selected causal candidate
+→ repair opportunity envelope
+→ applicable generators/providers/templates
+→ candidate realization
+→ candidate deduplication
+→ strategy intelligence
+→ deterministic selection
+→ repair admission
+```
+
+The key principle is:
+
+> Candidate generation broadens the option set; it does not lower the evidence threshold or gain authority over the selector.
