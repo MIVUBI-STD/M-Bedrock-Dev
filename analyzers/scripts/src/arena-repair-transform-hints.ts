@@ -200,6 +200,316 @@ function membershipCommit(
   };
 }
 
+const START_OWNER_PROPERTY =
+  /^(?:startOwner|startOwnerId|startToken|startGenerationOwner)$/i;
+const GENERATION_PROPERTY =
+  /^(?:generation|arenaGeneration|generationId)$/i;
+const START_STATE_PROPERTY =
+  /^(?:started|active|state|status|phase)$/i;
+const START_STATE_VALUE =
+  /^(?:true|starting|countdown|active|started|running)$/i;
+
+function propertyName(
+  node: ts.PropertyName | undefined,
+): string | undefined {
+  if (!node) return undefined;
+  return ts.isIdentifier(node) ||
+      ts.isStringLiteralLike(node)
+    ? node.text
+    : undefined;
+}
+
+function authoredOwnerSentinel(
+  method: ts.MethodDeclaration,
+): {
+  property: string;
+  sentinel: "null" | "undefined";
+} | undefined {
+  const container = method.parent;
+  if (
+    !ts.isClassDeclaration(container) &&
+    !ts.isClassExpression(container)
+  ) {
+    return undefined;
+  }
+
+  for (const member of container.members) {
+    if (!ts.isPropertyDeclaration(member)) continue;
+    const name = propertyName(member.name);
+    if (
+      !name ||
+      !START_OWNER_PROPERTY.test(name) ||
+      !member.initializer
+    ) {
+      continue;
+    }
+
+    if (
+      member.initializer.kind ===
+        ts.SyntaxKind.NullKeyword
+    ) {
+      return {
+        property: name,
+        sentinel: "null",
+      };
+    }
+    if (
+      ts.isIdentifier(member.initializer) &&
+      member.initializer.text ===
+        "undefined"
+    ) {
+      return {
+        property: name,
+        sentinel: "undefined",
+      };
+    }
+  }
+
+  return undefined;
+}
+
+function startGenerationDeclaration(
+  statement: ts.Statement,
+  file: ts.SourceFile,
+):
+  | {
+      identifier: string;
+      generationExpression: string;
+    }
+  | undefined {
+  if (!ts.isVariableStatement(statement)) {
+    return undefined;
+  }
+  if (
+    (statement.declarationList.flags &
+      ts.NodeFlags.Const) === 0 ||
+    statement.declarationList.declarations.length !== 1
+  ) {
+    return undefined;
+  }
+
+  const declaration =
+    statement.declarationList.declarations[0]!;
+  if (
+    !ts.isIdentifier(declaration.name) ||
+    !declaration.initializer ||
+    !ts.isPropertyAccessExpression(
+      declaration.initializer,
+    ) ||
+    declaration.initializer.expression.kind !==
+      ts.SyntaxKind.ThisKeyword ||
+    !GENERATION_PROPERTY.test(
+      declaration.initializer.name.text,
+    )
+  ) {
+    return undefined;
+  }
+
+  return {
+    identifier: declaration.name.text,
+    generationExpression:
+      declaration.initializer.getText(file),
+  };
+}
+
+function exactThisAssignment(
+  statement: ts.Statement,
+  expectedProperty: RegExp,
+  file: ts.SourceFile,
+):
+  | {
+      property: string;
+      right: ts.Expression;
+      expectedText: string;
+    }
+  | undefined {
+  if (!ts.isExpressionStatement(statement)) {
+    return undefined;
+  }
+  const expression = statement.expression;
+  if (
+    !ts.isBinaryExpression(expression) ||
+    expression.operatorToken.kind !==
+      ts.SyntaxKind.EqualsToken ||
+    !ts.isPropertyAccessExpression(
+      expression.left,
+    ) ||
+    expression.left.expression.kind !==
+      ts.SyntaxKind.ThisKeyword ||
+    !expectedProperty.test(
+      expression.left.name.text,
+    )
+  ) {
+    return undefined;
+  }
+
+  return {
+    property: expression.left.name.text,
+    right: expression.right,
+    expectedText: statement.getText(file),
+  };
+}
+
+function startStateAssignment(
+  statement: ts.Statement,
+  file: ts.SourceFile,
+): boolean {
+  const assignment = exactThisAssignment(
+    statement,
+    START_STATE_PROPERTY,
+    file,
+  );
+  if (!assignment) return false;
+
+  const right = assignment.right;
+  if (
+    right.kind === ts.SyntaxKind.TrueKeyword
+  ) {
+    return true;
+  }
+  if (
+    ts.isStringLiteralLike(right) ||
+    ts.isNoSubstitutionTemplateLiteral(right)
+  ) {
+    return START_STATE_VALUE.test(right.text);
+  }
+  return false;
+}
+
+export function deriveArenaStartOwnershipGuardTransformHints(
+  identifier: string,
+  text: string,
+  source: SourceRef,
+): RepairSourceTransformHint[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+  const output: RepairSourceTransformHint[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      !ts.isMethodDeclaration(node) ||
+      !node.body ||
+      node.body.statements.length !== 3
+    ) {
+      ts.forEachChild(node, visit);
+      return;
+    }
+
+    const sentinel = authoredOwnerSentinel(node);
+    const generation = startGenerationDeclaration(
+      node.body.statements[0]!,
+      file,
+    );
+    const owner = exactThisAssignment(
+      node.body.statements[1]!,
+      START_OWNER_PROPERTY,
+      file,
+    );
+    const stateCommit = startStateAssignment(
+      node.body.statements[2]!,
+      file,
+    );
+
+    if (
+      !sentinel ||
+      !generation ||
+      !owner ||
+      !stateCommit ||
+      owner.property !== sentinel.property ||
+      !ts.isIdentifier(owner.right) ||
+      owner.right.text !== generation.identifier
+    ) {
+      ts.forEachChild(node, visit);
+      return;
+    }
+
+    const ownerSource = lineSource(
+      file,
+      node.body.statements[1]!,
+      source,
+    );
+    if (
+      ownerSource.range?.lineStart === undefined ||
+      ownerSource.range.lineEnd === undefined ||
+      ownerSource.range.lineStart !==
+        ownerSource.range.lineEnd
+    ) {
+      ts.forEachChild(node, visit);
+      return;
+    }
+
+    const methodName =
+      propertyName(node.name) ??
+      "anonymous-start-method";
+    const replacementText =
+      "if (this." +
+      sentinel.property +
+      " !== " +
+      sentinel.sentinel +
+      ") return; " +
+      owner.expectedText;
+
+    const hint: RepairSourceTransformHint = {
+      schemaVersion: 1,
+      id: [
+        "repair-hint",
+        "arena-start-ownership-guard",
+        encodeURIComponent(identifier),
+        encodeURIComponent(source.relativePath),
+        ownerSource.range.lineStart,
+        ownerSource.range.columnStart ?? 0,
+      ].join(":"),
+      family: "arena-ownership-guard",
+      analyzerId:
+        SCRIPT_REPAIR_HINT_ANALYZER_ID,
+      analyzerRevision:
+        SCRIPT_REPAIR_HINT_ANALYZER_REVISION,
+      parserId: SCRIPT_REPAIR_HINT_PARSER_ID,
+      parserRevision:
+        SCRIPT_REPAIR_HINT_PARSER_REVISION,
+      semanticOwnerId:
+        "script:" +
+        identifier +
+        ":method:" +
+        methodName,
+      source: ownerSource,
+      expectedText: owner.expectedText,
+      replacementText,
+      supportedPredicateIds: [
+        "arena-start-ownership-violation-observed",
+      ],
+      supportedFactorIds: [
+        "start-ownership-guard-enabled",
+      ],
+      validationKinds: [
+        "reparse",
+        "rebuild-graph",
+      ],
+    };
+
+    if (
+      validateRepairSourceTransformHint(
+        hint,
+      ).length === 0
+    ) {
+      output.push(hint);
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+
+  return output.sort((a, b) =>
+    a.id.localeCompare(b.id)
+  );
+}
+
 export function deriveArenaCapacityGuardTransformHints(
   identifier: string,
   text: string,
