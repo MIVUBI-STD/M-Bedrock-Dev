@@ -47,6 +47,9 @@ import {
   correlateScriptArenaAuthorityPaths,
   deriveScriptArenaAuthorityEvidence,
 } from "./arena-authority-evidence.js";
+import {
+  derivePersistenceIdempotencyGuards,
+} from "./persistence-idempotency-evidence.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -1679,6 +1682,11 @@ export function parseScriptFile(
     correlateScriptArenaAuthorityPaths(
       arenaAuthorityEvidence,
     );
+  const persistenceIdempotencyGuards =
+    derivePersistenceIdempotencyGuards(
+      text,
+      source,
+    );
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2414,6 +2422,7 @@ export function parseScriptFile(
     source,
     arenaAuthorityEvidence,
     arenaAuthorityPaths,
+    persistenceIdempotencyGuards,
     repairTransformHints: [
       ...deriveCapturedGenerationGuardTransformHints(
         identifier,
