@@ -193,3 +193,5 @@ export * from "./realized-repair-strategy-selection.js";
 export * from "./script-transform-hint-discovery.js";
 
 export * from "./script-transform-postcondition.js";
+
+export * from "./script-transform-semantic-impact.js";
