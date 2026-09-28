@@ -175,3 +175,9 @@ export * from "./repair-strategy-enumeration.js";
 export * from "./repair-strategy-deduplication.js";
 
 export * from "./topology-repair-strategy-realizer.js";
+
+export * from "./repair-changed-node-derivation.js";
+
+export * from "./repair-realizer-registry.js";
+
+export * from "./repair-realizer-execution.js";
