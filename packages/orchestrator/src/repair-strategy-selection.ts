@@ -546,6 +546,16 @@ export function selectRepairStrategy(
               }
             : {}
         ),
+        ...(candidate.postTransformProof === undefined
+          ? {}
+          : {
+              postTransformProofBinding: {
+                transactionId:
+                  candidate.postTransformProof.transactionId,
+                transactionFingerprint:
+                  candidate.postTransformProof.transactionFingerprint,
+              },
+            }),
       });
 
       const selectionAdmission =
