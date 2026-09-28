@@ -195,3 +195,32 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Post-repair experiment contract continuity
+
+Runtime repair verification can now require the exact controlled-experiment contract that authorized the repair.
+
+The retest contract includes:
+
+```text
+intervention id
+experiment revision
+target runtime profile fingerprint
+fixture fingerprint
+predicate set
+```
+
+Expected retest contracts can be derived directly from the causal intervention provenance retained in the repair proof bundle. Runtime verification fails closed when the executed experiment revision, target profile, fixture, or predicate set differs from the authorizing contract.
+
+Validated source revision: `6b31eec249ca88fc1a511c1da7c997e72d61bd8c`.
+
+GitHub Actions Verify run `36382430628` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
