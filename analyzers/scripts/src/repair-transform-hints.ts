@@ -10,6 +10,8 @@ import {
 export const SCRIPT_REPAIR_HINT_ANALYZER_ID =
   "scripts:repair-transform-hints";
 export const SCRIPT_REPAIR_HINT_ANALYZER_REVISION = "1";
+export const SCRIPT_REPAIR_HINT_PARSER_ID = "typescript";
+export const SCRIPT_REPAIR_HINT_PARSER_REVISION = ts.version;
 
 const GENERATION_PATTERN =
   /(?:generation|epoch|revision|rev|token|sessionId|roundId|lifeId|entityId)/i;
@@ -406,8 +408,8 @@ export function deriveSchedulerGenerationGuardTransformHints(
         SCRIPT_REPAIR_HINT_ANALYZER_ID,
       analyzerRevision:
         SCRIPT_REPAIR_HINT_ANALYZER_REVISION,
-      parserId: "typescript",
-      parserRevision: ts.version,
+      parserId: SCRIPT_REPAIR_HINT_PARSER_ID,
+      parserRevision: SCRIPT_REPAIR_HINT_PARSER_REVISION,
       semanticOwnerId:
         "script:" +
         identifier +
