@@ -572,3 +572,58 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Persistence, reload, and crash-recovery proof contracts
+
+Runtime Lab now covers:
+
+1. durable-state restoration versus transient-session authority after reload;
+2. idempotent journal recovery after reload between APPLY and COMMIT;
+3. orphan pack-owned resource reconciliation under a new boot generation.
+
+Runtime scope now includes `bootGeneration` as a first-class ownership boundary.
+
+Reload reconciliation requires evidence that:
+
+```text
+new bootGeneration is active
+durable schema-versioned record restored
+worldLoad recovery entered
+control arm transient session state cleared
+```
+
+Only then can the contrast:
+
+```text
+reconciliation enabled  → stale transient restore absent
+reconciliation disabled → stale transient restore present
+```
+
+be promoted to intervention-supported causal provenance.
+
+Journal recovery requires a durable PREPARED marker before side effect, observed pre-reload applyCount = 1, recovery entry on the new boot, and control convergence with finalApplyCount = 1. Duplicate apply after reload is therefore not inferred merely from a counter change.
+
+Orphan recovery requires explicit old-boot resource seeding, new-boot scan evidence, and zero remaining orphan resources in the guarded arm.
+
+Persistence violation outcomes are wired into intent diagnostic reclassification:
+
+```text
+stale-transient-state-restored-observed
+duplicate-apply-after-reload-observed
+orphan-resource-retained-observed
+```
+
+Runtime-backed confirmation still requires authored intent, deterministic expected-direction contrast, and safe runtime evidence integrity.
+
+Validated source revision: `30c2c9bee90fbd342696d1556a28f650bce2d6c9`.
+
+GitHub Actions Verify run `36397270471` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
