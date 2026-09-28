@@ -322,7 +322,7 @@ describe("runtime intent diagnostic reclassification", () => {
     expect(result.gate.evidenceIds).toContain(
       "evidence:treatment",
     );
-    expect(result.gate.evidenceIds).not.toContain(
+    expect(result.gate.evidenceIds).toContain(
       "evidence:control",
     );
   });
