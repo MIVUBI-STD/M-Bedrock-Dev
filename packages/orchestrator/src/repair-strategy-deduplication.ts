@@ -59,6 +59,8 @@ export function repairStrategySemanticFingerprint(
     repairClass:
       proposal.strategy.repairClass ?? "unspecified",
     causalBinding: proposal.strategy.causalBinding ?? {},
+    validationObligations:
+      proposal.strategy.validationObligations ?? {},
     reversible:
       proposal.strategy.reversible ?? null,
     idempotent:
