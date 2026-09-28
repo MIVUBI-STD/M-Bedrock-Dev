@@ -98,6 +98,67 @@ describe("repair admission pipeline", () => {
       .toEqual(["function:p:caller"]);
   });
 
+  it("binds controlled-experiment repair proof to a deterministic experiment envelope revision", () => {
+    const { graph, transaction } = fixture();
+    const result = evaluateRepairAdmissionPipeline({
+      graph,
+      transaction,
+      diagnostic: {
+        incidentId: "incident-1",
+        activeCandidateIds: ["candidate"],
+        disposition: "guarded-repair-eligible",
+        selectedCandidateId: "candidate",
+        effectiveEvidenceLevel: "proven-with-observed-outcome",
+        proofState: "intervention-supported",
+        causalProof: {
+          state: "intervention-supported",
+          interventionIds: ["exp:chunk"],
+          interventionProvenance: [{
+            interventionId: "exp:chunk",
+            experimentRevision: "rev-1",
+            predicateId: "chunk-ready",
+            controlledFactorIds: ["chunk-loaded"],
+            controlledFactorContrasts: [{
+              factorId: "chunk-loaded",
+              controlValue: false,
+              treatmentValue: true,
+            }],
+            controlState: "absent",
+            treatmentState: "present",
+            expectedContrastDisposition: "matched",
+            targetProfileFingerprint: "profile-a",
+            fixtureFingerprint: "fixture-a",
+            evidenceIds: ["runtime:chunk-ready"],
+          }],
+        },
+        claimStrength: "proven-runtime",
+        reasons: ["controlled runtime proof"],
+      },
+      changedNodeIds: ["function:p:target"],
+      decisionBasis: {
+        runtimeEvidenceRevision: "evidence-current",
+        preservationContractRevision:
+          "preservation-contract-current",
+        preservationBaselineRevision:
+          "preservation-baseline-current",
+      },
+      preservationReadiness: {
+        contractId: "preserve:" + transaction.id,
+        transactionId: transaction.id,
+        disposition: "ready",
+        baselineEvidenceIds: [
+          "baseline:broken",
+          "baseline:healthy",
+        ],
+        reasons: ["ready"],
+      },
+    });
+
+    expect(
+      result.proof.decisionBasis.runtimeExperimentContractRevision,
+    ).toMatch(/^runtime-experiment-envelope:/);
+  });
+
   it("cannot bypass a blocked diagnostic decision", () => {
     const { graph, transaction } = fixture();
     const result = evaluateRepairAdmissionPipeline({
