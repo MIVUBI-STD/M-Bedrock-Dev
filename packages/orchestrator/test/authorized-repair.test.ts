@@ -100,6 +100,84 @@ describe("authorized repair mutation", () => {
     });
   });
 
+  it("requires post-transform proof when the patch transaction declares that proof requirement", () => {
+    const tx = createPatchTransaction({
+      title: "transform-bound",
+      sourceFingerprint: "abc",
+      requiredProofs: ["post-transform"],
+      operations: [{
+        kind: "replace-text",
+        source: {
+          artifactId: "art-1",
+          relativePath: "scripts/demo.ts",
+        },
+        expected: "old",
+        replacement: "new",
+      }],
+      preconditions: [{
+        kind: "source-fingerprint",
+        expected: "abc",
+      }],
+      validation: [{
+        kind: "rebuild-graph",
+      }],
+    });
+
+    const missing = proof(tx.id, "eligible");
+    expect(
+      authorizeRepairMutation(
+        tx,
+        missing,
+        {
+          currentSourceFingerprint: "abc",
+          currentGraphFingerprint: "graph-current",
+          semanticIrRevision: "semantic-ir-current",
+          preservationContractRevision:
+            "preservation-contract-current",
+          preservationBaselineRevision:
+            "preservation-baseline-current",
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      ),
+    ).toMatchObject({
+      authorized: false,
+      reasons: expect.arrayContaining([
+        expect.stringMatching(/post-transform semantic proof/i),
+      ]),
+    });
+
+    const bound: RepairProofBundle = {
+      ...missing,
+      decisionBasis: {
+        ...missing.decisionBasis,
+        postTransformProofRevision:
+          "guard-proof:impact-proof",
+      },
+    };
+
+    expect(
+      authorizeRepairMutation(
+        tx,
+        bound,
+        {
+          currentSourceFingerprint: "abc",
+          currentGraphFingerprint: "graph-current",
+          semanticIrRevision: "semantic-ir-current",
+          preservationContractRevision:
+            "preservation-contract-current",
+          preservationBaselineRevision:
+            "preservation-baseline-current",
+          runtimeEvidenceRevision: "evidence-current",
+          postTransformProofRevision:
+            "guard-proof:impact-proof",
+        },
+      ),
+    ).toMatchObject({
+      authorized: true,
+      mode: "eligible",
+    });
+  });
+
   it("blocks proof for another transaction", () => {
     const tx = transaction();
     expect(authorizeRepairMutation(
