@@ -325,6 +325,18 @@ export function realizeProviderRepairStrategy(
         ],
         repairClass: input.repairClass,
         causalBinding: envelope.causalBinding,
+        validationObligations: {
+          invariantIds: envelope.invariantIds,
+          runtimeExperimentIds:
+            envelope.causalBinding.interventionIds ?? [],
+          validationKinds: [
+            ...new Set(
+              input.transaction.validation.map(
+                (step) => step.kind,
+              ),
+            ),
+          ].sort(),
+        },
         reversible: input.reversible,
         idempotent: input.idempotent,
       },
