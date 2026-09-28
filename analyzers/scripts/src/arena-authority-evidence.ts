@@ -1,0 +1,716 @@
+import ts from "typescript";
+import type {
+  SourceRef,
+} from "../../../packages/project-model/src/index.js";
+import type {
+  ScriptArenaAuthorityEvidence,
+  ScriptArenaAuthorityPath,
+} from "./types.js";
+
+const MEMBERSHIP_PROPERTY =
+  /^(?:members|players|participants|memberships)$/i;
+const CAPACITY_PROPERTY =
+  /^(?:maxPlayers|maxParticipants|capacity)$/i;
+const GENERATION_PROPERTY =
+  /^(?:generation|arenaGeneration|generationId)$/i;
+const START_OWNER_PROPERTY =
+  /^(?:startOwner|startOwnerId|startToken|startGenerationOwner)$/i;
+const START_STATE_PROPERTY =
+  /^(?:started|active|state|status|phase)$/i;
+const START_STATE_VALUE =
+  /^(?:true|starting|countdown|active|started|running)$/i;
+
+function scriptKind(path: string): ts.ScriptKind {
+  if (path.endsWith(".ts")) return ts.ScriptKind.TS;
+  if (path.endsWith(".tsx")) return ts.ScriptKind.TSX;
+  if (path.endsWith(".jsx")) return ts.ScriptKind.JSX;
+  return ts.ScriptKind.JS;
+}
+
+function lineSource(
+  file: ts.SourceFile,
+  node: ts.Node,
+  source: SourceRef,
+): SourceRef {
+  const start = file.getLineAndCharacterOfPosition(
+    node.getStart(file),
+  );
+  const end = file.getLineAndCharacterOfPosition(
+    node.getEnd(),
+  );
+  return {
+    ...source,
+    range: {
+      lineStart: start.line + 1,
+      lineEnd: end.line + 1,
+      columnStart: start.character + 1,
+      columnEnd: end.character + 1,
+    },
+  };
+}
+
+function declarationMemberName(
+  node: ts.PropertyName | undefined,
+): string | undefined {
+  if (!node) return undefined;
+  return ts.isIdentifier(node) ||
+      ts.isStringLiteralLike(node)
+    ? node.text
+    : undefined;
+}
+
+function localExecutionRegionId(
+  node: ts.Node,
+  file: ts.SourceFile,
+): string {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (ts.isFunctionDeclaration(current)) {
+      return current.name
+        ? "function:" + current.name.text
+        : "anonymous-function";
+    }
+    if (ts.isMethodDeclaration(current)) {
+      const name = declarationMemberName(
+        current.name,
+      );
+      if (name) return "function:" + name;
+    }
+    if (
+      ts.isArrowFunction(current) ||
+      ts.isFunctionExpression(current)
+    ) {
+      const start =
+        file.getLineAndCharacterOfPosition(
+          current.getStart(file),
+        );
+      return (
+        "callback@" +
+        (start.line + 1) +
+        ":" +
+        (start.character + 1)
+      );
+    }
+    current = current.parent;
+  }
+  return "module";
+}
+
+function assignment(
+  node: ts.Node,
+):
+  | {
+      left: ts.Expression;
+      right: ts.Expression;
+      statement: ts.ExpressionStatement;
+    }
+  | undefined {
+  if (!ts.isExpressionStatement(node)) {
+    return undefined;
+  }
+  const expression = node.expression;
+  if (
+    !ts.isBinaryExpression(expression) ||
+    expression.operatorToken.kind !==
+      ts.SyntaxKind.EqualsToken
+  ) {
+    return undefined;
+  }
+  return {
+    left: expression.left,
+    right: expression.right,
+    statement: node,
+  };
+}
+
+function directProperty(
+  expression: ts.Expression,
+):
+  | {
+      owner: ts.Expression;
+      property: string;
+      text: string;
+    }
+  | undefined {
+  if (!ts.isPropertyAccessExpression(expression)) {
+    return undefined;
+  }
+  return {
+    owner: expression.expression,
+    property: expression.name.text,
+    text: expression.getText(),
+  };
+}
+
+function membershipCollection(
+  expression: ts.Expression,
+):
+  | {
+      arenaExpression: string;
+      membershipExpression: string;
+      collectionKind: "set" | "array" | "map";
+    }
+  | undefined {
+  if (!ts.isPropertyAccessExpression(expression)) {
+    return undefined;
+  }
+  if (!MEMBERSHIP_PROPERTY.test(expression.name.text)) {
+    return undefined;
+  }
+
+  return {
+    arenaExpression: expression.expression.getText(),
+    membershipExpression: expression.getText(),
+    collectionKind: "set",
+  };
+}
+
+function membershipCommitEvidence(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence | undefined {
+  if (!ts.isExpressionStatement(node)) {
+    return undefined;
+  }
+  const call = node.expression;
+  if (
+    !ts.isCallExpression(call) ||
+    !ts.isPropertyAccessExpression(call.expression)
+  ) {
+    return undefined;
+  }
+
+  const method = call.expression.name.text;
+  if (
+    method !== "add" &&
+    method !== "push" &&
+    method !== "set"
+  ) {
+    return undefined;
+  }
+
+  const membership = membershipCollection(
+    call.expression.expression,
+  );
+  if (!membership) return undefined;
+
+  const subject = call.arguments[0];
+  if (!subject) return undefined;
+
+  return {
+    kind: "membership-commit",
+    arenaExpression: membership.arenaExpression,
+    subjectExpression: subject.getText(file),
+    membershipExpression:
+      membership.membershipExpression,
+    executionRegion:
+      localExecutionRegionId(node, file),
+    source: lineSource(file, node, source),
+  };
+}
+
+function variableOperandEvidence(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence[] {
+  if (!ts.isVariableStatement(node)) return [];
+
+  const output: ScriptArenaAuthorityEvidence[] = [];
+  for (const declaration of node.declarationList.declarations) {
+    if (
+      !ts.isIdentifier(declaration.name) ||
+      !declaration.initializer ||
+      !ts.isPropertyAccessExpression(
+        declaration.initializer,
+      )
+    ) {
+      continue;
+    }
+
+    const property =
+      declaration.initializer.name.text;
+    const arenaExpression =
+      declaration.initializer.expression.getText(file);
+    const executionRegion =
+      localExecutionRegionId(node, file);
+
+    if (CAPACITY_PROPERTY.test(property)) {
+      output.push({
+        kind: "capacity-operand",
+        arenaExpression,
+        capacityExpression:
+          declaration.name.text,
+        executionRegion,
+        source: lineSource(
+          file,
+          declaration,
+          source,
+        ),
+      });
+    }
+
+    if (GENERATION_PROPERTY.test(property)) {
+      output.push({
+        kind: "arena-generation-operand",
+        arenaExpression,
+        generationExpression:
+          declaration.name.text,
+        executionRegion,
+        source: lineSource(
+          file,
+          declaration,
+          source,
+        ),
+      });
+    }
+  }
+
+  return output;
+}
+
+function membershipCount(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+):
+  | {
+      arenaExpression: string;
+      membershipExpression: string;
+      countExpression: string;
+    }
+  | undefined {
+  if (!ts.isPropertyAccessExpression(expression)) {
+    return undefined;
+  }
+  if (
+    expression.name.text !== "length" &&
+    expression.name.text !== "size"
+  ) {
+    return undefined;
+  }
+  const membership = membershipCollection(
+    expression.expression,
+  );
+  if (!membership) return undefined;
+
+  return {
+    arenaExpression: membership.arenaExpression,
+    membershipExpression:
+      membership.membershipExpression,
+    countExpression: expression.getText(file),
+  };
+}
+
+function capacityExpression(
+  expression: ts.Expression,
+  file: ts.SourceFile,
+):
+  | {
+      expression: string;
+      arenaExpression?: string;
+    }
+  | undefined {
+  if (ts.isIdentifier(expression)) {
+    return {
+      expression: expression.text,
+    };
+  }
+  if (
+    ts.isPropertyAccessExpression(expression) &&
+    CAPACITY_PROPERTY.test(expression.name.text)
+  ) {
+    return {
+      expression: expression.getText(file),
+      arenaExpression:
+        expression.expression.getText(file),
+    };
+  }
+  if (ts.isNumericLiteral(expression)) {
+    return {
+      expression: expression.text,
+    };
+  }
+  return undefined;
+}
+
+function capacityCheckEvidence(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence | undefined {
+  if (!ts.isIfStatement(node)) return undefined;
+  const condition = node.expression;
+  if (!ts.isBinaryExpression(condition)) {
+    return undefined;
+  }
+
+  const supportedOperators = new Set([
+    ts.SyntaxKind.GreaterThanToken,
+    ts.SyntaxKind.GreaterThanEqualsToken,
+    ts.SyntaxKind.LessThanToken,
+    ts.SyntaxKind.LessThanEqualsToken,
+  ]);
+  if (
+    !supportedOperators.has(
+      condition.operatorToken.kind,
+    )
+  ) {
+    return undefined;
+  }
+
+  const leftMembership = membershipCount(
+    condition.left,
+    file,
+  );
+  const rightMembership = membershipCount(
+    condition.right,
+    file,
+  );
+
+  const membership =
+    leftMembership ?? rightMembership;
+  if (!membership) return undefined;
+
+  const other = leftMembership
+    ? condition.right
+    : condition.left;
+  const capacity = capacityExpression(
+    other,
+    file,
+  );
+  if (!capacity) return undefined;
+
+  if (
+    capacity.arenaExpression !== undefined &&
+    capacity.arenaExpression !==
+      membership.arenaExpression
+  ) {
+    return undefined;
+  }
+
+  return {
+    kind: "capacity-check",
+    arenaExpression:
+      membership.arenaExpression,
+    membershipExpression:
+      membership.membershipExpression,
+    capacityExpression:
+      capacity.expression,
+    executionRegion:
+      localExecutionRegionId(node, file),
+    source: lineSource(
+      file,
+      condition,
+      source,
+    ),
+  };
+}
+
+function startOwnerEvidence(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence | undefined {
+  const value = assignment(node);
+  if (!value) return undefined;
+
+  const target = directProperty(value.left);
+  if (
+    !target ||
+    !START_OWNER_PROPERTY.test(target.property)
+  ) {
+    return undefined;
+  }
+
+  const ownerExpression =
+    value.right.getText(file);
+  return {
+    kind: "start-owner-acquire",
+    arenaExpression:
+      target.owner.getText(file),
+    ownerExpression,
+    ...(GENERATION_PROPERTY.test(
+      ownerExpression,
+    )
+      ? {
+          generationExpression:
+            ownerExpression,
+        }
+      : {}),
+    executionRegion:
+      localExecutionRegionId(node, file),
+    source: lineSource(
+      file,
+      value.statement,
+      source,
+    ),
+  };
+}
+
+function startStateValue(
+  expression: ts.Expression,
+): string | undefined {
+  if (
+    expression.kind ===
+      ts.SyntaxKind.TrueKeyword
+  ) {
+    return "true";
+  }
+  if (
+    ts.isStringLiteralLike(expression) ||
+    ts.isNoSubstitutionTemplateLiteral(
+      expression,
+    )
+  ) {
+    return expression.text;
+  }
+  return undefined;
+}
+
+function startStateCommitEvidence(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence | undefined {
+  const value = assignment(node);
+  if (!value) return undefined;
+
+  const target = directProperty(value.left);
+  if (
+    !target ||
+    !START_STATE_PROPERTY.test(target.property)
+  ) {
+    return undefined;
+  }
+
+  const state = startStateValue(value.right);
+  if (
+    state === undefined ||
+    !START_STATE_VALUE.test(state)
+  ) {
+    return undefined;
+  }
+
+  return {
+    kind: "start-state-commit",
+    arenaExpression:
+      target.owner.getText(file),
+    stateExpression:
+      target.text + "=" + state,
+    executionRegion:
+      localExecutionRegionId(node, file),
+    source: lineSource(
+      file,
+      value.statement,
+      source,
+    ),
+  };
+}
+
+function evidenceKey(
+  evidence: ScriptArenaAuthorityEvidence,
+): string {
+  return [
+    evidence.kind,
+    evidence.arenaExpression,
+    evidence.executionRegion,
+    evidence.source.relativePath,
+    evidence.source.range?.lineStart ?? 0,
+    evidence.source.range?.columnStart ?? 0,
+  ].join("|");
+}
+
+export function deriveScriptArenaAuthorityEvidence(
+  text: string,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence[] {
+  const file = ts.createSourceFile(
+    source.relativePath,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKind(source.relativePath),
+  );
+
+  const output: ScriptArenaAuthorityEvidence[] = [];
+
+  const visit = (node: ts.Node): void => {
+    const membership =
+      membershipCommitEvidence(
+        node,
+        file,
+        source,
+      );
+    if (membership) output.push(membership);
+
+    output.push(
+      ...variableOperandEvidence(
+        node,
+        file,
+        source,
+      ),
+    );
+
+    const capacity = capacityCheckEvidence(
+      node,
+      file,
+      source,
+    );
+    if (capacity) output.push(capacity);
+
+    const owner = startOwnerEvidence(
+      node,
+      file,
+      source,
+    );
+    if (owner) output.push(owner);
+
+    const start = startStateCommitEvidence(
+      node,
+      file,
+      source,
+    );
+    if (start) output.push(start);
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+
+  return [
+    ...new Map(
+      output.map((item) => [
+        evidenceKey(item),
+        item,
+      ]),
+    ).values(),
+  ].sort((a, b) =>
+    evidenceKey(a).localeCompare(
+      evidenceKey(b),
+    )
+  );
+}
+
+export function correlateScriptArenaAuthorityPaths(
+  evidence:
+    readonly ScriptArenaAuthorityEvidence[],
+): ScriptArenaAuthorityPath[] {
+  const grouped = new Map<
+    string,
+    ScriptArenaAuthorityEvidence[]
+  >();
+
+  for (const item of evidence) {
+    const key =
+      item.arenaExpression +
+      "|" +
+      item.executionRegion;
+    const list = grouped.get(key) ?? [];
+    list.push(item);
+    grouped.set(key, list);
+  }
+
+  return [...grouped.entries()]
+    .map(([key, items]) => {
+      const [
+        arenaExpression,
+        executionRegion,
+      ] = key.split("|");
+
+      const membershipCommit = items.find(
+        (item) =>
+          item.kind ===
+            "membership-commit",
+      );
+      const capacityOperand = items.find(
+        (item) =>
+          item.kind ===
+            "capacity-operand",
+      );
+      const capacityCheck = items.find(
+        (item) =>
+          item.kind ===
+            "capacity-check",
+      );
+      const generationOperand = items.find(
+        (item) =>
+          item.kind ===
+            "arena-generation-operand",
+      );
+      const startOwnerAcquire = items.find(
+        (item) =>
+          item.kind ===
+            "start-owner-acquire",
+      );
+      const startStateCommit = items.find(
+        (item) =>
+          item.kind ===
+            "start-state-commit",
+      );
+
+      const capacityExpression =
+        capacityCheck?.capacityExpression;
+      const capacityMatchesOperand =
+        capacityExpression !== undefined &&
+        (
+          capacityOperand === undefined ||
+          capacityOperand.capacityExpression ===
+            capacityExpression
+        );
+
+      const capacityAuthorityProven =
+        membershipCommit !== undefined &&
+        capacityCheck !== undefined &&
+        capacityMatchesOperand;
+
+      const startAuthorityProven =
+        startOwnerAcquire !== undefined &&
+        startStateCommit !== undefined &&
+        (
+          startOwnerAcquire.generationExpression !==
+            undefined ||
+          generationOperand !== undefined
+        );
+
+      return {
+        arenaExpression:
+          arenaExpression ?? "",
+        executionRegion:
+          executionRegion ?? "",
+        ...(membershipCommit
+          ? { membershipCommit }
+          : {}),
+        ...(capacityOperand
+          ? { capacityOperand }
+          : {}),
+        ...(capacityCheck
+          ? { capacityCheck }
+          : {}),
+        ...(generationOperand
+          ? { generationOperand }
+          : {}),
+        ...(startOwnerAcquire
+          ? { startOwnerAcquire }
+          : {}),
+        ...(startStateCommit
+          ? { startStateCommit }
+          : {}),
+        capacityAuthorityProven,
+        startAuthorityProven,
+      };
+    })
+    .filter(
+      (item) =>
+        item.arenaExpression.length > 0 &&
+        item.executionRegion.length > 0,
+    )
+    .sort((a, b) =>
+      a.arenaExpression.localeCompare(
+        b.arenaExpression,
+      ) ||
+      a.executionRegion.localeCompare(
+        b.executionRegion,
+      )
+    );
+}
