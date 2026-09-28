@@ -16,6 +16,7 @@ import type {
   RepairStrategySourceRegistry,
 } from "./repair-strategy-source-registry.js";
 import {
+  realizeArenaCapacityGuardHint,
   realizePersistenceIdempotencyGuardHint,
   realizeSchedulerGenerationGuardHint,
   realizeSessionGenerationGuardHint,
@@ -290,5 +291,67 @@ export function realizePersistenceIdempotencyGuardFromParsedScripts(
     sourceRegistry,
     realizerRegistry,
     persistenceHints[0]!,
+  );
+}
+
+
+export function realizeArenaCapacityGuardFromParsedScripts(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  parsedScripts: readonly {
+    parsed: ParsedScriptFile;
+  }[],
+): RepairTransformHintRealization {
+  const discovery =
+    discoverApplicableRepairTransformHints(
+      parsedScripts,
+      enumeration,
+    );
+  const capacityHints =
+    discovery.applicable.filter(
+      (hint) =>
+        hint.family ===
+          "arena-ownership-guard" &&
+        hint.supportedPredicateIds.includes(
+          "arena-capacity-overflow-observed",
+        ) &&
+        hint.supportedFactorIds.includes(
+          "capacity-guard-enabled",
+        ),
+    );
+
+  if (capacityHints.length === 0) {
+    return {
+      status: "blocked",
+      sourceId:
+        "arena-capacity-guard-template",
+      reasons: [
+        "No analyzer-owned arena capacity transform hint matches the selected causal opportunity.",
+      ],
+    };
+  }
+
+  if (capacityHints.length > 1) {
+    return {
+      status: "blocked",
+      sourceId:
+        "arena-capacity-guard-template",
+      reasons: [
+        "Multiple exact arena capacity transform hints match the selected causal opportunity; realization is ambiguous.",
+        ...capacityHints.map(
+          (hint) => "candidate-hint:" + hint.id,
+        ),
+      ],
+    };
+  }
+
+  return realizeArenaCapacityGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    capacityHints[0]!,
   );
 }
