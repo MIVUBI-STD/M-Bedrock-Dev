@@ -7,6 +7,7 @@ import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { GameplayIntentRuntimeAssessment } from "./gameplay-intent-runtime-stage.js";
 import type { ValidationTraceReport } from "../../validation/src/index.js";
 import { buildEngineeringReviewInvalidationProjection, type EngineeringReviewInvalidationProjection } from "./engineering-review-invalidation.js";
+import { buildEngineeringReviewPriority, type EngineeringReviewPriorityProjection } from "./engineering-review-priority.js";
 
 export type EngineeringReviewSource = Pick<
   InspectArtifactResult,
@@ -102,6 +103,7 @@ export interface EngineeringReviewProjection {
   decisionBasis: EngineeringReviewSource["decisionBasis"];
   validationTrace?: ValidationTraceReport;
   invalidation: EngineeringReviewInvalidationProjection;
+  priority: EngineeringReviewPriorityProjection;
 }
 
 const runtimeDispositions: readonly IntentDiagnosticDisposition[] = [
@@ -195,6 +197,12 @@ export function buildEngineeringReviewProjection(
     source.gameplayIntentRuntime.assessments,
   );
 
+  const invalidation = buildEngineeringReviewInvalidationProjection(
+    source.decisionBasis,
+    decisionLedger,
+    validationTrace,
+  );
+
   return {
     schemaVersion: 1,
     artifact: {
@@ -257,10 +265,13 @@ export function buildEngineeringReviewProjection(
     ...(validationTrace === undefined
       ? {}
       : { validationTrace }),
-    invalidation: buildEngineeringReviewInvalidationProjection(
-      source.decisionBasis,
-      decisionLedger,
-      validationTrace,
-    ),
+    invalidation,
+    priority: buildEngineeringReviewPriority({
+      runtimeClassifications,
+      diagnostics: source.diagnostics,
+      evidenceRecovery: source.evidenceRecovery,
+      invalidation,
+      repairCandidates: source.repairCandidates,
+    }),
   };
 }

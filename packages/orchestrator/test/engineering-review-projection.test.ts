@@ -188,6 +188,15 @@ describe("engineering review projection", () => {
       "evidence-recovery",
       "planned-repair",
     ]);
+    expect(review.priority.items.map((item) => item.kind)).toEqual([
+      "critical-diagnostic",
+      "evidence-recovery",
+      "runtime-proof-required",
+      "probable-defect",
+      "planned-repair",
+    ]);
+    expect(review.priority.hasCriticalDiagnostic).toBe(true);
+    expect(review.priority.hasConfirmedDefect).toBe(false);
   });
 
   it("keeps repair planning distinct from verification", () => {
