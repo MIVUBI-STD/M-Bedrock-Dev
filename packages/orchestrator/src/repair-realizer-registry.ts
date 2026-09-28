@@ -181,6 +181,17 @@ export const BUILTIN_REPAIR_REALIZERS:
       rationale:
         "Applies only validated analyzer-owned exact source-transform hints for captured scheduler generation guards.",
     }, {
+      id: "persistence-idempotency-guard-realizer",
+      version: "1",
+      sourceKind: "built-in-planner",
+      sourceId: "persistence-idempotency-guard-template",
+      owner:
+        "packages/orchestrator/src/script-transform-hint-realizer.ts",
+      deterministic: true,
+      repairClass: "implementation-repair",
+      rationale:
+        "Applies only analyzer-owned exact source-transform hints backed by an authored applied-generation persistence marker.",
+    }, {
       id: "linear-topology-repair-realizer",
       version: "1",
       sourceKind: "provider",
