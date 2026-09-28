@@ -18,11 +18,19 @@ export type RuntimeDiagnosticEvidenceCeiling =
   | "repeatable"
   | "intervention-supported";
 
+export interface RuntimeDiagnosticArmObservation {
+  armId: string;
+  observation: DiagnosticEvidenceObservation;
+  sourceEvidenceIds: readonly string[];
+}
+
 export interface RuntimeDiagnosticPredicateEvidence {
   predicate: string;
   observation: DiagnosticEvidenceObservation;
   ceiling: RuntimeDiagnosticEvidenceCeiling;
   sourceEvidenceIds: readonly string[];
+  armObservations?: readonly RuntimeDiagnosticArmObservation[];
+  interventionContrast?: boolean;
 }
 
 export interface RuntimeExperimentDiagnosticBridge {
@@ -67,21 +75,81 @@ function ceilingFor(
   }
 }
 
+interface RuntimePredicateRecord {
+  trialId: string;
+  armId: string;
+  recordIndex: number;
+  record: RuntimeEvidenceRecord;
+}
+
 function evidenceIdsFor(
   experimentId: string,
   predicate: string,
-  records: readonly RuntimeEvidenceRecord[],
+  records: readonly RuntimePredicateRecord[],
 ): readonly string[] {
-  return records.map((record, index) =>
-    record.provenanceKey ??
-    [
-      "runtime-experiment",
-      experimentId,
+  return records.map((entry) => {
+    const suffix = [
+      "predicate",
       predicate,
-      String(record.observedAt?.tick ?? "na"),
-      String(index),
-    ].join(":")
-  );
+      "record",
+      String(entry.recordIndex),
+    ].join(":");
+
+    return entry.record.provenanceKey
+      ? entry.record.provenanceKey + ":" + suffix
+      : [
+          "runtime-experiment",
+          experimentId,
+          "trial",
+          entry.trialId,
+          "arm",
+          entry.armId,
+          suffix,
+          String(entry.record.observedAt?.tick ?? "na"),
+        ].join(":");
+  });
+}
+
+function armObservationsFor(
+  experimentId: string,
+  predicate: string,
+  records: readonly RuntimePredicateRecord[],
+): RuntimeDiagnosticArmObservation[] {
+  const byArm = new Map<string, RuntimePredicateRecord[]>();
+
+  for (const entry of records) {
+    const current = byArm.get(entry.armId) ?? [];
+    current.push(entry);
+    byArm.set(entry.armId, current);
+  }
+
+  return [...byArm.entries()]
+    .map(([armId, entries]) => {
+      const state = aggregateState(
+        entries.map((entry) => entry.record),
+      );
+      return {
+        armId,
+        observation: {
+          predicate,
+          state,
+          evidenceId: [
+            "runtime-experiment",
+            experimentId,
+            predicate,
+            "arm",
+            armId,
+            state,
+          ].join(":"),
+        },
+        sourceEvidenceIds: evidenceIdsFor(
+          experimentId,
+          predicate,
+          entries,
+        ),
+      };
+    })
+    .sort((a, b) => a.armId.localeCompare(b.armId));
 }
 
 export function runtimeExperimentDiagnosticEvidence(
@@ -93,25 +161,37 @@ export function runtimeExperimentDiagnosticEvidence(
   );
   const byPredicate = new Map<
     string,
-    RuntimeEvidenceRecord[]
+    RuntimePredicateRecord[]
   >();
 
   for (const trial of completed) {
-    for (const record of trial.evidence) {
+    for (const [recordIndex, record] of trial.evidence.entries()) {
       const list = byPredicate.get(record.predicate) ?? [];
-      list.push(record);
+      list.push({
+        trialId: trial.id,
+        armId: trial.identity.armId,
+        recordIndex,
+        record,
+      });
       byPredicate.set(record.predicate, list);
     }
   }
 
   const predicates = [...byPredicate.entries()]
     .map(([predicate, records]) => {
-      const state = aggregateState(records);
+      const state = aggregateState(
+        records.map((entry) => entry.record),
+      );
       const ceiling = ceilingFor(
         predicate,
         qualification,
       );
       const sourceEvidenceIds = evidenceIdsFor(
+        qualification.experimentId,
+        predicate,
+        records,
+      );
+      const armObservations = armObservationsFor(
         qualification.experimentId,
         predicate,
         records,
@@ -132,6 +212,11 @@ export function runtimeExperimentDiagnosticEvidence(
         observation,
         ceiling,
         sourceEvidenceIds,
+        armObservations,
+        interventionContrast:
+          qualification.controlTreatmentContrastPredicates.includes(
+            predicate,
+          ),
       };
     })
     .sort((a, b) =>
