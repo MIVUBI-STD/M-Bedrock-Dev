@@ -22,6 +22,7 @@ import {
   repairStrategySemanticFingerprint,
   selectProviderBackedRepairStrategyForIncident,
   type RepairStrategyProviderRegistry,
+  type RepairStrategySourceRegistry,
 } from "../src/index.js";
 
 const source = {
@@ -629,18 +630,41 @@ describe("repair strategy enumeration and realization", () => {
   });
 
   it("enumerates non-provider proposal sources without converting them into patch transactions", () => {
+    const proposalOnlyRegistry:
+      RepairStrategySourceRegistry = {
+        schemaVersion: 1,
+        sources: [{
+          id: "session-proposal-only",
+          version: "1",
+          kind: "built-in-planner",
+          owner: "fixture:proposal-only",
+          deterministic: false,
+          selectionMode: "proposal-only",
+          repairClass: "implementation-repair",
+          supportedPredicateIds: [
+            "stale-session-mutation-observed",
+          ],
+          supportedFactorIds: [
+            "connection-generation-guard-enabled",
+          ],
+          requiresExactSourceEvidence: true,
+          rationale:
+            "Fixture proposal surface without a concrete realizer.",
+        }],
+      };
+
     const enumeration = enumerateRepairStrategySources(
       envelope(),
       diagnostics,
       providerRegistry,
-      BUILTIN_REPAIR_STRATEGY_SOURCES,
+      proposalOnlyRegistry,
     );
 
     const sessionTemplate =
       enumeration.applicableSources.find(
         (item) =>
           item.sourceId ===
-            "session-generation-guard-template",
+            "session-proposal-only",
       );
 
     expect(sessionTemplate).toMatchObject({
@@ -659,7 +683,7 @@ describe("repair strategy enumeration and realization", () => {
       coverage.items.find(
         (item) =>
           item.sourceId ===
-            "session-generation-guard-template",
+            "session-proposal-only",
       ),
     ).toMatchObject({
       status: "missing-realizer",
@@ -677,7 +701,7 @@ describe("repair strategy enumeration and realization", () => {
       report.items.find(
         (item) =>
           item.sourceId ===
-            "session-generation-guard-template",
+            "session-proposal-only",
       ),
     ).toMatchObject({
       disposition: "missing-realizer",
