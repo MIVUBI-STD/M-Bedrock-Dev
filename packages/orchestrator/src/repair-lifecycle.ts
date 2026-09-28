@@ -45,6 +45,9 @@ export interface RepairLifecycleState {
   runtimeVerificationComplete: boolean;
   preservationVerificationComplete: boolean;
   packageVerificationComplete: boolean;
+  staticPreservationRequired?: boolean;
+  staticPreservationComplete?: boolean;
+  staticPreservationProofFingerprint?: string;
   runtimeVerificationContract?: RuntimeVerificationExperimentContract;
   runtimeVerificationContracts?: readonly RuntimeVerificationExperimentContract[];
   authorizingRuntimeExperimentContracts?: readonly RuntimeVerificationExperimentContract[];
@@ -62,6 +65,34 @@ export function repairLifecycleFromApplyResult(
     runtimeVerificationExperimentContractsFromProvenance(
       result.proof.causalInterventionProvenance ?? [],
     );
+
+  const staticPreservationRequired =
+    result.proof.postTransformProofBinding !==
+    undefined;
+
+  const staticPreservationState =
+    (
+      result.status === "validated" ||
+      result.status ===
+        "transitive-revalidation-pending"
+    ) &&
+    result.staticPreservation?.status ===
+      "proven" &&
+    result.staticPreservation.proofFingerprint
+      ?.trim()
+      ? {
+          staticPreservationRequired,
+          staticPreservationComplete: true,
+          staticPreservationProofFingerprint:
+            result.staticPreservation
+              .proofFingerprint,
+        }
+      : staticPreservationRequired
+        ? {
+            staticPreservationRequired: true,
+            staticPreservationComplete: false,
+          }
+        : {};
 
   switch (result.status) {
     case "not-authorized":
@@ -182,6 +213,7 @@ export function repairLifecycleFromApplyResult(
         runtimeVerificationComplete: false,
         preservationVerificationComplete: false,
         packageVerificationComplete: false,
+        ...staticPreservationState,
         ...(authorizingRuntimeExperimentContracts.length === 0
           ? {}
           : { authorizingRuntimeExperimentContracts }),
@@ -202,6 +234,7 @@ export function repairLifecycleFromApplyResult(
         runtimeVerificationComplete: false,
         preservationVerificationComplete: false,
         packageVerificationComplete: false,
+        ...staticPreservationState,
         ...(authorizingRuntimeExperimentContracts.length === 0
           ? {}
           : { authorizingRuntimeExperimentContracts }),
@@ -498,6 +531,16 @@ export function repairReleaseEligible(
     state.stage === "static-validated" &&
     state.localStaticValidationPassed &&
     state.transitiveRevalidationComplete &&
+    (
+      state.staticPreservationRequired !== true ||
+      (
+        state.staticPreservationComplete === true &&
+        Boolean(
+          state.staticPreservationProofFingerprint
+            ?.trim(),
+        )
+      )
+    ) &&
     state.runtimeVerificationComplete &&
     state.preservationVerificationComplete &&
     state.packageVerificationComplete
