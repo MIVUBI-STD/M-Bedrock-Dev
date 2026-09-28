@@ -259,3 +259,42 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Multi-contract runtime verification and experiment-envelope invalidation
+
+Repairs backed by multiple controlled runtime experiments now require complete coverage of the authorizing experiment envelope.
+
+Lifecycle behavior:
+
+```text
+authorizing contracts 2
+verified contracts    1
+→ runtimeVerificationComplete = false
+
+authorizing contracts 2
+verified contracts    2
+→ runtimeVerificationComplete = true
+```
+
+Compatible successor contracts may satisfy an older authorizing contract only through the explicit compatibility rules already defined.
+
+Release lineage now supports multiple active runtime-verification decisions. Every runtime verification must be passing, current, and descended from the same repair admission/transitive-revalidation lineage.
+
+A deterministic `runtimeExperimentContractRevision` is now part of the decision basis when a repair is backed by controlled experiment provenance. Changes to the authorizing runtime experiment envelope invalidate stale decisions and block release.
+
+Release also independently reconstructs the authorizing experiment envelope from repair causal provenance and verifies that lifecycle runtime receipts cover the complete envelope. A manually constructed lifecycle state cannot bypass this coverage requirement.
+
+Validated source revision: `b4ed1f0022cd079257fe0227569d1f7254d17d4e`.
+
+GitHub Actions Verify run `36383899879` completed successfully on the repository-pinned Node 24.21.0 toolchain:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
+
+An independent targeted verification against the Package Source Snapshot also passed TypeScript compilation and 56/56 focused repair/runtime/lineage tests. The official GitHub Actions result remains the authoritative validation.
