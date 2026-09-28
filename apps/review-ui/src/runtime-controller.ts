@@ -1,4 +1,5 @@
 import type {
+  ReviewRecentArtifact,
   ReviewRuntimeClient,
   ReviewRuntimeInfo,
 } from "./runtime-client.js";
@@ -64,6 +65,12 @@ export class ReviewRuntimeController {
     return this.stateValue;
   }
 
+  async recent(): Promise<
+    readonly ReviewRecentArtifact[]
+  > {
+    return this.client.recent();
+  }
+
   private async execute(
     load: () => Promise<ReviewUiViewModel>,
     artifactLabel?: string,
@@ -121,6 +128,15 @@ export class ReviewRuntimeController {
     return this.execute(
       () => this.client.analyzeFile(file),
       file.name,
+    );
+  }
+
+  async analyzeRecent(
+    recent: Pick<ReviewRecentArtifact, "id" | "label">,
+  ): Promise<ReviewRuntimeState> {
+    return this.execute(
+      () => this.client.analyzeRecent(recent.id),
+      recent.label,
     );
   }
 }

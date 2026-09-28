@@ -5,11 +5,13 @@
     subtitle: string;
     updated: string;
     state: string;
-    tone: "attention" | "warning" | "verified";
+    tone: "attention" | "warning" | "verified" | "unavailable";
+    available?: boolean;
   }
 
   export let maps: readonly RecentMap[];
-  export let onOpenExample: (id?: string) => void;
+  export let mode: "recent" | "examples" = "examples";
+  export let onOpenMap: (id: string) => void;
   export let onOpenFile: (file: File) => void;
   export let busy = false;
   export let error = "";
@@ -56,25 +58,41 @@
   <section class="recent-maps" aria-labelledby="recent-maps-heading">
     <div class="section-title">
       <div>
-        <h2 id="recent-maps-heading">Recent examples</h2>
-        <p>Prototype entries until recent-map persistence is added.</p>
+        <h2 id="recent-maps-heading">{mode === "recent" ? "Recent" : "Recent examples"}</h2>
+        {#if mode === "examples"}
+          <p>Static preview entries. Real recent maps appear when the local runtime is available.</p>
+        {:else if maps.length === 0}
+          <p>Maps opened here will appear in this list.</p>
+        {/if}
       </div>
     </div>
-    <div class="map-list">
-      {#each maps as map (map.id)}
-        <button class="map-row" on:click={() => onOpenExample(map.id)}>
-          <span class="map-icon" aria-hidden="true">{map.name.slice(0, 1)}</span>
-          <span class="map-copy">
-            <strong>{map.name}</strong>
-            <span>{map.subtitle}</span>
-          </span>
-          <span class="map-meta">
-            <small>{map.updated}</small>
-            <span class="map-state {map.tone}">{map.state}</span>
-          </span>
-        </button>
-      {/each}
-    </div>
+
+    {#if maps.length > 0}
+      <div class="map-list">
+        {#each maps as map (map.id)}
+          <button
+            class="map-row"
+            disabled={busy || map.available === false}
+            on:click={() => onOpenMap(map.id)}
+          >
+            <span class="map-icon" aria-hidden="true">{map.name.slice(0, 1)}</span>
+            <span class="map-copy">
+              <strong>{map.name}</strong>
+              <span>{map.subtitle}</span>
+            </span>
+            <span class="map-meta">
+              <small>{map.updated}</small>
+              <span class="map-state {map.tone}">{map.state}</span>
+            </span>
+          </button>
+        {/each}
+      </div>
+    {:else}
+      <div class="empty-recent">
+        <strong>No recent maps</strong>
+        <span>Open a map to add it here.</span>
+      </div>
+    {/if}
   </section>
 </main>
 
@@ -87,20 +105,24 @@
   .file-input{display:none}
   .primary{min-height:34px;padding:7px 12px;border:1px solid #878fff;border-radius:7px;background:#737cff;color:#0a0c0e;font-weight:650;cursor:pointer}
   .primary:disabled{opacity:.62;cursor:default}
-  .library-error{display:grid;gap:3px;margin:0 0 18px;padding:12px 14px;border:1px solid #5a3035;border-radius:9px;background:#1a1113;color:#d6a2a6}.library-error strong{color:#efb1b5;font-size:13px}.library-error span{font-size:12px}.recent-maps{margin-top:8px}
+  .library-error{display:grid;gap:3px;margin:0 0 18px;padding:12px 14px;border:1px solid #5a3035;border-radius:9px;background:#1a1113;color:#d6a2a6}
+  .library-error strong{color:#efb1b5;font-size:13px}.library-error span{font-size:12px}
+  .recent-maps{margin-top:8px}
   .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .section-title h2{margin:0;color:#8f98a1;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
   .section-title p{margin:3px 0 0;color:#747d86;font-size:11px}
   .map-list{display:grid}
   .map-row{width:100%;display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 10px;border:0;border-top:1px solid #20252a;background:transparent;color:inherit;text-align:left;cursor:pointer}
-  .map-row:hover{background:#11151a}
+  .map-row:hover:not(:disabled){background:#11151a}.map-row:disabled{opacity:.55;cursor:default}
   .map-icon{width:34px;height:34px;display:grid;place-items:center;border:1px solid #2a3037;border-radius:8px;background:#14181d;color:#cbd1d7;font-weight:700}
   .map-copy{display:grid;gap:2px;min-width:0}
   .map-copy strong{font-size:14px}
   .map-copy span,.map-meta small{color:#848d96;font-size:12px}
   .map-meta{display:grid;justify-items:end;gap:4px}
   .map-state{font-size:11px}
-  .map-state.attention{color:#ef868c}.map-state.warning{color:#ddb35a}.map-state.verified{color:#81b394}
+  .map-state.attention{color:#ef868c}.map-state.warning{color:#ddb35a}.map-state.verified{color:#81b394}.map-state.unavailable{color:#89919a}
+  .empty-recent{display:grid;gap:3px;padding:22px 10px;border-top:1px solid #20252a;color:#828b94}
+  .empty-recent strong{color:#c0c6cc;font-size:13px}.empty-recent span{font-size:12px}
   @media(max-width:759px){
     .library{width:calc(100% - 28px);padding:24px 0 40px}
     .library-head{align-items:flex-start;flex-direction:column}

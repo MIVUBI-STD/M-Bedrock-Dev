@@ -6,10 +6,26 @@ export interface ReviewRuntimeInfo {
   artifactLabel?: string;
 }
 
+export interface ReviewRecentArtifact {
+  id: string;
+  label: string;
+  targetLabel: string;
+  attentionCount: number;
+  updatedAt: string;
+  available: boolean;
+}
+
+interface ReviewAnalysisEnvelope {
+  model: ReviewUiViewModel;
+  record: Omit<ReviewRecentArtifact, "available">;
+}
+
 export interface ReviewRuntimeClient {
   info(): Promise<ReviewRuntimeInfo>;
+  recent(): Promise<readonly ReviewRecentArtifact[]>;
   analyze(): Promise<ReviewUiViewModel>;
   analyzeFile(file: File): Promise<ReviewUiViewModel>;
+  analyzeRecent(id: string): Promise<ReviewUiViewModel>;
 }
 
 async function jsonOrError<T>(response: Response): Promise<T> {
@@ -34,6 +50,13 @@ export function createReviewRuntimeClient(
       const response = await fetch(baseUrl + "/info");
       return jsonOrError<ReviewRuntimeInfo>(response);
     },
+    async recent() {
+      const response = await fetch(baseUrl + "/recent");
+      const result = await jsonOrError<{
+        items: readonly ReviewRecentArtifact[];
+      }>(response);
+      return result.items;
+    },
     async analyze() {
       const response = await fetch(baseUrl + "/analyze", {
         method: "POST",
@@ -53,7 +76,28 @@ export function createReviewRuntimeClient(
           body: file,
         },
       );
-      return jsonOrError<ReviewUiViewModel>(response);
+      const result =
+        await jsonOrError<ReviewAnalysisEnvelope>(
+          response,
+        );
+      return result.model;
+    },
+    async analyzeRecent(id) {
+      const response = await fetch(
+        baseUrl + "/recent-analyze",
+        {
+          method: "POST",
+          headers: {
+            "X-M-Bedrock-Recent-Id":
+              encodeURIComponent(id),
+          },
+        },
+      );
+      const result =
+        await jsonOrError<ReviewAnalysisEnvelope>(
+          response,
+        );
+      return result.model;
     },
   };
 }
