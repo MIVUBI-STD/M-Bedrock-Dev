@@ -41,6 +41,7 @@ import {
 } from "./repair-transform-hints.js";
 import {
   deriveArenaCapacityGuardTransformHints,
+  deriveArenaStartOwnershipGuardTransformHints,
 } from "./arena-repair-transform-hints.js";
 import {
   correlateScriptArenaAuthorityPaths,
@@ -2425,6 +2426,11 @@ export function parseScriptFile(
         source,
       ),
       ...deriveArenaCapacityGuardTransformHints(
+        identifier,
+        text,
+        source,
+      ),
+      ...deriveArenaStartOwnershipGuardTransformHints(
         identifier,
         text,
         source,
