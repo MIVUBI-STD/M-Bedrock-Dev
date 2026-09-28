@@ -192,6 +192,17 @@ export const BUILTIN_REPAIR_REALIZERS:
       rationale:
         "Applies only analyzer-owned exact source-transform hints backed by an authored applied-generation persistence marker.",
     }, {
+      id: "arena-capacity-guard-realizer",
+      version: "1",
+      sourceKind: "built-in-planner",
+      sourceId: "arena-capacity-guard-template",
+      owner:
+        "packages/orchestrator/src/script-transform-hint-realizer.ts",
+      deterministic: true,
+      repairClass: "implementation-repair",
+      rationale:
+        "Applies only analyzer-owned exact terminal arena capacity transform hints with a direct authored capacity operand.",
+    }, {
       id: "linear-topology-repair-realizer",
       version: "1",
       sourceKind: "provider",
