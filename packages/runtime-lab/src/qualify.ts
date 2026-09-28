@@ -61,6 +61,54 @@ function outcomeFor(
   };
 }
 
+function satisfiesMeasurementRequirements(
+  record: RuntimeEvidenceRecord,
+  requirements: RuntimeExperimentDefinition["evidenceRequirements"] extends
+    readonly (infer R)[] | undefined
+      ? R extends { measurements?: infer M }
+        ? M
+        : never
+      : never,
+): boolean {
+  if (requirements === undefined) return true;
+
+  for (const [key, rule] of Object.entries(
+    requirements as Record<
+      string,
+      {
+        equals?: number;
+        min?: number;
+        max?: number;
+      }
+    >,
+  )) {
+    const value = record.measurements?.[key];
+    if (value === undefined || !Number.isFinite(value)) {
+      return false;
+    }
+    if (
+      rule.equals !== undefined &&
+      value !== rule.equals
+    ) {
+      return false;
+    }
+    if (
+      rule.min !== undefined &&
+      value < rule.min
+    ) {
+      return false;
+    }
+    if (
+      rule.max !== undefined &&
+      value > rule.max
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function consistentState(
   outcomes: readonly RuntimeExperimentTrialOutcome[],
 ): "present" | "absent" | undefined {
@@ -237,6 +285,10 @@ export function qualifyRuntimeExperiment(
           runtimeScopeContains(
             record.scope,
             requirement.scope,
+          ) &&
+          satisfiesMeasurementRequirements(
+            record,
+            requirement.measurements,
           )
         );
 
