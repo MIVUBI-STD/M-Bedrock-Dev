@@ -148,3 +148,24 @@ full test suite       pass
 ```
 
 This proves the role/direction contracts compile and pass the current repository regression surface. It does not by itself prove Minecraft runtime semantics outside the experiments actually executed.
+
+
+## Causal intervention provenance proof
+
+Controlled-experiment causal proof now carries typed intervention provenance including experiment revision, predicate, controlled factors, observed control/treatment states, expected-direction disposition, target runtime profile, fixture fingerprint, and predicate-specific evidence IDs.
+
+Root-cause candidates may declare exact `causalPredicateIds`. Experiment-backed mutation is downgraded to proposal-only when intervention provenance is missing, malformed, direction-mismatched, or does not cover the candidate's causal predicates.
+
+Repair decisions retain the full causal proof object, and repair proof bundles preserve intervention provenance so auditability is not lost after admission.
+
+Validated source revision: `133d681e7afa6ff72d21228b5f3c0f49542a7936`.
+
+GitHub Actions Verify run `36381755600` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
