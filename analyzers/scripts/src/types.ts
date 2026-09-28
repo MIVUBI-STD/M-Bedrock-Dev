@@ -331,7 +331,9 @@ export interface ScriptGuardedOutcome {
 export interface ScriptArenaAuthorityEvidence {
   kind:
     | "membership-commit"
+    | "capacity-operand"
     | "capacity-check"
+    | "arena-generation-operand"
     | "start-owner-acquire"
     | "start-state-commit";
   arenaExpression: string;
