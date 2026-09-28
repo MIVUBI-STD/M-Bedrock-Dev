@@ -159,3 +159,5 @@ export * from "./diagnosis-runtime.js";
 export * from "./runtime-experiment-temporal-assessment.js";
 
 export * from "./runtime-scheduler-diagnostic-bindings.js";
+
+export * from "./runtime-multiplayer-diagnostic-bindings.js";
