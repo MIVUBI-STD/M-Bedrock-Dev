@@ -39,6 +39,12 @@ export interface RepairStrategyProviderProposal {
     providerId: string;
     providerVersion: string;
   }[];
+  realizerProvenance?: {
+    realizerId: string;
+    realizerVersion: string;
+    sourceKind: string;
+    sourceId: string;
+  };
 }
 
 function canonicalJson(value: unknown): string {
