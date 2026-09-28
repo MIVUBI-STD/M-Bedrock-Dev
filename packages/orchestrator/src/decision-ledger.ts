@@ -129,6 +129,7 @@ function mismatchReason(
     "repairProviderRegistryRevision",
     "repairStrategySourceRegistryRevision",
     "repairRealizerRegistryRevision",
+    "postTransformProofRevision",
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
