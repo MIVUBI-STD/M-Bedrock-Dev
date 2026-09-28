@@ -27,8 +27,9 @@ import {
   decideRepairReleaseWithLineage,
   type RepairReleaseLineageResult,
 } from "./repair-release-lineage.js";
-import type {
-  RepairStrategySelection,
+import {
+  repairStrategyPostTransformProofRevision,
+  type RepairStrategySelection,
 } from "./repair-strategy-selection.js";
 import type {
   ProviderBackedRepairStrategySelection,
@@ -387,12 +388,16 @@ export function recordRepairStrategySelection(
       ? selection.selected.intelligence
           .postTransformProof
       : undefined;
+  const selectedPostTransformProofRevision =
+    repairStrategyPostTransformProofRevision(
+      selectedPostTransformProof,
+    );
 
   if (
-    selectedPostTransformProof !== undefined &&
+    selectedPostTransformProofRevision !== undefined &&
     context.basis.postTransformProofRevision !== undefined &&
     context.basis.postTransformProofRevision !==
-      selectedPostTransformProof.proofFingerprint
+      selectedPostTransformProofRevision
   ) {
     throw new Error(
       "Decision basis post-transform proof revision does not match the selected strategy proof.",
@@ -441,11 +446,11 @@ export function recordRepairStrategySelection(
       : { transactionId }),
     basis: {
       ...context.basis,
-      ...(selectedPostTransformProof === undefined
+      ...(selectedPostTransformProofRevision === undefined
         ? {}
         : {
             postTransformProofRevision:
-              selectedPostTransformProof.proofFingerprint,
+              selectedPostTransformProofRevision,
           }),
     },
     ...(context.upstreamDecisionIds === undefined
@@ -475,11 +480,11 @@ export function recordRepairStrategySelection(
           "@" +
           realizer.realizerVersion,
       ),
-      ...(selectedPostTransformProof === undefined
+      ...(selectedPostTransformProofRevision === undefined
         ? []
         : [
             "post-transform-proof:" +
-              selectedPostTransformProof.proofFingerprint,
+              selectedPostTransformProofRevision,
           ]),
     ],
     outputIds,
