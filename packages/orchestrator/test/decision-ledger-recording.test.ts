@@ -139,6 +139,24 @@ function ledgerBeforeRelease() {
         kind: "runtime",
         passed: true,
         evidenceIds: ["runtime:ready"],
+        runtimeExperimentContract: {
+          interventionId: "exp:chunk",
+          experimentRevision: "rev-2",
+          compatibleWithRevisions: ["rev-1"],
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          predicateIds: ["target-ready"],
+          factorContrasts: [{
+            factorId: "chunk-loaded",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          expectedContrasts: [{
+            predicateId: "target-ready",
+            controlState: "absent",
+            treatmentState: "present",
+          }],
+        },
       },
       reasons: ["passed"],
     },
@@ -241,6 +259,22 @@ describe("decision ledger recording", () => {
       "decision-runtime",
       "decision-strategy",
     ]);
+
+    const runtimeEntry = result.ledger.entries.find(
+      (entry) => entry.id === "decision-runtime",
+    );
+    expect(runtimeEntry?.inputIds).toEqual(
+      expect.arrayContaining([
+        "runtime-experiment:exp:chunk",
+        "runtime-experiment-revision:rev-2",
+        "runtime-target-profile:profile-a",
+        "runtime-fixture:fixture-a",
+        "runtime-predicate:target-ready",
+      ]),
+    );
+    expect(runtimeEntry?.outputIds).toContain(
+      "runtime-verification-contract:exp:chunk@rev-2",
+    );
   });
 
   it("does not record release admission when lineage gate blocks", () => {
