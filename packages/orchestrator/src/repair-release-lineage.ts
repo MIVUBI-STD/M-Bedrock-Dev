@@ -402,11 +402,17 @@ export function decideRepairReleaseWithLineage(
     transactionId,
     "repair-admission",
   );
-  const runtime = uniqueActiveStage(
+  const runtimeEntries = activeForTransaction(
     ledger,
     transactionId,
     "runtime-verification",
   );
+  const runtimeError =
+    runtimeEntries.length === 0
+      ? "Missing active runtime-verification decision for transaction " +
+        transactionId +
+        "."
+      : undefined;
   const preservationVerification = uniqueActiveStage(
     ledger,
     transactionId,
@@ -436,7 +442,7 @@ export function decideRepairReleaseWithLineage(
     ...(needsTransitiveRevalidation
       ? [transitive.error]
       : []),
-    runtime.error,
+    runtimeError,
     preservationVerification.error,
     packageVerification.error,
   ].filter((value): value is string => value !== undefined);
@@ -459,7 +465,7 @@ export function decideRepairReleaseWithLineage(
 
   const strategyEntry = strategy.entry!;
   const admissionEntry = admission.entry!;
-  const runtimeEntry = runtime.entry!;
+  const runtimeVerificationEntries = runtimeEntries;
   const preservationEntry = preservationVerification.entry!;
   const packageEntry = packageVerification.entry!;
   const transitiveEntry = needsTransitiveRevalidation
@@ -603,17 +609,21 @@ export function decideRepairReleaseWithLineage(
   const requiredVerificationParent =
     transitiveEntry?.id ?? admissionEntry.id;
 
-  const runtimeAncestors = ancestorIds(
-    ledger,
-    runtimeEntry,
-  );
-  if (!runtimeAncestors.has(requiredVerificationParent)) {
-    lineageErrors.push(
-      "Runtime verification is not descended from " +
-        (transitiveEntry
-          ? "transitive revalidation."
-          : "repair admission."),
+  for (const runtimeEntry of runtimeVerificationEntries) {
+    const runtimeAncestors = ancestorIds(
+      ledger,
+      runtimeEntry,
     );
+    if (!runtimeAncestors.has(requiredVerificationParent)) {
+      lineageErrors.push(
+        "Runtime verification " +
+          runtimeEntry.id +
+          " is not descended from " +
+          (transitiveEntry
+            ? "transitive revalidation."
+            : "repair admission."),
+      );
+    }
   }
 
   const preservationAncestors = ancestorIds(
@@ -655,14 +665,18 @@ export function decideRepairReleaseWithLineage(
     );
   }
 
-  if (
-    !runtimeEntry.outputIds.includes(
-      "runtime-verification:passed",
-    )
-  ) {
-    lineageErrors.push(
-      "Active runtime verification decision is not a passing decision.",
-    );
+  for (const runtimeEntry of runtimeVerificationEntries) {
+    if (
+      !runtimeEntry.outputIds.includes(
+        "runtime-verification:passed",
+      )
+    ) {
+      lineageErrors.push(
+        "Active runtime verification decision " +
+          runtimeEntry.id +
+          " is not a passing decision.",
+      );
+    }
   }
 
   if (
@@ -690,7 +704,7 @@ export function decideRepairReleaseWithLineage(
     strategyEntry,
     admissionEntry,
     ...(transitiveEntry ? [transitiveEntry] : []),
-    runtimeEntry,
+    ...runtimeVerificationEntries,
     preservationEntry,
     packageEntry,
   ];
