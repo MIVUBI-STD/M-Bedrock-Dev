@@ -16,3 +16,5 @@ export * from "./scenario-requirements.js";
 export * from "./scenario-execution-gate.js";
 
 export * from "./chunk-readiness-experiment.js";
+
+export * from "./experiment-capability-preflight.js";
