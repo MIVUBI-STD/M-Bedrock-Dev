@@ -254,3 +254,28 @@ stale generation/previous-session callback
 and preserve exact runtime tick/sequence evidence so happens-before claims never derive from unordered observations.
 
 Do not convert scheduler timing assumptions into rules until repeated controlled runtime evidence establishes the applicable target-profile semantics.
+
+
+## Next lane — scheduler cancellation and cross-arena isolation
+
+Stale-generation ownership and timeline ordering contracts are now structurally validated.
+
+Next priorities:
+
+1. prove cancellation prevents fixture-owned callbacks from mutating after teardown;
+2. distinguish cancelled callbacks from merely delayed callbacks;
+3. prove callbacks owned by arena A cannot mutate arena B state;
+4. bind scheduler work to arena/session/subsystem generation in runtime evidence scope;
+5. test teardown/reset while deferred work is pending;
+6. test simultaneous deferred work from multiple arenas under the same runtime scheduler;
+7. preserve per-arena timeline streams so ordering evidence cannot be accidentally compared across unrelated sessions.
+
+Required fail-closed rule:
+
+```text
+callback has no matching active owner generation
+→ mutation forbidden
+→ explicit stale/cancelled evidence
+```
+
+Do not infer scheduler isolation from unique scoreboard names or source-level arena IDs. Isolation must be demonstrated by controlled concurrent runtime evidence.
