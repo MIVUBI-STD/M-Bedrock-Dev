@@ -78,6 +78,7 @@ function stateFor(
   switch (disposition) {
     case "ambiguous-intent": return "intended-behavior-unclear";
     case "insufficient-evidence": return "more-evidence-needed";
+    case "runtime-proof-required": return "runtime-test-required";
     default: return disposition;
   }
 }
@@ -141,6 +142,7 @@ function runtimeItem(
 ): ReviewUiItem {
   const title = words(assessment.outcomeId);
   const why = assessment.reasons.join(" ");
+  const nextAction = actionLabel(assessment.nextEvidenceNeed);
 
   return {
     id: assessment.id,
@@ -152,9 +154,7 @@ function runtimeItem(
       title +
       "”.",
     why: why || "No additional explanation was recorded.",
-    ...(actionLabel(assessment.nextEvidenceNeed) === undefined
-      ? {}
-      : { nextAction: actionLabel(assessment.nextEvidenceNeed) }),
+    ...(nextAction === undefined ? {} : { nextAction }),
     section: sectionFor(assessment.disposition),
     technical: {
       evidenceIds: assessment.evidenceIds,

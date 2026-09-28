@@ -11,6 +11,7 @@ export const reviewProjectionFixture: EngineeringReviewProjection = {
     target: {
       edition: "bedrock",
       version: "1.26.32",
+      educationFeatures: "unknown",
     },
   },
   understanding: {
