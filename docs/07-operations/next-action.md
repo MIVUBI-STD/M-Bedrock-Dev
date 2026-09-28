@@ -661,3 +661,40 @@ arena-start-ownership-violation-observed
 ```
 
 Do not infer arena ownership from variable names alone. A concrete arena realizer is allowed only after the analyzer can prove the guard operands and the mutation they protect belong to the same authored arena authority path.
+
+
+## Next lane — post-transform semantic proof
+
+Scheduler generation, session generation, persistence idempotency, arena capacity, and arena start ownership now have concrete analyzer-owned source transforms.
+
+The next quality bottleneck is proving the generated edit itself before runtime mutation/retest.
+
+Priorities:
+
+1. define transform-specific static postconditions owned by analyzers;
+2. after a candidate transform is generated, apply it to an isolated in-memory source snapshot and reparse it;
+3. require the analyzer to observe the expected new guard/authority relation after transformation;
+4. require the original transform hint to disappear after transformation, proving idempotent source diagnosis;
+5. reject a candidate if the transformed source creates a second authority surface, duplicate guard, parse error, or ambiguous hint;
+6. preserve exact pre-transform and post-transform analyzer revisions;
+7. add the post-transform proof fingerprint to candidate/decision provenance;
+8. require post-transform semantic graph impact to remain within the admitted repair envelope;
+9. run runtime retest only after static post-transform proof succeeds;
+10. keep source mutation transactional so failed post-transform proof never changes the original world/package.
+
+Target closure:
+
+```text
+exact analyzer hint
+→ deterministic candidate
+→ isolated transform
+→ reparse
+→ static postcondition proven
+→ impact/preservation validation
+→ transaction apply
+→ same causal runtime experiment retest
+```
+
+The governing rule is:
+
+> A deterministic edit is not yet a proven repair. The analyzer must recognize the intended guard after transformation, and the same runtime experiment must still close the causal loop.
