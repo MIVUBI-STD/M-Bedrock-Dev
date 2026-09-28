@@ -101,8 +101,39 @@ export function realizeProviderRepairStrategyFromGraph(
   graph: SemanticGraph,
   enumeration: RepairStrategyEnumeration,
   providerRegistry: RepairStrategyProviderRegistry,
+  realizerRegistry: RepairRealizerRegistry,
   input: GraphBoundProviderRepairRealizationInput,
 ): ProviderRepairRealization {
+  const source = enumeration.applicableSources.find(
+    (item) =>
+      item.sourceId === input.sourceId &&
+      item.sourceVersion === input.sourceVersion,
+  );
+  if (!source) {
+    return {
+      status: "blocked",
+      sourceId: input.sourceId,
+      reasons: [
+        "Repair strategy source was not enumerated as applicable to this opportunity.",
+      ],
+    };
+  }
+
+  const realizer = repairRealizerForSource(
+    realizerRegistry,
+    source.sourceKind,
+    source.sourceId,
+  );
+  if (!realizer) {
+    return {
+      status: "blocked",
+      sourceId: input.sourceId,
+      reasons: [
+        "Applicable repair strategy source has no registered deterministic realizer.",
+      ],
+    };
+  }
+
   const derivation = deriveChangedSemanticNodeIds(
     graph,
     input.transaction,
@@ -130,7 +161,7 @@ export function realizeProviderRepairStrategyFromGraph(
     };
   }
 
-  return realizeProviderRepairStrategy(
+  const realized = realizeProviderRepairStrategy(
     enumeration,
     providerRegistry,
     {
@@ -139,4 +170,21 @@ export function realizeProviderRepairStrategyFromGraph(
         derivation.changedNodeIds,
     },
   );
+
+  if (realized.status !== "realized") {
+    return realized;
+  }
+
+  return {
+    ...realized,
+    proposal: {
+      ...realized.proposal,
+      realizerProvenance: {
+        realizerId: realizer.id,
+        realizerVersion: realizer.version,
+        sourceKind: realizer.sourceKind,
+        sourceId: realizer.sourceId,
+      },
+    },
+  };
 }
