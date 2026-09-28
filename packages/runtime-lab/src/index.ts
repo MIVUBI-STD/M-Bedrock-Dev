@@ -24,3 +24,5 @@ export * from "./scheduler-generation-experiment.js";
 export * from "./scheduler-ordering-experiment.js";
 
 export * from "./scheduler-isolation-experiment.js";
+
+export * from "./entity-navigation-experiment.js";
