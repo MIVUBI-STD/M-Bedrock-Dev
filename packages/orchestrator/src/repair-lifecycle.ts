@@ -1,6 +1,10 @@
 import type {
   RuntimeVerificationExperimentContract,
 } from "../../project-model/src/index.js";
+import {
+  runtimeVerificationExperimentContractCompatible,
+  runtimeVerificationExperimentContractsFromProvenance,
+} from "../../project-model/src/index.js";
 import type {
   PreservationVerificationReceipt,
 } from "../../preservation/src/index.js";
@@ -42,6 +46,7 @@ export interface RepairLifecycleState {
   preservationVerificationComplete: boolean;
   packageVerificationComplete: boolean;
   runtimeVerificationContract?: RuntimeVerificationExperimentContract;
+  authorizingRuntimeExperimentContracts?: readonly RuntimeVerificationExperimentContract[];
   pendingNodeIds: readonly string[];
   pendingPaths: readonly string[];
   reasons: readonly string[];
@@ -51,6 +56,11 @@ export function repairLifecycleFromApplyResult(
   result: AuthorizedRepairApplyResult,
 ): RepairLifecycleState {
   const transactionId = result.proof.transactionId;
+
+  const authorizingRuntimeExperimentContracts =
+    runtimeVerificationExperimentContractsFromProvenance(
+      result.proof.causalInterventionProvenance ?? [],
+    );
 
   switch (result.status) {
     case "not-authorized":
@@ -133,6 +143,9 @@ export function repairLifecycleFromApplyResult(
         runtimeVerificationComplete: false,
         preservationVerificationComplete: false,
         packageVerificationComplete: false,
+        ...(authorizingRuntimeExperimentContracts.length === 0
+          ? {}
+          : { authorizingRuntimeExperimentContracts }),
         pendingNodeIds: [...result.pendingNodeIds],
         pendingPaths: [...result.pendingPaths],
         reasons: [
@@ -150,6 +163,9 @@ export function repairLifecycleFromApplyResult(
         runtimeVerificationComplete: false,
         preservationVerificationComplete: false,
         packageVerificationComplete: false,
+        ...(authorizingRuntimeExperimentContracts.length === 0
+          ? {}
+          : { authorizingRuntimeExperimentContracts }),
         pendingNodeIds: [],
         pendingPaths: [],
         reasons: [
@@ -266,6 +282,27 @@ export function markRepairRuntimeVerified(
     );
   }
   validateReceipt(state, receipt, "runtime");
+
+  const expectedContracts =
+    state.authorizingRuntimeExperimentContracts ?? [];
+  if (expectedContracts.length > 1) {
+    throw new Error(
+      "Runtime verification requires separate coverage for each authorizing experiment contract.",
+    );
+  }
+  if (expectedContracts.length === 1) {
+    const expected = expectedContracts[0]!;
+    if (
+      !runtimeVerificationExperimentContractCompatible(
+        expected,
+        receipt.runtimeExperimentContract,
+      )
+    ) {
+      throw new Error(
+        "Runtime verification receipt experiment contract is not compatible with the repair-authorizing experiment contract.",
+      );
+    }
+  }
 
   return {
     ...state,
