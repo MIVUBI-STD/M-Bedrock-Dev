@@ -453,3 +453,60 @@ full test suite       pass
 ```
 
 Independent Package Source Snapshot verification on the same revision also passed TypeScript compilation and 34/34 focused scheduler/runtime tests under Node 24.21.0.
+
+
+## Entity AI navigation recovery and crowding proof contracts
+
+Runtime Lab now has controlled experiment families for:
+
+1. bounded path-anchor recovery after a verified stall;
+2. crowding differential for distinguishing route/navigation issues from entity congestion.
+
+Runtime evidence now supports numeric `measurements` for progress claims, including:
+
+```text
+windowTicks
+displacement
+distanceToTargetReduction
+velocityMagnitude
+nearbyEntityCount
+```
+
+Navigation observations are scoped by:
+
+```text
+arenaId
+arenaGeneration
+entityKey
+entityGeneration
+operationId
+```
+
+so pre-recovery, post-recovery, and crowding windows cannot be silently mixed.
+
+Recovery experiments require supporting evidence for target validity, active movement goal, chunk readiness, measurable progress sampling, a pre-recovery stall, and explicit recovery-applied state. Only then may the treatment contrast:
+
+```text
+control: recovery disabled → movement-resumed-after-recovery absent
+treatment: recovery enabled → movement-resumed-after-recovery present
+```
+
+be promoted to intervention-supported causal provenance.
+
+Crowding experiments vary nearby entity count and require the same target/goal/chunk/progress support before a stall contrast can be interpreted.
+
+The progress validator rejects stall claims when measured displacement or distance-to-target reduction exceeds the configured stall threshold.
+
+Validated source revision: `0949bf400118b0a8efb4d08f6b23d64857950a4a`.
+
+GitHub Actions Verify run `36394389787` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
+
+Independent Package Source Snapshot verification on the same revision also passed TypeScript compilation and 26/26 focused AI/runtime tests under Node 24.21.0.
