@@ -686,3 +686,80 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Repair strategy intelligence proof
+
+Repair strategy selection now evaluates more than mutation size and graph blast radius.
+
+Runtime-causal strategies can declare an exact causal binding:
+
+```text
+intervention ids
+predicate ids
+controlled factor ids
+```
+
+When the diagnostic carries controlled-intervention provenance, automatic selection fails closed if a strategy omits or does not cover that causal binding.
+
+Strategies may classify themselves as:
+
+```text
+implementation-repair
+configuration-repair
+compatibility-workaround
+runtime-recovery-mitigation
+```
+
+Selection policy can restrict allowed repair classes.
+
+The Pareto assessment now includes:
+
+```text
+repair admission
+semantic blast radius
+sensitive semantic kinds
+affected nodes/paths/depth
+preservation risk
+runtime retest burden
+reversibility
+idempotency
+changed nodes
+patch operations
+```
+
+Reversible and idempotent strategies are preferred by default when the higher-order causal/safety dimensions are otherwise equal. Policy can disable those preferences explicitly.
+
+Raw patch size is not allowed to override causal fit. A smaller strategy with missing runtime causal binding is rejected even when a larger strategy is selected. The selected result records an explicit rationale when a smaller raw mutation existed but was rejected for non-size reasons.
+
+Every selected result now retains structured rejected alternatives:
+
+```text
+strategy id
+inadmissible | dominated
+rejection reasons
+dominating strategy ids
+```
+
+Decision-ledger recording preserves:
+
+```text
+selected strategy
+repair class
+causal-binding status
+rejected alternatives + disposition
+```
+
+Provider existence remains proposal provenance, not selection authority.
+
+Validated source revision: `9a00003b85a5b8fa77221fc66b0f2a3572ec0017`.
+
+GitHub Actions Verify run `36406861849` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
