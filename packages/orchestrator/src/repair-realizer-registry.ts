@@ -159,6 +159,17 @@ export const BUILTIN_REPAIR_REALIZERS:
   RepairRealizerRegistry = {
     schemaVersion: 1,
     realizers: [{
+      id: "scheduler-generation-guard-realizer",
+      version: "1",
+      sourceKind: "built-in-planner",
+      sourceId: "scheduler-generation-guard-template",
+      owner:
+        "packages/orchestrator/src/script-transform-hint-realizer.ts",
+      deterministic: true,
+      repairClass: "implementation-repair",
+      rationale:
+        "Applies only validated analyzer-owned exact source-transform hints for captured scheduler generation guards.",
+    }, {
       id: "linear-topology-repair-realizer",
       version: "1",
       sourceKind: "provider",
