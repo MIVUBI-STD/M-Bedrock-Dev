@@ -222,6 +222,19 @@ export function qualifyRuntimeExperiment(
     ...new Set(outcomes.flatMap((outcome) => outcome.evidenceIds)),
   ].sort();
 
+  const outcomeEvidenceIdsByPredicate = Object.fromEntries(
+    definition.outcomePredicateIds.map((predicateId) => [
+      predicateId,
+      [
+        ...new Set(
+          outcomes
+            .filter((outcome) => outcome.predicateId === predicateId)
+            .flatMap((outcome) => outcome.evidenceIds),
+        ),
+      ].sort(),
+    ]),
+  );
+
   const enoughRuns = definition.arms.every(
     (arm) =>
       (completedRunsByArm[arm.id] ?? 0) >=
@@ -310,6 +323,7 @@ export function qualifyRuntimeExperiment(
     observedContrasts: contrasts,
     expectedContrastMatches: expectedMatches.sort(),
     expectedContrastMismatches: expectedMismatches.sort(),
+    outcomeEvidenceIdsByPredicate,
     evidenceIds,
     reasons: contrast.length > 0
       ? [
@@ -352,8 +366,33 @@ export function targetBoundObservedEvidence(
     }));
 }
 
+function controlledFactorIds(
+  definition: RuntimeExperimentDefinition,
+): string[] {
+  const controls = definition.arms.filter(
+    (arm) => arm.role === "control",
+  );
+  const treatments = definition.arms.filter(
+    (arm) => arm.role === "treatment",
+  );
+
+  return definition.factors
+    .filter((factor) =>
+      controls.some((control) =>
+        treatments.some(
+          (treatment) =>
+            control.factorValues[factor.id] !==
+              treatment.factorValues[factor.id],
+        )
+      )
+    )
+    .map((factor) => factor.id)
+    .sort();
+}
+
 export function experimentQualificationCausalProof(
   qualification: RuntimeExperimentQualification,
+  definition?: RuntimeExperimentDefinition,
 ): CausalProof {
   switch (qualification.state) {
     case "insufficient":
@@ -375,13 +414,50 @@ export function experimentQualificationCausalProof(
         reproductionIds: [qualification.experimentId],
         note: qualification.reasons.join(" "),
       };
-    case "intervention-supported":
+    case "intervention-supported": {
+      const interventionProvenance =
+        definition === undefined
+          ? undefined
+          : (qualification.expectedContrastMatches ?? []).flatMap(
+              (predicateId) => {
+                const contrast = qualification.observedContrasts?.find(
+                  (item) => item.predicateId === predicateId,
+                );
+                if (!contrast) return [];
+                return [{
+                  interventionId: qualification.experimentId,
+                  experimentRevision:
+                    runtimeExperimentDefinitionRevision(definition),
+                  predicateId,
+                  controlledFactorIds:
+                    controlledFactorIds(definition),
+                  controlState: contrast.controlState,
+                  treatmentState: contrast.treatmentState,
+                  expectedContrastDisposition: "matched" as const,
+                  targetProfileFingerprint:
+                    definition.targetProfileFingerprint,
+                  fixtureFingerprint:
+                    definition.fixtureFingerprint,
+                  evidenceIds:
+                    qualification.outcomeEvidenceIdsByPredicate?.[
+                      predicateId
+                    ] ?? [],
+                }];
+              },
+            );
+
       return {
         state: "intervention-supported",
         evidenceIds: qualification.evidenceIds,
         interventionIds: [qualification.experimentId],
+        ...(interventionProvenance === undefined
+          ? {}
+          : { interventionProvenance }),
         reproductionIds: [qualification.experimentId],
+        targetProfileFingerprint:
+          definition?.targetProfileFingerprint,
         note: qualification.reasons.join(" "),
       };
+    }
   }
 }
