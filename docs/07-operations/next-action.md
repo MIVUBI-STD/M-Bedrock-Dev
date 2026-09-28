@@ -311,3 +311,36 @@ entity identity/generation
 ```
 
 A stationary entity is not automatically a pathfinding defect. The experiment must distinguish waiting/target loss/collision/unloaded region from genuine navigation stall.
+
+
+## Next lane — multiplayer session concurrency proof
+
+Chunk readiness, scheduler behavior, and entity navigation now have controlled proof contracts.
+
+Next runtime domain:
+
+1. join-pad enter/leave ownership;
+2. disconnect/reconnect generation reset;
+3. death while joining an arena;
+4. simultaneous player joins into one arena;
+5. simultaneous starts across multiple arenas;
+6. session cleanup on match end;
+7. player inventory/scoreboard ownership isolation;
+8. cross-arena event leakage;
+9. reconnect to the same arena with a new session generation;
+10. full-capacity five-player arena stress.
+
+Required runtime scope:
+
+```text
+playerKey
+connectionGeneration
+lifeGeneration
+arenaId
+arenaGeneration
+operationId
+```
+
+A player teleport, reset, or cleanup event is valid only when its session/generation ownership matches the current arena membership contract.
+
+Do not classify a reconnect/reset issue from player location alone. Require membership state, session generation, arena generation, and lifecycle event ordering evidence.
