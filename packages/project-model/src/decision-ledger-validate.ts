@@ -102,6 +102,34 @@ function validateEntrySemantics(
   const providerBound = inputIds.some((id) =>
     id.startsWith("repair-provider:")
   );
+  const sourceBound = inputIds.some((id) =>
+    id.startsWith("repair-source:")
+  );
+  if (
+    sourceBound &&
+    !nonEmpty(
+      value.basis.repairStrategySourceRegistryRevision,
+    )
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] repair-source-bound decision requires repairStrategySourceRegistryRevision.",
+    );
+  }
+
+  if (
+    value.kind === "repair-strategy-selection" &&
+    nonEmpty(
+      value.basis.repairStrategySourceRegistryRevision,
+    ) &&
+    !sourceBound
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] repair-source-bound repair strategy requires repair-source provenance.",
+    );
+  }
+
   const realizerBound = inputIds.some((id) =>
     id.startsWith("repair-realizer:")
   );
