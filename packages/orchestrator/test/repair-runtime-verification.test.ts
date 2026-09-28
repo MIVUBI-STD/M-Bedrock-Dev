@@ -3,9 +3,10 @@ import {
   repairRuntimeExperimentContractsFromProof,
   verifyRepairRuntimeEvidence,
 } from "../src/repair-runtime-verification.js";
-import type {
-  RuntimeEvidenceRecord,
-  RuntimeVerificationExperimentContract,
+import {
+  runtimeVerificationExperimentEnvelopeRevision,
+  type RuntimeEvidenceRecord,
+  type RuntimeVerificationExperimentContract,
 } from "../../project-model/src/index.js";
 
 const records: RuntimeEvidenceRecord[] = [{
@@ -37,6 +38,68 @@ const records: RuntimeEvidenceRecord[] = [{
 }];
 
 describe("repair runtime verification", () => {
+  it("derives deterministic experiment envelope revisions and changes them only with semantic contract changes", () => {
+    const first: RuntimeVerificationExperimentContract = {
+      interventionId: "exp:a",
+      experimentRevision: "rev-1",
+      targetProfileFingerprint: "profile-a",
+      fixtureFingerprint: "fixture-a",
+      predicateIds: ["b", "a"],
+      factorContrasts: [{
+        factorId: "flag",
+        controlValue: false,
+        treatmentValue: true,
+      }],
+      expectedContrasts: [{
+        predicateId: "a",
+        controlState: "absent",
+        treatmentState: "present",
+      }],
+    };
+    const second: RuntimeVerificationExperimentContract = {
+      interventionId: "exp:b",
+      experimentRevision: "rev-1",
+      targetProfileFingerprint: "profile-a",
+      fixtureFingerprint: "fixture-b",
+      predicateIds: ["c"],
+      factorContrasts: [{
+        factorId: "mode",
+        controlValue: "old",
+        treatmentValue: "new",
+      }],
+      expectedContrasts: [{
+        predicateId: "c",
+        controlState: "absent",
+        treatmentState: "present",
+      }],
+    };
+
+    const a = runtimeVerificationExperimentEnvelopeRevision(
+      [first, second],
+    );
+    const reordered = runtimeVerificationExperimentEnvelopeRevision(
+      [
+        second,
+        {
+          ...first,
+          predicateIds: ["a", "b"],
+        },
+      ],
+    );
+    const changed = runtimeVerificationExperimentEnvelopeRevision(
+      [
+        first,
+        {
+          ...second,
+          fixtureFingerprint: "fixture-c",
+        },
+      ],
+    );
+
+    expect(reordered).toBe(a);
+    expect(changed).not.toBe(a);
+  });
+
   it("creates a receipt only from observed scope-compatible evidence", () => {
     const result = verifyRepairRuntimeEvidence({
       transactionId: "tx-1",
