@@ -128,6 +128,66 @@ describe("runtime experiment diagnostic evidence bridge", () => {
     ]);
   });
 
+  it("exposes arm roles and expected contrast direction from qualification", () => {
+    const qualification: RuntimeExperimentQualification = {
+      experimentId: "exp",
+      state: "intervention-supported",
+      completedRunsByArm: {
+        c: 1,
+        t: 1,
+      },
+      unknownOutcomes: 0,
+      controlTreatmentContrastPredicates: [
+        "cleanup-complete",
+      ],
+      armRoles: {
+        c: "control",
+        t: "treatment",
+      },
+      observedContrasts: [{
+        predicateId: "cleanup-complete",
+        controlState: "absent",
+        treatmentState: "present",
+      }],
+      expectedContrastMatches: [
+        "cleanup-complete",
+      ],
+      expectedContrastMismatches: [],
+      evidenceIds: [],
+      reasons: [],
+    };
+
+    const bridge = runtimeExperimentDiagnosticEvidence(
+      qualification,
+      [
+        trial("control", "c", [evidenceAbsent]),
+        trial("treatment", "t", [evidencePresent]),
+      ],
+    );
+
+    expect(
+      bridge.predicates[0]?.expectedContrastDisposition,
+    ).toBe("matched");
+    expect(
+      bridge.predicates[0]?.observedContrast,
+    ).toEqual({
+      controlState: "absent",
+      treatmentState: "present",
+    });
+    expect(
+      bridge.predicates[0]?.armObservations,
+    ).toEqual([
+      expect.objectContaining({
+        armId: "c",
+        role: "control",
+      }),
+      expect.objectContaining({
+        armId: "t",
+        role: "treatment",
+      }),
+    ]);
+  });
+
   it("never hides conflicting trial observations behind a stronger ceiling", () => {
     const qualification: RuntimeExperimentQualification = {
       experimentId: "exp",
