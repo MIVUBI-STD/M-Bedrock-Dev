@@ -328,6 +328,23 @@ export interface ScriptGuardedOutcome {
   outcomeSource: SourceRef;
 }
 
+export interface ScriptArenaAuthorityEvidence {
+  kind:
+    | "membership-commit"
+    | "capacity-check"
+    | "start-owner-acquire"
+    | "start-state-commit";
+  arenaExpression: string;
+  subjectExpression?: string;
+  membershipExpression?: string;
+  capacityExpression?: string;
+  ownerExpression?: string;
+  generationExpression?: string;
+  stateExpression?: string;
+  executionRegion: string;
+  source: SourceRef;
+}
+
 export interface ScriptCapabilityUse {
   capability:
     | "world-access"
@@ -377,5 +394,6 @@ export interface ParsedScriptFile {
   spatialTransformUses?: ScriptSpatialTransformUse[];
   spatialContextOffsetSeries?: ScriptSpatialContextOffsetSeries[];
   repairTransformHints?: RepairSourceTransformHint[];
+  arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   capabilities: ScriptCapabilityUse[];
 }
