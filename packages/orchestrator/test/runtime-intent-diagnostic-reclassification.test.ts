@@ -327,6 +327,190 @@ describe("runtime intent diagnostic reclassification", () => {
     );
   });
 
+  it("confirms only when role, state, intervention contrast, and expected direction all match", () => {
+    const roleBridge: RuntimeExperimentDiagnosticBridge = {
+      experimentId: "exp",
+      qualificationState: "intervention-supported",
+      predicates: [{
+        predicate: "membership-contradiction",
+        observation: {
+          predicate: "membership-contradiction",
+          state: "unknown",
+          evidenceId: "obs:membership-contradiction",
+        },
+        ceiling: "intervention-supported",
+        sourceEvidenceIds: [
+          "evidence:control",
+          "evidence:treatment",
+        ],
+        interventionContrast: true,
+        expectedContrastDisposition: "matched",
+        observedContrast: {
+          controlState: "absent",
+          treatmentState: "present",
+        },
+        armObservations: [{
+          armId: "baseline",
+          role: "control",
+          observation: {
+            predicate: "membership-contradiction",
+            state: "absent",
+            evidenceId: "obs:membership-contradiction:control",
+          },
+          sourceEvidenceIds: ["evidence:control"],
+        }, {
+          armId: "candidate",
+          role: "treatment",
+          observation: {
+            predicate: "membership-contradiction",
+            state: "present",
+            evidenceId: "obs:membership-contradiction:treatment",
+          },
+          sourceEvidenceIds: ["evidence:treatment"],
+        }],
+      }, {
+        predicate: "runtime-semantics-observed",
+        observation: {
+          predicate: "runtime-semantics-observed",
+          state: "unknown",
+          evidenceId: "obs:runtime-semantics-observed",
+        },
+        ceiling: "intervention-supported",
+        sourceEvidenceIds: [
+          "runtime:control",
+          "runtime:treatment",
+        ],
+        interventionContrast: true,
+        expectedContrastDisposition: "matched",
+        observedContrast: {
+          controlState: "absent",
+          treatmentState: "present",
+        },
+        armObservations: [{
+          armId: "baseline",
+          role: "control",
+          observation: {
+            predicate: "runtime-semantics-observed",
+            state: "absent",
+            evidenceId: "obs:runtime-semantics-observed:control",
+          },
+          sourceEvidenceIds: ["runtime:control"],
+        }, {
+          armId: "candidate",
+          role: "treatment",
+          observation: {
+            predicate: "runtime-semantics-observed",
+            state: "present",
+            evidenceId: "obs:runtime-semantics-observed:treatment",
+          },
+          sourceEvidenceIds: ["runtime:treatment"],
+        }],
+      }],
+      observations: [],
+    };
+
+    const result =
+      reclassifyIntentDiagnosticFromRuntime({
+        intent: intent("authored"),
+        subjectIds: ["arena"],
+        bridge: roleBridge,
+        bindings: {
+          contradictionRolePredicates: [{
+            predicate: "membership-contradiction",
+            role: "treatment",
+            state: "present",
+            requireInterventionContrast: true,
+            requireExpectedContrast: true,
+          }],
+          runtimeProofRolePredicates: [{
+            predicate: "runtime-semantics-observed",
+            role: "treatment",
+            state: "present",
+            requireInterventionContrast: true,
+            requireExpectedContrast: true,
+          }],
+        },
+        runtimeProofRequired: true,
+        runtimeIntegrity: integrity,
+      });
+
+    expect(result.disposition).toBe(
+      "confirmed-defect",
+    );
+    expect(result.matchedPredicates.contradictions).toEqual([
+      "membership-contradiction@role:treatment=present",
+    ]);
+  });
+
+  it("does not promote role-scoped evidence when deterministic contrast direction contradicts the experiment definition", () => {
+    const mismatchedBridge: RuntimeExperimentDiagnosticBridge = {
+      experimentId: "exp",
+      qualificationState: "intervention-supported",
+      predicates: [{
+        predicate: "membership-contradiction",
+        observation: {
+          predicate: "membership-contradiction",
+          state: "unknown",
+          evidenceId: "obs:membership-contradiction",
+        },
+        ceiling: "intervention-supported",
+        sourceEvidenceIds: [
+          "evidence:control",
+          "evidence:treatment",
+        ],
+        interventionContrast: true,
+        expectedContrastDisposition: "mismatched",
+        observedContrast: {
+          controlState: "present",
+          treatmentState: "absent",
+        },
+        armObservations: [{
+          armId: "baseline",
+          role: "control",
+          observation: {
+            predicate: "membership-contradiction",
+            state: "present",
+            evidenceId: "obs:membership-contradiction:control",
+          },
+          sourceEvidenceIds: ["evidence:control"],
+        }, {
+          armId: "candidate",
+          role: "treatment",
+          observation: {
+            predicate: "membership-contradiction",
+            state: "absent",
+            evidenceId: "obs:membership-contradiction:treatment",
+          },
+          sourceEvidenceIds: ["evidence:treatment"],
+        }],
+      }],
+      observations: [],
+    };
+
+    const result =
+      reclassifyIntentDiagnosticFromRuntime({
+        intent: intent("authored"),
+        subjectIds: ["arena"],
+        bridge: mismatchedBridge,
+        bindings: {
+          contradictionRolePredicates: [{
+            predicate: "membership-contradiction",
+            role: "control",
+            state: "present",
+            requireInterventionContrast: true,
+            requireExpectedContrast: true,
+          }],
+        },
+      });
+
+    expect(result.disposition).toBe(
+      "insufficient-evidence",
+    );
+    expect(
+      result.matchedPredicates.contradictions,
+    ).toEqual([]);
+  });
+
   it("caps inferred intent contradictions at probable defect", () => {
     const result =
       reclassifyIntentDiagnosticFromRuntime({
