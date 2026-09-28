@@ -578,3 +578,39 @@ proven runtime cause
 The governing rule is:
 
 > Runtime causal proof identifies what must change; a syntax-aware analyzer must still prove exactly where and how the source can be changed safely.
+
+
+## Next lane — persistence/idempotency and arena ownership transform hints
+
+Scheduler and session generation guards are the first runtime-causal classes with analyzer-owned exact source transforms and deterministic causal-auto realizers.
+
+Do not generalize the transform beyond the proven AST surface.
+
+Next priorities:
+
+1. inspect persistence/dynamic-property analyzers for exact patterns that can prove an idempotency/reconciliation transform without inventing storage semantics;
+2. inspect arena membership/start analyzers for exact atomic ownership/capacity mutation surfaces;
+3. define new `RepairSourceTransformHint` families only where source syntax supplies all required operands;
+4. keep `arena-ownership-guard-template`, navigation recovery, and compatibility workaround proposal-only until such hints exist;
+5. add exact parser/analyzer revision binding for every new hint family;
+6. require one-to-one causal predicate/factor coverage before causal-auto realization;
+7. verify generated transforms through the same runtime experiment that authorized the repair;
+8. add realizer-specific post-transform analyzer checks so the expected guard becomes statically observable after mutation;
+9. reject transformations that would duplicate an existing guard, widen state scope, or introduce a second authority surface;
+10. preserve source formatting beyond the smallest replaced syntax span whenever possible.
+
+Potential next concrete family:
+
+```text
+persistence stale-state / duplicate replay proof
+→ analyzer identifies authored write + reconciliation marker
+→ exact idempotency hint
+→ deterministic persistence realizer
+→ reload/restart causal retest
+```
+
+Arena capacity/start ownership remains a high-value target, but it must stay proposal-only unless the analyzer can identify the exact membership/start commit expression and its current ownership token.
+
+The governing rule remains:
+
+> A runtime experiment proves the missing behavior; only source syntax can authorize the exact edit.
