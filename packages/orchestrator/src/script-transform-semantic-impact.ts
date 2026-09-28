@@ -3,8 +3,15 @@ import {
   parseScriptFile,
 } from "../../../analyzers/scripts/src/index.js";
 import type {
+  RepairSourceTransformHint,
   SourceRef,
 } from "../../project-model/src/index.js";
+import type {
+  RepairTransformHintProposal,
+} from "./script-transform-hint-realizer.js";
+import {
+  proveAndBindScriptTransformPostcondition,
+} from "./script-transform-postcondition.js";
 import {
   buildInspectionSemanticIr,
 } from "./semantic-ir-stage.js";
@@ -186,4 +193,114 @@ export function proveScriptTransformSemanticImpact(
       "Pre/post transformed source preserves execution regions, execution edges, state surfaces, state operations, authority bindings, and temporal topology.",
     ],
   };
+}
+
+
+export type BoundScriptTransformSemanticProof =
+  | {
+      status: "bound";
+      proposal: RepairTransformHintProposal;
+      postconditionProofFingerprint: string;
+      semanticImpactProofFingerprint: string;
+    }
+  | {
+      status: "blocked";
+      reasons: readonly string[];
+    };
+
+export function bindScriptTransformSemanticImpactProof(
+  proposal: RepairTransformHintProposal,
+  proof: ScriptTransformSemanticImpactProof,
+): BoundScriptTransformSemanticProof {
+  const existing =
+    proposal.strategy.postTransformProof;
+  const reasons: string[] = [];
+
+  if (existing === undefined) {
+    reasons.push(
+      "Semantic impact proof cannot be bound before the post-transform guard proof.",
+    );
+  }
+  if (
+    proof.status !== "proven" ||
+    !proof.proofFingerprint?.trim()
+  ) {
+    reasons.push(
+      "Pre/post semantic-impact proof is not proven.",
+    );
+  }
+
+  if (reasons.length > 0 || existing === undefined) {
+    return {
+      status: "blocked",
+      reasons,
+    };
+  }
+
+  return {
+    status: "bound",
+    proposal: {
+      ...proposal,
+      strategy: {
+        ...proposal.strategy,
+        postTransformProof: {
+          ...existing,
+          semanticImpactFingerprint:
+            proof.proofFingerprint!,
+        },
+      },
+    },
+    postconditionProofFingerprint:
+      existing.proofFingerprint,
+    semanticImpactProofFingerprint:
+      proof.proofFingerprint!,
+  };
+}
+
+export function proveAndBindCompleteScriptTransform(
+  proposal: RepairTransformHintProposal,
+  identifier: string,
+  originalText: string,
+  source: SourceRef,
+  hint: RepairSourceTransformHint,
+): BoundScriptTransformSemanticProof {
+  const postcondition =
+    proveAndBindScriptTransformPostcondition(
+      proposal,
+      identifier,
+      originalText,
+      source,
+      hint,
+    );
+
+  if (postcondition.status !== "bound") {
+    return {
+      status: "blocked",
+      reasons: postcondition.reasons,
+    };
+  }
+
+  if (
+    postcondition.proof.status !== "proven" ||
+    postcondition.proof.transformedText === undefined
+  ) {
+    return {
+      status: "blocked",
+      reasons: [
+        "Post-transform proof did not produce an isolated transformed source snapshot.",
+      ],
+    };
+  }
+
+  const impact = proveScriptTransformSemanticImpact(
+    identifier,
+    originalText,
+    postcondition.proof.transformedText,
+    source,
+  );
+
+  return bindScriptTransformSemanticImpactProof(
+    postcondition.proposal,
+    impact,
+  );
 }
