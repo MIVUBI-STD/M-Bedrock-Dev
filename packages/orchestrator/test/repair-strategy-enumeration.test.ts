@@ -11,6 +11,10 @@ import type {
   DiagnosticFinding,
 } from "../../diagnostics/src/index.js";
 import {
+  BUILTIN_REPAIR_REALIZERS,
+  BUILTIN_REPAIR_STRATEGY_SOURCES,
+  assessRepairRealizerCoverage,
+  buildRepairRealizationCoverageReport,
   deduplicateRepairStrategyProposals,
   deriveRepairOpportunityEnvelope,
   enumerateRepairStrategySources,
@@ -622,6 +626,62 @@ describe("repair strategy enumeration and realization", () => {
     ).not.toBe(
       repairStrategySemanticFingerprint(a.proposal),
     );
+  });
+
+  it("enumerates non-provider proposal sources without converting them into patch transactions", () => {
+    const enumeration = enumerateRepairStrategySources(
+      envelope(),
+      diagnostics,
+      providerRegistry,
+      BUILTIN_REPAIR_STRATEGY_SOURCES,
+    );
+
+    const sessionTemplate =
+      enumeration.applicableSources.find(
+        (item) =>
+          item.sourceId ===
+            "session-generation-guard-template",
+      );
+
+    expect(sessionTemplate).toMatchObject({
+      sourceKind: "built-in-planner",
+      selectionMode: "proposal-only",
+      deterministic: false,
+      automaticRealizationEligible: false,
+    });
+
+    const coverage = assessRepairRealizerCoverage(
+      enumeration,
+      BUILTIN_REPAIR_REALIZERS,
+    );
+
+    expect(
+      coverage.items.find(
+        (item) =>
+          item.sourceId ===
+            "session-generation-guard-template",
+      ),
+    ).toMatchObject({
+      status: "missing-realizer",
+    });
+
+    const report =
+      buildRepairRealizationCoverageReport(
+        enumeration,
+        coverage,
+        [],
+      );
+
+    expect(report.noImplementationCoverage).toBe(true);
+    expect(
+      report.items.find(
+        (item) =>
+          item.sourceId ===
+            "session-generation-guard-template",
+      ),
+    ).toMatchObject({
+      disposition: "missing-realizer",
+    });
   });
 
   it("reports explicit strategy coverage gaps", () => {
