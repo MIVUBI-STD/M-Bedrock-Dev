@@ -2,6 +2,8 @@ import type { SemanticGraph } from "../../graph/src/index.js";
 import type { DiagnosticRepairDecision } from "../../project-model/src/index.js";
 import {
   CONTRACT_REGISTRY_REVISION,
+  runtimeVerificationExperimentContractsFromProvenance,
+  runtimeVerificationExperimentEnvelopeRevision,
 } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
@@ -101,11 +103,24 @@ export function evaluateRepairAdmissionPipeline(
         }
       : rawAdmission;
 
+  const runtimeExperimentContracts =
+    runtimeVerificationExperimentContractsFromProvenance(
+      input.diagnostic.causalProof?.interventionProvenance ?? [],
+    );
+
   const decisionBasis: DecisionBasisRevision = {
     ...(input.decisionBasis ?? {}),
     contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
     sourceFingerprint: input.transaction.sourceFingerprint,
     graphFingerprint: semanticGraphFingerprint(input.graph),
+    ...(runtimeExperimentContracts.length === 0
+      ? {}
+      : {
+          runtimeExperimentContractRevision:
+            runtimeVerificationExperimentEnvelopeRevision(
+              runtimeExperimentContracts,
+            ),
+        }),
   };
 
   const proof = createRepairProofBundle(
