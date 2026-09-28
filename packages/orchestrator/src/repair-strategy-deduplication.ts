@@ -32,6 +32,8 @@ export function repairStrategySemanticFingerprint(
   const transaction = proposal.strategy.transaction;
   const normalized = {
     sourceFingerprint: transaction.sourceFingerprint,
+    requiredProofs:
+      [...(transaction.requiredProofs ?? [])].sort(),
     operations: transaction.operations
       .map((operation) => ({
         kind: operation.kind,
