@@ -40,6 +40,9 @@ import {
   derivePersistenceIdempotencyGuardTransformHints,
 } from "./repair-transform-hints.js";
 import {
+  deriveArenaCapacityGuardTransformHints,
+} from "./arena-repair-transform-hints.js";
+import {
   correlateScriptArenaAuthorityPaths,
   deriveScriptArenaAuthorityEvidence,
 } from "./arena-authority-evidence.js";
@@ -2417,6 +2420,11 @@ export function parseScriptFile(
         source,
       ),
       ...derivePersistenceIdempotencyGuardTransformHints(
+        identifier,
+        text,
+        source,
+      ),
+      ...deriveArenaCapacityGuardTransformHints(
         identifier,
         text,
         source,
