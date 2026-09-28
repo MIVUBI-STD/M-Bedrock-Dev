@@ -150,6 +150,40 @@ export function validateCausalInterventionProvenance(
         );
       }
       if (
+        !item.controlledFactorContrasts ||
+        item.controlledFactorContrasts.length === 0
+      ) {
+        errors.push(
+          "Causal intervention " + id + " is missing controlled factor value contrast provenance.",
+        );
+      } else {
+        const contrastIds = item.controlledFactorContrasts
+          .map((contrast) => contrast.factorId)
+          .sort();
+        const declaredIds = [...new Set(item.controlledFactorIds ?? [])].sort();
+        if (
+          contrastIds.length !== declaredIds.length ||
+          !contrastIds.every(
+            (factorId, index) => factorId === declaredIds[index],
+          )
+        ) {
+          errors.push(
+            "Causal intervention " + id + " controlled factor ids do not match factor contrast provenance.",
+          );
+        }
+        for (const contrast of item.controlledFactorContrasts) {
+          if (contrast.controlValue === contrast.treatmentValue) {
+            errors.push(
+              "Causal intervention " +
+                id +
+                " factor " +
+                contrast.factorId +
+                " does not change between control and treatment.",
+            );
+          }
+        }
+      }
+      if (
         item.controlState === undefined ||
         item.treatmentState === undefined
       ) {
@@ -213,6 +247,21 @@ export function causalInterventionSupportsPredicates(
       (item) =>
         item.predicateId === predicateId &&
         item.expectedContrastDisposition === "matched",
+    )
+  );
+}
+
+export function causalInterventionSupportsFactors(
+  proof: CausalProof,
+  factorIds: readonly string[],
+): boolean {
+  if (factorIds.length === 0) return false;
+  const provenance = proof.interventionProvenance ?? [];
+  return factorIds.every((factorId) =>
+    provenance.some((item) =>
+      (item.controlledFactorContrasts ?? []).some(
+        (contrast) => contrast.factorId === factorId,
+      )
     )
   );
 }
