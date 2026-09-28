@@ -404,3 +404,52 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Scheduler cancellation and cross-arena isolation proof contracts
+
+Runtime Lab now has controlled experiment families for:
+
+1. cancellation of pending scheduler work before callback eligibility;
+2. single-direction cross-arena callback isolation;
+3. bidirectional concurrent A↔B scheduler isolation.
+
+Qualification no longer trusts outcome contrast alone for these experiments.
+
+Scheduler cancellation requires supporting evidence:
+
+```text
+control arm:
+scheduler-work-cancelled = present
+scheduler-callback-attempted = absent
+
+treatment arm:
+scheduler-work-cancelled = absent
+```
+
+Cross-arena isolation requires callback-attempt evidence scoped to the expected owner arena/generation. Bidirectional isolation requires evidence for both arena owners.
+
+Supporting-evidence requirements are now a generic Runtime Lab contract feature. Missing support markers or scope mismatch prevent promotion to intervention-supported even when the primary outcome appears deterministic.
+
+Scheduler cancellation and cross-arena isolation experiments are wired into intent diagnostic reclassification. Authored-intent defects become confirmed only when:
+
+```text
+treatment violation present
++ deterministic intervention contrast
++ expected direction matched
++ runtime evidence integrity safe
+```
+
+Validated source revision: `99ff68a7b10a1be210c9e864f4213db82f35299b`.
+
+GitHub Actions Verify run `36393729504` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
+
+Independent Package Source Snapshot verification on the same revision also passed TypeScript compilation and 34/34 focused scheduler/runtime tests under Node 24.21.0.
