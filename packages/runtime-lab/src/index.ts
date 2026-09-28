@@ -20,3 +20,5 @@ export * from "./chunk-readiness-experiment.js";
 export * from "./experiment-capability-preflight.js";
 
 export * from "./scheduler-generation-experiment.js";
+
+export * from "./scheduler-ordering-experiment.js";
