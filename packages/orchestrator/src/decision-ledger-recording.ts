@@ -365,6 +365,11 @@ export interface RepairStrategyDecisionRecordContext
     providerId: string;
     providerVersion: string;
   }[];
+  sourceProvenance?: readonly {
+    sourceKind: string;
+    sourceId: string;
+    sourceVersion: string;
+  }[];
   realizerProvenance?: readonly {
     realizerId: string;
     realizerVersion: string;
@@ -429,6 +434,15 @@ export function recordRepairStrategySelection(
           "@" +
           provider.providerVersion,
       ),
+      ...(context.sourceProvenance ?? []).map(
+        (source) =>
+          "repair-source:" +
+          source.sourceKind +
+          ":" +
+          source.sourceId +
+          "@" +
+          source.sourceVersion,
+      ),
       ...(context.realizerProvenance ?? []).map(
         (realizer) =>
           "repair-realizer:" +
@@ -444,6 +458,58 @@ export function recordRepairStrategySelection(
   });
 }
 
+
+export function recordRealizedRepairStrategySelection(
+  ledger: DecisionLedgerSnapshot,
+  selection: import("./realized-repair-strategy-selection.js").RealizedRepairStrategySelection,
+  transactionId: string | undefined,
+  context: DecisionRecordContext,
+): DecisionLedgerSnapshot {
+  if (selection.result.status !== "evaluated") {
+    throw new Error(
+      "Realized strategy selection cannot be recorded before invariant derivation passes.",
+    );
+  }
+
+  if (
+    context.basis.repairStrategySourceRegistryRevision !== undefined &&
+    context.basis.repairStrategySourceRegistryRevision !==
+      selection.sourceRegistryRevision
+  ) {
+    throw new Error(
+      "Decision basis repair strategy source registry revision does not match evaluated source registry.",
+    );
+  }
+  if (
+    context.basis.repairRealizerRegistryRevision !== undefined &&
+    context.basis.repairRealizerRegistryRevision !==
+      selection.realizerRegistryRevision
+  ) {
+    throw new Error(
+      "Decision basis repair realizer registry revision does not match evaluated realizer registry.",
+    );
+  }
+
+  return recordRepairStrategySelection(
+    ledger,
+    selection.result.selection,
+    transactionId,
+    {
+      ...context,
+      basis: {
+        ...context.basis,
+        repairStrategySourceRegistryRevision:
+          selection.sourceRegistryRevision,
+        repairRealizerRegistryRevision:
+          selection.realizerRegistryRevision,
+      },
+      sourceProvenance:
+        selection.sourceProvenance,
+      realizerProvenance:
+        selection.realizerProvenance,
+    },
+  );
+}
 
 export function recordTransitiveRevalidationDecision(
   ledger: DecisionLedgerSnapshot,
