@@ -96,6 +96,19 @@ export function parseBedrockRuntimeActionResponse(
             "] is invalid.",
         );
       }
+      const measurements =
+        (record as RuntimeEvidenceRecord).measurements;
+      if (measurements !== undefined) {
+        for (const [key, value] of Object.entries(measurements)) {
+          if (!key.trim() || !Number.isFinite(value)) {
+            throw new Error(
+              "Bedrock runtime action response evidence[" +
+                index +
+                "].measurements must contain finite numeric values with non-empty keys.",
+            );
+          }
+        }
+      }
     }
   }
   return parsed as BedrockRuntimeActionResponse;
