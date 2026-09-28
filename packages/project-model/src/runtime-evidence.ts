@@ -29,6 +29,7 @@ export interface RuntimeScope {
   entityGeneration?: number;
   operationId?: string;
   subsystemGeneration?: number;
+  bootGeneration?: number;
 }
 
 export interface RuntimeEvidenceRecord {
@@ -71,6 +72,7 @@ export function runtimeScopeKey(scope: RuntimeScope | undefined): string {
     stableScopePart(scope.entityGeneration),
     stableScopePart(scope.operationId),
     stableScopePart(scope.subsystemGeneration),
+    stableScopePart(scope.bootGeneration),
   ].join("|");
 }
 
@@ -106,6 +108,7 @@ export function runtimeScopeContains(
     "entityGeneration",
     "operationId",
     "subsystemGeneration",
+    "bootGeneration",
   ] as const) {
     const expectedValue = expected[key];
     if (
