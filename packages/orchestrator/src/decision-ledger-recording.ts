@@ -134,6 +134,21 @@ export function recordRuntimeVerificationDecision(
       ...result.satisfiedStateRequirementIds.map(
         (id) => "runtime-requirement:" + id,
       ),
+      ...(result.receipt?.runtimeExperimentContract === undefined
+        ? []
+        : [
+            "runtime-experiment:" +
+              result.receipt.runtimeExperimentContract.interventionId,
+            "runtime-experiment-revision:" +
+              result.receipt.runtimeExperimentContract.experimentRevision,
+            "runtime-target-profile:" +
+              result.receipt.runtimeExperimentContract.targetProfileFingerprint,
+            "runtime-fixture:" +
+              result.receipt.runtimeExperimentContract.fixtureFingerprint,
+            ...result.receipt.runtimeExperimentContract.predicateIds.map(
+              (id) => "runtime-predicate:" + id,
+            ),
+          ]),
     ],
     ...(context.upstreamDecisionIds === undefined
       ? {}
