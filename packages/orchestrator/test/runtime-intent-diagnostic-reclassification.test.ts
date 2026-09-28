@@ -3,6 +3,9 @@ import type {
   GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
 import type {
+  RuntimeEvidenceIntegrityReport,
+} from "../../project-model/src/index.js";
+import type {
   RuntimeExperimentDiagnosticBridge,
 } from "../src/index.js";
 import {
@@ -75,6 +78,21 @@ function bridge(
   };
 }
 
+const integrity: RuntimeEvidenceIntegrityReport = {
+  records: 2,
+  observedRecords: 2,
+  derivedRecords: 0,
+  unknownConfidenceRecords: 0,
+  unlocatedObservedRecords: 0,
+  unresolvedConflictPredicates: [],
+  resolvedConflictCount: 0,
+  continuityComplete: true,
+  telemetryContinuityComplete: true,
+  safeForCurrentStateClaims: true,
+  safeForTemporalViolationClaims: true,
+  reasons: ["integrity satisfied"],
+};
+
 describe("runtime intent diagnostic reclassification", () => {
   it("confirms an authored-intent defect after runtime contradiction proof arrives", () => {
     const result =
@@ -102,6 +120,7 @@ describe("runtime intent diagnostic reclassification", () => {
           ],
         },
         runtimeProofRequired: true,
+        runtimeIntegrity: integrity,
         previousDisposition:
           "runtime-proof-required",
       });
@@ -113,6 +132,83 @@ describe("runtime intent diagnostic reclassification", () => {
     expect(
       result.matchedPredicates.contradictions,
     ).toEqual(["membership-contradiction"]);
+  });
+
+  it("requires runtime evidence integrity before confirming a runtime-backed authored defect", () => {
+    const result =
+      reclassifyIntentDiagnosticFromRuntime({
+        intent: intent("authored"),
+        subjectIds: ["arena"],
+        bridge: bridge([
+          {
+            predicate: "membership-contradiction",
+            state: "present",
+            ceiling: "observed",
+          },
+          {
+            predicate: "runtime-semantics-observed",
+            state: "present",
+            ceiling: "observed",
+          },
+        ]),
+        bindings: {
+          contradictionPredicates: [
+            "membership-contradiction",
+          ],
+          runtimeProofPredicates: [
+            "runtime-semantics-observed",
+          ],
+        },
+        runtimeProofRequired: true,
+      });
+
+    expect(result.disposition).toBe(
+      "runtime-proof-required",
+    );
+    expect(result.gate.nextEvidenceNeed).toBe(
+      "runtime-evidence-integrity",
+    );
+  });
+
+  it("does not accept unsafe runtime evidence integrity for confirmation", () => {
+    const result =
+      reclassifyIntentDiagnosticFromRuntime({
+        intent: intent("authored"),
+        subjectIds: ["arena"],
+        bridge: bridge([
+          {
+            predicate: "membership-contradiction",
+            state: "present",
+            ceiling: "observed",
+          },
+          {
+            predicate: "runtime-semantics-observed",
+            state: "present",
+            ceiling: "observed",
+          },
+        ]),
+        bindings: {
+          contradictionPredicates: [
+            "membership-contradiction",
+          ],
+          runtimeProofPredicates: [
+            "runtime-semantics-observed",
+          ],
+        },
+        runtimeProofRequired: true,
+        runtimeIntegrity: {
+          ...integrity,
+          safeForCurrentStateClaims: false,
+          reasons: ["conflicting runtime evidence"],
+        },
+      });
+
+    expect(result.disposition).toBe(
+      "runtime-proof-required",
+    );
+    expect(result.gate.nextEvidenceNeed).toBe(
+      "runtime-evidence-integrity",
+    );
   });
 
   it("caps inferred intent contradictions at probable defect", () => {
