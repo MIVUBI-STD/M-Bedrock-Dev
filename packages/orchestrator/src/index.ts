@@ -155,3 +155,5 @@ export * from "./diagnosis-source-index-executor.js";
 export * from "./diagnosis-semantic-ir-executor.js";
 export * from "./diagnosis-intent-executors.js";
 export * from "./diagnosis-runtime.js";
+
+export * from "./runtime-experiment-temporal-assessment.js";
