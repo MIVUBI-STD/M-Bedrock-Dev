@@ -215,25 +215,41 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Allows exact replay/idempotency guard insertion only when the script analyzer proves an authored applied-generation marker around the side effect.",
     }, {
-      id: "arena-ownership-guard-template",
+      id: "arena-capacity-guard-template",
       version: "1",
       kind: "built-in-planner",
       owner:
-        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+        "analyzers/scripts/src/arena-repair-transform-hints.ts",
+      deterministic: true,
+      selectionMode: "causal-auto",
+      repairClass: "implementation-repair",
+      supportedPredicateIds: [
+        "arena-capacity-overflow-observed",
+      ],
+      supportedFactorIds: [
+        "capacity-guard-enabled",
+      ],
+      requiresExactSourceEvidence: true,
+      rationale:
+        "Allows a terminal membership capacity guard only when the script analyzer proves a two-statement authored arena path with a direct capacity operand and no intervening side effects.",
+    }, {
+      id: "arena-ownership-guard-template",
+      version: "2",
+      kind: "built-in-planner",
+      owner:
+        "analyzers/scripts/src/arena-authority-evidence.ts",
       deterministic: false,
       selectionMode: "proposal-only",
       repairClass: "implementation-repair",
       supportedPredicateIds: [
-        "arena-capacity-overflow-observed",
         "arena-start-ownership-violation-observed",
       ],
       supportedFactorIds: [
-        "capacity-guard-enabled",
         "start-ownership-guard-enabled",
       ],
       requiresExactSourceEvidence: true,
       rationale:
-        "Represents atomic arena capacity/start ownership repairs without inventing a patch before exact source syntax is understood.",
+        "Represents arena start-owner acquisition repairs. It remains proposal-only until the analyzer proves a safe owner sentinel/acquisition transform.",
     }, {
       id: "navigation-recovery-configuration",
       version: "1",
