@@ -1,5 +1,6 @@
 import {
   causalProofAtLeast,
+  type CausalInterventionProvenance,
   type DiagnosticRepairDecision,
 } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
@@ -23,6 +24,7 @@ export interface RepairProofBundle {
   claimStrength: DiagnosticRepairDecision["claimStrength"];
   effectiveEvidenceLevel?: DiagnosticRepairDecision["effectiveEvidenceLevel"];
   proofState?: DiagnosticRepairDecision["proofState"];
+  causalInterventionProvenance?: readonly CausalInterventionProvenance[];
   blastRadiusDisposition: RepairBlastRadiusDecision["disposition"];
   admissionDisposition: RepairAdmissionDecision["disposition"];
   preservationContractId?: string;
@@ -103,6 +105,22 @@ export function createRepairProofBundle(
     ...(diagnostic.proofState === undefined
       ? {}
       : { proofState: diagnostic.proofState }),
+    ...(diagnostic.causalProof?.interventionProvenance === undefined
+      ? {}
+      : {
+          causalInterventionProvenance:
+            diagnostic.causalProof.interventionProvenance.map((item) => ({
+              ...item,
+              ...(item.controlledFactorIds === undefined
+                ? {}
+                : {
+                    controlledFactorIds: [...item.controlledFactorIds],
+                  }),
+              ...(item.evidenceIds === undefined
+                ? {}
+                : { evidenceIds: [...item.evidenceIds] }),
+            })),
+        }),
     blastRadiusDisposition: blastRadius.disposition,
     admissionDisposition: admission.disposition,
     ...(preservationReadiness === undefined
@@ -179,6 +197,25 @@ export function validateRepairProofBundle(
     errors.push(
       "Repair proof semantic graph fingerprint must be non-empty.",
     );
+  }
+
+  if (
+    causalProofAtLeast(proof.proofState, "intervention-supported") &&
+    proof.causalInterventionProvenance !== undefined
+  ) {
+    const keys = proof.causalInterventionProvenance.map(
+      (item) =>
+        item.interventionId +
+        "::" +
+        (item.predicateId ?? "<missing>"),
+    );
+    const duplicates = duplicateValues(keys);
+    if (duplicates.length > 0) {
+      errors.push(
+        "Repair proof causal intervention provenance contains duplicate intervention/predicate bindings: " +
+          duplicates.join(", "),
+      );
+    }
   }
 
   for (const [label, values] of [
