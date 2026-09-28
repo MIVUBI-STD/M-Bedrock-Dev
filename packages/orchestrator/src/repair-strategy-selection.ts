@@ -44,6 +44,23 @@ export interface RepairStrategyPostTransformProof {
   semanticImpactFingerprint?: string;
 }
 
+export function repairStrategyPostTransformProofRevision(
+  proof: RepairStrategyPostTransformProof | undefined,
+): string | undefined {
+  if (
+    proof === undefined ||
+    !proof.proofFingerprint.trim() ||
+    !proof.semanticImpactFingerprint?.trim()
+  ) {
+    return undefined;
+  }
+  return (
+    proof.proofFingerprint +
+    ":" +
+    proof.semanticImpactFingerprint
+  );
+}
+
 export interface RepairStrategyCandidate {
   strategyId: string;
   transaction: PatchTransaction;
@@ -489,14 +506,15 @@ export function selectRepairStrategy(
           ...(policy.decisionBasis ?? {}),
           invariantRegistryRevision:
             policy.invariantRegistry.revision,
-          ...(candidate.postTransformProof?.proofFingerprint === undefined ||
-          candidate.postTransformProof?.semanticImpactFingerprint === undefined
+          ...(repairStrategyPostTransformProofRevision(
+            candidate.postTransformProof,
+          ) === undefined
             ? {}
             : {
                 postTransformProofRevision:
-                  candidate.postTransformProof.proofFingerprint +
-                  ":" +
-                  candidate.postTransformProof.semanticImpactFingerprint,
+                  repairStrategyPostTransformProofRevision(
+                    candidate.postTransformProof,
+                  )!,
               }),
         },
         ...(policy.blastRadiusPolicy === undefined
