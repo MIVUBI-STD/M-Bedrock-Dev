@@ -13,6 +13,21 @@ import type {
   ValidationStep,
   ValidationStepResult,
 } from "../../validation/src/index.js";
+import type {
+  SemanticGraph,
+} from "../../graph/src/index.js";
+import {
+  buildFilesystemInventory,
+} from "../../project-model/src/index.js";
+import {
+  indexInspectionSources,
+} from "./inspect-source-index.js";
+import {
+  enrichInspectionSemanticGraph,
+} from "./inspect-graph-enrichment.js";
+import {
+  populateInspectionScriptImportGraph,
+} from "./inspect-script-import-graph.js";
 import type { PatchTransaction } from "../../repair/src/index.js";
 import type { MutationWorkspace } from "../../repair/src/index.js";
 import type { InspectTargetProfile } from "./types.js";
@@ -116,13 +131,19 @@ async function validateReparse(
   }
 }
 
+export interface RepairTransactionValidationResult
+  extends TransactionValidationResult {
+  rebuiltGraph?: SemanticGraph;
+}
+
 export async function validatePatchTransaction(
   transaction: PatchTransaction,
   workspace: MutationWorkspace,
   target: InspectTargetProfile = {},
-): Promise<TransactionValidationResult> {
+): Promise<RepairTransactionValidationResult> {
   let inspection: Awaited<ReturnType<typeof inspectDirectory>> | undefined;
   let topology: ReturnType<typeof analyzeFunctionTopology> | undefined;
+  let rebuiltGraph: SemanticGraph | undefined;
 
   const ensureInspection = async () => {
     if (!inspection) {
@@ -133,6 +154,40 @@ export async function validatePatchTransaction(
       );
     }
     return inspection;
+  };
+
+  const ensureRebuiltGraph = async () => {
+    if (rebuiltGraph) return rebuiltGraph;
+
+    const files = await buildFilesystemInventory(
+      workspace.workingRoot,
+    );
+    const sourceIndex =
+      await indexInspectionSources(
+        workspace.workingRoot,
+        transaction.sourceFingerprint,
+        files,
+      );
+
+    enrichInspectionSemanticGraph({
+      graph: sourceIndex.graph,
+      nodes: sourceIndex.nodes,
+      artifactId:
+        transaction.sourceFingerprint,
+      parsedFunctions:
+        sourceIndex.parsedFunctions,
+      parsedDialogueDocuments:
+        sourceIndex.parsedDialogueDocuments,
+      parsedStructureModels:
+        sourceIndex.parsedStructureModels,
+    });
+    populateInspectionScriptImportGraph(
+      sourceIndex.graph,
+      sourceIndex.parsedScripts,
+    );
+
+    rebuiltGraph = sourceIndex.graph;
+    return rebuiltGraph;
   };
 
   const ensureTopology = async () => {
@@ -164,6 +219,7 @@ export async function validatePatchTransaction(
     if (step.kind === "rebuild-graph") {
       try {
         await ensureInspection();
+        await ensureRebuiltGraph();
         results.push({ step, ok: true, message: "Integrated semantic graph rebuilt successfully." });
       } catch (error) {
         results.push({
@@ -227,5 +283,11 @@ export async function validatePatchTransaction(
     }
   }
 
-  return summarizeValidation(results);
+  const summary = summarizeValidation(results);
+  return {
+    ...summary,
+    ...(rebuiltGraph === undefined
+      ? {}
+      : { rebuiltGraph }),
+  };
 }
