@@ -100,6 +100,30 @@ function validateEntrySemantics(
     ? value.outputIds
     : [];
 
+  const postTransformProofBound = inputIds.some(
+    (id) => id.startsWith("post-transform-proof:")
+  );
+  if (
+    postTransformProofBound &&
+    !nonEmpty(value.basis.postTransformProofRevision)
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] post-transform-proof-bound decision requires postTransformProofRevision.",
+    );
+  }
+
+  if (
+    value.kind === "repair-strategy-selection" &&
+    nonEmpty(value.basis.postTransformProofRevision) &&
+    !postTransformProofBound
+  ) {
+    errors.push(
+      "entries[" + index +
+        "] post-transform-proof-bound repair strategy requires post-transform-proof provenance.",
+    );
+  }
+
   const providerBound = inputIds.some((id) =>
     id.startsWith("repair-provider:")
   );
