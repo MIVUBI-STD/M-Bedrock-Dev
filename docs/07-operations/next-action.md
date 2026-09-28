@@ -127,3 +127,18 @@ Next generic priorities:
 5. add runtime differential fixtures for scheduler, chunk lifecycle, entity AI/pathfinding, multiplayer, and persistence classes.
 
 Do not infer causal meaning merely because two arms differ. The experiment definition, arm roles, expected direction, target profile, evidence integrity, and diagnostic intent binding must agree before promoting the claim.
+
+
+## Next lane — preserve experiment semantics into causal proof
+
+Role-aware expected contrast is now available at diagnostic reclassification.
+
+Next priorities:
+
+1. carry experiment id, predicate, role, expected state, observed state, and expected-direction disposition into causal proof provenance;
+2. prevent a generic `intervention-supported` proof from authorizing repair when its supporting experiment contrast belongs to a different predicate or direction;
+3. bind causal candidates to the exact controlled factor/intervention that discriminated them;
+4. retain control evidence, treatment evidence, runtime profile, fixture fingerprint, and experiment revision through repair admission and proof bundles;
+5. require preservation/retest plans to reference the same causal experiment contract when a repair is justified by controlled runtime evidence.
+
+A controlled difference is evidence only for the predicate and intervention contract that produced it. Do not promote experiment-level status into unrelated causal claims.
