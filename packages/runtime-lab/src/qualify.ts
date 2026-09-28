@@ -1,6 +1,7 @@
-import type {
-  CausalProof,
-  RuntimeEvidenceRecord,
+import {
+  runtimeScopeContains,
+  type CausalProof,
+  type RuntimeEvidenceRecord,
 } from "../../project-model/src/index.js";
 import {
   runtimeExperimentDefinitionRevision,
@@ -208,6 +209,71 @@ export function qualifyRuntimeExperiment(
   for (const trial of completed) {
     completedRunsByArm[trial.identity.armId] =
       (completedRunsByArm[trial.identity.armId] ?? 0) + 1;
+  }
+
+  const supportingEvidenceErrors: string[] = [];
+  const supportingEvidenceIds: string[] = [];
+
+  for (const trial of completed) {
+    for (
+      const requirement of
+        definition.evidenceRequirements ?? []
+    ) {
+      if (
+        requirement.armIds !== undefined &&
+        !requirement.armIds.includes(
+          trial.identity.armId,
+        )
+      ) {
+        continue;
+      }
+
+      const matches = trial.evidence
+        .map((record, index) => ({ record, index }))
+        .filter(({ record }) =>
+          record.predicate === requirement.predicateId &&
+          record.state === requirement.state &&
+          record.confidence === "observed" &&
+          runtimeScopeContains(
+            record.scope,
+            requirement.scope,
+          )
+        );
+
+      if (matches.length === 0) {
+        supportingEvidenceErrors.push(
+          "Trial " +
+            trial.id +
+            " does not satisfy supporting evidence requirement " +
+            requirement.id +
+            ".",
+        );
+        continue;
+      }
+
+      supportingEvidenceIds.push(
+        ...matches.map(({ index }) =>
+          evidenceId(trial, index)
+        ),
+      );
+    }
+  }
+
+  if (supportingEvidenceErrors.length > 0) {
+    return {
+      experimentId: definition.id,
+      state: completed.length > 0 ? "observed" : "insufficient",
+      completedRunsByArm,
+      unknownOutcomes: 0,
+      controlTreatmentContrastPredicates: [],
+      evidenceIds: [
+        ...new Set(supportingEvidenceIds),
+      ].sort(),
+      reasons: [
+        "One or more supporting evidence requirements are not satisfied.",
+        ...supportingEvidenceErrors.sort(),
+      ],
+    };
   }
 
   const outcomes = completed.flatMap((trial) =>
