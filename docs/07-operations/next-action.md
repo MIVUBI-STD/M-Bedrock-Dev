@@ -167,3 +167,18 @@ experiment definition
 → repair proof bundle
 → post-repair retest
 ```
+
+
+## Next lane — compatible successor retest contracts
+
+Exact post-repair experiment continuity is now enforced.
+
+Next priorities:
+
+1. define an explicit compatibility relation for a stricter successor experiment instead of accepting only byte-for-byte contract identity;
+2. require successor contracts to preserve intervention identity, target runtime scope, fixture semantics, causal predicates, controlled factor/value direction, and expected outcome direction;
+3. record the executed retest contract on runtime verification receipts and lifecycle state;
+4. carry retest contract revision into the decision ledger and release proof;
+5. invalidate prior runtime verification when its authorizing experiment contract is superseded incompatibly.
+
+A newer retest is acceptable only when equivalence or stricter coverage is proven explicitly. Version recency alone is never sufficient.
