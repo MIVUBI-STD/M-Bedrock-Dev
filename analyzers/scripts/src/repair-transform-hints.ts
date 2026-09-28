@@ -145,7 +145,7 @@ function statementContext(
   let current: ts.Node | undefined = node;
 
   while (current?.parent) {
-    const parent = current.parent;
+    const parent: ts.Node = current.parent;
     if (
       ts.isBlock(parent) ||
       ts.isSourceFile(parent)
