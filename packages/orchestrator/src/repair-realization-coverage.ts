@@ -5,6 +5,9 @@ import type {
   ProviderRepairRealization,
 } from "./repair-strategy-enumeration.js";
 import type {
+  RepairTransformHintRealization,
+} from "./script-transform-hint-realizer.js";
+import type {
   RepairRealizerCoverageReport,
 } from "./repair-realizer-execution.js";
 
@@ -33,10 +36,34 @@ export interface RepairRealizationCoverageReport {
   noImplementationCoverage: boolean;
 }
 
+export type RepairRealizationResult =
+  | ProviderRepairRealization
+  | RepairTransformHintRealization;
+
+function realizationSourceId(
+  realization: RepairRealizationResult,
+): string {
+  if (realization.status === "blocked") {
+    return realization.sourceId;
+  }
+  return "providerId" in realization.proposal
+    ? realization.proposal.providerId
+    : realization.proposal.sourceId;
+}
+
+function realizedStrategy(
+  realization: Extract<
+    RepairRealizationResult,
+    { status: "realized" }
+  >,
+) {
+  return realization.proposal.strategy;
+}
+
 export function buildRepairRealizationCoverageReport(
   enumeration: RepairStrategyEnumeration,
   realizerCoverage: RepairRealizerCoverageReport,
-  realizations: readonly ProviderRepairRealization[],
+  realizations: readonly RepairRealizationResult[],
 ): RepairRealizationCoverageReport {
   if (enumeration.applicableSources.length === 0) {
     return {
@@ -59,9 +86,7 @@ export function buildRepairRealizationCoverageReport(
 
   const realizationBySource = new Map(
     realizations.map((item) => [
-      item.status === "realized"
-        ? item.proposal.providerId
-        : item.sourceId,
+      realizationSourceId(item),
       item,
     ]),
   );
@@ -111,14 +136,14 @@ export function buildRepairRealizationCoverageReport(
         };
       }
 
+      const strategy =
+        realizedStrategy(realization);
       return {
         sourceId: source.sourceId,
         sourceVersion: source.sourceVersion,
         disposition: "realized",
-        strategyId:
-          realization.proposal.strategy.strategyId,
-        transactionId:
-          realization.proposal.strategy.transaction.id,
+        strategyId: strategy.strategyId,
+        transactionId: strategy.transaction.id,
         reasons: realization.reasons,
       };
     },
