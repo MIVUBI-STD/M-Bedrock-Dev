@@ -135,12 +135,15 @@ export function selectProviderBackedRepairStrategyForIncident(
     repairStrategyProviderRegistryRevision(providerRegistry);
 
   const providerProvenance = [...new Map(
-    proposals.map((proposal) => [
-      proposal.providerId + "@" + proposal.providerVersion,
+    proposals.flatMap((proposal) => [
       {
         providerId: proposal.providerId,
         providerVersion: proposal.providerVersion,
       },
+      ...(proposal.equivalentProviderProvenance ?? []),
+    ]).map((provider) => [
+      provider.providerId + "@" + provider.providerVersion,
+      provider,
     ]),
   ).values()].sort((a, b) =>
     a.providerId.localeCompare(b.providerId) ||
