@@ -14,12 +14,22 @@ import type {
   RuntimeDiagnosticPredicateEvidence,
 } from "./runtime-experiment-diagnostic-evidence.js";
 
+export interface RuntimeDiagnosticArmPredicateBinding {
+  predicate: string;
+  armId: string;
+}
+
 export interface RuntimeDiagnosticPredicateBindings {
   contradictionPredicates?: readonly string[];
+  contradictionArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
   designMatchPredicates?: readonly string[];
+  designMatchArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
   engineConstraintPredicates?: readonly string[];
+  engineConstraintArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
   compatibilityDifferencePredicates?: readonly string[];
+  compatibilityDifferenceArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
   runtimeProofPredicates?: readonly string[];
+  runtimeProofArmPredicates?: readonly RuntimeDiagnosticArmPredicateBinding[];
 }
 
 export interface RuntimeIntentDiagnosticReclassificationInput {
@@ -90,6 +100,93 @@ function presentEvidenceIds(
   };
 }
 
+function presentArmEvidenceIds(
+  bindings: readonly RuntimeDiagnosticArmPredicateBinding[] | undefined,
+  evidence: ReadonlyMap<
+    string,
+    RuntimeDiagnosticPredicateEvidence
+  >,
+): {
+  predicates: string[];
+  evidenceIds: string[];
+} {
+  const matchedPredicates: string[] = [];
+  const evidenceIds: string[] = [];
+
+  for (const binding of bindings ?? []) {
+    const item = evidence.get(binding.predicate);
+    if (!item || item.ceiling === "unknown") continue;
+
+    const arm = item.armObservations?.find(
+      (entry) => entry.armId === binding.armId,
+    );
+    if (!arm || arm.observation.state !== "present") continue;
+
+    matchedPredicates.push(
+      binding.predicate + "@arm:" + binding.armId,
+    );
+    evidenceIds.push(...arm.sourceEvidenceIds);
+  }
+
+  return {
+    predicates: [...new Set(matchedPredicates)].sort(),
+    evidenceIds: [...new Set(evidenceIds)].sort(),
+  };
+}
+
+function runtimeProofArmEvidenceIds(
+  bindings: readonly RuntimeDiagnosticArmPredicateBinding[] | undefined,
+  evidence: ReadonlyMap<
+    string,
+    RuntimeDiagnosticPredicateEvidence
+  >,
+): {
+  predicates: string[];
+  evidenceIds: string[];
+} {
+  const matchedPredicates: string[] = [];
+  const evidenceIds: string[] = [];
+
+  for (const binding of bindings ?? []) {
+    const item = evidence.get(binding.predicate);
+    if (!item || item.ceiling === "unknown") continue;
+
+    const arm = item.armObservations?.find(
+      (entry) => entry.armId === binding.armId,
+    );
+    if (!arm || arm.observation.state === "unknown") continue;
+
+    matchedPredicates.push(
+      binding.predicate + "@arm:" + binding.armId,
+    );
+    evidenceIds.push(...arm.sourceEvidenceIds);
+  }
+
+  return {
+    predicates: [...new Set(matchedPredicates)].sort(),
+    evidenceIds: [...new Set(evidenceIds)].sort(),
+  };
+}
+
+function mergeMatches(
+  ...matches: readonly {
+    predicates: readonly string[];
+    evidenceIds: readonly string[];
+  }[]
+): {
+  predicates: string[];
+  evidenceIds: string[];
+} {
+  return {
+    predicates: [
+      ...new Set(matches.flatMap((item) => item.predicates)),
+    ].sort(),
+    evidenceIds: [
+      ...new Set(matches.flatMap((item) => item.evidenceIds)),
+    ].sort(),
+  };
+}
+
 function runtimeProofEvidenceIds(
   predicates: readonly string[] | undefined,
   evidence: ReadonlyMap<
@@ -128,13 +225,17 @@ function allObservedEvidenceIds(
 ): string[] {
   return [
     ...new Set(
-      bridge.predicates
-        .filter(
-          (item) =>
-            item.observation.state !== "unknown" &&
-            item.ceiling !== "unknown",
-        )
-        .flatMap((item) => item.sourceEvidenceIds),
+      bridge.predicates.flatMap((item) => {
+        if (item.ceiling === "unknown") return [];
+        if (item.observation.state !== "unknown") {
+          return item.sourceEvidenceIds;
+        }
+        return (item.armObservations ?? [])
+          .filter(
+            (arm) => arm.observation.state !== "unknown",
+          )
+          .flatMap((arm) => arm.sourceEvidenceIds);
+      }),
     ),
   ].sort();
 }
@@ -144,25 +245,55 @@ export function reclassifyIntentDiagnosticFromRuntime(
 ): RuntimeIntentDiagnosticReclassification {
   const evidence = byPredicate(input.bridge);
 
-  const contradictions = presentEvidenceIds(
-    input.bindings.contradictionPredicates,
-    evidence,
+  const contradictions = mergeMatches(
+    presentEvidenceIds(
+      input.bindings.contradictionPredicates,
+      evidence,
+    ),
+    presentArmEvidenceIds(
+      input.bindings.contradictionArmPredicates,
+      evidence,
+    ),
   );
-  const designMatches = presentEvidenceIds(
-    input.bindings.designMatchPredicates,
-    evidence,
+  const designMatches = mergeMatches(
+    presentEvidenceIds(
+      input.bindings.designMatchPredicates,
+      evidence,
+    ),
+    presentArmEvidenceIds(
+      input.bindings.designMatchArmPredicates,
+      evidence,
+    ),
   );
-  const engineConstraints = presentEvidenceIds(
-    input.bindings.engineConstraintPredicates,
-    evidence,
+  const engineConstraints = mergeMatches(
+    presentEvidenceIds(
+      input.bindings.engineConstraintPredicates,
+      evidence,
+    ),
+    presentArmEvidenceIds(
+      input.bindings.engineConstraintArmPredicates,
+      evidence,
+    ),
   );
-  const compatibilityDifferences = presentEvidenceIds(
-    input.bindings.compatibilityDifferencePredicates,
-    evidence,
+  const compatibilityDifferences = mergeMatches(
+    presentEvidenceIds(
+      input.bindings.compatibilityDifferencePredicates,
+      evidence,
+    ),
+    presentArmEvidenceIds(
+      input.bindings.compatibilityDifferenceArmPredicates,
+      evidence,
+    ),
   );
-  const runtimeProof = runtimeProofEvidenceIds(
-    input.bindings.runtimeProofPredicates,
-    evidence,
+  const runtimeProof = mergeMatches(
+    runtimeProofEvidenceIds(
+      input.bindings.runtimeProofPredicates,
+      evidence,
+    ),
+    runtimeProofArmEvidenceIds(
+      input.bindings.runtimeProofArmPredicates,
+      evidence,
+    ),
   );
 
   const gate = gateIntentDiagnostic({
