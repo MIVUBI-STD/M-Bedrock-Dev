@@ -181,3 +181,7 @@ export * from "./repair-changed-node-derivation.js";
 export * from "./repair-realizer-registry.js";
 
 export * from "./repair-realizer-execution.js";
+
+export * from "./repair-strategy-source-registry.js";
+
+export * from "./repair-realization-coverage.js";
