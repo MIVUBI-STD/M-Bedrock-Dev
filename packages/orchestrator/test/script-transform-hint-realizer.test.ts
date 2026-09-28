@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { SemanticGraph } from "../../graph/src/index.js";
 import {
   deriveSchedulerGenerationGuardTransformHints,
+  parseScriptFile,
 } from "../../../analyzers/scripts/src/index.js";
 import type {
   CausalChain,
@@ -20,6 +21,7 @@ import {
   createDecisionLedger,
   deriveRepairOpportunityEnvelope,
   enumerateRepairStrategySources,
+  realizeSchedulerGenerationGuardFromParsedScripts,
   realizeSchedulerGenerationGuardHint,
   recordRealizedRepairStrategySelection,
   selectRealizedRepairStrategyForIncident,
@@ -432,6 +434,45 @@ describe("script transform hint realizer", () => {
       ledger.entries[0]?.basis
         .repairRealizerRegistryRevision,
     ).toBe(selected.realizerRegistryRevision);
+  });
+
+  it("discovers the exact hint from parsed scripts so callers do not choose transform hints manually", () => {
+    const parsed = parseScriptFile(
+      "session-controller",
+      scriptText,
+      fileSource,
+    );
+
+    const result =
+      realizeSchedulerGenerationGuardFromParsedScripts(
+        graph(),
+        enumeration(),
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+        BUILTIN_REPAIR_REALIZERS,
+        [{ parsed }],
+      );
+
+    expect(result.status).toBe("realized");
+    if (result.status !== "realized") return;
+    expect(result.proposal.hintId).toBe(
+      parsed.repairTransformHints?.[0]?.id,
+    );
+
+    const ambiguous =
+      realizeSchedulerGenerationGuardFromParsedScripts(
+        graph(),
+        enumeration(),
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+        BUILTIN_REPAIR_REALIZERS,
+        [{ parsed }, { parsed }],
+      );
+
+    expect(ambiguous).toMatchObject({
+      status: "blocked",
+      reasons: expect.arrayContaining([
+        expect.stringMatching(/multiple exact scheduler/i),
+      ]),
+    });
   });
 
   it("blocks stale analyzer/parser revisions and source hints outside the causal opportunity", () => {
