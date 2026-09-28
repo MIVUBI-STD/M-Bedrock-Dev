@@ -1098,3 +1098,116 @@ full test suite       pass
 ```
 
 Independent Package Source Snapshot verification on the same revision also passed TypeScript compilation and 12/12 focused persistence/generation realizer tests under Node 24.21.0.
+
+
+## Arena capacity and start-ownership source proof
+
+Arena repair now has structured source analysis and two concrete syntax-aware runtime-causal realizers.
+
+The scripts analyzer emits structured `ScriptArenaAuthorityEvidence` for:
+
+```text
+membership-commit
+capacity-operand
+capacity-check
+arena-generation-operand
+start-owner-acquire
+start-state-commit
+```
+
+Evidence is correlated into `ScriptArenaAuthorityPath` only when operations share the exact authored arena expression and execution region.
+
+This prevents join-pad/queue state from being treated as committed membership and prevents capacity/owner operands from a different arena object from being merged into one authority path.
+
+### Arena capacity guard
+
+The concrete capacity transform is intentionally narrow.
+
+A causal-auto hint is emitted only when a function/method/callback block contains exactly:
+
+```text
+const <capacity> = <arena>.maxPlayers|maxParticipants|capacity;
+<arena>.members|players|participants|memberships.add|push|set(...);
+```
+
+with no third statement or intervening side effect.
+
+The replacement is bounded to the terminal membership commit:
+
+```text
+Set/Map:
+if (<membership>.size < <capacity>) <existing commit>;
+
+Array:
+if (<membership>.length < <capacity>) <existing commit>;
+```
+
+The analyzer refuses hints for mutable capacity variables, different arena objects, queue/join-pad collections, or blocks containing additional side effects.
+
+The causal binding is exact:
+
+```text
+arena-capacity-overflow-observed
+↔ capacity-guard-enabled
+```
+
+and the original arena-capacity experiment is retained as the runtime retest obligation.
+
+### Arena start ownership guard
+
+Start ownership is now causal-auto only on an even narrower authored class pattern:
+
+```text
+class Arena {
+  startOwner = null | undefined;
+  generation = ...;
+
+  start() {
+    const <generationToken> = this.generation;
+    this.startOwner = <generationToken>;
+    this.state|status|phase|started|active = <start-state>;
+  }
+}
+```
+
+The method must contain exactly those three statements.
+
+The sentinel is never invented by the repair system; it must already be authored as `null` or `undefined`.
+
+The exact owner assignment is transformed to:
+
+```text
+if (this.startOwner !== <authored sentinel>) return;
+this.startOwner = <generationToken>;
+```
+
+Because the only statement before owner acquisition is the generation capture, the early return cannot skip unrelated authored side effects.
+
+No hint is emitted when:
+
+- the owner sentinel is absent;
+- owner assignment targets another object;
+- generation is not sourced from `this.generation/arenaGeneration/generationId`;
+- the start-state commit is missing or on another authority path;
+- an extra side effect exists in the method.
+
+The causal binding is exact:
+
+```text
+arena-start-ownership-violation-observed
+↔ start-ownership-guard-enabled
+```
+
+and the multi-arena start experiment is retained as the post-repair runtime retest obligation.
+
+Validated source revision: `5e02256869b4fc2107a1cbcf0ff85f0aac6745ac`.
+
+GitHub Actions Verify run `36431630205` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
