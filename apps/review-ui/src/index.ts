@@ -7,3 +7,6 @@ export const reviewUiPrototypeStatus: ReviewUiPrototypeStatus = {
   phase: "source-prototype",
   runtimeConnected: false,
 };
+
+export * from "./load-review.js";
+export * from "./view-model.js";
