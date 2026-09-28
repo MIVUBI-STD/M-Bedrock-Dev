@@ -165,3 +165,5 @@ export * from "./runtime-multiplayer-diagnostic-bindings.js";
 export * from "./runtime-persistence-diagnostic-bindings.js";
 
 export * from "./runtime-profile-differential.js";
+
+export * from "./runtime-profile-differential-reclassification.js";
