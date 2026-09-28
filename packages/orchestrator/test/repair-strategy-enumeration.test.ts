@@ -120,7 +120,7 @@ const diagnostic: DiagnosticRepairDecision = {
     "proven-with-observed-outcome",
   proofState: "causal",
   causalProof:
-    incident.rootCauseCandidates[0]!.proof,
+    incident.rootCauseCandidates[0]!.proof!,
   claimStrength: "proven-runtime",
   reasons: ["controlled reconnect proof"],
 };
