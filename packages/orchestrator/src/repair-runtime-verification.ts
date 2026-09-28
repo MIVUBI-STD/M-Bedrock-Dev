@@ -70,6 +70,32 @@ function evidenceId(record: RuntimeEvidenceRecord): string {
   ].join(":");
 }
 
+function sameStringSet(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  const a = [...new Set(left)].sort();
+  const b = [...new Set(right)].sort();
+  return (
+    a.length === b.length &&
+    a.every((value, index) => value === b[index])
+  );
+}
+
+function experimentContractMatches(
+  expected: RepairRuntimeExperimentContract,
+  actual: RepairRuntimeExperimentContract | undefined,
+): boolean {
+  return (
+    actual !== undefined &&
+    actual.interventionId === expected.interventionId &&
+    actual.experimentRevision === expected.experimentRevision &&
+    actual.targetProfileFingerprint === expected.targetProfileFingerprint &&
+    actual.fixtureFingerprint === expected.fixtureFingerprint &&
+    sameStringSet(actual.predicateIds, expected.predicateIds)
+  );
+}
+
 function matchingObservedEvidence(
   records: readonly RuntimeEvidenceRecord[],
   requirement: RepairRuntimeStateRequirement,
@@ -158,8 +184,16 @@ export function verifyRepairRuntimeEvidence(
     plan.stateRequirements.length > 0 ||
     plan.temporalRequirements.length > 0;
 
+  const experimentContractSatisfied =
+    plan.experimentContract === undefined ||
+    experimentContractMatches(
+      plan.experimentContract,
+      options.executedExperimentContract,
+    );
+
   const passed =
     hasRequirements &&
+    experimentContractSatisfied &&
     failedStateRequirementIds.length === 0 &&
     failedTemporal.length === 0 &&
     selectedEvidence.size > 0;
@@ -170,6 +204,12 @@ export function verifyRepairRuntimeEvidence(
   if (!hasRequirements) {
     reasons.push(
       "Runtime verification plan must contain at least one state or temporal requirement.",
+    );
+  }
+
+  if (!experimentContractSatisfied) {
+    reasons.push(
+      "Post-repair runtime verification did not execute the exact experiment contract that authorized the repair.",
     );
   }
 
