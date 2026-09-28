@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  repairRuntimeExperimentContractsFromProof,
   verifyRepairRuntimeEvidence,
 } from "../src/repair-runtime-verification.js";
 import type {
@@ -65,6 +66,139 @@ describe("repair runtime verification", () => {
       passed: true,
     });
     expect(result.evidenceIds.length).toBe(2);
+  });
+
+  it("accepts post-repair runtime proof only when the executed experiment contract matches exactly", () => {
+    const contract = {
+      interventionId: "exp:chunk",
+      experimentRevision: "rev-1",
+      targetProfileFingerprint: "profile-a",
+      fixtureFingerprint: "fixture-a",
+      predicateIds: ["target-ready"],
+    };
+
+    const result = verifyRepairRuntimeEvidence({
+      transactionId: "tx-1",
+      stateRequirements: [{
+        id: "ready",
+        predicate: "target-ready",
+        expectedState: "present",
+      }],
+      temporalRequirements: [],
+      experimentContract: contract,
+    }, [{
+      ...records[0]!,
+      targetProfileFingerprint: "profile-a",
+    }], true, {
+      expectedTargetProfileFingerprint: "profile-a",
+      executedExperimentContract: contract,
+    });
+
+    expect(result.passed).toBe(true);
+    expect(result.receipt).toBeDefined();
+  });
+
+  it("rejects post-repair runtime proof when the experiment revision or fixture changes", () => {
+    const expected = {
+      interventionId: "exp:chunk",
+      experimentRevision: "rev-1",
+      targetProfileFingerprint: "profile-a",
+      fixtureFingerprint: "fixture-a",
+      predicateIds: ["target-ready"],
+    };
+
+    const result = verifyRepairRuntimeEvidence({
+      transactionId: "tx-1",
+      stateRequirements: [{
+        id: "ready",
+        predicate: "target-ready",
+        expectedState: "present",
+      }],
+      temporalRequirements: [],
+      experimentContract: expected,
+    }, [{
+      ...records[0]!,
+      targetProfileFingerprint: "profile-a",
+    }], true, {
+      expectedTargetProfileFingerprint: "profile-a",
+      executedExperimentContract: {
+        ...expected,
+        experimentRevision: "rev-2",
+        fixtureFingerprint: "fixture-b",
+      },
+    });
+
+    expect(result.passed).toBe(false);
+    expect(result.receipt).toBeUndefined();
+    expect(result.reasons.join(" ")).toMatch(
+      /exact experiment contract/i,
+    );
+  });
+
+  it("derives retest contract identity from repair causal provenance", () => {
+    const contracts = repairRuntimeExperimentContractsFromProof({
+      transactionId: "tx-1",
+      sourceFingerprint: "source",
+      graphFingerprint: "graph",
+      decisionBasis: {
+        sourceFingerprint: "source",
+        graphFingerprint: "graph",
+      },
+      incidentId: "incident",
+      diagnosticDisposition: "guarded-repair-eligible",
+      claimStrength: "proven-runtime",
+      proofState: "intervention-supported",
+      blastRadiusDisposition: "minimal",
+      admissionDisposition: "guarded",
+      supportingInvariantIds: [],
+      changedNodeIds: [],
+      affectedNodeIds: [],
+      requiredRevalidationNodeIds: [],
+      requiredRevalidationPaths: [],
+      impactTraces: [],
+      reasons: [],
+      causalInterventionProvenance: [{
+        interventionId: "exp:chunk",
+        experimentRevision: "rev-1",
+        predicateId: "target-ready",
+        controlledFactorIds: ["chunk-loaded"],
+        controlledFactorContrasts: [{
+          factorId: "chunk-loaded",
+          controlValue: false,
+          treatmentValue: true,
+        }],
+        controlState: "absent",
+        treatmentState: "present",
+        expectedContrastDisposition: "matched",
+        targetProfileFingerprint: "profile-a",
+        fixtureFingerprint: "fixture-a",
+        evidenceIds: ["e:1"],
+      }, {
+        interventionId: "exp:chunk",
+        experimentRevision: "rev-1",
+        predicateId: "game-started",
+        controlledFactorIds: ["chunk-loaded"],
+        controlledFactorContrasts: [{
+          factorId: "chunk-loaded",
+          controlValue: false,
+          treatmentValue: true,
+        }],
+        controlState: "absent",
+        treatmentState: "present",
+        expectedContrastDisposition: "matched",
+        targetProfileFingerprint: "profile-a",
+        fixtureFingerprint: "fixture-a",
+        evidenceIds: ["e:2"],
+      }],
+    });
+
+    expect(contracts).toEqual([{
+      interventionId: "exp:chunk",
+      experimentRevision: "rev-1",
+      targetProfileFingerprint: "profile-a",
+      fixtureFingerprint: "fixture-a",
+      predicateIds: ["game-started", "target-ready"],
+    }]);
   });
 
   it("rejects derived-only state evidence", () => {
