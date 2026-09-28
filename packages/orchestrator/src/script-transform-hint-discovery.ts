@@ -17,6 +17,7 @@ import type {
 } from "./repair-strategy-source-registry.js";
 import {
   realizeSchedulerGenerationGuardHint,
+  realizeSessionGenerationGuardHint,
   type RepairTransformHintRealization,
 } from "./script-transform-hint-realizer.js";
 
@@ -176,5 +177,61 @@ export function realizeSchedulerGenerationGuardFromParsedScripts(
     sourceRegistry,
     realizerRegistry,
     schedulerHints[0]!,
+  );
+}
+
+
+export function realizeSessionGenerationGuardFromParsedScripts(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  parsedScripts: readonly {
+    parsed: ParsedScriptFile;
+  }[],
+): RepairTransformHintRealization {
+  const discovery =
+    discoverApplicableRepairTransformHints(
+      parsedScripts,
+      enumeration,
+    );
+  const sessionHints =
+    discovery.applicable.filter(
+      (hint) =>
+        hint.family ===
+          "session-generation-guard",
+    );
+
+  if (sessionHints.length === 0) {
+    return {
+      status: "blocked",
+      sourceId:
+        "session-generation-guard-template",
+      reasons: [
+        "No analyzer-owned session generation guard transform hint matches the selected causal opportunity.",
+      ],
+    };
+  }
+
+  if (sessionHints.length > 1) {
+    return {
+      status: "blocked",
+      sourceId:
+        "session-generation-guard-template",
+      reasons: [
+        "Multiple exact session generation guard transform hints match the selected causal opportunity; realization is ambiguous.",
+        ...sessionHints.map(
+          (hint) => "candidate-hint:" + hint.id,
+        ),
+      ],
+    };
+  }
+
+  return realizeSessionGenerationGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    sessionHints[0]!,
   );
 }
