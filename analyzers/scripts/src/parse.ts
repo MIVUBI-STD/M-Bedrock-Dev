@@ -39,6 +39,10 @@ import {
   deriveCapturedGenerationGuardTransformHints,
   derivePersistenceIdempotencyGuardTransformHints,
 } from "./repair-transform-hints.js";
+import {
+  correlateScriptArenaAuthorityPaths,
+  deriveScriptArenaAuthorityEvidence,
+} from "./arena-authority-evidence.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -1662,6 +1666,15 @@ export function parseScriptFile(
     true,
     scriptKind(source.relativePath),
   );
+  const arenaAuthorityEvidence =
+    deriveScriptArenaAuthorityEvidence(
+      text,
+      source,
+    );
+  const arenaAuthorityPaths =
+    correlateScriptArenaAuthorityPaths(
+      arenaAuthorityEvidence,
+    );
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2395,6 +2408,8 @@ export function parseScriptFile(
   return {
     identifier,
     source,
+    arenaAuthorityEvidence,
+    arenaAuthorityPaths,
     repairTransformHints: [
       ...deriveCapturedGenerationGuardTransformHints(
         identifier,
