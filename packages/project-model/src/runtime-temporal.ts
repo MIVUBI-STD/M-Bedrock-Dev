@@ -8,6 +8,7 @@ export interface RuntimeTemporalRequirement {
   beforePredicate: string;
   afterPredicate: string;
   scope?: RuntimeScope;
+  minTickDelta?: number;
   maxTickDelta?: number;
 }
 
