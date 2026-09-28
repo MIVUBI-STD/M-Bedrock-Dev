@@ -457,6 +457,12 @@ function persistenceMarkerPattern(
   for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
     const candidate = parent.statements[cursor]!;
     if (!ts.isVariableStatement(candidate)) continue;
+    if (
+      (candidate.declarationList.flags &
+        ts.NodeFlags.Const) === 0
+    ) {
+      continue;
+    }
 
     for (const declaration of candidate.declarationList.declarations) {
       if (
