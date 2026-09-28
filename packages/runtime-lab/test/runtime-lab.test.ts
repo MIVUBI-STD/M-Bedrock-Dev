@@ -49,6 +49,11 @@ const definition: RuntimeExperimentDefinition = {
     factorValues: { "generation-guard": false },
   }],
   outcomePredicateIds: ["stale-callback-observed"],
+  expectedContrasts: [{
+    predicateId: "stale-callback-observed",
+    controlState: "absent",
+    treatmentState: "present",
+  }],
   minimumRunsPerArm: 2,
 };
 
@@ -115,7 +120,80 @@ describe("runtime laboratory contracts", () => {
       controlTreatmentContrastPredicates: [
         "stale-callback-observed",
       ],
+      armRoles: {
+        control: "control",
+        treatment: "treatment",
+      },
+      observedContrasts: [{
+        predicateId: "stale-callback-observed",
+        controlState: "absent",
+        treatmentState: "present",
+      }],
+      expectedContrastMatches: [
+        "stale-callback-observed",
+      ],
+      expectedContrastMismatches: [],
     });
+  });
+
+  it("records deterministic contrast direction mismatches without treating them as expected proof", () => {
+    const result = qualifyRuntimeExperiment(
+      definition,
+      [
+        trial("c0", "control", 0, "present"),
+        trial("c1", "control", 1, "present"),
+        trial("t0", "treatment", 0, "absent"),
+        trial("t1", "treatment", 1, "absent"),
+      ],
+    );
+
+    expect(result.state).toBe("intervention-supported");
+    expect(result.observedContrasts).toEqual([{
+      predicateId: "stale-callback-observed",
+      controlState: "present",
+      treatmentState: "absent",
+    }]);
+    expect(result.expectedContrastMatches).toEqual([]);
+    expect(result.expectedContrastMismatches).toEqual([
+      "stale-callback-observed",
+    ]);
+    expect(result.reasons.join(" ")).toMatch(
+      /do not match the direction declared/,
+    );
+  });
+
+  it("validates expected contrast predicates and direction", () => {
+    const undeclared = qualifyRuntimeExperiment(
+      {
+        ...definition,
+        expectedContrasts: [{
+          predicateId: "undeclared",
+          controlState: "absent",
+          treatmentState: "present",
+        }],
+      },
+      [],
+    );
+    expect(undeclared.state).toBe("insufficient");
+    expect(undeclared.reasons.join(" ")).toMatch(
+      /undeclared outcome predicate/,
+    );
+
+    const noDirection = qualifyRuntimeExperiment(
+      {
+        ...definition,
+        expectedContrasts: [{
+          predicateId: "stale-callback-observed",
+          controlState: "present",
+          treatmentState: "present",
+        }],
+      },
+      [],
+    );
+    expect(noDirection.state).toBe("insufficient");
+    expect(noDirection.reasons.join(" ")).toMatch(
+      /requires different control and treatment states/,
+    );
   });
 
   it("rejects cross-environment control/treatment evidence", () => {
