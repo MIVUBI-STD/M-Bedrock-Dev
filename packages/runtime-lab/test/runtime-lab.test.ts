@@ -262,6 +262,60 @@ describe("runtime laboratory contracts", () => {
     });
   });
 
+  it("emits predicate-specific controlled intervention provenance when the expected contrast matches", () => {
+    const qualification = qualifyRuntimeExperiment(
+      definition,
+      [
+        trial("c0", "control", 0, "absent"),
+        trial("c1", "control", 1, "absent"),
+        trial("t0", "treatment", 0, "present"),
+        trial("t1", "treatment", 1, "present"),
+      ],
+    );
+
+    const proof = experimentQualificationCausalProof(
+      qualification,
+      definition,
+    );
+
+    expect(proof.interventionProvenance).toEqual([
+      expect.objectContaining({
+        interventionId: definition.id,
+        predicateId: "stale-callback-observed",
+        controlledFactorIds: ["generation-guard"],
+        controlState: "absent",
+        treatmentState: "present",
+        expectedContrastDisposition: "matched",
+        targetProfileFingerprint: "profile-a",
+        fixtureFingerprint: "fixture-a",
+      }),
+    ]);
+    expect(
+      proof.interventionProvenance?.[0]?.evidenceIds,
+    ).toHaveLength(4);
+  });
+
+  it("does not emit matched causal provenance when deterministic contrast runs opposite to the expected direction", () => {
+    const qualification = qualifyRuntimeExperiment(
+      definition,
+      [
+        trial("c0", "control", 0, "present"),
+        trial("c1", "control", 1, "present"),
+        trial("t0", "treatment", 0, "absent"),
+        trial("t1", "treatment", 1, "absent"),
+      ],
+    );
+
+    const proof = experimentQualificationCausalProof(
+      qualification,
+      definition,
+    );
+
+    expect(proof.state).toBe("intervention-supported");
+    expect(proof.interventionIds).toEqual([definition.id]);
+    expect(proof.interventionProvenance).toEqual([]);
+  });
+
   it("binds controlled observations to the exact target profile", () => {
     const evidence = targetBoundObservedEvidence(
       definition,
