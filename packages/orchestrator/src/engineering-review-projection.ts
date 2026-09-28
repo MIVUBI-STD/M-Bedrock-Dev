@@ -38,6 +38,17 @@ export interface EngineeringReviewAttention {
   reason: string;
 }
 
+export interface EngineeringReviewRuntimeAssessment {
+  id: string;
+  outcomeId: string;
+  disposition: IntentDiagnosticDisposition;
+  subjectIds: readonly string[];
+  basisInvariantIds: readonly string[];
+  evidenceIds: readonly string[];
+  nextEvidenceNeed: GameplayIntentRuntimeAssessment["result"]["nextEvidenceNeed"];
+  reasons: readonly string[];
+}
+
 export interface EngineeringReviewDiagnostic {
   id: string;
   code: DiagnosticFinding["code"];
@@ -94,6 +105,7 @@ export interface EngineeringReviewProjection {
     }>;
   };
   runtimeClassifications: Record<IntentDiagnosticDisposition, number>;
+  runtimeAssessments: EngineeringReviewRuntimeAssessment[];
   attention: EngineeringReviewAttention[];
   diagnosticDefinitions: DiagnosticDefinition[];
   diagnostics: EngineeringReviewDiagnostic[];
@@ -225,6 +237,22 @@ export function buildEngineeringReviewProjection(
       })),
     },
     runtimeClassifications,
+    runtimeAssessments: source.gameplayIntentRuntime.assessments.map(
+      (assessment) => ({
+        id:
+          "runtime:" +
+          assessment.outcomeObservation.outcomeId +
+          ":" +
+          assessment.outcomeObservation.evidenceId,
+        outcomeId: assessment.outcomeObservation.outcomeId,
+        disposition: assessment.result.disposition,
+        subjectIds: [...assessment.result.subjectIds],
+        basisInvariantIds: [...assessment.result.basisInvariantIds],
+        evidenceIds: [...assessment.result.evidenceIds],
+        nextEvidenceNeed: assessment.result.nextEvidenceNeed,
+        reasons: [...assessment.result.reasons],
+      }),
+    ),
     attention: attentionFrom(source, runtimeClassifications),
     diagnosticDefinitions: diagnosticDefinitions(
       source.diagnostics.map((finding) => finding.code),

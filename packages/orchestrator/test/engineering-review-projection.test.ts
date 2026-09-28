@@ -40,7 +40,7 @@ function sourceFixture(): EngineeringReviewSource {
     gameplayIntentRuntime: {
       assessments: [
         {
-          outcomeObservation: {} as never,
+          outcomeObservation: { outcomeId: "outcome:session", evidenceId: "obs:1" },
           observationNeeds: [],
           result: {
             disposition: "probable-defect",
@@ -52,7 +52,7 @@ function sourceFixture(): EngineeringReviewSource {
           },
         },
         {
-          outcomeObservation: {} as never,
+          outcomeObservation: { outcomeId: "outcome:scheduler", evidenceId: "obs:2" },
           observationNeeds: [],
           result: {
             disposition: "runtime-proof-required",
@@ -178,6 +178,28 @@ describe("engineering review projection", () => {
     expect(review.runtimeClassifications["probable-defect"]).toBe(1);
     expect(review.runtimeClassifications["confirmed-defect"]).toBe(0);
     expect(review.runtimeClassifications["runtime-proof-required"]).toBe(1);
+    expect(review.runtimeAssessments).toEqual([
+      {
+        id: "runtime:outcome:session:obs:1",
+        outcomeId: "outcome:session",
+        disposition: "probable-defect",
+        subjectIds: ["session"],
+        basisInvariantIds: ["inv:1"],
+        evidenceIds: ["ev:1"],
+        nextEvidenceNeed: "authored-intent",
+        reasons: ["Observed evidence contradicts inferred intent."],
+      },
+      {
+        id: "runtime:outcome:scheduler:obs:2",
+        outcomeId: "outcome:scheduler",
+        disposition: "runtime-proof-required",
+        subjectIds: ["scheduler"],
+        basisInvariantIds: [],
+        evidenceIds: ["ev:2"],
+        nextEvidenceNeed: "runtime-proof",
+        reasons: ["Runtime proof is required."],
+      },
+    ]);
     expect(review.incidents[0]?.rootCauseCandidates[0]?.label).toBe(
       "Session cleanup ordering",
     );
