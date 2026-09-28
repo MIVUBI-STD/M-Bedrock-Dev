@@ -204,6 +204,39 @@ describe("repair release lineage", () => {
     ]);
   });
 
+  it("blocks release when lifecycle claims runtime complete without covering the authorizing experiment envelope", () => {
+    const repairProof = proof({
+      causalInterventionProvenance: [{
+        interventionId: "exp:chunk",
+        experimentRevision: "rev-1",
+        predicateId: "chunk-ready",
+        controlledFactorIds: ["chunk-loaded"],
+        controlledFactorContrasts: [{
+          factorId: "chunk-loaded",
+          controlValue: false,
+          treatmentValue: true,
+        }],
+        controlState: "absent",
+        treatmentState: "present",
+        expectedContrastDisposition: "matched",
+        targetProfileFingerprint: "profile-a",
+        fixtureFingerprint: "fixture-a",
+        evidenceIds: ["runtime:chunk"],
+      }],
+    });
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      completeLedger(repairProof),
+      basis,
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/complete repair-authorizing experiment envelope/i);
+  });
+
   it("blocks guarded intervention proof from release", () => {
     const repairProof = proof({
       diagnosticDisposition: "guarded-repair-eligible",
