@@ -237,6 +237,33 @@ describe("decision ledger", () => {
       .toMatch(/runtimeEvidenceRevision changed/);
   });
 
+  it("invalidates runtime decisions when the experiment contract envelope revision changes", () => {
+    let ledger = appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "runtime-contract-bound",
+        kind: "runtime-verification",
+        transactionId: "tx-1",
+        basis: {
+          runtimeEvidenceRevision: "evidence-a",
+          runtimeExperimentContractRevision: "contract-envelope-a",
+        },
+        outputIds: ["runtime-verification:passed"],
+      },
+    );
+
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      runtimeEvidenceRevision: "evidence-a",
+      runtimeExperimentContractRevision: "contract-envelope-b",
+    });
+
+    expect(ledger.entries[0]).toMatchObject({
+      status: "invalidated",
+    });
+    expect(ledger.entries[0]?.invalidationReason)
+      .toMatch(/runtimeExperimentContractRevision changed/);
+  });
+
   it("invalidates descendants when a historical contract revision is stale", () => {
     let ledger = createDecisionLedger();
     ledger = appendDecisionLedgerEntry(ledger, {
