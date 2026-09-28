@@ -202,6 +202,22 @@ export function createSchedulerCancellationExperiment(
       controlState: "absent",
       treatmentState: "present",
     }],
+    evidenceRequirements: [{
+      id: "control-cancel-confirmed",
+      predicateId: "scheduler-work-cancelled",
+      state: "present",
+      armIds: ["control"],
+    }, {
+      id: "control-callback-suppressed",
+      predicateId: "scheduler-callback-attempted",
+      state: "absent",
+      armIds: ["control"],
+    }, {
+      id: "treatment-cancel-disabled",
+      predicateId: "scheduler-work-cancelled",
+      state: "absent",
+      armIds: ["treatment"],
+    }],
     minimumRunsPerArm:
       input.minimumRunsPerArm ?? 2,
   };
@@ -297,6 +313,15 @@ export function createSchedulerCrossArenaIsolationExperiment(
       predicateId: "cross-arena-mutation-observed",
       controlState: "absent",
       treatmentState: "present",
+    }],
+    evidenceRequirements: [{
+      id: "callback-attempt-owned-by-arena-a",
+      predicateId: "scheduler-callback-attempted",
+      state: "present",
+      scope: {
+        arenaId: input.arenaA,
+        arenaGeneration: generation,
+      },
     }],
     minimumRunsPerArm:
       input.minimumRunsPerArm ?? 2,
@@ -452,6 +477,23 @@ export function createBidirectionalSchedulerIsolationExperiment(
       predicateId: "cross-arena-mutation-observed",
       controlState: "absent",
       treatmentState: "present",
+    }],
+    evidenceRequirements: [{
+      id: "callback-attempt-owned-by-arena-a",
+      predicateId: "scheduler-callback-attempted",
+      state: "present",
+      scope: {
+        arenaId: input.arenaA,
+        arenaGeneration: generation,
+      },
+    }, {
+      id: "callback-attempt-owned-by-arena-b",
+      predicateId: "scheduler-callback-attempted",
+      state: "present",
+      scope: {
+        arenaId: input.arenaB,
+        arenaGeneration: generation,
+      },
     }],
     minimumRunsPerArm:
       input.minimumRunsPerArm ?? 2,
