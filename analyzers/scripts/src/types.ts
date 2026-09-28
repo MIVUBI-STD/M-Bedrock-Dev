@@ -1,4 +1,7 @@
-import type { SourceRef } from "../../../packages/project-model/src/index.js";
+import type {
+  RepairSourceTransformHint,
+  SourceRef,
+} from "../../../packages/project-model/src/index.js";
 import type { ScriptArgumentKind } from "../../../packages/compatibility/src/index.js";
 
 export interface ScriptImport {
@@ -373,5 +376,6 @@ export interface ParsedScriptFile {
   spatialOffsetTransforms?: ScriptSpatialOffsetTransform[];
   spatialTransformUses?: ScriptSpatialTransformUse[];
   spatialContextOffsetSeries?: ScriptSpatialContextOffsetSeries[];
+  repairTransformHints?: RepairSourceTransformHint[];
   capabilities: ScriptCapabilityUse[];
 }
