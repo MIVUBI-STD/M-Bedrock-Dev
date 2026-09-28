@@ -478,3 +478,54 @@ selected causal candidate
 The key principle is:
 
 > Candidate generation broadens the option set; it does not lower the evidence threshold or gain authority over the selector.
+
+
+## Next lane — repair realizer registry and generator coverage expansion
+
+The system can now derive repair opportunities, enumerate applicable provider sources, realize source-bound candidates, deduplicate equivalent candidates, and pass the unique option set into causal strategy selection.
+
+The next bottleneck is realization coverage and caller independence.
+
+Priorities:
+
+1. introduce a typed realizer registry that maps enumerated strategy sources to concrete deterministic realization implementations;
+2. derive changed semantic node ids from operation SourceRefs / the current SemanticGraph instead of accepting them from the caller;
+3. add strategy-source kinds beyond providers:
+   - built-in implementation planners;
+   - configuration templates;
+   - compatibility workarounds;
+   - runtime-recovery mitigations;
+4. keep speculative/non-deterministic source types proposal-only;
+5. add realizer revision/fingerprint to decision basis so generated candidates become stale when generator logic changes;
+6. produce a repair coverage report for every proven causal candidate:
+   ```text
+   applicable source discovered
+   realization succeeded
+   realization blocked + reason
+   no implementation coverage
+   ```
+7. add deterministic realizers for the highest-value proven runtime classes:
+   - session/generation guard insertion;
+   - arena ownership/capacity guard;
+   - scheduler cancellation/ownership guard;
+   - bounded navigation recovery configuration;
+   - persistence reconciliation/idempotency guard;
+8. require all generated source edits to retain exact source provenance and source-fingerprint preconditions;
+9. record generator/source provenance and realization failures in the decision ledger without turning failed ideas into patch transactions;
+10. feed only successfully realized, deduplicated candidates into repair strategy intelligence.
+
+Target flow:
+
+```text
+causal opportunity
+→ source registry
+→ applicability
+→ concrete realizer
+→ exact source binding
+→ deterministic PatchTransaction
+→ semantic node derivation
+→ deduplication
+→ strategy intelligence
+```
+
+The next quality bar is that the caller supplies causal evidence and current source state—not a hand-authored repair candidate.
