@@ -27,6 +27,7 @@ export interface DecisionBasisRevision {
   targetProfileFingerprint?: string;
   probeBindingRevision?: string;
   runtimeEvidenceRevision?: string;
+  runtimeExperimentContractRevision?: string;
 }
 
 export interface DecisionLedgerEntry {
