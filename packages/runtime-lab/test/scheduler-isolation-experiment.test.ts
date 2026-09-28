@@ -71,7 +71,33 @@ function trial(
         sequence: 10 + runIndex,
         tick: 100 + runIndex,
       },
-    }],
+    }, ...(
+      definition.id === cancellation.id
+        ? armId === "control"
+          ? [{
+              predicate: "scheduler-work-cancelled",
+              state: "present" as const,
+              confidence: "observed" as const,
+            }, {
+              predicate: "scheduler-callback-attempted",
+              state: "absent" as const,
+              confidence: "observed" as const,
+            }]
+          : [{
+              predicate: "scheduler-work-cancelled",
+              state: "absent" as const,
+              confidence: "observed" as const,
+            }]
+        : [{
+            predicate: "scheduler-callback-attempted",
+            state: "present" as const,
+            confidence: "observed" as const,
+            scope: {
+              arenaId: "arena-a",
+              arenaGeneration: 3,
+            },
+          }]
+    )],
   };
 }
 
@@ -175,6 +201,47 @@ describe("scheduler cancellation and isolation experiments", () => {
         "probe-cross-arena-mutation",
         "cleanup-owned-work",
       ]);
+  });
+
+  it("does not promote cancellation outcome contrast without required supporting evidence", () => {
+    const raw = [
+      "c0",
+      "c1",
+      "t0",
+      "t1",
+    ].map((id, index): RuntimeExperimentTrial => ({
+      schemaVersion: 1,
+      id,
+      identity: {
+        experimentId: cancellation.id,
+        definitionRevision:
+          runtimeExperimentDefinitionRevision(
+            cancellation,
+          ),
+        armId: index < 2 ? "control" : "treatment",
+        runIndex: index % 2,
+        targetProfileFingerprint: "profile-a",
+        fixtureFingerprint: "fixture-a",
+        environmentFingerprint: "env-a",
+      },
+      status: "completed",
+      evidence: [{
+        predicate:
+          "cancelled-callback-mutation-observed",
+        state: index < 2 ? "absent" : "present",
+        confidence: "observed",
+      }],
+    }));
+
+    const qualification = qualifyRuntimeExperiment(
+      cancellation,
+      raw,
+    );
+
+    expect(qualification.state).toBe("observed");
+    expect(qualification.reasons.join(" ")).toMatch(
+      /supporting evidence requirement/i,
+    );
   });
 
   it("promotes repeatable cancellation contrast to causal provenance", () => {
