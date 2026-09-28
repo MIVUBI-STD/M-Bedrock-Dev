@@ -75,6 +75,16 @@ describe("repair runtime verification", () => {
       targetProfileFingerprint: "profile-a",
       fixtureFingerprint: "fixture-a",
       predicateIds: ["target-ready"],
+      factorContrasts: [{
+        factorId: "chunk-loaded",
+        controlValue: false,
+        treatmentValue: true,
+      }],
+      expectedContrasts: [{
+        predicateId: "target-ready",
+        controlState: "absent",
+        treatmentState: "present",
+      }],
     };
 
     const result = verifyRepairRuntimeEvidence({
@@ -98,6 +108,101 @@ describe("repair runtime verification", () => {
     expect(result.receipt).toBeDefined();
   });
 
+  it("accepts an explicitly compatible successor contract with stricter predicate coverage", () => {
+    const expected = {
+      interventionId: "exp:chunk",
+      experimentRevision: "rev-1",
+      targetProfileFingerprint: "profile-a",
+      fixtureFingerprint: "fixture-a",
+      predicateIds: ["target-ready"],
+      factorContrasts: [{
+        factorId: "chunk-loaded",
+        controlValue: false,
+        treatmentValue: true,
+      }],
+      expectedContrasts: [{
+        predicateId: "target-ready",
+        controlState: "absent" as const,
+        treatmentState: "present" as const,
+      }],
+    };
+    const successor = {
+      ...expected,
+      experimentRevision: "rev-2",
+      compatibleWithRevisions: ["rev-1"],
+      predicateIds: ["game-started", "target-ready"],
+      expectedContrasts: [{
+        predicateId: "game-started",
+        controlState: "absent" as const,
+        treatmentState: "present" as const,
+      }, ...expected.expectedContrasts],
+    };
+
+    const result = verifyRepairRuntimeEvidence({
+      transactionId: "tx-1",
+      stateRequirements: [{
+        id: "ready",
+        predicate: "target-ready",
+        expectedState: "present",
+      }],
+      temporalRequirements: [],
+      experimentContract: expected,
+    }, [{
+      ...records[0]!,
+      targetProfileFingerprint: "profile-a",
+    }], true, {
+      expectedTargetProfileFingerprint: "profile-a",
+      executedExperimentContract: successor,
+    });
+
+    expect(result.passed).toBe(true);
+    expect(
+      result.receipt?.runtimeExperimentContract?.experimentRevision,
+    ).toBe("rev-2");
+  });
+
+  it("rejects a newer revision without explicit compatibility declaration", () => {
+    const expected = {
+      interventionId: "exp:chunk",
+      experimentRevision: "rev-1",
+      targetProfileFingerprint: "profile-a",
+      fixtureFingerprint: "fixture-a",
+      predicateIds: ["target-ready"],
+      factorContrasts: [{
+        factorId: "chunk-loaded",
+        controlValue: false,
+        treatmentValue: true,
+      }],
+      expectedContrasts: [{
+        predicateId: "target-ready",
+        controlState: "absent" as const,
+        treatmentState: "present" as const,
+      }],
+    };
+
+    const result = verifyRepairRuntimeEvidence({
+      transactionId: "tx-1",
+      stateRequirements: [{
+        id: "ready",
+        predicate: "target-ready",
+        expectedState: "present",
+      }],
+      temporalRequirements: [],
+      experimentContract: expected,
+    }, [{
+      ...records[0]!,
+      targetProfileFingerprint: "profile-a",
+    }], true, {
+      expectedTargetProfileFingerprint: "profile-a",
+      executedExperimentContract: {
+        ...expected,
+        experimentRevision: "rev-2",
+      },
+    });
+
+    expect(result.passed).toBe(false);
+  });
+
   it("rejects post-repair runtime proof when the experiment revision or fixture changes", () => {
     const expected = {
       interventionId: "exp:chunk",
@@ -105,6 +210,16 @@ describe("repair runtime verification", () => {
       targetProfileFingerprint: "profile-a",
       fixtureFingerprint: "fixture-a",
       predicateIds: ["target-ready"],
+      factorContrasts: [{
+        factorId: "chunk-loaded",
+        controlValue: false,
+        treatmentValue: true,
+      }],
+      expectedContrasts: [{
+        predicateId: "target-ready",
+        controlState: "absent",
+        treatmentState: "present",
+      }],
     };
 
     const result = verifyRepairRuntimeEvidence({
@@ -198,6 +313,20 @@ describe("repair runtime verification", () => {
       targetProfileFingerprint: "profile-a",
       fixtureFingerprint: "fixture-a",
       predicateIds: ["game-started", "target-ready"],
+      factorContrasts: [{
+        factorId: "chunk-loaded",
+        controlValue: false,
+        treatmentValue: true,
+      }],
+      expectedContrasts: [{
+        predicateId: "game-started",
+        controlState: "absent",
+        treatmentState: "present",
+      }, {
+        predicateId: "target-ready",
+        controlState: "absent",
+        treatmentState: "present",
+      }],
     }]);
   });
 
