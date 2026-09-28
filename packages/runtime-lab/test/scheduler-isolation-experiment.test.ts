@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   SCHEDULER_ISOLATION_CAPABILITY_REGISTRY,
+  createBidirectionalSchedulerIsolationExperiment,
   createSchedulerCancellationExperiment,
   createSchedulerCrossArenaIsolationExperiment,
   experimentQualificationCausalProof,
@@ -8,6 +9,7 @@ import {
   qualifyRuntimeExperiment,
   runtimeExperimentDefinitionRevision,
   validateCrossArenaSchedulerEvidence,
+  validateSchedulerCancellationEvidence,
   validateRuntimeActionCapabilityRegistry,
   validateRuntimeExperimentDefinition,
   type RuntimeExperimentTrial,
@@ -83,13 +85,11 @@ describe("scheduler cancellation and isolation experiments", () => {
     ).toEqual([]);
 
     expect(cancellation.expectedContrasts).toEqual([{
-      predicate:
-        undefined,
       predicateId:
         "cancelled-callback-mutation-observed",
       controlState: "absent",
       treatmentState: "present",
-    }].map(({ predicate: _predicate, ...rest }) => rest));
+    }]);
 
     expect(isolation.expectedContrasts).toEqual([{
       predicateId: "cross-arena-mutation-observed",
@@ -120,6 +120,61 @@ describe("scheduler cancellation and isolation experiments", () => {
         "LIVE_MINECRAFT",
       ).ready,
     ).toBe(true);
+  });
+
+  it("requires explicit cancellation evidence instead of treating a silent callback as cancelled", () => {
+    expect(
+      validateSchedulerCancellationEvidence([{
+        predicate: "scheduler-work-cancelled",
+        state: "present",
+        confidence: "observed",
+      }]),
+    ).toEqual([]);
+
+    expect(
+      validateSchedulerCancellationEvidence([]).join(" "),
+    ).toMatch(/missing explicit scheduler-work-cancelled/i);
+
+    expect(
+      validateSchedulerCancellationEvidence([{
+        predicate: "scheduler-work-cancelled",
+        state: "present",
+        confidence: "observed",
+      }, {
+        predicate: "scheduler-callback-attempted",
+        state: "present",
+        confidence: "observed",
+      }]).join(" "),
+    ).toMatch(/callback attempt after cancellation/i);
+  });
+
+  it("defines bidirectional concurrent isolation with both A→B and B→A scheduled before the shared callback window", () => {
+    const concurrent =
+      createBidirectionalSchedulerIsolationExperiment({
+        id: "exp:scheduler-isolation-bidirectional",
+        title: "Bidirectional scheduler isolation",
+        targetProfileFingerprint: "profile-a",
+        fixtureFingerprint: "fixture-c",
+        objectiveId: "scheduler_isolation",
+        participant: "cross_arena_mutation_count",
+        arenaA: "arena-a",
+        arenaB: "arena-b",
+        arenaGeneration: 3,
+      });
+
+    expect(
+      validateRuntimeExperimentDefinition(concurrent),
+    ).toEqual([]);
+
+    expect(concurrent.protocol.map((step) => step.id))
+      .toEqual([
+        "reset-owned-work",
+        "schedule-arena-a-to-b",
+        "schedule-arena-b-to-a",
+        "allow-concurrent-callback-window",
+        "probe-cross-arena-mutation",
+        "cleanup-owned-work",
+      ]);
   });
 
   it("promotes repeatable cancellation contrast to causal provenance", () => {
