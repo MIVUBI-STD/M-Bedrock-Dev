@@ -298,3 +298,51 @@ full test suite       pass
 ```
 
 An independent targeted verification against the Package Source Snapshot also passed TypeScript compilation and 56/56 focused repair/runtime/lineage tests. The official GitHub Actions result remains the authoritative validation.
+
+
+## Chunk readiness controlled-experiment proof
+
+Runtime Lab now has first-class controlled experiment families for chunk readiness:
+
+1. player-loader proximity readiness;
+2. temporary ticking-area recovery readiness.
+
+Both experiments are LIVE_MINECRAFT, guarded-mutation experiments and use the existing `probe.chunk-loaded` observation primitive. They do not infer readiness from fixed delays.
+
+The chunk experiment action contract includes:
+
+```text
+chunk.position-loader-relative-to-target
+chunk.isolate-target-from-loaders
+chunk.set-temporary-ticking-area
+chunk.clear-temporary-ticking-area
+```
+
+The ticking-area recovery experiment always includes a teardown cleanup action.
+
+Runtime capability preflight now checks all mutating experiment actions before execution. Missing or incompatible host capabilities fail closed before the campaign reaches Minecraft.
+
+Synthetic repeated control/treatment evidence proves the contract path:
+
+```text
+control: temporary load disabled → target-chunk-ready absent
+treatment: temporary load enabled → target-chunk-ready present
+→ repeatable deterministic contrast
+→ expected direction matched
+→ intervention-supported
+→ predicate-specific causal provenance
+```
+
+This validates experiment semantics and causal promotion wiring. It does not claim that Minecraft itself exhibits the contrast until a real LOCAL_MINECRAFT/LIVE_MINECRAFT host executes the experiment.
+
+Validated source revision: `9a370f7e1a12838a0db81b5e3b5e78240353f2ef`.
+
+GitHub Actions Verify run `36384578970` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
