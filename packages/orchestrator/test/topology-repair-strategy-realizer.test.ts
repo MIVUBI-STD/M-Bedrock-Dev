@@ -10,6 +10,7 @@ import type {
   DiagnosticFinding,
 } from "../../diagnostics/src/index.js";
 import {
+  BUILTIN_REPAIR_REALIZERS,
   BUILTIN_REPAIR_STRATEGY_PROVIDERS,
   deriveRepairOpportunityEnvelope,
   enumerateRepairStrategySources,
@@ -149,6 +150,7 @@ describe("topology repair strategy realizer", () => {
       enumeration,
       graph,
       BUILTIN_REPAIR_STRATEGY_PROVIDERS,
+      BUILTIN_REPAIR_REALIZERS,
       {
         outlier: {
           effectIndex: 0,
@@ -197,6 +199,13 @@ describe("topology repair strategy realizer", () => {
       providerId: "linear-topology-repair",
       providerVersion: "1",
       relatedDiagnosticIds: ["diag-topology"],
+      realizerProvenance: {
+        realizerId:
+          "linear-topology-repair-realizer",
+        realizerVersion: "1",
+        sourceKind: "provider",
+        sourceId: "linear-topology-repair",
+      },
       strategy: {
         addressesCandidateIds: ["cause-topology"],
         repairClass: "implementation-repair",
