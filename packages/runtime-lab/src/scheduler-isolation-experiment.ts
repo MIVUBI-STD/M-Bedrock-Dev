@@ -334,9 +334,14 @@ export function validateSchedulerCancellationEvidence(
       "Scheduler cancellation proof is missing explicit scheduler-work-cancelled evidence.",
     );
   }
-  if (callbackAttempt && !mutation) {
+  if (callbackAttempt) {
     errors.push(
-      "Scheduler cancellation proof observed a callback attempt after cancellation without a matching mutation; classify this separately from successful cancellation.",
+      "Scheduler cancellation proof observed a callback attempt after cancellation; cancellation did not fully suppress the pending callback.",
+    );
+  }
+  if (mutation) {
+    errors.push(
+      "Scheduler cancellation proof observed mutation after cancellation.",
     );
   }
 
