@@ -2,6 +2,7 @@ import type {
   RuntimeEvidenceRecord,
   RuntimeEvidenceState,
   RuntimeScope,
+  RuntimeVerificationExperimentContract,
 } from "../../project-model/src/index.js";
 import {
   runtimeScopeContains,
@@ -27,29 +28,21 @@ export interface RepairRuntimeStateRequirement {
   scope?: RuntimeScope;
 }
 
-export interface RepairRuntimeExperimentContract {
-  interventionId: string;
-  experimentRevision: string;
-  targetProfileFingerprint: string;
-  fixtureFingerprint: string;
-  predicateIds: readonly string[];
-}
-
 export interface RepairRuntimeVerificationPlan {
   transactionId: string;
   stateRequirements: readonly RepairRuntimeStateRequirement[];
   temporalRequirements: readonly RuntimeTemporalRequirement[];
-  experimentContract?: RepairRuntimeExperimentContract;
+  experimentContract?: RuntimeVerificationExperimentContract;
 }
 
 export interface RepairRuntimeVerificationOptions {
   expectedTargetProfileFingerprint?: string;
-  executedExperimentContract?: RepairRuntimeExperimentContract;
+  executedExperimentContract?: RuntimeVerificationExperimentContract;
 }
 
 export function repairRuntimeExperimentContractsFromProof(
   proof: RepairProofBundle,
-): RepairRuntimeExperimentContract[] {
+): RuntimeVerificationExperimentContract[] {
   const grouped = new Map<
     string,
     {
@@ -58,6 +51,8 @@ export function repairRuntimeExperimentContractsFromProof(
       targetProfileFingerprint: string;
       fixtureFingerprint: string;
       predicateIds: string[];
+      factorContrasts: RuntimeVerificationExperimentContract["factorContrasts"];
+      expectedContrasts: RuntimeVerificationExperimentContract["expectedContrasts"];
     }
   >();
 
@@ -80,6 +75,19 @@ export function repairRuntimeExperimentContractsFromProof(
     const current = grouped.get(key);
     if (current) {
       current.predicateIds.push(item.predicateId);
+      if (
+        item.controlState !== undefined &&
+        item.treatmentState !== undefined
+      ) {
+        current.expectedContrasts = [
+          ...current.expectedContrasts,
+          {
+            predicateId: item.predicateId,
+            controlState: item.controlState,
+            treatmentState: item.treatmentState,
+          },
+        ];
+      }
       continue;
     }
 
@@ -89,6 +97,16 @@ export function repairRuntimeExperimentContractsFromProof(
       targetProfileFingerprint: item.targetProfileFingerprint,
       fixtureFingerprint: item.fixtureFingerprint,
       predicateIds: [item.predicateId],
+      factorContrasts: [...(item.controlledFactorContrasts ?? [])],
+      expectedContrasts:
+        item.controlState === undefined ||
+        item.treatmentState === undefined
+          ? []
+          : [{
+              predicateId: item.predicateId,
+              controlState: item.controlState,
+              treatmentState: item.treatmentState,
+            }],
     });
   }
 
@@ -96,6 +114,10 @@ export function repairRuntimeExperimentContractsFromProof(
     .map((item) => ({
       ...item,
       predicateIds: [...new Set(item.predicateIds)].sort(),
+      factorContrasts: [...item.factorContrasts]
+        .sort((a, b) => a.factorId.localeCompare(b.factorId)),
+      expectedContrasts: [...item.expectedContrasts]
+        .sort((a, b) => a.predicateId.localeCompare(b.predicateId)),
     }))
     .sort((a, b) =>
       a.interventionId.localeCompare(b.interventionId) ||
@@ -141,17 +163,69 @@ function sameStringSet(
   );
 }
 
-function experimentContractMatches(
-  expected: RepairRuntimeExperimentContract,
-  actual: RepairRuntimeExperimentContract | undefined,
+function canonicalFactorContrasts(
+  contract: RuntimeVerificationExperimentContract,
+): string[] {
+  return contract.factorContrasts
+    .map((item) =>
+      JSON.stringify([
+        item.factorId,
+        item.controlValue,
+        item.treatmentValue,
+      ])
+    )
+    .sort();
+}
+
+function canonicalExpectedContrasts(
+  contract: RuntimeVerificationExperimentContract,
+): string[] {
+  return contract.expectedContrasts
+    .map((item) =>
+      JSON.stringify([
+        item.predicateId,
+        item.controlState,
+        item.treatmentState,
+      ])
+    )
+    .sort();
+}
+
+export function runtimeVerificationExperimentContractCompatible(
+  expected: RuntimeVerificationExperimentContract,
+  actual: RuntimeVerificationExperimentContract | undefined,
 ): boolean {
+  if (!actual) return false;
+
+  const revisionCompatible =
+    actual.experimentRevision === expected.experimentRevision ||
+    (actual.compatibleWithRevisions ?? []).includes(
+      expected.experimentRevision,
+    );
+
+  const predicatesCoverExpected =
+    expected.predicateIds.every((predicateId) =>
+      actual.predicateIds.includes(predicateId)
+    );
+
   return (
-    actual !== undefined &&
+    revisionCompatible &&
     actual.interventionId === expected.interventionId &&
-    actual.experimentRevision === expected.experimentRevision &&
     actual.targetProfileFingerprint === expected.targetProfileFingerprint &&
     actual.fixtureFingerprint === expected.fixtureFingerprint &&
-    sameStringSet(actual.predicateIds, expected.predicateIds)
+    predicatesCoverExpected &&
+    sameStringSet(
+      canonicalFactorContrasts(actual),
+      canonicalFactorContrasts(expected),
+    ) &&
+    expected.expectedContrasts.every((item) =>
+      actual.expectedContrasts.some(
+        (candidate) =>
+          candidate.predicateId === item.predicateId &&
+          candidate.controlState === item.controlState &&
+          candidate.treatmentState === item.treatmentState,
+      )
+    )
   );
 }
 
@@ -245,7 +319,7 @@ export function verifyRepairRuntimeEvidence(
 
   const experimentContractSatisfied =
     plan.experimentContract === undefined ||
-    experimentContractMatches(
+    runtimeVerificationExperimentContractCompatible(
       plan.experimentContract,
       options.executedExperimentContract,
     );
