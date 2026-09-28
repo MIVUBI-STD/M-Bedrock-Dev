@@ -12,6 +12,7 @@ import {
 } from "./validate.js";
 import type {
   RuntimeExperimentDefinition,
+  RuntimeExperimentMeasurementRequirement,
   RuntimeExperimentQualification,
   RuntimeExperimentTrial,
   RuntimeExperimentTrialOutcome,
@@ -63,12 +64,14 @@ function outcomeFor(
 
 function satisfiesMeasurementRequirements(
   record: RuntimeEvidenceRecord,
-  requirements: RuntimeExperimentDefinition["evidenceRequirements"] extends
-    readonly (infer R)[] | undefined
-      ? R extends { measurements?: infer M }
-        ? M
-        : never
-      : never,
+  requirements:
+    | Readonly<
+        Record<
+          string,
+          RuntimeExperimentMeasurementRequirement
+        >
+      >
+    | undefined,
 ): boolean {
   if (requirements === undefined) return true;
 
