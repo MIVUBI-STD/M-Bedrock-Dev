@@ -5,6 +5,9 @@ import {
 import {
   BUILTIN_REPAIR_REALIZERS,
 } from "../src/repair-realizer-registry.js";
+import {
+  BUILTIN_REPAIR_STRATEGY_SOURCES,
+} from "../src/repair-strategy-source-registry.js";
 
 describe("decision basis", () => {
   it("fingerprints probe bindings independently of input ordering", () => {
@@ -394,6 +397,32 @@ describe("decision basis", () => {
     expect(left.repairRealizerRegistryRevision)
       .not.toBe(
         right.repairRealizerRegistryRevision,
+      );
+  });
+
+  it("binds decision basis to repair strategy source registry revision", () => {
+    const left = buildDecisionBasis({
+      repairStrategySourceRegistry:
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+    });
+    const right = buildDecisionBasis({
+      repairStrategySourceRegistry: {
+        ...BUILTIN_REPAIR_STRATEGY_SOURCES,
+        sources:
+          BUILTIN_REPAIR_STRATEGY_SOURCES.sources.map(
+            (item) => ({
+              ...item,
+              version: item.version + ".next",
+            }),
+          ),
+      },
+    });
+
+    expect(left.repairStrategySourceRegistryRevision)
+      .toMatch(/^[a-f0-9]{64}$/);
+    expect(left.repairStrategySourceRegistryRevision)
+      .not.toBe(
+        right.repairStrategySourceRegistryRevision,
       );
   });
 
