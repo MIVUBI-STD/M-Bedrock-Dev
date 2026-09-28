@@ -405,3 +405,39 @@ same authored intent
 not automatically:
 → authored bug
 ```
+
+
+## Next lane — repair strategy intelligence
+
+The primary runtime-proof transport and runtime-domain experiment foundation is now structurally mature across chunks, scheduler/event ordering, entity navigation, multiplayer concurrency, persistence/reload, and runtime-profile differential analysis.
+
+The next bottleneck is repair selection quality.
+
+Priorities:
+
+1. enumerate all applicable repair strategies for the proven causal candidate;
+2. reject strategies whose causal preconditions do not match the exact candidate/provenance;
+3. estimate semantic blast radius before mutation;
+4. estimate preservation risk and required invariant envelope;
+5. estimate runtime retest burden from the authorizing experiment contracts;
+6. prefer reversible/local/idempotent changes when proof strength is equal;
+7. distinguish implementation repair, configuration repair, compatibility workaround, and runtime-recovery mitigation;
+8. require an explicit reason when a larger mutation is selected over a smaller valid candidate;
+9. retain rejected alternatives and their rejection reasons for auditability;
+10. never select a repair solely because a provider exists.
+
+Target decision shape:
+
+```text
+causal candidate
+→ applicable repair candidates
+→ proof compatibility
+→ semantic impact
+→ preservation risk
+→ reversibility
+→ validation/retest cost
+→ deterministic selection
+→ repair admission
+```
+
+The selector should optimize for the smallest repair that directly addresses the proven cause while preserving authored behavior—not the smallest diff in raw line count.
