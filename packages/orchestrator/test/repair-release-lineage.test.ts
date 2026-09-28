@@ -300,16 +300,50 @@ describe("repair release lineage", () => {
       .toMatch(/Missing active repair-strategy-selection/);
   });
 
-  it("blocks release when a verification stage has multiple active decisions", () => {
+  it("allows multiple active runtime verification decisions when all are passing and share the valid lineage", () => {
     const repairProof = proof();
     let ledger = completeLedger(repairProof);
     ledger = appendDecisionLedgerEntry(ledger, {
-      id: "runtime-duplicate",
+      id: "runtime-secondary",
       kind: "runtime-verification",
       transactionId: "tx-1",
       basis,
       upstreamDecisionIds: ["admission"],
       outputIds: ["runtime-verification:passed"],
+      evidenceIds: ["runtime:secondary-pass"],
+    });
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      ledger,
+      basis,
+    );
+
+    expect(result.decision.disposition)
+      .toBe("release-eligible");
+    expect(result.lineageDecisionIds).toEqual([
+      "admission",
+      "auth",
+      "package",
+      "preservation",
+      "runtime",
+      "runtime-secondary",
+      "strategy",
+    ]);
+  });
+
+  it("blocks release when any active runtime verification has invalid lineage", () => {
+    const repairProof = proof();
+    let ledger = completeLedger(repairProof);
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "runtime-invalid-parent",
+      kind: "runtime-verification",
+      transactionId: "tx-1",
+      basis,
+      upstreamDecisionIds: ["strategy"],
+      outputIds: ["runtime-verification:passed"],
+      evidenceIds: ["runtime:secondary-pass"],
     });
 
     const result = decideRepairReleaseWithLineage(
@@ -321,7 +355,7 @@ describe("repair release lineage", () => {
 
     expect(result.decision.disposition).toBe("blocked");
     expect(result.decision.reasons.join(" "))
-      .toMatch(/Multiple active runtime-verification/);
+      .toMatch(/runtime-invalid-parent.*not descended/i);
   });
 
   it("blocks release when verification is not descended from admission", () => {
