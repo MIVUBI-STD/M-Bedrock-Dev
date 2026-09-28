@@ -335,6 +335,41 @@ describe("decision ledger", () => {
   });
 
 
+  it("invalidates repair strategy decisions when realizer registry changes", () => {
+    let ledger = appendDecisionLedgerEntry(
+      createDecisionLedger(),
+      {
+        id: "realizer-bound",
+        kind: "repair-strategy-selection",
+        transactionId: "tx-1",
+        basis: {
+          repairRealizerRegistryRevision:
+            "realizers-a",
+        },
+        outputIds: [
+          "repair-strategy:selected",
+        ],
+      },
+    );
+    ledger = appendDecisionLedgerEntry(ledger, {
+      id: "realizer-downstream",
+      kind: "repair-admission",
+      transactionId: "tx-1",
+      basis: {},
+      upstreamDecisionIds: ["realizer-bound"],
+    });
+
+    ledger = invalidateStaleDecisionLedger(ledger, {
+      repairRealizerRegistryRevision:
+        "realizers-b",
+    });
+
+    expect(ledger.entries.map((entry) => entry.status))
+      .toEqual(["invalidated", "invalidated"]);
+    expect(ledger.entries[0]?.invalidationReason)
+      .toMatch(/repairRealizerRegistryRevision changed/);
+  });
+
   it("invalidates provider-bound decisions when provider registry changes", () => {
     let ledger = appendDecisionLedgerEntry(
       createDecisionLedger(),
