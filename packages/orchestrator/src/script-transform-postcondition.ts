@@ -416,3 +416,31 @@ export function bindScriptTransformPostconditionProof(
     },
   };
 }
+
+
+export function proveAndBindScriptTransformPostcondition(
+  proposal: RepairTransformHintProposal,
+  identifier: string,
+  originalText: string,
+  source: SourceRef,
+  hint: RepairSourceTransformHint,
+): BoundScriptTransformPostcondition & {
+  proof: ScriptTransformPostconditionProof;
+} {
+  const proof = proveScriptTransformPostcondition(
+    identifier,
+    originalText,
+    source,
+    hint,
+  );
+  const bound =
+    bindScriptTransformPostconditionProof(
+      proposal,
+      proof,
+    );
+
+  return {
+    ...bound,
+    proof,
+  };
+}
