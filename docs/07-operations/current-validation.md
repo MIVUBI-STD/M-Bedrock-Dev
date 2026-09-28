@@ -830,3 +830,87 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Repair realizer registry and coverage proof
+
+Repair realization is now versioned and graph-bound.
+
+A typed `RepairRealizerRegistry` records:
+
+```text
+realizer id/version
+strategy source kind/id
+owner
+determinism
+repair class
+rationale
+```
+
+The registry has a deterministic revision. `DecisionBasisRevision` now carries:
+
+```text
+repairStrategySourceRegistryRevision
+repairRealizerRegistryRevision
+```
+
+so strategy/realization decisions become stale when source discovery rules or concrete realizer logic changes.
+
+High-level realization no longer accepts caller-authored changed semantic node ids. Patch operation `SourceRef` values are matched against the current `SemanticGraph`, producing:
+
+```text
+changedNodeIds
+unmatchedOperationPaths
+```
+
+Realization fails closed when a patch source cannot be mapped to the current graph.
+
+The topology realizer has been migrated to this graph-bound path.
+
+Repair strategy discovery now supports source kinds beyond providers:
+
+```text
+provider
+built-in-planner
+configuration-template
+compatibility-workaround
+runtime-recovery-mitigation
+```
+
+Non-deterministic or not-yet-realized source families remain proposal-only. Current built-in proposal surfaces include session-generation guards, arena ownership guards, bounded navigation recovery, and compatibility workarounds. They do not become PatchTransactions until a deterministic syntax-aware realizer exists.
+
+A repair realization coverage report now distinguishes:
+
+```text
+realized
+blocked
+missing-realizer
+no-applicable-source
+```
+
+and reports whether a proven causal candidate has any implementation coverage.
+
+Coverage/failure can be persisted through the new `repair-strategy-realization` decision-ledger stage without fabricating a transaction.
+
+Graph-bound realized proposals retain exact realizer provenance:
+
+```text
+realizer id/version
+source kind/id
+```
+
+and realizer-bound strategy decisions require `repairRealizerRegistryRevision` in their decision basis.
+
+Validated source revision: `a3d7308c71b375df31eb88beb3ceefd6db7a597a`.
+
+GitHub Actions Verify run `36420113592` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
+
+Independent Package Source Snapshot verification on the same revision passed TypeScript compilation and 45/45 focused realizer/source-registry/ledger tests under Node 24.21.0.
