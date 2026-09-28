@@ -15,9 +15,14 @@ import type {
 import {
   BUILTIN_REPAIR_REALIZERS,
   BUILTIN_REPAIR_STRATEGY_SOURCES,
+  assessRepairRealizerCoverage,
+  buildRepairRealizationCoverageReport,
+  createDecisionLedger,
   deriveRepairOpportunityEnvelope,
   enumerateRepairStrategySources,
   realizeSchedulerGenerationGuardHint,
+  recordRealizedRepairStrategySelection,
+  selectRealizedRepairStrategyForIncident,
   type RepairStrategyProviderRegistry,
 } from "../src/index.js";
 
@@ -319,6 +324,114 @@ describe("script transform hint realizer", () => {
       kind: "source-fingerprint",
       expected: "source-a",
     }]);
+  });
+
+  it("feeds realized scheduler repair through coverage, causal selection, and ledger provenance", () => {
+    const activeGraph = graph();
+    const activeEnumeration = enumeration();
+    const realization =
+      realizeSchedulerGenerationGuardHint(
+        activeGraph,
+        activeEnumeration,
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+        BUILTIN_REPAIR_REALIZERS,
+        hint,
+      );
+
+    expect(realization.status).toBe("realized");
+    if (realization.status !== "realized") return;
+
+    const realizerCoverage =
+      assessRepairRealizerCoverage(
+        activeEnumeration,
+        BUILTIN_REPAIR_REALIZERS,
+      );
+    const coverage =
+      buildRepairRealizationCoverageReport(
+        activeEnumeration,
+        realizerCoverage,
+        [realization],
+      );
+
+    expect(coverage).toMatchObject({
+      realizedCount: 1,
+      noImplementationCoverage: false,
+    });
+    expect(
+      coverage.items.find(
+        (item) =>
+          item.sourceId ===
+            "scheduler-generation-guard-template",
+      ),
+    ).toMatchObject({
+      disposition: "realized",
+      strategyId:
+        realization.proposal.strategy.strategyId,
+    });
+
+    const selected =
+      selectRealizedRepairStrategyForIncident(
+        activeGraph,
+        incident,
+        [chain],
+        decision,
+        invariants,
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+        BUILTIN_REPAIR_REALIZERS,
+        [realization.proposal],
+        {
+          decisionBasis: {
+            runtimeEvidenceRevision:
+              "runtime-current",
+          },
+        },
+      );
+
+    expect(selected.result.status).toBe("evaluated");
+    if (selected.result.status !== "evaluated") return;
+    expect(selected.result.selection.status)
+      .toBe("selected");
+    if (
+      selected.result.selection.status !==
+        "selected"
+    ) {
+      return;
+    }
+
+    const transactionId =
+      selected.result.selection.selected
+        .transactionId;
+    const ledger =
+      recordRealizedRepairStrategySelection(
+        createDecisionLedger(),
+        selected,
+        transactionId,
+        {
+          decisionId:
+            "decision-scheduler-realizer",
+          basis: {
+            runtimeEvidenceRevision:
+              "runtime-current",
+            invariantRegistryRevision:
+              invariants.revision,
+          },
+        },
+      );
+
+    expect(ledger.entries[0]?.inputIds).toEqual(
+      expect.arrayContaining([
+        "repair-source:built-in-planner:scheduler-generation-guard-template@1",
+        "repair-realizer:scheduler-generation-guard-realizer@1",
+      ]),
+    );
+    expect(
+      ledger.entries[0]?.basis
+        .repairStrategySourceRegistryRevision,
+    ).toBe(selected.sourceRegistryRevision);
+    expect(
+      ledger.entries[0]?.basis
+        .repairRealizerRegistryRevision,
+    ).toBe(selected.realizerRegistryRevision);
   });
 
   it("blocks stale analyzer/parser revisions and source hints outside the causal opportunity", () => {
