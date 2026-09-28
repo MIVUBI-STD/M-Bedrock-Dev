@@ -7,6 +7,8 @@
   export let view: WorkspaceView;
   export let onBack: () => void;
   export let onViewChange: (view: WorkspaceView) => void;
+  export let onAnalyze: () => void;
+  export let analyzing = false;
 </script>
 
 <header class="mapbar">
@@ -20,7 +22,7 @@
     <button class:active={view === "history"} on:click={() => onViewChange("history")}>History</button>
   </nav>
   <div class="actions">
-    <button class="primary">Analyze</button>
+    <button class="primary" disabled={analyzing} on:click={onAnalyze}>{analyzing ? "Analyzing…" : "Analyze"}</button>
     <button class="icon" aria-label="More map options">•••</button>
   </div>
 </header>
@@ -35,7 +37,7 @@
   .mapbar nav button{padding:11px 10px}
   .mapbar nav button.active{color:#f1f3f5;border-bottom:2px solid #9ea7ff}
   .actions{display:flex;gap:5px}
-  .primary{min-height:34px;padding:7px 12px;border:1px solid #878fff;border-radius:7px;background:#737cff;color:#0a0c0e;font-weight:650;cursor:pointer}
+  .primary{min-height:34px;padding:7px 12px;border:1px solid #878fff;border-radius:7px;background:#737cff;color:#0a0c0e;font-weight:650;cursor:pointer}.primary:disabled{opacity:.62;cursor:default}
   .icon{width:34px;height:34px;border:0;border-radius:7px;background:transparent;color:#9299a2;cursor:pointer}
   @media(max-width:759px){
     .mapbar{min-height:94px;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"back identity actions" "nav nav nav";gap:6px 10px;padding:9px 12px}

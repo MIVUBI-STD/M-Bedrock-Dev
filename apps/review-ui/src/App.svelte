@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import MapHeader, { type WorkspaceView } from "./components/MapHeader.svelte";
   import MapLibrary from "./components/MapLibrary.svelte";
   import ReviewToolbar, { type ReviewFilter } from "./components/ReviewToolbar.svelte";
@@ -8,13 +9,22 @@
   import { mockHistory, mockMap, mockRecentMaps } from "./mock.js";
   import { reviewProjectionFixture } from "./review-projection-fixture.js";
   import { buildReviewUiViewModel, type ReviewUiItem } from "./view-model.js";
+  import { createReviewRuntimeClient } from "./runtime-client.js";
+  import { ReviewRuntimeController, type ReviewRuntimeState } from "./runtime-controller.js";
 
   type AppScreen = "library" | "workspace";
 
   let screen: AppScreen = "library";
   let view: WorkspaceView = "review";
-  const reviewModel = buildReviewUiViewModel(reviewProjectionFixture);
-  const reviewItems = reviewModel.items;
+  const fixtureModel = buildReviewUiViewModel(reviewProjectionFixture);
+  const runtimeController = new ReviewRuntimeController(
+    createReviewRuntimeClient(),
+    fixtureModel,
+  );
+
+  let runtimeState: ReviewRuntimeState = runtimeController.state();
+  let reviewModel = fixtureModel;
+  $: reviewItems = reviewModel.items;
 
   let selectedId = reviewItems[0]?.id ?? "";
   let query = "";
@@ -60,11 +70,37 @@
     detailOpen = false;
   }
 
+  async function analyze() {
+    const pending = runtimeController.analyze();
+    runtimeState = runtimeController.state();
+
+    const next = await pending;
+    runtimeState = next;
+
+    if (next.model) {
+      reviewModel = next.model;
+      const stillPresent = reviewModel.items.some(
+        (item) => item.id === selectedId,
+      );
+      if (!stillPresent) {
+        selectedId = reviewModel.items[0]?.id ?? "";
+        detailOpen = false;
+        technicalOpen = false;
+      }
+    }
+  }
+
   function backToMaps() {
     screen = "library";
     detailOpen = false;
     filterOpen = false;
   }
+
+  onMount(() => {
+    void runtimeController.discover().then((next) => {
+      runtimeState = next;
+    });
+  });
 </script>
 
 <div class="shell">
@@ -78,11 +114,32 @@
       {view}
       onBack={backToMaps}
       onViewChange={(next) => (view = next)}
+      onAnalyze={analyze}
+      analyzing={runtimeState.phase === "loading"}
     />
 
     {#if view === "review"}
       <main class="review">
         <aside class="listpane">
+          {#if runtimeState.phase === "loading"}
+            <div class="runtime-notice">
+              <strong>Analyzing latest map…</strong>
+              <span>The previous review stays visible until the new analysis finishes.</span>
+            </div>
+          {:else if runtimeState.phase === "error"}
+            <div class="runtime-notice error" role="alert">
+              <div>
+                <strong>Analysis could not finish</strong>
+                <span>{runtimeState.message} The previous review is still available.</span>
+              </div>
+              <button on:click={analyze}>Try again</button>
+            </div>
+          {:else if runtimeState.info?.configured}
+            <div class="runtime-source">
+              <span>Development artifact</span>
+              <strong>{runtimeState.info.artifactLabel ?? "Configured map"}</strong>
+            </div>
+          {/if}
           <ReviewToolbar
             attentionCount={attention.length}
             bind:query
@@ -118,6 +175,10 @@
   .shell{min-height:100vh}
   .review{height:calc(100vh - 84px);display:grid;grid-template-columns:minmax(320px,390px) minmax(0,1fr)}
   .listpane{min-width:0;border-right:1px solid #20252a;display:flex;flex-direction:column;background:#0f1215}
+  .runtime-notice,.runtime-source{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 18px;border-bottom:1px solid #2a3139;background:#131820;color:#929ca7}
+  .runtime-notice>div,.runtime-notice{font-size:12px}.runtime-notice strong,.runtime-source strong{color:#d7dce1}.runtime-notice span,.runtime-source span{display:block;color:#8d969f;font-size:11px}
+  .runtime-notice.error{border-bottom-color:#5a3035;background:#1a1113}.runtime-notice.error button{flex:0 0 auto;border:1px solid #5f3940;border-radius:6px;background:#21161a;color:#efb1b5;padding:5px 8px;cursor:pointer}
+  .runtime-source{display:grid;gap:1px;background:#101419}
   @media(max-width:900px){.review{grid-template-columns:320px minmax(0,1fr)}}
   @media(max-width:759px){.review{height:calc(100vh - 94px);grid-template-columns:1fr}}
 </style>
