@@ -5,7 +5,10 @@ import {
   validateInvariantRegistrySnapshot,
 } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
-import type { PatchTransaction } from "../../repair/src/index.js";
+import {
+  patchTransactionSemanticFingerprint,
+  type PatchTransaction,
+} from "../../repair/src/index.js";
 import type { PreservationReadinessResult } from "../../preservation/src/index.js";
 import {
   evaluateRepairAdmissionPipeline,
@@ -42,6 +45,8 @@ export interface RepairStrategyPostTransformProof {
   family: string;
   proofFingerprint: string;
   semanticImpactFingerprint?: string;
+  transactionId: string;
+  transactionFingerprint: string;
 }
 
 export function repairStrategyPostTransformProofRevision(
@@ -50,11 +55,17 @@ export function repairStrategyPostTransformProofRevision(
   if (
     proof === undefined ||
     !proof.proofFingerprint.trim() ||
-    !proof.semanticImpactFingerprint?.trim()
+    !proof.semanticImpactFingerprint?.trim() ||
+    !proof.transactionId.trim() ||
+    !proof.transactionFingerprint.trim()
   ) {
     return undefined;
   }
   return (
+    proof.transactionId +
+    ":" +
+    proof.transactionFingerprint +
+    ":" +
     proof.proofFingerprint +
     ":" +
     proof.semanticImpactFingerprint
@@ -629,6 +640,10 @@ export function selectRepairStrategy(
         );
       }
 
+      const transactionFingerprint =
+        patchTransactionSemanticFingerprint(
+          candidate.transaction,
+        );
       const postTransformProofSatisfied =
         candidate.postTransformProofRequired !== true ||
         (
@@ -637,11 +652,15 @@ export function selectRepairStrategy(
           (
             candidate.postTransformProof.semanticImpactFingerprint?.trim().length ??
             0
-          ) > 0
+          ) > 0 &&
+          candidate.postTransformProof.transactionId ===
+            candidate.transaction.id &&
+          candidate.postTransformProof.transactionFingerprint ===
+            transactionFingerprint
         );
       if (!postTransformProofSatisfied) {
         reasons.push(
-          "Strategy requires both a proven isolated post-transform guard proof and a proven pre/post semantic-impact proof before selection.",
+          "Strategy requires post-transform guard and semantic-impact proofs bound to the exact selected patch transaction before selection.",
         );
       }
 
