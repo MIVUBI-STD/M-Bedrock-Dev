@@ -7,6 +7,9 @@ import type {
   GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
 import type {
+  RuntimeEvidenceIntegrityReport,
+} from "../../project-model/src/index.js";
+import type {
   RuntimeExperimentDiagnosticBridge,
   RuntimeDiagnosticPredicateEvidence,
 } from "./runtime-experiment-diagnostic-evidence.js";
@@ -25,6 +28,7 @@ export interface RuntimeIntentDiagnosticReclassificationInput {
   bridge: RuntimeExperimentDiagnosticBridge;
   bindings: RuntimeDiagnosticPredicateBindings;
   runtimeProofRequired?: boolean;
+  runtimeIntegrity?: RuntimeEvidenceIntegrityReport;
   previousDisposition?: IntentDiagnosticDisposition;
 }
 
@@ -182,6 +186,12 @@ export function reclassifyIntentDiagnosticFromRuntime(
         }),
     runtimeProofEvidenceIds:
       runtimeProof.evidenceIds,
+    ...(input.runtimeProofRequired === true
+      ? {
+          runtimeEvidenceIntegritySatisfied:
+            input.runtimeIntegrity?.safeForCurrentStateClaims === true,
+        }
+      : {}),
   });
 
   return {
