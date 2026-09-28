@@ -386,6 +386,12 @@ export function verifyRepairRuntimeEvidence(
             kind: "runtime" as const,
             passed: true,
             evidenceIds: ids,
+            ...(options.executedExperimentContract === undefined
+              ? {}
+              : {
+                  runtimeExperimentContract:
+                    options.executedExperimentContract,
+                }),
           },
         }
       : {}),
