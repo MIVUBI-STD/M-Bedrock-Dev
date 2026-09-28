@@ -344,3 +344,34 @@ operationId
 A player teleport, reset, or cleanup event is valid only when its session/generation ownership matches the current arena membership contract.
 
 Do not classify a reconnect/reset issue from player location alone. Require membership state, session generation, arena generation, and lifecycle event ordering evidence.
+
+
+## Next lane — persistence, reload, and restart proof
+
+Chunk readiness, scheduler behavior, entity navigation, and multiplayer session concurrency now have controlled proof contracts.
+
+Next runtime domain:
+
+1. world/reload persistence of durable player and arena state;
+2. explicit non-persistence of transient runtime state;
+3. reconnect after process/world reload;
+4. stale timer/callback invalidation across reload;
+5. scoreboard/tag/dynamic-property reconciliation;
+6. persistent entity identity versus transient entity loss;
+7. fixture/runtime profile continuity across reload;
+8. restart-safe cleanup and orphan lease reconciliation.
+
+Required distinction:
+
+```text
+durable state
+→ may survive reload
+
+transient session authority
+→ must be rebuilt/reconciled
+
+in-memory callback/reference
+→ must never silently survive as current authority
+```
+
+Do not treat state found after reload as proof it belongs to the current session generation. Persistence proof must bind stored data to a new runtime ownership envelope before mutation.
