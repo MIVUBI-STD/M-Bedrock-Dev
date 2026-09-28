@@ -634,7 +634,10 @@ export function selectRepairStrategy(
         (
           candidate.postTransformProof !== undefined &&
           candidate.postTransformProof.proofFingerprint.trim().length > 0 &&
-          candidate.postTransformProof.semanticImpactFingerprint?.trim().length > 0
+          (
+            candidate.postTransformProof.semanticImpactFingerprint?.trim().length ??
+            0
+          ) > 0
         );
       if (!postTransformProofSatisfied) {
         reasons.push(
