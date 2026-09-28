@@ -149,9 +149,13 @@ export function authorizeRepairMutation(
     "knowledgeRevision",
     "invariantRegistryRevision",
     "repairProviderRegistryRevision",
+    "repairStrategySourceRegistryRevision",
+    "repairRealizerRegistryRevision",
+    "postTransformProofRevision",
     "targetProfileFingerprint",
     "probeBindingRevision",
     "runtimeEvidenceRevision",
+    "runtimeExperimentContractRevision",
   ] as const) {
     const expected = proof.decisionBasis[key];
     if (
