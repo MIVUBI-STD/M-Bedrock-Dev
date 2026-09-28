@@ -182,3 +182,18 @@ Next priorities:
 5. invalidate prior runtime verification when its authorizing experiment contract is superseded incompatibly.
 
 A newer retest is acceptable only when equivalence or stricter coverage is proven explicitly. Version recency alone is never sufficient.
+
+
+## Next lane — multi-contract runtime verification and invalidation
+
+Single authorizing experiment contract continuity and compatible successor semantics are now enforced.
+
+Next priorities:
+
+1. support repairs whose causal proof depends on multiple controlled experiment contracts and require explicit coverage of every contract;
+2. aggregate multiple runtime verification receipts without flattening contract identity;
+3. invalidate runtime verification when an authorizing experiment contract is superseded incompatibly after verification;
+4. propagate contract lineage into release admission and release proof;
+5. define compatibility/invalidation behavior for target runtime updates, fixture evolution, and predicate-contract revisions.
+
+Fail closed when only a subset of the causal experiment envelope has been reverified.
