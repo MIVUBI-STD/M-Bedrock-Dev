@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildDecisionBasis,
 } from "../src/decision-basis.js";
+import {
+  BUILTIN_REPAIR_REALIZERS,
+} from "../src/repair-realizer-registry.js";
 
 describe("decision basis", () => {
   it("fingerprints probe bindings independently of input ordering", () => {
@@ -366,6 +369,32 @@ describe("decision basis", () => {
       .not.toBe(changedContract.preservationContractRevision);
     expect(left.preservationBaselineRevision)
       .not.toBe(changedBaseline.preservationBaselineRevision);
+  });
+
+  it("binds decision basis to repair realizer registry revision", () => {
+    const left = buildDecisionBasis({
+      repairRealizerRegistry:
+        BUILTIN_REPAIR_REALIZERS,
+    });
+    const right = buildDecisionBasis({
+      repairRealizerRegistry: {
+        ...BUILTIN_REPAIR_REALIZERS,
+        realizers:
+          BUILTIN_REPAIR_REALIZERS.realizers.map(
+            (item) => ({
+              ...item,
+              version: item.version + ".next",
+            }),
+          ),
+      },
+    });
+
+    expect(left.repairRealizerRegistryRevision)
+      .toMatch(/^[a-f0-9]{64}$/);
+    expect(left.repairRealizerRegistryRevision)
+      .not.toBe(
+        right.repairRealizerRegistryRevision,
+      );
   });
 
   it("always binds the canonical contract registry revision", () => {
