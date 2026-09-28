@@ -34,6 +34,7 @@ const BASIS_FIELDS = new Set([
   "targetProfileFingerprint",
   "probeBindingRevision",
   "runtimeEvidenceRevision",
+  "runtimeExperimentContractRevision",
   "preservationContractRevision",
   "preservationBaselineRevision",
 ]);
