@@ -541,6 +541,45 @@ describe("repair release lineage", () => {
     ).toBe(true);
   });
 
+  it("blocks release when the authorizing runtime experiment envelope revision changes", () => {
+    const contractBasis = {
+      ...basis,
+      runtimeExperimentContractRevision:
+        "runtime-experiment-envelope:old",
+    };
+    const repairProof = proof({
+      decisionBasis: contractBasis,
+    });
+    const baseLedger = completeLedger(repairProof);
+    const ledger = {
+      schemaVersion: 1 as const,
+      entries: baseLedger.entries.map((entry) => ({
+        ...entry,
+        basis: contractBasis,
+      })),
+    };
+
+    const result = decideRepairReleaseWithLineage(
+      lifecycle,
+      repairProof,
+      ledger,
+      {
+        ...contractBasis,
+        runtimeExperimentContractRevision:
+          "runtime-experiment-envelope:new",
+      },
+    );
+
+    expect(result.decision.disposition).toBe("blocked");
+    expect(result.decision.reasons.join(" "))
+      .toMatch(/runtimeExperimentContractRevision changed/);
+    expect(
+      result.ledger.entries.every(
+        (entry) => entry.status === "invalidated",
+      ),
+    ).toBe(true);
+  });
+
   it("blocks runtime proof that has no evidence revision", () => {
     const repairProof = proof({
       decisionBasis: {
