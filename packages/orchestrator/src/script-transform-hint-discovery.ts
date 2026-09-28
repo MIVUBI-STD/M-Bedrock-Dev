@@ -16,6 +16,7 @@ import type {
   RepairStrategySourceRegistry,
 } from "./repair-strategy-source-registry.js";
 import {
+  realizePersistenceIdempotencyGuardHint,
   realizeSchedulerGenerationGuardHint,
   realizeSessionGenerationGuardHint,
   type RepairTransformHintRealization,
@@ -233,5 +234,61 @@ export function realizeSessionGenerationGuardFromParsedScripts(
     sourceRegistry,
     realizerRegistry,
     sessionHints[0]!,
+  );
+}
+
+
+export function realizePersistenceIdempotencyGuardFromParsedScripts(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  parsedScripts: readonly {
+    parsed: ParsedScriptFile;
+  }[],
+): RepairTransformHintRealization {
+  const discovery =
+    discoverApplicableRepairTransformHints(
+      parsedScripts,
+      enumeration,
+    );
+  const persistenceHints =
+    discovery.applicable.filter(
+      (hint) =>
+        hint.family ===
+          "persistence-idempotency-guard",
+    );
+
+  if (persistenceHints.length === 0) {
+    return {
+      status: "blocked",
+      sourceId:
+        "persistence-idempotency-guard-template",
+      reasons: [
+        "No analyzer-owned persistence idempotency transform hint matches the selected causal opportunity.",
+      ],
+    };
+  }
+
+  if (persistenceHints.length > 1) {
+    return {
+      status: "blocked",
+      sourceId:
+        "persistence-idempotency-guard-template",
+      reasons: [
+        "Multiple exact persistence idempotency transform hints match the selected causal opportunity; realization is ambiguous.",
+        ...persistenceHints.map(
+          (hint) => "candidate-hint:" + hint.id,
+        ),
+      ],
+    };
+  }
+
+  return realizePersistenceIdempotencyGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    persistenceHints[0]!,
   );
 }
