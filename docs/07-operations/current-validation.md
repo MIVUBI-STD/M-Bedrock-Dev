@@ -224,3 +224,38 @@ public API audit      pass
 typecheck             pass
 full test suite       pass
 ```
+
+
+## Compatible successor retest proof
+
+Post-repair runtime verification now supports explicitly compatible successor experiment contracts.
+
+A successor revision may satisfy an older authorizing contract only when:
+
+```text
+intervention identity        preserved
+target runtime profile       preserved
+fixture fingerprint          preserved
+controlled factor values     preserved
+expected outcome direction   preserved
+authorizing predicates       covered
+compatibility with old rev   explicitly declared
+```
+
+Additional predicates are allowed as stricter coverage. Revision recency alone is not sufficient.
+
+The executed runtime experiment contract is retained on the runtime verification receipt and lifecycle state. Runtime verification decisions also record experiment id, revision, target profile, fixture, and predicate lineage in the decision ledger.
+
+Lifecycle independently re-checks compatibility against the experiment contract derived from the repair-authorizing causal provenance, preventing manually constructed runtime receipts from bypassing contract continuity.
+
+Validated source revision: `374d4aab315094dccdb0a57b65d956e2fa2d4a17`.
+
+GitHub Actions Verify run `36382974403` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
