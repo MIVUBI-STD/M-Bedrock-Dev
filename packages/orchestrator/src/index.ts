@@ -189,3 +189,5 @@ export * from "./repair-realization-coverage.js";
 export * from "./script-transform-hint-realizer.js";
 
 export * from "./realized-repair-strategy-selection.js";
+
+export * from "./script-transform-hint-discovery.js";
