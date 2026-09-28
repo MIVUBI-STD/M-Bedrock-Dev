@@ -15,6 +15,10 @@ import {
 import type { PatchTransaction } from "../../repair/src/index.js";
 import type { MutationWorkspace } from "../../repair/src/index.js";
 import type { TransactionValidationResult } from "../../validation/src/index.js";
+import {
+  proveStaticGraphPreservation,
+  type StaticGraphPreservationProof,
+} from "./static-graph-preservation-proof.js";
 import type { InspectTargetProfile } from "./types.js";
 import type { RepairProofBundle } from "./repair-proof-bundle.js";
 import { validateRepairProofBundle } from "./repair-proof-bundle.js";
@@ -72,6 +76,22 @@ export type AuthorizedRepairApplyResult =
       proof: RepairProofBundle;
       apply: ApplyTransactionResult;
       validation: TransactionValidationResult;
+      rollback: RollbackAppliedFilesResult;
+    }
+  | {
+      status: "static-preservation-failed";
+      proof: RepairProofBundle;
+      apply: ApplyTransactionResult;
+      validation: TransactionValidationResult;
+      staticPreservation: StaticGraphPreservationProof;
+      rollback: RollbackAppliedFilesResult;
+    }
+  | {
+      status: "static-preservation-failed-rollback-failed";
+      proof: RepairProofBundle;
+      apply: ApplyTransactionResult;
+      validation: TransactionValidationResult;
+      staticPreservation: StaticGraphPreservationProof;
       rollback: RollbackAppliedFilesResult;
     }
   | {
@@ -311,6 +331,67 @@ export async function applyAuthorizedRepair(
       validation,
       rollback,
     };
+  }
+
+  if (
+    transaction.requiredProofs?.includes(
+      "post-transform",
+    )
+  ) {
+    const rebuiltGraph =
+      "rebuiltGraph" in validation
+        ? validation.rebuiltGraph
+        : undefined;
+
+    const staticPreservation =
+      rebuiltGraph === undefined
+        ? {
+            status: "blocked" as const,
+            beforeFingerprint:
+              semanticGraphFingerprint(
+                currentGraph,
+              ),
+            afterFingerprint: "<missing>",
+            addedNodeIds: [],
+            removedNodeIds: [],
+            changedOutsideEnvelopeNodeIds: [],
+            changedIdentityNodeIds: [],
+            edgeTopologyChanged: false,
+            reasons: [
+              "Post-transform repair requires rebuilt semantic graph evidence before mutation can remain applied.",
+            ],
+          }
+        : proveStaticGraphPreservation(
+            currentGraph,
+            rebuiltGraph,
+            {
+              allowedNodeIds:
+                proof.changedNodeIds,
+              allowedPaths:
+                transaction.affectedPaths,
+            },
+          );
+
+    if (
+      staticPreservation.status !==
+        "proven"
+    ) {
+      const rollback =
+        await rollbackAppliedFiles(
+          workspace,
+          apply.rollback,
+        );
+      return {
+        status: rollback.ok
+          ? "static-preservation-failed"
+          : "static-preservation-failed-rollback-failed",
+        proof,
+        apply,
+        validation,
+        staticPreservation,
+        rollback,
+      };
+    }
   }
 
   if (
