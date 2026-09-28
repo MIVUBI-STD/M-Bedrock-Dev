@@ -197,3 +197,5 @@ export * from "./script-transform-postcondition.js";
 export * from "./script-transform-semantic-impact.js";
 
 export * from "./static-graph-preservation-proof.js";
+
+export * from "./engineering-review-projection.js";

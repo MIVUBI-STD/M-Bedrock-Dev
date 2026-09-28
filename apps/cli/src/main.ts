@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { compareArtifacts } from "../../../packages/orchestrator/src/index.js";
 import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/index.js";
-import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";
+import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";\nimport { buildEngineeringReviewProjection } from "../../../packages/orchestrator/src/index.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/index.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
@@ -202,6 +202,28 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "review" && input) {
+    const telemetry = telemetryPath
+      ? await loadTelemetryFile(resolve(telemetryPath))
+      : undefined;
+    const probeTranscript = probeTranscriptPath
+      ? await loadRuntimeProbeTranscript(resolve(probeTranscriptPath))
+      : undefined;
+    const result = await inspectArtifact(
+      resolve(input),
+      target,
+      knowledge,
+      telemetry ?? [],
+      probeTranscript,
+    );
+    console.log(JSON.stringify(
+      buildEngineeringReviewProjection(result),
+      null,
+      2,
+    ));
+    return;
+  }
+
   if (command === "inspect" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
@@ -286,7 +308,7 @@ async function main(): Promise<void> {
   console.error([
     "Usage:",
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...]",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--telemetry qa.json] [--probe-transcript probes.json]",\n    "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
     "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...]",
