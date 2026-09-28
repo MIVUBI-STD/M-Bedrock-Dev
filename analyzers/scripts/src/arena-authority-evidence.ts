@@ -651,11 +651,19 @@ export function correlateScriptArenaAuthorityPaths(
 
       const capacityExpression =
         capacityCheck?.capacityExpression;
-      const capacityMatchesOperand =
+      const directCapacityExpression =
         capacityExpression !== undefined &&
+        capacityExpression.includes(".");
+      const localCapacityExpression =
+        capacityExpression !== undefined &&
+        /^[A-Za-z_$][\w$]*$/.test(
+          capacityExpression,
+        );
+      const capacityMatchesOperand =
+        directCapacityExpression ||
         (
-          capacityOperand === undefined ||
-          capacityOperand.capacityExpression ===
+          localCapacityExpression &&
+          capacityOperand?.capacityExpression ===
             capacityExpression
         );
 
