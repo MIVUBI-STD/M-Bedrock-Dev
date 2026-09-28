@@ -23,7 +23,7 @@ import {
   enumerateRepairStrategySources,
   realizeSchedulerGenerationGuardFromParsedScripts,
   realizeSchedulerGenerationGuardHint,
-  proveAndBindScriptTransformPostcondition,
+  proveAndBindCompleteScriptTransform,
   recordRealizedRepairStrategySelection,
   selectRealizedRepairStrategyForIncident,
   type RepairStrategyProviderRegistry,
@@ -396,7 +396,7 @@ describe("script transform hint realizer", () => {
       .toBe("none-eligible");
 
     const bound =
-      proveAndBindScriptTransformPostcondition(
+      proveAndBindCompleteScriptTransform(
         realization.proposal,
         "session-controller",
         scriptText,
@@ -460,13 +460,23 @@ describe("script transform hint realizer", () => {
         "repair-source:built-in-planner:scheduler-generation-guard-template@1",
         "repair-realizer:scheduler-generation-guard-realizer@1",
         "post-transform-proof:" +
-          bound.proof.proofFingerprint,
+          bound.proposal.strategy
+            .postTransformProof!.proofFingerprint +
+          ":" +
+          bound.proposal.strategy
+            .postTransformProof!.semanticImpactFingerprint,
       ]),
     );
     expect(
       ledger.entries[0]?.basis
         .postTransformProofRevision,
-    ).toBe(bound.proof.proofFingerprint);
+    ).toBe(
+      bound.proposal.strategy
+        .postTransformProof!.proofFingerprint +
+        ":" +
+        bound.proposal.strategy
+          .postTransformProof!.semanticImpactFingerprint,
+    );
     expect(
       ledger.entries[0]?.basis
         .repairStrategySourceRegistryRevision,
