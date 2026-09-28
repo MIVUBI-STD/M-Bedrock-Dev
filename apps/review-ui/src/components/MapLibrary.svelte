@@ -9,7 +9,21 @@
   }
 
   export let maps: readonly RecentMap[];
-  export let onOpenMap: (id?: string) => void;
+  export let onOpenExample: (id?: string) => void;
+  export let onOpenFile: (file: File) => void;
+  export let busy = false;
+
+  let input: HTMLInputElement;
+
+  function chooseFile() {
+    if (!busy) input.click();
+  }
+
+  function handleFile() {
+    const file = input.files?.[0];
+    input.value = "";
+    if (file) onOpenFile(file);
+  }
 </script>
 
 <main class="library">
@@ -19,16 +33,28 @@
       <h1>Maps</h1>
       <p>Open a Minecraft world to review issues, evidence, and validation.</p>
     </div>
-    <button class="primary" on:click={() => onOpenMap()}>Open map</button>
+    <input
+      bind:this={input}
+      class="file-input"
+      type="file"
+      accept=".mcworld,.zip"
+      on:change={handleFile}
+    />
+    <button class="primary" disabled={busy} on:click={chooseFile}>
+      {busy ? "Opening…" : "Open map"}
+    </button>
   </header>
 
   <section class="recent-maps" aria-labelledby="recent-maps-heading">
     <div class="section-title">
-      <h2 id="recent-maps-heading">Recent</h2>
+      <div>
+        <h2 id="recent-maps-heading">Recent examples</h2>
+        <p>Prototype entries until recent-map persistence is added.</p>
+      </div>
     </div>
     <div class="map-list">
       {#each maps as map (map.id)}
-        <button class="map-row" on:click={() => onOpenMap(map.id)}>
+        <button class="map-row" on:click={() => onOpenExample(map.id)}>
           <span class="map-icon" aria-hidden="true">{map.name.slice(0, 1)}</span>
           <span class="map-copy">
             <strong>{map.name}</strong>
@@ -50,10 +76,13 @@
   .product-name{display:block;margin-bottom:18px;color:#9aa3ad;font-size:12px}
   .library-head h1{margin:0;font-size:28px;letter-spacing:-.02em}
   .library-head p{margin:6px 0 0;color:#8d969f}
+  .file-input{display:none}
   .primary{min-height:34px;padding:7px 12px;border:1px solid #878fff;border-radius:7px;background:#737cff;color:#0a0c0e;font-weight:650;cursor:pointer}
+  .primary:disabled{opacity:.62;cursor:default}
   .recent-maps{margin-top:8px}
   .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .section-title h2{margin:0;color:#8f98a1;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+  .section-title p{margin:3px 0 0;color:#747d86;font-size:11px}
   .map-list{display:grid}
   .map-row{width:100%;display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 10px;border:0;border-top:1px solid #20252a;background:transparent;color:inherit;text-align:left;cursor:pointer}
   .map-row:hover{background:#11151a}

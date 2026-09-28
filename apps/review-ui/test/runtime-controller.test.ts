@@ -18,6 +18,10 @@ const model: ReviewUiViewModel = {
   items: [],
 };
 
+function file(name = "map.mcworld"): File {
+  return { name } as File;
+}
+
 describe("review runtime controller", () => {
   it("preserves the previous review while re-analysis is running and replaces it on success", async () => {
     let resolveAnalyze:
@@ -34,6 +38,7 @@ describe("review runtime controller", () => {
       async info() {
         return {
           configured: true,
+          uploadSupported: true,
           artifactLabel: "map.mcworld",
         };
       },
@@ -41,6 +46,9 @@ describe("review runtime controller", () => {
         return new Promise((resolve) => {
           resolveAnalyze = resolve;
         });
+      },
+      async analyzeFile() {
+        return nextModel;
       },
     };
 
@@ -63,12 +71,58 @@ describe("review runtime controller", () => {
     });
   });
 
+  it("analyzes a selected browser file without exposing a local path", async () => {
+    const nextModel = {
+      ...model,
+      artifact: {
+        ...model.artifact,
+        id: "art:upload",
+      },
+    };
+    let receivedName = "";
+
+    const client: ReviewRuntimeClient = {
+      async info() {
+        return {
+          configured: false,
+          uploadSupported: true,
+        };
+      },
+      async analyze() {
+        return model;
+      },
+      async analyzeFile(selected) {
+        receivedName = selected.name;
+        return nextModel;
+      },
+    };
+
+    const controller =
+      new ReviewRuntimeController(client, model);
+    const state = await controller.analyzeFile(
+      file("BlitzBuild.mcworld"),
+    );
+
+    expect(receivedName).toBe("BlitzBuild.mcworld");
+    expect(state).toMatchObject({
+      phase: "ready",
+      model: nextModel,
+      artifactLabel: "BlitzBuild.mcworld",
+    });
+  });
+
   it("keeps the previous review visible when analysis fails", async () => {
     const client: ReviewRuntimeClient = {
       async info() {
-        return { configured: true };
+        return {
+          configured: true,
+          uploadSupported: true,
+        };
       },
       async analyze() {
+        throw new Error("Map could not be read.");
+      },
+      async analyzeFile() {
         throw new Error("Map could not be read.");
       },
     };
@@ -90,6 +144,9 @@ describe("review runtime controller", () => {
         throw new Error("not available");
       },
       async analyze() {
+        return model;
+      },
+      async analyzeFile() {
         return model;
       },
     };

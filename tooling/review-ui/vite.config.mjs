@@ -1,4 +1,24 @@
-import { basename } from "node:path";
+import {
+  createWriteStream,
+} from "node:fs";
+import {
+  mkdtemp,
+  rm,
+} from "node:fs/promises";
+import {
+  basename,
+  extname,
+  join,
+} from "node:path";
+import {
+  tmpdir,
+} from "node:os";
+import {
+  Transform,
+} from "node:stream";
+import {
+  pipeline,
+} from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
@@ -12,20 +32,91 @@ const appRoot = fileURLToPath(
 const outDir = fileURLToPath(
   new URL("../../dist/review-ui/", import.meta.url),
 );
+const MAX_UPLOAD_BYTES = 1024 * 1024 * 1024;
 
 function sendJson(res, statusCode, value) {
   res.statusCode = statusCode;
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader(
+    "Content-Type",
+    "application/json; charset=utf-8",
+  );
   res.end(JSON.stringify(value));
+}
+
+function targetFromEnvironment() {
+  const edition =
+    process.env.M_BEDROCK_REVIEW_EDITION?.trim();
+  const version =
+    process.env.M_BEDROCK_REVIEW_VERSION?.trim();
+
+  return {
+    ...(edition === "bedrock" ||
+    edition === "education"
+      ? { edition }
+      : {}),
+    ...(version ? { version } : {}),
+  };
+}
+
+function safeUploadName(header) {
+  if (typeof header !== "string" || !header.trim()) {
+    throw new Error("Uploaded map filename is missing.");
+  }
+
+  let decoded;
+  try {
+    decoded = decodeURIComponent(header);
+  } catch {
+    throw new Error("Uploaded map filename is invalid.");
+  }
+
+  const name = basename(decoded);
+  const extension = extname(name).toLowerCase();
+  if (extension !== ".mcworld" && extension !== ".zip") {
+    throw new Error(
+      "Open a .mcworld or .zip Minecraft world.",
+    );
+  }
+
+  return {
+    name,
+    extension,
+  };
+}
+
+async function receiveArtifact(req, path) {
+  let bytes = 0;
+  const limiter = new Transform({
+    transform(chunk, _encoding, callback) {
+      bytes += chunk.length;
+      if (bytes > MAX_UPLOAD_BYTES) {
+        callback(
+          new Error(
+            "Map exceeds the 1 GB local upload limit.",
+          ),
+        );
+        return;
+      }
+      callback(null, chunk);
+    },
+  });
+
+  await pipeline(
+    req,
+    limiter,
+    createWriteStream(path, {
+      flags: "wx",
+    }),
+  );
+
+  if (bytes === 0) {
+    throw new Error("Uploaded map is empty.");
+  }
 }
 
 function reviewRuntimePlugin() {
   const artifactPath =
     process.env.M_BEDROCK_REVIEW_ARTIFACT?.trim();
-  const edition =
-    process.env.M_BEDROCK_REVIEW_EDITION?.trim();
-  const version =
-    process.env.M_BEDROCK_REVIEW_VERSION?.trim();
 
   return {
     name: "m-bedrock-review-runtime",
@@ -38,6 +129,7 @@ function reviewRuntimePlugin() {
           if (req.method === "GET" && path === "/info") {
             sendJson(res, 200, {
               configured: Boolean(artifactPath),
+              uploadSupported: true,
               ...(artifactPath
                 ? { artifactLabel: basename(artifactPath) }
                 : {}),
@@ -52,23 +144,16 @@ function reviewRuntimePlugin() {
             if (!artifactPath) {
               sendJson(res, 409, {
                 error:
-                  "No development artifact is configured. Set M_BEDROCK_REVIEW_ARTIFACT before starting the Review UI dev server.",
+                  "No development artifact is configured. Open a map from the library or set M_BEDROCK_REVIEW_ARTIFACT.",
               });
               return;
             }
 
             try {
-              const target = {
-                ...(edition === "bedrock" ||
-                edition === "education"
-                  ? { edition }
-                  : {}),
-                ...(version ? { version } : {}),
-              };
               const model =
                 await loadReviewUiViewModel({
                   artifactPath,
-                  target,
+                  target: targetFromEnvironment(),
                 });
               sendJson(res, 200, model);
             } catch (error) {
@@ -79,6 +164,55 @@ function reviewRuntimePlugin() {
                     ? error.message.trim()
                     : "Analysis could not finish.",
               });
+            }
+            return;
+          }
+
+          if (
+            req.method === "POST" &&
+            path === "/upload-analyze"
+          ) {
+            let sessionRoot;
+            try {
+              const upload = safeUploadName(
+                req.headers["x-m-bedrock-filename"],
+              );
+              sessionRoot = await mkdtemp(
+                join(tmpdir(), "m-bedrock-review-upload-"),
+              );
+              const uploadedPath = join(
+                sessionRoot,
+                "artifact" + upload.extension,
+              );
+              await receiveArtifact(req, uploadedPath);
+              const model =
+                await loadReviewUiViewModel({
+                  artifactPath: uploadedPath,
+                  target: targetFromEnvironment(),
+                });
+              sendJson(res, 200, model);
+            } catch (error) {
+              const message =
+                error instanceof Error &&
+                error.message.trim()
+                  ? error.message.trim()
+                  : "Map could not be opened.";
+              const status =
+                /filename|\.mcworld|\.zip|empty|1 GB/.test(
+                  message,
+                )
+                  ? 400
+                  : 500;
+              sendJson(res, status, {
+                error: message,
+              });
+            } finally {
+              if (sessionRoot) {
+                await rm(sessionRoot, {
+                  recursive: true,
+                  force: true,
+                });
+              }
             }
             return;
           }
