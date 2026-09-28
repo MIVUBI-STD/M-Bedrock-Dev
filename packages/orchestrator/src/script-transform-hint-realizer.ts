@@ -116,15 +116,18 @@ function allCovered(
   );
 }
 
-export function realizeSchedulerGenerationGuardHint(
+function realizeGenerationGuardHint(
   graph: SemanticGraph,
   enumeration: RepairStrategyEnumeration,
   sourceRegistry: RepairStrategySourceRegistry,
   realizerRegistry: RepairRealizerRegistry,
   hint: RepairSourceTransformHint,
+  expectedFamily:
+    | "scheduler-generation-guard"
+    | "session-generation-guard",
+  sourceId: string,
+  label: string,
 ): RepairTransformHintRealization {
-  const sourceId =
-    "scheduler-generation-guard-template";
   const enumerated =
     enumeration.applicableSources.find(
       (item) =>
@@ -138,7 +141,8 @@ export function realizeSchedulerGenerationGuardHint(
       status: "blocked",
       sourceId,
       reasons: [
-        "Scheduler generation guard source is not applicable to this repair opportunity.",
+        label +
+          " source is not applicable to this repair opportunity.",
       ],
     };
   }
@@ -148,7 +152,8 @@ export function realizeSchedulerGenerationGuardHint(
       status: "blocked",
       sourceId,
       reasons: [
-        "Scheduler generation guard source is not eligible for automatic realization under the current opportunity.",
+        label +
+          " source is not eligible for automatic realization under the current opportunity.",
       ],
     };
   }
@@ -166,7 +171,9 @@ export function realizeSchedulerGenerationGuardHint(
       status: "blocked",
       sourceId,
       reasons: [
-        "Enumerated scheduler generation guard source is not present at the expected version.",
+        "Enumerated " +
+          label.toLowerCase() +
+          " source is not present at the expected version.",
       ],
     };
   }
@@ -181,7 +188,8 @@ export function realizeSchedulerGenerationGuardHint(
       status: "blocked",
       sourceId,
       reasons: [
-        "Scheduler generation guard source has no registered deterministic realizer.",
+        label +
+          " source has no registered deterministic realizer.",
       ],
     };
   }
@@ -190,12 +198,11 @@ export function realizeSchedulerGenerationGuardHint(
     ...validateRepairSourceTransformHint(hint),
   ];
 
-  if (
-    hint.family !==
-      "scheduler-generation-guard"
-  ) {
+  if (hint.family !== expectedFamily) {
     errors.push(
-      "Repair transform hint family does not match scheduler generation guard realization.",
+      "Repair transform hint family does not match " +
+        label.toLowerCase() +
+        " realization.",
     );
   }
   if (
@@ -256,7 +263,8 @@ export function realizeSchedulerGenerationGuardHint(
     !realizer.deterministic
   ) {
     errors.push(
-      "Scheduler generation guard automatic realization requires deterministic causal-auto source and realizer definitions.",
+      label +
+        " automatic realization requires deterministic causal-auto source and realizer definitions.",
     );
   }
 
@@ -274,7 +282,9 @@ export function realizeSchedulerGenerationGuardHint(
 
   const transaction = createPatchTransaction({
     title:
-      "insert scheduler generation ownership guard",
+      "insert " +
+      label.toLowerCase() +
+      " ownership guard",
     sourceFingerprint:
       enumeration.envelope.sourceFingerprint,
     operations: [{
@@ -303,7 +313,8 @@ export function realizeSchedulerGenerationGuardHint(
       status: "blocked",
       sourceId,
       reasons: [
-        "Scheduler generation guard transform source does not map to the current semantic graph.",
+        label +
+          " transform source does not map to the current semantic graph.",
       ],
     };
   }
@@ -349,7 +360,46 @@ export function realizeSchedulerGenerationGuardHint(
       },
     },
     reasons: [
-      "Scheduler generation guard was realized from an analyzer-owned exact source-transform hint without synthesizing source syntax from runtime predicates.",
+      label +
+        " was realized from an analyzer-owned exact source-transform hint without synthesizing source syntax from runtime predicates.",
     ],
   };
+}
+
+export function realizeSchedulerGenerationGuardHint(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  hint: RepairSourceTransformHint,
+): RepairTransformHintRealization {
+  return realizeGenerationGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    hint,
+    "scheduler-generation-guard",
+    "scheduler-generation-guard-template",
+    "Scheduler generation guard",
+  );
+}
+
+export function realizeSessionGenerationGuardHint(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  hint: RepairSourceTransformHint,
+): RepairTransformHintRealization {
+  return realizeGenerationGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    hint,
+    "session-generation-guard",
+    "session-generation-guard-template",
+    "Session generation guard",
+  );
 }
