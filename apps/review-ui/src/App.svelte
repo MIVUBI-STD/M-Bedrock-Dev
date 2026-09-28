@@ -26,7 +26,7 @@
   $: selected = reviewItems.find((item) => item.id === selectedId) ?? reviewItems[0];
   $: filteredByQuery = query.trim()
     ? reviewItems.filter((item) =>
-        [item.title, item.stateLabel, item.proof ?? "", item.severity ?? ""]
+        [item.title, item.stateLabel, item.severity ?? ""]
           .join(" ")
           .toLowerCase()
           .includes(query.trim().toLowerCase())

@@ -1,12 +1,21 @@
-# Review UI Prototype
+# Review UI
 
-Source-only Svelte prototype for the review-first M-Bedrock interface.
+Buildable Svelte prototype for the review-first M-Bedrock interface.
 
-Status:
+Current status:
 
-- not connected to the orchestrator runtime;
-- not part of the repository build;
-- uses mock review data only;
-- exists to validate information hierarchy and interaction density before toolchain integration.
+- Svelte/Vite web shell is buildable;
+- Review data comes from an `EngineeringReviewProjection` fixture through `buildReviewUiViewModel()`;
+- the typed artifact loader exists and is proven through the CLI `review-model` path;
+- browser file selection/runtime bridging is not connected yet;
+- canonical diagnosis, priority, proof, repair, and validation truth remains in core/orchestrator owners.
 
-The prototype must remain a thin presentation surface. Canonical diagnosis, priority, proof, repair, and validation truth belongs to the existing core packages.
+Commands:
+
+```bash
+npm run review-ui:dev
+npm run review-ui:build
+npm run review-ui:preview
+```
+
+The repository verification pipeline runs the Review UI production build so Svelte compilation cannot silently drift.

@@ -9,7 +9,12 @@
 
   function tone(item: ReviewUiItem) {
     if (item.state === "confirmed-defect" || item.state === "outdated-proof") return "danger";
-    if (item.state === "runtime-test-required" || item.state === "probable-defect") return "warning";
+    if (
+      item.state === "runtime-test-required" ||
+      item.state === "probable-defect" ||
+      item.state === "intended-behavior-unclear" ||
+      item.state === "more-evidence-needed"
+    ) return "warning";
     return "quiet";
   }
 </script>
@@ -23,7 +28,7 @@
           <span class="dot {tone(item)}"></span>
           <span class="rowcopy">
             <strong>{item.title}</strong>
-            <span>{item.stateLabel}{item.proof ? ` · ${item.proof}` : ""}</span>
+            <span>{item.stateLabel}</span>
           </span>
           {#if item.severity === "Critical"}<span class="critical">Critical</span>{/if}
         </button>
@@ -39,7 +44,7 @@
           <span class="dot quiet"></span>
           <span class="rowcopy">
             <strong>{item.title}</strong>
-            <span>{item.stateLabel}{item.proof ? ` · ${item.proof}` : ""}</span>
+            <span>{item.stateLabel}</span>
           </span>
         </button>
       {/each}
