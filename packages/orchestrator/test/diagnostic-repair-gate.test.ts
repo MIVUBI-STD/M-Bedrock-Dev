@@ -172,6 +172,11 @@ describe("diagnostic repair gate v2", () => {
             experimentRevision: "rev-1",
             predicateId: "different-predicate",
             controlledFactorIds: ["chunk-loaded"],
+            controlledFactorContrasts: [{
+              factorId: "chunk-loaded",
+              controlValue: false,
+              treatmentValue: true,
+            }],
             controlState: "absent",
             treatmentState: "present",
             expectedContrastDisposition: "matched",
@@ -199,6 +204,57 @@ describe("diagnostic repair gate v2", () => {
     );
   });
 
+  it("blocks experiment-backed mutation when provenance belongs to another controlled factor", () => {
+    const base = incident(
+      "proven-with-observed-outcome",
+      "intervention-supported",
+    );
+    const experimental: CausalIncident = {
+      ...base,
+      rootCauseCandidates: [{
+        ...base.rootCauseCandidates[0]!,
+        causalPredicateIds: ["chunk-not-ready"],
+        causalFactorIds: ["chunk-loaded"],
+        proof: {
+          state: "intervention-supported",
+          interventionIds: ["exp:chunk"],
+          interventionProvenance: [{
+            interventionId: "exp:chunk",
+            experimentRevision: "rev-1",
+            predicateId: "chunk-not-ready",
+            controlledFactorIds: ["different-factor"],
+            controlledFactorContrasts: [{
+              factorId: "different-factor",
+              controlValue: false,
+              treatmentValue: true,
+            }],
+            controlState: "absent",
+            treatmentState: "present",
+            expectedContrastDisposition: "matched",
+            targetProfileFingerprint: "profile-a",
+            fixtureFingerprint: "fixture-a",
+            evidenceIds: ["e:1"],
+          }],
+        },
+      }],
+    };
+
+    const decision = decideDiagnosticRepair(
+      experimental,
+      investigation(true),
+      "LIVE_MINECRAFT",
+      cleanRuntimeIntegrity,
+    );
+
+    expect(decision).toMatchObject({
+      disposition: "proposal-only",
+      proofState: "localized",
+    });
+    expect(decision.reasons.join(" ")).toMatch(
+      /causal factors/i,
+    );
+  });
+
   it("allows guarded mutation when experiment provenance is complete and bound to the candidate predicate", () => {
     const base = incident(
       "proven-with-observed-outcome",
@@ -209,6 +265,7 @@ describe("diagnostic repair gate v2", () => {
       rootCauseCandidates: [{
         ...base.rootCauseCandidates[0]!,
         causalPredicateIds: ["chunk-not-ready"],
+        causalFactorIds: ["chunk-loaded"],
         proof: {
           state: "intervention-supported",
           interventionIds: ["exp:chunk"],
@@ -217,6 +274,11 @@ describe("diagnostic repair gate v2", () => {
             experimentRevision: "rev-1",
             predicateId: "chunk-not-ready",
             controlledFactorIds: ["chunk-loaded"],
+            controlledFactorContrasts: [{
+              factorId: "chunk-loaded",
+              controlValue: false,
+              treatmentValue: true,
+            }],
             controlState: "absent",
             treatmentState: "present",
             expectedContrastDisposition: "matched",
