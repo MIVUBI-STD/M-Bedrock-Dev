@@ -5,6 +5,7 @@ import {
 } from "../src/repair-runtime-verification.js";
 import type {
   RuntimeEvidenceRecord,
+  RuntimeVerificationExperimentContract,
 } from "../../project-model/src/index.js";
 
 const records: RuntimeEvidenceRecord[] = [{
@@ -69,7 +70,7 @@ describe("repair runtime verification", () => {
   });
 
   it("accepts post-repair runtime proof only when the executed experiment contract matches exactly", () => {
-    const contract = {
+    const contract: RuntimeVerificationExperimentContract = {
       interventionId: "exp:chunk",
       experimentRevision: "rev-1",
       targetProfileFingerprint: "profile-a",
@@ -109,7 +110,7 @@ describe("repair runtime verification", () => {
   });
 
   it("accepts an explicitly compatible successor contract with stricter predicate coverage", () => {
-    const expected = {
+    const expected: RuntimeVerificationExperimentContract = {
       interventionId: "exp:chunk",
       experimentRevision: "rev-1",
       targetProfileFingerprint: "profile-a",
@@ -162,7 +163,7 @@ describe("repair runtime verification", () => {
   });
 
   it("rejects a newer revision without explicit compatibility declaration", () => {
-    const expected = {
+    const expected: RuntimeVerificationExperimentContract = {
       interventionId: "exp:chunk",
       experimentRevision: "rev-1",
       targetProfileFingerprint: "profile-a",
@@ -204,7 +205,7 @@ describe("repair runtime verification", () => {
   });
 
   it("rejects post-repair runtime proof when the experiment revision or fixture changes", () => {
-    const expected = {
+    const expected: RuntimeVerificationExperimentContract = {
       interventionId: "exp:chunk",
       experimentRevision: "rev-1",
       targetProfileFingerprint: "profile-a",
