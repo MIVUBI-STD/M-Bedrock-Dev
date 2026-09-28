@@ -614,3 +614,50 @@ Arena capacity/start ownership remains a high-value target, but it must stay pro
 The governing rule remains:
 
 > A runtime experiment proves the missing behavior; only source syntax can authorize the exact edit.
+
+
+## Next lane — arena capacity/start ownership source-transform analysis
+
+Scheduler generation, session generation, and persistence idempotency now have analyzer-owned exact transform hints and deterministic causal-auto realizers.
+
+Arena capacity/start ownership remains proposal-only.
+
+The current source analyzers do not yet prove the exact authored mutation surface required to safely synthesize an atomic arena ownership guard.
+
+Next priorities:
+
+1. add structured analyzer evidence for arena membership commit and arena-start commit operations;
+2. identify exact owner/generation tokens already authored in the same semantic region;
+3. distinguish membership observation from membership mutation;
+4. distinguish queue/join-pad state from committed arena membership;
+5. identify max-capacity comparison and the mutation it guards as one source-owned unit;
+6. identify start-owner acquisition / countdown-start mutation as one source-owned unit;
+7. emit an `arena-ownership-guard` transform hint only when all operands are explicit in source;
+8. reject transforms that would introduce a new arena authority surface or duplicate an existing lock/guard;
+9. keep source proposal-only if the analyzer sees only scoreboard/tag names without proving their ownership role;
+10. retest every realized arena repair through the exact capacity/start runtime experiment that authorized it.
+
+Required hint surface:
+
+```text
+exact membership/start mutation SourceRef
+current arena id/generation expression
+current ownership/capacity expression
+expected original syntax
+deterministic guarded replacement
+semantic owner region
+parser/analyzer revision
+causal predicate/factor coverage
+```
+
+Candidate causal bindings:
+
+```text
+arena-capacity-overflow-observed
+↔ capacity-guard-enabled
+
+arena-start-ownership-violation-observed
+↔ start-ownership-guard-enabled
+```
+
+Do not infer arena ownership from variable names alone. A concrete arena realizer is allowed only after the analyzer can prove the guard operands and the mutation they protect belong to the same authored arena authority path.
