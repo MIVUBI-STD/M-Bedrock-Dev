@@ -444,3 +444,23 @@ export function realizeArenaCapacityGuardHint(
     "Arena capacity guard",
   );
 }
+
+
+export function realizeArenaStartOwnershipGuardHint(
+  graph: SemanticGraph,
+  enumeration: RepairStrategyEnumeration,
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+  hint: RepairSourceTransformHint,
+): RepairTransformHintRealization {
+  return realizeGenerationGuardHint(
+    graph,
+    enumeration,
+    sourceRegistry,
+    realizerRegistry,
+    hint,
+    "arena-ownership-guard",
+    "arena-ownership-guard-template",
+    "Arena start ownership guard",
+  );
+}
