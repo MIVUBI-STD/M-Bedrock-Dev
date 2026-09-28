@@ -24,14 +24,24 @@ export interface RepairRuntimeStateRequirement {
   scope?: RuntimeScope;
 }
 
+export interface RepairRuntimeExperimentContract {
+  interventionId: string;
+  experimentRevision: string;
+  targetProfileFingerprint: string;
+  fixtureFingerprint: string;
+  predicateIds: readonly string[];
+}
+
 export interface RepairRuntimeVerificationPlan {
   transactionId: string;
   stateRequirements: readonly RepairRuntimeStateRequirement[];
   temporalRequirements: readonly RuntimeTemporalRequirement[];
+  experimentContract?: RepairRuntimeExperimentContract;
 }
 
 export interface RepairRuntimeVerificationOptions {
   expectedTargetProfileFingerprint?: string;
+  executedExperimentContract?: RepairRuntimeExperimentContract;
 }
 
 export interface RepairRuntimeVerificationResult {
