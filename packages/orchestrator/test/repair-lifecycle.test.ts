@@ -249,6 +249,128 @@ describe("repair lifecycle", () => {
     ).toBe("rev-2");
   });
 
+  it("requires complete coverage of every authorizing runtime experiment contract", () => {
+    const authorized = repairLifecycleFromApplyResult({
+      status: "validated",
+      proof: {
+        ...proof,
+        causalInterventionProvenance: [{
+          interventionId: "exp:chunk",
+          experimentRevision: "rev-1",
+          predicateId: "chunk-ready",
+          controlledFactorIds: ["chunk-loaded"],
+          controlledFactorContrasts: [{
+            factorId: "chunk-loaded",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          controlState: "absent",
+          treatmentState: "present",
+          expectedContrastDisposition: "matched",
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          evidenceIds: ["e:chunk"],
+        }, {
+          interventionId: "exp:reconnect",
+          experimentRevision: "rev-1",
+          predicateId: "session-restored",
+          controlledFactorIds: ["reconnect"],
+          controlledFactorContrasts: [{
+            factorId: "reconnect",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          controlState: "absent",
+          treatmentState: "present",
+          expectedContrastDisposition: "matched",
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-b",
+          evidenceIds: ["e:reconnect"],
+        }],
+      },
+      apply: {
+        ok: true,
+        appliedOperations: 1,
+        rollback: [],
+      },
+      validation: {
+        ok: true,
+        steps: [],
+      },
+    });
+
+    expect(
+      authorized.authorizingRuntimeExperimentContracts,
+    ).toHaveLength(2);
+
+    const first = markRepairRuntimeVerified(
+      authorized,
+      {
+        transactionId: "tx-1",
+        kind: "runtime",
+        passed: true,
+        evidenceIds: ["runtime:chunk"],
+        runtimeExperimentContract: {
+          interventionId: "exp:chunk",
+          experimentRevision: "rev-1",
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          predicateIds: ["chunk-ready"],
+          factorContrasts: [{
+            factorId: "chunk-loaded",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          expectedContrasts: [{
+            predicateId: "chunk-ready",
+            controlState: "absent",
+            treatmentState: "present",
+          }],
+        },
+      },
+    );
+
+    expect(first.runtimeVerificationComplete).toBe(false);
+    expect(first.runtimeVerificationContracts).toHaveLength(1);
+    expect(first.reasons.at(-1)).toMatch(/1\/2/);
+
+    const second = markRepairRuntimeVerified(
+      first,
+      {
+        transactionId: "tx-1",
+        kind: "runtime",
+        passed: true,
+        evidenceIds: ["runtime:reconnect"],
+        runtimeExperimentContract: {
+          interventionId: "exp:reconnect",
+          experimentRevision: "rev-2",
+          compatibleWithRevisions: ["rev-1"],
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-b",
+          predicateIds: ["session-restored", "extra-check"],
+          factorContrasts: [{
+            factorId: "reconnect",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          expectedContrasts: [{
+            predicateId: "session-restored",
+            controlState: "absent",
+            treatmentState: "present",
+          }, {
+            predicateId: "extra-check",
+            controlState: "absent",
+            treatmentState: "present",
+          }],
+        },
+      },
+    );
+
+    expect(second.runtimeVerificationComplete).toBe(true);
+    expect(second.runtimeVerificationContracts).toHaveLength(2);
+    expect(second.reasons.at(-1)).toMatch(/2\/2/);
+  });
+
   it("rejects empty, failed, or cross-transaction verification receipts", () => {
     const state = staticValidated();
 
