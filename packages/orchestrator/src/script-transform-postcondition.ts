@@ -353,3 +353,66 @@ export function proveScriptTransformPostcondition(
     ],
   };
 }
+
+
+export type BoundScriptTransformPostcondition =
+  | {
+      status: "bound";
+      proposal: RepairTransformHintProposal;
+    }
+  | {
+      status: "blocked";
+      reasons: readonly string[];
+    };
+
+export function bindScriptTransformPostconditionProof(
+  proposal: RepairTransformHintProposal,
+  proof: ScriptTransformPostconditionProof,
+): BoundScriptTransformPostcondition {
+  const reasons: string[] = [];
+
+  if (proof.status !== "proven") {
+    reasons.push(
+      "Post-transform semantic proof is not proven.",
+    );
+  }
+  if (proposal.hintId !== proof.hintId) {
+    reasons.push(
+      "Post-transform proof hint id does not match the realized proposal.",
+    );
+  }
+  if (proposal.hintFamily !== proof.family) {
+    reasons.push(
+      "Post-transform proof family does not match the realized proposal.",
+    );
+  }
+  if (!proof.proofFingerprint?.trim()) {
+    reasons.push(
+      "Post-transform proof is missing a proof fingerprint.",
+    );
+  }
+
+  if (reasons.length > 0) {
+    return {
+      status: "blocked",
+      reasons,
+    };
+  }
+
+  return {
+    status: "bound",
+    proposal: {
+      ...proposal,
+      strategy: {
+        ...proposal.strategy,
+        postTransformProofRequired: true,
+        postTransformProof: {
+          hintId: proof.hintId,
+          family: proof.family,
+          proofFingerprint:
+            proof.proofFingerprint!,
+        },
+      },
+    },
+  };
+}
