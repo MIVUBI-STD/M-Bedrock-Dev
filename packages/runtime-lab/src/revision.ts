@@ -22,3 +22,15 @@ export function runtimeExperimentDefinitionRevision(
     .update(JSON.stringify(canonical(definition)))
     .digest("hex");
 }
+
+export function runtimeExperimentDifferentialContractRevision(
+  definition: RuntimeExperimentDefinition,
+): string {
+  return createHash("sha256")
+    .update(JSON.stringify(canonical({
+      ...definition,
+      targetProfileFingerprint:
+        "<runtime-profile-differential>",
+    })))
+    .digest("hex");
+}
