@@ -191,3 +191,5 @@ export * from "./script-transform-hint-realizer.js";
 export * from "./realized-repair-strategy-selection.js";
 
 export * from "./script-transform-hint-discovery.js";
+
+export * from "./script-transform-postcondition.js";
