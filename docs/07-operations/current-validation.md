@@ -510,3 +510,65 @@ full test suite       pass
 ```
 
 Independent Package Source Snapshot verification on the same revision also passed TypeScript compilation and 26/26 focused AI/runtime tests under Node 24.21.0.
+
+
+## Multiplayer session concurrency proof contracts
+
+Runtime Lab now covers multiplayer session ownership and stress surfaces:
+
+1. join-pad leave before deferred join commit;
+2. disconnect/reconnect under a new connectionGeneration and participationGeneration;
+3. death/respawn during a pending join under a new lifeGeneration;
+4. atomic arena capacity enforcement under a simultaneous join burst;
+5. single-player versus full-capacity five-player session scaling;
+6. simultaneous multi-arena start ownership.
+
+Runtime scope now includes `participationGeneration` as a first-class trust boundary alongside playerKey, connectionGeneration, lifeGeneration, arenaId, arenaGeneration, and operationId.
+
+Supporting evidence requirements now support numeric constraints:
+
+```text
+equals
+min
+max
+```
+
+so concurrency proof can require facts such as:
+
+```text
+attemptedPlayers = 6
+maxPlayers = 5
+activePlayers <= 5
+rejectedPlayers >= 1
+returnedPlayers = 5
+startOwners = 1
+```
+
+instead of treating telemetry numbers as informal notes.
+
+Full-capacity scaling intentionally does not claim player count is a causal defect factor when both 1-player and 5-player sessions remain healthy. It qualifies as repeatable stress evidence. If the 5-player treatment produces an authored-invariant violation, diagnosis may confirm the defect without pretending the scaling factor itself is the root cause.
+
+Multiplayer violation outcomes are wired into intent diagnostic reclassification:
+
+```text
+stale-join-transition-observed
+stale-session-mutation-observed
+stale-life-join-mutation-observed
+arena-capacity-overflow-observed
+arena-start-ownership-violation-observed
+arena-session-invariant-violation-observed
+```
+
+Intervention-backed violations require deterministic contrast and expected-direction match. All runtime-backed confirmation still requires safe runtime evidence integrity.
+
+Validated source revision: `0c732e88b02a3c8c74440696b9a61863c46bf1ec`.
+
+GitHub Actions Verify run `36396449793` completed successfully:
+
+```text
+repository policy     pass
+source hygiene        pass
+public API audit      pass
+typecheck             pass
+full test suite       pass
+```
