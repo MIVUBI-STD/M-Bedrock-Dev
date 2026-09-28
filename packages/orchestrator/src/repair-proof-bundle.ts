@@ -4,7 +4,10 @@ import {
   type DiagnosticRepairDecision,
 } from "../../project-model/src/index.js";
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
-import type { PatchTransaction } from "../../repair/src/index.js";
+import {
+  patchTransactionSemanticFingerprint,
+  type PatchTransaction,
+} from "../../repair/src/index.js";
 import type { PreservationReadinessResult } from "../../preservation/src/index.js";
 import type {
   RepairBlastRadiusDecision,
@@ -13,8 +16,14 @@ import type {
 } from "./repair-counterfactual-types.js";
 import type { RepairAdmissionDecision } from "./repair-admission.js";
 
+export interface RepairProofPostTransformBinding {
+  transactionId: string;
+  transactionFingerprint: string;
+}
+
 export interface RepairProofBundle {
   transactionId: string;
+  transactionFingerprint: string;
   sourceFingerprint: string;
   graphFingerprint: string;
   decisionBasis: DecisionBasisRevision;
@@ -30,6 +39,7 @@ export interface RepairProofBundle {
   preservationContractId?: string;
   preservationReadinessDisposition?: PreservationReadinessResult["disposition"];
   preservationBaselineEvidenceIds?: readonly string[];
+  postTransformProofBinding?: RepairProofPostTransformBinding;
   supportingInvariantIds: readonly string[];
   changedNodeIds: readonly string[];
   affectedNodeIds: readonly string[];
@@ -48,6 +58,7 @@ export function createRepairProofBundle(
   decisionBasis: DecisionBasisRevision,
   supportingInvariantIds: readonly string[] = [],
   preservationReadiness?: PreservationReadinessResult,
+  postTransformProofBinding?: RepairProofPostTransformBinding,
 ): RepairProofBundle {
   for (const [label, id] of [
     ["counterfactual impact", impact.transactionId],
@@ -90,6 +101,10 @@ export function createRepairProofBundle(
 
   return {
     transactionId: transaction.id,
+    transactionFingerprint:
+      patchTransactionSemanticFingerprint(
+        transaction,
+      ),
     sourceFingerprint: transaction.sourceFingerprint,
     graphFingerprint: decisionBasis.graphFingerprint,
     decisionBasis: { ...decisionBasis },
@@ -132,6 +147,13 @@ export function createRepairProofBundle(
           preservationBaselineEvidenceIds:
             [...preservationReadiness.baselineEvidenceIds],
         }),
+    ...(postTransformProofBinding === undefined
+      ? {}
+      : {
+          postTransformProofBinding: {
+            ...postTransformProofBinding,
+          },
+        }),
     supportingInvariantIds: [...new Set(supportingInvariantIds)].sort(),
     changedNodeIds: [...impact.changedNodeIds],
     affectedNodeIds: [...impact.affectedNodeIds],
@@ -167,6 +189,57 @@ export function validateRepairProofBundle(
     errors.push(
       "Repair proof bundle does not belong to this patch transaction.",
     );
+  }
+
+  const transactionFingerprint =
+    patchTransactionSemanticFingerprint(
+      transaction,
+    );
+  if (
+    proof.transactionFingerprint !==
+      transactionFingerprint
+  ) {
+    errors.push(
+      "Repair proof transaction fingerprint does not match the patch transaction semantics.",
+    );
+  }
+
+  if (
+    transaction.requiredProofs?.includes(
+      "post-transform",
+    )
+  ) {
+    if (!proof.postTransformProofBinding) {
+      errors.push(
+        "Patch transaction requires an explicit post-transform proof binding.",
+      );
+    } else {
+      if (
+        proof.postTransformProofBinding.transactionId !==
+          transaction.id
+      ) {
+        errors.push(
+          "Post-transform proof binding belongs to another patch transaction.",
+        );
+      }
+      if (
+        proof.postTransformProofBinding
+          .transactionFingerprint !==
+        transactionFingerprint
+      ) {
+        errors.push(
+          "Post-transform proof binding fingerprint does not match the patch transaction semantics.",
+        );
+      }
+    }
+    if (
+      !proof.decisionBasis
+        .postTransformProofRevision?.trim()
+    ) {
+      errors.push(
+        "Patch transaction requires postTransformProofRevision in the repair decision basis.",
+      );
+    }
   }
 
   if (proof.sourceFingerprint !== transaction.sourceFingerprint) {
