@@ -143,6 +143,112 @@ describe("repair lifecycle", () => {
     });
   });
 
+  it("enforces repair-authorizing experiment contract continuity inside lifecycle", () => {
+    const authorized = repairLifecycleFromApplyResult({
+      status: "validated",
+      proof: {
+        ...proof,
+        causalInterventionProvenance: [{
+          interventionId: "exp:chunk",
+          experimentRevision: "rev-1",
+          predicateId: "target-ready",
+          controlledFactorIds: ["chunk-loaded"],
+          controlledFactorContrasts: [{
+            factorId: "chunk-loaded",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          controlState: "absent",
+          treatmentState: "present",
+          expectedContrastDisposition: "matched",
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          evidenceIds: ["e:1"],
+        }],
+      },
+      apply: {
+        ok: true,
+        appliedOperations: 1,
+        rollback: [],
+      },
+      validation: {
+        ok: true,
+        steps: [],
+      },
+    });
+
+    expect(
+      authorized.authorizingRuntimeExperimentContracts?.[0],
+    ).toMatchObject({
+      interventionId: "exp:chunk",
+      experimentRevision: "rev-1",
+    });
+
+    expect(() => markRepairRuntimeVerified(
+      authorized,
+      {
+        transactionId: "tx-1",
+        kind: "runtime",
+        passed: true,
+        evidenceIds: ["runtime:pass"],
+        runtimeExperimentContract: {
+          interventionId: "exp:chunk",
+          experimentRevision: "rev-2",
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          predicateIds: ["target-ready"],
+          factorContrasts: [{
+            factorId: "chunk-loaded",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          expectedContrasts: [{
+            predicateId: "target-ready",
+            controlState: "absent",
+            treatmentState: "present",
+          }],
+        },
+      },
+    )).toThrow(/not compatible/i);
+
+    const verified = markRepairRuntimeVerified(
+      authorized,
+      {
+        transactionId: "tx-1",
+        kind: "runtime",
+        passed: true,
+        evidenceIds: ["runtime:pass"],
+        runtimeExperimentContract: {
+          interventionId: "exp:chunk",
+          experimentRevision: "rev-2",
+          compatibleWithRevisions: ["rev-1"],
+          targetProfileFingerprint: "profile-a",
+          fixtureFingerprint: "fixture-a",
+          predicateIds: ["target-ready", "extra-check"],
+          factorContrasts: [{
+            factorId: "chunk-loaded",
+            controlValue: false,
+            treatmentValue: true,
+          }],
+          expectedContrasts: [{
+            predicateId: "target-ready",
+            controlState: "absent",
+            treatmentState: "present",
+          }, {
+            predicateId: "extra-check",
+            controlState: "absent",
+            treatmentState: "present",
+          }],
+        },
+      },
+    );
+
+    expect(verified.runtimeVerificationComplete).toBe(true);
+    expect(
+      verified.runtimeVerificationContract?.experimentRevision,
+    ).toBe("rev-2");
+  });
+
   it("rejects empty, failed, or cross-transaction verification receipts", () => {
     const state = staticValidated();
 
