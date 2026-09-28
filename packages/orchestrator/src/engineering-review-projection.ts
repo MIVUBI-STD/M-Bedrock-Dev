@@ -5,6 +5,7 @@ import type { InspectArtifactResult } from "./inspect-artifact.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { GameplayIntentRuntimeAssessment } from "./gameplay-intent-runtime-stage.js";
+import type { ValidationTraceReport } from "../../validation/src/index.js";
 
 export type EngineeringReviewSource = Pick<
   InspectArtifactResult,
@@ -97,6 +98,7 @@ export interface EngineeringReviewProjection {
   repairCandidates: EngineeringReviewRepairCandidate[];
   evidenceRecovery: EvidenceRecoveryPlan;
   decisionBasis: EngineeringReviewSource["decisionBasis"];
+  validationTrace?: ValidationTraceReport;
 }
 
 const runtimeDispositions: readonly IntentDiagnosticDisposition[] = [
@@ -183,6 +185,7 @@ function attentionFrom(
 
 export function buildEngineeringReviewProjection(
   source: EngineeringReviewSource,
+  validationTrace?: ValidationTraceReport,
 ): EngineeringReviewProjection {
   const runtimeClassifications = countRuntimeClassifications(
     source.gameplayIntentRuntime.assessments,
@@ -244,5 +247,8 @@ export function buildEngineeringReviewProjection(
     })),
     evidenceRecovery: source.evidenceRecovery,
     decisionBasis: source.decisionBasis,
+    ...(validationTrace === undefined
+      ? {}
+      : { validationTrace }),
   };
 }
