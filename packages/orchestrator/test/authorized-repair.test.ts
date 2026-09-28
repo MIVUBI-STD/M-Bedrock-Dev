@@ -319,6 +319,82 @@ describe("authorized repair mutation", () => {
     });
   });
 
+  it("rejects stale repair source, realizer, experiment-contract, or post-transform proof basis", () => {
+    const tx = transaction();
+    const boundProof: RepairProofBundle = {
+      ...proof(tx.id, "eligible"),
+      decisionBasis: {
+        ...proof(tx.id, "eligible").decisionBasis,
+        repairStrategySourceRegistryRevision:
+          "source-registry-a",
+        repairRealizerRegistryRevision:
+          "realizer-registry-a",
+        runtimeExperimentContractRevision:
+          "experiment-contract-a",
+        postTransformProofRevision:
+          "post-transform-a",
+      },
+    };
+
+    const base = {
+      currentSourceFingerprint: "abc",
+      currentGraphFingerprint: "graph-current",
+      semanticIrRevision: "semantic-ir-current",
+      preservationContractRevision:
+        "preservation-contract-current",
+      preservationBaselineRevision:
+        "preservation-baseline-current",
+      runtimeEvidenceRevision: "evidence-current",
+      repairStrategySourceRegistryRevision:
+        "source-registry-a",
+      repairRealizerRegistryRevision:
+        "realizer-registry-a",
+      runtimeExperimentContractRevision:
+        "experiment-contract-a",
+      postTransformProofRevision:
+        "post-transform-a",
+    };
+
+    for (const stale of [{
+      ...base,
+      repairStrategySourceRegistryRevision:
+        "source-registry-b",
+    }, {
+      ...base,
+      repairRealizerRegistryRevision:
+        "realizer-registry-b",
+    }, {
+      ...base,
+      runtimeExperimentContractRevision:
+        "experiment-contract-b",
+    }, {
+      ...base,
+      postTransformProofRevision:
+        "post-transform-b",
+    }]) {
+      expect(
+        authorizeRepairMutation(
+          tx,
+          boundProof,
+          stale,
+        ),
+      ).toMatchObject({
+        authorized: false,
+      });
+    }
+
+    expect(
+      authorizeRepairMutation(
+        tx,
+        boundProof,
+        base,
+      ),
+    ).toMatchObject({
+      authorized: true,
+      mode: "eligible",
+    });
+  });
+
   it("accepts repair proof when runtime evidence revision still matches", () => {
     const tx = transaction();
     const boundProof: RepairProofBundle = {
