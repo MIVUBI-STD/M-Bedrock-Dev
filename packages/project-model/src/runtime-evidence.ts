@@ -43,6 +43,8 @@ export interface RuntimeEvidenceRecord {
   sourceRefs?: readonly SourceRef[];
   relatedNodeIds?: readonly string[];
   observedAt?: RuntimeObservationPoint;
+  /** Numeric runtime measurements supporting the predicate (distance, velocity, counts, durations, etc.). */
+  measurements?: Readonly<Record<string, number>>;
   note?: string;
 }
 
