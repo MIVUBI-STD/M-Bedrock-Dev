@@ -4,6 +4,12 @@ import { createPatchTransaction } from "../../repair/src/index.js";
 import {
   selectRepairStrategy,
 } from "../src/repair-strategy-selection.js";
+import {
+  createDecisionLedger,
+} from "../src/decision-ledger.js";
+import {
+  recordRepairStrategySelection,
+} from "../src/decision-ledger-recording.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };
@@ -698,6 +704,33 @@ describe("repair strategy selection", () => {
     expect(result.selected.strategyId).toBe("safer");
     expect(result.selected.metrics.reversibilityRank).toBe(0);
     expect(result.selected.metrics.idempotencyRank).toBe(0);
+    expect(result.rejectedAlternatives).toEqual([
+      expect.objectContaining({
+        strategyId: "riskier",
+        disposition: "dominated",
+        dominatedBy: ["safer"],
+      }),
+    ]);
+
+    const ledger = recordRepairStrategySelection(
+      createDecisionLedger(),
+      result,
+      result.selected.transactionId,
+      {
+        decisionId: "strategy-decision",
+        basis: {
+          runtimeEvidenceRevision: "evidence-current",
+        },
+      },
+    );
+
+    expect(ledger.entries[0]?.outputIds).toEqual(
+      expect.arrayContaining([
+        "repair-strategy-class:implementation-repair",
+        "repair-strategy-causal-binding:matched",
+        "repair-strategy-rejected:riskier:dominated",
+      ]),
+    );
   });
 
   it("rejects a repair class excluded by policy even when its raw patch is smaller", () => {
