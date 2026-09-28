@@ -176,12 +176,12 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
         "Exact scheduler generation guard insertion is allowed only when the script analyzer emits a validated single-line source-transform hint from an explicit captured generation token.",
     }, {
       id: "session-generation-guard-template",
-      version: "1",
+      version: "2",
       kind: "built-in-planner",
       owner:
-        "packages/orchestrator/src/repair-strategy-source-registry.ts",
-      deterministic: false,
-      selectionMode: "proposal-only",
+        "analyzers/scripts/src/repair-transform-hints.ts",
+      deterministic: true,
+      selectionMode: "causal-auto",
       repairClass: "implementation-repair",
       supportedPredicateIds: [
         "stale-session-mutation-observed",
@@ -195,7 +195,7 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       ],
       requiresExactSourceEvidence: true,
       rationale:
-        "Represents the session-generation guard repair family. It remains proposal-only until an exact syntax-aware realizer is registered.",
+        "Allows exact connection/life/participation generation guard insertion only when the script analyzer emits a validated captured-generation transform hint.",
     }, {
       id: "arena-ownership-guard-template",
       version: "1",
