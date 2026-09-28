@@ -105,6 +105,35 @@ export function validateRuntimeExperimentDefinition(
     errors.push("Duplicate runtime experiment outcome predicate: " + duplicate);
   }
 
+  for (const duplicate of duplicates(
+    (definition.expectedContrasts ?? []).map((item) => item.predicateId),
+  )) {
+    errors.push(
+      "Duplicate runtime experiment expected contrast predicate: " +
+        duplicate,
+    );
+  }
+
+  const outcomePredicates = new Set(
+    definition.outcomePredicateIds,
+  );
+  for (const expected of definition.expectedContrasts ?? []) {
+    if (!outcomePredicates.has(expected.predicateId)) {
+      errors.push(
+        "Runtime experiment expected contrast references undeclared outcome predicate " +
+          expected.predicateId +
+          ".",
+      );
+    }
+    if (expected.controlState === expected.treatmentState) {
+      errors.push(
+        "Runtime experiment expected contrast requires different control and treatment states for " +
+          expected.predicateId +
+          ".",
+      );
+    }
+  }
+
   const factors = new Set(definition.factors.map((factor) => factor.id));
   for (const arm of definition.arms) {
     if (!arm.id.trim()) {
