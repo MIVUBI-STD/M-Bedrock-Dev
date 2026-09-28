@@ -375,3 +375,33 @@ in-memory callback/reference
 ```
 
 Do not treat state found after reload as proof it belongs to the current session generation. Persistence proof must bind stored data to a new runtime ownership envelope before mutation.
+
+
+## Next lane — runtime-profile differential proof
+
+Persistence/reload recovery now has controlled proof contracts.
+
+Next runtime domain is compatibility discrimination across exact runtime profiles.
+
+Priorities:
+
+1. execute the same experiment definition against multiple captured runtime profiles;
+2. keep every profile/environment evidence set isolated during qualification;
+3. compare qualified predicate states across profiles only after each profile independently satisfies evidence integrity;
+4. classify stable authored behavior versus runtime-profile-specific divergence;
+5. preserve exact edition, host, Minecraft version, Script API version, experiments, and world/server settings in differential provenance;
+6. distinguish Retail/listen-server, BDS/dedicated-server, and Education differences;
+7. never call a profile-specific divergence a project defect until authored intent and target-support policy establish that the behavior should be invariant across those profiles.
+
+Target classification surface:
+
+```text
+same authored intent
++ same fixture/experiment
++ profile A expected behavior
++ profile B divergent behavior
+→ compatibility-difference candidate
+
+not automatically:
+→ authored bug
+```
