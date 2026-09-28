@@ -306,13 +306,68 @@ function guardedCallbackText(
   );
 }
 
+function hintSemantics(
+  capturedIdentifier: string,
+  currentExpression: string,
+): {
+  family:
+    | "scheduler-generation-guard"
+    | "session-generation-guard";
+  predicateId: string;
+  factorId: string;
+} {
+  const token =
+    capturedIdentifier + " " + currentExpression;
+
+  if (/connection.*generation/i.test(token)) {
+    return {
+      family: "session-generation-guard",
+      predicateId:
+        "stale-session-mutation-observed",
+      factorId:
+        "connection-generation-guard-enabled",
+    };
+  }
+  if (/life.*generation/i.test(token)) {
+    return {
+      family: "session-generation-guard",
+      predicateId:
+        "stale-life-join-mutation-observed",
+      factorId:
+        "life-generation-guard-enabled",
+    };
+  }
+  if (
+    /(?:participation|membership).*generation/i.test(
+      token,
+    )
+  ) {
+    return {
+      family: "session-generation-guard",
+      predicateId:
+        "stale-join-transition-observed",
+      factorId:
+        "membership-guard-enabled",
+    };
+  }
+
+  return {
+    family: "scheduler-generation-guard",
+    predicateId: "stale-callback-observed",
+    factorId: "generation-guard-enabled",
+  };
+}
+
 function hintId(
   identifier: string,
   source: SourceRef,
+  family:
+    | "scheduler-generation-guard"
+    | "session-generation-guard",
 ): string {
   return [
     "repair-hint",
-    "scheduler-generation-guard",
+    family,
     encodeURIComponent(identifier),
     encodeURIComponent(source.relativePath),
     source.range?.lineStart ?? 0,
@@ -320,7 +375,7 @@ function hintId(
   ].join(":");
 }
 
-export function deriveSchedulerGenerationGuardTransformHints(
+export function deriveCapturedGenerationGuardTransformHints(
   identifier: string,
   text: string,
   source: SourceRef,
@@ -380,6 +435,11 @@ export function deriveSchedulerGenerationGuardTransformHints(
       return;
     }
 
+    const semantics = hintSemantics(
+      capture.capturedIdentifier,
+      capture.currentExpression,
+    );
+
     const expectedText = node.getText(file);
     const replacementCallback =
       guardedCallbackText(
@@ -402,8 +462,12 @@ export function deriveSchedulerGenerationGuardTransformHints(
 
     const hint: RepairSourceTransformHint = {
       schemaVersion: 1,
-      id: hintId(identifier, callSource),
-      family: "scheduler-generation-guard",
+      id: hintId(
+        identifier,
+        callSource,
+        semantics.family,
+      ),
+      family: semantics.family,
       analyzerId:
         SCRIPT_REPAIR_HINT_ANALYZER_ID,
       analyzerRevision:
@@ -422,11 +486,10 @@ export function deriveSchedulerGenerationGuardTransformHints(
       expectedText,
       replacementText,
       supportedPredicateIds: [
-        "stale-callback-observed",
-        "cancelled-callback-mutation-observed",
+        semantics.predicateId,
       ],
       supportedFactorIds: [
-        "generation-guard-enabled",
+        semantics.factorId,
       ],
       validationKinds: [
         "reparse",
@@ -448,5 +511,37 @@ export function deriveSchedulerGenerationGuardTransformHints(
   visit(file);
   return output.sort((a, b) =>
     a.id.localeCompare(b.id)
+  );
+}
+
+export function deriveSchedulerGenerationGuardTransformHints(
+  identifier: string,
+  text: string,
+  source: SourceRef,
+): RepairSourceTransformHint[] {
+  return deriveCapturedGenerationGuardTransformHints(
+    identifier,
+    text,
+    source,
+  ).filter(
+    (hint) =>
+      hint.family ===
+        "scheduler-generation-guard",
+  );
+}
+
+export function deriveSessionGenerationGuardTransformHints(
+  identifier: string,
+  text: string,
+  source: SourceRef,
+): RepairSourceTransformHint[] {
+  return deriveCapturedGenerationGuardTransformHints(
+    identifier,
+    text,
+    source,
+  ).filter(
+    (hint) =>
+      hint.family ===
+        "session-generation-guard",
   );
 }
