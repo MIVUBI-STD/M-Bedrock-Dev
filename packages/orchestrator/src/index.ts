@@ -173,3 +173,5 @@ export * from "./repair-opportunity-envelope.js";
 export * from "./repair-strategy-enumeration.js";
 
 export * from "./repair-strategy-deduplication.js";
+
+export * from "./topology-repair-strategy-realizer.js";
