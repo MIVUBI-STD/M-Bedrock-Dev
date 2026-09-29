@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractArenaConcurrencyCapacity } from "../src/arena-capacity-extraction.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 
 const absolute = (x: number, y: number, z: number) => ({
   x: { mode: "absolute" as const, value: x },
@@ -93,6 +94,61 @@ describe("arena concurrency capacity extraction", () => {
     expect(
       result.evidence.commandTickingAreaResourceResolved,
     ).toBe(false);
+    expect(result.report?.safeConcurrentArenas).toBeNull();
+  });
+
+  it("reports player capacity as evidence without treating it as an arena limiter", () => {
+    const script = {
+      arenaAuthorityPaths: [{
+        arenaExpression: "arena",
+        executionRegion: "function:join",
+        capacityAuthorityProven: true,
+        startAuthorityProven: false,
+        startGuardProven: false,
+        capacityCheck: {
+          kind: "capacity-check",
+          arenaExpression: "arena",
+          membershipExpression: "arena.players",
+          capacityExpression: "5",
+          executionRegion: "function:join",
+          source: {
+            artifactId: "fixture",
+            relativePath: "scripts/main.ts",
+          },
+        },
+      }],
+      propertyAccesses: [],
+      methodCalls: [],
+      moduleMemberAccesses: [],
+    } as unknown as ParsedScriptFile;
+
+    const result = extractArenaConcurrencyCapacity({
+      discovery: {
+        canonical: {
+          arenaId: "arena-1",
+          anchor: { x: 0, y: 0, z: 0 },
+          items: [],
+        },
+        replicas: [{
+          arenaId: "arena-2",
+          anchor: { x: 100, y: 0, z: 0 },
+          items: [],
+        }],
+        offsets: [{ x: 100, y: 0, z: 0 }],
+        supportByOffset: {},
+        confidence: "medium",
+        evidenceCandidates: 2,
+      },
+      tickingAreas: [],
+      scripts: [script],
+    });
+
+    expect(result.evidence).toMatchObject({
+      perArenaPlayerCapacity: 5,
+      declaredMaxConcurrentPlayers: 10,
+      conflictingPlayerCapacityValues: [],
+    });
+    expect(result.resources).toEqual([]);
     expect(result.report?.safeConcurrentArenas).toBeNull();
   });
 
