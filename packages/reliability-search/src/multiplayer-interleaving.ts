@@ -223,28 +223,31 @@ function generationTokens(
 export function multiplayerEventOperation(
   event: MultiplayerInterleavingEvent,
 ): ScheduledOperation<MultiplayerInterleavingEvent> {
+  const tokens = generationTokens(event);
+  const hasParents =
+    (event.parentEventIds?.length ?? 0) > 0;
+
   return {
     id: event.id,
     value: event,
     footprint: eventFootprint(event),
-    causal:
-      event.parentEventIds?.length ||
-      generationTokens(event)
-        ? {
-            ...(event.parentEventIds?.length
+    ...(!hasParents && tokens === undefined
+      ? {}
+      : {
+          causal: {
+            ...(hasParents
               ? {
                   parentOperationIds:
-                    event.parentEventIds,
+                    event.parentEventIds!,
                 }
               : {}),
-            ...(generationTokens(event) === undefined
+            ...(tokens === undefined
               ? {}
               : {
-                  generationTokens:
-                    generationTokens(event),
+                  generationTokens: tokens,
                 }),
-          }
-        : undefined,
+          },
+        }),
   };
 }
 
