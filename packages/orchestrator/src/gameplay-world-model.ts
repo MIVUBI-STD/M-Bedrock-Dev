@@ -33,6 +33,9 @@ import type {
   ScriptSpatialAnalysis,
 } from "./script-spatial-analysis.js";
 import type {
+  InventoryLifecycleAnalysis,
+} from "./inventory-lifecycle-analysis.js";
+import type {
   SpatialAuthorityCoverageReport,
 } from "./spatial-authority-analysis.js";
 
@@ -114,6 +117,15 @@ export interface GameplayWorldModel {
       unknownRegions: number;
     };
   };
+  inventory: {
+    regions: number;
+    resetCandidates: number;
+    completeResets: number;
+    partialResets: number;
+    copyMutationRisks: number;
+    grantRegions: number;
+    dropRegions: number;
+  };
   state: {
     semanticSurfaces: number;
     semanticOperations: number;
@@ -167,6 +179,7 @@ export interface GameplayWorldModelSource {
   };
   scriptSpatial: ScriptSpatialAnalysis;
   spatialAuthority?: SpatialAuthorityCoverageReport;
+  inventoryLifecycle?: InventoryLifecycleAnalysis;
   semanticIr: {
     stateSurfaces: number;
     stateOperations: number;
@@ -416,6 +429,22 @@ export function deriveGameplayWorldModel(
         unknownRegions:
           source.spatialAuthority?.unknownRegions ?? 0,
       },
+    },
+    inventory: {
+      regions:
+        source.inventoryLifecycle?.regions ?? 0,
+      resetCandidates:
+        source.inventoryLifecycle?.resetCandidates ?? 0,
+      completeResets:
+        source.inventoryLifecycle?.completeResets ?? 0,
+      partialResets:
+        source.inventoryLifecycle?.partialResets ?? 0,
+      copyMutationRisks:
+        source.inventoryLifecycle?.copyMutationRisks ?? 0,
+      grantRegions:
+        source.inventoryLifecycle?.grantRegions ?? 0,
+      dropRegions:
+        source.inventoryLifecycle?.dropRegions ?? 0,
     },
     state: {
       semanticSurfaces:
