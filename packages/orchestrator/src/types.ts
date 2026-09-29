@@ -26,6 +26,7 @@ import type { ArenaCapacityExtractionResult } from "./arena-capacity-extraction.
 import type { ScriptSafeConfigAnalysis } from "./script-safe-config-analysis.js";
 import type { ArenaLayoutReconciliation } from "./arena-layout-reconciliation.js";
 import type { ArenaLifecycleAnalysis } from "./arena-lifecycle-analysis.js";
+import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
@@ -44,6 +45,7 @@ export interface InspectTargetProfile {
   stateAuthorityContracts?: readonly StateAuthorityContract[];
   authoredSourceRoots?: readonly string[];
   staticExecutionDimension?: string;
+  releaseVersion?: string;
 }
 
 export interface InspectedPack {
@@ -51,6 +53,7 @@ export interface InspectedPack {
   type: string;
   uuid?: string;
   minEngineVersion?: string;
+  packVersion?: string;
   educationMetadata: boolean;
   scriptModules: Array<{
     moduleName: string;
@@ -66,6 +69,7 @@ export interface InspectDirectoryResult {
   scripts: number;
   scriptApiUsage: ScriptApiUsageInventory;
   scriptSafeConfig: ScriptSafeConfigAnalysis;
+  releaseIdentity: ReleaseIdentityAnalysis;
   structures: number;
   parsedStructures: number;
   entities: number;

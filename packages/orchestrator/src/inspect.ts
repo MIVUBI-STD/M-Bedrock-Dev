@@ -37,6 +37,7 @@ import { semanticIrDiagnostics } from "./semantic-ir-diagnostics.js";
 import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
 import { indexAuthoredIntentSources } from "./inspect-authored-intent-source.js";
 import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js";
+import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
 export async function inspectDirectory(
   root: string,
@@ -214,6 +215,13 @@ export async function inspectDirectory(
   } = runtimeAnalysis;
   diagnostics.push(...runtimeAnalysis.diagnostics);
 
+  const releaseIdentity = analyzeReleaseIdentity(
+    packs,
+    runtimeAnalysis.scriptSafeConfig,
+    target,
+  );
+  diagnostics.push(...releaseIdentity.findings);
+
   const knowledgeRuntime = analyzeKnowledgeRuntime(
     knowledgeCatalog,
     target,
@@ -310,6 +318,7 @@ export async function inspectDirectory(
     entityKnowledge,
     knowledgeRuntime,
     runtimeAnalysis,
+    releaseIdentity,
     education,
     causal,
     telemetryEvents,

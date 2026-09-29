@@ -18,6 +18,41 @@ export interface InspectionPackDiscovery {
   }>;
 }
 
+function formatManifestVersion(
+  value: unknown,
+): string | undefined {
+  if (
+    Array.isArray(value) &&
+    value.length >= 3 &&
+    value.slice(0, 3).every(
+      (item) =>
+        typeof item === "number" &&
+        Number.isInteger(item) &&
+        item >= 0,
+    )
+  ) {
+    return value.slice(0, 3).join(".");
+  }
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+  ) {
+    const item = value as Record<string, unknown>;
+    if (
+      typeof item.major === "number" &&
+      typeof item.minor === "number" &&
+      typeof item.patch === "number"
+    ) {
+      return `${item.major}.${item.minor}.${item.patch}`;
+    }
+  }
+  return undefined;
+}
+
 function formatVersion(
   value:
     | { major: number; minor: number; patch: number }
@@ -64,6 +99,12 @@ export async function discoverInspectionPacks(
 
     if (manifest.headerUuid) {
       normalizedPack.uuid = manifest.headerUuid;
+    }
+
+    const packVersion =
+      formatManifestVersion(manifest.headerVersion);
+    if (packVersion) {
+      normalizedPack.packVersion = packVersion;
     }
 
     const minEngineVersion = formatVersion(

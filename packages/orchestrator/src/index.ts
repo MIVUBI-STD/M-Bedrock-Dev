@@ -270,3 +270,5 @@ export * from "./arena-layout-reconciliation.js";
 export * from "./script-arena-layout-fallback.js";
 
 export * from "./arena-lifecycle-analysis.js";
+
+export * from "./release-identity-analysis.js";

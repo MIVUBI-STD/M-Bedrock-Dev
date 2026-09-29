@@ -59,6 +59,7 @@ export interface InspectionResultInput {
   entityKnowledge: EntityKnowledgeStage;
   knowledgeRuntime: KnowledgeRuntimeStage;
   runtimeAnalysis: RuntimeAnalysisStage;
+  releaseIdentity: import("./release-identity-analysis.js").ReleaseIdentityAnalysis;
   education: EducationStage;
   causal: CausalityStage;
   telemetryEvents: readonly TelemetryEvent[];
@@ -233,6 +234,7 @@ export function buildInspectionResult(
     ).length,
     scriptApiUsage,
     scriptSafeConfig,
+    releaseIdentity: input.releaseIdentity,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
