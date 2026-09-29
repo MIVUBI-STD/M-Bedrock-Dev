@@ -8,6 +8,8 @@ import {
   createChunkResidencyBehavior,
   createDeferredCallbackBehavior,
   createPlayerSessionBehavior,
+  resolveSpatialAuthority,
+  validateSpatialAuthorityPolicy,
   evaluateTemporalProperty,
   unknownNondeterminismCapabilityProfile,
   validateBehavioralWorldModel,
@@ -258,6 +260,94 @@ describe("behavioral world model", () => {
           "minecraft.arena:a1:capacity-never-exceeded",
       ),
     ).toBe(true);
+  });
+
+  it("resolves spatial authority by most-specific authored rule", () => {
+    const policy = {
+      schemaVersion: 1 as const,
+      id: "build-plot-policy",
+      rules: [
+        {
+          id: "deny-default",
+          regionId: "build-plot",
+          actor: "player" as const,
+          action: "*" as const,
+          decision: "deny" as const,
+        },
+        {
+          id: "allow-build",
+          regionId: "build-plot",
+          actor: "player" as const,
+          action: "place-block" as const,
+          phases: ["building"],
+          decision: "allow" as const,
+        },
+      ],
+    };
+
+    expect(
+      validateSpatialAuthorityPolicy(policy),
+    ).toEqual([]);
+    expect(
+      resolveSpatialAuthority(policy, {
+        regionId: "build-plot",
+        actor: "player",
+        action: "place-block",
+        phase: "building",
+      }),
+    ).toMatchObject({
+      status: "resolved",
+      decision: "allow",
+      matchedRuleIds: ["allow-build"],
+    });
+    expect(
+      resolveSpatialAuthority(policy, {
+        regionId: "build-plot",
+        actor: "player",
+        action: "break-block",
+        phase: "observation",
+      }),
+    ).toMatchObject({
+      status: "resolved",
+      decision: "deny",
+      matchedRuleIds: ["deny-default"],
+    });
+  });
+
+  it("fails closed when equally-specific spatial rules disagree", () => {
+    const result = resolveSpatialAuthority(
+      {
+        schemaVersion: 1,
+        id: "conflict",
+        rules: [
+          {
+            id: "allow",
+            regionId: "plot",
+            actor: "player",
+            action: "use-item",
+            phases: ["building"],
+            decision: "allow",
+          },
+          {
+            id: "deny",
+            regionId: "plot",
+            actor: "player",
+            action: "use-item",
+            phases: ["building"],
+            decision: "deny",
+          },
+        ],
+      },
+      {
+        regionId: "plot",
+        actor: "player",
+        action: "use-item",
+        phase: "building",
+      },
+    );
+
+    expect(result.status).toBe("conflict");
+    expect(result.decision).toBeUndefined();
   });
 
   it("reports provenance gaps instead of silently trusting unbound claims", () => {
