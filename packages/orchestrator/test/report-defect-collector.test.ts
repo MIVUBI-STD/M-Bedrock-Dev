@@ -133,7 +133,10 @@ describe("report defect collector", () => {
         route: "runtime",
         intent,
         assessment: runtimeAssessment,
-        defect: defect("runtime-cleanup", { ai: true }),
+        defect: defect("runtime-cleanup", {
+          ai: true,
+          impactEvidenceIds: ["runtime:cleanup"],
+        }),
       },
       {
         route: "static",
@@ -262,7 +265,10 @@ describe("report defect collector", () => {
               nextEvidenceNeed: "authored-intent",
             },
           },
-          defect: defect("rejected", { ai: true }),
+          defect: defect("rejected", {
+            ai: true,
+            impactEvidenceIds: ["runtime:cleanup"],
+          }),
         },
         {
           route: "tester",
@@ -313,7 +319,10 @@ describe("report defect collector", () => {
             nextEvidenceNeed: "authored-intent",
           },
         },
-        defect: defect("needs-authored-intent", { ai: true }),
+        defect: defect("needs-authored-intent", {
+          ai: true,
+          impactEvidenceIds: ["runtime:cleanup"],
+        }),
       },
       {
         route: "tester",
