@@ -10,7 +10,7 @@ import {
 
 describe("GitHubReportClient", () => {
   it("lists reports through the app backend", async () => {
-    const fetchImpl = vi.fn(async () =>
+    const fetchMock = vi.fn(async () =>
       new Response(
         JSON.stringify({
           reports: [{
@@ -28,10 +28,10 @@ describe("GitHubReportClient", () => {
           },
         },
       )
-    ) as unknown as typeof fetch;
+    );
 
     const client = new GitHubReportClient({
-      fetchImpl,
+      fetchImpl: fetchMock as unknown as typeof fetch,
     });
 
     await expect(client.listReports()).resolves.toEqual([
@@ -56,10 +56,10 @@ describe("GitHubReportClient", () => {
           },
         },
       )
-    ) as unknown as typeof fetch;
+    );
 
     const client = new GitHubReportClient({
-      fetchImpl,
+      fetchImpl: fetchMock as unknown as typeof fetch,
     });
 
     await client.saveReport(
@@ -87,7 +87,7 @@ describe("GitHubReportClient", () => {
       },
     );
 
-    const init = fetchImpl.mock.calls[0]?.[1] as RequestInit;
+    const init = fetchMock.mock.calls[0]?.[1] as RequestInit;
     expect(init.headers).toEqual({
       "Content-Type": "application/json",
     });

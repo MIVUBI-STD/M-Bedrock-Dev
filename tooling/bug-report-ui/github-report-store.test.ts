@@ -34,7 +34,7 @@ function report() {
 
 describe("GitHubBugReportStore", () => {
   it("updates an existing canonical report using its current GitHub sha", async () => {
-    const fetchImpl = vi.fn()
+    const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
@@ -48,19 +48,19 @@ describe("GitHubBugReportStore", () => {
       .mockResolvedValueOnce(new Response(
         JSON.stringify({ content: { sha: "def" } }),
         { status: 200 },
-      )) as unknown as typeof fetch;
+      ));
 
     const store = new GitHubBugReportStore({
       owner: "MIVUBI-STD",
       repository: "M-Bedrock-Dev",
       branch: "Local",
       token: "secret",
-      fetchImpl,
+      fetchImpl: fetchMock as unknown as typeof fetch,
     });
 
     await store.saveReport("bug-reports/a.json", report());
 
-    const saveInit = fetchImpl.mock.calls[1]?.[1] as RequestInit;
+    const saveInit = fetchMock.mock.calls[1]?.[1] as RequestInit;
     const body = JSON.parse(String(saveInit.body)) as {
       sha?: string;
       branch: string;
@@ -81,19 +81,19 @@ describe("GitHubBugReportStore", () => {
       .mockResolvedValueOnce(new Response(
         JSON.stringify({ content: { sha: "new" } }),
         { status: 201 },
-      )) as unknown as typeof fetch;
+      ));
 
     const store = new GitHubBugReportStore({
       owner: "MIVUBI-STD",
       repository: "M-Bedrock-Dev",
       branch: "Local",
       token: "secret",
-      fetchImpl,
+      fetchImpl: fetchMock as unknown as typeof fetch,
     });
 
     await store.saveReport("bug-reports/a.json", report());
 
-    const saveInit = fetchImpl.mock.calls[1]?.[1] as RequestInit;
+    const saveInit = fetchMock.mock.calls[1]?.[1] as RequestInit;
     const body = JSON.parse(String(saveInit.body)) as {
       sha?: string;
     };
