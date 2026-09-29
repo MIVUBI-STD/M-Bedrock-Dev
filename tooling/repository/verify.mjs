@@ -43,6 +43,8 @@ const required = [
   "fixtures/AGENTS.md",
   "tooling/AGENTS.md",
   "workspace/AGENTS.md",
+  "bug-reports/AGENTS.md",
+  "bug-reports/README.md",
   "tooling/windows-toolchain/dev.ps1"
 ];
 
@@ -69,6 +71,7 @@ const allowedRootEntries = new Set([
   "adapters",
   "analyzers",
   "apps",
+  "bug-reports",
   "docs",
   "fixtures",
   "knowledge",
