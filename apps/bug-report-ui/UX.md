@@ -182,3 +182,18 @@ Do not add:
 - mandatory notes when checking Fixed.
 
 The tracker is a focused repair handoff tool, not a general project-management product.
+
+
+## GitHub conflict safety
+
+GitHub persistence uses optimistic concurrency. When a report is opened, its source revision is retained outside Bug Report V2. Save succeeds only if the GitHub report still has the same revision.
+
+If the remote report changed, the UI shows `Changed on GitHub` and must not overwrite the remote report. Local edits remain available for Export JSON. Reloading the GitHub version is explicit.
+
+Source revision is persistence metadata and must never be written into Bug Report V2.
+
+## Report list priority signal
+
+GitHub report rows may show the number of unfinished Blocker bugs. This value is derived from report content and is not persisted separately.
+
+Reports with unfinished Blockers scan before ordinary unfinished reports.
