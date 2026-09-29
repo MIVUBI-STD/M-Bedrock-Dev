@@ -36,6 +36,9 @@ export function describeLevelDbEntry(
 
   const classified = classifyBedrockLevelDbKey(key);
   result.keyFamily = classified.family;
+  if (classified.family === "chunk-data") {
+    result.valueHash = createHash("sha256").update(value).digest("hex");
+  }
   if (classified.chunkDataKind) result.chunkDataKind = classified.chunkDataKind;
   if (classified.chunkX !== undefined) result.chunkX = classified.chunkX;
   if (classified.chunkZ !== undefined) result.chunkZ = classified.chunkZ;

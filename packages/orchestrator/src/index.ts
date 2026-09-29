@@ -241,3 +241,5 @@ export * from "./report-candidate-reuse.js";
 export * from "./arena-audit.js";
 
 export * from "./report-source-owner.js";
+
+export * from "./arena-native-extraction.js";

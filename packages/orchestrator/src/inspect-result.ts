@@ -356,6 +356,12 @@ export function buildInspectionResult(
       present: dbFiles.length > 0,
       fileCount: dbFiles.length,
     },
+    arenaAnalysis: {
+      autoDetected: topology.arenaReplicaDiscovery !== undefined,
+      ...(topology.arenaReplicaDiscovery === undefined
+        ? {}
+        : { discovery: topology.arenaReplicaDiscovery }),
+    },
     gameplayIntent: {
       model: input.gameplayIntent,
       authoredSourceFiles: input.authoredIntentSources,

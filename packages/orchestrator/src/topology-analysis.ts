@@ -61,6 +61,10 @@ export function analyzeFunctionTopology(
   const resolvedSpatialEffects = spatialRecords.map((record) => record.resolved);
   const candidates = deriveTopologyCandidates(resolvedSpatialEffects);
   const linearOutliers = detectLinearTopologyOutliers(resolvedSpatialEffects);
+  const arenaReplicaDiscovery = discoverArenaReplicasFromTopology(
+    resolvedSpatialEffects,
+    candidates,
+  );
   const topologyDiagnostics = linearTopologyOutlierDiagnostics(linearOutliers);
 
   const repairableTopologyCandidates: RepairableTopologyCandidate[] = linearOutliers
@@ -81,6 +85,7 @@ export function analyzeFunctionTopology(
     candidates,
     linearOutliers,
     repairableTopologyCandidates,
+    arenaReplicaDiscovery,
     topologyDiagnostics,
     broadWrites: stateAccesses.filter(
       (access) => access.access === "write" && likelyGlobalAccess(access),

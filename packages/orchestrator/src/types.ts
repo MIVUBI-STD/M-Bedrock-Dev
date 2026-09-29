@@ -15,6 +15,8 @@ import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/ind
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
+import type { ArenaReplicaDiscovery } from "../../../analyzers/topology/src/index.js";
+import type { ArenaNativeSpatialAudit } from "./arena-native-extraction.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
@@ -138,8 +140,22 @@ export interface InspectDirectoryResult {
         kinds: string[];
       }>;
       chunkSignalsTruncated: boolean;
+      chunkContentObservations: Array<{
+        chunkX: number;
+        chunkZ: number;
+        dimensionId: number;
+        kind: string;
+        valueHash: string;
+        subChunkIndex?: number;
+      }>;
+      chunkContentObservationsTruncated: boolean;
       failure?: string;
     };
+  };
+  arenaAnalysis: {
+    autoDetected: boolean;
+    discovery?: ArenaReplicaDiscovery;
+    nativeSpatial?: ArenaNativeSpatialAudit;
   };
   gameplayIntent: {
     model: GameplayIntentModel;

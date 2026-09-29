@@ -7,6 +7,7 @@ export interface LevelDbEntryMetadata {
   keyBytes: number;
   valueBytes: number;
   keyHex: string;
+  valueHash?: string;
   keyPreview?: string;
   keyFamily?: "actor" | "actor-digest" | "chunk-data" | "unknown";
   chunkDataKind?: string;

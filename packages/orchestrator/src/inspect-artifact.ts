@@ -14,6 +14,7 @@ import type { TelemetryBatch, TelemetryEvent } from "../../project-model/src/ind
 import { isTelemetryBatch, resolveTelemetryEventsForArtifact } from "./telemetry-load.js";
 import type { RuntimeProbeTranscript } from "../../project-model/src/index.js";
 import { assertRuntimeProbeTranscriptArtifact } from "./runtime-probe-load.js";
+import { auditArenaNativeSpatialContent } from "./arena-native-extraction.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -71,6 +72,14 @@ export async function inspectArtifact(
       runtimeProbeResponses,
       runtimeProbeTranscript?.droppedExchanges ?? 0,
     );
+    const arenaNativeSpatial =
+      result.arenaAnalysis.discovery === undefined
+        ? undefined
+        : auditArenaNativeSpatialContent(
+            result.arenaAnalysis.discovery,
+            nativeWorldDb.chunkContentObservations,
+          );
+
     const embeddedCommandNativeCorrelations =
       correlateEmbeddedCommandsWithNativeChunks(
         result.structureRuntime.placedEmbeddedCommands,
@@ -97,6 +106,12 @@ export async function inspectArtifact(
       fingerprint,
       archiveEntries: inventory.entries.length,
       ...result,
+      arenaAnalysis: {
+        ...result.arenaAnalysis,
+        ...(arenaNativeSpatial === undefined
+          ? {}
+          : { nativeSpatial: arenaNativeSpatial }),
+      },
       worldDatabase: {
         ...result.worldDatabase,
         nativeScan: nativeWorldDb,

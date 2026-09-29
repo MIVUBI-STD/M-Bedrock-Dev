@@ -32,6 +32,15 @@ export interface WorldDbNativeSummary {
     kinds: string[];
   }>;
   chunkSignalsTruncated: boolean;
+  chunkContentObservations: Array<{
+    chunkX: number;
+    chunkZ: number;
+    dimensionId: number;
+    kind: string;
+    valueHash: string;
+    subChunkIndex?: number;
+  }>;
+  chunkContentObservationsTruncated: boolean;
   failure?: string;
 }
 
@@ -64,6 +73,8 @@ export async function analyzeWorldDbNative(
       chunksObserved: 0,
       chunkSignals: [],
       chunkSignalsTruncated: false,
+      chunkContentObservations: [],
+      chunkContentObservationsTruncated: false,
     };
   }
 
@@ -96,6 +107,26 @@ export async function analyzeWorldDbNative(
         }
       }
 
+      const chunkContentObservations = scan.metadata
+        .filter((entry) =>
+          entry.keyFamily === "chunk-data" &&
+          entry.chunkX !== undefined &&
+          entry.chunkZ !== undefined &&
+          entry.chunkDataKind !== undefined &&
+          entry.valueHash !== undefined
+        )
+        .slice(0, 8192)
+        .map((entry) => ({
+          chunkX: entry.chunkX!,
+          chunkZ: entry.chunkZ!,
+          dimensionId: entry.dimensionId ?? 0,
+          kind: entry.chunkDataKind!,
+          valueHash: entry.valueHash!,
+          ...(entry.subChunkIndex === undefined
+            ? {}
+            : { subChunkIndex: entry.subChunkIndex }),
+        }));
+
       const chunkSignals = [...chunkKinds.entries()]
         .slice(0, 1024)
         .map(([key, kinds]) => {
@@ -124,6 +155,10 @@ export async function analyzeWorldDbNative(
         chunksObserved: chunks.size,
         chunkSignals,
         chunkSignalsTruncated: chunkKinds.size > chunkSignals.length,
+        chunkContentObservations,
+        chunkContentObservationsTruncated:
+          scan.metadata.filter((entry) => entry.valueHash !== undefined).length >
+          chunkContentObservations.length,
       };
     } finally {
       await reader.close();
@@ -145,6 +180,8 @@ export async function analyzeWorldDbNative(
       chunksObserved: 0,
       chunkSignals: [],
       chunkSignalsTruncated: false,
+      chunkContentObservations: [],
+      chunkContentObservationsTruncated: false,
       failure: error instanceof Error ? error.message : String(error),
     };
   } finally {
