@@ -4,6 +4,7 @@ import {
   auditBehaviorModelProvenance,
   behaviorStateKey,
   composeBehavioralWorldModel,
+  createArenaLifecycleBehavior,
   createChunkResidencyBehavior,
   createDeferredCallbackBehavior,
   createPlayerSessionBehavior,
@@ -209,6 +210,11 @@ describe("behavioral world model", () => {
             arenaKey: "a1",
             startDeadlineTicks: 20,
           }),
+          createArenaLifecycleBehavior({
+            arenaKey: "a1",
+            capacity: 5,
+            resetDeadlineTicks: 40,
+          }),
           createChunkResidencyBehavior(
             "overworld:0:0",
           ),
@@ -236,6 +242,20 @@ describe("behavioral world model", () => {
         (property) =>
           property.provenance
             ?.evidenceCeiling === "designed",
+      ),
+    ).toBe(true);
+    expect(
+      composed.transitions.some(
+        (transition) =>
+          transition.id ===
+          "minecraft.arena:a1:finish-reset",
+      ),
+    ).toBe(true);
+    expect(
+      composed.properties.some(
+        (property) =>
+          property.id ===
+          "minecraft.arena:a1:capacity-never-exceeded",
       ),
     ).toBe(true);
   });
