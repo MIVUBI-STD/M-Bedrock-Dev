@@ -4,4 +4,4 @@
  * tooling/repository/verify-contract-registry.mjs verifies this value against
  * the canonical registry and fails closed when the registry changes.
  */
-export const CONTRACT_REGISTRY_REVISION = "662ab4e376c58e8445d09719b06dc50f0ccc163e132d15932fff306c2a0096e9";
+export const CONTRACT_REGISTRY_REVISION = "3eed62e96b9d80f4addc209c0c2ba1984600a7eca23fdad87aa5bc5e8a62c3d6";
