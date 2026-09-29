@@ -31,6 +31,42 @@ export interface ConfirmedDefectSourceEvidence {
   readonly reason: string;
 }
 
+function sourceRepairUnitId(
+  source: SourceRef,
+): string | undefined {
+  const path = source.relativePath
+    .replaceAll("\\", "/")
+    .trim();
+  if (!path) return undefined;
+
+  if (
+    source.jsonPointer !== undefined &&
+    source.jsonPointer.trim().length > 0
+  ) {
+    return (
+      "source-json:" +
+      path +
+      "#" +
+      source.jsonPointer.trim()
+    );
+  }
+
+  const range = source.range;
+  if (range?.lineStart !== undefined) {
+    return (
+      "source-range:" +
+      path +
+      "#L" +
+      String(range.lineStart) +
+      (range.lineEnd === undefined
+        ? ""
+        : "-L" + String(range.lineEnd))
+    );
+  }
+
+  return "source-file:" + path;
+}
+
 export function deriveRepairUnitIdsFromSourceEvidence(
   sourceEvidence:
     readonly ConfirmedDefectSourceEvidence[] | undefined,
@@ -43,12 +79,12 @@ export function deriveRepairUnitIdsFromSourceEvidence(
     ...new Set(
       sourceEvidence
         .map((item) =>
-          item.source.relativePath
-            .replaceAll("\\", "/")
-            .trim(),
+          sourceRepairUnitId(item.source)
         )
-        .filter(Boolean)
-        .map((path) => "source-file:" + path),
+        .filter(
+          (value): value is string =>
+            value !== undefined,
+        ),
     ),
   ].sort();
 }
