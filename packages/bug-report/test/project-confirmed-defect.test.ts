@@ -86,8 +86,8 @@ describe("confirmed defect projection", () => {
       ],
     );
 
-    expect(ids.get("a-first")).toBe("BUG-BB-001");
-    expect(ids.get("z-last")).toBe("BUG-BB-002");
+    expect(ids.get("a-first")).toBe("BUG-BB-1OTRUH3");
+    expect(ids.get("z-last")).toBe("BUG-BB-0TOWYPC");
   });
 
   it("keeps ids stable when input order changes", () => {
@@ -105,6 +105,24 @@ describe("confirmed defect projection", () => {
     );
   });
 
+  it("keeps an existing id stable when report contents grow", () => {
+    const before = allocateBugIds(
+      map.name,
+      [defect("cleanup")],
+    );
+    const after = allocateBugIds(
+      map.name,
+      [
+        defect("a-new-defect"),
+        defect("cleanup"),
+      ],
+    );
+
+    expect(after.get("cleanup")).toBe(
+      before.get("cleanup"),
+    );
+  });
+
   it("projects a canonical V2 report", () => {
     const result = buildBugReportFromConfirmedDefects({
       map,
@@ -116,7 +134,7 @@ describe("confirmed defect projection", () => {
     if (!result.ok) return;
     expect(result.report.bugs[0]).toEqual(
       expect.objectContaining({
-        id: "BUG-BB-001",
+        id: "BUG-BB-1OB7ULV",
         severity: "major",
         category: "player-state",
         foundBy: "ai",
