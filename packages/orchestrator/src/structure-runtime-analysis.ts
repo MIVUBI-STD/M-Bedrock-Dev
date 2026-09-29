@@ -177,6 +177,34 @@ export function analyzeStructureAndChunkRuntime(
     }];
   });
 
+  const absoluteStructurePlacements = structureLoads.map((load) => {
+    const position = absoluteBlockPosition(load.semantics.position);
+    return {
+      target: load.semantics.name,
+      ...(position === undefined ? {} : { position }),
+      options: {
+        rotation: load.semantics.rotation ?? "default",
+        mirror: load.semantics.mirror ?? "default",
+        animationMode:
+          load.semantics.animationMode ?? "default",
+        animationSeconds:
+          load.semantics.animationSeconds ?? null,
+        includeEntities:
+          load.semantics.includeEntities ?? "default",
+        includeBlocks:
+          load.semantics.includeBlocks ?? "default",
+        waterlogged:
+          load.semantics.waterlogged ?? "default",
+        integrity:
+          load.semantics.integrity ?? "default",
+        seed:
+          load.semantics.seed ?? "default",
+      },
+      functionId: load.functionId,
+      ...(load.line !== undefined ? { line: load.line } : {}),
+    };
+  });
+
   return {
     structureLoads,
     tickingAreas,
@@ -202,6 +230,7 @@ export function analyzeStructureAndChunkRuntime(
       (item) => item.findings.includes("runtime-logic-content"),
     ).length,
     absoluteLoadDestinations,
+    absoluteStructurePlacements,
     chunkLifecycleEvidence: {
       tickingAreas: tickingAreas.length,
       preloadedTickingAreas: tickingAreas.filter(
