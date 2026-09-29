@@ -1,0 +1,108 @@
+import {
+  classifyBugSeverity,
+  routeBugFinderCategory,
+} from "./decision.js";
+import type {
+  ConfirmedDefect,
+} from "./confirmed-defect.js";
+import {
+  promoteConfirmedBugsToV2,
+  type ConfirmedBugReportInput,
+  type PromoteConfirmedBugsResult,
+} from "./promote-v2.js";
+import type {
+  BugReportV2Map,
+  BugReportV2RepairBy,
+} from "./v2.js";
+
+function slug(value: string): string {
+  const normalized = value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized || "MAP";
+}
+
+function mapPrefix(mapName: string): string {
+  const words = slug(mapName)
+    .split("-")
+    .filter(Boolean);
+  if (words.length === 1) {
+    return words[0]!.slice(0, 4);
+  }
+  return words
+    .slice(0, 4)
+    .map((word) => word[0])
+    .join("");
+}
+
+export function allocateBugIds(
+  mapName: string,
+  defects: readonly ConfirmedDefect[],
+): ReadonlyMap<string, string> {
+  const ordered = [...defects].sort((left, right) =>
+    left.semanticKey.localeCompare(right.semanticKey)
+  );
+  const prefix = mapPrefix(mapName);
+  return new Map(
+    ordered.map((defect, index) => [
+      defect.semanticKey,
+      "BUG-" +
+        prefix +
+        "-" +
+        String(index + 1).padStart(3, "0"),
+    ]),
+  );
+}
+
+export function projectConfirmedDefects(
+  map: BugReportV2Map,
+  defects: readonly ConfirmedDefect[],
+): readonly ConfirmedBugReportInput[] {
+  const ids = allocateBugIds(map.name, defects);
+
+  return defects.map((defect) => ({
+    status: "confirmed-defect",
+    confirmation: defect.confirmation,
+    id: ids.get(defect.semanticKey)!,
+    severity: classifyBugSeverity(defect.impact),
+    category: routeBugFinderCategory(defect.primaryFailure),
+    foundBy: defect.foundBy,
+    title: defect.title,
+    problem: defect.problem,
+    expected: defect.expected.statement,
+    observed: defect.observed.statement,
+    ...(defect.reproduction === undefined
+      ? {}
+      : { reproduction: defect.reproduction }),
+    ...(defect.aiAnalysis === undefined
+      ? {}
+      : { aiAnalysis: defect.aiAnalysis }),
+    ...(defect.relevantCode === undefined
+      ? {}
+      : { relevantCode: defect.relevantCode }),
+    ...(defect.suggestedFix === undefined
+      ? {}
+      : { suggestedFix: defect.suggestedFix }),
+    ...(defect.mustPreserve === undefined
+      ? {}
+      : { mustPreserve: defect.mustPreserve }),
+  }));
+}
+
+export function buildBugReportFromConfirmedDefects(
+  input: {
+    readonly map: BugReportV2Map;
+    readonly repairBy: BugReportV2RepairBy;
+    readonly defects: readonly ConfirmedDefect[];
+  },
+): PromoteConfirmedBugsResult {
+  return promoteConfirmedBugsToV2({
+    map: input.map,
+    repairBy: input.repairBy,
+    bugs: projectConfirmedDefects(
+      input.map,
+      input.defects,
+    ),
+  });
+}
