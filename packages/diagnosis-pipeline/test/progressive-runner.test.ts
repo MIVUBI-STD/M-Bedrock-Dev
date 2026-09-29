@@ -21,6 +21,8 @@ function executor(
 ): DiagnosisCapabilityExecutor {
   return {
     executorId,
+    executorRevision:
+      executorId + ":test:1",
     execute: vi.fn(async () => ({
       status: "completed" as const,
       output: {
@@ -55,6 +57,8 @@ describe("progressive diagnosis runner", () => {
     const semantic = {
       executorId:
         "diagnosis.semantic-ir",
+      executorRevision:
+        "diagnosis.semantic-ir:test:1",
       execute: vi.fn(async () => ({
         status: "completed" as const,
         output: {},
@@ -136,6 +140,8 @@ describe("progressive diagnosis runner", () => {
           executors: [{
             executorId:
               "diagnosis.source-index",
+            executorRevision:
+              "diagnosis.source-index:test:blocked",
             execute: async () => ({
               status: "blocked",
               output: {
@@ -287,6 +293,62 @@ describe("progressive diagnosis runner", () => {
     expect(
       secondIntent.execute,
     ).not.toHaveBeenCalled();
+  });
+
+  it("invalidates deterministic reuse when executor revision changes", async () => {
+    const cache =
+      createInMemoryDiagnosisResultCache();
+
+    const first =
+      executor(
+        "diagnosis.source-index",
+        "static",
+        "structural-proof",
+      );
+
+    await runProgressiveDiagnosis({
+      goal: "structural-consistency",
+      relevantTags: ["artifact"],
+      context: "LOCAL_ARTIFACT",
+      executorRegistry: {
+        schemaVersion: 1,
+        executors: [first],
+      },
+      payloadProvider: {
+        payloadFor: () => ({
+          artifact: "same",
+        }),
+      },
+      resultCache: cache,
+    });
+
+    const second =
+      executor(
+        "diagnosis.source-index",
+        "static",
+        "structural-proof",
+      );
+    second.executorRevision =
+      "diagnosis.source-index:test:2";
+
+    await runProgressiveDiagnosis({
+      goal: "structural-consistency",
+      relevantTags: ["artifact"],
+      context: "LOCAL_ARTIFACT",
+      executorRegistry: {
+        schemaVersion: 1,
+        executors: [second],
+      },
+      payloadProvider: {
+        payloadFor: () => ({
+          artifact: "same",
+        }),
+      },
+      resultCache: cache,
+    });
+
+    expect(second.execute)
+      .toHaveBeenCalledTimes(1);
   });
 
   it("invalidates deterministic reuse when the payload changes", async () => {

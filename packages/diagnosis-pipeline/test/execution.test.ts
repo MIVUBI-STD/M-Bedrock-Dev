@@ -48,6 +48,8 @@ describe("diagnosis planned-step execution", () => {
           executors: [{
             executorId:
               "diagnosis.source-index",
+            executorRevision:
+              "diagnosis.source-index:test:1",
             execute,
           }],
         },
@@ -70,6 +72,8 @@ describe("diagnosis planned-step execution", () => {
           executors: [{
             executorId:
               "diagnosis.source-index",
+            executorRevision:
+              "diagnosis.source-index:test:1",
             execute: async () => ({
               status: "completed",
               evidence: [{
@@ -135,6 +139,8 @@ describe("diagnosis planned-step execution", () => {
           executors: [{
             executorId:
               "diagnosis.source-index",
+            executorRevision:
+              "diagnosis.source-index:test:1",
             execute,
           }],
         },
@@ -153,6 +159,56 @@ describe("diagnosis planned-step execution", () => {
         ? result.reasons.join(" ")
         : "",
     ).toMatch(/cache key generation failed/i);
+  });
+
+  it("disables cache reuse when a deterministic executor has no revision", async () => {
+    const execute = vi.fn(async () => ({
+      status: "completed" as const,
+      evidence: [{
+        level: "static" as const,
+        evidenceIds: ["source:e1"],
+        quality: "usable" as const,
+        traits: ["structural-proof" as const],
+      }],
+      output: { indexed: true },
+    }));
+
+    const result =
+      await executePlannedDiagnosisStep({
+        plan: plan(),
+        context: "LOCAL_ARTIFACT",
+        payload: { artifactId: "a" },
+        registry: {
+          schemaVersion: 1,
+          executors: [{
+            executorId:
+              "diagnosis.source-index",
+            execute,
+          }],
+        },
+        cache: {
+          get: () => {
+            throw new Error(
+              "cache should not be read",
+            );
+          },
+          put: () => {
+            throw new Error(
+              "cache should not be written",
+            );
+          },
+        },
+      });
+
+    expect(result.status)
+      .toBe("executed");
+    expect(
+      result.status === "executed"
+        ? result.reasons.join(" ")
+        : "",
+    ).toMatch(
+      /no executorRevision/,
+    );
   });
 
   it("rejects executor ids outside the canonical diagnosis profile", () => {
