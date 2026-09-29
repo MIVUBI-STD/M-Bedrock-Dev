@@ -7,6 +7,7 @@ import {
 } from "../../bug-report/src/index.js";
 import type {
   IntentDiagnosticGateResult,
+  IntentDiagnosticNextEvidenceNeed,
 } from "../../diagnostic-reasoning/src/index.js";
 import type {
   GameplayIntentModel,
@@ -76,9 +77,18 @@ export type AuditReportCandidate =
   | StaticReportCandidate
   | TesterReportCandidate;
 
+export type ReportCandidateNextEvidenceNeed =
+  | IntentDiagnosticNextEvidenceNeed
+  | "tester-reproduction"
+  | "expected-behavior-evidence"
+  | "repair-decision"
+  | "candidate-correction";
+
 export interface RejectedReportCandidate {
   readonly route: AuditReportCandidate["route"];
   readonly semanticKey: string;
+  readonly evidenceIds: readonly string[];
+  readonly nextEvidenceNeed: ReportCandidateNextEvidenceNeed;
   readonly reasons: readonly string[];
 }
 
@@ -159,6 +169,61 @@ function routeEvidenceConsistency(
   return errors;
 }
 
+function candidateEvidenceIds(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  const values = [
+    ...candidate.defect.expected.evidenceIds,
+    ...candidate.defect.observed.evidenceIds,
+    ...(candidate.route === "runtime"
+      ? [
+          candidate.assessment.outcomeObservation.evidenceId,
+          ...candidate.assessment.result.evidenceIds,
+        ]
+      : candidate.route === "static"
+        ? candidate.result.evidenceIds
+        : candidate.confirmation.expectedEvidenceIds),
+  ];
+
+  return [...new Set(
+    values.filter((value) => value.trim().length > 0),
+  )].sort();
+}
+
+function routeNextEvidenceNeed(
+  candidate: AuditReportCandidate,
+): ReportCandidateNextEvidenceNeed {
+  if (candidate.route === "runtime") {
+    return candidate.assessment.result.nextEvidenceNeed;
+  }
+  if (candidate.route === "static") {
+    return candidate.result.nextEvidenceNeed;
+  }
+  if (candidate.confirmation.expectedEvidenceIds.length === 0) {
+    return "expected-behavior-evidence";
+  }
+  if (!candidate.confirmation.reproduced) {
+    return "tester-reproduction";
+  }
+  return "none";
+}
+
+function rejectedCandidate(
+  candidate: AuditReportCandidate,
+  reasons: readonly string[],
+  nextEvidenceNeed:
+    ReportCandidateNextEvidenceNeed =
+      routeNextEvidenceNeed(candidate),
+): RejectedReportCandidate {
+  return {
+    route: candidate.route,
+    semanticKey: candidate.defect.semanticKey,
+    evidenceIds: candidateEvidenceIds(candidate),
+    nextEvidenceNeed,
+    reasons,
+  };
+}
+
 function collectOne(
   candidate: AuditReportCandidate,
 ): {
@@ -169,11 +234,11 @@ function collectOne(
     routeEvidenceConsistency(candidate);
   if (evidenceConsistency.length > 0) {
     return {
-      rejected: {
-        route: candidate.route,
-        semanticKey: candidate.defect.semanticKey,
-        reasons: evidenceConsistency,
-      },
+      rejected: rejectedCandidate(
+        candidate,
+        evidenceConsistency,
+        "candidate-correction",
+      ),
     };
   }
 
@@ -182,13 +247,13 @@ function collectOne(
     candidate.repairContext?.decision === undefined
   ) {
     return {
-      rejected: {
-        route: candidate.route,
-        semanticKey: candidate.defect.semanticKey,
-        reasons: [
+      rejected: rejectedCandidate(
+        candidate,
+        [
           "Suggested Fix requires a diagnostic repair decision.",
         ],
-      },
+        "repair-decision",
+      ),
     };
   }
 
@@ -199,13 +264,13 @@ function collectOne(
 
   if (candidate.defect.expected.authority !== expectedAuthority) {
     return {
-      rejected: {
-        route: candidate.route,
-        semanticKey: candidate.defect.semanticKey,
-        reasons: [
+      rejected: rejectedCandidate(
+        candidate,
+        [
           "Defect Expected authority does not match the confirmation route authority.",
         ],
-      },
+        "candidate-correction",
+      ),
     };
   }
 
@@ -226,11 +291,10 @@ function collectOne(
 
   if (!decision.confirmed) {
     return {
-      rejected: {
-        route: candidate.route,
-        semanticKey: candidate.defect.semanticKey,
-        reasons: decision.reasons,
-      },
+      rejected: rejectedCandidate(
+        candidate,
+        decision.reasons,
+      ),
     };
   }
 
