@@ -68,7 +68,9 @@ export function groupConfirmedDefects(
 
   for (const defect of defects) {
     const key =
-      defect.causalIncidentId === undefined
+      defect.causalIncidentId === undefined ||
+      defect.brokenInvariantIds.length === 0 ||
+      defect.repairUnitIds.length === 0
         ? "single:" + defect.semanticKey
         : [
             "incident:" + defect.causalIncidentId,
