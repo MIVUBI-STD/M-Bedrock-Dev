@@ -453,11 +453,15 @@ export function compileContextPack(
       ...evidenceSubjectIds,
     ]);
 
+  const explicitIntentRequest =
+    requestedSubjects.size > 0 ||
+    requestedInvariants.size > 0 ||
+    requestedEvidence.size > 0;
+
   const intentNodes =
     input.intent.nodes
       .filter((node) =>
-        explicitSubjectScope.size ===
-          0 ||
+        !explicitIntentRequest ||
         explicitSubjectScope.has(
           node.id,
         )
