@@ -28,6 +28,7 @@ import { analyzeArenaStateIsolation } from "./arena-state-isolation-analysis.js"
 import { analyzeScriptSpatialMutations } from "./script-spatial-analysis.js";
 import { analyzeArenaGlobalState } from "./arena-global-state-analysis.js";
 import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
+import { analyzeInventoryPolicy } from "./inventory-policy-analysis.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
@@ -168,6 +169,11 @@ export function analyzeInspectionRuntimeState(
   const inventoryLifecycle =
     analyzeInventoryLifecycle(
       parsedScriptModels,
+    );
+  const inventoryPolicy =
+    analyzeInventoryPolicy(
+      parsedScriptModels,
+      input.target.inventoryItemPolicy,
     );
   const arenaGlobalState =
     analyzeArenaGlobalState(
@@ -353,6 +359,7 @@ export function analyzeInspectionRuntimeState(
     arenaLifecycle,
     arenaCleanupSurfaces,
     inventoryLifecycle,
+    inventoryPolicy,
     arenaGlobalState,
     arenaStateIsolation,
     arenaLayoutReconciliation,
