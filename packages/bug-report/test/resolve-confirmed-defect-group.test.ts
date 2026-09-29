@@ -164,6 +164,118 @@ describe("canonical defect group resolution", () => {
     ).toThrow(/select primary sourceEvidence explicitly/);
   });
 
+  it("requires explicit discovery origin for mixed AI and tester groups", () => {
+    const group = groupConfirmedDefects([
+      defect("tester"),
+      defect("ai", {
+        foundBy: "ai",
+        confirmation: {
+          basis: "authored-contract-violation",
+          evidence: "Static contradiction.",
+        },
+        aiAnalysis: "Static analysis.",
+        sourceEvidence: [{
+          source: {
+            artifactId: "map",
+            relativePath: "scripts/session.ts",
+          },
+          reason: "Owns cleanup.",
+        }],
+      }),
+    ])[0]!;
+
+    expect(() =>
+      resolveConfirmedDefectGroup(
+        group,
+        {
+          title: "Merged defect",
+          problem: "Merged problem",
+          expected: { statement: "Expected" },
+          observed: { statement: "Observed" },
+          expectedAuthority: "explicit-requirement",
+          primaryFailure: "player-owned-state",
+          reproduction: ["Reproduce."],
+        },
+      )
+    ).toThrow(/explicit foundBy/);
+
+    const resolved = resolveConfirmedDefectGroup(
+      group,
+      {
+        title: "Merged defect",
+        problem: "Merged problem",
+        expected: { statement: "Expected" },
+        observed: { statement: "Observed" },
+        expectedAuthority: "explicit-requirement",
+        foundBy: "tester",
+        primaryFailure: "player-owned-state",
+        reproduction: ["Reproduce."],
+      },
+    );
+
+    expect(resolved.foundBy).toBe("tester");
+  });
+
+  it("uses Expected evidence only from the selected authority", () => {
+    const group = groupConfirmedDefects([
+      defect("requirement", {
+        expected: {
+          authority: "explicit-requirement",
+          statement: "Cleanup resets state.",
+          evidenceIds: ["req:cleanup"],
+        },
+      }),
+      defect("runtime-contract", {
+        expected: {
+          authority: "runtime-contract",
+          statement: "Cleanup resets runtime state.",
+          evidenceIds: ["runtime-contract:cleanup"],
+        },
+      }),
+    ])[0]!;
+
+    const resolved = resolveConfirmedDefectGroup(
+      group,
+      {
+        title: "Merged defect",
+        problem: "Merged problem",
+        expected: { statement: "Cleanup resets state." },
+        observed: { statement: "State remains." },
+        expectedAuthority: "explicit-requirement",
+        primaryFailure: "player-owned-state",
+        reproduction: ["Reproduce."],
+      },
+    );
+
+    expect(resolved.expected.evidenceIds).toEqual([
+      "req:cleanup",
+    ]);
+  });
+
+  it("refuses groups with multiple primary failures", () => {
+    const group = groupConfirmedDefects([
+      defect("a"),
+      defect("b", {
+        primaryFailure: "session-concurrency",
+      }),
+    ])[0]!;
+
+    expect(() =>
+      resolveConfirmedDefectGroup(
+        group,
+        {
+          title: "Merged defect",
+          problem: "Merged problem",
+          expected: { statement: "Expected" },
+          observed: { statement: "Observed" },
+          expectedAuthority: "explicit-requirement",
+          primaryFailure: "player-owned-state",
+          reproduction: ["Reproduce."],
+        },
+      )
+    ).toThrow(/multiple primary failures/);
+  });
+
   it("does not invent Suggested Fix during group resolution", () => {
     const group = groupConfirmedDefects([
       defect("a"),
@@ -180,6 +292,30 @@ describe("canonical defect group resolution", () => {
         expectedAuthority: "explicit-requirement",
         primaryFailure: "player-owned-state",
         reproduction: ["Reproduce the merged defect."],
+      },
+    );
+
+    expect(resolved.suggestedFix).toBeUndefined();
+  });
+
+  it("does not carry Suggested Fix unless every symptom shares the same advice", () => {
+    const group = groupConfirmedDefects([
+      defect("a", {
+        suggestedFix: "Reset state.",
+      }),
+      defect("b"),
+    ])[0]!;
+
+    const resolved = resolveConfirmedDefectGroup(
+      group,
+      {
+        title: "Merged defect",
+        problem: "Merged problem",
+        expected: { statement: "Expected" },
+        observed: { statement: "Observed" },
+        expectedAuthority: "explicit-requirement",
+        primaryFailure: "player-owned-state",
+        reproduction: ["Reproduce."],
       },
     );
 
