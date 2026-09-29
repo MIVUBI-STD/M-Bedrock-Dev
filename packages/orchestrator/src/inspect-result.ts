@@ -260,6 +260,7 @@ export function buildInspectionResult(
     scriptSpatial,
     inventoryLifecycle,
     inventoryPolicy,
+    inventoryRestoreOwnership,
     semanticIr: {
       stateSurfaces: semanticSummary.stateSurfaces,
       stateOperations: semanticSummary.stateOperations,
@@ -333,6 +334,7 @@ export function buildInspectionResult(
     scriptSpatial,
     inventoryLifecycle,
     inventoryPolicy,
+    inventoryRestoreOwnership,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
     structures: nodes.filter(
