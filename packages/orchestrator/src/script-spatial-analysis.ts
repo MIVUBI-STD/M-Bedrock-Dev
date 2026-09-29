@@ -21,7 +21,7 @@ export interface ResolvedScriptStructurePlacement {
 
 export interface ScriptSpatialResolutionFailure {
   scriptId: string;
-  kind: ScriptSpatialMutationEvidence["kind"];
+  kind: ScriptSpatialMutationEvidence["kind"] | "setblock" | "fill";
   executionRegion: string;
   reason: string;
   sourcePath: string;
@@ -86,48 +86,6 @@ function resolveMutation(
   | { placement: ResolvedScriptStructurePlacement }
   | { failure: ScriptSpatialResolutionFailure } {
   const sourcePath = mutation.source.relativePath;
-
-  if (mutation.kind === "fill") {
-    const from = evaluateVector(mutation.from, bindings);
-    const to = evaluateVector(mutation.to, bindings);
-    if (!from || !to) {
-      return {
-        failure: {
-          scriptId: script.identifier,
-          kind: mutation.kind,
-          executionRegion: mutation.executionRegion,
-          reason:
-            "fillBlocks coordinates could not be resolved by deterministic safe config.",
-          sourcePath,
-        },
-      };
-    }
-    if (
-      mutation.blockHint === undefined ||
-      mutation.blockHint === "script:unknown-block"
-    ) {
-      return {
-        failure: {
-          scriptId: script.identifier,
-          kind: mutation.kind,
-          executionRegion: mutation.executionRegion,
-          reason:
-            "fillBlocks block identity is runtime-dynamic, so topology equivalence is not proven.",
-          sourcePath,
-        },
-      };
-    }
-    return {
-      effect: {
-        kind: "fill",
-        from,
-        to,
-        block: mutation.blockHint,
-        sourcePath,
-      },
-    };
-  }
-
   const position = evaluateVector(
     mutation.position,
     bindings,
@@ -145,32 +103,6 @@ function resolveMutation(
     };
   }
 
-  if (mutation.kind === "setblock") {
-    if (
-      mutation.blockHint === undefined ||
-      mutation.blockHint === "script:unknown-block"
-    ) {
-      return {
-        failure: {
-          scriptId: script.identifier,
-          kind: mutation.kind,
-          executionRegion: mutation.executionRegion,
-          reason:
-            "Block identity is runtime-dynamic, so topology equivalence is not proven.",
-          sourcePath,
-        },
-      };
-    }
-    return {
-      effect: {
-        kind: "setblock",
-        position,
-        block: mutation.blockHint,
-        sourcePath,
-      },
-    };
-  }
-
   if (mutation.kind === "teleport") {
     return {
       effect: {
@@ -183,10 +115,7 @@ function resolveMutation(
   }
 
   if (mutation.kind === "entity-spawn") {
-    if (
-      mutation.identifier === undefined ||
-      mutation.identifier === "script:unknown-entity"
-    ) {
+    if (mutation.identifier === undefined) {
       return {
         failure: {
           scriptId: script.identifier,
@@ -221,6 +150,70 @@ function resolveMutation(
   };
 }
 
+function resolveWorldMutation(
+  script: ParsedScriptFile,
+  mutation: NonNullable<ParsedScriptFile["spatialWorldMutations"]>[number],
+):
+  | { effect: ResolvedEffect }
+  | { failure: ScriptSpatialResolutionFailure } {
+  const sourcePath = mutation.source.relativePath;
+  const kind =
+    mutation.method === "fillBlocks"
+      ? "fill" as const
+      : "setblock" as const;
+
+  if (
+    mutation.status !== "resolved" ||
+    mutation.volume === undefined
+  ) {
+    return {
+      failure: {
+        scriptId: script.identifier,
+        kind,
+        executionRegion: mutation.executionRegion,
+        reason:
+          mutation.reason ??
+          "Script block mutation could not be resolved statically.",
+        sourcePath,
+      },
+    };
+  }
+
+  if (!mutation.writeIdentity) {
+    return {
+      failure: {
+        scriptId: script.identifier,
+        kind,
+        executionRegion: mutation.executionRegion,
+        reason:
+          "Block identity is runtime-dynamic, so topology equivalence is not proven.",
+        sourcePath,
+      },
+    };
+  }
+
+  if (mutation.method === "fillBlocks") {
+    return {
+      effect: {
+        kind: "fill",
+        from: mutation.volume.min,
+        to: mutation.volume.max,
+        block: mutation.writeIdentity,
+        sourcePath,
+      },
+    };
+  }
+
+  return {
+    effect: {
+      kind: "setblock",
+      position: mutation.volume.min,
+      block: mutation.writeIdentity,
+      sourcePath,
+    },
+  };
+}
+
 export function analyzeScriptSpatialMutations(
   scripts: readonly ParsedScriptFile[],
 ): ScriptSpatialAnalysis {
@@ -235,6 +228,18 @@ export function analyzeScriptSpatialMutations(
         item.expression,
       ]),
     ) as Readonly<Record<string, SafeConfigExpression>>;
+
+    for (const mutation of script.spatialWorldMutations ?? []) {
+      const resolved = resolveWorldMutation(
+        script,
+        mutation,
+      );
+      if ("effect" in resolved) {
+        resolvedEffects.push(resolved.effect);
+      } else {
+        failures.push(resolved.failure);
+      }
+    }
 
     for (const mutation of script.spatialMutations ?? []) {
       const resolved = resolveMutation(
@@ -258,7 +263,9 @@ export function analyzeScriptSpatialMutations(
     failures,
     extractedMutations: scripts.reduce(
       (sum, script) =>
-        sum + (script.spatialMutations?.length ?? 0),
+        sum +
+        (script.spatialWorldMutations?.length ?? 0) +
+        (script.spatialMutations?.length ?? 0),
       0,
     ),
     rejectedMutations: scripts.reduce(
