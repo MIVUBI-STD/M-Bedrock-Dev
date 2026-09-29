@@ -34,3 +34,5 @@ export * from "./multiplayer-concurrency-experiment.js";
 export * from "./persistence-recovery-experiment.js";
 
 export * from "./multi-client-orchestrator.js";
+
+export * from "./multiplayer-stress-experiment.js";

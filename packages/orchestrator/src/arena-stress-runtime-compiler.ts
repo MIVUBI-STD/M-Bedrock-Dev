@@ -7,6 +7,9 @@ import {
   createDeathDuringJoinExperiment,
   createFullCapacitySessionExperiment,
   createReconnectGenerationResetExperiment,
+  createAllArenaStartStressExperiment,
+  createAllArenaFinishStressExperiment,
+  createCleanupStartOverlapExperiment,
   type RuntimeExperimentDefinition,
 } from "../../runtime-lab/src/index.js";
 
@@ -139,6 +142,132 @@ function compileScenario(
       ],
       reasons: [
         "Existing arena capacity runtime capability covers this scenario.",
+      ],
+    };
+  }
+
+
+  if (
+    (
+      scenario.kind === "simultaneous-all-arena-start" ||
+      scenario.kind === "simultaneous-all-arena-finish"
+    ) &&
+    scenario.arenaIds.length > 1
+  ) {
+    const arenas = scenario.arenaIds.flatMap((arenaId) => {
+      const generation = arenaGeneration(input, arenaId);
+      return generation === undefined
+        ? []
+        : [{ arenaId, arenaGeneration: generation }];
+    });
+
+    if (arenas.length !== scenario.arenaIds.length) {
+      return {
+        ...base,
+        disposition: "manual-required",
+        experiments: [],
+        reasons: [
+          "All-arena runtime execution requires explicit generation identity for every participating arena.",
+        ],
+      };
+    }
+
+    return {
+      ...base,
+      disposition: "runtime-ready",
+      experiments: [
+        scenario.kind === "simultaneous-all-arena-start"
+          ? createAllArenaStartStressExperiment({
+              id: scenario.id,
+              title: scenario.purpose,
+              targetProfileFingerprint:
+                input.targetProfileFingerprint,
+              fixtureFingerprint:
+                input.fixtureFingerprint,
+              objectiveId: input.objectiveId,
+              participant: input.participant,
+              arenas,
+              playerCountPerArena:
+                input.matrix.playersPerArena,
+              minimumRunsPerArm:
+                input.minimumRunsPerArm,
+            })
+          : createAllArenaFinishStressExperiment({
+              id: scenario.id,
+              title: scenario.purpose,
+              targetProfileFingerprint:
+                input.targetProfileFingerprint,
+              fixtureFingerprint:
+                input.fixtureFingerprint,
+              objectiveId: input.objectiveId,
+              participant: input.participant,
+              arenas,
+              playerCountPerArena:
+                input.matrix.playersPerArena,
+              minimumRunsPerArm:
+                input.minimumRunsPerArm,
+            }),
+      ],
+      reasons: [
+        "Dedicated all-arena runtime capability covers this scenario with explicit arena generation identity.",
+      ],
+    };
+  }
+
+  if (
+    scenario.kind === "cleanup-start-overlap" &&
+    scenario.arenaIds.length === 2
+  ) {
+    const endingId = scenario.arenaIds[0]!;
+    const startingId = scenario.arenaIds[1]!;
+    const endingGeneration =
+      arenaGeneration(input, endingId);
+    const startingGeneration =
+      arenaGeneration(input, startingId);
+
+    if (
+      endingGeneration === undefined ||
+      startingGeneration === undefined
+    ) {
+      return {
+        ...base,
+        disposition: "manual-required",
+        experiments: [],
+        reasons: [
+          "Cleanup/start overlap requires explicit generation identity for both arenas.",
+        ],
+      };
+    }
+
+    return {
+      ...base,
+      disposition: "runtime-ready",
+      experiments: [
+        createCleanupStartOverlapExperiment({
+          id: scenario.id,
+          title: scenario.purpose,
+          targetProfileFingerprint:
+            input.targetProfileFingerprint,
+          fixtureFingerprint:
+            input.fixtureFingerprint,
+          objectiveId: input.objectiveId,
+          participant: input.participant,
+          endingArena: {
+            arenaId: endingId,
+            arenaGeneration: endingGeneration,
+          },
+          startingArena: {
+            arenaId: startingId,
+            arenaGeneration: startingGeneration,
+          },
+          playerCountStartingArena:
+            input.matrix.playersPerArena,
+          minimumRunsPerArm:
+            input.minimumRunsPerArm,
+        }),
+      ],
+      reasons: [
+        "Dedicated cleanup/start overlap capability covers this pair with explicit generation identity.",
       ],
     };
   }
