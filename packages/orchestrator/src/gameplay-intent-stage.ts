@@ -48,6 +48,11 @@ export function buildGameplayIntentModel(
       (item) => item.parsed,
     ),
   ]);
+  const authoredSourcePaths = new Set(
+    (input.authoredScripts ?? []).map(
+      (item) => item.parsed.source.relativePath,
+    ),
+  );
 
   const evidence = new Map<string, GameplayIntentEvidence>();
   const nodes = new Map<string, GameplayIntentNode>();
@@ -158,6 +163,18 @@ export function buildGameplayIntentModel(
     });
   }
 
+  const evidenceIsFromAuthoredSource = (
+    evidenceIds: readonly string[],
+  ): boolean =>
+    evidenceIds.length > 0 &&
+    evidenceIds.every((id) => {
+      const item = evidence.get(id);
+      return (
+        item !== undefined &&
+        authoredSourcePaths.has(item.locator)
+      );
+    });
+
   const authoredTransitionsByFrom = new Map<
     string,
     GameplayIntentEdge[]
@@ -193,7 +210,9 @@ export function buildGameplayIntentModel(
         " transitions only to declared successors: " +
         targetLabels.join(", "),
       strength: "must",
-      status: "inferred",
+      status: evidenceIsFromAuthoredSource(evidenceIds)
+        ? "authored"
+        : "inferred",
       subjectIds: [from],
       evidenceIds,
     });
@@ -234,7 +253,9 @@ export function buildGameplayIntentModel(
             " is statically observed only under one of these direct guards: " +
             policyLabels.join(" OR "),
           strength: "must",
-          status: "inferred",
+          status: evidenceIsFromAuthoredSource(evidenceIds)
+            ? "authored"
+            : "inferred",
           subjectIds: [coverage.outcomeSubjectKey],
           evidenceIds,
         },
