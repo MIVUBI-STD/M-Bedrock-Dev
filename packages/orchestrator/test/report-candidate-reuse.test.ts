@@ -86,6 +86,10 @@ function candidate(
         statement: "State remains.",
         evidenceIds: [evidenceId],
       },
+      classificationEvidence: {
+        impactEvidenceIds: [evidenceId],
+        primaryFailureEvidenceIds: ["intent:evidence"],
+      },
       aiAnalysis: "Cleanup appears inconsistent.",
       sourceEvidence: [{
         source: {
