@@ -32,7 +32,7 @@ export interface WorldDbNativeSummary {
     kinds: string[];
   }>;
   chunkSignalsTruncated: boolean;
-  chunkContentObservations: Array<{
+  chunkContentObservations?: Array<{
     chunkX: number;
     chunkZ: number;
     dimensionId: number;
@@ -40,7 +40,7 @@ export interface WorldDbNativeSummary {
     valueHash: string;
     subChunkIndex?: number;
   }>;
-  chunkContentObservationsTruncated: boolean;
+  chunkContentObservationsTruncated?: boolean;
   failure?: string;
 }
 
