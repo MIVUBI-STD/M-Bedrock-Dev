@@ -5,6 +5,7 @@ export interface ParsedCliTargetOptions {
   positionals: string[];
   target: InspectTargetProfile;
   telemetryPath?: string;
+  arenaRegionContractsPath?: string;
   probeTranscriptPath?: string;
   probeBindingsPath?: string;
   probeContext?: DiagnosticExecutionContext;
@@ -16,6 +17,7 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
   const authoredSourceRoots: string[] = [];
   const target: InspectTargetProfile = {};
   let telemetryPath: string | undefined;
+  let arenaRegionContractsPath: string | undefined;
   let probeTranscriptPath: string | undefined;
   let probeBindingsPath: string | undefined;
   let probeContext: DiagnosticExecutionContext | undefined;
@@ -61,6 +63,18 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
         );
       }
       authoredSourceRoots.push(value);
+      index += 1;
+      continue;
+    }
+
+    if (token === "--arena-region-contracts") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error(
+          "--arena-region-contracts requires a JSON file path",
+        );
+      }
+      arenaRegionContractsPath = value;
       index += 1;
       continue;
     }
@@ -127,6 +141,9 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
     positionals,
     target,
     ...(telemetryPath === undefined ? {} : { telemetryPath }),
+    ...(arenaRegionContractsPath === undefined
+      ? {}
+      : { arenaRegionContractsPath }),
     ...(probeTranscriptPath === undefined
       ? {}
       : { probeTranscriptPath }),

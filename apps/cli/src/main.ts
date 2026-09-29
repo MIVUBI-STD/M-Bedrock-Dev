@@ -14,6 +14,7 @@ import { replayRuntimeProbeTranscript } from "../../../packages/orchestrator/src
 import { compileRuntimeProbeRequests } from "../../../packages/orchestrator/src/index.js";
 import {
   calibrateGameplayCorpusFromFile,
+  loadArenaRegionContractsFile,
 } from "../../../packages/orchestrator/src/index.js";
 
 async function main(): Promise<void> {
@@ -22,11 +23,18 @@ async function main(): Promise<void> {
     positionals: args,
     target,
     telemetryPath,
+    arenaRegionContractsPath,
     probeTranscriptPath,
     probeBindingsPath,
     probeContext,
   } = parseCliTargetOptions(rawArgs);
   const [input, secondInput, thirdInput] = args;
+  if (arenaRegionContractsPath) {
+    target.arenaRegionContracts =
+      await loadArenaRegionContractsFile(
+        resolve(arenaRegionContractsPath),
+      );
+  }
   const knowledge = await loadKnowledgeDirectory(resolve("knowledge"));
 
   if (command === "probe-plan" && input) {
@@ -311,13 +319,13 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
-    "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path]",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json]",
+    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
-    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...] [--authored-source-root path]",
-    "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...] [--authored-source-root path]",
+    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json]",
+    "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json]",
     "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version> [--edition ...] [--experiment id]",
   ].join("\n"));
   process.exitCode = 2;

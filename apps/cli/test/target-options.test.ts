@@ -33,6 +33,19 @@ describe("CLI target options", () => {
     ]);
   });
 
+  it("parses an arena region contracts file path", () => {
+    const parsed = parseCliTargetOptions([
+      "map.mcworld",
+      "--arena-region-contracts", "qa/arena-regions.json",
+    ]);
+
+    expect(parsed.positionals).toEqual(["map.mcworld"]);
+    expect(parsed.arenaRegionContractsPath).toBe(
+      "qa/arena-regions.json",
+    );
+    expect(parsed.target).toEqual({});
+  });
+
   it("parses a telemetry file without putting it in the target profile", () => {
     const parsed = parseCliTargetOptions([
       "map.mcworld",

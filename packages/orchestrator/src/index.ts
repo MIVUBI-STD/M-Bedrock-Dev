@@ -252,3 +252,5 @@ export * from "./report-defect-classification.js";
 export * from "./report-classification-producers.js";
 
 export * from "./report-runtime-classification.js";
+
+export * from "./arena-region-contract-load.js";
