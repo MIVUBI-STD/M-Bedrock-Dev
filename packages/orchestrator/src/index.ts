@@ -231,3 +231,5 @@ export * from "./report-confirmation-adapter.js";
 export * from "./static-report-confirmation-adapter.js";
 
 export * from "./tester-report-confirmation-adapter.js";
+
+export * from "./report-defect-collector.js";
