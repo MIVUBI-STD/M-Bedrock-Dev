@@ -109,6 +109,32 @@ describe("GitHubReportClient", () => {
     expect(JSON.stringify(init)).not.toContain("Bearer");
   });
 
+  it("creates a GitHub report from an imported file", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({
+        revision: "new",
+      }), { status: 200 }),
+    );
+    const client = new GitHubReportClient({
+      fetchImpl: fetchMock as unknown as typeof fetch,
+    });
+
+    await expect(
+      client.createReport(
+        "bug-reports/a.json",
+        report,
+      ),
+    ).resolves.toEqual({
+      revision: "new",
+    });
+
+    const call = fetchMock.mock.calls[0] as unknown as [
+      unknown,
+      RequestInit,
+    ];
+    expect(call[1].method).toBe("POST");
+  });
+
   it("maps revision conflicts to a dedicated error", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({
