@@ -18,6 +18,9 @@ import type {
 import type {
   GameplayIntentRuntimeAssessment,
 } from "./gameplay-intent-runtime-stage.js";
+import type {
+  SemanticIr,
+} from "../../semantic-ir/src/index.js";
 import {
   sourceRefHasPreciseLocation,
   type DiagnosticRepairDecision,
@@ -66,6 +69,7 @@ export interface RuntimeReportCandidate {
   readonly route: "runtime";
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
+  readonly semanticIr?: SemanticIr;
   readonly defect: AiConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
 }
@@ -74,6 +78,7 @@ export interface StaticReportCandidate {
   readonly route: "static";
   readonly intent: GameplayIntentModel;
   readonly result: IntentDiagnosticGateResult;
+  readonly semanticIr?: SemanticIr;
   readonly defect: AiConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
 }
@@ -82,6 +87,7 @@ export interface TesterReportCandidate {
   readonly route: "tester";
   readonly subjectIds: readonly string[];
   readonly confirmation: TesterDefectConfirmationInput;
+  readonly semanticIr?: SemanticIr;
   readonly defect: ConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
 }
@@ -214,6 +220,44 @@ function candidateBrokenInvariantIds(
   return candidate.defect.brokenInvariantIds;
 }
 
+function semanticOwnerIssues(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  const owners = [
+    ...new Set(
+      (candidate.defect.sourceEvidence ?? [])
+        .map((item) => item.semanticOwnerId?.trim())
+        .filter(
+          (value): value is string =>
+            typeof value === "string" &&
+            value.length > 0,
+        ),
+    ),
+  ];
+
+  if (owners.length === 0) return [];
+  if (candidate.semanticIr === undefined) {
+    return [
+      "Semantic owner evidence requires Semantic IR for validation.",
+    ];
+  }
+
+  const known = new Set(
+    candidate.semanticIr.execution.regions.map(
+      (region) => region.id,
+    ),
+  );
+
+  return owners
+    .filter((owner) => !known.has(owner))
+    .map(
+      (owner) =>
+        "Source evidence semanticOwnerId is not present in Semantic IR: " +
+        owner +
+        ".",
+    );
+}
+
 function candidateRepairUnitIds(
   candidate: AuditReportCandidate,
 ): readonly string[] {
@@ -321,6 +365,18 @@ function collectOne(
       rejected: rejectedCandidate(
         candidate,
         evidenceConsistency,
+        "candidate-correction",
+      ),
+    };
+  }
+
+  const ownerIssues =
+    semanticOwnerIssues(candidate);
+  if (ownerIssues.length > 0) {
+    return {
+      rejected: rejectedCandidate(
+        candidate,
+        ownerIssues,
         "candidate-correction",
       ),
     };
