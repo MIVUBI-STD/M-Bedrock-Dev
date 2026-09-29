@@ -94,6 +94,12 @@ export interface CompiledContextPack {
     lifecycle: GameplayWorldModel["arenas"]["lifecycle"];
     cleanup: GameplayWorldModel["arenas"]["cleanup"];
     isolation: GameplayWorldModel["arenas"]["isolation"];
+    globalState:
+      GameplayWorldModel["arenas"]["globalState"];
+    stress:
+      GameplayWorldModel["arenas"]["stress"];
+    proofMode?: string;
+    skippedProofLayers: readonly string[];
     broadWrites: number;
     unresolvedScriptMutations: number;
     intentUnknowns: number;
@@ -779,6 +785,21 @@ export function compileContextPack(
         lifecycle: input.worldModel.arenas.lifecycle,
         cleanup: input.worldModel.arenas.cleanup,
         isolation: input.worldModel.arenas.isolation,
+        globalState:
+          input.worldModel.arenas.globalState,
+        stress:
+          input.worldModel.arenas.stress,
+        ...(input.worldModel.arenas
+          .proofExecution === undefined
+          ? {}
+          : {
+              proofMode:
+                input.worldModel.arenas
+                  .proofExecution.mode,
+            }),
+        skippedProofLayers:
+          input.worldModel.arenas
+            .proofExecution?.skippedLayers ?? [],
         broadWrites:
           input.worldModel.state.broadWrites,
         unresolvedScriptMutations:

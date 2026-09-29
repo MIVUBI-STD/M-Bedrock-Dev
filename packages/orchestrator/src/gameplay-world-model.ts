@@ -21,6 +21,15 @@ import type {
   ArenaStateIsolationAnalysis,
 } from "./arena-state-isolation-analysis.js";
 import type {
+  ArenaGlobalStateAnalysis,
+} from "./arena-global-state-analysis.js";
+import type {
+  ArenaStressPlan,
+} from "./arena-stress-plan.js";
+import type {
+  ArenaProofExecutionPlan,
+} from "./arena-proof-execution-plan.js";
+import type {
   ScriptSpatialAnalysis,
 } from "./script-spatial-analysis.js";
 
@@ -62,6 +71,22 @@ export interface GameplayWorldModel {
       partitionProofRequired: number;
       sharedGlobal: number;
       unknown: number;
+    };
+    globalState: {
+      arenaScopedMutations: number;
+      pairedLeaseEvidence: number;
+      unleasedArenaMutations: number;
+      unauditedArenaMutations: number;
+    };
+    stress: {
+      status: "planned" | "unavailable";
+      totalNominalPlayers?: number;
+      scenarios?: number;
+    };
+    proofExecution?: {
+      mode: ArenaProofExecutionPlan["mode"];
+      executedLayers: readonly string[];
+      skippedLayers: readonly string[];
     };
     proof?: ArenaProofConclusionReport["conclusion"];
   };
@@ -116,6 +141,9 @@ export interface GameplayWorldModelSource {
     lifecycle?: ArenaLifecycleAnalysis;
     cleanupSurfaces?: ArenaCleanupSurfaceAnalysis;
     stateIsolation?: ArenaStateIsolationAnalysis;
+    globalState?: ArenaGlobalStateAnalysis;
+    stressPlan?: ArenaStressPlan;
+    proofExecution?: ArenaProofExecutionPlan;
     proofConclusion?: ArenaProofConclusionReport;
     entitySpawnEvidence?: readonly unknown[];
   };
@@ -277,6 +305,51 @@ export function deriveGameplayWorldModel(
         unknown:
           source.arena.stateIsolation?.unknown ?? 0,
       },
+      globalState: {
+        arenaScopedMutations:
+          source.arena.globalState
+            ?.arenaScopedMutations ?? 0,
+        pairedLeaseEvidence:
+          source.arena.globalState
+            ?.pairedLeaseEvidence ?? 0,
+        unleasedArenaMutations:
+          source.arena.globalState
+            ?.unleasedArenaMutations ?? 0,
+        unauditedArenaMutations:
+          source.arena.globalState
+            ?.unauditedArenaMutations ?? 0,
+      },
+      stress:
+        source.arena.stressPlan?.status === "planned" &&
+        source.arena.stressPlan.matrix !== undefined
+          ? {
+              status: "planned",
+              totalNominalPlayers:
+                source.arena.stressPlan.matrix
+                  .totalNominalPlayers,
+              scenarios:
+                source.arena.stressPlan.matrix
+                  .scenarios.length,
+            }
+          : {
+              status: "unavailable",
+            },
+      ...(source.arena.proofExecution === undefined
+        ? {}
+        : {
+            proofExecution: {
+              mode:
+                source.arena.proofExecution.mode,
+              executedLayers: [
+                ...source.arena.proofExecution
+                  .executedLayers,
+              ],
+              skippedLayers: [
+                ...source.arena.proofExecution
+                  .skippedLayers,
+              ],
+            },
+          }),
       ...(source.arena.proofConclusion === undefined
         ? {}
         : {

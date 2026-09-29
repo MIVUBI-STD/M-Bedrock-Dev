@@ -2,6 +2,9 @@ import type {
   GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
 import type {
+  GameplayWorldModel,
+} from "./gameplay-world-model.js";
+import type {
   SemanticGraph,
 } from "../../graph/src/index.js";
 import type {
@@ -45,6 +48,7 @@ export interface ZeroWasteWorkflowInput {
   graph: SemanticGraph;
   postPatchGraph?: SemanticGraph;
   intent: GameplayIntentModel;
+  worldModel?: GameplayWorldModel;
   transaction: PatchTransaction;
   validationScenarios:
     readonly ValidationScenario[];
@@ -132,6 +136,9 @@ export function prepareZeroWasteWorkflow(
       goal: input.goal,
       graph: effectiveGraph,
       intent: input.intent,
+      ...(input.worldModel === undefined
+        ? {}
+        : { worldModel: input.worldModel }),
       ...(affected.status === "planned"
         ? { affected }
         : {}),

@@ -34,6 +34,7 @@ import { deriveArenaStressPlan } from "./arena-stress-plan.js";
 import { deriveArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
 import { localizeArenaRepairSources } from "./arena-repair-localization.js";
 import { arenaProofLayerEnabled, planArenaProofExecution } from "./arena-proof-execution-plan.js";
+import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -577,76 +578,120 @@ export async function inspectArtifact(
           })),
       }),
     );
+    const finalArenaAnalysis = {
+      ...result.arenaAnalysis,
+      autoDetected:
+        result.arenaAnalysis.autoDetected ||
+        scriptLayoutFallback !== undefined,
+      ...(spatialLayout === undefined
+        ? {}
+        : { spatialLayout }),
+      stressPlan,
+      repeatedRunPlan,
+      ...(repairLocalization === undefined
+        ? {}
+        : { repairLocalization }),
+      ...(proofExecution === undefined
+        ? {}
+        : { proofExecution }),
+      ...(result.arenaAnalysis.regionPlan !== undefined ||
+          effectiveRegionPlan === undefined
+        ? {}
+        : { regionPlan: effectiveRegionPlan }),
+      ...(result.arenaAnalysis.regionClassification !== undefined ||
+          effectiveRegionClassification === undefined
+        ? {}
+        : {
+            regionClassification:
+              effectiveRegionClassification,
+          }),
+      ...(arenaNativeSpatial === undefined
+        ? {}
+        : { nativeSpatial: arenaNativeSpatial }),
+      ...(arenaVoxelProof === undefined
+        ? {}
+        : { voxelProof: arenaVoxelProof }),
+      ...(arenaBlockEntityProof === undefined
+        ? {}
+        : {
+            blockEntityProof:
+              arenaBlockEntityProof,
+          }),
+      ...(structureInstanceProof === undefined
+        ? {}
+        : { structureInstanceProof }),
+      ...(entityPopulationProof === undefined
+        ? {}
+        : { entityPopulationProof }),
+      ...(arenaActorPopulationProof === undefined
+        ? {}
+        : {
+            actorPopulationProof:
+              arenaActorPopulationProof,
+          }),
+      ...(tickStateProof === undefined
+        ? {}
+        : { tickStateProof }),
+      ...(proofPartition === undefined
+        ? {}
+        : { proofPartition }),
+      ...(proofCoverage === undefined
+        ? {}
+        : { proofCoverage }),
+      proofConclusion,
+      ...(replicaProofQuality.length === 0
+        ? {}
+        : { replicaProofQuality }),
+    };
+
+    const finalGameplayWorld =
+      deriveGameplayWorldModel({
+        artifactId,
+        intent: result.gameplayIntent.model,
+        arena: finalArenaAnalysis,
+        scriptSpatial: result.scriptSpatial,
+        semanticIr: {
+          stateSurfaces:
+            result.semanticIr.stateSurfaces,
+          stateOperations:
+            result.semanticIr.stateOperations,
+        },
+        broadWrites:
+          result.stateAnalysis.broadWrites,
+        structures: {
+          definitions: result.structures,
+          loads:
+            result.structureRuntime.loads,
+          unresolvedLoads:
+            result.structureRuntime
+              .unresolvedLoads,
+          placements:
+            result.structureRuntime
+              .structurePlacements.length +
+            result.scriptSpatial
+              .structurePlacements.length,
+          runtimeLogicLoads:
+            result.structureRuntime
+              .runtimeLogicLoads,
+        },
+        entities: {
+          definitions: result.entities,
+          knowledgePrerequisiteGaps:
+            result.entityKnowledge
+              .prerequisiteGaps,
+          staticAnalysisLimits:
+            result.entityKnowledge
+              .staticAnalysisLimits,
+        },
+      });
+
     return {
       artifactId,
       fingerprint,
       archiveEntries: inventory.entries.length,
       ...result,
-      arenaAnalysis: {
-        ...result.arenaAnalysis,
-        autoDetected:
-          result.arenaAnalysis.autoDetected ||
-          scriptLayoutFallback !== undefined,
-        ...(spatialLayout === undefined
-          ? {}
-          : { spatialLayout }),
-        stressPlan,
-        repeatedRunPlan,
-        ...(repairLocalization === undefined
-          ? {}
-          : { repairLocalization }),
-        ...(proofExecution === undefined
-          ? {}
-          : { proofExecution }),
-        ...(result.arenaAnalysis.regionPlan !== undefined ||
-            effectiveRegionPlan === undefined
-          ? {}
-          : { regionPlan: effectiveRegionPlan }),
-        ...(result.arenaAnalysis.regionClassification !== undefined ||
-            effectiveRegionClassification === undefined
-          ? {}
-          : {
-              regionClassification:
-                effectiveRegionClassification,
-            }),
-        ...(arenaNativeSpatial === undefined
-          ? {}
-          : { nativeSpatial: arenaNativeSpatial }),
-        ...(arenaVoxelProof === undefined
-          ? {}
-          : { voxelProof: arenaVoxelProof }),
-        ...(arenaBlockEntityProof === undefined
-          ? {}
-          : {
-              blockEntityProof:
-                arenaBlockEntityProof,
-            }),
-        ...(structureInstanceProof === undefined
-          ? {}
-          : { structureInstanceProof }),
-        ...(entityPopulationProof === undefined
-          ? {}
-          : { entityPopulationProof }),
-        ...(arenaActorPopulationProof === undefined
-          ? {}
-          : {
-              actorPopulationProof:
-                arenaActorPopulationProof,
-            }),
-        ...(tickStateProof === undefined
-          ? {}
-          : { tickStateProof }),
-        ...(proofPartition === undefined
-          ? {}
-          : { proofPartition }),
-        ...(proofCoverage === undefined
-          ? {}
-          : { proofCoverage }),
-        proofConclusion,
-        ...(replicaProofQuality.length === 0
-          ? {}
-          : { replicaProofQuality }),
-      },
+      gameplayWorld: finalGameplayWorld,
+      arenaAnalysis: finalArenaAnalysis,
       worldDatabase: {
         ...result.worldDatabase,
         nativeScan: nativeWorldDb,
