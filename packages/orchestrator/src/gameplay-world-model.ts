@@ -65,6 +65,13 @@ export interface GameplayWorldModel {
       exactProven: number;
       partial: number;
       unresolved: number;
+      resourceLedger: {
+        resources: number;
+        complete: number;
+        partial: number;
+        missing: number;
+        coverageRatio: number;
+      };
     };
     isolation: {
       isolated: number;
@@ -292,6 +299,23 @@ export function deriveGameplayWorldModel(
         unresolved:
           source.arena.cleanupSurfaces
             ?.unresolved ?? 0,
+        resourceLedger: {
+          resources:
+            source.arena.cleanupSurfaces
+              ?.ledger?.resources ?? 0,
+          complete:
+            source.arena.cleanupSurfaces
+              ?.ledger?.complete ?? 0,
+          partial:
+            source.arena.cleanupSurfaces
+              ?.ledger?.partial ?? 0,
+          missing:
+            source.arena.cleanupSurfaces
+              ?.ledger?.missing ?? 0,
+          coverageRatio:
+            source.arena.cleanupSurfaces
+              ?.ledger?.coverageRatio ?? 1,
+        },
       },
       isolation: {
         isolated:
