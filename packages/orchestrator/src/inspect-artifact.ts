@@ -659,6 +659,8 @@ export async function inspectArtifact(
         scriptSpatial: result.scriptSpatial,
         inventoryLifecycle:
           result.inventoryLifecycle,
+        inventoryPolicy:
+          result.inventoryPolicy,
         semanticIr: {
           stateSurfaces:
             result.semanticIr.stateSurfaces,
