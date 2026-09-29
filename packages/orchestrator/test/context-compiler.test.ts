@@ -165,6 +165,44 @@ describe("context compiler", () => {
     ).toBe("CALLS");
   });
 
+  it("uses explicit invariant and evidence relationships to avoid unrelated intent nodes", () => {
+    const byInvariant =
+      compileContextPack({
+        goal: "invariant-only",
+        graph: fixtureGraph(),
+        intent,
+        relevantInvariantIds: [
+          "inv:arena",
+        ],
+      });
+
+    expect(
+      byInvariant.intent.nodes.map(
+        (node) => node.id,
+      ),
+    ).toEqual([
+      "intent:arena",
+    ]);
+
+    const byEvidence =
+      compileContextPack({
+        goal: "evidence-only",
+        graph: fixtureGraph(),
+        intent,
+        relevantEvidenceIds: [
+          "e:shop",
+        ],
+      });
+
+    expect(
+      byEvidence.intent.nodes.map(
+        (node) => node.id,
+      ),
+    ).toEqual([
+      "intent:shop",
+    ]);
+  });
+
   it("reports truncation instead of silently overloading context", () => {
     const pack =
       compileContextPack({

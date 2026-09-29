@@ -300,11 +300,45 @@ export function compileContextPack(
       ),
     );
 
+  const invariantSubjectIds =
+    new Set(
+      input.intent.invariants
+        .filter((invariant) =>
+          requestedInvariants.has(
+            invariant.id,
+          )
+        )
+        .flatMap(
+          (invariant) =>
+            invariant.subjectIds,
+        ),
+    );
+
+  const evidenceSubjectIds =
+    new Set(
+      input.intent.nodes
+        .filter((node) =>
+          node.evidenceIds.some(
+            (id) =>
+              requestedEvidence.has(id),
+          )
+        )
+        .map((node) => node.id),
+    );
+
+  const explicitSubjectScope =
+    new Set([
+      ...requestedSubjects,
+      ...invariantSubjectIds,
+      ...evidenceSubjectIds,
+    ]);
+
   const intentNodes =
     input.intent.nodes
       .filter((node) =>
-        requestedSubjects.size === 0 ||
-        requestedSubjects.has(
+        explicitSubjectScope.size ===
+          0 ||
+        explicitSubjectScope.has(
           node.id,
         )
       )
@@ -477,7 +511,8 @@ export function compileContextPack(
 
   const noExplicitIntentScope =
     requestedSubjects.size === 0 &&
-    requestedInvariants.size === 0;
+    requestedInvariants.size === 0 &&
+    requestedEvidence.size === 0;
 
   return {
     schemaVersion: 1,
