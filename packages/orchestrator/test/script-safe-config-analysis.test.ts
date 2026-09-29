@@ -61,6 +61,41 @@ describe("script safe config analysis", () => {
     expect(result.crossFileResolvedBindings).toBeGreaterThan(0);
   });
 
+  it("resolves imported pure helpers used by map callbacks", () => {
+    const result = analyzeScriptSafeConfig([
+      parsed(
+        "config",
+        [
+          "export const BASE = { x: 10, y: 20, z: 30 };",
+          "export function shift(offset) { return translate3(BASE, offset); }",
+        ].join("\n"),
+      ),
+      parsed(
+        "main",
+        [
+          "import { shift as makeArena } from './config';",
+          "const ARENA_CENTERS = [{ x: 0, y: 0, z: 0 }, { x: 100, y: 0, z: 0 }].map(makeArena);",
+        ].join("\n"),
+      ),
+    ]);
+
+    expect(
+      result.resolvedBindings.find(
+        (item) =>
+          item.scriptId === "main" &&
+          item.name === "ARENA_CENTERS",
+      )?.value,
+    ).toEqual([
+      { x: 10, y: 20, z: 30 },
+      { x: 110, y: 20, z: 30 },
+    ]);
+    expect(result.resolvedArenaCount).toBe(2);
+    expect(result.resolvedArenaLayout).toMatchObject({
+      mode: "absolute-centers",
+      arenaCount: 2,
+    });
+  });
+
   it("fails closed on cross-file reference cycles", () => {
     const result = analyzeScriptSafeConfig([
       parsed(
