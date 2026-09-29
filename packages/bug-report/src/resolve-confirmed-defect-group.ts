@@ -127,6 +127,26 @@ export function resolveConfirmedDefectGroup(
     }
   }
 
+  const primaryFailures = unique(
+    group.defects.map((item) => item.primaryFailure),
+  );
+  if (
+    primaryFailures.length > 1 &&
+    !primaryFailures.includes(narrative.primaryFailure)
+  ) {
+    throw new Error(
+      "Canonical primaryFailure must be represented by the grouped defects.",
+    );
+  }
+  if (
+    primaryFailures.length === 1 &&
+    narrative.primaryFailure !== primaryFailures[0]
+  ) {
+    throw new Error(
+      "Canonical primaryFailure must match the grouped defect primaryFailure.",
+    );
+  }
+
   const sourceEvidence = group.defects
     .flatMap((item) => item.sourceEvidence ?? [])
     .filter((item, index, values) => {
