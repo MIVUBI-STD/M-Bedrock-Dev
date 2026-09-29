@@ -166,9 +166,6 @@ describe("semantic proof cache", () => {
           claimRevision: "1",
           availableEvidenceIds: [
             "validation:arena:1",
-          ],
-          availableEvidenceIds: [
-            "validation:arena:1",
             "semantic:scoreboard:1",
             "semantic:edge:1",
           ],

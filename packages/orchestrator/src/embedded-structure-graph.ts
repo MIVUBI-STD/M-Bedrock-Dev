@@ -45,10 +45,12 @@ export function populateEmbeddedStructureCommandGraph(
       },
       kind: "command",
       identifier,
-      contentHash:
-        structureNode.contentHash,
-      parserVersion:
-        structureNode.parserVersion,
+      ...(structureNode.contentHash === undefined
+        ? {}
+        : { contentHash: structureNode.contentHash }),
+      ...(structureNode.parserVersion === undefined
+        ? {}
+        : { parserVersion: structureNode.parserVersion }),
       source: structureNode.source,
       data: {
         command: analysis.block.command,

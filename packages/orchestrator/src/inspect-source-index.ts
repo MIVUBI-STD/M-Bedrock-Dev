@@ -121,7 +121,9 @@ export async function indexInspectionSources(
         },
         kind: "function",
         identifier: fnId,
-        contentHash: file.contentHash,
+        ...(file.contentHash === undefined
+          ? {}
+          : { contentHash: file.contentHash }),
         parserVersion:
           FUNCTION_PARSER_REVISION,
         source: {
@@ -162,7 +164,9 @@ export async function indexInspectionSources(
         },
         kind: "script_file",
         identifier: scriptId,
-        contentHash: file.contentHash,
+        ...(file.contentHash === undefined
+          ? {}
+          : { contentHash: file.contentHash }),
         parserVersion:
           SCRIPT_PARSER_REVISION,
         source: {
@@ -221,7 +225,9 @@ export async function indexInspectionSources(
             },
             kind: "entity",
             identifier: parsed.identifier,
-            contentHash: file.contentHash,
+            ...(file.contentHash === undefined
+              ? {}
+              : { contentHash: file.contentHash }),
             parserVersion:
               ENTITY_PARSER_REVISION,
             source: parsed.source,
@@ -294,7 +300,9 @@ export async function indexInspectionSources(
       },
       kind: "structure",
       identifier: structureId,
-      contentHash: file.contentHash,
+      ...(file.contentHash === undefined
+        ? {}
+        : { contentHash: file.contentHash }),
       parserVersion:
         MCSTRUCTURE_PARSER_REVISION,
       source: {

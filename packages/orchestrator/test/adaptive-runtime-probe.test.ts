@@ -16,7 +16,7 @@ describe("adaptive runtime probe bundle", () => {
         incidents: [{
           id: "incident:a",
           scopeKey: "a",
-          severity: "major",
+          severity: "medium",
           confidence: "medium",
           chainIds: [],
           relatedDiagnosticIds: [],
@@ -27,7 +27,7 @@ describe("adaptive runtime probe bundle", () => {
             label: "A1",
             evidenceLevel:
               "unproven-candidate",
-            severity: "major",
+            severity: "medium",
             confidence: "medium",
             chainIds: [],
             relatedDiagnosticIds: [],
@@ -42,7 +42,7 @@ describe("adaptive runtime probe bundle", () => {
             label: "A2",
             evidenceLevel:
               "unproven-candidate",
-            severity: "major",
+            severity: "medium",
             confidence: "medium",
             chainIds: [],
             relatedDiagnosticIds: [],
@@ -158,7 +158,7 @@ describe("adaptive runtime probe bundle", () => {
         incidents: [{
           id: "incident:progressive",
           scopeKey: "p",
-          severity: "major",
+          severity: "medium",
           confidence: "medium",
           chainIds: [],
           relatedDiagnosticIds: [],
@@ -169,7 +169,7 @@ describe("adaptive runtime probe bundle", () => {
             label: "P1",
             evidenceLevel:
               "unproven-candidate",
-            severity: "major",
+            severity: "medium",
             confidence: "medium",
             chainIds: [],
             relatedDiagnosticIds: [],
@@ -184,7 +184,7 @@ describe("adaptive runtime probe bundle", () => {
             label: "P2",
             evidenceLevel:
               "unproven-candidate",
-            severity: "major",
+            severity: "medium",
             confidence: "medium",
             chainIds: [],
             relatedDiagnosticIds: [],
@@ -292,7 +292,7 @@ describe("adaptive runtime probe bundle", () => {
         incidents: [{
           id: "incident:b",
           scopeKey: "b",
-          severity: "major",
+          severity: "medium",
           confidence: "medium",
           chainIds: [],
           relatedDiagnosticIds: [],
@@ -303,7 +303,7 @@ describe("adaptive runtime probe bundle", () => {
             label: "B1",
             evidenceLevel:
               "unproven-candidate",
-            severity: "major",
+            severity: "medium",
             confidence: "medium",
             chainIds: [],
             relatedDiagnosticIds: [],
