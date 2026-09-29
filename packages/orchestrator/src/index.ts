@@ -227,3 +227,5 @@ export * from "./golden-diagnosis-benchmark.js";
 export * from "./zero-waste-workflow.js";
 
 export * from "./report-confirmation-adapter.js";
+
+export * from "./static-report-confirmation-adapter.js";
