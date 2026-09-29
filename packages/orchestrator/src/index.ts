@@ -258,3 +258,5 @@ export * from "./arena-region-contract-load.js";
 export * from "./arena-proof-coverage.js";
 
 export * from "./arena-proof-conclusion.js";
+
+export * from "./arena-replica-proof-quality.js";

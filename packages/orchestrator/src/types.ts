@@ -21,6 +21,7 @@ import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
 import type { PersistedPackIdentityExtraction } from "./persisted-pack-identity.js";
 import type { ArenaProofCoverageReport } from "./arena-proof-coverage.js";
 import type { ArenaProofConclusionReport } from "./arena-proof-conclusion.js";
+import type { ArenaReplicaProofQuality } from "./arena-replica-proof-quality.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
@@ -166,6 +167,7 @@ export interface InspectDirectoryResult {
     proofPartition?: ArenaRegionPartitionResult;
     proofCoverage?: ArenaProofCoverageReport;
     proofConclusion?: ArenaProofConclusionReport;
+    replicaProofQuality?: readonly ArenaReplicaProofQuality[];
     nativeSpatial?: ArenaNativeSpatialAudit;
     voxelProof?: ArenaVoxelProof;
   };
