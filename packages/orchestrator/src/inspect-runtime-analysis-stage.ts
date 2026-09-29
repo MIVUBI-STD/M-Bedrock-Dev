@@ -151,6 +151,7 @@ export function analyzeInspectionRuntimeState(
           semantics: item.tickingArea,
         }),
       ),
+      scripts: input.parsedScripts.map((item) => item.parsed),
     });
   if (arenaCapacity.report) {
     diagnostics.push(
