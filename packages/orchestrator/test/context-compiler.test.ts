@@ -381,6 +381,43 @@ describe("context compiler", () => {
     );
   });
 
+  it("marks the pack incomplete when a requested invariant points to a missing subject", () => {
+    const pack =
+      compileContextPack({
+        goal:
+          "dangling-invariant-subject",
+        graph: fixtureGraph(),
+        intent: {
+          ...intent,
+          invariants: [{
+            id: "inv:dangling",
+            statement:
+              "Missing subject must hold",
+            strength: "must",
+            status: "authored",
+            subjectIds: [
+              "intent:missing-subject",
+            ],
+            evidenceIds: [
+              "e:arena",
+            ],
+          }],
+        },
+        relevantInvariantIds: [
+          "inv:dangling",
+        ],
+      });
+
+    expect(pack.complete)
+      .toBe(false);
+    expect(
+      pack.missingRequested
+        .intentSubjectIds,
+    ).toEqual([
+      "intent:missing-subject",
+    ]);
+  });
+
   it("marks the pack incomplete when explicitly requested ids are missing", () => {
     const pack =
       compileContextPack({
