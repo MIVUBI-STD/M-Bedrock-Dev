@@ -3,8 +3,9 @@ import {
   expect,
   it,
 } from "vitest";
-import type {
-  ConfirmedDefect,
+import {
+  deriveConfirmedDefectSemanticKey,
+  type ConfirmedDefect,
 } from "../../bug-report/src/index.js";
 import type {
   InvariantRegistrySnapshot,
@@ -14,8 +15,15 @@ import {
   deriveMustPreserveFromRepairInvariants,
 } from "../src/report-repair-context.js";
 
+const defectIdentity = {
+  subjectIds: ["outcome:cleanup"],
+  primaryFailure: "player-owned-state" as const,
+};
+
 const defect: ConfirmedDefect = {
-  semanticKey: "cleanup",
+  ...defectIdentity,
+  semanticKey:
+    deriveConfirmedDefectSemanticKey(defectIdentity),
   foundBy: "ai",
   confirmation: {
     basis: "authored-contract-violation",
@@ -29,7 +37,6 @@ const defect: ConfirmedDefect = {
     importantState: "materially-wrong",
     fairness: "unaffected",
   },
-  primaryFailure: "player-owned-state",
   title: "Cleanup retains state",
   problem: "State remains.",
   expected: {
