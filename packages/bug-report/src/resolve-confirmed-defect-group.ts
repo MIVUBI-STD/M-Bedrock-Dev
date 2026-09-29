@@ -7,11 +7,12 @@ import type {
   BugImpactAssessment,
   BugPrimaryFailure,
 } from "./decision.js";
-import type {
-  ConfirmedDefect,
-  ConfirmedDefectExpectedBasis,
-  ConfirmedDefectObservation,
-  ConfirmedDefectSourceEvidence,
+import {
+  deriveConfirmedDefectSemanticKey,
+  type ConfirmedDefect,
+  type ConfirmedDefectExpectedBasis,
+  type ConfirmedDefectObservation,
+  type ConfirmedDefectSourceEvidence,
 } from "./confirmed-defect.js";
 import type {
   DefectConfirmationBasis,
@@ -21,7 +22,6 @@ import type {
 } from "./confirmation-v2.js";
 
 export interface CanonicalDefectNarrative {
-  readonly semanticKey: string;
   readonly title: string;
   readonly problem: string;
   readonly expected: Pick<
@@ -291,8 +291,37 @@ export function resolveConfirmedDefectGroup(
   const suggestedFix =
     sharedSuggestedFix(group.defects);
 
+  const subjectIds = unique(
+    group.defects.flatMap((item) =>
+      item.subjectIds
+    ),
+  );
+  const brokenInvariantIds = unique(
+    group.defects.flatMap((item) =>
+      item.brokenInvariantIds
+    ),
+  );
+  const repairUnitIds = unique(
+    group.defects.flatMap((item) =>
+      item.repairUnitIds
+    ),
+  );
+  const causalIncidentId =
+    first.causalIncidentId;
+  const semanticKey =
+    deriveConfirmedDefectSemanticKey({
+      subjectIds,
+      brokenInvariantIds,
+      repairUnitIds,
+      primaryFailure: narrative.primaryFailure,
+      ...(causalIncidentId === undefined
+        ? {}
+        : { causalIncidentId }),
+    });
+
   return {
-    semanticKey: narrative.semanticKey,
+    semanticKey,
+    subjectIds,
     foundBy,
     confirmation: {
       basis: canonicalConfirmationBasis(group.defects),
@@ -336,18 +365,10 @@ export function resolveConfirmedDefectGroup(
     ...(mustPreserve.length === 0
       ? {}
       : { mustPreserve }),
-    brokenInvariantIds: unique(
-      group.defects.flatMap((item) =>
-        item.brokenInvariantIds
-      ),
-    ),
-    repairUnitIds: unique(
-      group.defects.flatMap((item) =>
-        item.repairUnitIds
-      ),
-    ),
-    ...(first.causalIncidentId === undefined
+    brokenInvariantIds,
+    repairUnitIds,
+    ...(causalIncidentId === undefined
       ? {}
-      : { causalIncidentId: first.causalIncidentId }),
+      : { causalIncidentId }),
   };
 }
