@@ -319,3 +319,5 @@ export * from "./post-repair-verification.js";
 export * from "./arena-proof-reuse.js";
 
 export * from "./arena-repair-bridge.js";
+
+export * from "./spatial-authority-analysis.js";
