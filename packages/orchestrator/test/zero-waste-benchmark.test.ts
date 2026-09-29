@@ -67,6 +67,7 @@ describe("zero-waste benchmark", () => {
             evidence: 0,
           },
           missingRequested: {
+            semanticNodeIds: [],
             intentSubjectIds: [],
             invariantIds: [],
             evidenceIds: [],
@@ -89,12 +90,102 @@ describe("zero-waste benchmark", () => {
     expect(report.disposition)
       .toBe("pass");
     expect(
-      report.metrics.every(
+      report.metrics.filter(
         (metric) =>
           metric.disposition ===
-          "pass",
+          "fail",
       ),
-    ).toBe(true);
+    ).toEqual([]);
+    expect(
+      report.metrics.find(
+        (metric) =>
+          metric.id ===
+          "context-truncation",
+      )?.disposition,
+    ).toBe("unscored");
+  });
+
+  it("does not treat optional context truncation as waste when required scope is complete", () => {
+    const report =
+      evaluateZeroWasteBenchmark({
+        id: "bench:bounded-context",
+        runMode: "cold",
+        summary: {
+          diagnosis: {
+            totalSteps: 0,
+            executedSteps: 0,
+            reusedSteps: 0,
+            reuseRatio: 0,
+          },
+          reasons: [],
+        },
+        context: {
+          schemaVersion: 1,
+          goal: "bounded",
+          semantic: {
+            nodes: [{
+              id: "required",
+              kind: "function",
+              identifier: "required",
+              source: {
+                artifactId: "map",
+                relativePath:
+                  "functions/required.mcfunction",
+              },
+            }],
+            edges: [],
+            omitted: 20,
+            omittedEdges: 0,
+          },
+          intent: {
+            nodes: [],
+            invariants: [],
+            unknowns: [],
+            evidence: [],
+          },
+          budget: {
+            maxSemanticNodes: 1,
+            maxSemanticEdges: 1,
+            maxIntentNodes: 1,
+            maxInvariants: 1,
+            maxUnknowns: 1,
+            maxEvidence: 1,
+          },
+          truncation: {
+            semanticNodes: 20,
+            semanticEdges: 0,
+            intentNodes: 0,
+            invariants: 0,
+            unknowns: 0,
+            evidence: 0,
+          },
+          missingRequested: {
+            semanticNodeIds: [],
+            intentSubjectIds: [],
+            invariantIds: [],
+            evidenceIds: [],
+          },
+          complete: true,
+          reasons: [],
+        },
+        targets: {
+          maximumContextTruncationRatio:
+            0.1,
+        },
+      });
+
+    expect(
+      report.wasteSignals,
+    ).not.toContain(
+      "context-budget-high-truncation",
+    );
+    expect(
+      report.metrics.find(
+        (metric) =>
+          metric.id ===
+          "context-truncation",
+      )?.disposition,
+    ).toBe("unscored");
   });
 
   it("reports missed targets instead of hiding poor efficiency", () => {
