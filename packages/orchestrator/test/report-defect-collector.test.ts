@@ -122,6 +122,10 @@ function defect(
             source: {
               artifactId: "map",
               relativePath: "scripts/session.ts",
+              range: {
+                lineStart: 10,
+                lineEnd: 12,
+              },
             },
             reason: "Owns match cleanup.",
           }],
