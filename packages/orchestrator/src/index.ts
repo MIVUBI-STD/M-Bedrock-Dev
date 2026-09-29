@@ -239,3 +239,5 @@ export * from "./report-repair-context.js";
 export * from "./report-candidate-reuse.js";
 
 export * from "./arena-audit.js";
+
+export * from "./report-source-owner.js";
