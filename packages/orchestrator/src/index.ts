@@ -246,3 +246,5 @@ export * from "./arena-native-extraction.js";
 
 export * from "./arena-voxel-proof.js";
 export * from "./persisted-pack-identity.js";
+
+export * from "./report-defect-classification.js";
