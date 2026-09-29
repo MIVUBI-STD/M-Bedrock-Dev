@@ -437,6 +437,106 @@ describe("report defect collector", () => {
     ).toContain("invalid-confirmed-defect");
   });
 
+  it("accepts a source semantic owner proven by Semantic IR", () => {
+    const semanticIr = {
+      schemaVersion: 1 as const,
+      execution: {
+        regions: [{
+          id: "exec:cleanup",
+          kind: "script-function" as const,
+          ownerId: "scripts/session",
+          label: "function:cleanup",
+          source: {
+            artifactId: "map",
+            relativePath: "scripts/session.ts",
+            range: {
+              lineStart: 10,
+              lineEnd: 12,
+            },
+          },
+        }],
+        edges: [],
+      },
+      state: {
+        surfaces: [],
+        operations: [],
+        authorityBindings: [],
+      },
+      temporal: {
+        relations: [],
+      },
+    };
+
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      semanticIr,
+      defect: {
+        ...defect("semantic-owner", { ai: true }),
+        sourceEvidence: [{
+          source: {
+            artifactId: "map",
+            relativePath: "scripts/session.ts",
+            range: {
+              lineStart: 10,
+              lineEnd: 12,
+            },
+          },
+          semanticOwnerId: "exec:cleanup",
+          reason: "Owns cleanup.",
+        }],
+      },
+    }]);
+
+    expect(result.confirmed).toHaveLength(1);
+    expect(result.confirmed[0]?.repairUnitIds).toEqual([
+      "execution-region:exec:cleanup",
+    ]);
+  });
+
+  it("rejects an unproven source semantic owner", () => {
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      semanticIr: {
+        schemaVersion: 1,
+        execution: {
+          regions: [],
+          edges: [],
+        },
+        state: {
+          surfaces: [],
+          operations: [],
+          authorityBindings: [],
+        },
+        temporal: {
+          relations: [],
+        },
+      },
+      defect: {
+        ...defect("bad-owner", { ai: true }),
+        sourceEvidence: [{
+          source: {
+            artifactId: "map",
+            relativePath: "scripts/session.ts",
+            range: {
+              lineStart: 10,
+              lineEnd: 12,
+            },
+          },
+          semanticOwnerId: "exec:missing",
+          reason: "Claimed owner.",
+        }],
+      },
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(result.rejected[0]?.reasons.join(" "))
+      .toMatch(/not present in Semantic IR/);
+  });
+
   it("rejects Suggested Fix without a repair decision", () => {
     const result = collectConfirmedDefects([{
       route: "static",
