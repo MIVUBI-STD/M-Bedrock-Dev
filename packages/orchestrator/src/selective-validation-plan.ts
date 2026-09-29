@@ -369,6 +369,13 @@ export function selectiveValidationPlanText(
       percentage(plan.skipRatio),
   ];
 
+  if (plan.reasons.length > 0) {
+    lines.push("", "Reasons");
+    for (const reason of plan.reasons) {
+      lines.push("- " + reason);
+    }
+  }
+
   if (plan.errors.length > 0) {
     lines.push("", "Errors");
     for (const error of plan.errors) {
