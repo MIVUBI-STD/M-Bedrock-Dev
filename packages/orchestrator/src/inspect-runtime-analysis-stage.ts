@@ -27,6 +27,7 @@ import { analyzeArenaCleanupSurfaces } from "./arena-cleanup-surface-analysis.js
 import { analyzeArenaStateIsolation } from "./arena-state-isolation-analysis.js";
 import { analyzeScriptSpatialMutations } from "./script-spatial-analysis.js";
 import { analyzeArenaGlobalState } from "./arena-global-state-analysis.js";
+import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
@@ -162,6 +163,10 @@ export function analyzeInspectionRuntimeState(
     );
   const arenaCleanupSurfaces =
     analyzeArenaCleanupSurfaces(
+      parsedScriptModels,
+    );
+  const inventoryLifecycle =
+    analyzeInventoryLifecycle(
       parsedScriptModels,
     );
   const arenaGlobalState =
@@ -347,6 +352,7 @@ export function analyzeInspectionRuntimeState(
     scriptSafeConfig,
     arenaLifecycle,
     arenaCleanupSurfaces,
+    inventoryLifecycle,
     arenaGlobalState,
     arenaStateIsolation,
     arenaLayoutReconciliation,
