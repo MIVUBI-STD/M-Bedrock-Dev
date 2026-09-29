@@ -89,6 +89,41 @@ describe("confirmed bug promotion", () => {
     );
   });
 
+  it("keeps tester as Found By when AI adds technical analysis", () => {
+    const result = promoteConfirmedBugsToV2({
+      map,
+      repairBy: "developer",
+      bugs: [{
+        status: "confirmed-defect",
+        id: "BUG-BBW-005",
+        severity: "major",
+        category: "world-interaction",
+        foundBy: "tester",
+        title: "Water mutates blocks outside the plot",
+        problem: "Water changes world state outside the active plot.",
+        expected: "Outside-plot interaction is rejected.",
+        observed: "Iron bars outside the plot become waterlogged.",
+        reproduction: [
+          "Start the building phase.",
+          "Use a water bucket on iron bars outside the active plot.",
+        ],
+        aiAnalysis: "Bucket handling bypasses the normal plot containment gate.",
+        relevantCode: [{
+          file: "scripts/building.ts",
+          reason: "Handles bucket interaction during the building phase.",
+        }],
+        suggestedFix: "Route bucket interaction through plot containment.",
+      }],
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.report.bugs[0]?.foundBy).toBe("tester");
+    expect(result.report.bugs[0]?.aiAnalysis).toContain(
+      "bypasses",
+    );
+  });
+
   it("keeps Relevant Code focused on primary locations", () => {
     const issues = reviewConfirmedBugInputs([{
       status: "confirmed-defect",
