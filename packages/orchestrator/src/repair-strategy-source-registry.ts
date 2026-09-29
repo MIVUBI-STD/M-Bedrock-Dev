@@ -251,6 +251,42 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Allows exact start-owner acquisition guards only when the script analyzer proves an authored null/undefined owner sentinel, current generation token, owner assignment, and start-state commit in one side-effect-free method path.",
     }, {
+      id: "arena-replica-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedDiagnosticCodes: [
+        "ARENA_REPLICA_DIVERGENCE",
+        "ARENA_SPATIAL_FINGERPRINT_DIVERGENCE",
+        "ARENA_VOXEL_DIVERGENCE",
+        "ARENA_BLOCK_ENTITY_DIVERGENCE",
+        "ARENA_ENTITY_POPULATION_DIVERGENCE",
+        "ARENA_TICK_STATE_DIVERGENCE",
+        "ARENA_STRUCTURE_INSTANCE_DIVERGENCE",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes proven arena replica divergence into authored-source localization and bounded remediation planning. Proposal-only because physical/world-state divergence alone does not identify a safe mutation surface.",
+    }, {
+      id: "arena-capacity-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedDiagnosticCodes: [
+        "ARENA_CONCURRENCY_CAPACITY_SHORTFALL",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes proven arena capacity shortfall toward backend selection, lease reduction, queueing, or authored capacity guard localization. Proposal-only until the exact limiting resource ownership path is localized.",
+    }, {
       id: "navigation-recovery-configuration",
       version: "1",
       kind: "runtime-recovery-mitigation",

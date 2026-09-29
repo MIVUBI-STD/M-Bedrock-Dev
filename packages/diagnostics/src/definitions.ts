@@ -53,6 +53,7 @@ function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
     code === "ARENA_BLOCK_ENTITY_DIVERGENCE" ||
     code === "ARENA_ENTITY_POPULATION_DIVERGENCE" ||
     code === "ARENA_TICK_STATE_DIVERGENCE" ||
+    code === "ARENA_STRUCTURE_INSTANCE_DIVERGENCE" ||
     code === "ARENA_CONCURRENCY_CAPACITY_SHORTFALL"
   ) return "arena";
   if (code === "UNKNOWN_COMMAND_EFFECT") return "command";

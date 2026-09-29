@@ -215,6 +215,31 @@ export async function inspectArtifact(
 
     for (
       const replica of
+        structureInstanceProof?.replicas ?? []
+    ) {
+      if (replica.status !== "diverged") continue;
+      artifactDiagnostics.push(
+        createDiagnostic({
+          code: "ARENA_STRUCTURE_INSTANCE_DIVERGENCE",
+          severity: "critical",
+          message:
+            `Arena ${replica.arenaId} differs from the canonical arena in resolved structure-placement instances.`,
+          data: {
+            arenaId: replica.arenaId,
+            canonicalInstances:
+              replica.canonicalInstances,
+            replicaInstances:
+              replica.replicaInstances,
+            unresolvedPlacements:
+              replica.unresolvedPlacements,
+            mismatches: replica.mismatches,
+          },
+        }),
+      );
+    }
+
+    for (
+      const replica of
         tickStateProof?.replicas ?? []
     ) {
       if (replica.status !== "diverged") continue;
