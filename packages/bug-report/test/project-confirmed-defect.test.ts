@@ -86,11 +86,7 @@ function defect(
 }
 
 describe("confirmed defect projection", () => {
-  it("derives different repair units for different precise source ranges", async () => {
-    const {
-      deriveRepairUnitIdsFromSourceEvidence,
-    } = await import("../src/index.js");
-
+  it("derives different repair units for different precise source ranges", () => {
     const first = deriveRepairUnitIdsFromSourceEvidence([{
       source: {
         artifactId: "map",
