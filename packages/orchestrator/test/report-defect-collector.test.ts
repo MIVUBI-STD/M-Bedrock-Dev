@@ -367,6 +367,7 @@ describe("report defect collector", () => {
   it("rejects tester Expected facts not grounded in requirement evidence", () => {
     const result = collectConfirmedDefects([{
       route: "tester",
+      subjectIds: ["outcome:cleanup"],
       confirmation: {
         expectedBehaviorAuthority: "explicit-requirement",
         expectedEvidenceIds: ["requirement:cleanup"],
