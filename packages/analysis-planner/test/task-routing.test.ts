@@ -45,6 +45,22 @@ describe("engineering task routing", () => {
     );
   });
 
+  it("keeps lower-context repair work below the runtime proof ceiling", () => {
+    const route =
+      routeEngineeringTask({
+        kind: "repair",
+        context:
+          "LOCAL_ARTIFACT",
+      });
+
+    expect(route.initialGoal)
+      .toBe(
+        "semantic-consistency",
+      );
+    expect(route.runtimeMayBeRequired)
+      .toBe(true);
+  });
+
   it("does not allow repair without diagnosis and preservation preconditions", () => {
     const route =
       routeEngineeringTask({

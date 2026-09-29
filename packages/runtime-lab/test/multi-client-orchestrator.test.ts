@@ -51,12 +51,18 @@ describe("multi-client orchestration", () => {
           adapterId:
             "fake-runtime",
           maxClients: 2,
+          proofAuthority:
+            "test-only",
           execute,
         },
       );
 
     expect(result.status)
       .toBe("completed");
+    expect(result.proofAuthority)
+      .toBe("test-only");
+    expect(result.reasons.join(" "))
+      .toMatch(/do not establish live runtime proof/);
     expect(execute)
       .toHaveBeenCalledTimes(2);
     expect(result.evidenceIds)
@@ -86,6 +92,8 @@ describe("multi-client orchestration", () => {
         {
           adapterId: "no-evidence",
           maxClients: 1,
+          proofAuthority:
+            "test-only",
           execute: async () => ({
             evidenceIds: [],
           }),
@@ -125,6 +133,8 @@ describe("multi-client orchestration", () => {
         {
           adapterId: "small",
           maxClients: 1,
+          proofAuthority:
+            "test-only",
           execute,
         },
       );

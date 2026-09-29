@@ -40,6 +40,9 @@ export interface MultiClientActionObservation {
 export interface MultiClientRuntimeAdapter {
   readonly adapterId: string;
   readonly maxClients: number;
+  readonly proofAuthority:
+    | "test-only"
+    | "live-runtime";
   execute(
     client: MultiClientLogicalClient,
     action:
@@ -64,6 +67,8 @@ export interface MultiClientWaveResult {
 export interface MultiClientScenarioResult {
   scenarioId: string;
   adapterId: string;
+  proofAuthority:
+    MultiClientRuntimeAdapter["proofAuthority"];
   status:
     | "completed"
     | "incomplete-evidence"
@@ -342,6 +347,8 @@ export async function executeMultiClientScenario(
       scenarioId: scenario.id,
       adapterId:
         adapter.adapterId,
+      proofAuthority:
+        adapter.proofAuthority,
       status: "blocked",
       requiredClients:
         scenario.clients.length,
@@ -356,19 +363,27 @@ export async function executeMultiClientScenario(
     !Number.isInteger(
       adapter.maxClients,
     ) ||
-    adapter.maxClients < 1
+    adapter.maxClients < 1 ||
+    ![
+      "test-only",
+      "live-runtime",
+    ].includes(
+      adapter.proofAuthority,
+    )
   ) {
     return {
       scenarioId: scenario.id,
       adapterId:
         adapter.adapterId,
+      proofAuthority:
+        adapter.proofAuthority,
       status: "blocked",
       requiredClients:
         scenario.clients.length,
       waveResults: [],
       evidenceIds: [],
       reasons: [
-        "Multi-client runtime adapter identity/maxClients is invalid.",
+        "Multi-client runtime adapter identity/maxClients/proofAuthority is invalid.",
       ],
     };
   }
@@ -381,6 +396,8 @@ export async function executeMultiClientScenario(
       scenarioId: scenario.id,
       adapterId:
         adapter.adapterId,
+      proofAuthority:
+        adapter.proofAuthority,
       status: "blocked",
       requiredClients:
         scenario.clients.length,
@@ -465,6 +482,8 @@ export async function executeMultiClientScenario(
           scenario.id,
         adapterId:
           adapter.adapterId,
+        proofAuthority:
+          adapter.proofAuthority,
         status: "failed",
         requiredClients:
           scenario.clients.length,
@@ -501,6 +520,8 @@ export async function executeMultiClientScenario(
     scenarioId: scenario.id,
     adapterId:
       adapter.adapterId,
+    proofAuthority:
+      adapter.proofAuthority,
     status:
       evidenceIds.length === 0
         ? "incomplete-evidence"
@@ -514,9 +535,14 @@ export async function executeMultiClientScenario(
         ? [
             "All multi-client synchronization waves completed, but the adapter produced no evidence ids. Execution alone is not runtime proof.",
           ]
-        : [
-            "All multi-client synchronization waves completed with explicit evidence.",
-          ],
+        : adapter.proofAuthority ===
+          "live-runtime"
+          ? [
+              "All multi-client synchronization waves completed with explicit evidence from a live-runtime adapter.",
+            ]
+          : [
+              "All multi-client synchronization waves completed with explicit test evidence, but test-only adapters do not establish live runtime proof.",
+            ],
   };
 }
 

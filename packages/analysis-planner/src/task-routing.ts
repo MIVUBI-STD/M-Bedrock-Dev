@@ -135,7 +135,11 @@ export function routeEngineeringTask(
       return {
         kind: input.kind,
         initialGoal:
-          "causal-repair",
+          runtimeCapable(
+            input.context,
+          )
+            ? "causal-repair"
+            : "semantic-consistency",
         mutationAllowed: true,
         runtimeMayBeRequired:
           true,
@@ -147,6 +151,13 @@ export function routeEngineeringTask(
           "The smallest causally bound repair is applied and its required proof obligations are satisfied.",
         reasons: [
           "Repair authority starts only after diagnosis and preservation obligations are explicit.",
+          ...(runtimeCapable(input.context)
+            ? [
+                "Runtime-capable context may close causal repair proof directly.",
+              ]
+            : [
+                "Current context cannot produce runtime proof; complete static/semantic repair planning first and leave only the runtime residue for a higher context.",
+              ]),
         ],
       };
 
@@ -155,7 +166,10 @@ export function routeEngineeringTask(
         kind: input.kind,
         initialGoal:
           input.runtimeSensitive ===
-          true
+            true &&
+          runtimeCapable(
+            input.context,
+          )
             ? "runtime-behavior"
             : "semantic-consistency",
         mutationAllowed: false,
@@ -218,7 +232,11 @@ export function routeEngineeringTask(
       return {
         kind: input.kind,
         initialGoal:
-          "runtime-evidence-integrity",
+          runtimeCapable(
+            input.context,
+          )
+            ? "runtime-evidence-integrity"
+            : "semantic-consistency",
         mutationAllowed: false,
         runtimeMayBeRequired: true,
         requiredPreconditions: [
