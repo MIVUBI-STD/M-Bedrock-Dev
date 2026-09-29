@@ -223,3 +223,5 @@ export * from "./work-session-store.js";
 export * from "./semantic-proof-store.js";
 
 export * from "./golden-diagnosis-benchmark.js";
+
+export * from "./zero-waste-workflow.js";
