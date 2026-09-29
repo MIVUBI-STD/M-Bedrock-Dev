@@ -6,6 +6,7 @@ import {
 import {
   allocateBugIds,
   buildBugReportFromConfirmedDefects,
+  groupConfirmedDefects,
   deriveConfirmedDefectSemanticKey,
   projectConfirmedDefects,
   type ConfirmedDefect,
@@ -170,6 +171,69 @@ describe("confirmed defect projection", () => {
     expect(
       result.issues.map((issue) => issue.code),
     ).toContain("unresolved-defect-group");
+  });
+
+  it("applies an explicit canonical group resolution before projection", () => {
+    const a = defect("symptom-a", {
+      causalIncidentId: "incident:cleanup",
+    });
+    const b = defect("symptom-b", {
+      causalIncidentId: "incident:cleanup",
+    });
+    const groupKey = groupConfirmedDefects([a, b])[0]!.key;
+
+    const result = buildBugReportFromConfirmedDefects({
+      map,
+      repairBy: "developer",
+      defects: [a, b],
+      groupResolutions: [{
+        groupKey,
+        narrative: {
+          title: "Cleanup does not reset match state",
+          problem: "Multiple match-owned state surfaces remain after cleanup.",
+          expected: {
+            statement: "All match-owned state is reset after cleanup.",
+          },
+          observed: {
+            statement: "Multiple state surfaces remain active.",
+          },
+          expectedAuthority: "authored-intent",
+          primaryFailure: "player-owned-state",
+          aiAnalysis: "Grouped symptoms share one cleanup defect.",
+          sourceEvidence: a.sourceEvidence,
+        },
+      }],
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.report.bugs).toHaveLength(1);
+  });
+
+  it("rejects an unused canonical group resolution", () => {
+    const item = defect("cleanup");
+    const result = buildBugReportFromConfirmedDefects({
+      map,
+      repairBy: "developer",
+      defects: [item],
+      groupResolutions: [{
+        groupKey: "missing-group",
+        narrative: {
+          title: "Unused",
+          problem: "Unused",
+          expected: { statement: "Unused" },
+          observed: { statement: "Unused" },
+          expectedAuthority: "authored-intent",
+          primaryFailure: "player-owned-state",
+        },
+      }],
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(
+      result.issues.map((issue) => issue.code),
+    ).toContain("unused-defect-group-resolution");
   });
 
   it("rejects a semantic key that does not match structured identity", () => {
