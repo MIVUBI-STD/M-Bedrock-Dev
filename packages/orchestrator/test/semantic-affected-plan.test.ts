@@ -20,6 +20,7 @@ function graphFixture(): SemanticGraph {
   for (const identifier of [
     "caller",
     "changed",
+    "callee",
     "unrelated",
   ]) {
     graph.addNode({
@@ -41,6 +42,21 @@ function graphFixture(): SemanticGraph {
     });
   }
 
+  graph.addNode({
+    id: "scoreboard:pack:round",
+    identity: {
+      kind: "scoreboard_objective",
+      scope: "pack",
+      identifier: "round",
+    },
+    kind: "scoreboard_objective",
+    identifier: "round",
+    source: {
+      artifactId: "map",
+      relativePath: "<derived>",
+    },
+  });
+
   graph.addEdge({
     from: "function:pack:caller",
     type: "CALLS",
@@ -52,6 +68,36 @@ function graphFixture(): SemanticGraph {
         artifactId: "map",
         relativePath:
           "functions/caller.mcfunction",
+      },
+    },
+  });
+
+  graph.addEdge({
+    from: "function:pack:changed",
+    type: "CALLS",
+    targetIdentifier: "callee",
+    status: "resolved",
+    to: "function:pack:callee",
+    evidence: {
+      source: {
+        artifactId: "map",
+        relativePath:
+          "functions/changed.mcfunction",
+      },
+    },
+  });
+
+  graph.addEdge({
+    from: "function:pack:changed",
+    type: "WRITES_SCOREBOARD",
+    targetIdentifier: "round",
+    status: "resolved",
+    to: "scoreboard:pack:round",
+    evidence: {
+      source: {
+        artifactId: "map",
+        relativePath:
+          "functions/changed.mcfunction",
       },
     },
   });
@@ -74,15 +120,17 @@ describe("semantic affected planning", () => {
       .toEqual([
         "function:pack:caller",
         "function:pack:changed",
+        "scoreboard:pack:round",
       ]);
     expect(result.skippedNodeIds)
       .toEqual([
+        "function:pack:callee",
         "function:pack:unrelated",
       ]);
     expect(result.skippedNodeCount)
-      .toBe(1);
+      .toBe(2);
     expect(result.skipRatio)
-      .toBeCloseTo(1 / 3);
+      .toBeCloseTo(2 / 5);
   });
 
   it("derives the affected closure directly from patch source references", () => {
@@ -125,8 +173,13 @@ describe("semantic affected planning", () => {
       .toContain(
         "function:pack:caller",
       );
+    expect(result.affectedNodeIds)
+      .toContain(
+        "scoreboard:pack:round",
+      );
     expect(result.skippedNodeIds)
       .toEqual([
+        "function:pack:callee",
         "function:pack:unrelated",
       ]);
   });

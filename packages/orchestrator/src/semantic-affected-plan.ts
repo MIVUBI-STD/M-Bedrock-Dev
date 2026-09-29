@@ -1,5 +1,6 @@
 import {
   buildInvalidationPlan,
+  type EdgeType,
   type SemanticGraph,
 } from "../../graph/src/index.js";
 import type {
@@ -8,6 +9,39 @@ import type {
 import {
   deriveChangedSemanticNodeIds,
 } from "./repair-changed-node-derivation.js";
+
+const PROPAGATED_SIDE_EFFECT_EDGE_TYPES =
+  new Set<EdgeType>([
+    "WRITES_SCOREBOARD",
+    "WRITES_TAG",
+    "MODIFIES_REGION",
+    "TELEPORTS_TO",
+  ]);
+
+function sideEffectTargetNodeIds(
+  graph: SemanticGraph,
+  changedNodeIds: readonly string[],
+): string[] {
+  const targets =
+    new Set<string>();
+
+  for (const nodeId of changedNodeIds) {
+    for (
+      const edge of
+        graph.outgoingEdges(nodeId)
+    ) {
+      if (
+        edge.to !== undefined &&
+        PROPAGATED_SIDE_EFFECT_EDGE_TYPES
+          .has(edge.type)
+      ) {
+        targets.add(edge.to);
+      }
+    }
+  }
+
+  return [...targets].sort();
+}
 
 export interface SemanticAffectedPlan {
   status: "planned" | "blocked";
@@ -64,10 +98,18 @@ export function planSemanticAffectedSet(
     };
   }
 
+  const sideEffectTargets =
+    sideEffectTargetNodeIds(
+      graph,
+      changed,
+    );
   const invalidation =
     buildInvalidationPlan(
       graph,
-      changed,
+      [
+        ...changed,
+        ...sideEffectTargets,
+      ],
     );
   const affectedNodeIds =
     uniqueSorted(invalidation.affected);
@@ -110,7 +152,7 @@ export function planSemanticAffectedSet(
       skippedNodeIds.length,
     skipRatio,
     reasons: [
-      "Affected nodes include only changed semantic nodes and their reverse dependents.",
+      "Affected nodes include changed semantic nodes, resolved mutation/state side-effect targets, and their reverse dependents.",
       skippedNodeIds.length === 0
         ? "No semantic nodes can be safely skipped for this change."
         : String(
