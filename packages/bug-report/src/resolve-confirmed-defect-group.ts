@@ -399,3 +399,72 @@ export function resolveConfirmedDefectGroup(
       : { causalIncidentId }),
   };
 }
+
+
+export interface ConfirmedDefectGroupResolution {
+  readonly groupKey: string;
+  readonly narrative: CanonicalDefectNarrative;
+}
+
+export interface ResolveConfirmedDefectGroupsResult {
+  readonly defects: readonly ConfirmedDefect[];
+  readonly unresolvedGroupKeys: readonly string[];
+  readonly unusedResolutionKeys: readonly string[];
+}
+
+export function resolveConfirmedDefectGroups(
+  groups: readonly ConfirmedDefectGroup[],
+  resolutions:
+    readonly ConfirmedDefectGroupResolution[],
+): ResolveConfirmedDefectGroupsResult {
+  const byKey = new Map<string, ConfirmedDefectGroupResolution>();
+
+  for (const resolution of resolutions) {
+    if (byKey.has(resolution.groupKey)) {
+      throw new Error(
+        "Duplicate canonical group resolution: " +
+          resolution.groupKey +
+          ".",
+      );
+    }
+    byKey.set(resolution.groupKey, resolution);
+  }
+
+  const defects: ConfirmedDefect[] = [];
+  const unresolvedGroupKeys: string[] = [];
+  const used = new Set<string>();
+
+  for (const group of groups) {
+    if (group.defects.length === 1) {
+      defects.push(group.defects[0]!);
+      continue;
+    }
+
+    const resolution = byKey.get(group.key);
+    if (!resolution) {
+      unresolvedGroupKeys.push(group.key);
+      continue;
+    }
+
+    used.add(group.key);
+    defects.push(
+      resolveConfirmedDefectGroup(
+        group,
+        resolution.narrative,
+      ),
+    );
+  }
+
+  const unusedResolutionKeys = [...byKey.keys()]
+    .filter((key) => !used.has(key))
+    .sort();
+
+  return {
+    defects: defects.sort((a, b) =>
+      a.semanticKey.localeCompare(b.semanticKey)
+    ),
+    unresolvedGroupKeys:
+      unresolvedGroupKeys.sort(),
+    unusedResolutionKeys,
+  };
+}
