@@ -4,7 +4,8 @@ import type {
 } from "../../../packages/project-model/src/index.js";
 
 export type ScriptInventoryEvidenceKind =
-  | "inventory-clear"
+  | "inventory-clear-all"
+  | "inventory-clear-slot"
   | "equipment-clear"
   | "item-grant"
   | "equipment-set"
@@ -135,16 +136,19 @@ function assignedIdentifier(
 function rootIdentifier(
   expression: ts.Expression,
 ): string | undefined {
-  let current = expression;
-  while (
-    ts.isPropertyAccessExpression(current) ||
-    ts.isElementAccessExpression(current)
-  ) {
-    current = current.expression;
+  if (ts.isIdentifier(expression)) {
+    return expression.text;
   }
-  return ts.isIdentifier(current)
-    ? current.text
-    : undefined;
+  if (
+    ts.isPropertyAccessExpression(expression) ||
+    ts.isElementAccessExpression(expression)
+  ) {
+    return rootIdentifier(expression.expression);
+  }
+  if (ts.isCallExpression(expression)) {
+    return rootIdentifier(expression.expression);
+  }
+  return undefined;
 }
 
 export function deriveScriptInventoryLifecycleEvidence(
@@ -238,7 +242,7 @@ export function deriveScriptInventoryLifecycleEvidence(
 
       if (method === "clearAll") {
         push(node, {
-          kind: "inventory-clear",
+          kind: "inventory-clear-all",
           subjectExpression: receiver,
         });
       } else if (method === "addItem") {
@@ -271,7 +275,7 @@ export function deriveScriptInventoryLifecycleEvidence(
           isUndefinedExpression(item)
         ) {
           push(node, {
-            kind: "inventory-clear",
+            kind: "inventory-clear-slot",
             subjectExpression: receiver,
             ...(slot === undefined
               ? {}
