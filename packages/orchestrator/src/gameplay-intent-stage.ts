@@ -163,11 +163,10 @@ export function buildGameplayIntentModel(
     });
   }
 
-  const evidenceIsFromAuthoredSource = (
+  const evidenceHasAuthoredSource = (
     evidenceIds: readonly string[],
   ): boolean =>
-    evidenceIds.length > 0 &&
-    evidenceIds.every((id) => {
+    evidenceIds.some((id) => {
       const item = evidence.get(id);
       return (
         item !== undefined &&
@@ -210,7 +209,7 @@ export function buildGameplayIntentModel(
         " transitions only to declared successors: " +
         targetLabels.join(", "),
       strength: "must",
-      status: evidenceIsFromAuthoredSource(evidenceIds)
+      status: evidenceHasAuthoredSource(evidenceIds)
         ? "authored"
         : "inferred",
       subjectIds: [from],
@@ -253,7 +252,7 @@ export function buildGameplayIntentModel(
             " is statically observed only under one of these direct guards: " +
             policyLabels.join(" OR "),
           strength: "must",
-          status: evidenceIsFromAuthoredSource(evidenceIds)
+          status: evidenceHasAuthoredSource(evidenceIds)
             ? "authored"
             : "inferred",
           subjectIds: [coverage.outcomeSubjectKey],
