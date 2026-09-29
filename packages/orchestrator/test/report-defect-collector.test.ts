@@ -114,6 +114,14 @@ function defect(
         "observation:" + label,
       ],
     },
+    classificationEvidence: {
+      impactEvidenceIds: [
+        "observation:" + label,
+      ],
+      primaryFailureEvidenceIds:
+        options.expectedEvidenceIds ??
+        ["intent:evidence"],
+    },
     ...(options.reproduction === undefined
       ? {}
       : { reproduction: options.reproduction }),
@@ -368,6 +376,25 @@ describe("report defect collector", () => {
         }),
       ]),
     );
+  });
+
+  it("rejects classification evidence outside the defect evidence universe", () => {
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      defect: {
+        ...defect("bad-classification", { ai: true }),
+        classificationEvidence: {
+          impactEvidenceIds: ["unrelated:impact"],
+          primaryFailureEvidenceIds: ["intent:evidence"],
+        },
+      },
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(result.rejected[0]?.reasons.join(" "))
+      .toMatch(/Classification evidence/);
   });
 
   it("rejects report facts that are not grounded in confirmation evidence", () => {
