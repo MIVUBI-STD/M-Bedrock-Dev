@@ -47,7 +47,7 @@ const ALLOWED_STAGE_TRANSITIONS:
   deliverable: [],
 };
 
-function normalized(
+function normalizedSet(
   values: readonly string[] = [],
 ): string[] {
   return [
@@ -57,6 +57,27 @@ function normalized(
       ),
     ),
   ].sort();
+}
+
+function normalizedSequence(
+  values: readonly string[] = [],
+): string[] {
+  const seen = new Set<string>();
+  const output: string[] = [];
+
+  for (const value of values) {
+    if (
+      !value.trim() ||
+      seen.has(value)
+    ) {
+      continue;
+    }
+
+    seen.add(value);
+    output.push(value);
+  }
+
+  return output;
 }
 
 function sameStrings(
@@ -112,34 +133,36 @@ export function createWorkSessionCheckpoint(
     revision: 1,
     references: {
       completedCapabilityIds:
-        normalized(
+        normalizedSet(
           input.references
             ?.completedCapabilityIds,
         ),
       evidenceIds:
-        normalized(
+        normalizedSet(
           input.references?.evidenceIds,
         ),
       semanticNodeIds:
-        normalized(
+        normalizedSet(
           input.references
             ?.semanticNodeIds,
         ),
       proofClaimIds:
-        normalized(
+        normalizedSet(
           input.references
             ?.proofClaimIds,
         ),
       validationScenarioIds:
-        normalized(
+        normalizedSet(
           input.references
             ?.validationScenarioIds,
         ),
     },
     nextActions:
-      normalized(input.nextActions),
+      normalizedSequence(
+        input.nextActions,
+      ),
     blockers:
-      normalized(input.blockers),
+      normalizedSet(input.blockers),
   };
 }
 
@@ -204,7 +227,7 @@ export function advanceWorkSessionCheckpoint(
 
   const references = {
     completedCapabilityIds:
-      normalized([
+      normalizedSet([
         ...current.references
           .completedCapabilityIds,
         ...(update
@@ -212,28 +235,28 @@ export function advanceWorkSessionCheckpoint(
           []),
       ]),
     evidenceIds:
-      normalized([
+      normalizedSet([
         ...current.references
           .evidenceIds,
         ...(update.evidenceIds ??
           []),
       ]),
     semanticNodeIds:
-      normalized([
+      normalizedSet([
         ...current.references
           .semanticNodeIds,
         ...(update.semanticNodeIds ??
           []),
       ]),
     proofClaimIds:
-      normalized([
+      normalizedSet([
         ...current.references
           .proofClaimIds,
         ...(update.proofClaimIds ??
           []),
       ]),
     validationScenarioIds:
-      normalized([
+      normalizedSet([
         ...current.references
           .validationScenarioIds,
         ...(update
@@ -245,13 +268,13 @@ export function advanceWorkSessionCheckpoint(
   const nextActions =
     update.nextActions === undefined
       ? [...current.nextActions]
-      : normalized(
+      : normalizedSequence(
           update.nextActions,
         );
   const blockers =
     update.blockers === undefined
       ? [...current.blockers]
-      : normalized(
+      : normalizedSet(
           update.blockers,
         );
 
