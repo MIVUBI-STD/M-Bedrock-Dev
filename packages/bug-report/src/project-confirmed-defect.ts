@@ -2,8 +2,9 @@ import {
   classifyBugSeverity,
   routeBugFinderCategory,
 } from "./decision.js";
-import type {
-  ConfirmedDefect,
+import {
+  validateConfirmedDefect,
+  type ConfirmedDefect,
 } from "./confirmed-defect.js";
 import {
   promoteConfirmedBugsToV2,
@@ -102,6 +103,41 @@ export function buildBugReportFromConfirmedDefects(
     readonly defects: readonly ConfirmedDefect[];
   },
 ): PromoteConfirmedBugsResult {
+  const issues: {
+    code:
+      | "invalid-confirmed-defect"
+      | "duplicate-semantic-key";
+    message: string;
+  }[] = [];
+  const seen = new Set<string>();
+
+  for (const defect of input.defects) {
+    for (const error of validateConfirmedDefect(defect)) {
+      issues.push({
+        code: "invalid-confirmed-defect",
+        message:
+          defect.semanticKey + ": " + error,
+      });
+    }
+    if (seen.has(defect.semanticKey)) {
+      issues.push({
+        code: "duplicate-semantic-key",
+        message:
+          "Confirmed defect semanticKey must be unique: " +
+          defect.semanticKey +
+          ".",
+      });
+    }
+    seen.add(defect.semanticKey);
+  }
+
+  if (issues.length > 0) {
+    return {
+      ok: false,
+      issues,
+    };
+  }
+
   return promoteConfirmedBugsToV2({
     map: input.map,
     repairBy: input.repairBy,
