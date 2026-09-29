@@ -151,6 +151,10 @@ export function analyzeInspectionRuntimeState(
     analyzeArenaLifecycleConvergence(
       parsedScriptModels,
     );
+  const arenaCleanupSurfaces =
+    analyzeArenaCleanupSurfaces(
+      parsedScriptModels,
+    );
 
   const arenaLayoutReconciliation =
     reconcileArenaLayouts(
