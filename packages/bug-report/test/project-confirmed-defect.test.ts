@@ -49,8 +49,11 @@ function defect(
       evidenceIds: ["static:cleanup"],
     },
     aiAnalysis: "The cleanup path does not clear the owned state.",
-    relevantCode: [{
-      file: "scripts/session.ts",
+    sourceEvidence: [{
+      source: {
+        artifactId: "map",
+        relativePath: "scripts/session.ts",
+      },
       reason: "Owns cleanup state mutation.",
     }],
     brokenInvariantIds: ["inv:cleanup"],
@@ -117,6 +120,10 @@ describe("confirmed defect projection", () => {
         severity: "major",
         category: "player-state",
         foundBy: "ai",
+        relevantCode: [{
+          file: "scripts/session.ts",
+          reason: "Owns cleanup state mutation.",
+        }],
       }),
     );
   });
