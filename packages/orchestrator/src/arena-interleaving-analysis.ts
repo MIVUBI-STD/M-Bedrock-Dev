@@ -366,6 +366,95 @@ function compileEvents(
 
   if (
     scenario.kind ===
+    "simultaneous-all-arena-finish"
+  ) {
+    const events: MultiplayerInterleavingEvent[] = [];
+    for (const arenaId of scenario.arenaIds) {
+      const generation =
+        arenaGeneration(input, arenaId);
+      if (generation === undefined) {
+        return {
+          status: "insufficient-identity",
+          reasons: [
+            "All-arena finish analysis requires generation identity for every arena.",
+          ],
+          events: [],
+        };
+      }
+      const begin = event(
+        scenario.id + ":" + arenaId + ":cleanup-begin",
+        "cleanup-begin",
+        {
+          arenaId,
+          arenaGeneration: generation,
+        },
+      );
+      events.push(
+        begin,
+        event(
+          scenario.id + ":" + arenaId + ":cleanup-complete",
+          "cleanup-complete",
+          {
+            arenaId,
+            arenaGeneration: generation,
+            parentEventIds: [begin.id],
+          },
+        ),
+      );
+    }
+    return {
+      status: "analyzed",
+      reasons: [
+        "Models concurrent terminal cleanup across every arena while preserving per-arena generation ownership.",
+      ],
+      events,
+    };
+  }
+
+  if (
+    scenario.kind === "staggered-full-join"
+  ) {
+    const events: MultiplayerInterleavingEvent[] = [];
+    for (const playerId of scenario.playerIds) {
+      const item = subject(input, playerId);
+      if (!item) {
+        return {
+          status: "insufficient-identity",
+          reasons: [
+            "Staggered full-join analysis requires explicit subject identity for every participant.",
+          ],
+          events: [],
+        };
+      }
+      const base = subjectEvents(item);
+      const request = event(
+        scenario.id + ":" + playerId + ":request",
+        "join-request",
+        base,
+      );
+      events.push(
+        request,
+        event(
+          scenario.id + ":" + playerId + ":membership",
+          "membership-commit",
+          {
+            ...base,
+            parentEventIds: [request.id],
+          },
+        ),
+      );
+    }
+    return {
+      status: "analyzed",
+      reasons: [
+        "Models interleaved joins across arenas to expose shared queue and cross-arena membership ownership.",
+      ],
+      events,
+    };
+  }
+
+  if (
+    scenario.kind ===
     "simultaneous-all-arena-start"
   ) {
     const events: MultiplayerInterleavingEvent[] = [];
