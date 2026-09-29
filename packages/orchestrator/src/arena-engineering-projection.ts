@@ -65,6 +65,7 @@ export interface ArenaEngineeringProjection {
     voxel?: string;
     blockEntity?: string;
     entityPopulation?: string;
+    actorPopulation?: string;
     tickState?: string;
     structureInstances?: string;
   };
@@ -203,6 +204,15 @@ export function buildArenaEngineeringProjection(
               entityPopulation:
                 statusFor(
                   arena.entityPopulationProof,
+                  arenaId,
+                ),
+            }),
+        ...(statusFor(arena.actorPopulationProof, arenaId) === undefined
+          ? {}
+          : {
+              actorPopulation:
+                statusFor(
+                  arena.actorPopulationProof,
                   arenaId,
                 ),
             }),
@@ -413,6 +423,12 @@ export function buildArenaEngineeringProjection(
         : {
             entityPopulation:
               arena.entityPopulationProof.status,
+          }),
+      ...(arena.actorPopulationProof === undefined
+        ? {}
+        : {
+            actorPopulation:
+              arena.actorPopulationProof.status,
           }),
       ...(arena.tickStateProof === undefined
         ? {}
