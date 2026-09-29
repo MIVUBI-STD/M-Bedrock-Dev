@@ -33,6 +33,9 @@ import type {
   ScriptSpatialAnalysis,
 } from "./script-spatial-analysis.js";
 import type {
+  EntityAiStackAnalysis,
+} from "./entity-ai-stack-analysis.js";
+import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
@@ -166,6 +169,15 @@ export interface GameplayWorldModel {
     knowledgePrerequisiteGaps: number;
     staticAnalysisLimits: number;
     resolvedSpawnEvidence: number;
+    aiStack: {
+      states: number;
+      targetedStates: number;
+      targetedStackComplete: number;
+      targetedStackIncomplete: number;
+      navigationWithoutMovement: number;
+      targetedWithoutNavigation: number;
+      movementGoalWithoutNavigation: number;
+    };
   };
   intent: {
     invariants: number;
@@ -217,6 +229,7 @@ export interface GameplayWorldModelSource {
     placements: number;
     runtimeLogicLoads: number;
   };
+  entityAiStack?: EntityAiStackAnalysis;
   entities: {
     definitions: number;
     knowledgePrerequisiteGaps: number;
@@ -527,6 +540,27 @@ export function deriveGameplayWorldModel(
       ...source.entities,
       resolvedSpawnEvidence:
         source.arena.entitySpawnEvidence?.length ?? 0,
+      aiStack: {
+        states:
+          source.entityAiStack?.states ?? 0,
+        targetedStates:
+          source.entityAiStack?.targetedStates ?? 0,
+        targetedStackComplete:
+          source.entityAiStack
+            ?.targetedStackComplete ?? 0,
+        targetedStackIncomplete:
+          source.entityAiStack
+            ?.targetedStackIncomplete ?? 0,
+        navigationWithoutMovement:
+          source.entityAiStack
+            ?.navigationWithoutMovement ?? 0,
+        targetedWithoutNavigation:
+          source.entityAiStack
+            ?.targetedWithoutNavigation ?? 0,
+        movementGoalWithoutNavigation:
+          source.entityAiStack
+            ?.movementGoalWithoutNavigation ?? 0,
+      },
     },
     intent: {
       invariants: source.intent.invariants.length,
