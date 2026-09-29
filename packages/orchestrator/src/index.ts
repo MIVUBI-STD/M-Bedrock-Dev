@@ -217,3 +217,7 @@ export * from "./context-compiler.js";
 export * from "./zero-waste-benchmark.js";
 
 export * from "./adaptive-runtime-probe.js";
+
+export * from "./work-session-store.js";
+
+export * from "./semantic-proof-store.js";
