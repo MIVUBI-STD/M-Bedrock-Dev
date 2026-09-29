@@ -187,3 +187,51 @@ AND same repair unit
 This prevents accidental deduplication from hiding distinct gameplay failures.
 
 The collector also does not generate bug copy from raw diagnostic messages. Problem, Expected, Observed, AI Analysis, Relevant Code, Suggested Fix, and Must Preserve remain curated report content rather than mechanical diagnostic dumps.
+
+
+## Canonical confirmed defect model
+
+Confirmed evidence must not jump directly into a V2 bug draft.
+
+The canonical bridge is `ConfirmedDefect`:
+
+```text
+confirmation evidence
+→ ConfirmedDefect
+→ report projection
+→ promotion gate
+→ Bug Report V2
+```
+
+`ConfirmedDefect` owns semantic information used to derive report fields:
+
+- `impact` → Severity through `classifyBugSeverity()`;
+- `primaryFailure` → Category through `routeBugFinderCategory()`;
+- `semanticKey` → stable Bug ID;
+- `expected` → authoritative Expected statement plus evidence IDs;
+- `observed` → Observed statement plus evidence IDs;
+- `sourceEvidence` → Relevant Code from verified SourceRef paths;
+- `brokenInvariantIds` and `repairUnitIds` → semantic grouping identity;
+- optional `causalIncidentId` → causal grouping identity.
+
+Callers do not supply Severity, Category, or Bug ID.
+
+Bug IDs are deterministic from map identity plus `semanticKey`, so adding an unrelated defect does not renumber existing bugs.
+
+For the high-level audit-to-report path, AI source evidence is checked against the audited file inventory before V2 promotion.
+
+## Repair-safe report enrichment
+
+The canonical audit path does not accept manually supplied Must Preserve content.
+
+Must Preserve is derived only when repair invariant selection is automatically supported by causal/invariant provenance.
+
+Suggested Fix requires a `DiagnosticRepairDecision`. If the decision remains `observe-only`, Suggested Fix is omitted.
+
+This keeps defect confirmation separate from repair authorization:
+
+```text
+defect confirmed
+does not imply
+repair mechanism proven
+```
