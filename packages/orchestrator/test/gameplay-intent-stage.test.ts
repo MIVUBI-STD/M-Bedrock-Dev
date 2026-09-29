@@ -268,6 +268,94 @@ describe("gameplay intent stage", () => {
     ).toBe(false);
   });
 
+  it("promotes typed authored transition invariants only from authored source input", () => {
+    const runtimeParsed: ParsedScriptFile = {
+      ...parsed(),
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/session-state-machine.js",
+      },
+      transitionDeclarations: [{
+        tableName: "TRANSITIONS",
+        from: "active",
+        to: ["finishing", "failed"],
+        source: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/demo/scripts/session-state-machine.js",
+        },
+      }],
+    };
+
+    const authoredParsed: ParsedScriptFile = {
+      ...parsed(),
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/src/session-state-machine.ts",
+      },
+      transitionDeclarations: [{
+        tableName: "TRANSITIONS",
+        stateType: "SessionPhase",
+        from: "active",
+        to: ["finishing", "failed"],
+        source: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/demo/src/session-state-machine.ts",
+        },
+      }],
+    };
+
+    const model = buildGameplayIntentModel({
+      id: "authored-transition-invariant",
+      parsedScripts: [{ parsed: runtimeParsed }],
+      authoredScripts: [{ parsed: authoredParsed }],
+    });
+
+    expect(
+      model.invariants.find(
+        (invariant) =>
+          invariant.id ===
+          "inv:allowed-transitions:state:session-phase-active",
+      )?.status,
+    ).toBe("authored");
+  });
+
+  it("promotes complete authored guard coverage to authored policy invariant", () => {
+    const authoredParsed = parsed();
+
+    const model = buildGameplayIntentModel({
+      id: "authored-policy-invariant",
+      parsedScripts: [],
+      authoredScripts: [{ parsed: authoredParsed }],
+    });
+
+    expect(
+      model.invariants.find(
+        (invariant) =>
+          invariant.id ===
+          "inv:admissible-policy:outcome:decide-reconnect-cleanup",
+      )?.status,
+    ).toBe("authored");
+  });
+
+  it("keeps the same policy invariant inferred when authored source input is absent", () => {
+    const model = buildGameplayIntentModel({
+      id: "runtime-policy-invariant",
+      parsedScripts: [{ parsed: parsed() }],
+    });
+
+    expect(
+      model.invariants.find(
+        (invariant) =>
+          invariant.id ===
+          "inv:admissible-policy:outcome:decide-reconnect-cleanup",
+      )?.status,
+    ).toBe("inferred");
+  });
+
   it("merges duplicate semantic relations from runtime and authored sources", () => {
     const runtimeParsed: ParsedScriptFile = {
       ...parsed(),
