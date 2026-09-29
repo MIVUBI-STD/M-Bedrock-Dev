@@ -39,6 +39,9 @@ import type {
   InventoryPolicyAnalysis,
 } from "./inventory-policy-analysis.js";
 import type {
+  InventoryRestoreOwnershipAnalysis,
+} from "./inventory-restore-ownership-analysis.js";
+import type {
   SpatialAuthorityCoverageReport,
 } from "./spatial-authority-analysis.js";
 
@@ -130,6 +133,12 @@ export interface GameplayWorldModel {
     dropRegions: number;
     knownEquipmentSlots: number;
     unresolvedEquipmentSlotEvidence: number;
+    restoreOwnership: {
+      pathways: number;
+      deterministicItemRestores: number;
+      unknownIdentityGrants: number;
+      multipleRestoreOwners: number;
+    };
     policy: {
       configured: boolean;
       resolvedItemClasses: number;
@@ -195,6 +204,7 @@ export interface GameplayWorldModelSource {
   spatialAuthority?: SpatialAuthorityCoverageReport;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
   inventoryPolicy?: InventoryPolicyAnalysis;
+  inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
   semanticIr: {
     stateSurfaces: number;
     stateOperations: number;
@@ -466,6 +476,20 @@ export function deriveGameplayWorldModel(
       unresolvedEquipmentSlotEvidence:
         source.inventoryLifecycle
           ?.unresolvedEquipmentSlotEvidence ?? 0,
+      restoreOwnership: {
+        pathways:
+          source.inventoryRestoreOwnership
+            ?.restorePathways ?? 0,
+        deterministicItemRestores:
+          source.inventoryRestoreOwnership
+            ?.deterministicItemRestores ?? 0,
+        unknownIdentityGrants:
+          source.inventoryRestoreOwnership
+            ?.unknownIdentityGrants ?? 0,
+        multipleRestoreOwners:
+          source.inventoryRestoreOwnership
+            ?.multipleRestoreOwners ?? 0,
+      },
       policy: {
         configured:
           source.inventoryPolicy?.configured ?? false,
