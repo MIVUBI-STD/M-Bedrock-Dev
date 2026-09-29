@@ -200,7 +200,9 @@ describe("confirmed defect projection", () => {
           expectedAuthority: "authored-intent",
           primaryFailure: "player-owned-state",
           aiAnalysis: "Grouped symptoms share one cleanup defect.",
-          sourceEvidence: a.sourceEvidence,
+          ...(a.sourceEvidence === undefined
+            ? {}
+            : { sourceEvidence: a.sourceEvidence }),
         },
       }],
     });
