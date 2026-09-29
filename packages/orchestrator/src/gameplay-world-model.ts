@@ -32,6 +32,9 @@ import type {
 import type {
   ScriptSpatialAnalysis,
 } from "./script-spatial-analysis.js";
+import type {
+  SpatialAuthorityCoverageReport,
+} from "./spatial-authority-analysis.js";
 
 export interface GameplayWorldSubjectSummary {
   kind: GameplayIntentNodeKind;
@@ -102,6 +105,14 @@ export interface GameplayWorldModel {
     structurePlacements: number;
     unresolvedScriptMutations: number;
     rejectedScriptMutations: number;
+    authority: {
+      configured: boolean;
+      policyValid: boolean;
+      resolved: number;
+      uncovered: number;
+      conflicts: number;
+      unknownRegions: number;
+    };
   };
   state: {
     semanticSurfaces: number;
@@ -155,6 +166,7 @@ export interface GameplayWorldModelSource {
     entitySpawnEvidence?: readonly unknown[];
   };
   scriptSpatial: ScriptSpatialAnalysis;
+  spatialAuthority?: SpatialAuthorityCoverageReport;
   semanticIr: {
     stateSurfaces: number;
     stateOperations: number;
@@ -390,6 +402,20 @@ export function deriveGameplayWorldModel(
         source.scriptSpatial.failures.length,
       rejectedScriptMutations:
         source.scriptSpatial.rejectedMutations,
+      authority: {
+        configured:
+          source.spatialAuthority !== undefined,
+        policyValid:
+          source.spatialAuthority?.policyValid ?? true,
+        resolved:
+          source.spatialAuthority?.resolved ?? 0,
+        uncovered:
+          source.spatialAuthority?.uncovered ?? 0,
+        conflicts:
+          source.spatialAuthority?.conflicts ?? 0,
+        unknownRegions:
+          source.spatialAuthority?.unknownRegions ?? 0,
+      },
     },
     state: {
       semanticSurfaces:
