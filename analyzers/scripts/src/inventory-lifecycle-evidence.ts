@@ -6,7 +6,7 @@ import type {
 export type ScriptInventoryEvidenceKind =
   | "inventory-clear-all"
   | "inventory-clear-slot"
-  | "equipment-clear"
+  | "equipment-clear-slot"
   | "item-grant"
   | "equipment-set"
   | "item-read"
@@ -336,9 +336,15 @@ export function deriveScriptInventoryLifecycleEvidence(
         push(node, {
           kind:
             isUndefinedExpression(item)
-              ? "equipment-clear"
+              ? "equipment-clear-slot"
               : "equipment-set",
           subjectExpression: receiver,
+          ...(node.arguments[0] === undefined
+            ? {}
+            : {
+                slotExpression:
+                  node.arguments[0]!.getText(file),
+              }),
           ...(item && ts.isIdentifier(item)
             ? { itemBinding: item.text }
             : {}),
