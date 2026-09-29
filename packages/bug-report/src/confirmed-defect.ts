@@ -1,7 +1,7 @@
 import {
   validateSourceRef,
   type SourceRef,
-} from "../../project-model/src/index.js";
+} from "../../project-model/src/source-ref.js";
 import type {
   BugImpactAssessment,
   BugPrimaryFailure,
