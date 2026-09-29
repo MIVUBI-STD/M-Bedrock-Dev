@@ -9,7 +9,7 @@ function singleBlockSubchunk(name: string): Uint8Array {
       name: string(name),
       states: comp({}),
       version: int(1),
-    }),
+    }, ""),
     "little",
   );
   return Buffer.concat([Buffer.from([9, 1, 0, 0]), palette]);
