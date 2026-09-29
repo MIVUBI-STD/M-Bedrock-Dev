@@ -92,6 +92,11 @@ function sourceEvidenceIds(
       return hash === undefined
         ? undefined
         : "source-index:" +
+            SOURCE_INDEX_EXECUTOR_REVISION +
+            ":" +
+            (node.parserVersion ??
+              "parser-unknown") +
+            ":" +
             payload.artifactId +
             ":" +
             hash +
@@ -106,6 +111,8 @@ function sourceEvidenceIds(
   if (ids.length === 0) {
     ids.push(
       "source-index:" +
+        SOURCE_INDEX_EXECUTOR_REVISION +
+        ":" +
         payload.artifactId +
         ":recognized-source-empty",
     );
