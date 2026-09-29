@@ -140,7 +140,7 @@ export interface InspectDirectoryResult {
         kinds: string[];
       }>;
       chunkSignalsTruncated: boolean;
-      chunkContentObservations: Array<{
+      chunkContentObservations?: Array<{
         chunkX: number;
         chunkZ: number;
         dimensionId: number;
@@ -148,7 +148,7 @@ export interface InspectDirectoryResult {
         valueHash: string;
         subChunkIndex?: number;
       }>;
-      chunkContentObservationsTruncated: boolean;
+      chunkContentObservationsTruncated?: boolean;
       failure?: string;
     };
   };
