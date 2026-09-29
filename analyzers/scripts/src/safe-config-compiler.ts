@@ -384,16 +384,34 @@ export function compileSafeConfigExpression(
         value.expression.expression,
       );
     const callback = value.arguments[0];
+    if (!source || !callback) {
+      return undefined;
+    }
+
+    if (ts.isIdentifier(callback)) {
+      const itemName = "$item";
+      return {
+        kind: "map",
+        source,
+        itemName,
+        body: {
+          kind: "call",
+          name: callback.text,
+          args: [{
+            kind: "ref",
+            name: itemName,
+          }],
+        },
+      };
+    }
+
     if (
-      !source ||
-      !callback ||
-      (
-        !ts.isArrowFunction(callback) &&
-        !ts.isFunctionExpression(callback)
-      )
+      !ts.isArrowFunction(callback) &&
+      !ts.isFunctionExpression(callback)
     ) {
       return undefined;
     }
+
     const params =
       functionParameterNames(
         callback.parameters,
