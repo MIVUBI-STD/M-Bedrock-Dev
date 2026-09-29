@@ -29,6 +29,7 @@ export function analyzeFunctionTopology(
   functions: readonly ParsedFunction[],
   options: {
     arenaRegionContracts?: readonly import("../../project-model/src/index.js").ArenaRegionContract[];
+    additionalResolvedEffects?: readonly ResolvedEffect[];
   } = {},
 ) {
   const effects: CommandEffect[] = [];
@@ -61,7 +62,12 @@ export function analyzeFunctionTopology(
   const stateAccesses = stateAccessesFromEffects(effects);
   const stateDiagnostics = stateScopeDiagnostics(stateAccesses);
 
-  const resolvedSpatialEffects = spatialRecords.map((record) => record.resolved);
+  const commandResolvedSpatialEffects =
+    spatialRecords.map((record) => record.resolved);
+  const resolvedSpatialEffects = [
+    ...commandResolvedSpatialEffects,
+    ...(options.additionalResolvedEffects ?? []),
+  ];
   const candidates = deriveTopologyCandidates(resolvedSpatialEffects);
   const linearOutliers = detectLinearTopologyOutliers(resolvedSpatialEffects);
   const arenaReplicaDiscovery = discoverArenaReplicasFromTopology(
@@ -88,20 +94,29 @@ export function analyzeFunctionTopology(
         );
   const topologyDiagnostics = linearTopologyOutlierDiagnostics(linearOutliers);
 
-  const repairableTopologyCandidates: RepairableTopologyCandidate[] = linearOutliers
-    .map((outlier) => ({
-      outlier,
-      record: spatialRecords[outlier.effectIndex]!,
-    }))
-    .filter(({ record }) =>
-      record.directTopLevel &&
-      (record.effect.kind === "fill" || record.effect.kind === "setblock")
-    );
+  const repairableTopologyCandidates: RepairableTopologyCandidate[] =
+    linearOutliers.flatMap((outlier) => {
+      const record = spatialRecords[outlier.effectIndex];
+      if (
+        !record ||
+        !record.directTopLevel ||
+        (
+          record.effect.kind !== "fill" &&
+          record.effect.kind !== "setblock"
+        )
+      ) {
+        return [];
+      }
+      return [{ outlier, record }];
+    });
 
   return {
     stateAccesses,
     stateDiagnostics,
     resolvedSpatialEffects,
+    commandResolvedSpatialEffects,
+    additionalResolvedSpatialEffects:
+      options.additionalResolvedEffects ?? [],
     spatialRecords,
     candidates,
     linearOutliers,

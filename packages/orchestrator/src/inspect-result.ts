@@ -157,6 +157,7 @@ export function buildInspectionResult(
     scriptStructureLoads,
     placedEmbeddedCommands,
     topology,
+    scriptSpatial,
     scriptSafeConfig,
     arenaLifecycle,
     arenaCleanupSurfaces,
@@ -236,6 +237,7 @@ export function buildInspectionResult(
     ).length,
     scriptApiUsage,
     scriptSafeConfig,
+    scriptSpatial,
     releaseIdentity: input.releaseIdentity,
     structures: nodes.filter(
       (node) => node.kind === "structure",

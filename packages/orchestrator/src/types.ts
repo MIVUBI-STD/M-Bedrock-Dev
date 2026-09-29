@@ -29,6 +29,7 @@ import type { ArenaLayoutReconciliation } from "./arena-layout-reconciliation.js
 import type { ArenaLifecycleAnalysis } from "./arena-lifecycle-analysis.js";
 import type { ArenaCleanupSurfaceAnalysis } from "./arena-cleanup-surface-analysis.js";
 import type { ArenaStateIsolationAnalysis } from "./arena-state-isolation-analysis.js";
+import type { ScriptSpatialAnalysis } from "./script-spatial-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
@@ -72,6 +73,7 @@ export interface InspectDirectoryResult {
   scripts: number;
   scriptApiUsage: ScriptApiUsageInventory;
   scriptSafeConfig: ScriptSafeConfigAnalysis;
+  scriptSpatial: ScriptSpatialAnalysis;
   releaseIdentity: ReleaseIdentityAnalysis;
   structures: number;
   parsedStructures: number;

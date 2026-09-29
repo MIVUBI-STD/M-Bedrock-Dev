@@ -25,6 +25,7 @@ import { reconcileArenaLayouts } from "./arena-layout-reconciliation.js";
 import { analyzeArenaLifecycleConvergence } from "./arena-lifecycle-analysis.js";
 import { analyzeArenaCleanupSurfaces } from "./arena-cleanup-surface-analysis.js";
 import { analyzeArenaStateIsolation } from "./arena-state-isolation-analysis.js";
+import { analyzeScriptSpatialMutations } from "./script-spatial-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -131,12 +132,19 @@ export function analyzeInspectionRuntimeState(
       },
     );
 
+  const parsedScriptModels =
+    input.parsedScripts.map((item) => item.parsed);
+  const scriptSpatial =
+    analyzeScriptSpatialMutations(parsedScriptModels);
+
   const topology =
     analyzeFunctionTopology(
       parsedFunctionModels,
       {
         arenaRegionContracts:
           input.target.arenaRegionContracts ?? [],
+        additionalResolvedEffects:
+          scriptSpatial.resolvedEffects,
       },
     );
   diagnostics.push(
@@ -144,8 +152,6 @@ export function analyzeInspectionRuntimeState(
     ...topology.topologyDiagnostics,
   );
 
-  const parsedScriptModels =
-    input.parsedScripts.map((item) => item.parsed);
   const scriptSafeConfig =
     analyzeScriptSafeConfig(parsedScriptModels);
   const arenaLifecycle =
@@ -286,6 +292,7 @@ export function analyzeInspectionRuntimeState(
     sourceByFunction,
     placedEmbeddedCommands,
     topology,
+    scriptSpatial,
     scriptSafeConfig,
     arenaLifecycle,
     arenaCleanupSurfaces,
