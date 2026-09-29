@@ -46,7 +46,7 @@ describe("GitHubReportClient", () => {
   });
 
   it("saves without exposing GitHub credentials to the browser", async () => {
-    const fetchImpl = vi.fn(async () =>
+    const fetchMock = vi.fn(async () =>
       new Response(
         JSON.stringify({ saved: true }),
         {
