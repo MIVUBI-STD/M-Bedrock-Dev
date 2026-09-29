@@ -4,6 +4,7 @@ import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/in
 import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";
 import { buildEngineeringReviewProjection } from "../../../packages/orchestrator/src/index.js";
 import { buildArenaEngineeringProjection } from "../../../packages/orchestrator/src/index.js";
+import { buildMapEngineeringWorkflow } from "../../../packages/orchestrator/src/index.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/index.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
@@ -230,6 +231,40 @@ async function main(): Promise<void> {
   }
 
 
+  if (command === "workflow" && input) {
+    const telemetry = telemetryPath
+      ? await loadTelemetryFile(resolve(telemetryPath))
+      : undefined;
+    const probeTranscript = probeTranscriptPath
+      ? await loadRuntimeProbeTranscript(
+          resolve(probeTranscriptPath),
+        )
+      : undefined;
+    const result = await inspectArtifact(
+      resolve(input),
+      target,
+      knowledge,
+      telemetry ?? [],
+      probeTranscript,
+    );
+    const workflow =
+      buildMapEngineeringWorkflow(result);
+    console.log(
+      JSON.stringify(workflow, null, 2),
+    );
+
+    if (
+      workflow.stages.some(
+        (stage) =>
+          stage.id === "release" &&
+          stage.status === "blocked",
+      )
+    ) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (command === "arena-audit" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
@@ -309,6 +344,7 @@ async function main(): Promise<void> {
     command !== "inspect" &&
     command !== "review" &&
     command !== "arena-audit" &&
+    command !== "workflow" &&
     command !== "review-model" &&
     command !== "probe-plan" &&
     command !== "probe-replay"
@@ -372,6 +408,7 @@ async function main(): Promise<void> {
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json]",
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
