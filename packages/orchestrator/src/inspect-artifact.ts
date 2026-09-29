@@ -19,6 +19,7 @@ import { openBedrockLevelDbSnapshot } from "../../../adapters/leveldb/src/index.
 import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
 import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { partitionArenaProofVolumes } from "../../../analyzers/topology/src/index.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
@@ -77,7 +78,7 @@ export async function inspectArtifact(
       runtimeProbeResponses,
       runtimeProbeTranscript?.droppedExchanges ?? 0,
     );
-    const proofVolumes =
+    const baseProofVolumes =
       result.arenaAnalysis.regionClassification === undefined
         ? result.arenaAnalysis.regionPlan?.volumes
         : [
@@ -85,6 +86,19 @@ export async function inspectArtifact(
             ...result.arenaAnalysis.regionClassification.mixedVolumes,
             ...result.arenaAnalysis.regionClassification.unknownVolumes,
           ];
+
+    const proofPartition =
+      baseProofVolumes === undefined
+        ? undefined
+        : partitionArenaProofVolumes(
+            baseProofVolumes,
+            result.arenaAnalysis.regionClassification
+              ?.proofExclusionVolumes ?? [],
+          );
+
+    const proofVolumes =
+      proofPartition?.volumes ??
+      baseProofVolumes;
 
     const arenaNativeSpatial =
       result.arenaAnalysis.discovery === undefined
@@ -212,6 +226,9 @@ export async function inspectArtifact(
         ...(arenaVoxelProof === undefined
           ? {}
           : { voxelProof: arenaVoxelProof }),
+        ...(proofPartition === undefined
+          ? {}
+          : { proofPartition }),
       },
       worldDatabase: {
         ...result.worldDatabase,

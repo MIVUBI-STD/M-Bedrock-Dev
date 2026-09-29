@@ -32,6 +32,7 @@ export interface ClassifiedArenaRegionVolume extends ArenaRegionVolume {
   mutableConflictKeys: readonly string[];
   authoredContractIds: readonly string[];
   roleAuthority: ArenaRegionRoleAuthority;
+  proofExclusionVolumes: readonly ArenaRegionVolume[];
 }
 
 export interface ArenaRegionClassification {
@@ -41,6 +42,7 @@ export interface ArenaRegionClassification {
   mixedVolumes: readonly ArenaRegionVolume[];
   ignoredVolumes: readonly ArenaRegionVolume[];
   unknownVolumes: readonly ArenaRegionVolume[];
+  proofExclusionVolumes: readonly ArenaRegionVolume[];
 }
 
 function overlaps(
@@ -247,6 +249,32 @@ export function classifyArenaRegionRoles(
         resolveArenaRegionContractVolume(contract, canonicalAnchor),
       )
     );
+
+    const authoredExclusions = overlappingContracts
+      .filter((contract) =>
+        contract.role === "mutable" ||
+        contract.role === "ignore"
+      )
+      .map((contract): ArenaRegionVolume => {
+        const resolved = resolveArenaRegionContractVolume(
+          contract,
+          canonicalAnchor,
+        );
+        return {
+          min: resolved.min,
+          max: resolved.max,
+          evidenceCandidateIds: [],
+        };
+      });
+
+    const inferredExclusions = writes
+      .filter((item) => mutableCandidates.has(item.candidateId))
+      .map((item) => item.volume);
+
+    const proofExclusionVolumes = [
+      ...authoredExclusions,
+      ...inferredExclusions,
+    ];
     const authoredRoles = new Set(
       overlappingContracts.map((contract) => contract.role),
     );
@@ -268,25 +296,31 @@ export function classifyArenaRegionRoles(
         .map((contract) => contract.id)
         .sort(),
       roleAuthority,
+      proofExclusionVolumes,
     };
   });
+
+  const proofExclusionVolumes = classified.flatMap(
+    (item) => item.proofExclusionVolumes,
+  );
 
   return {
     volumes: classified,
     staticVolumes: classified
       .filter((item) => item.role === "static")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, proofExclusionVolumes: _exclude, ...volume }) => volume),
     mutableVolumes: classified
       .filter((item) => item.role === "mutable")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, proofExclusionVolumes: _exclude, ...volume }) => volume),
     mixedVolumes: classified
       .filter((item) => item.role === "mixed")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, proofExclusionVolumes: _exclude, ...volume }) => volume),
     ignoredVolumes: classified
       .filter((item) => item.role === "ignore")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, proofExclusionVolumes: _exclude, ...volume }) => volume),
     unknownVolumes: classified
       .filter((item) => item.role === "unknown")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, proofExclusionVolumes: _exclude, ...volume }) => volume),
+    proofExclusionVolumes,
   };
 }
