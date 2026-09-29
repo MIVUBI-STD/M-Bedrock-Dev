@@ -6,91 +6,122 @@ import {
 } from "vitest";
 import {
   GitHubReportClient,
+  GitHubReportConflictError,
 } from "../src/github-report-client.js";
+
+const report = {
+  schema: "m-bedrock-bug-report/v2" as const,
+  map: {
+    name: "A",
+    mapVersion: "1.0.0",
+    baseVersion: "1.26.20",
+    testedVersion: "1.26.20",
+  },
+  repairBy: "developer" as const,
+  bugs: [{
+    id: "BUG-A-001",
+    fixed: false,
+    severity: "minor" as const,
+    category: "ui-feedback" as const,
+    foundBy: "tester" as const,
+    title: "A",
+    problem: "A",
+    expected: "A",
+    observed: "A",
+  }],
+};
 
 describe("GitHubReportClient", () => {
   it("lists reports through the app backend", async () => {
     const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          reports: [{
-            path: "bug-reports/a.json",
-            mapName: "A",
-            mapVersion: "1.0.0",
-            fixed: 1,
-            total: 2,
-          }],
-        }),
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      )
+      new Response(JSON.stringify({
+        reports: [{
+          path: "bug-reports/a.json",
+          mapName: "A",
+          mapVersion: "1.0.0",
+          fixed: 1,
+          total: 2,
+          blockers: 1,
+        }],
+      }), { status: 200 }),
     );
-
     const client = new GitHubReportClient({
       fetchImpl: fetchMock as unknown as typeof fetch,
     });
 
-    await expect(client.listReports()).resolves.toEqual([
-      {
-        path: "bug-reports/a.json",
-        mapName: "A",
-        mapVersion: "1.0.0",
-        fixed: 1,
-        total: 2,
-      },
-    ]);
+    await expect(client.listReports()).resolves.toEqual([{
+      path: "bug-reports/a.json",
+      mapName: "A",
+      mapVersion: "1.0.0",
+      fixed: 1,
+      total: 2,
+      blockers: 1,
+    }]);
   });
 
-  it("saves without exposing GitHub credentials to the browser", async () => {
+  it("loads report plus source revision", async () => {
     const fetchMock = vi.fn(async () =>
-      new Response(
-        JSON.stringify({ saved: true }),
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      )
+      new Response(JSON.stringify({
+        report,
+        revision: "abc",
+      }), { status: 200 }),
     );
-
     const client = new GitHubReportClient({
       fetchImpl: fetchMock as unknown as typeof fetch,
     });
 
-    await client.saveReport(
-      "bug-reports/a.json",
-      {
-        schema: "m-bedrock-bug-report/v2",
-        map: {
-          name: "A",
-          mapVersion: "1.0.0",
-          baseVersion: "1.26.20",
-          testedVersion: "1.26.20",
-        },
-        repairBy: "developer",
-        bugs: [{
-          id: "BUG-A-001",
-          fixed: false,
-          severity: "minor",
-          category: "ui-feedback",
-          foundBy: "tester",
-          title: "A",
-          problem: "A",
-          expected: "A",
-          observed: "A",
-        }],
-      },
+    await expect(
+      client.loadReport("bug-reports/a.json"),
+    ).resolves.toEqual({
+      report,
+      revision: "abc",
+    });
+  });
+
+  it("saves using expected revision without browser credentials", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({
+        revision: "def",
+      }), { status: 200 }),
     );
+    const client = new GitHubReportClient({
+      fetchImpl: fetchMock as unknown as typeof fetch,
+    });
+
+    await expect(
+      client.saveReport(
+        "bug-reports/a.json",
+        report,
+        "abc",
+      ),
+    ).resolves.toEqual({
+      revision: "def",
+    });
 
     const init = fetchMock.mock.calls[0]?.[1] as RequestInit;
-    expect(init.headers).toEqual({
-      "Content-Type": "application/json",
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      expectedRevision: "abc",
     });
     expect(JSON.stringify(init)).not.toContain("Bearer");
+  });
+
+  it("maps revision conflicts to a dedicated error", async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({
+        code: "report-conflict",
+        error: "changed",
+      }), { status: 409 }),
+    );
+    const client = new GitHubReportClient({
+      fetchImpl: fetchMock as unknown as typeof fetch,
+    });
+
+    await expect(
+      client.saveReport(
+        "bug-reports/a.json",
+        report,
+        "abc",
+      ),
+    ).rejects.toBeInstanceOf(GitHubReportConflictError);
   });
 });
