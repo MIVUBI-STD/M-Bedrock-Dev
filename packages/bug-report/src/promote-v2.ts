@@ -44,7 +44,9 @@ export type BugReportPromotionIssueCode =
   | "ai-unproven-defect"
   | "invalid-confirmed-defect"
   | "duplicate-semantic-key"
-  | "unresolved-defect-group";
+  | "unresolved-defect-group"
+  | "invalid-defect-group-resolution"
+  | "unused-defect-group-resolution";
 
 export interface BugReportPromotionIssue {
   readonly code: BugReportPromotionIssueCode;
