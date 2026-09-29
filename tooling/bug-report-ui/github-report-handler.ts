@@ -4,8 +4,9 @@ import type {
 import {
   parseBugReportV2,
 } from "../../packages/bug-report/src/index.js";
-import type {
-  GitHubBugReportStore,
+import {
+  GitHubBugReportConflictError,
+  type GitHubBugReportStore,
 } from "./github-report-store.js";
 
 function json(
@@ -47,9 +48,7 @@ export async function handleBugReportStoreRequest(
       if (!path) {
         return json({ error: "Missing path." }, 400);
       }
-      return json({
-        report: await store.loadReport(path),
-      });
+      return json(await store.loadReport(path));
     }
 
     if (
@@ -59,9 +58,17 @@ export async function handleBugReportStoreRequest(
       const input = await request.json() as {
         path?: unknown;
         report?: unknown;
+        expectedRevision?: unknown;
       };
       if (typeof input.path !== "string" || !input.path.trim()) {
         return json({ error: "Missing path." }, 400);
+      }
+
+      if (
+        typeof input.expectedRevision !== "string" ||
+        !input.expectedRevision.trim()
+      ) {
+        return json({ error: "Missing expectedRevision." }, 400);
       }
 
       const parsed = parseBugReportV2(input.report);
@@ -72,15 +79,21 @@ export async function handleBugReportStoreRequest(
         }, 400);
       }
 
-      await store.saveReport(
+      return json(await store.saveReport(
         input.path,
         parsed.report as BugReportV2,
-      );
-      return json({ saved: true });
+        input.expectedRevision,
+      ));
     }
 
     return json({ error: "Not found." }, 404);
   } catch (error) {
+    if (error instanceof GitHubBugReportConflictError) {
+      return json({
+        error: error.message,
+        code: "report-conflict",
+      }, 409);
+    }
     return json({
       error:
         error instanceof Error
