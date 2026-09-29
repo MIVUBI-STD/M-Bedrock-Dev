@@ -123,6 +123,27 @@ describe("confirmed defect projection", () => {
     );
   });
 
+  it("blocks unresolved multi-symptom semantic groups", () => {
+    const result = buildBugReportFromConfirmedDefects({
+      map,
+      repairBy: "developer",
+      defects: [
+        defect("symptom-a", {
+          causalIncidentId: "incident:cleanup",
+        }),
+        defect("symptom-b", {
+          causalIncidentId: "incident:cleanup",
+        }),
+      ],
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(
+      result.issues.map((issue) => issue.code),
+    ).toContain("unresolved-defect-group");
+  });
+
   it("projects a canonical V2 report", () => {
     const result = buildBugReportFromConfirmedDefects({
       map,
