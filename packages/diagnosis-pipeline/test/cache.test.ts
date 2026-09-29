@@ -117,40 +117,42 @@ describe("diagnosis result cache", () => {
       .not.toBe(zero);
   });
 
-  it("fingerprints semantic-graph-like objects from their public graph projection", () => {
-    class GraphLike {
-      private nodes:
-        Array<{ id: string }> = [];
-      private edges:
-        Array<{ id: string }> = [];
+  it("fingerprints class-backed state without invoking public methods", () => {
+    class Stateful {
+      private readonly nodes =
+        new Map<string, {
+          id: string;
+        }>();
+      calls = 0;
 
       allNodes() {
-        return [...this.nodes];
-      }
-
-      allEdges() {
-        return [...this.edges];
+        this.calls += 1;
+        return [
+          ...this.nodes.values(),
+        ];
       }
 
       addNode(id: string) {
-        this.nodes.push({ id });
+        this.nodes.set(id, { id });
       }
     }
 
-    const graph =
-      new GraphLike();
+    const value = new Stateful();
     const first =
       diagnosisCacheValueFingerprint(
-        graph,
+        value,
       );
 
-    graph.addNode("n1");
+    expect(value.calls).toBe(0);
+
+    value.addNode("n1");
 
     const second =
       diagnosisCacheValueFingerprint(
-        graph,
+        value,
       );
 
+    expect(value.calls).toBe(0);
     expect(second)
       .not.toBe(first);
   });
