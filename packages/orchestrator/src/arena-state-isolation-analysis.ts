@@ -2,6 +2,10 @@ import type {
   ParsedScriptFile,
   ScriptMethodCall,
 } from "../../../analyzers/scripts/src/index.js";
+import type {
+  StateAuthorityContract,
+  StateSurfaceKind,
+} from "../../project-model/src/index.js";
 
 export type ArenaStateScope =
   | "arena-local"
@@ -30,6 +34,7 @@ export interface ArenaStateIsolationObservation {
   scope: ArenaStateScope;
   status: ArenaStateIsolationStatus;
   reason: string;
+  authorityContractIds?: readonly string[];
 }
 
 export interface ArenaStateIsolationAnalysis {
@@ -281,13 +286,128 @@ function analyzeScript(
   return { regions, observations };
 }
 
+
+function contractSurfaceMatches(
+  observation: ArenaStateIsolationObservation,
+  surface: {
+    kind: StateSurfaceKind;
+    key: string;
+  },
+): boolean {
+  if (
+    observation.surface === "dynamic-property" &&
+    surface.kind === "dynamic-property"
+  ) {
+    return (
+      observation.key === surface.key ||
+      observation.key.endsWith(
+        ":" + surface.key,
+      )
+    );
+  }
+
+  if (
+    observation.surface === "scoreboard" &&
+    surface.kind === "scoreboard"
+  ) {
+    return (
+      observation.key === surface.key ||
+      observation.key.includes(
+        surface.key,
+      )
+    );
+  }
+
+  if (
+    observation.surface === "module-state" &&
+    surface.kind === "script-memory"
+  ) {
+    return (
+      observation.key === surface.key ||
+      observation.key.endsWith(
+        "." + surface.key,
+      )
+    );
+  }
+
+  return false;
+}
+
+function applyAuthorityContracts(
+  observations: readonly ArenaStateIsolationObservation[],
+  contracts: readonly StateAuthorityContract[],
+): ArenaStateIsolationObservation[] {
+  return observations.map((observation) => {
+    const matches = contracts.filter((contract) => {
+      if (
+        contract.scope !== "arena" &&
+        contract.scope !== "round" &&
+        contract.scope !== "player" &&
+        contract.scope !== "entity"
+      ) {
+        return false;
+      }
+
+      return [
+        contract.authority,
+        ...contract.mirrors,
+      ].some((surface) =>
+        contractSurfaceMatches(
+          observation,
+          surface,
+        )
+      );
+    });
+
+    if (matches.length === 0) {
+      return observation;
+    }
+
+    return {
+      ...observation,
+      scope:
+        matches.some(
+          (item) =>
+            item.scope === "arena" ||
+            item.scope === "round",
+        )
+          ? "arena-local"
+          : matches.some(
+              (item) =>
+                item.scope === "player",
+            )
+            ? "player-local"
+            : "entity-local",
+      status: "isolated",
+      reason:
+        "Authored state-authority contract proves this surface is partitioned by " +
+        [
+          ...new Set(
+            matches.map(
+              (item) => item.scope,
+            ),
+          ),
+        ].join("/") +
+        " scope.",
+      authorityContractIds:
+        matches.map(
+          (item) => item.id,
+        ).sort(),
+    };
+  });
+}
+
 export function analyzeArenaStateIsolation(
   scripts: readonly ParsedScriptFile[],
+  contracts: readonly StateAuthorityContract[] = [],
 ): ArenaStateIsolationAnalysis {
   const analyzed = scripts.map(analyzeScript);
-  const observations = analyzed
-    .flatMap((item) => item.observations)
-    .sort((a, b) =>
+  const observations = applyAuthorityContracts(
+    analyzed.flatMap(
+      (item) => item.observations,
+    ),
+    contracts,
+  ).sort((a, b) =>
       a.scriptId.localeCompare(b.scriptId) ||
       a.region.localeCompare(b.region) ||
       a.surface.localeCompare(b.surface) ||
