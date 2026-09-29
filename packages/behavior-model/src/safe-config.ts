@@ -9,14 +9,51 @@ export type SafeConfigExpression =
   | { kind: "ref"; name: string }
   | { kind: "array"; items: readonly SafeConfigExpression[] }
   | {
+      kind: "array-compose";
+      parts: readonly {
+        expression: SafeConfigExpression;
+        spread: boolean;
+      }[];
+    }
+  | {
       kind: "object";
       entries: Readonly<Record<string, SafeConfigExpression>>;
+    }
+  | {
+      kind: "object-merge";
+      parts: readonly SafeConfigExpression[];
     }
   | {
       kind: "binary";
       operator: "+" | "-" | "*" | "/";
       left: SafeConfigExpression;
       right: SafeConfigExpression;
+    }
+  | {
+      kind: "compare";
+      operator:
+        | "=="
+        | "==="
+        | "!="
+        | "!=="
+        | "<"
+        | "<="
+        | ">"
+        | ">=";
+      left: SafeConfigExpression;
+      right: SafeConfigExpression;
+    }
+  | {
+      kind: "logical";
+      operator: "&&" | "||" | "??";
+      left: SafeConfigExpression;
+      right: SafeConfigExpression;
+    }
+  | {
+      kind: "conditional";
+      condition: SafeConfigExpression;
+      whenTrue: SafeConfigExpression;
+      whenFalse: SafeConfigExpression;
     }
   | {
       kind: "get";
@@ -136,12 +173,51 @@ export function evaluateSafeConfig(
       return node.items.map((item) => evaluate(item, depth + 1));
     }
 
+    if (node.kind === "array-compose") {
+      const output: SafeConfigValue[] = [];
+      for (const part of node.parts) {
+        const value = evaluate(
+          part.expression,
+          depth + 1,
+        );
+        if (part.spread) {
+          if (!Array.isArray(value)) {
+            throw new SafeConfigEvaluationError(
+              "TYPE_MISMATCH",
+              "Array spread requires an array.",
+            );
+          }
+          output.push(...value);
+        } else {
+          output.push(value);
+        }
+      }
+      return output;
+    }
+
     if (node.kind === "object") {
       return Object.fromEntries(
         Object.entries(node.entries)
           .sort(([a], [b]) => a.localeCompare(b))
           .map(([key, value]) => [key, evaluate(value, depth + 1)]),
       );
+    }
+
+    if (node.kind === "object-merge") {
+      const output: Record<string, SafeConfigValue> = {};
+      for (const part of node.parts) {
+        const object = asObject(
+          evaluate(part, depth + 1),
+          "object spread",
+        );
+        for (
+          const [key, value] of
+            Object.entries(object)
+        ) {
+          output[key] = value;
+        }
+      }
+      return output;
     }
 
     if (node.kind === "get") {
@@ -156,6 +232,133 @@ export function evaluateSafeConfig(
         );
       }
       return object[node.key]!;
+    }
+
+    if (node.kind === "conditional") {
+      const condition =
+        evaluate(
+          node.condition,
+          depth + 1,
+        );
+      if (typeof condition !== "boolean") {
+        throw new SafeConfigEvaluationError(
+          "TYPE_MISMATCH",
+          "Conditional expression requires a boolean condition.",
+        );
+      }
+      return evaluate(
+        condition
+          ? node.whenTrue
+          : node.whenFalse,
+        depth + 1,
+      );
+    }
+
+    if (node.kind === "logical") {
+      const left =
+        evaluate(
+          node.left,
+          depth + 1,
+        );
+      if (node.operator === "??") {
+        return left === null
+          ? evaluate(
+              node.right,
+              depth + 1,
+            )
+          : left;
+      }
+      if (typeof left !== "boolean") {
+        throw new SafeConfigEvaluationError(
+          "TYPE_MISMATCH",
+          "Logical &&/|| requires boolean operands in safe config.",
+        );
+      }
+      if (node.operator === "&&") {
+        if (!left) return false;
+        const right =
+          evaluate(
+            node.right,
+            depth + 1,
+          );
+        if (typeof right !== "boolean") {
+          throw new SafeConfigEvaluationError(
+            "TYPE_MISMATCH",
+            "Logical && requires boolean operands in safe config.",
+          );
+        }
+        return right;
+      }
+      if (left) return true;
+      const right =
+        evaluate(
+          node.right,
+          depth + 1,
+        );
+      if (typeof right !== "boolean") {
+        throw new SafeConfigEvaluationError(
+          "TYPE_MISMATCH",
+          "Logical || requires boolean operands in safe config.",
+        );
+      }
+      return right;
+    }
+
+    if (node.kind === "compare") {
+      const left =
+        evaluate(
+          node.left,
+          depth + 1,
+        );
+      const right =
+        evaluate(
+          node.right,
+          depth + 1,
+        );
+
+      if (
+        node.operator === "==" ||
+        node.operator === "==="
+      ) {
+        return left === right;
+      }
+      if (
+        node.operator === "!=" ||
+        node.operator === "!=="
+      ) {
+        return left !== right;
+      }
+
+      if (
+        (typeof left !== "number" &&
+          typeof left !== "string") ||
+        (typeof right !== "number" &&
+          typeof right !== "string") ||
+        typeof left !== typeof right
+      ) {
+        throw new SafeConfigEvaluationError(
+          "TYPE_MISMATCH",
+          "Ordered comparison requires same-type finite numbers or strings.",
+        );
+      }
+
+      if (
+        typeof left === "number" &&
+        (
+          !Number.isFinite(left) ||
+          !Number.isFinite(right as number)
+        )
+      ) {
+        throw new SafeConfigEvaluationError(
+          "TYPE_MISMATCH",
+          "Ordered numeric comparison requires finite numbers.",
+        );
+      }
+
+      if (node.operator === "<") return left < (right as never);
+      if (node.operator === "<=") return left <= (right as never);
+      if (node.operator === ">") return left > (right as never);
+      return left >= (right as never);
     }
 
     if (node.kind === "binary") {
