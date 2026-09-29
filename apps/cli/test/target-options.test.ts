@@ -19,6 +19,20 @@ describe("CLI target options", () => {
     });
   });
 
+  it("parses repeated authored source roots into the target profile", () => {
+    const parsed = parseCliTargetOptions([
+      "map.mcworld",
+      "--authored-source-root", "map-source",
+      "--authored-source-root", "authoring/domain",
+    ]);
+
+    expect(parsed.positionals).toEqual(["map.mcworld"]);
+    expect(parsed.target.authoredSourceRoots).toEqual([
+      "map-source",
+      "authoring/domain",
+    ]);
+  });
+
   it("parses a telemetry file without putting it in the target profile", () => {
     const parsed = parseCliTargetOptions([
       "map.mcworld",
