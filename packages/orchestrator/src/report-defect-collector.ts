@@ -1,6 +1,6 @@
 import {
-  promoteConfirmedBugsToV2,
-  type ConfirmedBugReportInput,
+  buildBugReportFromConfirmedDefects,
+  type ConfirmedDefect,
   type PromoteConfirmedBugsResult,
   type BugReportV2Map,
   type BugReportV2RepairBy,
@@ -25,29 +25,29 @@ import {
   type TesterDefectConfirmationInput,
 } from "./tester-report-confirmation-adapter.js";
 
-type ConfirmedBugDraft = Omit<
-  ConfirmedBugReportInput,
-  "status" | "confirmation" | "foundBy"
+export type ConfirmedDefectDraft = Omit<
+  ConfirmedDefect,
+  "foundBy" | "confirmation"
 >;
 
 export interface RuntimeReportCandidate {
   readonly route: "runtime";
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
-  readonly bug: ConfirmedBugDraft;
+  readonly defect: ConfirmedDefectDraft;
 }
 
 export interface StaticReportCandidate {
   readonly route: "static";
   readonly intent: GameplayIntentModel;
   readonly result: IntentDiagnosticGateResult;
-  readonly bug: ConfirmedBugDraft;
+  readonly defect: ConfirmedDefectDraft;
 }
 
 export interface TesterReportCandidate {
   readonly route: "tester";
   readonly confirmation: TesterDefectConfirmationInput;
-  readonly bug: ConfirmedBugDraft;
+  readonly defect: ConfirmedDefectDraft;
 }
 
 export type AuditReportCandidate =
@@ -57,19 +57,19 @@ export type AuditReportCandidate =
 
 export interface RejectedReportCandidate {
   readonly route: AuditReportCandidate["route"];
-  readonly bugId: string;
+  readonly semanticKey: string;
   readonly reasons: readonly string[];
 }
 
 export interface ConfirmedDefectCollection {
-  readonly confirmed: readonly ConfirmedBugReportInput[];
+  readonly confirmed: readonly ConfirmedDefect[];
   readonly rejected: readonly RejectedReportCandidate[];
 }
 
 function collectOne(
   candidate: AuditReportCandidate,
 ): {
-  readonly confirmed?: ConfirmedBugReportInput;
+  readonly confirmed?: ConfirmedDefect;
   readonly rejected?: RejectedReportCandidate;
 } {
   const decision =
@@ -91,7 +91,7 @@ function collectOne(
     return {
       rejected: {
         route: candidate.route,
-        bugId: candidate.bug.id,
+        semanticKey: candidate.defect.semanticKey,
         reasons: decision.reasons,
       },
     };
@@ -99,8 +99,7 @@ function collectOne(
 
   return {
     confirmed: {
-      ...candidate.bug,
-      status: "confirmed-defect",
+      ...candidate.defect,
       foundBy:
         candidate.route === "tester"
           ? "tester"
@@ -113,23 +112,16 @@ function collectOne(
 export function collectConfirmedDefects(
   candidates: readonly AuditReportCandidate[],
 ): ConfirmedDefectCollection {
-  const confirmed: ConfirmedBugReportInput[] = [];
+  const confirmed: ConfirmedDefect[] = [];
   const rejected: RejectedReportCandidate[] = [];
 
   for (const candidate of candidates) {
     const result = collectOne(candidate);
-    if (result.confirmed) {
-      confirmed.push(result.confirmed);
-    }
-    if (result.rejected) {
-      rejected.push(result.rejected);
-    }
+    if (result.confirmed) confirmed.push(result.confirmed);
+    if (result.rejected) rejected.push(result.rejected);
   }
 
-  return {
-    confirmed,
-    rejected,
-  };
+  return { confirmed, rejected };
 }
 
 export interface BuildBugReportFromAuditInput {
@@ -152,10 +144,10 @@ export function buildBugReportFromAuditCandidates(
 
   return {
     collection,
-    promotion: promoteConfirmedBugsToV2({
+    promotion: buildBugReportFromConfirmedDefects({
       map: input.map,
       repairBy: input.repairBy,
-      bugs: collection.confirmed,
+      defects: collection.confirmed,
     }),
   };
 }
