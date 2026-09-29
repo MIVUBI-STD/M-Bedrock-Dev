@@ -45,6 +45,8 @@ export interface MapEngineeringWorkflowProjection {
     evidenceRecoveryActions: number;
     lifecycleUnresolved: number;
     cleanupResourcesMissing: number;
+    spatialAuthorityUncovered: number;
+    spatialAuthorityConflicts: number;
   };
   nextActions: readonly string[];
 }
@@ -61,6 +63,12 @@ function understandingStage(
   const cleanupMissing =
     source.gameplayWorld.arenas.cleanup
       .resourceLedger?.missing ?? 0;
+  const spatialAuthorityUncovered =
+    source.gameplayWorld.spatial.authority
+      ?.uncovered ?? 0;
+  const spatialAuthorityConflicts =
+    source.gameplayWorld.spatial.authority
+      ?.conflicts ?? 0;
 
   return {
     id: "understand",
@@ -68,7 +76,9 @@ function understandingStage(
       unresolved === 0 &&
       unknowns === 0 &&
       lifecycleUnresolved === 0 &&
-      cleanupMissing === 0
+      cleanupMissing === 0 &&
+      spatialAuthorityUncovered === 0 &&
+      spatialAuthorityConflicts === 0
         ? "ready"
         : "partial",
     reasons: [
@@ -88,6 +98,14 @@ function understandingStage(
         ? "No acquired arena resource is currently missing terminal cleanup coverage."
         : String(cleanupMissing) +
           " acquired arena resource(s) have no complete terminal cleanup coverage.",
+      spatialAuthorityUncovered === 0
+        ? "No configured spatial authority requirement is uncovered."
+        : String(spatialAuthorityUncovered) +
+          " spatial authority requirement(s) are uncovered.",
+      spatialAuthorityConflicts === 0
+        ? "No equally-specific spatial authority rules conflict."
+        : String(spatialAuthorityConflicts) +
+          " spatial authority requirement(s) resolve to conflicting rules.",
     ],
   };
 }
@@ -306,6 +324,12 @@ export function buildMapEngineeringWorkflow(
     cleanupResourcesMissing:
       source.gameplayWorld.arenas.cleanup
         .resourceLedger?.missing ?? 0,
+    spatialAuthorityUncovered:
+      source.gameplayWorld.spatial.authority
+        ?.uncovered ?? 0,
+    spatialAuthorityConflicts:
+      source.gameplayWorld.spatial.authority
+        ?.conflicts ?? 0,
   };
 
   const nextActions = stages
