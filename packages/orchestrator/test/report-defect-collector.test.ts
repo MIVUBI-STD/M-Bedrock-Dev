@@ -474,6 +474,7 @@ describe("report defect collector", () => {
       },
       defect: {
         ...defect("a", {
+          ai: true,
           reproduction: ["Reproduce A."],
         }),
         causalIncidentId: "incident:cleanup",
@@ -490,6 +491,7 @@ describe("report defect collector", () => {
       },
       defect: {
         ...defect("b", {
+          ai: true,
           reproduction: ["Reproduce B."],
         }),
         causalIncidentId: "incident:cleanup",
