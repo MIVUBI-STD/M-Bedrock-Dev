@@ -67,6 +67,7 @@ export type GameplayRouteStallInvestigationDirection =
   | "route-chunk-unavailable"
   | "route-unreachable"
   | "navigation-target-divergence"
+  | "entity-ai-stack-incomplete"
   | "navigation-runtime-suspect"
   | "evidence-incomplete";
 
@@ -885,13 +886,23 @@ export function analyzeGameplayIntentRuntime(
             }),
         };
 
+        const candidateAnalysis =
+          analyzeGameplayRouteCauseCandidates(
+            completeAssessment,
+            options.entityAiStack?.assessments ?? [],
+          );
+        const finalInvestigationDirection:
+          GameplayRouteStallInvestigationDirection =
+            candidateAnalysis.leadingCandidateId ===
+            "entity-ai-stack"
+              ? "entity-ai-stack-incomplete"
+              : investigationDirection;
+
         return {
           ...completeAssessment,
-          candidateAnalysis:
-            analyzeGameplayRouteCauseCandidates(
-              completeAssessment,
-              options.entityAiStack?.assessments ?? [],
-            ),
+          investigationDirection:
+            finalInvestigationDirection,
+          candidateAnalysis,
         };
       },
     );
