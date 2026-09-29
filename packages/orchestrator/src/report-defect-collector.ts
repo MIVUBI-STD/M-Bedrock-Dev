@@ -91,6 +91,23 @@ function collectOne(
   readonly confirmed?: ConfirmedDefect;
   readonly rejected?: RejectedReportCandidate;
 } {
+  const expectedAuthority =
+    candidate.route === "tester"
+      ? candidate.confirmation.expectedBehaviorAuthority
+      : "authored-intent";
+
+  if (candidate.defect.expected.authority !== expectedAuthority) {
+    return {
+      rejected: {
+        route: candidate.route,
+        semanticKey: candidate.defect.semanticKey,
+        reasons: [
+          "Defect Expected authority does not match the confirmation route authority.",
+        ],
+      },
+    };
+  }
+
   const decision =
     candidate.route === "runtime"
       ? confirmGameplayIntentRuntimeDefectForReport(
