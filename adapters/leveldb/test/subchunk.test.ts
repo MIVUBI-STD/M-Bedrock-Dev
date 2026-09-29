@@ -10,7 +10,7 @@ function paletteBlock(name: string) {
     name: string(name),
     states: comp({}),
     version: int(1),
-  });
+  }, "");
 }
 
 describe("Bedrock subchunk decoder", () => {
