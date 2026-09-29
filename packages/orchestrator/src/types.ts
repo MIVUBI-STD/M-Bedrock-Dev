@@ -269,6 +269,7 @@ export interface InspectDirectoryResult {
     stallRouteChunkUnavailable: number;
     stallRouteUnreachable: number;
     stallNavigationTargetDivergence: number;
+    stallEntityAiStackIncomplete: number;
     stallNavigationRuntimeSuspect: number;
     stallEvidenceIncomplete: number;
     routeSupportedCandidates: number;
