@@ -143,6 +143,9 @@ describe("zero-waste workflow facade", () => {
         proofClaims: [{
           claim: shopProof,
           claimRevision: "1",
+          availableEvidenceIds: [
+            "e:shop",
+          ],
         }],
       });
 

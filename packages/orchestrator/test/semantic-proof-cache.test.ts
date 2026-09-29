@@ -62,6 +62,53 @@ function graph(
 }
 
 describe("semantic proof cache", () => {
+  it("requires runtime claims to bind an exact runtime profile", () => {
+    expect(() =>
+      createSemanticProofClaim({
+        claimId: "claim:runtime-unbound",
+        claimRevision: "1",
+        kind: "runtime",
+        graph: graph(),
+        basisNodeIds: [
+          "function:pack:arena",
+        ],
+        evidenceIds: [
+          "runtime:arena:1",
+        ],
+      })
+    ).toThrow(
+      /targetProfileFingerprint/,
+    );
+  });
+
+  it("blocks reuse when stored evidence is no longer available", () => {
+    const claim =
+      createSemanticProofClaim({
+        claimId: "claim:evidence",
+        claimRevision: "1",
+        kind: "static",
+        graph: graph(),
+        basisNodeIds: [
+          "function:pack:arena",
+        ],
+        evidenceIds: [
+          "evidence:required",
+        ],
+      });
+
+    const result =
+      assessSemanticProofReuse(
+        claim,
+        {
+          graph: graph(),
+          claimRevision: "1",
+          availableEvidenceIds: [],
+        },
+      );
+
+    expect(result.status)
+      .toBe("blocked");
+  });
   it("reuses proof when unrelated semantic nodes change", () => {
     const claim =
       createSemanticProofClaim({
@@ -84,6 +131,14 @@ describe("semantic proof cache", () => {
         {
           graph: graph(true, false),
           claimRevision: "1",
+          availableEvidenceIds: [
+            "validation:arena:1",
+          ],
+          availableEvidenceIds: [
+            "validation:arena:1",
+            "semantic:scoreboard:1",
+            "semantic:edge:1",
+          ],
         },
       );
 
@@ -114,6 +169,14 @@ describe("semantic proof cache", () => {
           graph:
             graph(false, true),
           claimRevision: "1",
+          availableEvidenceIds: [
+            "validation:arena:1",
+          ],
+          availableEvidenceIds: [
+            "validation:arena:1",
+            "semantic:scoreboard:1",
+            "semantic:edge:1",
+          ],
         },
       );
 
@@ -145,6 +208,9 @@ describe("semantic proof cache", () => {
         {
           graph: graph(),
           claimRevision: "1",
+          availableEvidenceIds: [
+            "runtime:arena:1",
+          ],
           targetProfileFingerprint:
             "runtime-b",
         },
@@ -237,6 +303,14 @@ describe("semantic proof cache", () => {
         {
           graph: after,
           claimRevision: "1",
+          availableEvidenceIds: [
+            "semantic:scoreboard:1",
+          ],
+          availableEvidenceIds: [
+            "validation:arena:1",
+            "semantic:scoreboard:1",
+            "semantic:edge:1",
+          ],
         },
       );
 
@@ -284,6 +358,11 @@ describe("semantic proof cache", () => {
         {
           graph: graph(),
           claimRevision: "1",
+          availableEvidenceIds: [
+            "validation:arena:1",
+            "semantic:scoreboard:1",
+            "semantic:edge:1",
+          ],
         },
       );
 

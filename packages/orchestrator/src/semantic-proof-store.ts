@@ -93,6 +93,17 @@ function validateClaim(
         item.trim().length > 0,
     ) ||
     (
+      record.kind === "runtime" &&
+      (
+        typeof record
+          .targetProfileFingerprint !==
+          "string" ||
+        !record
+          .targetProfileFingerprint
+          .trim()
+      )
+    ) ||
+    (
       record
         .targetProfileFingerprint !==
         undefined &&

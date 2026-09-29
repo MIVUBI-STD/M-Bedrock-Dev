@@ -33,6 +33,8 @@ import {
 export interface ZeroWasteWorkflowProofInput {
   claim: SemanticProofClaim;
   claimRevision: string;
+  availableEvidenceIds:
+    readonly string[];
   targetProfileFingerprint?: string;
 }
 
@@ -154,6 +156,8 @@ export function prepareZeroWasteWorkflow(
             graph: input.graph,
             claimRevision:
               item.claimRevision,
+            availableEvidenceIds:
+              item.availableEvidenceIds,
             ...(item
               .targetProfileFingerprint ===
             undefined

@@ -275,6 +275,15 @@ export function createSemanticProofClaim(
     );
   }
 
+  if (
+    input.kind === "runtime" &&
+    !input.targetProfileFingerprint?.trim()
+  ) {
+    throw new Error(
+      "Runtime semantic proof claims require a targetProfileFingerprint.",
+    );
+  }
+
   const basisNodeIds =
     normalizedBasis(
       input.basisNodeIds,
@@ -310,6 +319,7 @@ export function assessSemanticProofReuse(
   input: {
     graph: SemanticGraph;
     claimRevision: string;
+    availableEvidenceIds: readonly string[];
     targetProfileFingerprint?: string;
   },
 ): SemanticProofReuseResult {
@@ -333,6 +343,32 @@ export function assessSemanticProofReuse(
       claimId: claim.claimId,
       reasons: [
         "Stored proof claim has no evidence ids.",
+      ],
+    };
+  }
+
+  const availableEvidenceIds =
+    new Set(
+      input.availableEvidenceIds,
+    );
+  const missingEvidenceIds =
+    claim.evidenceIds.filter(
+      (id) =>
+        !availableEvidenceIds.has(id),
+    );
+
+  if (
+    missingEvidenceIds.length > 0
+  ) {
+    return {
+      status: "blocked",
+      claimId: claim.claimId,
+      reasons: [
+        "Stored proof evidence is unavailable: " +
+          missingEvidenceIds
+            .sort()
+            .join(", ") +
+          ".",
       ],
     };
   }
