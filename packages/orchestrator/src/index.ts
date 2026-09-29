@@ -203,3 +203,5 @@ export * from "./engineering-review-projection.js";
 export * from "./engineering-review-invalidation.js";
 
 export * from "./engineering-review-priority.js";
+
+export * from "./semantic-affected-plan.js";
