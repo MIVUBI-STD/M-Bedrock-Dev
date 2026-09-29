@@ -10,6 +10,7 @@ export type ReportSource =
   | {
       readonly kind: "github";
       readonly path: string;
+      readonly revision: string;
     };
 
 export interface ReportDocument {
@@ -24,10 +25,24 @@ export interface GitHubReportSummary {
   readonly mapVersion: string;
   readonly fixed: number;
   readonly total: number;
+  readonly blockers: number;
+}
+
+export interface LoadedGitHubReport {
+  readonly report: BugReportV2;
+  readonly revision: string;
+}
+
+export interface SavedGitHubReport {
+  readonly revision: string;
 }
 
 export interface GitHubReportStore {
   listReports(): Promise<readonly GitHubReportSummary[]>;
-  loadReport(path: string): Promise<BugReportV2>;
-  saveReport(path: string, report: BugReportV2): Promise<void>;
+  loadReport(path: string): Promise<LoadedGitHubReport>;
+  saveReport(
+    path: string,
+    report: BugReportV2,
+    expectedRevision: string,
+  ): Promise<SavedGitHubReport>;
 }
