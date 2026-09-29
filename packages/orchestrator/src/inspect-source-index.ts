@@ -109,6 +109,7 @@ export async function indexInspectionSources(
         },
         kind: "function",
         identifier: fnId,
+        contentHash: file.contentHash,
         source: {
           artifactId,
           relativePath: file.relativePath,
@@ -147,6 +148,7 @@ export async function indexInspectionSources(
         },
         kind: "script_file",
         identifier: scriptId,
+        contentHash: file.contentHash,
         source: {
           artifactId,
           relativePath: file.relativePath,
@@ -203,6 +205,7 @@ export async function indexInspectionSources(
             },
             kind: "entity",
             identifier: parsed.identifier,
+            contentHash: file.contentHash,
             source: parsed.source,
           };
           graph.addNode(node);
@@ -273,6 +276,7 @@ export async function indexInspectionSources(
       },
       kind: "structure",
       identifier: structureId,
+      contentHash: file.contentHash,
       source: {
         artifactId,
         relativePath: file.relativePath,

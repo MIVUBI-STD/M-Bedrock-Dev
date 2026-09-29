@@ -61,6 +61,12 @@ describe("zero-waste benchmark", () => {
             unknowns: 0,
             evidence: 0,
           },
+          missingRequested: {
+            intentSubjectIds: [],
+            invariantIds: [],
+            evidenceIds: [],
+          },
+          complete: true,
           reasons: [],
         },
         targets: {
