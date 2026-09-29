@@ -43,6 +43,48 @@ describe("work session checkpoint", () => {
     ).toEqual(["node:arena"]);
   });
 
+  it("preserves next-action priority order while removing duplicates", () => {
+    const created =
+      createWorkSessionCheckpoint({
+        sessionId:
+          "session:ordered-actions",
+        goal: "diagnose",
+        artifact: {
+          artifactId: "map",
+          artifactFingerprint: "fp",
+        },
+        nextActions: [
+          "run semantic check",
+          "collect runtime evidence",
+          "run semantic check",
+        ],
+      });
+
+    expect(created.nextActions)
+      .toEqual([
+        "run semantic check",
+        "collect runtime evidence",
+      ]);
+
+    const updated =
+      advanceWorkSessionCheckpoint(
+        created,
+        {
+          stage: "new",
+          nextActions: [
+            "inspect affected graph",
+            "patch candidate",
+          ],
+        },
+      );
+
+    expect(updated.nextActions)
+      .toEqual([
+        "inspect affected graph",
+        "patch candidate",
+      ]);
+  });
+
   it("rejects silent artifact rebasing", () => {
     const created =
       createWorkSessionCheckpoint({
