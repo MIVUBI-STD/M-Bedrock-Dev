@@ -253,6 +253,7 @@ describe("report defect collector", () => {
         },
         {
           route: "tester",
+          subjectIds: ["outcome:cleanup"],
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement",
             expectedEvidenceIds: ["requirement:cleanup"],
