@@ -86,6 +86,39 @@ function defect(
 }
 
 describe("confirmed defect projection", () => {
+  it("derives different repair units for different precise source ranges", async () => {
+    const {
+      deriveRepairUnitIdsFromSourceEvidence,
+    } = await import("../src/index.js");
+
+    const first = deriveRepairUnitIdsFromSourceEvidence([{
+      source: {
+        artifactId: "map",
+        relativePath: "scripts/session.ts",
+        range: {
+          lineStart: 10,
+          lineEnd: 12,
+        },
+      },
+      reason: "First unit.",
+    }]);
+    const second = deriveRepairUnitIdsFromSourceEvidence([{
+      source: {
+        artifactId: "map",
+        relativePath: "scripts/session.ts",
+        range: {
+          lineStart: 30,
+          lineEnd: 34,
+        },
+      },
+      reason: "Second unit.",
+    }]);
+
+    expect(first).not.toEqual(second);
+    expect(first[0]).toContain("#L10-L12");
+    expect(second[0]).toContain("#L30-L34");
+  });
+
   it("derives severity and category instead of trusting caller labels", () => {
     const projected = projectConfirmedDefects(
       map,
