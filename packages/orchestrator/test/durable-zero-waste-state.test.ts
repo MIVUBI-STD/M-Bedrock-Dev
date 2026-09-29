@@ -72,6 +72,60 @@ describe("durable zero-waste state stores", () => {
     }
   });
 
+  it("rejects corrupt durable state instead of accepting empty references", async () => {
+    const root =
+      await mkdtemp(
+        join(
+          tmpdir(),
+          "m-bedrock-invalid-state-",
+        ),
+      );
+
+    try {
+      const workspace =
+        projectWorkspaceLayout(
+          root,
+          "project",
+        );
+
+      await expect(
+        saveWorkSessionCheckpoint(
+          workspace,
+          {
+            schemaVersion: 1,
+            sessionId: "s",
+            goal: "g",
+            artifact: {
+              artifactId: "a",
+              artifactFingerprint: "fp",
+            },
+            stage: "new",
+            revision: 1,
+            references: {
+              completedCapabilityIds: [""],
+              evidenceIds: [],
+              semanticNodeIds: [],
+              proofClaimIds: [],
+              validationScenarioIds: [],
+            },
+            nextActions: [],
+            blockers: [],
+          },
+        ),
+      ).rejects.toThrow(
+        /structurally invalid/,
+      );
+    } finally {
+      await rm(
+        root,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    }
+  });
+
   it("upserts semantic proof claims without duplicating ids", async () => {
     const root =
       await mkdtemp(

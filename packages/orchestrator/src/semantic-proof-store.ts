@@ -69,9 +69,12 @@ function validateClaim(
     !Array.isArray(
       record.basisNodeIds,
     ) ||
+    record.basisNodeIds.length ===
+      0 ||
     !record.basisNodeIds.every(
       (item) =>
-        typeof item === "string",
+        typeof item === "string" &&
+        item.trim().length > 0,
     ) ||
     typeof record
       .basisFingerprint !==
@@ -86,7 +89,21 @@ function validateClaim(
       0 ||
     !record.evidenceIds.every(
       (item) =>
-        typeof item === "string",
+        typeof item === "string" &&
+        item.trim().length > 0,
+    ) ||
+    (
+      record
+        .targetProfileFingerprint !==
+        undefined &&
+      (
+        typeof record
+          .targetProfileFingerprint !==
+          "string" ||
+        !record
+          .targetProfileFingerprint
+          .trim()
+      )
     )
   ) {
     throw new Error(

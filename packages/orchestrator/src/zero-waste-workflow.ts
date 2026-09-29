@@ -60,6 +60,7 @@ export interface ZeroWasteWorkflowInput {
 export interface ZeroWasteWorkflowPlan {
   status:
     | "ready"
+    | "needs-context-expansion"
     | "blocked";
   affected:
     SemanticAffectedPlan;
@@ -210,12 +211,17 @@ export function prepareZeroWasteWorkflow(
       "blocked" ||
     validation.status ===
       "blocked";
+  const needsContextExpansion =
+    !blocked &&
+    context.complete === false;
 
   return {
     status:
       blocked
         ? "blocked"
-        : "ready",
+        : needsContextExpansion
+          ? "needs-context-expansion"
+          : "ready",
     affected,
     context,
     validation,
@@ -258,6 +264,9 @@ export function prepareZeroWasteWorkflow(
           ) +
           " proof claim(s) remain reusable."
         : "No prior proof claim was reusable for this workflow input.",
+      context.complete
+        ? "Compiled AI context is complete for its explicit scope."
+        : "Compiled AI context is incomplete; expand the context or resolve missing requested ids before using it as decision authority.",
       staleProofClaimIds.length >
       0
         ? String(

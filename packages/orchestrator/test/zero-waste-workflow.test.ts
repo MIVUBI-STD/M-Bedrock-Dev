@@ -171,4 +171,41 @@ describe("zero-waste workflow facade", () => {
     expect(text)
       .toContain("- reusable: 1");
   });
+
+  it("does not report ready when the bounded context is incomplete", () => {
+    const plan =
+      prepareZeroWasteWorkflow({
+        goal: "repair arena",
+        graph: graphFixture(),
+        intent: {
+          ...intent,
+          nodes: [{
+            id: "intent:arena",
+            kind: "mechanic",
+            label: "Arena",
+            status: "authored",
+            evidenceIds: [],
+          }, {
+            id: "intent:shop",
+            kind: "mechanic",
+            label: "Shop",
+            status: "authored",
+            evidenceIds: [],
+          }],
+        },
+        transaction,
+        validationScenarios: [],
+        validationBindings: [],
+        contextBudget: {
+          maxIntentNodes: 1,
+        },
+      });
+
+    expect(plan.status)
+      .toBe(
+        "needs-context-expansion",
+      );
+    expect(plan.context.complete)
+      .toBe(false);
+  });
 });

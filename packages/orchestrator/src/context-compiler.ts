@@ -80,6 +80,12 @@ export interface CompiledContextPack {
     unknowns: number;
     evidence: number;
   };
+  missingRequested: {
+    intentSubjectIds: readonly string[];
+    invariantIds: readonly string[];
+    evidenceIds: readonly string[];
+  };
+  complete: boolean;
   reasons: readonly string[];
 }
 
@@ -367,6 +373,62 @@ export function compileContextPack(
       budget.maxEvidence,
     );
 
+  const knownIntentIds =
+    new Set(
+      input.intent.nodes.map(
+        (item) => item.id,
+      ),
+    );
+  const knownInvariantIds =
+    new Set(
+      input.intent.invariants.map(
+        (item) => item.id,
+      ),
+    );
+  const knownEvidenceIds =
+    new Set(
+      input.intent.evidence.map(
+        (item) => item.id,
+      ),
+    );
+
+  const missingRequested = {
+    intentSubjectIds: [
+      ...requestedSubjects,
+    ].filter(
+      (id) => !knownIntentIds.has(id),
+    ).sort(),
+    invariantIds: [
+      ...requestedInvariants,
+    ].filter(
+      (id) =>
+        !knownInvariantIds.has(id),
+    ).sort(),
+    evidenceIds: [
+      ...requestedEvidence,
+    ].filter(
+      (id) =>
+        !knownEvidenceIds.has(id),
+    ).sort(),
+  };
+
+  const truncated =
+    semanticSelection.omitted > 0 ||
+    nodeSelection.omitted > 0 ||
+    invariantSelection.omitted > 0 ||
+    unknownSelection.omitted > 0 ||
+    evidenceSelection.omitted > 0;
+  const missingRequestedCount =
+    missingRequested
+      .intentSubjectIds.length +
+    missingRequested
+      .invariantIds.length +
+    missingRequested
+      .evidenceIds.length;
+  const complete =
+    !truncated &&
+    missingRequestedCount === 0;
+
   const noExplicitIntentScope =
     requestedSubjects.size === 0 &&
     requestedInvariants.size === 0;
@@ -465,6 +527,8 @@ export function compileContextPack(
       evidence:
         evidenceSelection.omitted,
     },
+    missingRequested,
+    complete,
     reasons: [
       input.affected?.status ===
       "planned"
@@ -473,22 +537,12 @@ export function compileContextPack(
       noExplicitIntentScope
         ? "No explicit intent subject/invariant scope was supplied; intent nodes are conservatively included within budget."
         : "Intent context uses only explicitly requested subjects/invariants and their directly referenced evidence.",
-      Object.values({
-        semantic:
-          semanticSelection.omitted,
-        intent:
-          nodeSelection.omitted,
-        invariants:
-          invariantSelection.omitted,
-        unknowns:
-          unknownSelection.omitted,
-        evidence:
-          evidenceSelection.omitted,
-      }).some(
-        (value) => value > 0,
-      )
-        ? "Context budget truncated one or more categories; omitted counts are explicit."
+      truncated
+        ? "Context budget truncated one or more categories; omitted counts are explicit and the context pack is incomplete."
         : "Context budget did not truncate the selected evidence.",
+      missingRequestedCount > 0
+        ? "One or more explicitly requested intent/invariant/evidence ids are missing; the context pack is incomplete."
+        : "All explicitly requested intent/invariant/evidence ids are present.",
     ],
   };
 }

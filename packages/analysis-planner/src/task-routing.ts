@@ -20,8 +20,6 @@ export interface EngineeringTaskRoutingInput {
   context:
     AnalysisExecutionContext;
   runtimeSensitive?: boolean;
-  hasCandidateBug?: boolean;
-  hasProvenDiagnosis?: boolean;
 }
 
 export interface EngineeringTaskRoute {

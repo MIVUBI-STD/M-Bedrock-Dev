@@ -168,6 +168,38 @@ describe("context compiler", () => {
     expect(
       pack.truncation.intentNodes,
     ).toBe(1);
+    expect(pack.complete)
+      .toBe(false);
+  });
+
+  it("marks the pack incomplete when explicitly requested ids are missing", () => {
+    const pack =
+      compileContextPack({
+        goal: "missing",
+        graph: fixtureGraph(),
+        intent,
+        relevantIntentSubjectIds: [
+          "intent:missing",
+        ],
+        relevantEvidenceIds: [
+          "e:missing",
+        ],
+      });
+
+    expect(pack.complete)
+      .toBe(false);
+    expect(
+      pack.missingRequested
+        .intentSubjectIds,
+    ).toEqual([
+      "intent:missing",
+    ]);
+    expect(
+      pack.missingRequested
+        .evidenceIds,
+    ).toEqual([
+      "e:missing",
+    ]);
   });
 
   it("rejects invalid context budgets", () => {

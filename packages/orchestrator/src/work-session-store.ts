@@ -37,14 +37,27 @@ function pathFor(
   );
 }
 
-function stringArray(
+function nonEmptyStringArray(
   value: unknown,
 ): value is string[] {
   return (
     Array.isArray(value) &&
     value.every(
       (item) =>
-        typeof item === "string",
+        typeof item === "string" &&
+        item.trim().length > 0,
+    )
+  );
+}
+
+function optionalNonEmptyString(
+  value: unknown,
+): value is string | undefined {
+  return (
+    value === undefined ||
+    (
+      typeof value === "string" &&
+      value.trim().length > 0
     )
   );
 }
@@ -104,28 +117,34 @@ export function parseWorkSessionCheckpoint(
     !artifact
       .artifactFingerprint
       .trim() ||
+    !optionalNonEmptyString(
+      artifact.label,
+    ) ||
+    !optionalNonEmptyString(
+      artifact.version,
+    ) ||
     !references ||
-    !stringArray(
+    !nonEmptyStringArray(
       references
         .completedCapabilityIds,
     ) ||
-    !stringArray(
+    !nonEmptyStringArray(
       references.evidenceIds,
     ) ||
-    !stringArray(
+    !nonEmptyStringArray(
       references.semanticNodeIds,
     ) ||
-    !stringArray(
+    !nonEmptyStringArray(
       references.proofClaimIds,
     ) ||
-    !stringArray(
+    !nonEmptyStringArray(
       references
         .validationScenarioIds,
     ) ||
-    !stringArray(
+    !nonEmptyStringArray(
       record.nextActions,
     ) ||
-    !stringArray(
+    !nonEmptyStringArray(
       record.blockers,
     )
   ) {
