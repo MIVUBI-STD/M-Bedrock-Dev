@@ -1,37 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { compileScriptSafeConfig } from "../../../analyzers/scripts/src/index.js";
+import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
 import { analyzeScriptSafeConfig } from "../src/script-safe-config-analysis.js";
 
 function parsed(identifier: string, text: string): ParsedScriptFile {
-  const source = {
-    artifactId: "fixture",
-    relativePath: `scripts/${identifier}.ts`,
-  };
-  const safe = compileScriptSafeConfig(text, source);
-  return {
+  return parseScriptFile(
     identifier,
-    source,
-    imports: [],
-    events: [],
-    dynamicProperties: [],
-    restrictedMutations: [],
-    deferredCallbacks: [],
-    localFunctionCalls: [],
-    blockMatchGuards: [],
-    methodCalls: [],
-    propertyAccesses: [],
-    propertyWrites: [],
-    entityEventTriggers: [],
-    commandLiterals: [],
-    lifecycleMemberExposures: [],
-    moduleMemberAccesses: [],
-    importedSymbols: [],
-    enumValueComparisons: [],
-    safeConfigBindings: [...safe.bindings],
-    safeConfigRejected: [...safe.rejected],
-    capabilities: [],
-  };
+    text,
+    {
+      artifactId: "fixture",
+      relativePath: `scripts/${identifier}.ts`,
+    },
+  );
 }
 
 describe("script safe config analysis", () => {
@@ -43,6 +23,68 @@ describe("script safe config analysis", () => {
 
     expect(result.resolvedArenaCount).toBe(6);
     expect(result.arenaCountConflict).toBe(false);
+  });
+
+  it("resolves named relative imports and aliases without executing modules", () => {
+    const result = analyzeScriptSafeConfig([
+      parsed(
+        "config",
+        [
+          "export const BASE_COUNT = 3;",
+          "export const ARENA_OFFSETS = [",
+          "  { x: 0, y: 0, z: 0 },",
+          "  { x: 100, y: 0, z: 0 },",
+          "];",
+        ].join("\n"),
+      ),
+      parsed(
+        "main",
+        [
+          "import { BASE_COUNT as N, ARENA_OFFSETS } from './config';",
+          "const ARENA_COUNT = N * 2;",
+          "const COPY = ARENA_OFFSETS;",
+        ].join("\n"),
+      ),
+    ]);
+
+    expect(result.resolvedArenaCount).toBe(2);
+    expect(
+      result.resolvedBindings.find(
+        (item) =>
+          item.scriptId === "main" &&
+          item.name === "COPY",
+      )?.value,
+    ).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 100, y: 0, z: 0 },
+    ]);
+    expect(result.crossFileResolvedBindings).toBeGreaterThan(0);
+  });
+
+  it("fails closed on cross-file reference cycles", () => {
+    const result = analyzeScriptSafeConfig([
+      parsed(
+        "a",
+        [
+          "import { B } from './b';",
+          "export const A = B;",
+        ].join("\n"),
+      ),
+      parsed(
+        "b",
+        [
+          "import { A } from './a';",
+          "export const B = A;",
+        ].join("\n"),
+      ),
+    ]);
+
+    expect(result.failedBindings.length).toBeGreaterThan(0);
+    expect(
+      result.failedBindings.some((item) =>
+        item.reason.includes("cycle")
+      ),
+    ).toBe(true);
   });
 
   it("keeps conflicting arena counts unresolved", () => {
