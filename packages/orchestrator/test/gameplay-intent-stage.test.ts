@@ -341,6 +341,61 @@ describe("gameplay intent stage", () => {
     ).toBe("authored");
   });
 
+  it("keeps authored policy invariant when runtime duplicate evidence is also present", () => {
+    const runtimeParsed: ParsedScriptFile = {
+      ...parsed(),
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/scripts/session-state-machine.js",
+      },
+      guardedOutcomes: parsed().guardedOutcomes.map((item) => ({
+        ...item,
+        conditionSource: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/demo/scripts/session-state-machine.js",
+        },
+        outcomeSource: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/demo/scripts/session-state-machine.js",
+        },
+      })),
+      returnOutcomes: parsed().returnOutcomes.map((item) => ({
+        ...item,
+        source: {
+          artifactId: "art_test",
+          relativePath:
+            "behavior_packs/demo/scripts/session-state-machine.js",
+        },
+      })),
+    };
+
+    const authoredParsed: ParsedScriptFile = {
+      ...parsed(),
+      source: {
+        artifactId: "art_test",
+        relativePath:
+          "behavior_packs/demo/src/session-state-machine.ts",
+      },
+    };
+
+    const model = buildGameplayIntentModel({
+      id: "authored-policy-with-runtime-duplicate",
+      parsedScripts: [{ parsed: runtimeParsed }],
+      authoredScripts: [{ parsed: authoredParsed }],
+    });
+
+    expect(
+      model.invariants.find(
+        (invariant) =>
+          invariant.id ===
+          "inv:admissible-policy:outcome:decide-reconnect-cleanup",
+      )?.status,
+    ).toBe("authored");
+  });
+
   it("keeps the same policy invariant inferred when authored source input is absent", () => {
     const model = buildGameplayIntentModel({
       id: "runtime-policy-invariant",
