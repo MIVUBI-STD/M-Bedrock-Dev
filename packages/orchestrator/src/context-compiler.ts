@@ -1,6 +1,7 @@
 import type {
   GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
+import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type {
   SemanticGraph,
   SemanticNode,
@@ -30,6 +31,7 @@ export interface ContextCompilerRequest {
   relevantIntentSubjectIds?: readonly string[];
   relevantInvariantIds?: readonly string[];
   relevantEvidenceIds?: readonly string[];
+  worldModel?: GameplayWorldModel;
   budget?: Partial<ContextCompilerBudget>;
 }
 
@@ -82,6 +84,19 @@ export interface CompiledContextPack {
       locator: string;
       summary: string;
     }>;
+  };
+  world?: {
+    arenaCount?: number;
+    arenaBasis?: "topology" | "script-config" | "reconciled";
+    objectives: readonly string[];
+    phases: readonly string[];
+    outcomes: readonly string[];
+    lifecycle: GameplayWorldModel["arenas"]["lifecycle"];
+    cleanup: GameplayWorldModel["arenas"]["cleanup"];
+    isolation: GameplayWorldModel["arenas"]["isolation"];
+    broadWrites: number;
+    unresolvedScriptMutations: number;
+    intentUnknowns: number;
   };
   budget: ContextCompilerBudget;
   truncation: {
@@ -740,9 +755,45 @@ export function compileContextPack(
     requestedInvariants.size === 0 &&
     requestedEvidence.size === 0;
 
+  const world = input.worldModel === undefined
+    ? undefined
+    : {
+        ...(input.worldModel.arenas.count === undefined
+          ? {}
+          : { arenaCount: input.worldModel.arenas.count }),
+        ...(input.worldModel.arenas.basis === undefined
+          ? {}
+          : { arenaBasis: input.worldModel.arenas.basis }),
+        objectives:
+          input.worldModel.subjects.find(
+            (item) => item.kind === "objective",
+          )?.ids ?? [],
+        phases:
+          input.worldModel.subjects.find(
+            (item) => item.kind === "phase",
+          )?.ids ?? [],
+        outcomes:
+          input.worldModel.subjects.find(
+            (item) => item.kind === "outcome",
+          )?.ids ?? [],
+        lifecycle: input.worldModel.arenas.lifecycle,
+        cleanup: input.worldModel.arenas.cleanup,
+        isolation: input.worldModel.arenas.isolation,
+        broadWrites:
+          input.worldModel.state.broadWrites,
+        unresolvedScriptMutations:
+          input.worldModel.spatial
+            .unresolvedScriptMutations +
+          input.worldModel.spatial
+            .rejectedScriptMutations,
+        intentUnknowns:
+          input.worldModel.intent.unknowns.length,
+      };
+
   return {
     schemaVersion: 1,
     goal: input.goal,
+    ...(world === undefined ? {} : { world }),
     semantic: {
       nodes:
         semanticSelection.values.map(

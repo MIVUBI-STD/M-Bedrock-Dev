@@ -288,3 +288,5 @@ export * from "./arena-structure-instance-proof.js";
 export * from "./arena-entity-population-proof.js";
 
 export * from "./arena-tick-state-proof.js";
+
+export * from "./gameplay-world-model.js";

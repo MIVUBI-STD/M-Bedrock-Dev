@@ -20,6 +20,7 @@ import { analyzeKnowledgeRuntime } from "./knowledge-runtime-analysis.js";
 import { analyzeInspectionRuntimeState } from "./inspect-runtime-analysis-stage.js";
 import { analyzeInspectionEducation } from "./inspect-education-stage.js";
 import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
+import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
 
 type SourceIndex = Awaited<
   ReturnType<typeof indexInspectionSources>
@@ -194,6 +195,73 @@ export function buildInspectionResult(
     parsedScripts.map((item) => item.parsed),
   );
 
+  const semanticSummary =
+    semanticIrSummary(input.semanticIr);
+  const entitySpawnEvidence =
+    topology.resolvedSpatialEffects.filter(
+      (
+        effect,
+      ): effect is Extract<
+        typeof effect,
+        { kind: "entity-spawn" }
+      > => effect.kind === "entity-spawn",
+    );
+  const baseArenaAnalysis = {
+    autoDetected:
+      topology.arenaReplicaDiscovery !== undefined,
+    ...(topology.arenaReplicaDiscovery === undefined
+      ? {}
+      : { discovery: topology.arenaReplicaDiscovery }),
+    ...(topology.arenaRegionPlan === undefined
+      ? {}
+      : { regionPlan: topology.arenaRegionPlan }),
+    ...(topology.arenaRegionClassification === undefined
+      ? {}
+      : {
+          regionClassification:
+            topology.arenaRegionClassification,
+        }),
+    capacity: arenaCapacity,
+    layoutReconciliation:
+      arenaLayoutReconciliation,
+    lifecycle: arenaLifecycle,
+    cleanupSurfaces: arenaCleanupSurfaces,
+    stateIsolation: arenaStateIsolation,
+    entitySpawnEvidence,
+  };
+
+  const gameplayWorld = deriveGameplayWorldModel({
+    artifactId: input.artifactId,
+    intent: input.gameplayIntent,
+    arena: baseArenaAnalysis,
+    scriptSpatial,
+    semanticIr: {
+      stateSurfaces: semanticSummary.stateSurfaces,
+      stateOperations: semanticSummary.stateOperations,
+    },
+    broadWrites: topology.broadWrites,
+    structures: {
+      definitions: nodes.filter(
+        (node) => node.kind === "structure",
+      ).length,
+      loads: structureRuntime.structureLoads.length,
+      unresolvedLoads:
+        structureRuntime.unresolvedStructureLoads,
+      placements:
+        structureRuntime.absoluteStructurePlacements.length +
+        scriptSpatial.structurePlacements.length,
+      runtimeLogicLoads:
+        structureRuntime.runtimeLogicStructureLoads,
+    },
+    entities: {
+      definitions: parsedEntities.length,
+      knowledgePrerequisiteGaps:
+        entityKnowledgeGaps,
+      staticAnalysisLimits:
+        entityStaticLimits,
+    },
+  });
+
   const reliability = deriveReliabilityFingerprint({
     mapId: input.artifactId,
     ...(input.sourceFingerprint
@@ -239,6 +307,7 @@ export function buildInspectionResult(
     scriptSafeConfig,
     scriptSpatial,
     releaseIdentity: input.releaseIdentity,
+    gameplayWorld,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
@@ -367,36 +436,7 @@ export function buildInspectionResult(
       present: dbFiles.length > 0,
       fileCount: dbFiles.length,
     },
-    arenaAnalysis: {
-      autoDetected: topology.arenaReplicaDiscovery !== undefined,
-      ...(topology.arenaReplicaDiscovery === undefined
-        ? {}
-        : { discovery: topology.arenaReplicaDiscovery }),
-      ...(topology.arenaRegionPlan === undefined
-        ? {}
-        : { regionPlan: topology.arenaRegionPlan }),
-      ...(topology.arenaRegionClassification === undefined
-        ? {}
-        : {
-            regionClassification:
-              topology.arenaRegionClassification,
-          }),
-      capacity: arenaCapacity,
-      layoutReconciliation:
-        arenaLayoutReconciliation,
-      lifecycle: arenaLifecycle,
-      cleanupSurfaces: arenaCleanupSurfaces,
-      stateIsolation: arenaStateIsolation,
-      entitySpawnEvidence:
-        topology.resolvedSpatialEffects.filter(
-          (
-            effect,
-          ): effect is Extract<
-            typeof effect,
-            { kind: "entity-spawn" }
-          > => effect.kind === "entity-spawn",
-        ),
-    },
+    arenaAnalysis: baseArenaAnalysis,
     gameplayIntent: {
       model: input.gameplayIntent,
       authoredSourceFiles: input.authoredIntentSources,
@@ -562,7 +602,7 @@ export function buildInspectionResult(
             "continue-evidence-collection",
         ).length,
     },
-    semanticIr: semanticIrSummary(input.semanticIr),
+    semanticIr: semanticSummary,
     stateAnalysis: {
       accesses: topology.stateAccesses.length,
       broadWrites: topology.broadWrites,
