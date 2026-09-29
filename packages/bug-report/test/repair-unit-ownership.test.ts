@@ -55,7 +55,7 @@ function defect(
 }
 
 describe("confirmed defect repair unit ownership", () => {
-  it("derives stable repair units from verified source paths", () => {
+  it("keeps distinct precise source ranges as distinct repair units", () => {
     expect(
       deriveRepairUnitIdsFromSourceEvidence([
         {
@@ -82,7 +82,8 @@ describe("confirmed defect repair unit ownership", () => {
         },
       ]),
     ).toEqual([
-      "source-file:scripts/session.ts",
+      "source-range:scripts/session.ts#L10-L12",
+      "source-range:scripts/session.ts#L40-L45",
     ]);
   });
 
