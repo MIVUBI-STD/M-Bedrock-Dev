@@ -210,6 +210,94 @@ function membershipCommitEvidence(
   };
 }
 
+function membershipReleaseEvidence(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence | undefined {
+  if (!ts.isExpressionStatement(node)) return undefined;
+  const call = node.expression;
+  if (
+    !ts.isCallExpression(call) ||
+    !ts.isPropertyAccessExpression(call.expression)
+  ) {
+    return undefined;
+  }
+
+  if (call.expression.name.text !== "delete") {
+    return undefined;
+  }
+
+  const membership = membershipCollection(
+    call.expression.expression,
+  );
+  if (!membership) return undefined;
+
+  const subject = call.arguments[0];
+  if (!subject) return undefined;
+
+  return {
+    kind: "membership-release",
+    arenaExpression: membership.arenaExpression,
+    subjectExpression: subject.getText(file),
+    membershipExpression:
+      membership.membershipExpression,
+    executionRegion:
+      localExecutionRegionId(node, file),
+    source: lineSource(file, node, source),
+  };
+}
+
+function generationInvalidationEvidence(
+  node: ts.Node,
+  file: ts.SourceFile,
+  source: SourceRef,
+): ScriptArenaAuthorityEvidence | undefined {
+  let target: ts.Expression | undefined;
+
+  if (
+    ts.isExpressionStatement(node) &&
+    ts.isBinaryExpression(node.expression) &&
+    [
+      ts.SyntaxKind.EqualsToken,
+      ts.SyntaxKind.PlusEqualsToken,
+      ts.SyntaxKind.MinusEqualsToken,
+    ].includes(node.expression.operatorToken.kind)
+  ) {
+    target = node.expression.left;
+  } else if (
+    ts.isExpressionStatement(node) &&
+    (
+      ts.isPostfixUnaryExpression(node.expression) ||
+      ts.isPrefixUnaryExpression(node.expression)
+    ) &&
+    (
+      node.expression.operator === ts.SyntaxKind.PlusPlusToken ||
+      node.expression.operator === ts.SyntaxKind.MinusMinusToken
+    )
+  ) {
+    target = node.expression.operand;
+  }
+
+  if (!target) return undefined;
+  const property = directProperty(target);
+  if (
+    !property ||
+    !GENERATION_PROPERTY.test(property.property)
+  ) {
+    return undefined;
+  }
+
+  return {
+    kind: "generation-invalidate",
+    arenaExpression: property.owner.getText(file),
+    generationExpression: property.text,
+    executionRegion:
+      localExecutionRegionId(node, file),
+    source: lineSource(file, node, source),
+  };
+}
+
 function variableOperandEvidence(
   node: ts.Node,
   file: ts.SourceFile,
@@ -617,6 +705,23 @@ export function deriveScriptArenaAuthorityEvidence(
       );
     if (membership) output.push(membership);
 
+    const release = membershipReleaseEvidence(
+      node,
+      file,
+      source,
+    );
+    if (release) output.push(release);
+
+    const generationInvalidation =
+      generationInvalidationEvidence(
+        node,
+        file,
+        source,
+      );
+    if (generationInvalidation) {
+      output.push(generationInvalidation);
+    }
+
     output.push(
       ...variableOperandEvidence(
         node,
@@ -703,6 +808,11 @@ export function correlateScriptArenaAuthorityPaths(
           item.kind ===
             "membership-commit",
       );
+      const membershipRelease = items.find(
+        (item) =>
+          item.kind ===
+            "membership-release",
+      );
       const capacityOperand = items.find(
         (item) =>
           item.kind ===
@@ -717,6 +827,11 @@ export function correlateScriptArenaAuthorityPaths(
         (item) =>
           item.kind ===
             "arena-generation-operand",
+      );
+      const generationInvalidation = items.find(
+        (item) =>
+          item.kind ===
+            "generation-invalidate",
       );
       const startOwnerGuard = items.find(
         (item) =>
@@ -780,6 +895,9 @@ export function correlateScriptArenaAuthorityPaths(
         ...(membershipCommit
           ? { membershipCommit }
           : {}),
+        ...(membershipRelease
+          ? { membershipRelease }
+          : {}),
         ...(capacityOperand
           ? { capacityOperand }
           : {}),
@@ -788,6 +906,9 @@ export function correlateScriptArenaAuthorityPaths(
           : {}),
         ...(generationOperand
           ? { generationOperand }
+          : {}),
+        ...(generationInvalidation
+          ? { generationInvalidation }
           : {}),
         ...(startOwnerGuard
           ? { startOwnerGuard }
