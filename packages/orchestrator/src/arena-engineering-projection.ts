@@ -77,6 +77,16 @@ export interface ArenaEngineeringProjection {
     structureInstances?: string;
   };
   replicas: readonly ArenaEngineeringReplicaProjection[];
+  proofExecution: {
+    mode?: "progressive" | "full";
+    executedLayers: readonly string[];
+    skippedLayers: readonly string[];
+    decisions: readonly {
+      layer: string;
+      action: "execute" | "skip";
+      reason: string;
+    }[];
+  };
   repeatedRunValidation: {
     runCounts: readonly number[];
     stages: number;
@@ -118,7 +128,8 @@ function arenaDiagnostics(
 ) {
   return source.diagnostics
     .filter((item) =>
-      item.code.startsWith("ARENA_")
+      item.code.startsWith("ARENA_") ||
+      item.code.startsWith("WORLDSTATE_")
     )
     .map((item) => ({
       id: item.id,
@@ -140,6 +151,7 @@ function replicaIds(
     source.arenaAnalysis.voxelProof,
     source.arenaAnalysis.blockEntityProof,
     source.arenaAnalysis.entityPopulationProof,
+    source.arenaAnalysis.actorPopulationProof,
     source.arenaAnalysis.tickStateProof,
     source.arenaAnalysis.structureInstanceProof,
   ]) {
@@ -477,6 +489,17 @@ export function buildArenaEngineeringProjection(
           }),
     },
     replicas,
+    proofExecution: {
+      ...(arena.proofExecution === undefined
+        ? {}
+        : { mode: arena.proofExecution.mode }),
+      executedLayers:
+        arena.proofExecution?.executedLayers ?? [],
+      skippedLayers:
+        arena.proofExecution?.skippedLayers ?? [],
+      decisions:
+        arena.proofExecution?.decisions ?? [],
+    },
     repeatedRunValidation: {
       runCounts:
         arena.repeatedRunPlan?.runCounts ?? [],

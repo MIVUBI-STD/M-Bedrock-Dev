@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "mivubi-production-arena-baseline",
+  "cases": [
+    {
+      "id": "defense-v1",
+      "label": "Defense V1",
+      "artifactFile": "maps/Defense-V1.mcworld",
+      "regionContractsFile": "contracts/defense-v1-arena-regions.json",
+      "assertions": {
+        "arenaCount": 6,
+        "minCoverageRatio": 0.7,
+        "capacityOk": true,
+        "maxLifecycleUnresolved": 0,
+        "maxCleanupUnresolved": 0,
+        "maxSharedGlobalState": 0,
+        "maxPartitionProofRequired": 0,
+        "maxGlobalStateUnleased": 0,
+        "maxGlobalStateUnaudited": 0,
+        "maxRepairLocalizationUnresolved": 0,
+        "proofMode": "full",
+        "stressStatus": "planned",
+        "nominalStressPlayers": 30,
+        "requirePackIdentityDrift": false
+      },
+      "note": "Example template only. Replace artifact paths and assertions with approved production baselines."
+    }
+  ]
+}

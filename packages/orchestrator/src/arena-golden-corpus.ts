@@ -30,11 +30,16 @@ export interface ArenaGoldenAssertions {
   maxCleanupUnresolved?: number;
   maxSharedGlobalState?: number;
   maxPartitionProofRequired?: number;
+  maxGlobalStateUnleased?: number;
+  maxGlobalStateUnaudited?: number;
+  maxRepairLocalizationUnresolved?: number;
+  proofMode?: "progressive" | "full";
   stressStatus?: "planned" | "unavailable";
   nominalStressPlayers?: number;
   voxelStatus?: string;
   blockEntityStatus?: string;
   entityPopulationStatus?: string;
+  actorPopulationStatus?: string;
   tickStateStatus?: string;
   structureInstanceStatus?: string;
 }
@@ -68,11 +73,16 @@ export interface ArenaGoldenObservation {
   cleanupUnresolved: number;
   sharedGlobalState: number;
   partitionProofRequired: number;
+  globalStateUnleased: number;
+  globalStateUnaudited: number;
+  repairLocalizationUnresolved: number;
+  proofMode?: "progressive" | "full";
   stressStatus: "planned" | "unavailable";
   nominalStressPlayers?: number;
   voxelStatus?: string;
   blockEntityStatus?: string;
   entityPopulationStatus?: string;
+  actorPopulationStatus?: string;
   tickStateStatus?: string;
   structureInstanceStatus?: string;
 }
@@ -237,6 +247,9 @@ function parseAssertions(
     "maxCleanupUnresolved",
     "maxSharedGlobalState",
     "maxPartitionProofRequired",
+    "maxGlobalStateUnleased",
+    "maxGlobalStateUnaudited",
+    "maxRepairLocalizationUnresolved",
     "nominalStressPlayers",
   ] as const) {
     const value = raw[key];
@@ -251,6 +264,18 @@ function parseAssertions(
       );
     }
     output[key] = value;
+  }
+
+  if (raw.proofMode !== undefined) {
+    if (
+      raw.proofMode !== "progressive" &&
+      raw.proofMode !== "full"
+    ) {
+      throw new Error(
+        "Arena golden case " + caseId + " has invalid proofMode.",
+      );
+    }
+    output.proofMode = raw.proofMode;
   }
 
   if (raw.stressStatus !== undefined) {
@@ -269,6 +294,7 @@ function parseAssertions(
     "voxelStatus",
     "blockEntityStatus",
     "entityPopulationStatus",
+    "actorPopulationStatus",
     "tickStateStatus",
     "structureInstanceStatus",
   ] as const) {
@@ -295,11 +321,16 @@ function parseAssertions(
     "maxCleanupUnresolved",
     "maxSharedGlobalState",
     "maxPartitionProofRequired",
+    "maxGlobalStateUnleased",
+    "maxGlobalStateUnaudited",
+    "maxRepairLocalizationUnresolved",
+    "proofMode",
     "stressStatus",
     "nominalStressPlayers",
     "voxelStatus",
     "blockEntityStatus",
     "entityPopulationStatus",
+    "actorPopulationStatus",
     "tickStateStatus",
     "structureInstanceStatus",
   ]);
@@ -427,6 +458,21 @@ export function observeArenaGolden(
     partitionProofRequired:
       result.arenaAnalysis.stateIsolation
         ?.partitionProofRequired ?? 0,
+    globalStateUnleased:
+      result.arenaAnalysis.globalState
+        ?.unleasedArenaMutations ?? 0,
+    globalStateUnaudited:
+      result.arenaAnalysis.globalState
+        ?.unauditedArenaMutations ?? 0,
+    repairLocalizationUnresolved:
+      result.arenaAnalysis.repairLocalization
+        ?.unresolved ?? 0,
+    ...(result.arenaAnalysis.proofExecution === undefined
+      ? {}
+      : {
+          proofMode:
+            result.arenaAnalysis.proofExecution.mode,
+        }),
     stressStatus:
       result.arenaAnalysis.stressPlan?.status ??
       "unavailable",
@@ -454,6 +500,12 @@ export function observeArenaGolden(
       : {
           entityPopulationStatus:
             result.arenaAnalysis.entityPopulationProof.status,
+        }),
+    ...(result.arenaAnalysis.actorPopulationProof === undefined
+      ? {}
+      : {
+          actorPopulationStatus:
+            result.arenaAnalysis.actorPopulationProof.status,
         }),
     ...(result.arenaAnalysis.tickStateProof === undefined
       ? {}
@@ -586,6 +638,9 @@ export function evaluateArenaGoldenAssertions(
       | "maxCleanupUnresolved"
       | "maxSharedGlobalState"
       | "maxPartitionProofRequired"
+      | "maxGlobalStateUnleased"
+      | "maxGlobalStateUnaudited"
+      | "maxRepairLocalizationUnresolved"
     >,
     number,
   ]> = [
@@ -593,6 +648,9 @@ export function evaluateArenaGoldenAssertions(
     ["maxCleanupUnresolved", observation.cleanupUnresolved],
     ["maxSharedGlobalState", observation.sharedGlobalState],
     ["maxPartitionProofRequired", observation.partitionProofRequired],
+    ["maxGlobalStateUnleased", observation.globalStateUnleased],
+    ["maxGlobalStateUnaudited", observation.globalStateUnaudited],
+    ["maxRepairLocalizationUnresolved", observation.repairLocalizationUnresolved],
   ];
 
   for (const [key, actual] of maximums) {
@@ -609,6 +667,18 @@ export function evaluateArenaGoldenAssertions(
           actual,
       );
     }
+  }
+
+  if (
+    assertions.proofMode !== undefined &&
+    observation.proofMode !== assertions.proofMode
+  ) {
+    failures.push(
+      "proofMode: expected " +
+        assertions.proofMode +
+        ", observed " +
+        String(observation.proofMode),
+    );
   }
 
   if (
@@ -642,6 +712,7 @@ export function evaluateArenaGoldenAssertions(
       | "voxelStatus"
       | "blockEntityStatus"
       | "entityPopulationStatus"
+      | "actorPopulationStatus"
       | "tickStateStatus"
       | "structureInstanceStatus"
     >,
@@ -650,6 +721,7 @@ export function evaluateArenaGoldenAssertions(
     ["voxelStatus", observation.voxelStatus],
     ["blockEntityStatus", observation.blockEntityStatus],
     ["entityPopulationStatus", observation.entityPopulationStatus],
+    ["actorPopulationStatus", observation.actorPopulationStatus],
     ["tickStateStatus", observation.tickStateStatus],
     ["structureInstanceStatus", observation.structureInstanceStatus],
   ];
@@ -690,6 +762,10 @@ export async function runArenaGoldenCorpus(
         await loadArenaRegionContractsFile(
           resolve(artifactRoot, item.regionContractsFile),
         );
+    }
+
+    if (caseTarget.arenaProofMode === undefined) {
+      caseTarget.arenaProofMode = "full";
     }
 
     const result = await inspectArtifact(
