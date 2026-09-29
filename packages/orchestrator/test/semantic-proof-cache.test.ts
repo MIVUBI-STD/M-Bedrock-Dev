@@ -154,6 +154,96 @@ describe("semantic proof cache", () => {
       .toBe("stale");
   });
 
+  it("invalidates a derived-node proof when an incident source node changes even if topology stays the same", () => {
+    const before = graph();
+    before.addNode({
+      id: "scoreboard:pack:round",
+      identity: {
+        kind: "scoreboard_objective",
+        scope: "pack",
+        identifier: "round",
+      },
+      kind: "scoreboard_objective",
+      identifier: "round",
+      source: {
+        artifactId: "map",
+        relativePath: "<derived>",
+      },
+    });
+    before.addEdge({
+      from: "function:pack:arena",
+      type: "READS_SCOREBOARD",
+      targetIdentifier: "round",
+      status: "resolved",
+      to: "scoreboard:pack:round",
+      evidence: {
+        source: {
+          artifactId: "map",
+          relativePath:
+            "functions/arena.mcfunction",
+        },
+      },
+    });
+
+    const claim =
+      createSemanticProofClaim({
+        claimId:
+          "claim:derived-scoreboard",
+        claimRevision: "1",
+        kind: "semantic",
+        graph: before,
+        basisNodeIds: [
+          "scoreboard:pack:round",
+        ],
+        evidenceIds: [
+          "semantic:scoreboard:1",
+        ],
+      });
+
+    const after =
+      graph(false, true);
+    after.addNode({
+      id: "scoreboard:pack:round",
+      identity: {
+        kind: "scoreboard_objective",
+        scope: "pack",
+        identifier: "round",
+      },
+      kind: "scoreboard_objective",
+      identifier: "round",
+      source: {
+        artifactId: "map",
+        relativePath: "<derived>",
+      },
+    });
+    after.addEdge({
+      from: "function:pack:arena",
+      type: "READS_SCOREBOARD",
+      targetIdentifier: "round",
+      status: "resolved",
+      to: "scoreboard:pack:round",
+      evidence: {
+        source: {
+          artifactId: "map",
+          relativePath:
+            "functions/arena.mcfunction",
+        },
+      },
+    });
+
+    const result =
+      assessSemanticProofReuse(
+        claim,
+        {
+          graph: after,
+          claimRevision: "1",
+        },
+      );
+
+    expect(result.status)
+      .toBe("stale");
+  });
+
   it("invalidates proof when an incident dependency edge changes", () => {
     const before = graph();
     before.addEdge({

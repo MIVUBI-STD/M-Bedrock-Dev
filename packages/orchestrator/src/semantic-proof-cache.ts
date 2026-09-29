@@ -103,14 +103,30 @@ function nodeProjection(
 
 function edgeProjection(
   edge: SemanticEdge,
+  nodesById: ReadonlyMap<string, SemanticNode>,
 ): unknown {
+  const fromNode =
+    nodesById.get(edge.from);
+  const toNode =
+    edge.to === undefined
+      ? undefined
+      : nodesById.get(edge.to);
+
   return {
     from: edge.from,
+    fromContentHash:
+      fromNode?.contentHash ?? null,
+    fromSemanticHash:
+      fromNode?.semanticHash ?? null,
     type: edge.type,
     targetIdentifier:
       edge.targetIdentifier,
     status: edge.status,
     to: edge.to ?? null,
+    toContentHash:
+      toNode?.contentHash ?? null,
+    toSemanticHash:
+      toNode?.semanticHash ?? null,
     candidates:
       [...(edge.candidates ?? [])]
         .sort(),
@@ -124,6 +140,8 @@ function edgeProjection(
       jsonPointer:
         edge.evidence.source
           .jsonPointer ?? null,
+      range: edge.evidence.source
+        .range ?? null,
     },
   };
 }
@@ -198,7 +216,12 @@ export function semanticProofBasisFingerprint(
           basisSet.has(edge.to)
         )
       )
-      .map(edgeProjection)
+      .map((edge) =>
+        edgeProjection(
+          edge,
+          allNodes,
+        )
+      )
       .sort((left, right) =>
         JSON.stringify(
           canonical(left),

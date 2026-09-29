@@ -66,6 +66,36 @@ describe("multi-client orchestration", () => {
       ]);
   });
 
+  it("does not promote execution without evidence to runtime proof", async () => {
+    const result =
+      await executeMultiClientScenario(
+        {
+          schemaVersion: 1,
+          id: "multi:no-evidence",
+          clients: [{ id: "p1" }],
+          waves: [{
+            id: "step",
+            mode: "serial",
+            actions: [{
+              id: "step:p1",
+              clientId: "p1",
+              actionId: "noop",
+            }],
+          }],
+        },
+        {
+          adapterId: "no-evidence",
+          maxClients: 1,
+          execute: async () => ({
+            evidenceIds: [],
+          }),
+        },
+      );
+
+    expect(result.status)
+      .toBe("incomplete-evidence");
+  });
+
   it("blocks when real adapter capacity is below scenario demand", async () => {
     const execute = vi.fn();
 

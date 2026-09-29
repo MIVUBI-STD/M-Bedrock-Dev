@@ -66,6 +66,7 @@ export interface MultiClientScenarioResult {
   adapterId: string;
   status:
     | "completed"
+    | "incomplete-evidence"
     | "failed"
     | "blocked";
   requiredClients: number;
@@ -488,24 +489,34 @@ export async function executeMultiClientScenario(
     }
   }
 
+  const evidenceIds =
+    uniqueNonEmpty(
+      waveResults.flatMap(
+        (item) =>
+          item.evidenceIds,
+      ),
+    );
+
   return {
     scenarioId: scenario.id,
     adapterId:
       adapter.adapterId,
-    status: "completed",
+    status:
+      evidenceIds.length === 0
+        ? "incomplete-evidence"
+        : "completed",
     requiredClients:
       scenario.clients.length,
     waveResults,
-    evidenceIds:
-      uniqueNonEmpty(
-        waveResults.flatMap(
-          (item) =>
-            item.evidenceIds,
-        ),
-      ),
-    reasons: [
-      "All multi-client synchronization waves completed.",
-    ],
+    evidenceIds,
+    reasons:
+      evidenceIds.length === 0
+        ? [
+            "All multi-client synchronization waves completed, but the adapter produced no evidence ids. Execution alone is not runtime proof.",
+          ]
+        : [
+            "All multi-client synchronization waves completed with explicit evidence.",
+          ],
   };
 }
 
