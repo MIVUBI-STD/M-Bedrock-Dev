@@ -135,6 +135,11 @@ function terminalRegions(script: ParsedScriptFile): string[] {
       regions.add(path.executionRegion);
     }
   }
+  for (const resource of script.cleanupResourceEvidence ?? []) {
+    if (TERMINAL_PATTERN.test(resource.executionRegion)) {
+      regions.add(resource.executionRegion);
+    }
+  }
   return [...regions].sort();
 }
 
