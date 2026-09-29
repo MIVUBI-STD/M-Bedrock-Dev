@@ -1,35 +1,33 @@
 # Bug Report UI
 
-Thin Svelte/Vite interface for M-Bedrock Bug Report V1.
+Thin Svelte/Vite interface for the canonical M-Bedrock Bug Report V2.
 
-The web UI is an import/view/export surface. It does **not** analyze Minecraft maps, diagnose bugs, or decide repairs.
-
-Flow:
+User-facing flow:
 
 ```text
-ChatGPT / tester bug finding
-→ M-Bedrock Bug Report V1 JSON
-→ import and validate
-→ review by bug finder category
-→ export canonical JSON
-→ ChatGPT / Codex repair
+AUDIT → REPORT → FIX
 ```
 
-Report scope is intentionally strict:
+The UI does not analyze maps or diagnose bugs. ChatGPT performs the audit and produces the report. The UI exists so the selected repair owner can scan the report, avoid missing bugs, and mark each completed bug as `Fixed`.
 
-- one export represents one tested map and one test session;
-- map name, map version, Minecraft version, and related Google Drive map link are required;
-- severity is `blocker | major | minor`;
-- discovery source is `ai | tester | ai+tester`;
-- AI code evidence and tester gameplay evidence remain distinct;
-- canonical parsing, semantic validation, classification rules, normalization, and serialization live in `packages/bug-report/`.
+## Current behavior
+
+- V2 is the current report format.
+- V1 can still be imported and is converted to the V2 view.
+- One report has one `Repair By` value: `ChatGPT` or `Developer`.
+- Each bug has one `Fixed` checkbox.
+- Report progress is derived from the bug checkboxes.
+- Map Version, Base Version, and Tested Version are shown explicitly.
+- A version-difference hint appears when Base Version and Tested Version differ.
+- Bugs can be filtered by Fixed state and Severity.
+- New exports are V2 JSON.
+
+The canonical vocabulary is owned by `packages/bug-report/README.md`. Frontend wording must not invent alternate meanings for persisted fields.
 
 Commands:
 
 ```bash
-npm run review-ui:dev
-npm run review-ui:build
-npm run review-ui:preview
+npm run bug-report-ui:dev
+npm run bug-report-ui:build
+npm run bug-report-ui:preview
 ```
-
-The Vite server is intentionally static. Previous local map-analysis endpoints, recent-map cache behavior, and analysis history are not part of the Bug Report UI product direction.

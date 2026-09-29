@@ -47,3 +47,10 @@ Per-bug `fixed` checkboxes exist only to prevent missed bugs and show report pro
 ## Language
 
 All persisted report content and canonical UI labels are English.
+
+
+## Creation
+
+New reports must be created directly as V2 through `createBugReportV2()`. The creator defaults each bug to `fixed: false` unless an explicit value is supplied and validates the complete report before it can be emitted.
+
+Do not generate V1 and convert it to V2 for new audits. V1 conversion exists only for old saved reports.
