@@ -19,6 +19,9 @@ import {
   analyzeGameplayRouteCauseCandidates,
   type GameplayRouteCauseAnalysis,
 } from "./gameplay-route-candidate-analysis.js";
+import type {
+  EntityAiStackAnalysis,
+} from "./entity-ai-stack-analysis.js";
 import {
   resolveRuntimeStateSnapshot,
   type RuntimeNavigationStallObservation,
@@ -611,6 +614,7 @@ function navigationTargetComparison(
 
 export interface GameplayIntentRuntimeOptions {
   dimension?: string;
+  entityAiStack?: EntityAiStackAnalysis;
 }
 
 export function analyzeGameplayIntentRuntime(
@@ -886,6 +890,7 @@ export function analyzeGameplayIntentRuntime(
           candidateAnalysis:
             analyzeGameplayRouteCauseCandidates(
               completeAssessment,
+              options.entityAiStack?.assessments ?? [],
             ),
         };
       },
