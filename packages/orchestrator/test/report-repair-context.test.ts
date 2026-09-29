@@ -17,6 +17,8 @@ import {
 
 const defectIdentity = {
   subjectIds: ["outcome:cleanup"],
+  brokenInvariantIds: ["inv:broken"],
+  repairUnitIds: ["unit:cleanup"],
   primaryFailure: "player-owned-state" as const,
 };
 
