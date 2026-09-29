@@ -327,3 +327,4 @@ export * from "./arena-interleaving-portfolio.js";
 export * from "./inventory-lifecycle-analysis.js";
 export * from "./inventory-policy-analysis.js";
 export * from "./inventory-policy-load.js";
+export * from "./inventory-restore-ownership-analysis.js";
