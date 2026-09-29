@@ -75,8 +75,9 @@ describe("inventory lifecycle evidence", () => {
       );
 
     expect(result[0]).toMatchObject({
-      kind: "equipment-clear",
+      kind: "equipment-clear-slot",
       executionRegion: "function:reset",
+      slotExpression: "'Head'",
     });
   });
 });
