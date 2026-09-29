@@ -55,6 +55,7 @@ import {
   derivePersistenceIdempotencyGuards,
 } from "./persistence-idempotency-evidence.js";
 import { compileScriptSafeConfig } from "./safe-config-compiler.js";
+import { deriveScriptSpatialMutations } from "./spatial-mutation-evidence.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -1696,6 +1697,10 @@ export function parseScriptFile(
     text,
     source,
   );
+  const spatialMutations = deriveScriptSpatialMutations(
+    text,
+    source,
+  );
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2482,6 +2487,8 @@ export function parseScriptFile(
     spatialOffsetTransforms,
     spatialTransformUses,
     spatialContextOffsetSeries,
+    spatialMutations: [...spatialMutations.mutations],
+    spatialMutationRejected: [...spatialMutations.rejected],
     capabilities,
   };
 }
