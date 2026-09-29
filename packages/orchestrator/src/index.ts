@@ -313,3 +313,5 @@ export * from "./arena-proof-execution-plan.js";
 export * from "./arena-repeated-run-runtime-compiler.js";
 
 export * from "./arena-global-state-runtime-compiler.js";
+
+export * from "./post-repair-verification.js";

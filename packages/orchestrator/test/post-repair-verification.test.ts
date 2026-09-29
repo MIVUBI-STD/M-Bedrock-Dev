@@ -1,0 +1,111 @@
+import { describe, expect, it } from "vitest";
+import { verifyPostRepairOutcome } from "../src/post-repair-verification.js";
+
+function inspection(
+  overrides: Record<string, unknown> = {},
+) {
+  return {
+    fingerprint: "before",
+    diagnostics: [],
+    unresolvedReferences: 0,
+    releaseIdentity: {
+      status: "consistent",
+      observations: [],
+      conflicts: [],
+    },
+    arenaAnalysis: {
+      proofExecution: {
+        mode: "full",
+      },
+      proofConclusion: {
+        conclusion: "complete-proof",
+      },
+    },
+    gameplayWorld: {
+      intent: {
+        unknowns: [],
+      },
+    },
+    evidenceRecovery: {
+      actions: [],
+    },
+    ...overrides,
+  } as any;
+}
+
+describe("post repair verification", () => {
+  it("passes when targeted diagnostics are gone and no evidence regresses", () => {
+    const before = inspection({
+      diagnostics: [{
+        id: "old",
+        code: "ARENA_VOXEL_DIVERGENCE",
+        severity: "critical",
+        message: "old divergence",
+      }],
+    });
+    const after = inspection({
+      fingerprint: "after",
+      diagnostics: [],
+    });
+
+    const result =
+      verifyPostRepairOutcome({
+        before,
+        after,
+        requiredResolvedDiagnosticCodes: [
+          "ARENA_VOXEL_DIVERGENCE",
+        ],
+      });
+
+    expect(result.status).toBe("pass");
+    expect(result.releaseReady).toBe(true);
+  });
+
+  it("fails when repair introduces a new major diagnostic", () => {
+    const before = inspection();
+    const after = inspection({
+      fingerprint: "after",
+      diagnostics: [{
+        id: "new",
+        code: "WORLDSTATE_GLOBAL_LEASE_MISSING",
+        severity: "medium",
+        message: "new global-state defect",
+      }],
+    });
+
+    const result =
+      verifyPostRepairOutcome({
+        before,
+        after,
+      });
+
+    expect(result.status).toBe("fail");
+    expect(result.releaseReady).toBe(false);
+  });
+
+  it("keeps progressive after-proof partial when before used full proof", () => {
+    const before = inspection();
+    const after = inspection({
+      fingerprint: "after",
+      arenaAnalysis: {
+        proofExecution: {
+          mode: "progressive",
+        },
+        proofConclusion: {
+          conclusion: "bounded-proof",
+        },
+      },
+    });
+
+    const result =
+      verifyPostRepairOutcome({
+        before,
+        after,
+      });
+
+    expect(result.status).toBe("partial");
+    expect(
+      result.followUps.join(" "),
+    ).toMatch(/full arena proof/i);
+  });
+});

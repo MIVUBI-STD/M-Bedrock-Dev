@@ -5,6 +5,7 @@ import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";
 import { buildEngineeringReviewProjection } from "../../../packages/orchestrator/src/index.js";
 import { buildArenaEngineeringProjection } from "../../../packages/orchestrator/src/index.js";
 import { buildMapEngineeringWorkflow } from "../../../packages/orchestrator/src/index.js";
+import { verifyPostRepairOutcome } from "../../../packages/orchestrator/src/index.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/index.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
@@ -231,6 +232,40 @@ async function main(): Promise<void> {
   }
 
 
+  if (
+    command === "verify-repair" &&
+    input &&
+    secondInput
+  ) {
+    const proofTarget = {
+      ...target,
+      arenaProofMode:
+        target.arenaProofMode ?? "full",
+    };
+    const before = await inspectArtifact(
+      resolve(input),
+      proofTarget,
+      knowledge,
+    );
+    const after = await inspectArtifact(
+      resolve(secondInput),
+      proofTarget,
+      knowledge,
+    );
+    const report =
+      verifyPostRepairOutcome({
+        before,
+        after,
+      });
+    console.log(
+      JSON.stringify(report, null, 2),
+    );
+    if (!report.releaseReady) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (command === "workflow" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
@@ -349,6 +384,7 @@ async function main(): Promise<void> {
     command !== "review" &&
     command !== "arena-audit" &&
     command !== "workflow" &&
+    command !== "verify-repair" &&
     command !== "review-model" &&
     command !== "probe-plan" &&
     command !== "probe-replay"
@@ -413,6 +449,7 @@ async function main(): Promise<void> {
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- verify-repair <before-mcworld> <after-mcworld> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
