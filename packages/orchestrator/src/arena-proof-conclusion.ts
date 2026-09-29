@@ -1,5 +1,6 @@
 import type { ArenaProofCoverageReport } from "./arena-proof-coverage.js";
 import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
+import type { ArenaBlockEntityProof } from "./arena-block-entity-proof.js";
 
 export type ArenaProofConclusion =
   | "complete-proof"
@@ -10,6 +11,7 @@ export type ArenaProofConclusion =
 export interface ArenaProofConclusionReport {
   conclusion: ArenaProofConclusion;
   voxelStatus?: ArenaVoxelProof["status"];
+  blockEntityStatus?: ArenaBlockEntityProof["status"];
   coverageStatus?: ArenaProofCoverageReport["status"];
   coverageRatio?: number;
   statement: string;
@@ -18,11 +20,13 @@ export interface ArenaProofConclusionReport {
 export function concludeArenaProof(
   coverage: ArenaProofCoverageReport | undefined,
   voxel: ArenaVoxelProof | undefined,
+  blockEntities?: ArenaBlockEntityProof,
 ): ArenaProofConclusionReport {
   if (!coverage || coverage.status === "none") {
     return {
       conclusion: "no-proof",
       ...(voxel === undefined ? {} : { voxelStatus: voxel.status }),
+      ...(blockEntities === undefined ? {} : { blockEntityStatus: blockEntities.status }),
       ...(coverage === undefined
         ? {}
         : {
@@ -38,6 +42,7 @@ export function concludeArenaProof(
     return {
       conclusion: "partition-fallback",
       ...(voxel === undefined ? {} : { voxelStatus: voxel.status }),
+      ...(blockEntities === undefined ? {} : { blockEntityStatus: blockEntities.status }),
       coverageStatus: coverage.status,
       coverageRatio: coverage.coverageRatio,
       statement:
@@ -47,15 +52,20 @@ export function concludeArenaProof(
 
   if (
     coverage.status === "full" &&
-    voxel?.status === "verified"
+    voxel?.status === "verified" &&
+    (
+      blockEntities === undefined ||
+      blockEntities.status === "verified"
+    )
   ) {
     return {
       conclusion: "complete-proof",
       voxelStatus: voxel.status,
+      ...(blockEntities === undefined ? {} : { blockEntityStatus: blockEntities.status }),
       coverageStatus: coverage.status,
       coverageRatio: coverage.coverageRatio,
       statement:
-        "All proof-planned arena blocks were covered and decoded voxel comparison found no divergence.",
+        "All proof-planned arena blocks were covered and supplied physical proof layers found no voxel or block-entity divergence.",
     };
   }
 

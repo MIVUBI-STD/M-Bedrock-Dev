@@ -1,3 +1,4 @@
+export * from "./block-entity.js";
 export * from "./named-record.js";
 export * from "./subchunk.js";
 export * from "./keyspace.js";

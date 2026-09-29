@@ -274,3 +274,5 @@ export * from "./arena-lifecycle-analysis.js";
 export * from "./release-identity-analysis.js";
 
 export * from "./arena-golden-corpus.js";
+
+export * from "./arena-block-entity-proof.js";
