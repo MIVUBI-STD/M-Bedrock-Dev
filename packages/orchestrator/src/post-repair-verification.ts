@@ -4,6 +4,7 @@ import type {
 import type {
   InspectArtifactResult,
 } from "./inspect-artifact.js";
+import { assessArenaProofReuse, type ArenaProofReuseReport } from "./arena-proof-reuse.js";
 
 export type PostRepairVerificationStatus =
   | "pass"
@@ -34,6 +35,7 @@ export interface PostRepairVerificationReport {
   regressions: readonly string[];
   followUps: readonly string[];
   improvements: readonly string[];
+  proofReuse: ArenaProofReuseReport;
 }
 
 function sourceKey(
@@ -144,6 +146,11 @@ export function verifyPostRepairOutcome(
   const regressions: string[] = [];
   const followUps: string[] = [];
   const improvements: string[] = [];
+  const proofReuse =
+    assessArenaProofReuse(
+      input.before,
+      input.after,
+    );
 
   if (remaining.length > 0) {
     regressions.push(
@@ -285,9 +292,35 @@ export function verifyPostRepairOutcome(
     afterProofMode !== "full" &&
     beforeProofRank > 0
   ) {
-    followUps.push(
-      "Before-state arena evidence used full proof, but after-state verification did not. Run full arena proof before release.",
-    );
+    const skipped =
+      input.after.arenaAnalysis
+        .proofExecution?.skippedLayers ?? [];
+    const reusable =
+      new Set(
+        proofReuse.reusableLayers,
+      );
+    const allSkippedReusable =
+      skipped.length > 0 &&
+      skipped.every((layer) =>
+        reusable.has(layer)
+      );
+
+    if (
+      allSkippedReusable &&
+      input.before.arenaAnalysis
+        .proofConclusion?.conclusion ===
+        "complete-proof"
+    ) {
+      improvements.push(
+        "Progressive after-proof reused unchanged full-proof dependencies for skipped arena layers: " +
+          skipped.join(", ") +
+          ".",
+      );
+    } else {
+      followUps.push(
+        "Before-state arena evidence used full proof, but after-state skipped proof layers cannot all be reused safely. Run full arena proof before release.",
+      );
+    }
   }
 
   const beforeUnknowns =
@@ -355,5 +388,6 @@ export function verifyPostRepairOutcome(
     regressions,
     followUps,
     improvements,
+    proofReuse,
   };
 }
