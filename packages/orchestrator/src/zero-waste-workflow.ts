@@ -19,9 +19,11 @@ import {
   planPatchSemanticAffectedSet,
   type SemanticAffectedPlan,
 } from "./semantic-affected-plan.js";
+import type {
+  SemanticProofClaim,
+} from "../../project-model/src/index.js";
 import {
   assessSemanticProofReuse,
-  type SemanticProofClaim,
   type SemanticProofReuseResult,
 } from "./semantic-proof-cache.js";
 import {

@@ -205,7 +205,7 @@
     {
       "id": "semantic-proof-claim",
       "symbol": "SemanticProofClaim",
-      "owner": "packages/orchestrator/src/semantic-proof-cache.ts",
+      "owner": "packages/project-model/src/semantic-proof.ts",
       "producers": [
         "packages/orchestrator"
       ],

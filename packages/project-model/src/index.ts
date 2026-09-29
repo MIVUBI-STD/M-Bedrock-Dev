@@ -49,3 +49,5 @@ export * from "./runtime-verification-contract.js";
 export * from "./repair-source-transform-hint.js";
 
 export * from "./work-session.js";
+
+export * from "./semantic-proof.js";

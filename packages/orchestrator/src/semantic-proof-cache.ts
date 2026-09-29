@@ -4,24 +4,10 @@ import type {
   SemanticGraph,
   SemanticNode,
 } from "../../graph/src/index.js";
-
-export type SemanticProofKind =
-  | "static"
-  | "semantic"
-  | "formal"
-  | "runtime"
-  | "validation";
-
-export interface SemanticProofClaim {
-  schemaVersion: 1;
-  claimId: string;
-  claimRevision: string;
-  kind: SemanticProofKind;
-  basisNodeIds: readonly string[];
-  basisFingerprint: string;
-  evidenceIds: readonly string[];
-  targetProfileFingerprint?: string;
-}
+import type {
+  SemanticProofClaim,
+  SemanticProofKind,
+} from "../../project-model/src/index.js";
 
 export interface SemanticProofReuseResult {
   status:

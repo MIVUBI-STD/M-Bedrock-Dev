@@ -10,10 +10,8 @@ import {
 } from "../../repair/src/index.js";
 import type {
   ProjectWorkspaceLayout,
-} from "../../project-model/src/index.js";
-import type {
   SemanticProofClaim,
-} from "./semantic-proof-cache.js";
+} from "../../project-model/src/index.js";
 
 export interface SemanticProofClaimStore {
   schemaVersion: 1;
