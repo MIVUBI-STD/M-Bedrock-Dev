@@ -39,7 +39,9 @@ export type BugReportPromotionIssueCode =
   | "ai-missing-relevant-code"
   | "suggested-fix-without-analysis"
   | "too-many-relevant-code-locations"
-  | "duplicate-bug-id";
+  | "duplicate-bug-id"
+  | "invalid-confirmation"
+  | "ai-unproven-defect";
 
 export interface BugReportPromotionIssue {
   readonly code: BugReportPromotionIssueCode;
@@ -87,6 +89,27 @@ export function reviewConfirmedBugInputs(
       });
     }
     seenIds.add(bug.id);
+
+    if (!bug.confirmation.evidence.trim()) {
+      issues.push({
+        code: "invalid-confirmation",
+        bugId: bug.id,
+        message:
+          "Confirmed defects require a concise evidence statement describing why the defect itself is established.",
+      });
+    }
+
+    if (
+      bug.foundBy === "ai" &&
+      bug.confirmation.basis === "tester-reproduction"
+    ) {
+      issues.push({
+        code: "ai-unproven-defect",
+        bugId: bug.id,
+        message:
+          "AI-found defects require authored contract violation or runtime observation.",
+      });
+    }
 
     if (
       bug.foundBy === "tester" &&
