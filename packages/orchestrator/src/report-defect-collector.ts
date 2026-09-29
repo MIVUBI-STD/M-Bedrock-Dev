@@ -34,6 +34,10 @@ import {
   applyReportRepairContext,
 } from "./report-repair-context.js";
 import {
+  deriveReportDefectClassification,
+  type ReportDefectClassificationSignals,
+} from "./report-defect-classification.js";
+import {
   bindSourceEvidenceSemanticOwners,
 } from "./report-source-owner.js";
 import {
@@ -47,11 +51,6 @@ import {
   type TesterDefectConfirmationInput,
 } from "./tester-report-confirmation-adapter.js";
 
-export interface ReportDefectClassificationEvidence {
-  readonly impactEvidenceIds: readonly string[];
-  readonly primaryFailureEvidenceIds: readonly string[];
-}
-
 export type ConfirmedDefectDraft = Omit<
   ConfirmedDefect,
   | "semanticKey"
@@ -60,9 +59,11 @@ export type ConfirmedDefectDraft = Omit<
   | "confirmation"
   | "mustPreserve"
   | "repairUnitIds"
+  | "impact"
+  | "primaryFailure"
 > & {
-  readonly classificationEvidence:
-    ReportDefectClassificationEvidence;
+  readonly classificationSignals:
+    ReportDefectClassificationSignals;
 };
 
 export type AiConfirmedDefectDraft = Omit<
@@ -170,34 +171,31 @@ function candidateEvidenceUniverse(
   ].sort();
 }
 
-function classificationEvidenceIssues(
+function candidateClassification(
+  candidate: AuditReportCandidate,
+) {
+  return deriveReportDefectClassification(
+    candidate.defect.classificationSignals,
+  );
+}
+
+function classificationIssues(
   candidate: AuditReportCandidate,
 ): readonly string[] {
+  const classification =
+    candidateClassification(candidate);
+  if (!classification.ok) {
+    return classification.reasons;
+  }
+
   const universe = new Set(
     candidateEvidenceUniverse(candidate),
   );
-  const impact =
-    candidate.defect.classificationEvidence
-      .impactEvidenceIds;
-  const primary =
-    candidate.defect.classificationEvidence
-      .primaryFailureEvidenceIds;
   const errors: string[] = [];
 
-  if (impact.length === 0) {
-    errors.push(
-      "Impact assessment requires supporting evidence.",
-    );
-  }
-  if (primary.length === 0) {
-    errors.push(
-      "Primary failure classification requires supporting evidence.",
-    );
-  }
-
   for (const evidenceId of [
-    ...impact,
-    ...primary,
+    ...classification.impactEvidenceIds,
+    ...classification.primaryFailureEvidenceIds,
   ]) {
     if (!universe.has(evidenceId)) {
       errors.push(
@@ -354,15 +352,51 @@ function candidateRepairUnitIds(
   );
 }
 
+function preclassificationCandidateKey(
+  candidate: AuditReportCandidate,
+): string {
+  const failures = [
+    ...new Set(
+      candidate.defect.classificationSignals
+        .primaryFailure
+        .map((signal) => signal.failure),
+    ),
+  ].sort();
+
+  return [
+    "candidate",
+    "subjects=" +
+      [...new Set(candidateSubjectIds(candidate))].sort().join(","),
+    "invariants=" +
+      [...new Set(candidateBrokenInvariantIds(candidate))].sort().join(","),
+    "failures=" + failures.join(","),
+    candidate.defect.causalIncidentId === undefined
+      ? undefined
+      : "incident=" + candidate.defect.causalIncidentId,
+  ]
+    .filter(
+      (value): value is string =>
+        value !== undefined,
+    )
+    .join("|");
+}
+
 function candidateSemanticKey(
   candidate: AuditReportCandidate,
 ): string {
+  const classification =
+    candidateClassification(candidate);
+
+  if (!classification.ok) {
+    return preclassificationCandidateKey(candidate);
+  }
+
   return deriveConfirmedDefectSemanticKey({
     subjectIds: candidateSubjectIds(candidate),
     brokenInvariantIds:
       candidateBrokenInvariantIds(candidate),
     primaryFailure:
-      candidate.defect.primaryFailure,
+      classification.primaryFailure,
     ...(candidate.defect.causalIncidentId === undefined
       ? {}
       : {
@@ -431,13 +465,13 @@ function collectOne(
   readonly confirmed?: ConfirmedDefect;
   readonly rejected?: RejectedReportCandidate;
 } {
-  const classificationIssues =
-    classificationEvidenceIssues(candidate);
-  if (classificationIssues.length > 0) {
+  const classificationProblems =
+    classificationIssues(candidate);
+  if (classificationProblems.length > 0) {
     return {
       rejected: rejectedCandidate(
         candidate,
-        classificationIssues,
+        classificationProblems,
         "candidate-correction",
       ),
     };
@@ -523,16 +557,31 @@ function collectOne(
     };
   }
 
+  const classification =
+    candidateClassification(candidate);
+  if (!classification.ok) {
+    return {
+      rejected: rejectedCandidate(
+        candidate,
+        classification.reasons,
+        "candidate-correction",
+      ),
+    };
+  }
+
   const boundSourceEvidence =
     candidateSourceEvidence(candidate);
   const {
-    classificationEvidence:
-      _classificationEvidence,
+    classificationSignals:
+      _classificationSignals,
     ...defectDraft
   } = candidate.defect;
 
   const confirmed: ConfirmedDefect = {
     ...defectDraft,
+    impact: classification.impact,
+    primaryFailure:
+      classification.primaryFailure,
     ...(boundSourceEvidence === undefined
       ? {}
       : { sourceEvidence: boundSourceEvidence }),
