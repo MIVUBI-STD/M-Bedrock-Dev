@@ -21,6 +21,23 @@ export interface GitHubBugReportSummary {
   readonly mapVersion: string;
   readonly fixed: number;
   readonly total: number;
+  readonly blockers: number;
+}
+
+export interface LoadedGitHubBugReport {
+  readonly report: BugReportV2;
+  readonly revision: string;
+}
+
+export interface SavedGitHubBugReport {
+  readonly revision: string;
+}
+
+export class GitHubBugReportConflictError extends Error {
+  constructor() {
+    super("GitHub bug report changed after it was opened.");
+    this.name = "GitHubBugReportConflictError";
+  }
 }
 
 interface GitHubContentFile {
@@ -36,6 +53,12 @@ interface GitHubContentDirectoryEntry {
   readonly path: string;
   readonly name: string;
   readonly sha: string;
+}
+
+interface GitHubWriteResponse {
+  readonly content?: {
+    readonly sha?: string;
+  };
 }
 
 function assertNonEmpty(value: string, label: string): void {
@@ -176,17 +199,22 @@ export class GitHubBugReportStore {
           mapVersion: report.map.mapVersion,
           fixed: progress.fixed,
           total: progress.total,
+          blockers: report.bugs.filter(
+            (bug) => !bug.fixed && bug.severity === "blocker",
+          ).length,
         };
       }),
     );
 
     return summaries.sort((left, right) =>
+      Number(right.blockers > 0) - Number(left.blockers > 0) ||
+      (right.total - right.fixed) - (left.total - left.fixed) ||
       left.mapName.localeCompare(right.mapName) ||
       left.mapVersion.localeCompare(right.mapVersion)
     );
   }
 
-  async loadReport(path: string): Promise<BugReportV2> {
+  async loadReport(path: string): Promise<LoadedGitHubBugReport> {
     this.#assertReportPath(path);
     const file = await this.#currentFile(path);
     if (!file) {
@@ -211,33 +239,49 @@ export class GitHubBugReportStore {
             .join("; "),
       );
     }
-    return parsed.report;
+    return {
+      report: parsed.report,
+      revision: file.sha,
+    };
   }
 
-  async saveReport(path: string, report: BugReportV2): Promise<void> {
+  async saveReport(
+    path: string,
+    report: BugReportV2,
+    expectedRevision: string,
+  ): Promise<SavedGitHubBugReport> {
     this.#assertReportPath(path);
     const serialized = serializeBugReportV2(report);
     if (!serialized.ok || !serialized.json) {
       throw new Error("Refusing to save invalid Bug Report V2.");
     }
 
+    assertNonEmpty(expectedRevision, "Expected GitHub revision");
     const current = await this.#currentFile(path);
-    const body = {
-      message: "chore(bug-report): update " + report.map.name,
-      content: encodeBase64Utf8(serialized.json),
-      branch: this.#branch,
-      ...(current ? { sha: current.sha } : {}),
-    };
+    if (!current || current.sha !== expectedRevision) {
+      throw new GitHubBugReportConflictError();
+    }
 
-    await this.#request(
+    const response = await this.#request(
       this.#contentsPath(path),
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          message: "chore(bug-report): update " + report.map.name,
+          content: encodeBase64Utf8(serialized.json),
+          branch: this.#branch,
+          sha: expectedRevision,
+        }),
       },
     );
+    const result = await response.json() as GitHubWriteResponse;
+    const revision = result.content?.sha;
+    if (!revision) {
+      throw new Error("GitHub did not return the saved report revision.");
+    }
+    return { revision };
   }
 }
