@@ -19,6 +19,9 @@ import type {
   GameplayIntentRuntimeAssessment,
 } from "./gameplay-intent-runtime-stage.js";
 import type {
+  DiagnosticFinding,
+} from "../../diagnostics/src/index.js";
+import type {
   SemanticIr,
 } from "../../semantic-ir/src/index.js";
 import {
@@ -37,6 +40,9 @@ import {
   deriveReportDefectClassification,
   type ReportDefectClassificationSignals,
 } from "./report-defect-classification.js";
+import {
+  derivePrimaryFailureSignalsFromDiagnostics,
+} from "./report-classification-producers.js";
 import {
   bindSourceEvidenceSemanticOwners,
 } from "./report-source-owner.js";
@@ -82,6 +88,8 @@ export interface RuntimeReportCandidate {
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
   readonly semanticIr?: SemanticIr;
+  readonly classificationDiagnostics?:
+    readonly DiagnosticFinding[];
   readonly defect: AiConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
 }
@@ -91,6 +99,8 @@ export interface StaticReportCandidate {
   readonly intent: GameplayIntentModel;
   readonly result: IntentDiagnosticGateResult;
   readonly semanticIr?: SemanticIr;
+  readonly classificationDiagnostics?:
+    readonly DiagnosticFinding[];
   readonly defect: AiConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
 }
@@ -100,6 +110,8 @@ export interface TesterReportCandidate {
   readonly subjectIds: readonly string[];
   readonly confirmation: TesterDefectConfirmationInput;
   readonly semanticIr?: SemanticIr;
+  readonly classificationDiagnostics?:
+    readonly DiagnosticFinding[];
   readonly defect: ConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
 }
@@ -160,6 +172,8 @@ function candidateEvidenceUniverse(
         : [
             ...candidate.confirmation.expectedEvidenceIds,
           ]),
+    ...(candidate.classificationDiagnostics ?? [])
+      .map((finding) => finding.id),
   ];
 
   return [
@@ -174,9 +188,20 @@ function candidateEvidenceUniverse(
 function candidateClassification(
   candidate: AuditReportCandidate,
 ) {
-  return deriveReportDefectClassification(
-    candidate.defect.classificationSignals,
-  );
+  const diagnosticSignals =
+    derivePrimaryFailureSignalsFromDiagnostics(
+      candidate.classificationDiagnostics ?? [],
+    ).signals;
+
+  return deriveReportDefectClassification({
+    impact:
+      candidate.defect.classificationSignals.impact,
+    primaryFailure: [
+      ...candidate.defect.classificationSignals
+        .primaryFailure,
+      ...diagnosticSignals,
+    ],
+  });
 }
 
 function classificationIssues(
