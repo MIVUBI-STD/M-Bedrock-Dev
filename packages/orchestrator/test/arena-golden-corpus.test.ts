@@ -37,6 +37,45 @@ describe("arena golden corpus", () => {
     expect(failures).toEqual([]);
   });
 
+  it("evaluates lifecycle cleanup isolation stress and fidelity assertions", () => {
+    const failures = evaluateArenaGoldenAssertions(
+      {
+        arenaCount: 6,
+        detectionBasis: "topology",
+        proofConclusion: "bounded-proof",
+        packIdentityDrift: false,
+        releaseStatus: "consistent",
+        replicaStatuses: {},
+        lifecycleUnresolved: 0,
+        cleanupUnresolved: 1,
+        sharedGlobalState: 0,
+        partitionProofRequired: 1,
+        stressStatus: "planned",
+        nominalStressPlayers: 30,
+        voxelStatus: "verified",
+        blockEntityStatus: "verified",
+        entityPopulationStatus: "verified",
+        tickStateStatus: "incomplete",
+        structureInstanceStatus: "verified",
+      },
+      {
+        maxLifecycleUnresolved: 0,
+        maxCleanupUnresolved: 1,
+        maxSharedGlobalState: 0,
+        maxPartitionProofRequired: 1,
+        stressStatus: "planned",
+        nominalStressPlayers: 30,
+        voxelStatus: "verified",
+        blockEntityStatus: "verified",
+        entityPopulationStatus: "verified",
+        tickStateStatus: "incomplete",
+        structureInstanceStatus: "verified",
+      },
+    );
+
+    expect(failures).toEqual([]);
+  });
+
   it("rejects unknown assertion keys", () => {
     expect(() =>
       parseArenaGoldenManifest({
