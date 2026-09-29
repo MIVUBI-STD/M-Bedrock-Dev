@@ -1,5 +1,5 @@
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "./spatial-mutation-evidence.js";
-import type { ScriptSafeConfigBinding, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
+import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigImport, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
 import type {
   RepairSourceTransformHint,
   SourceRef,
@@ -451,6 +451,8 @@ export interface ParsedScriptFile {
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
   persistenceIdempotencyGuards?: ScriptPersistenceIdempotencyGuard[];
   safeConfigBindings?: ScriptSafeConfigBinding[];
+  safeConfigImports?: ScriptSafeConfigImport[];
+  safeConfigExports?: ScriptSafeConfigExport[];
   safeConfigRejected?: ScriptSafeConfigRejection[];
   capabilities: ScriptCapabilityUse[];
 }
