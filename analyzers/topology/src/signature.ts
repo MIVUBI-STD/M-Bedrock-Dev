@@ -34,11 +34,13 @@ function normalizedPayload(effect: ResolvedEffect) {
 
 export function effectSignature(effect: ResolvedEffect): EffectSignature {
   const anchor =
-    effect.kind === "fill" || effect.kind === "clone"
+    effect.kind === "fill"
       ? effect.from
-      : effect.kind === "setblock" || effect.kind === "entity-spawn"
-        ? effect.position
-        : effect.destination;
+      : effect.kind === "clone"
+        ? effect.destination
+        : effect.kind === "setblock" || effect.kind === "entity-spawn"
+          ? effect.position
+          : effect.destination;
 
   const shapeHash = createHash("sha256")
     .update(JSON.stringify(normalizedPayload(effect)))
