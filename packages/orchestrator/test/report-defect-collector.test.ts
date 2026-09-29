@@ -178,6 +178,28 @@ describe("report defect collector", () => {
     ).toEqual(["ai", "ai", "tester"]);
   });
 
+  it("ignores caller-supplied AI broken invariant identity", () => {
+    const attempted = {
+      ...defect("attempted-identity", { ai: true }),
+      brokenInvariantIds: ["inv:caller-controlled"],
+    };
+
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      defect: attempted,
+    }]);
+
+    expect(result.confirmed).toHaveLength(1);
+    expect(result.confirmed[0]?.brokenInvariantIds)
+      .toEqual(["inv:cleanup"]);
+    expect(result.confirmed[0]?.semanticKey)
+      .toContain("invariants=inv:cleanup");
+    expect(result.confirmed[0]?.semanticKey)
+      .not.toContain("caller-controlled");
+  });
+
   it("derives severity category and ids during final projection", () => {
     const result = buildBugReportFromAuditCandidates({
       map: {
