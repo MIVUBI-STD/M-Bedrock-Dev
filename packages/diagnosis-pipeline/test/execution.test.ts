@@ -110,6 +110,51 @@ describe("diagnosis planned-step execution", () => {
       .toMatch(/No executor is registered/);
   });
 
+  it("fails open when cache-key generation cannot canonicalize the payload", async () => {
+    const execute = vi.fn(async () => ({
+      status: "completed" as const,
+      evidence: [{
+        level: "static" as const,
+        evidenceIds: ["source:e1"],
+        quality: "usable" as const,
+        traits: ["structural-proof" as const],
+      }],
+      output: { indexed: true },
+    }));
+
+    const result =
+      await executePlannedDiagnosisStep({
+        plan: plan(),
+        context: "LOCAL_ARTIFACT",
+        payload: {
+          unsupported:
+            () => "not-cacheable",
+        },
+        registry: {
+          schemaVersion: 1,
+          executors: [{
+            executorId:
+              "diagnosis.source-index",
+            execute,
+          }],
+        },
+        cache: {
+          get: () => undefined,
+          put: () => undefined,
+        },
+      });
+
+    expect(result.status)
+      .toBe("executed");
+    expect(execute)
+      .toHaveBeenCalledTimes(1);
+    expect(
+      result.status === "executed"
+        ? result.reasons.join(" ")
+        : "",
+    ).toMatch(/cache key generation failed/i);
+  });
+
   it("rejects executor ids outside the canonical diagnosis profile", () => {
     const registry: DiagnosisExecutorRegistry = {
       schemaVersion: 1,

@@ -297,18 +297,33 @@ export async function executePlannedDiagnosisStep(
   }
 
   const cacheNotes: string[] = [];
-  const cacheKey =
+  let cacheKey: string | undefined;
+
+  if (
     capability.deterministic &&
     input.cache !== undefined
-      ? diagnosisExecutionCacheKey({
+  ) {
+    try {
+      cacheKey =
+        diagnosisExecutionCacheKey({
           capabilityId: capability.id,
           executorId: capability.executorId,
           capabilityRevision:
             capability.cacheRevision,
           context: input.context,
           payload: input.payload,
-        })
-      : undefined;
+        });
+    } catch (error) {
+      cacheNotes.push(
+        "Diagnosis cache key generation failed; executor ran normally: " +
+          (
+            error instanceof Error
+              ? error.message
+              : String(error)
+          ),
+      );
+    }
+  }
 
   if (
     cacheKey !== undefined &&
