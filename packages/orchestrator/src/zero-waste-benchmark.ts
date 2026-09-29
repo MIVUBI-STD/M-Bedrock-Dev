@@ -222,13 +222,20 @@ export function evaluateZeroWasteBenchmark(
     );
 
   if (truncation !== undefined) {
+    const requiredScopeComplete =
+      input.context?.complete === true;
+
     metrics.push(
       maximumMetric(
         "context-truncation",
         truncation,
-        input.targets
-          ?.maximumContextTruncationRatio,
-        "Share of eligible context items omitted by the explicit context budget.",
+        requiredScopeComplete
+          ? undefined
+          : input.targets
+              ?.maximumContextTruncationRatio,
+        requiredScopeComplete
+          ? "Optional surrounding context omitted while explicitly required scope remains complete; informational only."
+          : "Share of eligible context items omitted while the compiled context remains incomplete.",
       ),
     );
   }
@@ -286,6 +293,7 @@ export function evaluateZeroWasteBenchmark(
 
   if (
     truncation !== undefined &&
+    input.context?.complete === false &&
     truncation > 0.5
   ) {
     wasteSignals.push(
