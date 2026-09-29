@@ -209,6 +209,30 @@
     }
   }
 
+  async function saveToGitHub() {
+    if (!report || source?.kind !== "file") return;
+    saveState = "saving";
+    const path =
+      "bug-reports/" +
+      buildBugReportDownloadName(report.map);
+
+    try {
+      const saved = await github.createReport(path, report);
+      source = {
+        kind: "github",
+        path,
+        revision: saved.revision,
+      };
+      dirty = false;
+      saveState = "saved";
+    } catch (error) {
+      saveState =
+        error instanceof GitHubReportConflictError
+          ? "conflict"
+          : "failed";
+    }
+  }
+
   async function saveGitHubReport() {
     if (!report || source?.kind !== "github") return;
     saveState = "saving";
@@ -321,6 +345,16 @@
             Save
           </button>
         {:else}
+          {#if saveState === "saving"}
+            <span class="save-state">Saving…</span>
+          {:else if saveState === "failed"}
+            <span class="save-state failed">Save failed</span>
+          {:else if saveState === "conflict"}
+            <span class="save-state conflict">Already on GitHub</span>
+          {/if}
+          <button class="secondary" on:click={saveToGitHub} disabled={saveState === "saving"}>
+            Save to GitHub
+          </button>
           <button class="primary" on:click={exportReport}>Export JSON</button>
         {/if}
         <button class="secondary" on:click={clearReport}>Close</button>
