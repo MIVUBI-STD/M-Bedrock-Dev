@@ -209,3 +209,5 @@ export * from "./semantic-affected-plan.js";
 export * from "./selective-validation-plan.js";
 
 export * from "./zero-waste-execution-summary.js";
+
+export * from "./semantic-proof-cache.js";

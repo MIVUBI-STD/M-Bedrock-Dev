@@ -120,5 +120,5 @@ describe("diagnosis result cache", () => {
       (cached?.output as Output)
         .value(),
     ).toBe("ok");
-  });;
+  });
 });
