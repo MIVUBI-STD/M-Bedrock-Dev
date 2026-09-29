@@ -213,3 +213,5 @@ export * from "./zero-waste-execution-summary.js";
 export * from "./semantic-proof-cache.js";
 
 export * from "./context-compiler.js";
+
+export * from "./zero-waste-benchmark.js";

@@ -18,8 +18,7 @@ describe("work session checkpoint", () => {
           artifactId: "map",
           artifactFingerprint: "fp",
         },
-        evidenceIds: [],
-      } as never);
+      });
 
     const understood =
       advanceWorkSessionCheckpoint(
