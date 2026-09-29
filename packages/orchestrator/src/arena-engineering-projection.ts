@@ -76,6 +76,22 @@ export interface ArenaEngineeringProjection {
     byKind?: Readonly<Record<string, number>>;
     reasons: readonly string[];
   };
+  repairLocalization: {
+    localized: number;
+    unresolved: number;
+    items: readonly {
+      kind: string;
+      arenaId: string;
+      unresolved: boolean;
+      candidates: readonly {
+        path: string;
+        line?: number;
+        authoredKind: string;
+        strength: string;
+      }[];
+      reasons: readonly string[];
+    }[];
+  };
   diagnostics: readonly {
     id: string;
     code: DiagnosticFinding["code"];
@@ -427,6 +443,39 @@ export function buildArenaEngineeringProjection(
                 "Arena stress plan has not been derived.",
               ],
           },
+    repairLocalization: {
+      localized:
+        arena.repairLocalization?.localized ?? 0,
+      unresolved:
+        arena.repairLocalization?.unresolved ?? 0,
+      items:
+        arena.repairLocalization?.items.map(
+          (item) => ({
+            kind: item.kind,
+            arenaId: item.arenaId,
+            unresolved: item.unresolved,
+            candidates: item.candidates
+              .slice(0, 8)
+              .map((candidate) => ({
+                path:
+                  candidate.source.relativePath,
+                ...(candidate.source.range
+                  ?.lineStart === undefined
+                  ? {}
+                  : {
+                      line:
+                        candidate.source.range
+                          .lineStart,
+                    }),
+                authoredKind:
+                  candidate.authoredKind,
+                strength:
+                  candidate.strength,
+              })),
+            reasons: item.reasons,
+          }),
+        ) ?? [],
+    },
     diagnostics: arenaDiagnostics(source),
     unresolved,
   };
