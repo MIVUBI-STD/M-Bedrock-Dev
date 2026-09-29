@@ -111,6 +111,13 @@ export interface ConfirmedDefectCollection {
   readonly rejected: readonly RejectedReportCandidate[];
 }
 
+export interface AuditReportCandidateDescriptor {
+  readonly route: AuditReportCandidate["route"];
+  readonly semanticKey: string;
+  readonly evidenceIds: readonly string[];
+  readonly nextEvidenceNeed: ReportCandidateNextEvidenceNeed;
+}
+
 function intersects(
   left: readonly string[],
   right: readonly string[],
@@ -274,6 +281,17 @@ function routeNextEvidenceNeed(
   return "none";
 }
 
+export function describeAuditReportCandidate(
+  candidate: AuditReportCandidate,
+): AuditReportCandidateDescriptor {
+  return {
+    route: candidate.route,
+    semanticKey: candidateSemanticKey(candidate),
+    evidenceIds: candidateEvidenceIds(candidate),
+    nextEvidenceNeed: routeNextEvidenceNeed(candidate),
+  };
+}
+
 function rejectedCandidate(
   candidate: AuditReportCandidate,
   reasons: readonly string[],
@@ -281,10 +299,12 @@ function rejectedCandidate(
     ReportCandidateNextEvidenceNeed =
       routeNextEvidenceNeed(candidate),
 ): RejectedReportCandidate {
+  const descriptor =
+    describeAuditReportCandidate(candidate);
   return {
-    route: candidate.route,
-    semanticKey: candidateSemanticKey(candidate),
-    evidenceIds: candidateEvidenceIds(candidate),
+    route: descriptor.route,
+    semanticKey: descriptor.semanticKey,
+    evidenceIds: descriptor.evidenceIds,
     nextEvidenceNeed,
     reasons,
   };
