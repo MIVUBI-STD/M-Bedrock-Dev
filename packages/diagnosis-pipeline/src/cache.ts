@@ -37,10 +37,24 @@ function canonical(value: unknown): unknown {
   if (
     value === null ||
     typeof value === "string" ||
-    typeof value === "number" ||
     typeof value === "boolean"
   ) {
     return value;
+  }
+
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      throw new Error(
+        "Diagnosis cache fingerprint cannot canonicalize non-finite numbers.",
+      );
+    }
+
+    return Object.is(value, -0)
+      ? {
+          $type: "number",
+          value: "-0",
+        }
+      : value;
   }
 
   if (typeof value === "bigint") {

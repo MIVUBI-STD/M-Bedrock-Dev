@@ -47,6 +47,63 @@ describe("diagnosis result cache", () => {
     expect(first).toBe(second);
   });
 
+  it("rejects ambiguous non-finite numeric cache inputs", () => {
+    expect(() =>
+      diagnosisExecutionCacheKey({
+        capabilityId:
+          "diagnosis.source-index",
+        executorId:
+          "diagnosis.source-index",
+        capabilityRevision: "1",
+        context: "LOCAL_ARTIFACT",
+        payload: {
+          value: Number.NaN,
+        },
+      })
+    ).toThrow(/non-finite/);
+
+    expect(() =>
+      diagnosisExecutionCacheKey({
+        capabilityId:
+          "diagnosis.source-index",
+        executorId:
+          "diagnosis.source-index",
+        capabilityRevision: "1",
+        context: "LOCAL_ARTIFACT",
+        payload: {
+          value:
+            Number.POSITIVE_INFINITY,
+        },
+      })
+    ).toThrow(/non-finite/);
+  });
+
+  it("distinguishes negative zero from zero", () => {
+    const zero =
+      diagnosisExecutionCacheKey({
+        capabilityId:
+          "diagnosis.source-index",
+        executorId:
+          "diagnosis.source-index",
+        capabilityRevision: "1",
+        context: "LOCAL_ARTIFACT",
+        payload: { value: 0 },
+      });
+    const negativeZero =
+      diagnosisExecutionCacheKey({
+        capabilityId:
+          "diagnosis.source-index",
+        executorId:
+          "diagnosis.source-index",
+        capabilityRevision: "1",
+        context: "LOCAL_ARTIFACT",
+        payload: { value: -0 },
+      });
+
+    expect(negativeZero)
+      .not.toBe(zero);
+  });
+
   it("changes the key when capability revision or payload changes", () => {
     const base = {
       capabilityId:
