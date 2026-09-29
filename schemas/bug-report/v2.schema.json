@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "m-bedrock-bug-report/v2",
+  "title": "M-Bedrock Bug Report V2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "map", "repairBy", "issues"],
+  "properties": {
+    "schema": { "const": "m-bedrock-bug-report/v2" },
+    "map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "mapVersion", "baseVersion", "testedVersion"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "mapVersion": { "type": "string", "minLength": 1 },
+        "baseVersion": { "type": "string", "minLength": 1 },
+        "testedVersion": { "type": "string", "minLength": 1 }
+      }
+    },
+    "repairBy": {
+      "enum": ["chatgpt", "developer"]
+    },
+    "issues": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/issue" }
+    }
+  },
+  "$defs": {
+    "stringList": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "relevantCode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "reason"],
+      "properties": {
+        "file": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "fixed",
+        "severity",
+        "category",
+        "foundBy",
+        "title",
+        "problem",
+        "expected",
+        "observed"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "fixed": { "type": "boolean" },
+        "severity": { "enum": ["blocker", "major", "minor"] },
+        "category": {
+          "enum": [
+            "game-flow",
+            "player-state",
+            "multiplayer-session",
+            "world-interaction",
+            "entity-behavior",
+            "combat",
+            "score-reward",
+            "ui-feedback",
+            "performance-stability",
+            "compatibility"
+          ]
+        },
+        "foundBy": { "enum": ["ai", "tester"] },
+        "title": { "type": "string", "minLength": 1 },
+        "problem": { "type": "string", "minLength": 1 },
+        "expected": { "type": "string", "minLength": 1 },
+        "observed": { "type": "string", "minLength": 1 },
+        "reproduction": { "$ref": "#/$defs/stringList" },
+        "aiAnalysis": { "type": "string", "minLength": 1 },
+        "relevantCode": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/relevantCode" }
+        },
+        "suggestedFix": { "type": "string", "minLength": 1 },
+        "mustPreserve": { "$ref": "#/$defs/stringList" }
+      }
+    }
+  }
+}

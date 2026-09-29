@@ -1,0 +1,110 @@
+import {
+  describe,
+  expect,
+  it,
+} from "vitest";
+import {
+  BUG_REPORT_V2_SCHEMA,
+  bugReportV2Progress,
+  parseBugReportV2Json,
+  serializeBugReportV2,
+  type BugReportV2,
+} from "../src/index.js";
+
+function report(): BugReportV2 {
+  return {
+    schema: BUG_REPORT_V2_SCHEMA,
+    map: {
+      name: "Beach Bedwars",
+      mapVersion: "1.0.4",
+      baseVersion: "1.26.20",
+      testedVersion: "1.26.32",
+    },
+    repairBy: "developer",
+    issues: [
+      {
+        id: "BUG-BBW-002",
+        fixed: false,
+        severity: "minor",
+        category: "ui-feedback",
+        foundBy: "tester",
+        title: "Join feedback persists",
+        problem: "Feedback remains visible after leaving.",
+        expected: "Feedback clears after leaving.",
+        observed: "Feedback remains visible.",
+      },
+      {
+        id: "BUG-BBW-001",
+        fixed: true,
+        severity: "blocker",
+        category: "game-flow",
+        foundBy: "ai",
+        title: "Match cannot restart",
+        problem: "A completed arena cannot start again.",
+        expected: "The arena can start a new match.",
+        observed: "The previous session remains active.",
+        reproduction: [
+          "Start a match.",
+          "Finish the match.",
+          "Attempt to start again.",
+        ],
+        aiAnalysis: "Cleanup leaves stale session ownership.",
+        relevantCode: [{
+          file: "scripts/session.ts",
+          reason: "Owns arena session cleanup.",
+        }],
+        suggestedFix: "Clear stale session ownership during cleanup.",
+        mustPreserve: [
+          "Other arenas remain isolated.",
+        ],
+      },
+    ],
+  };
+}
+
+describe("bug report v2", () => {
+  it("round-trips the minimal developer-facing contract", () => {
+    const serialized = serializeBugReportV2(report());
+    expect(serialized.ok).toBe(true);
+    if (!serialized.ok || !serialized.json) return;
+
+    const parsed = parseBugReportV2Json(serialized.json);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+
+    expect(parsed.report.map.baseVersion).toBe("1.26.20");
+    expect(parsed.report.map.testedVersion).toBe("1.26.32");
+    expect(parsed.report.issues[0]?.severity).toBe("blocker");
+  });
+
+  it("derives report completion from per-bug fixed checkboxes", () => {
+    expect(bugReportV2Progress(report())).toEqual({
+      fixed: 1,
+      total: 2,
+      complete: false,
+    });
+  });
+
+  it("rejects mixed per-bug repair ownership by not supporting it", () => {
+    const source = JSON.parse(
+      JSON.stringify(report()),
+    ) as Record<string, unknown>;
+    const issues = source.issues as Array<Record<string, unknown>>;
+    issues[0]!.repairBy = "chatgpt";
+
+    const parsed = parseBugReportV2Json(JSON.stringify(source));
+    expect(parsed.ok).toBe(false);
+  });
+
+  it("requires clear map, base, and tested versions", () => {
+    const source = JSON.parse(
+      JSON.stringify(report()),
+    ) as {
+      map: Record<string, unknown>;
+    };
+    delete source.map.testedVersion;
+
+    const parsed = parseBugReportV2Json(JSON.stringify(source));
+    expect(parsed.ok).toBe(false);
+  });
+});
