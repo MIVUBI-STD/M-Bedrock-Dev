@@ -14,6 +14,7 @@ export interface ZeroWasteBenchmarkTargets {
 
 export interface ZeroWasteBenchmarkInput {
   id: string;
+  runMode: "cold" | "warm";
   summary: ZeroWasteExecutionSummary;
   context?: CompiledContextPack;
   targets?: ZeroWasteBenchmarkTargets;
@@ -37,6 +38,7 @@ export interface ZeroWasteBenchmarkMetric {
 export interface ZeroWasteBenchmarkReport {
   schemaVersion: 1;
   id: string;
+  runMode: "cold" | "warm";
   disposition:
     | "pass"
     | "fail"
@@ -173,16 +175,18 @@ export function evaluateZeroWasteBenchmark(
   const metrics:
     ZeroWasteBenchmarkMetric[] = [];
 
-  metrics.push(
-    minimumMetric(
-      "diagnosis-reuse",
-      input.summary.diagnosis
-        .reuseRatio,
-      input.targets
-        ?.minimumDiagnosisReuseRatio,
-      "Share of successful deterministic diagnosis steps reused instead of recomputed.",
-    ),
-  );
+  if (input.runMode === "warm") {
+    metrics.push(
+      minimumMetric(
+        "diagnosis-reuse",
+        input.summary.diagnosis
+          .reuseRatio,
+        input.targets
+          ?.minimumDiagnosisReuseRatio,
+        "Share of successful deterministic diagnosis steps reused instead of recomputed on a warm run.",
+      ),
+    );
+  }
 
   if (
     input.summary.semanticImpact
@@ -245,6 +249,7 @@ export function evaluateZeroWasteBenchmark(
   const wasteSignals: string[] = [];
 
   if (
+    input.runMode === "warm" &&
     input.summary.diagnosis
       .totalSteps > 1 &&
     input.summary.diagnosis
@@ -291,6 +296,7 @@ export function evaluateZeroWasteBenchmark(
   return {
     schemaVersion: 1,
     id: input.id,
+    runMode: input.runMode,
     disposition:
       failed.length > 0
         ? "fail"
@@ -300,6 +306,9 @@ export function evaluateZeroWasteBenchmark(
     metrics,
     wasteSignals,
     reasons: [
+      input.runMode === "cold"
+        ? "Cold run: diagnosis reuse is not scored because no prior cache is assumed."
+        : "Warm run: deterministic diagnosis reuse is eligible for scoring.",
       failed.length > 0
         ? String(failed.length) +
           " zero-waste target(s) missed."
@@ -331,6 +340,7 @@ export function zeroWasteBenchmarkText(
   const lines = [
     "Zero-Waste Benchmark",
     "ID: " + report.id,
+    "Mode: " + report.runMode,
     "Status: " +
       report.disposition,
     "",

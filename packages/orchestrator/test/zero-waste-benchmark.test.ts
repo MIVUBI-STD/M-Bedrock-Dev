@@ -13,6 +13,7 @@ describe("zero-waste benchmark", () => {
     const report =
       evaluateZeroWasteBenchmark({
         id: "bench:1",
+        runMode: "warm",
         summary: {
           diagnosis: {
             totalSteps: 4,
@@ -100,6 +101,7 @@ describe("zero-waste benchmark", () => {
     const report =
       evaluateZeroWasteBenchmark({
         id: "bench:poor",
+        runMode: "warm",
         summary: {
           diagnosis: {
             totalSteps: 3,
@@ -150,10 +152,44 @@ describe("zero-waste benchmark", () => {
       .toContain("Status: fail");
   });
 
+  it("does not misclassify a cold run as missing cache reuse", () => {
+    const report =
+      evaluateZeroWasteBenchmark({
+        id: "bench:cold",
+        runMode: "cold",
+        summary: {
+          diagnosis: {
+            totalSteps: 3,
+            executedSteps: 3,
+            reusedSteps: 0,
+            reuseRatio: 0,
+          },
+          reasons: [],
+        },
+        targets: {
+          minimumDiagnosisReuseRatio:
+            0.9,
+        },
+      });
+
+    expect(
+      report.metrics.some(
+        (metric) =>
+          metric.id ===
+          "diagnosis-reuse",
+      ),
+    ).toBe(false);
+    expect(report.wasteSignals)
+      .not.toContain(
+        "repeated-diagnosis-without-reuse",
+      );
+  });
+
   it("keeps metrics informational when no targets are configured", () => {
     const report =
       evaluateZeroWasteBenchmark({
         id: "bench:info",
+        runMode: "cold",
         summary: {
           diagnosis: {
             totalSteps: 0,
