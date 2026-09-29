@@ -250,6 +250,22 @@ export interface ScriptSpatialTransformUse {
   source: SourceRef;
 }
 
+export interface ScriptSpatialWorldMutation {
+  method:
+    | "setBlockType"
+    | "setBlockPermutation"
+    | "fillBlocks";
+  executionRegion: string;
+  status: "resolved" | "unresolved";
+  volume?: {
+    min: { x: number; y: number; z: number };
+    max: { x: number; y: number; z: number };
+  };
+  writeIdentity?: string;
+  reason?: string;
+  source: SourceRef;
+}
+
 export interface ScriptSpatialContextOffsetSeries {
   collectionName: string;
   sourceCollectionName: string;
@@ -426,6 +442,7 @@ export interface ParsedScriptFile {
   spatialOffsetTransforms?: ScriptSpatialOffsetTransform[];
   spatialTransformUses?: ScriptSpatialTransformUse[];
   spatialContextOffsetSeries?: ScriptSpatialContextOffsetSeries[];
+  spatialWorldMutations?: ScriptSpatialWorldMutation[];
   repairTransformHints?: RepairSourceTransformHint[];
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
