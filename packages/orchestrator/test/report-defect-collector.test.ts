@@ -374,6 +374,135 @@ describe("report defect collector", () => {
     );
   });
 
+  it("derives classification from runtime experiment evidence bound to the same confirmation", () => {
+    const base = defect("runtime-experiment", { ai: true });
+    const runtimeEvidenceId =
+      "runtime:stale-session-mutation-observed";
+    const result = collectConfirmedDefects([{
+      route: "runtime",
+      intent,
+      assessment: {
+        ...runtimeAssessment,
+        result: {
+          ...runtimeAssessment.result,
+          evidenceIds: [
+            "runtime:cleanup",
+            runtimeEvidenceId,
+          ],
+        },
+      },
+      runtimeExperimentClassification: {
+        definition: {
+          schemaVersion: 1,
+          id: "exp:session",
+          title: "Session",
+          domain: "multiplayer",
+          requiredContext: "LIVE_MINECRAFT",
+          mutationRisk: "read-only",
+          targetProfileFingerprint: "target",
+          fixtureFingerprint: "fixture",
+          protocol: [],
+          factors: [],
+          arms: [],
+          outcomePredicateIds: [
+            "stale-session-mutation-observed",
+          ],
+          minimumRunsPerArm: 1,
+        },
+        bridge: {
+          experimentId: "exp:session",
+          qualificationState: "repeatable",
+          predicates: [{
+            predicate:
+              "stale-session-mutation-observed",
+            observation: {
+              predicate:
+                "stale-session-mutation-observed",
+              state: "present",
+              evidenceId: "bridge:stale-session",
+            },
+            ceiling: "repeatable",
+            sourceEvidenceIds: [
+              runtimeEvidenceId,
+            ],
+          }],
+          observations: [],
+        },
+      },
+      defect: {
+        ...base,
+        classificationSignals: {
+          impact: [],
+          primaryFailure: [],
+        },
+      },
+    }]);
+
+    expect(result.confirmed).toHaveLength(1);
+    expect(result.confirmed[0]?.primaryFailure)
+      .toBe("session-concurrency");
+    expect(result.confirmed[0]?.impact.importantState)
+      .toBe("materially-wrong");
+  });
+
+  it("rejects runtime classification evidence unrelated to confirmation", () => {
+    const base = defect("runtime-unrelated", { ai: true });
+    const result = collectConfirmedDefects([{
+      route: "runtime",
+      intent,
+      assessment: runtimeAssessment,
+      runtimeExperimentClassification: {
+        definition: {
+          schemaVersion: 1,
+          id: "exp:other",
+          title: "Other",
+          domain: "multiplayer",
+          requiredContext: "LIVE_MINECRAFT",
+          mutationRisk: "read-only",
+          targetProfileFingerprint: "target",
+          fixtureFingerprint: "fixture",
+          protocol: [],
+          factors: [],
+          arms: [],
+          outcomePredicateIds: [
+            "stale-session-mutation-observed",
+          ],
+          minimumRunsPerArm: 1,
+        },
+        bridge: {
+          experimentId: "exp:other",
+          qualificationState: "repeatable",
+          predicates: [{
+            predicate:
+              "stale-session-mutation-observed",
+            observation: {
+              predicate:
+                "stale-session-mutation-observed",
+              state: "present",
+              evidenceId: "bridge:other",
+            },
+            ceiling: "repeatable",
+            sourceEvidenceIds: [
+              "runtime:other-experiment",
+            ],
+          }],
+          observations: [],
+        },
+      },
+      defect: {
+        ...base,
+        classificationSignals: {
+          impact: [],
+          primaryFailure: [],
+        },
+      },
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(result.rejected[0]?.reasons.join(" "))
+      .toMatch(/not part of the confirmation evidence/);
+  });
+
   it("derives primary failure from an unambiguous diagnostic family", () => {
     const base = defect("diagnostic-classification", {
       ai: true,
