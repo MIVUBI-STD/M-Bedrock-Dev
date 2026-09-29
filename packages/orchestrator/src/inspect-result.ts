@@ -155,6 +155,7 @@ export function buildInspectionResult(
   } = input.entityKnowledge;
 
   const {
+    entityAiStack,
     structureRuntime,
     scriptStructureLoads,
     placedEmbeddedCommands,
@@ -279,6 +280,7 @@ export function buildInspectionResult(
       runtimeLogicLoads:
         structureRuntime.runtimeLogicStructureLoads,
     },
+    entityAiStack,
     entities: {
       definitions: parsedEntities.length,
       knowledgePrerequisiteGaps:
@@ -342,6 +344,7 @@ export function buildInspectionResult(
     ).length,
     parsedStructures,
     entities: parsedEntities.length,
+    entityAiStack,
     entityKnowledge: {
       analyzed:
         input.knowledgeCatalogPresent &&
