@@ -56,6 +56,44 @@ describe("inventory lifecycle analysis", () => {
     });
   });
 
+  it("keeps equipment reset partial when authored equipment slots are not all cleared", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function equip(equippable, head, offhand) {",
+        "  equippable.setEquipment('Head', head);",
+        "  equippable.setEquipment('Offhand', offhand);",
+        "}",
+        "function reset(container, equippable) {",
+        "  container.clearAll();",
+        "  equippable.setEquipment('Head', undefined);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeInventoryLifecycle([script]);
+    const reset = result.assessments.find(
+      (item) =>
+        item.executionRegion ===
+        "function:reset",
+    );
+
+    expect(result.knownEquipmentSlots).toEqual([
+      "'Head'",
+      "'Offhand'",
+    ]);
+    expect(reset).toMatchObject({
+      status: "partial-reset",
+      equipmentCoverageComplete: false,
+      clearedEquipmentSlots: ["'Head'"],
+    });
+  });
+
   it("flags a mutated ItemStack copy without writeback", () => {
     const script = parseScriptFile(
       "main",
