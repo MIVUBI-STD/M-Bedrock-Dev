@@ -123,13 +123,25 @@ function contextCanReach(
   return true;
 }
 
+function tagOverlapCount(
+  capability: AnalysisCapability,
+  relevantTags: readonly string[],
+): number {
+  if (relevantTags.length === 0) return 0;
+  const wanted = new Set(relevantTags);
+  return capability.tags.filter((tag) =>
+    wanted.has(tag)
+  ).length;
+}
+
 function relevant(
   capability: AnalysisCapability,
   relevantTags: readonly string[],
 ): boolean {
-  if (relevantTags.length === 0) return true;
-  const wanted = new Set(relevantTags);
-  return capability.tags.some((tag) => wanted.has(tag));
+  return (
+    relevantTags.length === 0 ||
+    tagOverlapCount(capability, relevantTags) > 0
+  );
 }
 
 function producesMissingTrait(
@@ -196,6 +208,14 @@ function candidateCapabilities(
               b,
               missingTraits,
             ),
+          ) ||
+        tagOverlapCount(
+          b,
+          input.relevantTags,
+        ) -
+          tagOverlapCount(
+            a,
+            input.relevantTags,
           ) ||
         LEVEL_ORDER[a.evidenceLevel] -
           LEVEL_ORDER[b.evidenceLevel] ||
