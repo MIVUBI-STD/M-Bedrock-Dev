@@ -6,6 +6,10 @@ import {
   groupConfirmedDefects,
 } from "./grouping.js";
 import {
+  resolveConfirmedDefectGroups,
+  type ConfirmedDefectGroupResolution,
+} from "./resolve-confirmed-defect-group.js";
+import {
   validateConfirmedDefect,
   type ConfirmedDefect,
 } from "./confirmed-defect.js";
@@ -123,13 +127,17 @@ export function buildBugReportFromConfirmedDefects(
     readonly map: BugReportV2Map;
     readonly repairBy: BugReportV2RepairBy;
     readonly defects: readonly ConfirmedDefect[];
+    readonly groupResolutions?:
+      readonly ConfirmedDefectGroupResolution[];
   },
 ): PromoteConfirmedBugsResult {
   const issues: {
     code:
       | "invalid-confirmed-defect"
       | "duplicate-semantic-key"
-      | "unresolved-defect-group";
+      | "unresolved-defect-group"
+      | "invalid-defect-group-resolution"
+      | "unused-defect-group-resolution";
     message: string;
   }[] = [];
   const seen = new Set<string>();
@@ -154,21 +162,55 @@ export function buildBugReportFromConfirmedDefects(
     seen.add(defect.semanticKey);
   }
 
-  const unresolvedGroups = groupConfirmedDefects(
+  const groups = groupConfirmedDefects(
     input.defects,
-  ).filter((group) => group.defects.length > 1);
+  );
 
-  for (const group of unresolvedGroups) {
+  let resolvedDefects: readonly ConfirmedDefect[] =
+    input.defects;
+
+  try {
+    const resolution =
+      resolveConfirmedDefectGroups(
+        groups,
+        input.groupResolutions ?? [],
+      );
+
+    for (const key of resolution.unresolvedGroupKeys) {
+      const group = groups.find((item) => item.key === key);
+      issues.push({
+        code: "unresolved-defect-group",
+        message:
+          "Confirmed defect group must be resolved to one canonical defect before report projection: " +
+          key +
+          (group
+            ? " (" +
+              group.defects
+                .map((defect) => defect.semanticKey)
+                .join(", ") +
+              ")."
+            : "."),
+      });
+    }
+
+    for (const key of resolution.unusedResolutionKeys) {
+      issues.push({
+        code: "unused-defect-group-resolution",
+        message:
+          "Canonical group resolution does not match an unresolved defect group: " +
+          key +
+          ".",
+      });
+    }
+
+    resolvedDefects = resolution.defects;
+  } catch (error) {
     issues.push({
-      code: "unresolved-defect-group",
+      code: "invalid-defect-group-resolution",
       message:
-        "Confirmed defect group must be resolved to one canonical defect before report projection: " +
-        group.key +
-        " (" +
-        group.defects
-          .map((defect) => defect.semanticKey)
-          .join(", ") +
-        ").",
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 
@@ -184,7 +226,7 @@ export function buildBugReportFromConfirmedDefects(
     repairBy: input.repairBy,
     bugs: projectConfirmedDefects(
       input.map,
-      input.defects,
+      resolvedDefects,
     ),
   });
 }
