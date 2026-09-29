@@ -355,3 +355,37 @@ Rejected candidates remain internal and derived. They are not persisted as Bug R
 Candidate correction, repair-decision changes, tester reproduction, and intent clarification are always re-evaluated because those inputs can change without producing a new evidence ID.
 
 This avoids repeating unchanged analysis while remaining conservative when user/tester/repair context changes.
+
+
+## Defect identity versus repair knowledge
+
+`semanticKey` identifies the defect itself. It is derived from:
+
+- causal incident when available;
+- affected semantic subjects;
+- broken invariant identity;
+- primary failure.
+
+Repair-unit knowledge is deliberately excluded from semantic identity.
+
+`repairUnitIds` are used for grouping and repair reasoning only. As diagnosis becomes more precise, repair units may change without changing the defect's semantic key or Bug ID.
+
+This prevents unrelated source-line movement, repair-strategy refinement, or later root-cause precision from renumbering an existing bug.
+
+For source-backed grouping, precise SourceRef locations are preferred over whole-file identity. This makes grouping conservative: uncertain repair ownership tends to split rather than silently merge.
+
+
+## Authored source roots
+
+Default authored TypeScript discovery recognizes Bedrock source layouts under:
+
+```text
+behavior_packs/<pack>/src/
+development_behavior_packs/<pack>/src/
+```
+
+Custom layouts may be supplied through `authoredSourceRoots` in the inspection profile or authored-intent diagnosis payload.
+
+Generated/runtime outputs remain excluded. In particular, Bedrock `<pack>/scripts/`, `dist/`, `build/`, `node_modules/`, and declaration-only `.d.ts` files are not treated as authored gameplay intent.
+
+The authored-intent diagnosis executor revision is bumped when these semantics change so cached evidence cannot silently reuse an older source-authority policy.
