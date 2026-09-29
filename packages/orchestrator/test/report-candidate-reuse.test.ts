@@ -146,6 +146,25 @@ describe("report candidate reuse", () => {
     expect(plan.reusedRejected).toHaveLength(0);
   });
 
+  it("reevaluates terminal classifications even when evidence is unchanged", () => {
+    const item = candidate("static:a");
+    const descriptor =
+      describeAuditReportCandidate(item);
+
+    const plan = planReportCandidateReuse(
+      [item],
+      [{
+        route: descriptor.route,
+        semanticKey: descriptor.semanticKey,
+        evidenceIds: descriptor.evidenceIds,
+        nextEvidenceNeed: "none",
+        reasons: ["Previously classified as non-defect."],
+      }],
+    );
+
+    expect(plan.reevaluate).toEqual([item]);
+  });
+
   it("reevaluates correction-driven rejections even with unchanged evidence", () => {
     const item = candidate("static:a");
     const descriptor =
