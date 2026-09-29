@@ -154,6 +154,120 @@ describe("intent diagnosis executors", () => {
     }
   });
 
+  it("grounds authored intent from a configured custom source root", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-authored-custom-"),
+    );
+
+    try {
+      await mkdir(join(root, "scripts"), {
+        recursive: true,
+      });
+      await mkdir(
+        join(root, "map-source/domain"),
+        { recursive: true },
+      );
+
+      await writeFile(
+        join(root, "scripts", "main.ts"),
+        "export const x = 1;\n",
+        "utf8",
+      );
+      await writeFile(
+        join(root, "map-source/domain/types.ts"),
+        [
+          "export interface ResourceRecord {",
+          "  owner: SessionToken;",
+          "}",
+          "export interface SessionToken {",
+          "  sessionId: string;",
+          "}",
+          "",
+        ].join("\n"),
+        "utf8",
+      );
+
+      const sourceResult =
+        await indexPack(root);
+
+      expect(sourceResult.status).toBe(
+        "executed",
+      );
+      if (
+        sourceResult.status !==
+        "executed"
+      ) {
+        return;
+      }
+
+      const authoredPlan =
+        planMinimumSufficientAnalysis({
+          goal: "authored-intent",
+          relevantTags: ["session"],
+          context: "LOCAL_ARTIFACT",
+          availableEvidence: [{
+            level: "semantic",
+            evidenceIds: ["intent:inferred"],
+            quality: "usable",
+            traits: ["intent-grounded"],
+          }],
+          completedCapabilityIds: [
+            "diagnosis.source-index",
+            "diagnosis.intent-grounding",
+          ],
+          capabilities:
+            DIAGNOSIS_ANALYSIS_CAPABILITY_REGISTRY
+              .capabilities,
+        });
+
+      const result =
+        await executePlannedDiagnosisStep({
+          plan: authoredPlan,
+          context: "LOCAL_ARTIFACT",
+          payload: {
+            id: "intent:test",
+            root,
+            artifactId: "artifact:test",
+            authoredSourceRoots: ["map-source"],
+            files: [
+              {
+                relativePath: "scripts/main.ts",
+                size: 64,
+                contentHash: "hash-main",
+              },
+              {
+                relativePath:
+                  "map-source/domain/types.ts",
+                size: 128,
+                contentHash: "hash-authored",
+              },
+            ],
+            sourceIndex:
+              sourceResult.output,
+          },
+          registry: {
+            schemaVersion: 1,
+            executors: [
+              createAuthoredIntentDiagnosisExecutor(),
+            ],
+          },
+        });
+
+      expect(result.status).toBe("executed");
+      if (result.status !== "executed") return;
+      expect(
+        result.evidence.flatMap(
+          (item) => item.traits,
+        ),
+      ).toContain("authored-intent");
+    } finally {
+      await rm(root, {
+        recursive: true,
+        force: true,
+      });
+    }
+  });
+
   it("does not promote authored intent when no recognized authored source exists", async () => {
     const root = await mkdtemp(
       join(tmpdir(), "m-bedrock-authored-"),
