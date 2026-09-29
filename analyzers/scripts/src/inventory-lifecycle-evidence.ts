@@ -330,6 +330,8 @@ export function deriveScriptInventoryLifecycleEvidence(
         });
       } else if (method === "setEquipment") {
         const item = node.arguments[1];
+        const identifier =
+          itemIdentifier(item);
         push(node, {
           kind:
             isUndefinedExpression(item)
@@ -339,11 +341,10 @@ export function deriveScriptInventoryLifecycleEvidence(
           ...(item && ts.isIdentifier(item)
             ? { itemBinding: item.text }
             : {}),
-          ...(itemIdentifier(item) === undefined
+          ...(identifier === undefined
             ? {}
             : {
-                itemIdentifier:
-                  itemIdentifier(item),
+                itemIdentifier: identifier,
               }),
         });
       } else if (method === "setItem") {
@@ -386,17 +387,18 @@ export function deriveScriptInventoryLifecycleEvidence(
         method === "dropItem"
       ) {
         const item = node.arguments[0];
+        const identifier =
+          itemIdentifier(item);
         push(node, {
           kind: "item-drop",
           subjectExpression: receiver,
           ...(item && ts.isIdentifier(item)
             ? { itemBinding: item.text }
             : {}),
-          ...(itemIdentifier(item) === undefined
+          ...(identifier === undefined
             ? {}
             : {
-                itemIdentifier:
-                  itemIdentifier(item),
+                itemIdentifier: identifier,
               }),
         });
       }
