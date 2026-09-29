@@ -97,7 +97,20 @@ function intersects(
 function routeEvidenceConsistency(
   candidate: AuditReportCandidate,
 ): readonly string[] {
-  if (candidate.route === "tester") return [];
+  if (candidate.route === "tester") {
+    const errors: string[] = [];
+    if (
+      !intersects(
+        candidate.defect.expected.evidenceIds,
+        candidate.confirmation.expectedEvidenceIds,
+      )
+    ) {
+      errors.push(
+        "Defect Expected evidence is not grounded in the tester requirement evidence used for confirmation.",
+      );
+    }
+    return errors;
+  }
 
   const basisInvariantIds =
     candidate.route === "runtime"
