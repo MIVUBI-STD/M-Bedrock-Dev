@@ -6,3 +6,4 @@ export * from "./runtime-overlay.js";
 export * from "./semantic-registry.js";
 export * from "./arena-lifecycle.js";
 export * from "./spatial-authority.js";
+export * from "./inventory-lifecycle.js";
