@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { comp, int, string, writeUncompressed } from "prismarine-nbt";
+import { comp, int, string, writeUncompressed, type NBT } from "prismarine-nbt";
 import {
   blockAt,
   decodeBedrockSubChunk,
 } from "../src/subchunk.js";
 
-function paletteBlock(name: string) {
+function paletteBlock(name: string): NBT {
   return comp({
     name: string(name),
     states: comp({}),
     version: int(1),
-  }, "");
+  }, "") as NBT;
 }
 
 describe("Bedrock subchunk decoder", () => {
