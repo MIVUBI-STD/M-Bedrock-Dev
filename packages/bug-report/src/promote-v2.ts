@@ -41,7 +41,9 @@ export type BugReportPromotionIssueCode =
   | "too-many-relevant-code-locations"
   | "duplicate-bug-id"
   | "invalid-confirmation"
-  | "ai-unproven-defect";
+  | "ai-unproven-defect"
+  | "invalid-confirmed-defect"
+  | "duplicate-semantic-key";
 
 export interface BugReportPromotionIssue {
   readonly code: BugReportPromotionIssueCode;
