@@ -7,6 +7,7 @@ import {
   createArenaLifecycleBehavior,
   createChunkResidencyBehavior,
   createDeferredCallbackBehavior,
+  createInventoryLifecycleBehavior,
   createPlayerSessionBehavior,
   resolveSpatialAuthority,
   validateSpatialAuthorityPolicy,
@@ -217,6 +218,10 @@ describe("behavioral world model", () => {
             capacity: 5,
             resetDeadlineTicks: 40,
           }),
+          createInventoryLifecycleBehavior({
+            playerKey: "p1",
+            applyDeadlineTicks: 40,
+          }),
           createChunkResidencyBehavior(
             "overworld:0:0",
           ),
@@ -258,6 +263,13 @@ describe("behavioral world model", () => {
         (property) =>
           property.id ===
           "minecraft.arena:a1:capacity-never-exceeded",
+      ),
+    ).toBe(true);
+    expect(
+      composed.properties.some(
+        (property) =>
+          property.id ===
+          "minecraft.inventory:p1:commit-requires-verification",
       ),
     ).toBe(true);
   });
