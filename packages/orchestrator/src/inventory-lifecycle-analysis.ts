@@ -105,7 +105,7 @@ function assessRegion(
   evidence: readonly ScriptInventoryLifecycleEvidence[],
 ): InventoryLifecycleRegionAssessment {
   const inventoryClear = evidence.some(
-    (item) => item.kind === "inventory-clear",
+    (item) => item.kind === "inventory-clear-all",
   );
   const equipmentClear = evidence.some(
     (item) => item.kind === "equipment-clear",
