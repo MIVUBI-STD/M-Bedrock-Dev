@@ -115,6 +115,8 @@ export function createSourceIndexDiagnosisExecutor():
   DiagnosisCapabilityExecutor {
   return {
     executorId: "diagnosis.source-index",
+    executorRevision:
+      "source-index-executor:1",
 
     async execute(
       request: DiagnosisExecutorRequest,

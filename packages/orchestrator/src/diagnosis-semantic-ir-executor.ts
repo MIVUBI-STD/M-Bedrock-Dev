@@ -91,6 +91,8 @@ export function createSemanticIrDiagnosisExecutor():
   DiagnosisCapabilityExecutor {
   return {
     executorId: "diagnosis.semantic-ir",
+    executorRevision:
+      "semantic-ir-executor:1",
 
     async execute(
       request: DiagnosisExecutorRequest,
