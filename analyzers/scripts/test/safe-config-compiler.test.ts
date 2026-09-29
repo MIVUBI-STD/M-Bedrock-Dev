@@ -55,6 +55,71 @@ describe("safe config compiler", () => {
       .toEqual(["unsupported-call", "non-const"].sort());
   });
 
+  it("compiles map Array.from spreads conditionals and pure helpers", () => {
+    const result = compileScriptSafeConfig(
+      [
+        "const BASE = { x: 10, y: 20, z: 30 };",
+        "const OFFSETS = [{ x: 0, y: 0, z: 0 }, { x: 100, y: 0, z: 0 }];",
+        "function makeArena(offset) { return translate3(BASE, offset); }",
+        "const ARENA_CENTERS = OFFSETS.map(makeArena);",
+        "const IDS = Array.from({ length: 3 }, (_, i) => 'arena-' + (i + 1));",
+        "const EXTRA = [3, 4];",
+        "const VALUES = [1, 2, ...EXTRA];",
+        "const OPTIONS = { a: 1, ...{ b: 2 }, c: true ? 3 : 4 };",
+      ].join("\n"),
+      source,
+    );
+
+    const bindings = Object.fromEntries(
+      result.bindings.map((item) => [
+        item.name,
+        item.expression,
+      ]),
+    );
+    const functions = Object.fromEntries(
+      result.functions.map((item) => [
+        item.name,
+        item.definition,
+      ]),
+    );
+
+    expect(
+      evaluateSafeConfig(
+        { kind: "ref", name: "ARENA_CENTERS" },
+        { bindings, functions },
+      ),
+    ).toEqual([
+      { x: 10, y: 20, z: 30 },
+      { x: 110, y: 20, z: 30 },
+    ]);
+    expect(
+      evaluateSafeConfig(
+        { kind: "ref", name: "IDS" },
+        { bindings, functions },
+      ),
+    ).toEqual([
+      "arena-1",
+      "arena-2",
+      "arena-3",
+    ]);
+    expect(
+      evaluateSafeConfig(
+        { kind: "ref", name: "VALUES" },
+        { bindings, functions },
+      ),
+    ).toEqual([1, 2, 3, 4]);
+    expect(
+      evaluateSafeConfig(
+        { kind: "ref", name: "OPTIONS" },
+        { bindings, functions },
+      ),
+    ).toEqual({
+      a: 1,
+      b: 2,
+      c: 3,
+    });
+  });
+
   it("supports safe property access chains", () => {
     const result = compileScriptSafeConfig(
       [
