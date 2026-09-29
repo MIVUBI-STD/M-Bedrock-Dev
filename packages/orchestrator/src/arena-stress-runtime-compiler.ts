@@ -10,6 +10,9 @@ import {
   createAllArenaStartStressExperiment,
   createAllArenaFinishStressExperiment,
   createCleanupStartOverlapExperiment,
+  createStaggeredFullJoinStressExperiment,
+  createDisconnectDuringSetupStressExperiment,
+  createDisconnectDuringActiveStressExperiment,
   type RuntimeExperimentDefinition,
 } from "../../runtime-lab/src/index.js";
 
@@ -268,6 +271,108 @@ function compileScenario(
       ],
       reasons: [
         "Dedicated cleanup/start overlap capability covers this pair with explicit generation identity.",
+      ],
+    };
+  }
+
+
+  if (
+    scenario.kind === "staggered-full-join" &&
+    scenario.arenaIds.length > 0
+  ) {
+    const arenas = scenario.arenaIds.flatMap((arenaId) => {
+      const generation = arenaGeneration(input, arenaId);
+      return generation === undefined
+        ? []
+        : [{ arenaId, arenaGeneration: generation }];
+    });
+
+    if (arenas.length !== scenario.arenaIds.length) {
+      return {
+        ...base,
+        disposition: "manual-required",
+        experiments: [],
+        reasons: [
+          "Staggered full-join execution requires explicit generation identity for every participating arena.",
+        ],
+      };
+    }
+
+    return {
+      ...base,
+      disposition: "runtime-ready",
+      experiments: [
+        createStaggeredFullJoinStressExperiment({
+          id: scenario.id,
+          title: scenario.purpose,
+          targetProfileFingerprint:
+            input.targetProfileFingerprint,
+          fixtureFingerprint:
+            input.fixtureFingerprint,
+          objectiveId: input.objectiveId,
+          participant: input.participant,
+          arenas,
+          playerCountPerArena:
+            input.matrix.playersPerArena,
+          minimumRunsPerArm:
+            input.minimumRunsPerArm,
+        }),
+      ],
+      reasons: [
+        "Dedicated staggered full-join runtime capability covers this scenario with explicit arena generation identity.",
+      ],
+    };
+  }
+
+  if (
+    (
+      scenario.kind === "disconnect-during-setup" ||
+      scenario.kind === "disconnect-during-active"
+    ) &&
+    scenario.playerIds.length > 0
+  ) {
+    const subject =
+      input.subjects?.[scenario.playerIds[0]!];
+
+    if (!subject) {
+      return {
+        ...base,
+        disposition: "manual-required",
+        experiments: [],
+        reasons: [
+          "Disconnect stress execution requires explicit player/session generation identity.",
+        ],
+      };
+    }
+
+    const experimentInput = {
+      id: scenario.id,
+      title: scenario.purpose,
+      targetProfileFingerprint:
+        input.targetProfileFingerprint,
+      fixtureFingerprint:
+        input.fixtureFingerprint,
+      objectiveId: input.objectiveId,
+      participant: input.participant,
+      subject,
+      minimumRunsPerArm:
+        input.minimumRunsPerArm,
+    };
+
+    return {
+      ...base,
+      disposition: "runtime-ready",
+      experiments: [
+        scenario.kind === "disconnect-during-setup"
+          ? createDisconnectDuringSetupStressExperiment(
+              experimentInput,
+            )
+          : createDisconnectDuringActiveStressExperiment(
+              experimentInput,
+            ),
+      ],
+      reasons: [
+        "Dedicated disconnect stress capability covers this scenario with explicit player/session generation identity.",
       ],
     };
   }
