@@ -294,3 +294,5 @@ export * from "./gameplay-world-model.js";
 export * from "./arena-stress-plan.js";
 
 export * from "./arena-engineering-projection.js";
+
+export * from "./arena-stress-runtime-compiler.js";
