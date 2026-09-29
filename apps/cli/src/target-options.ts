@@ -13,6 +13,7 @@ export interface ParsedCliTargetOptions {
 export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetOptions {
   const positionals: string[] = [];
   const experiments: string[] = [];
+  const authoredSourceRoots: string[] = [];
   const target: InspectTargetProfile = {};
   let telemetryPath: string | undefined;
   let probeTranscriptPath: string | undefined;
@@ -48,6 +49,18 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
         throw new Error("--experiment requires an experiment id");
       }
       experiments.push(value);
+      index += 1;
+      continue;
+    }
+
+    if (token === "--authored-source-root") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error(
+          "--authored-source-root requires a source root path",
+        );
+      }
+      authoredSourceRoots.push(value);
       index += 1;
       continue;
     }
@@ -107,6 +120,9 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
   }
 
   if (experiments.length > 0) target.experiments = experiments;
+  if (authoredSourceRoots.length > 0) {
+    target.authoredSourceRoots = authoredSourceRoots;
+  }
   return {
     positionals,
     target,
