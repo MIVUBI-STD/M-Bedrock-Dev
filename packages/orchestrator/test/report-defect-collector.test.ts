@@ -78,44 +78,28 @@ function defect(
   options: {
     ai?: boolean;
     reproduction?: readonly string[];
-    expectedAuthority?:
-      | "authored-intent"
-      | "explicit-requirement"
-      | "runtime-contract";
-    expectedEvidenceIds?: readonly string[];
+    impactEvidenceIds?: readonly string[];
+    primaryEvidenceIds?: readonly string[];
   } = {},
 ) {
   return {
     title: "Cleanup retains match state",
     problem: "Match-owned state remains after cleanup.",
-    expected: {
-      authority:
-        options.expectedAuthority ??
-        ("authored-intent" as const),
-      statement: "Match-owned state is reset.",
-      evidenceIds:
-        options.expectedEvidenceIds ??
-        ["intent:evidence"],
-    },
-    observed: {
-      statement: "Previous match state remains active.",
-      evidenceIds: [
-        "runtime:cleanup",
-        "static:cleanup",
-        "observation:" + label,
-      ],
-    },
+    expectedStatement:
+      "Match-owned state is reset.",
+    observedStatement:
+      "Previous match state remains active.",
     classificationSignals: {
       impact: [{
         kind: "important-state-wrong" as const,
-        evidenceIds: [
-          "observation:" + label,
-        ],
+        evidenceIds:
+          options.impactEvidenceIds ??
+          ["static:cleanup"],
       }],
       primaryFailure: [{
         failure: "player-owned-state" as const,
         evidenceIds:
-          options.expectedEvidenceIds ??
+          options.primaryEvidenceIds ??
           ["intent:evidence"],
       }],
     },
