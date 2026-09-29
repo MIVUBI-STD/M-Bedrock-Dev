@@ -102,6 +102,7 @@ describe("zero-waste workflow facade", () => {
       prepareZeroWasteWorkflow({
         goal: "repair arena",
         graph,
+        postPatchGraph: graph,
         intent,
         transaction,
         validationScenarios: [{
@@ -175,11 +176,85 @@ describe("zero-waste workflow facade", () => {
       .toContain("- reusable: 1");
   });
 
+  it("falls back to conservative validation and blocks proof reuse without a post-patch graph", () => {
+    const graph =
+      graphFixture();
+    const shopProof =
+      createSemanticProofClaim({
+        claimId:
+          "claim:shop:no-post",
+        claimRevision: "1",
+        kind: "static",
+        graph,
+        basisNodeIds: [
+          "function:pack:shop",
+        ],
+        evidenceIds: [
+          "e:shop",
+        ],
+      });
+
+    const plan =
+      prepareZeroWasteWorkflow({
+        goal: "pre-patch only",
+        graph,
+        intent,
+        transaction,
+        validationScenarios: [{
+          schemaVersion: 1,
+          id: "scenario:shop",
+          revision: "1",
+          title: "shop",
+          intentInvariantIds: [],
+          steps: [{
+            kind: "rebuild-graph",
+          }],
+          requiredProofLevel:
+            "STATIC VERIFIED",
+        }],
+        validationBindings: [{
+          scenarioId:
+            "scenario:shop",
+          semanticNodeIds: [
+            "function:pack:shop",
+          ],
+        }],
+        proofClaims: [{
+          claim: shopProof,
+          claimRevision: "1",
+          availableEvidenceIds: [
+            "e:shop",
+          ],
+        }],
+      });
+
+    expect(
+      plan.impactAuthority,
+    ).toBe(
+      "pre-patch-conservative",
+    );
+    expect(
+      plan.validation
+        .selectedScenarioCount,
+    ).toBe(1);
+    expect(
+      plan.validation
+        .skippedScenarioCount,
+    ).toBe(0);
+    expect(
+      plan.blockedProofClaimIds,
+    ).toEqual([
+      "claim:shop:no-post",
+    ]);
+  });
+
   it("does not report ready when the bounded context is incomplete", () => {
     const plan =
       prepareZeroWasteWorkflow({
         goal: "repair arena",
         graph: graphFixture(),
+        postPatchGraph:
+          graphFixture(),
         intent: {
           ...intent,
           nodes: [{

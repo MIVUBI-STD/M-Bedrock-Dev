@@ -43,6 +43,7 @@ export interface ZeroWasteWorkflowProofInput {
 export interface ZeroWasteWorkflowInput {
   goal: string;
   graph: SemanticGraph;
+  postPatchGraph?: SemanticGraph;
   intent: GameplayIntentModel;
   transaction: PatchTransaction;
   validationScenarios:
@@ -64,6 +65,9 @@ export interface ZeroWasteWorkflowInput {
 }
 
 export interface ZeroWasteWorkflowPlan {
+  impactAuthority:
+    | "post-patch"
+    | "pre-patch-conservative";
   status:
     | "ready"
     | "needs-context-expansion"
@@ -94,16 +98,23 @@ export function prepareZeroWasteWorkflow(
     );
   }
 
+  const impactAuthority =
+    input.postPatchGraph === undefined
+      ? "pre-patch-conservative" as const
+      : "post-patch" as const;
+  const effectiveGraph =
+    input.postPatchGraph ??
+    input.graph;
   const affected =
     planPatchSemanticAffectedSet(
-      input.graph,
+      effectiveGraph,
       input.transaction,
     );
 
   const context =
     compileContextPack({
       goal: input.goal,
-      graph: input.graph,
+      graph: effectiveGraph,
       intent: input.intent,
       ...(affected.status === "planned"
         ? { affected }
@@ -156,32 +167,46 @@ export function prepareZeroWasteWorkflow(
   const validation =
     planSelectiveValidation(
       input.validationScenarios,
-      input.validationBindings,
+      impactAuthority === "post-patch"
+        ? input.validationBindings
+        : [],
       affected,
     );
 
   const proofReuse =
     (input.proofClaims ?? [])
       .map((item) =>
-        assessSemanticProofReuse(
-          item.claim,
-          {
-            graph: input.graph,
-            claimRevision:
-              item.claimRevision,
-            availableEvidenceIds:
-              item.availableEvidenceIds,
-            ...(item
-              .targetProfileFingerprint ===
-            undefined
-              ? {}
-              : {
-                  targetProfileFingerprint:
-                    item
-                      .targetProfileFingerprint,
-                }),
-          },
-        ),
+        impactAuthority ===
+        "post-patch"
+          ? assessSemanticProofReuse(
+              item.claim,
+              {
+                graph:
+                  effectiveGraph,
+                claimRevision:
+                  item.claimRevision,
+                availableEvidenceIds:
+                  item.availableEvidenceIds,
+                ...(item
+                  .targetProfileFingerprint ===
+                undefined
+                  ? {}
+                  : {
+                      targetProfileFingerprint:
+                        item
+                          .targetProfileFingerprint,
+                    }),
+              },
+            )
+          : {
+              status:
+                "blocked" as const,
+              claimId:
+                item.claim.claimId,
+              reasons: [
+                "Post-patch semantic graph is required before prior proof can be reused across a mutation.",
+              ],
+            },
       )
       .sort((a, b) =>
         a.claimId.localeCompare(
@@ -233,6 +258,7 @@ export function prepareZeroWasteWorkflow(
     context.complete === false;
 
   return {
+    impactAuthority,
     status:
       blocked
         ? "blocked"
@@ -247,6 +273,9 @@ export function prepareZeroWasteWorkflow(
     staleProofClaimIds,
     blockedProofClaimIds,
     reasons: [
+      impactAuthority === "post-patch"
+        ? "Affected closure, selective validation, and proof reuse are bound to the post-patch semantic graph."
+        : "Post-patch semantic graph is unavailable; validation remains conservative and prior proof reuse is blocked.",
       affected.status ===
       "planned"
         ? String(
@@ -302,6 +331,8 @@ export function zeroWasteWorkflowPlanText(
   const lines = [
     "Zero-Waste Workflow Plan",
     "Status: " + plan.status,
+    "Impact authority: " +
+      plan.impactAuthority,
     "",
     "Impact",
     "- changed: " +
