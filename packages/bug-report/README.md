@@ -451,3 +451,51 @@ npm run cli -- inspect map.mcworld \
 ```
 
 The option flows through the inspection target profile and authored-intent diagnosis path.
+
+
+## Route-owned report provenance
+
+The canonical audit path does not accept caller-owned Expected/Observed evidence IDs.
+
+For AI static/runtime routes:
+
+```text
+authored invariant evidence
+→ Expected provenance
+
+diagnostic/runtime contradiction evidence
+→ Observed provenance
+```
+
+The draft supplies only the curated wording:
+
+```text
+expectedStatement
+observedStatement
+```
+
+For tester routes, `TesterDefectConfirmationInput` owns:
+
+```text
+expected behavior authority
+expected statement
+expected evidence IDs
+gameplay observation evidence IDs
+reproduction state
+```
+
+The collector projects those authoritative facts into `ConfirmedDefect.expected` and `ConfirmedDefect.observed`.
+
+This removes a duplicate source of truth and prevents report copy from attaching arbitrary provenance.
+
+## Bounded classification producers
+
+Classification automation is intentionally partial.
+
+`derivePrimaryFailureSignalsFromDiagnostics()` maps only diagnostic families with a direct one-to-one semantic meaning. Ambiguous diagnostic codes remain unmapped.
+
+`deriveReportClassificationFromRuntimeExperiment()` maps only explicit failure predicates from qualified runtime experiments. It does not infer impact from diagnostic severity, success predicates, measurements, or natural-language names.
+
+Runtime-derived classification may affect a defect only when its source evidence intersects the same runtime evidence used to confirm that defect.
+
+Explicit and derived primary-failure signals are combined without precedence. If they disagree, classification is rejected as ambiguous.
