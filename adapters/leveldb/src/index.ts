@@ -1,3 +1,4 @@
+export * from "./actor.js";
 export * from "./block-entity.js";
 export * from "./named-record.js";
 export * from "./subchunk.js";

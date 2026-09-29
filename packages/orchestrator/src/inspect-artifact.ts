@@ -20,6 +20,7 @@ import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
 import { proveArenaBlockEntityEquivalence } from "./arena-block-entity-proof.js";
 import { proveArenaStructureInstances } from "./arena-structure-instance-proof.js";
 import { proveArenaEntityPopulation } from "./arena-entity-population-proof.js";
+import { proveArenaActorPopulation } from "./arena-actor-population-proof.js";
 import { proveArenaTickStateEquivalence } from "./arena-tick-state-proof.js";
 import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
@@ -217,6 +218,7 @@ export async function inspectArtifact(
 
     let arenaVoxelProof;
     let arenaBlockEntityProof;
+    let arenaActorPopulationProof;
     let persistedPackIdentity;
     const artifactDiagnostics = [...result.diagnostics];
 
@@ -329,6 +331,13 @@ export async function inspectArtifact(
                 );
             }
 
+            arenaActorPopulationProof =
+              await proveArenaActorPopulation(
+                reader,
+                spatialLayout,
+                effectiveRegionPlan,
+              );
+
             for (const replica of arenaVoxelProof.replicas) {
               if (replica.status !== "diverged") continue;
               artifactDiagnostics.push(
@@ -343,6 +352,32 @@ export async function inspectArtifact(
                     unresolvedBlocks: replica.unresolvedBlocks,
                     mismatchCount: replica.mismatchCount,
                     mismatches: replica.mismatches,
+                  },
+                }),
+              );
+            }
+
+            for (
+              const replica of
+                arenaActorPopulationProof?.replicas ?? []
+            ) {
+              if (replica.status !== "diverged") continue;
+              artifactDiagnostics.push(
+                createDiagnostic({
+                  code: "ARENA_ACTOR_POPULATION_DIVERGENCE",
+                  severity: "medium",
+                  message:
+                    `Arena ${replica.arenaId} differs from the canonical arena in runtime Actor DB population counts.`,
+                  data: {
+                    arenaId: replica.arenaId,
+                    canonicalActors:
+                      replica.canonicalActors,
+                    replicaActors:
+                      replica.replicaActors,
+                    mismatchCount:
+                      replica.mismatchCount,
+                    mismatches:
+                      replica.mismatches,
                   },
                 }),
               );
@@ -482,6 +517,12 @@ export async function inspectArtifact(
         ...(entityPopulationProof === undefined
           ? {}
           : { entityPopulationProof }),
+        ...(arenaActorPopulationProof === undefined
+          ? {}
+          : {
+              actorPopulationProof:
+                arenaActorPopulationProof,
+            }),
         ...(tickStateProof === undefined
           ? {}
           : { tickStateProof }),
