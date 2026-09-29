@@ -96,10 +96,12 @@ export async function inspectDirectory(
       root,
       artifactId,
       files,
-      {
-        authoredSourceRoots:
-          target.authoredSourceRoots,
-      },
+      target.authoredSourceRoots === undefined
+        ? {}
+        : {
+            authoredSourceRoots:
+              target.authoredSourceRoots,
+          },
     );
 
   const semanticIr = buildInspectionSemanticIr({
