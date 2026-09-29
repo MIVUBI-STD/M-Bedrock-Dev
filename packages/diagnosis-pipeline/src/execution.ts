@@ -33,6 +33,7 @@ export type DiagnosisExecutorResult =
 
 export interface DiagnosisCapabilityExecutor {
   executorId: string;
+  executorRevision?: string;
   execute(
     request: DiagnosisExecutorRequest,
   ): Promise<DiagnosisExecutorResult>;
@@ -301,7 +302,8 @@ export async function executePlannedDiagnosisStep(
 
   if (
     capability.deterministic &&
-    input.cache !== undefined
+    input.cache !== undefined &&
+    executor.executorRevision?.trim()
   ) {
     try {
       cacheKey =
@@ -310,6 +312,8 @@ export async function executePlannedDiagnosisStep(
           executorId: capability.executorId,
           capabilityRevision:
             capability.cacheRevision,
+          executorRevision:
+            executor.executorRevision,
           context: input.context,
           payload: input.payload,
         });
@@ -323,6 +327,16 @@ export async function executePlannedDiagnosisStep(
           ),
       );
     }
+  }
+
+  if (
+    capability.deterministic &&
+    input.cache !== undefined &&
+    !executor.executorRevision?.trim()
+  ) {
+    cacheNotes.push(
+      "Deterministic executor has no executorRevision; cache reuse is disabled for safety.",
+    );
   }
 
   if (
@@ -343,6 +357,8 @@ export async function executePlannedDiagnosisStep(
           capability.executorId &&
         cached.capabilityRevision ===
           capability.cacheRevision &&
+        cached.executorRevision ===
+          executor.executorRevision &&
         cached.context === input.context
       ) {
         const cachedEvidenceErrors =
@@ -438,6 +454,8 @@ export async function executePlannedDiagnosisStep(
         executorId: executor.executorId,
         capabilityRevision:
           capability.cacheRevision,
+        executorRevision:
+          executor.executorRevision!,
         context: input.context,
         evidence: [...result.evidence],
         output: result.output,

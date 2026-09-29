@@ -8,6 +8,7 @@ export interface DiagnosisCacheKeyInput {
   capabilityId: string;
   executorId: string;
   capabilityRevision: string;
+  executorRevision: string;
   context: AnalysisExecutionContext;
   payload: unknown;
 }
@@ -18,6 +19,7 @@ export interface CachedDiagnosisExecution {
   capabilityId: string;
   executorId: string;
   capabilityRevision: string;
+  executorRevision: string;
   context: AnalysisExecutionContext;
   evidence: readonly AnalysisEvidenceSnapshot[];
   output: unknown;
@@ -141,6 +143,8 @@ export function diagnosisExecutionCacheKey(
     executorId: input.executorId,
     capabilityRevision:
       input.capabilityRevision,
+    executorRevision:
+      input.executorRevision,
     context: input.context,
     payload: input.payload,
   });
