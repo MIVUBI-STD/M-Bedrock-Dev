@@ -349,7 +349,7 @@ describe("gameplay intent stage", () => {
         relativePath:
           "behavior_packs/demo/scripts/session-state-machine.js",
       },
-      guardedOutcomes: parsed().guardedOutcomes.map((item) => ({
+      guardedOutcomes: (parsed().guardedOutcomes ?? []).map((item) => ({
         ...item,
         conditionSource: {
           artifactId: "art_test",
@@ -362,7 +362,7 @@ describe("gameplay intent stage", () => {
             "behavior_packs/demo/scripts/session-state-machine.js",
         },
       })),
-      returnOutcomes: parsed().returnOutcomes.map((item) => ({
+      returnOutcomes: (parsed().returnOutcomes ?? []).map((item) => ({
         ...item,
         source: {
           artifactId: "art_test",
