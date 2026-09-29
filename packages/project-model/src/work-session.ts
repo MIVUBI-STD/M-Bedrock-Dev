@@ -6,8 +6,7 @@ export type WorkSessionStage =
   | "repair-planned"
   | "patched"
   | "validated"
-  | "deliverable"
-  | "blocked";
+  | "deliverable";
 
 export interface WorkSessionArtifactRef {
   artifactId: string;
@@ -38,22 +37,14 @@ export interface WorkSessionCheckpoint {
 
 const ALLOWED_STAGE_TRANSITIONS:
   Readonly<Record<WorkSessionStage, readonly WorkSessionStage[]>> = {
-  new: ["understood", "blocked"],
-  understood: ["evidence-ready", "blocked"],
-  "evidence-ready": ["diagnosed", "blocked"],
-  diagnosed: ["repair-planned", "validated", "blocked"],
-  "repair-planned": ["patched", "blocked"],
-  patched: ["validated", "blocked"],
-  validated: ["deliverable", "repair-planned", "blocked"],
+  new: ["understood"],
+  understood: ["evidence-ready"],
+  "evidence-ready": ["diagnosed"],
+  diagnosed: ["repair-planned", "validated"],
+  "repair-planned": ["patched"],
+  patched: ["validated"],
+  validated: ["deliverable", "repair-planned"],
   deliverable: [],
-  blocked: [
-    "understood",
-    "evidence-ready",
-    "diagnosed",
-    "repair-planned",
-    "patched",
-    "validated",
-  ],
 };
 
 function normalized(
@@ -73,7 +64,6 @@ export function createWorkSessionCheckpoint(
     sessionId: string;
     goal: string;
     artifact: WorkSessionArtifactRef;
-    stage?: WorkSessionStage;
     references?: Partial<WorkSessionReferences>;
     nextActions?: readonly string[];
     blockers?: readonly string[];
@@ -105,7 +95,7 @@ export function createWorkSessionCheckpoint(
     artifact: {
       ...input.artifact,
     },
-    stage: input.stage ?? "new",
+    stage: "new",
     revision: 1,
     references: {
       completedCapabilityIds:
@@ -138,6 +128,12 @@ export function createWorkSessionCheckpoint(
     blockers:
       normalized(input.blockers),
   };
+}
+
+export function workSessionIsBlocked(
+  checkpoint: WorkSessionCheckpoint,
+): boolean {
+  return checkpoint.blockers.length > 0;
 }
 
 export function advanceWorkSessionCheckpoint(

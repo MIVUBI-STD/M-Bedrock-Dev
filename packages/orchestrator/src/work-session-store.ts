@@ -24,7 +24,6 @@ const STAGES:
   "patched",
   "validated",
   "deliverable",
-  "blocked",
 ];
 
 function pathFor(

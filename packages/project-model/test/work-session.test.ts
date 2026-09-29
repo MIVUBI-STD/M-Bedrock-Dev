@@ -6,6 +6,7 @@ import {
 import {
   advanceWorkSessionCheckpoint,
   createWorkSessionCheckpoint,
+  workSessionIsBlocked,
 } from "../src/work-session.js";
 
 describe("work session checkpoint", () => {
@@ -63,6 +64,46 @@ describe("work session checkpoint", () => {
         },
       )
     ).toThrow(/fingerprint changed/);
+  });
+
+  it("keeps blockers separate from lifecycle progress", () => {
+    const created =
+      createWorkSessionCheckpoint({
+        sessionId: "session:blocked",
+        goal: "diagnose arena",
+        artifact: {
+          artifactId: "map",
+          artifactFingerprint: "fp",
+        },
+        blockers: [
+          "runtime evidence required",
+        ],
+      });
+
+    expect(created.stage)
+      .toBe("new");
+    expect(
+      workSessionIsBlocked(
+        created,
+      ),
+    ).toBe(true);
+
+    const stillNew =
+      advanceWorkSessionCheckpoint(
+        created,
+        {
+          stage: "new",
+          blockers: [],
+        },
+      );
+
+    expect(stillNew.stage)
+      .toBe("new");
+    expect(
+      workSessionIsBlocked(
+        stillNew,
+      ),
+    ).toBe(false);
   });
 
   it("rejects invalid lifecycle jumps", () => {
