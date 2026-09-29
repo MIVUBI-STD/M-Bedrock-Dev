@@ -211,3 +211,5 @@ export * from "./selective-validation-plan.js";
 export * from "./zero-waste-execution-summary.js";
 
 export * from "./semantic-proof-cache.js";
+
+export * from "./context-compiler.js";
