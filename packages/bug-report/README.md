@@ -164,3 +164,26 @@ Tester confirmation is gameplay-only. Tester evidence must not claim code archit
 AI may later add AI Analysis, Relevant Code, and Suggested Fix to a tester-found bug without changing `Found By: Tester`.
 
 All non-confirmed diagnostic dispositions remain internal.
+
+
+## Audit-to-report entry point
+
+The orchestrator exposes one high-level path for confirmed defect collection:
+
+```text
+buildBugReportFromAuditCandidates(...)
+```
+
+It accepts runtime, static, and tester candidates, applies the route-specific confirmation adapters, records rejected candidates with reasons, and sends only confirmed defects into `promoteConfirmedBugsToV2()`.
+
+The collector does not infer or auto-merge duplicate defects. If two observations are believed to represent one bug, grouping must be supported explicitly by the existing grouping rule:
+
+```text
+same causal defect
+AND same broken invariant
+AND same repair unit
+```
+
+This prevents accidental deduplication from hiding distinct gameplay failures.
+
+The collector also does not generate bug copy from raw diagnostic messages. Problem, Expected, Observed, AI Analysis, Relevant Code, Suggested Fix, and Must Preserve remain curated report content rather than mechanical diagnostic dumps.
