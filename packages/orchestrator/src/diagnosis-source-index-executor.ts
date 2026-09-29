@@ -10,6 +10,9 @@ import {
   type InspectionSourceIndex,
 } from "./inspect-source-index.js";
 
+export const SOURCE_INDEX_EXECUTOR_REVISION =
+  "source-index-executor:2";
+
 export interface SourceIndexDiagnosisPayload {
   root: string;
   artifactId: string;
@@ -116,7 +119,7 @@ export function createSourceIndexDiagnosisExecutor():
   return {
     executorId: "diagnosis.source-index",
     executorRevision:
-      "source-index-executor:1",
+      SOURCE_INDEX_EXECUTOR_REVISION,
 
     async execute(
       request: DiagnosisExecutorRequest,
