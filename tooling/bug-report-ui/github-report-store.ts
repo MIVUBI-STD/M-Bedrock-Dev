@@ -191,15 +191,15 @@ export class GitHubBugReportStore {
 
     const summaries = await Promise.all(
       files.map(async (entry) => {
-        const report = await this.loadReport(entry.path);
-        const progress = bugReportV2Progress(report);
+        const loaded = await this.loadReport(entry.path);
+        const progress = bugReportV2Progress(loaded.report);
         return {
           path: entry.path,
-          mapName: report.map.name,
-          mapVersion: report.map.mapVersion,
+          mapName: loaded.report.map.name,
+          mapVersion: loaded.report.map.mapVersion,
           fixed: progress.fixed,
           total: progress.total,
-          blockers: report.bugs.filter(
+          blockers: loaded.report.bugs.filter(
             (bug) => !bug.fixed && bug.severity === "blocker",
           ).length,
         };
