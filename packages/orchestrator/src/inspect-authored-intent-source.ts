@@ -12,18 +12,77 @@ export interface AuthoredIntentSource {
   parsed: ParsedScriptFile;
 }
 
+export interface AuthoredIntentSourceIndexOptions {
+  readonly authoredSourceRoots?: readonly string[];
+}
+
+function normalizePath(value: string): string {
+  return value
+    .replaceAll("\\", "/")
+    .replace(/^\.\//, "")
+    .replace(/^\/+|\/+$/g, "");
+}
+
+function defaultAuthoredSourceRoot(
+  relativePath: string,
+): string | undefined {
+  const normalized = normalizePath(relativePath);
+  const segments = normalized.split("/");
+  const packRootIndex = segments.findIndex((segment) =>
+    segment === "behavior_packs" ||
+    segment === "development_behavior_packs"
+  );
+  if (
+    packRootIndex < 0 ||
+    segments.length <= packRootIndex + 2
+  ) {
+    return undefined;
+  }
+
+  const sourceSegment =
+    segments[packRootIndex + 2];
+  if (sourceSegment !== "src") {
+    return undefined;
+  }
+
+  return segments
+    .slice(0, packRootIndex + 3)
+    .join("/");
+}
+
 function isAuthoredIntentSourcePath(
   relativePath: string,
+  options: AuthoredIntentSourceIndexOptions,
 ): boolean {
-  const normalized =
-    "/" + relativePath.replaceAll("\\", "/");
-  if (!normalized.includes("/behavior_packs/")) return false;
-  if (!normalized.includes("/src/")) return false;
-  if (normalized.includes("/node_modules/")) return false;
+  const normalized = normalizePath(relativePath);
+  const wrapped = "/" + normalized + "/";
+
+  if (
+    wrapped.includes("/node_modules/") ||
+    wrapped.includes("/dist/") ||
+    wrapped.includes("/build/") ||
+    wrapped.includes("/scripts/")
+  ) {
+    return false;
+  }
+
   if (normalized.endsWith(".d.ts")) return false;
 
   const extension = extname(normalized).toLowerCase();
-  return extension === ".ts" || extension === ".tsx";
+  if (extension !== ".ts" && extension !== ".tsx") {
+    return false;
+  }
+
+  const configuredRoots =
+    options.authoredSourceRoots?.map(normalizePath) ?? [];
+  if (configuredRoots.length > 0) {
+    return configuredRoots.some((root) =>
+      normalized === root ||
+      normalized.startsWith(root + "/")
+    );
+  }
+
+  return defaultAuthoredSourceRoot(normalized) !== undefined;
 }
 
 function authoredIdentifier(
@@ -39,11 +98,17 @@ export async function indexAuthoredIntentSources(
   root: string,
   artifactId: string,
   files: readonly FileInventoryEntry[],
+  options: AuthoredIntentSourceIndexOptions = {},
 ): Promise<AuthoredIntentSource[]> {
   const output: AuthoredIntentSource[] = [];
 
   for (const file of files) {
-    if (!isAuthoredIntentSourcePath(file.relativePath)) {
+    if (
+      !isAuthoredIntentSourcePath(
+        file.relativePath,
+        options,
+      )
+    ) {
       continue;
     }
 
