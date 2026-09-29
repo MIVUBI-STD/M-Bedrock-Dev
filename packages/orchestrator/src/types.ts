@@ -30,6 +30,7 @@ export interface InspectTargetProfile {
   routeCorridors?: readonly RouteCorridorContract[];
   mutationDependentActions?: readonly MutationDependentActionContract[];
   stateAuthorityContracts?: readonly StateAuthorityContract[];
+  authoredSourceRoots?: readonly string[];
   staticExecutionDimension?: string;
 }
 
