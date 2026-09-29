@@ -36,6 +36,31 @@ describe("spatial authority policy parser", () => {
     });
   });
 
+  it("rejects duplicate rule ids at the parser boundary", () => {
+    expect(() =>
+      parseSpatialAuthorityPolicy({
+        schemaVersion: 1,
+        id: "duplicate",
+        rules: [
+          {
+            id: "same",
+            regionId: "build-plot",
+            actor: "player",
+            action: "place-block",
+            decision: "allow",
+          },
+          {
+            id: "same",
+            regionId: "lobby",
+            actor: "player",
+            action: "place-block",
+            decision: "deny",
+          },
+        ],
+      }),
+    ).toThrow(/Duplicate spatial authority rule id/);
+  });
+
   it("rejects unknown actions instead of silently accepting typos", () => {
     expect(() =>
       parseSpatialAuthorityPolicy({
