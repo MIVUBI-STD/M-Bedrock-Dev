@@ -1,7 +1,7 @@
 import type { ScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
 import type { ScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "./spatial-mutation-evidence.js";
-import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigImport, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
+import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigFunction, ScriptSafeConfigImport, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
 import type {
   RepairSourceTransformHint,
   SourceRef,
@@ -455,6 +455,7 @@ export interface ParsedScriptFile {
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
   persistenceIdempotencyGuards?: ScriptPersistenceIdempotencyGuard[];
   safeConfigBindings?: ScriptSafeConfigBinding[];
+  safeConfigFunctions?: ScriptSafeConfigFunction[];
   safeConfigImports?: ScriptSafeConfigImport[];
   safeConfigExports?: ScriptSafeConfigExport[];
   safeConfigRejected?: ScriptSafeConfigRejection[];
