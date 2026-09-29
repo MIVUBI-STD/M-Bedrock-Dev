@@ -376,3 +376,5 @@ export * from "./serialize.js";
 export * from "./v2.js";
 
 export * from "./create-v2.js";
+
+export * from "./promote-v2.js";
