@@ -327,7 +327,6 @@ The canonical identity is derived from:
 ```text
 subjectIds
 + brokenInvariantIds
-+ repairUnitIds
 + primaryFailure
 + causalIncidentId (when available)
 → semanticKey
@@ -389,3 +388,54 @@ Custom layouts may be supplied through `authoredSourceRoots` in the inspection p
 Generated/runtime outputs remain excluded. In particular, Bedrock `<pack>/scripts/`, `dist/`, `build/`, `node_modules/`, and declaration-only `.d.ts` files are not treated as authored gameplay intent.
 
 The authored-intent diagnosis executor revision is bumped when these semantics change so cached evidence cannot silently reuse an older source-authority policy.
+
+
+## Classification evidence
+
+The high-level audit-to-report path does not accept ungrounded impact or primary-failure classification.
+
+Each audit candidate carries internal classification evidence:
+
+```text
+impactEvidenceIds
+primaryFailureEvidenceIds
+```
+
+Those IDs must already belong to the same defect evidence universe used by confirmation. They are never serialized into Bug Report V2.
+
+Severity remains derived from `BugImpactAssessment`, and Category remains derived from `BugPrimaryFailure`. Classification evidence exists only to prevent those semantic assessments from becoming unsupported caller choices.
+
+## Semantic repair owners
+
+Repair-unit identity prefers a validated Semantic IR execution region when one can be established:
+
+```text
+Semantic IR execution region
+→ JSON pointer
+→ SourceRef range
+→ file
+```
+
+Source evidence may carry an internal `semanticOwnerId`. The collector validates it against `SemanticIr.execution.regions`.
+
+When the caller omits the owner and Semantic IR is available, SourceRef evidence may be bound automatically only when exactly one execution region is the best match. Ambiguous matches are not guessed.
+
+Semantic owners influence grouping and repair reasoning only. They do not change the defect semantic key or Bug ID.
+
+## CLI authored source roots
+
+Custom authored source layouts are available from the CLI through the repeatable option:
+
+```text
+--authored-source-root <path>
+```
+
+Example:
+
+```text
+npm run cli -- inspect map.mcworld \
+  --authored-source-root map-source \
+  --authored-source-root authoring/domain
+```
+
+The option flows through the inspection target profile and authored-intent diagnosis path.
