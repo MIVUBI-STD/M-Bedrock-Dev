@@ -3,6 +3,7 @@ import {
   comp,
   int,
   writeUncompressed,
+  type NBT,
 } from "prismarine-nbt";
 import type { BedrockLevelDbReader } from "../../../adapters/leveldb/src/index.js";
 import { extractPersistedPackIdentities } from "../src/persisted-pack-identity.js";
@@ -14,7 +15,7 @@ describe("persisted pack identity extraction", () => {
         "8a121475-6f9f-4780-a746-2bf25f732204": comp({
           score: int(10),
         }),
-      }, ""),
+      }, "") as NBT,
       "little",
     );
 
