@@ -11,10 +11,13 @@ import type {
 } from "../../runtime-profile/src/index.js";
 import {
   BEDROCK_CAPABILITIES_PREFIX,
-  compareRuntimeActionRegistries,
   parseBedrockCapabilityAnnouncement,
   type BedrockCapabilityDiscoveryRequest,
 } from "./bedrock-capabilities.js";
+import {
+  compareRequiredRuntimeActions,
+  requiredBedrockActionCapabilities,
+} from "./bedrock-action-registry.js";
 import {
   BEDROCK_ACTION_PREFIX,
   parseBedrockRuntimeActionResponse,
@@ -468,17 +471,21 @@ async function discoverActionCapabilities(
       ),
     );
 
-  if (options.actionCapabilities) {
-    const errors = compareRuntimeActionRegistries(
-      options.actionCapabilities,
+  const required =
+    options.actionCapabilities ??
+    requiredBedrockActionCapabilities(
+      definition,
+    );
+  const errors =
+    compareRequiredRuntimeActions(
+      required,
       announcement.registry,
     );
-    if (errors.length > 0) {
-      throw new Error(
-        "Bedrock runtime capability handshake mismatch: " +
-          errors.join("; "),
-      );
-    }
+  if (errors.length > 0) {
+    throw new Error(
+      "Bedrock runtime capability handshake mismatch: " +
+        errors.join("; "),
+    );
   }
 
   return announcement.registry;
