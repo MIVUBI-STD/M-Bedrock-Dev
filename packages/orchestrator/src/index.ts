@@ -272,3 +272,5 @@ export * from "./script-arena-layout-fallback.js";
 export * from "./arena-lifecycle-analysis.js";
 
 export * from "./release-identity-analysis.js";
+
+export * from "./arena-golden-corpus.js";

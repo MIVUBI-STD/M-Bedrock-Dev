@@ -15,6 +15,7 @@ import { compileRuntimeProbeRequests } from "../../../packages/orchestrator/src/
 import {
   calibrateGameplayCorpusFromFile,
   loadArenaRegionContractsFile,
+  runArenaGoldenCorpusFromFile,
 } from "../../../packages/orchestrator/src/index.js";
 
 async function main(): Promise<void> {
@@ -192,6 +193,22 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "arena-corpus" && input) {
+    const report = await runArenaGoldenCorpusFromFile(
+      resolve(input),
+      secondInput === undefined
+        ? undefined
+        : resolve(secondInput),
+      target,
+      knowledge,
+    );
+    console.log(JSON.stringify(report, null, 2));
+    if (report.totalAssertionFailures > 0) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (command === "corpus-calibrate" && input) {
     const report =
       await calibrateGameplayCorpusFromFile(
@@ -319,6 +336,7 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
+    "  npm run cli -- arena-corpus <manifest.json> [artifact-root] [--edition ...] [--version ...] [--arena-region-contracts regions.json]",
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json]",
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
