@@ -144,27 +144,118 @@ export function compileSafeConfigExpression(
   }
 
   if (ts.isArrayLiteralExpression(value)) {
-    const items: SafeConfigExpression[] = [];
+    const parts: Array<{
+      expression: SafeConfigExpression;
+      spread: boolean;
+    }> = [];
+    let hasSpread = false;
+
     for (const item of value.elements) {
-      if (ts.isSpreadElement(item)) return undefined;
-      const compiled = compileSafeConfigExpression(item);
+      if (ts.isSpreadElement(item)) {
+        const compiled =
+          compileSafeConfigExpression(
+            item.expression,
+          );
+        if (!compiled) return undefined;
+        parts.push({
+          expression: compiled,
+          spread: true,
+        });
+        hasSpread = true;
+        continue;
+      }
+
+      const compiled =
+        compileSafeConfigExpression(item);
       if (!compiled) return undefined;
-      items.push(compiled);
+      parts.push({
+        expression: compiled,
+        spread: false,
+      });
     }
-    return { kind: "array", items };
+
+    return hasSpread
+      ? {
+          kind: "array-compose",
+          parts,
+        }
+      : {
+          kind: "array",
+          items: parts.map(
+            (part) => part.expression,
+          ),
+        };
   }
 
   if (ts.isObjectLiteralExpression(value)) {
-    const entries: Record<string, SafeConfigExpression> = {};
+    const parts: SafeConfigExpression[] = [];
+    let pending: Record<
+      string,
+      SafeConfigExpression
+    > = {};
+    let hasSpread = false;
+
+    const flushPending = () => {
+      if (
+        Object.keys(pending).length === 0
+      ) return;
+      parts.push({
+        kind: "object",
+        entries: pending,
+      });
+      pending = {};
+    };
+
     for (const property of value.properties) {
-      if (!ts.isPropertyAssignment(property)) return undefined;
+      if (
+        ts.isSpreadAssignment(property)
+      ) {
+        flushPending();
+        const compiled =
+          compileSafeConfigExpression(
+            property.expression,
+          );
+        if (!compiled) return undefined;
+        parts.push(compiled);
+        hasSpread = true;
+        continue;
+      }
+
+      if (
+        ts.isShorthandPropertyAssignment(
+          property,
+        )
+      ) {
+        pending[property.name.text] = {
+          kind: "ref",
+          name: property.name.text,
+        };
+        continue;
+      }
+
+      if (
+        !ts.isPropertyAssignment(property)
+      ) {
+        return undefined;
+      }
       const key = propertyName(property.name);
       if (key === undefined) return undefined;
-      const compiled = compileSafeConfigExpression(property.initializer);
+      const compiled =
+        compileSafeConfigExpression(
+          property.initializer,
+        );
       if (!compiled) return undefined;
-      entries[key] = compiled;
+      pending[key] = compiled;
     }
-    return { kind: "object", entries };
+    flushPending();
+
+    if (!hasSpread && parts.length === 1) {
+      return parts[0]!;
+    }
+    return {
+      kind: "object-merge",
+      parts,
+    };
   }
 
   if (ts.isPropertyAccessExpression(value)) {
@@ -197,27 +288,159 @@ export function compileSafeConfigExpression(
     };
   }
 
+  if (ts.isConditionalExpression(value)) {
+    const condition =
+      compileSafeConfigExpression(
+        value.condition,
+      );
+    const whenTrue =
+      compileSafeConfigExpression(
+        value.whenTrue,
+      );
+    const whenFalse =
+      compileSafeConfigExpression(
+        value.whenFalse,
+      );
+    if (
+      !condition ||
+      !whenTrue ||
+      !whenFalse
+    ) {
+      return undefined;
+    }
+    return {
+      kind: "conditional",
+      condition,
+      whenTrue,
+      whenFalse,
+    };
+  }
+
+  if (ts.isTemplateExpression(value)) {
+    let expression:
+      SafeConfigExpression = {
+        kind: "literal",
+        value: value.head.text,
+      };
+
+    for (
+      const span of
+        value.templateSpans
+    ) {
+      const middle =
+        compileSafeConfigExpression(
+          span.expression,
+        );
+      if (!middle) return undefined;
+
+      expression = {
+        kind: "binary",
+        operator: "+",
+        left: expression,
+        right: middle,
+      };
+      if (span.literal.text.length > 0) {
+        expression = {
+          kind: "binary",
+          operator: "+",
+          left: expression,
+          right: {
+            kind: "literal",
+            value: span.literal.text,
+          },
+        };
+      }
+    }
+
+    return expression;
+  }
+
   if (ts.isBinaryExpression(value)) {
-    const operator =
-      value.operatorToken.kind === ts.SyntaxKind.PlusToken
+    const left =
+      compileSafeConfigExpression(value.left);
+    const right =
+      compileSafeConfigExpression(value.right);
+    if (!left || !right) return undefined;
+
+    const arithmetic =
+      value.operatorToken.kind ===
+        ts.SyntaxKind.PlusToken
         ? "+"
-        : value.operatorToken.kind === ts.SyntaxKind.MinusToken
+        : value.operatorToken.kind ===
+            ts.SyntaxKind.MinusToken
           ? "-"
-          : value.operatorToken.kind === ts.SyntaxKind.AsteriskToken
+          : value.operatorToken.kind ===
+              ts.SyntaxKind.AsteriskToken
             ? "*"
-            : value.operatorToken.kind === ts.SyntaxKind.SlashToken
+            : value.operatorToken.kind ===
+                ts.SyntaxKind.SlashToken
               ? "/"
               : undefined;
-    if (!operator) return undefined;
-    const left = compileSafeConfigExpression(value.left);
-    const right = compileSafeConfigExpression(value.right);
-    if (!left || !right) return undefined;
-    return {
-      kind: "binary",
-      operator,
-      left,
-      right,
-    };
+    if (arithmetic) {
+      return {
+        kind: "binary",
+        operator: arithmetic,
+        left,
+        right,
+      };
+    }
+
+    const comparison =
+      value.operatorToken.kind ===
+        ts.SyntaxKind.EqualsEqualsToken
+        ? "=="
+        : value.operatorToken.kind ===
+            ts.SyntaxKind.EqualsEqualsEqualsToken
+          ? "==="
+          : value.operatorToken.kind ===
+              ts.SyntaxKind.ExclamationEqualsToken
+            ? "!="
+            : value.operatorToken.kind ===
+                ts.SyntaxKind.ExclamationEqualsEqualsToken
+              ? "!=="
+              : value.operatorToken.kind ===
+                  ts.SyntaxKind.LessThanToken
+                ? "<"
+                : value.operatorToken.kind ===
+                    ts.SyntaxKind.LessThanEqualsToken
+                  ? "<="
+                  : value.operatorToken.kind ===
+                      ts.SyntaxKind.GreaterThanToken
+                    ? ">"
+                    : value.operatorToken.kind ===
+                        ts.SyntaxKind.GreaterThanEqualsToken
+                      ? ">="
+                      : undefined;
+    if (comparison) {
+      return {
+        kind: "compare",
+        operator: comparison,
+        left,
+        right,
+      };
+    }
+
+    const logical =
+      value.operatorToken.kind ===
+        ts.SyntaxKind.AmpersandAmpersandToken
+        ? "&&"
+        : value.operatorToken.kind ===
+            ts.SyntaxKind.BarBarToken
+          ? "||"
+          : value.operatorToken.kind ===
+              ts.SyntaxKind.QuestionQuestionToken
+            ? "??"
+            : undefined;
+    if (logical) {
+      return {
+        kind: "logical",
+        operator: logical,
+        left,
+        right,
+      };
+    }
+
+    return undefined;
   }
 
   if (
