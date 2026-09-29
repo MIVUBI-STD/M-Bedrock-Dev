@@ -106,9 +106,11 @@ function canonicalFoundBy(
   defects: readonly ConfirmedDefect[],
   narrative: CanonicalDefectNarrative,
 ): ConfirmedDefect["foundBy"] {
-  const origins = unique(
-    defects.map((item) => item.foundBy),
-  );
+  const origins = [
+    ...new Set(
+      defects.map((item) => item.foundBy),
+    ),
+  ].sort() as ConfirmedDefect["foundBy"][];
 
   if (origins.length === 1) {
     return origins[0]!;
