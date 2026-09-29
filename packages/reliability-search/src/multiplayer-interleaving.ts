@@ -118,6 +118,7 @@ function eventFootprint(
     case "reconnect":
       read(player);
       write(
+        player,
         player && player + ":connected",
         player && player + ":connection-generation",
         player && player + ":progress",
@@ -128,6 +129,7 @@ function eventFootprint(
     case "respawn":
       read(player);
       write(
+        player,
         player && player + ":life-generation",
         player && player + ":life-state",
       );
@@ -136,6 +138,7 @@ function eventFootprint(
     case "cleanup-begin":
       read(arena);
       write(
+        arena,
         arena && arena + ":phase",
         arena && arena + ":cleanup",
       );
@@ -144,6 +147,7 @@ function eventFootprint(
     case "cleanup-complete":
       read(arena && arena + ":cleanup");
       write(
+        arena,
         arena && arena + ":cleanup",
         arena && arena + ":membership",
         arena && arena + ":generation",
