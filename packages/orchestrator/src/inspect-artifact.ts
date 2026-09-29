@@ -83,6 +83,11 @@ export async function inspectArtifact(
         : auditArenaNativeSpatialContent(
             result.arenaAnalysis.discovery,
             nativeWorldDb.chunkContentObservations ?? [],
+            {
+              ...(result.arenaAnalysis.regionPlan === undefined
+                ? {}
+                : { regionPlan: result.arenaAnalysis.regionPlan }),
+            },
           );
 
     let arenaVoxelProof;

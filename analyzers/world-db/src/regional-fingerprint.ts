@@ -108,3 +108,72 @@ export function translatedChunkRegion(
       : { dimensionId: canonical.dimensionId }),
   };
 }
+
+export function createRegionalChunkFingerprintFromRegions(
+  observations: readonly ChunkContentObservation[],
+  regions: readonly ChunkRegion[],
+  origin: { chunkX: number; chunkZ: number },
+): RegionalChunkFingerprint {
+  const unique = new Map<string, ChunkContentObservation>();
+
+  for (const item of observations) {
+    const included = regions.some((region) =>
+      item.chunkX >= region.minChunkX &&
+      item.chunkX <= region.maxChunkX &&
+      item.chunkZ >= region.minChunkZ &&
+      item.chunkZ <= region.maxChunkZ &&
+      (
+        region.dimensionId === undefined ||
+        item.dimensionId === region.dimensionId
+      )
+    );
+    if (!included) continue;
+
+    const key = [
+      item.dimensionId,
+      item.chunkX,
+      item.chunkZ,
+      item.kind,
+      item.subChunkIndex ?? "",
+      item.valueHash,
+    ].join(":");
+    unique.set(key, item);
+  }
+
+  const dimensionIds = [
+    ...new Set(
+      regions
+        .map((region) => region.dimensionId)
+        .filter((value): value is number => value !== undefined),
+    ),
+  ];
+  const components = [...unique.values()]
+    .map((item) => ({
+      relativeChunkX: item.chunkX - origin.chunkX,
+      relativeChunkZ: item.chunkZ - origin.chunkZ,
+      kind: item.kind,
+      valueHash: item.valueHash,
+      ...(item.subChunkIndex === undefined
+        ? {}
+        : { subChunkIndex: item.subChunkIndex }),
+    }))
+    .sort((a, b) =>
+      a.relativeChunkX - b.relativeChunkX ||
+      a.relativeChunkZ - b.relativeChunkZ ||
+      a.kind.localeCompare(b.kind) ||
+      (a.subChunkIndex ?? -129) - (b.subChunkIndex ?? -129) ||
+      a.valueHash.localeCompare(b.valueHash)
+    );
+
+  return {
+    algorithm: "sha256",
+    hash: digest(components),
+    records: components.length,
+    originChunkX: origin.chunkX,
+    originChunkZ: origin.chunkZ,
+    ...(dimensionIds.length === 1
+      ? { dimensionId: dimensionIds[0] }
+      : {}),
+    components,
+  };
+}

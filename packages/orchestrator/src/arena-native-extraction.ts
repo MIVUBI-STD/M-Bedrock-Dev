@@ -1,11 +1,13 @@
 import {
   createRegionalChunkFingerprint,
+  createRegionalChunkFingerprintFromRegions,
   translatedChunkRegion,
   type ChunkContentObservation,
   type ChunkRegion,
   type RegionalChunkFingerprint,
 } from "../../../analyzers/world-db/src/index.js";
 import type {
+  ArenaRegionPlan,
   ArenaReplicaDiscovery,
   ArenaVector3,
 } from "../../../analyzers/topology/src/index.js";
@@ -28,6 +30,7 @@ export interface ArenaNativeSpatialAudit {
   canonical?: RegionalChunkFingerprint;
   replicas: readonly ArenaNativeSpatialReplicaProof[];
   region: ChunkRegion;
+  regions?: readonly ChunkRegion[];
 }
 
 function chunkOf(value: number): number {
@@ -63,6 +66,7 @@ export function auditArenaNativeSpatialContent(
   options: {
     marginChunks?: number;
     dimensionId?: number;
+    regionPlan?: ArenaRegionPlan;
   } = {},
 ): ArenaNativeSpatialAudit {
   const region = topologyEnvelope(
@@ -70,11 +74,19 @@ export function auditArenaNativeSpatialContent(
     options.marginChunks ?? 2,
     options.dimensionId ?? 0,
   );
+  const regions = options.regionPlan?.volumes.map((volume) => ({
+    minChunkX: chunkOf(volume.min.x),
+    maxChunkX: chunkOf(volume.max.x),
+    minChunkZ: chunkOf(volume.min.z),
+    maxChunkZ: chunkOf(volume.max.z),
+    dimensionId: options.dimensionId ?? 0,
+  })) ?? [region];
 
   if (observations.length === 0) {
     return {
       status: "not-available",
       region,
+      regions,
       replicas: discovery.replicas.map((replica) => ({
         arenaId: replica.arenaId,
         status: "not-available",
@@ -83,14 +95,24 @@ export function auditArenaNativeSpatialContent(
     };
   }
 
-  const canonical = createRegionalChunkFingerprint(
-    observations,
-    region,
-    {
-      chunkX: chunkOf(discovery.canonical.anchor.x),
-      chunkZ: chunkOf(discovery.canonical.anchor.z),
-    },
-  );
+  const canonical =
+    regions.length === 1
+      ? createRegionalChunkFingerprint(
+          observations,
+          regions[0]!,
+          {
+            chunkX: chunkOf(discovery.canonical.anchor.x),
+            chunkZ: chunkOf(discovery.canonical.anchor.z),
+          },
+        )
+      : createRegionalChunkFingerprintFromRegions(
+          observations,
+          regions,
+          {
+            chunkX: chunkOf(discovery.canonical.anchor.x),
+            chunkZ: chunkOf(discovery.canonical.anchor.z),
+          },
+        );
 
   const replicas = discovery.replicas.map((replica, index) => {
     const offset = discovery.offsets[index];
@@ -102,11 +124,13 @@ export function auditArenaNativeSpatialContent(
       };
     }
 
-    const translated = translatedChunkRegion(region, {
-      x: offset.x,
-      z: offset.z,
-    });
-    if (!translated) {
+    const translatedRegions = regions.map((item) =>
+      translatedChunkRegion(item, {
+        x: offset.x,
+        z: offset.z,
+      })
+    );
+    if (translatedRegions.some((item) => item === undefined)) {
       return {
         arenaId: replica.arenaId,
         status: "voxel-proof-required" as const,
@@ -115,14 +139,27 @@ export function auditArenaNativeSpatialContent(
       };
     }
 
-    const fingerprint = createRegionalChunkFingerprint(
-      observations,
-      translated,
-      {
-        chunkX: chunkOf(replica.anchor.x),
-        chunkZ: chunkOf(replica.anchor.z),
-      },
+    const concreteRegions = translatedRegions.filter(
+      (item): item is ChunkRegion => item !== undefined,
     );
+    const fingerprint =
+      concreteRegions.length === 1
+        ? createRegionalChunkFingerprint(
+            observations,
+            concreteRegions[0]!,
+            {
+              chunkX: chunkOf(replica.anchor.x),
+              chunkZ: chunkOf(replica.anchor.z),
+            },
+          )
+        : createRegionalChunkFingerprintFromRegions(
+            observations,
+            concreteRegions,
+            {
+              chunkX: chunkOf(replica.anchor.x),
+              chunkZ: chunkOf(replica.anchor.z),
+            },
+          );
 
     return {
       arenaId: replica.arenaId,
@@ -141,5 +178,6 @@ export function auditArenaNativeSpatialContent(
     canonical,
     replicas,
     region,
+    regions,
   };
 }
