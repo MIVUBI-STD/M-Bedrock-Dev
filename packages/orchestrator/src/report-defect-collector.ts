@@ -1,6 +1,7 @@
 import {
   buildBugReportFromConfirmedDefects,
   deriveConfirmedDefectSemanticKey,
+  deriveRepairUnitIdsFromSourceEvidence,
   type ConfirmedDefect,
   type PromoteConfirmedBugsResult,
   type BugReportV2Map,
@@ -46,6 +47,7 @@ export type ConfirmedDefectDraft = Omit<
   | "foundBy"
   | "confirmation"
   | "mustPreserve"
+  | "repairUnitIds"
 >;
 
 export type AiConfirmedDefectDraft = Omit<
@@ -204,6 +206,14 @@ function candidateBrokenInvariantIds(
   return candidate.defect.brokenInvariantIds;
 }
 
+function candidateRepairUnitIds(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  return deriveRepairUnitIdsFromSourceEvidence(
+    candidate.defect.sourceEvidence,
+  );
+}
+
 function candidateSemanticKey(
   candidate: AuditReportCandidate,
 ): string {
@@ -212,7 +222,7 @@ function candidateSemanticKey(
     brokenInvariantIds:
       candidateBrokenInvariantIds(candidate),
     repairUnitIds:
-      candidate.defect.repairUnitIds,
+      candidateRepairUnitIds(candidate),
     primaryFailure:
       candidate.defect.primaryFailure,
     ...(candidate.defect.causalIncidentId === undefined
@@ -359,6 +369,9 @@ function collectOne(
     subjectIds: [...candidateSubjectIds(candidate)],
     brokenInvariantIds: [
       ...candidateBrokenInvariantIds(candidate),
+    ],
+    repairUnitIds: [
+      ...candidateRepairUnitIds(candidate),
     ],
     foundBy:
       candidate.route === "tester"
