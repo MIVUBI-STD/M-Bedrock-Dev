@@ -231,7 +231,7 @@ describe("zero-waste benchmark", () => {
         "repeated-diagnosis-without-reuse",
       );
     expect(report.wasteSignals)
-      .toContain(
+      .not.toContain(
         "full-validation-set",
       );
 
@@ -241,6 +241,44 @@ describe("zero-waste benchmark", () => {
       );
     expect(text)
       .toContain("Status: fail");
+  });
+
+  it("does not treat a legitimately full semantic/validation closure as heuristic waste", () => {
+    const report =
+      evaluateZeroWasteBenchmark({
+        id: "bench:full-legitimate",
+        runMode: "cold",
+        summary: {
+          diagnosis: {
+            totalSteps: 1,
+            executedSteps: 1,
+            reusedSteps: 0,
+            reuseRatio: 0,
+          },
+          semanticImpact: {
+            totalNodes: 4,
+            affectedNodes: 4,
+            skippedNodes: 0,
+            skipRatio: 0,
+          },
+          validation: {
+            totalScenarios: 3,
+            selectedScenarios: 3,
+            skippedScenarios: 0,
+            skipRatio: 0,
+          },
+          reasons: [],
+        },
+      });
+
+    expect(report.wasteSignals)
+      .not.toContain(
+        "full-semantic-closure",
+      );
+    expect(report.wasteSignals)
+      .not.toContain(
+        "full-validation-set",
+      );
   });
 
   it("does not misclassify a cold run as missing cache reuse", () => {
