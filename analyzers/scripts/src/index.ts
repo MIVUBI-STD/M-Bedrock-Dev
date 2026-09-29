@@ -22,3 +22,4 @@ export * from "./spatial-world-mutation.js";
 export * from "./cleanup-resource-evidence.js";
 
 export * from "./global-lease-evidence.js";
+export * from "./inventory-lifecycle-evidence.js";
