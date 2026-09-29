@@ -36,6 +36,9 @@ import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
+  InventoryPolicyAnalysis,
+} from "./inventory-policy-analysis.js";
+import type {
   SpatialAuthorityCoverageReport,
 } from "./spatial-authority-analysis.js";
 
@@ -125,6 +128,15 @@ export interface GameplayWorldModel {
     copyMutationRisks: number;
     grantRegions: number;
     dropRegions: number;
+    policy: {
+      configured: boolean;
+      resolvedItemClasses: number;
+      uncoveredItemClasses: number;
+      unknownIdentityEvidence: number;
+      deniedDrops: number;
+      uncoveredDrops: number;
+      unknownDrops: number;
+    };
   };
   state: {
     semanticSurfaces: number;
@@ -180,6 +192,7 @@ export interface GameplayWorldModelSource {
   scriptSpatial: ScriptSpatialAnalysis;
   spatialAuthority?: SpatialAuthorityCoverageReport;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
+  inventoryPolicy?: InventoryPolicyAnalysis;
   semanticIr: {
     stateSurfaces: number;
     stateOperations: number;
@@ -445,6 +458,28 @@ export function deriveGameplayWorldModel(
         source.inventoryLifecycle?.grantRegions ?? 0,
       dropRegions:
         source.inventoryLifecycle?.dropRegions ?? 0,
+      policy: {
+        configured:
+          source.inventoryPolicy?.configured ?? false,
+        resolvedItemClasses:
+          source.inventoryPolicy
+            ?.resolvedItemClasses ?? 0,
+        uncoveredItemClasses:
+          source.inventoryPolicy
+            ?.uncoveredItemClasses ?? 0,
+        unknownIdentityEvidence:
+          source.inventoryPolicy
+            ?.unknownIdentityEvidence ?? 0,
+        deniedDrops:
+          source.inventoryPolicy
+            ?.deniedDrops ?? 0,
+        uncoveredDrops:
+          source.inventoryPolicy
+            ?.uncoveredDrops ?? 0,
+        unknownDrops:
+          source.inventoryPolicy
+            ?.unknownDrops ?? 0,
+      },
     },
     state: {
       semanticSurfaces:
