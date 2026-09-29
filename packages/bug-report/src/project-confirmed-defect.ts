@@ -78,9 +78,14 @@ export function projectConfirmedDefects(
     ...(defect.aiAnalysis === undefined
       ? {}
       : { aiAnalysis: defect.aiAnalysis }),
-    ...(defect.relevantCode === undefined
+    ...(defect.sourceEvidence === undefined
       ? {}
-      : { relevantCode: defect.relevantCode }),
+      : {
+          relevantCode: defect.sourceEvidence.map((item) => ({
+            file: item.source.relativePath,
+            reason: item.reason,
+          })),
+        }),
     ...(defect.suggestedFix === undefined
       ? {}
       : { suggestedFix: defect.suggestedFix }),
