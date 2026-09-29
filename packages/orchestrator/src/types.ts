@@ -35,6 +35,7 @@ import type { ArenaCleanupSurfaceAnalysis } from "./arena-cleanup-surface-analys
 import type { ArenaStateIsolationAnalysis } from "./arena-state-isolation-analysis.js";
 import type { ArenaGlobalStateAnalysis } from "./arena-global-state-analysis.js";
 import type { ScriptSpatialAnalysis } from "./script-spatial-analysis.js";
+import type { InventoryLifecycleAnalysis } from "./inventory-lifecycle-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
@@ -87,6 +88,7 @@ export interface InspectDirectoryResult {
   scriptApiUsage: ScriptApiUsageInventory;
   scriptSafeConfig: ScriptSafeConfigAnalysis;
   scriptSpatial: ScriptSpatialAnalysis;
+  inventoryLifecycle: InventoryLifecycleAnalysis;
   releaseIdentity: ReleaseIdentityAnalysis;
   gameplayWorld: GameplayWorldModel;
   structures: number;
