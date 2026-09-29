@@ -16,6 +16,11 @@ import type {
   InspectionSourceIndex,
 } from "./inspect-source-index.js";
 
+export const INTENT_GROUNDING_EXECUTOR_REVISION =
+  "intent-grounding-executor:2";
+export const AUTHORED_INTENT_EXECUTOR_REVISION =
+  "authored-intent-executor:2";
+
 export interface IntentGroundingDiagnosisPayload {
   id: string;
   sourceIndex: InspectionSourceIndex;
@@ -144,12 +149,18 @@ function parseAuthoredPayload(
 
 function intentEvidenceId(
   prefix: string,
+  executorRevision: string,
   value: unknown,
 ): string {
   return prefix +
     ":" +
     createHash("sha256")
-      .update(JSON.stringify(value))
+      .update(
+        JSON.stringify({
+          executorRevision,
+          value,
+        }),
+      )
       .digest("hex");
 }
 
@@ -177,7 +188,7 @@ export function createIntentGroundingDiagnosisExecutor():
     executorId:
       "diagnosis.intent-grounding",
     executorRevision:
-      "intent-grounding-executor:1",
+      INTENT_GROUNDING_EXECUTOR_REVISION,
 
     async execute(
       request: DiagnosisExecutorRequest,
@@ -257,6 +268,7 @@ export function createIntentGroundingDiagnosisExecutor():
           evidenceIds: [
             intentEvidenceId(
               "gameplay-intent",
+              INTENT_GROUNDING_EXECUTOR_REVISION,
               output,
             ),
           ],
@@ -275,7 +287,7 @@ export function createAuthoredIntentDiagnosisExecutor():
     executorId:
       "diagnosis.authored-intent",
     executorRevision:
-      "authored-intent-executor:1",
+      AUTHORED_INTENT_EXECUTOR_REVISION,
 
     async execute(
       request: DiagnosisExecutorRequest,
@@ -378,6 +390,7 @@ export function createAuthoredIntentDiagnosisExecutor():
           evidenceIds: [
             intentEvidenceId(
               "authored-intent",
+              AUTHORED_INTENT_EXECUTOR_REVISION,
               output,
             ),
           ],
