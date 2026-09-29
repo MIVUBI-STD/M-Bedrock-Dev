@@ -19,6 +19,12 @@ import type {
   GameplayIntentRuntimeAssessment,
 } from "./gameplay-intent-runtime-stage.js";
 import type {
+  RuntimeExperimentDefinition,
+} from "../../runtime-lab/src/index.js";
+import type {
+  RuntimeExperimentDiagnosticBridge,
+} from "./runtime-experiment-diagnostic-evidence.js";
+import type {
   DiagnosticFinding,
 } from "../../diagnostics/src/index.js";
 import type {
@@ -43,6 +49,9 @@ import {
 import {
   derivePrimaryFailureSignalsFromDiagnostics,
 } from "./report-classification-producers.js";
+import {
+  deriveReportClassificationFromRuntimeExperiment,
+} from "./report-runtime-classification.js";
 import {
   bindSourceEvidenceSemanticOwners,
 } from "./report-source-owner.js";
@@ -87,6 +96,10 @@ export interface RuntimeReportCandidate {
   readonly route: "runtime";
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
+  readonly runtimeExperimentClassification?: {
+    readonly definition: RuntimeExperimentDefinition;
+    readonly bridge: RuntimeExperimentDiagnosticBridge;
+  };
   readonly semanticIr?: SemanticIr;
   readonly classificationDiagnostics?:
     readonly DiagnosticFinding[];
@@ -185,6 +198,25 @@ function candidateEvidenceUniverse(
   ].sort();
 }
 
+function runtimeClassificationSignals(
+  candidate: AuditReportCandidate,
+) {
+  if (
+    candidate.route !== "runtime" ||
+    candidate.runtimeExperimentClassification === undefined
+  ) {
+    return {
+      impact: [],
+      primaryFailure: [],
+    } as const;
+  }
+
+  return deriveReportClassificationFromRuntimeExperiment(
+    candidate.runtimeExperimentClassification.definition,
+    candidate.runtimeExperimentClassification.bridge,
+  );
+}
+
 function candidateClassification(
   candidate: AuditReportCandidate,
 ) {
@@ -192,14 +224,19 @@ function candidateClassification(
     derivePrimaryFailureSignalsFromDiagnostics(
       candidate.classificationDiagnostics ?? [],
     ).signals;
+  const runtimeSignals =
+    runtimeClassificationSignals(candidate);
 
   return deriveReportDefectClassification({
-    impact:
-      candidate.defect.classificationSignals.impact,
+    impact: [
+      ...candidate.defect.classificationSignals.impact,
+      ...runtimeSignals.impact,
+    ],
     primaryFailure: [
       ...candidate.defect.classificationSignals
         .primaryFailure,
       ...diagnosticSignals,
+      ...runtimeSignals.primaryFailure,
     ],
   });
 }
@@ -232,6 +269,61 @@ function classificationIssues(
   }
 
   return [...new Set(errors)];
+}
+
+function runtimeClassificationIssues(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  if (
+    candidate.route !== "runtime" ||
+    candidate.runtimeExperimentClassification === undefined
+  ) {
+    return [];
+  }
+
+  let derived;
+  try {
+    derived =
+      deriveReportClassificationFromRuntimeExperiment(
+        candidate.runtimeExperimentClassification.definition,
+        candidate.runtimeExperimentClassification.bridge,
+      );
+  } catch (error) {
+    return [
+      error instanceof Error
+        ? error.message
+        : String(error),
+    ];
+  }
+
+  const classificationEvidence = [
+    ...derived.impact.flatMap(
+      (signal) => signal.evidenceIds,
+    ),
+    ...derived.primaryFailure.flatMap(
+      (signal) => signal.evidenceIds,
+    ),
+  ];
+  if (classificationEvidence.length === 0) {
+    return [];
+  }
+
+  const confirmationEvidence = new Set([
+    candidate.assessment.outcomeObservation.evidenceId,
+    ...candidate.assessment.result.evidenceIds,
+  ]);
+
+  if (
+    !classificationEvidence.some(
+      (id) => confirmationEvidence.has(id),
+    )
+  ) {
+    return [
+      "Runtime classification evidence is not part of the confirmation evidence for this defect.",
+    ];
+  }
+
+  return [];
 }
 
 function routeEvidenceConsistency(
@@ -490,6 +582,18 @@ function collectOne(
   readonly confirmed?: ConfirmedDefect;
   readonly rejected?: RejectedReportCandidate;
 } {
+  const runtimeClassificationProblems =
+    runtimeClassificationIssues(candidate);
+  if (runtimeClassificationProblems.length > 0) {
+    return {
+      rejected: rejectedCandidate(
+        candidate,
+        runtimeClassificationProblems,
+        "candidate-correction",
+      ),
+    };
+  }
+
   const classificationProblems =
     classificationIssues(candidate);
   if (classificationProblems.length > 0) {
