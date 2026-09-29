@@ -73,6 +73,119 @@ describe("report source semantic owner", () => {
     ).toBe("exec:cleanup");
   });
 
+  it("prefers a directly matched state operation over broad region source", () => {
+    const withOperation: SemanticIr = {
+      ...ir,
+      state: {
+        ...ir.state,
+        surfaces: [{
+          id: "state:session",
+          ref: {
+            kind: "dynamic-property",
+            key: "session",
+          },
+        }],
+        operations: [{
+          id: "op:cleanup",
+          executionRegionId: "exec:cleanup",
+          surfaceId: "state:session",
+          operation: "write",
+          source: {
+            artifactId: "map",
+            relativePath: "scripts/session.ts",
+            range: {
+              lineStart: 22,
+              lineEnd: 22,
+            },
+          },
+        }],
+      },
+    };
+
+    expect(
+      resolveSourceSemanticOwner(
+        {
+          artifactId: "map",
+          relativePath: "scripts/session.ts",
+          range: {
+            lineStart: 22,
+            lineEnd: 22,
+          },
+        },
+        withOperation,
+      ),
+    ).toBe("exec:cleanup");
+  });
+
+  it("does not guess when equally ranked semantic operations disagree", () => {
+    const ambiguous: SemanticIr = {
+      ...ir,
+      execution: {
+        ...ir.execution,
+        regions: [
+          ...ir.execution.regions,
+          {
+            id: "exec:shadow",
+            kind: "script-function",
+            ownerId: "scripts/session",
+            label: "function:shadow",
+          },
+        ],
+      },
+      state: {
+        ...ir.state,
+        surfaces: [{
+          id: "state:session",
+          ref: {
+            kind: "dynamic-property",
+            key: "session",
+          },
+        }],
+        operations: [{
+          id: "op:cleanup",
+          executionRegionId: "exec:cleanup",
+          surfaceId: "state:session",
+          operation: "write",
+          source: {
+            artifactId: "map",
+            relativePath: "scripts/session.ts",
+            range: {
+              lineStart: 22,
+              lineEnd: 22,
+            },
+          },
+        }, {
+          id: "op:shadow",
+          executionRegionId: "exec:shadow",
+          surfaceId: "state:session",
+          operation: "write",
+          source: {
+            artifactId: "map",
+            relativePath: "scripts/session.ts",
+            range: {
+              lineStart: 22,
+              lineEnd: 22,
+            },
+          },
+        }],
+      },
+    };
+
+    expect(
+      resolveSourceSemanticOwner(
+        {
+          artifactId: "map",
+          relativePath: "scripts/session.ts",
+          range: {
+            lineStart: 22,
+            lineEnd: 22,
+          },
+        },
+        ambiguous,
+      ),
+    ).toBeUndefined();
+  });
+
   it("does not guess when equally ranked regions overlap", () => {
     const ambiguous: SemanticIr = {
       ...ir,
