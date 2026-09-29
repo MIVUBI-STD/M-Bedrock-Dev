@@ -159,6 +159,7 @@ export function buildInspectionResult(
     topology,
     scriptSafeConfig,
     arenaLifecycle,
+    arenaCleanupSurfaces,
     arenaLayoutReconciliation,
     arenaCapacity,
     routeCorrelations,
@@ -381,6 +382,7 @@ export function buildInspectionResult(
       layoutReconciliation:
         arenaLayoutReconciliation,
       lifecycle: arenaLifecycle,
+      cleanupSurfaces: arenaCleanupSurfaces,
     },
     gameplayIntent: {
       model: input.gameplayIntent,

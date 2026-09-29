@@ -27,6 +27,7 @@ import type { ArenaCapacityExtractionResult } from "./arena-capacity-extraction.
 import type { ScriptSafeConfigAnalysis } from "./script-safe-config-analysis.js";
 import type { ArenaLayoutReconciliation } from "./arena-layout-reconciliation.js";
 import type { ArenaLifecycleAnalysis } from "./arena-lifecycle-analysis.js";
+import type { ArenaCleanupSurfaceAnalysis } from "./arena-cleanup-surface-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
@@ -182,6 +183,7 @@ export interface InspectDirectoryResult {
     capacity?: ArenaCapacityExtractionResult;
     layoutReconciliation?: ArenaLayoutReconciliation;
     lifecycle?: ArenaLifecycleAnalysis;
+    cleanupSurfaces?: ArenaCleanupSurfaceAnalysis;
     nativeSpatial?: ArenaNativeSpatialAudit;
     voxelProof?: ArenaVoxelProof;
     blockEntityProof?: ArenaBlockEntityProof;

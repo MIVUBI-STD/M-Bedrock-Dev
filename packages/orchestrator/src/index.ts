@@ -276,3 +276,5 @@ export * from "./release-identity-analysis.js";
 export * from "./arena-golden-corpus.js";
 
 export * from "./arena-block-entity-proof.js";
+
+export * from "./arena-cleanup-surface-analysis.js";
