@@ -235,3 +235,74 @@ defect confirmed
 does not imply
 repair mechanism proven
 ```
+
+
+## Canonical defect group resolution
+
+Semantic grouping never concatenates report prose automatically.
+
+When multiple confirmed symptoms share:
+
+```text
+same causal incident
+AND same broken invariant set
+AND same repair unit set
+```
+
+they form one unresolved semantic defect group.
+
+Before V2 projection, that group must be resolved with `resolveConfirmedDefectGroup()`.
+
+The resolver merges only information that is safe to combine deterministically:
+
+- worst-case impact;
+- Expected and Observed evidence IDs;
+- broken invariant IDs;
+- repair unit IDs;
+- proven Must Preserve constraints;
+- selected primary source evidence.
+
+Canonical Title, Problem, Expected wording, Observed wording, primary failure, and tester reproduction remain explicit resolution inputs.
+
+If a grouped AI defect exposes more than three distinct source locations, the resolver requires an explicit selection of the primary locations rather than truncating them silently.
+
+## Source precision
+
+AI Relevant Code is projected from SourceRef, not arbitrary file strings.
+
+For line-addressable authored sources such as TypeScript, JavaScript, and mcfunction files, the high-level audit-to-report path requires a precise SourceRef range/location. The parsers already emit these ranges.
+
+File-level references remain valid for formats that do not have meaningful line positions.
+
+Every source path is still checked against the audited file inventory before V2 promotion.
+
+## Rejected candidate continuation
+
+Rejected report candidates are not persisted as workflow state.
+
+The collector returns:
+
+```text
+semanticKey
+route
+evidenceIds already available
+nextEvidenceNeed
+reasons
+```
+
+This allows the same semantic candidate to be re-evaluated after collecting only the missing evidence, without creating another report database or rediscovering the defect from scratch.
+
+Examples of targeted next evidence include authored intent, runtime proof, tester reproduction, expected-behavior evidence, repair decision, or candidate correction.
+
+## Authored invariant promotion
+
+An invariant may become `authored` only when its evidence is entirely attributable to the explicit `authoredScripts` input.
+
+Runtime/compiled script evidence does not raise intent authority.
+
+Currently lossless promotion is allowed for:
+
+- typed authored transition-table invariants;
+- complete direct-guard policy coverage from authored source.
+
+Incomplete guard coverage and runtime-only derivations remain inferred or unknown.
