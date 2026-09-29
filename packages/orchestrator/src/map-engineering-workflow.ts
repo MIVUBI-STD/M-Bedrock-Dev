@@ -51,6 +51,8 @@ export interface MapEngineeringWorkflowProjection {
     inventoryCopyMutationRisks: number;
     inventoryDeniedDrops: number;
     inventoryUncoveredDrops: number;
+    inventoryUnresolvedEquipmentSlots: number;
+    inventoryMultipleRestoreOwners: number;
   };
   nextActions: readonly string[];
 }
@@ -346,6 +348,12 @@ export function buildMapEngineeringWorkflow(
     inventoryUncoveredDrops:
       source.gameplayWorld.inventory
         ?.policy.uncoveredDrops ?? 0,
+    inventoryUnresolvedEquipmentSlots:
+      source.gameplayWorld.inventory
+        ?.unresolvedEquipmentSlotEvidence ?? 0,
+    inventoryMultipleRestoreOwners:
+      source.gameplayWorld.inventory
+        ?.restoreOwnership.multipleRestoreOwners ?? 0,
   };
 
   const nextActions = stages
