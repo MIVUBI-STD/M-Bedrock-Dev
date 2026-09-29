@@ -3,10 +3,10 @@ import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 const appRoot = fileURLToPath(
-  new URL("../../apps/review-ui/", import.meta.url),
+  new URL("../../apps/bug-report-ui/", import.meta.url),
 );
 const outDir = fileURLToPath(
-  new URL("../../dist/review-ui/", import.meta.url),
+  new URL("../../dist/bug-report-ui/", import.meta.url),
 );
 
 export default defineConfig({
