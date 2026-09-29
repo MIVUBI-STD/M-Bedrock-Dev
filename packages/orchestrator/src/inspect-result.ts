@@ -161,6 +161,7 @@ export function buildInspectionResult(
     topology,
     scriptSpatial,
     scriptSafeConfig,
+    inventoryLifecycle,
     arenaLifecycle,
     arenaCleanupSurfaces,
     arenaGlobalState,
@@ -328,6 +329,7 @@ export function buildInspectionResult(
     scriptApiUsage,
     scriptSafeConfig,
     scriptSpatial,
+    inventoryLifecycle,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
     structures: nodes.filter(
