@@ -166,20 +166,54 @@ export interface SessionToken {
       .toBe("map-source/domain/session.ts");
   });
 
-  it("does not treat generated or runtime folders as authored even under explicit roots", async () => {
+  it("allows custom authored roots to use a scripts subfolder", async () => {
     const root = await mkdtemp(
-      join(tmpdir(), "m-bedrock-authored-intent-generated-"),
+      join(tmpdir(), "m-bedrock-authored-intent-custom-scripts-"),
     );
     roots.push(root);
 
     await mkdir(join(root, "map-source/scripts"), {
       recursive: true,
     });
+    await writeFile(
+      join(root, "map-source/scripts/domain.ts"),
+      "export const domain = true;",
+      "utf8",
+    );
+
+    const result = await indexAuthoredIntentSources(
+      root,
+      "art_test",
+      [{
+        relativePath: "map-source/scripts/domain.ts",
+        size: 28,
+      }],
+      {
+        authoredSourceRoots: ["map-source"],
+      },
+    );
+
+    expect(result).toHaveLength(1);
+  });
+
+  it("does not treat Bedrock runtime scripts or generated outputs as authored", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-authored-intent-generated-"),
+    );
+    roots.push(root);
+
+    await mkdir(
+      join(root, "behavior_packs/demo/scripts"),
+      { recursive: true },
+    );
     await mkdir(join(root, "map-source/dist"), {
       recursive: true,
     });
     await writeFile(
-      join(root, "map-source/scripts/runtime.ts"),
+      join(
+        root,
+        "behavior_packs/demo/scripts/runtime.ts",
+      ),
       "export {};",
       "utf8",
     );
@@ -194,7 +228,8 @@ export interface SessionToken {
       "art_test",
       [
         {
-          relativePath: "map-source/scripts/runtime.ts",
+          relativePath:
+            "behavior_packs/demo/scripts/runtime.ts",
           size: 10,
         },
         {
@@ -203,7 +238,10 @@ export interface SessionToken {
         },
       ],
       {
-        authoredSourceRoots: ["map-source"],
+        authoredSourceRoots: [
+          "behavior_packs/demo",
+          "map-source",
+        ],
       },
     );
 
