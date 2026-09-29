@@ -1,4 +1,4 @@
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { resolveScriptImports, type ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 import {
   evaluateSafeConfig,
   type SafeConfigExpression,
@@ -46,6 +46,7 @@ export interface ScriptArenaLayout {
 export interface ScriptSafeConfigAnalysis {
   compiledBindings: number;
   rejectedBindings: number;
+  crossFileResolvedBindings: number;
   resolvedBindings: readonly ResolvedScriptSafeConfigBinding[];
   failedBindings: readonly FailedScriptSafeConfigBinding[];
   arenaCountCandidates: readonly ScriptArenaCountCandidate[];
@@ -121,23 +122,192 @@ export function analyzeScriptSafeConfig(
   const failedBindings: FailedScriptSafeConfigBinding[] = [];
   const arenaCountCandidates: ScriptArenaCountCandidate[] = [];
   const arenaLayoutCandidates: ScriptArenaLayoutCandidate[] = [];
+  const scriptsById = new Map(
+    scripts.map((script) => [script.identifier, script]),
+  );
+  const importResolutions = resolveScriptImports(scripts);
+  const importTargetByKey = new Map(
+    importResolutions
+      .filter(
+        (item) =>
+          item.status === "resolved" &&
+          item.targetIdentifier !== undefined,
+      )
+      .map((item) => [
+        item.fromIdentifier + "|" + item.module,
+        item.targetIdentifier!,
+      ]),
+  );
+  const cache = new Map<string, SafeConfigValue>();
+  const resolving = new Set<string>();
+  let crossFileResolvedBindings = 0;
+
+  const exportedLocalName = (
+    script: ParsedScriptFile,
+    exportedName: string,
+  ): string | undefined =>
+    (script.safeConfigExports ?? []).find(
+      (item) => item.exportedName === exportedName,
+    )?.localName;
+
+  const resolveBindingValue = (
+    script: ParsedScriptFile,
+    name: string,
+  ): SafeConfigValue => {
+    const cacheKey = script.identifier + "::" + name;
+    const cached = cache.get(cacheKey);
+    if (cached !== undefined) return cached;
+    if (resolving.has(cacheKey)) {
+      throw new Error(
+        "Cross-file safe config reference cycle includes " +
+          cacheKey,
+      );
+    }
+
+    const binding = (script.safeConfigBindings ?? []).find(
+      (item) => item.name === name,
+    );
+    if (!binding) {
+      throw new Error(
+        "Unknown safe config binding " +
+          name +
+          " in " +
+          script.identifier,
+      );
+    }
+
+    resolving.add(cacheKey);
+    try {
+      const importedNames = new Set(
+        (script.safeConfigImports ?? []).map(
+          (item) => item.localName,
+        ),
+      );
+
+      const resolveExpression = (
+        expression: SafeConfigExpression,
+      ): SafeConfigExpression => {
+        if (expression.kind === "ref") {
+          const local = (script.safeConfigBindings ?? []).find(
+            (item) => item.name === expression.name,
+          );
+          if (local) {
+            return {
+              kind: "literal",
+              value: resolveBindingValue(
+                script,
+                expression.name,
+              ),
+            };
+          }
+
+          const imported = (script.safeConfigImports ?? []).find(
+            (item) => item.localName === expression.name,
+          );
+          if (!imported) {
+            throw new Error(
+              "Unknown safe config reference " +
+                expression.name +
+                " in " +
+                script.identifier,
+            );
+          }
+          const targetId = importTargetByKey.get(
+            script.identifier + "|" + imported.module,
+          );
+          const target = targetId
+            ? scriptsById.get(targetId)
+            : undefined;
+          if (!target) {
+            throw new Error(
+              "Safe config import " +
+                imported.module +
+                " from " +
+                script.identifier +
+                " is unresolved.",
+            );
+          }
+          const targetLocalName = exportedLocalName(
+            target,
+            imported.importedName,
+          );
+          if (!targetLocalName) {
+            throw new Error(
+              "Safe config export " +
+                imported.importedName +
+                " is not declared by " +
+                target.identifier,
+            );
+          }
+
+          crossFileResolvedBindings +=
+            importedNames.has(expression.name) ? 1 : 0;
+          return {
+            kind: "literal",
+            value: resolveBindingValue(
+              target,
+              targetLocalName,
+            ),
+          };
+        }
+
+        if (expression.kind === "array") {
+          return {
+            kind: "array",
+            items: expression.items.map(resolveExpression),
+          };
+        }
+        if (expression.kind === "object") {
+          return {
+            kind: "object",
+            entries: Object.fromEntries(
+              Object.entries(expression.entries).map(
+                ([key, value]) => [
+                  key,
+                  resolveExpression(value),
+                ],
+              ),
+            ),
+          };
+        }
+        if (expression.kind === "binary") {
+          return {
+            ...expression,
+            left: resolveExpression(expression.left),
+            right: resolveExpression(expression.right),
+          };
+        }
+        if (expression.kind === "get") {
+          return {
+            ...expression,
+            object: resolveExpression(expression.object),
+          };
+        }
+        if (expression.kind === "intrinsic") {
+          return {
+            ...expression,
+            args: expression.args.map(resolveExpression),
+          };
+        }
+        return expression;
+      };
+
+      const value = evaluateSafeConfig(
+        resolveExpression(binding.expression),
+      );
+      cache.set(cacheKey, value);
+      return value;
+    } finally {
+      resolving.delete(cacheKey);
+    }
+  };
 
   for (const script of scripts) {
-    const compiled = script.safeConfigBindings ?? [];
-    const environment = {
-      bindings: Object.fromEntries(
-        compiled.map((item) => [
-          item.name,
-          item.expression,
-        ]),
-      ) as Readonly<Record<string, SafeConfigExpression>>,
-    };
-
-    for (const binding of compiled) {
+    for (const binding of script.safeConfigBindings ?? []) {
       try {
-        const value = evaluateSafeConfig(
-          { kind: "ref", name: binding.name },
-          environment,
+        const value = resolveBindingValue(
+          script,
+          binding.name,
         );
         resolvedBindings.push({
           scriptId: script.identifier,
@@ -265,6 +435,7 @@ export function analyzeScriptSafeConfig(
         sum + (script.safeConfigRejected?.length ?? 0),
       0,
     ),
+    crossFileResolvedBindings,
     resolvedBindings: resolvedBindings.sort((a, b) =>
       a.scriptId.localeCompare(b.scriptId) ||
       a.name.localeCompare(b.name)
