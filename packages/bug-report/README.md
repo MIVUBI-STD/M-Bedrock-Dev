@@ -340,3 +340,18 @@ Tester routes provide explicit gameplay subject IDs because tester evidence is e
 `validateConfirmedDefect()` rejects any ConfirmedDefect whose semanticKey does not match the deterministic identity.
 
 Stable Bug IDs are then derived from this semanticKey, so wording changes to Title, Problem, AI Analysis, or Suggested Fix do not change bug identity.
+
+
+## Rejected candidate reuse planner
+
+Rejected candidates remain internal and derived. They are not persisted as Bug Report V2 workflow state.
+
+`planReportCandidateReuse()` may reuse a prior rejection only when:
+
+- route and deterministic semantic identity are unchanged;
+- the prior next-evidence need is evidence-bound; and
+- the current evidence ID set is unchanged.
+
+Candidate correction, repair-decision changes, tester reproduction, and intent clarification are always re-evaluated because those inputs can change without producing a new evidence ID.
+
+This avoids repeating unchanged analysis while remaining conservative when user/tester/repair context changes.
