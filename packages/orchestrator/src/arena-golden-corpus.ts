@@ -26,6 +26,17 @@ export interface ArenaGoldenAssertions {
   requirePackIdentityDrift?: boolean;
   releaseStatus?: "unavailable" | "consistent" | "conflict";
   replicaStatuses?: Readonly<Record<string, ArenaReplicaProofQualityStatus>>;
+  maxLifecycleUnresolved?: number;
+  maxCleanupUnresolved?: number;
+  maxSharedGlobalState?: number;
+  maxPartitionProofRequired?: number;
+  stressStatus?: "planned" | "unavailable";
+  nominalStressPlayers?: number;
+  voxelStatus?: string;
+  blockEntityStatus?: string;
+  entityPopulationStatus?: string;
+  tickStateStatus?: string;
+  structureInstanceStatus?: string;
 }
 
 export interface ArenaGoldenCase {
@@ -53,6 +64,17 @@ export interface ArenaGoldenObservation {
   packIdentityDrift: boolean;
   releaseStatus: "unavailable" | "consistent" | "conflict";
   replicaStatuses: Readonly<Record<string, ArenaReplicaProofQualityStatus>>;
+  lifecycleUnresolved: number;
+  cleanupUnresolved: number;
+  sharedGlobalState: number;
+  partitionProofRequired: number;
+  stressStatus: "planned" | "unavailable";
+  nominalStressPlayers?: number;
+  voxelStatus?: string;
+  blockEntityStatus?: string;
+  entityPopulationStatus?: string;
+  tickStateStatus?: string;
+  structureInstanceStatus?: string;
 }
 
 export interface ArenaGoldenCaseReport {
@@ -210,6 +232,56 @@ function parseAssertions(
     output.replicaStatuses = statuses;
   }
 
+  for (const key of [
+    "maxLifecycleUnresolved",
+    "maxCleanupUnresolved",
+    "maxSharedGlobalState",
+    "maxPartitionProofRequired",
+    "nominalStressPlayers",
+  ] as const) {
+    const value = raw[key];
+    if (value === undefined) continue;
+    if (
+      typeof value !== "number" ||
+      !Number.isInteger(value) ||
+      value < 0
+    ) {
+      throw new Error(
+        "Arena golden case " + caseId + " " + key + " must be a non-negative integer.",
+      );
+    }
+    output[key] = value;
+  }
+
+  if (raw.stressStatus !== undefined) {
+    if (
+      raw.stressStatus !== "planned" &&
+      raw.stressStatus !== "unavailable"
+    ) {
+      throw new Error(
+        "Arena golden case " + caseId + " has invalid stressStatus.",
+      );
+    }
+    output.stressStatus = raw.stressStatus;
+  }
+
+  for (const key of [
+    "voxelStatus",
+    "blockEntityStatus",
+    "entityPopulationStatus",
+    "tickStateStatus",
+    "structureInstanceStatus",
+  ] as const) {
+    const value = raw[key];
+    if (value === undefined) continue;
+    if (!nonEmptyString(value)) {
+      throw new Error(
+        "Arena golden case " + caseId + " " + key + " must be non-empty.",
+      );
+    }
+    output[key] = value;
+  }
+
   const allowed = new Set([
     "arenaCount",
     "layoutStatus",
@@ -219,6 +291,17 @@ function parseAssertions(
     "requirePackIdentityDrift",
     "releaseStatus",
     "replicaStatuses",
+    "maxLifecycleUnresolved",
+    "maxCleanupUnresolved",
+    "maxSharedGlobalState",
+    "maxPartitionProofRequired",
+    "stressStatus",
+    "nominalStressPlayers",
+    "voxelStatus",
+    "blockEntityStatus",
+    "entityPopulationStatus",
+    "tickStateStatus",
+    "structureInstanceStatus",
   ]);
   for (const key of Object.keys(raw)) {
     if (!allowed.has(key)) {
@@ -335,6 +418,55 @@ export function observeArenaGolden(
         item.status,
       ]),
     ),
+    lifecycleUnresolved:
+      result.arenaAnalysis.lifecycle?.unresolved ?? 0,
+    cleanupUnresolved:
+      result.arenaAnalysis.cleanupSurfaces?.unresolved ?? 0,
+    sharedGlobalState:
+      result.arenaAnalysis.stateIsolation?.sharedGlobal ?? 0,
+    partitionProofRequired:
+      result.arenaAnalysis.stateIsolation
+        ?.partitionProofRequired ?? 0,
+    stressStatus:
+      result.arenaAnalysis.stressPlan?.status ??
+      "unavailable",
+    ...(result.arenaAnalysis.stressPlan?.matrix === undefined
+      ? {}
+      : {
+          nominalStressPlayers:
+            result.arenaAnalysis.stressPlan.matrix
+              .totalNominalPlayers,
+        }),
+    ...(result.arenaAnalysis.voxelProof === undefined
+      ? {}
+      : {
+          voxelStatus:
+            result.arenaAnalysis.voxelProof.status,
+        }),
+    ...(result.arenaAnalysis.blockEntityProof === undefined
+      ? {}
+      : {
+          blockEntityStatus:
+            result.arenaAnalysis.blockEntityProof.status,
+        }),
+    ...(result.arenaAnalysis.entityPopulationProof === undefined
+      ? {}
+      : {
+          entityPopulationStatus:
+            result.arenaAnalysis.entityPopulationProof.status,
+        }),
+    ...(result.arenaAnalysis.tickStateProof === undefined
+      ? {}
+      : {
+          tickStateStatus:
+            result.arenaAnalysis.tickStateProof.status,
+        }),
+    ...(result.arenaAnalysis.structureInstanceProof === undefined
+      ? {}
+      : {
+          structureInstanceStatus:
+            result.arenaAnalysis.structureInstanceProof.status,
+        }),
   };
 }
 
@@ -439,6 +571,97 @@ export function evaluateArenaGoldenAssertions(
       failures.push(
         "replicaStatuses." +
           arenaId +
+          ": expected " +
+          expected +
+          ", observed " +
+          String(actual),
+      );
+    }
+  }
+
+  const maximums: Array<[
+    keyof Pick<
+      ArenaGoldenAssertions,
+      | "maxLifecycleUnresolved"
+      | "maxCleanupUnresolved"
+      | "maxSharedGlobalState"
+      | "maxPartitionProofRequired"
+    >,
+    number,
+  ]> = [
+    ["maxLifecycleUnresolved", observation.lifecycleUnresolved],
+    ["maxCleanupUnresolved", observation.cleanupUnresolved],
+    ["maxSharedGlobalState", observation.sharedGlobalState],
+    ["maxPartitionProofRequired", observation.partitionProofRequired],
+  ];
+
+  for (const [key, actual] of maximums) {
+    const expected = assertions[key];
+    if (
+      expected !== undefined &&
+      actual > expected
+    ) {
+      failures.push(
+        key +
+          ": expected at most " +
+          expected +
+          ", observed " +
+          actual,
+      );
+    }
+  }
+
+  if (
+    assertions.stressStatus !== undefined &&
+    observation.stressStatus !== assertions.stressStatus
+  ) {
+    failures.push(
+      "stressStatus: expected " +
+        assertions.stressStatus +
+        ", observed " +
+        observation.stressStatus,
+    );
+  }
+
+  if (
+    assertions.nominalStressPlayers !== undefined &&
+    observation.nominalStressPlayers !==
+      assertions.nominalStressPlayers
+  ) {
+    failures.push(
+      "nominalStressPlayers: expected " +
+        assertions.nominalStressPlayers +
+        ", observed " +
+        String(observation.nominalStressPlayers),
+    );
+  }
+
+  const statusAssertions: Array<[
+    keyof Pick<
+      ArenaGoldenAssertions,
+      | "voxelStatus"
+      | "blockEntityStatus"
+      | "entityPopulationStatus"
+      | "tickStateStatus"
+      | "structureInstanceStatus"
+    >,
+    string | undefined,
+  ]> = [
+    ["voxelStatus", observation.voxelStatus],
+    ["blockEntityStatus", observation.blockEntityStatus],
+    ["entityPopulationStatus", observation.entityPopulationStatus],
+    ["tickStateStatus", observation.tickStateStatus],
+    ["structureInstanceStatus", observation.structureInstanceStatus],
+  ];
+
+  for (const [key, actual] of statusAssertions) {
+    const expected = assertions[key];
+    if (
+      expected !== undefined &&
+      actual !== expected
+    ) {
+      failures.push(
+        key +
           ": expected " +
           expected +
           ", observed " +
