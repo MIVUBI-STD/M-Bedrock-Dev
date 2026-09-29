@@ -173,7 +173,6 @@ describe("canonical defect group resolution", () => {
     const resolved = resolveConfirmedDefectGroup(
       group,
       {
-        semanticKey: "merged",
         title: "Merged defect",
         problem: "Merged problem",
         expected: { statement: "Expected" },
