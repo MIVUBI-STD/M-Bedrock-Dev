@@ -31,7 +31,9 @@ export interface GoldenDiagnosisCaseResult {
 }
 
 export interface GoldenDiagnosisMetrics {
+  corpusCases: number;
   cases: number;
+  predictionCoverage: number;
   truePositive: number;
   trueNegative: number;
   falsePositive: number;
@@ -294,7 +296,14 @@ export function evaluateGoldenDiagnosisBenchmark(
         ),
     ),
     metrics: {
+      corpusCases:
+        cases.length,
       cases: scoredCases,
+      predictionCoverage:
+        ratio(
+          scoredCases,
+          cases.length,
+        ),
       truePositive,
       trueNegative,
       falsePositive,
@@ -343,7 +352,7 @@ export function evaluateGoldenDiagnosisBenchmark(
       missing.length === 0
         ? "Every golden case has a prediction."
         : String(missing.length) +
-          " golden case(s) have no prediction and are excluded from scored metrics.",
+          " golden case(s) have no prediction; accuracy metrics apply only to predicted cases and prediction coverage must be read alongside them.",
       falsePositive === 0
         ? "No false-positive defect classification was observed."
         : String(falsePositive) +
@@ -376,8 +385,12 @@ export function goldenDiagnosisBenchmarkText(
   return [
     "Golden Diagnosis Benchmark",
     "Corpus: " + report.corpusId,
+    "Cases: " +
+      String(m.corpusCases),
     "Cases scored: " +
       String(m.cases),
+    "Prediction coverage: " +
+      pct(m.predictionCoverage),
     "",
     "Defect detection",
     "- precision: " +

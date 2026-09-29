@@ -44,6 +44,10 @@ describe("golden diagnosis benchmark", () => {
       );
 
     expect(
+      report.metrics
+        .predictionCoverage,
+    ).toBe(1);
+    expect(
       report.metrics.precision,
     ).toBe(1);
     expect(
@@ -128,5 +132,21 @@ describe("golden diagnosis benchmark", () => {
     ).toEqual(["case:a"]);
     expect(report.metrics.cases)
       .toBe(0);
+    expect(
+      report.metrics.corpusCases,
+    ).toBe(1);
+    expect(
+      report.metrics
+        .predictionCoverage,
+    ).toBe(0);
+
+    const text =
+      goldenDiagnosisBenchmarkText(
+        report,
+      );
+    expect(text)
+      .toContain(
+        "Prediction coverage: 0.0%",
+      );
   });
 });
