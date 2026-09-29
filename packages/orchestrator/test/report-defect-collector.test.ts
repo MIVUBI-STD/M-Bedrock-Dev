@@ -149,13 +149,15 @@ describe("report defect collector", () => {
         subjectIds: ["outcome:cleanup"],
         confirmation: {
           expectedBehaviorAuthority: "explicit-requirement",
+          expectedStatement: "Match-owned state is reset.",
           expectedEvidenceIds: ["requirement:cleanup"],
+          observationEvidenceIds: ["tester:observation"],
           reproduced: true,
           evidence: "State persists after two repeated match completions.",
         },
         defect: defect("tester-cleanup", {
-          expectedAuthority: "explicit-requirement",
-          expectedEvidenceIds: ["requirement:cleanup"],
+          impactEvidenceIds: ["tester:observation"],
+          primaryEvidenceIds: ["requirement:cleanup"],
           reproduction: [
             "Complete a match.",
             "Return to lobby.",
@@ -212,13 +214,15 @@ describe("report defect collector", () => {
         subjectIds: ["outcome:cleanup"],
         confirmation: {
           expectedBehaviorAuthority: "explicit-requirement",
+          expectedStatement: "Match-owned state is reset.",
           expectedEvidenceIds: ["requirement:cleanup"],
+          observationEvidenceIds: ["tester:observation"],
           reproduced: true,
           evidence: "State persists after repeated completion.",
         },
         defect: defect("cleanup", {
-          expectedAuthority: "explicit-requirement",
-          expectedEvidenceIds: ["requirement:cleanup"],
+          impactEvidenceIds: ["tester:observation"],
+          primaryEvidenceIds: ["requirement:cleanup"],
           reproduction: [
             "Complete a match.",
             "Observe retained state.",
@@ -280,8 +284,8 @@ describe("report defect collector", () => {
             evidence: "The state persists after repeated completion.",
           },
           defect: defect("accepted", {
-            expectedAuthority: "explicit-requirement",
-            expectedEvidenceIds: ["requirement:cleanup"],
+            impactEvidenceIds: ["tester:observation"],
+            primaryEvidenceIds: ["requirement:cleanup"],
             reproduction: [
               "Complete a match.",
               "Observe retained state.",
@@ -329,13 +333,15 @@ describe("report defect collector", () => {
         subjectIds: ["outcome:cleanup"],
         confirmation: {
           expectedBehaviorAuthority: "explicit-requirement",
+          expectedStatement: "Match-owned state is reset.",
           expectedEvidenceIds: ["requirement:cleanup"],
+          observationEvidenceIds: ["tester:observation"],
           reproduced: false,
           evidence: "Observed once.",
         },
         defect: defect("needs-reproduction", {
-          expectedAuthority: "explicit-requirement",
-          expectedEvidenceIds: ["requirement:cleanup"],
+          impactEvidenceIds: ["tester:observation"],
+          primaryEvidenceIds: ["requirement:cleanup"],
           reproduction: ["Attempt reproduction."],
         }),
       },
@@ -570,56 +576,51 @@ describe("report defect collector", () => {
       .toMatch(/Classification evidence/);
   });
 
-  it("rejects report facts that are not grounded in confirmation evidence", () => {
+  it("derives AI Expected and Observed provenance from the confirmation route", () => {
     const result = collectConfirmedDefects([{
       route: "static",
       intent,
       result: staticResult,
-      defect: {
-        ...defect("bad-provenance", { ai: true }),
-        expected: {
-          authority: "authored-intent",
-          statement: "Match-owned state is reset.",
-          evidenceIds: ["unrelated:intent"],
-        },
-        classificationSignals: {
-          impact: [{
-            kind: "important-state-wrong",
-            evidenceIds: ["static:cleanup"],
-          }],
-          primaryFailure: [{
-            failure: "player-owned-state",
-            evidenceIds: ["unrelated:intent"],
-          }],
-        },
-      },
+      defect: defect("route-provenance", { ai: true }),
     }]);
 
-    expect(result.confirmed).toHaveLength(0);
-    expect(result.rejected[0]?.reasons.join(" "))
-      .toMatch(/Expected evidence/);
+    expect(result.confirmed).toHaveLength(1);
+    expect(result.confirmed[0]?.expected).toEqual({
+      authority: "authored-intent",
+      statement: "Match-owned state is reset.",
+      evidenceIds: ["intent:evidence"],
+    });
+    expect(result.confirmed[0]?.observed.evidenceIds)
+      .toEqual(["static:cleanup"]);
   });
 
-  it("rejects tester Expected facts not grounded in requirement evidence", () => {
+  it("derives tester Expected and Observed provenance from confirmation input", () => {
     const result = collectConfirmedDefects([{
       route: "tester",
       subjectIds: ["outcome:cleanup"],
       confirmation: {
         expectedBehaviorAuthority: "explicit-requirement",
+        expectedStatement: "Match-owned state is reset.",
         expectedEvidenceIds: ["requirement:cleanup"],
+        observationEvidenceIds: ["tester:cleanup"],
         reproduced: true,
         evidence: "The state persists after repeated completion.",
       },
-      defect: defect("tester-bad-expected", {
-        expectedAuthority: "explicit-requirement",
-        expectedEvidenceIds: ["requirement:other"],
+      defect: defect("tester-route-provenance", {
+        impactEvidenceIds: ["tester:cleanup"],
+        primaryEvidenceIds: ["requirement:cleanup"],
         reproduction: ["Reproduce the mismatch."],
       }),
     }]);
 
-    expect(result.confirmed).toHaveLength(0);
-    expect(result.rejected[0]?.reasons.join(" "))
-      .toMatch(/tester requirement evidence/);
+    expect(result.confirmed).toHaveLength(1);
+    expect(result.confirmed[0]?.expected).toEqual({
+      authority: "explicit-requirement",
+      statement: "Match-owned state is reset.",
+      evidenceIds: ["requirement:cleanup"],
+    });
+    expect(result.confirmed[0]?.observed.evidenceIds)
+      .toEqual(["tester:cleanup"]);
   });
 
   it("blocks promotion when AI source evidence is not in the audited inventory", () => {
@@ -824,15 +825,17 @@ describe("report defect collector", () => {
       subjectIds: ["subject:a"],
       confirmation: {
         expectedBehaviorAuthority: "explicit-requirement" as const,
+        expectedStatement: "Match-owned state is reset.",
         expectedEvidenceIds: ["requirement:cleanup"],
+        observationEvidenceIds: ["tester:observation"],
         reproduced: true,
         evidence: "Symptom A is reproducible.",
       },
       defect: {
         ...defect("a", {
           ai: true,
-          expectedAuthority: "explicit-requirement",
-          expectedEvidenceIds: ["requirement:cleanup"],
+          impactEvidenceIds: ["tester:observation"],
+          primaryEvidenceIds: ["requirement:cleanup"],
           reproduction: ["Reproduce A."],
         }),
         causalIncidentId: "incident:cleanup",
@@ -843,15 +846,17 @@ describe("report defect collector", () => {
       subjectIds: ["subject:b"],
       confirmation: {
         expectedBehaviorAuthority: "explicit-requirement" as const,
+        expectedStatement: "Match-owned state is reset.",
         expectedEvidenceIds: ["requirement:cleanup"],
+        observationEvidenceIds: ["tester:observation"],
         reproduced: true,
         evidence: "Symptom B is reproducible.",
       },
       defect: {
         ...defect("b", {
           ai: true,
-          expectedAuthority: "explicit-requirement",
-          expectedEvidenceIds: ["requirement:cleanup"],
+          impactEvidenceIds: ["tester:observation"],
+          primaryEvidenceIds: ["requirement:cleanup"],
           reproduction: ["Reproduce B."],
         }),
         causalIncidentId: "incident:cleanup",
@@ -915,13 +920,15 @@ describe("report defect collector", () => {
           subjectIds: ["outcome:a"],
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement" as const,
+            expectedStatement: "Match-owned state is reset.",
             expectedEvidenceIds: ["requirement:cleanup"],
+            observationEvidenceIds: ["tester:observation"],
             reproduced: true,
             evidence: "A",
           },
           defect: defect("a", {
-            expectedAuthority: "explicit-requirement",
-            expectedEvidenceIds: ["requirement:cleanup"],
+            impactEvidenceIds: ["tester:observation"],
+            primaryEvidenceIds: ["requirement:cleanup"],
             reproduction: ["A"],
           }),
         },
@@ -930,13 +937,15 @@ describe("report defect collector", () => {
           subjectIds: ["outcome:b"],
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement" as const,
+            expectedStatement: "Match-owned state is reset.",
             expectedEvidenceIds: ["requirement:cleanup"],
+            observationEvidenceIds: ["tester:observation"],
             reproduced: true,
             evidence: "B",
           },
           defect: defect("b", {
-            expectedAuthority: "explicit-requirement",
-            expectedEvidenceIds: ["requirement:cleanup"],
+            impactEvidenceIds: ["tester:observation"],
+            primaryEvidenceIds: ["requirement:cleanup"],
             reproduction: ["B"],
           }),
         },
