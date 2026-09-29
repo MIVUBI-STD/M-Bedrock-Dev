@@ -69,6 +69,10 @@ export interface ArenaEngineeringProjection {
     structureInstances?: string;
   };
   replicas: readonly ArenaEngineeringReplicaProjection[];
+  repeatedRunValidation: {
+    runCounts: readonly number[];
+    stages: number;
+  };
   stress: {
     status: "planned" | "unavailable";
     totalNominalPlayers?: number;
@@ -424,6 +428,12 @@ export function buildArenaEngineeringProjection(
           }),
     },
     replicas,
+    repeatedRunValidation: {
+      runCounts:
+        arena.repeatedRunPlan?.runCounts ?? [],
+      stages:
+        arena.repeatedRunPlan?.stages.length ?? 0,
+    },
     stress:
       stress?.status === "planned" &&
       stress.matrix !== undefined

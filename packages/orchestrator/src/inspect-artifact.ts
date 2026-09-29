@@ -31,6 +31,7 @@ import { concludeArenaProof } from "./arena-proof-conclusion.js";
 import { deriveArenaReplicaProofQuality } from "./arena-replica-proof-quality.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 import { deriveArenaStressPlan } from "./arena-stress-plan.js";
+import { deriveArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
 import { localizeArenaRepairSources } from "./arena-repair-localization.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
@@ -113,6 +114,8 @@ export async function inspectArtifact(
         spatialLayout,
         result.arenaAnalysis.capacity,
       );
+    const repeatedRunPlan =
+      deriveArenaRepeatedRunValidationPlan();
 
     const effectiveRegionPlan =
       result.arenaAnalysis.regionPlan ??
@@ -520,6 +523,7 @@ export async function inspectArtifact(
           ? {}
           : { spatialLayout }),
         stressPlan,
+        repeatedRunPlan,
         ...(repairLocalization === undefined
           ? {}
           : { repairLocalization }),
