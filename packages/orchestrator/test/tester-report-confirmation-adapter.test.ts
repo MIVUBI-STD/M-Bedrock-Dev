@@ -12,7 +12,10 @@ describe("tester report confirmation adapter", () => {
     const result = confirmTesterDefectForReport({
       expectedBehaviorAuthority:
         "explicit-requirement",
+      expectedStatement:
+        "A second match can start after the first completes.",
       expectedEvidenceIds: ["requirement:match-restart"],
+      observationEvidenceIds: ["tester:match-restart"],
       reproduced: true,
       evidence:
         "The second match cannot start after completing the first match.",
@@ -29,7 +32,26 @@ describe("tester report confirmation adapter", () => {
     const result = confirmTesterDefectForReport({
       expectedBehaviorAuthority:
         "explicit-requirement",
+      expectedStatement:
+        "A second match can start after the first completes.",
       expectedEvidenceIds: [],
+      observationEvidenceIds: ["tester:match-restart"],
+      reproduced: true,
+      evidence:
+        "The behavior is repeatable.",
+    });
+
+    expect(result.confirmed).toBe(false);
+  });
+
+  it("does not confirm without gameplay observation evidence identity", () => {
+    const result = confirmTesterDefectForReport({
+      expectedBehaviorAuthority:
+        "explicit-requirement",
+      expectedStatement:
+        "A second match can start after the first completes.",
+      expectedEvidenceIds: ["requirement:match-restart"],
+      observationEvidenceIds: [],
       reproduced: true,
       evidence:
         "The behavior is repeatable.",
@@ -42,7 +64,10 @@ describe("tester report confirmation adapter", () => {
     const result = confirmTesterDefectForReport({
       expectedBehaviorAuthority:
         "explicit-requirement",
+      expectedStatement:
+        "A second match can start after the first completes.",
       expectedEvidenceIds: ["requirement:match-restart"],
+      observationEvidenceIds: ["tester:match-restart"],
       reproduced: false,
       evidence:
         "The behavior was observed once but could not be reproduced.",
