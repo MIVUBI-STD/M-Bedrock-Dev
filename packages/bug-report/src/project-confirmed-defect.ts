@@ -37,23 +37,42 @@ function mapPrefix(mapName: string): string {
     .join("");
 }
 
+function stableSemanticHash(value: string): string {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0)
+    .toString(36)
+    .toUpperCase()
+    .padStart(7, "0");
+}
+
 export function allocateBugIds(
   mapName: string,
   defects: readonly ConfirmedDefect[],
 ): ReadonlyMap<string, string> {
-  const ordered = [...defects].sort((left, right) =>
-    left.semanticKey.localeCompare(right.semanticKey)
-  );
   const prefix = mapPrefix(mapName);
-  return new Map(
-    ordered.map((defect, index) => [
-      defect.semanticKey,
-      "BUG-" +
-        prefix +
-        "-" +
-        String(index + 1).padStart(3, "0"),
-    ]),
-  );
+  const entries = defects.map((defect) => [
+    defect.semanticKey,
+    "BUG-" +
+      prefix +
+      "-" +
+      stableSemanticHash(defect.semanticKey),
+  ] as const);
+
+  const ids = new Set<string>();
+  for (const [, id] of entries) {
+    if (ids.has(id)) {
+      throw new Error(
+        "Deterministic bug id collision detected: " + id + ".",
+      );
+    }
+    ids.add(id);
+  }
+
+  return new Map(entries);
 }
 
 export function projectConfirmedDefects(
