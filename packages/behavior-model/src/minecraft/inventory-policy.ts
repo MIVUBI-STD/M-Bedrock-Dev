@@ -191,11 +191,13 @@ export function resolveInventoryItemPolicy(
     };
   }
 
+  const resolvedRule = selected[0]!;
+
   return {
     query,
     status: "resolved",
-    rule: selected[0],
-    matchedRuleIds: [selected[0]!.id],
+    rule: resolvedRule,
+    matchedRuleIds: [resolvedRule.id],
     reason:
       exact.length > 0
         ? "Resolved from exact item-class policy."
