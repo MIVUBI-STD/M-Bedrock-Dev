@@ -87,6 +87,26 @@ function defect(
 }
 
 describe("confirmed defect projection", () => {
+  it("prefers semantic execution owner over source range for repair-unit identity", () => {
+    const units = deriveRepairUnitIdsFromSourceEvidence([{
+      source: {
+        artifactId: "map",
+        relativePath: "scripts/session.ts",
+        range: {
+          lineStart: 10,
+          lineEnd: 12,
+        },
+      },
+      semanticOwnerId:
+        "exec:script:session:function%3Acleanup",
+      reason: "Cleanup execution region.",
+    }]);
+
+    expect(units).toEqual([
+      "execution-region:exec:script:session:function%3Acleanup",
+    ]);
+  });
+
   it("derives different repair units for different precise source ranges", () => {
     const first = deriveRepairUnitIdsFromSourceEvidence([{
       source: {
