@@ -167,6 +167,10 @@ describe("report defect collector", () => {
         testedVersion: "1.26.32",
       },
       repairBy: "developer",
+      files: [{
+        relativePath: "scripts/session.ts",
+        size: 1,
+      }],
       candidates: [{
         route: "tester",
         confirmation: {
@@ -204,6 +208,10 @@ describe("report defect collector", () => {
         testedVersion: "1.26.32",
       },
       repairBy: "developer",
+      files: [{
+        relativePath: "scripts/session.ts",
+        size: 1,
+      }],
       candidates: [
         {
           route: "runtime",
@@ -246,6 +254,31 @@ describe("report defect collector", () => {
     expect(result.promotion.ok).toBe(true);
     if (!result.promotion.ok) return;
     expect(result.promotion.report.bugs).toHaveLength(1);
+  });
+
+  it("blocks promotion when AI source evidence is not in the audited inventory", () => {
+    const result = buildBugReportFromAuditCandidates({
+      map: {
+        name: "Map",
+        mapVersion: "1.0.0",
+        baseVersion: "1.26.20",
+        testedVersion: "1.26.20",
+      },
+      repairBy: "developer",
+      files: [],
+      candidates: [{
+        route: "static",
+        intent,
+        result: staticResult,
+        defect: defect("missing-source", { ai: true }),
+      }],
+    });
+
+    expect(result.promotion.ok).toBe(false);
+    if (result.promotion.ok) return;
+    expect(
+      result.promotion.issues.map((issue) => issue.code),
+    ).toContain("invalid-confirmed-defect");
   });
 
   it("rejects Suggested Fix without a repair decision", () => {
@@ -307,6 +340,10 @@ describe("report defect collector", () => {
         testedVersion: "1.26.20",
       },
       repairBy: "developer" as const,
+      files: [{
+        relativePath: "scripts/session.ts",
+        size: 1,
+      }],
     };
 
     const first = buildBugReportFromAuditCandidates({
