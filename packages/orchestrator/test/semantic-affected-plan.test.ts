@@ -43,6 +43,22 @@ function graphFixture(): SemanticGraph {
   }
 
   graph.addNode({
+    id: "structure:pack:arena-structure",
+    identity: {
+      kind: "structure",
+      scope: "pack",
+      identifier: "arena-structure",
+    },
+    kind: "structure",
+    identifier: "arena-structure",
+    source: {
+      artifactId: "map",
+      relativePath:
+        "structures/arena.mcstructure",
+    },
+  });
+
+  graph.addNode({
     id: "scoreboard:pack:round",
     identity: {
       kind: "scoreboard_objective",
@@ -89,6 +105,23 @@ function graphFixture(): SemanticGraph {
 
   graph.addEdge({
     from: "function:pack:changed",
+    type: "LOADS_STRUCTURE",
+    targetIdentifier:
+      "arena-structure",
+    status: "resolved",
+    to:
+      "structure:pack:arena-structure",
+    evidence: {
+      source: {
+        artifactId: "map",
+        relativePath:
+          "functions/changed.mcfunction",
+      },
+    },
+  });
+
+  graph.addEdge({
+    from: "function:pack:changed",
     type: "WRITES_SCOREBOARD",
     targetIdentifier: "round",
     status: "resolved",
@@ -121,6 +154,7 @@ describe("semantic affected planning", () => {
         "function:pack:caller",
         "function:pack:changed",
         "scoreboard:pack:round",
+        "structure:pack:arena-structure",
       ]);
     expect(result.skippedNodeIds)
       .toEqual([
@@ -130,7 +164,7 @@ describe("semantic affected planning", () => {
     expect(result.skippedNodeCount)
       .toBe(2);
     expect(result.skipRatio)
-      .toBeCloseTo(2 / 5);
+      .toBeCloseTo(2 / 6);
   });
 
   it("derives the affected closure directly from patch source references", () => {
@@ -176,6 +210,10 @@ describe("semantic affected planning", () => {
     expect(result.affectedNodeIds)
       .toContain(
         "scoreboard:pack:round",
+      );
+    expect(result.affectedNodeIds)
+      .toContain(
+        "structure:pack:arena-structure",
       );
     expect(result.skippedNodeIds)
       .toEqual([

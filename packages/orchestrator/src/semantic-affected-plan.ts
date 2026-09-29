@@ -10,12 +10,18 @@ import {
   deriveChangedSemanticNodeIds,
 } from "./repair-changed-node-derivation.js";
 
-const PROPAGATED_SIDE_EFFECT_EDGE_TYPES =
+const PROPAGATED_RUNTIME_TARGET_EDGE_TYPES =
   new Set<EdgeType>([
     "WRITES_SCOREBOARD",
     "WRITES_TAG",
     "MODIFIES_REGION",
     "TELEPORTS_TO",
+    "LOADS_STRUCTURE",
+    "REFERENCES_ENTITY",
+    "USES_ANIMATION",
+    "USES_CONTROLLER",
+    "EXECUTES_EVENT",
+    "REFERENCES_DIALOGUE_SCENE",
   ]);
 
 function sideEffectTargetNodeIds(
@@ -32,7 +38,7 @@ function sideEffectTargetNodeIds(
     ) {
       if (
         edge.to !== undefined &&
-        PROPAGATED_SIDE_EFFECT_EDGE_TYPES
+        PROPAGATED_RUNTIME_TARGET_EDGE_TYPES
           .has(edge.type)
       ) {
         targets.add(edge.to);
@@ -168,7 +174,7 @@ export function planSemanticAffectedSet(
       skippedNodeIds.length,
     skipRatio,
     reasons: [
-      "Affected nodes include changed semantic nodes, resolved mutation/state side-effect targets, and their reverse dependents.",
+      "Affected nodes include changed semantic nodes, resolved runtime mutation/invocation targets, and their reverse dependents.",
       skippedNodeIds.length === 0
         ? "No semantic nodes can be safely skipped for this change."
         : String(
