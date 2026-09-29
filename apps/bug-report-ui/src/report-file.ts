@@ -28,7 +28,7 @@ function legacyToV2(
   report: BugReportV1,
 ): BugReportV2 {
   let sequence = 1;
-  const issues = report.bugFinders.flatMap((finder) =>
+  const bugs = report.bugFinders.flatMap((finder) =>
     finder.bugs.map((bug) => {
       const id =
         "BUG-" +
@@ -107,7 +107,7 @@ function legacyToV2(
         report.map.minecraftVersion,
     },
     repairBy: "developer",
-    issues,
+    bugs,
   };
 }
 

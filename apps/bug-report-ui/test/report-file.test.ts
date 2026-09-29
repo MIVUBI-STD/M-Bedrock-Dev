@@ -17,7 +17,7 @@ const validV2 = JSON.stringify({
     testedVersion: "1.26.32",
   },
   repairBy: "developer",
-  issues: [{
+  bugs: [{
     id: "BUG-BBW-001",
     fixed: false,
     severity: "major",

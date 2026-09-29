@@ -3,8 +3,8 @@ import type { BugReportParseIssue } from "./parse.js";
 
 export const BUG_REPORT_V2_SCHEMA = "m-bedrock-bug-report/v2" as const;
 
-export type BugRepairOwner = "chatgpt" | "developer";
-export type BugOrigin = "ai" | "tester";
+export type BugReportV2RepairBy = "chatgpt" | "developer";
+export type BugReportV2FoundBy = "ai" | "tester";
 
 export interface BugReportV2Map {
   readonly name: string;
@@ -18,12 +18,12 @@ export interface BugReportV2RelevantCode {
   readonly reason: string;
 }
 
-export interface BugReportV2Issue {
+export interface BugReportV2Bug {
   readonly id: string;
   readonly fixed: boolean;
   readonly severity: BugSeverity;
   readonly category: BugFinderCategory;
-  readonly foundBy: BugOrigin;
+  readonly foundBy: BugReportV2FoundBy;
   readonly title: string;
   readonly problem: string;
   readonly expected: string;
@@ -38,8 +38,8 @@ export interface BugReportV2Issue {
 export interface BugReportV2 {
   readonly schema: typeof BUG_REPORT_V2_SCHEMA;
   readonly map: BugReportV2Map;
-  readonly repairBy: BugRepairOwner;
-  readonly issues: readonly BugReportV2Issue[];
+  readonly repairBy: BugReportV2RepairBy;
+  readonly bugs: readonly BugReportV2Bug[];
 }
 
 export type BugReportV2ParseResult =
@@ -72,12 +72,12 @@ const severities = new Set<BugSeverity>([
   "minor",
 ]);
 
-const repairOwners = new Set<BugRepairOwner>([
+const repairByValues = new Set<BugReportV2RepairBy>([
   "chatgpt",
   "developer",
 ]);
 
-const origins = new Set<BugOrigin>([
+const foundByValues = new Set<BugReportV2FoundBy>([
   "ai",
   "tester",
 ]);
@@ -202,7 +202,7 @@ function parseRelevantCode(
       issues.push({
         code: "invalid-type",
         path: itemPath,
-        message: "Expected a relevant code object.",
+        message: "Expected a relevantCode object.",
       });
       return;
     }
@@ -215,12 +215,12 @@ function parseRelevantCode(
   return parsed.length === value.length ? parsed : undefined;
 }
 
-function parseIssue(
+function parseBug(
   value: unknown,
   index: number,
   issues: BugReportParseIssue[],
-): BugReportV2Issue | undefined {
-  const path = "issues[" + index + "]";
+): BugReportV2Bug | undefined {
+  const path = "bugs[" + index + "]";
   if (!object(value)) {
     issues.push({
       code: "invalid-type",
@@ -282,7 +282,7 @@ function parseIssue(
     });
   }
 
-  if (!origins.has(value.foundBy as BugOrigin)) {
+  if (!foundByValues.has(value.foundBy as BugReportV2FoundBy)) {
     issues.push({
       code: "invalid-value",
       path: path + ".foundBy",
@@ -320,7 +320,7 @@ function parseIssue(
     typeof value.fixed !== "boolean" ||
     !severities.has(value.severity as BugSeverity) ||
     !categories.has(value.category as BugFinderCategory) ||
-    !origins.has(value.foundBy as BugOrigin) ||
+    !foundByValues.has(value.foundBy as BugReportV2FoundBy) ||
     !title ||
     !problem ||
     !expected ||
@@ -334,7 +334,7 @@ function parseIssue(
     fixed: value.fixed,
     severity: value.severity as BugSeverity,
     category: value.category as BugFinderCategory,
-    foundBy: value.foundBy as BugOrigin,
+    foundBy: value.foundBy as BugReportV2FoundBy,
     title,
     problem,
     expected,
@@ -365,7 +365,7 @@ export function parseBugReportV2(
 
   rejectUnknown(
     value,
-    ["schema", "map", "repairBy", "issues"],
+    ["schema", "map", "repairBy", "bugs"],
     "$",
     issues,
   );
@@ -378,7 +378,7 @@ export function parseBugReportV2(
     });
   }
 
-  if (!repairOwners.has(value.repairBy as BugRepairOwner)) {
+  if (!repairByValues.has(value.repairBy as BugReportV2RepairBy)) {
     issues.push({
       code: "invalid-value",
       path: "$.repairBy",
@@ -388,40 +388,40 @@ export function parseBugReportV2(
 
   const map = parseMap(value.map, issues);
 
-  if (!Array.isArray(value.issues) || value.issues.length === 0) {
+  if (!Array.isArray(value.bugs) || value.bugs.length === 0) {
     issues.push({
       code: "invalid-type",
-      path: "$.issues",
+      path: "$.bugs",
       message: "Expected at least one confirmed bug.",
     });
   }
 
-  const parsedIssues =
-    Array.isArray(value.issues)
-      ? value.issues.flatMap((entry, index) => {
-          const parsed = parseIssue(entry, index, issues);
+  const parsedBugs =
+    Array.isArray(value.bugs)
+      ? value.bugs.flatMap((entry, index) => {
+          const parsed = parseBug(entry, index, issues);
           return parsed ? [parsed] : [];
         })
       : [];
 
   const ids = new Set<string>();
-  parsedIssues.forEach((issue, index) => {
-    if (ids.has(issue.id)) {
+  parsedBugs.forEach((bug, index) => {
+    if (ids.has(bug.id)) {
       issues.push({
         code: "semantic-error",
-        path: "issues[" + index + "].id",
+        path: "bugs[" + index + "].id",
         message: "Bug ids must be unique within one report.",
       });
     }
-    ids.add(issue.id);
+    ids.add(bug.id);
   });
 
   if (
     issues.length > 0 ||
     !map ||
-    !repairOwners.has(value.repairBy as BugRepairOwner) ||
-    !Array.isArray(value.issues) ||
-    parsedIssues.length !== value.issues.length
+    !repairByValues.has(value.repairBy as BugReportV2RepairBy) ||
+    !Array.isArray(value.bugs) ||
+    parsedBugs.length !== value.bugs.length
   ) {
     return { ok: false, issues };
   }
@@ -431,8 +431,8 @@ export function parseBugReportV2(
     report: {
       schema: BUG_REPORT_V2_SCHEMA,
       map,
-      repairBy: value.repairBy as BugRepairOwner,
-      issues: parsedIssues,
+      repairBy: value.repairBy as BugReportV2RepairBy,
+      bugs: parsedBugs,
     },
     issues: [],
   };
@@ -468,7 +468,7 @@ export function normalizeBugReportV2(
 ): BugReportV2 {
   return {
     ...report,
-    issues: [...report.issues].sort((left, right) => {
+    bugs: [...report.bugs].sort((left, right) => {
       const severity = severityRank[left.severity] - severityRank[right.severity];
       if (severity !== 0) return severity;
       return left.id.localeCompare(right.id);
@@ -495,12 +495,12 @@ export function bugReportV2Progress(
 ): {
   readonly fixed: number;
   readonly total: number;
-  readonly complete: boolean;
+  readonly allFixed: boolean;
 } {
-  const fixed = report.issues.filter((issue) => issue.fixed).length;
+  const fixed = report.bugs.filter((bug) => bug.fixed).length;
   return {
     fixed,
-    total: report.issues.length,
-    complete: fixed === report.issues.length,
+    total: report.bugs.length,
+    allFixed: fixed === report.bugs.length,
   };
 }

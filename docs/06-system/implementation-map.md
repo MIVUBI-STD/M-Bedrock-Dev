@@ -18,7 +18,7 @@ Use this before broad repository search.
 | Competing hypotheses, falsifiers, and diagnostic probe discrimination | packages/diagnostic-reasoning/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Validation step/result contracts | packages/validation/ |
-| Bug-report V1 repair contract, strict ingest, semantic validation, deterministic classification/export | packages/bug-report/ + schemas/bug-report/ |
+| Bug Report V2 canonical tracker contract/export; V1 import compatibility only | packages/bug-report/ + schemas/bug-report/ |
 | Repair preservation contracts, baselines, and verification receipts | packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | packages/reliability/ |
 | Reliability search/corpus/interleavings/minimization | packages/reliability-search/ |

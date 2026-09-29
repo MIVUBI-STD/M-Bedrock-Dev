@@ -21,7 +21,7 @@ function report(): BugReportV2 {
       testedVersion: "1.26.32",
     },
     repairBy: "developer",
-    issues: [
+    bugs: [
       {
         id: "BUG-BBW-002",
         fixed: false,
@@ -63,7 +63,7 @@ function report(): BugReportV2 {
 }
 
 describe("bug report v2", () => {
-  it("round-trips the minimal developer-facing contract", () => {
+  it("round-trips the canonical developer-facing vocabulary", () => {
     const serialized = serializeBugReportV2(report());
     expect(serialized.ok).toBe(true);
     if (!serialized.ok || !serialized.json) return;
@@ -74,29 +74,29 @@ describe("bug report v2", () => {
 
     expect(parsed.report.map.baseVersion).toBe("1.26.20");
     expect(parsed.report.map.testedVersion).toBe("1.26.32");
-    expect(parsed.report.issues[0]?.severity).toBe("blocker");
+    expect(parsed.report.bugs[0]?.severity).toBe("blocker");
   });
 
-  it("derives report completion from per-bug fixed checkboxes", () => {
+  it("derives report progress from per-bug fixed checkboxes", () => {
     expect(bugReportV2Progress(report())).toEqual({
       fixed: 1,
       total: 2,
-      complete: false,
+      allFixed: false,
     });
   });
 
-  it("rejects mixed per-bug repair ownership by not supporting it", () => {
+  it("rejects per-bug repair ownership", () => {
     const source = JSON.parse(
       JSON.stringify(report()),
     ) as Record<string, unknown>;
-    const issues = source.issues as Array<Record<string, unknown>>;
-    issues[0]!.repairBy = "chatgpt";
+    const bugs = source.bugs as Array<Record<string, unknown>>;
+    bugs[0]!.repairBy = "chatgpt";
 
     const parsed = parseBugReportV2Json(JSON.stringify(source));
     expect(parsed.ok).toBe(false);
   });
 
-  it("requires clear map, base, and tested versions", () => {
+  it("requires map, base, and tested versions", () => {
     const source = JSON.parse(
       JSON.stringify(report()),
     ) as {

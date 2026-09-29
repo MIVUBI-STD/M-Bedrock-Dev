@@ -14,18 +14,18 @@
   let importIssues: readonly BugReportParseIssue[] = [];
   let sourceFile = "";
   let query = "";
-  let view: "all" | "open" | "fixed" = "all";
+  let view: "all" | "not-fixed" | "fixed" = "all";
 
   $: progress = report
     ? bugReportV2Progress(report)
-    : { fixed: 0, total: 0, complete: false };
+    : { fixed: 0, total: 0, allFixed: false };
 
-  $: visibleIssues = report
-    ? report.issues.filter((bug) => {
-        const statusMatch =
+  $: visibleBugs = report
+    ? report.bugs.filter((bug) => {
+        const fixedMatch =
           view === "all" ||
           (view === "fixed" && bug.fixed) ||
-          (view === "open" && !bug.fixed);
+          (view === "not-fixed" && !bug.fixed);
         const haystack = [
           bug.id,
           bug.title,
@@ -37,7 +37,7 @@
           bug.severity,
         ].join(" ").toLowerCase();
         return (
-          statusMatch &&
+          fixedMatch &&
           haystack.includes(query.trim().toLowerCase())
         );
       })
@@ -68,7 +68,7 @@
     if (!report) return;
     report = {
       ...report,
-      issues: report.issues.map((bug) =>
+      bugs: report.bugs.map((bug) =>
         bug.id === id
           ? { ...bug, fixed }
           : bug
@@ -163,21 +163,21 @@
         <div class="eyebrow">MAP</div>
         <h1>{report.map.name}</h1>
         <div class="meta">
-          <span>Map {report.map.mapVersion}</span>
-          <span>Base {report.map.baseVersion}</span>
-          <span>Tested {report.map.testedVersion}</span>
+          <span>Map Version {report.map.mapVersion}</span>
+          <span>Base Version {report.map.baseVersion}</span>
+          <span>Tested Version {report.map.testedVersion}</span>
         </div>
       </div>
 
       <div class="summary">
         <strong>{progress.fixed} / {progress.total}</strong>
-        <span>{progress.complete ? "Complete" : "Fixed"}</span>
+        <span>{progress.allFixed ? "All Fixed" : "Fixed"}</span>
       </div>
     </section>
 
     <section class="controlbar">
       <div class="repair-owner">
-        <span>Repair with</span>
+        <span>Repair By</span>
         <button
           class:active={report.repairBy === "developer"}
           on:click={() => setRepairBy("developer")}
@@ -190,7 +190,7 @@
 
       <div class="views">
         <button class:active={view === "all"} on:click={() => (view = "all")}>All</button>
-        <button class:active={view === "open"} on:click={() => (view = "open")}>Open</button>
+        <button class:active={view === "not-fixed"} on:click={() => (view = "not-fixed")}>Not Fixed</button>
         <button class:active={view === "fixed"} on:click={() => (view = "fixed")}>Fixed</button>
       </div>
 
@@ -198,11 +198,11 @@
     </section>
 
     <main class="workspace">
-      {#if visibleIssues.length === 0}
+      {#if visibleBugs.length === 0}
         <div class="empty">No bugs match this view.</div>
       {/if}
 
-      {#each visibleIssues as bug}
+      {#each visibleBugs as bug}
         <details class:fixed={bug.fixed} class="bug">
           <summary>
             <label class="check" on:click|stopPropagation>
@@ -219,7 +219,7 @@
 
             <div class="bug-title">
               <strong>{bug.id} · {bug.title}</strong>
-              <span>{bug.category} · found by {bug.foundBy}</span>
+              <span>{bug.category} · Found By {bug.foundBy}</span>
             </div>
 
             <span class="severity {bug.severity}">{bug.severity}</span>
@@ -277,7 +277,7 @@
 
             {#if bug.mustPreserve}
               <section>
-                <h3>Do Not Break</h3>
+                <h3>Must Preserve</h3>
                 <ul>{#each bug.mustPreserve as item}<li>{item}</li>{/each}</ul>
               </section>
             {/if}
