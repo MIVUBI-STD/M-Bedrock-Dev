@@ -1,5 +1,6 @@
 import {
   buildBugReportFromConfirmedDefects,
+  deriveConfirmedDefectSemanticKey,
   type ConfirmedDefect,
   type PromoteConfirmedBugsResult,
   type BugReportV2Map,
@@ -40,7 +41,10 @@ import {
 
 export type ConfirmedDefectDraft = Omit<
   ConfirmedDefect,
-  "foundBy" | "confirmation" | "mustPreserve"
+  | "semanticKey"
+  | "foundBy"
+  | "confirmation"
+  | "mustPreserve"
 >;
 
 export interface ReportCandidateRepairContext {
@@ -169,6 +173,26 @@ function routeEvidenceConsistency(
   return errors;
 }
 
+function candidateSemanticKey(
+  candidate: AuditReportCandidate,
+): string {
+  return deriveConfirmedDefectSemanticKey({
+    subjectIds: candidate.defect.subjectIds,
+    brokenInvariantIds:
+      candidate.defect.brokenInvariantIds,
+    repairUnitIds:
+      candidate.defect.repairUnitIds,
+    primaryFailure:
+      candidate.defect.primaryFailure,
+    ...(candidate.defect.causalIncidentId === undefined
+      ? {}
+      : {
+          causalIncidentId:
+            candidate.defect.causalIncidentId,
+        }),
+  });
+}
+
 function candidateEvidenceIds(
   candidate: AuditReportCandidate,
 ): readonly string[] {
@@ -217,7 +241,7 @@ function rejectedCandidate(
 ): RejectedReportCandidate {
   return {
     route: candidate.route,
-    semanticKey: candidate.defect.semanticKey,
+    semanticKey: candidateSemanticKey(candidate),
     evidenceIds: candidateEvidenceIds(candidate),
     nextEvidenceNeed,
     reasons,
@@ -300,6 +324,7 @@ function collectOne(
 
   const confirmed: ConfirmedDefect = {
     ...candidate.defect,
+    semanticKey: candidateSemanticKey(candidate),
     foundBy:
       candidate.route === "tester"
         ? "tester"
