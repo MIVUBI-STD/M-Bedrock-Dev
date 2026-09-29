@@ -111,6 +111,22 @@ export function prepareZeroWasteWorkflow(
       input.transaction,
     );
 
+  const requiredSemanticNodeIds =
+    affected.status === "planned"
+      ? [
+          ...new Set([
+            ...affected.changedNodeIds,
+            ...(input.relevantSemanticNodeIds ??
+              []),
+          ]),
+        ].sort()
+      : [
+          ...new Set(
+            input.relevantSemanticNodeIds ??
+            [],
+          ),
+        ].sort();
+
   const context =
     compileContextPack({
       goal: input.goal,
@@ -119,14 +135,11 @@ export function prepareZeroWasteWorkflow(
       ...(affected.status === "planned"
         ? { affected }
         : {}),
-      ...(input
-        .relevantSemanticNodeIds ===
-      undefined
+      ...(requiredSemanticNodeIds.length === 0
         ? {}
         : {
             relevantSemanticNodeIds:
-              input
-                .relevantSemanticNodeIds,
+              requiredSemanticNodeIds,
           }),
       ...(input
         .relevantIntentSubjectIds ===
@@ -311,7 +324,7 @@ export function prepareZeroWasteWorkflow(
           " proof claim(s) remain reusable."
         : "No prior proof claim was reusable for this workflow input.",
       context.complete
-        ? "Compiled AI context is complete for its explicit scope."
+        ? "Compiled AI context is complete; changed semantic nodes are always retained as required scope."
         : "Compiled AI context is incomplete; expand the context or resolve missing requested ids before using it as decision authority.",
       staleProofClaimIds.length >
       0

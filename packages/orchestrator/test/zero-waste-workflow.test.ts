@@ -176,6 +176,35 @@ describe("zero-waste workflow facade", () => {
       .toContain("- reusable: 1");
   });
 
+  it("retains changed semantic nodes as required context even when optional context is budget-limited", () => {
+    const graph =
+      graphFixture();
+
+    const plan =
+      prepareZeroWasteWorkflow({
+        goal: "repair arena",
+        graph,
+        postPatchGraph: graph,
+        intent,
+        transaction,
+        validationScenarios: [],
+        validationBindings: [],
+        contextBudget: {
+          maxSemanticNodes: 1,
+        },
+      });
+
+    expect(plan.context.complete)
+      .toBe(true);
+    expect(
+      plan.context.semantic.nodes.map(
+        (node) => node.id,
+      ),
+    ).toContain(
+      "function:pack:arena",
+    );
+  });
+
   it("falls back to conservative validation and blocks proof reuse without a post-patch graph", () => {
     const graph =
       graphFixture();
