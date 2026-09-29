@@ -1,6 +1,6 @@
 # M-Bedrock-Dev Stable Context
 
-Last verified stable design facts: 2026-09-22
+Last verified stable design facts: 2026-09-29
 
 This file owns stable product and architecture facts only.
 
@@ -46,12 +46,24 @@ Artifact
 → evidence report
 ```
 
+Repository execution planning is a separate control-plane concern:
+
+```text
+changed paths / explicit target
+→ task-graph affected closure
+→ valid reuse filtering
+→ minimum required execution
+→ existing semantic owners
+```
+
+The Task Graph never upgrades semantic or runtime proof and never owns Minecraft behavior.
+
 ## Repository organization
 
 ```text
 DEV.cmd        sole repository-level developer entrypoint
 apps/          user-facing surfaces only
-packages/      reusable deterministic engine owners
+packages/      reusable deterministic engine/control-plane owners
 adapters/      external/source format adapters
 analyzers/     semantic derivation and diagnostics
 rules/         versioned Bedrock/Education rules
@@ -79,10 +91,11 @@ The root is reserved for repository policy, version/toolchain authority, command
 - unknown content is preserved;
 - compatibility is a versioned capability concern;
 - Bedrock and Education share one core with explicit edition-specific rules;
-- artifact graph and semantic graph are different authorities;
+- artifact graph, repository task graph, and Minecraft semantic graph remain separate authorities;
 - source/static/package/live proof remain separate;
 - regression fixtures protect material recurring behavior;
 - deletion/reuse/native capability precede new abstractions;
+- unknown Task Graph ownership falls back conservatively instead of silently skipping work;
 - no background subsystem or persistent registry without a concrete repeated need.
 
 ## Toolchain
@@ -94,7 +107,7 @@ Current initial implementation lane:
 ```text
 Windows 10/11 x64 primary developer target
 Node.js 24 LTS (developer/build pinned to 24.21.0)
-npm 11.19.0 + committed lockfile authority; installs use `npm ci`
+npm 11.19.0 + committed lockfile authority; installs use npm ci
 TypeScript strict mode
 Vitest
 PowerShell 7-compatible repository tooling
@@ -102,25 +115,26 @@ PowerShell 7-compatible repository tooling
 
 Rust, Python, databases, desktop frameworks, and MCP infrastructure are not mandatory dependencies until a proven requirement owns them.
 
-## Semantic owners
+## Semantic and control-plane owners
 
 ```text
 artifact identity/fingerprint      → packages/artifact
 archive safety/transport           → packages/archive
 normalized project state           → packages/project-model
-dependency graph                   → packages/graph
+Minecraft dependency graph         → packages/graph
+repository affected execution      → packages/task-graph
 diagnostic contracts               → packages/diagnostics
 repair transactions                → packages/repair
-orchestration                      → packages/orchestrator
+cross-owner composition            → packages/orchestrator
 Bedrock content parsing            → analyzers/*
 format adaptation                  → adapters/*
-compatibility/version policy       → rules/* + future packages/compatibility
+compatibility/version policy       → rules/* + packages/compatibility
 interface presentation             → apps/*
 ```
 
 ## Current phase
 
-Repository foundation and core source architecture exist.
+Repository foundation and core source architecture exist. Workflow compression and affected-only execution are the active architecture lane.
 
 Current continuation: `docs/07-operations/next-action.md`.
 Current proof state: `docs/07-operations/current-validation.md`.

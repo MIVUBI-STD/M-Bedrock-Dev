@@ -4,7 +4,7 @@ Applies to reusable deterministic engine modules under packages/.
 
 ## Boundary
 
-Packages own stable reusable behavior. They must not depend on CLI presentation, future MCP protocol shape, desktop UI, or repository orchestration policy unless the package itself is the canonical orchestrator owner.
+Packages own stable reusable behavior. They must not depend on CLI presentation, future MCP protocol shape, desktop UI, or repository orchestration policy unless the package itself is the canonical owner for that policy.
 
 ## Rules
 
@@ -20,24 +20,27 @@ Packages own stable reusable behavior. They must not depend on CLI presentation,
 ## Package ownership
 
 ```text
-common         → dependency-neutral shared primitives only
-artifact       → identity / fingerprint / source classification
-archive        → archive policy / inventory / extraction / packaging transport
-project-model  → normalized project/workspace/session/file inventory + telemetry data contracts
-telemetry      → runtime telemetry emission helpers / sinks / instrumentation guards
-graph          → semantic graph / edges / invalidation
-diagnostics    → diagnostic contract and stable identifiers
-validation     → post-mutation validation contracts/results
-reliability    → invariants / regression metadata / map fingerprints / update deltas / retest planning
-compatibility  → edition/version/capability evaluation
+common          → dependency-neutral shared primitives only
+artifact        → identity / fingerprint / source classification
+archive         → archive policy / inventory / extraction / packaging transport
+project-model   → normalized project/workspace/session/file inventory + telemetry data contracts
+telemetry       → runtime telemetry emission helpers / sinks / instrumentation guards
+graph           → semantic graph / edges / invalidation
+diagnostics     → diagnostic contract and stable identifiers
+validation      → post-mutation validation contracts/results
+reliability     → invariants / regression metadata / map fingerprints / update deltas / retest planning
+compatibility   → edition/version/capability evaluation
 runtime-profile → exact target Minecraft product/host/module/environment identity
 knowledge       → versioned evidence-backed Minecraft claims and applicability
 semantic-ir     → normalized execution/state/temporal semantics; parser-independent and non-mutating
-gameplay-intent  → evidence-backed authored/inferred game meaning, mechanics, lifecycle, spatial semantics, and diagnostic ambiguity gates
+gameplay-intent → evidence-backed authored/inferred game meaning, mechanics, lifecycle, spatial semantics, and diagnostic ambiguity gates
 preservation    → pre-mutation baselines, must-change/must-preserve contracts, and preservation receipts
 runtime-lab     → controlled runtime experiment definitions, trials, qualification, and evidence provenance
-repair         → patch transactions / preconditions / working-copy mutation
-orchestrator   → composition only; no duplicated parser/repair semantics
+repair          → patch transactions / preconditions / working-copy mutation
+task-graph      → repository capability dependencies, affected closure, and minimum execution planning only
+orchestrator    → composition only; no duplicated parser/repair semantics
 ```
+
+`task-graph` may route existing owners but must not become a second semantic, diagnosis, repair, validation, cache-authority, or evidence owner.
 
 When a package starts accumulating a second unrelated responsibility, move the responsibility to its actual canonical owner instead of growing a generic manager layer.

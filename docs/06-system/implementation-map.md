@@ -10,9 +10,11 @@ Use this before broad repository search.
 | Workspace/session/file inventory + telemetry data contracts | packages/project-model/ |
 | Runtime telemetry emission helpers / sinks / instrumentation guards | packages/telemetry/ |
 | Semantic dependency graph/invalidation | packages/graph/ |
+| Repository capability dependencies, affected closure, execution planning | packages/task-graph/ |
 | Execution/state/temporal Semantic IR contracts and queries | packages/semantic-ir/ |
 | Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | packages/gameplay-intent/ |
-| Formal behavioral state/transition/temporal property kernel + Minecraft overlays | packages/behavior-model/ |\n| Constraint-backed reachability, invariant proof, and counterexample traces | packages/logic-solver/ |
+| Formal behavioral state/transition/temporal property kernel + Minecraft overlays | packages/behavior-model/ |
+| Constraint-backed reachability, invariant proof, and counterexample traces | packages/logic-solver/ |
 | Competing hypotheses, falsifiers, and diagnostic probe discrimination | packages/diagnostic-reasoning/ |
 | Diagnostic contract/IDs | packages/diagnostics/ |
 | Validation step/result contracts | packages/validation/ |
