@@ -229,3 +229,5 @@ export * from "./zero-waste-workflow.js";
 export * from "./report-confirmation-adapter.js";
 
 export * from "./static-report-confirmation-adapter.js";
+
+export * from "./tester-report-confirmation-adapter.js";
