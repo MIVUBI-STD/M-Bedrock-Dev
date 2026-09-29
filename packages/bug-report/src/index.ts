@@ -378,3 +378,5 @@ export * from "./v2.js";
 export * from "./create-v2.js";
 
 export * from "./promote-v2.js";
+
+export * from "./confirmation-v2.js";
