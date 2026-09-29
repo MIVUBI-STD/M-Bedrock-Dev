@@ -78,7 +78,13 @@ describe("canonical defect group resolution", () => {
         observed: {
           statement: "Inventory and scoreboard state persist after cleanup.",
         },
+        expectedAuthority: "explicit-requirement",
         primaryFailure: "player-owned-state",
+        reproduction: [
+          "Complete a match.",
+          "Return to lobby.",
+          "Start another match and observe retained state.",
+        ],
       },
     );
 
@@ -94,9 +100,51 @@ describe("canonical defect group resolution", () => {
       "obs:scoreboard",
     ]);
     expect(resolved.reproduction).toEqual([
-      "Step inventory",
-      "Step scoreboard",
+      "Complete a match.",
+      "Return to lobby.",
+      "Start another match and observe retained state.",
     ]);
+  });
+
+  it("requires explicit primary source selection when a group has more than three locations", () => {
+    const withSource = (key: string, file: string): ConfirmedDefect =>
+      defect(key, {
+        foundBy: "ai",
+        confirmation: {
+          basis: "authored-contract-violation",
+          evidence: "Static contradiction " + key,
+        },
+        sourceEvidence: [{
+          source: {
+            artifactId: "map",
+            relativePath: file,
+          },
+          reason: "Primary location " + key,
+        }],
+      });
+
+    const group = groupConfirmedDefects([
+      withSource("a", "scripts/a.ts"),
+      withSource("b", "scripts/b.ts"),
+      withSource("c", "scripts/c.ts"),
+      withSource("d", "scripts/d.ts"),
+    ])[0]!;
+
+    expect(() =>
+      resolveConfirmedDefectGroup(
+        group,
+        {
+          semanticKey: "merged",
+          title: "Merged defect",
+          problem: "Merged problem",
+          expected: { statement: "Expected" },
+          observed: { statement: "Observed" },
+          expectedAuthority: "explicit-requirement",
+          primaryFailure: "player-owned-state",
+          aiAnalysis: "Merged analysis",
+        },
+      )
+    ).toThrow(/select primary sourceEvidence explicitly/);
   });
 
   it("refuses incompatible defects even when caller constructs a group manually", () => {
@@ -119,7 +167,9 @@ describe("canonical defect group resolution", () => {
           problem: "Merged",
           expected: { statement: "Expected" },
           observed: { statement: "Observed" },
+          expectedAuthority: "explicit-requirement",
           primaryFailure: "player-owned-state",
+          reproduction: ["Reproduce."],
         },
       )
     ).toThrow(/semantically incompatible/);
