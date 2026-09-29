@@ -322,3 +322,4 @@ export * from "./arena-repair-bridge.js";
 
 export * from "./spatial-authority-analysis.js";
 export * from "./spatial-authority-policy-load.js";
+export * from "./arena-interleaving-analysis.js";
