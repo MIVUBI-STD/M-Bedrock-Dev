@@ -1,5 +1,5 @@
-import type { ArenaReplicaComparison } from "../../topology/src/arena-replica.js";
-import type { SpatialFingerprintComparison } from "../../world-db/src/spatial-fingerprint.js";
+import type { ArenaReplicaComparison } from "../../topology/src/index.js";
+import type { SpatialFingerprintComparison } from "../../world-db/src/index.js";
 import {
   createDiagnostic,
   type DiagnosticFinding,
