@@ -48,10 +48,25 @@ function hasOnlyKeys(
     );
 }
 
-function canonicalStrings(
+function canonicalSetStrings(
   value: string[],
 ): string[] {
   return [...new Set(value)].sort();
+}
+
+function canonicalSequenceStrings(
+  value: string[],
+): string[] {
+  const seen = new Set<string>();
+  const output: string[] = [];
+
+  for (const item of value) {
+    if (seen.has(item)) continue;
+    seen.add(item);
+    output.push(item);
+  }
+
+  return output;
 }
 
 function nonEmptyStringArray(
@@ -237,43 +252,43 @@ export function parseWorkSessionCheckpoint(
       record.revision as number,
     references: {
       completedCapabilityIds:
-        canonicalStrings(
+        canonicalSetStrings(
           references
             .completedCapabilityIds as
             string[],
         ),
       evidenceIds:
-        canonicalStrings(
+        canonicalSetStrings(
           references
             .evidenceIds as
             string[],
         ),
       semanticNodeIds:
-        canonicalStrings(
+        canonicalSetStrings(
           references
             .semanticNodeIds as
             string[],
         ),
       proofClaimIds:
-        canonicalStrings(
+        canonicalSetStrings(
           references
             .proofClaimIds as
             string[],
         ),
       validationScenarioIds:
-        canonicalStrings(
+        canonicalSetStrings(
           references
             .validationScenarioIds as
             string[],
         ),
     },
     nextActions:
-      canonicalStrings(
+      canonicalSequenceStrings(
         record.nextActions as
           string[],
       ),
     blockers:
-      canonicalStrings(
+      canonicalSetStrings(
         record.blockers as
           string[],
       ),
