@@ -68,15 +68,8 @@ function candidate(
     defect: {
       title: "Cleanup retains state",
       problem: "State remains.",
-      expected: {
-        authority: "authored-intent" as const,
-        statement: "State resets.",
-        evidenceIds: ["intent:evidence"],
-      },
-      observed: {
-        statement: "State remains.",
-        evidenceIds: [evidenceId],
-      },
+      expectedStatement: "State resets.",
+      observedStatement: "State remains.",
       classificationSignals: {
         impact: [{
           kind: "important-state-wrong" as const,
