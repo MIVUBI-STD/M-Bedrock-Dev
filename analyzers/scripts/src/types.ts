@@ -1,3 +1,4 @@
+import type { ScriptSafeConfigBinding, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
 import type {
   RepairSourceTransformHint,
   SourceRef,
@@ -425,5 +426,7 @@ export interface ParsedScriptFile {
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
   persistenceIdempotencyGuards?: ScriptPersistenceIdempotencyGuard[];
+  safeConfigBindings?: ScriptSafeConfigBinding[];
+  safeConfigRejected?: ScriptSafeConfigRejection[];
   capabilities: ScriptCapabilityUse[];
 }
