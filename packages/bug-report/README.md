@@ -99,3 +99,43 @@ What must the repair preserve?
 ```
 
 Do not copy internal proof chains, diagnostic IDs, planner output, confidence scores, cache metadata, or orchestration details into the report.
+
+
+## Defect confirmation
+
+Defect existence and root-cause proof are separate decisions.
+
+A bug may be confirmed for the developer report even when its exact root cause is not yet proven. Conversely, a suspicious code path, compatibility difference, risk, or evidence gap is not a confirmed bug by itself.
+
+Use `confirmDefectForReport()` before promotion.
+
+A confirmed defect requires:
+
+1. established expected behavior; and
+2. one qualifying existence basis.
+
+Qualifying bases:
+
+```text
+tester-reproduction
+authored-contract-violation
+runtime-observation
+```
+
+Expected behavior must come from authored intent, an explicit requirement, or an applicable runtime contract.
+
+AI-discovered bugs cannot be confirmed from tester reproduction alone. AI discovery requires direct authored-contract violation or runtime mismatch evidence.
+
+These are not confirmation by themselves:
+
+- Base Version / Tested Version difference;
+- static risk;
+- correlation;
+- evidence gap;
+- unresolved hypothesis;
+- suspicious topology;
+- multiple active root-cause candidates.
+
+Root-cause and repair authorization remain owned by diagnostic/repair reasoning. They do not need to be serialized into Bug Report V2.
+
+The confirmation basis and evidence are internal promotion metadata. They are never persisted in the final report.
