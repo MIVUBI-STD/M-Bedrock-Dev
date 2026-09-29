@@ -54,3 +54,48 @@ All persisted report content and canonical UI labels are English.
 New reports must be created directly as V2 through `createBugReportV2()`. The creator defaults each bug to `fixed: false` unless an explicit value is supplied and validates the complete report before it can be emitted.
 
 Do not generate V1 and convert it to V2 for new audits. V1 conversion exists only for old saved reports.
+
+
+## Promotion gate
+
+Internal diagnostics are not bug reports.
+
+A Diagnostic Finding may represent a risk, evidence gap, compatibility warning, or unresolved hypothesis. Do not copy diagnostics directly into developer-facing V2.
+
+New audit output follows:
+
+```text
+internal analysis
+→ confirmed defect
+→ promoteConfirmedBugsToV2()
+→ Bug Report V2
+```
+
+Only `confirmed-defect` inputs enter the final report.
+
+Promotion quality rules:
+
+- Tester-found confirmed defects require Reproduction.
+- AI-found confirmed defects require AI Analysis and Relevant Code.
+- Relevant Code stays focused on at most three primary locations.
+- Suggested Fix is advisory and requires supporting analysis/code context.
+- Root-cause certainty is never required to describe a confirmed defect.
+- Candidate, possible, speculative, and insufficient-evidence findings stay internal.
+
+The promotion-only `status` is not persisted in Bug Report V2.
+
+## Output density
+
+Developer-facing report text should answer the minimum useful questions:
+
+```text
+What is wrong?
+What should happen?
+What actually happens?
+How can I reproduce it?
+Where should I look?
+What does the AI analysis suggest?
+What must the repair preserve?
+```
+
+Do not copy internal proof chains, diagnostic IDs, planner output, confidence scores, cache metadata, or orchestration details into the report.
