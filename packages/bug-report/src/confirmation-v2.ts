@@ -5,9 +5,14 @@ import type {
   DefectConfirmation,
 } from "./promote-v2.js";
 
+export type ExpectedBehaviorAuthority =
+  | "authored-intent"
+  | "explicit-requirement"
+  | "runtime-contract";
+
 export interface DefectConfirmationAssessment {
   readonly foundBy: BugReportV2FoundBy;
-  readonly expectedBehaviorEstablished: boolean;
+  readonly expectedBehaviorAuthority: ExpectedBehaviorAuthority;
   readonly testerReproduced?: boolean;
   readonly authoredContractViolation?: boolean;
   readonly runtimeMismatchObserved?: boolean;
@@ -30,15 +35,8 @@ export function confirmDefectForReport(
   assessment: DefectConfirmationAssessment,
 ): DefectConfirmationDecision {
   const evidence = assessment.evidence.trim();
-
-  if (!assessment.expectedBehaviorEstablished) {
-    return {
-      confirmed: false,
-      reasons: [
-        "Expected behavior is not established by authored intent, an explicit requirement, or an applicable runtime contract.",
-      ],
-    };
-  }
+  const expectedAuthority =
+    assessment.expectedBehaviorAuthority;
 
   if (assessment.compatibilityDifferenceOnly === true) {
     return {
@@ -66,7 +64,9 @@ export function confirmDefectForReport(
         evidence,
       },
       reasons: [
-        "Runtime behavior directly contradicts established expected behavior.",
+        "Runtime behavior directly contradicts expected behavior established by " +
+          expectedAuthority +
+          ".",
       ],
     };
   }
@@ -79,7 +79,9 @@ export function confirmDefectForReport(
         evidence,
       },
       reasons: [
-        "Static source evidence directly contradicts established authored behavior.",
+        "Static source evidence directly contradicts expected behavior established by " +
+          expectedAuthority +
+          ".",
       ],
     };
   }
@@ -95,7 +97,9 @@ export function confirmDefectForReport(
         evidence,
       },
       reasons: [
-        "Tester reproduction directly demonstrates the behavior mismatch.",
+        "Tester reproduction directly demonstrates a mismatch against expected behavior established by " +
+          expectedAuthority +
+          ".",
       ],
     };
   }
