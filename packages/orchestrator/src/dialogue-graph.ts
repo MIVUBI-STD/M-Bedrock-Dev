@@ -1,4 +1,8 @@
-import type { ParsedDialogueDocument } from "../../../analyzers/dialogue/src/index.js";
+import { createHash } from "node:crypto";
+import {
+  DIALOGUE_PARSER_REVISION,
+  type ParsedDialogueDocument,
+} from "../../../analyzers/dialogue/src/index.js";
 import { flattenCommandEffects } from "../../../analyzers/commands/src/index.js";
 import { SemanticGraph } from "../../graph/src/index.js";
 import type { SemanticNode } from "../../graph/src/index.js";
@@ -7,6 +11,14 @@ import {
   commandEffectStateIdentifiers,
   populateCommandEffectEdges,
 } from "./command-effect-graph.js";
+
+function semanticHash(
+  value: unknown,
+): string {
+  return createHash("sha256")
+    .update(JSON.stringify(value))
+    .digest("hex");
+}
 
 export interface DialogueGraphDocument {
   parsed: ParsedDialogueDocument;
@@ -28,6 +40,20 @@ export function createDialogueSceneNodes(
       },
       kind: "dialogue_scene",
       identifier: scene.sceneTag,
+      parserVersion:
+        DIALOGUE_PARSER_REVISION,
+      semanticHash:
+        semanticHash({
+          sceneTag: scene.sceneTag,
+          commands: scene.commands.map(
+            (command) => ({
+              raw: command.raw,
+              trigger: command.trigger,
+              buttonIndex:
+                command.buttonIndex ?? null,
+            }),
+          ),
+        }),
       source: document.source,
       data: {
         commandCount: scene.commands.length,
@@ -94,6 +120,15 @@ export function populateDialogueCommandGraph(
         },
         kind: "command",
         identifier: commandIdentifier,
+        parserVersion:
+          DIALOGUE_PARSER_REVISION,
+        semanticHash:
+          semanticHash({
+            raw: command.raw,
+            trigger: command.trigger,
+            buttonIndex:
+              command.buttonIndex ?? null,
+          }),
         source: document.parsed.source,
         data: {
           command: command.raw,

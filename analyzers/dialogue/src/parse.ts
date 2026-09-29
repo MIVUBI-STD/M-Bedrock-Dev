@@ -1,4 +1,7 @@
 import type { SourceRef } from "../../../packages/project-model/src/index.js";
+
+export const DIALOGUE_PARSER_REVISION =
+  "m-bedrock-dialogue-parser:1";
 import { analyzeCommand } from "../../commands/src/index.js";
 import type {
   DialogueCommandTrigger,
