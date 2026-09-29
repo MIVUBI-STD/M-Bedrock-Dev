@@ -24,10 +24,14 @@ export interface ArenaCapacityExtractionInput {
   discovery?: ArenaReplicaDiscovery;
   tickingAreas: readonly ArenaCommandTickingAreaRecord[];
   scripts?: readonly ParsedScriptFile[];
+  declaredArenaCount?: number;
 }
 
 export interface ArenaCapacityExtractionEvidence {
   requestedConcurrentArenas?: number;
+  discoveredArenaCount?: number;
+  declaredArenaCount?: number;
+  arenaCountConflict: boolean;
   commandTickingAreaAdds: number;
   completeCommandTickingAreaFamilies: number;
   unmatchedCommandTickingAreaAdds: number;
@@ -138,10 +142,34 @@ export function extractArenaConcurrencyCapacity(
   input: ArenaCapacityExtractionInput,
 ): ArenaCapacityExtractionResult {
   const reasons: string[] = [];
-  const requestedConcurrentArenas =
+  const discoveredArenaCount =
     input.discovery === undefined
       ? undefined
       : 1 + input.discovery.replicas.length;
+  const declaredArenaCount =
+    input.declaredArenaCount;
+  const arenaCountConflict =
+    discoveredArenaCount !== undefined &&
+    declaredArenaCount !== undefined &&
+    discoveredArenaCount !== declaredArenaCount;
+  const requestedConcurrentArenas =
+    arenaCountConflict
+      ? undefined
+      : discoveredArenaCount ??
+        declaredArenaCount;
+
+  if (arenaCountConflict) {
+    reasons.push(
+      `Detected arena count ${discoveredArenaCount} conflicts with deterministic script-declared arena count ${declaredArenaCount}; concurrency request remains unresolved.`,
+    );
+  } else if (
+    discoveredArenaCount !== undefined &&
+    declaredArenaCount !== undefined
+  ) {
+    reasons.push(
+      `Topology and deterministic script config agree on ${discoveredArenaCount} arena(s).`,
+    );
+  }
 
   const addRecords = input.tickingAreas.flatMap((record) => {
     const anchor = anchorForTickingArea(record.semantics);
@@ -338,6 +366,13 @@ export function extractArenaConcurrencyCapacity(
       ...(requestedConcurrentArenas === undefined
         ? {}
         : { requestedConcurrentArenas }),
+      ...(discoveredArenaCount === undefined
+        ? {}
+        : { discoveredArenaCount }),
+      ...(declaredArenaCount === undefined
+        ? {}
+        : { declaredArenaCount }),
+      arenaCountConflict,
       commandTickingAreaAdds: addRecords.length,
       completeCommandTickingAreaFamilies:
         completeFamilies,
