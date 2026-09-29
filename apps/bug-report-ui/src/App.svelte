@@ -15,6 +15,7 @@
   let sourceFile = "";
   let query = "";
   let view: "all" | "not-fixed" | "fixed" = "all";
+  let severity: "all" | "blocker" | "major" | "minor" = "all";
 
   $: progress = report
     ? bugReportV2Progress(report)
@@ -26,6 +27,8 @@
           view === "all" ||
           (view === "fixed" && bug.fixed) ||
           (view === "not-fixed" && !bug.fixed);
+        const severityMatch =
+          severity === "all" || bug.severity === severity;
         const haystack = [
           bug.id,
           bug.title,
@@ -38,6 +41,7 @@
         ].join(" ").toLowerCase();
         return (
           fixedMatch &&
+          severityMatch &&
           haystack.includes(query.trim().toLowerCase())
         );
       })
@@ -55,6 +59,7 @@
     importIssues = [];
     query = "";
     view = "all";
+    severity = "all";
   }
 
   function handleFileChange(event: Event) {
@@ -114,6 +119,7 @@
     sourceFile = "";
     query = "";
     view = "all";
+    severity = "all";
   }
 </script>
 
@@ -167,6 +173,11 @@
           <span>Base Version {report.map.baseVersion}</span>
           <span>Tested Version {report.map.testedVersion}</span>
         </div>
+        {#if report.map.baseVersion !== report.map.testedVersion}
+          <div class="version-note">
+            Base Version differs from Tested Version
+          </div>
+        {/if}
       </div>
 
       <div class="summary">
@@ -193,6 +204,16 @@
         <button class:active={view === "not-fixed"} on:click={() => (view = "not-fixed")}>Not Fixed</button>
         <button class:active={view === "fixed"} on:click={() => (view = "fixed")}>Fixed</button>
       </div>
+
+      <label class="severity-filter">
+        <span>Severity</span>
+        <select bind:value={severity}>
+          <option value="all">All</option>
+          <option value="blocker">Blocker</option>
+          <option value="major">Major</option>
+          <option value="minor">Minor</option>
+        </select>
+      </label>
 
       <input bind:value={query} placeholder="Search bugs…" aria-label="Search bugs" />
     </section>
@@ -297,8 +318,8 @@
   button,.file-button{border:1px solid #303740;border-radius:7px;background:#15191e;color:#c3cad2;padding:8px 11px;cursor:pointer}.primary,.file-button,.active{background:#7d85ff;color:#090b0e;border-color:#8d94ff}
   .landing{max-width:720px;margin:auto;padding:90px 24px}.import-card{padding:34px;border:1px solid #242a31;border-radius:14px;background:#101419}.eyebrow{font-size:10px;font-weight:750;letter-spacing:.13em;color:#818b96}.import-card h1,.mapbar h1{margin:6px 0}.import-card p{color:#98a1aa}.file-button input{display:none}
   .errors{margin-top:16px;border:1px solid #553037;border-radius:10px;padding:16px}.error-row{display:grid;grid-template-columns:220px 1fr;gap:12px;padding-top:8px}
-  .mapbar{display:flex;align-items:flex-end;justify-content:space-between;padding:24px 30px;border-bottom:1px solid #20252a;background:#101317}.summary{display:grid;text-align:right}.summary strong{font-size:22px}.summary span{font-size:10px;text-transform:uppercase;color:#7d8791}.meta{gap:14px}
-  .controlbar{display:flex;align-items:center;gap:16px;padding:12px 30px;border-bottom:1px solid #20252a;background:#0f1215}.repair-owner{align-items:center}.repair-owner>span{font-size:11px;color:#7f8994}.controlbar input{margin-left:auto;min-width:240px;border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:8px 10px}
+  .mapbar{display:flex;align-items:flex-end;justify-content:space-between;padding:24px 30px;border-bottom:1px solid #20252a;background:#101317}.version-note{margin-top:8px;font-size:11px;color:#eec477}.summary{display:grid;text-align:right}.summary strong{font-size:22px}.summary span{font-size:10px;text-transform:uppercase;color:#7d8791}.meta{gap:14px}
+  .controlbar{display:flex;align-items:center;gap:16px;padding:12px 30px;border-bottom:1px solid #20252a;background:#0f1215}.repair-owner{align-items:center}.repair-owner>span{font-size:11px;color:#7f8994}.severity-filter{display:flex;align-items:center;gap:7px;font-size:11px;color:#7f8994}.severity-filter select{border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:7px 9px}.controlbar input{margin-left:auto;min-width:240px;border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:8px 10px}
   .workspace{max-width:1100px;padding:18px 30px 80px}.bug{border-bottom:1px solid #20262c}.bug.fixed{opacity:.55}.bug summary{list-style:none;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;padding:16px 4px;cursor:pointer}.bug summary::-webkit-details-marker{display:none}.check input{width:17px;height:17px}.bug-title{display:grid;gap:2px}
   .severity{border-radius:999px;padding:3px 7px;font-size:10px;font-weight:750;text-transform:uppercase}.severity.blocker{background:#3b171c;color:#ff9da6}.severity.major{background:#382b16;color:#eec477}.severity.minor{background:#1d2931;color:#9dc5dc}
   .bug-body{display:grid;gap:18px;padding:2px 46px 26px;color:#b8c0c8}.bug-body section{display:grid;gap:5px}.bug-body h3{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#79848e}.bug-body p,.bug-body ol,.bug-body ul{margin:0}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:24px}.code-row{display:grid;grid-template-columns:minmax(180px,.7fr) 1fr;gap:14px;padding:5px 0}.code-row code{color:#aeb5ff}.empty{padding:36px 0;color:#737d87}
