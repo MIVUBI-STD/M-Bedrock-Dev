@@ -671,6 +671,8 @@ export async function inspectArtifact(
         },
         broadWrites:
           result.stateAnalysis.broadWrites,
+        entityAiStack:
+          result.entityAiStack,
         structures: {
           definitions: result.structures,
           loads:
