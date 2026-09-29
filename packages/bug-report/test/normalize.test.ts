@@ -80,14 +80,33 @@ describe("bug report canonical normalization", () => {
 
   it("does not reorder authored reproduction and validation steps", () => {
     const source = report();
-    const first = source.bugFinders[1]!.bugs[0]!;
-    source.bugFinders[1]!.bugs[0] = {
-      ...first,
-      reproduction: ["second-dependent step 1", "second-dependent step 2"],
-      fixValidation: ["validation step 1", "validation step 2"],
+    const modified: BugReportV1 = {
+      ...source,
+      bugFinders: source.bugFinders.map((finder) =>
+        finder.category === "game-flow"
+          ? {
+              ...finder,
+              bugs: finder.bugs.map((entry) =>
+                entry.title === "Minor flow issue"
+                  ? {
+                      ...entry,
+                      reproduction: [
+                        "second-dependent step 1",
+                        "second-dependent step 2",
+                      ],
+                      fixValidation: [
+                        "validation step 1",
+                        "validation step 2",
+                      ],
+                    }
+                  : entry,
+              ),
+            }
+          : finder,
+      ),
     };
 
-    const normalized = normalizeBugReportV1(source);
+    const normalized = normalizeBugReportV1(modified);
     const normalizedBug = normalized.bugFinders
       .find((finder) => finder.category === "game-flow")
       ?.bugs.find((entry) => entry.title === "Minor flow issue");
