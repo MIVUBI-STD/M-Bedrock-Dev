@@ -81,6 +81,8 @@ export function createContradictionProofDiagnosisExecutor():
   return {
     executorId:
       "diagnosis.contradiction-proof",
+    executorRevision:
+      "contradiction-proof-executor:1",
 
     async execute(
       request: DiagnosisExecutorRequest,

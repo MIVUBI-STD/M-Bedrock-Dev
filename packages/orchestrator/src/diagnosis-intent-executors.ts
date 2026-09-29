@@ -176,6 +176,8 @@ export function createIntentGroundingDiagnosisExecutor():
   return {
     executorId:
       "diagnosis.intent-grounding",
+    executorRevision:
+      "intent-grounding-executor:1",
 
     async execute(
       request: DiagnosisExecutorRequest,
@@ -272,6 +274,8 @@ export function createAuthoredIntentDiagnosisExecutor():
   return {
     executorId:
       "diagnosis.authored-intent",
+    executorRevision:
+      "authored-intent-executor:1",
 
     async execute(
       request: DiagnosisExecutorRequest,
