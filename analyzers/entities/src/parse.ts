@@ -1,4 +1,7 @@
 import type { SourceRef } from "../../../packages/project-model/src/index.js";
+
+export const ENTITY_PARSER_REVISION =
+  "m-bedrock-entity-parser:1";
 import type {
   EntityEventMutation,
   ParsedEntityDefinition,

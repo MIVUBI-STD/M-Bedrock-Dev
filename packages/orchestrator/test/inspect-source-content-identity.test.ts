@@ -95,6 +95,11 @@ describe("inspection source content identity", () => {
         firstNode?.contentHash,
       ).toBeTruthy();
       expect(
+        firstNode?.parserVersion,
+      ).toBe(
+        "m-bedrock-function-parser:1",
+      );
+      expect(
         secondNode?.contentHash,
       ).toBeTruthy();
       expect(

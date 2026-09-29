@@ -1,4 +1,7 @@
 import type { ParsedFunction, FunctionReference } from "./types.js";
+
+export const FUNCTION_PARSER_REVISION =
+  "m-bedrock-function-parser:1";
 import type { SourceRef } from "../../../packages/project-model/src/index.js";
 import { analyzeCommand } from "../../commands/src/index.js";
 import { flattenCommandEffects } from "../../commands/src/index.js";

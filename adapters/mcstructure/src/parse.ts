@@ -1,4 +1,7 @@
 import { parseBedrockNbt } from "../../nbt/src/index.js";
+
+export const MCSTRUCTURE_PARSER_REVISION =
+  "m-bedrock-mcstructure-parser:1";
 import { normalizeMcStructure } from "./normalize.js";
 import type { McStructureModel } from "./types.js";
 

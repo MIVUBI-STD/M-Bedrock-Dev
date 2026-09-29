@@ -1,4 +1,8 @@
 import ts from "typescript";
+
+export const SCRIPT_PARSER_REVISION =
+  "m-bedrock-script-parser:1:typescript:" +
+  ts.version;
 import type { SourceRef } from "../../../packages/project-model/src/index.js";
 import type {
   DynamicPropertyAccess,

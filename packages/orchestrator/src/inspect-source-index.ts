@@ -1,9 +1,18 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import {
+  FUNCTION_PARSER_REVISION,
+  parseMcFunction,
+} from "../../../analyzers/functions/src/index.js";
+import {
+  SCRIPT_PARSER_REVISION,
+  parseScriptFile,
+} from "../../../analyzers/scripts/src/index.js";
 import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { parseEntityDefinition } from "../../../analyzers/entities/src/index.js";
+import {
+  ENTITY_PARSER_REVISION,
+  parseEntityDefinition,
+} from "../../../analyzers/entities/src/index.js";
 import { parseDialogueDocument } from "../../../analyzers/dialogue/src/index.js";
 import { dialogueDocumentDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { embeddedStructureCommandDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
@@ -12,7 +21,10 @@ import {
   structureInvariantDiagnostics,
   structureParseFailedDiagnostic,
 } from "../../../analyzers/diagnostics/src/index.js";
-import { parseMcStructure } from "../../../adapters/mcstructure/src/index.js";
+import {
+  MCSTRUCTURE_PARSER_REVISION,
+  parseMcStructure,
+} from "../../../adapters/mcstructure/src/index.js";
 import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/index.js";
 import { extractStructureRuntimeContent } from "../../../adapters/mcstructure/src/index.js";
 import { analyzeCommandBlockChains } from "../../../adapters/mcstructure/src/index.js";
@@ -110,6 +122,8 @@ export async function indexInspectionSources(
         kind: "function",
         identifier: fnId,
         contentHash: file.contentHash,
+        parserVersion:
+          FUNCTION_PARSER_REVISION,
         source: {
           artifactId,
           relativePath: file.relativePath,
@@ -149,6 +163,8 @@ export async function indexInspectionSources(
         kind: "script_file",
         identifier: scriptId,
         contentHash: file.contentHash,
+        parserVersion:
+          SCRIPT_PARSER_REVISION,
         source: {
           artifactId,
           relativePath: file.relativePath,
@@ -206,6 +222,8 @@ export async function indexInspectionSources(
             kind: "entity",
             identifier: parsed.identifier,
             contentHash: file.contentHash,
+            parserVersion:
+              ENTITY_PARSER_REVISION,
             source: parsed.source,
           };
           graph.addNode(node);
@@ -277,6 +295,8 @@ export async function indexInspectionSources(
       kind: "structure",
       identifier: structureId,
       contentHash: file.contentHash,
+      parserVersion:
+        MCSTRUCTURE_PARSER_REVISION,
       source: {
         artifactId,
         relativePath: file.relativePath,
