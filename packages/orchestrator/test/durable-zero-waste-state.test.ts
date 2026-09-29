@@ -180,6 +180,60 @@ describe("durable zero-waste state stores", () => {
     }
   });
 
+  it("refuses to rebind the same session id to a different artifact fingerprint", async () => {
+    const root =
+      await mkdtemp(
+        join(
+          tmpdir(),
+          "m-bedrock-session-rebind-",
+        ),
+      );
+
+    try {
+      const workspace =
+        projectWorkspaceLayout(
+          root,
+          "project",
+        );
+
+      await saveWorkSessionCheckpoint(
+        workspace,
+        createWorkSessionCheckpoint({
+          sessionId: "same",
+          goal: "first",
+          artifact: {
+            artifactId: "a",
+            artifactFingerprint: "fp-a",
+          },
+        }),
+      );
+
+      await expect(
+        saveWorkSessionCheckpoint(
+          workspace,
+          createWorkSessionCheckpoint({
+            sessionId: "same",
+            goal: "second",
+            artifact: {
+              artifactId: "a",
+              artifactFingerprint: "fp-b",
+            },
+          }),
+        ),
+      ).rejects.toThrow(
+        /different artifact identity or fingerprint/,
+      );
+    } finally {
+      await rm(
+        root,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    }
+  });
+
   it("upserts semantic proof claims without duplicating ids", async () => {
     const root =
       await mkdtemp(

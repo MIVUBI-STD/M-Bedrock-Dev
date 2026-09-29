@@ -185,6 +185,22 @@ export async function saveWorkSessionCheckpoint(
     );
   }
 
+  if (
+    existing !== undefined &&
+    (
+      existing.artifact.artifactId !==
+        parsed.artifact.artifactId ||
+      existing.artifact
+        .artifactFingerprint !==
+        parsed.artifact
+          .artifactFingerprint
+    )
+  ) {
+    throw new Error(
+      "Refusing to rebind an existing work session to a different artifact identity or fingerprint.",
+    );
+  }
+
   const serialized =
     JSON.stringify(
       parsed,

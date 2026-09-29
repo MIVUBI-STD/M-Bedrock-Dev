@@ -59,6 +59,19 @@ function normalized(
   ].sort();
 }
 
+function sameStrings(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  return (
+    left.length === right.length &&
+    left.every(
+      (value, index) =>
+        value === right[index],
+    )
+  );
+}
+
 export function createWorkSessionCheckpoint(
   input: {
     sessionId: string;
@@ -229,23 +242,64 @@ export function advanceWorkSessionCheckpoint(
       ]),
   };
 
+  const nextActions =
+    update.nextActions === undefined
+      ? [...current.nextActions]
+      : normalized(
+          update.nextActions,
+        );
+  const blockers =
+    update.blockers === undefined
+      ? [...current.blockers]
+      : normalized(
+          update.blockers,
+        );
+
+  const unchanged =
+    update.stage === current.stage &&
+    sameStrings(
+      references.completedCapabilityIds,
+      current.references
+        .completedCapabilityIds,
+    ) &&
+    sameStrings(
+      references.evidenceIds,
+      current.references.evidenceIds,
+    ) &&
+    sameStrings(
+      references.semanticNodeIds,
+      current.references
+        .semanticNodeIds,
+    ) &&
+    sameStrings(
+      references.proofClaimIds,
+      current.references.proofClaimIds,
+    ) &&
+    sameStrings(
+      references.validationScenarioIds,
+      current.references
+        .validationScenarioIds,
+    ) &&
+    sameStrings(
+      nextActions,
+      current.nextActions,
+    ) &&
+    sameStrings(
+      blockers,
+      current.blockers,
+    );
+
+  if (unchanged) {
+    return current;
+  }
+
   return {
     ...current,
     stage: update.stage,
     revision:
       current.revision + 1,
     references,
-    nextActions:
-      update.nextActions === undefined
-        ? [...current.nextActions]
-        : normalized(
-            update.nextActions,
-          ),
-    blockers:
-      update.blockers === undefined
-        ? [...current.blockers]
-        : normalized(
-            update.blockers,
-          ),
+    nextActions,
+    blockers,
   };
 }

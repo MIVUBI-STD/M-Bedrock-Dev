@@ -106,6 +106,31 @@ describe("work session checkpoint", () => {
     ).toBe(false);
   });
 
+  it("does not create a new revision for a no-op update", () => {
+    const created =
+      createWorkSessionCheckpoint({
+        sessionId: "session:noop",
+        goal: "diagnose",
+        artifact: {
+          artifactId: "map",
+          artifactFingerprint: "fp",
+        },
+      });
+
+    const same =
+      advanceWorkSessionCheckpoint(
+        created,
+        {
+          stage: "new",
+        },
+      );
+
+    expect(same)
+      .toBe(created);
+    expect(same.revision)
+      .toBe(1);
+  });
+
   it("rejects invalid lifecycle jumps", () => {
     const created =
       createWorkSessionCheckpoint({
