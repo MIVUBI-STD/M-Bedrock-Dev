@@ -208,6 +208,39 @@ describe("context compiler", () => {
     ]);
   });
 
+  it("does not widen to every intent node when explicit evidence has no subject binding", () => {
+    const pack =
+      compileContextPack({
+        goal: "evidence-no-subject",
+        graph: fixtureGraph(),
+        intent: {
+          ...intent,
+          evidence: [
+            ...intent.evidence,
+            {
+              id: "e:global",
+              origin: "source-code",
+              locator:
+                "global/source",
+              summary:
+                "global evidence",
+            },
+          ],
+        },
+        relevantEvidenceIds: [
+          "e:global",
+        ],
+      });
+
+    expect(pack.intent.nodes)
+      .toEqual([]);
+    expect(
+      pack.intent.evidence.map(
+        (item) => item.id,
+      ),
+    ).toEqual(["e:global"]);
+  });
+
   it("reports truncation instead of silently overloading context", () => {
     const pack =
       compileContextPack({
