@@ -459,6 +459,91 @@ describe("report defect collector", () => {
     );
   });
 
+  it("resolves multi-symptom groups through the high-level audit entry point", () => {
+    const first = {
+      route: "tester" as const,
+      subjectIds: ["subject:a"],
+      confirmation: {
+        expectedBehaviorAuthority: "explicit-requirement" as const,
+        expectedEvidenceIds: ["requirement:cleanup"],
+        reproduced: true,
+        evidence: "Symptom A is reproducible.",
+      },
+      defect: {
+        ...defect("a", {
+          reproduction: ["Reproduce A."],
+        }),
+        causalIncidentId: "incident:cleanup",
+      },
+    };
+    const second = {
+      route: "tester" as const,
+      subjectIds: ["subject:b"],
+      confirmation: {
+        expectedBehaviorAuthority: "explicit-requirement" as const,
+        expectedEvidenceIds: ["requirement:cleanup"],
+        reproduced: true,
+        evidence: "Symptom B is reproducible.",
+      },
+      defect: {
+        ...defect("b", {
+          reproduction: ["Reproduce B."],
+        }),
+        causalIncidentId: "incident:cleanup",
+      },
+    };
+
+    const preview = collectConfirmedDefects([
+      first,
+      second,
+    ]);
+    const groupKey = (
+      await import("../../bug-report/src/index.js")
+    ).groupConfirmedDefects(
+      preview.confirmed,
+    )[0]!.key;
+
+    const result = buildBugReportFromAuditCandidates({
+      map: {
+        name: "Beach Bedwars",
+        mapVersion: "1.0.4",
+        baseVersion: "1.26.20",
+        testedVersion: "1.26.20",
+      },
+      repairBy: "developer",
+      files: [{
+        relativePath: "scripts/session.ts",
+        size: 1,
+      }],
+      candidates: [first, second],
+      groupResolutions: [{
+        groupKey,
+        narrative: {
+          title: "Cleanup retains match state",
+          problem: "Multiple state symptoms share one cleanup defect.",
+          expected: {
+            statement: "Cleanup resets all match-owned state.",
+          },
+          observed: {
+            statement: "Multiple state surfaces remain active.",
+          },
+          expectedAuthority: "explicit-requirement",
+          foundBy: "tester",
+          primaryFailure: "player-owned-state",
+          reproduction: [
+            "Complete a match.",
+            "Return to lobby.",
+            "Observe retained state.",
+          ],
+        },
+      }],
+    });
+
+    expect(result.promotion.ok).toBe(true);
+    if (!result.promotion.ok) return;
+    expect(result.promotion.report.bugs).toHaveLength(1);
+  });
+
   it("allocates the same ids regardless of candidate order", () => {
     const makeCandidates = (reversed: boolean) => {
       const entries = [
