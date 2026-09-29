@@ -14,3 +14,5 @@ export * from "./arena-repair-transform-hints.js";
 export * from "./persistence-idempotency-evidence.js";
 
 export * from "./safe-config-compiler.js";
+
+export * from "./spatial-mutation-evidence.js";
