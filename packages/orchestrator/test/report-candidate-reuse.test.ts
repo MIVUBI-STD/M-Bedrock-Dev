@@ -66,15 +66,6 @@ function candidate(
       reasons: ["More evidence is required."],
     },
     defect: {
-      impact: {
-        progression: "degraded" as const,
-        recovery: "normal" as const,
-        stability: "stable" as const,
-        coreMechanic: "correct" as const,
-        importantState: "materially-wrong" as const,
-        fairness: "unaffected" as const,
-      },
-      primaryFailure: "player-owned-state" as const,
       title: "Cleanup retains state",
       problem: "State remains.",
       expected: {
@@ -86,9 +77,15 @@ function candidate(
         statement: "State remains.",
         evidenceIds: [evidenceId],
       },
-      classificationEvidence: {
-        impactEvidenceIds: [evidenceId],
-        primaryFailureEvidenceIds: ["intent:evidence"],
+      classificationSignals: {
+        impact: [{
+          kind: "important-state-wrong" as const,
+          evidenceIds: [evidenceId],
+        }],
+        primaryFailure: [{
+          failure: "player-owned-state" as const,
+          evidenceIds: ["intent:evidence"],
+        }],
       },
       aiAnalysis: "Cleanup appears inconsistent.",
       sourceEvidence: [{
