@@ -128,6 +128,8 @@ export interface GameplayWorldModel {
     copyMutationRisks: number;
     grantRegions: number;
     dropRegions: number;
+    knownEquipmentSlots: number;
+    unresolvedEquipmentSlotEvidence: number;
     policy: {
       configured: boolean;
       resolvedItemClasses: number;
@@ -458,6 +460,12 @@ export function deriveGameplayWorldModel(
         source.inventoryLifecycle?.grantRegions ?? 0,
       dropRegions:
         source.inventoryLifecycle?.dropRegions ?? 0,
+      knownEquipmentSlots:
+        source.inventoryLifecycle
+          ?.knownEquipmentSlots.length ?? 0,
+      unresolvedEquipmentSlotEvidence:
+        source.inventoryLifecycle
+          ?.unresolvedEquipmentSlotEvidence ?? 0,
       policy: {
         configured:
           source.inventoryPolicy?.configured ?? false,
