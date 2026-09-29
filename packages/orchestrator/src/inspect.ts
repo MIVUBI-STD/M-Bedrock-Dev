@@ -37,6 +37,7 @@ import { semanticIrDiagnostics } from "./semantic-ir-diagnostics.js";
 import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
 import { indexAuthoredIntentSources } from "./inspect-authored-intent-source.js";
 import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js";
+import { analyzeEntityAiStacks } from "./entity-ai-stack-analysis.js";
 import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
 export async function inspectDirectory(
@@ -123,6 +124,13 @@ export async function inspectDirectory(
     authoredScripts: authoredIntentSources,
   });
 
+  const entityAiStack =
+    analyzeEntityAiStacks(
+      parsedEntities.map(
+        (item) => item.parsed,
+      ),
+    );
+
   const gameplayIntentRuntime = analyzeGameplayIntentRuntime(
     gameplayIntent,
     runtimeEvidenceStage.runtimeStateObservations,
@@ -139,6 +147,7 @@ export async function inspectDirectory(
             dimension:
               target.staticExecutionDimension,
           }),
+      entityAiStack,
     },
   );
 
@@ -197,6 +206,7 @@ export async function inspectDirectory(
       parsedFunctions,
       parsedScripts,
       parsedEntities,
+      entityAiStack,
       parsedStructureModels,
     });
   const {
