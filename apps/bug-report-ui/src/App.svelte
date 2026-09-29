@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    BUG_REPORT_V2_LABELS,
     bugReportV2Progress,
     serializeBugReportV2,
     type BugReportParseIssue,
@@ -169,9 +170,9 @@
         <div class="eyebrow">MAP</div>
         <h1>{report.map.name}</h1>
         <div class="meta">
-          <span>Map Version {report.map.mapVersion}</span>
-          <span>Base Version {report.map.baseVersion}</span>
-          <span>Tested Version {report.map.testedVersion}</span>
+          <span>{BUG_REPORT_V2_LABELS.mapVersion} {report.map.mapVersion}</span>
+          <span>{BUG_REPORT_V2_LABELS.baseVersion} {report.map.baseVersion}</span>
+          <span>{BUG_REPORT_V2_LABELS.testedVersion} {report.map.testedVersion}</span>
         </div>
         {#if report.map.baseVersion !== report.map.testedVersion}
           <div class="version-note">
@@ -188,7 +189,7 @@
 
     <section class="controlbar">
       <div class="repair-owner">
-        <span>Repair By</span>
+        <span>{BUG_REPORT_V2_LABELS.repairBy}</span>
         <button
           class:active={report.repairBy === "developer"}
           on:click={() => setRepairBy("developer")}
@@ -206,7 +207,7 @@
       </div>
 
       <label class="severity-filter">
-        <span>Severity</span>
+        <span>{BUG_REPORT_V2_LABELS.severity}</span>
         <select bind:value={severity}>
           <option value="all">All</option>
           <option value="blocker">Blocker</option>
@@ -248,38 +249,38 @@
 
           <div class="bug-body">
             <section>
-              <h3>Problem</h3>
+              <h3>{BUG_REPORT_V2_LABELS.problem}</h3>
               <p>{bug.problem}</p>
             </section>
 
             <div class="comparison">
               <section>
-                <h3>Expected</h3>
+                <h3>{BUG_REPORT_V2_LABELS.expected}</h3>
                 <p>{bug.expected}</p>
               </section>
               <section>
-                <h3>Observed</h3>
+                <h3>{BUG_REPORT_V2_LABELS.observed}</h3>
                 <p>{bug.observed}</p>
               </section>
             </div>
 
             {#if bug.reproduction}
               <section>
-                <h3>Reproduction</h3>
+                <h3>{BUG_REPORT_V2_LABELS.reproduction}</h3>
                 <ol>{#each bug.reproduction as item}<li>{item}</li>{/each}</ol>
               </section>
             {/if}
 
             {#if bug.aiAnalysis}
               <section>
-                <h3>AI Analysis</h3>
+                <h3>{BUG_REPORT_V2_LABELS.aiAnalysis}</h3>
                 <p>{bug.aiAnalysis}</p>
               </section>
             {/if}
 
             {#if bug.relevantCode}
               <section>
-                <h3>Relevant Code</h3>
+                <h3>{BUG_REPORT_V2_LABELS.relevantCode}</h3>
                 {#each bug.relevantCode as item}
                   <div class="code-row">
                     <code>{item.file}</code>
@@ -291,14 +292,14 @@
 
             {#if bug.suggestedFix}
               <section>
-                <h3>Suggested Fix</h3>
+                <h3>{BUG_REPORT_V2_LABELS.suggestedFix}</h3>
                 <p>{bug.suggestedFix}</p>
               </section>
             {/if}
 
             {#if bug.mustPreserve}
               <section>
-                <h3>Must Preserve</h3>
+                <h3>{BUG_REPORT_V2_LABELS.mustPreserve}</h3>
                 <ul>{#each bug.mustPreserve as item}<li>{item}</li>{/each}</ul>
               </section>
             {/if}

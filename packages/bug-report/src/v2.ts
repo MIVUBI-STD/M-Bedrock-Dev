@@ -3,6 +3,26 @@ import type { BugReportParseIssue } from "./parse.js";
 
 export const BUG_REPORT_V2_SCHEMA = "m-bedrock-bug-report/v2" as const;
 
+export const BUG_REPORT_V2_LABELS = {
+  mapVersion: "Map Version",
+  baseVersion: "Base Version",
+  testedVersion: "Tested Version",
+  repairBy: "Repair By",
+  bugs: "Bugs",
+  fixed: "Fixed",
+  severity: "Severity",
+  category: "Category",
+  foundBy: "Found By",
+  problem: "Problem",
+  expected: "Expected",
+  observed: "Observed",
+  reproduction: "Reproduction",
+  aiAnalysis: "AI Analysis",
+  relevantCode: "Relevant Code",
+  suggestedFix: "Suggested Fix",
+  mustPreserve: "Must Preserve",
+} as const;
+
 export type BugReportV2RepairBy = "chatgpt" | "developer";
 export type BugReportV2FoundBy = "ai" | "tester";
 
