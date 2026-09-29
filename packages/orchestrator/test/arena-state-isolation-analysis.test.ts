@@ -29,6 +29,46 @@ describe("arena state isolation analysis", () => {
     });
   });
 
+  it("uses authored state authority contracts to prove arena partitioning", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function join(arena, player) {",
+        "  arena.players.add(player);",
+        "  world.setDynamicProperty('arenaState', 1);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeArenaStateIsolation(
+      [script],
+      [{
+        id: "arena-state",
+        authority: {
+          kind: "dynamic-property",
+          key: "arenaState",
+        },
+        mirrors: [],
+        scope: "arena",
+      }],
+    );
+
+    expect(
+      result.observations.find(
+        (item) =>
+          item.surface === "dynamic-property",
+      ),
+    ).toMatchObject({
+      scope: "arena-local",
+      status: "isolated",
+      authorityContractIds: ["arena-state"],
+    });
+  });
+
   it("keeps arena-owned state isolated", () => {
     const script = parseScriptFile(
       "main",
