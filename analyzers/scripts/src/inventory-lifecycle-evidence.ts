@@ -130,26 +130,6 @@ function rootIdentifier(
     : undefined;
 }
 
-function containsIdentifier(
-  node: ts.Node | undefined,
-  identifier: string,
-): boolean {
-  if (!node) return false;
-  let found = false;
-  const visit = (current: ts.Node): void => {
-    if (
-      ts.isIdentifier(current) &&
-      current.text === identifier
-    ) {
-      found = true;
-      return;
-    }
-    if (!found) ts.forEachChild(current, visit);
-  };
-  visit(node);
-  return found;
-}
-
 export function deriveScriptInventoryLifecycleEvidence(
   text: string,
   source: SourceRef,
@@ -396,15 +376,3 @@ export function inventoryCopyMutationHasWriteback(
   );
 }
 
-export function inventoryEvidenceReferencesBinding(
-  evidence: ScriptInventoryLifecycleEvidence,
-  binding: string,
-): boolean {
-  return (
-    evidence.itemBinding === binding ||
-    containsIdentifier(
-      undefined,
-      binding,
-    )
-  );
-}
