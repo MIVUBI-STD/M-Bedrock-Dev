@@ -1,0 +1,76 @@
+import type { AnalysisCapability } from "./types.js";
+
+export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
+  {
+    id: "arena-concurrency-capacity",
+    evidenceLevel: "semantic",
+    cost: "cheap",
+    tags: ["arena", "capacity", "multiplayer"],
+    deterministic: true,
+    contexts: [
+      "REMOTE_GITHUB",
+      "LOCAL_ARTIFACT",
+      "LOCAL_MINECRAFT",
+      "LIVE_MINECRAFT",
+    ],
+    producesTraits: ["structural-proof", "semantic-model"],
+  },
+  {
+    id: "safe-config-resolution",
+    evidenceLevel: "semantic",
+    cost: "moderate",
+    tags: ["arena", "configuration", "coordinates"],
+    deterministic: true,
+    contexts: ["REMOTE_GITHUB", "LOCAL_ARTIFACT"],
+    producesTraits: ["semantic-model"],
+  },
+  {
+    id: "arena-replica-fidelity",
+    evidenceLevel: "semantic",
+    cost: "moderate",
+    tags: ["arena", "coordinates", "multiplayer", "topology"],
+    deterministic: true,
+    contexts: [
+      "LOCAL_ARTIFACT",
+      "LOCAL_MINECRAFT",
+      "LIVE_MINECRAFT",
+    ],
+    producesTraits: ["structural-proof", "semantic-model"],
+    prerequisites: ["safe-config-resolution"],
+  },
+  {
+    id: "arena-spatial-fingerprint",
+    evidenceLevel: "semantic",
+    cost: "expensive",
+    tags: ["arena", "terrain", "world-db", "multiplayer"],
+    deterministic: true,
+    contexts: [
+      "LOCAL_ARTIFACT",
+      "LOCAL_MINECRAFT",
+      "LIVE_MINECRAFT",
+    ],
+    producesTraits: ["structural-proof"],
+  },
+  {
+    id: "pack-identity-continuity",
+    evidenceLevel: "semantic",
+    cost: "moderate",
+    tags: ["manifest", "persistence", "world-db"],
+    deterministic: true,
+    contexts: [
+      "LOCAL_ARTIFACT",
+      "LOCAL_MINECRAFT",
+      "LIVE_MINECRAFT",
+    ],
+    producesTraits: ["structural-proof", "semantic-model"],
+  },
+  {
+    id: "release-identity-consistency",
+    evidenceLevel: "static",
+    cost: "cheap",
+    tags: ["manifest", "release", "version"],
+    deterministic: true,
+    contexts: ["REMOTE_GITHUB", "LOCAL_ARTIFACT"],
+    producesTraits: ["structural-proof"],
+  },
+] as const;
