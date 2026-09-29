@@ -141,7 +141,9 @@ export function analyzeInspectionRuntimeState(
 
   const arenaCapacity =
     extractArenaConcurrencyCapacity({
-      discovery: topology.arenaReplicaDiscovery,
+      ...(topology.arenaReplicaDiscovery === undefined
+        ? {}
+        : { discovery: topology.arenaReplicaDiscovery }),
       tickingAreas: structureRuntime.tickingAreas.map(
         (item) => ({
           functionId: item.functionId,
