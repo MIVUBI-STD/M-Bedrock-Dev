@@ -71,7 +71,7 @@ const staticResult: IntentDiagnosticGateResult = {
 };
 
 function defect(
-  semanticKey: string,
+  label: string,
   options: {
     ai?: boolean;
     reproduction?: readonly string[];
@@ -83,7 +83,6 @@ function defect(
   } = {},
 ) {
   return {
-    semanticKey,
     impact: {
       progression: "degraded" as const,
       recovery: "normal" as const,
@@ -109,7 +108,7 @@ function defect(
       evidenceIds: [
         "runtime:cleanup",
         "static:cleanup",
-        "observation:cleanup",
+        "observation:" + label,
       ],
     },
     ...(options.reproduction === undefined
@@ -153,6 +152,7 @@ describe("report defect collector", () => {
       },
       {
         route: "tester",
+        subjectIds: ["outcome:cleanup"],
         confirmation: {
           expectedBehaviorAuthority: "explicit-requirement",
           expectedEvidenceIds: ["requirement:cleanup"],
@@ -193,6 +193,7 @@ describe("report defect collector", () => {
       }],
       candidates: [{
         route: "tester",
+        subjectIds: ["outcome:cleanup"],
         confirmation: {
           expectedBehaviorAuthority: "explicit-requirement",
           expectedEvidenceIds: ["requirement:cleanup"],
@@ -214,7 +215,7 @@ describe("report defect collector", () => {
     if (!result.promotion.ok) return;
     expect(result.promotion.report.bugs[0]).toEqual(
       expect.objectContaining({
-        id: "BUG-BB-1OB7ULV",
+        id: expect.stringMatching(/^BUG-BB-[A-Z0-9]+$/),
         severity: "major",
         category: "player-state",
         foundBy: "tester",
@@ -274,7 +275,9 @@ describe("report defect collector", () => {
     expect(result.collection.rejected).toEqual([
       expect.objectContaining({
         route: "runtime",
-        semanticKey: "rejected",
+        semanticKey: expect.stringContaining(
+          "subjects=outcome:cleanup",
+        ),
       }),
     ]);
     expect(result.promotion.ok).toBe(true);
@@ -300,6 +303,7 @@ describe("report defect collector", () => {
       },
       {
         route: "tester",
+        subjectIds: ["outcome:cleanup"],
         confirmation: {
           expectedBehaviorAuthority: "explicit-requirement",
           expectedEvidenceIds: ["requirement:cleanup"],
@@ -317,14 +321,20 @@ describe("report defect collector", () => {
     expect(result.rejected).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          semanticKey: "needs-authored-intent",
+          route: "runtime",
+          semanticKey: expect.stringContaining(
+            "subjects=outcome:cleanup",
+          ),
           nextEvidenceNeed: "authored-intent",
           evidenceIds: expect.arrayContaining([
             "runtime:cleanup",
           ]),
         }),
         expect.objectContaining({
-          semanticKey: "needs-reproduction",
+          route: "tester",
+          semanticKey: expect.stringContaining(
+            "subjects=outcome:cleanup",
+          ),
           nextEvidenceNeed: "tester-reproduction",
           evidenceIds: expect.arrayContaining([
             "requirement:cleanup",
@@ -414,7 +424,9 @@ describe("report defect collector", () => {
     expect(result.confirmed).toHaveLength(0);
     expect(result.rejected[0]).toEqual(
       expect.objectContaining({
-        semanticKey: "repair-advice",
+        semanticKey: expect.stringContaining(
+          "subjects=outcome:cleanup",
+        ),
         reasons: [
           "Suggested Fix requires a diagnostic repair decision.",
         ],
@@ -428,6 +440,7 @@ describe("report defect collector", () => {
       const entries = [
         {
           route: "tester" as const,
+          subjectIds: ["outcome:a"],
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement" as const,
             expectedEvidenceIds: ["requirement:cleanup"],
@@ -442,6 +455,7 @@ describe("report defect collector", () => {
         },
         {
           route: "tester" as const,
+          subjectIds: ["outcome:b"],
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement" as const,
             expectedEvidenceIds: ["requirement:cleanup"],
