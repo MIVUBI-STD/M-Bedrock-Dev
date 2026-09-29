@@ -87,8 +87,49 @@ function validateConfirmedDefectSourceRef(
   return errors;
 }
 
+export interface ConfirmedDefectIdentityInput {
+  readonly subjectIds: readonly string[];
+  readonly brokenInvariantIds: readonly string[];
+  readonly repairUnitIds: readonly string[];
+  readonly primaryFailure: BugPrimaryFailure;
+  readonly causalIncidentId?: string;
+}
+
+function normalizedIdentityPart(
+  values: readonly string[],
+): string {
+  return [...new Set(
+    values
+      .map((value) => value.trim())
+      .filter(Boolean),
+  )].sort().join(",");
+}
+
+export function deriveConfirmedDefectSemanticKey(
+  input: ConfirmedDefectIdentityInput,
+): string {
+  return [
+    input.causalIncidentId === undefined
+      ? undefined
+      : "incident=" + input.causalIncidentId.trim(),
+    "subjects=" + normalizedIdentityPart(input.subjectIds),
+    "invariants=" +
+      normalizedIdentityPart(input.brokenInvariantIds),
+    "repair-units=" +
+      normalizedIdentityPart(input.repairUnitIds),
+    "failure=" + input.primaryFailure,
+  ]
+    .filter(
+      (value): value is string =>
+        value !== undefined &&
+        value.trim().length > 0,
+    )
+    .join("|");
+}
+
 export interface ConfirmedDefect {
   readonly semanticKey: string;
+  readonly subjectIds: readonly string[];
   readonly foundBy: BugReportV2FoundBy;
   readonly confirmation: DefectConfirmation;
   readonly impact: BugImpactAssessment;
@@ -112,8 +153,19 @@ export function validateConfirmedDefect(
 ): readonly string[] {
   const errors: string[] = [];
 
+  if (defect.subjectIds.length === 0) {
+    errors.push(
+      "subjectIds must identify the affected semantic subject.",
+    );
+  }
+  const derivedSemanticKey =
+    deriveConfirmedDefectSemanticKey(defect);
   if (!defect.semanticKey.trim()) {
     errors.push("semanticKey must be non-empty.");
+  } else if (defect.semanticKey !== derivedSemanticKey) {
+    errors.push(
+      "semanticKey must match the deterministic confirmed-defect identity.",
+    );
   }
   if (!defect.title.trim()) {
     errors.push("title must be non-empty.");
