@@ -1,10 +1,17 @@
 import ts from "typescript";
 import type {
   SafeConfigExpression,
+  SafeConfigFunction,
 } from "../../../packages/behavior-model/src/index.js";
 import type {
   SourceRef,
 } from "../../../packages/project-model/src/index.js";
+
+export interface ScriptSafeConfigFunction {
+  name: string;
+  definition: SafeConfigFunction;
+  source: SourceRef;
+}
 
 export interface ScriptSafeConfigBinding {
   name: string;
@@ -39,6 +46,7 @@ export interface ScriptSafeConfigExport {
 
 export interface ScriptSafeConfigCompilation {
   bindings: readonly ScriptSafeConfigBinding[];
+  functions: readonly ScriptSafeConfigFunction[];
   imports: readonly ScriptSafeConfigImport[];
   exports: readonly ScriptSafeConfigExport[];
   rejected: readonly ScriptSafeConfigRejection[];
@@ -84,6 +92,111 @@ function propertyName(
     return node.text;
   }
   return undefined;
+}
+
+
+function functionParameterNames(
+  parameters: readonly ts.ParameterDeclaration[],
+): string[] | undefined {
+  const names: string[] = [];
+  for (const parameter of parameters) {
+    if (
+      !ts.isIdentifier(parameter.name) ||
+      parameter.dotDotDotToken !== undefined ||
+      parameter.initializer !== undefined
+    ) {
+      return undefined;
+    }
+    names.push(parameter.name.text);
+  }
+  return names;
+}
+
+function functionBodyExpression(
+  node:
+    | ts.FunctionDeclaration
+    | ts.FunctionExpression
+    | ts.ArrowFunction,
+): ts.Expression | undefined {
+  if (ts.isArrowFunction(node) && !ts.isBlock(node.body)) {
+    return node.body;
+  }
+
+  const body = node.body;
+  if (!body || !ts.isBlock(body)) {
+    return undefined;
+  }
+  if (
+    body.statements.length !== 1 ||
+    !ts.isReturnStatement(body.statements[0]) ||
+    body.statements[0]!.expression === undefined
+  ) {
+    return undefined;
+  }
+  return body.statements[0]!.expression;
+}
+
+function compileSafeFunction(
+  node:
+    | ts.FunctionDeclaration
+    | ts.FunctionExpression
+    | ts.ArrowFunction,
+): SafeConfigFunction | undefined {
+  if (
+    "asteriskToken" in node &&
+    node.asteriskToken !== undefined
+  ) {
+    return undefined;
+  }
+  const modifiers =
+    "modifiers" in node
+      ? node.modifiers
+      : undefined;
+  if (
+    modifiers?.some(
+      (modifier) =>
+        modifier.kind === ts.SyntaxKind.AsyncKeyword,
+    )
+  ) {
+    return undefined;
+  }
+
+  const params =
+    functionParameterNames(node.parameters);
+  const body =
+    functionBodyExpression(node);
+  if (!params || !body) return undefined;
+  const compiled =
+    compileSafeConfigExpression(body);
+  return compiled
+    ? {
+        params,
+        body: compiled,
+      }
+    : undefined;
+}
+
+function objectLengthExpression(
+  expression: ts.Expression,
+): SafeConfigExpression | undefined {
+  if (!ts.isObjectLiteralExpression(expression)) {
+    return undefined;
+  }
+  const lengthProperty =
+    expression.properties.find(
+      (property) =>
+        ts.isPropertyAssignment(property) &&
+        propertyName(property.name) === "length",
+    );
+  if (
+    !lengthProperty ||
+    !ts.isPropertyAssignment(lengthProperty)
+  ) {
+    return undefined;
+  }
+  return compileSafeConfigExpression(
+    lengthProperty.initializer,
+  );
 }
 
 export function compileSafeConfigExpression(
@@ -255,6 +368,109 @@ export function compileSafeConfigExpression(
     return {
       kind: "object-merge",
       parts,
+    };
+  }
+
+  if (
+    ts.isCallExpression(value) &&
+    ts.isPropertyAccessExpression(value.expression) &&
+    value.expression.name.text === "map"
+  ) {
+    if (value.arguments.length !== 1) {
+      return undefined;
+    }
+    const source =
+      compileSafeConfigExpression(
+        value.expression.expression,
+      );
+    const callback = value.arguments[0];
+    if (
+      !source ||
+      !callback ||
+      (
+        !ts.isArrowFunction(callback) &&
+        !ts.isFunctionExpression(callback)
+      )
+    ) {
+      return undefined;
+    }
+    const params =
+      functionParameterNames(
+        callback.parameters,
+      );
+    const body =
+      functionBodyExpression(callback);
+    if (
+      !params ||
+      params.length < 1 ||
+      params.length > 2 ||
+      !body
+    ) {
+      return undefined;
+    }
+    const compiledBody =
+      compileSafeConfigExpression(body);
+    if (!compiledBody) return undefined;
+
+    return {
+      kind: "map",
+      source,
+      itemName: params[0]!,
+      ...(params[1] === undefined
+        ? {}
+        : { indexName: params[1] }),
+      body: compiledBody,
+    };
+  }
+
+  if (
+    ts.isCallExpression(value) &&
+    ts.isPropertyAccessExpression(value.expression) &&
+    ts.isIdentifier(value.expression.expression) &&
+    value.expression.expression.text === "Array" &&
+    value.expression.name.text === "from"
+  ) {
+    if (value.arguments.length !== 2) {
+      return undefined;
+    }
+    const length =
+      objectLengthExpression(
+        value.arguments[0]!,
+      );
+    const callback =
+      value.arguments[1]!;
+    if (
+      !length ||
+      (
+        !ts.isArrowFunction(callback) &&
+        !ts.isFunctionExpression(callback)
+      )
+    ) {
+      return undefined;
+    }
+    const params =
+      functionParameterNames(
+        callback.parameters,
+      );
+    const body =
+      functionBodyExpression(callback);
+    if (
+      !params ||
+      params.length !== 2 ||
+      !params[0]!.startsWith("_") ||
+      !body
+    ) {
+      return undefined;
+    }
+    const compiledBody =
+      compileSafeConfigExpression(body);
+    if (!compiledBody) return undefined;
+
+    return {
+      kind: "array-from",
+      length,
+      indexName: params[1]!,
+      body: compiledBody,
     };
   }
 
@@ -464,6 +680,29 @@ export function compileSafeConfigExpression(
     };
   }
 
+  if (
+    ts.isCallExpression(value) &&
+    ts.isIdentifier(value.expression)
+  ) {
+    const args =
+      value.arguments.map(
+        compileSafeConfigExpression,
+      );
+    if (
+      args.some(
+        (item): item is undefined =>
+          item === undefined,
+      )
+    ) {
+      return undefined;
+    }
+    return {
+      kind: "call",
+      name: value.expression.text,
+      args: args as SafeConfigExpression[],
+    };
+  }
+
   return undefined;
 }
 
@@ -499,6 +738,7 @@ export function compileScriptSafeConfig(
   );
 
   const bindings: ScriptSafeConfigBinding[] = [];
+  const functions: ScriptSafeConfigFunction[] = [];
   const imports: ScriptSafeConfigImport[] = [];
   const exports: ScriptSafeConfigExport[] = [];
   const rejected: ScriptSafeConfigRejection[] = [];
@@ -546,6 +786,43 @@ export function compileScriptSafeConfig(
       continue;
     }
 
+    if (
+      ts.isFunctionDeclaration(statement) &&
+      statement.name
+    ) {
+      const definition =
+        compileSafeFunction(statement);
+      if (definition) {
+        const sourceRef =
+          nodeSource(
+            file,
+            statement,
+            source,
+          );
+        functions.push({
+          name: statement.name.text,
+          definition,
+          source: sourceRef,
+        });
+        const exported =
+          statement.modifiers?.some(
+            (modifier) =>
+              modifier.kind ===
+              ts.SyntaxKind.ExportKeyword,
+          ) ?? false;
+        if (exported) {
+          exports.push({
+            localName:
+              statement.name.text,
+            exportedName:
+              statement.name.text,
+            source: sourceRef,
+          });
+        }
+      }
+      continue;
+    }
+
     if (!ts.isVariableStatement(statement)) continue;
 
     const isConst =
@@ -577,6 +854,63 @@ export function compileScriptSafeConfig(
       }
 
       if (!declaration.initializer) continue;
+
+      if (
+        ts.isArrowFunction(
+          declaration.initializer,
+        ) ||
+        ts.isFunctionExpression(
+          declaration.initializer,
+        )
+      ) {
+        const definition =
+          compileSafeFunction(
+            declaration.initializer,
+          );
+        if (!definition) {
+          rejected.push({
+            name,
+            reason:
+              "unsupported-expression",
+            detail:
+              "Pure safe-config helper must have identifier parameters and exactly one expression/return body.",
+            source:
+              nodeSource(
+                file,
+                declaration,
+                source,
+              ),
+          });
+          continue;
+        }
+
+        const functionSource =
+          nodeSource(
+            file,
+            declaration,
+            source,
+          );
+        functions.push({
+          name,
+          definition,
+          source: functionSource,
+        });
+        const isExported =
+          statement.modifiers?.some(
+            (modifier) =>
+              modifier.kind ===
+              ts.SyntaxKind.ExportKeyword,
+          ) ?? false;
+        if (isExported) {
+          exports.push({
+            localName: name,
+            exportedName: name,
+            source: functionSource,
+          });
+        }
+        continue;
+      }
+
       const expression =
         compileSafeConfigExpression(declaration.initializer);
       if (!expression) {
@@ -617,6 +951,9 @@ export function compileScriptSafeConfig(
 
   return {
     bindings: bindings.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    ),
+    functions: functions.sort((a, b) =>
       a.name.localeCompare(b.name)
     ),
     imports: imports.sort((a, b) =>
