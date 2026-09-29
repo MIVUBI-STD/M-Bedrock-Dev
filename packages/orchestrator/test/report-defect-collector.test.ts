@@ -86,15 +86,6 @@ function defect(
   } = {},
 ) {
   return {
-    impact: {
-      progression: "degraded" as const,
-      recovery: "normal" as const,
-      stability: "stable" as const,
-      coreMechanic: "correct" as const,
-      importantState: "materially-wrong" as const,
-      fairness: "unaffected" as const,
-    },
-    primaryFailure: "player-owned-state" as const,
     title: "Cleanup retains match state",
     problem: "Match-owned state remains after cleanup.",
     expected: {
@@ -114,13 +105,19 @@ function defect(
         "observation:" + label,
       ],
     },
-    classificationEvidence: {
-      impactEvidenceIds: [
-        "observation:" + label,
-      ],
-      primaryFailureEvidenceIds:
-        options.expectedEvidenceIds ??
-        ["intent:evidence"],
+    classificationSignals: {
+      impact: [{
+        kind: "important-state-wrong" as const,
+        evidenceIds: [
+          "observation:" + label,
+        ],
+      }],
+      primaryFailure: [{
+        failure: "player-owned-state" as const,
+        evidenceIds:
+          options.expectedEvidenceIds ??
+          ["intent:evidence"],
+      }],
     },
     ...(options.reproduction === undefined
       ? {}
@@ -142,7 +139,6 @@ function defect(
         }
       : {}),
     brokenInvariantIds: ["inv:cleanup"],
-    repairUnitIds: ["unit:session-cleanup"],
   };
 }
 
@@ -385,9 +381,15 @@ describe("report defect collector", () => {
       result: staticResult,
       defect: {
         ...defect("bad-classification", { ai: true }),
-        classificationEvidence: {
-          impactEvidenceIds: ["unrelated:impact"],
-          primaryFailureEvidenceIds: ["intent:evidence"],
+        classificationSignals: {
+          impact: [{
+            kind: "important-state-wrong",
+            evidenceIds: ["unrelated:impact"],
+          }],
+          primaryFailure: [{
+            failure: "player-owned-state",
+            evidenceIds: ["intent:evidence"],
+          }],
         },
       },
     }]);
@@ -409,9 +411,15 @@ describe("report defect collector", () => {
           statement: "Match-owned state is reset.",
           evidenceIds: ["unrelated:intent"],
         },
-        classificationEvidence: {
-          impactEvidenceIds: ["static:cleanup"],
-          primaryFailureEvidenceIds: ["unrelated:intent"],
+        classificationSignals: {
+          impact: [{
+            kind: "important-state-wrong",
+            evidenceIds: ["static:cleanup"],
+          }],
+          primaryFailure: [{
+            failure: "player-owned-state",
+            evidenceIds: ["unrelated:intent"],
+          }],
         },
       },
     }]);
