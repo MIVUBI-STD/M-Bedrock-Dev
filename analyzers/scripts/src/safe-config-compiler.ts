@@ -24,8 +24,23 @@ export interface ScriptSafeConfigRejection {
   source: SourceRef;
 }
 
+export interface ScriptSafeConfigImport {
+  module: string;
+  importedName: string;
+  localName: string;
+  source: SourceRef;
+}
+
+export interface ScriptSafeConfigExport {
+  localName: string;
+  exportedName: string;
+  source: SourceRef;
+}
+
 export interface ScriptSafeConfigCompilation {
   bindings: readonly ScriptSafeConfigBinding[];
+  imports: readonly ScriptSafeConfigImport[];
+  exports: readonly ScriptSafeConfigExport[];
   rejected: readonly ScriptSafeConfigRejection[];
 }
 
@@ -210,7 +225,7 @@ export function compileSafeConfigExpression(
     ts.isIdentifier(value.expression) &&
     value.expression.text === "translate3"
   ) {
-    const args = value.arguments.map(compileExpression);
+    const args = value.arguments.map(compileSafeConfigExpression);
     if (
       args.length !== 2 ||
       args.some(
@@ -261,9 +276,53 @@ export function compileScriptSafeConfig(
   );
 
   const bindings: ScriptSafeConfigBinding[] = [];
+  const imports: ScriptSafeConfigImport[] = [];
+  const exports: ScriptSafeConfigExport[] = [];
   const rejected: ScriptSafeConfigRejection[] = [];
 
   for (const statement of file.statements) {
+    if (
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteralLike(statement.moduleSpecifier) &&
+      (
+        statement.moduleSpecifier.text.startsWith(".") ||
+        statement.moduleSpecifier.text.startsWith("/")
+      )
+    ) {
+      const named = statement.importClause?.namedBindings;
+      if (named && ts.isNamedImports(named)) {
+        for (const element of named.elements) {
+          imports.push({
+            module: statement.moduleSpecifier.text,
+            importedName:
+              element.propertyName?.text ??
+              element.name.text,
+            localName: element.name.text,
+            source: nodeSource(file, element, source),
+          });
+        }
+      }
+      continue;
+    }
+
+    if (
+      ts.isExportDeclaration(statement) &&
+      !statement.moduleSpecifier &&
+      statement.exportClause &&
+      ts.isNamedExports(statement.exportClause)
+    ) {
+      for (const element of statement.exportClause.elements) {
+        exports.push({
+          localName:
+            element.propertyName?.text ??
+            element.name.text,
+          exportedName: element.name.text,
+          source: nodeSource(file, element, source),
+        });
+      }
+      continue;
+    }
+
     if (!ts.isVariableStatement(statement)) continue;
 
     const isConst =
@@ -309,17 +368,41 @@ export function compileScriptSafeConfig(
         continue;
       }
 
+      const bindingSource =
+        nodeSource(file, declaration, source);
       bindings.push({
         name,
         expression,
-        source: nodeSource(file, declaration, source),
+        source: bindingSource,
       });
+
+      const isExported =
+        statement.modifiers?.some(
+          (modifier) =>
+            modifier.kind ===
+            ts.SyntaxKind.ExportKeyword,
+        ) ?? false;
+      if (isExported) {
+        exports.push({
+          localName: name,
+          exportedName: name,
+          source: bindingSource,
+        });
+      }
     }
   }
 
   return {
     bindings: bindings.sort((a, b) =>
       a.name.localeCompare(b.name)
+    ),
+    imports: imports.sort((a, b) =>
+      a.module.localeCompare(b.module) ||
+      a.localName.localeCompare(b.localName)
+    ),
+    exports: exports.sort((a, b) =>
+      a.exportedName.localeCompare(b.exportedName) ||
+      a.localName.localeCompare(b.localName)
     ),
     rejected: rejected.sort((a, b) =>
       (a.name ?? "").localeCompare(b.name ?? "") ||
