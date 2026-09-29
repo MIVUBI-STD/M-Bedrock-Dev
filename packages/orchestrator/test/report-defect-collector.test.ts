@@ -282,6 +282,58 @@ describe("report defect collector", () => {
     expect(result.promotion.report.bugs).toHaveLength(1);
   });
 
+  it("exposes targeted next evidence for rejected candidates", () => {
+    const result = collectConfirmedDefects([
+      {
+        route: "runtime",
+        intent,
+        assessment: {
+          ...runtimeAssessment,
+          result: {
+            ...runtimeAssessment.result,
+            disposition: "probable-defect",
+            basisInvariantIds: [],
+            nextEvidenceNeed: "authored-intent",
+          },
+        },
+        defect: defect("needs-authored-intent", { ai: true }),
+      },
+      {
+        route: "tester",
+        confirmation: {
+          expectedBehaviorAuthority: "explicit-requirement",
+          expectedEvidenceIds: ["requirement:cleanup"],
+          reproduced: false,
+          evidence: "Observed once.",
+        },
+        defect: defect("needs-reproduction", {
+          expectedAuthority: "explicit-requirement",
+          expectedEvidenceIds: ["requirement:cleanup"],
+          reproduction: ["Attempt reproduction."],
+        }),
+      },
+    ]);
+
+    expect(result.rejected).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          semanticKey: "needs-authored-intent",
+          nextEvidenceNeed: "authored-intent",
+          evidenceIds: expect.arrayContaining([
+            "runtime:cleanup",
+          ]),
+        }),
+        expect.objectContaining({
+          semanticKey: "needs-reproduction",
+          nextEvidenceNeed: "tester-reproduction",
+          evidenceIds: expect.arrayContaining([
+            "requirement:cleanup",
+          ]),
+        }),
+      ]),
+    );
+  });
+
   it("rejects report facts that are not grounded in confirmation evidence", () => {
     const result = collectConfirmedDefects([{
       route: "static",
@@ -366,6 +418,7 @@ describe("report defect collector", () => {
         reasons: [
           "Suggested Fix requires a diagnostic repair decision.",
         ],
+        nextEvidenceNeed: "repair-decision",
       }),
     );
   });
