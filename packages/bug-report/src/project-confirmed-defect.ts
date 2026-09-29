@@ -3,6 +3,9 @@ import {
   routeBugFinderCategory,
 } from "./decision.js";
 import {
+  groupConfirmedDefects,
+} from "./grouping.js";
+import {
   validateConfirmedDefect,
   type ConfirmedDefect,
 } from "./confirmed-defect.js";
@@ -148,6 +151,24 @@ export function buildBugReportFromConfirmedDefects(
       });
     }
     seen.add(defect.semanticKey);
+  }
+
+  const unresolvedGroups = groupConfirmedDefects(
+    input.defects,
+  ).filter((group) => group.defects.length > 1);
+
+  for (const group of unresolvedGroups) {
+    issues.push({
+      code: "unresolved-defect-group",
+      message:
+        "Confirmed defect group must be resolved to one canonical defect before report projection: " +
+        group.key +
+        " (" +
+        group.defects
+          .map((defect) => defect.semanticKey)
+          .join(", ") +
+        ").",
+    });
   }
 
   if (issues.length > 0) {
