@@ -211,10 +211,17 @@ function runtimeClassificationSignals(
     } as const;
   }
 
-  return deriveReportClassificationFromRuntimeExperiment(
-    candidate.runtimeExperimentClassification.definition,
-    candidate.runtimeExperimentClassification.bridge,
-  );
+  try {
+    return deriveReportClassificationFromRuntimeExperiment(
+      candidate.runtimeExperimentClassification.definition,
+      candidate.runtimeExperimentClassification.bridge,
+    );
+  } catch {
+    return {
+      impact: [],
+      primaryFailure: [],
+    } as const;
+  }
 }
 
 function candidateClassification(
