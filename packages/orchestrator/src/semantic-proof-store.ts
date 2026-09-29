@@ -19,6 +19,26 @@ export interface SemanticProofClaimStore {
     readonly SemanticProofClaim[];
 }
 
+function hasOnlyKeys(
+  value: Record<string, unknown>,
+  allowed: readonly string[],
+): boolean {
+  const keys =
+    new Set(allowed);
+  return Object.keys(value)
+    .every((key) =>
+      keys.has(key)
+    );
+}
+
+function canonicalStrings(
+  values: readonly string[],
+): string[] {
+  return [
+    ...new Set(values),
+  ].sort();
+}
+
 function pathFor(
   workspace:
     ProjectWorkspaceLayout,
@@ -48,6 +68,19 @@ function validateClaim(
     >;
 
   if (
+    !hasOnlyKeys(
+      record,
+      [
+        "schemaVersion",
+        "claimId",
+        "claimRevision",
+        "kind",
+        "basisNodeIds",
+        "basisFingerprint",
+        "evidenceIds",
+        "targetProfileFingerprint",
+      ],
+    ) ||
     record.schemaVersion !== 1 ||
     typeof record.claimId !==
       "string" ||
@@ -120,8 +153,38 @@ function validateClaim(
     );
   }
 
-  return record as unknown as
-    SemanticProofClaim;
+  return {
+    schemaVersion: 1,
+    claimId:
+      record.claimId as string,
+    claimRevision:
+      record.claimRevision as string,
+    kind:
+      record.kind as
+        SemanticProofClaim["kind"],
+    basisNodeIds:
+      canonicalStrings(
+        record.basisNodeIds as
+          string[],
+      ),
+    basisFingerprint:
+      record.basisFingerprint as string,
+    evidenceIds:
+      canonicalStrings(
+        record.evidenceIds as
+          string[],
+      ),
+    ...(record
+      .targetProfileFingerprint ===
+    undefined
+      ? {}
+      : {
+          targetProfileFingerprint:
+            record
+              .targetProfileFingerprint as
+              string,
+        }),
+  };
 }
 
 export function parseSemanticProofClaimStore(
@@ -143,6 +206,13 @@ export function parseSemanticProofClaimStore(
     >;
 
   if (
+    !hasOnlyKeys(
+      record,
+      [
+        "schemaVersion",
+        "claims",
+      ],
+    ) ||
     record.schemaVersion !== 1 ||
     !Array.isArray(
       record.claims,

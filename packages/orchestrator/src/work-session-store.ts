@@ -36,6 +36,24 @@ function pathFor(
   );
 }
 
+function hasOnlyKeys(
+  value: Record<string, unknown>,
+  allowed: readonly string[],
+): boolean {
+  const keys =
+    new Set(allowed);
+  return Object.keys(value)
+    .every((key) =>
+      keys.has(key)
+    );
+}
+
+function canonicalStrings(
+  value: string[],
+): string[] {
+  return [...new Set(value)].sort();
+}
+
 function nonEmptyStringArray(
   value: unknown,
 ): value is string[] {
@@ -88,6 +106,20 @@ export function parseWorkSessionCheckpoint(
       | undefined;
 
   if (
+    !hasOnlyKeys(
+      record,
+      [
+        "schemaVersion",
+        "sessionId",
+        "goal",
+        "artifact",
+        "stage",
+        "revision",
+        "references",
+        "nextActions",
+        "blockers",
+      ],
+    ) ||
     record.schemaVersion !== 1 ||
     typeof record.sessionId !==
       "string" ||
@@ -107,6 +139,15 @@ export function parseWorkSessionCheckpoint(
     (record.revision as number) <
       1 ||
     !artifact ||
+    !hasOnlyKeys(
+      artifact,
+      [
+        "artifactId",
+        "artifactFingerprint",
+        "label",
+        "version",
+      ],
+    ) ||
     typeof artifact.artifactId !==
       "string" ||
     !artifact.artifactId.trim() ||
@@ -123,6 +164,16 @@ export function parseWorkSessionCheckpoint(
       artifact.version,
     ) ||
     !references ||
+    !hasOnlyKeys(
+      references,
+      [
+        "completedCapabilityIds",
+        "evidenceIds",
+        "semanticNodeIds",
+        "proofClaimIds",
+        "validationScenarioIds",
+      ],
+    ) ||
     !nonEmptyStringArray(
       references
         .completedCapabilityIds,
@@ -152,8 +203,81 @@ export function parseWorkSessionCheckpoint(
     );
   }
 
-  return record as unknown as
-    WorkSessionCheckpoint;
+  return {
+    schemaVersion: 1,
+    sessionId:
+      record.sessionId as string,
+    goal:
+      record.goal as string,
+    artifact: {
+      artifactId:
+        artifact.artifactId as string,
+      artifactFingerprint:
+        artifact
+          .artifactFingerprint as string,
+      ...(artifact.label ===
+      undefined
+        ? {}
+        : {
+            label:
+              artifact.label as string,
+          }),
+      ...(artifact.version ===
+      undefined
+        ? {}
+        : {
+            version:
+              artifact.version as string,
+          }),
+    },
+    stage:
+      record.stage as
+        WorkSessionStage,
+    revision:
+      record.revision as number,
+    references: {
+      completedCapabilityIds:
+        canonicalStrings(
+          references
+            .completedCapabilityIds as
+            string[],
+        ),
+      evidenceIds:
+        canonicalStrings(
+          references
+            .evidenceIds as
+            string[],
+        ),
+      semanticNodeIds:
+        canonicalStrings(
+          references
+            .semanticNodeIds as
+            string[],
+        ),
+      proofClaimIds:
+        canonicalStrings(
+          references
+            .proofClaimIds as
+            string[],
+        ),
+      validationScenarioIds:
+        canonicalStrings(
+          references
+            .validationScenarioIds as
+            string[],
+        ),
+    },
+    nextActions:
+      canonicalStrings(
+        record.nextActions as
+          string[],
+      ),
+    blockers:
+      canonicalStrings(
+        record.blockers as
+          string[],
+      ),
+  };
 }
 
 export async function saveWorkSessionCheckpoint(

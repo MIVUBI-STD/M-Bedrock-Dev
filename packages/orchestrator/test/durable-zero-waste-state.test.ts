@@ -20,6 +20,8 @@ import {
 import {
   loadSemanticProofClaimStore,
   loadWorkSessionCheckpoint,
+  parseSemanticProofClaimStore,
+  parseWorkSessionCheckpoint,
   saveWorkSessionCheckpoint,
   upsertSemanticProofClaim,
 } from "../src/index.js";
@@ -70,6 +72,44 @@ describe("durable zero-waste state stores", () => {
         },
       );
     }
+  });
+
+  it("rejects unknown persisted fields at canonical state boundaries", async () => {
+    expect(() =>
+      parseWorkSessionCheckpoint({
+        schemaVersion: 1,
+        sessionId: "s",
+        goal: "g",
+        artifact: {
+          artifactId: "a",
+          artifactFingerprint: "fp",
+        },
+        stage: "new",
+        revision: 1,
+        references: {
+          completedCapabilityIds: [],
+          evidenceIds: [],
+          semanticNodeIds: [],
+          proofClaimIds: [],
+          validationScenarioIds: [],
+        },
+        nextActions: [],
+        blockers: [],
+        hiddenAuthority: true,
+      })
+    ).toThrow(
+      /structurally invalid/,
+    );
+
+    expect(() =>
+      parseSemanticProofClaimStore({
+        schemaVersion: 1,
+        claims: [],
+        hiddenAuthority: true,
+      })
+    ).toThrow(
+      /structurally invalid/,
+    );
   });
 
   it("rejects corrupt durable state instead of accepting empty references", async () => {
