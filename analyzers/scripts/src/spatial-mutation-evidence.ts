@@ -21,6 +21,7 @@ export interface ScriptSpatialMutationEvidence {
   source: SourceRef;
   position: SafeConfigExpression;
   identifier?: string;
+  resultBinding?: string;
 }
 
 export interface ScriptSpatialMutationRejection {
@@ -132,6 +133,28 @@ function expressionAt(
     : undefined;
 }
 
+
+function assignedIdentifier(
+  call: ts.CallExpression,
+): string | undefined {
+  const parent = call.parent;
+  if (
+    ts.isVariableDeclaration(parent) &&
+    ts.isIdentifier(parent.name)
+  ) {
+    return parent.name.text;
+  }
+  if (
+    ts.isBinaryExpression(parent) &&
+    parent.operatorToken.kind ===
+      ts.SyntaxKind.EqualsToken &&
+    ts.isIdentifier(parent.left)
+  ) {
+    return parent.left.text;
+  }
+  return undefined;
+}
+
 export function deriveScriptSpatialMutations(
   text: string,
   source: SourceRef,
@@ -210,6 +233,12 @@ export function deriveScriptSpatialMutations(
             ...(identifier === undefined
               ? {}
               : { identifier }),
+            ...(assignedIdentifier(node) === undefined
+              ? {}
+              : {
+                  resultBinding:
+                    assignedIdentifier(node),
+                }),
           });
         }
       }
