@@ -229,8 +229,6 @@ function candidateSemanticKey(
     subjectIds: candidateSubjectIds(candidate),
     brokenInvariantIds:
       candidateBrokenInvariantIds(candidate),
-    repairUnitIds:
-      candidateRepairUnitIds(candidate),
     primaryFailure:
       candidate.defect.primaryFailure,
     ...(candidate.defect.causalIncidentId === undefined
