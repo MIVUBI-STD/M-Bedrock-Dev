@@ -237,19 +237,24 @@ async function main(): Promise<void> {
     input &&
     secondInput
   ) {
-    const proofTarget = {
+    const beforeTarget = {
+      ...target,
+      arenaProofMode: "full" as const,
+    };
+    const afterTarget = {
       ...target,
       arenaProofMode:
-        target.arenaProofMode ?? "full",
+        target.arenaProofMode ??
+        "progressive",
     };
     const before = await inspectArtifact(
       resolve(input),
-      proofTarget,
+      beforeTarget,
       knowledge,
     );
     const after = await inspectArtifact(
       resolve(secondInput),
-      proofTarget,
+      afterTarget,
       knowledge,
     );
     const report =
