@@ -34,6 +34,9 @@ import {
   applyReportRepairContext,
 } from "./report-repair-context.js";
 import {
+  bindSourceEvidenceSemanticOwners,
+} from "./report-source-owner.js";
+import {
   confirmGameplayIntentRuntimeDefectForReport,
 } from "./report-confirmation-adapter.js";
 import {
@@ -220,12 +223,21 @@ function candidateBrokenInvariantIds(
   return candidate.defect.brokenInvariantIds;
 }
 
+function candidateSourceEvidence(
+  candidate: AuditReportCandidate,
+) {
+  return bindSourceEvidenceSemanticOwners(
+    candidate.defect.sourceEvidence,
+    candidate.semanticIr,
+  );
+}
+
 function semanticOwnerIssues(
   candidate: AuditReportCandidate,
 ): readonly string[] {
   const owners = [
     ...new Set(
-      (candidate.defect.sourceEvidence ?? [])
+      (candidateSourceEvidence(candidate) ?? [])
         .map((item) => item.semanticOwnerId?.trim())
         .filter(
           (value): value is string =>
@@ -262,7 +274,7 @@ function candidateRepairUnitIds(
   candidate: AuditReportCandidate,
 ): readonly string[] {
   return deriveRepairUnitIdsFromSourceEvidence(
-    candidate.defect.sourceEvidence,
+    candidateSourceEvidence(candidate),
   );
 }
 
@@ -438,8 +450,14 @@ function collectOne(
     };
   }
 
+  const boundSourceEvidence =
+    candidateSourceEvidence(candidate);
+
   const confirmed: ConfirmedDefect = {
     ...candidate.defect,
+    ...(boundSourceEvidence === undefined
+      ? {}
+      : { sourceEvidence: boundSourceEvidence }),
     semanticKey: candidateSemanticKey(candidate),
     subjectIds: [...candidateSubjectIds(candidate)],
     brokenInvariantIds: [
