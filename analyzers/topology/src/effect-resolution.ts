@@ -60,5 +60,18 @@ export function resolveEffect(
     const destination = resolveCoordinate3(effect.destination, context);
     return destination ? { kind: "teleport", target: effect.target, destination, sourcePath: effect.source.relativePath } : undefined;
   }
+  if (effect.kind === "entity-spawn") {
+    const position = effect.position
+      ? resolveCoordinate3(effect.position, context)
+      : undefined;
+    return position
+      ? {
+          kind: "entity-spawn",
+          entityIdentifier: effect.entityIdentifier,
+          position,
+          sourcePath: effect.source.relativePath,
+        }
+      : undefined;
+  }
   return undefined;
 }
