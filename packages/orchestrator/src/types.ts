@@ -41,6 +41,7 @@ import type { ArenaStressPlan } from "./arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "./arena-authored-source-index.js";
 import type { ArenaRepairLocalization } from "./arena-repair-localization.js";
+import type { ArenaRepairBridge } from "./arena-repair-bridge.js";
 import type { ArenaProofExecutionMode, ArenaProofExecutionPlan } from "./arena-proof-execution-plan.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
@@ -206,6 +207,7 @@ export interface InspectDirectoryResult {
     repeatedRunPlan?: ArenaRepeatedRunValidationPlan;
     authoredSources?: readonly ArenaAuthoredSpatialSource[];
     repairLocalization?: ArenaRepairLocalization;
+    repairBridge?: ArenaRepairBridge;
     proofExecution?: ArenaProofExecutionPlan;
     nativeSpatial?: ArenaNativeSpatialAudit;
     voxelProof?: ArenaVoxelProof;

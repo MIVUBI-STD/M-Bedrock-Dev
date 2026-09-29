@@ -99,6 +99,20 @@ export interface ArenaEngineeringProjection {
     byKind?: Readonly<Record<string, number>>;
     reasons: readonly string[];
   };
+  repairBridge: {
+    deterministicRepairs: number;
+    proposalOnly: number;
+    unresolved: number;
+    items: readonly {
+      kind: string;
+      arenaId: string;
+      status: string;
+      sourcePath?: string;
+      line?: number;
+      transactionId?: string;
+      reasons: readonly string[];
+    }[];
+  };
   repairLocalization: {
     localized: number;
     unresolved: number;
@@ -526,6 +540,41 @@ export function buildArenaEngineeringProjection(
                 "Arena stress plan has not been derived.",
               ],
           },
+    repairBridge: {
+      deterministicRepairs:
+        arena.repairBridge
+          ?.deterministicRepairs ?? 0,
+      proposalOnly:
+        arena.repairBridge
+          ?.proposalOnly ?? 0,
+      unresolved:
+        arena.repairBridge
+          ?.unresolved ?? 0,
+      items:
+        arena.repairBridge?.items.map(
+          (item) => ({
+            kind: item.kind,
+            arenaId: item.arenaId,
+            status: item.status,
+            ...(item.sourcePath === undefined
+              ? {}
+              : {
+                  sourcePath:
+                    item.sourcePath,
+                }),
+            ...(item.line === undefined
+              ? {}
+              : { line: item.line }),
+            ...(item.transactionId === undefined
+              ? {}
+              : {
+                  transactionId:
+                    item.transactionId,
+                }),
+            reasons: item.reasons,
+          }),
+        ) ?? [],
+    },
     repairLocalization: {
       localized:
         arena.repairLocalization?.localized ?? 0,

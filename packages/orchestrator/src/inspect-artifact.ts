@@ -33,6 +33,7 @@ import { createDiagnostic } from "../../diagnostics/src/index.js";
 import { deriveArenaStressPlan } from "./arena-stress-plan.js";
 import { deriveArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
 import { localizeArenaRepairSources } from "./arena-repair-localization.js";
+import { bridgeArenaRepairLocalization } from "./arena-repair-bridge.js";
 import { arenaProofLayerEnabled, planArenaProofExecution } from "./arena-proof-execution-plan.js";
 import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
 
@@ -524,6 +525,12 @@ export async function inspectArtifact(
                 }),
           })
         : undefined;
+
+    const repairBridge =
+      bridgeArenaRepairLocalization(
+        repairLocalization,
+        result.repairCandidates,
+      );
 
     const proofConclusion = concludeArenaProof(
       proofCoverage,

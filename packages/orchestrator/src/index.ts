@@ -317,3 +317,5 @@ export * from "./arena-global-state-runtime-compiler.js";
 export * from "./post-repair-verification.js";
 
 export * from "./arena-proof-reuse.js";
+
+export * from "./arena-repair-bridge.js";
