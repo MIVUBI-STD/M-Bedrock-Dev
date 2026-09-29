@@ -24,6 +24,24 @@ export interface AllArenaStressExperimentInput {
   minimumRunsPerArm?: number;
 }
 
+export interface PlayerDisconnectStressExperimentInput {
+  id: string;
+  title: string;
+  targetProfileFingerprint: string;
+  fixtureFingerprint: string;
+  objectiveId: string;
+  participant: string;
+  subject: {
+    playerKey: string;
+    arenaId: string;
+    arenaGeneration: number;
+    connectionGeneration: number;
+    participationGeneration: number;
+    lifeGeneration: number;
+  };
+  minimumRunsPerArm?: number;
+}
+
 export interface CleanupStartOverlapExperimentInput {
   id: string;
   title: string;
@@ -87,6 +105,49 @@ export const MULTIPLAYER_STRESS_ACTION_CAPABILITIES:
       startingArenaId: "string",
       startingArenaGeneration: "number",
       startingPlayerCount: "number",
+    },
+  }, {
+    id: "multiplayer.execute-staggered-full-join",
+    description:
+      "Fill all supplied arenas using interleaved joins separated by a bounded tick spacing.",
+    requiredContext: "LIVE_MINECRAFT",
+    mutationRisk: "guarded",
+    phases: ["stimulus"],
+    requiredParameters: {
+      arenaIds: "string",
+      arenaGenerations: "string",
+      playersPerArena: "number",
+      joinSpacingTicks: "number",
+    },
+  }, {
+    id: "multiplayer.execute-disconnect-during-setup",
+    description:
+      "Disconnect one player after arena setup begins but before active play and emit generation-scoped reconciliation evidence.",
+    requiredContext: "LIVE_MINECRAFT",
+    mutationRisk: "guarded",
+    phases: ["stimulus"],
+    requiredParameters: {
+      playerKey: "string",
+      arenaId: "string",
+      arenaGeneration: "number",
+      connectionGeneration: "number",
+      participationGeneration: "number",
+      lifeGeneration: "number",
+    },
+  }, {
+    id: "multiplayer.execute-disconnect-during-active",
+    description:
+      "Disconnect one active player and emit progress/session reconciliation evidence scoped to the captured generations.",
+    requiredContext: "LIVE_MINECRAFT",
+    mutationRisk: "guarded",
+    phases: ["stimulus"],
+    requiredParameters: {
+      playerKey: "string",
+      arenaId: "string",
+      arenaGeneration: "number",
+      connectionGeneration: "number",
+      participationGeneration: "number",
+      lifeGeneration: "number",
     },
   }, {
     id: "multiplayer.cleanup-arena-stress-fixture",
@@ -485,4 +546,207 @@ export function createCleanupStartOverlapExperiment(
     minimumRunsPerArm:
       input.minimumRunsPerArm ?? 2,
   };
+}
+
+
+export function createStaggeredFullJoinStressExperiment(
+  input: AllArenaStressExperimentInput,
+): RuntimeExperimentDefinition {
+  if (input.arenas.length < 1) {
+    throw new Error(
+      "Staggered full join stress requires at least one arena.",
+    );
+  }
+
+  return {
+    schemaVersion: 1,
+    id: input.id,
+    title: input.title,
+    domain: "multiplayer",
+    requiredContext: "LIVE_MINECRAFT",
+    mutationRisk: "guarded",
+    targetProfileFingerprint:
+      input.targetProfileFingerprint,
+    fixtureFingerprint:
+      input.fixtureFingerprint,
+    protocol: [
+      resetStep(input.arenas),
+      {
+        id: "execute-staggered-full-join",
+        phase: "stimulus",
+        actionId:
+          "multiplayer.execute-staggered-full-join",
+        parameters: {
+          arenaIds:
+            encodedArenaIds(input.arenas),
+          arenaGenerations:
+            encodedGenerations(input.arenas),
+          playersPerArena:
+            input.playerCountPerArena,
+          joinSpacingTicks: 1,
+        },
+      },
+      scoreProbe(
+        input,
+        "arena-session-invariant-violation-observed",
+      ),
+      cleanupStep(input.arenas),
+    ],
+    factors: [],
+    arms: [{
+      id: "baseline",
+      role: "control",
+      factorValues: {},
+    }],
+    outcomePredicateIds: [
+      "arena-session-invariant-violation-observed",
+    ],
+    evidenceRequirements: [
+      ...perArenaEvidence(
+        input.arenas,
+        "arena-staggered-join-complete",
+      ),
+      ...perArenaEvidence(
+        input.arenas,
+        "arena-membership-count-sampled",
+        "activePlayers",
+        input.playerCountPerArena,
+      ),
+    ],
+    minimumRunsPerArm:
+      input.minimumRunsPerArm ?? 2,
+  };
+}
+
+function playerDisconnectExperiment(
+  input: PlayerDisconnectStressExperimentInput,
+  phase: "setup" | "active",
+): RuntimeExperimentDefinition {
+  const actionId =
+    phase === "setup"
+      ? "multiplayer.execute-disconnect-during-setup"
+      : "multiplayer.execute-disconnect-during-active";
+  const outcome =
+    phase === "setup"
+      ? "stale-session-mutation-observed"
+      : "arena-session-invariant-violation-observed";
+  const reconciliationPredicate =
+    phase === "setup"
+      ? "arena-pending-setup-invalidated"
+      : "arena-active-disconnect-reconciled";
+
+  return {
+    schemaVersion: 1,
+    id: input.id,
+    title: input.title,
+    domain: "multiplayer",
+    requiredContext: "LIVE_MINECRAFT",
+    mutationRisk: "guarded",
+    targetProfileFingerprint:
+      input.targetProfileFingerprint,
+    fixtureFingerprint:
+      input.fixtureFingerprint,
+    protocol: [{
+      id: "reset-arena-stress-fixture",
+      phase: "setup",
+      actionId:
+        "multiplayer.reset-arena-stress-fixture",
+      parameters: {
+        arenaIds: input.subject.arenaId,
+        arenaGenerations:
+          String(input.subject.arenaGeneration),
+      },
+    }, {
+      id:
+        phase === "setup"
+          ? "disconnect-during-setup"
+          : "disconnect-during-active",
+      phase: "stimulus",
+      actionId,
+      parameters: {
+        playerKey: input.subject.playerKey,
+        arenaId: input.subject.arenaId,
+        arenaGeneration:
+          input.subject.arenaGeneration,
+        connectionGeneration:
+          input.subject.connectionGeneration,
+        participationGeneration:
+          input.subject.participationGeneration,
+        lifeGeneration:
+          input.subject.lifeGeneration,
+      },
+    }, scoreProbe(input, outcome), {
+      id: "cleanup-arena-stress-fixture",
+      phase: "teardown",
+      actionId:
+        "multiplayer.cleanup-arena-stress-fixture",
+      parameters: {
+        arenaIds: input.subject.arenaId,
+      },
+    }],
+    factors: [],
+    arms: [{
+      id: "baseline",
+      role: "control",
+      factorValues: {},
+    }],
+    outcomePredicateIds: [outcome],
+    evidenceRequirements: [{
+      id: "player-disconnected",
+      predicateId: "player-disconnected",
+      state: "present",
+      scope: {
+        playerKey: input.subject.playerKey,
+        arenaId: input.subject.arenaId,
+        arenaGeneration:
+          input.subject.arenaGeneration,
+        connectionGeneration:
+          input.subject.connectionGeneration,
+        participationGeneration:
+          input.subject.participationGeneration,
+        lifeGeneration:
+          input.subject.lifeGeneration,
+      },
+    }, {
+      id: "session-progress-reset",
+      predicateId: "session-progress-reset",
+      state: "present",
+      scope: {
+        playerKey: input.subject.playerKey,
+        arenaId: input.subject.arenaId,
+        arenaGeneration:
+          input.subject.arenaGeneration,
+      },
+    }, {
+      id: "disconnect-reconciled",
+      predicateId: reconciliationPredicate,
+      state: "present",
+      scope: {
+        playerKey: input.subject.playerKey,
+        arenaId: input.subject.arenaId,
+        arenaGeneration:
+          input.subject.arenaGeneration,
+      },
+    }],
+    minimumRunsPerArm:
+      input.minimumRunsPerArm ?? 2,
+  };
+}
+
+export function createDisconnectDuringSetupStressExperiment(
+  input: PlayerDisconnectStressExperimentInput,
+): RuntimeExperimentDefinition {
+  return playerDisconnectExperiment(
+    input,
+    "setup",
+  );
+}
+
+export function createDisconnectDuringActiveStressExperiment(
+  input: PlayerDisconnectStressExperimentInput,
+): RuntimeExperimentDefinition {
+  return playerDisconnectExperiment(
+    input,
+    "active",
+  );
 }
