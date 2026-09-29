@@ -102,6 +102,14 @@ export async function inspectArtifact(
             arenaVoxelProof = await proveArenaVoxelEquivalence(
               reader,
               result.arenaAnalysis.discovery,
+              {
+                ...(result.arenaAnalysis.regionPlan === undefined
+                  ? {}
+                  : {
+                      regionPlan:
+                        result.arenaAnalysis.regionPlan,
+                    }),
+              },
             );
 
             for (const replica of arenaVoxelProof.replicas) {

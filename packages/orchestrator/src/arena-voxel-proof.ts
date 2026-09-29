@@ -7,6 +7,7 @@ import {
   UnsupportedSubChunkFormatError,
 } from "../../../adapters/leveldb/src/index.js";
 import type {
+  ArenaRegionPlan,
   ArenaReplicaDiscovery,
   ArenaVector3,
   Translation3,
@@ -42,6 +43,11 @@ export interface ArenaVoxelProof {
     min: ArenaVector3;
     max: ArenaVector3;
   };
+  regions: readonly {
+    min: ArenaVector3;
+    max: ArenaVector3;
+  }[];
+  regionSource: "topology-plan" | "fallback-envelope";
   replicas: readonly ArenaVoxelReplicaProof[];
 }
 
@@ -50,6 +56,7 @@ export interface ArenaVoxelProofOptions {
   dimensionId?: number;
   maxBlocks?: number;
   maxMismatchesPerReplica?: number;
+  regionPlan?: ArenaRegionPlan;
 }
 
 function floorDiv(value: number, divisor: number): number {
@@ -152,14 +159,29 @@ export async function proveArenaVoxelEquivalence(
   discovery: ArenaReplicaDiscovery,
   options: ArenaVoxelProofOptions = {},
 ): Promise<ArenaVoxelProof> {
-  const region = envelope(discovery, options.marginBlocks ?? 16);
+  const fallbackRegion = envelope(discovery, options.marginBlocks ?? 16);
+  const regions =
+    options.regionPlan?.volumes.map((volume) => ({
+      min: volume.min,
+      max: volume.max,
+    })) ?? [fallbackRegion];
+  const region =
+    options.regionPlan?.boundingBox ?? fallbackRegion;
+  const regionSource =
+    options.regionPlan === undefined
+      ? "fallback-envelope" as const
+      : "topology-plan" as const;
   const maxBlocks = options.maxBlocks ?? 250_000;
   const maxMismatches = options.maxMismatchesPerReplica ?? 128;
   const dimensionId = options.dimensionId ?? 0;
-  const requiredBlocks =
-    (region.max.x - region.min.x + 1) *
-    (region.max.y - region.min.y + 1) *
-    (region.max.z - region.min.z + 1);
+  const requiredBlocks = regions.reduce(
+    (sum, volume) =>
+      sum +
+      (volume.max.x - volume.min.x + 1) *
+      (volume.max.y - volume.min.y + 1) *
+      (volume.max.z - volume.min.z + 1),
+    0,
+  );
 
   if (requiredBlocks > maxBlocks) {
     return {
@@ -167,6 +189,8 @@ export async function proveArenaVoxelEquivalence(
       sampledBlocks: 0,
       requiredBlocks,
       region,
+      regions,
+      regionSource,
       replicas: discovery.replicas.map((replica) => ({
         arenaId: replica.arenaId,
         status: "budget-exceeded",
@@ -237,38 +261,40 @@ export async function proveArenaVoxelEquivalence(
   }));
 
   let sampledBlocks = 0;
-  for (let x = region.min.x; x <= region.max.x; x += 1) {
-    for (let y = region.min.y; y <= region.max.y; y += 1) {
-      for (let z = region.min.z; z <= region.max.z; z += 1) {
-        const canonical = { x, y, z };
-        const canonicalSignature = await signatureAt(canonical);
-        sampledBlocks += 1;
+  for (const volume of regions) {
+    for (let x = volume.min.x; x <= volume.max.x; x += 1) {
+      for (let y = volume.min.y; y <= volume.max.y; y += 1) {
+        for (let z = volume.min.z; z <= volume.max.z; z += 1) {
+          const canonical = { x, y, z };
+          const canonicalSignature = await signatureAt(canonical);
+          sampledBlocks += 1;
 
-        for (let index = 0; index < discovery.replicas.length; index += 1) {
-          const state = replicaState[index]!;
-          const offset = discovery.offsets[index];
-          if (!offset || canonicalSignature === undefined) {
-            state.unresolvedBlocks += 1;
-            continue;
-          }
+          for (let index = 0; index < discovery.replicas.length; index += 1) {
+            const state = replicaState[index]!;
+            const offset = discovery.offsets[index];
+            if (!offset || canonicalSignature === undefined) {
+              state.unresolvedBlocks += 1;
+              continue;
+            }
 
-          const replica = translated(canonical, offset);
-          const replicaSignature = await signatureAt(replica);
-          if (replicaSignature === undefined) {
-            state.unresolvedBlocks += 1;
-            continue;
-          }
+            const replica = translated(canonical, offset);
+            const replicaSignature = await signatureAt(replica);
+            if (replicaSignature === undefined) {
+              state.unresolvedBlocks += 1;
+              continue;
+            }
 
-          state.comparedBlocks += 1;
-          if (canonicalSignature !== replicaSignature) {
-            state.mismatchCount += 1;
-            if (state.mismatches.length < maxMismatches) {
-              state.mismatches.push({
-                canonical,
-                replica,
-                canonicalSignature,
-                replicaSignature,
-              });
+            state.comparedBlocks += 1;
+            if (canonicalSignature !== replicaSignature) {
+              state.mismatchCount += 1;
+              if (state.mismatches.length < maxMismatches) {
+                state.mismatches.push({
+                  canonical,
+                  replica,
+                  canonicalSignature,
+                  replicaSignature,
+                });
+              }
             }
           }
         }
@@ -298,6 +324,8 @@ export async function proveArenaVoxelEquivalence(
     sampledBlocks,
     requiredBlocks,
     region,
+    regions,
+    regionSource,
     replicas,
   };
 }

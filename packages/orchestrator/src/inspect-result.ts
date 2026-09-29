@@ -361,6 +361,9 @@ export function buildInspectionResult(
       ...(topology.arenaReplicaDiscovery === undefined
         ? {}
         : { discovery: topology.arenaReplicaDiscovery }),
+      ...(topology.arenaRegionPlan === undefined
+        ? {}
+        : { regionPlan: topology.arenaRegionPlan }),
     },
     gameplayIntent: {
       model: input.gameplayIntent,

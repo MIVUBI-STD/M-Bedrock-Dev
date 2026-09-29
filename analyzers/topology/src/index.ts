@@ -1,5 +1,6 @@
 export * from "./arena-discovery.js";
 export * from "./arena-replica.js";
+export * from "./arena-region.js";
 export * from "./candidates.js";
 export * from "./coordinate-context.js";
 export * from "./effect-resolution.js";
