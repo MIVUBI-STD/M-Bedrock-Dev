@@ -70,45 +70,66 @@ const staticResult: IntentDiagnosticGateResult = {
   reasons: ["Static implementation contradicts authored cleanup intent."],
 };
 
-const baseBug = {
-  severity: "major" as const,
-  category: "player-state" as const,
-  title: "Cleanup retains match state",
-  problem: "Match-owned state remains after cleanup.",
-  expected: "Match-owned state is reset.",
-  observed: "Previous match state remains active.",
-};
+function defect(
+  semanticKey: string,
+  options: {
+    ai?: boolean;
+    reproduction?: readonly string[];
+  } = {},
+) {
+  return {
+    semanticKey,
+    impact: {
+      progression: "degraded" as const,
+      recovery: "normal" as const,
+      stability: "stable" as const,
+      coreMechanic: "correct" as const,
+      importantState: "materially-wrong" as const,
+      fairness: "unaffected" as const,
+    },
+    primaryFailure: "player-owned-state" as const,
+    title: "Cleanup retains match state",
+    problem: "Match-owned state remains after cleanup.",
+    expected: {
+      authority: "authored-intent" as const,
+      statement: "Match-owned state is reset.",
+      evidenceIds: ["intent:cleanup"],
+    },
+    observed: {
+      statement: "Previous match state remains active.",
+      evidenceIds: ["observation:cleanup"],
+    },
+    ...(options.reproduction === undefined
+      ? {}
+      : { reproduction: options.reproduction }),
+    ...(options.ai
+      ? {
+          aiAnalysis: "Cleanup does not clear the owned state.",
+          relevantCode: [{
+            file: "scripts/session.ts",
+            reason: "Owns match cleanup.",
+          }],
+        }
+      : {}),
+    brokenInvariantIds: ["inv:cleanup"],
+    repairUnitIds: ["unit:session-cleanup"],
+  };
+}
 
 describe("report defect collector", () => {
-  it("collects confirmed defects from all three evidence routes", () => {
+  it("collects canonical defects from all three evidence routes", () => {
     const result = collectConfirmedDefects([
       {
         route: "runtime",
         intent,
         assessment: runtimeAssessment,
-        bug: {
-          ...baseBug,
-          id: "BUG-RUN-001",
-          aiAnalysis: "Runtime cleanup contradicts the authored invariant.",
-          relevantCode: [{
-            file: "scripts/session.ts",
-            reason: "Owns match cleanup.",
-          }],
-        },
+        defect: defect("runtime-cleanup", { ai: true }),
       },
       {
         route: "static",
         intent,
         result: staticResult,
-        bug: {
-          ...baseBug,
-          id: "BUG-STA-001",
-          aiAnalysis: "Static cleanup path omits the required reset.",
-          relevantCode: [{
-            file: "scripts/session.ts",
-            reason: "Owns match cleanup.",
-          }],
-        },
+        defect: defect("static-cleanup", { ai: true }),
       },
       {
         route: "tester",
@@ -117,23 +138,58 @@ describe("report defect collector", () => {
           reproduced: true,
           evidence: "State persists after two repeated match completions.",
         },
-        bug: {
-          ...baseBug,
-          id: "BUG-TST-001",
+        defect: defect("tester-cleanup", {
           reproduction: [
             "Complete a match.",
             "Return to lobby.",
             "Start another match.",
           ],
-        },
+        }),
       },
     ]);
 
     expect(result.confirmed).toHaveLength(3);
     expect(result.rejected).toHaveLength(0);
     expect(
-      result.confirmed.map((bug) => bug.foundBy),
+      result.confirmed.map((item) => item.foundBy),
     ).toEqual(["ai", "ai", "tester"]);
+  });
+
+  it("derives severity category and ids during final projection", () => {
+    const result = buildBugReportFromAuditCandidates({
+      map: {
+        name: "Beach Bedwars",
+        mapVersion: "1.0.4",
+        baseVersion: "1.26.20",
+        testedVersion: "1.26.32",
+      },
+      repairBy: "developer",
+      candidates: [{
+        route: "tester",
+        confirmation: {
+          expectedBehaviorAuthority: "explicit-requirement",
+          reproduced: true,
+          evidence: "State persists after repeated completion.",
+        },
+        defect: defect("cleanup", {
+          reproduction: [
+            "Complete a match.",
+            "Observe retained state.",
+          ],
+        }),
+      }],
+    });
+
+    expect(result.promotion.ok).toBe(true);
+    if (!result.promotion.ok) return;
+    expect(result.promotion.report.bugs[0]).toEqual(
+      expect.objectContaining({
+        id: "BUG-BB-001",
+        severity: "major",
+        category: "player-state",
+        foundBy: "tester",
+      }),
+    );
   });
 
   it("keeps non-confirmed candidates out of the final report", () => {
@@ -158,15 +214,7 @@ describe("report defect collector", () => {
               nextEvidenceNeed: "authored-intent",
             },
           },
-          bug: {
-            ...baseBug,
-            id: "BUG-REJECT-001",
-            aiAnalysis: "Evidence remains incomplete.",
-            relevantCode: [{
-              file: "scripts/session.ts",
-              reason: "Possible cleanup path.",
-            }],
-          },
+          defect: defect("rejected", { ai: true }),
         },
         {
           route: "tester",
@@ -175,14 +223,12 @@ describe("report defect collector", () => {
             reproduced: true,
             evidence: "The state persists after repeated completion.",
           },
-          bug: {
-            ...baseBug,
-            id: "BUG-TST-002",
+          defect: defect("accepted", {
             reproduction: [
               "Complete a match.",
               "Observe retained state.",
             ],
-          },
+          }),
         },
       ],
     });
@@ -191,90 +237,72 @@ describe("report defect collector", () => {
     expect(result.collection.rejected).toEqual([
       expect.objectContaining({
         route: "runtime",
-        bugId: "BUG-REJECT-001",
+        semanticKey: "rejected",
       }),
     ]);
     expect(result.promotion.ok).toBe(true);
     if (!result.promotion.ok) return;
-    expect(
-      result.promotion.report.bugs.map((bug) => bug.id),
-    ).toEqual(["BUG-TST-002"]);
+    expect(result.promotion.report.bugs).toHaveLength(1);
   });
 
-  it("does not auto-merge duplicate defect candidates", () => {
-    const collection = collectConfirmedDefects([
-      {
-        route: "tester",
-        confirmation: {
-          expectedBehaviorAuthority: "explicit-requirement",
-          reproduced: true,
-          evidence: "First observation.",
+  it("allocates the same ids regardless of candidate order", () => {
+    const makeCandidates = (reversed: boolean) => {
+      const entries = [
+        {
+          route: "tester" as const,
+          confirmation: {
+            expectedBehaviorAuthority: "explicit-requirement" as const,
+            reproduced: true,
+            evidence: "A",
+          },
+          defect: defect("a", {
+            reproduction: ["A"],
+          }),
         },
-        bug: {
-          ...baseBug,
-          id: "BUG-DUP-001",
-          reproduction: ["Reproduce once."],
+        {
+          route: "tester" as const,
+          confirmation: {
+            expectedBehaviorAuthority: "explicit-requirement" as const,
+            reproduced: true,
+            evidence: "B",
+          },
+          defect: defect("b", {
+            reproduction: ["B"],
+          }),
         },
-      },
-      {
-        route: "tester",
-        confirmation: {
-          expectedBehaviorAuthority: "explicit-requirement",
-          reproduced: true,
-          evidence: "Second observation.",
-        },
-        bug: {
-          ...baseBug,
-          id: "BUG-DUP-001",
-          reproduction: ["Reproduce twice."],
-        },
-      },
-    ]);
+      ];
+      return reversed ? [...entries].reverse() : entries;
+    };
 
-    expect(collection.confirmed).toHaveLength(2);
-
-    const report = buildBugReportFromAuditCandidates({
+    const input = {
       map: {
-        name: "Map",
-        mapVersion: "1.0.0",
+        name: "Beach Bedwars",
+        mapVersion: "1.0.4",
         baseVersion: "1.26.20",
         testedVersion: "1.26.20",
       },
-      repairBy: "developer",
-      candidates: [
-        {
-          route: "tester",
-          confirmation: {
-            expectedBehaviorAuthority: "explicit-requirement",
-            reproduced: true,
-            evidence: "First observation.",
-          },
-          bug: {
-            ...baseBug,
-            id: "BUG-DUP-001",
-            reproduction: ["Reproduce once."],
-          },
-        },
-        {
-          route: "tester",
-          confirmation: {
-            expectedBehaviorAuthority: "explicit-requirement",
-            reproduced: true,
-            evidence: "Second observation.",
-          },
-          bug: {
-            ...baseBug,
-            id: "BUG-DUP-001",
-            reproduction: ["Reproduce twice."],
-          },
-        },
-      ],
+      repairBy: "developer" as const,
+    };
+
+    const first = buildBugReportFromAuditCandidates({
+      ...input,
+      candidates: makeCandidates(false),
+    });
+    const second = buildBugReportFromAuditCandidates({
+      ...input,
+      candidates: makeCandidates(true),
     });
 
-    expect(report.promotion.ok).toBe(false);
-    if (report.promotion.ok) return;
-    expect(
-      report.promotion.issues.map((issue) => issue.code),
-    ).toContain("duplicate-bug-id");
+    expect(first.promotion.ok).toBe(true);
+    expect(second.promotion.ok).toBe(true);
+    if (!first.promotion.ok || !second.promotion.ok) return;
+
+    const firstByTitle = [...first.promotion.report.bugs]
+      .map((item) => item.id)
+      .sort();
+    const secondByTitle = [...second.promotion.report.bugs]
+      .map((item) => item.id)
+      .sort();
+    expect(firstByTitle).toEqual(secondByTitle);
   });
 });
