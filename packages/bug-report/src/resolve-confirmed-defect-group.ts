@@ -33,6 +33,7 @@ export interface CanonicalDefectNarrative {
     "statement"
   >;
   readonly expectedAuthority: ExpectedBehaviorAuthority;
+  readonly foundBy?: ConfirmedDefect["foundBy"];
   readonly primaryFailure: BugPrimaryFailure;
   readonly reproduction?: readonly string[];
   readonly aiAnalysis?: string;
@@ -103,10 +104,29 @@ function mergeImpact(
 
 function canonicalFoundBy(
   defects: readonly ConfirmedDefect[],
+  narrative: CanonicalDefectNarrative,
 ): ConfirmedDefect["foundBy"] {
-  return defects.some((item) => item.foundBy === "tester")
-    ? "tester"
-    : "ai";
+  const origins = unique(
+    defects.map((item) => item.foundBy),
+  );
+
+  if (origins.length === 1) {
+    return origins[0]!;
+  }
+
+  if (narrative.foundBy === undefined) {
+    throw new Error(
+      "Mixed-origin canonical groups require explicit foundBy based on the earliest documented discovery.",
+    );
+  }
+
+  if (!origins.includes(narrative.foundBy)) {
+    throw new Error(
+      "Canonical foundBy must be represented by the grouped defects.",
+    );
+  }
+
+  return narrative.foundBy;
 }
 
 function canonicalConfirmationBasis(
@@ -155,17 +175,22 @@ function uniqueSourceEvidence(
 function sharedSuggestedFix(
   defects: readonly ConfirmedDefect[],
 ): string | undefined {
-  const values = unique(
-    defects
-      .map((item) => item.suggestedFix)
-      .filter(
-        (value): value is string =>
-          typeof value === "string" &&
-          value.trim().length > 0,
-      ),
+  const values = defects.map((item) =>
+    item.suggestedFix?.trim()
   );
-  return values.length === 1
-    ? values[0]
+
+  if (
+    values.some((value) => !value) ||
+    values.length === 0
+  ) {
+    return undefined;
+  }
+
+  const uniqueValues = unique(
+    values as readonly string[],
+  );
+  return uniqueValues.length === 1
+    ? uniqueValues[0]
     : undefined;
 }
 
@@ -234,18 +259,12 @@ export function resolveConfirmedDefectGroup(
   const primaryFailures = unique(
     group.defects.map((item) => item.primaryFailure),
   );
-  if (
-    primaryFailures.length > 1 &&
-    !primaryFailures.includes(narrative.primaryFailure)
-  ) {
+  if (primaryFailures.length !== 1) {
     throw new Error(
-      "Canonical primaryFailure must be represented by the grouped defects.",
+      "Canonical group contains multiple primary failures and must be split before report projection.",
     );
   }
-  if (
-    primaryFailures.length === 1 &&
-    narrative.primaryFailure !== primaryFailures[0]
-  ) {
+  if (narrative.primaryFailure !== primaryFailures[0]) {
     throw new Error(
       "Canonical primaryFailure must match the grouped defect primaryFailure.",
     );
@@ -264,7 +283,10 @@ export function resolveConfirmedDefectGroup(
     );
   }
 
-  const foundBy = canonicalFoundBy(group.defects);
+  const foundBy = canonicalFoundBy(
+    group.defects,
+    narrative,
+  );
   if (
     foundBy === "tester" &&
     (narrative.reproduction?.length ?? 0) === 0
@@ -335,9 +357,14 @@ export function resolveConfirmedDefectGroup(
       authority: narrative.expectedAuthority,
       statement: narrative.expected.statement,
       evidenceIds: unique(
-        group.defects.flatMap((item) =>
-          item.expected.evidenceIds
-        ),
+        group.defects
+          .filter((item) =>
+            item.expected.authority ===
+            narrative.expectedAuthority
+          )
+          .flatMap((item) =>
+            item.expected.evidenceIds
+          ),
       ),
     },
     observed: {
