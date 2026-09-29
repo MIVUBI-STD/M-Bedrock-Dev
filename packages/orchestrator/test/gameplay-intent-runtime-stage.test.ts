@@ -103,6 +103,29 @@ const routeIntent: GameplayIntentModel = {
   unknowns: [],
 };
 
+
+const completeEntityAiStack = {
+  entities: 1,
+  states: 1,
+  targetedStates: 1,
+  targetedStackComplete: 1,
+  targetedStackIncomplete: 0,
+  navigationWithoutMovement: 0,
+  targetedWithoutNavigation: 0,
+  movementGoalWithoutNavigation: 0,
+  assessments: [{
+    entityKey: "demo:zombie",
+    stateId: "base",
+    targeted: true,
+    movementPresent: true,
+    navigationPresent: true,
+    movementGoalCandidatePresent: true,
+    attackBehaviorPresent: true,
+    missingSurfaces: [],
+    status: "targeted-stack-complete" as const,
+  }],
+};
+
 describe("gameplay intent runtime stage", () => {
   it("evaluates observed outcomes against scoped state at the outcome tick", () => {
     const result = analyzeGameplayIntentRuntime(
@@ -475,7 +498,10 @@ describe("gameplay intent runtime stage", () => {
         evidenceId: "e:reachability",
       }],
       [],
-      { dimension: "overworld" },
+      {
+        dimension: "overworld",
+        entityAiStack: completeEntityAiStack,
+      },
     );
 
     const stall =
@@ -626,7 +652,10 @@ describe("gameplay intent runtime stage", () => {
         observedAt: { tick: 226 },
         evidenceId: "e:chunk-loaded",
       }],
-      { dimension: "overworld" },
+      {
+        dimension: "overworld",
+        entityAiStack: completeEntityAiStack,
+      },
     );
 
     const stall = result.routeStallAssessments[0]!;
@@ -715,7 +744,10 @@ describe("gameplay intent runtime stage", () => {
         observedAt: { tick: 226 },
         evidenceId: "e:chunk-not-loaded",
       }],
-      { dimension: "overworld" },
+      {
+        dimension: "overworld",
+        entityAiStack: completeEntityAiStack,
+      },
     );
 
     const stall = result.routeStallAssessments[0]!;
