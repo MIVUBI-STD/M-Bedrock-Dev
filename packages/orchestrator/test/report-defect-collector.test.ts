@@ -475,6 +475,8 @@ describe("report defect collector", () => {
       defect: {
         ...defect("a", {
           ai: true,
+          expectedAuthority: "explicit-requirement",
+          expectedEvidenceIds: ["requirement:cleanup"],
           reproduction: ["Reproduce A."],
         }),
         causalIncidentId: "incident:cleanup",
@@ -492,6 +494,8 @@ describe("report defect collector", () => {
       defect: {
         ...defect("b", {
           ai: true,
+          expectedAuthority: "explicit-requirement",
+          expectedEvidenceIds: ["requirement:cleanup"],
           reproduction: ["Reproduce B."],
         }),
         causalIncidentId: "incident:cleanup",
