@@ -11,7 +11,14 @@ import type {
   ConfirmedDefect,
   ConfirmedDefectExpectedBasis,
   ConfirmedDefectObservation,
+  ConfirmedDefectSourceEvidence,
 } from "./confirmed-defect.js";
+import type {
+  DefectConfirmationBasis,
+} from "./promote-v2.js";
+import type {
+  ExpectedBehaviorAuthority,
+} from "./confirmation-v2.js";
 
 export interface CanonicalDefectNarrative {
   readonly semanticKey: string;
@@ -25,8 +32,11 @@ export interface CanonicalDefectNarrative {
     ConfirmedDefectObservation,
     "statement"
   >;
+  readonly expectedAuthority: ExpectedBehaviorAuthority;
   readonly primaryFailure: BugPrimaryFailure;
+  readonly reproduction?: readonly string[];
   readonly aiAnalysis?: string;
+  readonly sourceEvidence?: readonly ConfirmedDefectSourceEvidence[];
   readonly suggestedFix?: string;
 }
 
@@ -100,6 +110,84 @@ function canonicalFoundBy(
     : "ai";
 }
 
+function canonicalConfirmationBasis(
+  defects: readonly ConfirmedDefect[],
+): DefectConfirmationBasis {
+  const bases = defects.map((item) => item.confirmation.basis);
+  if (bases.includes("runtime-observation")) {
+    return "runtime-observation";
+  }
+  if (bases.includes("authored-contract-violation")) {
+    return "authored-contract-violation";
+  }
+  return "tester-reproduction";
+}
+
+function sourceEvidenceKey(
+  item: ConfirmedDefectSourceEvidence,
+): string {
+  return [
+    item.source.artifactId,
+    item.source.relativePath,
+    item.source.range?.lineStart ?? "",
+    item.source.range?.lineEnd ?? "",
+    item.source.range?.columnStart ?? "",
+    item.source.range?.columnEnd ?? "",
+    item.source.jsonPointer ?? "",
+    item.reason,
+  ].join("|");
+}
+
+function uniqueSourceEvidence(
+  defects: readonly ConfirmedDefect[],
+): readonly ConfirmedDefectSourceEvidence[] {
+  const values = defects.flatMap(
+    (item) => item.sourceEvidence ?? [],
+  );
+  const seen = new Set<string>();
+  return values.filter((item) => {
+    const key = sourceEvidenceKey(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function canonicalSourceEvidence(
+  defects: readonly ConfirmedDefect[],
+  narrative: CanonicalDefectNarrative,
+): readonly ConfirmedDefectSourceEvidence[] {
+  const available = uniqueSourceEvidence(defects);
+  const selected = narrative.sourceEvidence;
+
+  if (selected === undefined) {
+    if (available.length > 3) {
+      throw new Error(
+        "Canonical group has more than three source locations; select primary sourceEvidence explicitly.",
+      );
+    }
+    return available;
+  }
+
+  if (selected.length > 3) {
+    throw new Error(
+      "Canonical sourceEvidence must contain at most three primary locations.",
+    );
+  }
+
+  const availableKeys = new Set(
+    available.map(sourceEvidenceKey),
+  );
+  for (const item of selected) {
+    if (!availableKeys.has(sourceEvidenceKey(item))) {
+      throw new Error(
+        "Canonical sourceEvidence must be selected from grouped defect evidence.",
+      );
+    }
+  }
+  return selected;
+}
+
 export function resolveConfirmedDefectGroup(
   group: ConfirmedDefectGroup,
   narrative: CanonicalDefectNarrative,
@@ -147,38 +235,38 @@ export function resolveConfirmedDefectGroup(
     );
   }
 
-  const sourceEvidence = group.defects
-    .flatMap((item) => item.sourceEvidence ?? [])
-    .filter((item, index, values) => {
-      const key = [
-        item.source.artifactId,
-        item.source.relativePath,
-        item.source.range?.lineStart ?? "",
-        item.source.range?.lineEnd ?? "",
-        item.reason,
-      ].join("|");
-      return values.findIndex((candidate) => [
-        candidate.source.artifactId,
-        candidate.source.relativePath,
-        candidate.source.range?.lineStart ?? "",
-        candidate.source.range?.lineEnd ?? "",
-        candidate.reason,
-      ].join("|") === key) === index;
-    })
-    .slice(0, 3);
-
-  const reproduction = unique(
-    group.defects.flatMap((item) =>
-      item.reproduction ?? []
-    ),
+  const expectedAuthorities = unique(
+    group.defects.map((item) => item.expected.authority),
   );
+  if (
+    !expectedAuthorities.includes(
+      narrative.expectedAuthority,
+    )
+  ) {
+    throw new Error(
+      "Canonical expectedAuthority must be represented by the grouped defects.",
+    );
+  }
 
+  const foundBy = canonicalFoundBy(group.defects);
+  if (
+    foundBy === "tester" &&
+    (narrative.reproduction?.length ?? 0) === 0
+  ) {
+    throw new Error(
+      "Tester-origin canonical defects require explicit canonical reproduction steps.",
+    );
+  }
+
+  const sourceEvidence = canonicalSourceEvidence(
+    group.defects,
+    narrative,
+  );
   const mustPreserve = unique(
     group.defects.flatMap((item) =>
       item.mustPreserve ?? []
     ),
   );
-
   const confirmationEvidence = unique(
     group.defects.map((item) =>
       item.confirmation.evidence
@@ -187,9 +275,9 @@ export function resolveConfirmedDefectGroup(
 
   return {
     semanticKey: narrative.semanticKey,
-    foundBy: canonicalFoundBy(group.defects),
+    foundBy,
     confirmation: {
-      basis: first.confirmation.basis,
+      basis: canonicalConfirmationBasis(group.defects),
       evidence: confirmationEvidence,
     },
     impact: mergeImpact(group.defects),
@@ -197,7 +285,7 @@ export function resolveConfirmedDefectGroup(
     title: narrative.title,
     problem: narrative.problem,
     expected: {
-      authority: first.expected.authority,
+      authority: narrative.expectedAuthority,
       statement: narrative.expected.statement,
       evidenceIds: unique(
         group.defects.flatMap((item) =>
@@ -213,9 +301,11 @@ export function resolveConfirmedDefectGroup(
         ),
       ),
     },
-    ...(reproduction.length === 0
+    ...(narrative.reproduction === undefined
       ? {}
-      : { reproduction }),
+      : {
+          reproduction: [...narrative.reproduction],
+        }),
     ...(narrative.aiAnalysis === undefined
       ? {}
       : { aiAnalysis: narrative.aiAnalysis }),
