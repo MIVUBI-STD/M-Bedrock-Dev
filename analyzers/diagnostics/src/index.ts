@@ -1,3 +1,6 @@
+export * from "./arena-capacity.js";
+export * from "./arena-findings.js";
+export * from "./identity-findings.js";
 export * from "./dialogue-findings.js";
 export * from "./command-chain-findings.js";
 export * from "./embedded-structure-command-findings.js";

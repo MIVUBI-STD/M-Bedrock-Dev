@@ -7,4 +7,5 @@ export * from "./temporal.js";
 export * from "./validate.js";
 export * from "./compose.js";
 export * from "./nondeterminism.js";
+export * from "./safe-config.js";
 export * from "./minecraft/index.js";

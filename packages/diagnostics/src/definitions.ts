@@ -6,6 +6,7 @@ export type DiagnosticDefinitionCategory =
   | "command"
   | "state"
   | "topology"
+  | "arena"
   | "education"
   | "script"
   | "structure"
@@ -40,7 +41,16 @@ function titleFromCode(code: DiagnosticCode): string {
 
 function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
   if (code === "UNRESOLVED_REFERENCE" || code === "AMBIGUOUS_REFERENCE") return "reference";
-  if (code === "DUPLICATE_MANIFEST_UUID") return "manifest";
+  if (
+    code === "DUPLICATE_MANIFEST_UUID" ||
+    code === "PACK_IDENTITY_DRIFT" ||
+    code === "RELEASE_IDENTITY_INCONSISTENT"
+  ) return "manifest";
+  if (
+    code === "ARENA_REPLICA_DIVERGENCE" ||
+    code === "ARENA_SPATIAL_FINGERPRINT_DIVERGENCE" ||
+    code === "ARENA_CONCURRENCY_CAPACITY_SHORTFALL"
+  ) return "arena";
   if (code === "UNKNOWN_COMMAND_EFFECT") return "command";
   if (code === "SUSPICIOUS_REGION_MUTATION" || code === "CROSS_SCOPE_STATE_RISK") return "state";
   if (code === "TOPOLOGY_TRANSLATION_OUTLIER") return "topology";
