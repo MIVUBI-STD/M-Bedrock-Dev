@@ -1,3 +1,4 @@
+import type { ScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
 import type { ScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "./spatial-mutation-evidence.js";
 import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigImport, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
@@ -448,6 +449,7 @@ export interface ParsedScriptFile {
   spatialMutationRejected?: ScriptSpatialMutationRejection[];
   spatialWorldMutations?: ScriptSpatialWorldMutation[];
   cleanupResourceEvidence?: ScriptCleanupResourceEvidence[];
+  globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
   repairTransformHints?: RepairSourceTransformHint[];
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
