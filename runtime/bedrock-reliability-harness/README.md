@@ -22,9 +22,21 @@ The default transport uses `console.warn()` because Microsoft documents it as th
 [M-BEDROCK-OBS]
 ```
 
-## Scheduling
+## Scheduling and probe cost
 
-The sample uses `system.runInterval` with a configurable interval. Minecraft's Script API schedules these callbacks on script ticks.
+The harness is targeted-first.
+
+By default:
+
+- continuous full snapshots are disabled;
+- the fallback snapshot interval is 20 ticks when continuous capture is explicitly enabled;
+- player and arena summaries are included;
+- dimension-wide entity enumeration is disabled;
+- targeted `m-bedrock:probe` requests remain available for the exact state needed by a diagnosis.
+
+Send the `m-bedrock:capture` script event when a one-shot observation snapshot is required.
+
+This prevents the reliability harness from enumerating every entity and serializing a full world snapshot every script tick merely to wait for a possible failure. Enable continuous/entity capture only for experiments that explicitly require that evidence.
 
 ## Integration
 

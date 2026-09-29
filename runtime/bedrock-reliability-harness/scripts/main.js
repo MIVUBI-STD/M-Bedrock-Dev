@@ -8,8 +8,14 @@ const PROFILE_INPUT_PREFIX = "[M-BEDROCK-PROFILE-IN]";
 const CONTROL_INPUT_PREFIX = "[M-BEDROCK-CTRL-IN]";
 
 const CONFIG = {
-  intervalTicks: 1,
   artifactFingerprint: "",
+  snapshot: {
+    continuous: false,
+    intervalTicks: 20,
+    includePlayers: true,
+    includeArenas: true,
+    includeEntities: false
+  },
   playerObjectives: ["session_progress"],
   arenaObjectives: ["cutscene_active", "round"],
   arenas: [
@@ -126,12 +132,26 @@ function capture() {
     ...(CONFIG.artifactFingerprint
       ? { artifactFingerprint: CONFIG.artifactFingerprint }
       : {}),
-    players: capturePlayers(issues),
-    arenas: captureArenas(issues),
-    entities: captureEntities(issues),
+    players: CONFIG.snapshot.includePlayers
+      ? capturePlayers(issues)
+      : [],
+    arenas: CONFIG.snapshot.includeArenas
+      ? captureArenas(issues)
+      : [],
+    entities: CONFIG.snapshot.includeEntities
+      ? captureEntities(issues)
+      : [],
     metadata: {
       harness: "m-bedrock-reliability",
       targetProfileBound: activeRuntimeProfile !== undefined,
+      captureMode: CONFIG.snapshot.continuous
+        ? "continuous"
+        : "on-demand",
+      included: {
+        players: CONFIG.snapshot.includePlayers,
+        arenas: CONFIG.snapshot.includeArenas,
+        entities: CONFIG.snapshot.includeEntities
+      },
       captureIssueCount: issues.length,
       issues
     }
@@ -176,6 +196,19 @@ function bindRuntimeProfile(message) {
 }
 
 world.afterEvents.scriptEventReceive.subscribe((event) => {
+  if (event.id === "m-bedrock:capture") {
+    try {
+      emit(capture());
+    } catch (error) {
+      console.warn(`${PREFIX}${JSON.stringify({
+        schemaVersion: 1,
+        tick: system.currentTick,
+        error: String(error)
+      })}`);
+    }
+    return;
+  }
+
   if (event.id === "m-bedrock:target-profile") {
     try {
       bindRuntimeProfile(JSON.parse(event.message));
@@ -229,6 +262,8 @@ world.afterEvents.scriptEventReceive.subscribe((event) => {
 });
 
 system.runInterval(() => {
+  if (!CONFIG.snapshot.continuous) return;
+
   try {
     emit(capture());
   } catch (error) {
@@ -238,4 +273,4 @@ system.runInterval(() => {
       error: String(error)
     })}`);
   }
-}, CONFIG.intervalTicks);
+}, CONFIG.snapshot.intervalTicks);
