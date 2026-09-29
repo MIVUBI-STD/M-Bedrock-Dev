@@ -157,6 +157,7 @@ export function buildInspectionResult(
     placedEmbeddedCommands,
     topology,
     scriptSafeConfig,
+    arenaLifecycle,
     arenaLayoutReconciliation,
     arenaCapacity,
     routeCorrelations,
@@ -377,6 +378,7 @@ export function buildInspectionResult(
       capacity: arenaCapacity,
       layoutReconciliation:
         arenaLayoutReconciliation,
+      lifecycle: arenaLifecycle,
     },
     gameplayIntent: {
       model: input.gameplayIntent,

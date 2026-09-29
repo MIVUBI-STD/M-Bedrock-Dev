@@ -268,3 +268,5 @@ export * from "./script-safe-config-analysis.js";
 export * from "./arena-layout-reconciliation.js";
 
 export * from "./script-arena-layout-fallback.js";
+
+export * from "./arena-lifecycle-analysis.js";
