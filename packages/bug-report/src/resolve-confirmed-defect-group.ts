@@ -37,7 +37,6 @@ export interface CanonicalDefectNarrative {
   readonly reproduction?: readonly string[];
   readonly aiAnalysis?: string;
   readonly sourceEvidence?: readonly ConfirmedDefectSourceEvidence[];
-  readonly suggestedFix?: string;
 }
 
 function unique(values: readonly string[]): string[] {
@@ -151,6 +150,23 @@ function uniqueSourceEvidence(
     seen.add(key);
     return true;
   });
+}
+
+function sharedSuggestedFix(
+  defects: readonly ConfirmedDefect[],
+): string | undefined {
+  const values = unique(
+    defects
+      .map((item) => item.suggestedFix)
+      .filter(
+        (value): value is string =>
+          typeof value === "string" &&
+          value.trim().length > 0,
+      ),
+  );
+  return values.length === 1
+    ? values[0]
+    : undefined;
 }
 
 function canonicalSourceEvidence(
@@ -272,6 +288,8 @@ export function resolveConfirmedDefectGroup(
       item.confirmation.evidence
     ),
   ).join(" | ");
+  const suggestedFix =
+    sharedSuggestedFix(group.defects);
 
   return {
     semanticKey: narrative.semanticKey,
@@ -312,9 +330,9 @@ export function resolveConfirmedDefectGroup(
     ...(sourceEvidence.length === 0
       ? {}
       : { sourceEvidence }),
-    ...(narrative.suggestedFix === undefined
+    ...(suggestedFix === undefined
       ? {}
-      : { suggestedFix: narrative.suggestedFix }),
+      : { suggestedFix }),
     ...(mustPreserve.length === 0
       ? {}
       : { mustPreserve }),
