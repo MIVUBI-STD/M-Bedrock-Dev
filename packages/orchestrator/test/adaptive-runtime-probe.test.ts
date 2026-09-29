@@ -151,6 +151,81 @@ describe("adaptive runtime probe bundle", () => {
     ).toHaveLength(1);
   });
 
+  it("reports missing runtime bindings as compile-blocked rather than lower-value", () => {
+    const inspection:
+      AdaptiveRuntimeProbeInspection = {
+      causalAnalysis: {
+        incidents: [{
+          id: "incident:b",
+          scopeKey: "b",
+          severity: "major",
+          confidence: "medium",
+          chainIds: [],
+          relatedDiagnosticIds: [],
+          nodes: [],
+          links: [],
+          rootCauseCandidates: [{
+            id: "candidate:b1",
+            label: "B1",
+            evidenceLevel:
+              "unproven-candidate",
+            severity: "major",
+            confidence: "medium",
+            chainIds: [],
+            relatedDiagnosticIds: [],
+            support: {
+              dependencyViolations: 0,
+              evidenceGaps: 1,
+              corroboratedRisks: 0,
+              observedOutcomes: 0,
+            },
+          }],
+        }],
+      },
+      diagnosticProbeAnalysis: {
+        incidents: [{
+          incidentId: "incident:b",
+          definitions: [{
+            id: "probe:missing-binding",
+            label: "missing",
+            requiredContext:
+              "LIVE_MINECRAFT",
+            costUnits: 1,
+            mutationRisk:
+              "read-only",
+            outcomes: [{
+              id: "present",
+              observation: "present",
+              supportsCandidateIds: [
+                "candidate:b1",
+              ],
+            }],
+          }],
+        }],
+      },
+    };
+
+    const result =
+      prepareAdaptiveRuntimeProbeBundle(
+        inspection,
+        {
+          availableContext:
+            "LIVE_MINECRAFT",
+          bindings: [],
+          budget: {
+            maxRequests: 1,
+            maxCostUnits: 2,
+          },
+        },
+      );
+
+    expect(
+      result.skipped[0]?.reason,
+    ).toBe("compile-blocked");
+    expect(result.issues)
+      .not.toHaveLength(0);
+  });
+
   it("returns an empty valid bundle when budget is zero", () => {
     const result =
       prepareAdaptiveRuntimeProbeBundle(

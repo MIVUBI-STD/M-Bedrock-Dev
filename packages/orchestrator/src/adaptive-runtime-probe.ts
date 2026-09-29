@@ -56,6 +56,7 @@ export interface AdaptiveRuntimeProbeBundle {
     reason:
       | "request-budget"
       | "cost-budget"
+      | "compile-blocked"
       | "lower-value";
   }[];
   issues:
@@ -289,6 +290,14 @@ export function prepareAdaptiveRuntimeProbeBundle(
       compilation.requests.length ===
       0
     ) {
+      skipped.push({
+        incidentId:
+          candidate.incidentId,
+        probeId:
+          candidate.item.probeId,
+        reason:
+          "compile-blocked",
+      });
       continue;
     }
 
