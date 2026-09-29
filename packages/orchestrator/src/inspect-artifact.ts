@@ -29,6 +29,7 @@ import { deriveArenaProofCoverage } from "./arena-proof-coverage.js";
 import { concludeArenaProof } from "./arena-proof-conclusion.js";
 import { deriveArenaReplicaProofQuality } from "./arena-replica-proof-quality.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
+import { deriveArenaStressPlan } from "./arena-stress-plan.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -104,6 +105,12 @@ export async function inspectArtifact(
               ? "reconciled"
               : "topology",
           );
+
+    const stressPlan =
+      deriveArenaStressPlan(
+        spatialLayout,
+        result.arenaAnalysis.capacity,
+      );
 
     const effectiveRegionPlan =
       result.arenaAnalysis.regionPlan ??
@@ -445,6 +452,7 @@ export async function inspectArtifact(
         ...(spatialLayout === undefined
           ? {}
           : { spatialLayout }),
+        stressPlan,
         ...(result.arenaAnalysis.regionPlan !== undefined ||
             effectiveRegionPlan === undefined
           ? {}

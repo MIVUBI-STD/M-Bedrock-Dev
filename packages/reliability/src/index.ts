@@ -38,3 +38,5 @@ export * from "./chunk-runtime-observation.js";
 export * from "./catalog-writer.js";
 export * from "./regression-execution-queue.js";
 export * from "./portfolio-regression-scheduler.js";
+
+export * from "./multiplayer-stress-matrix.js";
