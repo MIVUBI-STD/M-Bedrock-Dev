@@ -87,33 +87,123 @@ function regionMatchRank(
   return 0;
 }
 
+interface SemanticOwnerCandidate {
+  readonly ownerId: string;
+  readonly score: number;
+}
+
+function sourceMatchRank(
+  evidence: SourceRef,
+  source: SourceRef | undefined,
+): number {
+  if (!source) return 0;
+
+  return regionMatchRank(
+    evidence,
+    {
+      id: "source-match",
+      kind: "script-module",
+      ownerId: "source-match",
+      label: "source-match",
+      source,
+    },
+  );
+}
+
+function bestOwner(
+  candidates: readonly SemanticOwnerCandidate[],
+): string | undefined {
+  if (candidates.length === 0) {
+    return undefined;
+  }
+
+  const byOwner = new Map<string, number>();
+  for (const candidate of candidates) {
+    byOwner.set(
+      candidate.ownerId,
+      Math.max(
+        byOwner.get(candidate.ownerId) ?? 0,
+        candidate.score,
+      ),
+    );
+  }
+
+  const ranked = [...byOwner.entries()]
+    .map(([ownerId, score]) => ({
+      ownerId,
+      score,
+    }))
+    .sort((a, b) =>
+      b.score - a.score ||
+      a.ownerId.localeCompare(b.ownerId)
+    );
+
+  if (
+    ranked.length > 1 &&
+    ranked[0]!.score === ranked[1]!.score
+  ) {
+    return undefined;
+  }
+
+  return ranked[0]!.ownerId;
+}
+
 export function resolveSourceSemanticOwner(
   source: SourceRef,
   semanticIr: SemanticIr,
 ): string | undefined {
-  const ranked = semanticIr.execution.regions
-    .map((region) => ({
-      region,
-      rank: regionMatchRank(source, region),
-    }))
-    .filter((item) => item.rank > 0);
+  const candidates: SemanticOwnerCandidate[] = [];
 
-  if (ranked.length === 0) return undefined;
-
-  const bestRank = Math.max(
-    ...ranked.map((item) => item.rank),
-  );
-  const best = ranked
-    .filter((item) => item.rank === bestRank)
-    .sort((a, b) =>
-      a.region.id.localeCompare(b.region.id)
+  for (const operation of semanticIr.state.operations) {
+    const rank = sourceMatchRank(
+      source,
+      operation.source,
     );
-
-  if (best.length !== 1) {
-    return undefined;
+    if (rank > 0) {
+      candidates.push({
+        ownerId: operation.executionRegionId,
+        score: 40 + rank,
+      });
+    }
   }
 
-  return best[0]!.region.id;
+  for (const edge of semanticIr.execution.edges) {
+    const rank = sourceMatchRank(
+      source,
+      edge.source,
+    );
+    if (rank > 0) {
+      candidates.push({
+        ownerId: edge.from,
+        score: 30 + rank,
+      });
+    }
+  }
+
+  for (const relation of semanticIr.temporal.relations) {
+    const rank = sourceMatchRank(
+      source,
+      relation.source,
+    );
+    if (rank > 0) {
+      candidates.push({
+        ownerId: relation.from,
+        score: 20 + rank,
+      });
+    }
+  }
+
+  for (const region of semanticIr.execution.regions) {
+    const rank = regionMatchRank(source, region);
+    if (rank > 0) {
+      candidates.push({
+        ownerId: region.id,
+        score: 10 + rank,
+      });
+    }
+  }
+
+  return bestOwner(candidates);
 }
 
 export function bindSourceEvidenceSemanticOwners(
