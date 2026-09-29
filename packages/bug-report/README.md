@@ -394,16 +394,28 @@ The authored-intent diagnosis executor revision is bumped when these semantics c
 
 The high-level audit-to-report path does not accept ungrounded impact or primary-failure classification.
 
-Each audit candidate carries internal classification evidence:
+Each audit candidate carries structured classification signals instead of final Severity/Category inputs.
 
 ```text
-impactEvidenceIds
-primaryFailureEvidenceIds
+impact signals
+  progression-blocked
+  progression-degraded
+  recovery-none
+  recovery-abnormal
+  crash-or-freeze
+  core-mechanic-wrong
+  important-state-wrong
+  fairness-affected
+
+primary failure signals
+  one BugPrimaryFailure
 ```
 
-Those IDs must already belong to the same defect evidence universe used by confirmation. They are never serialized into Bug Report V2.
+Every signal carries evidence IDs. The IDs must already belong to the same confirmed-defect evidence universe.
 
-Severity remains derived from `BugImpactAssessment`, and Category remains derived from `BugPrimaryFailure`. Classification evidence exists only to prevent those semantic assessments from becoming unsupported caller choices.
+`deriveReportDefectClassification()` deterministically converts those signals into `BugImpactAssessment` and one `BugPrimaryFailure`. Ambiguous primary-failure signals are rejected rather than guessed.
+
+Severity remains derived from the resulting impact assessment, and Category remains derived from the resulting primary failure. Classification signals and their evidence are internal only and are never serialized into Bug Report V2.
 
 ## Semantic repair owners
 
