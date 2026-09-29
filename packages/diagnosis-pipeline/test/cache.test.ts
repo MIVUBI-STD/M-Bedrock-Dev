@@ -82,9 +82,15 @@ describe("diagnosis result cache", () => {
       .not.toBe(first);
   });
 
-  it("isolates cached mutable values from callers", async () => {
+  it("preserves executor output identity so class prototypes are not destroyed", async () => {
     const cache =
       createInMemoryDiagnosisResultCache();
+    class Output {
+      value() {
+        return "ok";
+      }
+    }
+    const output = new Output();
 
     await cache.put({
       schemaVersion: 1,
@@ -101,30 +107,18 @@ describe("diagnosis result cache", () => {
         traits: ["structural-proof"],
         evidenceIds: ["e1"],
       }],
-      output: {
-        values: ["original"],
-      },
+      output,
       reasons: [],
     });
 
-    const first =
+    const cached =
       await cache.get("k");
-    expect(first).toBeDefined();
 
-    (
-      first!.output as {
-        values: string[];
-      }
-    ).values.push("mutated");
-
-    const second =
-      await cache.get("k");
+    expect(cached?.output)
+      .toBe(output);
     expect(
-      (
-        second!.output as {
-          values: string[];
-        }
-      ).values,
-    ).toEqual(["original"]);
-  });
+      (cached?.output as Output)
+        .value(),
+    ).toBe("ok");
+  });;
 });

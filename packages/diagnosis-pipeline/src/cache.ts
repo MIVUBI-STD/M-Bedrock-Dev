@@ -136,12 +136,6 @@ export function diagnosisExecutionCacheKey(
     .digest("hex");
 }
 
-function cloneEntry(
-  entry: CachedDiagnosisExecution,
-): CachedDiagnosisExecution {
-  return structuredClone(entry);
-}
-
 export function createInMemoryDiagnosisResultCache():
   DiagnosisResultCache {
   const entries =
@@ -150,15 +144,13 @@ export function createInMemoryDiagnosisResultCache():
   return {
     get(cacheKey) {
       const entry = entries.get(cacheKey);
-      return entry === undefined
-        ? undefined
-        : cloneEntry(entry);
+      return entry;
     },
 
     put(entry) {
       entries.set(
         entry.cacheKey,
-        cloneEntry(entry),
+        entry,
       );
     },
   };
