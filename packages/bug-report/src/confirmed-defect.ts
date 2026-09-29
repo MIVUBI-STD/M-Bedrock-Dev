@@ -1,7 +1,6 @@
-import {
-  validateSourceRef,
-  type SourceRef,
-} from "../../project-model/src/source-ref.js";
+import type {
+  SourceRef,
+} from "../../project-model/src/index.js";
 import type {
   BugImpactAssessment,
   BugPrimaryFailure,
@@ -30,6 +29,62 @@ export interface ConfirmedDefectObservation {
 export interface ConfirmedDefectSourceEvidence {
   readonly source: SourceRef;
   readonly reason: string;
+}
+
+function validateConfirmedDefectSourceRef(
+  source: SourceRef,
+): readonly string[] {
+  const errors: string[] = [];
+
+  if (!source.artifactId.trim()) {
+    errors.push("artifactId must be non-empty.");
+  }
+  if (!source.relativePath.trim()) {
+    errors.push("relativePath must be non-empty.");
+  }
+
+  const range = source.range;
+  if (range) {
+    const values = [
+      ["lineStart", range.lineStart],
+      ["lineEnd", range.lineEnd],
+      ["columnStart", range.columnStart],
+      ["columnEnd", range.columnEnd],
+    ] as const;
+
+    for (const [name, value] of values) {
+      if (
+        value !== undefined &&
+        (!Number.isInteger(value) || value < 1)
+      ) {
+        errors.push(
+          name + " must be a positive integer when present.",
+        );
+      }
+    }
+
+    if (
+      range.lineStart !== undefined &&
+      range.lineEnd !== undefined &&
+      range.lineEnd < range.lineStart
+    ) {
+      errors.push(
+        "lineEnd must be greater than or equal to lineStart.",
+      );
+    }
+  }
+
+  if (
+    source.jsonPointer !== undefined &&
+    source.jsonPointer !== "" &&
+    !source.jsonPointer.startsWith("/")
+  ) {
+    errors.push(
+      "jsonPointer must be empty or start with '/'.",
+    );
+  }
+
+  return errors;
 }
 
 export interface ConfirmedDefect {
@@ -87,7 +142,7 @@ export function validateConfirmedDefect(
     );
   }
   for (const item of defect.sourceEvidence ?? []) {
-    for (const error of validateSourceRef(item.source)) {
+    for (const error of validateConfirmedDefectSourceRef(item.source)) {
       errors.push(
         "sourceEvidence: " + error,
       );
