@@ -76,15 +76,21 @@ export type ConfirmedDefectDraft = Omit<
   | "repairUnitIds"
   | "impact"
   | "primaryFailure"
+  | "expected"
+  | "observed"
 > & {
+  readonly expectedStatement?: string;
+  readonly observedStatement: string;
   readonly classificationSignals:
     ReportDefectClassificationSignals;
 };
 
 export type AiConfirmedDefectDraft = Omit<
   ConfirmedDefectDraft,
-  "brokenInvariantIds"
->;
+  "brokenInvariantIds" | "expectedStatement"
+> & {
+  readonly expectedStatement: string;
+};
 
 export interface ReportCandidateRepairContext {
   readonly decision?: DiagnosticRepairDecision;
@@ -161,30 +167,80 @@ export interface AuditReportCandidateDescriptor {
   readonly nextEvidenceNeed: ReportCandidateNextEvidenceNeed;
 }
 
-function intersects(
-  left: readonly string[],
-  right: readonly string[],
-): boolean {
-  const values = new Set(left);
-  return right.some((value) => values.has(value));
+function candidateExpectedBasis(
+  candidate: AuditReportCandidate,
+): ConfirmedDefect["expected"] {
+  if (candidate.route === "tester") {
+    return {
+      authority:
+        candidate.confirmation.expectedBehaviorAuthority,
+      statement:
+        candidate.confirmation.expectedStatement,
+      evidenceIds: [
+        ...new Set(
+          candidate.confirmation.expectedEvidenceIds,
+        ),
+      ].sort(),
+    };
+  }
+
+  const basisIds = new Set(
+    candidate.route === "runtime"
+      ? candidate.assessment.result.basisInvariantIds
+      : candidate.result.basisInvariantIds,
+  );
+  const invariants = candidate.intent.invariants
+    .filter((invariant) =>
+      basisIds.has(invariant.id) &&
+      invariant.status === "authored"
+    );
+
+  return {
+    authority: "authored-intent",
+    statement: candidate.defect.expectedStatement,
+    evidenceIds: [
+      ...new Set(
+        invariants.flatMap(
+          (invariant) => invariant.evidenceIds,
+        ),
+      ),
+    ].sort(),
+  };
 }
 
-function candidateEvidenceUniverse(
+function candidateObservedBasis(
   candidate: AuditReportCandidate,
-): readonly string[] {
-  const values = [
-    ...candidate.defect.expected.evidenceIds,
-    ...candidate.defect.observed.evidenceIds,
-    ...(candidate.route === "runtime"
+): ConfirmedDefect["observed"] {
+  const evidenceIds =
+    candidate.route === "runtime"
       ? [
           candidate.assessment.outcomeObservation.evidenceId,
           ...candidate.assessment.result.evidenceIds,
         ]
       : candidate.route === "static"
         ? candidate.result.evidenceIds
-        : [
-            ...candidate.confirmation.expectedEvidenceIds,
-          ]),
+        : candidate.confirmation.observationEvidenceIds;
+
+  return {
+    statement: candidate.defect.observedStatement,
+    evidenceIds: [
+      ...new Set(
+        evidenceIds.filter(
+          (id) => id.trim().length > 0,
+        ),
+      ),
+    ].sort(),
+  };
+}
+
+function candidateEvidenceUniverse(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  const expected = candidateExpectedBasis(candidate);
+  const observed = candidateObservedBasis(candidate);
+  const values = [
+    ...expected.evidenceIds,
+    ...observed.evidenceIds,
     ...(candidate.classificationDiagnostics ?? [])
       .map((finding) => finding.id),
   ];
@@ -331,70 +387,6 @@ function runtimeClassificationIssues(
   }
 
   return [];
-}
-
-function routeEvidenceConsistency(
-  candidate: AuditReportCandidate,
-): readonly string[] {
-  if (candidate.route === "tester") {
-    const errors: string[] = [];
-    if (
-      !intersects(
-        candidate.defect.expected.evidenceIds,
-        candidate.confirmation.expectedEvidenceIds,
-      )
-    ) {
-      errors.push(
-        "Defect Expected evidence is not grounded in the tester requirement evidence used for confirmation.",
-      );
-    }
-    return errors;
-  }
-
-  const basisInvariantIds =
-    candidate.route === "runtime"
-      ? candidate.assessment.result.basisInvariantIds
-      : candidate.result.basisInvariantIds;
-  const basisIds = new Set(basisInvariantIds);
-  const expectedEvidence = candidate.intent.invariants
-    .filter((invariant) =>
-      basisIds.has(invariant.id) &&
-      invariant.status === "authored"
-    )
-    .flatMap((invariant) => invariant.evidenceIds);
-
-  const observedEvidence =
-    candidate.route === "runtime"
-      ? [
-          candidate.assessment.outcomeObservation.evidenceId,
-          ...candidate.assessment.result.evidenceIds,
-        ]
-      : candidate.result.evidenceIds;
-
-  const errors: string[] = [];
-  if (
-    expectedEvidence.length > 0 &&
-    !intersects(
-      candidate.defect.expected.evidenceIds,
-      expectedEvidence,
-    )
-  ) {
-    errors.push(
-      "Defect Expected evidence is not grounded in the authored invariant evidence used for confirmation.",
-    );
-  }
-  if (
-    observedEvidence.length > 0 &&
-    !intersects(
-      candidate.defect.observed.evidenceIds,
-      observedEvidence,
-    )
-  ) {
-    errors.push(
-      "Defect Observed evidence is not grounded in the evidence used for confirmation.",
-    );
-  }
-  return errors;
 }
 
 function candidateSubjectIds(
@@ -545,10 +537,16 @@ function routeNextEvidenceNeed(
   if (candidate.route === "static") {
     return candidate.result.nextEvidenceNeed;
   }
-  if (candidate.confirmation.expectedEvidenceIds.length === 0) {
+  if (
+    !candidate.confirmation.expectedStatement.trim() ||
+    candidate.confirmation.expectedEvidenceIds.length === 0
+  ) {
     return "expected-behavior-evidence";
   }
-  if (!candidate.confirmation.reproduced) {
+  if (
+    !candidate.confirmation.reproduced ||
+    candidate.confirmation.observationEvidenceIds.length === 0
+  ) {
     return "tester-reproduction";
   }
   return "none";
@@ -613,18 +611,6 @@ function collectOne(
     };
   }
 
-  const evidenceConsistency =
-    routeEvidenceConsistency(candidate);
-  if (evidenceConsistency.length > 0) {
-    return {
-      rejected: rejectedCandidate(
-        candidate,
-        evidenceConsistency,
-        "candidate-correction",
-      ),
-    };
-  }
-
   const ownerIssues =
     semanticOwnerIssues(candidate);
   if (ownerIssues.length > 0) {
@@ -648,23 +634,6 @@ function collectOne(
           "Suggested Fix requires a diagnostic repair decision.",
         ],
         "repair-decision",
-      ),
-    };
-  }
-
-  const expectedAuthority =
-    candidate.route === "tester"
-      ? candidate.confirmation.expectedBehaviorAuthority
-      : "authored-intent";
-
-  if (candidate.defect.expected.authority !== expectedAuthority) {
-    return {
-      rejected: rejectedCandidate(
-        candidate,
-        [
-          "Defect Expected authority does not match the confirmation route authority.",
-        ],
-        "candidate-correction",
       ),
     };
   }
@@ -707,14 +676,24 @@ function collectOne(
 
   const boundSourceEvidence =
     candidateSourceEvidence(candidate);
+  const expected =
+    candidateExpectedBasis(candidate);
+  const observed =
+    candidateObservedBasis(candidate);
   const {
     classificationSignals:
       _classificationSignals,
+    expectedStatement:
+      _expectedStatement,
+    observedStatement:
+      _observedStatement,
     ...defectDraft
   } = candidate.defect;
 
   const confirmed: ConfirmedDefect = {
     ...defectDraft,
+    expected,
+    observed,
     impact: classification.impact,
     primaryFailure:
       classification.primaryFailure,
