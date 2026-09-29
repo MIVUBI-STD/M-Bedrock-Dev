@@ -251,7 +251,7 @@ AND same repair unit set
 
 they form one unresolved semantic defect group.
 
-Before V2 projection, that group must be resolved with `resolveConfirmedDefectGroup()`.
+Before V2 projection, that group must be resolved explicitly. Low-level callers may use `resolveConfirmedDefectGroup()`; high-level audit callers pass `groupResolutions` to `buildBugReportFromAuditCandidates()`.
 
 The resolver merges only information that is safe to combine deterministically:
 
@@ -262,7 +262,13 @@ The resolver merges only information that is safe to combine deterministically:
 - proven Must Preserve constraints;
 - selected primary source evidence.
 
-Canonical Title, Problem, Expected wording, Observed wording, primary failure, and tester reproduction remain explicit resolution inputs.
+Canonical Title, Problem, Expected wording, Observed wording, and tester reproduction remain explicit resolution inputs.
+
+Grouped defects must share one primary failure. If the group mixes AI- and tester-origin symptoms, the resolution must explicitly choose Found By according to the earliest documented discovery; the resolver never guesses discovery order.
+
+Expected evidence in the resolved defect is taken only from grouped symptoms that use the selected Expected authority.
+
+Suggested Fix is preserved only when every grouped symptom carries the same supported repair advice.
 
 If a grouped AI defect exposes more than three distinct source locations, the resolver requires an explicit selection of the primary locations rather than truncating them silently.
 
@@ -296,7 +302,11 @@ Examples of targeted next evidence include authored intent, runtime proof, teste
 
 ## Authored invariant promotion
 
-An invariant may become `authored` only when its evidence is entirely attributable to the explicit `authoredScripts` input.
+An invariant may become `authored` only when the semantic relation has direct evidence from the explicit `authoredScripts` input.
+
+Compiled/runtime duplicates may coexist with the same semantic edge and do not downgrade authored authority. The authored evidence must still exist for that exact semantic relation; runtime-only evidence remains inferred.
+
+This prevents generated JavaScript duplicates from diluting authoritative TypeScript intent while preserving the distinction between authored semantics and inferred naming/call-flow semantics.
 
 Runtime/compiled script evidence does not raise intent authority.
 
