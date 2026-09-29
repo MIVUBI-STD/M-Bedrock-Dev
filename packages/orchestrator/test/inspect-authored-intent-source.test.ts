@@ -15,116 +15,7 @@ const roots: string[] = [];
 
 afterEach(async () => {
   for (const root of roots.splice(0)) {
-    await rm(root, { recursive: true, force: true   it("indexes development_behavior_packs authored TypeScript", async () => {
-    const root = await mkdtemp(
-      join(tmpdir(), "m-bedrock-authored-intent-dev-"),
-    );
-    roots.push(root);
-
-    await mkdir(
-      join(root, "development_behavior_packs/demo/src"),
-      { recursive: true },
-    );
-    await writeFile(
-      join(
-        root,
-        "development_behavior_packs/demo/src/state.ts",
-      ),
-      "export const state = 'active';",
-      "utf8",
-    );
-
-    const result = await indexAuthoredIntentSources(
-      root,
-      "art_test",
-      [{
-        relativePath:
-          "development_behavior_packs/demo/src/state.ts",
-        size: 32,
-      }],
-    );
-
-    expect(result).toHaveLength(1);
-  });
-
-  it("supports an explicit authored source root for custom layouts", async () => {
-    const root = await mkdtemp(
-      join(tmpdir(), "m-bedrock-authored-intent-custom-"),
-    );
-    roots.push(root);
-
-    await mkdir(
-      join(root, "map-source/domain"),
-      { recursive: true },
-    );
-    await writeFile(
-      join(root, "map-source/domain/session.ts"),
-      "export const session = true;",
-      "utf8",
-    );
-
-    const result = await indexAuthoredIntentSources(
-      root,
-      "art_test",
-      [{
-        relativePath:
-          "map-source/domain/session.ts",
-        size: 28,
-      }],
-      {
-        authoredSourceRoots: ["map-source"],
-      },
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0]?.parsed.source.relativePath)
-      .toBe("map-source/domain/session.ts");
-  });
-
-  it("does not treat generated or runtime folders as authored even under explicit roots", async () => {
-    const root = await mkdtemp(
-      join(tmpdir(), "m-bedrock-authored-intent-generated-"),
-    );
-    roots.push(root);
-
-    await mkdir(join(root, "map-source/scripts"), {
-      recursive: true,
-    });
-    await mkdir(join(root, "map-source/dist"), {
-      recursive: true,
-    });
-    await writeFile(
-      join(root, "map-source/scripts/runtime.ts"),
-      "export {};",
-      "utf8",
-    );
-    await writeFile(
-      join(root, "map-source/dist/generated.ts"),
-      "export {};",
-      "utf8",
-    );
-
-    const result = await indexAuthoredIntentSources(
-      root,
-      "art_test",
-      [
-        {
-          relativePath: "map-source/scripts/runtime.ts",
-          size: 10,
-        },
-        {
-          relativePath: "map-source/dist/generated.ts",
-          size: 10,
-        },
-      ],
-      {
-        authoredSourceRoots: ["map-source"],
-      },
-    );
-
-    expect(result).toEqual([]);
-  });
-});
+    await rm(root, { recursive: true, force: true });
   }
 });
 
@@ -203,5 +94,119 @@ export interface SessionToken {
           item.typeText === "SessionToken",
       ),
     ).toBe(true);
+  });
+
+  it("indexes development_behavior_packs authored TypeScript", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-authored-intent-dev-"),
+    );
+    roots.push(root);
+
+    await mkdir(
+      join(root, "development_behavior_packs/demo/src"),
+      { recursive: true },
+    );
+    await writeFile(
+      join(
+        root,
+        "development_behavior_packs/demo/src/state.ts",
+      ),
+      "export const state = 'active';",
+      "utf8",
+    );
+
+    const result = await indexAuthoredIntentSources(
+      root,
+      "art_test",
+      [{
+        relativePath:
+          "development_behavior_packs/demo/src/state.ts",
+        size: 32,
+      }],
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.parsed.source.relativePath)
+      .toBe(
+        "development_behavior_packs/demo/src/state.ts",
+      );
+  });
+
+  it("supports an explicit authored source root for custom layouts", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-authored-intent-custom-"),
+    );
+    roots.push(root);
+
+    await mkdir(
+      join(root, "map-source/domain"),
+      { recursive: true },
+    );
+    await writeFile(
+      join(root, "map-source/domain/session.ts"),
+      "export const session = true;",
+      "utf8",
+    );
+
+    const result = await indexAuthoredIntentSources(
+      root,
+      "art_test",
+      [{
+        relativePath:
+          "map-source/domain/session.ts",
+        size: 28,
+      }],
+      {
+        authoredSourceRoots: ["map-source"],
+      },
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.parsed.source.relativePath)
+      .toBe("map-source/domain/session.ts");
+  });
+
+  it("does not treat generated or runtime folders as authored even under explicit roots", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-authored-intent-generated-"),
+    );
+    roots.push(root);
+
+    await mkdir(join(root, "map-source/scripts"), {
+      recursive: true,
+    });
+    await mkdir(join(root, "map-source/dist"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(root, "map-source/scripts/runtime.ts"),
+      "export {};",
+      "utf8",
+    );
+    await writeFile(
+      join(root, "map-source/dist/generated.ts"),
+      "export {};",
+      "utf8",
+    );
+
+    const result = await indexAuthoredIntentSources(
+      root,
+      "art_test",
+      [
+        {
+          relativePath: "map-source/scripts/runtime.ts",
+          size: 10,
+        },
+        {
+          relativePath: "map-source/dist/generated.ts",
+          size: 10,
+        },
+      ],
+      {
+        authoredSourceRoots: ["map-source"],
+      },
+    );
+
+    expect(result).toEqual([]);
   });
 });
