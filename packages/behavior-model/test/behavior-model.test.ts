@@ -11,6 +11,8 @@ import {
   createPlayerSessionBehavior,
   resolveSpatialAuthority,
   validateSpatialAuthorityPolicy,
+  resolveInventoryItemPolicy,
+  validateInventoryItemPolicy,
   evaluateTemporalProperty,
   unknownNondeterminismCapabilityProfile,
   validateBehavioralWorldModel,
@@ -360,6 +362,83 @@ describe("behavioral world model", () => {
 
     expect(result.status).toBe("conflict");
     expect(result.decision).toBeUndefined();
+  });
+
+  it("resolves exact inventory item ownership before fallback policy", () => {
+    const policy = {
+      schemaVersion: 1 as const,
+      id: "items",
+      rules: [
+        {
+          id: "fallback",
+          itemClass: "*",
+          ownershipScope: "session" as const,
+          dropAllowed: true,
+          resetOn: ["lobby-return" as const],
+        },
+        {
+          id: "sword",
+          itemClass: "minecraft:diamond_sword",
+          ownershipScope: "round" as const,
+          dropAllowed: false,
+          resetOn: ["round-end" as const],
+          restoreOn: ["respawn" as const],
+        },
+      ],
+    };
+
+    expect(
+      validateInventoryItemPolicy(policy),
+    ).toEqual([]);
+    expect(
+      resolveInventoryItemPolicy(policy, {
+        itemClass: "minecraft:diamond_sword",
+      }),
+    ).toMatchObject({
+      status: "resolved",
+      matchedRuleIds: ["sword"],
+      rule: {
+        ownershipScope: "round",
+        dropAllowed: false,
+      },
+    });
+    expect(
+      resolveInventoryItemPolicy(policy, {
+        itemClass: "minecraft:stone",
+      }),
+    ).toMatchObject({
+      status: "resolved",
+      matchedRuleIds: ["fallback"],
+    });
+  });
+
+  it("fails closed when duplicate exact item policies conflict", () => {
+    const result = resolveInventoryItemPolicy(
+      {
+        schemaVersion: 1,
+        id: "conflict",
+        rules: [
+          {
+            id: "one",
+            itemClass: "minecraft:bow",
+            ownershipScope: "round",
+            dropAllowed: false,
+            resetOn: ["round-end"],
+          },
+          {
+            id: "two",
+            itemClass: "minecraft:bow",
+            ownershipScope: "life",
+            dropAllowed: true,
+            resetOn: ["death"],
+          },
+        ],
+      },
+      { itemClass: "minecraft:bow" },
+    );
+
+    expect(result.status).toBe("conflict");
+    expect(result.rule).toBeUndefined();
   });
 
   it("reports provenance gaps instead of silently trusting unbound claims", () => {
