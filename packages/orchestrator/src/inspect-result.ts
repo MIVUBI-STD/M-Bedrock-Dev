@@ -157,6 +157,7 @@ export function buildInspectionResult(
     placedEmbeddedCommands,
     topology,
     scriptSafeConfig,
+    arenaLayoutReconciliation,
     arenaCapacity,
     routeCorrelations,
     effectiveRouteCorridors,
@@ -374,6 +375,8 @@ export function buildInspectionResult(
               topology.arenaRegionClassification,
           }),
       capacity: arenaCapacity,
+      layoutReconciliation:
+        arenaLayoutReconciliation,
     },
     gameplayIntent: {
       model: input.gameplayIntent,

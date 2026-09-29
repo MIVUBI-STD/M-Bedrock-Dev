@@ -21,6 +21,7 @@ import { analyzeScriptCommandMutationTransactions } from "./script-command-trans
 import { extractArenaConcurrencyCapacity } from "./arena-capacity-extraction.js";
 import { arenaCapacityDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { analyzeScriptSafeConfig } from "./script-safe-config-analysis.js";
+import { reconcileArenaLayouts } from "./arena-layout-reconciliation.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -143,6 +144,12 @@ export function analyzeInspectionRuntimeState(
   const scriptSafeConfig =
     analyzeScriptSafeConfig(
       input.parsedScripts.map((item) => item.parsed),
+    );
+
+  const arenaLayoutReconciliation =
+    reconcileArenaLayouts(
+      topology.arenaReplicaDiscovery,
+      scriptSafeConfig.resolvedArenaLayout,
     );
 
   const arenaCapacity =
@@ -269,6 +276,7 @@ export function analyzeInspectionRuntimeState(
     placedEmbeddedCommands,
     topology,
     scriptSafeConfig,
+    arenaLayoutReconciliation,
     arenaCapacity,
     structureProofs,
     routeCorrelations,

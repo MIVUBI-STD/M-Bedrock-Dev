@@ -24,6 +24,7 @@ import type { ArenaProofConclusionReport } from "./arena-proof-conclusion.js";
 import type { ArenaReplicaProofQuality } from "./arena-replica-proof-quality.js";
 import type { ArenaCapacityExtractionResult } from "./arena-capacity-extraction.js";
 import type { ScriptSafeConfigAnalysis } from "./script-safe-config-analysis.js";
+import type { ArenaLayoutReconciliation } from "./arena-layout-reconciliation.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
@@ -172,6 +173,7 @@ export interface InspectDirectoryResult {
     proofConclusion?: ArenaProofConclusionReport;
     replicaProofQuality?: readonly ArenaReplicaProofQuality[];
     capacity?: ArenaCapacityExtractionResult;
+    layoutReconciliation?: ArenaLayoutReconciliation;
     nativeSpatial?: ArenaNativeSpatialAudit;
     voxelProof?: ArenaVoxelProof;
   };
