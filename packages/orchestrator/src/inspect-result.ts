@@ -156,6 +156,7 @@ export function buildInspectionResult(
     scriptStructureLoads,
     placedEmbeddedCommands,
     topology,
+    scriptSafeConfig,
     arenaCapacity,
     routeCorrelations,
     effectiveRouteCorridors,
@@ -229,6 +230,7 @@ export function buildInspectionResult(
       (node) => node.kind === "script_file",
     ).length,
     scriptApiUsage,
+    scriptSafeConfig,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,

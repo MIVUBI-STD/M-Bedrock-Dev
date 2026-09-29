@@ -23,6 +23,7 @@ import type { ArenaProofCoverageReport } from "./arena-proof-coverage.js";
 import type { ArenaProofConclusionReport } from "./arena-proof-conclusion.js";
 import type { ArenaReplicaProofQuality } from "./arena-replica-proof-quality.js";
 import type { ArenaCapacityExtractionResult } from "./arena-capacity-extraction.js";
+import type { ScriptSafeConfigAnalysis } from "./script-safe-config-analysis.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
@@ -62,6 +63,7 @@ export interface InspectDirectoryResult {
   functions: number;
   scripts: number;
   scriptApiUsage: ScriptApiUsageInventory;
+  scriptSafeConfig: ScriptSafeConfigAnalysis;
   structures: number;
   parsedStructures: number;
   entities: number;

@@ -20,6 +20,7 @@ import { analyzeScriptMutationTransactions } from "./script-mutation-transaction
 import { analyzeScriptCommandMutationTransactions } from "./script-command-transaction-analysis.js";
 import { extractArenaConcurrencyCapacity } from "./arena-capacity-extraction.js";
 import { arenaCapacityDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { analyzeScriptSafeConfig } from "./script-safe-config-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -139,6 +140,11 @@ export function analyzeInspectionRuntimeState(
     ...topology.topologyDiagnostics,
   );
 
+  const scriptSafeConfig =
+    analyzeScriptSafeConfig(
+      input.parsedScripts.map((item) => item.parsed),
+    );
+
   const arenaCapacity =
     extractArenaConcurrencyCapacity({
       ...(topology.arenaReplicaDiscovery === undefined
@@ -154,6 +160,12 @@ export function analyzeInspectionRuntimeState(
         }),
       ),
       scripts: input.parsedScripts.map((item) => item.parsed),
+      ...(scriptSafeConfig.resolvedArenaCount === undefined
+        ? {}
+        : {
+            declaredArenaCount:
+              scriptSafeConfig.resolvedArenaCount,
+          }),
     });
   if (arenaCapacity.report) {
     diagnostics.push(
@@ -256,6 +268,7 @@ export function analyzeInspectionRuntimeState(
     sourceByFunction,
     placedEmbeddedCommands,
     topology,
+    scriptSafeConfig,
     arenaCapacity,
     structureProofs,
     routeCorrelations,
