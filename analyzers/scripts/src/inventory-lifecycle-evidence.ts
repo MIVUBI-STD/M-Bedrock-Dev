@@ -12,7 +12,8 @@ export type ScriptInventoryEvidenceKind =
   | "item-read"
   | "item-copy-mutation"
   | "item-writeback"
-  | "item-drop";
+  | "item-drop"
+  | "item-world-spawn";
 
 export interface ScriptInventoryLifecycleEvidence {
   kind: ScriptInventoryEvidenceKind;
@@ -390,7 +391,10 @@ export function deriveScriptInventoryLifecycleEvidence(
         const identifier =
           itemIdentifier(item);
         push(node, {
-          kind: "item-drop",
+          kind:
+            method === "dropItem"
+              ? "item-drop"
+              : "item-world-spawn",
           subjectExpression: receiver,
           ...(item && ts.isIdentifier(item)
             ? { itemBinding: item.text }
