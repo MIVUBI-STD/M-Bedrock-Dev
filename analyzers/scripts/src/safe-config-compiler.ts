@@ -71,7 +71,7 @@ function propertyName(
   return undefined;
 }
 
-function compileExpression(
+export function compileSafeConfigExpression(
   expression: ts.Expression,
 ): SafeConfigExpression | undefined {
   const value =
@@ -115,7 +115,7 @@ function compileExpression(
       value.operator === ts.SyntaxKind.MinusToken
     )
   ) {
-    const operand = compileExpression(value.operand);
+    const operand = compileSafeConfigExpression(value.operand);
     if (!operand) return undefined;
     return {
       kind: "binary",
@@ -132,7 +132,7 @@ function compileExpression(
     const items: SafeConfigExpression[] = [];
     for (const item of value.elements) {
       if (ts.isSpreadElement(item)) return undefined;
-      const compiled = compileExpression(item);
+      const compiled = compileSafeConfigExpression(item);
       if (!compiled) return undefined;
       items.push(compiled);
     }
@@ -145,7 +145,7 @@ function compileExpression(
       if (!ts.isPropertyAssignment(property)) return undefined;
       const key = propertyName(property.name);
       if (key === undefined) return undefined;
-      const compiled = compileExpression(property.initializer);
+      const compiled = compileSafeConfigExpression(property.initializer);
       if (!compiled) return undefined;
       entries[key] = compiled;
     }
@@ -153,7 +153,7 @@ function compileExpression(
   }
 
   if (ts.isPropertyAccessExpression(value)) {
-    const object = compileExpression(value.expression);
+    const object = compileSafeConfigExpression(value.expression);
     if (!object) return undefined;
     return {
       kind: "get",
@@ -163,7 +163,7 @@ function compileExpression(
   }
 
   if (ts.isElementAccessExpression(value)) {
-    const object = compileExpression(value.expression);
+    const object = compileSafeConfigExpression(value.expression);
     const argument = value.argumentExpression;
     if (
       !object ||
@@ -194,8 +194,8 @@ function compileExpression(
               ? "/"
               : undefined;
     if (!operator) return undefined;
-    const left = compileExpression(value.left);
-    const right = compileExpression(value.right);
+    const left = compileSafeConfigExpression(value.left);
+    const right = compileSafeConfigExpression(value.right);
     if (!left || !right) return undefined;
     return {
       kind: "binary",
@@ -296,7 +296,7 @@ export function compileScriptSafeConfig(
 
       if (!declaration.initializer) continue;
       const expression =
-        compileExpression(declaration.initializer);
+        compileSafeConfigExpression(declaration.initializer);
       if (!expression) {
         rejected.push({
           name,
