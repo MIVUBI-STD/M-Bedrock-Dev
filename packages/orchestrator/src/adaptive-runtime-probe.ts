@@ -57,6 +57,7 @@ export interface AdaptiveRuntimeProbeBundle {
       | "request-budget"
       | "cost-budget"
       | "compile-blocked"
+      | "awaiting-replan"
       | "lower-value";
   }[];
   issues:
@@ -211,12 +212,30 @@ export function prepareAdaptiveRuntimeProbeBundle(
       [];
   const selectedProbeKeys =
     new Set<string>();
+  const selectedIncidentIds =
+    new Set<string>();
 
   for (const candidate of candidates) {
     const key =
       candidate.incidentId +
       "::" +
       candidate.item.probeId;
+
+    if (
+      selectedIncidentIds.has(
+        candidate.incidentId,
+      )
+    ) {
+      skipped.push({
+        incidentId:
+          candidate.incidentId,
+        probeId:
+          candidate.item.probeId,
+        reason:
+          "awaiting-replan",
+      });
+      continue;
+    }
 
     if (
       usedRequests >=
@@ -309,6 +328,9 @@ export function prepareAdaptiveRuntimeProbeBundle(
     usedCostUnits +=
       candidate.item.costUnits;
     selectedProbeKeys.add(key);
+    selectedIncidentIds.add(
+      candidate.incidentId,
+    );
     selected.push({
       incidentId:
         candidate.incidentId,
@@ -393,6 +415,7 @@ export function prepareAdaptiveRuntimeProbeBundle(
     usedCostUnits,
     reasons: [
       "Probe candidates are globally ordered by diagnostic separation value and cost rather than receiving a fixed per-incident allowance.",
+      "At most one next-best probe is selected per incident in each batch; later probes wait for evidence-driven re-planning.",
       "Budget exhaustion skips lower-value runtime work instead of silently exceeding the requested runtime cost.",
       String(usedRequests) +
         " request(s) selected using " +

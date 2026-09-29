@@ -151,6 +151,140 @@ describe("adaptive runtime probe bundle", () => {
     ).toHaveLength(1);
   });
 
+  it("selects only one next-best probe per incident before re-planning", () => {
+    const inspection:
+      AdaptiveRuntimeProbeInspection = {
+      causalAnalysis: {
+        incidents: [{
+          id: "incident:progressive",
+          scopeKey: "p",
+          severity: "major",
+          confidence: "medium",
+          chainIds: [],
+          relatedDiagnosticIds: [],
+          nodes: [],
+          links: [],
+          rootCauseCandidates: [{
+            id: "candidate:p1",
+            label: "P1",
+            evidenceLevel:
+              "unproven-candidate",
+            severity: "major",
+            confidence: "medium",
+            chainIds: [],
+            relatedDiagnosticIds: [],
+            support: {
+              dependencyViolations: 0,
+              evidenceGaps: 1,
+              corroboratedRisks: 0,
+              observedOutcomes: 0,
+            },
+          }, {
+            id: "candidate:p2",
+            label: "P2",
+            evidenceLevel:
+              "unproven-candidate",
+            severity: "major",
+            confidence: "medium",
+            chainIds: [],
+            relatedDiagnosticIds: [],
+            support: {
+              dependencyViolations: 0,
+              evidenceGaps: 1,
+              corroboratedRisks: 0,
+              observedOutcomes: 0,
+            },
+          }],
+        }],
+      },
+      diagnosticProbeAnalysis: {
+        incidents: [{
+          incidentId:
+            "incident:progressive",
+          definitions: [{
+            id: "probe:first",
+            label: "first",
+            requiredContext:
+              "LIVE_MINECRAFT",
+            costUnits: 1,
+            mutationRisk:
+              "read-only",
+            outcomes: [{
+              id: "present",
+              observation: "yes",
+              supportsCandidateIds: [
+                "candidate:p1",
+              ],
+              rejectsCandidateIds: [
+                "candidate:p2",
+              ],
+            }],
+          }, {
+            id: "probe:second",
+            label: "second",
+            requiredContext:
+              "LIVE_MINECRAFT",
+            costUnits: 2,
+            mutationRisk:
+              "read-only",
+            outcomes: [{
+              id: "present",
+              observation: "yes",
+              supportsCandidateIds: [
+                "candidate:p1",
+              ],
+              rejectsCandidateIds: [
+                "candidate:p2",
+              ],
+            }],
+          }],
+        }],
+      },
+    };
+
+    const bindings = [
+      "probe:first",
+      "probe:second",
+    ].map((probeId) => ({
+      probeId,
+      predicate: "p",
+      query: {
+        kind:
+          "scoreboard-value" as const,
+        objectiveId: "o",
+        participant: "#p",
+      },
+      outcomeByState: {
+        present: "present",
+        absent: "present",
+      },
+    }));
+
+    const result =
+      prepareAdaptiveRuntimeProbeBundle(
+        inspection,
+        {
+          availableContext:
+            "LIVE_MINECRAFT",
+          bindings,
+          budget: {
+            maxRequests: 2,
+            maxCostUnits: 10,
+          },
+        },
+      );
+
+    expect(result.selected)
+      .toHaveLength(1);
+    expect(
+      result.skipped.some(
+        (item) =>
+          item.reason ===
+          "awaiting-replan",
+      ),
+    ).toBe(true);
+  });
+
   it("reports missing runtime bindings as compile-blocked rather than lower-value", () => {
     const inspection:
       AdaptiveRuntimeProbeInspection = {
