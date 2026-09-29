@@ -260,6 +260,23 @@ export async function upsertSemanticProofClaim(
     await loadSemanticProofClaimStore(
       workspace,
     );
+  const validated =
+    validateClaim(claim);
+  const existing =
+    current.claims.find(
+      (item) =>
+        item.claimId ===
+        validated.claimId,
+    );
+
+  if (
+    existing !== undefined &&
+    JSON.stringify(existing) ===
+      JSON.stringify(validated)
+  ) {
+    return current;
+  }
+
   const next:
     SemanticProofClaimStore = {
     schemaVersion: 1,
@@ -267,9 +284,9 @@ export async function upsertSemanticProofClaim(
       ...current.claims.filter(
         (item) =>
           item.claimId !==
-          claim.claimId,
+          validated.claimId,
       ),
-      validateClaim(claim),
+      validated,
     ].sort((a, b) =>
       a.claimId.localeCompare(
         b.claimId,

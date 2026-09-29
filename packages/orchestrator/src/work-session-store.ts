@@ -166,6 +166,39 @@ export async function saveWorkSessionCheckpoint(
     parseWorkSessionCheckpoint(
       checkpoint,
     );
+  const existing =
+    await loadWorkSessionCheckpoint(
+      workspace,
+    );
+
+  if (
+    existing !== undefined &&
+    existing.sessionId !==
+      parsed.sessionId
+  ) {
+    throw new Error(
+      "Refusing to overwrite active work session " +
+        existing.sessionId +
+        " with different session " +
+        parsed.sessionId +
+        ".",
+    );
+  }
+
+  const serialized =
+    JSON.stringify(
+      parsed,
+      null,
+      2,
+    ) + "\n";
+
+  if (
+    existing !== undefined &&
+    JSON.stringify(existing) ===
+      JSON.stringify(parsed)
+  ) {
+    return;
+  }
 
   await mkdir(
     workspace.state,
@@ -173,11 +206,7 @@ export async function saveWorkSessionCheckpoint(
   );
   await atomicWriteText(
     pathFor(workspace),
-    JSON.stringify(
-      parsed,
-      null,
-      2,
-    ) + "\n",
+    serialized,
   );
 }
 

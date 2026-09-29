@@ -126,6 +126,60 @@ describe("durable zero-waste state stores", () => {
     }
   });
 
+  it("refuses to clobber a different active work session", async () => {
+    const root =
+      await mkdtemp(
+        join(
+          tmpdir(),
+          "m-bedrock-session-clobber-",
+        ),
+      );
+
+    try {
+      const workspace =
+        projectWorkspaceLayout(
+          root,
+          "project",
+        );
+
+      await saveWorkSessionCheckpoint(
+        workspace,
+        createWorkSessionCheckpoint({
+          sessionId: "s1",
+          goal: "first",
+          artifact: {
+            artifactId: "a",
+            artifactFingerprint: "fp",
+          },
+        }),
+      );
+
+      await expect(
+        saveWorkSessionCheckpoint(
+          workspace,
+          createWorkSessionCheckpoint({
+            sessionId: "s2",
+            goal: "second",
+            artifact: {
+              artifactId: "a",
+              artifactFingerprint: "fp",
+            },
+          }),
+        ),
+      ).rejects.toThrow(
+        /Refusing to overwrite active work session/,
+      );
+    } finally {
+      await rm(
+        root,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    }
+  });
+
   it("upserts semantic proof claims without duplicating ids", async () => {
     const root =
       await mkdtemp(
