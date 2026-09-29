@@ -58,6 +58,7 @@ import { compileScriptSafeConfig } from "./safe-config-compiler.js";
 import { deriveScriptSpatialWorldMutations } from "./spatial-world-mutation.js";
 import { deriveScriptSpatialMutations } from "./spatial-mutation-evidence.js";
 import { deriveScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
+import { deriveScriptInventoryLifecycleEvidence } from "./inventory-lifecycle-evidence.js";
 import { deriveScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
 
 function scriptKind(path: string): ts.ScriptKind {
@@ -1704,6 +1705,11 @@ export function parseScriptFile(
     text,
     source,
   );
+  const inventoryLifecycleEvidence =
+    deriveScriptInventoryLifecycleEvidence(
+      text,
+      source,
+    );
   const cleanupResourceEvidence =
     deriveScriptCleanupResourceEvidence(
       text,
@@ -2512,6 +2518,9 @@ export function parseScriptFile(
     spatialContextOffsetSeries,
     spatialMutations: [...spatialMutations.mutations],
     cleanupResourceEvidence: [...cleanupResourceEvidence],
+    inventoryLifecycleEvidence: [
+      ...inventoryLifecycleEvidence,
+    ],
     globalLeaseEvidence: [...globalLeaseEvidence],
     spatialMutationRejected: [...spatialMutations.rejected],
     capabilities,
