@@ -374,6 +374,55 @@ describe("report defect collector", () => {
     );
   });
 
+  it("derives primary failure from an unambiguous diagnostic family", () => {
+    const base = defect("diagnostic-classification", {
+      ai: true,
+    });
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      classificationDiagnostics: [{
+        id: "diag:entity",
+        code: "ENTITY_TRIGGER_EVENT_UNDEFINED",
+        severity: "medium",
+        message: "Undefined entity event.",
+      }],
+      defect: {
+        ...base,
+        classificationSignals: {
+          ...base.classificationSignals,
+          primaryFailure: [],
+        },
+      },
+    }]);
+
+    expect(result.confirmed).toHaveLength(1);
+    expect(result.confirmed[0]?.primaryFailure)
+      .toBe("entity-decision");
+  });
+
+  it("rejects conflicting explicit and diagnostic primary failure signals", () => {
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      classificationDiagnostics: [{
+        id: "diag:entity",
+        code: "ENTITY_TRIGGER_EVENT_UNDEFINED",
+        severity: "medium",
+        message: "Undefined entity event.",
+      }],
+      defect: defect("classification-conflict", {
+        ai: true,
+      }),
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(result.rejected[0]?.reasons.join(" "))
+      .toMatch(/ambiguous/);
+  });
+
   it("rejects classification evidence outside the defect evidence universe", () => {
     const result = collectConfirmedDefects([{
       route: "static",
