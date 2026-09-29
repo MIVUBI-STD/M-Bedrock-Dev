@@ -2446,6 +2446,8 @@ export function parseScriptFile(
     arenaAuthorityPaths,
     persistenceIdempotencyGuards,
     safeConfigBindings: [...safeConfig.bindings],
+    safeConfigImports: [...safeConfig.imports],
+    safeConfigExports: [...safeConfig.exports],
     safeConfigRejected: [...safeConfig.rejected],
     repairTransformHints: [
       ...deriveCapturedGenerationGuardTransformHints(
