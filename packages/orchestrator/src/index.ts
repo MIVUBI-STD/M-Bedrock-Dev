@@ -286,3 +286,5 @@ export * from "./script-spatial-analysis.js";
 export * from "./arena-structure-instance-proof.js";
 
 export * from "./arena-entity-population-proof.js";
+
+export * from "./arena-tick-state-proof.js";

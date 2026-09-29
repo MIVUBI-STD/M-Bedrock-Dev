@@ -20,6 +20,7 @@ import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
 import { proveArenaBlockEntityEquivalence } from "./arena-block-entity-proof.js";
 import { proveArenaStructureInstances } from "./arena-structure-instance-proof.js";
 import { proveArenaEntityPopulation } from "./arena-entity-population-proof.js";
+import { proveArenaTickStateEquivalence } from "./arena-tick-state-proof.js";
 import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { partitionArenaProofVolumes, spatialLayoutFromReplicaDiscovery } from "../../../analyzers/topology/src/index.js";
@@ -148,6 +149,19 @@ export async function inspectArtifact(
             result.arenaAnalysis.entitySpawnEvidence ?? [],
           );
 
+    const tickStateProof =
+      spatialLayout === undefined
+        ? undefined
+        : proveArenaTickStateEquivalence(
+            spatialLayout,
+            effectiveRegionPlan,
+            nativeWorldDb.chunkContentObservations ?? [],
+            {
+              observationsTruncated:
+                nativeWorldDb.chunkContentObservationsTruncated ?? false,
+            },
+          );
+
     const structureInstanceProof =
       spatialLayout === undefined
         ? undefined
@@ -198,6 +212,31 @@ export async function inspectArtifact(
     let arenaBlockEntityProof;
     let persistedPackIdentity;
     const artifactDiagnostics = [...result.diagnostics];
+
+    for (
+      const replica of
+        tickStateProof?.replicas ?? []
+    ) {
+      if (replica.status !== "diverged") continue;
+      artifactDiagnostics.push(
+        createDiagnostic({
+          code: "ARENA_TICK_STATE_DIVERGENCE",
+          severity: "medium",
+          message:
+            `Arena ${replica.arenaId} differs from the canonical arena in normalized pending/random tick record state.`,
+          data: {
+            arenaId: replica.arenaId,
+            pendingTickRecords:
+              replica.pendingTickRecords,
+            randomTickRecords:
+              replica.randomTickRecords,
+            matchesCanonical:
+              replica.matchesCanonical,
+            reason: replica.reason,
+          },
+        }),
+      );
+    }
 
     for (
       const replica of
@@ -410,6 +449,9 @@ export async function inspectArtifact(
         ...(entityPopulationProof === undefined
           ? {}
           : { entityPopulationProof }),
+        ...(tickStateProof === undefined
+          ? {}
+          : { tickStateProof }),
         ...(proofPartition === undefined
           ? {}
           : { proofPartition }),
