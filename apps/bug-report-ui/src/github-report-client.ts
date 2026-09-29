@@ -125,7 +125,7 @@ export class GitHubReportClient
     report: BugReportV2,
     expectedRevision: string,
   ): Promise<SavedGitHubReport> {
-    await this.#json(
+    const body = await this.#json(
       "/api/bug-report",
       {
         method: "PUT",
