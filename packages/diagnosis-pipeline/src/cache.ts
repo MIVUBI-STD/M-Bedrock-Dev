@@ -36,6 +36,46 @@ export interface DiagnosisResultCache {
   ): void | Promise<void>;
 }
 
+function semanticGraphProjection(
+  value: unknown,
+): unknown | undefined {
+  if (
+    value === null ||
+    typeof value !== "object"
+  ) {
+    return undefined;
+  }
+
+  const candidate =
+    value as {
+      allNodes?: unknown;
+      allEdges?: unknown;
+    };
+
+  if (
+    typeof candidate.allNodes !==
+      "function" ||
+    typeof candidate.allEdges !==
+      "function"
+  ) {
+    return undefined;
+  }
+
+  return {
+    $type: "semantic-graph",
+    nodes:
+      (
+        candidate.allNodes as
+          () => unknown
+      )(),
+    edges:
+      (
+        candidate.allEdges as
+          () => unknown
+      )(),
+  };
+}
+
 function canonical(value: unknown): unknown {
   if (
     value === null ||
@@ -93,8 +133,8 @@ function canonical(value: unknown): unknown {
           canonical(child),
         ])
         .sort((a, b) =>
-          JSON.stringify(a[0]).localeCompare(
-            JSON.stringify(b[0]),
+          JSON.stringify(a).localeCompare(
+            JSON.stringify(b),
           )
         ),
     };
@@ -111,6 +151,12 @@ function canonical(value: unknown): unknown {
           )
         ),
     };
+  }
+
+  const graph =
+    semanticGraphProjection(value);
+  if (graph !== undefined) {
+    return canonical(graph);
   }
 
   if (typeof value === "object") {

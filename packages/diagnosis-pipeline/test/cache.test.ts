@@ -117,6 +117,44 @@ describe("diagnosis result cache", () => {
       .not.toBe(zero);
   });
 
+  it("fingerprints semantic-graph-like objects from their public graph projection", () => {
+    class GraphLike {
+      private nodes:
+        Array<{ id: string }> = [];
+      private edges:
+        Array<{ id: string }> = [];
+
+      allNodes() {
+        return [...this.nodes];
+      }
+
+      allEdges() {
+        return [...this.edges];
+      }
+
+      addNode(id: string) {
+        this.nodes.push({ id });
+      }
+    }
+
+    const graph =
+      new GraphLike();
+    const first =
+      diagnosisCacheValueFingerprint(
+        graph,
+      );
+
+    graph.addNode("n1");
+
+    const second =
+      diagnosisCacheValueFingerprint(
+        graph,
+      );
+
+    expect(second)
+      .not.toBe(first);
+  });
+
   it("changes the key when executor revision changes", () => {
     const first =
       diagnosisExecutionCacheKey({
