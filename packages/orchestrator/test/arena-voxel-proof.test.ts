@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { BedrockLevelDbReader } from "../../../adapters/leveldb/src/index.js";
-import { comp, int, string, writeUncompressed } from "prismarine-nbt";
+import { comp, int, string, writeUncompressed, type NBT } from "prismarine-nbt";
 import { proveArenaVoxelEquivalence } from "../src/arena-voxel-proof.js";
 
 function singleBlockSubchunk(name: string): Uint8Array {
@@ -9,7 +9,7 @@ function singleBlockSubchunk(name: string): Uint8Array {
       name: string(name),
       states: comp({}),
       version: int(1),
-    }, ""),
+    }, "") as NBT,
     "little",
   );
   return Buffer.concat([Buffer.from([9, 1, 0, 0]), palette]);
