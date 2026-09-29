@@ -86,12 +86,83 @@ export interface ConfirmedDefectCollection {
   readonly rejected: readonly RejectedReportCandidate[];
 }
 
+function intersects(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  const values = new Set(left);
+  return right.some((value) => values.has(value));
+}
+
+function routeEvidenceConsistency(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  if (candidate.route === "tester") return [];
+
+  const basisInvariantIds =
+    candidate.route === "runtime"
+      ? candidate.assessment.result.basisInvariantIds
+      : candidate.result.basisInvariantIds;
+  const basisIds = new Set(basisInvariantIds);
+  const expectedEvidence = candidate.intent.invariants
+    .filter((invariant) =>
+      basisIds.has(invariant.id) &&
+      invariant.status === "authored"
+    )
+    .flatMap((invariant) => invariant.evidenceIds);
+
+  const observedEvidence =
+    candidate.route === "runtime"
+      ? [
+          candidate.assessment.outcomeObservation.evidenceId,
+          ...candidate.assessment.result.evidenceIds,
+        ]
+      : candidate.result.evidenceIds;
+
+  const errors: string[] = [];
+  if (
+    expectedEvidence.length > 0 &&
+    !intersects(
+      candidate.defect.expected.evidenceIds,
+      expectedEvidence,
+    )
+  ) {
+    errors.push(
+      "Defect Expected evidence is not grounded in the authored invariant evidence used for confirmation.",
+    );
+  }
+  if (
+    observedEvidence.length > 0 &&
+    !intersects(
+      candidate.defect.observed.evidenceIds,
+      observedEvidence,
+    )
+  ) {
+    errors.push(
+      "Defect Observed evidence is not grounded in the evidence used for confirmation.",
+    );
+  }
+  return errors;
+}
+
 function collectOne(
   candidate: AuditReportCandidate,
 ): {
   readonly confirmed?: ConfirmedDefect;
   readonly rejected?: RejectedReportCandidate;
 } {
+  const evidenceConsistency =
+    routeEvidenceConsistency(candidate);
+  if (evidenceConsistency.length > 0) {
+    return {
+      rejected: {
+        route: candidate.route,
+        semanticKey: candidate.defect.semanticKey,
+        reasons: evidenceConsistency,
+      },
+    };
+  }
+
   if (
     candidate.defect.suggestedFix !== undefined &&
     candidate.repairContext?.decision === undefined
