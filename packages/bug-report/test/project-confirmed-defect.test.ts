@@ -6,6 +6,7 @@ import {
 import {
   allocateBugIds,
   buildBugReportFromConfirmedDefects,
+  deriveRepairUnitIdsFromSourceEvidence,
   groupConfirmedDefects,
   deriveConfirmedDefectSemanticKey,
   projectConfirmedDefects,
