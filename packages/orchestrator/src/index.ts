@@ -254,3 +254,5 @@ export * from "./report-classification-producers.js";
 export * from "./report-runtime-classification.js";
 
 export * from "./arena-region-contract-load.js";
+
+export * from "./arena-proof-coverage.js";

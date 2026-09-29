@@ -20,6 +20,7 @@ import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
 import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { partitionArenaProofVolumes } from "../../../analyzers/topology/src/index.js";
+import { deriveArenaProofCoverage } from "./arena-proof-coverage.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
@@ -99,6 +100,12 @@ export async function inspectArtifact(
     const proofVolumes =
       proofPartition?.volumes ??
       baseProofVolumes;
+
+    const proofCoverage = deriveArenaProofCoverage(
+      result.arenaAnalysis.regionPlan,
+      result.arenaAnalysis.regionClassification,
+      proofPartition,
+    );
 
     const arenaNativeSpatial =
       result.arenaAnalysis.discovery === undefined
@@ -229,6 +236,9 @@ export async function inspectArtifact(
         ...(proofPartition === undefined
           ? {}
           : { proofPartition }),
+        ...(proofCoverage === undefined
+          ? {}
+          : { proofCoverage }),
       },
       worldDatabase: {
         ...result.worldDatabase,
