@@ -4,10 +4,14 @@ import type {
 import type {
   GameplayRouteStallRuntimeAssessment,
 } from "./gameplay-intent-runtime-stage.js";
+import type {
+  EntityAiStackStateAssessment,
+} from "./entity-ai-stack-analysis.js";
 
 export type GameplayRouteCauseCandidateId =
   | "route-context"
   | "target-assignment"
+  | "entity-ai-stack"
   | "chunk-availability"
   | "route-reachability"
   | "navigation-target"
@@ -45,6 +49,7 @@ export interface GameplayRouteCauseAnalysis {
 const ORDER: readonly GameplayRouteCauseCandidateId[] = [
   "route-context",
   "target-assignment",
+  "entity-ai-stack",
   "chunk-availability",
   "route-reachability",
   "navigation-target",
@@ -56,6 +61,7 @@ const LABELS: Readonly<
 > = {
   "route-context": "Route context / authored route resolution",
   "target-assignment": "Route target assignment / progression",
+  "entity-ai-stack": "Entity movement / navigation / movement-goal source stack",
   "chunk-availability": "Route target chunk availability",
   "route-reachability": "Route target reachability",
   "navigation-target": "Engine navigation target alignment",
@@ -100,6 +106,8 @@ export type GameplayRouteCauseAnalysisInput =
 
 export function analyzeGameplayRouteCauseCandidates(
   assessment: GameplayRouteCauseAnalysisInput,
+  aiStackAssessments:
+    readonly EntityAiStackStateAssessment[] = [],
 ): GameplayRouteCauseAnalysis {
   const stallEvidence = [
     assessment.stallObservation.evidenceId,
@@ -198,6 +206,82 @@ export function analyzeGameplayRouteCauseCandidates(
       targetNearestMatch
         ? "corroborated"
         : "hypothesis",
+    ),
+  );
+
+  const matchingAiStacks =
+    aiStackAssessments.filter(
+      (item) =>
+        item.entityKey ===
+          assessment.stallObservation.entityKey &&
+        item.targeted,
+    );
+  const completeAiStacks =
+    matchingAiStacks.filter(
+      (item) =>
+        item.status ===
+        "targeted-stack-complete",
+    );
+  const incompleteAiStacks =
+    matchingAiStacks.filter(
+      (item) =>
+        item.status ===
+        "targeted-stack-incomplete",
+    );
+
+  const aiStackStatus:
+    GameplayRouteCauseCandidateStatus =
+      matchingAiStacks.length === 0
+        ? "unresolved"
+        : completeAiStacks.length ===
+            matchingAiStacks.length
+          ? "rejected"
+          : incompleteAiStacks.length ===
+              matchingAiStacks.length
+            ? "supported"
+            : "unresolved";
+
+  const aiStackEvidenceIds =
+    matchingAiStacks.map(
+      (item) =>
+        "entity-ai-stack:" +
+        item.entityKey +
+        ":" +
+        item.stateId,
+    );
+
+  const missingAiSurfaces = [
+    ...new Set(
+      incompleteAiStacks.flatMap(
+        (item) => item.missingSurfaces,
+      ),
+    ),
+  ].sort();
+
+  candidates.push(
+    candidate(
+      "entity-ai-stack",
+      aiStackStatus,
+      aiStackEvidenceIds,
+      aiStackStatus === "supported"
+        ? [
+            "Every statically discovered targeted state for the stalled entity is missing one or more movement/navigation stack surfaces.",
+            "Missing surfaces: " +
+              missingAiSurfaces.join(", ") +
+              ".",
+            "Static source evidence narrows investigation to entity AI configuration, but does not prove which state was active at runtime.",
+          ]
+        : aiStackStatus === "rejected"
+          ? [
+              "Every statically discovered targeted state for the stalled entity contains movement, navigation, and a movement-goal candidate.",
+              "A missing static AI stack is therefore not the first modeled cause for this entity.",
+            ]
+          : [
+              matchingAiStacks.length === 0
+                ? "No statically targeted entity state is available for this runtime entity key."
+                : "Static targeted states mix complete and incomplete AI stacks, so active-state binding is required before resolving this candidate.",
+            ],
+      "hypothesis",
     ),
   );
 
@@ -307,6 +391,7 @@ export function analyzeGameplayRouteCauseCandidates(
     [
       "route-context",
       "target-assignment",
+      "entity-ai-stack",
       "chunk-availability",
       "route-reachability",
       "navigation-target",
