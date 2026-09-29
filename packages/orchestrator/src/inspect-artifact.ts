@@ -33,6 +33,7 @@ import { createDiagnostic } from "../../diagnostics/src/index.js";
 import { deriveArenaStressPlan } from "./arena-stress-plan.js";
 import { deriveArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
 import { localizeArenaRepairSources } from "./arena-repair-localization.js";
+import { arenaProofLayerEnabled, planArenaProofExecution } from "./arena-proof-execution-plan.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -161,18 +162,7 @@ export async function inspectArtifact(
             result.arenaAnalysis.entitySpawnEvidence ?? [],
           );
 
-    const tickStateProof =
-      spatialLayout === undefined
-        ? undefined
-        : proveArenaTickStateEquivalence(
-            spatialLayout,
-            effectiveRegionPlan,
-            nativeWorldDb.chunkContentObservations ?? [],
-            {
-              observationsTruncated:
-                nativeWorldDb.chunkContentObservationsTruncated ?? false,
-            },
-          );
+    let tickStateProof;
 
     const structureInstanceProof =
       spatialLayout === undefined
@@ -219,6 +209,54 @@ export async function inspectArtifact(
                 : { includedVolumes: proofVolumes }),
             },
           );
+
+    const proofExecution =
+      spatialLayout === undefined
+        ? undefined
+        : planArenaProofExecution({
+            mode:
+              target.arenaProofMode ??
+              "progressive",
+            nativeSpatial:
+              arenaNativeSpatial,
+            nativeObservationsTruncated:
+              nativeWorldDb
+                .chunkContentObservationsTruncated ??
+              false,
+            blockEntityRecords:
+              nativeWorldDb.blockEntityRecords,
+            pendingTickRecords:
+              nativeWorldDb.pendingTickRecords,
+            randomTickRecords:
+              nativeWorldDb.randomTickRecords,
+            actorRecords:
+              nativeWorldDb.actorRecords,
+            authoredEntityProof:
+              entityPopulationProof,
+          });
+
+    if (
+      spatialLayout !== undefined &&
+      proofExecution !== undefined &&
+      arenaProofLayerEnabled(
+        proofExecution,
+        "tick-state",
+      )
+    ) {
+      tickStateProof =
+        proveArenaTickStateEquivalence(
+          spatialLayout,
+          effectiveRegionPlan,
+          nativeWorldDb
+            .chunkContentObservations ?? [],
+          {
+            observationsTruncated:
+              nativeWorldDb
+                .chunkContentObservationsTruncated ??
+              false,
+          },
+        );
+    }
 
     let arenaVoxelProof;
     let arenaBlockEntityProof;
@@ -308,23 +346,42 @@ export async function inspectArtifact(
             await extractPersistedPackIdentities(reader);
 
           if (spatialLayout !== undefined) {
-            arenaVoxelProof = await proveArenaVoxelEquivalence(
-              reader,
-              spatialLayout,
-              {
-                ...(effectiveRegionPlan === undefined
-                  ? {}
-                  : {
-                      regionPlan:
-                        effectiveRegionPlan,
-                    }),
-                ...(proofVolumes === undefined
-                  ? {}
-                  : { includedVolumes: proofVolumes }),
-              },
-            );
+            if (
+              proofExecution !== undefined &&
+              arenaProofLayerEnabled(
+                proofExecution,
+                "voxel",
+              )
+            ) {
+              arenaVoxelProof =
+                await proveArenaVoxelEquivalence(
+                  reader,
+                  spatialLayout,
+                  {
+                    ...(effectiveRegionPlan === undefined
+                      ? {}
+                      : {
+                          regionPlan:
+                            effectiveRegionPlan,
+                        }),
+                    ...(proofVolumes === undefined
+                      ? {}
+                      : {
+                          includedVolumes:
+                            proofVolumes,
+                        }),
+                  },
+                );
+            }
 
-            if (proofVolumes !== undefined) {
+            if (
+              proofVolumes !== undefined &&
+              proofExecution !== undefined &&
+              arenaProofLayerEnabled(
+                proofExecution,
+                "block-entity",
+              )
+            ) {
               arenaBlockEntityProof =
                 await proveArenaBlockEntityEquivalence(
                   reader,
@@ -335,14 +392,25 @@ export async function inspectArtifact(
                 );
             }
 
-            arenaActorPopulationProof =
-              await proveArenaActorPopulation(
-                reader,
-                spatialLayout,
-                effectiveRegionPlan,
-              );
+            if (
+              proofExecution !== undefined &&
+              arenaProofLayerEnabled(
+                proofExecution,
+                "actor-population",
+              )
+            ) {
+              arenaActorPopulationProof =
+                await proveArenaActorPopulation(
+                  reader,
+                  spatialLayout,
+                  effectiveRegionPlan,
+                );
+            }
 
-            for (const replica of arenaVoxelProof.replicas) {
+            for (
+              const replica of
+                arenaVoxelProof?.replicas ?? []
+            ) {
               if (replica.status !== "diverged") continue;
               artifactDiagnostics.push(
                 createDiagnostic({
@@ -527,6 +595,9 @@ export async function inspectArtifact(
         ...(repairLocalization === undefined
           ? {}
           : { repairLocalization }),
+        ...(proofExecution === undefined
+          ? {}
+          : { proofExecution }),
         ...(result.arenaAnalysis.regionPlan !== undefined ||
             effectiveRegionPlan === undefined
           ? {}

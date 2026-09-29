@@ -67,6 +67,21 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
       continue;
     }
 
+    if (token === "--arena-proof-mode") {
+      const value = args[index + 1];
+      if (
+        value !== "progressive" &&
+        value !== "full"
+      ) {
+        throw new Error(
+          "--arena-proof-mode requires progressive or full",
+        );
+      }
+      target.arenaProofMode = value;
+      index += 1;
+      continue;
+    }
+
     if (token === "--arena-region-contracts") {
       const value = args[index + 1];
       if (!value || value.startsWith("--")) {

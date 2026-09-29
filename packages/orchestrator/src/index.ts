@@ -307,3 +307,5 @@ export * from "./arena-repeated-run-validation.js";
 export * from "./arena-global-state-analysis.js";
 
 export * from "./map-engineering-workflow.js";
+
+export * from "./arena-proof-execution-plan.js";

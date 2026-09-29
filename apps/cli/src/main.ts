@@ -276,7 +276,11 @@ async function main(): Promise<void> {
       : undefined;
     const result = await inspectArtifact(
       resolve(input),
-      target,
+      {
+        ...target,
+        arenaProofMode:
+          target.arenaProofMode ?? "full",
+      },
       knowledge,
       telemetry ?? [],
       probeTranscript,
@@ -404,16 +408,16 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
-    "  npm run cli -- arena-corpus <manifest.json> [artifact-root] [--edition ...] [--version ...] [--arena-region-contracts regions.json]",
-    "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json]",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- arena-corpus <manifest.json> [artifact-root] [--edition ...] [--version ...] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
+    "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
+    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
-    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json]",
-    "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json]",
+    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
+    "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version> [--edition ...] [--experiment id]",
   ].join("\n"));
   process.exitCode = 2;
