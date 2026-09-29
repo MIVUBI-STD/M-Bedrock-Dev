@@ -120,6 +120,36 @@ export class GitHubReportClient
     };
   }
 
+  async createReport(
+    path: string,
+    report: BugReportV2,
+  ): Promise<SavedGitHubReport> {
+    const body = await this.#json(
+      "/api/bug-report",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path,
+          report,
+        }),
+      },
+    );
+    if (
+      typeof body !== "object" ||
+      body === null ||
+      !("revision" in body) ||
+      typeof (body as { revision?: unknown }).revision !== "string"
+    ) {
+      throw new Error("GitHub create response is invalid.");
+    }
+    return {
+      revision: (body as { revision: string }).revision,
+    };
+  }
+
   async saveReport(
     path: string,
     report: BugReportV2,
