@@ -336,7 +336,6 @@ export function resolveConfirmedDefectGroup(
     deriveConfirmedDefectSemanticKey({
       subjectIds,
       brokenInvariantIds,
-      repairUnitIds,
       primaryFailure: narrative.primaryFailure,
       ...(causalIncidentId === undefined
         ? {}
