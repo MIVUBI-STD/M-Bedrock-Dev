@@ -338,7 +338,7 @@ describe("context compiler", () => {
     );
   });
 
-  it("marks the pack incomplete when explicitly requested ids are missing",
+  it("marks the pack incomplete when explicitly requested ids are missing", () => {
     const pack =
       compileContextPack({
         goal: "missing",

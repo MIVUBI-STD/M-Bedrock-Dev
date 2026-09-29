@@ -106,7 +106,7 @@ function graphFixture(): SemanticGraph {
 }
 
 describe("semantic affected planning", () => {
-  it("keeps only changed nodes and reverse dependents in the affected closure", () => {
+  it("includes changed nodes, mutation targets, and reverse dependents without pulling ordinary callees", () => {
     const result =
       planSemanticAffectedSet(
         graphFixture(),
