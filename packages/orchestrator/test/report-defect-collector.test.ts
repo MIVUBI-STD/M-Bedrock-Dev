@@ -93,11 +93,15 @@ function defect(
     expected: {
       authority: "authored-intent" as const,
       statement: "Match-owned state is reset.",
-      evidenceIds: ["intent:cleanup"],
+      evidenceIds: ["intent:evidence"],
     },
     observed: {
       statement: "Previous match state remains active.",
-      evidenceIds: ["observation:cleanup"],
+      evidenceIds: [
+        "runtime:cleanup",
+        "static:cleanup",
+        "observation:cleanup",
+      ],
     },
     ...(options.reproduction === undefined
       ? {}
@@ -254,6 +258,26 @@ describe("report defect collector", () => {
     expect(result.promotion.ok).toBe(true);
     if (!result.promotion.ok) return;
     expect(result.promotion.report.bugs).toHaveLength(1);
+  });
+
+  it("rejects report facts that are not grounded in confirmation evidence", () => {
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      defect: {
+        ...defect("bad-provenance", { ai: true }),
+        expected: {
+          authority: "authored-intent",
+          statement: "Match-owned state is reset.",
+          evidenceIds: ["unrelated:intent"],
+        },
+      },
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(result.rejected[0]?.reasons.join(" "))
+      .toMatch(/Expected evidence/);
   });
 
   it("blocks promotion when AI source evidence is not in the audited inventory", () => {
