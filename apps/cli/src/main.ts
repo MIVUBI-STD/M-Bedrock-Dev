@@ -15,7 +15,6 @@ import { compileRuntimeProbeRequests } from "../../../packages/orchestrator/src/
 import {
   calibrateGameplayCorpusFromFile,
 } from "../../../packages/orchestrator/src/index.js";
-import { loadReviewUiViewModel } from "../../review-ui/src/index.js";
 
 async function main(): Promise<void> {
   const [, , command, ...rawArgs] = process.argv;
@@ -204,20 +203,6 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "review-model" && input) {
-    const model = await loadReviewUiViewModel({
-      artifactPath: input,
-      target,
-      ...(telemetryPath === undefined
-        ? {}
-        : { telemetryPath }),
-      ...(probeTranscriptPath === undefined
-        ? {}
-        : { probeTranscriptPath }),
-    });
-    console.log(JSON.stringify(model, null, 2));
-    return;
-  }
 
   if (command === "review" && input) {
     const telemetry = telemetryPath
@@ -272,7 +257,7 @@ async function main(): Promise<void> {
     command !== "probe-replay"
   ) {
     throw new Error(
-      "Telemetry and runtime probe transcript inputs are only supported by inspect, review, or probe-plan.",
+      "Telemetry and runtime probe transcript inputs are only supported by inspect, review, probe-plan, or probe-replay.",
     );
   }
 
@@ -329,7 +314,6 @@ async function main(): Promise<void> {
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...]",
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- review-model <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
     "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...]",
