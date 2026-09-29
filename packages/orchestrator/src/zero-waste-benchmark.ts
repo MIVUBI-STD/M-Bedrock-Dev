@@ -198,7 +198,7 @@ export function evaluateZeroWasteBenchmark(
           .skipRatio,
         input.targets
           ?.minimumSemanticSkipRatio,
-        "Share of semantic nodes outside the affected dependency closure.",
+        "Case-specific share of semantic nodes outside the affected dependency closure; only interpret against an explicit benchmark target.",
       ),
     );
   }
@@ -211,7 +211,7 @@ export function evaluateZeroWasteBenchmark(
           .skipRatio,
         input.targets
           ?.minimumValidationSkipRatio,
-        "Share of validation scenarios proven outside the affected closure.",
+        "Case-specific share of validation scenarios proven outside the affected closure; only interpret against an explicit benchmark target.",
       ),
     );
   }
@@ -264,30 +264,6 @@ export function evaluateZeroWasteBenchmark(
   ) {
     wasteSignals.push(
       "repeated-diagnosis-without-reuse",
-    );
-  }
-
-  if (
-    input.summary.semanticImpact &&
-    input.summary.semanticImpact
-      .totalNodes > 0 &&
-    input.summary.semanticImpact
-      .skippedNodes === 0
-  ) {
-    wasteSignals.push(
-      "full-semantic-closure",
-    );
-  }
-
-  if (
-    input.summary.validation &&
-    input.summary.validation
-      .totalScenarios > 1 &&
-    input.summary.validation
-      .skippedScenarios === 0
-  ) {
-    wasteSignals.push(
-      "full-validation-set",
     );
   }
 
