@@ -10,10 +10,12 @@ describe("arena analysis capabilities", () => {
     const registry = createAnalysisCapabilityRegistry(
       ARENA_ANALYSIS_CAPABILITIES,
     );
-    expect(registry.capabilities).toHaveLength(6);
+    expect(registry.capabilities).toHaveLength(
+      ARENA_ANALYSIS_CAPABILITIES.length,
+    );
   });
 
-  it("selects the cheap capacity proof before expensive spatial analysis when capacity is relevant", () => {
+  it("selects the cheap capacity proof when capacity is the specific concern", () => {
     const plan = planMinimumSufficientAnalysis({
       goal: "semantic-consistency",
       relevantTags: ["arena", "capacity"],
@@ -22,6 +24,43 @@ describe("arena analysis capabilities", () => {
     });
 
     expect(plan.disposition).toBe("execute");
-    expect(plan.steps[0]?.capabilityId).toBe("arena-concurrency-capacity");
+    expect(plan.steps[0]?.capabilityId).toBe(
+      "arena-concurrency-capacity",
+    );
+  });
+
+  it("prefers terrain-specific chunk evidence before voxel decode", () => {
+    const plan = planMinimumSufficientAnalysis({
+      goal: "semantic-consistency",
+      relevantTags: ["arena", "terrain"],
+      context: "LOCAL_ARTIFACT",
+      capabilities: ARENA_ANALYSIS_CAPABILITIES,
+      completedCapabilityIds: [
+        "safe-config-resolution",
+        "arena-replica-fidelity",
+      ],
+    });
+
+    expect(plan.disposition).toBe("execute");
+    expect(plan.steps[0]).toMatchObject({
+      capabilityId: "arena-spatial-fingerprint",
+      cost: "moderate",
+    });
+  });
+
+  it("keeps actor DB analysis behind cheaper authored entity evidence", () => {
+    const plan = planMinimumSufficientAnalysis({
+      goal: "semantic-consistency",
+      relevantTags: ["arena", "entity"],
+      context: "LOCAL_ARTIFACT",
+      capabilities: ARENA_ANALYSIS_CAPABILITIES,
+      completedCapabilityIds: [
+        "safe-config-resolution",
+      ],
+    });
+
+    expect(plan.steps[0]?.capabilityId).toBe(
+      "arena-authored-entity-fidelity",
+    );
   });
 });
