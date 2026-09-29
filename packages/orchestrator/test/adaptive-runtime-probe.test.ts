@@ -5,31 +5,53 @@ import {
 } from "vitest";
 import {
   prepareAdaptiveRuntimeProbeBundle,
+  type AdaptiveRuntimeProbeInspection,
 } from "../src/adaptive-runtime-probe.js";
 
 describe("adaptive runtime probe bundle", () => {
   it("spends a global budget on the highest-value probes first", () => {
-    const inspection = {
+    const inspection:
+      AdaptiveRuntimeProbeInspection = {
       causalAnalysis: {
         incidents: [{
           id: "incident:a",
           scopeKey: "a",
           severity: "major",
-          confidence: "probable",
+          confidence: "medium",
           chainIds: [],
           relatedDiagnosticIds: [],
+          nodes: [],
+          links: [],
           rootCauseCandidates: [{
             id: "candidate:a1",
             label: "A1",
-            evidenceLevel: "hypothesis",
+            evidenceLevel:
+              "unproven-candidate",
             severity: "major",
-            confidence: "probable",
+            confidence: "medium",
+            chainIds: [],
+            relatedDiagnosticIds: [],
+            support: {
+              dependencyViolations: 0,
+              evidenceGaps: 1,
+              corroboratedRisks: 0,
+              observedOutcomes: 0,
+            },
           }, {
             id: "candidate:a2",
             label: "A2",
-            evidenceLevel: "hypothesis",
+            evidenceLevel:
+              "unproven-candidate",
             severity: "major",
-            confidence: "probable",
+            confidence: "medium",
+            chainIds: [],
+            relatedDiagnosticIds: [],
+            support: {
+              dependencyViolations: 0,
+              evidenceGaps: 1,
+              corroboratedRisks: 0,
+              observedOutcomes: 0,
+            },
           }],
         }],
       },
@@ -75,7 +97,7 @@ describe("adaptive runtime probe bundle", () => {
           }],
         }],
       },
-    } as never;
+    };
 
     const result =
       prepareAdaptiveRuntimeProbeBundle(
@@ -139,7 +161,7 @@ describe("adaptive runtime probe bundle", () => {
           diagnosticProbeAnalysis: {
             incidents: [],
           },
-        } as never,
+        },
         {
           availableContext:
             "LIVE_MINECRAFT",

@@ -1,4 +1,5 @@
 import type {
+  CausalIncident,
   DiagnosticProbeDefinition,
   DiagnosticProbePlan,
 } from "../../project-model/src/index.js";
@@ -10,9 +11,6 @@ import type {
 import {
   parseRuntimeProbeRequestBundle,
 } from "../../project-model/src/index.js";
-import type {
-  InspectDirectoryResult,
-} from "./types.js";
 import {
   planDiagnosticProbes,
 } from "./diagnostic-probe-planning.js";
@@ -20,6 +18,20 @@ import {
   compileRuntimeProbeRequests,
   type RuntimeProbeCompilationIssue,
 } from "./runtime-probe-request-compiler.js";
+
+export interface AdaptiveRuntimeProbeInspection {
+  causalAnalysis: {
+    incidents:
+      readonly CausalIncident[];
+  };
+  diagnosticProbeAnalysis: {
+    incidents: readonly {
+      incidentId: string;
+      definitions:
+        readonly DiagnosticProbeDefinition[];
+    }[];
+  };
+}
 
 export interface AdaptiveRuntimeProbeBudget {
   maxRequests: number;
@@ -112,16 +124,8 @@ function candidateOrder(
 }
 
 export function prepareAdaptiveRuntimeProbeBundle(
-  inspection: {
-    causalAnalysis: Pick<
-      InspectDirectoryResult["causalAnalysis"],
-      "incidents"
-    >;
-    diagnosticProbeAnalysis:
-      InspectDirectoryResult[
-        "diagnosticProbeAnalysis"
-      ];
-  },
+  inspection:
+    AdaptiveRuntimeProbeInspection,
   options: {
     availableContext:
       Parameters<
