@@ -14,7 +14,7 @@ describe("persisted pack identity extraction", () => {
         "8a121475-6f9f-4780-a746-2bf25f732204": comp({
           score: int(10),
         }),
-      }),
+      }, ""),
       "little",
     );
 
