@@ -366,3 +366,5 @@ export function validateBugReportSemantics(
     issues,
   };
 }
+
+export * from "./decision.js";
