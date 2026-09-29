@@ -6,6 +6,7 @@ import {
 import {
   allocateBugIds,
   buildBugReportFromConfirmedDefects,
+  deriveConfirmedDefectSemanticKey,
   projectConfirmedDefects,
   type ConfirmedDefect,
 } from "../src/index.js";
@@ -18,15 +19,22 @@ const map = {
 };
 
 function defect(
-  semanticKey: string,
-  overrides: Partial<ConfirmedDefect> = {},
+  subject: string,
+  overrides: Partial<Omit<
+    ConfirmedDefect,
+    "semanticKey"
+  >> = {},
 ): ConfirmedDefect {
-  return {
-    semanticKey,
+  const base: Omit<
+    ConfirmedDefect,
+    "semanticKey"
+  > = {
+    subjectIds: ["subject:" + subject],
     foundBy: "ai",
     confirmation: {
       basis: "authored-contract-violation",
-      evidence: "Static implementation contradicts authored cleanup behavior.",
+      evidence:
+        "Static implementation contradicts authored cleanup behavior.",
     },
     impact: {
       progression: "degraded",
@@ -48,7 +56,8 @@ function defect(
       statement: "Previous match state remains active.",
       evidenceIds: ["static:cleanup"],
     },
-    aiAnalysis: "The cleanup path does not clear the owned state.",
+    aiAnalysis:
+      "The cleanup path does not clear the owned state.",
     sourceEvidence: [{
       source: {
         artifactId: "map",
@@ -62,7 +71,16 @@ function defect(
     }],
     brokenInvariantIds: ["inv:cleanup"],
     repairUnitIds: ["unit:session-cleanup"],
+  };
+
+  const merged = {
+    ...base,
     ...overrides,
+  };
+  return {
+    ...merged,
+    semanticKey:
+      deriveConfirmedDefectSemanticKey(merged),
   };
 }
 
@@ -81,49 +99,55 @@ describe("confirmed defect projection", () => {
     );
   });
 
-  it("allocates stable ids from semantic ordering", () => {
+  it("allocates ids from deterministic semantic identity", () => {
+    const a = defect("a-first");
+    const z = defect("z-last");
     const ids = allocateBugIds(
       map.name,
-      [
-        defect("z-last"),
-        defect("a-first"),
-      ],
+      [z, a],
     );
 
-    expect(ids.get("a-first")).toBe("BUG-BB-1OTRUH3");
-    expect(ids.get("z-last")).toBe("BUG-BB-0TOWYPC");
+    expect(ids.get(a.semanticKey))
+      .toMatch(/^BUG-BB-[A-Z0-9]+$/);
+    expect(ids.get(z.semanticKey))
+      .toMatch(/^BUG-BB-[A-Z0-9]+$/);
+    expect(ids.get(a.semanticKey))
+      .not.toBe(ids.get(z.semanticKey));
   });
 
   it("keeps ids stable when input order changes", () => {
+    const a = defect("a");
+    const b = defect("b");
     const first = allocateBugIds(
       map.name,
-      [defect("a"), defect("b")],
+      [a, b],
     );
     const second = allocateBugIds(
       map.name,
-      [defect("b"), defect("a")],
+      [b, a],
     );
 
-    expect([...first.entries()]).toEqual(
-      [...second.entries()],
+    expect([...first.entries()].sort()).toEqual(
+      [...second.entries()].sort(),
     );
   });
 
   it("keeps an existing id stable when report contents grow", () => {
+    const cleanup = defect("cleanup");
     const before = allocateBugIds(
       map.name,
-      [defect("cleanup")],
+      [cleanup],
     );
     const after = allocateBugIds(
       map.name,
       [
         defect("a-new-defect"),
-        defect("cleanup"),
+        cleanup,
       ],
     );
 
-    expect(after.get("cleanup")).toBe(
-      before.get("cleanup"),
+    expect(after.get(cleanup.semanticKey)).toBe(
+      before.get(cleanup.semanticKey),
     );
   });
 
@@ -148,18 +172,42 @@ describe("confirmed defect projection", () => {
     ).toContain("unresolved-defect-group");
   });
 
-  it("projects a canonical V2 report", () => {
+  it("rejects a semantic key that does not match structured identity", () => {
+    const item = defect("cleanup");
     const result = buildBugReportFromConfirmedDefects({
       map,
       repairBy: "developer",
-      defects: [defect("cleanup")],
+      defects: [{
+        ...item,
+        semanticKey: "caller-controlled-key",
+      }],
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(
+      result.issues.map((issue) => issue.code),
+    ).toContain("invalid-confirmed-defect");
+  });
+
+  it("projects a canonical V2 report", () => {
+    const item = defect("cleanup");
+    const expectedId = allocateBugIds(
+      map.name,
+      [item],
+    ).get(item.semanticKey);
+
+    const result = buildBugReportFromConfirmedDefects({
+      map,
+      repairBy: "developer",
+      defects: [item],
     });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.report.bugs[0]).toEqual(
       expect.objectContaining({
-        id: "BUG-BB-1OB7ULV",
+        id: expectedId,
         severity: "major",
         category: "player-state",
         foundBy: "ai",
