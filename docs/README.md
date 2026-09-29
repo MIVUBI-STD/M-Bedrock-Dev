@@ -61,3 +61,8 @@ Evidence = supporting history/research, opt-in
 ```
 
 One concern has one canonical semantic owner. Link instead of duplicating.
+
+
+## Zero-waste execution
+
+For task routing, affected analysis, cache/proof reuse, bounded context, and selective validation, see [06-system/zero-waste-execution.md](06-system/zero-waste-execution.md).

@@ -2,6 +2,20 @@
   "schemaVersion": 1,
   "contracts": [
     {
+      "id": "bug-report-v1",
+      "symbol": "BugReportV1",
+      "owner": "packages/bug-report/src/index.ts",
+      "producers": [
+        "packages/bug-report"
+      ],
+      "consumers": [
+        "apps"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "bug-fixing-report",
+      "status": "canonical"
+    },
+    {
       "id": "contract-registry-revision",
       "symbol": "CONTRACT_REGISTRY_REVISION",
       "owner": "packages/project-model/src/contract-registry-revision.ts",
@@ -189,6 +203,21 @@
       "status": "canonical"
     },
     {
+      "id": "semantic-proof-claim",
+      "symbol": "SemanticProofClaim",
+      "owner": "packages/orchestrator/src/semantic-proof-cache.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator",
+        "apps"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "proof-reuse",
+      "status": "canonical"
+    },
+    {
       "id": "telemetry-batch",
       "symbol": "TelemetryBatch",
       "owner": "packages/project-model/src/telemetry.ts",
@@ -218,17 +247,18 @@
       "status": "canonical"
     },
     {
-      "id": "bug-report-v1",
-      "symbol": "BugReportV1",
-      "owner": "packages/bug-report/src/index.ts",
+      "id": "work-session-checkpoint",
+      "symbol": "WorkSessionCheckpoint",
+      "owner": "packages/project-model/src/work-session.ts",
       "producers": [
-        "packages/bug-report"
+        "packages/orchestrator"
       ],
       "consumers": [
+        "packages/orchestrator",
         "apps"
       ],
       "schemaVersion": 1,
-      "verificationLevel": "bug-fixing-report",
+      "verificationLevel": "workflow-continuity",
       "status": "canonical"
     }
   ]
