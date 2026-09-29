@@ -51,6 +51,8 @@ export interface ZeroWasteWorkflowInput {
     readonly ValidationScenarioImpactBinding[];
   proofClaims?:
     readonly ZeroWasteWorkflowProofInput[];
+  relevantSemanticNodeIds?:
+    readonly string[];
   relevantIntentSubjectIds?:
     readonly string[];
   relevantInvariantIds?:
@@ -106,6 +108,15 @@ export function prepareZeroWasteWorkflow(
       ...(affected.status === "planned"
         ? { affected }
         : {}),
+      ...(input
+        .relevantSemanticNodeIds ===
+      undefined
+        ? {}
+        : {
+            relevantSemanticNodeIds:
+              input
+                .relevantSemanticNodeIds,
+          }),
       ...(input
         .relevantIntentSubjectIds ===
       undefined

@@ -26,6 +26,7 @@ export interface ContextCompilerRequest {
   graph: SemanticGraph;
   intent: GameplayIntentModel;
   affected?: SemanticAffectedPlan;
+  relevantSemanticNodeIds?: readonly string[];
   relevantIntentSubjectIds?: readonly string[];
   relevantInvariantIds?: readonly string[];
   relevantEvidenceIds?: readonly string[];
@@ -92,6 +93,7 @@ export interface CompiledContextPack {
     evidence: number;
   };
   missingRequested: {
+    semanticNodeIds: readonly string[];
     intentSubjectIds: readonly string[];
     invariantIds: readonly string[];
     evidenceIds: readonly string[];
@@ -244,14 +246,78 @@ export function compileContextPack(
 
   const budget =
     resolveBudget(input.budget);
-  const semanticSelection =
-    take(
-      semanticCandidates(
-        input.graph,
-        input.affected,
-      ),
-      budget.maxSemanticNodes,
+  const semanticPool =
+    semanticCandidates(
+      input.graph,
+      input.affected,
     );
+  const requestedSemanticIds =
+    new Set(
+      unique(
+        input.relevantSemanticNodeIds,
+      ),
+    );
+  const semanticById =
+    new Map(
+      semanticPool.map((node) => [
+        node.id,
+        node,
+      ]),
+    );
+  const requiredSemanticNodes =
+    [...requestedSemanticIds]
+      .map((id) =>
+        semanticById.get(id)
+      )
+      .filter(
+        (node):
+          node is SemanticNode =>
+          node !== undefined,
+      )
+      .sort((a, b) =>
+        a.id.localeCompare(b.id)
+      );
+
+  if (
+    requiredSemanticNodes.length >
+    budget.maxSemanticNodes
+  ) {
+    throw new Error(
+      "Context compiler maxSemanticNodes is smaller than the explicitly required semantic node set.",
+    );
+  }
+
+  const requiredSemanticSet =
+    new Set(
+      requiredSemanticNodes.map(
+        (node) => node.id,
+      ),
+    );
+  const optionalSemanticNodes =
+    semanticPool.filter(
+      (node) =>
+        !requiredSemanticSet.has(
+          node.id,
+        ),
+    );
+  const semanticCapacity =
+    budget.maxSemanticNodes -
+    requiredSemanticNodes.length;
+  const optionalSemanticSelection =
+    take(
+      optionalSemanticNodes,
+      semanticCapacity,
+    );
+  const semanticSelection = {
+    values: [
+      ...requiredSemanticNodes,
+      ...optionalSemanticSelection.values,
+    ].sort((a, b) =>
+      a.id.localeCompare(b.id)
+    ),
+    omitted:
+      optionalSemanticSelection.omitted,
+  };
   const selectedSemanticIds =
     new Set(
       semanticSelection.values.map(
@@ -471,7 +537,20 @@ export function compileContextPack(
       ),
     );
 
+  const allGraphNodeIds =
+    new Set(
+      input.graph.allNodes().map(
+        (node) => node.id,
+      ),
+    );
+
   const missingRequested = {
+    semanticNodeIds: [
+      ...requestedSemanticIds,
+    ].filter(
+      (id) =>
+        !allGraphNodeIds.has(id),
+    ).sort(),
     intentSubjectIds: [
       ...requestedSubjects,
     ].filter(
@@ -491,14 +570,21 @@ export function compileContextPack(
     ).sort(),
   };
 
-  const truncated =
+  const optionalTruncated =
     semanticSelection.omitted > 0 ||
     semanticEdgeSelection.omitted > 0 ||
     nodeSelection.omitted > 0 ||
     invariantSelection.omitted > 0 ||
     unknownSelection.omitted > 0 ||
     evidenceSelection.omitted > 0;
+  const explicitScope =
+    requestedSemanticIds.size > 0 ||
+    requestedSubjects.size > 0 ||
+    requestedInvariants.size > 0 ||
+    requestedEvidence.size > 0;
   const missingRequestedCount =
+    missingRequested
+      .semanticNodeIds.length +
     missingRequested
       .intentSubjectIds.length +
     missingRequested
@@ -506,8 +592,11 @@ export function compileContextPack(
     missingRequested
       .evidenceIds.length;
   const complete =
-    !truncated &&
-    missingRequestedCount === 0;
+    missingRequestedCount === 0 &&
+    (
+      explicitScope ||
+      !optionalTruncated
+    );
 
   const noExplicitIntentScope =
     requestedSubjects.size === 0 &&
@@ -647,8 +736,10 @@ export function compileContextPack(
       noExplicitIntentScope
         ? "No explicit intent subject/invariant scope was supplied; intent nodes are conservatively included within budget."
         : "Intent context uses only explicitly requested subjects/invariants and their directly referenced evidence.",
-      truncated
-        ? "Context budget truncated one or more categories; omitted counts are explicit and the context pack is incomplete."
+      optionalTruncated
+        ? explicitScope
+          ? "Context budget truncated optional surrounding context; explicitly required scope remains authoritative."
+          : "Context budget truncated an unscoped context set; the context pack is incomplete until relevance is narrowed or budget is expanded."
         : "Context budget did not truncate the selected evidence.",
       missingRequestedCount > 0
         ? "One or more explicitly requested intent/invariant/evidence ids are missing; the context pack is incomplete."

@@ -230,6 +230,39 @@ describe("context compiler", () => {
       .toBe(false);
   });
 
+  it("allows optional truncation when explicit required scope is fully retained", () => {
+    const pack =
+      compileContextPack({
+        goal: "scoped-bounded",
+        graph: fixtureGraph(),
+        intent,
+        relevantSemanticNodeIds: [
+          "function:pack:arena",
+        ],
+        relevantIntentSubjectIds: [
+          "intent:arena",
+        ],
+        budget: {
+          maxSemanticNodes: 1,
+          maxSemanticEdges: 1,
+          maxIntentNodes: 1,
+        },
+      });
+
+    expect(pack.complete)
+      .toBe(true);
+    expect(
+      pack.semantic.nodes.map(
+        (node) => node.id,
+      ),
+    ).toEqual([
+      "function:pack:arena",
+    ]);
+    expect(
+      pack.truncation.semanticNodes,
+    ).toBeGreaterThan(0);
+  });
+
   it("marks the pack incomplete when explicitly requested ids are missing", () => {
     const pack =
       compileContextPack({
@@ -246,6 +279,10 @@ describe("context compiler", () => {
 
     expect(pack.complete)
       .toBe(false);
+    expect(
+      pack.missingRequested
+        .semanticNodeIds,
+    ).toEqual([]);
     expect(
       pack.missingRequested
         .intentSubjectIds,
