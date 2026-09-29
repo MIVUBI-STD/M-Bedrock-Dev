@@ -144,10 +144,24 @@ function baseAssessment(): GameplayRouteCauseAnalysisInput {
   };
 }
 
+
+const completeAiStack = [{
+  entityKey: "demo:zombie",
+  stateId: "base",
+  targeted: true,
+  movementPresent: true,
+  navigationPresent: true,
+  movementGoalCandidatePresent: true,
+  attackBehaviorPresent: true,
+  missingSurfaces: [],
+  status: "targeted-stack-complete" as const,
+}];
+
 describe("gameplay route candidate analysis", () => {
   it("isolates engine navigation only after all upstream candidates are rejected", () => {
     const result = analyzeGameplayRouteCauseCandidates(
       baseAssessment(),
+      completeAiStack,
     );
 
     expect(result.supportedCandidateIds).toEqual([
@@ -156,6 +170,7 @@ describe("gameplay route candidate analysis", () => {
     expect(result.rejectedCandidateIds).toEqual([
       "route-context",
       "target-assignment",
+      "entity-ai-stack",
       "chunk-availability",
       "route-reachability",
       "navigation-target",
@@ -174,6 +189,43 @@ describe("gameplay route candidate analysis", () => {
       status: "supported",
       claimStrength: "corroborated",
     }));
+  });
+
+  it("keeps static AI stack ahead of engine navigation when every targeted state is incomplete", () => {
+    const result =
+      analyzeGameplayRouteCauseCandidates(
+        baseAssessment(),
+        [{
+          entityKey: "demo:zombie",
+          stateId: "base",
+          targeted: true,
+          movementPresent: true,
+          navigationPresent: false,
+          movementGoalCandidatePresent: true,
+          attackBehaviorPresent: true,
+          missingSurfaces: ["navigation"],
+          status:
+            "targeted-stack-incomplete",
+        }],
+      );
+
+    expect(result.leadingCandidateId)
+      .toBe("entity-ai-stack");
+    expect(result.stopCondition)
+      .toBe("route-cause-supported");
+    expect(
+      result.candidates.find(
+        (item) =>
+          item.id === "entity-ai-stack",
+      )?.status,
+    ).toBe("supported");
+    expect(
+      result.candidates.find(
+        (item) =>
+          item.id ===
+          "engine-navigation-runtime",
+      )?.status,
+    ).toBe("rejected");
   });
 
   it("selects chunk availability as the first supported upstream owner", () => {
