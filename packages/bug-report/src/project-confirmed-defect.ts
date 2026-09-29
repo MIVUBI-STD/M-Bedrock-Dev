@@ -128,7 +128,8 @@ export function buildBugReportFromConfirmedDefects(
   const issues: {
     code:
       | "invalid-confirmed-defect"
-      | "duplicate-semantic-key";
+      | "duplicate-semantic-key"
+      | "unresolved-defect-group";
     message: string;
   }[] = [];
   const seen = new Set<string>();
