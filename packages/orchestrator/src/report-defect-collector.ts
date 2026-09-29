@@ -14,6 +14,16 @@ import type {
 import type {
   GameplayIntentRuntimeAssessment,
 } from "./gameplay-intent-runtime-stage.js";
+import type {
+  DiagnosticRepairDecision,
+  InvariantRegistrySnapshot,
+} from "../../project-model/src/index.js";
+import type {
+  RepairInvariantDerivation,
+} from "./repair-invariant-derivation.js";
+import {
+  applyReportRepairContext,
+} from "./report-repair-context.js";
 import {
   confirmGameplayIntentRuntimeDefectForReport,
 } from "./report-confirmation-adapter.js";
@@ -30,11 +40,18 @@ export type ConfirmedDefectDraft = Omit<
   "foundBy" | "confirmation"
 >;
 
+export interface ReportCandidateRepairContext {
+  readonly decision?: DiagnosticRepairDecision;
+  readonly invariantDerivation?: RepairInvariantDerivation;
+  readonly invariantRegistry?: InvariantRegistrySnapshot;
+}
+
 export interface RuntimeReportCandidate {
   readonly route: "runtime";
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
   readonly defect: ConfirmedDefectDraft;
+  readonly repairContext?: ReportCandidateRepairContext;
 }
 
 export interface StaticReportCandidate {
@@ -42,12 +59,14 @@ export interface StaticReportCandidate {
   readonly intent: GameplayIntentModel;
   readonly result: IntentDiagnosticGateResult;
   readonly defect: ConfirmedDefectDraft;
+  readonly repairContext?: ReportCandidateRepairContext;
 }
 
 export interface TesterReportCandidate {
   readonly route: "tester";
   readonly confirmation: TesterDefectConfirmationInput;
   readonly defect: ConfirmedDefectDraft;
+  readonly repairContext?: ReportCandidateRepairContext;
 }
 
 export type AuditReportCandidate =
@@ -97,15 +116,22 @@ function collectOne(
     };
   }
 
+  const confirmed: ConfirmedDefect = {
+    ...candidate.defect,
+    foundBy:
+      candidate.route === "tester"
+        ? "tester"
+        : "ai",
+    confirmation: decision.confirmation,
+  };
+
   return {
-    confirmed: {
-      ...candidate.defect,
-      foundBy:
-        candidate.route === "tester"
-          ? "tester"
-          : "ai",
-      confirmation: decision.confirmation,
-    },
+    confirmed: candidate.repairContext === undefined
+      ? confirmed
+      : applyReportRepairContext(
+          confirmed,
+          candidate.repairContext,
+        ),
   };
 }
 
