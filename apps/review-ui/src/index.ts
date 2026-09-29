@@ -1,20 +1,15 @@
 export type ReviewUiPrototypeStatus = {
-  readonly phase: "runtime-prototype";
-  readonly runtimeConnected: true;
-  readonly filePickerConnected: true;
-  readonly recentMapPersistenceConnected: true;
-  readonly historyConnected: true;
+  readonly phase: "bug-report-v1";
+  readonly reportImportConnected: true;
+  readonly canonicalExportConnected: true;
+  readonly mapAnalysisConnected: false;
 };
 
 export const reviewUiPrototypeStatus: ReviewUiPrototypeStatus = {
-  phase: "runtime-prototype",
-  runtimeConnected: true,
-  filePickerConnected: true,
-  recentMapPersistenceConnected: true,
-  historyConnected: true,
+  phase: "bug-report-v1",
+  reportImportConnected: true,
+  canonicalExportConnected: true,
+  mapAnalysisConnected: false,
 };
 
-export * from "./load-review.js";
-export * from "./view-model.js";
-export * from "./runtime-client.js";
-export * from "./runtime-controller.js";
+export * from "./report-file.js";
