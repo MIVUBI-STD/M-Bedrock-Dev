@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import type {
   SpatialAuthorityAction,
   SpatialAuthorityActor,
@@ -181,5 +182,23 @@ export function parseSpatialAuthorityPolicy(
     rules: item.rules.map(parseRule),
   };
 
+  const errors =
+    validateSpatialAuthorityPolicy(policy);
+  if (errors.length > 0) {
+    throw new Error(
+      "Invalid spatial authority policy: " +
+        errors.join(" "),
+    );
+  }
+
   return policy;
+}
+
+export async function loadSpatialAuthorityPolicyFile(
+  path: string,
+): Promise<SpatialAuthorityPolicy> {
+  const raw = JSON.parse(
+    await readFile(path, "utf8"),
+  ) as unknown;
+  return parseSpatialAuthorityPolicy(raw);
 }
