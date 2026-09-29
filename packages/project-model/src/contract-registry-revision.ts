@@ -5,4 +5,4 @@
  * the canonical registry and fails closed when the registry changes.
  */
 export const CONTRACT_REGISTRY_REVISION =
-  "a3a596b388d053ffbfa0c0e451bb67656fb7debe5ffb76f66ff75d1019a38144";
+  "f37ceb1bd29e7b670485b6435176e05fdf1373f4b46162ec62c2b0315be0d5dd";
