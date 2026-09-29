@@ -31,7 +31,6 @@ import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
 import { analyzeInventoryPolicy } from "./inventory-policy-analysis.js";
 import { analyzeInventoryRestoreOwnership } from "./inventory-restore-ownership-analysis.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
-import { analyzeEntityAiStacks } from "./entity-ai-stack-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -39,6 +38,7 @@ export interface InspectionRuntimeAnalysisInput {
   parsedFunctions: InspectionSourceIndex["parsedFunctions"];
   parsedScripts: InspectionSourceIndex["parsedScripts"];
   parsedEntities: InspectionSourceIndex["parsedEntities"];
+  entityAiStack: import("./entity-ai-stack-analysis.js").EntityAiStackAnalysis;
   parsedStructureModels:
     InspectionSourceIndex["parsedStructureModels"];
 }
@@ -141,11 +141,7 @@ export function analyzeInspectionRuntimeState(
   const parsedScriptModels =
     input.parsedScripts.map((item) => item.parsed);
   const entityAiStack =
-    analyzeEntityAiStacks(
-      input.parsedEntities.map(
-        (item) => item.parsed,
-      ),
-    );
+    input.entityAiStack;
   const scriptSpatial =
     analyzeScriptSpatialMutations(parsedScriptModels);
 
