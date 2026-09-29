@@ -258,6 +258,7 @@ export function buildInspectionResult(
     intent: input.gameplayIntent,
     arena: baseArenaAnalysis,
     scriptSpatial,
+    inventoryLifecycle,
     semanticIr: {
       stateSurfaces: semanticSummary.stateSurfaces,
       stateOperations: semanticSummary.stateOperations,
