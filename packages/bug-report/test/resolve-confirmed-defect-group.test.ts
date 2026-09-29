@@ -7,20 +7,27 @@ import type {
   ConfirmedDefect,
 } from "../src/index.js";
 import {
+  deriveConfirmedDefectSemanticKey,
   groupConfirmedDefects,
   resolveConfirmedDefectGroup,
 } from "../src/index.js";
 
 function defect(
-  semanticKey: string,
-  overrides: Partial<ConfirmedDefect> = {},
+  subject: string,
+  overrides: Partial<Omit<
+    ConfirmedDefect,
+    "semanticKey"
+  >> = {},
 ): ConfirmedDefect {
-  return {
-    semanticKey,
+  const base: Omit<
+    ConfirmedDefect,
+    "semanticKey"
+  > = {
+    subjectIds: ["subject:" + subject],
     foundBy: "tester",
     confirmation: {
       basis: "tester-reproduction",
-      evidence: "Reproduced symptom " + semanticKey,
+      evidence: "Reproduced symptom " + subject,
     },
     impact: {
       progression: "degraded",
@@ -31,8 +38,8 @@ function defect(
       fairness: "unaffected",
     },
     primaryFailure: "player-owned-state",
-    title: "Symptom " + semanticKey,
-    problem: "Symptom problem " + semanticKey,
+    title: "Symptom " + subject,
+    problem: "Symptom problem " + subject,
     expected: {
       authority: "explicit-requirement",
       statement: "Cleanup resets state.",
@@ -40,13 +47,21 @@ function defect(
     },
     observed: {
       statement: "State remains.",
-      evidenceIds: ["obs:" + semanticKey],
+      evidenceIds: ["obs:" + subject],
     },
-    reproduction: ["Step " + semanticKey],
+    reproduction: ["Step " + subject],
     brokenInvariantIds: ["inv:cleanup"],
     repairUnitIds: ["unit:cleanup"],
     causalIncidentId: "incident:cleanup",
+  };
+  const merged = {
+    ...base,
     ...overrides,
+  };
+  return {
+    ...merged,
+    semanticKey:
+      deriveConfirmedDefectSemanticKey(merged),
   };
 }
 
@@ -69,7 +84,6 @@ describe("canonical defect group resolution", () => {
     const resolved = resolveConfirmedDefectGroup(
       group,
       {
-        semanticKey: "cleanup-state-not-reset",
         title: "Cleanup does not reset match state",
         problem: "Multiple match-owned state surfaces remain after cleanup.",
         expected: {
@@ -89,8 +103,12 @@ describe("canonical defect group resolution", () => {
     );
 
     expect(resolved.semanticKey).toBe(
-      "cleanup-state-not-reset",
+      deriveConfirmedDefectSemanticKey(resolved),
     );
+    expect(resolved.subjectIds).toEqual([
+      "subject:inventory",
+      "subject:scoreboard",
+    ]);
     expect(resolved.impact.progression).toBe("blocked");
     expect(resolved.expected.evidenceIds).toEqual([
       "req:cleanup",
@@ -134,7 +152,6 @@ describe("canonical defect group resolution", () => {
       resolveConfirmedDefectGroup(
         group,
         {
-          semanticKey: "merged",
           title: "Merged defect",
           problem: "Merged problem",
           expected: { statement: "Expected" },
@@ -185,7 +202,6 @@ describe("canonical defect group resolution", () => {
       resolveConfirmedDefectGroup(
         group,
         {
-          semanticKey: "merged",
           title: "Merged",
           problem: "Merged",
           expected: { statement: "Expected" },
