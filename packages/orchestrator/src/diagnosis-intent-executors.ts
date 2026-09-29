@@ -358,10 +358,12 @@ export function createAuthoredIntentDiagnosisExecutor():
             payload.root,
             payload.artifactId,
             payload.files,
-            {
-              authoredSourceRoots:
-                payload.authoredSourceRoots,
-            },
+            payload.authoredSourceRoots === undefined
+              ? {}
+              : {
+                  authoredSourceRoots:
+                    payload.authoredSourceRoots,
+                },
           );
       } catch (error) {
         return {
