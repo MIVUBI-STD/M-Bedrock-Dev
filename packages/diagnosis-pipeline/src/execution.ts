@@ -7,6 +7,10 @@ import {
   diagnosisCapabilityByExecutorId,
   DIAGNOSIS_ANALYSIS_CAPABILITIES,
 } from "./profile.js";
+import {
+  diagnosisExecutionCacheKey,
+  type DiagnosisResultCache,
+} from "./cache.js";
 
 export interface DiagnosisExecutorRequest {
   capabilityId: string;
@@ -47,6 +51,8 @@ export type DiagnosisPlannedStepExecution =
       evidence: readonly AnalysisEvidenceSnapshot[];
       output: unknown;
       reasons: readonly string[];
+      reused?: boolean;
+      cacheKey?: string;
     }
   | {
       status: "blocked";
@@ -208,6 +214,7 @@ export async function executePlannedDiagnosisStep(
     context: AnalysisExecutionContext;
     payload: unknown;
     registry: DiagnosisExecutorRegistry;
+    cache?: DiagnosisResultCache;
   },
 ): Promise<DiagnosisPlannedStepExecution> {
   const registryErrors =
@@ -289,6 +296,84 @@ export async function executePlannedDiagnosisStep(
     };
   }
 
+  const cacheNotes: string[] = [];
+  const cacheKey =
+    capability.deterministic &&
+    input.cache !== undefined
+      ? diagnosisExecutionCacheKey({
+          capabilityId: capability.id,
+          executorId: capability.executorId,
+          capabilityRevision:
+            capability.cacheRevision,
+          context: input.context,
+          payload: input.payload,
+        })
+      : undefined;
+
+  if (
+    cacheKey !== undefined &&
+    input.cache !== undefined
+  ) {
+    try {
+      const cached =
+        await input.cache.get(cacheKey);
+
+      if (
+        cached !== undefined &&
+        cached.schemaVersion === 1 &&
+        cached.cacheKey === cacheKey &&
+        cached.capabilityId ===
+          capability.id &&
+        cached.executorId ===
+          capability.executorId &&
+        cached.capabilityRevision ===
+          capability.cacheRevision &&
+        cached.context === input.context
+      ) {
+        const cachedEvidenceErrors =
+          validateCompletedEvidence(
+            capability.id,
+            executor.executorId,
+            cached.evidence,
+          );
+
+        if (
+          cachedEvidenceErrors.length === 0
+        ) {
+          return {
+            status: "executed",
+            capabilityId: capability.id,
+            executorId: executor.executorId,
+            evidence: [
+              ...cached.evidence,
+            ],
+            output: cached.output,
+            reasons: [
+              "Reused deterministic diagnosis result from the exact input/revision cache.",
+              ...cached.reasons,
+            ],
+            reused: true,
+            cacheKey,
+          };
+        }
+
+        cacheNotes.push(
+          "Cached diagnosis result failed the current evidence contract and was ignored.",
+          ...cachedEvidenceErrors,
+        );
+      }
+    } catch (error) {
+      cacheNotes.push(
+        "Diagnosis result cache read failed; executor ran normally: " +
+          (
+            error instanceof Error
+              ? error.message
+              : String(error)
+          ),
+      );
+    }
+  }
+
   const result = await executor.execute({
     capabilityId: capability.id,
     context: input.context,
@@ -326,12 +411,50 @@ export async function executePlannedDiagnosisStep(
     };
   }
 
+  if (
+    cacheKey !== undefined &&
+    input.cache !== undefined
+  ) {
+    try {
+      await input.cache.put({
+        schemaVersion: 1,
+        cacheKey,
+        capabilityId: capability.id,
+        executorId: executor.executorId,
+        capabilityRevision:
+          capability.cacheRevision,
+        context: input.context,
+        evidence: [...result.evidence],
+        output: result.output,
+        reasons: [
+          ...(result.reasons ?? []),
+        ],
+      });
+    } catch (error) {
+      cacheNotes.push(
+        "Diagnosis result cache write failed; fresh executor result remains authoritative: " +
+          (
+            error instanceof Error
+              ? error.message
+              : String(error)
+          ),
+      );
+    }
+  }
+
   return {
     status: "executed",
     capabilityId: capability.id,
     executorId: capability.executorId,
     evidence: [...result.evidence],
     output: result.output,
-    reasons: [...(result.reasons ?? [])],
+    reasons: [
+      ...(result.reasons ?? []),
+      ...cacheNotes,
+    ],
+    reused: false,
+    ...(cacheKey === undefined
+      ? {}
+      : { cacheKey }),
   };
 }

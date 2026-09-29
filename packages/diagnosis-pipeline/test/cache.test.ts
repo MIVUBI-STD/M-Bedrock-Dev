@@ -1,0 +1,130 @@
+import {
+  describe,
+  expect,
+  it,
+} from "vitest";
+import {
+  createInMemoryDiagnosisResultCache,
+  diagnosisExecutionCacheKey,
+} from "../src/index.js";
+
+describe("diagnosis result cache", () => {
+  it("fingerprints structurally equivalent payloads identically", () => {
+    const first =
+      diagnosisExecutionCacheKey({
+        capabilityId:
+          "diagnosis.source-index",
+        executorId:
+          "diagnosis.source-index",
+        capabilityRevision: "1",
+        context: "LOCAL_ARTIFACT",
+        payload: {
+          z: 2,
+          a: {
+            second: true,
+            first: "x",
+          },
+        },
+      });
+
+    const second =
+      diagnosisExecutionCacheKey({
+        capabilityId:
+          "diagnosis.source-index",
+        executorId:
+          "diagnosis.source-index",
+        capabilityRevision: "1",
+        context: "LOCAL_ARTIFACT",
+        payload: {
+          a: {
+            first: "x",
+            second: true,
+          },
+          z: 2,
+        },
+      });
+
+    expect(first).toBe(second);
+  });
+
+  it("changes the key when capability revision or payload changes", () => {
+    const base = {
+      capabilityId:
+        "diagnosis.source-index",
+      executorId:
+        "diagnosis.source-index",
+      context:
+        "LOCAL_ARTIFACT" as const,
+    };
+
+    const first =
+      diagnosisExecutionCacheKey({
+        ...base,
+        capabilityRevision: "1",
+        payload: { artifact: "a" },
+      });
+    const changedPayload =
+      diagnosisExecutionCacheKey({
+        ...base,
+        capabilityRevision: "1",
+        payload: { artifact: "b" },
+      });
+    const changedRevision =
+      diagnosisExecutionCacheKey({
+        ...base,
+        capabilityRevision: "2",
+        payload: { artifact: "a" },
+      });
+
+    expect(changedPayload)
+      .not.toBe(first);
+    expect(changedRevision)
+      .not.toBe(first);
+  });
+
+  it("isolates cached mutable values from callers", async () => {
+    const cache =
+      createInMemoryDiagnosisResultCache();
+
+    await cache.put({
+      schemaVersion: 1,
+      cacheKey: "k",
+      capabilityId:
+        "diagnosis.source-index",
+      executorId:
+        "diagnosis.source-index",
+      capabilityRevision: "1",
+      context: "LOCAL_ARTIFACT",
+      evidence: [{
+        level: "static",
+        quality: "usable",
+        traits: ["structural-proof"],
+        evidenceIds: ["e1"],
+      }],
+      output: {
+        values: ["original"],
+      },
+      reasons: [],
+    });
+
+    const first =
+      await cache.get("k");
+    expect(first).toBeDefined();
+
+    (
+      first!.output as {
+        values: string[];
+      }
+    ).values.push("mutated");
+
+    const second =
+      await cache.get("k");
+    expect(
+      (
+        second!.output as {
+          values: string[];
+        }
+      ).values,
+    ).toEqual(["original"]);
+  });
+});

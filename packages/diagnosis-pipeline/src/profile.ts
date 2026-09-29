@@ -8,12 +8,14 @@ export interface RegisteredDiagnosisCapability
   extends AnalysisCapability {
   owner: string;
   executorId: string;
+  cacheRevision: string;
 }
 
 const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   id: "diagnosis.source-index",
   owner: "packages/orchestrator/src/inspect-source-index.ts",
   executorId: "diagnosis.source-index",
+  cacheRevision: "1",
   evidenceLevel: "static",
   cost: "cheap",
   tags: [
@@ -36,6 +38,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   id: "diagnosis.semantic-ir",
   owner: "packages/orchestrator/src/semantic-ir-stage.ts",
   executorId: "diagnosis.semantic-ir",
+  cacheRevision: "1",
   evidenceLevel: "semantic",
   cost: "moderate",
   tags: [
@@ -57,6 +60,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   id: "diagnosis.intent-grounding",
   owner: "packages/orchestrator/src/gameplay-intent-stage.ts",
   executorId: "diagnosis.intent-grounding",
+  cacheRevision: "1",
   evidenceLevel: "semantic",
   cost: "moderate",
   tags: [
@@ -77,6 +81,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   id: "diagnosis.authored-intent",
   owner: "packages/orchestrator/src/gameplay-intent-stage.ts",
   executorId: "diagnosis.authored-intent",
+  cacheRevision: "1",
   evidenceLevel: "semantic",
   cost: "moderate",
   tags: [
@@ -97,6 +102,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   id: "diagnosis.contradiction-proof",
   owner: "packages/diagnosis-pipeline/src/contradiction-executor.ts",
   executorId: "diagnosis.contradiction-proof",
+  cacheRevision: "1",
   evidenceLevel: "formal",
   cost: "expensive",
   tags: [
@@ -120,6 +126,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   id: "diagnosis.runtime-observation",
   owner: "packages/runtime-lab/src/index.ts",
   executorId: "diagnosis.runtime-observation",
+  cacheRevision: "1",
   evidenceLevel: "runtime",
   cost: "expensive",
   tags: [
@@ -139,6 +146,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   id: "diagnosis.runtime-integrity",
   owner: "packages/orchestrator/src/runtime-evidence-integrity.ts",
   executorId: "diagnosis.runtime-integrity",
+  cacheRevision: "1",
   evidenceLevel: "runtime",
   cost: "moderate",
   tags: [

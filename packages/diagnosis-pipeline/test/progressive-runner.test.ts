@@ -5,6 +5,7 @@ import {
   vi,
 } from "vitest";
 import {
+  createInMemoryDiagnosisResultCache,
   runProgressiveDiagnosis,
   type DiagnosisCapabilityExecutor,
 } from "../src/index.js";
@@ -192,4 +193,137 @@ describe("progressive diagnosis runner", () => {
     expect(result.reasons.join(" "))
       .toMatch(/step limit/);
   });
+
+  it("reuses deterministic capability results for identical inputs and revisions", async () => {
+    const cache =
+      createInMemoryDiagnosisResultCache();
+    const firstSource =
+      executor(
+        "diagnosis.source-index",
+        "static",
+        "structural-proof",
+      );
+    const firstIntent =
+      executor(
+        "diagnosis.intent-grounding",
+        "semantic",
+        "intent-grounded",
+      );
+
+    const first =
+      await runProgressiveDiagnosis({
+        goal: "intent-classification",
+        relevantTags: ["session"],
+        context: "LOCAL_ARTIFACT",
+        executorRegistry: {
+          schemaVersion: 1,
+          executors: [
+            firstSource,
+            firstIntent,
+          ],
+        },
+        payloadProvider: {
+          payloadFor: (input) => ({
+            capabilityId:
+              input.capabilityId,
+            artifact: "same",
+          }),
+        },
+        resultCache: cache,
+      });
+
+    expect(first.status).toBe(
+      "sufficient",
+    );
+
+    const secondSource =
+      executor(
+        "diagnosis.source-index",
+        "static",
+        "structural-proof",
+      );
+    const secondIntent =
+      executor(
+        "diagnosis.intent-grounding",
+        "semantic",
+        "intent-grounded",
+      );
+
+    const second =
+      await runProgressiveDiagnosis({
+        goal: "intent-classification",
+        relevantTags: ["session"],
+        context: "LOCAL_ARTIFACT",
+        executorRegistry: {
+          schemaVersion: 1,
+          executors: [
+            secondSource,
+            secondIntent,
+          ],
+        },
+        payloadProvider: {
+          payloadFor: (input) => ({
+            capabilityId:
+              input.capabilityId,
+            artifact: "same",
+          }),
+        },
+        resultCache: cache,
+      });
+
+    expect(second.status).toBe(
+      "sufficient",
+    );
+    expect(
+      second.executions.every(
+        (item) =>
+          item.status === "executed" &&
+          item.reused === true,
+      ),
+    ).toBe(true);
+    expect(
+      secondSource.execute,
+    ).not.toHaveBeenCalled();
+    expect(
+      secondIntent.execute,
+    ).not.toHaveBeenCalled();
+  });
+
+  it("invalidates deterministic reuse when the payload changes", async () => {
+    const cache =
+      createInMemoryDiagnosisResultCache();
+    const source =
+      executor(
+        "diagnosis.source-index",
+        "static",
+        "structural-proof",
+      );
+
+    const run = async (
+      artifact: string,
+    ) =>
+      await runProgressiveDiagnosis({
+        goal:
+          "structural-consistency",
+        relevantTags: ["artifact"],
+        context: "LOCAL_ARTIFACT",
+        executorRegistry: {
+          schemaVersion: 1,
+          executors: [source],
+        },
+        payloadProvider: {
+          payloadFor: () => ({
+            artifact,
+          }),
+        },
+        resultCache: cache,
+      });
+
+    await run("a");
+    await run("b");
+
+    expect(source.execute)
+      .toHaveBeenCalledTimes(2);
+  });
+
 });

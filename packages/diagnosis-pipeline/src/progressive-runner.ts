@@ -13,6 +13,9 @@ import {
   type DiagnosisExecutorRegistry,
   type DiagnosisPlannedStepExecution,
 } from "./execution.js";
+import type {
+  DiagnosisResultCache,
+} from "./cache.js";
 
 export interface DiagnosisPayloadProviderInput {
   capabilityId: string;
@@ -38,6 +41,7 @@ export interface ProgressiveDiagnosisRunInput {
   initialEvidence?: readonly AnalysisEvidenceSnapshot[];
   initialCompletedCapabilityIds?: readonly string[];
   initialOutputs?: Readonly<Record<string, unknown>>;
+  resultCache?: DiagnosisResultCache;
   maxSteps?: number;
 }
 
@@ -255,6 +259,12 @@ export async function runProgressiveDiagnosis(
         payload,
         registry:
           input.executorRegistry,
+        ...(input.resultCache === undefined
+          ? {}
+          : {
+              cache:
+                input.resultCache,
+            }),
       });
 
     executions.push(execution);
