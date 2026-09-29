@@ -14,10 +14,11 @@ import type {
 import type {
   GameplayIntentRuntimeAssessment,
 } from "./gameplay-intent-runtime-stage.js";
-import type {
-  DiagnosticRepairDecision,
-  FileInventoryEntry,
-  InvariantRegistrySnapshot,
+import {
+  sourceRefHasPreciseLocation,
+  type DiagnosticRepairDecision,
+  type FileInventoryEntry,
+  type InvariantRegistrySnapshot,
 } from "../../project-model/src/index.js";
 import type {
   RepairInvariantDerivation,
@@ -279,6 +280,10 @@ export interface BuildBugReportFromAuditResult {
   readonly promotion: PromoteConfirmedBugsResult;
 }
 
+function lineAddressableSource(path: string): boolean {
+  return /\.(?:ts|tsx|js|jsx|mcfunction)$/i.test(path);
+}
+
 function sourceEvidenceIssues(
   defects: readonly ConfirmedDefect[],
   files: readonly FileInventoryEntry[],
@@ -306,6 +311,22 @@ function sourceEvidenceIssues(
           message:
             defect.semanticKey +
             ": source evidence path is not present in the audited file inventory: " +
+            path +
+            ".",
+        });
+        continue;
+      }
+
+      if (
+        defect.foundBy === "ai" &&
+        lineAddressableSource(path) &&
+        !sourceRefHasPreciseLocation(item.source)
+      ) {
+        issues.push({
+          code: "invalid-confirmed-defect",
+          message:
+            defect.semanticKey +
+            ": line-addressable AI source evidence must include a precise range or location: " +
             path +
             ".",
         });
