@@ -45,12 +45,39 @@ export interface ArenaCleanupTerminalAssessment {
   unresolved: number;
 }
 
+export type ArenaCleanupObligationStatus =
+  | "complete"
+  | "partial"
+  | "missing";
+
+export interface ArenaCleanupResourceObligation {
+  scriptId: string;
+  surface: ArenaCleanupSurfaceKind;
+  key: string;
+  acquisitionRegions: readonly string[];
+  requiredTerminals: number;
+  provenTerminals: number;
+  partialTerminals: number;
+  missingTerminals: number;
+  status: ArenaCleanupObligationStatus;
+}
+
+export interface ArenaCleanupResourceLedger {
+  resources: number;
+  complete: number;
+  partial: number;
+  missing: number;
+  coverageRatio: number;
+  obligations: readonly ArenaCleanupResourceObligation[];
+}
+
 export interface ArenaCleanupSurfaceAnalysis {
   acquiredSurfaces: number;
   terminalAssessments: readonly ArenaCleanupTerminalAssessment[];
   exactProven: number;
   partial: number;
   unresolved: number;
+  ledger?: ArenaCleanupResourceLedger;
 }
 
 const TERMINAL_PATTERN =
@@ -361,6 +388,115 @@ function analyzeScript(
   });
 }
 
+function buildResourceLedger(
+  scripts: readonly ParsedScriptFile[],
+  terminalAssessments: readonly ArenaCleanupTerminalAssessment[],
+): ArenaCleanupResourceLedger {
+  const obligations: ArenaCleanupResourceObligation[] = [];
+
+  for (const script of scripts) {
+    const acquisitions = extractMutations(script).filter(
+      (item) => item.action === "acquire",
+    );
+    const unique = new Map<string, ArenaCleanupSurfaceMutation>();
+
+    for (const acquisition of acquisitions) {
+      unique.set(
+        mutationKey(acquisition.surface, acquisition.key),
+        acquisition,
+      );
+    }
+
+    const terminals = terminalAssessments.filter(
+      (item) => item.scriptId === script.identifier,
+    );
+
+    for (const acquisition of unique.values()) {
+      const matchingAcquisitions = acquisitions.filter(
+        (item) =>
+          item.surface === acquisition.surface &&
+          item.key === acquisition.key,
+      );
+      let provenTerminals = 0;
+      let partialTerminals = 0;
+      let missingTerminals = 0;
+
+      for (const terminal of terminals) {
+        const surface = terminal.surfaces.find(
+          (item) =>
+            item.surface === acquisition.surface &&
+            item.key === acquisition.key,
+        );
+        if (surface?.status === "proven") {
+          provenTerminals++;
+        } else if (surface?.status === "partial") {
+          partialTerminals++;
+        } else {
+          missingTerminals++;
+        }
+      }
+
+      const requiredTerminals = terminals.length;
+      const status: ArenaCleanupObligationStatus =
+        requiredTerminals > 0 &&
+        provenTerminals === requiredTerminals
+          ? "complete"
+          : provenTerminals > 0 || partialTerminals > 0
+            ? "partial"
+            : "missing";
+
+      obligations.push({
+        scriptId: script.identifier,
+        surface: acquisition.surface,
+        key: acquisition.key,
+        acquisitionRegions: matchingAcquisitions
+          .map((item) => item.region)
+          .filter((value, index, array) =>
+            array.indexOf(value) === index
+          )
+          .sort(),
+        requiredTerminals,
+        provenTerminals,
+        partialTerminals,
+        missingTerminals:
+          requiredTerminals === 0
+            ? 1
+            : missingTerminals,
+        status,
+      });
+    }
+  }
+
+  obligations.sort((a, b) =>
+    a.scriptId.localeCompare(b.scriptId) ||
+    a.surface.localeCompare(b.surface) ||
+    a.key.localeCompare(b.key)
+  );
+
+  const complete = obligations.filter(
+    (item) => item.status === "complete",
+  ).length;
+  const partial = obligations.filter(
+    (item) => item.status === "partial",
+  ).length;
+  const missing = obligations.filter(
+    (item) => item.status === "missing",
+  ).length;
+  const denominator = obligations.length;
+
+  return {
+    resources: denominator,
+    complete,
+    partial,
+    missing,
+    coverageRatio:
+      denominator === 0
+        ? 1
+        : complete / denominator,
+    obligations,
+  };
+}
+
 export function analyzeArenaCleanupSurfaces(
   scripts: readonly ParsedScriptFile[],
 ): ArenaCleanupSurfaceAnalysis {
@@ -374,9 +510,15 @@ export function analyzeArenaCleanupSurfaces(
     0,
   );
 
+  const ledger = buildResourceLedger(
+    scripts,
+    terminalAssessments,
+  );
+
   return {
     acquiredSurfaces,
     terminalAssessments,
+    ledger,
     exactProven: terminalAssessments.reduce(
       (sum, item) => sum + item.exactProven,
       0,
