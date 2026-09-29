@@ -14,6 +14,7 @@ export interface ArenaEngineeringReplicaProjection {
   voxel?: string;
   blockEntity?: string;
   entityPopulation?: string;
+  actorPopulation?: string;
   tickState?: string;
   structureInstances?: string;
 }
