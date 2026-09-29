@@ -49,6 +49,8 @@ export interface MapEngineeringWorkflowProjection {
     spatialAuthorityConflicts: number;
     inventoryPartialResets: number;
     inventoryCopyMutationRisks: number;
+    inventoryDeniedDrops: number;
+    inventoryUncoveredDrops: number;
   };
   nextActions: readonly string[];
 }
@@ -338,6 +340,12 @@ export function buildMapEngineeringWorkflow(
     inventoryCopyMutationRisks:
       source.gameplayWorld.inventory
         ?.copyMutationRisks ?? 0,
+    inventoryDeniedDrops:
+      source.gameplayWorld.inventory
+        ?.policy.deniedDrops ?? 0,
+    inventoryUncoveredDrops:
+      source.gameplayWorld.inventory
+        ?.policy.uncoveredDrops ?? 0,
   };
 
   const nextActions = stages
