@@ -295,6 +295,70 @@ describe("progressive diagnosis runner", () => {
     ).not.toHaveBeenCalled();
   });
 
+  it("invalidates deterministic reuse when cached output is mutated", async () => {
+    const cache =
+      createInMemoryDiagnosisResultCache();
+
+    const first =
+      executor(
+        "diagnosis.source-index",
+        "static",
+        "structural-proof",
+      );
+
+    const firstRun =
+      await runProgressiveDiagnosis({
+        goal: "structural-consistency",
+        relevantTags: ["artifact"],
+        context: "LOCAL_ARTIFACT",
+        executorRegistry: {
+          schemaVersion: 1,
+          executors: [first],
+        },
+        payloadProvider: {
+          payloadFor: () => ({
+            artifact: "same",
+          }),
+        },
+        resultCache: cache,
+      });
+
+    const firstOutput =
+      firstRun.outputs[
+        "diagnosis.source-index"
+      ] as {
+        executorId: string;
+      };
+    firstOutput.executorId =
+      "mutated-after-cache";
+
+    const second =
+      executor(
+        "diagnosis.source-index",
+        "static",
+        "structural-proof",
+      );
+
+    await runProgressiveDiagnosis({
+      goal: "structural-consistency",
+      relevantTags: ["artifact"],
+      context: "LOCAL_ARTIFACT",
+      executorRegistry: {
+        schemaVersion: 1,
+        executors: [second],
+      },
+      payloadProvider: {
+        payloadFor: () => ({
+          artifact: "same",
+        }),
+      },
+      resultCache: cache,
+    });
+
+    expect(second.execute)
+      .toHaveBeenCalledTimes(1);
+  });
+
   it("invalidates deterministic reuse when executor revision changes", async () => {
     const cache =
       createInMemoryDiagnosisResultCache();

@@ -5,6 +5,7 @@ import {
 } from "vitest";
 import {
   createInMemoryDiagnosisResultCache,
+  diagnosisCacheValueFingerprint,
   diagnosisExecutionCacheKey,
 } from "../src/index.js";
 
@@ -207,6 +208,10 @@ describe("diagnosis result cache", () => {
       executorRevision:
         "executor:test:1",
       context: "LOCAL_ARTIFACT",
+      outputFingerprint:
+        diagnosisCacheValueFingerprint(
+          output,
+        ),
       evidence: [{
         level: "static",
         quality: "usable",
