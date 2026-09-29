@@ -40,6 +40,10 @@ export interface SavedGitHubReport {
 export interface GitHubReportStore {
   listReports(): Promise<readonly GitHubReportSummary[]>;
   loadReport(path: string): Promise<LoadedGitHubReport>;
+  createReport(
+    path: string,
+    report: BugReportV2,
+  ): Promise<SavedGitHubReport>;
   saveReport(
     path: string,
     report: BugReportV2,
