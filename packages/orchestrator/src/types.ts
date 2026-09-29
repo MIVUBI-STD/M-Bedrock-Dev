@@ -15,11 +15,12 @@ import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/ind
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
-import type { ArenaRegionClassification, ArenaRegionPartitionResult, ArenaRegionPlan, ArenaReplicaDiscovery, ArenaSpatialLayout } from "../../../analyzers/topology/src/index.js";
+import type { ArenaRegionClassification, ArenaRegionPartitionResult, ArenaRegionPlan, ArenaReplicaDiscovery, ArenaSpatialLayout, ResolvedEffect } from "../../../analyzers/topology/src/index.js";
 import type { ArenaNativeSpatialAudit } from "./arena-native-extraction.js";
 import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
 import type { ArenaBlockEntityProof } from "./arena-block-entity-proof.js";
 import type { ArenaStructureInstanceProof } from "./arena-structure-instance-proof.js";
+import type { ArenaEntityPopulationProof } from "./arena-entity-population-proof.js";
 import type { PersistedPackIdentityExtraction } from "./persisted-pack-identity.js";
 import type { ArenaProofCoverageReport } from "./arena-proof-coverage.js";
 import type { ArenaProofConclusionReport } from "./arena-proof-conclusion.js";
@@ -193,6 +194,8 @@ export interface InspectDirectoryResult {
     voxelProof?: ArenaVoxelProof;
     blockEntityProof?: ArenaBlockEntityProof;
     structureInstanceProof?: ArenaStructureInstanceProof;
+    entityPopulationProof?: ArenaEntityPopulationProof;
+    entitySpawnEvidence?: readonly Extract<ResolvedEffect, { kind: "entity-spawn" }>[];
   };
   gameplayIntent: {
     model: GameplayIntentModel;

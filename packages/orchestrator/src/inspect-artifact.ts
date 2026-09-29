@@ -19,6 +19,7 @@ import { openBedrockLevelDbSnapshot } from "../../../adapters/leveldb/src/index.
 import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
 import { proveArenaBlockEntityEquivalence } from "./arena-block-entity-proof.js";
 import { proveArenaStructureInstances } from "./arena-structure-instance-proof.js";
+import { proveArenaEntityPopulation } from "./arena-entity-population-proof.js";
 import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { partitionArenaProofVolumes, spatialLayoutFromReplicaDiscovery } from "../../../analyzers/topology/src/index.js";
@@ -138,6 +139,15 @@ export async function inspectArtifact(
       proofPartition,
     );
 
+    const entityPopulationProof =
+      spatialLayout === undefined
+        ? undefined
+        : proveArenaEntityPopulation(
+            spatialLayout,
+            effectiveRegionPlan,
+            result.arenaAnalysis.entitySpawnEvidence ?? [],
+          );
+
     const structureInstanceProof =
       spatialLayout === undefined
         ? undefined
@@ -188,6 +198,28 @@ export async function inspectArtifact(
     let arenaBlockEntityProof;
     let persistedPackIdentity;
     const artifactDiagnostics = [...result.diagnostics];
+
+    for (
+      const replica of
+        entityPopulationProof?.replicas ?? []
+    ) {
+      if (replica.status !== "diverged") continue;
+      artifactDiagnostics.push(
+        createDiagnostic({
+          code: "ARENA_ENTITY_POPULATION_DIVERGENCE",
+          severity: "critical",
+          message:
+            `Arena ${replica.arenaId} differs from the canonical arena in resolved entity-spawn population.`,
+          data: {
+            arenaId: replica.arenaId,
+            canonicalSpawns: replica.canonicalSpawns,
+            replicaSpawns: replica.replicaSpawns,
+            unresolvedSpawns: replica.unresolvedSpawns,
+            mismatches: replica.mismatches,
+          },
+        }),
+      );
+    }
 
     if (nativeWorldDb.status === "scanned") {
       try {
@@ -375,6 +407,9 @@ export async function inspectArtifact(
         ...(structureInstanceProof === undefined
           ? {}
           : { structureInstanceProof }),
+        ...(entityPopulationProof === undefined
+          ? {}
+          : { entityPopulationProof }),
         ...(proofPartition === undefined
           ? {}
           : { proofPartition }),

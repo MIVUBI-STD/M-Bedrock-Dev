@@ -284,3 +284,5 @@ export * from "./arena-state-isolation-analysis.js";
 export * from "./script-spatial-analysis.js";
 
 export * from "./arena-structure-instance-proof.js";
+
+export * from "./arena-entity-population-proof.js";

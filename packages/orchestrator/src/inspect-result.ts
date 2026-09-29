@@ -387,6 +387,15 @@ export function buildInspectionResult(
       lifecycle: arenaLifecycle,
       cleanupSurfaces: arenaCleanupSurfaces,
       stateIsolation: arenaStateIsolation,
+      entitySpawnEvidence:
+        topology.resolvedSpatialEffects.filter(
+          (
+            effect,
+          ): effect is Extract<
+            typeof effect,
+            { kind: "entity-spawn" }
+          > => effect.kind === "entity-spawn",
+        ),
     },
     gameplayIntent: {
       model: input.gameplayIntent,

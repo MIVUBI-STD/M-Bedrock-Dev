@@ -51,6 +51,7 @@ function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
     code === "ARENA_SPATIAL_FINGERPRINT_DIVERGENCE" ||
     code === "ARENA_VOXEL_DIVERGENCE" ||
     code === "ARENA_BLOCK_ENTITY_DIVERGENCE" ||
+    code === "ARENA_ENTITY_POPULATION_DIVERGENCE" ||
     code === "ARENA_CONCURRENCY_CAPACITY_SHORTFALL"
   ) return "arena";
   if (code === "UNKNOWN_COMMAND_EFFECT") return "command";
