@@ -250,6 +250,7 @@ describe("report defect collector", () => {
           route: "tester",
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement",
+            expectedEvidenceIds: ["requirement:cleanup"],
             reproduced: true,
             evidence: "The state persists after repeated completion.",
           },
