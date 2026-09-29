@@ -437,6 +437,52 @@ describe("report defect collector", () => {
     ).toContain("invalid-confirmed-defect");
   });
 
+  it("auto-binds a unique Semantic IR execution owner", () => {
+    const semanticIr = {
+      schemaVersion: 1 as const,
+      execution: {
+        regions: [{
+          id: "exec:cleanup",
+          kind: "script-function" as const,
+          ownerId: "scripts/session",
+          label: "function:cleanup",
+          source: {
+            artifactId: "map",
+            relativePath: "scripts/session.ts",
+            range: {
+              lineStart: 1,
+              lineEnd: 30,
+            },
+          },
+        }],
+        edges: [],
+      },
+      state: {
+        surfaces: [],
+        operations: [],
+        authorityBindings: [],
+      },
+      temporal: {
+        relations: [],
+      },
+    };
+
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      semanticIr,
+      defect: defect("auto-owner", { ai: true }),
+    }]);
+
+    expect(result.confirmed).toHaveLength(1);
+    expect(result.confirmed[0]?.sourceEvidence?.[0]?.semanticOwnerId)
+      .toBe("exec:cleanup");
+    expect(result.confirmed[0]?.repairUnitIds).toEqual([
+      "execution-region:exec:cleanup",
+    ]);
+  });
+
   it("accepts a source semantic owner proven by Semantic IR", () => {
     const semanticIr = {
       schemaVersion: 1 as const,
