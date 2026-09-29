@@ -1,5 +1,6 @@
-import type {
-  SourceRef,
+import {
+  validateSourceRef,
+  type SourceRef,
 } from "../../project-model/src/index.js";
 import type {
   BugImpactAssessment,
@@ -86,9 +87,9 @@ export function validateConfirmedDefect(
     );
   }
   for (const item of defect.sourceEvidence ?? []) {
-    if (!item.source.relativePath.trim()) {
+    for (const error of validateSourceRef(item.source)) {
       errors.push(
-        "sourceEvidence source.relativePath must be non-empty.",
+        "sourceEvidence: " + error,
       );
     }
     if (!item.reason.trim()) {
