@@ -142,7 +142,15 @@ export function analyzeInspectionRuntimeState(
   const arenaCapacity =
     extractArenaConcurrencyCapacity({
       discovery: topology.arenaReplicaDiscovery,
-      tickingAreas: structureRuntime.tickingAreas,
+      tickingAreas: structureRuntime.tickingAreas.map(
+        (item) => ({
+          functionId: item.functionId,
+          ...(item.line === undefined
+            ? {}
+            : { line: item.line }),
+          semantics: item.tickingArea,
+        }),
+      ),
     });
   if (arenaCapacity.report) {
     diagnostics.push(
