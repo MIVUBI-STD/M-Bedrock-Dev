@@ -50,6 +50,20 @@ function defaultAuthoredSourceRoot(
     .join("/");
 }
 
+function isBedrockRuntimeScriptPath(
+  relativePath: string,
+): boolean {
+  const segments = normalizePath(relativePath).split("/");
+  const packRootIndex = segments.findIndex((segment) =>
+    segment === "behavior_packs" ||
+    segment === "development_behavior_packs"
+  );
+  return (
+    packRootIndex >= 0 &&
+    segments[packRootIndex + 2] === "scripts"
+  );
+}
+
 function isAuthoredIntentSourcePath(
   relativePath: string,
   options: AuthoredIntentSourceIndexOptions,
@@ -61,7 +75,7 @@ function isAuthoredIntentSourcePath(
     wrapped.includes("/node_modules/") ||
     wrapped.includes("/dist/") ||
     wrapped.includes("/build/") ||
-    wrapped.includes("/scripts/")
+    isBedrockRuntimeScriptPath(normalized)
   ) {
     return false;
   }
