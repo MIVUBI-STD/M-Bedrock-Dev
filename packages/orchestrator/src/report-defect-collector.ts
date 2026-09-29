@@ -37,7 +37,7 @@ import {
 
 export type ConfirmedDefectDraft = Omit<
   ConfirmedDefect,
-  "foundBy" | "confirmation"
+  "foundBy" | "confirmation" | "mustPreserve"
 >;
 
 export interface ReportCandidateRepairContext {
@@ -91,6 +91,21 @@ function collectOne(
   readonly confirmed?: ConfirmedDefect;
   readonly rejected?: RejectedReportCandidate;
 } {
+  if (
+    candidate.defect.suggestedFix !== undefined &&
+    candidate.repairContext?.decision === undefined
+  ) {
+    return {
+      rejected: {
+        route: candidate.route,
+        semanticKey: candidate.defect.semanticKey,
+        reasons: [
+          "Suggested Fix requires a diagnostic repair decision.",
+        ],
+      },
+    };
+  }
+
   const expectedAuthority =
     candidate.route === "tester"
       ? candidate.confirmation.expectedBehaviorAuthority
