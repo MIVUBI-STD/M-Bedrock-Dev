@@ -40,8 +40,9 @@ function arenaGeneration(
   const generation =
     input.arenaGenerations[arenaId];
   return (
+    typeof generation === "number" &&
     Number.isInteger(generation) &&
-    (generation ?? -1) >= 0
+    generation >= 0
   )
     ? generation
     : undefined;
@@ -66,7 +67,6 @@ function event(
 }
 
 function subjectEvents(
-  prefix: string,
   item: ArenaInterleavingSubject,
 ): Pick<
   MultiplayerInterleavingEvent,
@@ -144,10 +144,7 @@ function compileEvents(
       };
     }
 
-    const base = subjectEvents(
-      scenario.id,
-      item,
-    );
+    const base = subjectEvents(item);
     const joinRequest = event(
       scenario.id + ":join-request",
       "join-request",
@@ -443,10 +440,18 @@ export function compileArenaInterleavingAnalysis(
       analyzeMultiplayerInterleavings(
         compiled.events,
         {
-          maxSchedules:
-            input.maxSchedules,
-          maxExploredNodes:
-            input.maxExploredNodes,
+          ...(input.maxSchedules === undefined
+            ? {}
+            : {
+                maxSchedules:
+                  input.maxSchedules,
+              }),
+          ...(input.maxExploredNodes === undefined
+            ? {}
+            : {
+                maxExploredNodes:
+                  input.maxExploredNodes,
+              }),
         },
       ),
   };
