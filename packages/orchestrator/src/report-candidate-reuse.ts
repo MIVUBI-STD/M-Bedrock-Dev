@@ -10,7 +10,6 @@ import {
 const REUSABLE_WITH_UNCHANGED_EVIDENCE = new Set<
   ReportCandidateNextEvidenceNeed
 >([
-  "none",
   "intent-grounding",
   "authored-intent",
   "contradiction-proof",
