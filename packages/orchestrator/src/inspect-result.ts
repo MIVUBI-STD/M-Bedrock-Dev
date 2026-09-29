@@ -259,6 +259,7 @@ export function buildInspectionResult(
     arena: baseArenaAnalysis,
     scriptSpatial,
     inventoryLifecycle,
+    inventoryPolicy,
     semanticIr: {
       stateSurfaces: semanticSummary.stateSurfaces,
       stateOperations: semanticSummary.stateOperations,
@@ -331,6 +332,7 @@ export function buildInspectionResult(
     scriptSafeConfig,
     scriptSpatial,
     inventoryLifecycle,
+    inventoryPolicy,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
     structures: nodes.filter(
