@@ -13,6 +13,9 @@ import type {
   GameplayIntentRuntimeAssessment,
 } from "../src/gameplay-intent-runtime-stage.js";
 import {
+  groupConfirmedDefects,
+} from "../../bug-report/src/index.js";
+import {
   buildBugReportFromAuditCandidates,
   collectConfirmedDefects,
 } from "../src/report-defect-collector.js";
@@ -497,9 +500,7 @@ describe("report defect collector", () => {
       first,
       second,
     ]);
-    const groupKey = (
-      await import("../../bug-report/src/index.js")
-    ).groupConfirmedDefects(
+    const groupKey = groupConfirmedDefects(
       preview.confirmed,
     )[0]!.key;
 
