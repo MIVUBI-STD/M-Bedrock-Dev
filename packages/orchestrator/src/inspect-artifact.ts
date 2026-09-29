@@ -661,6 +661,8 @@ export async function inspectArtifact(
           result.inventoryLifecycle,
         inventoryPolicy:
           result.inventoryPolicy,
+        inventoryRestoreOwnership:
+          result.inventoryRestoreOwnership,
         semanticIr: {
           stateSurfaces:
             result.semanticIr.stateSurfaces,
