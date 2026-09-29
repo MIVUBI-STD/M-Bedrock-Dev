@@ -18,6 +18,7 @@ import { auditArenaNativeSpatialContent } from "./arena-native-extraction.js";
 import { openBedrockLevelDbSnapshot } from "../../../adapters/leveldb/src/index.js";
 import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
 import { proveArenaBlockEntityEquivalence } from "./arena-block-entity-proof.js";
+import { proveArenaStructureInstances } from "./arena-structure-instance-proof.js";
 import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { partitionArenaProofVolumes, spatialLayoutFromReplicaDiscovery } from "../../../analyzers/topology/src/index.js";
@@ -136,6 +137,36 @@ export async function inspectArtifact(
       effectiveRegionClassification,
       proofPartition,
     );
+
+    const structureInstanceProof =
+      spatialLayout === undefined
+        ? undefined
+        : proveArenaStructureInstances(
+            spatialLayout,
+            effectiveRegionPlan,
+            [
+              ...result.structureRuntime.structurePlacements.map(
+                (placement) => ({
+                  target: placement.target,
+                  ...(placement.position === undefined
+                    ? {}
+                    : { position: placement.position }),
+                  options: placement.options,
+                  sourceKind: "command" as const,
+                }),
+              ),
+              ...result.scriptSpatial.structurePlacements.map(
+                (placement) => ({
+                  ...(placement.identifier === undefined
+                    ? {}
+                    : { target: placement.identifier }),
+                  position: placement.position,
+                  options: {},
+                  sourceKind: "script" as const,
+                }),
+              ),
+            ],
+          );
 
     const arenaNativeSpatial =
       spatialLayout === undefined
@@ -341,6 +372,9 @@ export async function inspectArtifact(
               blockEntityProof:
                 arenaBlockEntityProof,
             }),
+        ...(structureInstanceProof === undefined
+          ? {}
+          : { structureInstanceProof }),
         ...(proofPartition === undefined
           ? {}
           : { proofPartition }),

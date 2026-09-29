@@ -282,3 +282,5 @@ export * from "./arena-cleanup-surface-analysis.js";
 export * from "./arena-state-isolation-analysis.js";
 
 export * from "./script-spatial-analysis.js";
+
+export * from "./arena-structure-instance-proof.js";

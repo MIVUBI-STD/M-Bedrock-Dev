@@ -613,6 +613,8 @@ export function buildInspectionResult(
           0,
         ),
       educationSpecialtyBlocks,
+      structurePlacements:
+        structureRuntime.absoluteStructurePlacements,
       absoluteLoadDestinations:
         structureRuntime.absoluteLoadDestinations,
       placedEmbeddedCommands,

@@ -19,6 +19,7 @@ import type { ArenaRegionClassification, ArenaRegionPartitionResult, ArenaRegion
 import type { ArenaNativeSpatialAudit } from "./arena-native-extraction.js";
 import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
 import type { ArenaBlockEntityProof } from "./arena-block-entity-proof.js";
+import type { ArenaStructureInstanceProof } from "./arena-structure-instance-proof.js";
 import type { PersistedPackIdentityExtraction } from "./persisted-pack-identity.js";
 import type { ArenaProofCoverageReport } from "./arena-proof-coverage.js";
 import type { ArenaProofConclusionReport } from "./arena-proof-conclusion.js";
@@ -191,6 +192,7 @@ export interface InspectDirectoryResult {
     nativeSpatial?: ArenaNativeSpatialAudit;
     voxelProof?: ArenaVoxelProof;
     blockEntityProof?: ArenaBlockEntityProof;
+    structureInstanceProof?: ArenaStructureInstanceProof;
   };
   gameplayIntent: {
     model: GameplayIntentModel;
@@ -281,6 +283,17 @@ export interface InspectDirectoryResult {
       deny: number;
       border: number;
     };
+    structurePlacements: Array<{
+      target: string;
+      position?: {
+        x: number;
+        y: number;
+        z: number;
+      };
+      options: Readonly<Record<string, unknown>>;
+      functionId: string;
+      line?: number;
+    }>;
     absoluteLoadDestinations: Array<{
       target: string;
       chunkX: number;
