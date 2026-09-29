@@ -75,6 +75,11 @@ function defect(
   options: {
     ai?: boolean;
     reproduction?: readonly string[];
+    expectedAuthority?:
+      | "authored-intent"
+      | "explicit-requirement"
+      | "runtime-contract";
+    expectedEvidenceIds?: readonly string[];
   } = {},
 ) {
   return {
@@ -91,9 +96,13 @@ function defect(
     title: "Cleanup retains match state",
     problem: "Match-owned state remains after cleanup.",
     expected: {
-      authority: "authored-intent" as const,
+      authority:
+        options.expectedAuthority ??
+        ("authored-intent" as const),
       statement: "Match-owned state is reset.",
-      evidenceIds: ["intent:evidence"],
+      evidenceIds:
+        options.expectedEvidenceIds ??
+        ["intent:evidence"],
     },
     observed: {
       statement: "Previous match state remains active.",
@@ -142,10 +151,13 @@ describe("report defect collector", () => {
         route: "tester",
         confirmation: {
           expectedBehaviorAuthority: "explicit-requirement",
+          expectedEvidenceIds: ["requirement:cleanup"],
           reproduced: true,
           evidence: "State persists after two repeated match completions.",
         },
         defect: defect("tester-cleanup", {
+          expectedAuthority: "explicit-requirement",
+          expectedEvidenceIds: ["requirement:cleanup"],
           reproduction: [
             "Complete a match.",
             "Return to lobby.",
@@ -179,10 +191,13 @@ describe("report defect collector", () => {
         route: "tester",
         confirmation: {
           expectedBehaviorAuthority: "explicit-requirement",
+          expectedEvidenceIds: ["requirement:cleanup"],
           reproduced: true,
           evidence: "State persists after repeated completion.",
         },
         defect: defect("cleanup", {
+          expectedAuthority: "explicit-requirement",
+          expectedEvidenceIds: ["requirement:cleanup"],
           reproduction: [
             "Complete a match.",
             "Observe retained state.",
@@ -239,6 +254,8 @@ describe("report defect collector", () => {
             evidence: "The state persists after repeated completion.",
           },
           defect: defect("accepted", {
+            expectedAuthority: "explicit-requirement",
+            expectedEvidenceIds: ["requirement:cleanup"],
             reproduction: [
               "Complete a match.",
               "Observe retained state.",
@@ -278,6 +295,27 @@ describe("report defect collector", () => {
     expect(result.confirmed).toHaveLength(0);
     expect(result.rejected[0]?.reasons.join(" "))
       .toMatch(/Expected evidence/);
+  });
+
+  it("rejects tester Expected facts not grounded in requirement evidence", () => {
+    const result = collectConfirmedDefects([{
+      route: "tester",
+      confirmation: {
+        expectedBehaviorAuthority: "explicit-requirement",
+        expectedEvidenceIds: ["requirement:cleanup"],
+        reproduced: true,
+        evidence: "The state persists after repeated completion.",
+      },
+      defect: defect("tester-bad-expected", {
+        expectedAuthority: "explicit-requirement",
+        expectedEvidenceIds: ["requirement:other"],
+        reproduction: ["Reproduce the mismatch."],
+      }),
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(result.rejected[0]?.reasons.join(" "))
+      .toMatch(/tester requirement evidence/);
   });
 
   it("blocks promotion when AI source evidence is not in the audited inventory", () => {
@@ -334,10 +372,13 @@ describe("report defect collector", () => {
           route: "tester" as const,
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement" as const,
+            expectedEvidenceIds: ["requirement:cleanup"],
             reproduced: true,
             evidence: "A",
           },
           defect: defect("a", {
+            expectedAuthority: "explicit-requirement",
+            expectedEvidenceIds: ["requirement:cleanup"],
             reproduction: ["A"],
           }),
         },
@@ -345,10 +386,13 @@ describe("report defect collector", () => {
           route: "tester" as const,
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement" as const,
+            expectedEvidenceIds: ["requirement:cleanup"],
             reproduced: true,
             evidence: "B",
           },
           defect: defect("b", {
+            expectedAuthority: "explicit-requirement",
+            expectedEvidenceIds: ["requirement:cleanup"],
             reproduction: ["B"],
           }),
         },
