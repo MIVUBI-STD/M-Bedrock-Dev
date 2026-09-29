@@ -105,8 +105,11 @@ function defect(
     ...(options.ai
       ? {
           aiAnalysis: "Cleanup does not clear the owned state.",
-          relevantCode: [{
-            file: "scripts/session.ts",
+          sourceEvidence: [{
+            source: {
+              artifactId: "map",
+              relativePath: "scripts/session.ts",
+            },
             reason: "Owns match cleanup.",
           }],
         }
