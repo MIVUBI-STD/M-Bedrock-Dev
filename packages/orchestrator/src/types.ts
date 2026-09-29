@@ -40,6 +40,7 @@ import type { InventoryLifecycleAnalysis } from "./inventory-lifecycle-analysis.
 import type { InventoryPolicyAnalysis } from "./inventory-policy-analysis.js";
 import type { InventoryRestoreOwnershipAnalysis } from "./inventory-restore-ownership-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
+import type { EntityAiStackAnalysis } from "./entity-ai-stack-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
@@ -100,6 +101,7 @@ export interface InspectDirectoryResult {
   structures: number;
   parsedStructures: number;
   entities: number;
+  entityAiStack: EntityAiStackAnalysis;
   entityKnowledge: {
     analyzed: number;
     states: number;
