@@ -5,6 +5,7 @@ import {
   vi,
 } from "vitest";
 import {
+  GitHubBugReportConflictError,
   GitHubBugReportStore,
 } from "./github-report-store.js";
 
@@ -33,7 +34,7 @@ function report() {
 }
 
 describe("GitHubBugReportStore", () => {
-  it("updates an existing canonical report using its current GitHub sha", async () => {
+  it("updates only the revision that was opened", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
@@ -46,7 +47,9 @@ describe("GitHubBugReportStore", () => {
         { status: 200 },
       ))
       .mockResolvedValueOnce(new Response(
-        JSON.stringify({ content: { sha: "def" } }),
+        JSON.stringify({
+          content: { sha: "def" },
+        }),
         { status: 200 },
       ));
 
@@ -58,29 +61,34 @@ describe("GitHubBugReportStore", () => {
       fetchImpl: fetchMock as unknown as typeof fetch,
     });
 
-    await store.saveReport("bug-reports/a.json", report());
+    await expect(
+      store.saveReport(
+        "bug-reports/a.json",
+        report(),
+        "abc",
+      ),
+    ).resolves.toEqual({
+      revision: "def",
+    });
 
     const saveInit = fetchMock.mock.calls[1]?.[1] as RequestInit;
-    const body = JSON.parse(String(saveInit.body)) as {
-      sha?: string;
-      branch: string;
-      content: string;
-    };
-
-    expect(body.sha).toBe("abc");
-    expect(body.branch).toBe("Local");
-    expect(body.content.length).toBeGreaterThan(0);
+    expect(JSON.parse(String(saveInit.body))).toMatchObject({
+      sha: "abc",
+      branch: "Local",
+    });
   });
 
-  it("creates a new report when the GitHub path does not exist", async () => {
-    const fetchImpl = vi.fn()
+  it("refuses to overwrite a changed report", async () => {
+    const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(
-        JSON.stringify({ message: "Not Found" }),
-        { status: 404 },
-      ))
-      .mockResolvedValueOnce(new Response(
-        JSON.stringify({ content: { sha: "new" } }),
-        { status: 201 },
+        JSON.stringify({
+          type: "file",
+          path: "bug-reports/a.json",
+          sha: "newer",
+          content: "",
+          encoding: "base64",
+        }),
+        { status: 200 },
       ));
 
     const store = new GitHubBugReportStore({
@@ -91,13 +99,16 @@ describe("GitHubBugReportStore", () => {
       fetchImpl: fetchMock as unknown as typeof fetch,
     });
 
-    await store.saveReport("bug-reports/a.json", report());
-
-    const saveInit = fetchMock.mock.calls[1]?.[1] as RequestInit;
-    const body = JSON.parse(String(saveInit.body)) as {
-      sha?: string;
-    };
-    expect(body.sha).toBeUndefined();
+    await expect(
+      store.saveReport(
+        "bug-reports/a.json",
+        report(),
+        "older",
+      ),
+    ).rejects.toBeInstanceOf(
+      GitHubBugReportConflictError,
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("rejects paths outside the report directory", async () => {
@@ -110,7 +121,11 @@ describe("GitHubBugReportStore", () => {
     });
 
     await expect(
-      store.saveReport("../outside.json", report()),
+      store.saveReport(
+        "../outside.json",
+        report(),
+        "abc",
+      ),
     ).rejects.toThrow(/inside bug-reports/);
   });
 });
