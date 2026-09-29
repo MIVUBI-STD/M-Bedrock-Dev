@@ -31,6 +31,28 @@ export interface ConfirmedDefectSourceEvidence {
   readonly reason: string;
 }
 
+export function deriveRepairUnitIdsFromSourceEvidence(
+  sourceEvidence:
+    readonly ConfirmedDefectSourceEvidence[] | undefined,
+): readonly string[] {
+  if (!sourceEvidence || sourceEvidence.length === 0) {
+    return [];
+  }
+
+  return [
+    ...new Set(
+      sourceEvidence
+        .map((item) =>
+          item.source.relativePath
+            .replaceAll("\\", "/")
+            .trim(),
+        )
+        .filter(Boolean)
+        .map((path) => "source-file:" + path),
+    ),
+  ].sort();
+}
+
 function validateConfirmedDefectSourceRef(
   source: SourceRef,
 ): readonly string[] {
@@ -213,9 +235,5 @@ export function validateConfirmedDefect(
   if (defect.brokenInvariantIds.length === 0) {
     errors.push("brokenInvariantIds must identify the violated invariant.");
   }
-  if (defect.repairUnitIds.length === 0) {
-    errors.push("repairUnitIds must identify the repair unit.");
-  }
-
   return errors;
 }
