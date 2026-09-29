@@ -48,6 +48,11 @@ export type ConfirmedDefectDraft = Omit<
   | "mustPreserve"
 >;
 
+export type AiConfirmedDefectDraft = Omit<
+  ConfirmedDefectDraft,
+  "brokenInvariantIds"
+>;
+
 export interface ReportCandidateRepairContext {
   readonly decision?: DiagnosticRepairDecision;
   readonly invariantDerivation?: RepairInvariantDerivation;
@@ -58,7 +63,7 @@ export interface RuntimeReportCandidate {
   readonly route: "runtime";
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
-  readonly defect: ConfirmedDefectDraft;
+  readonly defect: AiConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
 }
 
@@ -66,7 +71,7 @@ export interface StaticReportCandidate {
   readonly route: "static";
   readonly intent: GameplayIntentModel;
   readonly result: IntentDiagnosticGateResult;
-  readonly defect: ConfirmedDefectDraft;
+  readonly defect: AiConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
 }
 
@@ -187,13 +192,25 @@ function candidateSubjectIds(
   return candidate.subjectIds;
 }
 
+function candidateBrokenInvariantIds(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  if (candidate.route === "runtime") {
+    return candidate.assessment.result.basisInvariantIds;
+  }
+  if (candidate.route === "static") {
+    return candidate.result.basisInvariantIds;
+  }
+  return candidate.defect.brokenInvariantIds;
+}
+
 function candidateSemanticKey(
   candidate: AuditReportCandidate,
 ): string {
   return deriveConfirmedDefectSemanticKey({
     subjectIds: candidateSubjectIds(candidate),
     brokenInvariantIds:
-      candidate.defect.brokenInvariantIds,
+      candidateBrokenInvariantIds(candidate),
     repairUnitIds:
       candidate.defect.repairUnitIds,
     primaryFailure:
@@ -340,6 +357,9 @@ function collectOne(
     ...candidate.defect,
     semanticKey: candidateSemanticKey(candidate),
     subjectIds: [...candidateSubjectIds(candidate)],
+    brokenInvariantIds: [
+      ...candidateBrokenInvariantIds(candidate),
+    ],
     foundBy:
       candidate.route === "tester"
         ? "tester"
