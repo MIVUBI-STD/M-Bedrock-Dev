@@ -6,6 +6,7 @@ import {
 
 export interface TesterDefectConfirmationInput {
   readonly expectedBehaviorAuthority: ExpectedBehaviorAuthority;
+  readonly expectedEvidenceIds: readonly string[];
   readonly reproduced: boolean;
   readonly evidence: string;
 }
@@ -13,6 +14,15 @@ export interface TesterDefectConfirmationInput {
 export function confirmTesterDefectForReport(
   input: TesterDefectConfirmationInput,
 ): DefectConfirmationDecision {
+  if (input.expectedEvidenceIds.length === 0) {
+    return {
+      confirmed: false,
+      reasons: [
+        "Tester confirmation requires evidence identifying the expected behavior authority.",
+      ],
+    };
+  }
+
   return confirmDefectForReport({
     foundBy: "tester",
     expectedBehaviorAuthority:
