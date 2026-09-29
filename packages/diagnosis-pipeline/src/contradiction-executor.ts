@@ -9,6 +9,9 @@ import type {
   DiagnosisExecutorRequest,
 } from "./execution.js";
 
+export const CONTRADICTION_PROOF_EXECUTOR_REVISION =
+  "contradiction-proof-executor:2";
+
 export interface ContradictionProofDiagnosisPayload {
   problem: ConstraintProblem;
 }
@@ -65,6 +68,8 @@ function evidenceId(
     createHash("sha256")
       .update(
         JSON.stringify({
+          executorRevision:
+            CONTRADICTION_PROOF_EXECUTOR_REVISION,
           problemId: problem.id,
           queryId: problem.query.id,
           disposition: result.disposition,
@@ -82,7 +87,7 @@ export function createContradictionProofDiagnosisExecutor():
     executorId:
       "diagnosis.contradiction-proof",
     executorRevision:
-      "contradiction-proof-executor:1",
+      CONTRADICTION_PROOF_EXECUTOR_REVISION,
 
     async execute(
       request: DiagnosisExecutorRequest,
