@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   assessConfirmedDefectGrouping,
   decideBugGrouping,
+  deriveConfirmedDefectSemanticKey,
   groupConfirmedDefects,
   type ConfirmedDefect,
 } from "../src/index.js";
@@ -70,15 +71,18 @@ describe("bug report split and merge policy", () => {
 
 
 function defect(
-  semanticKey: string,
+  subject: string,
   options: {
     incident?: string;
     invariant?: string;
     repairUnit?: string;
   } = {},
 ): ConfirmedDefect {
-  return {
-    semanticKey,
+  const base: Omit<
+    ConfirmedDefect,
+    "semanticKey"
+  > = {
+    subjectIds: ["subject:" + subject],
     foundBy: "tester",
     confirmation: {
       basis: "tester-reproduction",
@@ -114,6 +118,12 @@ function defect(
     ...(options.incident === undefined
       ? {}
       : { causalIncidentId: options.incident }),
+  };
+
+  return {
+    ...base,
+    semanticKey:
+      deriveConfirmedDefectSemanticKey(base),
   };
 }
 
@@ -171,6 +181,9 @@ describe("confirmed defect semantic grouping", () => {
 
     expect(first).toEqual(second);
     expect(first[0]?.defects.map((item) => item.semanticKey))
-      .toEqual(["a", "b"]);
+      .toEqual([
+        a.semanticKey,
+        b.semanticKey,
+      ].sort());
   });
 });
