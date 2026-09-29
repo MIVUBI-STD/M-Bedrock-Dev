@@ -147,6 +147,29 @@ describe("canonical defect group resolution", () => {
     ).toThrow(/select primary sourceEvidence explicitly/);
   });
 
+  it("does not invent Suggested Fix during group resolution", () => {
+    const group = groupConfirmedDefects([
+      defect("a"),
+      defect("b"),
+    ])[0]!;
+
+    const resolved = resolveConfirmedDefectGroup(
+      group,
+      {
+        semanticKey: "merged",
+        title: "Merged defect",
+        problem: "Merged problem",
+        expected: { statement: "Expected" },
+        observed: { statement: "Observed" },
+        expectedAuthority: "explicit-requirement",
+        primaryFailure: "player-owned-state",
+        reproduction: ["Reproduce the merged defect."],
+      },
+    );
+
+    expect(resolved.suggestedFix).toBeUndefined();
+  });
+
   it("refuses incompatible defects even when caller constructs a group manually", () => {
     const group = {
       key: "manual",
