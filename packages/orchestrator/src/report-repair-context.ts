@@ -81,13 +81,20 @@ export function applyReportRepairContext(
     options.decision === undefined ||
     options.decision.disposition !== "observe-only";
 
-  return {
+  const enriched = {
     ...defect,
     ...(mustPreserve.length === 0
       ? {}
       : { mustPreserve }),
-    ...(suggestedFixAllowed
-      ? {}
-      : { suggestedFix: undefined }),
   };
+
+  if (suggestedFixAllowed) {
+    return enriched;
+  }
+
+  const {
+    suggestedFix: _suggestedFix,
+    ...withoutSuggestedFix
+  } = enriched;
+  return withoutSuggestedFix;
 }
