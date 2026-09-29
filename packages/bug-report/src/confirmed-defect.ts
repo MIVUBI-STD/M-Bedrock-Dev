@@ -148,7 +148,6 @@ function validateConfirmedDefectSourceRef(
 export interface ConfirmedDefectIdentityInput {
   readonly subjectIds: readonly string[];
   readonly brokenInvariantIds: readonly string[];
-  readonly repairUnitIds: readonly string[];
   readonly primaryFailure: BugPrimaryFailure;
   readonly causalIncidentId?: string;
 }
@@ -173,8 +172,6 @@ export function deriveConfirmedDefectSemanticKey(
     "subjects=" + normalizedIdentityPart(input.subjectIds),
     "invariants=" +
       normalizedIdentityPart(input.brokenInvariantIds),
-    "repair-units=" +
-      normalizedIdentityPart(input.repairUnitIds),
     "failure=" + input.primaryFailure,
   ]
     .filter(
