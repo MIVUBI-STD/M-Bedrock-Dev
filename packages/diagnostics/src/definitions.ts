@@ -5,6 +5,7 @@ export type DiagnosticDefinitionCategory =
   | "manifest"
   | "command"
   | "state"
+  | "world-state"
   | "topology"
   | "arena"
   | "education"
@@ -59,6 +60,7 @@ function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
   ) return "arena";
   if (code === "UNKNOWN_COMMAND_EFFECT") return "command";
   if (code === "SUSPICIOUS_REGION_MUTATION" || code === "CROSS_SCOPE_STATE_RISK") return "state";
+  if (code.startsWith("WORLDSTATE_")) return "world-state";
   if (code === "TOPOLOGY_TRANSLATION_OUTLIER") return "topology";
   if (code.startsWith("EDUCATION_")) return "education";
   if (code.startsWith("SCRIPT_")) return "script";

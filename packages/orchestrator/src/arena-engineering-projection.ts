@@ -54,6 +54,13 @@ export interface ArenaEngineeringProjection {
     partial: number;
     unresolved: number;
   };
+  globalState: {
+    arenaScopedMutations: number;
+    pairedLeaseEvidence: number;
+    partialLeaseEvidence: number;
+    unleasedArenaMutations: number;
+    unauditedArenaMutations: number;
+  };
   isolation: {
     isolated: number;
     partitionProofRequired: number;
@@ -284,6 +291,15 @@ export function buildArenaEngineeringProjection(
     );
   }
   if (
+    arena.globalState &&
+    arena.globalState.unleasedArenaMutations > 0
+  ) {
+    unresolved.push(
+      `${arena.globalState.unleasedArenaMutations} arena-scoped world-global mutation(s) have no paired lease evidence.`,
+    );
+  }
+
+  if (
     arena.stateIsolation &&
     (
       arena.stateIsolation.sharedGlobal > 0 ||
@@ -390,6 +406,23 @@ export function buildArenaEngineeringProjection(
         arena.cleanupSurfaces?.partial ?? 0,
       unresolved:
         arena.cleanupSurfaces?.unresolved ?? 0,
+    },
+    globalState: {
+      arenaScopedMutations:
+        arena.globalState
+          ?.arenaScopedMutations ?? 0,
+      pairedLeaseEvidence:
+        arena.globalState
+          ?.pairedLeaseEvidence ?? 0,
+      partialLeaseEvidence:
+        arena.globalState
+          ?.partialLeaseEvidence ?? 0,
+      unleasedArenaMutations:
+        arena.globalState
+          ?.unleasedArenaMutations ?? 0,
+      unauditedArenaMutations:
+        arena.globalState
+          ?.unauditedArenaMutations ?? 0,
     },
     isolation: {
       isolated:

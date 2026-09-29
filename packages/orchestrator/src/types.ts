@@ -33,6 +33,7 @@ import type { ArenaLayoutReconciliation } from "./arena-layout-reconciliation.js
 import type { ArenaLifecycleAnalysis } from "./arena-lifecycle-analysis.js";
 import type { ArenaCleanupSurfaceAnalysis } from "./arena-cleanup-surface-analysis.js";
 import type { ArenaStateIsolationAnalysis } from "./arena-state-isolation-analysis.js";
+import type { ArenaGlobalStateAnalysis } from "./arena-global-state-analysis.js";
 import type { ScriptSpatialAnalysis } from "./script-spatial-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
@@ -198,6 +199,7 @@ export interface InspectDirectoryResult {
     lifecycle?: ArenaLifecycleAnalysis;
     cleanupSurfaces?: ArenaCleanupSurfaceAnalysis;
     stateIsolation?: ArenaStateIsolationAnalysis;
+    globalState?: ArenaGlobalStateAnalysis;
     stressPlan?: ArenaStressPlan;
     repeatedRunPlan?: ArenaRepeatedRunValidationPlan;
     authoredSources?: readonly ArenaAuthoredSpatialSource[];

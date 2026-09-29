@@ -303,3 +303,5 @@ export * from "./arena-authored-source-index.js";
 export * from "./arena-repair-localization.js";
 
 export * from "./arena-repeated-run-validation.js";
+
+export * from "./arena-global-state-analysis.js";

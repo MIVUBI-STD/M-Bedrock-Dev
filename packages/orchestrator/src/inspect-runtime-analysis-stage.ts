@@ -26,6 +26,8 @@ import { analyzeArenaLifecycleConvergence } from "./arena-lifecycle-analysis.js"
 import { analyzeArenaCleanupSurfaces } from "./arena-cleanup-surface-analysis.js";
 import { analyzeArenaStateIsolation } from "./arena-state-isolation-analysis.js";
 import { analyzeScriptSpatialMutations } from "./script-spatial-analysis.js";
+import { analyzeArenaGlobalState } from "./arena-global-state-analysis.js";
+import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -162,6 +164,55 @@ export function analyzeInspectionRuntimeState(
     analyzeArenaCleanupSurfaces(
       parsedScriptModels,
     );
+  const arenaGlobalState =
+    analyzeArenaGlobalState(
+      parsedFunctionModels,
+      parsedScriptModels,
+    );
+
+  for (const assessment of arenaGlobalState.assessments) {
+    const mutation =
+      arenaGlobalState.mutations.find(
+        (item) =>
+          item.id === assessment.mutationId,
+      );
+    if (!mutation || !mutation.arenaScoped) continue;
+
+    if (assessment.status === "unleased") {
+      diagnostics.push(
+        createDiagnostic({
+          code: "WORLDSTATE_GLOBAL_LEASE_MISSING",
+          severity: "medium",
+          message:
+            `Arena-scoped mutation of world-global resource ${assessment.resource} has no matching static lease evidence.`,
+          source: mutation.source,
+          data: {
+            resource: assessment.resource,
+            ownerId: mutation.ownerId,
+            executionRegion:
+              mutation.executionRegion,
+          },
+        }),
+      );
+    }
+
+    if (!assessment.audited) {
+      diagnostics.push(
+        createDiagnostic({
+          code: "WORLDSTATE_GLOBAL_MUTATION_NOT_AUDITED",
+          severity: "minor",
+          message:
+            `Arena-scoped mutation of world-global resource ${assessment.resource} has no explicit static audit helper evidence.`,
+          source: mutation.source,
+          data: {
+            resource: assessment.resource,
+            ownerId: mutation.ownerId,
+            leaseStatus: assessment.status,
+          },
+        }),
+      );
+    }
+  }
 
   const arenaLayoutReconciliation =
     reconcileArenaLayouts(
@@ -296,6 +347,7 @@ export function analyzeInspectionRuntimeState(
     scriptSafeConfig,
     arenaLifecycle,
     arenaCleanupSurfaces,
+    arenaGlobalState,
     arenaStateIsolation,
     arenaLayoutReconciliation,
     arenaCapacity,
