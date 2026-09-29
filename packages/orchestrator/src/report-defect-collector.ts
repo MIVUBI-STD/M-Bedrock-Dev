@@ -16,6 +16,7 @@ import type {
 } from "./gameplay-intent-runtime-stage.js";
 import type {
   DiagnosticRepairDecision,
+  FileInventoryEntry,
   InvariantRegistrySnapshot,
 } from "../../project-model/src/index.js";
 import type {
@@ -185,6 +186,7 @@ export function collectConfirmedDefects(
 export interface BuildBugReportFromAuditInput {
   readonly map: BugReportV2Map;
   readonly repairBy: BugReportV2RepairBy;
+  readonly files: readonly FileInventoryEntry[];
   readonly candidates: readonly AuditReportCandidate[];
 }
 
@@ -193,19 +195,66 @@ export interface BuildBugReportFromAuditResult {
   readonly promotion: PromoteConfirmedBugsResult;
 }
 
+function sourceEvidenceIssues(
+  defects: readonly ConfirmedDefect[],
+  files: readonly FileInventoryEntry[],
+): readonly {
+  code: "invalid-confirmed-defect";
+  message: string;
+}[] {
+  const known = new Set(
+    files.map((file) =>
+      file.relativePath.replaceAll("\\", "/")
+    ),
+  );
+  const issues: {
+    code: "invalid-confirmed-defect";
+    message: string;
+  }[] = [];
+
+  for (const defect of defects) {
+    for (const item of defect.sourceEvidence ?? []) {
+      const path =
+        item.source.relativePath.replaceAll("\\", "/");
+      if (!known.has(path)) {
+        issues.push({
+          code: "invalid-confirmed-defect",
+          message:
+            defect.semanticKey +
+            ": source evidence path is not present in the audited file inventory: " +
+            path +
+            ".",
+        });
+      }
+    }
+  }
+
+  return issues;
+}
+
 export function buildBugReportFromAuditCandidates(
   input: BuildBugReportFromAuditInput,
 ): BuildBugReportFromAuditResult {
   const collection = collectConfirmedDefects(
     input.candidates,
   );
+  const sourceIssues = sourceEvidenceIssues(
+    collection.confirmed,
+    input.files,
+  );
 
   return {
     collection,
-    promotion: buildBugReportFromConfirmedDefects({
-      map: input.map,
-      repairBy: input.repairBy,
-      defects: collection.confirmed,
-    }),
+    promotion:
+      sourceIssues.length > 0
+        ? {
+            ok: false,
+            issues: sourceIssues,
+          }
+        : buildBugReportFromConfirmedDefects({
+            map: input.map,
+            repairBy: input.repairBy,
+            defects: collection.confirmed,
+          }),
   };
 }
