@@ -248,6 +248,28 @@ describe("report defect collector", () => {
     expect(result.promotion.report.bugs).toHaveLength(1);
   });
 
+  it("rejects Suggested Fix without a repair decision", () => {
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      defect: {
+        ...defect("repair-advice", { ai: true }),
+        suggestedFix: "Rewrite cleanup ownership.",
+      },
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(result.rejected[0]).toEqual(
+      expect.objectContaining({
+        semanticKey: "repair-advice",
+        reasons: [
+          "Suggested Fix requires a diagnostic repair decision.",
+        ],
+      }),
+    );
+  });
+
   it("allocates the same ids regardless of candidate order", () => {
     const makeCandidates = (reversed: boolean) => {
       const entries = [
