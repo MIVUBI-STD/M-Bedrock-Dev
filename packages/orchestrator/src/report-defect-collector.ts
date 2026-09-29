@@ -42,6 +42,7 @@ import {
 export type ConfirmedDefectDraft = Omit<
   ConfirmedDefect,
   | "semanticKey"
+  | "subjectIds"
   | "foundBy"
   | "confirmation"
   | "mustPreserve"
@@ -71,6 +72,7 @@ export interface StaticReportCandidate {
 
 export interface TesterReportCandidate {
   readonly route: "tester";
+  readonly subjectIds: readonly string[];
   readonly confirmation: TesterDefectConfirmationInput;
   readonly defect: ConfirmedDefectDraft;
   readonly repairContext?: ReportCandidateRepairContext;
@@ -173,11 +175,23 @@ function routeEvidenceConsistency(
   return errors;
 }
 
+function candidateSubjectIds(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  if (candidate.route === "runtime") {
+    return candidate.assessment.result.subjectIds;
+  }
+  if (candidate.route === "static") {
+    return candidate.result.subjectIds;
+  }
+  return candidate.subjectIds;
+}
+
 function candidateSemanticKey(
   candidate: AuditReportCandidate,
 ): string {
   return deriveConfirmedDefectSemanticKey({
-    subjectIds: candidate.defect.subjectIds,
+    subjectIds: candidateSubjectIds(candidate),
     brokenInvariantIds:
       candidate.defect.brokenInvariantIds,
     repairUnitIds:
@@ -325,6 +339,7 @@ function collectOne(
   const confirmed: ConfirmedDefect = {
     ...candidate.defect,
     semanticKey: candidateSemanticKey(candidate),
+    subjectIds: [...candidateSubjectIds(candidate)],
     foundBy:
       candidate.route === "tester"
         ? "tester"
