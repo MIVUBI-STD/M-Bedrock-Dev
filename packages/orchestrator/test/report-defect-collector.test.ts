@@ -279,7 +279,9 @@ describe("report defect collector", () => {
           subjectIds: ["outcome:cleanup"],
           confirmation: {
             expectedBehaviorAuthority: "explicit-requirement",
+            expectedStatement: "Match-owned state is reset.",
             expectedEvidenceIds: ["requirement:cleanup"],
+            observationEvidenceIds: ["tester:observation"],
             reproduced: true,
             evidence: "The state persists after repeated completion.",
           },
