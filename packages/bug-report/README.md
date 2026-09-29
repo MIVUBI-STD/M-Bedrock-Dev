@@ -306,3 +306,27 @@ Currently lossless promotion is allowed for:
 - complete direct-guard policy coverage from authored source.
 
 Incomplete guard coverage and runtime-only derivations remain inferred or unknown.
+
+
+### Semantic identity ownership
+
+`semanticKey` is derived data. Callers do not choose it.
+
+The canonical identity is derived from:
+
+```text
+subjectIds
++ brokenInvariantIds
++ repairUnitIds
++ primaryFailure
++ causalIncidentId (when available)
+→ semanticKey
+```
+
+Runtime and static AI routes take `subjectIds` from the diagnostic result that established the defect. The AI report caller cannot override those subjects.
+
+Tester routes provide explicit gameplay subject IDs because tester evidence is external to source-code diagnostics.
+
+`validateConfirmedDefect()` rejects any ConfirmedDefect whose semanticKey does not match the deterministic identity.
+
+Stable Bug IDs are then derived from this semanticKey, so wording changes to Title, Problem, AI Analysis, or Suggested Fix do not change bug identity.
