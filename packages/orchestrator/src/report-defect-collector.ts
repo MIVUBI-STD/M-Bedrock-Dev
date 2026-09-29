@@ -3,6 +3,7 @@ import {
   deriveConfirmedDefectSemanticKey,
   deriveRepairUnitIdsFromSourceEvidence,
   type ConfirmedDefect,
+  type ConfirmedDefectGroupResolution,
   type PromoteConfirmedBugsResult,
   type BugReportV2Map,
   type BugReportV2RepairBy,
@@ -410,6 +411,8 @@ export interface BuildBugReportFromAuditInput {
   readonly repairBy: BugReportV2RepairBy;
   readonly files: readonly FileInventoryEntry[];
   readonly candidates: readonly AuditReportCandidate[];
+  readonly groupResolutions?:
+    readonly ConfirmedDefectGroupResolution[];
 }
 
 export interface BuildBugReportFromAuditResult {
@@ -497,6 +500,12 @@ export function buildBugReportFromAuditCandidates(
             map: input.map,
             repairBy: input.repairBy,
             defects: collection.confirmed,
+            ...(input.groupResolutions === undefined
+              ? {}
+              : {
+                  groupResolutions:
+                    input.groupResolutions,
+                }),
           }),
   };
 }
