@@ -45,6 +45,23 @@ describe("engineering task routing", () => {
     );
   });
 
+  it("keeps lower-context bug verification below the runtime proof ceiling", () => {
+    const route =
+      routeEngineeringTask({
+        kind: "verify-bug",
+        context:
+          "LOCAL_ARTIFACT",
+        runtimeSensitive: true,
+      });
+
+    expect(route.initialGoal)
+      .toBe(
+        "contradiction-proof",
+      );
+    expect(route.runtimeMayBeRequired)
+      .toBe(true);
+  });
+
   it("keeps lower-context repair work below the runtime proof ceiling", () => {
     const route =
       routeEngineeringTask({

@@ -111,7 +111,10 @@ export function routeEngineeringTask(
         kind: input.kind,
         initialGoal:
           input.runtimeSensitive ===
-          true
+            true &&
+          runtimeCapable(
+            input.context,
+          )
             ? "runtime-behavior"
             : "contradiction-proof",
         mutationAllowed: false,
@@ -125,9 +128,12 @@ export function routeEngineeringTask(
           "The candidate is proven, falsified, or remains UNKNOWN with explicit separating evidence.",
         reasons: [
           input.runtimeSensitive ===
-          true
-            ? "Runtime-sensitive verification requires observed behavior rather than stronger static speculation."
-            : "Non-runtime verification should seek a contradiction proof before escalating.",
+            true &&
+          runtimeCapable(input.context)
+            ? "Runtime-sensitive verification uses observed behavior when the current context can produce it."
+            : input.runtimeSensitive === true
+              ? "Current context cannot produce runtime proof; establish the strongest contradiction/static evidence first and leave only the runtime residue for a higher context."
+              : "Non-runtime verification should seek a contradiction proof before escalating.",
         ],
       };
 
