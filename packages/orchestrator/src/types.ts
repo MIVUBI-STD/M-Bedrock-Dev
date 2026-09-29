@@ -1,4 +1,5 @@
 import type { MinecraftEdition } from "../../compatibility/src/index.js";
+import type { InventoryItemPolicy } from "../../behavior-model/src/index.js";
 import type { EducationFeatureState } from "../../compatibility/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
@@ -36,6 +37,7 @@ import type { ArenaStateIsolationAnalysis } from "./arena-state-isolation-analys
 import type { ArenaGlobalStateAnalysis } from "./arena-global-state-analysis.js";
 import type { ScriptSpatialAnalysis } from "./script-spatial-analysis.js";
 import type { InventoryLifecycleAnalysis } from "./inventory-lifecycle-analysis.js";
+import type { InventoryPolicyAnalysis } from "./inventory-policy-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
@@ -64,6 +66,7 @@ export interface InspectTargetProfile {
   staticExecutionDimension?: string;
   releaseVersion?: string;
   arenaProofMode?: ArenaProofExecutionMode;
+  inventoryItemPolicy?: InventoryItemPolicy;
 }
 
 export interface InspectedPack {
@@ -89,6 +92,7 @@ export interface InspectDirectoryResult {
   scriptSafeConfig: ScriptSafeConfigAnalysis;
   scriptSpatial: ScriptSpatialAnalysis;
   inventoryLifecycle: InventoryLifecycleAnalysis;
+  inventoryPolicy: InventoryPolicyAnalysis;
   releaseIdentity: ReleaseIdentityAnalysis;
   gameplayWorld: GameplayWorldModel;
   structures: number;
