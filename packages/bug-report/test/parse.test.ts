@@ -4,7 +4,7 @@ import {
   parseBugReportV1,
 } from "../src/index.js";
 
-function validReport() {
+function validReport(): Record<string, any> {
   return {
     schema: "m-bedrock-bug-report/v1",
     map: {
