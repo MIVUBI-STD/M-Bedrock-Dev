@@ -1,0 +1,86 @@
+import { describe, expect, it } from "vitest";
+import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import {
+  analyzeInventoryLifecycle,
+} from "../src/inventory-lifecycle-analysis.js";
+
+describe("inventory lifecycle analysis", () => {
+  it("marks inventory-only reset as partial", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function reset(container) {",
+        "  container.clearAll();",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeInventoryLifecycle([script]);
+
+    expect(result).toMatchObject({
+      resetCandidates: 1,
+      completeResets: 0,
+      partialResets: 1,
+      copyMutationRisks: 0,
+    });
+  });
+
+  it("marks inventory and equipment reset in the same region as complete", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function reset(container, equippable) {",
+        "  container.clearAll();",
+        "  equippable.setEquipment('Head', undefined);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeInventoryLifecycle([script]);
+
+    expect(result.assessments[0]).toMatchObject({
+      executionRegion: "function:reset",
+      status: "complete-reset",
+      inventoryClear: true,
+      equipmentClear: true,
+    });
+  });
+
+  it("flags a mutated ItemStack copy without writeback", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function damage(container) {",
+        "  const item = container.getItem(0);",
+        "  if (!item) return;",
+        "  item.nameTag = 'Changed';",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeInventoryLifecycle([script]);
+
+    expect(result.copyMutationRisks).toBe(1);
+    expect(
+      result.assessments[0]?.copyMutations[0],
+    ).toMatchObject({
+      itemBinding: "item",
+      status: "missing-writeback",
+    });
+  });
+});
