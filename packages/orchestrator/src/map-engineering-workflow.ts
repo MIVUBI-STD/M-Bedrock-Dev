@@ -43,6 +43,8 @@ export interface MapEngineeringWorkflowProjection {
     repairCandidatesPlanned: number;
     repairCandidatesUnsupported: number;
     evidenceRecoveryActions: number;
+    lifecycleUnresolved: number;
+    cleanupResourcesMissing: number;
   };
   nextActions: readonly string[];
 }
@@ -54,11 +56,19 @@ function understandingStage(
     source.gameplayWorld.intent.unknowns.length;
   const unresolved =
     source.unresolvedReferences;
+  const lifecycleUnresolved =
+    source.gameplayWorld.arenas.lifecycle.unresolved;
+  const cleanupMissing =
+    source.gameplayWorld.arenas.cleanup
+      .resourceLedger?.missing ?? 0;
 
   return {
     id: "understand",
     status:
-      unresolved === 0 && unknowns === 0
+      unresolved === 0 &&
+      unknowns === 0 &&
+      lifecycleUnresolved === 0 &&
+      cleanupMissing === 0
         ? "ready"
         : "partial",
     reasons: [
@@ -70,6 +80,14 @@ function understandingStage(
         ? "Gameplay world model has no explicit blocked intent unknowns."
         : String(unknowns) +
           " gameplay intent unknown(s) remain.",
+      lifecycleUnresolved === 0
+        ? "Arena lifecycle terminal convergence has no unresolved path."
+        : String(lifecycleUnresolved) +
+          " arena lifecycle terminal path(s) remain unresolved.",
+      cleanupMissing === 0
+        ? "No acquired arena resource is currently missing terminal cleanup coverage."
+        : String(cleanupMissing) +
+          " acquired arena resource(s) have no complete terminal cleanup coverage.",
     ],
   };
 }
@@ -283,6 +301,11 @@ export function buildMapEngineeringWorkflow(
       ).length,
     evidenceRecoveryActions:
       source.evidenceRecovery.actions.length,
+    lifecycleUnresolved:
+      source.gameplayWorld.arenas.lifecycle.unresolved,
+    cleanupResourcesMissing:
+      source.gameplayWorld.arenas.cleanup
+        .resourceLedger?.missing ?? 0,
   };
 
   const nextActions = stages
