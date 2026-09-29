@@ -8,7 +8,7 @@ import {
 } from "../../../adapters/leveldb/src/index.js";
 import type {
   ArenaRegionPlan,
-  ArenaReplicaDiscovery,
+  ArenaSpatialLayoutSource,
   ArenaVector3,
   Translation3,
 } from "../../../analyzers/topology/src/index.js";
@@ -119,14 +119,16 @@ function blockSignature(
 }
 
 function envelope(
-  discovery: ArenaReplicaDiscovery,
+  discovery: ArenaSpatialLayoutSource,
   marginBlocks: number,
 ) {
   const points = [
     discovery.canonical.anchor,
-    ...discovery.canonical.items
-      .map((item) => item.position)
-      .filter((item): item is ArenaVector3 => item !== undefined),
+    ...("items" in discovery.canonical
+      ? discovery.canonical.items
+          .map((item) => item.position)
+          .filter((item): item is ArenaVector3 => item !== undefined)
+      : []),
   ];
   return {
     min: {
@@ -160,7 +162,7 @@ function translated(
 
 export async function proveArenaVoxelEquivalence(
   reader: BedrockLevelDbReader,
-  discovery: ArenaReplicaDiscovery,
+  discovery: ArenaSpatialLayoutSource,
   options: ArenaVoxelProofOptions = {},
 ): Promise<ArenaVoxelProof> {
   const fallbackRegion = envelope(discovery, options.marginBlocks ?? 16);

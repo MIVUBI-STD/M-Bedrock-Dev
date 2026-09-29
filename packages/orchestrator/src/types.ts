@@ -15,7 +15,7 @@ import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/ind
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
-import type { ArenaRegionClassification, ArenaRegionPartitionResult, ArenaRegionPlan, ArenaReplicaDiscovery } from "../../../analyzers/topology/src/index.js";
+import type { ArenaRegionClassification, ArenaRegionPartitionResult, ArenaRegionPlan, ArenaReplicaDiscovery, ArenaSpatialLayout } from "../../../analyzers/topology/src/index.js";
 import type { ArenaNativeSpatialAudit } from "./arena-native-extraction.js";
 import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
 import type { PersistedPackIdentityExtraction } from "./persisted-pack-identity.js";
@@ -166,6 +166,7 @@ export interface InspectDirectoryResult {
   arenaAnalysis: {
     autoDetected: boolean;
     discovery?: ArenaReplicaDiscovery;
+    spatialLayout?: ArenaSpatialLayout;
     regionPlan?: ArenaRegionPlan;
     regionClassification?: ArenaRegionClassification;
     proofPartition?: ArenaRegionPartitionResult;

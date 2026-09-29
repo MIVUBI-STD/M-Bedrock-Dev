@@ -19,7 +19,8 @@ import { openBedrockLevelDbSnapshot } from "../../../adapters/leveldb/src/index.
 import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
 import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
-import { partitionArenaProofVolumes } from "../../../analyzers/topology/src/index.js";
+import { partitionArenaProofVolumes, spatialLayoutFromReplicaDiscovery } from "../../../analyzers/topology/src/index.js";
+import { deriveScriptArenaLayoutFallback } from "./script-arena-layout-fallback.js";
 import { deriveArenaProofCoverage } from "./arena-proof-coverage.js";
 import { concludeArenaProof } from "./arena-proof-conclusion.js";
 import { deriveArenaReplicaProofQuality } from "./arena-replica-proof-quality.js";
@@ -81,13 +82,39 @@ export async function inspectArtifact(
       runtimeProbeResponses,
       runtimeProbeTranscript?.droppedExchanges ?? 0,
     );
+    const scriptLayoutFallback =
+      result.arenaAnalysis.discovery === undefined
+        ? deriveScriptArenaLayoutFallback(
+            result.scriptSafeConfig,
+            target.arenaRegionContracts ?? [],
+          )
+        : undefined;
+
+    const spatialLayout =
+      result.arenaAnalysis.discovery === undefined
+        ? scriptLayoutFallback?.layout
+        : spatialLayoutFromReplicaDiscovery(
+            result.arenaAnalysis.discovery,
+            result.arenaAnalysis.layoutReconciliation?.status ===
+              "consistent"
+              ? "reconciled"
+              : "topology",
+          );
+
+    const effectiveRegionPlan =
+      result.arenaAnalysis.regionPlan ??
+      scriptLayoutFallback?.regionPlan;
+    const effectiveRegionClassification =
+      result.arenaAnalysis.regionClassification ??
+      scriptLayoutFallback?.regionClassification;
+
     const baseProofVolumes =
-      result.arenaAnalysis.regionClassification === undefined
-        ? result.arenaAnalysis.regionPlan?.volumes
+      effectiveRegionClassification === undefined
+        ? effectiveRegionPlan?.volumes
         : [
-            ...result.arenaAnalysis.regionClassification.staticVolumes,
-            ...result.arenaAnalysis.regionClassification.mixedVolumes,
-            ...result.arenaAnalysis.regionClassification.unknownVolumes,
+            ...effectiveRegionClassification.staticVolumes,
+            ...effectiveRegionClassification.mixedVolumes,
+            ...effectiveRegionClassification.unknownVolumes,
           ];
 
     const proofPartition =
@@ -95,7 +122,7 @@ export async function inspectArtifact(
         ? undefined
         : partitionArenaProofVolumes(
             baseProofVolumes,
-            result.arenaAnalysis.regionClassification
+            effectiveRegionClassification
               ?.proofExclusionVolumes ?? [],
           );
 
@@ -104,21 +131,21 @@ export async function inspectArtifact(
       baseProofVolumes;
 
     const proofCoverage = deriveArenaProofCoverage(
-      result.arenaAnalysis.regionPlan,
-      result.arenaAnalysis.regionClassification,
+      effectiveRegionPlan,
+      effectiveRegionClassification,
       proofPartition,
     );
 
     const arenaNativeSpatial =
-      result.arenaAnalysis.discovery === undefined
+      spatialLayout === undefined
         ? undefined
         : auditArenaNativeSpatialContent(
-            result.arenaAnalysis.discovery,
+            spatialLayout,
             nativeWorldDb.chunkContentObservations ?? [],
             {
-              ...(result.arenaAnalysis.regionPlan === undefined
+              ...(effectiveRegionPlan === undefined
                 ? {}
-                : { regionPlan: result.arenaAnalysis.regionPlan }),
+                : { regionPlan: effectiveRegionPlan }),
               ...(proofVolumes === undefined
                 ? {}
                 : { includedVolumes: proofVolumes }),
@@ -138,16 +165,16 @@ export async function inspectArtifact(
           persistedPackIdentity =
             await extractPersistedPackIdentities(reader);
 
-          if (result.arenaAnalysis.discovery !== undefined) {
+          if (spatialLayout !== undefined) {
             arenaVoxelProof = await proveArenaVoxelEquivalence(
               reader,
-              result.arenaAnalysis.discovery,
+              spatialLayout,
               {
-                ...(result.arenaAnalysis.regionPlan === undefined
+                ...(effectiveRegionPlan === undefined
                   ? {}
                   : {
                       regionPlan:
-                        result.arenaAnalysis.regionPlan,
+                        effectiveRegionPlan,
                     }),
                 ...(proofVolumes === undefined
                   ? {}
@@ -240,6 +267,23 @@ export async function inspectArtifact(
       ...result,
       arenaAnalysis: {
         ...result.arenaAnalysis,
+        autoDetected:
+          result.arenaAnalysis.autoDetected ||
+          scriptLayoutFallback !== undefined,
+        ...(spatialLayout === undefined
+          ? {}
+          : { spatialLayout }),
+        ...(result.arenaAnalysis.regionPlan !== undefined ||
+            effectiveRegionPlan === undefined
+          ? {}
+          : { regionPlan: effectiveRegionPlan }),
+        ...(result.arenaAnalysis.regionClassification !== undefined ||
+            effectiveRegionClassification === undefined
+          ? {}
+          : {
+              regionClassification:
+                effectiveRegionClassification,
+            }),
         ...(arenaNativeSpatial === undefined
           ? {}
           : { nativeSpatial: arenaNativeSpatial }),

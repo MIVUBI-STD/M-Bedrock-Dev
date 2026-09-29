@@ -8,7 +8,7 @@ import {
 } from "../../../analyzers/world-db/src/index.js";
 import type {
   ArenaRegionPlan,
-  ArenaReplicaDiscovery,
+  ArenaSpatialLayoutSource,
   ArenaVector3,
 } from "../../../analyzers/topology/src/index.js";
 
@@ -38,15 +38,17 @@ function chunkOf(value: number): number {
 }
 
 function topologyEnvelope(
-  discovery: ArenaReplicaDiscovery,
+  discovery: ArenaSpatialLayoutSource,
   marginChunks: number,
   dimensionId = 0,
 ): ChunkRegion {
   const points: ArenaVector3[] = [
     discovery.canonical.anchor,
-    ...discovery.canonical.items
-      .map((item) => item.position)
-      .filter((item): item is ArenaVector3 => item !== undefined),
+    ...("items" in discovery.canonical
+      ? discovery.canonical.items
+          .map((item) => item.position)
+          .filter((item): item is ArenaVector3 => item !== undefined)
+      : []),
   ];
   const xs = points.map((item) => chunkOf(item.x));
   const zs = points.map((item) => chunkOf(item.z));
@@ -61,7 +63,7 @@ function topologyEnvelope(
 }
 
 export function auditArenaNativeSpatialContent(
-  discovery: ArenaReplicaDiscovery,
+  discovery: ArenaSpatialLayoutSource,
   observations: readonly ChunkContentObservation[],
   options: {
     marginChunks?: number;
