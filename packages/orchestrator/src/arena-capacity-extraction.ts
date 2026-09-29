@@ -35,6 +35,9 @@ export interface ArenaCapacityExtractionEvidence {
   scriptTickingAreaManagerReferenced: boolean;
   scriptCapacitySignals: readonly string[];
   scriptTickingAreaCapacityResolved: boolean;
+  perArenaPlayerCapacity?: number;
+  declaredMaxConcurrentPlayers?: number;
+  conflictingPlayerCapacityValues: readonly number[];
   reasons: readonly string[];
 }
 
@@ -149,6 +152,36 @@ export function extractArenaConcurrencyCapacity(
   });
 
   const resources: ArenaCapacityResource[] = [];
+  const numericPlayerCapacities = [
+    ...new Set(
+      (input.scripts ?? []).flatMap((script) =>
+        (script.arenaAuthorityPaths ?? [])
+          .filter((path) =>
+            path.capacityAuthorityProven &&
+            path.capacityCheck?.capacityExpression !== undefined
+          )
+          .flatMap((path) => {
+            const raw =
+              path.capacityCheck!.capacityExpression!;
+            const value = Number(raw);
+            return Number.isInteger(value) && value > 0
+              ? [value]
+              : [];
+          })
+      ),
+    ),
+  ].sort((a, b) => a - b);
+  const perArenaPlayerCapacity =
+    numericPlayerCapacities.length === 1
+      ? numericPlayerCapacities[0]
+      : undefined;
+  const declaredMaxConcurrentPlayers =
+    perArenaPlayerCapacity !== undefined &&
+    requestedConcurrentArenas !== undefined
+      ? perArenaPlayerCapacity *
+        requestedConcurrentArenas
+      : undefined;
+
   const scriptCapacitySignals = [
     ...new Set(
       (input.scripts ?? []).flatMap((script) => [
@@ -269,6 +302,16 @@ export function extractArenaConcurrencyCapacity(
     );
   }
 
+  if (numericPlayerCapacities.length > 1) {
+    reasons.push(
+      "Multiple proven per-arena player capacity literals disagree; player capacity is reported as conflicting evidence rather than collapsed to one value.",
+    );
+  } else if (perArenaPlayerCapacity !== undefined) {
+    reasons.push(
+      `Detected a consistent proven per-arena player capacity of ${perArenaPlayerCapacity} from arena membership authority checks.`,
+    );
+  }
+
   if (scriptTickingAreaManagerReferenced) {
     reasons.push(
       "Script ticking-area capacity signals were detected, but this repository does not yet have a knowledge-catalog contract that resolves TickingAreaManager reported capacity into a deterministic resource value. The Script API backend is therefore detected-but-unresolved and does not constrain the solver.",
@@ -304,6 +347,16 @@ export function extractArenaConcurrencyCapacity(
       scriptTickingAreaManagerReferenced,
       scriptCapacitySignals,
       scriptTickingAreaCapacityResolved: false,
+      ...(perArenaPlayerCapacity === undefined
+        ? {}
+        : { perArenaPlayerCapacity }),
+      ...(declaredMaxConcurrentPlayers === undefined
+        ? {}
+        : { declaredMaxConcurrentPlayers }),
+      conflictingPlayerCapacityValues:
+        numericPlayerCapacities.length > 1
+          ? numericPlayerCapacities
+          : [],
       reasons,
     },
     ...(report === undefined ? {} : { report }),
