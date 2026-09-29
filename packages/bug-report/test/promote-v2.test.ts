@@ -22,6 +22,10 @@ describe("confirmed bug promotion", () => {
       repairBy: "developer",
       bugs: [{
         status: "confirmed-defect",
+        confirmation: {
+          basis: "authored-contract-violation",
+          evidence: "The implementation contradicts the authored behavior contract.",
+        },
         id: "BUG-BBW-001",
         severity: "major",
         category: "multiplayer-session",
@@ -48,11 +52,16 @@ describe("confirmed bug promotion", () => {
     expect(result.report.bugs).toHaveLength(1);
     expect(result.report.bugs[0]?.fixed).toBe(false);
     expect("status" in result.report.bugs[0]!).toBe(false);
+    expect("confirmation" in result.report.bugs[0]!).toBe(false);
   });
 
   it("requires gameplay reproduction for tester-found confirmed defects", () => {
     const issues = reviewConfirmedBugInputs([{
       status: "confirmed-defect",
+        confirmation: {
+          basis: "authored-contract-violation",
+          evidence: "The implementation contradicts the authored behavior contract.",
+        },
       id: "BUG-BBW-002",
       severity: "major",
       category: "game-flow",
@@ -71,6 +80,10 @@ describe("confirmed bug promotion", () => {
   it("requires technical basis for AI-found confirmed defects", () => {
     const issues = reviewConfirmedBugInputs([{
       status: "confirmed-defect",
+        confirmation: {
+          basis: "authored-contract-violation",
+          evidence: "The implementation contradicts the authored behavior contract.",
+        },
       id: "BUG-BBW-003",
       severity: "minor",
       category: "ui-feedback",
@@ -95,6 +108,10 @@ describe("confirmed bug promotion", () => {
       repairBy: "developer",
       bugs: [{
         status: "confirmed-defect",
+        confirmation: {
+          basis: "tester-reproduction",
+          evidence: "The waterlogging behavior is reproducible outside the active plot.",
+        },
         id: "BUG-BBW-005",
         severity: "major",
         category: "world-interaction",
@@ -124,9 +141,40 @@ describe("confirmed bug promotion", () => {
     );
   });
 
+  it("rejects AI discovery supported only by tester reproduction", () => {
+    const issues = reviewConfirmedBugInputs([{
+      status: "confirmed-defect",
+      confirmation: {
+        basis: "tester-reproduction",
+        evidence: "A tester can reproduce the behavior.",
+      },
+      id: "BUG-BBW-006",
+      severity: "major",
+      category: "game-flow",
+      foundBy: "ai",
+      title: "AI-only claim without AI proof",
+      problem: "The behavior is wrong.",
+      expected: "Expected behavior.",
+      observed: "Observed behavior.",
+      aiAnalysis: "A possible path exists.",
+      relevantCode: [{
+        file: "scripts/game.ts",
+        reason: "Potentially related.",
+      }],
+    }]);
+
+    expect(issues.map((issue) => issue.code)).toContain(
+      "ai-unproven-defect",
+    );
+  });
+
   it("keeps Relevant Code focused on primary locations", () => {
     const issues = reviewConfirmedBugInputs([{
       status: "confirmed-defect",
+        confirmation: {
+          basis: "authored-contract-violation",
+          evidence: "The implementation contradicts the authored behavior contract.",
+        },
       id: "BUG-BBW-004",
       severity: "major",
       category: "player-state",
