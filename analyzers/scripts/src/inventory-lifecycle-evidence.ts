@@ -19,6 +19,7 @@ export interface ScriptInventoryLifecycleEvidence {
   executionRegion: string;
   subjectExpression: string;
   itemBinding?: string;
+  itemIdentifier?: string;
   slotExpression?: string;
   source: SourceRef;
 }
@@ -133,6 +134,36 @@ function assignedIdentifier(
   return undefined;
 }
 
+function itemStackIdentifier(
+  expression: ts.Expression | undefined,
+): string | undefined {
+  if (!expression || !ts.isNewExpression(expression)) {
+    return undefined;
+  }
+  const constructor = expression.expression;
+  const isItemStack =
+    (
+      ts.isIdentifier(constructor) &&
+      constructor.text === "ItemStack"
+    ) ||
+    (
+      ts.isPropertyAccessExpression(constructor) &&
+      constructor.name.text === "ItemStack"
+    );
+  if (!isItemStack) return undefined;
+
+  const first = expression.arguments?.[0];
+  return (
+    first &&
+    (
+      ts.isStringLiteralLike(first) ||
+      ts.isNoSubstitutionTemplateLiteral(first)
+    )
+  )
+    ? first.text
+    : undefined;
+}
+
 function rootIdentifier(
   expression: ts.Expression,
 ): string | undefined {
@@ -163,6 +194,8 @@ export function deriveScriptInventoryLifecycleEvidence(
     scriptKind(source.relativePath),
   );
 
+  const itemBindings =
+    new Map<string, string>();
   const copiedItems = new Map<
     string,
     {
@@ -172,6 +205,42 @@ export function deriveScriptInventoryLifecycleEvidence(
     }
   >();
   const output: ScriptInventoryLifecycleEvidence[] = [];
+
+  const collectItemBindings = (
+    node: ts.Node,
+  ): void => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer
+    ) {
+      const identifier =
+        itemStackIdentifier(node.initializer);
+      if (identifier) {
+        itemBindings.set(
+          node.name.text,
+          identifier,
+        );
+      }
+    }
+    ts.forEachChild(node, collectItemBindings);
+  };
+
+  collectItemBindings(file);
+
+  const itemIdentifier = (
+    expression: ts.Expression | undefined,
+  ): string | undefined => {
+    const direct =
+      itemStackIdentifier(expression);
+    if (direct) return direct;
+    return (
+      expression &&
+      ts.isIdentifier(expression)
+    )
+      ? itemBindings.get(expression.text)
+      : undefined;
+  };
 
   const push = (
     node: ts.Node,
@@ -246,9 +315,18 @@ export function deriveScriptInventoryLifecycleEvidence(
           subjectExpression: receiver,
         });
       } else if (method === "addItem") {
+        const item = node.arguments[0];
+        const identifier =
+          itemIdentifier(item);
         push(node, {
           kind: "item-grant",
           subjectExpression: receiver,
+          ...(item && ts.isIdentifier(item)
+            ? { itemBinding: item.text }
+            : {}),
+          ...(identifier === undefined
+            ? {}
+            : { itemIdentifier: identifier }),
         });
       } else if (method === "setEquipment") {
         const item = node.arguments[1];
@@ -261,6 +339,12 @@ export function deriveScriptInventoryLifecycleEvidence(
           ...(item && ts.isIdentifier(item)
             ? { itemBinding: item.text }
             : {}),
+          ...(itemIdentifier(item) === undefined
+            ? {}
+            : {
+                itemIdentifier:
+                  itemIdentifier(item),
+              }),
         });
       } else if (method === "setItem") {
         const slot = node.arguments[0];
@@ -301,9 +385,19 @@ export function deriveScriptInventoryLifecycleEvidence(
         method === "spawnItem" ||
         method === "dropItem"
       ) {
+        const item = node.arguments[0];
         push(node, {
           kind: "item-drop",
           subjectExpression: receiver,
+          ...(item && ts.isIdentifier(item)
+            ? { itemBinding: item.text }
+            : {}),
+          ...(itemIdentifier(item) === undefined
+            ? {}
+            : {
+                itemIdentifier:
+                  itemIdentifier(item),
+              }),
         });
       }
 
@@ -362,6 +456,8 @@ export function deriveScriptInventoryLifecycleEvidence(
           item.subjectExpression &&
         candidate.itemBinding ===
           item.itemBinding &&
+        candidate.itemIdentifier ===
+          item.itemIdentifier &&
         candidate.slotExpression ===
           item.slotExpression &&
         candidate.source.range?.lineStart ===
