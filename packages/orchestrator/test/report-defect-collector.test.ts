@@ -409,6 +409,10 @@ describe("report defect collector", () => {
           statement: "Match-owned state is reset.",
           evidenceIds: ["unrelated:intent"],
         },
+        classificationEvidence: {
+          impactEvidenceIds: ["static:cleanup"],
+          primaryFailureEvidenceIds: ["unrelated:intent"],
+        },
       },
     }]);
 
