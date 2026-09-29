@@ -8,3 +8,4 @@ export * from "./targeting.js";
 export * from "./types.js";
 
 export * from "./runtime-evidence.js";
+export * from "./ai-stack.js";
