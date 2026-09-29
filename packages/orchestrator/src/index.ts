@@ -205,3 +205,7 @@ export * from "./engineering-review-invalidation.js";
 export * from "./engineering-review-priority.js";
 
 export * from "./semantic-affected-plan.js";
+
+export * from "./selective-validation-plan.js";
+
+export * from "./zero-waste-execution-summary.js";
