@@ -9,6 +9,9 @@ import type {
   SemanticProofKind,
 } from "../../project-model/src/index.js";
 
+export const SEMANTIC_PROOF_EVALUATOR_REVISION =
+  "m-bedrock-semantic-proof-evaluator:2";
+
 export interface SemanticProofReuseResult {
   status:
     | "reusable"
@@ -220,6 +223,8 @@ export function semanticProofBasisFingerprint(
 
   return hash({
     schemaVersion: 1,
+    evaluatorRevision:
+      SEMANTIC_PROOF_EVALUATOR_REVISION,
     basis,
     nodes,
     incidentEdges: edges,
