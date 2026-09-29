@@ -98,7 +98,11 @@ describe("GitHubReportClient", () => {
       revision: "def",
     });
 
-    const init = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    const call = fetchMock.mock.calls[0] as unknown as [
+      unknown,
+      RequestInit,
+    ];
+    const init = call[1];
     expect(JSON.parse(String(init.body))).toMatchObject({
       expectedRevision: "abc",
     });
