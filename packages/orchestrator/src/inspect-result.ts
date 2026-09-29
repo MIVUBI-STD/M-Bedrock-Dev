@@ -160,6 +160,7 @@ export function buildInspectionResult(
     scriptSafeConfig,
     arenaLifecycle,
     arenaCleanupSurfaces,
+    arenaStateIsolation,
     arenaLayoutReconciliation,
     arenaCapacity,
     routeCorrelations,
@@ -383,6 +384,7 @@ export function buildInspectionResult(
         arenaLayoutReconciliation,
       lifecycle: arenaLifecycle,
       cleanupSurfaces: arenaCleanupSurfaces,
+      stateIsolation: arenaStateIsolation,
     },
     gameplayIntent: {
       model: input.gameplayIntent,

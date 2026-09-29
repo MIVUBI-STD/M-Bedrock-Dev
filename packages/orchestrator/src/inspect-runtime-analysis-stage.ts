@@ -24,6 +24,7 @@ import { analyzeScriptSafeConfig } from "./script-safe-config-analysis.js";
 import { reconcileArenaLayouts } from "./arena-layout-reconciliation.js";
 import { analyzeArenaLifecycleConvergence } from "./arena-lifecycle-analysis.js";
 import { analyzeArenaCleanupSurfaces } from "./arena-cleanup-surface-analysis.js";
+import { analyzeArenaStateIsolation } from "./arena-state-isolation-analysis.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -288,6 +289,7 @@ export function analyzeInspectionRuntimeState(
     scriptSafeConfig,
     arenaLifecycle,
     arenaCleanupSurfaces,
+    arenaStateIsolation,
     arenaLayoutReconciliation,
     arenaCapacity,
     structureProofs,

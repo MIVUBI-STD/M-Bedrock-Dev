@@ -278,3 +278,5 @@ export * from "./arena-golden-corpus.js";
 export * from "./arena-block-entity-proof.js";
 
 export * from "./arena-cleanup-surface-analysis.js";
+
+export * from "./arena-state-isolation-analysis.js";
