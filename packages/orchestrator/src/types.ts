@@ -17,6 +17,8 @@ import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
 import type { ArenaReplicaDiscovery } from "../../../analyzers/topology/src/index.js";
 import type { ArenaNativeSpatialAudit } from "./arena-native-extraction.js";
+import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
+import type { PersistedPackIdentityExtraction } from "./persisted-pack-identity.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
@@ -119,6 +121,7 @@ export interface InspectDirectoryResult {
   worldDatabase: {
     present: boolean;
     fileCount: number;
+    persistedPackIdentity?: PersistedPackIdentityExtraction;
     nativeScan?: {
       status: "not-present" | "scanned" | "failed";
       entriesScanned: number;
@@ -156,6 +159,7 @@ export interface InspectDirectoryResult {
     autoDetected: boolean;
     discovery?: ArenaReplicaDiscovery;
     nativeSpatial?: ArenaNativeSpatialAudit;
+    voxelProof?: ArenaVoxelProof;
   };
   gameplayIntent: {
     model: GameplayIntentModel;

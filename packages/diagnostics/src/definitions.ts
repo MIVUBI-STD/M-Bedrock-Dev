@@ -49,6 +49,7 @@ function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
   if (
     code === "ARENA_REPLICA_DIVERGENCE" ||
     code === "ARENA_SPATIAL_FINGERPRINT_DIVERGENCE" ||
+    code === "ARENA_VOXEL_DIVERGENCE" ||
     code === "ARENA_CONCURRENCY_CAPACITY_SHORTFALL"
   ) return "arena";
   if (code === "UNKNOWN_COMMAND_EFFECT") return "command";

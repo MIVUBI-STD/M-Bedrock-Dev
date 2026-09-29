@@ -1,3 +1,5 @@
+export * from "./named-record.js";
+export * from "./subchunk.js";
 export * from "./keyspace.js";
 export * from "./inspect.js";
 export * from "./native-reader.js";

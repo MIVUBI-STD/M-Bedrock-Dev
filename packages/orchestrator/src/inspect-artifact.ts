@@ -15,6 +15,11 @@ import { isTelemetryBatch, resolveTelemetryEventsForArtifact } from "./telemetry
 import type { RuntimeProbeTranscript } from "../../project-model/src/index.js";
 import { assertRuntimeProbeTranscriptArtifact } from "./runtime-probe-load.js";
 import { auditArenaNativeSpatialContent } from "./arena-native-extraction.js";
+import { openBedrockLevelDbSnapshot } from "../../../adapters/leveldb/src/index.js";
+import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
+import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
+import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -80,6 +85,71 @@ export async function inspectArtifact(
             nativeWorldDb.chunkContentObservations ?? [],
           );
 
+    let arenaVoxelProof;
+    let persistedPackIdentity;
+    const artifactDiagnostics = [...result.diagnostics];
+
+    if (nativeWorldDb.status === "scanned") {
+      try {
+        const reader = await openBedrockLevelDbSnapshot(
+          join(workingRoot, "db"),
+        );
+        try {
+          persistedPackIdentity =
+            await extractPersistedPackIdentities(reader);
+
+          if (result.arenaAnalysis.discovery !== undefined) {
+            arenaVoxelProof = await proveArenaVoxelEquivalence(
+              reader,
+              result.arenaAnalysis.discovery,
+            );
+
+            for (const replica of arenaVoxelProof.replicas) {
+              if (replica.status !== "diverged") continue;
+              artifactDiagnostics.push(
+                createDiagnostic({
+                  code: "ARENA_VOXEL_DIVERGENCE",
+                  severity: "critical",
+                  message:
+                    `Arena ${replica.arenaId} differs from the canonical arena at decoded voxel level.`,
+                  data: {
+                    arenaId: replica.arenaId,
+                    comparedBlocks: replica.comparedBlocks,
+                    unresolvedBlocks: replica.unresolvedBlocks,
+                    mismatchCount: replica.mismatchCount,
+                    mismatches: replica.mismatches,
+                  },
+                }),
+              );
+            }
+          }
+        } finally {
+          await reader.close();
+        }
+      } catch {
+        // Native targeted proof is supplementary. Existing scan status remains authoritative.
+      }
+    }
+
+    if (persistedPackIdentity?.status === "parsed") {
+      const behaviorPackUuids = result.packs
+        .filter((pack) =>
+          pack.type === "behavior_pack" ||
+          pack.type === "script_pack" ||
+          pack.type === "mixed_pack"
+        )
+        .flatMap((pack) => pack.uuid ? [pack.uuid] : []);
+
+      artifactDiagnostics.push(
+        ...packIdentityDriftDiagnostics(
+          behaviorPackUuids,
+          persistedPackIdentity.namespaces.map((item) => ({
+            identity: item.identity,
+          })),
+        ),
+      );
+    }
+
     const embeddedCommandNativeCorrelations =
       correlateEmbeddedCommandsWithNativeChunks(
         result.structureRuntime.placedEmbeddedCommands,
@@ -111,11 +181,18 @@ export async function inspectArtifact(
         ...(arenaNativeSpatial === undefined
           ? {}
           : { nativeSpatial: arenaNativeSpatial }),
+        ...(arenaVoxelProof === undefined
+          ? {}
+          : { voxelProof: arenaVoxelProof }),
       },
       worldDatabase: {
         ...result.worldDatabase,
         nativeScan: nativeWorldDb,
+        ...(persistedPackIdentity === undefined
+          ? {}
+          : { persistedPackIdentity }),
       },
+      diagnostics: artifactDiagnostics,
       structureRuntime: {
         ...result.structureRuntime,
         nativeChunkCorrelations,

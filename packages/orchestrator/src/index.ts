@@ -243,3 +243,6 @@ export * from "./arena-audit.js";
 export * from "./report-source-owner.js";
 
 export * from "./arena-native-extraction.js";
+
+export * from "./arena-voxel-proof.js";
+export * from "./persisted-pack-identity.js";
