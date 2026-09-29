@@ -256,3 +256,5 @@ export * from "./report-runtime-classification.js";
 export * from "./arena-region-contract-load.js";
 
 export * from "./arena-proof-coverage.js";
+
+export * from "./arena-proof-conclusion.js";

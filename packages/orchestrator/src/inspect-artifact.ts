@@ -21,6 +21,7 @@ import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { partitionArenaProofVolumes } from "../../../analyzers/topology/src/index.js";
 import { deriveArenaProofCoverage } from "./arena-proof-coverage.js";
+import { concludeArenaProof } from "./arena-proof-conclusion.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
@@ -180,6 +181,11 @@ export async function inspectArtifact(
       }
     }
 
+    const proofConclusion = concludeArenaProof(
+      proofCoverage,
+      arenaVoxelProof,
+    );
+
     if (persistedPackIdentity?.status === "parsed") {
       const behaviorPackUuids = result.packs
         .filter((pack) =>
@@ -239,6 +245,7 @@ export async function inspectArtifact(
         ...(proofCoverage === undefined
           ? {}
           : { proofCoverage }),
+        proofConclusion,
       },
       worldDatabase: {
         ...result.worldDatabase,
