@@ -47,6 +47,11 @@ import {
   type TesterDefectConfirmationInput,
 } from "./tester-report-confirmation-adapter.js";
 
+export interface ReportDefectClassificationEvidence {
+  readonly impactEvidenceIds: readonly string[];
+  readonly primaryFailureEvidenceIds: readonly string[];
+}
+
 export type ConfirmedDefectDraft = Omit<
   ConfirmedDefect,
   | "semanticKey"
@@ -55,7 +60,10 @@ export type ConfirmedDefectDraft = Omit<
   | "confirmation"
   | "mustPreserve"
   | "repairUnitIds"
->;
+> & {
+  readonly classificationEvidence:
+    ReportDefectClassificationEvidence;
+};
 
 export type AiConfirmedDefectDraft = Omit<
   ConfirmedDefectDraft,
@@ -133,6 +141,74 @@ function intersects(
 ): boolean {
   const values = new Set(left);
   return right.some((value) => values.has(value));
+}
+
+function candidateEvidenceUniverse(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  const values = [
+    ...candidate.defect.expected.evidenceIds,
+    ...candidate.defect.observed.evidenceIds,
+    ...(candidate.route === "runtime"
+      ? [
+          candidate.assessment.outcomeObservation.evidenceId,
+          ...candidate.assessment.result.evidenceIds,
+        ]
+      : candidate.route === "static"
+        ? candidate.result.evidenceIds
+        : [
+            ...candidate.confirmation.expectedEvidenceIds,
+          ]),
+  ];
+
+  return [
+    ...new Set(
+      values.filter(
+        (value) => value.trim().length > 0,
+      ),
+    ),
+  ].sort();
+}
+
+function classificationEvidenceIssues(
+  candidate: AuditReportCandidate,
+): readonly string[] {
+  const universe = new Set(
+    candidateEvidenceUniverse(candidate),
+  );
+  const impact =
+    candidate.defect.classificationEvidence
+      .impactEvidenceIds;
+  const primary =
+    candidate.defect.classificationEvidence
+      .primaryFailureEvidenceIds;
+  const errors: string[] = [];
+
+  if (impact.length === 0) {
+    errors.push(
+      "Impact assessment requires supporting evidence.",
+    );
+  }
+  if (primary.length === 0) {
+    errors.push(
+      "Primary failure classification requires supporting evidence.",
+    );
+  }
+
+  for (const evidenceId of [
+    ...impact,
+    ...primary,
+  ]) {
+    if (!universe.has(evidenceId)) {
+      errors.push(
+        "Classification evidence is not part of the confirmed defect evidence universe: " +
+          evidenceId +
+          ".",
+      );
+    }
+  }
+
+  return [...new Set(errors)];
 }
 
 function routeEvidenceConsistency(
@@ -299,22 +375,7 @@ function candidateSemanticKey(
 function candidateEvidenceIds(
   candidate: AuditReportCandidate,
 ): readonly string[] {
-  const values = [
-    ...candidate.defect.expected.evidenceIds,
-    ...candidate.defect.observed.evidenceIds,
-    ...(candidate.route === "runtime"
-      ? [
-          candidate.assessment.outcomeObservation.evidenceId,
-          ...candidate.assessment.result.evidenceIds,
-        ]
-      : candidate.route === "static"
-        ? candidate.result.evidenceIds
-        : candidate.confirmation.expectedEvidenceIds),
-  ];
-
-  return [...new Set(
-    values.filter((value) => value.trim().length > 0),
-  )].sort();
+  return candidateEvidenceUniverse(candidate);
 }
 
 function routeNextEvidenceNeed(
@@ -370,6 +431,18 @@ function collectOne(
   readonly confirmed?: ConfirmedDefect;
   readonly rejected?: RejectedReportCandidate;
 } {
+  const classificationIssues =
+    classificationEvidenceIssues(candidate);
+  if (classificationIssues.length > 0) {
+    return {
+      rejected: rejectedCandidate(
+        candidate,
+        classificationIssues,
+        "candidate-correction",
+      ),
+    };
+  }
+
   const evidenceConsistency =
     routeEvidenceConsistency(candidate);
   if (evidenceConsistency.length > 0) {
@@ -452,9 +525,14 @@ function collectOne(
 
   const boundSourceEvidence =
     candidateSourceEvidence(candidate);
+  const {
+    classificationEvidence:
+      _classificationEvidence,
+    ...defectDraft
+  } = candidate.defect;
 
   const confirmed: ConfirmedDefect = {
-    ...candidate.defect,
+    ...defectDraft,
     ...(boundSourceEvidence === undefined
       ? {}
       : { sourceEvidence: boundSourceEvidence }),
