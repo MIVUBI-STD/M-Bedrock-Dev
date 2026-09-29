@@ -127,6 +127,11 @@ describe("context compiler", () => {
           affectedPaths: [
             "functions/arena.mcfunction",
           ],
+          knownPaths: [
+            "functions/arena.mcfunction",
+            "functions/shop.mcfunction",
+            "functions/unrelated.mcfunction",
+          ],
           totalNodeCount: 3,
           changedNodeCount: 1,
           affectedNodeCount: 1,
@@ -283,6 +288,11 @@ describe("context compiler", () => {
           ],
           affectedPaths: [
             "functions/arena.mcfunction",
+          ],
+          knownPaths: [
+            "functions/arena.mcfunction",
+            "functions/shop.mcfunction",
+            "functions/unrelated.mcfunction",
           ],
           totalNodeCount: 3,
           changedNodeCount: 1,

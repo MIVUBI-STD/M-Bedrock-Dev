@@ -64,6 +64,10 @@ function affected():
     affectedPaths: [
       "scripts/arena.ts",
     ],
+    knownPaths: [
+      "scripts/arena.ts",
+      "scripts/shop.ts",
+    ],
     totalNodeCount: 4,
     changedNodeCount: 1,
     affectedNodeCount: 2,
@@ -152,6 +156,26 @@ describe("selective validation planning", () => {
     ).toBe("always-run");
     expect(plan.skipped)
       .toHaveLength(0);
+  });
+
+  it("blocks selective skipping when bindings contain stale source paths", () => {
+    const plan =
+      planSelectiveValidation(
+        scenarios.slice(0, 1),
+        [{
+          scenarioId:
+            "scenario:arena",
+          sourcePaths: [
+            "scripts/missing.ts",
+          ],
+        }],
+        affected(),
+      );
+
+    expect(plan.status)
+      .toBe("blocked");
+    expect(plan.errors.join(" "))
+      .toMatch(/source path absent/);
   });
 
   it("blocks selective skipping when bindings contain stale semantic nodes", () => {

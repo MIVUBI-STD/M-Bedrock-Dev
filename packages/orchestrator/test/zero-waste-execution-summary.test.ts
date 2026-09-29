@@ -71,6 +71,11 @@ describe("zero-waste execution summary", () => {
             "n3",
           ],
           affectedPaths: ["a.ts"],
+          knownPaths: [
+            "a.ts",
+            "b.ts",
+            "c.ts",
+          ],
           totalNodeCount: 3,
           changedNodeCount: 1,
           affectedNodeCount: 1,

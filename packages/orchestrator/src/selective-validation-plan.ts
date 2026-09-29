@@ -73,6 +73,10 @@ function bindingErrors(
     ...affected.affectedNodeIds,
     ...affected.skippedNodeIds,
   ]);
+  const knownPaths =
+    new Set(
+      affected.knownPaths,
+    );
   const seen = new Set<string>();
 
   for (const binding of bindings) {
@@ -121,6 +125,18 @@ function bindingErrors(
             binding.scenarioId +
             " -> " +
             nodeId +
+            ".",
+        );
+      }
+    }
+
+    for (const path of sourcePaths) {
+      if (!knownPaths.has(path)) {
+        errors.push(
+          "Validation impact binding references source path absent from the current semantic graph: " +
+            binding.scenarioId +
+            " -> " +
+            path +
             ".",
         );
       }

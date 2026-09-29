@@ -49,6 +49,7 @@ export interface SemanticAffectedPlan {
   affectedNodeIds: readonly string[];
   skippedNodeIds: readonly string[];
   affectedPaths: readonly string[];
+  knownPaths: readonly string[];
   totalNodeCount: number;
   changedNodeCount: number;
   affectedNodeCount: number;
@@ -85,6 +86,13 @@ export function planSemanticAffectedSet(
       affectedNodeIds: [],
       skippedNodeIds: [],
       affectedPaths: [],
+      knownPaths:
+        uniqueSorted(
+          allNodes.map(
+            (node) =>
+              node.source.relativePath,
+          ),
+        ),
       totalNodeCount: allNodes.length,
       changedNodeCount: changed.length,
       affectedNodeCount: 0,
@@ -132,6 +140,13 @@ export function planSemanticAffectedSet(
           node.source.relativePath
         ),
     );
+  const knownPaths =
+    uniqueSorted(
+      allNodes.map(
+        (node) =>
+          node.source.relativePath,
+      ),
+    );
   const skipRatio =
     allNodes.length === 0
       ? 0
@@ -144,6 +159,7 @@ export function planSemanticAffectedSet(
     affectedNodeIds,
     skippedNodeIds,
     affectedPaths,
+    knownPaths,
     totalNodeCount: allNodes.length,
     changedNodeCount: changed.length,
     affectedNodeCount:
@@ -186,6 +202,13 @@ export function planPatchSemanticAffectedSet(
       affectedNodeIds: [],
       skippedNodeIds: [],
       affectedPaths: [],
+      knownPaths:
+        uniqueSorted(
+          graph.allNodes().map(
+            (node) =>
+              node.source.relativePath,
+          ),
+        ),
       totalNodeCount:
         graph.allNodes().length,
       changedNodeCount:
