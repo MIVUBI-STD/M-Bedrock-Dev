@@ -12,6 +12,7 @@ import {
 import type {
   TickingAreaSemantics,
 } from "../../../analyzers/commands/src/index.js";
+import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
 
 export interface ArenaCommandTickingAreaRecord {
   semantics: TickingAreaSemantics;
@@ -22,6 +23,7 @@ export interface ArenaCommandTickingAreaRecord {
 export interface ArenaCapacityExtractionInput {
   discovery?: ArenaReplicaDiscovery;
   tickingAreas: readonly ArenaCommandTickingAreaRecord[];
+  scripts?: readonly ParsedScriptFile[];
 }
 
 export interface ArenaCapacityExtractionEvidence {
@@ -30,6 +32,9 @@ export interface ArenaCapacityExtractionEvidence {
   completeCommandTickingAreaFamilies: number;
   unmatchedCommandTickingAreaAdds: number;
   commandTickingAreaResourceResolved: boolean;
+  scriptTickingAreaManagerReferenced: boolean;
+  scriptCapacitySignals: readonly string[];
+  scriptTickingAreaCapacityResolved: boolean;
   reasons: readonly string[];
 }
 
@@ -144,6 +149,33 @@ export function extractArenaConcurrencyCapacity(
   });
 
   const resources: ArenaCapacityResource[] = [];
+  const scriptCapacitySignals = [
+    ...new Set(
+      (input.scripts ?? []).flatMap((script) => [
+        ...script.propertyAccesses
+          .filter((item) =>
+            item.property === "tickingAreaManager" ||
+            item.property === "maxChunkCount"
+          )
+          .map((item) => item.symbol),
+        ...script.methodCalls
+          .filter((item) =>
+            item.method === "hasCapacity" ||
+            item.symbol.includes("tickingAreaManager")
+          )
+          .map((item) => item.symbol),
+        ...script.moduleMemberAccesses
+          .filter((item) =>
+            item.member === "tickingAreaManager" ||
+            item.member === "maxChunkCount" ||
+            item.member === "hasCapacity"
+          )
+          .map((item) => item.symbol),
+      ]),
+    ),
+  ].sort();
+  const scriptTickingAreaManagerReferenced =
+    scriptCapacitySignals.length > 0;
   let completeFamilies = 0;
   let unmatched = addRecords.length;
   let commandResourceResolved = false;
@@ -237,6 +269,12 @@ export function extractArenaConcurrencyCapacity(
     );
   }
 
+  if (scriptTickingAreaManagerReferenced) {
+    reasons.push(
+      "Script ticking-area capacity signals were detected, but this repository does not yet have a knowledge-catalog contract that resolves TickingAreaManager reported capacity into a deterministic resource value. The Script API backend is therefore detected-but-unresolved and does not constrain the solver.",
+    );
+  }
+
   if (addRecords.length === 0) {
     reasons.push(
       "No command /tickingarea add usage was detected; command ticking-area capacity does not constrain the extracted model.",
@@ -263,6 +301,9 @@ export function extractArenaConcurrencyCapacity(
       unmatchedCommandTickingAreaAdds: unmatched,
       commandTickingAreaResourceResolved:
         commandResourceResolved,
+      scriptTickingAreaManagerReferenced,
+      scriptCapacitySignals,
+      scriptTickingAreaCapacityResolved: false,
       reasons,
     },
     ...(report === undefined ? {} : { report }),
