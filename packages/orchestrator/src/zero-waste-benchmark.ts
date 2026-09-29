@@ -105,6 +105,7 @@ function contextTruncationRatio(
 
   const included =
     pack.semantic.nodes.length +
+    pack.semantic.edges.length +
     pack.intent.nodes.length +
     pack.intent.invariants.length +
     pack.intent.unknowns.length +
@@ -112,6 +113,7 @@ function contextTruncationRatio(
 
   const omitted =
     pack.truncation.semanticNodes +
+    pack.truncation.semanticEdges +
     pack.truncation.intentNodes +
     pack.truncation.invariants +
     pack.truncation.unknowns +

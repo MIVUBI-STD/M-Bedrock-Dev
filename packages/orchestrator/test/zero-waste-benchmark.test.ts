@@ -39,7 +39,9 @@ describe("zero-waste benchmark", () => {
           goal: "arena",
           semantic: {
             nodes: [],
+            edges: [],
             omitted: 0,
+            omittedEdges: 0,
           },
           intent: {
             nodes: [],
@@ -49,6 +51,7 @@ describe("zero-waste benchmark", () => {
           },
           budget: {
             maxSemanticNodes: 1,
+            maxSemanticEdges: 1,
             maxIntentNodes: 1,
             maxInvariants: 1,
             maxUnknowns: 1,
@@ -56,6 +59,7 @@ describe("zero-waste benchmark", () => {
           },
           truncation: {
             semanticNodes: 0,
+            semanticEdges: 0,
             intentNodes: 0,
             invariants: 0,
             unknowns: 0,

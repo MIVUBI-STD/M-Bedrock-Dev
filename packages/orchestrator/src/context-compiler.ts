@@ -14,6 +14,7 @@ import type {
 
 export interface ContextCompilerBudget {
   maxSemanticNodes: number;
+  maxSemanticEdges: number;
   maxIntentNodes: number;
   maxInvariants: number;
   maxUnknowns: number;
@@ -41,7 +42,16 @@ export interface CompiledContextPack {
       identifier: string;
       source: SourceRef;
     }>;
+    edges: Array<{
+      from: string;
+      type: string;
+      targetIdentifier: string;
+      status: string;
+      to?: string;
+      source: SourceRef;
+    }>;
     omitted: number;
+    omittedEdges: number;
   };
   intent: {
     nodes: Array<{
@@ -75,6 +85,7 @@ export interface CompiledContextPack {
   budget: ContextCompilerBudget;
   truncation: {
     semanticNodes: number;
+    semanticEdges: number;
     intentNodes: number;
     invariants: number;
     unknowns: number;
@@ -92,6 +103,7 @@ export interface CompiledContextPack {
 const DEFAULT_BUDGET:
   ContextCompilerBudget = {
   maxSemanticNodes: 24,
+  maxSemanticEdges: 40,
   maxIntentNodes: 20,
   maxInvariants: 16,
   maxUnknowns: 12,
@@ -129,6 +141,12 @@ function resolveBudget(
         value?.maxSemanticNodes,
         DEFAULT_BUDGET
           .maxSemanticNodes,
+      ),
+    maxSemanticEdges:
+      positiveInteger(
+        value?.maxSemanticEdges,
+        DEFAULT_BUDGET
+          .maxSemanticEdges,
       ),
     maxIntentNodes:
       positiveInteger(
@@ -233,6 +251,33 @@ export function compileContextPack(
         input.affected,
       ),
       budget.maxSemanticNodes,
+    );
+  const selectedSemanticIds =
+    new Set(
+      semanticSelection.values.map(
+        (node) => node.id,
+      ),
+    );
+  const semanticEdges =
+    input.graph.allEdges()
+      .filter((edge) =>
+        selectedSemanticIds.has(
+          edge.from,
+        ) ||
+        (
+          edge.to !== undefined &&
+          selectedSemanticIds.has(
+            edge.to,
+          )
+        )
+      )
+      .sort((a, b) =>
+        a.id.localeCompare(b.id)
+      );
+  const semanticEdgeSelection =
+    take(
+      semanticEdges,
+      budget.maxSemanticEdges,
     );
 
   const requestedSubjects =
@@ -414,6 +459,7 @@ export function compileContextPack(
 
   const truncated =
     semanticSelection.omitted > 0 ||
+    semanticEdgeSelection.omitted > 0 ||
     nodeSelection.omitted > 0 ||
     invariantSelection.omitted > 0 ||
     unknownSelection.omitted > 0 ||
@@ -457,8 +503,35 @@ export function compileContextPack(
             },
           }),
         ),
+      edges:
+        semanticEdgeSelection.values.map(
+          (edge) => ({
+            from: edge.from,
+            type: edge.type,
+            targetIdentifier:
+              edge.targetIdentifier,
+            status: edge.status,
+            ...(edge.to === undefined
+              ? {}
+              : { to: edge.to }),
+            source: {
+              ...edge.evidence.source,
+              ...(edge.evidence.source
+                .range === undefined
+                ? {}
+                : {
+                    range: {
+                      ...edge.evidence
+                        .source.range,
+                    },
+                  }),
+            },
+          }),
+        ),
       omitted:
         semanticSelection.omitted,
+      omittedEdges:
+        semanticEdgeSelection.omitted,
     },
     intent: {
       nodes:
@@ -518,6 +591,8 @@ export function compileContextPack(
     truncation: {
       semanticNodes:
         semanticSelection.omitted,
+      semanticEdges:
+        semanticEdgeSelection.omitted,
       intentNodes:
         nodeSelection.omitted,
       invariants:

@@ -39,6 +39,20 @@ function fixtureGraph() {
       },
     });
   }
+  graph.addEdge({
+    from: "function:pack:arena",
+    type: "CALLS",
+    targetIdentifier: "shop",
+    status: "resolved",
+    to: "function:pack:shop",
+    evidence: {
+      source: {
+        artifactId: "map",
+        relativePath:
+          "functions/arena.mcfunction",
+      },
+    },
+  });
   return graph;
 }
 
@@ -144,6 +158,11 @@ describe("context compiler", () => {
         (item) => item.id,
       ),
     ).toEqual(["e:arena"]);
+    expect(pack.semantic.edges)
+      .toHaveLength(1);
+    expect(
+      pack.semantic.edges[0]?.type,
+    ).toBe("CALLS");
   });
 
   it("reports truncation instead of silently overloading context", () => {
@@ -154,6 +173,7 @@ describe("context compiler", () => {
         intent,
         budget: {
           maxSemanticNodes: 1,
+          maxSemanticEdges: 1,
           maxIntentNodes: 1,
         },
       });
