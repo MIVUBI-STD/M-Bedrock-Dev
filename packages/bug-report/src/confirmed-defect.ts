@@ -10,7 +10,6 @@ import type {
 } from "./promote-v2.js";
 import type {
   BugReportV2FoundBy,
-  BugReportV2RelevantCode,
 } from "./v2.js";
 import type {
   ExpectedBehaviorAuthority,
@@ -27,6 +26,11 @@ export interface ConfirmedDefectObservation {
   readonly evidenceIds: readonly string[];
 }
 
+export interface ConfirmedDefectSourceEvidence {
+  readonly source: SourceRef;
+  readonly reason: string;
+}
+
 export interface ConfirmedDefect {
   readonly semanticKey: string;
   readonly foundBy: BugReportV2FoundBy;
@@ -39,8 +43,7 @@ export interface ConfirmedDefect {
   readonly observed: ConfirmedDefectObservation;
   readonly reproduction?: readonly string[];
   readonly aiAnalysis?: string;
-  readonly sourceRefs?: readonly SourceRef[];
-  readonly relevantCode?: readonly BugReportV2RelevantCode[];
+  readonly sourceEvidence?: readonly ConfirmedDefectSourceEvidence[];
   readonly suggestedFix?: string;
   readonly mustPreserve?: readonly string[];
   readonly brokenInvariantIds: readonly string[];
@@ -73,6 +76,31 @@ export function validateConfirmedDefect(
   }
   if (defect.observed.evidenceIds.length === 0) {
     errors.push("observed.evidenceIds must contain defect evidence.");
+  }
+  if (
+    defect.foundBy === "ai" &&
+    (defect.sourceEvidence?.length ?? 0) === 0
+  ) {
+    errors.push(
+      "AI-found defects must include verified sourceEvidence.",
+    );
+  }
+  for (const item of defect.sourceEvidence ?? []) {
+    if (!item.source.relativePath.trim()) {
+      errors.push(
+        "sourceEvidence source.relativePath must be non-empty.",
+      );
+    }
+    if (!item.reason.trim()) {
+      errors.push(
+        "sourceEvidence reason must be non-empty.",
+      );
+    }
+  }
+  if ((defect.sourceEvidence?.length ?? 0) > 3) {
+    errors.push(
+      "sourceEvidence must contain at most three primary locations.",
+    );
   }
   if (defect.brokenInvariantIds.length === 0) {
     errors.push("brokenInvariantIds must identify the violated invariant.");
