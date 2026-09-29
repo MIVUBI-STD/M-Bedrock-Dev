@@ -29,11 +29,19 @@ export interface ConfirmedDefectObservation {
 export interface ConfirmedDefectSourceEvidence {
   readonly source: SourceRef;
   readonly reason: string;
+  readonly semanticOwnerId?: string;
 }
 
 function sourceRepairUnitId(
-  source: SourceRef,
+  evidence: ConfirmedDefectSourceEvidence,
 ): string | undefined {
+  const semanticOwnerId =
+    evidence.semanticOwnerId?.trim();
+  if (semanticOwnerId) {
+    return "execution-region:" + semanticOwnerId;
+  }
+
+  const source = evidence.source;
   const path = source.relativePath
     .replaceAll("\\", "/")
     .trim();
@@ -79,7 +87,7 @@ export function deriveRepairUnitIdsFromSourceEvidence(
     ...new Set(
       sourceEvidence
         .map((item) =>
-          sourceRepairUnitId(item.source)
+          sourceRepairUnitId(item)
         )
         .filter(
           (value): value is string =>
@@ -257,6 +265,14 @@ export function validateConfirmedDefect(
     if (!item.reason.trim()) {
       errors.push(
         "sourceEvidence reason must be non-empty.",
+      );
+    }
+    if (
+      item.semanticOwnerId !== undefined &&
+      !item.semanticOwnerId.trim()
+    ) {
+      errors.push(
+        "sourceEvidence semanticOwnerId must be non-empty when present.",
       );
     }
   }
