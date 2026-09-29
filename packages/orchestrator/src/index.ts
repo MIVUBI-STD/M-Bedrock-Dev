@@ -235,3 +235,5 @@ export * from "./tester-report-confirmation-adapter.js";
 export * from "./report-defect-collector.js";
 
 export * from "./report-repair-context.js";
+
+export * from "./report-candidate-reuse.js";
