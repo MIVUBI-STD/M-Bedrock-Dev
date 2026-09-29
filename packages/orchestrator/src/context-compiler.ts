@@ -675,7 +675,7 @@ export function compileContextPack(
         !allGraphNodeIds.has(id),
     ).sort(),
     intentSubjectIds: [
-      ...requestedSubjects,
+      ...explicitSubjectScope,
     ].filter(
       (id) => !knownIntentIds.has(id),
     ).sort(),
