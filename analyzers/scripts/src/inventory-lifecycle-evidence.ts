@@ -94,6 +94,23 @@ function executionRegion(
   return "module";
 }
 
+function isUndefinedExpression(
+  expression: ts.Expression | undefined,
+): boolean {
+  return (
+    expression === undefined ||
+    (
+      ts.isIdentifier(expression) &&
+      expression.text === "undefined"
+    ) ||
+    (
+      ts.isVoidExpression(expression) &&
+      ts.isNumericLiteral(expression.expression) &&
+      expression.expression.text === "0"
+    )
+  );
+}
+
 function assignedIdentifier(
   call: ts.CallExpression,
 ): string | undefined {
@@ -233,8 +250,7 @@ export function deriveScriptInventoryLifecycleEvidence(
         const item = node.arguments[1];
         push(node, {
           kind:
-            item === undefined ||
-            item.kind === ts.SyntaxKind.UndefinedKeyword
+            isUndefinedExpression(item)
               ? "equipment-clear"
               : "equipment-set",
           subjectExpression: receiver,
@@ -252,8 +268,7 @@ export function deriveScriptInventoryLifecycleEvidence(
             : undefined;
 
         if (
-          item === undefined ||
-          item.kind === ts.SyntaxKind.UndefinedKeyword
+          isUndefinedExpression(item)
         ) {
           push(node, {
             kind: "inventory-clear",
