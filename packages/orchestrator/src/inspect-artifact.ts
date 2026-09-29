@@ -77,7 +77,7 @@ export async function inspectArtifact(
         ? undefined
         : auditArenaNativeSpatialContent(
             result.arenaAnalysis.discovery,
-            nativeWorldDb.chunkContentObservations,
+            nativeWorldDb.chunkContentObservations ?? [],
           );
 
     const embeddedCommandNativeCorrelations =
