@@ -204,7 +204,6 @@ export function analyzeInspectionRuntimeState(
   const routeCorrelations = correlateRouteMutations(
     effectiveRouteCorridors,
     topology,
-    arenaCapacity,
     structureProofs,
     input.target.staticExecutionDimension,
   );
@@ -257,6 +256,7 @@ export function analyzeInspectionRuntimeState(
     sourceByFunction,
     placedEmbeddedCommands,
     topology,
+    arenaCapacity,
     structureProofs,
     routeCorrelations,
     effectiveRouteCorridors,
