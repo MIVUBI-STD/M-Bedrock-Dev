@@ -31,6 +31,7 @@ import { concludeArenaProof } from "./arena-proof-conclusion.js";
 import { deriveArenaReplicaProofQuality } from "./arena-replica-proof-quality.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 import { deriveArenaStressPlan } from "./arena-stress-plan.js";
+import { localizeArenaRepairSources } from "./arena-repair-localization.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -421,6 +422,37 @@ export async function inspectArtifact(
       }
     }
 
+    const repairLocalization =
+      spatialLayout !== undefined &&
+      effectiveRegionPlan !== undefined
+        ? localizeArenaRepairSources({
+            layout: spatialLayout,
+            regionPlan: effectiveRegionPlan,
+            sources:
+              result.arenaAnalysis.authoredSources ?? [],
+            ...(arenaVoxelProof === undefined
+              ? {}
+              : { voxelProof: arenaVoxelProof }),
+            ...(structureInstanceProof === undefined
+              ? {}
+              : {
+                  structureProof:
+                    structureInstanceProof,
+                }),
+            ...(entityPopulationProof === undefined
+              ? {}
+              : {
+                  entityPopulationProof,
+                }),
+            ...(arenaActorPopulationProof === undefined
+              ? {}
+              : {
+                  actorPopulationProof:
+                    arenaActorPopulationProof,
+                }),
+          })
+        : undefined;
+
     const proofConclusion = concludeArenaProof(
       proofCoverage,
       arenaVoxelProof,
@@ -488,6 +520,9 @@ export async function inspectArtifact(
           ? {}
           : { spatialLayout }),
         stressPlan,
+        ...(repairLocalization === undefined
+          ? {}
+          : { repairLocalization }),
         ...(result.arenaAnalysis.regionPlan !== undefined ||
             effectiveRegionPlan === undefined
           ? {}

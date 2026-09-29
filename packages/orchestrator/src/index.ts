@@ -298,3 +298,6 @@ export * from "./arena-engineering-projection.js";
 export * from "./arena-stress-runtime-compiler.js";
 
 export * from "./arena-actor-population-proof.js";
+
+export * from "./arena-authored-source-index.js";
+export * from "./arena-repair-localization.js";

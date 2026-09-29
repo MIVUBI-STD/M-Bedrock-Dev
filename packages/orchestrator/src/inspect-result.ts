@@ -21,6 +21,7 @@ import { analyzeInspectionRuntimeState } from "./inspect-runtime-analysis-stage.
 import { analyzeInspectionEducation } from "./inspect-education-stage.js";
 import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
 import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
+import { deriveArenaAuthoredSpatialSources } from "./arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
   ReturnType<typeof indexInspectionSources>
@@ -206,6 +207,24 @@ export function buildInspectionResult(
         { kind: "entity-spawn" }
       > => effect.kind === "entity-spawn",
     );
+  const functionSources = Object.fromEntries(
+    parsedFunctions.map((item) => [
+      item.parsed.identifier,
+      item.node.source,
+    ]),
+  );
+  const authoredSources =
+    deriveArenaAuthoredSpatialSources({
+      topology,
+      scripts: parsedScripts.map(
+        (item) => item.parsed,
+      ),
+      scriptSpatial,
+      structurePlacements:
+        structureRuntime.absoluteStructurePlacements,
+      functionSources,
+    });
+
   const baseArenaAnalysis = {
     autoDetected:
       topology.arenaReplicaDiscovery !== undefined,
@@ -228,6 +247,7 @@ export function buildInspectionResult(
     cleanupSurfaces: arenaCleanupSurfaces,
     stateIsolation: arenaStateIsolation,
     entitySpawnEvidence,
+    authoredSources,
   };
 
   const gameplayWorld = deriveGameplayWorldModel({

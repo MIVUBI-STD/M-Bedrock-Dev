@@ -37,6 +37,8 @@ import type { ScriptSpatialAnalysis } from "./script-spatial-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
+import type { ArenaAuthoredSpatialSource } from "./arena-authored-source-index.js";
+import type { ArenaRepairLocalization } from "./arena-repair-localization.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
@@ -196,6 +198,8 @@ export interface InspectDirectoryResult {
     cleanupSurfaces?: ArenaCleanupSurfaceAnalysis;
     stateIsolation?: ArenaStateIsolationAnalysis;
     stressPlan?: ArenaStressPlan;
+    authoredSources?: readonly ArenaAuthoredSpatialSource[];
+    repairLocalization?: ArenaRepairLocalization;
     nativeSpatial?: ArenaNativeSpatialAudit;
     voxelProof?: ArenaVoxelProof;
     blockEntityProof?: ArenaBlockEntityProof;
