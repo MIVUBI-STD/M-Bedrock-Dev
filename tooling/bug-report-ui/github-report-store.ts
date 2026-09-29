@@ -1,0 +1,243 @@
+import {
+  bugReportV2Progress,
+  parseBugReportV2Json,
+  serializeBugReportV2,
+  type BugReportV2,
+} from "../../packages/bug-report/src/index.js";
+
+export interface GitHubBugReportStoreOptions {
+  readonly owner: string;
+  readonly repository: string;
+  readonly branch: string;
+  readonly token: string;
+  readonly directory?: string;
+  readonly apiBaseUrl?: string;
+  readonly fetchImpl?: typeof fetch;
+}
+
+export interface GitHubBugReportSummary {
+  readonly path: string;
+  readonly mapName: string;
+  readonly mapVersion: string;
+  readonly fixed: number;
+  readonly total: number;
+}
+
+interface GitHubContentFile {
+  readonly type: "file";
+  readonly path: string;
+  readonly sha: string;
+  readonly content?: string;
+  readonly encoding?: string;
+}
+
+interface GitHubContentDirectoryEntry {
+  readonly type: "file" | "dir" | "symlink" | "submodule";
+  readonly path: string;
+  readonly name: string;
+  readonly sha: string;
+}
+
+function assertNonEmpty(value: string, label: string): void {
+  if (!value.trim()) {
+    throw new Error(label + " must be non-empty.");
+  }
+}
+
+function encodedPath(path: string): string {
+  return path
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+}
+
+function decodeBase64Utf8(value: string): string {
+  return Buffer.from(value.replace(/\n/g, ""), "base64").toString("utf8");
+}
+
+function encodeBase64Utf8(value: string): string {
+  return Buffer.from(value, "utf8").toString("base64");
+}
+
+export class GitHubBugReportStore {
+  readonly #owner: string;
+  readonly #repository: string;
+  readonly #branch: string;
+  readonly #token: string;
+  readonly #directory: string;
+  readonly #apiBaseUrl: string;
+  readonly #fetch: typeof fetch;
+
+  constructor(options: GitHubBugReportStoreOptions) {
+    assertNonEmpty(options.owner, "GitHub owner");
+    assertNonEmpty(options.repository, "GitHub repository");
+    assertNonEmpty(options.branch, "GitHub branch");
+    assertNonEmpty(options.token, "GitHub token");
+
+    this.#owner = options.owner;
+    this.#repository = options.repository;
+    this.#branch = options.branch;
+    this.#token = options.token;
+    this.#directory = (options.directory ?? "bug-reports").replace(/^\/+|\/+$/g, "");
+    this.#apiBaseUrl = (options.apiBaseUrl ?? "https://api.github.com").replace(/\/$/, "");
+    this.#fetch = options.fetchImpl ?? fetch;
+  }
+
+  #assertReportPath(path: string): void {
+    const prefix = this.#directory + "/";
+    if (
+      !path.startsWith(prefix) ||
+      path.includes("..") ||
+      !path.toLowerCase().endsWith(".json")
+    ) {
+      throw new Error(
+        "Bug report path must be a JSON file inside " +
+          this.#directory +
+          "/.",
+      );
+    }
+  }
+
+  async #request(
+    path: string,
+    init?: RequestInit,
+    allowedStatuses: readonly number[] = [],
+  ): Promise<Response> {
+    const response = await this.#fetch(
+      this.#apiBaseUrl + path,
+      {
+        ...init,
+        headers: {
+          Accept: "application/vnd.github+json",
+          Authorization: "Bearer " + this.#token,
+          "X-GitHub-Api-Version": "2022-11-28",
+          ...init?.headers,
+        },
+      },
+    );
+
+    if (!response.ok && !allowedStatuses.includes(response.status)) {
+      const body = await response.text();
+      throw new Error(
+        "GitHub report store request failed (" +
+          String(response.status) +
+          "): " +
+          body,
+      );
+    }
+
+    return response;
+  }
+
+  #contentsPath(path: string): string {
+    return (
+      "/repos/" +
+      encodeURIComponent(this.#owner) +
+      "/" +
+      encodeURIComponent(this.#repository) +
+      "/contents/" +
+      encodedPath(path)
+    );
+  }
+
+  async #currentFile(path: string): Promise<GitHubContentFile | undefined> {
+    const response = await this.#request(
+      this.#contentsPath(path) +
+        "?ref=" +
+        encodeURIComponent(this.#branch),
+      undefined,
+      [404],
+    );
+    if (response.status === 404) return undefined;
+    return await response.json() as GitHubContentFile;
+  }
+
+  async listReports(): Promise<readonly GitHubBugReportSummary[]> {
+    const response = await this.#request(
+      this.#contentsPath(this.#directory) +
+        "?ref=" +
+        encodeURIComponent(this.#branch),
+    );
+    const entries = await response.json() as GitHubContentDirectoryEntry[];
+    const files = entries
+      .filter((entry) =>
+        entry.type === "file" &&
+        entry.name.toLowerCase().endsWith(".json")
+      )
+      .sort((left, right) => left.name.localeCompare(right.name));
+
+    const summaries = await Promise.all(
+      files.map(async (entry) => {
+        const report = await this.loadReport(entry.path);
+        const progress = bugReportV2Progress(report);
+        return {
+          path: entry.path,
+          mapName: report.map.name,
+          mapVersion: report.map.mapVersion,
+          fixed: progress.fixed,
+          total: progress.total,
+        };
+      }),
+    );
+
+    return summaries.sort((left, right) =>
+      left.mapName.localeCompare(right.mapName) ||
+      left.mapVersion.localeCompare(right.mapVersion)
+    );
+  }
+
+  async loadReport(path: string): Promise<BugReportV2> {
+    this.#assertReportPath(path);
+    const file = await this.#currentFile(path);
+    if (!file) {
+      throw new Error("GitHub bug report does not exist.");
+    }
+    if (
+      file.type !== "file" ||
+      file.encoding !== "base64" ||
+      typeof file.content !== "string"
+    ) {
+      throw new Error("GitHub bug report content is not a base64 file.");
+    }
+
+    const parsed = parseBugReportV2Json(
+      decodeBase64Utf8(file.content),
+    );
+    if (!parsed.ok) {
+      throw new Error(
+        "GitHub bug report is not valid V2: " +
+          parsed.issues
+            .map((issue) => issue.path + ": " + issue.message)
+            .join("; "),
+      );
+    }
+    return parsed.report;
+  }
+
+  async saveReport(path: string, report: BugReportV2): Promise<void> {
+    this.#assertReportPath(path);
+    const serialized = serializeBugReportV2(report);
+    if (!serialized.ok || !serialized.json) {
+      throw new Error("Refusing to save invalid Bug Report V2.");
+    }
+
+    const current = await this.#currentFile(path);
+    const body = {
+      message: "chore(bug-report): update " + report.map.name,
+      content: encodeBase64Utf8(serialized.json),
+      branch: this.#branch,
+      ...(current ? { sha: current.sha } : {}),
+    };
+
+    await this.#request(
+      this.#contentsPath(path),
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      },
+    );
+  }
+}
