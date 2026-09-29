@@ -139,3 +139,28 @@ These are not confirmation by themselves:
 Root-cause and repair authorization remain owned by diagnostic/repair reasoning. They do not need to be serialized into Bug Report V2.
 
 The confirmation basis and evidence are internal promotion metadata. They are never persisted in the final report.
+
+
+## Confirmation routes
+
+All confirmed defects enter the same Bug Report V2 promotion gate, but the evidence route depends on who discovered the defect.
+
+```text
+AI runtime mismatch
+→ report-confirmation-adapter
+→ runtime-observation
+
+AI static authored-contract violation
+→ static-report-confirmation-adapter
+→ authored-contract-violation
+
+Tester gameplay reproduction
+→ tester-report-confirmation-adapter
+→ tester-reproduction
+```
+
+Tester confirmation is gameplay-only. Tester evidence must not claim code architecture, root cause, or implementation ownership.
+
+AI may later add AI Analysis, Relevant Code, and Suggested Fix to a tester-found bug without changing `Found By: Tester`.
+
+All non-confirmed diagnostic dispositions remain internal.
