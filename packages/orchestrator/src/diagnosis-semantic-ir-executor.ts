@@ -14,6 +14,9 @@ import type {
   InspectionSourceIndex,
 } from "./inspect-source-index.js";
 
+export const SEMANTIC_IR_EXECUTOR_REVISION =
+  "semantic-ir-executor:2";
+
 export interface SemanticIrDiagnosisPayload {
   sourceIndex: InspectionSourceIndex;
   stateAuthorityContracts?: readonly StateAuthorityContract[];
@@ -81,7 +84,13 @@ function semanticEvidenceId(
   value: unknown,
 ): string {
   const digest = createHash("sha256")
-    .update(JSON.stringify(value))
+    .update(
+      JSON.stringify({
+        executorRevision:
+          SEMANTIC_IR_EXECUTOR_REVISION,
+        value,
+      }),
+    )
     .digest("hex");
 
   return "semantic-ir:" + digest;
@@ -92,7 +101,7 @@ export function createSemanticIrDiagnosisExecutor():
   return {
     executorId: "diagnosis.semantic-ir",
     executorRevision:
-      "semantic-ir-executor:1",
+      SEMANTIC_IR_EXECUTOR_REVISION,
 
     async execute(
       request: DiagnosisExecutorRequest,
