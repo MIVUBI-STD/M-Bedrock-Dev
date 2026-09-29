@@ -10,9 +10,20 @@ import type {
 
 export type ConfirmedBugStatus = "confirmed-defect";
 
+export type DefectConfirmationBasis =
+  | "tester-reproduction"
+  | "authored-contract-violation"
+  | "runtime-observation";
+
+export interface DefectConfirmation {
+  readonly basis: DefectConfirmationBasis;
+  readonly evidence: string;
+}
+
 export interface ConfirmedBugReportInput
   extends Omit<CreateBugReportV2BugInput, "fixed"> {
   readonly status: ConfirmedBugStatus;
+  readonly confirmation: DefectConfirmation;
 }
 
 export interface PromoteConfirmedBugsInput {
