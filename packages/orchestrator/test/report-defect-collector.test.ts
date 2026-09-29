@@ -187,7 +187,7 @@ describe("report defect collector", () => {
     if (!result.promotion.ok) return;
     expect(result.promotion.report.bugs[0]).toEqual(
       expect.objectContaining({
-        id: "BUG-BB-001",
+        id: "BUG-BB-1OB7ULV",
         severity: "major",
         category: "player-state",
         foundBy: "tester",
