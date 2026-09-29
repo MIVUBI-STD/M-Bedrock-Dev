@@ -11,6 +11,10 @@
     readBugReportFile,
   } from "./report-file.js";
   import {
+    defaultBugReportView,
+    filterBugReportBugs,
+  } from "./report-view.js";
+  import {
     GitHubReportClient,
     GitHubReportConflictError,
   } from "./github-report-client.js";
@@ -46,37 +50,17 @@
     : { fixed: 0, total: 0, allFixed: false };
 
   $: visibleBugs = report
-    ? report.bugs.filter((bug) => {
-        const fixedMatch =
-          view === "all" ||
-          (view === "fixed" && bug.fixed) ||
-          (view === "not-fixed" && !bug.fixed);
-        const severityMatch =
-          severity === "all" || bug.severity === severity;
-        const haystack = [
-          bug.id,
-          bug.title,
-          bug.problem,
-          bug.expected,
-          bug.observed,
-          bug.aiAnalysis ?? "",
-          bug.category,
-          bug.severity,
-        ].join(" ").toLowerCase();
-        return (
-          fixedMatch &&
-          severityMatch &&
-          haystack.includes(query.trim().toLowerCase())
-        );
+    ? filterBugReportBugs(report.bugs, {
+        view,
+        severity,
+        query,
       })
     : [];
 
   function resetFilters(next: BugReportV2) {
     query = "";
     severity = "all";
-    view = next.bugs.some((bug) => !bug.fixed)
-      ? "not-fixed"
-      : "all";
+    view = defaultBugReportView(next);
   }
 
   function openDocument(
@@ -493,10 +477,11 @@
       {#each visibleBugs as bug}
         <details class:fixed={bug.fixed} class="bug">
           <summary>
-            <label class="check" on:click|stopPropagation>
+            <label class="check">
               <input
                 type="checkbox"
                 checked={bug.fixed}
+                on:click|stopPropagation
                 on:change={(event) =>
                   setFixed(
                     bug.id,
