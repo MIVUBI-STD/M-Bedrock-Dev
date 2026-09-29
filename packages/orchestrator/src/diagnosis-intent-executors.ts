@@ -19,7 +19,7 @@ import type {
 export const INTENT_GROUNDING_EXECUTOR_REVISION =
   "intent-grounding-executor:2";
 export const AUTHORED_INTENT_EXECUTOR_REVISION =
-  "authored-intent-executor:2";
+  "authored-intent-executor:3";
 
 export interface IntentGroundingDiagnosisPayload {
   id: string;
@@ -32,6 +32,7 @@ export interface AuthoredIntentDiagnosisPayload
   root: string;
   artifactId: string;
   files: readonly FileInventoryEntry[];
+  authoredSourceRoots?: readonly string[];
 }
 
 function isSourceIndex(
@@ -139,11 +140,31 @@ function parseAuthoredPayload(
     return undefined;
   }
 
+  if (
+    record.authoredSourceRoots !== undefined &&
+    (
+      !Array.isArray(record.authoredSourceRoots) ||
+      !record.authoredSourceRoots.every(
+        (value) =>
+          typeof value === "string" &&
+          value.trim().length > 0,
+      )
+    )
+  ) {
+    return undefined;
+  }
+
   return {
     ...base,
     root: record.root,
     artifactId: record.artifactId,
     files: record.files,
+    ...(record.authoredSourceRoots === undefined
+      ? {}
+      : {
+          authoredSourceRoots:
+            record.authoredSourceRoots as readonly string[],
+        }),
   };
 }
 
@@ -337,6 +358,10 @@ export function createAuthoredIntentDiagnosisExecutor():
             payload.root,
             payload.artifactId,
             payload.files,
+            {
+              authoredSourceRoots:
+                payload.authoredSourceRoots,
+            },
           );
       } catch (error) {
         return {
@@ -354,7 +379,7 @@ export function createAuthoredIntentDiagnosisExecutor():
         return {
           status: "blocked",
           reasons: [
-            "No explicit authored intent source files were found in recognized behavior-pack source paths.",
+            "No explicit authored intent source files were found in recognized or configured authored source roots.",
           ],
         };
       }
