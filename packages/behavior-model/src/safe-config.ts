@@ -64,15 +64,40 @@ export type SafeConfigExpression =
       kind: "intrinsic";
       name: "translate3";
       args: readonly SafeConfigExpression[];
+    }
+  | {
+      kind: "map";
+      source: SafeConfigExpression;
+      itemName: string;
+      indexName?: string;
+      body: SafeConfigExpression;
+    }
+  | {
+      kind: "array-from";
+      length: SafeConfigExpression;
+      indexName: string;
+      body: SafeConfigExpression;
+    }
+  | {
+      kind: "call";
+      name: string;
+      args: readonly SafeConfigExpression[];
     };
+
+export interface SafeConfigFunction {
+  params: readonly string[];
+  body: SafeConfigExpression;
+}
 
 export interface SafeConfigEnvironment {
   bindings: Readonly<Record<string, SafeConfigExpression>>;
+  functions?: Readonly<Record<string, SafeConfigFunction>>;
 }
 
 export interface SafeConfigEvaluationOptions {
   maxDepth?: number;
   maxNodes?: number;
+  maxCollectionItems?: number;
 }
 
 export class SafeConfigEvaluationError extends Error {
@@ -83,7 +108,10 @@ export class SafeConfigEvaluationError extends Error {
       | "DEPTH_LIMIT"
       | "NODE_LIMIT"
       | "TYPE_MISMATCH"
-      | "INVALID_OPERATION",
+      | "INVALID_OPERATION"
+      | "UNKNOWN_FUNCTION"
+      | "FUNCTION_CYCLE"
+      | "COLLECTION_LIMIT",
     message: string,
   ) {
     super(message);
@@ -124,12 +152,16 @@ export function evaluateSafeConfig(
 ): SafeConfigValue {
   const maxDepth = options.maxDepth ?? 64;
   const maxNodes = options.maxNodes ?? 10_000;
+  const maxCollectionItems =
+    options.maxCollectionItems ?? 4096;
   let nodes = 0;
   const resolving = new Set<string>();
+  const calling = new Set<string>();
 
   const evaluate = (
     node: SafeConfigExpression,
     depth: number,
+    activeEnvironment: SafeConfigEnvironment = environment,
   ): SafeConfigValue => {
     nodes += 1;
     if (nodes > maxNodes) {
@@ -148,7 +180,7 @@ export function evaluateSafeConfig(
     if (node.kind === "literal") return node.value;
 
     if (node.kind === "ref") {
-      const target = environment.bindings[node.name];
+      const target = activeEnvironment.bindings[node.name];
       if (!target) {
         throw new SafeConfigEvaluationError(
           "UNKNOWN_REFERENCE",
@@ -163,14 +195,14 @@ export function evaluateSafeConfig(
       }
       resolving.add(node.name);
       try {
-        return evaluate(target, depth + 1);
+        return evaluate(target, depth + 1, activeEnvironment);
       } finally {
         resolving.delete(node.name);
       }
     }
 
     if (node.kind === "array") {
-      return node.items.map((item) => evaluate(item, depth + 1));
+      return node.items.map((item) => evaluate(item, depth + 1, activeEnvironment));
     }
 
     if (node.kind === "array-compose") {
@@ -199,7 +231,7 @@ export function evaluateSafeConfig(
       return Object.fromEntries(
         Object.entries(node.entries)
           .sort(([a], [b]) => a.localeCompare(b))
-          .map(([key, value]) => [key, evaluate(value, depth + 1)]),
+          .map(([key, value]) => [key, evaluate(value, depth + 1, activeEnvironment)]),
       );
     }
 
@@ -207,7 +239,7 @@ export function evaluateSafeConfig(
       const output: Record<string, SafeConfigValue> = {};
       for (const part of node.parts) {
         const object = asObject(
-          evaluate(part, depth + 1),
+          evaluate(part, depth + 1, activeEnvironment),
           "object spread",
         );
         for (
@@ -222,7 +254,7 @@ export function evaluateSafeConfig(
 
     if (node.kind === "get") {
       const object = asObject(
-        evaluate(node.object, depth + 1),
+        evaluate(node.object, depth + 1, activeEnvironment),
         "get",
       );
       if (!(node.key in object)) {
@@ -239,6 +271,7 @@ export function evaluateSafeConfig(
         evaluate(
           node.condition,
           depth + 1,
+          activeEnvironment,
         );
       if (typeof condition !== "boolean") {
         throw new SafeConfigEvaluationError(
@@ -251,6 +284,7 @@ export function evaluateSafeConfig(
           ? node.whenTrue
           : node.whenFalse,
         depth + 1,
+        activeEnvironment,
       );
     }
 
@@ -259,12 +293,14 @@ export function evaluateSafeConfig(
         evaluate(
           node.left,
           depth + 1,
+          activeEnvironment,
         );
       if (node.operator === "??") {
         return left === null
           ? evaluate(
               node.right,
               depth + 1,
+              activeEnvironment,
             )
           : left;
       }
@@ -280,6 +316,7 @@ export function evaluateSafeConfig(
           evaluate(
             node.right,
             depth + 1,
+            activeEnvironment,
           );
         if (typeof right !== "boolean") {
           throw new SafeConfigEvaluationError(
@@ -309,6 +346,7 @@ export function evaluateSafeConfig(
         evaluate(
           node.left,
           depth + 1,
+          activeEnvironment,
         );
       const right =
         evaluate(
@@ -362,8 +400,8 @@ export function evaluateSafeConfig(
     }
 
     if (node.kind === "binary") {
-      const left = evaluate(node.left, depth + 1);
-      const right = evaluate(node.right, depth + 1);
+      const left = evaluate(node.left, depth + 1, activeEnvironment);
+      const right = evaluate(node.right, depth + 1, activeEnvironment);
       if (
         node.operator === "+" &&
         (typeof left === "string" || typeof right === "string")
@@ -394,7 +432,162 @@ export function evaluateSafeConfig(
       return a / b;
     }
 
-    const args = node.args.map((item) => evaluate(item, depth + 1));
+    if (node.kind === "map") {
+      const source = evaluate(
+        node.source,
+        depth + 1,
+        activeEnvironment,
+      );
+      if (!Array.isArray(source)) {
+        throw new SafeConfigEvaluationError(
+          "TYPE_MISMATCH",
+          "Safe config map source must resolve to an array.",
+        );
+      }
+      if (source.length > maxCollectionItems) {
+        throw new SafeConfigEvaluationError(
+          "COLLECTION_LIMIT",
+          "Safe config map exceeded the collection item budget.",
+        );
+      }
+
+      return source.map((item, index) => {
+        const bindings: Record<
+          string,
+          SafeConfigExpression
+        > = {
+          ...activeEnvironment.bindings,
+          [node.itemName]: {
+            kind: "literal",
+            value: item,
+          },
+        };
+        if (node.indexName) {
+          bindings[node.indexName] = {
+            kind: "literal",
+            value: index,
+          };
+        }
+        return evaluate(
+          node.body,
+          depth + 1,
+          {
+            bindings,
+            functions:
+              activeEnvironment.functions,
+          },
+        );
+      });
+    }
+
+    if (node.kind === "array-from") {
+      const lengthValue = evaluate(
+        node.length,
+        depth + 1,
+        activeEnvironment,
+      );
+      const length = asNumber(
+        lengthValue,
+        "Array.from length",
+      );
+      if (
+        !Number.isInteger(length) ||
+        length < 0
+      ) {
+        throw new SafeConfigEvaluationError(
+          "TYPE_MISMATCH",
+          "Array.from length must be a non-negative integer.",
+        );
+      }
+      if (length > maxCollectionItems) {
+        throw new SafeConfigEvaluationError(
+          "COLLECTION_LIMIT",
+          "Array.from exceeded the collection item budget.",
+        );
+      }
+
+      return Array.from(
+        { length },
+        (_, index) =>
+          evaluate(
+            node.body,
+            depth + 1,
+            {
+              bindings: {
+                ...activeEnvironment.bindings,
+                [node.indexName]: {
+                  kind: "literal",
+                  value: index,
+                },
+              },
+              functions:
+                activeEnvironment.functions,
+            },
+          ),
+      );
+    }
+
+    if (node.kind === "call") {
+      const fn =
+        activeEnvironment.functions?.[
+          node.name
+        ];
+      if (!fn) {
+        throw new SafeConfigEvaluationError(
+          "UNKNOWN_FUNCTION",
+          `Unknown safe config function: ${node.name}`,
+        );
+      }
+      if (calling.has(node.name)) {
+        throw new SafeConfigEvaluationError(
+          "FUNCTION_CYCLE",
+          `Safe config function cycle includes ${node.name}.`,
+        );
+      }
+      if (fn.params.length !== node.args.length) {
+        throw new SafeConfigEvaluationError(
+          "INVALID_OPERATION",
+          `Safe config function ${node.name} expects ${fn.params.length} argument(s), received ${node.args.length}.`,
+        );
+      }
+
+      const args = node.args.map((item) =>
+        evaluate(
+          item,
+          depth + 1,
+          activeEnvironment,
+        )
+      );
+      const bindings: Record<
+        string,
+        SafeConfigExpression
+      > = {
+        ...activeEnvironment.bindings,
+      };
+      fn.params.forEach((param, index) => {
+        bindings[param] = {
+          kind: "literal",
+          value: args[index]!,
+        };
+      });
+
+      calling.add(node.name);
+      try {
+        return evaluate(
+          fn.body,
+          depth + 1,
+          {
+            bindings,
+            functions:
+              activeEnvironment.functions,
+          },
+        );
+      } finally {
+        calling.delete(node.name);
+      }
+    }
+
+    const args = node.args.map((item) => evaluate(item, depth + 1, activeEnvironment));
     if (args.length !== 2) {
       throw new SafeConfigEvaluationError(
         "INVALID_OPERATION",
