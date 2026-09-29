@@ -17,6 +17,7 @@ import { assertRuntimeProbeTranscriptArtifact } from "./runtime-probe-load.js";
 import { auditArenaNativeSpatialContent } from "./arena-native-extraction.js";
 import { openBedrockLevelDbSnapshot } from "../../../adapters/leveldb/src/index.js";
 import { proveArenaVoxelEquivalence } from "./arena-voxel-proof.js";
+import { proveArenaBlockEntityEquivalence } from "./arena-block-entity-proof.js";
 import { extractPersistedPackIdentities } from "./persisted-pack-identity.js";
 import { packIdentityDriftDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { partitionArenaProofVolumes, spatialLayoutFromReplicaDiscovery } from "../../../analyzers/topology/src/index.js";
@@ -153,6 +154,7 @@ export async function inspectArtifact(
           );
 
     let arenaVoxelProof;
+    let arenaBlockEntityProof;
     let persistedPackIdentity;
     const artifactDiagnostics = [...result.diagnostics];
 
@@ -182,6 +184,17 @@ export async function inspectArtifact(
               },
             );
 
+            if (proofVolumes !== undefined) {
+              arenaBlockEntityProof =
+                await proveArenaBlockEntityEquivalence(
+                  reader,
+                  spatialLayout,
+                  {
+                    includedVolumes: proofVolumes,
+                  },
+                );
+            }
+
             for (const replica of arenaVoxelProof.replicas) {
               if (replica.status !== "diverged") continue;
               artifactDiagnostics.push(
@@ -200,6 +213,36 @@ export async function inspectArtifact(
                 }),
               );
             }
+
+            for (
+              const replica of
+                arenaBlockEntityProof?.replicas ?? []
+            ) {
+              if (replica.status !== "diverged") continue;
+              artifactDiagnostics.push(
+                createDiagnostic({
+                  code: "ARENA_BLOCK_ENTITY_DIVERGENCE",
+                  severity: "critical",
+                  message:
+                    `Arena ${replica.arenaId} differs from the canonical arena at block-entity NBT level.`,
+                  data: {
+                    arenaId: replica.arenaId,
+                    canonicalEntities:
+                      replica.canonicalEntities,
+                    replicaEntities:
+                      replica.replicaEntities,
+                    comparedEntities:
+                      replica.comparedEntities,
+                    unresolvedChunks:
+                      replica.unresolvedChunks,
+                    mismatchCount:
+                      replica.mismatchCount,
+                    mismatches:
+                      replica.mismatches,
+                  },
+                }),
+              );
+            }
           }
         } finally {
           await reader.close();
@@ -212,12 +255,14 @@ export async function inspectArtifact(
     const proofConclusion = concludeArenaProof(
       proofCoverage,
       arenaVoxelProof,
+      arenaBlockEntityProof,
     );
     const replicaProofQuality =
       deriveArenaReplicaProofQuality(
         proofCoverage,
         arenaVoxelProof,
         arenaNativeSpatial,
+        arenaBlockEntityProof,
       );
 
     if (persistedPackIdentity?.status === "parsed") {
@@ -290,6 +335,12 @@ export async function inspectArtifact(
         ...(arenaVoxelProof === undefined
           ? {}
           : { voxelProof: arenaVoxelProof }),
+        ...(arenaBlockEntityProof === undefined
+          ? {}
+          : {
+              blockEntityProof:
+                arenaBlockEntityProof,
+            }),
         ...(proofPartition === undefined
           ? {}
           : { proofPartition }),
