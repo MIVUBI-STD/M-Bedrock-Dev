@@ -257,9 +257,11 @@ export function compileContextPack(
         input.relevantSemanticNodeIds,
       ),
     );
+  const allGraphNodes =
+    input.graph.allNodes();
   const semanticById =
     new Map(
-      semanticPool.map((node) => [
+      allGraphNodes.map((node) => [
         node.id,
         node,
       ]),
@@ -324,15 +326,17 @@ export function compileContextPack(
         (node) => node.id,
       ),
     );
-  const semanticEdges =
-    input.graph.allEdges()
+  const allSemanticEdges =
+    input.graph.allEdges();
+  const requiredSemanticEdges =
+    allSemanticEdges
       .filter((edge) =>
-        selectedSemanticIds.has(
+        requiredSemanticSet.has(
           edge.from,
         ) ||
         (
           edge.to !== undefined &&
-          selectedSemanticIds.has(
+          requiredSemanticSet.has(
             edge.to,
           )
         )
@@ -340,11 +344,61 @@ export function compileContextPack(
       .sort((a, b) =>
         a.id.localeCompare(b.id)
       );
-  const semanticEdgeSelection =
-    take(
-      semanticEdges,
-      budget.maxSemanticEdges,
+
+  if (
+    requiredSemanticEdges.length >
+    budget.maxSemanticEdges
+  ) {
+    throw new Error(
+      "Context compiler maxSemanticEdges is smaller than the relationships required by the explicit semantic node set.",
     );
+  }
+
+  const requiredSemanticEdgeIds =
+    new Set(
+      requiredSemanticEdges.map(
+        (edge) => edge.id,
+      ),
+    );
+  const optionalSemanticEdges =
+    allSemanticEdges
+      .filter((edge) =>
+        !requiredSemanticEdgeIds.has(
+          edge.id,
+        ) &&
+        (
+          selectedSemanticIds.has(
+            edge.from,
+          ) ||
+          (
+            edge.to !== undefined &&
+            selectedSemanticIds.has(
+              edge.to,
+            )
+          )
+        )
+      )
+      .sort((a, b) =>
+        a.id.localeCompare(b.id)
+      );
+  const semanticEdgeCapacity =
+    budget.maxSemanticEdges -
+    requiredSemanticEdges.length;
+  const optionalSemanticEdgeSelection =
+    take(
+      optionalSemanticEdges,
+      semanticEdgeCapacity,
+    );
+  const semanticEdgeSelection = {
+    values: [
+      ...requiredSemanticEdges,
+      ...optionalSemanticEdgeSelection.values,
+    ].sort((a, b) =>
+      a.id.localeCompare(b.id)
+    ),
+    omitted:
+      optionalSemanticEdgeSelection.omitted,
+  };
 
   const requestedSubjects =
     new Set(
@@ -412,11 +466,26 @@ export function compileContextPack(
         a.id.localeCompare(b.id)
       );
 
-  const nodeSelection =
-    take(
-      intentNodes,
-      budget.maxIntentNodes,
+  if (
+    explicitSubjectScope.size > 0 &&
+    intentNodes.length >
+      budget.maxIntentNodes
+  ) {
+    throw new Error(
+      "Context compiler maxIntentNodes is smaller than the explicitly required intent subject set.",
     );
+  }
+
+  const nodeSelection =
+    explicitSubjectScope.size > 0
+      ? {
+          values: [...intentNodes],
+          omitted: 0,
+        }
+      : take(
+          intentNodes,
+          budget.maxIntentNodes,
+        );
   const selectedSubjectIds =
     new Set(
       nodeSelection.values.map(
@@ -447,11 +516,26 @@ export function compileContextPack(
         a.id.localeCompare(b.id)
       );
 
-  const invariantSelection =
-    take(
-      invariants,
-      budget.maxInvariants,
+  if (
+    explicitSubjectScope.size > 0 &&
+    invariants.length >
+      budget.maxInvariants
+  ) {
+    throw new Error(
+      "Context compiler maxInvariants is smaller than the invariants required by the explicit intent scope.",
     );
+  }
+
+  const invariantSelection =
+    explicitSubjectScope.size > 0
+      ? {
+          values: [...invariants],
+          omitted: 0,
+        }
+      : take(
+          invariants,
+          budget.maxInvariants,
+        );
 
   const relevantIntentIds =
     new Set([
@@ -477,11 +561,26 @@ export function compileContextPack(
         a.id.localeCompare(b.id)
       );
 
-  const unknownSelection =
-    take(
-      unknowns,
-      budget.maxUnknowns,
+  if (
+    explicitSubjectScope.size > 0 &&
+    unknowns.length >
+      budget.maxUnknowns
+  ) {
+    throw new Error(
+      "Context compiler maxUnknowns is smaller than the unknowns required by the explicit intent scope.",
     );
+  }
+
+  const unknownSelection =
+    explicitSubjectScope.size > 0
+      ? {
+          values: [...unknowns],
+          omitted: 0,
+        }
+      : take(
+          unknowns,
+          budget.maxUnknowns,
+        );
 
   const evidenceIds =
     new Set([
@@ -512,11 +611,31 @@ export function compileContextPack(
         a.id.localeCompare(b.id)
       );
 
-  const evidenceSelection =
-    take(
-      evidence,
-      budget.maxEvidence,
+  const explicitIntentScope =
+    explicitSubjectScope.size > 0 ||
+    requestedInvariants.size > 0 ||
+    requestedEvidence.size > 0;
+
+  if (
+    explicitIntentScope &&
+    evidence.length >
+      budget.maxEvidence
+  ) {
+    throw new Error(
+      "Context compiler maxEvidence is smaller than the evidence required by the explicit intent scope.",
     );
+  }
+
+  const evidenceSelection =
+    explicitIntentScope
+      ? {
+          values: [...evidence],
+          omitted: 0,
+        }
+      : take(
+          evidence,
+          budget.maxEvidence,
+        );
 
   const knownIntentIds =
     new Set(
@@ -577,11 +696,21 @@ export function compileContextPack(
     invariantSelection.omitted > 0 ||
     unknownSelection.omitted > 0 ||
     evidenceSelection.omitted > 0;
-  const explicitScope =
-    requestedSemanticIds.size > 0 ||
+  const semanticScopeExplicit =
+    requestedSemanticIds.size > 0;
+  const intentScopeExplicit =
     requestedSubjects.size > 0 ||
     requestedInvariants.size > 0 ||
     requestedEvidence.size > 0;
+  const semanticOptionalTruncated =
+    semanticSelection.omitted > 0 ||
+    semanticEdgeSelection.omitted > 0;
+  const intentOptionalTruncated =
+    nodeSelection.omitted > 0 ||
+    invariantSelection.omitted > 0 ||
+    unknownSelection.omitted > 0 ||
+    evidenceSelection.omitted > 0;
+
   const missingRequestedCount =
     missingRequested
       .semanticNodeIds.length +
@@ -594,8 +723,12 @@ export function compileContextPack(
   const complete =
     missingRequestedCount === 0 &&
     (
-      explicitScope ||
-      !optionalTruncated
+      semanticScopeExplicit ||
+      !semanticOptionalTruncated
+    ) &&
+    (
+      intentScopeExplicit ||
+      !intentOptionalTruncated
     );
 
   const noExplicitIntentScope =
@@ -737,9 +870,9 @@ export function compileContextPack(
         ? "No explicit intent subject/invariant scope was supplied; intent nodes are conservatively included within budget."
         : "Intent context uses only explicitly requested subjects/invariants and their directly referenced evidence.",
       optionalTruncated
-        ? explicitScope
-          ? "Context budget truncated optional surrounding context; explicitly required scope remains authoritative."
-          : "Context budget truncated an unscoped context set; the context pack is incomplete until relevance is narrowed or budget is expanded."
+        ? complete
+          ? "Context budget truncated only optional surrounding context; explicitly required scope remains complete."
+          : "Context budget truncated an unscoped context category; narrow relevance or expand that category budget."
         : "Context budget did not truncate the selected evidence.",
       missingRequestedCount > 0
         ? "One or more explicitly requested intent/invariant/evidence ids are missing; the context pack is incomplete."

@@ -263,7 +263,82 @@ describe("context compiler", () => {
     ).toBeGreaterThan(0);
   });
 
-  it("marks the pack incomplete when explicitly requested ids are missing", () => {
+  it("includes explicitly required semantic nodes even when they are outside the affected closure", () => {
+    const pack =
+      compileContextPack({
+        goal: "explicit-outside-affected",
+        graph: fixtureGraph(),
+        intent,
+        affected: {
+          status: "planned",
+          changedNodeIds: [
+            "function:pack:arena",
+          ],
+          affectedNodeIds: [
+            "function:pack:arena",
+          ],
+          skippedNodeIds: [
+            "function:pack:shop",
+            "function:pack:unrelated",
+          ],
+          affectedPaths: [
+            "functions/arena.mcfunction",
+          ],
+          totalNodeCount: 3,
+          changedNodeCount: 1,
+          affectedNodeCount: 1,
+          skippedNodeCount: 2,
+          skipRatio: 2 / 3,
+          reasons: [],
+        },
+        relevantSemanticNodeIds: [
+          "function:pack:shop",
+        ],
+      });
+
+    expect(
+      pack.semantic.nodes.map(
+        (node) => node.id,
+      ),
+    ).toContain(
+      "function:pack:shop",
+    );
+  });
+
+  it("rejects a budget smaller than explicitly required relationships", () => {
+    expect(() =>
+      compileContextPack({
+        goal: "too-small-edge-budget",
+        graph: fixtureGraph(),
+        intent,
+        relevantSemanticNodeIds: [
+          "function:pack:arena",
+        ],
+        budget: {
+          maxSemanticEdges: 1,
+        },
+      })
+    ).not.toThrow();
+
+    expect(() =>
+      compileContextPack({
+        goal: "too-small-node-budget",
+        graph: fixtureGraph(),
+        intent,
+        relevantSemanticNodeIds: [
+          "function:pack:arena",
+          "function:pack:shop",
+        ],
+        budget: {
+          maxSemanticNodes: 1,
+        },
+      })
+    ).toThrow(
+      /maxSemanticNodes/,
+    );
+  });
+
+  it("marks the pack incomplete when explicitly requested ids are missing",
     const pack =
       compileContextPack({
         goal: "missing",
