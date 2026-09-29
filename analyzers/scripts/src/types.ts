@@ -332,9 +332,11 @@ export interface ScriptGuardedOutcome {
 export interface ScriptArenaAuthorityEvidence {
   kind:
     | "membership-commit"
+    | "membership-release"
     | "capacity-operand"
     | "capacity-check"
     | "arena-generation-operand"
+    | "generation-invalidate"
     | "start-owner-guard"
     | "start-owner-acquire"
     | "start-state-commit";
@@ -353,9 +355,11 @@ export interface ScriptArenaAuthorityPath {
   arenaExpression: string;
   executionRegion: string;
   membershipCommit?: ScriptArenaAuthorityEvidence;
+  membershipRelease?: ScriptArenaAuthorityEvidence;
   capacityOperand?: ScriptArenaAuthorityEvidence;
   capacityCheck?: ScriptArenaAuthorityEvidence;
   generationOperand?: ScriptArenaAuthorityEvidence;
+  generationInvalidation?: ScriptArenaAuthorityEvidence;
   startOwnerGuard?: ScriptArenaAuthorityEvidence;
   startOwnerAcquire?: ScriptArenaAuthorityEvidence;
   startStateCommit?: ScriptArenaAuthorityEvidence;
