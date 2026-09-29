@@ -1,6 +1,9 @@
 import type {
   IntentDiagnosticDisposition,
 } from "../../diagnostic-reasoning/src/index.js";
+import type {
+  RegressionCase,
+} from "../../reliability/src/index.js";
 
 export interface GoldenDiagnosisCase {
   id: string;
@@ -9,6 +12,12 @@ export interface GoldenDiagnosisCase {
     readonly IntentDiagnosticDisposition[];
   acceptedRootCauseIds?:
     readonly string[];
+}
+
+export interface ReviewedGoldenDiagnosisCase
+  extends GoldenDiagnosisCase {
+  regressionCaseId: string;
+  reviewRevision: string;
 }
 
 export interface GoldenDiagnosisPrediction {
@@ -59,6 +68,90 @@ export interface GoldenDiagnosisBenchmarkReport {
   unexpectedPredictionCaseIds:
     readonly string[];
   reasons: readonly string[];
+}
+
+export function validateReviewedGoldenDiagnosisCases(
+  regressions: readonly RegressionCase[],
+  cases: readonly ReviewedGoldenDiagnosisCase[],
+): string[] {
+  const errors: string[] = [];
+  const regressionIds =
+    new Set(
+      regressions.map(
+        (item) => item.id,
+      ),
+    );
+  const caseIds =
+    new Set<string>();
+  const linkedRegressionIds =
+    new Set<string>();
+
+  for (const item of cases) {
+    if (!item.id.trim()) {
+      errors.push(
+        "Reviewed golden diagnosis case id must be non-empty.",
+      );
+    }
+    if (caseIds.has(item.id)) {
+      errors.push(
+        "Duplicate reviewed golden diagnosis case id: " +
+          item.id +
+          ".",
+      );
+    }
+    caseIds.add(item.id);
+
+    if (
+      !item.regressionCaseId.trim() ||
+      !regressionIds.has(
+        item.regressionCaseId,
+      )
+    ) {
+      errors.push(
+        "Reviewed golden diagnosis case " +
+          item.id +
+          " references unknown regression case " +
+          item.regressionCaseId +
+          ".",
+      );
+    }
+
+    if (
+      linkedRegressionIds.has(
+        item.regressionCaseId,
+      )
+    ) {
+      errors.push(
+        "Multiple reviewed golden diagnosis cases reference the same regression case: " +
+          item.regressionCaseId +
+          ".",
+      );
+    }
+    linkedRegressionIds.add(
+      item.regressionCaseId,
+    );
+
+    if (!item.reviewRevision.trim()) {
+      errors.push(
+        "Reviewed golden diagnosis case " +
+          item.id +
+          " requires a non-empty reviewRevision.",
+      );
+    }
+
+    if (
+      item.acceptedDispositions
+        .length === 0
+    ) {
+      errors.push(
+        "Reviewed golden diagnosis case " +
+          item.id +
+          " requires at least one accepted disposition.",
+      );
+    }
+  }
+
+  return errors.sort();
 }
 
 const DEFECT_DISPOSITIONS =

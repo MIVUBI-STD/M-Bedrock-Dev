@@ -6,9 +6,58 @@ import {
 import {
   evaluateGoldenDiagnosisBenchmark,
   goldenDiagnosisBenchmarkText,
+  validateReviewedGoldenDiagnosisCases,
 } from "../src/golden-diagnosis-benchmark.js";
 
 describe("golden diagnosis benchmark", () => {
+  it("accepts reviewed labels only when they bind to a real regression case", () => {
+    const regressions = [{
+      id: "reg:1",
+      title: "Regression",
+      domain: "multiplayer" as const,
+      discoveredBy: "manual" as const,
+      invariantIds: [],
+      triggerTags: ["multiplayer"],
+      capabilityTags: ["session"],
+      reproduction: ["run"],
+      expected: "isolated",
+      observed: "shared",
+    }];
+
+    expect(
+      validateReviewedGoldenDiagnosisCases(
+        regressions,
+        [{
+          id: "golden:reg:1",
+          regressionCaseId:
+            "reg:1",
+          reviewRevision:
+            "review:1",
+          expectedDefect: true,
+          acceptedDispositions: [
+            "confirmed-defect",
+          ],
+        }],
+      ),
+    ).toEqual([]);
+
+    expect(
+      validateReviewedGoldenDiagnosisCases(
+        regressions,
+        [{
+          id: "golden:missing",
+          regressionCaseId:
+            "reg:missing",
+          reviewRevision:
+            "review:1",
+          expectedDefect: true,
+          acceptedDispositions: [
+            "confirmed-defect",
+          ],
+        }],
+      ).join(" "),
+    ).toMatch(/unknown regression case/);
+  });
   it("scores defect detection and root cause separately", () => {
     const report =
       evaluateGoldenDiagnosisBenchmark(
