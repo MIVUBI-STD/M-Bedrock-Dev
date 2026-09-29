@@ -4,7 +4,7 @@ import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { ScriptApiUsageInventory } from "./script-api-usage.js";
-import type { RouteCorridorContract } from "../../project-model/src/index.js";
+import type { ArenaRegionContract, RouteCorridorContract } from "../../project-model/src/index.js";
 import type { StateAuthorityContract } from "../../project-model/src/index.js";
 import type { MutationDependentActionContract } from "../../project-model/src/index.js";
 import type { CausalChain, CausalIncident } from "../../project-model/src/index.js";
@@ -32,6 +32,7 @@ export interface InspectTargetProfile {
   eduLevel?: number;
   experiments?: readonly string[];
   routeCorridors?: readonly RouteCorridorContract[];
+  arenaRegionContracts?: readonly ArenaRegionContract[];
   mutationDependentActions?: readonly MutationDependentActionContract[];
   stateAuthorityContracts?: readonly StateAuthorityContract[];
   authoredSourceRoots?: readonly string[];

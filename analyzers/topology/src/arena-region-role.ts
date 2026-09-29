@@ -1,3 +1,5 @@
+import type { ArenaRegionContract } from "../../../packages/project-model/src/index.js";
+import { blockVolumesOverlap, resolveArenaRegionContractVolume } from "../../../packages/project-model/src/index.js";
 import type { ArenaRegionPlan, ArenaRegionVolume } from "./arena-region.js";
 import type { TopologyCandidate } from "./candidates.js";
 import type { ResolvedEffect } from "./effect-resolution.js";
@@ -6,7 +8,15 @@ import { effectSignature } from "./signature.js";
 export type ArenaRegionRole =
   | "static"
   | "mutable"
+  | "ignore"
   | "mixed"
+  | "unknown";
+
+export type ArenaRegionRoleAuthority =
+  | "authored-contract"
+  | "inferred-mutation"
+  | "inferred-static"
+  | "conflict"
   | "unknown";
 
 export interface ArenaRegionRoleEvidence {
@@ -20,6 +30,8 @@ export interface ClassifiedArenaRegionVolume extends ArenaRegionVolume {
   role: ArenaRegionRole;
   evidence: readonly ArenaRegionRoleEvidence[];
   mutableConflictKeys: readonly string[];
+  authoredContractIds: readonly string[];
+  roleAuthority: ArenaRegionRoleAuthority;
 }
 
 export interface ArenaRegionClassification {
@@ -27,6 +39,7 @@ export interface ArenaRegionClassification {
   staticVolumes: readonly ArenaRegionVolume[];
   mutableVolumes: readonly ArenaRegionVolume[];
   mixedVolumes: readonly ArenaRegionVolume[];
+  ignoredVolumes: readonly ArenaRegionVolume[];
   unknownVolumes: readonly ArenaRegionVolume[];
 }
 
@@ -141,6 +154,8 @@ export function classifyArenaRegionRoles(
   plan: ArenaRegionPlan,
   effects: readonly ResolvedEffect[],
   candidates: readonly TopologyCandidate[],
+  contracts: readonly ArenaRegionContract[] = [],
+  canonicalAnchor: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 },
 ): ArenaRegionClassification {
   const candidateById = new Map(
     candidates.map((candidate) => [candidate.id, candidate]),
@@ -214,12 +229,34 @@ export function classifyArenaRegionRoles(
     );
 
     let role: ArenaRegionRole = "unknown";
+    let roleAuthority: ArenaRegionRoleAuthority = "unknown";
     if (mutableEvidence.length > 0 && staticEvidence.length > 0) {
       role = "mixed";
+      roleAuthority = "conflict";
     } else if (mutableEvidence.length > 0) {
       role = "mutable";
+      roleAuthority = "inferred-mutation";
     } else if (staticEvidence.length > 0) {
       role = "static";
+      roleAuthority = "inferred-static";
+    }
+
+    const overlappingContracts = contracts.filter((contract) =>
+      blockVolumesOverlap(
+        { min: volume.min, max: volume.max },
+        resolveArenaRegionContractVolume(contract, canonicalAnchor),
+      )
+    );
+    const authoredRoles = new Set(
+      overlappingContracts.map((contract) => contract.role),
+    );
+
+    if (authoredRoles.size === 1) {
+      role = [...authoredRoles][0]!;
+      roleAuthority = "authored-contract";
+    } else if (authoredRoles.size > 1) {
+      role = "mixed";
+      roleAuthority = "conflict";
     }
 
     return {
@@ -227,6 +264,10 @@ export function classifyArenaRegionRoles(
       role,
       evidence,
       mutableConflictKeys: [...conflictKeys].sort(),
+      authoredContractIds: overlappingContracts
+        .map((contract) => contract.id)
+        .sort(),
+      roleAuthority,
     };
   });
 
@@ -234,15 +275,18 @@ export function classifyArenaRegionRoles(
     volumes: classified,
     staticVolumes: classified
       .filter((item) => item.role === "static")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
     mutableVolumes: classified
       .filter((item) => item.role === "mutable")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
     mixedVolumes: classified
       .filter((item) => item.role === "mixed")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
+    ignoredVolumes: classified
+      .filter((item) => item.role === "ignore")
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
     unknownVolumes: classified
       .filter((item) => item.role === "unknown")
-      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, ...volume }) => volume),
+      .map(({ role: _role, evidence: _evidence, mutableConflictKeys: _keys, authoredContractIds: _contracts, roleAuthority: _authority, ...volume }) => volume),
   };
 }

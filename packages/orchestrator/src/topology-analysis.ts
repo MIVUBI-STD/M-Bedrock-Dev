@@ -27,6 +27,9 @@ export interface RepairableTopologyCandidate {
 
 export function analyzeFunctionTopology(
   functions: readonly ParsedFunction[],
+  options: {
+    arenaRegionContracts?: readonly import("../../project-model/src/index.js").ArenaRegionContract[];
+  } = {},
 ) {
   const effects: CommandEffect[] = [];
   const spatialRecords: SpatialEffectRecord[] = [];
@@ -80,6 +83,8 @@ export function analyzeFunctionTopology(
           arenaRegionPlan,
           resolvedSpatialEffects,
           candidates,
+          options.arenaRegionContracts ?? [],
+          arenaReplicaDiscovery!.canonical.anchor,
         );
   const topologyDiagnostics = linearTopologyOutlierDiagnostics(linearOutliers);
 

@@ -125,7 +125,13 @@ export function analyzeInspectionRuntimeState(
     );
 
   const topology =
-    analyzeFunctionTopology(parsedFunctionModels);
+    analyzeFunctionTopology(
+      parsedFunctionModels,
+      {
+        arenaRegionContracts:
+          input.target.arenaRegionContracts ?? [],
+      },
+    );
   diagnostics.push(
     ...topology.stateDiagnostics,
     ...topology.topologyDiagnostics,
