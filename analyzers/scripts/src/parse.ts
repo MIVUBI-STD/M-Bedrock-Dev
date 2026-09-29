@@ -55,6 +55,7 @@ import {
   derivePersistenceIdempotencyGuards,
 } from "./persistence-idempotency-evidence.js";
 import { compileScriptSafeConfig } from "./safe-config-compiler.js";
+import { deriveScriptSpatialWorldMutations } from "./spatial-world-mutation.js";
 import { deriveScriptSpatialMutations } from "./spatial-mutation-evidence.js";
 
 function scriptKind(path: string): ts.ScriptKind {
@@ -1714,6 +1715,13 @@ export function parseScriptFile(
   const deferredCallbacks: ScriptDeferredCallback[] = [];
   const localFunctionCalls: ScriptLocalFunctionCall[] = [];
   const methodCalls = inferScriptMethodCalls(file, source);
+  const spatialWorldMutations =
+    deriveScriptSpatialWorldMutations(
+      text,
+      source,
+      methodCalls,
+      safeConfig.bindings,
+    );
   const blockMatchGuards = inferBlockMatchGuards(
     file,
     source,
