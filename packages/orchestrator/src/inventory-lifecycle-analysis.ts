@@ -21,6 +21,9 @@ export interface InventoryLifecycleRegionAssessment {
   executionRegion: string;
   inventoryClear: boolean;
   equipmentClear: boolean;
+  knownEquipmentSlots: readonly string[];
+  clearedEquipmentSlots: readonly string[];
+  equipmentCoverageComplete: boolean;
   itemGrants: number;
   equipmentSets: number;
   itemDrops: number;
@@ -36,6 +39,8 @@ export interface InventoryLifecycleAnalysis {
   copyMutationRisks: number;
   grantRegions: number;
   dropRegions: number;
+  knownEquipmentSlots: readonly string[];
+  unresolvedEquipmentSlotEvidence: number;
   assessments: readonly InventoryLifecycleRegionAssessment[];
 }
 
@@ -103,13 +108,27 @@ function assessRegion(
   scriptId: string,
   executionRegion: string,
   evidence: readonly ScriptInventoryLifecycleEvidence[],
+  knownEquipmentSlots: readonly string[],
 ): InventoryLifecycleRegionAssessment {
   const inventoryClear = evidence.some(
     (item) => item.kind === "inventory-clear-all",
   );
-  const equipmentClear = evidence.some(
-    (item) => item.kind === "equipment-clear",
-  );
+  const clearedEquipmentSlots = [
+    ...new Set(
+      evidence.flatMap((item) =>
+        item.kind === "equipment-clear-slot" &&
+        item.slotExpression !== undefined
+          ? [item.slotExpression]
+          : [],
+      ),
+    ),
+  ].sort();
+  const equipmentClear =
+    clearedEquipmentSlots.length > 0;
+  const equipmentCoverageComplete =
+    knownEquipmentSlots.every((slot) =>
+      clearedEquipmentSlots.includes(slot)
+    );
   const itemGrants = evidence.filter(
     (item) => item.kind === "item-grant",
   ).length;
@@ -127,7 +146,8 @@ function assessRegion(
   const status: InventoryLifecycleRegionStatus =
     copyRisk
       ? "copy-writeback-risk"
-      : inventoryClear && equipmentClear
+      : inventoryClear &&
+          equipmentCoverageComplete
         ? "complete-reset"
         : inventoryClear || equipmentClear
           ? "partial-reset"
@@ -138,6 +158,9 @@ function assessRegion(
     executionRegion,
     inventoryClear,
     equipmentClear,
+    knownEquipmentSlots,
+    clearedEquipmentSlots,
+    equipmentCoverageComplete,
     itemGrants,
     equipmentSets,
     itemDrops,
@@ -149,6 +172,30 @@ function assessRegion(
 export function analyzeInventoryLifecycle(
   scripts: readonly ParsedScriptFile[],
 ): InventoryLifecycleAnalysis {
+  const allEvidence = scripts.flatMap(
+    (script) =>
+      script.inventoryLifecycleEvidence ?? [],
+  );
+  const knownEquipmentSlots = [
+    ...new Set(
+      allEvidence.flatMap((item) =>
+        item.kind === "equipment-set" &&
+        item.slotExpression !== undefined
+          ? [item.slotExpression]
+          : [],
+      ),
+    ),
+  ].sort();
+  const unresolvedEquipmentSlotEvidence =
+    allEvidence.filter(
+      (item) =>
+        (
+          item.kind === "equipment-set" ||
+          item.kind === "equipment-clear-slot"
+        ) &&
+        item.slotExpression === undefined,
+    ).length;
+
   const assessments = scripts.flatMap((script) =>
     [...byRegion(script).entries()].map(
       ([region, evidence]) =>
@@ -156,6 +203,7 @@ export function analyzeInventoryLifecycle(
           script.identifier,
           region,
           evidence,
+          knownEquipmentSlots,
         ),
     )
   ).sort((a, b) =>
@@ -196,6 +244,8 @@ export function analyzeInventoryLifecycle(
     dropRegions: assessments.filter(
       (item) => item.itemDrops > 0,
     ).length,
+    knownEquipmentSlots,
+    unresolvedEquipmentSlotEvidence,
     assessments,
   };
 }
