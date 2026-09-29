@@ -38,3 +38,5 @@ export * from "./multi-client-orchestrator.js";
 export * from "./multiplayer-stress-experiment.js";
 
 export * from "./repeated-arena-cycle-experiment.js";
+
+export * from "./global-state-lease-experiment.js";
