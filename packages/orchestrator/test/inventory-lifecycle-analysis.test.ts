@@ -5,7 +5,7 @@ import {
 } from "../src/inventory-lifecycle-analysis.js";
 
 describe("inventory lifecycle analysis", () => {
-  it("marks inventory-only reset as partial", () => {
+  it("accepts inventory-only reset when the map has no equipment surface", () => {
     const script = parseScriptFile(
       "main",
       [
@@ -24,9 +24,10 @@ describe("inventory lifecycle analysis", () => {
 
     expect(result).toMatchObject({
       resetCandidates: 1,
-      completeResets: 0,
-      partialResets: 1,
+      completeResets: 1,
+      partialResets: 0,
       copyMutationRisks: 0,
+      knownEquipmentSlots: [],
     });
   });
 
