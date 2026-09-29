@@ -17,6 +17,8 @@ describe("diagnosis result cache", () => {
         executorId:
           "diagnosis.source-index",
         capabilityRevision: "1",
+        executorRevision:
+          "executor:test:1",
         context: "LOCAL_ARTIFACT",
         payload: {
           z: 2,
@@ -34,6 +36,8 @@ describe("diagnosis result cache", () => {
         executorId:
           "diagnosis.source-index",
         capabilityRevision: "1",
+        executorRevision:
+          "executor:test:1",
         context: "LOCAL_ARTIFACT",
         payload: {
           a: {
@@ -55,6 +59,8 @@ describe("diagnosis result cache", () => {
         executorId:
           "diagnosis.source-index",
         capabilityRevision: "1",
+        executorRevision:
+          "executor:test:1",
         context: "LOCAL_ARTIFACT",
         payload: {
           value: Number.NaN,
@@ -69,6 +75,8 @@ describe("diagnosis result cache", () => {
         executorId:
           "diagnosis.source-index",
         capabilityRevision: "1",
+        executorRevision:
+          "executor:test:1",
         context: "LOCAL_ARTIFACT",
         payload: {
           value:
@@ -86,6 +94,8 @@ describe("diagnosis result cache", () => {
         executorId:
           "diagnosis.source-index",
         capabilityRevision: "1",
+        executorRevision:
+          "executor:test:1",
         context: "LOCAL_ARTIFACT",
         payload: { value: 0 },
       });
@@ -96,6 +106,8 @@ describe("diagnosis result cache", () => {
         executorId:
           "diagnosis.source-index",
         capabilityRevision: "1",
+        executorRevision:
+          "executor:test:1",
         context: "LOCAL_ARTIFACT",
         payload: { value: -0 },
       });
@@ -104,12 +116,45 @@ describe("diagnosis result cache", () => {
       .not.toBe(zero);
   });
 
+  it("changes the key when executor revision changes", () => {
+    const first =
+      diagnosisExecutionCacheKey({
+        capabilityId:
+          "diagnosis.source-index",
+        executorId:
+          "diagnosis.source-index",
+        capabilityRevision: "1",
+        executorRevision:
+          "executor:test:1",
+        context: "LOCAL_ARTIFACT",
+        payload: { artifact: "a" },
+      });
+
+    const second =
+      diagnosisExecutionCacheKey({
+        capabilityId:
+          "diagnosis.source-index",
+        executorId:
+          "diagnosis.source-index",
+        capabilityRevision: "1",
+        executorRevision:
+          "executor:test:2",
+        context: "LOCAL_ARTIFACT",
+        payload: { artifact: "a" },
+      });
+
+    expect(second)
+      .not.toBe(first);
+  });
+
   it("changes the key when capability revision or payload changes", () => {
     const base = {
       capabilityId:
         "diagnosis.source-index",
       executorId:
         "diagnosis.source-index",
+      executorRevision:
+        "executor:test:1",
       context:
         "LOCAL_ARTIFACT" as const,
     };
@@ -130,6 +175,8 @@ describe("diagnosis result cache", () => {
       diagnosisExecutionCacheKey({
         ...base,
         capabilityRevision: "2",
+        executorRevision:
+          "executor:test:1",
         payload: { artifact: "a" },
       });
 
@@ -157,6 +204,8 @@ describe("diagnosis result cache", () => {
       executorId:
         "diagnosis.source-index",
       capabilityRevision: "1",
+      executorRevision:
+        "executor:test:1",
       context: "LOCAL_ARTIFACT",
       evidence: [{
         level: "static",
