@@ -42,6 +42,7 @@ export interface MultiClientRuntimeAdapter {
   readonly maxClients: number;
   readonly proofAuthority:
     | "test-only"
+    | "server-simulated"
     | "live-runtime";
   execute(
     client: MultiClientLogicalClient,
@@ -366,6 +367,7 @@ export async function executeMultiClientScenario(
     adapter.maxClients < 1 ||
     ![
       "test-only",
+      "server-simulated",
       "live-runtime",
     ].includes(
       adapter.proofAuthority,
@@ -540,9 +542,14 @@ export async function executeMultiClientScenario(
           ? [
               "All multi-client synchronization waves completed with explicit evidence from a live-runtime adapter.",
             ]
-          : [
-              "All multi-client synchronization waves completed with explicit test evidence, but test-only adapters do not establish live runtime proof.",
-            ],
+          : adapter.proofAuthority ===
+            "server-simulated"
+            ? [
+                "All multi-client synchronization waves completed with explicit server-state simulation evidence, but simulated player state does not establish real client/network lifecycle proof.",
+              ]
+            : [
+                "All multi-client synchronization waves completed with explicit test evidence, but test-only adapters do not establish live runtime proof.",
+              ],
   };
 }
 

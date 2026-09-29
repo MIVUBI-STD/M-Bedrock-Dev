@@ -104,6 +104,49 @@ describe("multi-client orchestration", () => {
       .toBe("incomplete-evidence");
   });
 
+  it("keeps server-simulated evidence below real client proof", async () => {
+    const result =
+      await executeMultiClientScenario(
+        {
+          schemaVersion: 1,
+          id: "multi:simulated",
+          clients: [{ id: "p1" }],
+          waves: [{
+            id: "disconnect",
+            mode: "serial",
+            actions: [{
+              id: "disconnect:p1",
+              clientId: "p1",
+              actionId: "disconnect",
+            }],
+          }],
+        },
+        {
+          adapterId:
+            "server-harness",
+          maxClients: 1,
+          proofAuthority:
+            "server-simulated",
+          execute: async () => ({
+            evidenceIds: [
+              "e:server-state",
+            ],
+          }),
+        },
+      );
+
+    expect(result.status)
+      .toBe("completed");
+    expect(
+      result.proofAuthority,
+    ).toBe("server-simulated");
+    expect(
+      result.reasons.join(" "),
+    ).toMatch(
+      /does not establish real client\/network lifecycle proof/,
+    );
+  });
+
   it("blocks when real adapter capacity is below scenario demand", async () => {
     const execute = vi.fn();
 

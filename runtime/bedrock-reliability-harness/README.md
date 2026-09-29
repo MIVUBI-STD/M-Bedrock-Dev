@@ -50,3 +50,12 @@ Copy this directory as the basis of a development-only behavior pack, then adjus
 - arena/session tag naming.
 
 Do not ship this harness in production maps unless explicitly desired.
+
+
+## Client lifecycle proof boundary
+
+Server-state simulation is not client lifecycle proof.
+
+The development control actions named `disconnect` and `reconnect` only toggle harness/session tags on an already connected player. They are useful for deterministic state-machine testing, but they do **not** disconnect a Minecraft client from the server or prove network reconnect behavior.
+
+Any orchestration built on these controls must declare `proofAuthority: "server-simulated"`. Only an adapter that controls independent real Minecraft client processes/connections may declare `proofAuthority: "live-runtime"`.
