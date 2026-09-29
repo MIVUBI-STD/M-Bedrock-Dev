@@ -18,3 +18,5 @@ export * from "./safe-config-compiler.js";
 export * from "./spatial-mutation-evidence.js";
 
 export * from "./spatial-world-mutation.js";
+
+export * from "./cleanup-resource-evidence.js";

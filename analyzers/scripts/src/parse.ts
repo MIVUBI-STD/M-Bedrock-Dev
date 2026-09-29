@@ -57,6 +57,7 @@ import {
 import { compileScriptSafeConfig } from "./safe-config-compiler.js";
 import { deriveScriptSpatialWorldMutations } from "./spatial-world-mutation.js";
 import { deriveScriptSpatialMutations } from "./spatial-mutation-evidence.js";
+import { deriveScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -1702,6 +1703,11 @@ export function parseScriptFile(
     text,
     source,
   );
+  const cleanupResourceEvidence =
+    deriveScriptCleanupResourceEvidence(
+      text,
+      source,
+    );
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2498,6 +2504,7 @@ export function parseScriptFile(
     spatialTransformUses,
     spatialContextOffsetSeries,
     spatialMutations: [...spatialMutations.mutations],
+    cleanupResourceEvidence: [...cleanupResourceEvidence],
     spatialMutationRejected: [...spatialMutations.rejected],
     capabilities,
   };

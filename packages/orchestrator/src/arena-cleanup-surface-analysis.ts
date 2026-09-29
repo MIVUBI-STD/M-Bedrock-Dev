@@ -186,14 +186,14 @@ function extractMutations(
     }
   }
 
-  for (const callback of script.deferredCallbacks) {
+  for (const resource of script.cleanupResourceEvidence ?? []) {
     output.push({
       scriptId: script.identifier,
-      region: normalizedRegion(callback.callerRegion),
-      surface: "deferred-callback",
-      key: callback.scheduler,
-      action: "acquire",
-      precision: "surface-level",
+      region: resource.executionRegion,
+      surface: resource.surface,
+      key: resource.key,
+      action: resource.action,
+      precision: resource.precision,
     });
   }
 
@@ -208,26 +208,23 @@ function extractMutations(
           key: string;
         }
       | undefined =
-      method === "addTag"
-        ? { surface: "tag", action: "acquire", key: call.receiverHint ?? call.receiverType }
-        : method === "removeTag"
-          ? { surface: "tag", action: "release", key: call.receiverHint ?? call.receiverType }
-          : method === "addEffect"
-            ? { surface: "effect", action: "acquire", key: call.receiverHint ?? call.receiverType }
-            : method === "removeEffect" || method === "clearEffects"
-              ? { surface: "effect", action: "release", key: call.receiverHint ?? call.receiverType }
-              : method === "spawnEntity"
-                ? { surface: "entity", action: "acquire", key: call.receiverHint ?? call.receiverType }
-                : method === "remove" || method === "kill"
-                  ? { surface: "entity", action: "release", key: call.receiverHint ?? call.receiverType }
-                  : method === "setScore" || method === "addScore"
-                    ? { surface: "scoreboard", action: "acquire", key: call.receiverHint ?? call.receiverType }
-                    : method === "removeParticipant"
-                      ? { surface: "scoreboard", action: "release", key: call.receiverHint ?? call.receiverType }
-                      : method === "clearRun"
-                        ? { surface: "deferred-callback", action: "release", key: "system" }
-                        : undefined;
-
+      method === "spawnEntity"
+        ? {
+            surface: "entity",
+            action: "acquire",
+            key:
+              call.receiverHint ??
+              call.receiverType,
+          }
+        : method === "remove" || method === "kill"
+          ? {
+              surface: "entity",
+              action: "release",
+              key:
+                call.receiverHint ??
+                call.receiverType,
+            }
+          : undefined;
     if (pair) {
       output.push({
         scriptId: script.identifier,
@@ -240,20 +237,6 @@ function extractMutations(
     }
   }
 
-  for (const write of script.propertyWrites) {
-    if (
-      write.receiverType === "PlayerInputPermissions"
-    ) {
-      output.push({
-        scriptId: script.identifier,
-        region: "module",
-        surface: "input-permission",
-        key: write.symbol,
-        action: "acquire",
-        precision: "surface-level",
-      });
-    }
-  }
 
   return output;
 }

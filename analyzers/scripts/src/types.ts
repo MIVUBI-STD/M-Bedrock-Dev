@@ -1,3 +1,4 @@
+import type { ScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "./spatial-mutation-evidence.js";
 import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigImport, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
 import type {
@@ -446,6 +447,7 @@ export interface ParsedScriptFile {
   spatialMutations?: ScriptSpatialMutationEvidence[];
   spatialMutationRejected?: ScriptSpatialMutationRejection[];
   spatialWorldMutations?: ScriptSpatialWorldMutation[];
+  cleanupResourceEvidence?: ScriptCleanupResourceEvidence[];
   repairTransformHints?: RepairSourceTransformHint[];
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
