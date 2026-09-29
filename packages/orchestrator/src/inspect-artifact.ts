@@ -77,6 +77,15 @@ export async function inspectArtifact(
       runtimeProbeResponses,
       runtimeProbeTranscript?.droppedExchanges ?? 0,
     );
+    const proofVolumes =
+      result.arenaAnalysis.regionClassification === undefined
+        ? result.arenaAnalysis.regionPlan?.volumes
+        : [
+            ...result.arenaAnalysis.regionClassification.staticVolumes,
+            ...result.arenaAnalysis.regionClassification.mixedVolumes,
+            ...result.arenaAnalysis.regionClassification.unknownVolumes,
+          ];
+
     const arenaNativeSpatial =
       result.arenaAnalysis.discovery === undefined
         ? undefined
@@ -87,6 +96,9 @@ export async function inspectArtifact(
               ...(result.arenaAnalysis.regionPlan === undefined
                 ? {}
                 : { regionPlan: result.arenaAnalysis.regionPlan }),
+              ...(proofVolumes === undefined
+                ? {}
+                : { includedVolumes: proofVolumes }),
             },
           );
 
@@ -114,6 +126,9 @@ export async function inspectArtifact(
                       regionPlan:
                         result.arenaAnalysis.regionPlan,
                     }),
+                ...(proofVolumes === undefined
+                  ? {}
+                  : { includedVolumes: proofVolumes }),
               },
             );
 

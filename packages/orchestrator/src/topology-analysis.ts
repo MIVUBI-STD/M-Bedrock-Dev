@@ -6,7 +6,7 @@ import {
   resolveEffect,
   type ResolvedEffect,
 } from "../../../analyzers/topology/src/index.js";
-import { deriveTopologyCandidates, discoverArenaReplicasFromTopology, inferArenaRegionPlan } from "../../../analyzers/topology/src/index.js";
+import { deriveTopologyCandidates, discoverArenaReplicasFromTopology, inferArenaRegionPlan, classifyArenaRegionRoles } from "../../../analyzers/topology/src/index.js";
 import { detectLinearTopologyOutliers } from "../../../analyzers/topology/src/index.js";
 import { stateAccessesFromEffects } from "../../../analyzers/topology/src/index.js";
 import { likelyGlobalAccess } from "../../../analyzers/topology/src/index.js";
@@ -73,6 +73,14 @@ export function analyzeFunctionTopology(
           candidates,
           arenaReplicaDiscovery,
         );
+  const arenaRegionClassification =
+    arenaRegionPlan === undefined
+      ? undefined
+      : classifyArenaRegionRoles(
+          arenaRegionPlan,
+          resolvedSpatialEffects,
+          candidates,
+        );
   const topologyDiagnostics = linearTopologyOutlierDiagnostics(linearOutliers);
 
   const repairableTopologyCandidates: RepairableTopologyCandidate[] = linearOutliers
@@ -95,6 +103,7 @@ export function analyzeFunctionTopology(
     repairableTopologyCandidates,
     arenaReplicaDiscovery,
     arenaRegionPlan,
+    arenaRegionClassification,
     topologyDiagnostics,
     broadWrites: stateAccesses.filter(
       (access) => access.access === "write" && likelyGlobalAccess(access),

@@ -67,6 +67,7 @@ export function auditArenaNativeSpatialContent(
     marginChunks?: number;
     dimensionId?: number;
     regionPlan?: ArenaRegionPlan;
+    includedVolumes?: readonly ArenaRegionPlan["volumes"][number][];
   } = {},
 ): ArenaNativeSpatialAudit {
   const region = topologyEnvelope(
@@ -74,7 +75,10 @@ export function auditArenaNativeSpatialContent(
     options.marginChunks ?? 2,
     options.dimensionId ?? 0,
   );
-  const regions = options.regionPlan?.volumes.map((volume) => ({
+  const sourceVolumes =
+    options.includedVolumes ??
+    options.regionPlan?.volumes;
+  const regions = sourceVolumes?.map((volume) => ({
     minChunkX: chunkOf(volume.min.x),
     maxChunkX: chunkOf(volume.max.x),
     minChunkZ: chunkOf(volume.min.z),

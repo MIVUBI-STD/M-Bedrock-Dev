@@ -57,6 +57,10 @@ export interface ArenaVoxelProofOptions {
   maxBlocks?: number;
   maxMismatchesPerReplica?: number;
   regionPlan?: ArenaRegionPlan;
+  includedVolumes?: readonly {
+    min: ArenaVector3;
+    max: ArenaVector3;
+  }[];
 }
 
 function floorDiv(value: number, divisor: number): number {
@@ -161,14 +165,17 @@ export async function proveArenaVoxelEquivalence(
 ): Promise<ArenaVoxelProof> {
   const fallbackRegion = envelope(discovery, options.marginBlocks ?? 16);
   const regions =
+    options.includedVolumes ??
     options.regionPlan?.volumes.map((volume) => ({
       min: volume.min,
       max: volume.max,
-    })) ?? [fallbackRegion];
+    })) ??
+    [fallbackRegion];
   const region =
     options.regionPlan?.boundingBox ?? fallbackRegion;
   const regionSource =
-    options.regionPlan === undefined
+    options.regionPlan === undefined &&
+    options.includedVolumes === undefined
       ? "fallback-envelope" as const
       : "topology-plan" as const;
   const maxBlocks = options.maxBlocks ?? 250_000;

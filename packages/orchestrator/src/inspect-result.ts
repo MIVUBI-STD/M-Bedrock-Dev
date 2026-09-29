@@ -364,6 +364,12 @@ export function buildInspectionResult(
       ...(topology.arenaRegionPlan === undefined
         ? {}
         : { regionPlan: topology.arenaRegionPlan }),
+      ...(topology.arenaRegionClassification === undefined
+        ? {}
+        : {
+            regionClassification:
+              topology.arenaRegionClassification,
+          }),
     },
     gameplayIntent: {
       model: input.gameplayIntent,
