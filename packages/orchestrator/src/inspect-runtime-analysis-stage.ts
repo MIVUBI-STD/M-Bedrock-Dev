@@ -18,6 +18,8 @@ import { deriveGameplayRouteCorridors } from "./gameplay-route-corridor.js";
 import { analyzeMutationTransactionOrdering } from "./mutation-transaction-analysis.js";
 import { analyzeScriptMutationTransactions } from "./script-mutation-transaction-analysis.js";
 import { analyzeScriptCommandMutationTransactions } from "./script-command-transaction-analysis.js";
+import { extractArenaConcurrencyCapacity } from "./arena-capacity-extraction.js";
+import { arenaCapacityDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -137,6 +139,17 @@ export function analyzeInspectionRuntimeState(
     ...topology.topologyDiagnostics,
   );
 
+  const arenaCapacity =
+    extractArenaConcurrencyCapacity({
+      discovery: topology.arenaReplicaDiscovery,
+      tickingAreas: structureRuntime.tickingAreas,
+    });
+  if (arenaCapacity.report) {
+    diagnostics.push(
+      ...arenaCapacityDiagnostics(arenaCapacity.report),
+    );
+  }
+
   const structureProofs = derivePlacementProofs(
     structureRuntime,
     parsedFunctionModels,
@@ -180,6 +193,7 @@ export function analyzeInspectionRuntimeState(
   const routeCorrelations = correlateRouteMutations(
     effectiveRouteCorridors,
     topology,
+    arenaCapacity,
     structureProofs,
     input.target.staticExecutionDimension,
   );

@@ -22,6 +22,7 @@ import type { PersistedPackIdentityExtraction } from "./persisted-pack-identity.
 import type { ArenaProofCoverageReport } from "./arena-proof-coverage.js";
 import type { ArenaProofConclusionReport } from "./arena-proof-conclusion.js";
 import type { ArenaReplicaProofQuality } from "./arena-replica-proof-quality.js";
+import type { ArenaCapacityExtractionResult } from "./arena-capacity-extraction.js";
 import type {
   GameplayIntentRouteRuntimeAssessment,
   GameplayIntentRuntimeAssessment,
@@ -168,6 +169,7 @@ export interface InspectDirectoryResult {
     proofCoverage?: ArenaProofCoverageReport;
     proofConclusion?: ArenaProofConclusionReport;
     replicaProofQuality?: readonly ArenaReplicaProofQuality[];
+    capacity?: ArenaCapacityExtractionResult;
     nativeSpatial?: ArenaNativeSpatialAudit;
     voxelProof?: ArenaVoxelProof;
   };

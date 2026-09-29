@@ -156,6 +156,7 @@ export function buildInspectionResult(
     scriptStructureLoads,
     placedEmbeddedCommands,
     topology,
+    arenaCapacity,
     routeCorrelations,
     effectiveRouteCorridors,
     derivedGameplayRouteCorridors,
@@ -370,6 +371,7 @@ export function buildInspectionResult(
             regionClassification:
               topology.arenaRegionClassification,
           }),
+      capacity: arenaCapacity,
     },
     gameplayIntent: {
       model: input.gameplayIntent,
