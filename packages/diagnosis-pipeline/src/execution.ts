@@ -8,6 +8,7 @@ import {
   DIAGNOSIS_ANALYSIS_CAPABILITIES,
 } from "./profile.js";
 import {
+  diagnosisCacheValueFingerprint,
   diagnosisExecutionCacheKey,
   type DiagnosisResultCache,
 } from "./cache.js";
@@ -361,6 +362,32 @@ export async function executePlannedDiagnosisStep(
           executor.executorRevision &&
         cached.context === input.context
       ) {
+        let outputFingerprintValid =
+          false;
+
+        try {
+          outputFingerprintValid =
+            cached.outputFingerprint ===
+            diagnosisCacheValueFingerprint(
+              cached.output,
+            );
+        } catch (error) {
+          cacheNotes.push(
+            "Cached diagnosis output integrity could not be verified and was ignored: " +
+              (
+                error instanceof Error
+                  ? error.message
+                  : String(error)
+              ),
+          );
+        }
+
+        if (!outputFingerprintValid) {
+          cacheNotes.push(
+            "Cached diagnosis output fingerprint changed; cache entry was ignored.",
+          );
+        }
+
         const cachedEvidenceErrors =
           validateCompletedEvidence(
             capability.id,
@@ -369,6 +396,7 @@ export async function executePlannedDiagnosisStep(
           );
 
         if (
+          outputFingerprintValid &&
           cachedEvidenceErrors.length === 0
         ) {
           return {
@@ -447,6 +475,11 @@ export async function executePlannedDiagnosisStep(
     input.cache !== undefined
   ) {
     try {
+      const outputFingerprint =
+        diagnosisCacheValueFingerprint(
+          result.output,
+        );
+
       await input.cache.put({
         schemaVersion: 1,
         cacheKey,
@@ -457,6 +490,7 @@ export async function executePlannedDiagnosisStep(
         executorRevision:
           executor.executorRevision!,
         context: input.context,
+        outputFingerprint,
         evidence: [...result.evidence],
         output: result.output,
         reasons: [
@@ -465,7 +499,7 @@ export async function executePlannedDiagnosisStep(
       });
     } catch (error) {
       cacheNotes.push(
-        "Diagnosis result cache write failed; fresh executor result remains authoritative: " +
+        "Diagnosis result cache write/integrity fingerprint failed; fresh executor result remains authoritative: " +
           (
             error instanceof Error
               ? error.message

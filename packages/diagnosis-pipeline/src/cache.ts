@@ -21,6 +21,7 @@ export interface CachedDiagnosisExecution {
   capabilityRevision: string;
   executorRevision: string;
   context: AnalysisExecutionContext;
+  outputFingerprint: string;
   evidence: readonly AnalysisEvidenceSnapshot[];
   output: unknown;
   reasons: readonly string[];
@@ -132,6 +133,18 @@ function canonical(value: unknown): unknown {
       typeof value +
       ".",
   );
+}
+
+export function diagnosisCacheValueFingerprint(
+  value: unknown,
+): string {
+  return createHash("sha256")
+    .update(
+      JSON.stringify(
+        canonical(value),
+      ),
+    )
+    .digest("hex");
 }
 
 export function diagnosisExecutionCacheKey(
