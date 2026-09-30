@@ -312,6 +312,7 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       repairClass: "implementation-repair",
       supportedDiagnosticCodes: [
         "CHUNK_LIFECYCLE_RUNTIME_RISK",
+        "CHUNK_LIFECYCLE_SOURCE_RISK",
       ],
       requiresExactSourceEvidence: false,
       rationale:
