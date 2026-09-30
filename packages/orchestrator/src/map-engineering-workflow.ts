@@ -47,6 +47,8 @@ export interface MapEngineeringWorkflowProjection {
     cleanupResourcesMissing: number;
     spatialAuthorityUncovered: number;
     spatialAuthorityConflicts: number;
+    spatialAuthorityUnknownRegions: number;
+    spatialAuthorityPolicyInvalid: number;
     inventoryPartialResets: number;
     inventoryCopyMutationRisks: number;
     inventoryDeniedDrops: number;
@@ -100,6 +102,16 @@ function understandingStage(
   const spatialAuthorityConflicts =
     source.gameplayWorld.spatial.authority
       ?.conflicts ?? 0;
+  const spatialAuthorityUnknownRegions =
+    source.gameplayWorld.spatial.authority
+      ?.unknownRegions ?? 0;
+  const spatialAuthorityPolicyInvalid =
+    source.gameplayWorld.spatial.authority
+      ?.configured === true &&
+    source.gameplayWorld.spatial.authority
+      ?.policyValid === false
+      ? 1
+      : 0;
 
   return {
     id: "understand",
@@ -109,7 +121,9 @@ function understandingStage(
       lifecycleUnresolved === 0 &&
       cleanupMissing === 0 &&
       spatialAuthorityUncovered === 0 &&
-      spatialAuthorityConflicts === 0
+      spatialAuthorityConflicts === 0 &&
+      spatialAuthorityUnknownRegions === 0 &&
+      spatialAuthorityPolicyInvalid === 0
         ? "ready"
         : "partial",
     reasons: [
@@ -137,6 +151,13 @@ function understandingStage(
         ? "No equally-specific spatial authority rules conflict."
         : String(spatialAuthorityConflicts) +
           " spatial authority requirement(s) resolve to conflicting rules.",
+      spatialAuthorityUnknownRegions === 0
+        ? "No spatial authority requirement references an unknown region."
+        : String(spatialAuthorityUnknownRegions) +
+          " spatial authority requirement(s) reference unknown regions.",
+      spatialAuthorityPolicyInvalid === 0
+        ? "Configured spatial authority policy is structurally valid."
+        : "Configured spatial authority policy is invalid or references unknown region contracts.",
     ],
   };
 }
@@ -361,6 +382,16 @@ export function buildMapEngineeringWorkflow(
     spatialAuthorityConflicts:
       source.gameplayWorld.spatial.authority
         ?.conflicts ?? 0,
+    spatialAuthorityUnknownRegions:
+      source.gameplayWorld.spatial.authority
+        ?.unknownRegions ?? 0,
+    spatialAuthorityPolicyInvalid:
+      source.gameplayWorld.spatial.authority
+        ?.configured === true &&
+      source.gameplayWorld.spatial.authority
+        ?.policyValid === false
+        ? 1
+        : 0,
     inventoryPartialResets:
       source.gameplayWorld.inventory
         ?.partialResets ?? 0,
