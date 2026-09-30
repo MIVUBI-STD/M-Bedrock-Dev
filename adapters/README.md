@@ -6,11 +6,10 @@ Format-boundary translation for Bedrock/Education content.
 
 Adapters translate external representations to/from canonical engine models without becoming semantic-policy owners.
 
-Expected specialized adapters may include:
+Active specialized adapters include:
 
 ```text
-mcworld / pack container handoff
-mcstructure / NBT
+mcstructure / little-endian NBT / canonical indexing / placement / footprint
 LevelDB world database
 other specialized binary formats
 ```
