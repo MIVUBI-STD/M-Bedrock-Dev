@@ -162,6 +162,27 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
       ],
     },
     {
+      id: "persistence-lifecycle-integrity",
+      evidenceLevel: "semantic",
+      cost: "moderate",
+      tags: [
+        "persistence",
+        "dynamic-property",
+        "recovery",
+        "state",
+      ],
+      deterministic: true,
+      contexts: [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+      producesTraits: [
+        "semantic-model",
+      ],
+    },
+    {
       id: "multiplayer-interleaving",
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -181,6 +202,28 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
       ],
       producesTraits: [
         "semantic-model",
+      ],
+    },
+    {
+      id: "persistence-recovery-runtime",
+      evidenceLevel: "runtime",
+      cost: "expensive",
+      tags: [
+        "persistence",
+        "recovery",
+        "reload",
+        "runtime",
+      ],
+      deterministic: false,
+      contexts: [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+      producesTraits: [
+        "runtime-observation",
+      ],
+      prerequisites: [
+        "persistence-lifecycle-integrity",
       ],
     },
     {
