@@ -82,6 +82,32 @@ describe("task graph", () => {
     ).toThrow(/Unknown task dependency/);
   });
 
+  it("rejects unbounded wildcard ownership syntax", () => {
+    expect(() =>
+      createTaskGraph([{
+        id: "bad-glob",
+        owner: "test",
+        pathPrefixes: [
+          "packages/*/src",
+        ],
+        deterministic: true,
+        cacheable: true,
+        cost: "cheap",
+      }])
+    ).toThrow(/one trailing \*/);
+
+    expect(() =>
+      createTaskGraph([{
+        id: "bare-glob",
+        owner: "test",
+        pathPrefixes: ["*"],
+        deterministic: true,
+        cacheable: true,
+        cost: "cheap",
+      }])
+    ).toThrow(/one trailing \*/);
+  });
+
   it("rejects dependency cycles", () => {
     expect(() =>
       createTaskGraph([
