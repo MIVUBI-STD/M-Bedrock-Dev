@@ -55,16 +55,6 @@ export function validateCombatPolicy(
       "Combat policy id must be non-empty.",
     );
   }
-  if (
-    policy.reviveAfterDeathAllowed &&
-    !policy.selfReviveAllowed &&
-    policy.multipleReviversAllowed
-  ) {
-    errors.push(
-      "Revive-after-death with multiple revivers requires an explicit mode-specific contract; the generic combat policy forbids this ambiguous combination.",
-    );
-  }
-
   return errors;
 }
 
