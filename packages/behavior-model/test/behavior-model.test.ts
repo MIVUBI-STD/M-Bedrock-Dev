@@ -13,6 +13,8 @@ import {
   validateSpatialAuthorityPolicy,
   resolveInventoryItemPolicy,
   validateInventoryItemPolicy,
+  planNavigationRecovery,
+  validateNavigationRecoveryPolicy,
   evaluateTemporalProperty,
   unknownNondeterminismCapabilityProfile,
   validateBehavioralWorldModel,
@@ -439,6 +441,84 @@ describe("behavioral world model", () => {
 
     expect(result.status).toBe("conflict");
     expect(result.rule).toBeUndefined();
+  });
+
+  it("escalates navigation recovery only after bounded earlier stages are exhausted", () => {
+    const policy = {
+      schemaVersion: 1 as const,
+      id: "arena-recovery",
+      maxRepathAttempts: 1,
+      maxAnchorRecoveryAttempts: 1,
+      teleportFallbackEnabled: true,
+      maxTeleportFallbackAttempts: 1,
+    };
+
+    expect(
+      validateNavigationRecoveryPolicy(policy),
+    ).toEqual([]);
+
+    const base = {
+      entityGeneration: 4,
+      ownerGeneration: 4,
+      stalledConfirmed: true,
+      pathAnchorAvailable: true,
+      repathAttempts: 0,
+      anchorRecoveryAttempts: 0,
+      teleportFallbackAttempts: 0,
+    };
+
+    const repath =
+      planNavigationRecovery(policy, base);
+    expect(repath.decision).toBe("repath");
+
+    const anchor =
+      planNavigationRecovery(
+        policy,
+        repath.nextState,
+      );
+    expect(anchor.decision)
+      .toBe("path-anchor-recovery");
+
+    const teleport =
+      planNavigationRecovery(
+        policy,
+        anchor.nextState,
+      );
+    expect(teleport.decision)
+      .toBe("teleport-fallback");
+
+    const terminal =
+      planNavigationRecovery(
+        policy,
+        teleport.nextState,
+      );
+    expect(terminal.decision)
+      .toBe("terminal-stuck");
+  });
+
+  it("rejects stale-generation navigation recovery work", () => {
+    const result = planNavigationRecovery(
+      {
+        schemaVersion: 1,
+        id: "recovery",
+        maxRepathAttempts: 1,
+        maxAnchorRecoveryAttempts: 1,
+        teleportFallbackEnabled: false,
+        maxTeleportFallbackAttempts: 0,
+      },
+      {
+        entityGeneration: 5,
+        ownerGeneration: 4,
+        stalledConfirmed: true,
+        pathAnchorAvailable: true,
+        repathAttempts: 0,
+        anchorRecoveryAttempts: 0,
+        teleportFallbackAttempts: 0,
+      },
+    );
+
+    expect(result.decision)
+      .toBe("stale-generation");
   });
 
   it("reports provenance gaps instead of silently trusting unbound claims", () => {
