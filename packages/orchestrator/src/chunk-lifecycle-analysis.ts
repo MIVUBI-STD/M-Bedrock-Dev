@@ -13,6 +13,7 @@ export interface ChunkLeaseAssessment {
     | "paired"
     | "acquire-without-release"
     | "release-without-acquire"
+    | "release-unreachable"
     | "dynamic-key"
     | "capacity-unchecked";
 }
@@ -30,6 +31,7 @@ export interface ChunkLifecycleAnalysis {
   pairedLeases: number;
   acquireWithoutRelease: number;
   releaseWithoutAcquire: number;
+  releaseUnreachable: number;
   dynamicLeaseKeys: number;
   capacityUncheckedLeases: number;
   shutdownOnlyCleanupRisk: number;
@@ -90,6 +92,44 @@ function regionCanReach(
   return reachableRegions(graph, from).has(to);
 }
 
+function commonCallerCanReachBoth(
+  graph: ReadonlyMap<string, ReadonlySet<string>>,
+  knownRegions: readonly string[],
+  acquireRegion: string,
+  releaseRegion: string,
+): boolean {
+  return knownRegions.some((region) => {
+    const reachable =
+      reachableRegions(graph, region);
+    return (
+      reachable.has(acquireRegion) &&
+      reachable.has(releaseRegion)
+    );
+  });
+}
+
+function releaseReachableForAcquire(
+  graph: ReadonlyMap<string, ReadonlySet<string>>,
+  knownRegions: readonly string[],
+  acquireRegion: string,
+  releaseRegion: string,
+): boolean {
+  return (
+    acquireRegion === releaseRegion ||
+    regionCanReach(
+      graph,
+      acquireRegion,
+      releaseRegion,
+    ) ||
+    commonCallerCanReachBoth(
+      graph,
+      knownRegions,
+      acquireRegion,
+      releaseRegion,
+    )
+  );
+}
+
 function analyzeScriptLeases(
   script: ParsedScriptFile,
 ): ChunkLeaseAssessment[] {
@@ -105,6 +145,17 @@ function analyzeScriptLeases(
       item.kind === "ticking-area-capacity-check",
   );
   const graph = callGraphFor(script);
+  const knownRegions = uniqueSorted([
+    ...script.localFunctionCalls.flatMap(
+      (call) => [
+        call.callerRegion,
+        call.targetRegion,
+      ],
+    ),
+    ...evidence.map(
+      (item) => item.executionRegion,
+    ),
+  ]);
 
   const keys = new Set<string | undefined>([
     ...acquires.map((item) => item.leaseKey),
@@ -134,6 +185,17 @@ function analyzeScriptLeases(
       );
       const hasCapacity =
         relevantCapacity.length > 0;
+      const hasReachableRelease =
+        keyAcquires.some((acquire) =>
+          keyReleases.some((release) =>
+            releaseReachableForAcquire(
+              graph,
+              knownRegions,
+              acquire.executionRegion,
+              release.executionRegion,
+            ),
+          ),
+        );
 
       let status: ChunkLeaseAssessment["status"];
       if (leaseKey === undefined) {
@@ -148,6 +210,12 @@ function analyzeScriptLeases(
         keyReleases.length > 0
       ) {
         status = "release-without-acquire";
+      } else if (
+        keyAcquires.length > 0 &&
+        keyReleases.length > 0 &&
+        !hasReachableRelease
+      ) {
+        status = "release-unreachable";
       } else if (
         keyAcquires.length > 0 &&
         keyReleases.length > 0 &&
@@ -424,6 +492,11 @@ export function analyzeChunkLifecycle(
       (item) =>
         item.status ===
         "release-without-acquire",
+    ).length,
+    releaseUnreachable: leases.filter(
+      (item) =>
+        item.status ===
+        "release-unreachable",
     ).length,
     dynamicLeaseKeys: leases.filter(
       (item) =>
