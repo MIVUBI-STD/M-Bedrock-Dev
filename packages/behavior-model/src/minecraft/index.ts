@@ -10,3 +10,4 @@ export * from "./inventory-lifecycle.js";
 export * from "./inventory-policy.js";
 export * from "./navigation-recovery.js";
 export * from "./combat-lifecycle.js";
+export * from "./combat-policy.js";
