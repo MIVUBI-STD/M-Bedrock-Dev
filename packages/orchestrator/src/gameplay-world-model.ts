@@ -186,6 +186,7 @@ export interface GameplayWorldModel {
     deathRewardPaths: number;
     pickupCurrencyPaths: number;
     deathRewardSourceOverlapCandidates: number;
+    deathRewardSourceOverlapUnresolved: number;
     pickupCurrencyWithoutConsumeCandidates: number;
     rewardPathsWithoutIdempotency: number;
     dropCleanupSurfaces: number;
@@ -656,6 +657,9 @@ export function deriveGameplayWorldModel(
       deathRewardSourceOverlapCandidates:
         source.rewardSources
           ?.deathRewardSourceOverlapCandidates ?? 0,
+      deathRewardSourceOverlapUnresolved:
+        source.rewardSources
+          ?.deathRewardSourceOverlapUnresolved ?? 0,
       pickupCurrencyWithoutConsumeCandidates:
         source.rewardSources
           ?.pickupCurrencyWithoutConsumeCandidates ?? 0,
