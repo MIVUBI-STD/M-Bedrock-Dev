@@ -1,4 +1,7 @@
 import type {
+  RuntimeEvidenceRecord,
+} from "../../project-model/src/index.js";
+import type {
   RuntimeExperimentArm,
   RuntimeExperimentDefinition,
 } from "./types.js";
@@ -34,6 +37,7 @@ export interface MultiClientScenario {
 
 export interface MultiClientActionObservation {
   evidenceIds: readonly string[];
+  evidence?: readonly RuntimeEvidenceRecord[];
   runtimeTick?: number;
 }
 
@@ -61,6 +65,7 @@ export interface MultiClientWaveResult {
   failedActionIds:
     readonly string[];
   evidenceIds: readonly string[];
+  evidence: readonly RuntimeEvidenceRecord[];
   startTick?: number;
   endTick?: number;
 }
@@ -79,6 +84,7 @@ export interface MultiClientScenarioResult {
   waveResults:
     readonly MultiClientWaveResult[];
   evidenceIds: readonly string[];
+  evidence: readonly RuntimeEvidenceRecord[];
   reasons: readonly string[];
 }
 
@@ -320,6 +326,11 @@ function waveResult(
             item.evidenceIds,
         ),
       ),
+    evidence:
+      observations.flatMap(
+        (item) =>
+          item.evidence ?? [],
+      ),
     ...(ticks.length === 0
       ? {}
       : {
@@ -355,6 +366,7 @@ export async function executeMultiClientScenario(
         scenario.clients.length,
       waveResults: [],
       evidenceIds: [],
+      evidence: [],
       reasons: errors,
     };
   }
@@ -384,6 +396,7 @@ export async function executeMultiClientScenario(
         scenario.clients.length,
       waveResults: [],
       evidenceIds: [],
+      evidence: [],
       reasons: [
         "Multi-client runtime adapter identity/maxClients/proofAuthority is invalid.",
       ],
@@ -405,6 +418,7 @@ export async function executeMultiClientScenario(
         scenario.clients.length,
       waveResults: [],
       evidenceIds: [],
+      evidence: [],
       reasons: [
         "Scenario requires " +
           String(
@@ -497,6 +511,11 @@ export async function executeMultiClientScenario(
                 item.evidenceIds,
             ),
           ),
+        evidence:
+          waveResults.flatMap(
+            (item) =>
+              item.evidence,
+          ),
         reasons: [
           "Multi-client execution stopped at failed wave " +
             wave.id +
@@ -517,6 +536,21 @@ export async function executeMultiClientScenario(
           item.evidenceIds,
       ),
     );
+  const evidence =
+    waveResults.flatMap(
+      (item) =>
+        item.evidence,
+    ).map((record) => ({
+      ...record,
+      proofAuthority:
+        record.proofAuthority ??
+        (
+          adapter.proofAuthority ===
+            "live-runtime"
+            ? "live-runtime"
+            : "server-simulated"
+        ),
+    }));
 
   return {
     scenarioId: scenario.id,
@@ -532,6 +566,7 @@ export async function executeMultiClientScenario(
       scenario.clients.length,
     waveResults,
     evidenceIds,
+    evidence,
     reasons:
       evidenceIds.length === 0
         ? [
