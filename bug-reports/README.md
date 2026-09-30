@@ -27,6 +27,7 @@ Beach-Bedwars-v1.0.4-BugReport.json
 The report itself carries:
 
 - Map Version
+- Map Drive (required Google Drive URL)
 - Base Version
 - Tested Version
 - Repair By
@@ -35,3 +36,10 @@ The report itself carries:
 - developer-facing analysis and repair context
 
 Git history is the change history. Do not duplicate revision logs inside report JSON.
+
+
+Compatibility note:
+
+- Bug Report V2 is the canonical persisted format.
+- Bug Report V1 is read-only compatibility input for migration and must not be newly persisted.
+- Canonical `Found By` values are `ai` or `tester`; combined evidence belongs in the evidence/analysis fields, not a third origin value.
