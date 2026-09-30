@@ -10,7 +10,8 @@ Use this before broad repository search.
 | Workspace/session/file inventory + telemetry data contracts | packages/project-model/ |
 | Runtime telemetry emission helpers / sinks / instrumentation guards | packages/telemetry/ |
 | Semantic dependency graph/invalidation | packages/graph/ |
-| Repository capability dependencies, affected closure, execution planning | packages/task-graph/ |
+| Repository capability dependencies, domain path ownership, affected closure, execution planning | packages/task-graph/ |
+| Minimum-sufficient evidence/capability planning | packages/analysis-planner/ |
 | Execution/state/temporal Semantic IR contracts and queries | packages/semantic-ir/ |
 | Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | packages/gameplay-intent/ |
 | Formal behavioral state/transition/temporal property kernel + Minecraft overlays | packages/behavior-model/ |
@@ -29,11 +30,21 @@ Use this before broad repository search.
 | Education edition/feature profile | packages/compatibility/education* |
 | Repair transactions/preconditions/application | packages/repair/ |
 | Cross-owner inspect/repair-validation orchestration | packages/orchestrator/ |
+| Fail-closed repository task planning | packages/orchestrator/src/repository-task-plan.ts |
+| Affected semantic/context compression for Codex | packages/orchestrator/src/semantic-affected-plan.ts + context-compiler.ts |
+| Arena lifecycle + cleanup convergence | packages/orchestrator/src/arena-lifecycle-* + arena-cleanup-* |
+| Spatial gameplay authority | packages/behavior-model/src/minecraft/spatial-authority.ts + packages/orchestrator/src/spatial-authority-* |
+| Inventory/equipment lifecycle + item policy | packages/behavior-model/src/minecraft/inventory-* + packages/orchestrator/src/inventory-* |
+| Entity AI/navigation source readiness + route environment | analyzers/entities/ + packages/orchestrator/src/entity-ai-* + route-navigation-* |
+| Combat/downed/revive policy and lifecycle | packages/behavior-model/src/minecraft/combat-* + packages/orchestrator/src/combat-* + packages/telemetry/src/revive-* |
+| Chunk lifecycle/readiness/lease reasoning | packages/behavior-model/src/minecraft/chunk.ts + packages/orchestrator/src/chunk-* |
+| Economy/reward source arbitration | packages/behavior-model/src/minecraft/economy-* + packages/orchestrator/src/economy-* + reward-source-analysis.ts |
 | Generic Bedrock NBT transport | adapters/nbt/ |
 | mcstructure semantic normalization | adapters/mcstructure/ |
 | Bedrock LevelDB snapshot/transport | adapters/leveldb/ |
 | World DB semantic decoding | analyzers/world-db/ |
 | Script source/module/capability analysis | analyzers/scripts/ |
+| Entity behavior/navigation/targeting/loot semantics | analyzers/entities/ |
 | Gameplay-intent signal extraction from authored source evidence | analyzers/gameplay-intent/ |
 | File/path discovery | analyzers/discovery/ |
 | Manifest semantics + compatibility fact extraction | analyzers/manifest/ |
