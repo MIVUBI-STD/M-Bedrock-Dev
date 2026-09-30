@@ -32,6 +32,8 @@ export interface ChunkLifecycleAnalysis {
   dynamicLeaseKeys: number;
   capacityUncheckedLeases: number;
   shutdownOnlyCleanupRisk: number;
+  worldLoadReconciliationPaths: number;
+  unguardedDeferredChunkWork: number;
   entityResidencyObservability: "complete" | "partial" | "absent";
   leases: readonly ChunkLeaseAssessment[];
 }
@@ -185,6 +187,83 @@ function analyzeScriptLeases(
     );
 }
 
+function chunkLifecycleRegions(
+  script: ParsedScriptFile,
+): Set<string> {
+  return new Set(
+    evidenceFor(script)
+      .filter(
+        (item) =>
+          item.kind === "chunk-readiness-probe" ||
+          item.kind === "ticking-area-acquire" ||
+          item.kind === "ticking-area-release" ||
+          item.kind === "ticking-area-capacity-check",
+      )
+      .map((item) => item.executionRegion),
+  );
+}
+
+function unguardedDeferredChunkWorkFor(
+  script: ParsedScriptFile,
+): number {
+  const graph = callGraphFor(script);
+  const chunkRegions =
+    chunkLifecycleRegions(script);
+
+  return script.deferredCallbacks.filter(
+    (callback) => {
+      if (
+        callback.guardEvidence ===
+        "explicit-generation-check"
+      ) {
+        return false;
+      }
+      const root =
+        callback.callbackRegion;
+      if (root === undefined) return false;
+
+      const reachable =
+        reachableRegions(graph, root);
+      return [...chunkRegions].some(
+        (region) => reachable.has(region),
+      );
+    },
+  ).length;
+}
+
+function worldLoadReconciliationPathsFor(
+  script: ParsedScriptFile,
+): number {
+  const evidence = evidenceFor(script);
+  const graph = callGraphFor(script);
+  const releaseRegions = new Set(
+    evidence
+      .filter(
+        (item) =>
+          item.kind ===
+          "ticking-area-release",
+      )
+      .map((item) => item.executionRegion),
+  );
+
+  return evidence
+    .filter(
+      (item) =>
+        item.kind ===
+        "world-load-subscription",
+    )
+    .filter((observer) => {
+      const reachable =
+        reachableRegions(
+          graph,
+          observer.executionRegion,
+        );
+      return [...releaseRegions].some(
+        (region) => reachable.has(region),
+      );
+    }).length;
+}
+
 export function analyzeChunkLifecycle(
   scripts: readonly ParsedScriptFile[],
 ): ChunkLifecycleAnalysis {
@@ -298,6 +377,25 @@ export function analyzeChunkLifecycle(
         ? "partial"
         : "absent";
 
+  const worldLoadReconciliationPaths =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        worldLoadReconciliationPathsFor(
+          script,
+        ),
+      0,
+    );
+  const unguardedDeferredChunkWork =
+    scripts.reduce(
+      (sum, script) =>
+        sum +
+        unguardedDeferredChunkWorkFor(
+          script,
+        ),
+      0,
+    );
+
   return {
     worldLoadObservers,
     entityLoadObservers,
@@ -337,6 +435,8 @@ export function analyzeChunkLifecycle(
       !anyNonShutdownRelease
         ? tickingAreaAcquires
         : 0,
+    worldLoadReconciliationPaths,
+    unguardedDeferredChunkWork,
     entityResidencyObservability,
     leases,
   };
