@@ -39,6 +39,7 @@ export interface InspectionRuntimeAnalysisInput {
   parsedScripts: InspectionSourceIndex["parsedScripts"];
   parsedEntities: InspectionSourceIndex["parsedEntities"];
   entityAiStack: import("./entity-ai-stack-analysis.js").EntityAiStackAnalysis;
+  routeNavigationEnvironment: import("./route-navigation-environment-analysis.js").RouteNavigationEnvironmentAnalysis;
   parsedStructureModels:
     InspectionSourceIndex["parsedStructureModels"];
 }
@@ -142,6 +143,8 @@ export function analyzeInspectionRuntimeState(
     input.parsedScripts.map((item) => item.parsed);
   const entityAiStack =
     input.entityAiStack;
+  const routeNavigationEnvironment =
+    input.routeNavigationEnvironment;
   const scriptSpatial =
     analyzeScriptSpatialMutations(parsedScriptModels);
 
@@ -358,6 +361,7 @@ export function analyzeInspectionRuntimeState(
     parsedFunctionModels,
     parsedStructureSummaries,
     entityAiStack,
+    routeNavigationEnvironment,
     structureRuntime,
     scriptStructureLoads,
     sourceByFunction,
