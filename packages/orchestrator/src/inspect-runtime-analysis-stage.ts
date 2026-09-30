@@ -31,8 +31,10 @@ import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
 import { analyzeInventoryPolicy } from "./inventory-policy-analysis.js";
 import { analyzeInventoryRestoreOwnership } from "./inventory-restore-ownership-analysis.js";
 import { analyzeCombatLifecycle } from "./combat-lifecycle-analysis.js";
+import { analyzeCombatPolicy } from "./combat-policy-analysis.js";
 import { analyzeChunkLifecycle } from "./chunk-lifecycle-analysis.js";
 import { analyzeRewardSources } from "./reward-source-analysis.js";
+import { analyzeEconomyPolicy } from "./economy-policy-analysis.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
@@ -43,6 +45,7 @@ export interface InspectionRuntimeAnalysisInput {
   parsedEntities: InspectionSourceIndex["parsedEntities"];
   entityAiStack: import("./entity-ai-stack-analysis.js").EntityAiStackAnalysis;
   routeNavigationEnvironment: import("./route-navigation-environment-analysis.js").RouteNavigationEnvironmentAnalysis;
+  combatRuntimeTelemetry: import("./combat-runtime-telemetry-analysis.js").CombatRuntimeTelemetryAnalysis;
   parsedStructureModels:
     InspectionSourceIndex["parsedStructureModels"];
 }
@@ -204,6 +207,17 @@ export function analyzeInspectionRuntimeState(
       input.parsedEntities.map(
         (item) => item.parsed,
       ),
+    );
+  const combatPolicy =
+    analyzeCombatPolicy(
+      combatLifecycle,
+      input.combatRuntimeTelemetry,
+      input.target.combatPolicy,
+    );
+  const economyPolicy =
+    analyzeEconomyPolicy(
+      rewardSources,
+      input.target.economyPolicy,
     );
   const arenaGlobalState =
     analyzeArenaGlobalState(
@@ -396,6 +410,8 @@ export function analyzeInspectionRuntimeState(
     combatLifecycle,
     chunkLifecycle,
     rewardSources,
+    combatPolicy,
+    economyPolicy,
     arenaGlobalState,
     arenaStateIsolation,
     arenaLayoutReconciliation,
