@@ -354,3 +354,5 @@ export * from "./chunk-readiness-runtime-classification.js";
 export * from "./economy-policy-diagnostics.js";
 
 export * from "./spatial-authority-diagnostics.js";
+
+export * from "./inventory-lifecycle-diagnostics.js";
