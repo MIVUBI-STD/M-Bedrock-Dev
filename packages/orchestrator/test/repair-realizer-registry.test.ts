@@ -195,6 +195,18 @@ describe("repair realizer registry and graph binding", () => {
         ],
         automaticRealizationEligible: false,
         reasons: [],
+      }, {
+        sourceKind: "built-in-planner",
+        sourceId: "intentional-proposal",
+        sourceVersion: "1",
+        selectionMode: "proposal-only",
+        deterministic: false,
+        applicableDiagnosticIds: ["diag"],
+        applicableDiagnosticCodes: [
+          "TOPOLOGY_TRANSLATION_OUTLIER",
+        ],
+        automaticRealizationEligible: false,
+        reasons: [],
       }],
       inapplicableSources: [],
       coverageMissing: false,
@@ -209,6 +221,7 @@ describe("repair realizer registry and graph binding", () => {
     expect(report).toMatchObject({
       coveredSources: 1,
       uncoveredSources: 1,
+      realizerNotRequiredSources: 1,
       complete: false,
     });
     expect(report.items).toEqual([
@@ -217,6 +230,10 @@ describe("repair realizer registry and graph binding", () => {
         status: "realizer-available",
         realizerId:
           "linear-topology-repair-realizer",
+      }),
+      expect.objectContaining({
+        sourceId: "intentional-proposal",
+        status: "realizer-not-required",
       }),
       expect.objectContaining({
         sourceId: "missing-realizer",
