@@ -13,6 +13,7 @@ export interface EntityAiStackStateAssessment {
   navigationPresent: boolean;
   movementGoalCandidatePresent: boolean;
   attackBehaviorPresent: boolean;
+  navigationCapabilities: readonly string[];
   missingSurfaces: readonly (
     | "movement"
     | "navigation"
@@ -103,6 +104,8 @@ function assessEntity(
         attackBehaviorPresent:
           stack.staticSignals
             .attackBehaviorPresent,
+        navigationCapabilities:
+          stack.navigation.capabilities,
         missingSurfaces,
         status,
       };
