@@ -32,5 +32,3 @@ export * from "./function-knowledge-runtime-findings.js";
 
 export * from "./runtime-evidence-merge.js";
 
-export * from "./arena-proof-fusion.js";
-export * from "./terminal-lifecycle-fusion.js";
