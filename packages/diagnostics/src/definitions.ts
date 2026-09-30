@@ -14,6 +14,7 @@ export type DiagnosticDefinitionCategory =
   | "chunk"
   | "entity"
   | "combat"
+  | "economy"
   | "dialogue"
   | "knowledge"
   | "runtime-evidence"
@@ -70,6 +71,7 @@ function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
   if (code.startsWith("STRUCTURE_")) return "structure";
   if (code.startsWith("ENTITY_")) return "entity";
   if (code.startsWith("COMBAT_")) return "combat";
+  if (code.startsWith("ECONOMY_")) return "economy";
   if (code.startsWith("DIALOGUE_")) return "dialogue";
   if (code.startsWith("KNOWLEDGE_")) return "knowledge";
   if (code.startsWith("TELEMETRY_") || code.startsWith("RUNTIME_PROBE_")) return "runtime-evidence";
