@@ -130,6 +130,7 @@ export interface ScriptLocalFunctionCall {
   callerRegion: string;
   targetRegion: string;
   targetName: string;
+  controlFlow?: "unconditional" | "conditional" | "deferred";
   source: SourceRef;
 }
 
