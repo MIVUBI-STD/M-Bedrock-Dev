@@ -15,7 +15,8 @@ export interface ChunkLeaseAssessment {
     | "release-without-acquire"
     | "release-unreachable"
     | "dynamic-key"
-    | "capacity-unchecked";
+    | "capacity-unchecked"
+    | "readiness-unverified";
 }
 
 export interface ChunkLifecycleAnalysis {
@@ -34,6 +35,7 @@ export interface ChunkLifecycleAnalysis {
   releaseUnreachable: number;
   dynamicLeaseKeys: number;
   capacityUncheckedLeases: number;
+  readinessUnverifiedLeases: number;
   shutdownOnlyCleanupRisk: number;
   worldLoadReconciliationPaths: number;
   unguardedDeferredChunkWork: number;
@@ -144,6 +146,12 @@ function analyzeScriptLeases(
     (item) =>
       item.kind === "ticking-area-capacity-check",
   );
+  const readiness = evidence.filter(
+    (item) =>
+      item.kind === "chunk-readiness-probe" ||
+      item.kind ===
+        "ticking-area-readiness-state",
+  );
   const graph = callGraphFor(script);
   const knownRegions = uniqueSorted([
     ...script.localFunctionCalls.flatMap(
@@ -183,8 +191,30 @@ function analyzeScriptLeases(
               ),
           ),
       );
+      const relevantReadiness =
+        readiness.filter(
+          (probe) =>
+            keyAcquires.some(
+              (acquire) =>
+                probe.executionRegion ===
+                  acquire.executionRegion ||
+                regionCanReach(
+                  graph,
+                  acquire.executionRegion,
+                  probe.executionRegion,
+                ) ||
+                commonCallerCanReachBoth(
+                  graph,
+                  knownRegions,
+                  acquire.executionRegion,
+                  probe.executionRegion,
+                ),
+            ),
+        );
       const hasCapacity =
         relevantCapacity.length > 0;
+      const hasReadiness =
+        relevantReadiness.length > 0;
       const hasReachableRelease =
         keyAcquires.some((acquire) =>
           keyReleases.some((release) =>
@@ -222,6 +252,12 @@ function analyzeScriptLeases(
         !hasCapacity
       ) {
         status = "capacity-unchecked";
+      } else if (
+        keyAcquires.length > 0 &&
+        keyReleases.length > 0 &&
+        !hasReadiness
+      ) {
+        status = "readiness-unverified";
       } else {
         status = "paired";
       }
@@ -506,6 +542,11 @@ export function analyzeChunkLifecycle(
       (item) =>
         item.status ===
         "capacity-unchecked",
+    ).length,
+    readinessUnverifiedLeases: leases.filter(
+      (item) =>
+        item.status ===
+        "readiness-unverified",
     ).length,
     shutdownOnlyCleanupRisk:
       tickingAreaAcquires > 0 &&
