@@ -171,6 +171,18 @@ export function validateRuntimeExperimentDefinition(
       }
     }
 
+    if (
+      requirement.minimumProofAuthority !== undefined &&
+      requirement.minimumProofAuthority !== "server-simulated" &&
+      requirement.minimumProofAuthority !== "live-runtime"
+    ) {
+      errors.push(
+        "Runtime experiment evidence requirement " +
+          requirement.id +
+          " has invalid minimumProofAuthority.",
+      );
+    }
+
     for (const [measurement, rule] of Object.entries(
       requirement.measurements ?? {},
     )) {
