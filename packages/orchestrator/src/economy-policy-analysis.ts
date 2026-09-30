@@ -29,7 +29,8 @@ export function analyzeEconomyPolicy(
       configured: false,
       deathRewardOverlapPolicyConflicts: 0,
       deathRewardOverlapUnresolved:
-        rewards.deathRewardSourceOverlapCandidates,
+        rewards.deathRewardSourceOverlapCandidates +
+        rewards.deathRewardSourceOverlapUnresolved,
       pickupCurrencyConsumeCoverageGaps: 0,
       pickupCurrencyPolicyMismatch: 0,
       idempotencyCoverageGaps: 0,
@@ -53,9 +54,12 @@ export function analyzeEconomyPolicy(
   const deathRewardOverlapUnresolved =
     policy.deathRewardArbitration ===
       "unresolved"
-      ? rewards
-          .deathRewardSourceOverlapCandidates
-      : 0;
+      ? rewards.deathRewardSourceOverlapCandidates +
+        rewards.deathRewardSourceOverlapUnresolved
+      : policy.deathRewardArbitration ===
+          "mutually-exclusive"
+        ? rewards.deathRewardSourceOverlapUnresolved
+        : 0;
 
   const pickupCurrencyConsumeCoverageGaps =
     policy.pickupCurrencyItemPolicy ===
