@@ -26,6 +26,7 @@ import { analyzeArenaLifecycleConvergence } from "./arena-lifecycle-analysis.js"
 import { analyzeArenaCleanupSurfaces } from "./arena-cleanup-surface-analysis.js";
 import { analyzeArenaStateIsolation } from "./arena-state-isolation-analysis.js";
 import { analyzeScriptSpatialMutations } from "./script-spatial-analysis.js";
+import { analyzeSpatialAuthorityCoverage } from "./spatial-authority-analysis.js";
 import { analyzeArenaGlobalState } from "./arena-global-state-analysis.js";
 import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
 import { analyzeInventoryPolicy } from "./inventory-policy-analysis.js";
@@ -153,6 +154,14 @@ export function analyzeInspectionRuntimeState(
     input.routeNavigationEnvironment;
   const scriptSpatial =
     analyzeScriptSpatialMutations(parsedScriptModels);
+  const spatialAuthority =
+    input.target.spatialAuthorityPolicy === undefined
+      ? undefined
+      : analyzeSpatialAuthorityCoverage(
+          input.target.arenaRegionContracts ?? [],
+          input.target.spatialAuthorityPolicy,
+          input.target.spatialAuthorityRequirements ?? [],
+        );
 
   const topology =
     analyzeFunctionTopology(
@@ -401,6 +410,9 @@ export function analyzeInspectionRuntimeState(
     placedEmbeddedCommands,
     topology,
     scriptSpatial,
+    ...(spatialAuthority === undefined
+      ? {}
+      : { spatialAuthority }),
     scriptSafeConfig,
     arenaLifecycle,
     arenaCleanupSurfaces,
