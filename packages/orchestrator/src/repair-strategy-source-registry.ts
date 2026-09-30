@@ -302,6 +302,21 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Routes observed revive transaction anomalies toward life-generation ownership, reviver eligibility, exclusive revive-owner, and death-terminal review. Proposal-only because telemetry identifies the violated transaction semantics but not one universally safe source mutation.",
     }, {
+      id: "spatial-authority-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedDiagnosticCodes: [
+        "SPATIAL_AUTHORITY_POLICY_GAP",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes spatial authority conflicts and uncovered actor/action/region requirements toward authored policy completion or source-policy alignment review. Proposal-only because permission semantics are gameplay-authored and do not identify one universally safe mutation.",
+    }, {
       id: "economy-policy-remediation",
       version: "1",
       kind: "built-in-planner",
