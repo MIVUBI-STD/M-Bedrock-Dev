@@ -37,4 +37,28 @@ describe("local function call control flow", () => {
       "conditional",
     );
   });
+
+  it("treats calls after a possible early return as conditional", () => {
+    const parsed = parseScriptFile(
+      "scripts/main.ts",
+      `
+        function cleanupArena() {}
+        function finishGame(skipCleanup) {
+          if (skipCleanup) return;
+          cleanupArena();
+        }
+      `,
+      {
+        artifactId: "artifact:test",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    expect(
+      parsed.localFunctionCalls.find(
+        (call) => call.targetName === "cleanupArena",
+      )?.controlFlow,
+    ).toBe("conditional");
+  });
+
 });
