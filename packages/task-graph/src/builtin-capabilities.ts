@@ -2,49 +2,237 @@ import type {
   TaskCapability,
 } from "./types.js";
 
+const REMOTE_CONTEXTS = [
+  "REMOTE_GITHUB",
+  "LOCAL_ARTIFACT",
+] as const;
+
+const ALL_STATIC_CONTEXTS = [
+  "REMOTE_GITHUB",
+  "LOCAL_ARTIFACT",
+  "LOCAL_MINECRAFT",
+  "LIVE_MINECRAFT",
+] as const;
+
 export const BUILTIN_TASK_CAPABILITIES:
   readonly TaskCapability[] = [
     {
-      id: "source.scripts",
+      id: "source.scripts.core",
       owner: "analyzers/scripts",
       pathPrefixes: [
-        "analyzers/scripts/src",
+        "analyzers/scripts/src/parse.ts",
+        "analyzers/scripts/src/types.ts",
+        "analyzers/scripts/src/index.ts",
+        "analyzers/scripts/src/receiver-inference.ts",
       ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: REMOTE_CONTEXTS,
     },
     {
-      id: "source.entities",
+      id: "source.scripts.arena",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/arena-*",
+        "analyzers/scripts/src/cleanup-resource-*",
+        "analyzers/scripts/src/global-lease-*",
+      ],
+      dependsOn: ["source.scripts.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "source.scripts.inventory",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/inventory-*",
+      ],
+      dependsOn: ["source.scripts.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "source.scripts.combat",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/combat-*",
+      ],
+      dependsOn: ["source.scripts.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "source.scripts.chunks",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/chunk-*",
+      ],
+      dependsOn: ["source.scripts.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "source.scripts.economy",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/economy-*",
+      ],
+      dependsOn: ["source.scripts.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "source.entities.core",
       owner: "analyzers/entities",
       pathPrefixes: [
-        "analyzers/entities/src",
+        "analyzers/entities/src/parse.ts",
+        "analyzers/entities/src/types.ts",
+        "analyzers/entities/src/state-graph.ts",
+        "analyzers/entities/src/runtime-evidence.ts",
       ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: REMOTE_CONTEXTS,
     },
     {
-      id: "behavior.contracts",
+      id: "source.entities.ai",
+      owner: "analyzers/entities",
+      pathPrefixes: [
+        "analyzers/entities/src/ai-stack.ts",
+        "analyzers/entities/src/navigation.ts",
+        "analyzers/entities/src/targeting.ts",
+        "analyzers/entities/src/attack.ts",
+        "analyzers/entities/src/reachability.ts",
+        "analyzers/entities/src/sensors.ts",
+      ],
+      dependsOn: ["source.entities.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "source.entities.economy",
+      owner: "analyzers/entities",
+      pathPrefixes: [
+        "analyzers/entities/src/loot.ts",
+      ],
+      dependsOn: ["source.entities.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "behavior.core",
       owner: "packages/behavior-model",
       pathPrefixes: [
-        "packages/behavior-model/src",
+        "packages/behavior-model/src/types.ts",
+        "packages/behavior-model/src/provenance.ts",
+        "packages/behavior-model/src/transition.ts",
+        "packages/behavior-model/src/compose.ts",
+        "packages/behavior-model/src/minecraft/index.ts",
       ],
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "behavior.arena",
+      owner: "packages/behavior-model",
+      pathPrefixes: [
+        "packages/behavior-model/src/minecraft/arena-lifecycle.ts",
       ],
+      dependsOn: ["behavior.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "behavior.spatial",
+      owner: "packages/behavior-model",
+      pathPrefixes: [
+        "packages/behavior-model/src/minecraft/spatial-authority.ts",
+      ],
+      dependsOn: ["behavior.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "behavior.inventory",
+      owner: "packages/behavior-model",
+      pathPrefixes: [
+        "packages/behavior-model/src/minecraft/inventory-*",
+      ],
+      dependsOn: ["behavior.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "behavior.entity-ai",
+      owner: "packages/behavior-model",
+      pathPrefixes: [
+        "packages/behavior-model/src/minecraft/navigation-*",
+      ],
+      dependsOn: ["behavior.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "behavior.combat",
+      owner: "packages/behavior-model",
+      pathPrefixes: [
+        "packages/behavior-model/src/minecraft/combat-*",
+      ],
+      dependsOn: ["behavior.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "behavior.chunks",
+      owner: "packages/behavior-model",
+      pathPrefixes: [
+        "packages/behavior-model/src/minecraft/chunk.ts",
+      ],
+      dependsOn: ["behavior.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
+    },
+    {
+      id: "behavior.economy",
+      owner: "packages/behavior-model",
+      pathPrefixes: [
+        "packages/behavior-model/src/minecraft/economy-*",
+      ],
+      dependsOn: ["behavior.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: REMOTE_CONTEXTS,
     },
     {
       id: "domain.arena-lifecycle",
@@ -54,16 +242,13 @@ export const BUILTIN_TASK_CAPABILITIES:
         "packages/orchestrator/src/arena-cleanup-*",
       ],
       dependsOn: [
-        "source.scripts",
-        "behavior.contracts",
+        "source.scripts.arena",
+        "behavior.arena",
       ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "domain.spatial-authority",
@@ -71,16 +256,11 @@ export const BUILTIN_TASK_CAPABILITIES:
       pathPrefixes: [
         "packages/orchestrator/src/spatial-authority-*",
       ],
-      dependsOn: [
-        "behavior.contracts",
-      ],
+      dependsOn: ["behavior.spatial"],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "domain.inventory",
@@ -89,16 +269,13 @@ export const BUILTIN_TASK_CAPABILITIES:
         "packages/orchestrator/src/inventory-*",
       ],
       dependsOn: [
-        "source.scripts",
-        "behavior.contracts",
+        "source.scripts.inventory",
+        "behavior.inventory",
       ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "domain.entity-ai",
@@ -109,16 +286,13 @@ export const BUILTIN_TASK_CAPABILITIES:
         "packages/orchestrator/src/route-navigation-*",
       ],
       dependsOn: [
-        "source.entities",
-        "behavior.contracts",
+        "source.entities.ai",
+        "behavior.entity-ai",
       ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "domain.combat",
@@ -127,16 +301,13 @@ export const BUILTIN_TASK_CAPABILITIES:
         "packages/orchestrator/src/combat-*",
       ],
       dependsOn: [
-        "source.scripts",
-        "behavior.contracts",
+        "source.scripts.combat",
+        "behavior.combat",
       ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "domain.chunks",
@@ -145,16 +316,13 @@ export const BUILTIN_TASK_CAPABILITIES:
         "packages/orchestrator/src/chunk-*",
       ],
       dependsOn: [
-        "source.scripts",
-        "behavior.contracts",
+        "source.scripts.chunks",
+        "behavior.chunks",
       ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "domain.economy",
@@ -164,16 +332,44 @@ export const BUILTIN_TASK_CAPABILITIES:
         "packages/orchestrator/src/reward-source-*",
       ],
       dependsOn: [
-        "source.scripts",
-        "source.entities",
-        "behavior.contracts",
+        "source.scripts.economy",
+        "source.scripts.inventory",
+        "source.entities.economy",
+        "behavior.economy",
       ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
+      id: "runtime.entity-ai",
+      owner: "packages/runtime-lab",
+      pathPrefixes: [
+        "packages/runtime-lab/src/entity-navigation-*",
+      ],
+      dependsOn: ["domain.entity-ai"],
+      deterministic: false,
+      cacheable: false,
+      cost: "very-expensive",
       contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+    },
+    {
+      id: "runtime.chunks",
+      owner: "packages/runtime-lab",
+      pathPrefixes: [
+        "packages/runtime-lab/src/chunk-*",
+      ],
+      dependsOn: ["domain.chunks"],
+      deterministic: false,
+      cacheable: false,
+      cost: "very-expensive",
+      contexts: [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
       ],
     },
     {
@@ -194,10 +390,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "projection.workflow",
@@ -205,16 +398,11 @@ export const BUILTIN_TASK_CAPABILITIES:
       pathPrefixes: [
         "packages/orchestrator/src/map-engineering-workflow.ts",
       ],
-      dependsOn: [
-        "projection.world-model",
-      ],
+      dependsOn: ["projection.world-model"],
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "repair.routing",
@@ -223,16 +411,11 @@ export const BUILTIN_TASK_CAPABILITIES:
         "packages/orchestrator/src/repair-strategy-*",
         "packages/orchestrator/src/repair-realiz*",
       ],
-      dependsOn: [
-        "projection.world-model",
-      ],
+      dependsOn: ["projection.world-model"],
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "context.compile",
@@ -240,15 +423,10 @@ export const BUILTIN_TASK_CAPABILITIES:
       pathPrefixes: [
         "packages/orchestrator/src/context-compiler.ts",
       ],
-      dependsOn: [
-        "projection.world-model",
-      ],
+      dependsOn: ["projection.world-model"],
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: [
-        "REMOTE_GITHUB",
-        "LOCAL_ARTIFACT",
-      ],
+      contexts: ALL_STATIC_CONTEXTS,
     },
   ] as const;
