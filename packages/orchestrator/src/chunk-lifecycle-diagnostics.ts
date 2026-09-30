@@ -19,6 +19,7 @@ export function chunkLifecycleDiagnostics(
     analysis.shutdownOnlyCleanupRisk > 0;
   const reviewRisk =
     analysis.capacityUncheckedLeases > 0 ||
+    analysis.cleanupOrderUnproven > 0 ||
     analysis.readinessUnverifiedLeases > 0 ||
     analysis.unguardedDeferredChunkWork > 0 ||
     worldLoadReconciliationMissing;
@@ -40,6 +41,8 @@ export function chunkLifecycleDiagnostics(
           analysis.acquireWithoutRelease,
         releaseUnreachable:
           analysis.releaseUnreachable,
+        cleanupOrderUnproven:
+          analysis.cleanupOrderUnproven,
         capacityUncheckedLeases:
           analysis.capacityUncheckedLeases,
         readinessUnverifiedLeases:
