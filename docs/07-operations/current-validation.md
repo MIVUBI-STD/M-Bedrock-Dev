@@ -877,18 +877,20 @@ compatibility-workaround
 runtime-recovery-mitigation
 ```
 
-Non-deterministic or not-yet-realized source families remain proposal-only. Current built-in proposal surfaces include session-generation guards, arena ownership guards, bounded navigation recovery, and compatibility workarounds. They do not become PatchTransactions until a deterministic syntax-aware realizer exists.
+Non-deterministic or not-yet-realized source families remain proposal-only. Current deterministic causal-auto source families include scheduler/session generation guards, persistence idempotency guards, arena capacity guards, and arena start-ownership guards. Current proposal-only surfaces include arena replica/capacity remediation, chunk lifecycle remediation, bounded navigation recovery, and compatibility workarounds. Proposal-only sources do not become PatchTransactions until a safe deterministic mutation surface exists.
 
-A repair realization coverage report now distinguishes:
+Repair source semantics are intentionally distinct: arena capacity transforms use the `arena-capacity-guard` family, while exclusive start-owner acquisition uses `arena-ownership-guard`. These families are not interchangeable.
+
+Repair realization coverage distinguishes:
 
 ```text
-realized
-blocked
+realizer-available
 missing-realizer
+realizer-not-required
 no-applicable-source
 ```
 
-and reports whether a proven causal candidate has any implementation coverage.
+A nondeterministic proposal-only source can be explicitly `realizer-not-required` without being misreported as missing automatic implementation coverage. Registry-level coverage additionally verifies that every causal-auto/deterministic source has a compatible registered realizer and that repair classes agree.
 
 Coverage/failure can be persisted through the new `repair-strategy-realization` decision-ledger stage without fabricating a transaction.
 
