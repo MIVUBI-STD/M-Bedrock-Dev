@@ -72,6 +72,30 @@ describe("domain repair strategy source safety", () => {
 
     expect(
       byId.get(
+        "entity-ai-navigation-remediation",
+      ),
+    ).toMatchObject({
+      deterministic: false,
+      selectionMode: "proposal-only",
+      supportedDiagnosticCodes: [
+        "ENTITY_AI_NAVIGATION_COVERAGE_GAP",
+      ],
+    });
+
+    expect(
+      byId.get(
+        "arena-lifecycle-remediation",
+      ),
+    ).toMatchObject({
+      deterministic: false,
+      selectionMode: "proposal-only",
+      supportedDiagnosticCodes: [
+        "ARENA_LIFECYCLE_COVERAGE_GAP",
+      ],
+    });
+
+    expect(
+      byId.get(
         "spatial-authority-remediation",
       ),
     ).toMatchObject({
