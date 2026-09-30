@@ -374,3 +374,5 @@ export * from "./post-repair-validation-obligations.js";
 export * from "./arena-golden-status.js";
 
 export * from "./release-identity-evidence.js";
+
+export * from "./zero-waste-execution-receipt.js";

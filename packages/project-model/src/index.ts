@@ -58,3 +58,5 @@ export * from "./route-navigation-environment.js";
 export * from "./evidence-identity.js";
 
 export * from "./evidence-freshness.js";
+
+export * from "./runtime-evidence-continuity.js";

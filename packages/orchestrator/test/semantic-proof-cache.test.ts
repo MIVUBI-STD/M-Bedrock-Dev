@@ -229,6 +229,56 @@ describe("semantic proof cache", () => {
     expect(result.status).toBe("stale");
   });
 
+  it("rejects mixed runtime generations inside one reused proof campaign", () => {
+    const claim =
+      createSemanticProofClaim({
+        claimId: "claim:mixed-generation",
+        claimRevision: "1",
+        kind: "runtime",
+        graph: graph(),
+        basisNodeIds: ["function:pack:arena"],
+        evidenceIds: ["runtime:a", "runtime:b"],
+        targetProfileFingerprint: "runtime-a",
+        runtimeScope: {
+          arenaId: "arena-2",
+          arenaGeneration: 4,
+        },
+      });
+
+    const result =
+      assessSemanticProofReuse(claim, {
+        graph: graph(),
+        claimRevision: "1",
+        availableEvidenceIds: ["runtime:a", "runtime:b"],
+        targetProfileFingerprint: "runtime-a",
+        runtimeScope: {
+          arenaId: "arena-2",
+          arenaGeneration: 4,
+        },
+        runtimeEvidenceRecords: [{
+          predicate: "ready",
+          state: "present",
+          confidence: "observed",
+          targetProfileFingerprint: "runtime-a",
+          scope: {
+            arenaId: "arena-2",
+            arenaGeneration: 4,
+          },
+        }, {
+          predicate: "released",
+          state: "present",
+          confidence: "observed",
+          targetProfileFingerprint: "runtime-a",
+          scope: {
+            arenaId: "arena-2",
+            arenaGeneration: 5,
+          },
+        }],
+      });
+
+    expect(result.status).toBe("stale");
+  });
+
   it("invalidates runtime-bound proof when target profile changes", () => {
     const claim =
       createSemanticProofClaim({

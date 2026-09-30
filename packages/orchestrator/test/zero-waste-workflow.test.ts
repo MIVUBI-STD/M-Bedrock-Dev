@@ -295,6 +295,86 @@ describe("zero-waste workflow facade", () => {
     ]);
   });
 
+  it("orders dependent proof actions before their consumers", () => {
+    const graph = graphFixture();
+    const dependency =
+      createSemanticProofClaim({
+        claimId: "claim:dependency",
+        claimRevision: "1",
+        kind: "static",
+        graph,
+        basisNodeIds: ["function:pack:shop"],
+        evidenceIds: ["e:dependency"],
+      });
+    const consumer =
+      createSemanticProofClaim({
+        claimId: "claim:consumer",
+        claimRevision: "1",
+        kind: "static",
+        graph,
+        basisNodeIds: ["function:pack:arena"],
+        evidenceIds: ["e:consumer"],
+      });
+
+    const plan = prepareZeroWasteWorkflow({
+      goal: "repair arena",
+      graph,
+      postPatchGraph: graph,
+      intent,
+      transaction,
+      validationScenarios: [],
+      validationBindings: [],
+      proofClaims: [{
+        claim: consumer,
+        claimRevision: "2",
+        availableEvidenceIds: ["e:consumer"],
+        dependsOnClaimIds: ["claim:dependency"],
+      }, {
+        claim: dependency,
+        claimRevision: "2",
+        availableEvidenceIds: ["e:dependency"],
+      }],
+    });
+
+    expect(plan.proofActions.map((item) => item.claimId)).toEqual([
+      "claim:dependency",
+      "claim:consumer",
+    ]);
+    expect(plan.status).toBe("ready");
+  });
+
+  it("blocks zero-waste routing when a proof dependency is missing", () => {
+    const graph = graphFixture();
+    const proof =
+      createSemanticProofClaim({
+        claimId: "claim:consumer",
+        claimRevision: "1",
+        kind: "static",
+        graph,
+        basisNodeIds: ["function:pack:arena"],
+        evidenceIds: ["e:consumer"],
+      });
+
+    const plan = prepareZeroWasteWorkflow({
+      goal: "repair arena",
+      graph,
+      postPatchGraph: graph,
+      intent,
+      transaction,
+      validationScenarios: [],
+      validationBindings: [],
+      proofClaims: [{
+        claim: proof,
+        claimRevision: "2",
+        availableEvidenceIds: ["e:consumer"],
+        dependsOnClaimIds: ["claim:missing"],
+      }],
+    });
+
+    expect(plan.status).toBe("blocked");
+    expect(plan.reasons.join(" ")).toMatch(/unknown claim/i);
+  });
+
   it("falls back to conservative validation and blocks proof reuse without a post-patch graph", () => {
     const graph =
       graphFixture();
