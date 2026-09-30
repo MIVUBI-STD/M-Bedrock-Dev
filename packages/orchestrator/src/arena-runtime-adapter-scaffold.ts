@@ -19,6 +19,25 @@ function jsString(
   return JSON.stringify(value);
 }
 
+function baselineProviderStub(
+  surface: string,
+): string {
+  return [
+    "  " + JSON.stringify(surface) + ": {",
+    "    capture(context) {",
+    '      throw new Error("TODO: capture baseline surface ' +
+      surface +
+      ' for arena " + context.arenaId);',
+    "    },",
+    "    compare(snapshot, context) {",
+    '      throw new Error("TODO: compare baseline surface ' +
+      surface +
+      ' for arena " + context.arenaId);',
+    "    },",
+    "  },",
+  ].join("\n");
+}
+
 function methodStub(
   name: string,
   params: readonly string[],
@@ -51,6 +70,7 @@ export function buildArenaRuntimeAdapterScaffold(
 
   const lines: string[] = [
     'import { world } from "@minecraft/server";',
+    'import { captureBaselineSurfaces, compareBaselineSurfaces } from "./baseline-surface.js";',
     "",
     "/**",
     " * Generated map-specific Runtime Lab adapter scaffold.",
@@ -59,21 +79,35 @@ export function buildArenaRuntimeAdapterScaffold(
     " * Keep arena/generation scope explicit; never broaden selectors only",
     " * to make the experiment pass.",
     " */",
+    "const BASELINE_SURFACE_PROVIDERS = {",
+    ...requirements.requiredBaselineSurfaces.map(
+      baselineProviderStub,
+    ),
+    "};",
+    "",
     "export const MAP_ADAPTER = {",
     '  proofAuthority: "server-simulated",',
     "",
-    "  supportedBaselineSurfaces: " +
-      JSON.stringify(
-        requirements
-          .requiredBaselineSurfaces,
-        null,
-        2,
-      )
-        .split("\n")
-        .join("\n  ") +
-      ",",
+    "  baselineSurfaceProviders: BASELINE_SURFACE_PROVIDERS,",
+    "  supportedBaselineSurfaces: Object.keys(BASELINE_SURFACE_PROVIDERS).sort(),",
     "",
   ];
+
+  if (
+    requirements.requiredBaselineSurfaces
+      .length > 0
+  ) {
+    lines.push(
+      methodStub(
+        "playersInArena",
+        ["arenaId"],
+        [
+          'throw new Error("TODO: return the real authored player membership for arena " + arenaId);',
+        ],
+      ),
+      "",
+    );
+  }
 
   if (hooks.has("resetArena")) {
     lines.push(
@@ -173,11 +207,20 @@ export function buildArenaRuntimeAdapterScaffold(
           "compareSurfaces",
         ],
         [
+          "const players = this.playersInArena(arenaId);",
+          "const captured = captureBaselineSurfaces(",
+          "  this.baselineSurfaceProviders,",
+          "  compareSurfaces,",
+          "  { arenaId, arenaGeneration, players, world },",
+          ");",
           "return {",
           "  arenaId,",
           "  arenaGeneration,",
-          "  compareSurfaces: [...compareSurfaces],",
-          "  // TODO: capture exact baseline values for every supported surface.",
+          "  compareSurfaces: captured.requestedSurfaces,",
+          "  supportedSurfaces: captured.supportedSurfaces,",
+          "  unsupportedSurfaces: captured.unsupportedSurfaces,",
+          "  surfaceSnapshots: captured.surfaceSnapshots,",
+          "  assignedPlayers: players.length,",
           "};",
         ],
       ),
@@ -191,12 +234,20 @@ export function buildArenaRuntimeAdapterScaffold(
         "compareArenaBaseline",
         ["baseline"],
         [
+          "const players = this.playersInArena(baseline.arenaId);",
+          "const comparison = compareBaselineSurfaces(",
+          "  this.baselineSurfaceProviders,",
+          "  baseline,",
+          "  {",
+          "    arenaId: baseline.arenaId,",
+          "    arenaGeneration: baseline.arenaGeneration,",
+          "    players,",
+          "    world,",
+          "  },",
+          ");",
           "return {",
-          "  matches: false,",
-          "  complete: false,",
-          "  unsupportedSurfaces: baseline.compareSurfaces ?? [],",
-          "  actualPlayers: -1,",
-          "  residueCount: -1,",
+          "  ...comparison,",
+          "  actualPlayers: players.length,",
           "};",
         ],
       ),
