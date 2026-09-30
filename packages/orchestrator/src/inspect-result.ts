@@ -273,6 +273,7 @@ export function buildInspectionResult(
       combatRuntimeTelemetry,
     combatPolicy,
     chunkLifecycle,
+    persistenceSource,
     rewardSources,
     economyPolicy,
     semanticIr: {
@@ -359,6 +360,7 @@ export function buildInspectionResult(
       combatRuntimeTelemetry,
     combatPolicy,
     chunkLifecycle,
+    persistenceSource,
     rewardSources,
     economyPolicy,
     releaseIdentity: input.releaseIdentity,
