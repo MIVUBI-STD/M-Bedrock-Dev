@@ -60,6 +60,13 @@ function resolveRelative(
   ].find((candidate) => known.has(candidate));
 }
 
+function scriptKind(path: string): ts.ScriptKind {
+  if (path.endsWith(".ts")) return ts.ScriptKind.TS;
+  if (path.endsWith(".tsx")) return ts.ScriptKind.TSX;
+  if (path.endsWith(".jsx")) return ts.ScriptKind.JSX;
+  return ts.ScriptKind.JS;
+}
+
 function nodeSource(
   file: ts.SourceFile,
   node: ts.Node,
@@ -132,6 +139,55 @@ function controlFlow(
   return "unconditional";
 }
 
+function hasModifier(
+  node: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> },
+  kind: ts.SyntaxKind,
+): boolean {
+  return node.modifiers?.some((modifier) => modifier.kind === kind) ?? false;
+}
+
+function exportedNames(file: ts.SourceFile): Set<string> {
+  const output = new Set<string>();
+
+  for (const statement of file.statements) {
+    if (ts.isExportDeclaration(statement)) {
+      const clause = statement.exportClause;
+      if (clause && ts.isNamedExports(clause)) {
+        for (const item of clause.elements) {
+          output.add(item.name.text);
+        }
+      }
+      continue;
+    }
+
+    const exported = hasModifier(statement, ts.SyntaxKind.ExportKeyword);
+    if (!exported) continue;
+
+    if (hasModifier(statement, ts.SyntaxKind.DefaultKeyword)) {
+      output.add("default");
+    }
+
+    if (
+      (ts.isFunctionDeclaration(statement) ||
+        ts.isClassDeclaration(statement)) &&
+      statement.name
+    ) {
+      output.add(statement.name.text);
+      continue;
+    }
+
+    if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name)) {
+          output.add(declaration.name.text);
+        }
+      }
+    }
+  }
+
+  return output;
+}
+
 export function deriveCrossFileCallEdges(
   modules: readonly ScriptModuleSourceInput[],
 ): CrossFileCallEdge[] {
@@ -139,17 +195,25 @@ export function deriveCrossFileCallEdges(
     modules.map((module) => [normalizePath(module.path), module]),
   );
   const known = new Set(normalizedModules.keys());
-  const output: CrossFileCallEdge[] = [];
+  const parsedFiles = new Map<string, ts.SourceFile>();
+  const exportsByModule = new Map<string, Set<string>>();
 
-  for (const [modulePath, module] of normalizedModules) {
+  for (const [path, module] of normalizedModules) {
     const file = ts.createSourceFile(
-      modulePath,
+      path,
       module.text,
       ts.ScriptTarget.Latest,
       true,
-      modulePath.endsWith(".ts") ? ts.ScriptKind.TS : ts.ScriptKind.JS,
+      scriptKind(path),
     );
+    parsedFiles.set(path, file);
+    exportsByModule.set(path, exportedNames(file));
+  }
 
+  const output: CrossFileCallEdge[] = [];
+
+  for (const [modulePath, module] of normalizedModules) {
+    const file = parsedFiles.get(modulePath)!;
     const imports = new Map<string, {
       moduleSpecifier: string;
       importedName: string;
@@ -189,6 +253,12 @@ export function deriveCrossFileCallEdges(
             imported.moduleSpecifier,
             known,
           );
+          const exportExists =
+            targetModule !== undefined &&
+            exportsByModule
+              .get(targetModule)
+              ?.has(imported.importedName) === true;
+
           output.push({
             callerModule: modulePath,
             callerRegion: region(node, file),
@@ -196,7 +266,7 @@ export function deriveCrossFileCallEdges(
             targetExport: imported.importedName,
             localName: node.expression.text,
             controlFlow: controlFlow(node),
-            status: targetModule ? "resolved" : "unresolved",
+            status: exportExists ? "resolved" : "unresolved",
             source: nodeSource(file, node, {
               ...module.source,
               relativePath: modulePath,
@@ -206,6 +276,7 @@ export function deriveCrossFileCallEdges(
       }
       ts.forEachChild(node, visit);
     };
+
     visit(file);
   }
 
