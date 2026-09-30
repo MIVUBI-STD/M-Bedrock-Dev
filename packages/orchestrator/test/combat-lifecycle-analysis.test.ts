@@ -30,6 +30,48 @@ describe("combat lifecycle analysis", () => {
     });
   });
 
+  it("follows callback call graph without merging hurt and death paths", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityHurt.subscribe((event) => {",
+        "  applyCombatEffects(event.hurtEntity);",
+        "});",
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  finishElimination(event.deadEntity);",
+        "});",
+        "function applyCombatEffects(entity) {",
+        "  entity.applyKnockback(1, 0, 1, 1);",
+        "}",
+        "function finishElimination(entity) {",
+        "  entity.addEffect('weakness', 20);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeCombatLifecycle([script]);
+    const hurt = result.paths.find(
+      (item) => item.event === "hurt",
+    );
+    const death = result.paths.find(
+      (item) => item.event === "death",
+    );
+
+    expect(hurt).toMatchObject({
+      knockbackEffects: 1,
+      statusEffects: 0,
+    });
+    expect(death).toMatchObject({
+      knockbackEffects: 0,
+      statusEffects: 1,
+    });
+  });
+
   it("reports projectile cleanup gap only for projectile-bounded evidence", () => {
     const script = parseScriptFile(
       "main",
