@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "groups": {
+    "ingest": {
+      "purpose": "Cheap discovery and manifest/source entry normalization.",
+      "modules": [
+        "discovery",
+        "manifest"
+      ]
+    },
+    "authored-logic": {
+      "purpose": "Parse authored executable/control content without deciding repair policy.",
+      "modules": [
+        "functions",
+        "commands",
+        "scripts",
+        "dialogue"
+      ]
+    },
+    "gameplay": {
+      "purpose": "Derive entity and gameplay-intent semantics from authored evidence.",
+      "modules": [
+        "entities",
+        "gameplay-intent"
+      ]
+    },
+    "resolution": {
+      "purpose": "Resolve references, spatial/topological relationships and persisted world evidence.",
+      "modules": [
+        "references",
+        "topology",
+        "world-db"
+      ]
+    },
+    "diagnostics": {
+      "purpose": "Convert supported analyzer facts into derived findings.",
+      "modules": [
+        "diagnostics"
+      ]
+    }
+  }
+}

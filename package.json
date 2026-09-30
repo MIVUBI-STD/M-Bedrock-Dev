@@ -9,7 +9,7 @@
   },
   "scripts": {
     "check": "npm run verify:full",
-    "verify:repository": "node tooling/repository/verify.mjs && npm run verify:modules && npm run verify:dependencies && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs",
+    "verify:repository": "node tooling/repository/verify.mjs && npm run verify:ownership && npm run verify:modules && npm run verify:dependencies && node tooling/repository/verify-boundaries.mjs && node tooling/repository/verify-contract-registry.mjs && node tooling/repository/verify-reliability-catalogs.mjs && node tooling/repository/verify-reliability-history.mjs && node tooling/repository/verify-knowledge-catalogs.mjs",
     "verify:boundaries": "node tooling/repository/verify-boundaries.mjs",
     "verify:source": "npm run typecheck && npm run bug-report-ui:build && npm test",
     "verify:full": "npm run verify:repository && npm run verify:source",
@@ -23,7 +23,8 @@
     "audit:api": "node tooling/repository/audit-public-api.mjs",
     "bug-report-ui:dev": "vite --config tooling/bug-report-ui/vite.config.mjs",
     "bug-report-ui:build": "vite build --config tooling/bug-report-ui/vite.config.mjs",
-    "bug-report-ui:preview": "vite preview --config tooling/bug-report-ui/vite.config.mjs"
+    "bug-report-ui:preview": "vite preview --config tooling/bug-report-ui/vite.config.mjs",
+    "verify:ownership": "node tooling/repository/verify-engine-ownership.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",

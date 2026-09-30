@@ -1,19 +1,18 @@
 # Adapters
 
-Format-boundary translation for Bedrock/Education content.
+External and native Bedrock format translation.
 
-## Purpose
-
-Adapters translate external representations to/from canonical engine models without becoming semantic-policy owners.
-
-Active specialized adapters include:
+## Format groups
 
 ```text
-mcstructure / little-endian NBT / canonical indexing / placement / footprint
-LevelDB world database
-other specialized binary formats
+native-storage/
+├─ nbt
+└─ leveldb
+
+structure-format/
+└─ mcstructure
 ```
 
-Generic ZIP transport remains in `packages/archive/`.
+Canonical group assignment lives in `ownership.json`.
 
-No adapter should be added until a concrete format boundary is implemented.
+Adapters translate representations and preserve unknown data where required. They do not own gameplay diagnosis, compatibility policy, or repair decisions.

@@ -2,20 +2,40 @@
 
 Read-only semantic derivation from Bedrock/Education content.
 
-## Owners
+Analyzer modules remain at `engine/analyzers/<module>/`; hierarchy is recorded in `ownership.json` and enforced by repository verification.
+
+## Analysis pipeline
 
 ```text
-discovery/     physical/path/content classification
-manifest/      manifest normalization
-functions/     function parsing and references
-commands/      typed command effects
-references/    target resolution
-diagnostics/   diagnostic derivation
-topology/      coordinate/state/repeated-pattern analysis
+ingest
+├─ discovery
+└─ manifest
+      ↓
+authored-logic
+├─ functions
+├─ commands
+├─ scripts
+└─ dialogue
+      ↓
+gameplay
+├─ entities
+└─ gameplay-intent
+      ↓
+resolution
+├─ references
+├─ topology
+└─ world-db
+      ↓
+diagnostics
+└─ diagnostics
 ```
 
-Analyzers preserve source evidence and never directly mutate artifacts.
+This is a semantic routing hierarchy, not a requirement that every map executes every stage.
 
-Version-dependent behavior must route through compatibility/rule authority instead of being silently hardcoded across analyzers.
+## Boundary
 
-- `gameplay-intent/` derives evidence-bounded gameplay-intent signals from parsed authored source. It proposes semantic candidates; it does not declare defects or mutate artifacts.
+- Analyzers are read-only.
+- Preserve source evidence and uncertainty.
+- Version-dependent facts route through compatibility/rule authority.
+- `diagnostics/` derives findings from supported evidence; it does not mutate artifacts.
+- New analyzers must have one explicit group in `ownership.json`.

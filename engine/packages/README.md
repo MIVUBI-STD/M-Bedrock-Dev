@@ -2,26 +2,76 @@
 
 Reusable deterministic engine modules.
 
-## Owners
+Packages stay physically flat at `engine/packages/<module>/` so module import paths remain stable. Architectural hierarchy is **logical and enforced**, not simulated by deeply nested folders.
+
+## Domain groups
 
 ```text
-artifact/       source identity, classification, fingerprint
-archive/        archive security, transport, deterministic packaging
-project-model/  project/session/workspace/file inventory + telemetry contracts
-telemetry/      runtime telemetry emitter, sinks, and instrumentation guards
-graph/          semantic graph, indexes, invalidation
-diagnostics/    finding contract and stable IDs
-repair/         patch planning/application/preconditions
-task-graph/     repository capability/dependency/affected execution planning
-orchestrator/   composition across canonical owners
+foundation/
+├─ common
+├─ artifact
+├─ archive
+├─ project-model
+├─ graph
+└─ semantic-ir
+
+understanding/
+├─ knowledge
+├─ gameplay-intent
+├─ behavior-model
+├─ compatibility
+└─ runtime-profile
+
+diagnosis/
+├─ diagnostics
+├─ diagnostic-reasoning
+├─ logic-solver
+├─ analysis-planner
+└─ diagnosis-pipeline
+
+repair/
+├─ repair
+└─ preservation
+
+validation-reliability/
+├─ validation
+├─ telemetry
+├─ runtime-lab
+├─ reliability
+└─ reliability-search
+
+orchestration/
+├─ task-graph
+├─ orchestrator
+└─ bug-report
 ```
+
+Canonical machine-readable ownership is `ownership.json`. Repository verification requires every package directory to belong to exactly one group and rejects stale/duplicate assignments.
+
+## Dependency intent
+
+```text
+foundation
+   ↓
+understanding
+   ↓
+diagnosis
+   ↓
+repair
+   ↓
+validation-reliability
+
+orchestration = composition/routing across canonical owners
+```
+
+This is an ownership hierarchy, not permission for arbitrary downward/upward imports. Concrete dependency rules remain enforced by repository boundary checks.
 
 ## Boundary
 
-Packages expose domain APIs and must not depend on presentation surfaces in `apps/`.
+- Packages expose domain APIs and must not depend on presentation surfaces in `apps/`.
+- Analyzers provide derived facts; parser/extraction ownership remains under `engine/analyzers/`.
+- `task-graph/` is repository-control-plane only and must not become a second Minecraft semantic engine.
+- `orchestrator/` composes owners; it must not duplicate canonical parser, diagnosis, or repair semantics.
+- New modules require an existing group or an explicit taxonomy change. Do not create `utils`, `misc`, `helpers`, `shared`, or generic manager packages.
 
-Analyzers may feed facts into packages such as graph/diagnostics, but parsers and semantic extraction remain under `analyzers/`.
-
-`task-graph/` is deliberately domain-neutral. It may describe owners and dependencies, but Minecraft semantics, diagnosis authority, repair authority, and proof strength stay with their existing owners.
-
-Read `AGENTS.md` in this directory before changing package ownership.
+Read `AGENTS.md` before changing package ownership.

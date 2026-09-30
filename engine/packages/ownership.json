@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "groups": {
+    "foundation": {
+      "purpose": "Stable primitives, artifact transport/identity, normalized state, graph and semantic representation.",
+      "modules": [
+        "common",
+        "artifact",
+        "archive",
+        "project-model",
+        "graph",
+        "semantic-ir"
+      ]
+    },
+    "understanding": {
+      "purpose": "Minecraft meaning, authored intent, behavior, target/runtime compatibility and evidence-backed knowledge.",
+      "modules": [
+        "knowledge",
+        "gameplay-intent",
+        "behavior-model",
+        "compatibility",
+        "runtime-profile"
+      ]
+    },
+    "diagnosis": {
+      "purpose": "Defect contracts, hypothesis reasoning, constraint solving and minimum-sufficient analysis planning.",
+      "modules": [
+        "diagnostics",
+        "diagnostic-reasoning",
+        "logic-solver",
+        "analysis-planner",
+        "diagnosis-pipeline"
+      ]
+    },
+    "repair": {
+      "purpose": "Controlled mutation and preservation of behavior outside the intended change.",
+      "modules": [
+        "repair",
+        "preservation"
+      ]
+    },
+    "validation-reliability": {
+      "purpose": "Validation, runtime evidence, controlled experiments, regression intelligence and reliability search.",
+      "modules": [
+        "validation",
+        "telemetry",
+        "runtime-lab",
+        "reliability",
+        "reliability-search"
+      ]
+    },
+    "orchestration": {
+      "purpose": "Repository task routing, cross-owner composition and canonical bug-report handoff.",
+      "modules": [
+        "task-graph",
+        "orchestrator",
+        "bug-report"
+      ]
+    }
+  }
+}
