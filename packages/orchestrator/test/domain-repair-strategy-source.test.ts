@@ -28,6 +28,7 @@ describe("domain repair strategy source safety", () => {
       selectionMode: "proposal-only",
       supportedDiagnosticCodes: [
         "CHUNK_LIFECYCLE_RUNTIME_RISK",
+        "CHUNK_LIFECYCLE_SOURCE_RISK",
       ],
     });
 
