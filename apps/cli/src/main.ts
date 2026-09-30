@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 import { compareArtifacts } from "../../../packages/orchestrator/src/index.js";
 import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/index.js";
 import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";
@@ -7,6 +7,7 @@ import { buildArenaEngineeringProjection } from "../../../packages/orchestrator/
 import { buildMapEngineeringWorkflow } from "../../../packages/orchestrator/src/index.js";
 import { planRepositoryTasks } from "../../../packages/orchestrator/src/index.js";
 import { verifyPostRepairOutcome } from "../../../packages/orchestrator/src/index.js";
+import { buildArenaGoldenBaselineCandidate } from "../../../packages/orchestrator/src/index.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/index.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
@@ -222,6 +223,59 @@ async function main(): Promise<void> {
       orphanTranscriptIncidentIds,
       replays,
     }, null, 2));
+    return;
+  }
+
+  if (command === "arena-baseline" && input) {
+    const proofTarget = {
+      ...target,
+      arenaProofMode: "full" as const,
+    };
+    const result = await inspectArtifact(
+      resolve(input),
+      proofTarget,
+      knowledge,
+    );
+    const fileName = basename(input);
+    const label = fileName.replace(
+      /\.(?:mcworld|zip)$/i,
+      "",
+    );
+    const id = label
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") ||
+      "arena-map";
+
+    const candidate =
+      buildArenaGoldenBaselineCandidate(
+        result,
+        {
+          id,
+          label,
+          artifactFile: fileName,
+          ...(arenaRegionContractsPath ===
+          undefined
+            ? {}
+            : {
+                regionContractsFile:
+                  basename(
+                    arenaRegionContractsPath,
+                  ),
+              }),
+        },
+      );
+
+    console.log(
+      JSON.stringify(
+        candidate,
+        null,
+        2,
+      ),
+    );
+    if (candidate.warnings.length > 0) {
+      process.exitCode = 1;
+    }
     return;
   }
 
@@ -484,6 +538,7 @@ async function main(): Promise<void> {
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- arena-baseline <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json]",
     "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- verify-repair <before-mcworld> <after-mcworld> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
