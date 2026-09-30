@@ -1,12 +1,16 @@
 import type {
   BugFinderCategory,
+  BugSeverity,
+} from "./vocabulary.js";
+import type {
   BugFoundBy,
   BugReportBug,
   BugReportV1,
-  BugSeverity,
   BugVerification,
-} from "./index.js";
-import { validateBugReportSemantics } from "./index.js";
+} from "./legacy-v1.js";
+import {
+  validateBugReportSemantics,
+} from "./legacy-v1.js";
 
 export type BugReportParseIssueCode =
   | "invalid-json"

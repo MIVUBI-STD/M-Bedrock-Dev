@@ -1,8 +1,7 @@
 import type {
   BugFinderCategory,
-  BugReportBug,
   BugSeverity,
-} from "./index.js";
+} from "./vocabulary.js";
 
 export type GameplayProgressionImpact =
   | "blocked"
@@ -102,7 +101,7 @@ const severityRank: Readonly<Record<BugSeverity, number>> = {
 };
 
 export function highestBugSeverity(
-  bugs: readonly Pick<BugReportBug, "severity">[],
+  bugs: readonly { readonly severity: BugSeverity }[],
 ): BugSeverity | undefined {
   let highest: BugSeverity | undefined;
 

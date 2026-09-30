@@ -1,11 +1,13 @@
 import type {
   BugReportV1,
   BugReportValidationIssue,
-} from "./index.js";
+} from "./legacy-v1.js";
+import {
+  validateBugReportSemantics,
+} from "./legacy-v1.js";
 import {
   normalizeBugReportV1,
-  validateBugReportSemantics,
-} from "./index.js";
+} from "./normalize.js";
 
 export type BugReportSerializeResult =
   | {

@@ -1,9 +1,11 @@
 import type {
   BugFinderCategory,
+  BugSeverity,
+} from "./vocabulary.js";
+import type {
   BugReportBug,
   BugReportV1,
-  BugSeverity,
-} from "./index.js";
+} from "./legacy-v1.js";
 
 const canonicalCategoryOrder: readonly BugFinderCategory[] = [
   "game-flow",

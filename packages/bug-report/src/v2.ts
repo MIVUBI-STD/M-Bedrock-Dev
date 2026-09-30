@@ -1,4 +1,4 @@
-import type { BugFinderCategory, BugSeverity } from "./index.js";
+import type { BugFinderCategory, BugSeverity } from "./vocabulary.js";
 import type { BugReportParseIssue } from "./parse.js";
 
 export const BUG_REPORT_V2_SCHEMA = "m-bedrock-bug-report/v2" as const;
