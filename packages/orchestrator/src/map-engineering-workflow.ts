@@ -53,6 +53,8 @@ export interface MapEngineeringWorkflowProjection {
     inventoryUncoveredDrops: number;
     inventoryUnresolvedEquipmentSlots: number;
     inventoryMultipleRestoreOwners: number;
+    entityAiTargetedStackIncomplete: number;
+    entityAiNavigationEnvironmentIncompatible: number;
   };
   nextActions: readonly string[];
 }
@@ -354,6 +356,12 @@ export function buildMapEngineeringWorkflow(
     inventoryMultipleRestoreOwners:
       source.gameplayWorld.inventory
         ?.restoreOwnership.multipleRestoreOwners ?? 0,
+    entityAiTargetedStackIncomplete:
+      source.gameplayWorld.entities
+        ?.aiStack.targetedStackIncomplete ?? 0,
+    entityAiNavigationEnvironmentIncompatible:
+      source.gameplayWorld.entities
+        ?.navigationEnvironment.incompatible ?? 0,
   };
 
   const nextActions = stages
