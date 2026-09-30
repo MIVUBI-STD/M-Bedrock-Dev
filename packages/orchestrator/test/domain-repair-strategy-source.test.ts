@@ -3,7 +3,12 @@ import {
   BUILTIN_REPAIR_REALIZERS,
   BUILTIN_REPAIR_STRATEGY_SOURCES,
   assessRepairRegistryCoverage,
+  assessRepairRealizerCoverage,
+  enumerateRepairStrategySources,
   validateRepairStrategySourceRegistry,
+} from "../src/index.js";
+import type {
+  RepairStrategyProviderRegistry,
 } from "../src/index.js";
 
 describe("domain repair strategy source safety", () => {
