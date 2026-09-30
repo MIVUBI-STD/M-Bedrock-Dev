@@ -81,10 +81,9 @@ export function analyzeEconomyPolicy(
       : 0;
 
   const staleDropCleanupCoverageGaps =
-    policy.staleDropCleanupRequired &&
-    rewards.worldDrops > 0 &&
-    rewards.dropCleanupSurfaces === 0
-      ? rewards.worldDrops
+    policy.staleDropCleanupRequired
+      ? rewards
+          .worldDropRewardPathsWithoutCleanup
       : 0;
 
   const inventoryFullPolicyGaps =
