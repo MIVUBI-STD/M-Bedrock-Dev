@@ -66,6 +66,9 @@ export function analyzeInspectionRuntimeState(
       identifier: item.identifier,
       relativePath: item.node.source.relativePath,
       ...(item.size ? { size: item.size } : {}),
+      ...(item.footprint
+        ? { footprint: item.footprint }
+        : {}),
       semantics: item.semantics,
     }));
 
