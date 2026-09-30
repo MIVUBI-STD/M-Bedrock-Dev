@@ -41,7 +41,7 @@ const parsed = parseScriptFile(
 const hint = parsed.repairTransformHints?.find(
   (item) =>
     item.family ===
-      "arena-ownership-guard" &&
+      "arena-capacity-guard" &&
     item.supportedPredicateIds.includes(
       "arena-capacity-overflow-observed",
     ),
