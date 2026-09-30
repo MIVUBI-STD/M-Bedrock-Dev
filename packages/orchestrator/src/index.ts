@@ -358,3 +358,5 @@ export * from "./spatial-authority-diagnostics.js";
 export * from "./inventory-lifecycle-diagnostics.js";
 
 export * from "./entity-ai-navigation-diagnostics.js";
+
+export * from "./arena-lifecycle-diagnostics.js";
