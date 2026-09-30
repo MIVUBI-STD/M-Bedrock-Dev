@@ -14,7 +14,7 @@ describe("world runtime-state key decoder", () => {
     expect(result.record).toEqual(
       expect.objectContaining({
         kind: "ticking-area",
-        arenaId: "3-gameplay",
+        arenaId: "3",
       }),
     );
   });
