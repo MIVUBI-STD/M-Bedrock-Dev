@@ -11,7 +11,8 @@ export type ScriptEconomyEvidenceKind =
   | "score-debit"
   | "score-adjust"
   | "score-write"
-  | "item-consume";
+  | "item-consume"
+  | "death-entity-type-guard";
 
 export interface ScriptEconomyEvidence {
   kind: ScriptEconomyEvidenceKind;
@@ -22,6 +23,7 @@ export interface ScriptEconomyEvidence {
   participantExpression?: string;
   objectiveExpression?: string;
   amount?: number;
+  entityIdentifier?: string;
   source: SourceRef;
 }
 
@@ -411,6 +413,41 @@ export function deriveScriptEconomyEvidence(
       }
     }
 
+    if (
+      ts.isBinaryExpression(node) &&
+      (
+        node.operatorToken.kind ===
+          ts.SyntaxKind.EqualsEqualsToken ||
+        node.operatorToken.kind ===
+          ts.SyntaxKind.EqualsEqualsEqualsToken
+      )
+    ) {
+      const pairs: readonly [
+        ts.Expression,
+        ts.Expression,
+      ][] = [
+        [node.left, node.right],
+        [node.right, node.left],
+      ];
+      for (const [candidate, literal] of pairs) {
+        if (
+          ts.isPropertyAccessExpression(
+            candidate,
+          ) &&
+          candidate.name.text === "typeId" &&
+          ts.isStringLiteralLike(literal)
+        ) {
+          push(node, {
+            kind: "death-entity-type-guard",
+            subjectExpression:
+              candidate.expression.getText(file),
+            entityIdentifier: literal.text,
+          });
+          break;
+        }
+      }
+    }
+
     ts.forEachChild(node, visit);
   };
 
@@ -430,6 +467,8 @@ export function deriveScriptEconomyEvidence(
           item.participantExpression &&
         candidate.amount ===
           item.amount &&
+        candidate.entityIdentifier ===
+          item.entityIdentifier &&
         candidate.source.range?.lineStart ===
           item.source.range?.lineStart
       ) === index
