@@ -23,6 +23,7 @@ import {
 } from "../../../analyzers/diagnostics/src/index.js";
 import {
   MCSTRUCTURE_PARSER_REVISION,
+  extractMcStructureFootprint,
   parseMcStructure,
 } from "../../../adapters/mcstructure/src/index.js";
 import { deriveMcStructureSemantics } from "../../../adapters/mcstructure/src/index.js";
@@ -78,6 +79,9 @@ export interface InspectionSourceIndex {
     size?: { x: number; y: number; z: number };
     semantics: ReturnType<
       typeof deriveMcStructureSemantics
+    >;
+    footprint?: ReturnType<
+      typeof extractMcStructureFootprint
     >;
     embeddedCommands: ReturnType<
       typeof analyzeEmbeddedStructureCommands
@@ -335,6 +339,19 @@ export async function indexInspectionSources(
           node.source,
         );
 
+      let footprint:
+        ReturnType<
+          typeof extractMcStructureFootprint
+        > | undefined;
+      try {
+        footprint =
+          extractMcStructureFootprint(
+            structure,
+          );
+      } catch {
+        footprint = undefined;
+      }
+
       parsedStructureModels.push({
         identifier: structureId,
         node,
@@ -342,6 +359,9 @@ export async function indexInspectionSources(
           ? { size: structure.size }
           : {}),
         semantics: deriveMcStructureSemantics(structure),
+        ...(footprint === undefined
+          ? {}
+          : { footprint }),
         embeddedCommands,
         queuedTickPositions:
           runtimeContent.queuedTickPositions,
