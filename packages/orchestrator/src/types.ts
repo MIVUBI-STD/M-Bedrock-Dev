@@ -1,5 +1,5 @@
 import type { MinecraftEdition } from "../../compatibility/src/index.js";
-import type { CombatPolicy, InventoryItemPolicy } from "../../behavior-model/src/index.js";
+import type { CombatPolicy, EconomyPolicy, InventoryItemPolicy } from "../../behavior-model/src/index.js";
 import type { EducationFeatureState } from "../../compatibility/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
@@ -46,6 +46,8 @@ import type { CombatLifecycleAnalysis } from "./combat-lifecycle-analysis.js";
 import type { CombatRuntimeTelemetryAnalysis } from "./combat-runtime-telemetry-analysis.js";
 import type { CombatPolicyAnalysis } from "./combat-policy-analysis.js";
 import type { ChunkLifecycleAnalysis } from "./chunk-lifecycle-analysis.js";
+import type { RewardSourceAnalysis } from "./reward-source-analysis.js";
+import type { EconomyPolicyAnalysis } from "./economy-policy-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
@@ -76,6 +78,7 @@ export interface InspectTargetProfile {
   arenaProofMode?: ArenaProofExecutionMode;
   inventoryItemPolicy?: InventoryItemPolicy;
   combatPolicy?: CombatPolicy;
+  economyPolicy?: EconomyPolicy;
 }
 
 export interface InspectedPack {
@@ -107,6 +110,8 @@ export interface InspectDirectoryResult {
   combatRuntime: CombatRuntimeTelemetryAnalysis;
   combatPolicy: CombatPolicyAnalysis;
   chunkLifecycle: ChunkLifecycleAnalysis;
+  rewardSources: RewardSourceAnalysis;
+  economyPolicy: EconomyPolicyAnalysis;
   releaseIdentity: ReleaseIdentityAnalysis;
   gameplayWorld: GameplayWorldModel;
   structures: number;
