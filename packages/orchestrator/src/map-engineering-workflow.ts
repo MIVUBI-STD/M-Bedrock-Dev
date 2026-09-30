@@ -62,6 +62,7 @@ export interface MapEngineeringWorkflowProjection {
     combatReviveScopeGaps: number;
     chunkLeaseAcquireWithoutRelease: number;
     chunkLeaseReleaseUnreachable: number;
+    chunkCleanupOrderUnproven: number;
     chunkDynamicLeaseKeys: number;
     chunkCapacityUncheckedLeases: number;
     chunkReadinessUnverifiedLeases: number;
@@ -411,6 +412,9 @@ export function buildMapEngineeringWorkflow(
     chunkLeaseReleaseUnreachable:
       source.gameplayWorld.chunks
         ?.releaseUnreachable ?? 0,
+    chunkCleanupOrderUnproven:
+      source.gameplayWorld.chunks
+        ?.cleanupOrderUnproven ?? 0,
     chunkDynamicLeaseKeys:
       source.gameplayWorld.chunks
         ?.dynamicLeaseKeys ?? 0,
