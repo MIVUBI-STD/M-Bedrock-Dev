@@ -673,6 +673,8 @@ export async function inspectArtifact(
           result.stateAnalysis.broadWrites,
         entityAiStack:
           result.entityAiStack,
+        routeNavigationEnvironment:
+          result.routeNavigationEnvironment,
         structures: {
           definitions: result.structures,
           loads:
