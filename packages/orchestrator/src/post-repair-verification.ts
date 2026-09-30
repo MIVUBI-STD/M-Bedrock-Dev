@@ -5,6 +5,7 @@ import type {
   InspectArtifactResult,
 } from "./inspect-artifact.js";
 import { assessArenaProofReuse, type ArenaProofReuseReport } from "./arena-proof-reuse.js";
+import { derivePostRepairValidationObligations, type PostRepairValidationObligations } from "./post-repair-validation-obligations.js";
 
 export type PostRepairVerificationStatus =
   | "pass"
@@ -36,6 +37,8 @@ export interface PostRepairVerificationReport {
   followUps: readonly string[];
   improvements: readonly string[];
   proofReuse: ArenaProofReuseReport;
+  validationObligations:
+    PostRepairValidationObligations;
 }
 
 function sourceKey(
@@ -150,6 +153,12 @@ export function verifyPostRepairOutcome(
     assessArenaProofReuse(
       input.before,
       input.after,
+    );
+  const validationObligations =
+    derivePostRepairValidationObligations(
+      input.before,
+      input.after,
+      proofReuse,
     );
 
   if (remaining.length > 0) {
@@ -389,5 +398,6 @@ export function verifyPostRepairOutcome(
     followUps,
     improvements,
     proofReuse,
+    validationObligations,
   };
 }
