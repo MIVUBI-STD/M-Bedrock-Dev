@@ -285,18 +285,29 @@ export function assessArenaProofReuse(
         },
   );
 
+  const beforeScan =
+    before.worldDatabase.nativeScan;
+  const afterScan =
+    after.worldDatabase.nativeScan;
+  const actorLayoutSame =
+    layoutFingerprint(before) ===
+      layoutFingerprint(after);
+  const actorHashesComplete =
+    beforeScan?.actorContentComplete === true &&
+    afterScan?.actorContentComplete === true;
+  const beforeActorHash =
+    beforeScan?.actorContentFingerprint;
+  const afterActorHash =
+    afterScan?.actorContentFingerprint;
   const beforeActors =
-    before.worldDatabase.nativeScan
-      ?.actorRecords ?? 0;
+    beforeScan?.actorRecords ?? 0;
   const afterActors =
-    after.worldDatabase.nativeScan
-      ?.actorRecords ?? 0;
+    afterScan?.actorRecords ?? 0;
 
   if (
     beforeActors === 0 &&
     afterActors === 0 &&
-    layoutFingerprint(before) ===
-      layoutFingerprint(after)
+    actorLayoutSame
   ) {
     assessments.push({
       layer: "actor-population",
@@ -305,21 +316,35 @@ export function assessArenaProofReuse(
         "Both snapshots contain zero Actor records and arena layout is unchanged.",
     });
   } else if (
-    before.fingerprint ===
-    after.fingerprint
+    actorLayoutSame &&
+    actorHashesComplete &&
+    beforeActorHash !== undefined &&
+    beforeActorHash === afterActorHash
   ) {
     assessments.push({
       layer: "actor-population",
       status: "reusable",
       reason:
-        "Artifact fingerprint is identical, so Actor DB content is unchanged.",
+        "Arena layout and complete Actor record content fingerprint are unchanged.",
+    });
+  } else if (
+    actorLayoutSame &&
+    actorHashesComplete &&
+    beforeActorHash !==
+      afterActorHash
+  ) {
+    assessments.push({
+      layer: "actor-population",
+      status: "stale",
+      reason:
+        "Complete Actor record content fingerprint changed.",
     });
   } else {
     assessments.push({
       layer: "actor-population",
       status: "blocked",
       reason:
-        "Actor record values are not yet stored as reusable hashed dependencies; changed artifacts require fresh Actor DB proof.",
+        "Actor record dependency fingerprint is incomplete; fresh Actor DB proof is required.",
     });
   }
 

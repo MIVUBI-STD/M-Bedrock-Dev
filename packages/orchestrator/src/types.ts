@@ -191,6 +191,9 @@ export interface InspectDirectoryResult {
       truncated: boolean;
       actorRecords: number;
       actorDigestRecords: number;
+      actorContentFingerprint?: string;
+      actorContentRecordsHashed: number;
+      actorContentComplete: boolean;
       chunkRecords: number;
       blockEntityRecords: number;
       pendingTickRecords: number;

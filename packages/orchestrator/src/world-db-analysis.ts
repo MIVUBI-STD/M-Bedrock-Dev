@@ -1,4 +1,5 @@
 import { mkdtemp, rm, stat } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createLevelDbSnapshot } from "../../../adapters/leveldb/src/index.js";
@@ -17,6 +18,9 @@ export interface WorldDbNativeSummary {
   truncated: boolean;
   actorRecords: number;
   actorDigestRecords: number;
+  actorContentFingerprint?: string;
+  actorContentRecordsHashed: number;
+  actorContentComplete: boolean;
   chunkRecords: number;
   blockEntityRecords: number;
   pendingTickRecords: number;
@@ -63,6 +67,8 @@ export async function analyzeWorldDbNative(
       truncated: false,
       actorRecords: 0,
       actorDigestRecords: 0,
+      actorContentRecordsHashed: 0,
+      actorContentComplete: true,
       chunkRecords: 0,
       blockEntityRecords: 0,
       pendingTickRecords: 0,
@@ -107,6 +113,27 @@ export async function analyzeWorldDbNative(
         }
       }
 
+      const actorHashes = scan.metadata
+        .filter((entry) =>
+          entry.keyFamily === "actor" &&
+          entry.valueHash !== undefined
+        )
+        .map((entry) => ({
+          keyHex: entry.keyHex,
+          valueHash: entry.valueHash!,
+        }))
+        .sort((a, b) =>
+          a.keyHex.localeCompare(b.keyHex)
+        );
+      const actorContentFingerprint =
+        actorHashes.length === 0
+          ? undefined
+          : createHash("sha256")
+              .update(
+                JSON.stringify(actorHashes),
+              )
+              .digest("hex");
+
       const chunkContentObservations = scan.metadata
         .filter((entry) =>
           entry.keyFamily === "chunk-data" &&
@@ -145,6 +172,15 @@ export async function analyzeWorldDbNative(
         truncated: scan.truncated,
         actorRecords: scan.keyFamilies.actor ?? 0,
         actorDigestRecords: scan.keyFamilies["actor-digest"] ?? 0,
+        ...(actorContentFingerprint === undefined
+          ? {}
+          : { actorContentFingerprint }),
+        actorContentRecordsHashed:
+          actorHashes.length,
+        actorContentComplete:
+          !scan.truncated &&
+          actorHashes.length ===
+            (scan.keyFamilies.actor ?? 0),
         chunkRecords: scan.keyFamilies["chunk-data"] ?? 0,
         blockEntityRecords: scan.chunkDataKinds.BlockEntity ?? 0,
         pendingTickRecords: scan.chunkDataKinds.PendingTicks ?? 0,
@@ -157,7 +193,10 @@ export async function analyzeWorldDbNative(
         chunkSignalsTruncated: chunkKinds.size > chunkSignals.length,
         chunkContentObservations,
         chunkContentObservationsTruncated:
-          scan.metadata.filter((entry) => entry.valueHash !== undefined).length >
+          scan.metadata.filter((entry) =>
+            entry.keyFamily === "chunk-data" &&
+            entry.valueHash !== undefined
+          ).length >
           chunkContentObservations.length,
       };
     } finally {
@@ -170,6 +209,8 @@ export async function analyzeWorldDbNative(
       truncated: false,
       actorRecords: 0,
       actorDigestRecords: 0,
+      actorContentRecordsHashed: 0,
+      actorContentComplete: true,
       chunkRecords: 0,
       blockEntityRecords: 0,
       pendingTickRecords: 0,
