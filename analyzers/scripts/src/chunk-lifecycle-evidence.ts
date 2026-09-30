@@ -11,7 +11,8 @@ export type ScriptChunkLifecycleEvidenceKind =
   | "chunk-readiness-probe"
   | "ticking-area-acquire"
   | "ticking-area-release"
-  | "ticking-area-capacity-check";
+  | "ticking-area-capacity-check"
+  | "ticking-area-readiness-state";
 
 export interface ScriptChunkLifecycleEvidence {
   kind: ScriptChunkLifecycleEvidenceKind;
@@ -219,6 +220,20 @@ export function deriveScriptChunkLifecycleEvidence(
   };
 
   const visit = (node: ts.Node): void => {
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      node.name.text === "isFullyLoaded" &&
+      /tickingArea|lease|area/i.test(
+        node.expression.getText(file),
+      )
+    ) {
+      push(
+        node,
+        "ticking-area-readiness-state",
+        node.expression.getText(file),
+      );
+    }
+
     if (
       ts.isCallExpression(node) &&
       ts.isPropertyAccessExpression(
