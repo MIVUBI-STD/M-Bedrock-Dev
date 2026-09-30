@@ -4,7 +4,7 @@
     {
       "id": "bug-report-v1",
       "symbol": "BugReportV1",
-      "owner": "packages/bug-report/src/index.ts",
+      "owner": "packages/bug-report/src/legacy-v1.ts",
       "producers": [
         "packages/bug-report"
       ],
