@@ -31,6 +31,7 @@ export interface ScriptRewardPathAssessment {
   scoreAdjustments: number;
   scoreWrites: number;
   itemConsumes: number;
+  deathEntityTypeGuards: readonly string[];
   idempotencyGuards: number;
 }
 
@@ -54,6 +55,7 @@ export interface RewardSourceAnalysis {
   deathRewardPaths: number;
   pickupCurrencyPaths: number;
   deathRewardSourceOverlapCandidates: number;
+  deathRewardSourceOverlapUnresolved: number;
   pickupCurrencyWithoutConsumeCandidates: number;
   paths: readonly ScriptRewardPathAssessment[];
 }
@@ -255,6 +257,17 @@ function pathAssessment(
         economy,
         "item-consume",
       ),
+    deathEntityTypeGuards: [
+      ...new Set(
+        economy.flatMap((item) =>
+          item.kind ===
+            "death-entity-type-guard" &&
+          item.entityIdentifier !== undefined
+            ? [item.entityIdentifier]
+            : [],
+        ),
+      ),
+    ].sort(),
     idempotencyGuards,
   };
 }
@@ -347,6 +360,15 @@ export function analyzeRewardSources(
       (item) =>
         item.configuredStates > 0,
     ).length;
+  const engineLootEntityKeys =
+    new Set(
+      entityLoot
+        .filter(
+          (item) =>
+            item.configuredStates > 0,
+        )
+        .map((item) => item.entityKey),
+    );
   const engineLootTables =
     new Set(
       entityLoot.flatMap(
@@ -561,9 +583,21 @@ export function analyzeRewardSources(
     pickupCurrencyPaths:
       pickupCurrencyPaths.length,
     deathRewardSourceOverlapCandidates:
-      engineLootEntities > 0 &&
-      deathRewardPaths.length > 0
-        ? 1
+      deathRewardPaths.filter((path) =>
+        path.deathEntityTypeGuards.some(
+          (entityKey) =>
+            engineLootEntityKeys.has(
+              entityKey,
+            ),
+        ),
+      ).length,
+    deathRewardSourceOverlapUnresolved:
+      engineLootEntities > 0
+        ? deathRewardPaths.filter(
+            (path) =>
+              path.deathEntityTypeGuards
+                .length === 0,
+          ).length
         : 0,
     pickupCurrencyWithoutConsumeCandidates:
       pickupCurrencyPaths.filter(
