@@ -31,6 +31,7 @@ const rewards: RewardSourceAnalysis = {
   deathRewardPaths: 1,
   pickupCurrencyPaths: 1,
   deathRewardSourceOverlapCandidates: 1,
+  deathRewardSourceOverlapUnresolved: 0,
   pickupCurrencyWithoutConsumeCandidates: 1,
   paths: [],
 };
