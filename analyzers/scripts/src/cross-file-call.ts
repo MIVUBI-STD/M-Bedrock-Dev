@@ -123,9 +123,86 @@ function region(node: ts.Node, file: ts.SourceFile): string {
   return "module";
 }
 
+function statementMayExitFunction(
+  node: ts.Node,
+): boolean {
+  if (
+    ts.isReturnStatement(node) ||
+    ts.isThrowStatement(node)
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isFunctionDeclaration(node) ||
+    ts.isFunctionExpression(node) ||
+    ts.isArrowFunction(node) ||
+    ts.isMethodDeclaration(node)
+  ) {
+    return false;
+  }
+
+  let found = false;
+  ts.forEachChild(node, (child) => {
+    if (!found && statementMayExitFunction(child)) {
+      found = true;
+    }
+  });
+  return found;
+}
+
+function hasPriorPossibleFunctionExit(
+  node: ts.Node,
+): boolean {
+  let current: ts.Node | undefined = node;
+
+  while (current?.parent) {
+    const parent = current.parent;
+
+    if (
+      ts.isBlock(parent) &&
+      ts.isStatement(current)
+    ) {
+      const index =
+        parent.statements.indexOf(current);
+      if (index > 0) {
+        for (
+          const previous of
+            parent.statements.slice(0, index)
+        ) {
+          if (
+            statementMayExitFunction(
+              previous,
+            )
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+
+    if (
+      ts.isFunctionDeclaration(parent) ||
+      ts.isFunctionExpression(parent) ||
+      ts.isArrowFunction(parent) ||
+      ts.isMethodDeclaration(parent)
+    ) {
+      break;
+    }
+
+    current = parent;
+  }
+
+  return false;
+}
+
 function controlFlow(
   node: ts.Node,
 ): CrossFileCallEdge["controlFlow"] {
+  if (hasPriorPossibleFunctionExit(node)) {
+    return "conditional";
+  }
+
   let current: ts.Node | undefined = node.parent;
   while (current) {
     if (
