@@ -45,4 +45,26 @@ describe("script economy evidence", () => {
       )?.itemIdentifier,
     ).toBe("minecraft:golden_apple");
   });
+
+  it("keeps dynamic scoreboard delta direction unresolved", () => {
+    const result =
+      deriveScriptEconomyEvidence(
+        [
+          "function adjust(credits, player, delta) {",
+          "  credits.addScore(player, delta);",
+          "}",
+        ].join("\n"),
+        {
+          artifactId: "fixture",
+          relativePath: "scripts/main.ts",
+        },
+      );
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        kind: "score-adjust",
+        amount: undefined,
+      }),
+    ]);
+  });
 });
