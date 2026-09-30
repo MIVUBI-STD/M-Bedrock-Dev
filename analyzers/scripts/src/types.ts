@@ -1,3 +1,4 @@
+import type { ScriptCombatLifecycleEvidence } from "./combat-lifecycle-evidence.js";
 import type { ScriptInventoryLifecycleEvidence } from "./inventory-lifecycle-evidence.js";
 import type { ScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
 import type { ScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
@@ -450,6 +451,7 @@ export interface ParsedScriptFile {
   spatialMutationRejected?: ScriptSpatialMutationRejection[];
   spatialWorldMutations?: ScriptSpatialWorldMutation[];
   cleanupResourceEvidence?: ScriptCleanupResourceEvidence[];
+  combatLifecycleEvidence?: ScriptCombatLifecycleEvidence[];
   inventoryLifecycleEvidence?: ScriptInventoryLifecycleEvidence[];
   globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
   repairTransformHints?: RepairSourceTransformHint[];
