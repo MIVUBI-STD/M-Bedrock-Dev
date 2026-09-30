@@ -27,7 +27,6 @@ export * from "./runtime-observation-validate.js";
 export * from "./runtime-observation.js";
 export * from "./session-generators.js";
 export * from "./session-invariants.js";
-export * from "./session-lifecycle-policy.js";
 export * from "./session-model.js";
 export * from "./session-runner.js";
 export * from "./timing-scenarios.js";
