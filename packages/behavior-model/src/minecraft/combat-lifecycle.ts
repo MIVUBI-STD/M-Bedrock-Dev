@@ -89,6 +89,7 @@ function eq(
 
 export interface CombatLifecycleBehaviorOptions {
   playerKey: string;
+  reviverKey?: string;
   reviveDeadlineTicks?: number;
 }
 
@@ -130,34 +131,42 @@ export function createCombatLifecycleBehavior(
         ],
         provenance,
       },
-      {
-        id: id("begin-revive"),
-        owner: "script",
-        preconditions: [
-          eq(
-            "combat.life-state",
-            p,
-            "downed",
-          ),
-          eq(
-            "combat.death-confirmed",
-            p,
-            false,
-          ),
-          eq(
-            "combat.revive-owner",
-            p,
-            null,
-          ),
-        ],
-        effects: [],
-        nondeterminismSurfaces: [
-          "event-ordering",
-          "network-input-order",
-          "death-respawn-order",
-        ],
-        provenance,
-      },
+      ...(options.reviverKey === undefined
+        ? []
+        : [{
+            id: id("begin-revive"),
+            owner: "script" as const,
+            preconditions: [
+              eq(
+                "combat.life-state",
+                p,
+                "downed",
+              ),
+              eq(
+                "combat.death-confirmed",
+                p,
+                false,
+              ),
+              eq(
+                "combat.revive-owner",
+                p,
+                null,
+              ),
+            ],
+            effects: [{
+              kind: "set" as const,
+              variableId:
+                "combat.revive-owner",
+              scopeKey: p,
+              value: options.reviverKey,
+            }],
+            nondeterminismSurfaces: [
+              "event-ordering" as const,
+              "network-input-order" as const,
+              "death-respawn-order" as const,
+            ],
+            provenance,
+          }]),
       {
         id: id("commit-revive"),
         owner: "script",
