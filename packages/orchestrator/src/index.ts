@@ -332,3 +332,6 @@ export * from "./entity-ai-stack-analysis.js";
 export * from "./route-navigation-environment-analysis.js";
 export * from "./entity-navigation-runtime-classification.js";
 export * from "./route-navigation-environment-load.js";
+
+export * from "./combat-lifecycle-analysis.js";
+export * from "./combat-runtime-telemetry-analysis.js";
