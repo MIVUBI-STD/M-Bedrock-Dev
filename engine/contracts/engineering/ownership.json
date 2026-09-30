@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "groups": {
+    "platform": {
+      "purpose": "Core platform, edition, compatibility, permission and API engineering contracts.",
+      "files": [
+        "compatibility-policy.json",
+        "education-runtime-policy.json",
+        "permissions-policy.json",
+        "validation-policy.json"
+      ]
+    },
+    "world-runtime": {
+      "purpose": "World persistence, chunks, mutation, ordering and runtime-system engineering contracts.",
+      "files": [
+        "automation-policy.json",
+        "chunk-runtime-policy.json",
+        "command-context-policy.json",
+        "event-order-policy.json",
+        "observability-policy.json",
+        "performance-policy.json",
+        "persistence-policy.json",
+        "world-mutation-policy.json",
+        "world-state-policy.json"
+      ]
+    },
+    "player-experience": {
+      "purpose": "Player lifecycle, input, interaction, inventory and feedback behavior.",
+      "files": [
+        "client-feedback-policy.json",
+        "input-gesture-policy.json",
+        "interaction-policy.json",
+        "interactive-blocks-policy.json",
+        "inventory-policy.json",
+        "player-life-policy.json",
+        "player-session-policy.json",
+        "teleport-policy.json"
+      ]
+    },
+    "entity-systems": {
+      "purpose": "Entity runtime, combat, effects, economy, mounts and NPC behavior.",
+      "files": [
+        "combat-policy.json",
+        "effects-policy.json",
+        "entity-population-policy.json",
+        "entity-runtime-policy.json",
+        "loot-economy-policy.json",
+        "mounts-policy.json",
+        "npc-dialogue-policy.json",
+        "physics-policy.json"
+      ]
+    },
+    "arena-gameplay": {
+      "purpose": "Arena lifecycle, round integrity, spatial/state authority and environment behavior.",
+      "files": [
+        "arena-cleanup-policy.json",
+        "cinematic-policy.json",
+        "environment-hazards-policy.json",
+        "round-integrity-policy.json",
+        "spatial-containment-policy.json",
+        "state-authority-policy.json"
+      ]
+    }
+  }
+}

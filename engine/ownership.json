@@ -15,7 +15,7 @@
       ]
     },
     "policy-data": {
-      "purpose": "Versioned facts, rules and persisted structural contracts.",
+      "purpose": "Versioned Minecraft platform facts, executable capability rules, and persisted structural schemas.",
       "entries": [
         "knowledge",
         "rules",
@@ -33,6 +33,18 @@
       "purpose": "Bounded Minecraft runtime proof harnesses and controlled laboratories.",
       "entries": [
         "runtime"
+      ]
+    },
+    "design-authority": {
+      "purpose": "Explicit map/mode Game Design specifications that define intended gameplay.",
+      "entries": [
+        "game-design"
+      ]
+    },
+    "engineering-governance": {
+      "purpose": "Engineering and validation contracts that constrain implementation without defining map design.",
+      "entries": [
+        "contracts"
       ]
     }
   }

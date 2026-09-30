@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock-Dev Game Design Specification",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "status",
+    "source",
+    "mechanics",
+    "invariants"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "approved"
+      ]
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "mapId": {
+          "type": "string"
+        },
+        "modeId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "kind",
+        "reference"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "authored-spec",
+            "client-brief",
+            "approved-reconstruction"
+          ]
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "mechanics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "strength"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string"
+          },
+          "strength": {
+            "enum": [
+              "must",
+              "must-not",
+              "should"
+            ]
+          },
+          "subjectIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

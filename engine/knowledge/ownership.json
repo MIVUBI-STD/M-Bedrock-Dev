@@ -5,101 +5,66 @@
       "purpose": "Core platform, edition, compatibility, permission and API facts.",
       "files": [
         "compatibility-bedrock.json",
-        "compatibility-policy.json",
         "core-bedrock.json",
-        "education-runtime-policy.json",
         "education-runtime.json",
         "education.json",
         "leveldb-bedrock.json",
         "permissions-bedrock.json",
-        "permissions-policy.json",
         "script-api-bedrock.json",
-        "validation-bedrock.json",
-        "validation-policy.json"
+        "validation-bedrock.json"
       ]
     },
     "world-runtime": {
       "purpose": "World persistence, chunks, mutation, ordering and runtime-system facts.",
       "files": [
         "automation-bedrock.json",
-        "automation-policy.json",
-        "chunk-runtime-policy.json",
         "chunks-bedrock.json",
         "command-context-bedrock.json",
-        "command-context-policy.json",
-        "event-order-policy.json",
         "event-ordering-bedrock.json",
         "observability-bedrock.json",
-        "observability-policy.json",
         "performance-bedrock.json",
-        "performance-policy.json",
         "persistence-bedrock.json",
-        "persistence-policy.json",
         "structure-bedrock.json",
         "world-mutation-bedrock.json",
-        "world-mutation-policy.json",
-        "world-state-bedrock.json",
-        "world-state-policy.json"
+        "world-state-bedrock.json"
       ]
     },
     "player-experience": {
       "purpose": "Player lifecycle, input, interaction, inventory and feedback behavior.",
       "files": [
         "client-feedback-bedrock.json",
-        "client-feedback-policy.json",
         "input-gesture-bedrock.json",
-        "input-gesture-policy.json",
         "interaction-bedrock.json",
-        "interaction-policy.json",
         "interactive-blocks-bedrock.json",
-        "interactive-blocks-policy.json",
         "inventory-bedrock.json",
-        "inventory-policy.json",
         "player-life-bedrock.json",
-        "player-life-policy.json",
         "player-runtime-bedrock.json",
-        "player-session-policy.json",
-        "teleport-bedrock.json",
-        "teleport-policy.json"
+        "teleport-bedrock.json"
       ]
     },
     "entity-systems": {
       "purpose": "Entity runtime, combat, effects, economy, mounts and NPC behavior.",
       "files": [
         "combat-bedrock.json",
-        "combat-policy.json",
         "effects-bedrock.json",
-        "effects-policy.json",
         "entity-bedrock.json",
         "entity-population-bedrock.json",
-        "entity-population-policy.json",
         "entity-runtime-bedrock.json",
-        "entity-runtime-policy.json",
         "loot-economy-bedrock.json",
-        "loot-economy-policy.json",
         "mounts-bedrock.json",
-        "mounts-policy.json",
         "npc-dialogue-bedrock.json",
-        "npc-dialogue-policy.json",
-        "physics-bedrock.json",
-        "physics-policy.json"
+        "physics-bedrock.json"
       ]
     },
     "arena-gameplay": {
       "purpose": "Arena lifecycle, round integrity, spatial/state authority and environment behavior.",
       "files": [
         "arena-cleanup-bedrock.json",
-        "arena-cleanup-policy.json",
         "cinematic-bedrock.json",
-        "cinematic-policy.json",
         "environment-hazards-bedrock.json",
-        "environment-hazards-policy.json",
         "round-integrity-bedrock.json",
-        "round-integrity-policy.json",
         "spatial-containment-bedrock.json",
-        "spatial-containment-policy.json",
-        "state-authority-bedrock.json",
-        "state-authority-policy.json"
+        "state-authority-bedrock.json"
       ]
     }
   }

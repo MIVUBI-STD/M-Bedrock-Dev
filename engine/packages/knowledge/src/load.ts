@@ -29,7 +29,7 @@ export async function loadKnowledgeDirectory(
   directory: string,
 ): Promise<KnowledgeCatalog> {
   const names = (await readdir(directory))
-    .filter((name) => name.endsWith(".json"))
+    .filter((name) => name.endsWith(".json") && name !== "ownership.json")
     .sort();
 
   if (names.length === 0) {

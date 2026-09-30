@@ -31,7 +31,7 @@ for (const domain of DOMAIN_REGISTRIES) {
 }
 
 const engineRegistry = JSON.parse(readFileSync("engine/ownership.json", "utf8"));
-const expectedEngineEntries = ["adapters","analyzers","fixtures","knowledge","packages","reliability","rules","runtime","schemas"].sort();
+const expectedEngineEntries = ["adapters","analyzers","contracts","fixtures","game-design","knowledge","packages","reliability","rules","runtime","schemas"].sort();
 const assignedEngineEntries = Object.values(engineRegistry.groups ?? {})
   .flatMap((group) => Array.isArray(group.entries) ? group.entries : [])
   .sort();

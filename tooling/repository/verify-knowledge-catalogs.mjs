@@ -22,7 +22,7 @@ const diagnosticSeverities = stringRegistry("KNOWLEDGE_DIAGNOSTIC_SEVERITIES");
 
 const directory = "engine/knowledge";
 const files = readdirSync(directory)
-  .filter((name) => name.endsWith(".json"))
+  .filter((name) => name.endsWith(".json") && name !== "ownership.json")
   .map((name) => join(directory, name))
   .sort();
 
