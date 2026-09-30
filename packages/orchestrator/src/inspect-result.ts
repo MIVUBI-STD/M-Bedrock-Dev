@@ -163,6 +163,7 @@ export function buildInspectionResult(
     placedEmbeddedCommands,
     topology,
     scriptSpatial,
+    spatialAuthority,
     scriptSafeConfig,
     inventoryLifecycle,
     arenaLifecycle,
@@ -261,6 +262,9 @@ export function buildInspectionResult(
     intent: input.gameplayIntent,
     arena: baseArenaAnalysis,
     scriptSpatial,
+    ...(spatialAuthority === undefined
+      ? {}
+      : { spatialAuthority }),
     inventoryLifecycle,
     inventoryPolicy,
     inventoryRestoreOwnership,
@@ -344,6 +348,9 @@ export function buildInspectionResult(
     scriptApiUsage,
     scriptSafeConfig,
     scriptSpatial,
+    ...(spatialAuthority === undefined
+      ? {}
+      : { spatialAuthority }),
     inventoryLifecycle,
     inventoryPolicy,
     inventoryRestoreOwnership,
