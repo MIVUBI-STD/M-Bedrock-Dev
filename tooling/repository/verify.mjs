@@ -32,8 +32,8 @@ const required = [
   "engine/README.md",
   "engine/ownership.json",
   "engine/AGENTS.md",
-  "engine/game-design/AGENTS.md",
-  "engine/game-design/schema/v1.schema.json",
+  "engine/design/AGENTS.md",
+  "engine/design/schema/v1.schema.json",
   "engine/contracts/AGENTS.md",
   "engine/contracts/engineering/README.md",
   "engine/contracts/engineering/ownership.json",
@@ -125,7 +125,8 @@ const forbiddenLegacyPrefixes = [
   "runtime/",
   "schemas/",
   "Experimental/",
-  "bug-reports/"
+  "bug-reports/",
+  "engine/game-design/"
 ];
 
 const legacyTracked = trackedFiles.filter((path) =>

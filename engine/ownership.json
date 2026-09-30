@@ -35,16 +35,16 @@
         "runtime"
       ]
     },
-    "design-authority": {
-      "purpose": "Explicit map/mode Game Design specifications that define intended gameplay.",
-      "entries": [
-        "game-design"
-      ]
-    },
     "engineering-governance": {
       "purpose": "Engineering and validation contracts that constrain implementation without defining map design.",
       "entries": [
         "contracts"
+      ]
+    },
+    "design-system": {
+      "purpose": "Game Design schema, vocabulary, templates, and deterministic compilation support. Actual map design remains project-local.",
+      "entries": [
+        "design"
       ]
     }
   }

@@ -11,8 +11,8 @@ engine/
 ├─ analysis
 │  ├─ adapters/        physical/native format translation
 │  └─ analyzers/       read-only semantic derivation
-├─ design-authority
-│  └─ game-design/     explicit map/mode intended gameplay
+├─ design-system
+│  └─ design/          Game Design schema, vocabulary, templates, compiler
 ├─ policy-data
 │  ├─ knowledge/       descriptive Minecraft platform facts
 │  ├─ rules/           executable version/capability rules
@@ -43,7 +43,7 @@ external bytes / native storage
 Policy/data owners inform the pipeline without becoming runtime proof:
 
 ```text
-game-design + knowledge + rules + contracts + schemas
+project Game Design + design system + knowledge + rules + contracts + schemas
         ↓
 analysis / compatibility / diagnosis
 ```
@@ -63,7 +63,7 @@ fixtures + reliability + runtime
 - `engine/adapters` translates representations.
 - `engine/analyzers` derives evidence without mutation.
 - `engine/packages/orchestrator` is the normal cross-owner composition boundary.
-- `engine/game-design` owns intended gameplay; `engine/knowledge` owns platform facts; `engine/contracts` owns engineering constraints; `rules` and `schemas` remain executable policy/structure owners.
+- Actual map Game Design lives under the project workspace; `engine/design` owns only the design system. `engine/knowledge` owns platform facts; `engine/contracts` owns engineering constraints; `rules` and `schemas` remain executable policy/structure owners.
 - `engine/fixtures` and `reliability` protect quality but do not define gameplay semantics.
 - `engine/runtime` provides bounded runtime proof.
 - Research under `experiments/` is non-authoritative and must not become a production dependency.

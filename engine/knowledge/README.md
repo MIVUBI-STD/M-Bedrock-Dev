@@ -8,7 +8,7 @@ It does not define map design and it does not own MIVUBI engineering requirement
 
 ## Authority boundary
 
-- Game Design → `engine/game-design/` + `engine/packages/game-design/`
+- Game Design → `engine/design/` + `engine/packages/game-design/`
 - Engineering/validation contracts → `engine/contracts/engineering/`
 - Runtime observations → runtime evidence layers
 - Repair decisions → repair/orchestrator
@@ -23,10 +23,15 @@ Platform knowledge keeps provenance, applicability, confidence, and contradictio
 ```text
 knowledge/
 ├─ platform/
-├─ world-runtime/
-├─ player-experience/
-├─ entity-systems/
-└─ arena-gameplay/
+├─ world-engine/
+├─ player-runtime/
+├─ entity-runtime/
+└─ gameplay-runtime/
 ```
 
 The folder name is the semantic domain. `ownership.json` must match the physical placement exactly.
+
+
+## Naming rule
+
+Knowledge folders describe Minecraft runtime domains, never map-design domains.
