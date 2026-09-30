@@ -1,5 +1,6 @@
 export * from "./arena-discovery.js";
 export * from "./arena-replica.js";
+export * from "./arena-canonical-proof.js";
 export * from "./arena-region.js";
 export * from "./arena-region-role.js";
 export * from "./arena-region-partition.js";

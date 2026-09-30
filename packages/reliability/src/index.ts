@@ -5,6 +5,7 @@ export * from "./bedrock-state-mapping.js";
 export * from "./catalog-loader.js";
 export * from "./catalogs.js";
 export * from "./concurrency-oracles.js";
+export * from "./arena-capacity.js";
 export * from "./content-log-parser.js";
 export * from "./control-ack-parser.js";
 export * from "./coverage.js";
