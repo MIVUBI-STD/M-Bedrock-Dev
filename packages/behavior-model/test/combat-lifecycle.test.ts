@@ -13,6 +13,7 @@ describe("combat lifecycle behavior", () => {
       [
         createCombatLifecycleBehavior({
           playerKey: "p1",
+          reviverKey: "p2",
           reviveDeadlineTicks: 100,
         }),
       ],
@@ -28,11 +29,25 @@ describe("combat lifecycle behavior", () => {
     ).toEqual(
       expect.arrayContaining([
         "minecraft.combat:p1:enter-downed",
+        "minecraft.combat:p1:begin-revive",
         "minecraft.combat:p1:commit-revive",
         "minecraft.combat:p1:confirm-death",
         "minecraft.combat:p1:commit-elimination",
       ]),
     );
+    expect(
+      model.transitions.find(
+        (item) =>
+          item.id ===
+          "minecraft.combat:p1:begin-revive",
+      )?.effects,
+    ).toEqual([
+      expect.objectContaining({
+        kind: "set",
+        variableId: "combat.revive-owner",
+        value: "p2",
+      }),
+    ]);
   });
 
   it("does not require attacker or projectile generations for allowed environmental damage", () => {
