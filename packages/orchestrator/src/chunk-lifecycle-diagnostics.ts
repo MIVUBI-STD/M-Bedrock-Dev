@@ -15,6 +15,7 @@ export function chunkLifecycleDiagnostics(
 
   const strongRisk =
     analysis.acquireWithoutRelease > 0 ||
+    analysis.releaseUnreachable > 0 ||
     analysis.shutdownOnlyCleanupRisk > 0;
   const reviewRisk =
     analysis.capacityUncheckedLeases > 0 ||
@@ -36,6 +37,8 @@ export function chunkLifecycleDiagnostics(
       data: {
         acquireWithoutRelease:
           analysis.acquireWithoutRelease,
+        releaseUnreachable:
+          analysis.releaseUnreachable,
         capacityUncheckedLeases:
           analysis.capacityUncheckedLeases,
         shutdownOnlyCleanupRisk:
