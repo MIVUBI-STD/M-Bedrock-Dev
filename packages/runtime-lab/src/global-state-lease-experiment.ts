@@ -37,6 +37,7 @@ export const GLOBAL_STATE_LEASE_ACTION_CAPABILITIES:
     phases: ["setup"],
     requiredParameters: {
       resource: "string",
+      baselineValue: "string",
     },
   }, {
     id: "worldstate.acquire-lease",
@@ -122,6 +123,8 @@ export function createGlobalStateLeaseRaceExperiment(
       actionId: "worldstate.capture-baseline",
       parameters: {
         resource: input.resource,
+        baselineValue:
+          input.baselineValue,
       },
     }, {
       id: "owner-a-acquire",
