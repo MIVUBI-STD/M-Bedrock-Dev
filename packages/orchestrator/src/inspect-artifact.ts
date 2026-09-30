@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, cp, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, cp, rm, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { NORMAL_EXTRACTION_BUDGET } from "../../archive/src/index.js";
@@ -36,6 +36,8 @@ import { localizeArenaRepairSources } from "./arena-repair-localization.js";
 import { bridgeArenaRepairLocalization } from "./arena-repair-bridge.js";
 import { arenaProofLayerEnabled, planArenaProofExecution } from "./arena-proof-execution-plan.js";
 import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
+import { collectArtifactReleaseObservations } from "./release-identity-evidence.js";
+import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -93,6 +95,30 @@ export async function inspectArtifact(
       runtimeProbeResponses,
       runtimeProbeTranscript?.droppedExchanges ?? 0,
     );
+
+    const levelName = await readFile(
+      join(workingRoot, "levelname.txt"),
+      "utf8",
+    ).then(
+      (value) => value.trim(),
+      () => undefined,
+    );
+    const releaseObservations =
+      collectArtifactReleaseObservations({
+        artifactPath: path,
+        artifactId,
+        ...(levelName === undefined ||
+        levelName.length === 0
+          ? {}
+          : { levelName }),
+      });
+    const finalReleaseIdentity =
+      analyzeReleaseIdentity(
+        result.packs,
+        result.scriptSafeConfig,
+        target,
+        releaseObservations,
+      );
     const scriptLayoutFallback =
       result.arenaAnalysis.discovery === undefined
         ? deriveScriptArenaLayoutFallback(
@@ -264,7 +290,14 @@ export async function inspectArtifact(
     let arenaBlockEntityProof;
     let arenaActorPopulationProof;
     let persistedPackIdentity;
-    const artifactDiagnostics = [...result.diagnostics];
+    const artifactDiagnostics = [
+      ...result.diagnostics.filter(
+        (finding) =>
+          finding.code !==
+          "RELEASE_IDENTITY_INCONSISTENT",
+      ),
+      ...finalReleaseIdentity.findings,
+    ];
 
     for (
       const replica of
@@ -719,6 +752,8 @@ export async function inspectArtifact(
       fingerprint,
       archiveEntries: inventory.entries.length,
       ...result,
+      releaseIdentity:
+        finalReleaseIdentity,
       gameplayWorld: finalGameplayWorld,
       arenaAnalysis: finalArenaAnalysis,
       worldDatabase: {

@@ -32,8 +32,12 @@ export function analyzeReleaseIdentity(
   packs: readonly InspectedPack[],
   scriptConfig: ScriptSafeConfigAnalysis,
   target: InspectTargetProfile,
+  additionalObservations:
+    readonly ReleaseIdentityObservation[] = [],
 ): ReleaseIdentityAnalysis {
-  const explicitReleaseObservations: ReleaseIdentityObservation[] = [];
+  const explicitReleaseObservations: ReleaseIdentityObservation[] = [
+    ...additionalObservations,
+  ];
 
   if (
     target.releaseVersion !== undefined &&
@@ -61,25 +65,39 @@ export function analyzeReleaseIdentity(
     });
   }
 
+  const deduplicatedObservations = [
+    ...new Map(
+      explicitReleaseObservations.map((item) => [
+        [
+          item.component,
+          item.releaseVersion,
+          item.source?.relativePath ?? "",
+          item.source?.range?.lineStart ?? 0,
+        ].join("|"),
+        item,
+      ]),
+    ).values(),
+  ];
+
   const findings =
     releaseIdentityConsistencyDiagnostics(
-      explicitReleaseObservations,
+      deduplicatedObservations,
     );
   const versions = new Set(
-    explicitReleaseObservations.map(
+    deduplicatedObservations.map(
       (item) => item.releaseVersion,
     ),
   );
 
   return {
     status:
-      explicitReleaseObservations.length === 0
+      deduplicatedObservations.length === 0
         ? "unavailable"
         : versions.size === 1
           ? "consistent"
           : "conflict",
     explicitReleaseObservations:
-      explicitReleaseObservations.sort((a, b) =>
+      deduplicatedObservations.sort((a, b) =>
         a.component.localeCompare(b.component)
       ),
     packVersions: packs.flatMap((pack) =>
