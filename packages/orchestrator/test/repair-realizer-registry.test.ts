@@ -4,6 +4,8 @@ import { createPatchTransaction } from "../../repair/src/index.js";
 import {
   BUILTIN_REPAIR_REALIZERS,
   assessRepairRealizerCoverage,
+  assessRepairRegistryCoverage,
+  BUILTIN_REPAIR_STRATEGY_SOURCES,
   deriveChangedSemanticNodeIds,
   repairRealizerRegistryRevision,
   type RepairStrategyEnumeration,
@@ -149,6 +151,43 @@ describe("repair realizer registry and graph binding", () => {
 
     expect(reordered).toBe(first);
     expect(changed).not.toBe(first);
+  });
+
+  it("keeps every builtin causal-auto source covered while proposal-only nondeterministic sources require no automatic realizer", () => {
+    const report =
+      assessRepairRegistryCoverage(
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+        BUILTIN_REPAIR_REALIZERS,
+      );
+
+    expect(report).toMatchObject({
+      missingRequiredRealizers: 0,
+      incompatibleRealizers: 0,
+      complete: true,
+    });
+    expect(
+      report.items.filter(
+        (item) =>
+          item.selectionMode ===
+          "causal-auto",
+      ).every(
+        (item) =>
+          item.status === "covered" &&
+          item.requiresRealizer,
+      ),
+    ).toBe(true);
+    expect(
+      report.items.find(
+        (item) =>
+          item.sourceId ===
+          "chunk-lifecycle-remediation",
+      ),
+    ).toMatchObject({
+      status:
+        "proposal-only-no-realizer",
+      requiresRealizer: false,
+      deterministic: false,
+    });
   });
 
   it("reports missing concrete realization coverage separately from provider applicability", () => {
