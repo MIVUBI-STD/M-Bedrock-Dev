@@ -254,6 +254,12 @@ describe("zero-waste workflow facade", () => {
       "claim:arena:g4",
     ]);
     expect(plan.reusableProofClaimIds).toEqual([]);
+    expect(plan.proofActions).toEqual([
+      expect.objectContaining({
+        claimId: "claim:arena:g4",
+        action: "recompute",
+      }),
+    ]);
   });
 
   it("rejects explicitly stale evidence from zero-waste reuse", () => {
