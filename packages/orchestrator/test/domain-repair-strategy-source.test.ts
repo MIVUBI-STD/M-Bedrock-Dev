@@ -12,7 +12,7 @@ import type {
 } from "../src/index.js";
 
 describe("domain repair strategy source safety", () => {
-  it("keeps chunk and combat remediation proposal-only", () => {
+  it("keeps chunk, combat, and economy remediation proposal-only", () => {
     const byId = new Map(
       BUILTIN_REPAIR_STRATEGY_SOURCES.sources.map(
         (item) => [item.id, item],
@@ -41,6 +41,19 @@ describe("domain repair strategy source safety", () => {
       selectionMode: "proposal-only",
       supportedDiagnosticCodes: [
         "COMBAT_REVIVE_POLICY_VIOLATION",
+      ],
+    });
+
+    expect(
+      byId.get(
+        "economy-policy-remediation",
+      ),
+    ).toMatchObject({
+      deterministic: false,
+      selectionMode: "proposal-only",
+      supportedDiagnosticCodes: [
+        "ECONOMY_POLICY_CONFLICT",
+        "ECONOMY_POLICY_COVERAGE_GAP",
       ],
     });
   });
@@ -103,6 +116,69 @@ describe("domain repair strategy source safety", () => {
         (item) =>
           item.sourceId ===
           "combat-revive-remediation",
+      ),
+    ).toMatchObject({
+      status: "realizer-not-required",
+    });
+  });
+
+  it("routes economy policy diagnostics without requiring an automatic realizer", () => {
+    const emptyProviders:
+      RepairStrategyProviderRegistry = {
+        schemaVersion: 1,
+        providers: [],
+      };
+    const enumeration =
+      enumerateRepairStrategySources(
+        {
+          incidentId: "incident-economy",
+          candidateId: "cause-economy",
+          sourceFingerprint: "source-a",
+          chainIds: ["chain-economy"],
+          relationIds: [],
+          invariantIds: [],
+          diagnosticIds: ["diag-economy"],
+          diagnosticCodes: [
+            "ECONOMY_POLICY_CONFLICT",
+          ],
+          sourceRefs: [],
+          exactSourceRefs: [],
+          causalBinding: {},
+          targetProfileFingerprints: [],
+          automaticRealizationAllowed: false,
+          reasons: [],
+        },
+        [{
+          id: "diag-economy",
+          code: "ECONOMY_POLICY_CONFLICT",
+          severity: "medium",
+          message:
+            "Authored economy policy conflicts with correlated reward evidence.",
+        }],
+        emptyProviders,
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+      );
+
+    expect(
+      enumeration.applicableSources.find(
+        (item) =>
+          item.sourceId ===
+          "economy-policy-remediation",
+      ),
+    ).toMatchObject({
+      selectionMode: "proposal-only",
+      deterministic: false,
+      automaticRealizationEligible: false,
+    });
+
+    expect(
+      assessRepairRealizerCoverage(
+        enumeration,
+        BUILTIN_REPAIR_REALIZERS,
+      ).items.find(
+        (item) =>
+          item.sourceId ===
+          "economy-policy-remediation",
       ),
     ).toMatchObject({
       status: "realizer-not-required",
