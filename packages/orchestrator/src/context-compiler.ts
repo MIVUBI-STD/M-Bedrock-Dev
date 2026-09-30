@@ -100,6 +100,7 @@ export interface CompiledContextPack {
     isolation: GameplayWorldModel["arenas"]["isolation"];
     globalState:
       GameplayWorldModel["arenas"]["globalState"];
+    persistence?: GameplayWorldModel["persistence"];
     stress:
       GameplayWorldModel["arenas"]["stress"];
     proofMode?: string;
@@ -115,6 +116,7 @@ export interface CompiledContextPack {
       combat: number;
       chunks: number;
       economy: number;
+      persistence: number;
     }>;
   };
   executionScope?: {
@@ -843,6 +845,9 @@ export function compileContextPack(
             worldModel.chunks.readinessUnverifiedLeases +
             worldModel.chunks.shutdownOnlyCleanupRisk +
             worldModel.chunks.unguardedDeferredChunkWork,
+          persistence:
+            (worldModel.persistence?.worldScopedAppendWithoutClear ?? 0) +
+            (worldModel.persistence?.unknownLifetime ?? 0),
           economy:
             worldModel.economy.policy
               .deathRewardOverlapPolicyConflicts +
@@ -906,6 +911,15 @@ export function compileContextPack(
           "runtime.chunks",
         )
       ) ?? false,
+    persistence:
+      (
+        affectedCapabilities?.has(
+          "domain.persistence",
+        ) ||
+        affectedCapabilities?.has(
+          "runtime.persistence",
+        )
+      ) ?? false,
     economy:
       affectedCapabilities?.has(
         "domain.economy",
@@ -954,6 +968,12 @@ export function compileContextPack(
         isolation: worldModel.arenas.isolation,
         globalState:
           worldModel.arenas.globalState,
+        ...(worldModel.persistence === undefined
+          ? {}
+          : {
+              persistence:
+                worldModel.persistence,
+            }),
         stress:
           worldModel.arenas.stress,
         ...(worldModel.arenas
