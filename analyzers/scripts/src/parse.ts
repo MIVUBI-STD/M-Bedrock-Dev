@@ -344,6 +344,50 @@ function directThisMethodTarget(
   return declared ? methodName : undefined;
 }
 
+function localCallControlFlow(
+  node: ts.Node,
+): "unconditional" | "conditional" | "deferred" {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (
+      ts.isIfStatement(current) ||
+      ts.isConditionalExpression(current) ||
+      ts.isCaseClause(current) ||
+      ts.isDefaultClause(current)
+    ) {
+      return "conditional";
+    }
+
+    if (
+      ts.isArrowFunction(current) ||
+      ts.isFunctionExpression(current)
+    ) {
+      const parent = current.parent;
+      if (
+        ts.isCallExpression(parent) &&
+        parent.arguments.includes(current) &&
+        ts.isPropertyAccessExpression(parent.expression) &&
+        /^(?:run|runTimeout|runInterval|runJob)$/.test(
+          parent.expression.name.text,
+        )
+      ) {
+        return "deferred";
+      }
+      return "unconditional";
+    }
+
+    if (
+      ts.isFunctionDeclaration(current) ||
+      ts.isMethodDeclaration(current)
+    ) {
+      return "unconditional";
+    }
+
+    current = current.parent;
+  }
+  return "unconditional";
+}
+
 function localExecutionRegionId(
   node: ts.Node,
   file: ts.SourceFile,
@@ -2289,6 +2333,7 @@ export function parseScriptFile(
         callerRegion: localExecutionRegionId(node, file),
         targetRegion: "function:" + node.expression.text,
         targetName: node.expression.text,
+        controlFlow: localCallControlFlow(node),
         source: lineSource(file, node, source),
       });
     }
@@ -2303,6 +2348,7 @@ export function parseScriptFile(
           callerRegion: localExecutionRegionId(node, file),
           targetRegion: "function:" + localMethodTarget,
           targetName: localMethodTarget,
+          controlFlow: localCallControlFlow(node),
           source: lineSource(file, node, source),
         });
       }
