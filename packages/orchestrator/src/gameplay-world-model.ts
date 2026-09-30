@@ -48,6 +48,9 @@ import type {
   CombatPolicyAnalysis,
 } from "./combat-policy-analysis.js";
 import type {
+  ChunkLifecycleAnalysis,
+} from "./chunk-lifecycle-analysis.js";
+import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
@@ -137,6 +140,21 @@ export interface GameplayWorldModel {
       conflicts: number;
       unknownRegions: number;
     };
+  };
+  chunks: {
+    worldLoadObservers: number;
+    entityLoadObservers: number;
+    entityRemoveObservers: number;
+    readinessProbes: number;
+    tickingAreaAcquires: number;
+    tickingAreaReleases: number;
+    pairedLeases: number;
+    acquireWithoutRelease: number;
+    dynamicLeaseKeys: number;
+    capacityUncheckedLeases: number;
+    shutdownOnlyCleanupRisk: number;
+    entityResidencyObservability:
+      "complete" | "partial" | "absent";
   };
   combat: {
     hurtHandlers: number;
@@ -262,6 +280,7 @@ export interface GameplayWorldModelSource {
   combatLifecycle?: CombatLifecycleAnalysis;
   combatRuntime?: CombatRuntimeTelemetryAnalysis;
   combatPolicy?: CombatPolicyAnalysis;
+  chunkLifecycle?: ChunkLifecycleAnalysis;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
   inventoryPolicy?: InventoryPolicyAnalysis;
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
@@ -516,6 +535,32 @@ export function deriveGameplayWorldModel(
         unknownRegions:
           source.spatialAuthority?.unknownRegions ?? 0,
       },
+    },
+    chunks: {
+      worldLoadObservers:
+        source.chunkLifecycle?.worldLoadObservers ?? 0,
+      entityLoadObservers:
+        source.chunkLifecycle?.entityLoadObservers ?? 0,
+      entityRemoveObservers:
+        source.chunkLifecycle?.entityRemoveObservers ?? 0,
+      readinessProbes:
+        source.chunkLifecycle?.readinessProbes ?? 0,
+      tickingAreaAcquires:
+        source.chunkLifecycle?.tickingAreaAcquires ?? 0,
+      tickingAreaReleases:
+        source.chunkLifecycle?.tickingAreaReleases ?? 0,
+      pairedLeases:
+        source.chunkLifecycle?.pairedLeases ?? 0,
+      acquireWithoutRelease:
+        source.chunkLifecycle?.acquireWithoutRelease ?? 0,
+      dynamicLeaseKeys:
+        source.chunkLifecycle?.dynamicLeaseKeys ?? 0,
+      capacityUncheckedLeases:
+        source.chunkLifecycle?.capacityUncheckedLeases ?? 0,
+      shutdownOnlyCleanupRisk:
+        source.chunkLifecycle?.shutdownOnlyCleanupRisk ?? 0,
+      entityResidencyObservability:
+        source.chunkLifecycle?.entityResidencyObservability ?? "absent",
     },
     combat: {
       hurtHandlers:
