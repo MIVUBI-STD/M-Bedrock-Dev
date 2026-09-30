@@ -7,7 +7,6 @@ import type { ScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.
 import type { PersistentDataLifecycleEvidence } from "./persistent-data-lifecycle.js";
 import type { PersistentStateScopeEvidence } from "./persistent-state-scope.js";
 import type { PersistentStateLifetimeEvidence } from "./persistent-state-lifetime.js";
-import type { ScriptTerminalRaceEvidence } from "./terminal-race-evidence.js";
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "./spatial-mutation-evidence.js";
 import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigFunction, ScriptSafeConfigImport, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
 import type {
@@ -468,7 +467,6 @@ export interface ParsedScriptFile {
   persistentDataLifecycleEvidence?: PersistentDataLifecycleEvidence[];
   persistentStateScopes?: PersistentStateScopeEvidence[];
   persistentStateLifetimes?: PersistentStateLifetimeEvidence[];
-  terminalRaceEvidence?: ScriptTerminalRaceEvidence[];
   repairTransformHints?: RepairSourceTransformHint[];
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];

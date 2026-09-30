@@ -29,7 +29,6 @@ export * from "./chunk-lifecycle-evidence.js";
 export * from "./economy-evidence.js";
 
 export * from "./persistent-data-lifecycle.js";
-export * from "./terminal-race-evidence.js";
 
 export * from "./persistent-state-scope.js";
 

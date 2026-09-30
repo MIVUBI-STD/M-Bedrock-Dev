@@ -65,7 +65,6 @@ import { deriveScriptInventoryLifecycleEvidence } from "./inventory-lifecycle-ev
 import { deriveScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
 import { derivePersistentDataLifecycleEvidence } from "./persistent-data-lifecycle.js";
 import { inferPersistentStateScopes } from "./persistent-state-scope.js";
-import { deriveTerminalRaceEvidence } from "./terminal-race-evidence.js";
 import { inferPersistentStateLifetimes } from "./persistent-state-lifetime.js";
 
 function scriptKind(path: string): ts.ScriptKind {
@@ -1868,11 +1867,6 @@ export function parseScriptFile(
       text,
       source,
     );
-  const terminalRaceEvidence =
-    deriveTerminalRaceEvidence(
-      text,
-      source,
-    );
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2706,9 +2700,6 @@ export function parseScriptFile(
         ),
         cleanupResourceEvidence,
       ),
-    terminalRaceEvidence: [
-      ...terminalRaceEvidence,
-    ],
     spatialMutationRejected: [...spatialMutations.rejected],
     capabilities,
   };
