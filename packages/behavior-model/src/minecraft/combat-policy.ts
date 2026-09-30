@@ -13,6 +13,8 @@ export interface CombatPolicy {
   secondaryEffectsRequireDamageEligibility: boolean;
   projectileGenerationBound: boolean;
   projectileCleanupOnGenerationEnd: boolean;
+  environmentalDamageAllowed: boolean;
+  reviveGenerationBound: boolean;
   selfReviveAllowed: boolean;
   multipleReviversAllowed: boolean;
   reviveAfterDeathAllowed: boolean;
@@ -20,6 +22,8 @@ export interface CombatPolicy {
 }
 
 export interface CombatDamageEligibilityQuery {
+  attackerPresent?: boolean;
+  projectilePresent?: boolean;
   sameArena?: boolean;
   sameTeam?: boolean;
   attackerGenerationCurrent?: boolean;
@@ -71,6 +75,34 @@ export function resolveCombatDamageEligibility(
   }
 
   if (
+    query.attackerPresent === false &&
+    query.projectilePresent !== true
+  ) {
+    return {
+      status: policy.environmentalDamageAllowed
+        ? "allow"
+        : "deny",
+      reasons: [
+        policy.environmentalDamageAllowed
+          ? "Authored policy allows environmental/unattributed damage."
+          : "Authored policy denies environmental/unattributed damage.",
+      ],
+    };
+  }
+
+  if (
+    query.attackerPresent === undefined &&
+    query.projectilePresent === undefined
+  ) {
+    return {
+      status: "unknown",
+      reasons: [
+        "Damage attribution presence is unresolved.",
+      ],
+    };
+  }
+
+  if (
     policy.crossArenaDamageAllowed === false
   ) {
     if (query.sameArena === false) {
@@ -112,28 +144,34 @@ export function resolveCombatDamageEligibility(
     }
   }
 
-  if (
-    query.attackerGenerationCurrent === false
-  ) {
-    return {
-      status: "deny",
-      reasons: [
-        "Attacker generation is stale.",
-      ],
-    };
-  }
-  if (
-    query.attackerGenerationCurrent === undefined
-  ) {
-    return {
-      status: "unknown",
-      reasons: [
-        "Attacker generation freshness is unresolved.",
-      ],
-    };
+  if (query.attackerPresent === true) {
+    if (
+      query.attackerGenerationCurrent === false
+    ) {
+      return {
+        status: "deny",
+        reasons: [
+          "Attacker generation is stale.",
+        ],
+      };
+    }
+    if (
+      query.attackerGenerationCurrent ===
+      undefined
+    ) {
+      return {
+        status: "unknown",
+        reasons: [
+          "Attacker generation freshness is unresolved.",
+        ],
+      };
+    }
   }
 
-  if (policy.projectileGenerationBound) {
+  if (
+    policy.projectileGenerationBound &&
+    query.projectilePresent === true
+  ) {
     if (
       query.projectileGenerationCurrent === false
     ) {
