@@ -657,6 +657,8 @@ export async function inspectArtifact(
         intent: result.gameplayIntent.model,
         arena: finalArenaAnalysis,
         scriptSpatial: result.scriptSpatial,
+        combatLifecycle:
+          result.combatLifecycle,
         inventoryLifecycle:
           result.inventoryLifecycle,
         inventoryPolicy:
