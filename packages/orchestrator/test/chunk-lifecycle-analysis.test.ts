@@ -127,6 +127,54 @@ describe("chunk lifecycle analysis", () => {
     expect(result.shutdownOnlyCleanupRisk).toBe(1);
   });
 
+  it("recognizes world-load reconciliation through a cleanup helper", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.worldLoad.subscribe(() => {",
+        "  reconcile(manager);",
+        "});",
+        "function reconcile(manager) {",
+        "  manager.removeTickingArea('arena:recover');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(result.worldLoadReconciliationPaths).toBe(1);
+  });
+
+  it("flags unguarded deferred chunk work that reaches a readiness operation", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function schedule(system, dimension) {",
+        "  system.runTimeout(() => {",
+        "    check(dimension);",
+        "  }, 20);",
+        "}",
+        "function check(dimension) {",
+        "  dimension.isChunkLoaded({ x: 0, y: 0, z: 0 });",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(result.unguardedDeferredChunkWork).toBe(1);
+  });
+
   it("reports partial entity residency observability when only load is observed", () => {
     const script = parseScriptFile(
       "main",
