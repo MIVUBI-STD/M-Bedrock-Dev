@@ -12,6 +12,7 @@ export interface ZeroWasteProofActionOutcome {
 
 export interface ZeroWasteExecutionReceipt {
   schemaVersion: 1;
+  transactionId: string;
   status: "complete" | "incomplete";
   reusedClaimIds: readonly string[];
   recomputedClaimIds: readonly string[];
@@ -111,6 +112,8 @@ export function createZeroWasteExecutionReceipt(
 
   return {
     schemaVersion: 1,
+    transactionId:
+      plan.transactionId,
     status: completed ? "complete" : "incomplete",
     reusedClaimIds: plan.proofActions
       .filter((item) => item.action === "reuse")
