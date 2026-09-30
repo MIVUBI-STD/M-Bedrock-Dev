@@ -122,4 +122,60 @@ describe("domain analysis capabilities", () => {
       .toBe("capability-gap");
     expect(plan.steps).toEqual([]);
   });
+
+  it("selects persistence semantic analysis before runtime recovery", () => {
+    const plan =
+      planMinimumSufficientAnalysis({
+        goal: "runtime-behavior",
+        relevantTags: [
+          "persistence",
+          "recovery",
+        ],
+        context: "LIVE_MINECRAFT",
+        capabilities:
+          BUILTIN_ANALYSIS_CAPABILITIES,
+      });
+
+    expect(plan.disposition).toBe("execute");
+    expect(plan.steps[0]).toMatchObject({
+      capabilityId:
+        "persistence-lifecycle-integrity",
+      evidenceLevel: "semantic",
+      cost: "moderate",
+    });
+  });
+
+  it("advances persistence analysis to controlled runtime recovery after semantic evidence", () => {
+    const plan =
+      planMinimumSufficientAnalysis({
+        goal: "runtime-behavior",
+        relevantTags: [
+          "persistence",
+          "recovery",
+        ],
+        context: "LIVE_MINECRAFT",
+        completedCapabilityIds: [
+          "persistence-lifecycle-integrity",
+        ],
+        availableEvidence: [{
+          level: "semantic",
+          evidenceIds: [
+            "persistence:semantic",
+          ],
+          quality: "usable",
+          traits: ["semantic-model"],
+        }],
+        capabilities:
+          BUILTIN_ANALYSIS_CAPABILITIES,
+      });
+
+    expect(plan.disposition).toBe("execute");
+    expect(plan.steps[0]).toMatchObject({
+      capabilityId:
+        "persistence-recovery-runtime",
+      evidenceLevel: "runtime",
+      cost: "expensive",
+    });
+  });
+
 });
