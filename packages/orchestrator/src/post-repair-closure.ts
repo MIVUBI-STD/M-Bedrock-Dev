@@ -111,3 +111,114 @@ export function assertPostRepairFixed(
       result.reasons.join("; "),
   );
 }
+
+
+export interface PostRepairProofLayerEvidence {
+  transitive: readonly string[];
+  runtime: readonly string[];
+  preservation: readonly string[];
+  package: readonly string[];
+}
+
+export interface PostRepairClosureReceipt {
+  schemaVersion: 1;
+  transactionId: string;
+  scenarioId: string;
+  disposition: "fixed";
+  proofLayerEvidence: PostRepairProofLayerEvidence;
+  regressionEvidenceIds: readonly string[];
+  evidenceIds: readonly string[];
+}
+
+function requireEvidenceLayer(
+  name: keyof PostRepairProofLayerEvidence,
+  ids: readonly string[],
+): readonly string[] {
+  const normalized = [
+    ...new Set(
+      ids
+        .map((id) => id.trim())
+        .filter(Boolean),
+    ),
+  ].sort();
+
+  if (normalized.length === 0) {
+    throw new Error(
+      "Post-repair closure receipt requires " +
+        name +
+        " evidence.",
+    );
+  }
+  return normalized;
+}
+
+export function createPostRepairClosureReceipt(
+  result: PostRepairClosureResult,
+  evidence: PostRepairProofLayerEvidence,
+): PostRepairClosureReceipt {
+  if (result.disposition !== "fixed") {
+    throw new Error(
+      "Post-repair closure receipt can only be created for a fixed repair.",
+    );
+  }
+  if (
+    result.release.disposition !==
+      "release-eligible"
+  ) {
+    throw new Error(
+      "Post-repair closure receipt requires release eligibility.",
+    );
+  }
+
+  const proofLayerEvidence = {
+    transitive: requireEvidenceLayer(
+      "transitive",
+      evidence.transitive,
+    ),
+    runtime: requireEvidenceLayer(
+      "runtime",
+      evidence.runtime,
+    ),
+    preservation: requireEvidenceLayer(
+      "preservation",
+      evidence.preservation,
+    ),
+    package: requireEvidenceLayer(
+      "package",
+      evidence.package,
+    ),
+  };
+
+  const regressionEvidenceIds = [
+    ...new Set(
+      result.defectRegression.evidenceIds,
+    ),
+  ].sort();
+
+  if (regressionEvidenceIds.length === 0) {
+    throw new Error(
+      "Post-repair closure receipt requires defect regression evidence.",
+    );
+  }
+
+  const evidenceIds = [
+    ...new Set([
+      ...proofLayerEvidence.transitive,
+      ...proofLayerEvidence.runtime,
+      ...proofLayerEvidence.preservation,
+      ...proofLayerEvidence.package,
+      ...regressionEvidenceIds,
+    ]),
+  ].sort();
+
+  return {
+    schemaVersion: 1,
+    transactionId: result.transactionId,
+    scenarioId:
+      result.defectRegression.scenarioId,
+    disposition: "fixed",
+    proofLayerEvidence,
+    regressionEvidenceIds,
+    evidenceIds,
+  };
+}
