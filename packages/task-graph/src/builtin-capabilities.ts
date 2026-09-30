@@ -2,11 +2,6 @@ import type {
   TaskCapability,
 } from "./types.js";
 
-const REMOTE_CONTEXTS = [
-  "REMOTE_GITHUB",
-  "LOCAL_ARTIFACT",
-] as const;
-
 const ALL_STATIC_CONTEXTS = [
   "REMOTE_GITHUB",
   "LOCAL_ARTIFACT",
@@ -28,7 +23,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "source.scripts.arena",
@@ -42,7 +37,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "source.scripts.inventory",
@@ -54,7 +49,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "source.scripts.combat",
@@ -66,7 +61,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "source.scripts.chunks",
@@ -78,7 +73,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "source.scripts.economy",
@@ -90,7 +85,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "source.entities.core",
@@ -104,7 +99,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "moderate",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "source.entities.ai",
@@ -121,7 +116,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "source.entities.economy",
@@ -133,7 +128,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "behavior.core",
@@ -148,7 +143,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "behavior.arena",
@@ -160,7 +155,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "behavior.spatial",
@@ -172,7 +167,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "behavior.inventory",
@@ -184,7 +179,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "behavior.entity-ai",
@@ -196,7 +191,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "behavior.combat",
@@ -208,7 +203,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "behavior.chunks",
@@ -220,7 +215,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "behavior.economy",
@@ -232,7 +227,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       deterministic: true,
       cacheable: true,
       cost: "cheap",
-      contexts: REMOTE_CONTEXTS,
+      contexts: ALL_STATIC_CONTEXTS,
     },
     {
       id: "domain.arena-lifecycle",
