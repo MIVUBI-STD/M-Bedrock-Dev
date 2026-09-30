@@ -69,6 +69,9 @@ import type {
 import type {
   SpatialAuthorityCoverageReport,
 } from "./spatial-authority-analysis.js";
+import type {
+  PersistenceSourceAnalysis,
+} from "./persistence-source-analysis.js";
 
 export interface GameplayWorldSubjectSummary {
   kind: GameplayIntentNodeKind;
@@ -147,6 +150,13 @@ export interface GameplayWorldModel {
       conflicts: number;
       unknownRegions: number;
     };
+  };
+  persistence: {
+    properties: number;
+    appendWithoutClear: number;
+    worldScopedAppendWithoutClear: number;
+    unknownScope: number;
+    unknownLifetime: number;
   };
   chunks: {
     worldLoadObservers: number;
@@ -329,6 +339,7 @@ export interface GameplayWorldModelSource {
   combatRuntime?: CombatRuntimeTelemetryAnalysis;
   combatPolicy?: CombatPolicyAnalysis;
   chunkLifecycle?: ChunkLifecycleAnalysis;
+  persistenceSource?: PersistenceSourceAnalysis;
   rewardSources?: RewardSourceAnalysis;
   economyPolicy?: EconomyPolicyAnalysis;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
@@ -585,6 +596,18 @@ export function deriveGameplayWorldModel(
         unknownRegions:
           source.spatialAuthority?.unknownRegions ?? 0,
       },
+    },
+    persistence: {
+      properties:
+        source.persistenceSource?.properties.length ?? 0,
+      appendWithoutClear:
+        source.persistenceSource?.appendWithoutClear ?? 0,
+      worldScopedAppendWithoutClear:
+        source.persistenceSource?.worldScopedAppendWithoutClear ?? 0,
+      unknownScope:
+        source.persistenceSource?.unknownScope ?? 0,
+      unknownLifetime:
+        source.persistenceSource?.unknownLifetime ?? 0,
     },
     chunks: {
       worldLoadObservers:
