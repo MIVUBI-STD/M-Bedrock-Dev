@@ -10,6 +10,9 @@ import {
   type SafeConfigExpression,
   type SafeConfigValue,
 } from "../../behavior-model/src/index.js";
+import type {
+  SourceRef,
+} from "../../project-model/src/index.js";
 
 export interface ResolvedScriptStructurePlacement {
   scriptId: string;
@@ -17,6 +20,14 @@ export interface ResolvedScriptStructurePlacement {
   position: { x: number; y: number; z: number };
   executionRegion: string;
   sourcePath: string;
+  source: SourceRef;
+}
+
+export interface ResolvedScriptSpatialEffect {
+  scriptId: string;
+  effect: ResolvedEffect;
+  executionRegion: string;
+  source: SourceRef;
 }
 
 export interface ScriptSpatialResolutionFailure {
@@ -29,6 +40,7 @@ export interface ScriptSpatialResolutionFailure {
 
 export interface ScriptSpatialAnalysis {
   resolvedEffects: readonly ResolvedEffect[];
+  resolvedEffectSources: readonly ResolvedScriptSpatialEffect[];
   structurePlacements: readonly ResolvedScriptStructurePlacement[];
   failures: readonly ScriptSpatialResolutionFailure[];
   extractedMutations: number;
@@ -146,6 +158,7 @@ function resolveMutation(
       position,
       executionRegion: mutation.executionRegion,
       sourcePath,
+      source: mutation.source,
     },
   };
 }
@@ -218,6 +231,7 @@ export function analyzeScriptSpatialMutations(
   scripts: readonly ParsedScriptFile[],
 ): ScriptSpatialAnalysis {
   const resolvedEffects: ResolvedEffect[] = [];
+  const resolvedEffectSources: ResolvedScriptSpatialEffect[] = [];
   const structurePlacements: ResolvedScriptStructurePlacement[] = [];
   const failures: ScriptSpatialResolutionFailure[] = [];
 
@@ -236,6 +250,13 @@ export function analyzeScriptSpatialMutations(
       );
       if ("effect" in resolved) {
         resolvedEffects.push(resolved.effect);
+        resolvedEffectSources.push({
+          scriptId: script.identifier,
+          effect: resolved.effect,
+          executionRegion:
+            mutation.executionRegion,
+          source: mutation.source,
+        });
       } else {
         failures.push(resolved.failure);
       }
@@ -249,6 +270,13 @@ export function analyzeScriptSpatialMutations(
       );
       if ("effect" in resolved) {
         resolvedEffects.push(resolved.effect);
+        resolvedEffectSources.push({
+          scriptId: script.identifier,
+          effect: resolved.effect,
+          executionRegion:
+            mutation.executionRegion,
+          source: mutation.source,
+        });
       } else if ("placement" in resolved) {
         structurePlacements.push(resolved.placement);
       } else {
@@ -259,6 +287,7 @@ export function analyzeScriptSpatialMutations(
 
   return {
     resolvedEffects,
+    resolvedEffectSources,
     structurePlacements,
     failures,
     extractedMutations: scripts.reduce(

@@ -171,63 +171,43 @@ export function deriveArenaAuthoredSpatialSources(
     });
   }
 
-  for (const script of input.scripts) {
-    for (
-      const mutation of
-        script.spatialWorldMutations ?? []
-    ) {
-      if (
-        mutation.status !== "resolved" ||
-        mutation.volume === undefined
-      ) {
-        continue;
-      }
-      const kind =
-        mutation.method === "fillBlocks"
-          ? "fill" as const
-          : "setblock" as const;
-      output.push({
-        id: sourceId(
-          kind,
-          mutation.source,
-          mutation.executionRegion,
-        ),
+  for (
+    const resolved of
+      input.scriptSpatial.resolvedEffectSources
+  ) {
+    if (resolved.effect.kind === "teleport") {
+      continue;
+    }
+    const kind =
+      resolved.effect.kind as
+        ArenaAuthoredSpatialSourceKind;
+    const volume =
+      effectVolume(resolved.effect);
+    output.push({
+      id: sourceId(
         kind,
-        source: mutation.source,
-        sourceKind: "script",
-        executionRegion:
-          mutation.executionRegion,
-        volume: mutation.volume,
-      });
-    }
-
-    for (
-      const mutation of
-        script.spatialMutations ?? []
-    ) {
-      if (mutation.kind !== "entity-spawn") {
-        continue;
-      }
-      output.push({
-        id: sourceId(
-          "entity-spawn",
-          mutation.source,
-          mutation.executionRegion,
-        ),
-        kind: "entity-spawn",
-        source: mutation.source,
-        sourceKind: "script",
-        executionRegion:
-          mutation.executionRegion,
-        ...(mutation.identifier === undefined
-          ? {}
-          : {
-              identifier:
-                mutation.identifier,
-            }),
-      });
-    }
+        resolved.source,
+        resolved.executionRegion,
+      ),
+      kind,
+      source: resolved.source,
+      sourceKind: "script",
+      executionRegion:
+        resolved.executionRegion,
+      ...(volume === undefined
+        ? {}
+        : { volume }),
+      ...(resolved.effect.kind === "entity-spawn"
+        ? {
+            position:
+              resolved.effect.position,
+            identifier:
+              resolved.effect.entityIdentifier,
+          }
+        : {}),
+    });
   }
+
 
   for (const placement of input.structurePlacements) {
     const baseSource =
@@ -273,16 +253,7 @@ export function deriveArenaAuthoredSpatialSources(
     const placement of
       input.scriptSpatial.structurePlacements
   ) {
-    const source: SourceRef = {
-      artifactId:
-        input.scripts.find(
-          (script) =>
-            script.identifier ===
-            placement.scriptId,
-        )?.source.artifactId ??
-        "unknown",
-      relativePath: placement.sourcePath,
-    };
+    const source = placement.source;
     output.push({
       id: sourceId(
         "structure-place",
