@@ -33,12 +33,9 @@ describe("domain repair strategy source safety", () => {
     ).toMatchObject({
       deterministic: false,
       selectionMode: "proposal-only",
-      supportedPredicateIds:
-        expect.arrayContaining([
-          "revive-anomaly-observed",
-          "revive-anomaly:stale-revive",
-          "revive-anomaly:revive-after-death",
-        ]),
+      supportedDiagnosticCodes: [
+        "COMBAT_REVIVE_POLICY_VIOLATION",
+      ],
     });
   });
 
