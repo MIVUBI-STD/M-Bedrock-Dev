@@ -1,6 +1,6 @@
 # M-Bedrock-Dev Stable Context
 
-Last verified stable design facts: 2026-09-29
+Last verified stable design facts: 2026-09-30
 
 This file owns stable product and architecture facts only.
 
@@ -96,6 +96,10 @@ The root is reserved for repository policy, version/toolchain authority, command
 - regression fixtures protect material recurring behavior;
 - deletion/reuse/native capability precede new abstractions;
 - unknown Task Graph ownership falls back conservatively instead of silently skipping work;
+- Task Graph wildcard ownership is limited to one trailing prefix wildcard; no generic glob semantics;
+- domain-specific source changes invalidate only their owned domain plus explicit dependents; core parser/model changes expand conservatively;
+- proposal-only repair coverage is distinct from missing deterministic realizer coverage;
+- AI Context Compiler may consume a valid repository task plan to compress domain context, but unmatched ownership keeps context conservative;
 - no background subsystem or persistent registry without a concrete repeated need.
 
 ## Toolchain
@@ -134,7 +138,7 @@ interface presentation             → apps/*
 
 ## Current phase
 
-Repository foundation and core source architecture exist. Workflow compression and affected-only execution are the active architecture lane.
+Repository foundation, domain-intelligence layers, repair routing, and domain-aware affected planning exist. The active lane is workflow-compression integration: developer-surface task planning, affected verification with conservative fallback, and explicit reusable-work identity.
 
 Current continuation: `docs/07-operations/next-action.md`.
 Current proof state: `docs/07-operations/current-validation.md`.
