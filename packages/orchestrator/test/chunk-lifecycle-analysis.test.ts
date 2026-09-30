@@ -130,6 +130,37 @@ describe("chunk lifecycle analysis", () => {
     expect(result.pairedLeases).toBe(0);
   });
 
+  it("keeps shared cleanup owner as order-unproven without acquire-to-release path", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function run(manager, options) {",
+        "  await acquire(manager, options);",
+        "  cleanup(manager);",
+        "}",
+        "async function acquire(manager, options) {",
+        "  if (!manager.hasCapacity(options)) return;",
+        "  const area = await manager.createTickingArea('arena:recover', options);",
+        "  if (!area.isFullyLoaded) return;",
+        "}",
+        "function cleanup(manager) {",
+        "  manager.removeTickingArea('arena:recover');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(result.cleanupOrderUnproven)
+      .toBe(1);
+    expect(result.pairedLeases).toBe(0);
+  });
+
   it("keeps runtime-dynamic lease identity unresolved", () => {
     const script = parseScriptFile(
       "main",
