@@ -20,6 +20,15 @@ const VARIABLES: readonly BehaviorVariable[] = [
     provenance,
   },
   {
+    id: "chunk.simulation-active",
+    scope: "chunk",
+    valueType: "boolean",
+    authority: "engine",
+    description:
+      "Whether the project currently has evidence that gameplay simulation is active for this chunk; this is distinct from script-readable loaded state.",
+    provenance,
+  },
+  {
     id: "chunk.generation",
     scope: "chunk",
     valueType: "number",
@@ -28,19 +37,31 @@ const VARIABLES: readonly BehaviorVariable[] = [
   },
 ];
 
-function loaded(
+function condition(
+  variableId: string,
   chunkKey: string,
   value: boolean,
 ) {
   return {
     kind: "condition" as const,
     condition: {
-      variableId: "chunk.loaded-for-script",
+      variableId,
       scopeKey: chunkKey,
       operator: "eq" as const,
       value,
     },
   };
+}
+
+function loaded(
+  chunkKey: string,
+  value: boolean,
+) {
+  return condition(
+    "chunk.loaded-for-script",
+    chunkKey,
+    value,
+  );
 }
 
 export function createChunkResidencyBehavior(
@@ -83,6 +104,53 @@ export function createChunkResidencyBehavior(
         provenance,
       },
       {
+        id: id("activate-simulation"),
+        owner: "engine",
+        preconditions: [
+          loaded(chunkKey, true),
+          condition(
+            "chunk.simulation-active",
+            chunkKey,
+            false,
+          ),
+        ],
+        effects: [{
+          kind: "set",
+          variableId:
+            "chunk.simulation-active",
+          scopeKey: chunkKey,
+          value: true,
+        }],
+        nondeterminismSurfaces: [
+          "chunk-residency",
+          "tick-scheduling",
+        ],
+        provenance,
+      },
+      {
+        id: id("deactivate-simulation"),
+        owner: "engine",
+        preconditions: [
+          condition(
+            "chunk.simulation-active",
+            chunkKey,
+            true,
+          ),
+        ],
+        effects: [{
+          kind: "set",
+          variableId:
+            "chunk.simulation-active",
+          scopeKey: chunkKey,
+          value: false,
+        }],
+        nondeterminismSurfaces: [
+          "chunk-residency",
+          "tick-scheduling",
+        ],
+        provenance,
+      },
+      {
         id: id("unload"),
         owner: "engine",
         preconditions: [
@@ -93,6 +161,13 @@ export function createChunkResidencyBehavior(
             kind: "set",
             variableId:
               "chunk.loaded-for-script",
+            scopeKey: chunkKey,
+            value: false,
+          },
+          {
+            kind: "set",
+            variableId:
+              "chunk.simulation-active",
             scopeKey: chunkKey,
             value: false,
           },
@@ -110,5 +185,21 @@ export function createChunkResidencyBehavior(
         provenance,
       },
     ],
+    properties: [{
+      id: id(
+        "simulation-requires-loaded-state",
+      ),
+      kind: "always",
+      predicate: {
+        kind: "implies",
+        if: condition(
+          "chunk.simulation-active",
+          chunkKey,
+          true,
+        ),
+        then: loaded(chunkKey, true),
+      },
+      provenance,
+    }],
   };
 }
