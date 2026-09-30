@@ -42,6 +42,7 @@ import { combatPolicyDiagnostics } from "./combat-policy-diagnostics.js";
 import { chunkLifecycleDiagnostics } from "./chunk-lifecycle-diagnostics.js";
 import { economyPolicyDiagnostics } from "./economy-policy-diagnostics.js";
 import { spatialAuthorityDiagnostics } from "./spatial-authority-diagnostics.js";
+import { inventoryLifecycleDiagnostics } from "./inventory-lifecycle-diagnostics.js";
 import { analyzeRouteNavigationEnvironments } from "./route-navigation-environment-analysis.js";
 import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
@@ -255,6 +256,11 @@ export async function inspectDirectory(
     ),
     ...spatialAuthorityDiagnostics(
       runtimeAnalysis.spatialAuthority,
+    ),
+    ...inventoryLifecycleDiagnostics(
+      runtimeAnalysis.inventoryLifecycle,
+      runtimeAnalysis.inventoryPolicy,
+      runtimeAnalysis.inventoryRestoreOwnership,
     ),
   );
 
