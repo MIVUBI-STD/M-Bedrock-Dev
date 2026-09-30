@@ -27,6 +27,7 @@ const rewards: RewardSourceAnalysis = {
   scoreboardWrites: 0,
   itemConsumes: 0,
   dropCleanupSurfaces: 0,
+  worldDropRewardPathsWithoutCleanup: 1,
   rewardPathsWithoutIdempotency: 2,
   deathRewardPaths: 1,
   pickupCurrencyPaths: 1,
