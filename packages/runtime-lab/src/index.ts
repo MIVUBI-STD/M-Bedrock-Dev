@@ -46,3 +46,5 @@ export * from "./bedrock-action-registry.js";
 export * from "./live-client-lifecycle.js";
 
 export * from "./harness-capability-audit.js";
+
+export * from "./probe-plan.js";
