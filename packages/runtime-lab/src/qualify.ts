@@ -62,6 +62,27 @@ function outcomeFor(
   };
 }
 
+const PROOF_AUTHORITY_RANK = {
+  "server-simulated": 0,
+  "live-runtime": 1,
+} as const;
+
+function satisfiesProofAuthority(
+  record: RuntimeEvidenceRecord,
+  minimum:
+    | "server-simulated"
+    | "live-runtime"
+    | undefined,
+): boolean {
+  if (minimum === undefined) return true;
+  const actual = record.proofAuthority;
+  if (actual === undefined) return false;
+  return (
+    PROOF_AUTHORITY_RANK[actual] >=
+    PROOF_AUTHORITY_RANK[minimum]
+  );
+}
+
 function satisfiesMeasurementRequirements(
   record: RuntimeEvidenceRecord,
   requirements:
@@ -288,6 +309,10 @@ export function qualifyRuntimeExperiment(
           runtimeScopeContains(
             record.scope,
             requirement.scope,
+          ) &&
+          satisfiesProofAuthority(
+            record,
+            requirement.minimumProofAuthority,
           ) &&
           satisfiesMeasurementRequirements(
             record,
