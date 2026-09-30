@@ -1,6 +1,6 @@
 import type {
   EvidenceRevisionBinding,
-} from "../../project-model/src/evidence-freshness.js";
+} from "../../project-model/src/index.js";
 import type {
   InvalidationPlan,
 } from "./invalidation.js";
