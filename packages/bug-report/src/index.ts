@@ -386,3 +386,5 @@ export * from "./confirmed-defect.js";
 export * from "./project-confirmed-defect.js";
 
 export * from "./resolve-confirmed-defect-group.js";
+
+export * from "./evidence-confirmed-defect.js";
