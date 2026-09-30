@@ -1,5 +1,5 @@
 import type { MinecraftEdition } from "../../compatibility/src/index.js";
-import type { InventoryItemPolicy } from "../../behavior-model/src/index.js";
+import type { CombatPolicy, InventoryItemPolicy } from "../../behavior-model/src/index.js";
 import type { EducationFeatureState } from "../../compatibility/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
@@ -73,6 +73,7 @@ export interface InspectTargetProfile {
   releaseVersion?: string;
   arenaProofMode?: ArenaProofExecutionMode;
   inventoryItemPolicy?: InventoryItemPolicy;
+  combatPolicy?: CombatPolicy;
 }
 
 export interface InspectedPack {
