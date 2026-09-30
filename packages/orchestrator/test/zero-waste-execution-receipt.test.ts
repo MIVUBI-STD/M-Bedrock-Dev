@@ -119,6 +119,53 @@ describe("zero-waste execution receipt", () => {
       proofExecutions: 1,
       validationScenarios: 1,
       totalUnits: 2,
-    });
+      it("rejects outcomes that violate proof dependency order", () => {
+    const dependentPlan: ZeroWasteWorkflowPlan = {
+      ...plan,
+      proofActions: [
+        {
+          claimId: "claim:dependency",
+          action: "recompute",
+          dependsOnClaimIds: [],
+          reasons: [],
+        },
+        {
+          claimId: "claim:consumer",
+          action: "recompute",
+          dependsOnClaimIds: ["claim:dependency"],
+          reasons: [],
+        },
+      ],
+      reusableProofClaimIds: [],
+      staleProofClaimIds: [
+        "claim:dependency",
+        "claim:consumer",
+      ],
+    };
+
+    const receipt = createZeroWasteExecutionReceipt(
+      dependentPlan,
+      [
+        {
+          claimId: "claim:consumer",
+          action: "recompute",
+          completed: true,
+          evidenceIds: ["e:consumer"],
+        },
+        {
+          claimId: "claim:dependency",
+          action: "recompute",
+          completed: true,
+          evidenceIds: ["e:dependency"],
+        },
+      ],
+    );
+
+    expect(receipt.status).toBe("incomplete");
+    expect(receipt.dependencyViolations.join(" ")).toMatch(
+      /before dependency/i,
+    );
+  });
+});
   });
 });
