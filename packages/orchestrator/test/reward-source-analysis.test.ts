@@ -1,0 +1,99 @@
+import { describe, expect, it } from "vitest";
+import {
+  parseEntityDefinition,
+} from "../../../analyzers/entities/src/index.js";
+import {
+  parseScriptFile,
+} from "../../../analyzers/scripts/src/index.js";
+import {
+  analyzeRewardSources,
+} from "../src/reward-source-analysis.js";
+
+describe("reward source analysis", () => {
+  it("surfaces engine/script death reward overlap as a candidate", () => {
+    const entity = parseEntityDefinition(
+      {
+        "minecraft:entity": {
+          description: {
+            identifier: "demo:zombie",
+          },
+          components: {
+            "minecraft:loot": {
+              table:
+                "loot_tables/entities/zombie.json",
+            },
+          },
+        },
+      },
+      {
+        artifactId: "fixture",
+        relativePath:
+          "entities/zombie.json",
+      },
+    );
+
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  grantReward(event.deadEntity);",
+        "});",
+        "function grantReward(player) {",
+        "  const token = new ItemStack('minecraft:gold_nugget');",
+        "  player.getComponent('inventory').container.addItem(token);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeRewardSources(
+      [script],
+      [],
+      [entity],
+    );
+
+    expect(result.engineLootEntities).toBe(1);
+    expect(result.deathRewardPaths).toBe(1);
+    expect(
+      result.deathRewardSourceOverlapCandidates,
+    ).toBe(1);
+    expect(result.sourceKinds).toEqual(
+      expect.arrayContaining([
+        "ENGINE_LOOT_TABLE",
+        "SCRIPT_INVENTORY_GRANT",
+      ]),
+    );
+  });
+
+  it("finds pickup-to-currency paths without assuming they are defects", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityItemPickup.subscribe((event) => {",
+        "  award(event.entity);",
+        "});",
+        "function award(player) {",
+        "  credits.addScore(player, 1);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeRewardSources(
+      [script],
+      [],
+      [],
+    );
+
+    expect(result.pickupCurrencyPaths).toBe(1);
+    expect(
+      result.pickupCurrencyWithoutConsumeCandidates,
+    ).toBe(1);
+  });
+});
