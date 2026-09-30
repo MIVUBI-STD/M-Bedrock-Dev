@@ -11,7 +11,8 @@ describe("chunk lifecycle analysis", () => {
       [
         "async function recover(manager, options) {",
         "  if (!manager.hasCapacity(options)) return;",
-        "  await manager.createTickingArea('arena:recover', options);",
+        "  const area = await manager.createTickingArea('arena:recover', options);",
+        "  if (!area.isFullyLoaded) return;",
         "  manager.removeTickingArea('arena:recover');",
         "}",
       ].join("\n"),
@@ -62,7 +63,8 @@ describe("chunk lifecycle analysis", () => {
         "  await acquire(manager, options);",
         "}",
         "async function acquire(manager, options) {",
-        "  await manager.createTickingArea('arena:recover', options);",
+        "  const area = await manager.createTickingArea('arena:recover', options);",
+        "  if (!area.isFullyLoaded) return;",
         "  manager.removeTickingArea('arena:recover');",
         "}",
       ].join("\n"),
@@ -77,6 +79,30 @@ describe("chunk lifecycle analysis", () => {
 
     expect(result.pairedLeases).toBe(1);
     expect(result.capacityUncheckedLeases).toBe(0);
+  });
+
+  it("keeps capacity-checked leases unverified until readiness is observed", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function recover(manager, options) {",
+        "  if (!manager.hasCapacity(options)) return;",
+        "  await manager.createTickingArea('arena:recover', options);",
+        "  manager.removeTickingArea('arena:recover');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(result.readinessUnverifiedLeases)
+      .toBe(1);
+    expect(result.pairedLeases).toBe(0);
   });
 
   it("does not treat unrelated release code as a paired cleanup path", () => {
