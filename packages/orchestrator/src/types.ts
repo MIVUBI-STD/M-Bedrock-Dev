@@ -5,7 +5,7 @@ import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
 import type { InspectionRepairCandidate } from "./repair-planning.js";
 import type { ScriptApiUsageInventory } from "./script-api-usage.js";
-import type { ArenaRegionContract, RouteCorridorContract } from "../../project-model/src/index.js";
+import type { ArenaRegionContract, RouteCorridorContract, RouteNavigationEnvironmentContract } from "../../project-model/src/index.js";
 import type { StateAuthorityContract } from "../../project-model/src/index.js";
 import type { MutationDependentActionContract } from "../../project-model/src/index.js";
 import type { CausalChain, CausalIncident } from "../../project-model/src/index.js";
@@ -41,6 +41,7 @@ import type { InventoryPolicyAnalysis } from "./inventory-policy-analysis.js";
 import type { InventoryRestoreOwnershipAnalysis } from "./inventory-restore-ownership-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type { EntityAiStackAnalysis } from "./entity-ai-stack-analysis.js";
+import type { RouteNavigationEnvironmentAnalysis } from "./route-navigation-environment-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
@@ -61,6 +62,7 @@ export interface InspectTargetProfile {
   eduLevel?: number;
   experiments?: readonly string[];
   routeCorridors?: readonly RouteCorridorContract[];
+  routeNavigationEnvironments?: readonly RouteNavigationEnvironmentContract[];
   arenaRegionContracts?: readonly ArenaRegionContract[];
   mutationDependentActions?: readonly MutationDependentActionContract[];
   stateAuthorityContracts?: readonly StateAuthorityContract[];
@@ -102,6 +104,7 @@ export interface InspectDirectoryResult {
   parsedStructures: number;
   entities: number;
   entityAiStack: EntityAiStackAnalysis;
+  routeNavigationEnvironment: RouteNavigationEnvironmentAnalysis;
   entityKnowledge: {
     analyzed: number;
     states: number;
