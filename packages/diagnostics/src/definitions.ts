@@ -12,6 +12,7 @@ export type DiagnosticDefinitionCategory =
   | "script"
   | "structure"
   | "entity"
+  | "combat"
   | "dialogue"
   | "knowledge"
   | "runtime-evidence"
@@ -66,6 +67,7 @@ function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
   if (code.startsWith("SCRIPT_")) return "script";
   if (code.startsWith("STRUCTURE_") || code === "CHUNK_LIFECYCLE_RUNTIME_RISK") return "structure";
   if (code.startsWith("ENTITY_")) return "entity";
+  if (code.startsWith("COMBAT_")) return "combat";
   if (code.startsWith("DIALOGUE_")) return "dialogue";
   if (code.startsWith("KNOWLEDGE_")) return "knowledge";
   if (code.startsWith("TELEMETRY_") || code.startsWith("RUNTIME_PROBE_")) return "runtime-evidence";
@@ -77,6 +79,7 @@ function boundaryFor(code: DiagnosticCode): DiagnosticEvidenceBoundary {
     code.startsWith("TELEMETRY_") ||
     code.startsWith("RUNTIME_PROBE_") ||
     code === "CHUNK_LIFECYCLE_RUNTIME_RISK" ||
+    code === "COMBAT_REVIVE_POLICY_VIOLATION" ||
     code === "ENTITY_RUNTIME_BEHAVIOR_LIMIT" ||
     code === "STRUCTURE_LOAD_PROBABILISTIC_RUNTIME_CONTENT"
   ) {
