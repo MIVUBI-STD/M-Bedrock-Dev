@@ -13,6 +13,7 @@ const validV2 = JSON.stringify({
   map: {
     name: "Beach Bedwars",
     mapVersion: "1.0.4",
+      drive: "https://drive.google.com/file/d/map/view",
     baseVersion: "1.26.20",
     testedVersion: "1.26.32",
   },
@@ -82,6 +83,7 @@ describe("bug report file boundary", () => {
       buildBugReportDownloadName({
         name: "Beach Bedwars",
         mapVersion: "1.0.4",
+      drive: "https://drive.google.com/file/d/map/view",
         baseVersion: "1.26.20",
         testedVersion: "1.26.32",
       }),

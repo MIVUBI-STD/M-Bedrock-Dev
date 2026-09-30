@@ -11,6 +11,7 @@ import {
 const map = {
   name: "Beach Bedwars",
   mapVersion: "1.0.4",
+      drive: "https://drive.google.com/file/d/map/view",
   baseVersion: "1.26.20",
   testedVersion: "1.26.32",
 };
@@ -194,4 +195,34 @@ describe("confirmed bug promotion", () => {
       "too-many-relevant-code-locations",
     );
   });
+
+  it("requires the canonical map Drive URL", () => {
+    const missing = JSON.parse(
+      JSON.stringify(report()),
+    ) as {
+      map: Record<string, unknown>;
+    };
+    delete missing.map.drive;
+
+    const missingResult =
+      parseBugReportV2Json(
+        JSON.stringify(missing),
+      );
+    expect(missingResult.ok).toBe(false);
+
+    const invalid = JSON.parse(
+      JSON.stringify(report()),
+    ) as {
+      map: Record<string, unknown>;
+    };
+    invalid.map.drive =
+      "https://example.com/map";
+
+    const invalidResult =
+      parseBugReportV2Json(
+        JSON.stringify(invalid),
+      );
+    expect(invalidResult.ok).toBe(false);
+  });
+
 });

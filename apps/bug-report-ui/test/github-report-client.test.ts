@@ -14,6 +14,7 @@ const report = {
   map: {
     name: "A",
     mapVersion: "1.0.0",
+      drive: "https://drive.google.com/file/d/map/view",
     baseVersion: "1.26.20",
     testedVersion: "1.26.20",
   },

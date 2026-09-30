@@ -41,6 +41,7 @@ function report(
     map: {
       name: "Scale Test",
       mapVersion: "1.0.0",
+      drive: "https://drive.google.com/file/d/map/view",
       baseVersion: "1.26.20",
       testedVersion: "1.26.32",
     },
