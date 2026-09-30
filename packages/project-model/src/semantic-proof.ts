@@ -14,4 +14,5 @@ export interface SemanticProofClaim {
   basisFingerprint: string;
   evidenceIds: readonly string[];
   targetProfileFingerprint?: string;
+  runtimeScopeKey?: string;
 }
