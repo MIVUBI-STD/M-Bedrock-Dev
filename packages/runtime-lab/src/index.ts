@@ -44,3 +44,5 @@ export * from "./global-state-lease-experiment.js";
 export * from "./bedrock-action-registry.js";
 
 export * from "./live-client-lifecycle.js";
+
+export * from "./harness-capability-audit.js";
