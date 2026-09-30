@@ -102,6 +102,74 @@ describe("arena proof reuse", () => {
     );
   });
 
+  it("ignores world DB changes outside arena chunk scope", () => {
+    const before = inspection();
+    const after = inspection({
+      fingerprint: "artifact-b",
+      worldDatabase: {
+        nativeScan: {
+          ...before.worldDatabase.nativeScan,
+          chunkContentObservations: [
+            ...before.worldDatabase.nativeScan
+              .chunkContentObservations,
+            {
+              chunkX: 999,
+              chunkZ: 999,
+              dimensionId: 0,
+              kind: "SubChunk",
+              valueHash: "outside-change",
+              subChunkIndex: 0,
+            },
+          ],
+        },
+      },
+    });
+
+    const result =
+      assessArenaProofReuse(
+        before,
+        after,
+      );
+
+    expect(
+      result.assessments.find(
+        (item) => item.layer === "voxel",
+      )?.status,
+    ).toBe("reusable");
+  });
+
+  it("invalidates physical proof when arena-scoped chunk content changes", () => {
+    const before = inspection();
+    const after = inspection({
+      fingerprint: "artifact-b",
+      worldDatabase: {
+        nativeScan: {
+          ...before.worldDatabase.nativeScan,
+          chunkContentObservations: [{
+            chunkX: 0,
+            chunkZ: 0,
+            dimensionId: 0,
+            kind: "SubChunk",
+            valueHash: "changed",
+            subChunkIndex: 0,
+          }],
+        },
+      },
+    });
+
+    const result =
+      assessArenaProofReuse(
+        before,
+        after,
+      );
+
+    expect(
+      result.assessments.find(
+        (item) => item.layer === "voxel",
+      )?.status,
+    ).toBe("stale");
+  });
+
   it("blocks physical reuse when native observations are truncated", () => {
     const before = inspection();
     const after = inspection({
