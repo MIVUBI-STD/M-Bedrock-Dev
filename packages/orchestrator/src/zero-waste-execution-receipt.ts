@@ -18,6 +18,11 @@ export interface ZeroWasteExecutionReceipt {
   restoredEvidenceClaimIds: readonly string[];
   skippedValidationScenarioIds: readonly string[];
   selectedValidationScenarioIds: readonly string[];
+  avoidedWork: {
+    proofExecutions: number;
+    validationScenarios: number;
+    totalUnits: number;
+  };
   evidenceIds: readonly string[];
   reasons: readonly string[];
 }
@@ -74,6 +79,19 @@ export function createZeroWasteExecutionReceipt(
       plan.validation.selected
         .map((item) => item.scenarioId)
         .sort(),
+    avoidedWork: {
+      proofExecutions:
+        plan.proofActions.filter(
+          (item) => item.action === "reuse",
+        ).length,
+      validationScenarios:
+        plan.validation.skipped.length,
+      totalUnits:
+        plan.proofActions.filter(
+          (item) => item.action === "reuse",
+        ).length +
+        plan.validation.skipped.length,
+    },
     evidenceIds,
     reasons: completed
       ? [
