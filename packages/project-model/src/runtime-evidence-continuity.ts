@@ -97,6 +97,43 @@ export function evaluateRuntimeEvidenceContinuity(
     };
   }
 
+  const continuityKeys = [
+    "arenaId",
+    "arenaGeneration",
+    "playerKey",
+    "connectionGeneration",
+    "lifeGeneration",
+    "participationGeneration",
+    "entityKey",
+    "entityGeneration",
+    "operationId",
+    "subsystemGeneration",
+    "bootGeneration",
+  ] as const;
+
+  const mixedScopeKeys = continuityKeys.filter((key) => {
+    const values = new Set(
+      accepted
+        .map((record) => record.scope?.[key])
+        .filter((value) => value !== undefined)
+        .map(String),
+    );
+    return values.size > 1;
+  });
+
+  if (mixedScopeKeys.length > 0) {
+    return {
+      status: "broken",
+      acceptedRecords: accepted,
+      rejectedRecords: rejected,
+      reasons: [
+        "Runtime evidence campaign mixes generation/ownership identities: " +
+          mixedScopeKeys.join(", ") +
+          ".",
+      ],
+    };
+  }
+
   if (rejected.length > 0) {
     return {
       status: "broken",
