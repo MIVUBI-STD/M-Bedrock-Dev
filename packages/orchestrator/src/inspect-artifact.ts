@@ -659,6 +659,8 @@ export async function inspectArtifact(
         scriptSpatial: result.scriptSpatial,
         combatLifecycle:
           result.combatLifecycle,
+        combatRuntime:
+          result.combatRuntime,
         inventoryLifecycle:
           result.inventoryLifecycle,
         inventoryPolicy:
