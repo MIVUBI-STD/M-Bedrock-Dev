@@ -5,8 +5,12 @@ import type {
   SemanticNode,
 } from "../../graph/src/index.js";
 import type {
+  RuntimeScope,
   SemanticProofClaim,
   SemanticProofKind,
+} from "../../project-model/src/index.js";
+import {
+  runtimeScopeKey,
 } from "../../project-model/src/index.js";
 
 export const SEMANTIC_PROOF_EVALUATOR_REVISION =
@@ -240,6 +244,7 @@ export function createSemanticProofClaim(
     basisNodeIds: readonly string[];
     evidenceIds: readonly string[];
     targetProfileFingerprint?: string;
+    runtimeScope?: RuntimeScope;
   },
 ): SemanticProofClaim {
   if (!input.claimId.trim()) {
@@ -280,6 +285,21 @@ export function createSemanticProofClaim(
       input.basisNodeIds,
     );
 
+  if (
+    input.kind === "runtime" &&
+    input.runtimeScope?.arenaId !== undefined &&
+    input.runtimeScope.arenaGeneration === undefined
+  ) {
+    throw new Error(
+      "Arena-scoped runtime semantic proof claims require arenaGeneration.",
+    );
+  }
+
+  const boundRuntimeScopeKey =
+    input.runtimeScope === undefined
+      ? undefined
+      : runtimeScopeKey(input.runtimeScope);
+
   return {
     schemaVersion: 1,
     claimId: input.claimId,
@@ -302,6 +322,9 @@ export function createSemanticProofClaim(
             input
               .targetProfileFingerprint,
         }),
+    ...(boundRuntimeScopeKey === undefined
+      ? {}
+      : { runtimeScopeKey: boundRuntimeScopeKey }),
   };
 }
 
@@ -312,6 +335,8 @@ export function assessSemanticProofReuse(
     claimRevision: string;
     availableEvidenceIds: readonly string[];
     targetProfileFingerprint?: string;
+    runtimeScope?: RuntimeScope;
+    staleEvidenceIds?: readonly string[];
   },
 ): SemanticProofReuseResult {
   if (
@@ -334,6 +359,25 @@ export function assessSemanticProofReuse(
       claimId: claim.claimId,
       reasons: [
         "Stored proof claim has no evidence ids.",
+      ],
+    };
+  }
+
+  const staleEvidenceIds =
+    new Set(input.staleEvidenceIds ?? []);
+  const staleClaimEvidenceIds =
+    claim.evidenceIds.filter((id) =>
+      staleEvidenceIds.has(id)
+    );
+
+  if (staleClaimEvidenceIds.length > 0) {
+    return {
+      status: "stale",
+      claimId: claim.claimId,
+      reasons: [
+        "Stored proof depends on stale evidence: " +
+          staleClaimEvidenceIds.sort().join(", ") +
+          ".",
       ],
     };
   }
@@ -390,6 +434,24 @@ export function assessSemanticProofReuse(
       claimId: claim.claimId,
       reasons: [
         "Target runtime profile changed since this proof was recorded.",
+      ],
+    };
+  }
+
+  const requestedRuntimeScopeKey =
+    input.runtimeScope === undefined
+      ? undefined
+      : runtimeScopeKey(input.runtimeScope);
+
+  if (
+    claim.runtimeScopeKey !==
+    requestedRuntimeScopeKey
+  ) {
+    return {
+      status: "stale",
+      claimId: claim.claimId,
+      reasons: [
+        "Runtime scope changed since this proof was recorded.",
       ],
     };
   }
