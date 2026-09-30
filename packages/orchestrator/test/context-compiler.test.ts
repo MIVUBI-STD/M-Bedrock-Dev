@@ -464,4 +464,137 @@ describe("context compiler", () => {
       })
     ).toThrow(/positive integers/);
   });
+  it("compresses domain attention into compact world signals", () => {
+    const pack = compileContextPack({
+      goal: "domain-risk",
+      graph: fixtureGraph(),
+      intent,
+      worldModel: {
+        subjects: [],
+        arenas: {
+          lifecycle: {
+            terminalCandidates: 1,
+            proven: 0,
+            partial: 1,
+            unresolved: 0,
+          },
+          cleanup: {
+            acquiredSurfaces: 1,
+            exactProven: 0,
+            partial: 0,
+            unresolved: 0,
+            resourceLedger: {
+              resources: 1,
+              complete: 0,
+              partial: 0,
+              missing: 1,
+              coverageRatio: 0,
+            },
+          },
+          isolation: {
+            isolated: 0,
+            partitionProofRequired: 0,
+            sharedGlobal: 0,
+            unknown: 0,
+          },
+          globalState: {
+            arenaScopedMutations: 0,
+            pairedLeaseEvidence: 0,
+            unleasedArenaMutations: 0,
+            unauditedArenaMutations: 0,
+          },
+          stress: {
+            status: "unavailable",
+          },
+        },
+        spatial: {
+          unresolvedScriptMutations: 0,
+          rejectedScriptMutations: 0,
+          authority: {
+            configured: true,
+            policyValid: true,
+            resolved: 0,
+            uncovered: 1,
+            conflicts: 0,
+            unknownRegions: 0,
+          },
+        },
+        inventory: {
+          partialResets: 1,
+          copyMutationRisks: 1,
+          unresolvedEquipmentSlotEvidence: 0,
+          restoreOwnership: {
+            multipleRestoreOwners: 0,
+          },
+          policy: {
+            deniedDrops: 0,
+            uncoveredDrops: 0,
+            unknownDrops: 0,
+          },
+        },
+        entities: {
+          aiStack: {
+            targetedStackIncomplete: 1,
+          },
+          navigationEnvironment: {
+            incompatible: 0,
+            stateDependent: 0,
+            unresolved: 0,
+          },
+        },
+        combat: {
+          hurtOnlyTerminalRisk: 0,
+          policy: {
+            revivePolicyContradictions: 1,
+            projectileCleanupPolicyGap: 0,
+          },
+          runtime: {
+            scopedLifeGenerationMissing: 0,
+            scopedArenaGenerationMissing: 0,
+          },
+        },
+        chunks: {
+          acquireWithoutRelease: 0,
+          releaseUnreachable: 0,
+          cleanupOrderUnproven: 1,
+          dynamicLeaseKeys: 0,
+          capacityUncheckedLeases: 0,
+          readinessUnverifiedLeases: 1,
+          shutdownOnlyCleanupRisk: 0,
+          unguardedDeferredChunkWork: 0,
+        },
+        economy: {
+          policy: {
+            deathRewardOverlapPolicyConflicts: 0,
+            deathRewardOverlapUnresolved: 1,
+            pickupCurrencyConsumeCoverageGaps: 0,
+            pickupCurrencyPolicyMismatch: 0,
+            idempotencyCoverageGaps: 0,
+            staleDropCleanupCoverageGaps: 0,
+            inventoryFullPolicyGaps: 0,
+            pickupScopeValidationUnproven: 0,
+            terminalRewardResultCommitUnproven: 0,
+          },
+        },
+        state: {
+          broadWrites: 0,
+        },
+        intent: {
+          unknowns: [],
+        },
+      } as any,
+    });
+
+    expect(pack.world?.domainSignals)
+      .toEqual({
+        arenaLifecycle: 2,
+        spatialAuthority: 1,
+        inventory: 2,
+        entityAiNavigation: 1,
+        combat: 1,
+        chunks: 2,
+        economy: 1,
+      });
+  });
+
 });
