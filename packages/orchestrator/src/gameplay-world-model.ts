@@ -42,6 +42,9 @@ import type {
   CombatLifecycleAnalysis,
 } from "./combat-lifecycle-analysis.js";
 import type {
+  CombatRuntimeTelemetryAnalysis,
+} from "./combat-runtime-telemetry-analysis.js";
+import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
@@ -141,6 +144,16 @@ export interface GameplayWorldModel {
     projectileRemovals: number;
     projectileCleanupGap: number;
     hurtOnlyTerminalRisk: number;
+    runtime: {
+      reviveAnomalies: number;
+      selfRevive: number;
+      multipleRevivers: number;
+      staleRevive: number;
+      reviveAfterDeath: number;
+      invalidReviver: number;
+      scopedLifeGenerationMissing: number;
+      scopedArenaGenerationMissing: number;
+    };
   };
   inventory: {
     regions: number;
@@ -238,6 +251,7 @@ export interface GameplayWorldModelSource {
   scriptSpatial: ScriptSpatialAnalysis;
   spatialAuthority?: SpatialAuthorityCoverageReport;
   combatLifecycle?: CombatLifecycleAnalysis;
+  combatRuntime?: CombatRuntimeTelemetryAnalysis;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
   inventoryPolicy?: InventoryPolicyAnalysis;
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
@@ -510,6 +524,24 @@ export function deriveGameplayWorldModel(
         source.combatLifecycle?.projectileCleanupGap ?? 0,
       hurtOnlyTerminalRisk:
         source.combatLifecycle?.hurtOnlyTerminalRisk ?? 0,
+      runtime: {
+        reviveAnomalies:
+          source.combatRuntime?.reviveAnomalies ?? 0,
+        selfRevive:
+          source.combatRuntime?.byKind["self-revive"] ?? 0,
+        multipleRevivers:
+          source.combatRuntime?.byKind["multiple-revivers"] ?? 0,
+        staleRevive:
+          source.combatRuntime?.byKind["stale-revive"] ?? 0,
+        reviveAfterDeath:
+          source.combatRuntime?.byKind["revive-after-death"] ?? 0,
+        invalidReviver:
+          source.combatRuntime?.byKind["invalid-reviver"] ?? 0,
+        scopedLifeGenerationMissing:
+          source.combatRuntime?.scopedLifeGenerationMissing ?? 0,
+        scopedArenaGenerationMissing:
+          source.combatRuntime?.scopedArenaGenerationMissing ?? 0,
+      },
     },
     inventory: {
       regions:
