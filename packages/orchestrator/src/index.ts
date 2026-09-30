@@ -352,3 +352,5 @@ export * from "./chunk-lifecycle-diagnostics.js";
 export * from "./chunk-readiness-runtime-classification.js";
 
 export * from "./economy-policy-diagnostics.js";
+
+export * from "./spatial-authority-diagnostics.js";
