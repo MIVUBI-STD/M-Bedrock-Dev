@@ -15,6 +15,9 @@ import {
   repairRealizerForSource,
   type RepairRealizerRegistry,
 } from "./repair-realizer-registry.js";
+import type {
+  RepairStrategySourceRegistry,
+} from "./repair-strategy-source-registry.js";
 
 export type RepairRealizerCoverageStatus =
   | "realizer-available"
@@ -116,6 +119,108 @@ export function assessRepairRealizerCoverage(
     complete:
       items.length > 0 &&
       uncoveredSources === 0,
+  };
+}
+
+export interface RepairRegistryCoverageItem {
+  sourceKind: string;
+  sourceId: string;
+  sourceVersion: string;
+  selectionMode: "causal-auto" | "proposal-only";
+  deterministic: boolean;
+  requiresRealizer: boolean;
+  status:
+    | "covered"
+    | "missing-required-realizer"
+    | "proposal-only-no-realizer";
+  realizerId?: string;
+  realizerVersion?: string;
+}
+
+export interface RepairRegistryCoverageReport {
+  items: readonly RepairRegistryCoverageItem[];
+  requiredRealizers: number;
+  coveredRequiredRealizers: number;
+  missingRequiredRealizers: number;
+  proposalOnlyWithoutRealizer: number;
+  complete: boolean;
+}
+
+export function assessRepairRegistryCoverage(
+  sourceRegistry: RepairStrategySourceRegistry,
+  realizerRegistry: RepairRealizerRegistry,
+): RepairRegistryCoverageReport {
+  const items = sourceRegistry.sources
+    .map((source): RepairRegistryCoverageItem => {
+      const realizer = repairRealizerForSource(
+        realizerRegistry,
+        source.kind,
+        source.id,
+      );
+      const requiresRealizer =
+        source.selectionMode === "causal-auto" ||
+        source.deterministic;
+
+      if (realizer) {
+        return {
+          sourceKind: source.kind,
+          sourceId: source.id,
+          sourceVersion: source.version,
+          selectionMode: source.selectionMode,
+          deterministic: source.deterministic,
+          requiresRealizer,
+          status: "covered",
+          realizerId: realizer.id,
+          realizerVersion: realizer.version,
+        };
+      }
+
+      return {
+        sourceKind: source.kind,
+        sourceId: source.id,
+        sourceVersion: source.version,
+        selectionMode: source.selectionMode,
+        deterministic: source.deterministic,
+        requiresRealizer,
+        status: requiresRealizer
+          ? "missing-required-realizer"
+          : "proposal-only-no-realizer",
+      };
+    })
+    .sort((a, b) =>
+      a.sourceKind.localeCompare(b.sourceKind) ||
+      a.sourceId.localeCompare(b.sourceId) ||
+      a.sourceVersion.localeCompare(b.sourceVersion)
+    );
+
+  const required = items.filter(
+    (item) => item.requiresRealizer,
+  );
+  const coveredRequiredRealizers =
+    required.filter(
+      (item) => item.status === "covered",
+    ).length;
+  const missingRequiredRealizers =
+    required.filter(
+      (item) =>
+        item.status ===
+        "missing-required-realizer",
+    ).length;
+  const proposalOnlyWithoutRealizer =
+    items.filter(
+      (item) =>
+        item.status ===
+        "proposal-only-no-realizer",
+    ).length;
+
+  return {
+    items,
+    requiredRealizers: required.length,
+    coveredRequiredRealizers,
+    missingRequiredRealizers,
+    proposalOnlyWithoutRealizer,
+    complete:
+      missingRequiredRealizers === 0,
   };
 }
 
