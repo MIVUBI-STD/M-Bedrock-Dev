@@ -73,6 +73,7 @@ export const GLOBAL_STATE_LEASE_ACTION_CAPABILITIES:
     phases: ["observe"],
     requiredParameters: {
       resource: "string",
+      baselineValue: "string",
     },
   }, {
     id: "worldstate.restore-baseline",
@@ -164,6 +165,7 @@ export function createGlobalStateLeaseRaceExperiment(
       actionId: "worldstate.observe-lease",
       parameters: {
         resource: input.resource,
+        baselineValue: input.baselineValue,
       },
     }, {
       id: "restore-final-baseline",

@@ -585,7 +585,7 @@ function executeCleanupStartOverlap(parameters) {
       ),
       {
         activePlayers:
-          startingPlayers.length,
+          startingPlayers,
       },
       "Server-simulated membership fixture."
     ),
@@ -630,7 +630,7 @@ function executeStaggeredJoin(parameters) {
         ),
         {
           activePlayers:
-            players.length,
+            players,
         }
       )
     );
