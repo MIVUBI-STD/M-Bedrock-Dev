@@ -6,3 +6,5 @@ export * from "./spatial-fingerprint.js";
 export * from "./runtime-state-forensics.js";
 export * from "./spatial-diff.js";
 export * from "./structure-residue.js";
+
+export * from "./runtime-state-decoder.js";
