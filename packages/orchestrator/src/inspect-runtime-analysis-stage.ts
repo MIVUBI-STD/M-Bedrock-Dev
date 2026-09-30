@@ -32,6 +32,7 @@ import { analyzeInventoryPolicy } from "./inventory-policy-analysis.js";
 import { analyzeInventoryRestoreOwnership } from "./inventory-restore-ownership-analysis.js";
 import { analyzeCombatLifecycle } from "./combat-lifecycle-analysis.js";
 import { analyzeChunkLifecycle } from "./chunk-lifecycle-analysis.js";
+import { analyzeRewardSources } from "./reward-source-analysis.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
@@ -195,6 +196,14 @@ export function analyzeInspectionRuntimeState(
   const chunkLifecycle =
     analyzeChunkLifecycle(
       parsedScriptModels,
+    );
+  const rewardSources =
+    analyzeRewardSources(
+      parsedScriptModels,
+      parsedFunctionModels,
+      input.parsedEntities.map(
+        (item) => item.parsed,
+      ),
     );
   const arenaGlobalState =
     analyzeArenaGlobalState(
@@ -386,6 +395,7 @@ export function analyzeInspectionRuntimeState(
     inventoryRestoreOwnership,
     combatLifecycle,
     chunkLifecycle,
+    rewardSources,
     arenaGlobalState,
     arenaStateIsolation,
     arenaLayoutReconciliation,
