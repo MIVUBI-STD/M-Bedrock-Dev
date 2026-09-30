@@ -500,19 +500,11 @@ async function executeAction(
 ): Promise<BedrockRuntimeActionResponse> {
   const arm = armFor(definition, identity.armId);
   const parameters = resolvedParameters(step, arm);
-  if (definition.mutationRisk === "read-only") {
-    throw new Error(
-      "Read-only runtime experiment cannot execute a mutating action.",
-    );
-  }
   const validation = validateRuntimeActionInvocation(
     actionCapabilities,
     {
       actionId: step.actionId,
-      phase: step.phase as Exclude<
-        RuntimeExperimentProtocolStep["phase"],
-        "observe"
-      >,
+      phase: step.phase,
       parameters,
       context: options.channel.context,
       mutationRisk: definition.mutationRisk,
@@ -665,8 +657,13 @@ export function createBedrockHarnessExperimentHost(
         identity,
       );
 
+      const requiredActionCapabilities =
+        requiredBedrockActionCapabilities(
+          definition,
+        );
       const actionCapabilities =
-        definition.mutationRisk === "read-only"
+        requiredActionCapabilities.actions
+          .length === 0
           ? undefined
           : await discoverActionCapabilities(
               options,
@@ -679,7 +676,12 @@ export function createBedrockHarnessExperimentHost(
       let endTick: number | undefined;
 
       for (const step of definition.protocol) {
-        if (step.phase === "observe") {
+        if (
+          step.phase === "observe" &&
+          step.actionId.startsWith(
+            "probe."
+          )
+        ) {
           const response = await executeProbe(
             options,
             requestFor(
@@ -695,15 +697,19 @@ export function createBedrockHarnessExperimentHost(
           continue;
         }
 
-        if (definition.mutationRisk === "read-only") {
+        if (
+          actionCapabilities === undefined
+        ) {
           throw new Error(
-            "Read-only experiment cannot execute setup, stimulus, or teardown actions.",
+            "Runtime action capability handshake is required for non-probe action " +
+              step.actionId +
+              ".",
           );
         }
 
         const actionResponse = await executeAction(
           options,
-          actionCapabilities!,
+          actionCapabilities,
           definition,
           identity,
           step,
