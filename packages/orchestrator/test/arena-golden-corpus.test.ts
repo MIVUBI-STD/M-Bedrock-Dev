@@ -76,6 +76,44 @@ describe("arena golden corpus", () => {
     expect(failures).toEqual([]);
   });
 
+  it("blocks approval-required corpus before expensive execution", () => {
+    expect(() =>
+      assertArenaGoldenApprovals({
+        schemaVersion: 1,
+        id: "production",
+        requireApproval: true,
+        cases: [{
+          id: "map-a",
+          label: "Map A",
+          artifactFile: "a.mcworld",
+          assertions: {},
+        }],
+      }),
+    ).toThrow(/Missing approval/);
+  });
+
+  it("accepts explicitly approved production cases", () => {
+    expect(() =>
+      assertArenaGoldenApprovals({
+        schemaVersion: 1,
+        id: "production",
+        requireApproval: true,
+        cases: [{
+          id: "map-a",
+          label: "Map A",
+          artifactFile: "a.mcworld",
+          assertions: {},
+          approval: {
+            status: "approved",
+            approvedBy: "qa",
+            approvedAt:
+              "2026-09-30T00:00:00Z",
+          },
+        }],
+      }),
+    ).not.toThrow();
+  });
+
   it("rejects unknown assertion keys", () => {
     expect(() =>
       parseArenaGoldenManifest({
