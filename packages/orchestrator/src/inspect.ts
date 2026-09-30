@@ -40,6 +40,7 @@ import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js
 import { analyzeEntityAiStacks } from "./entity-ai-stack-analysis.js";
 import { combatPolicyDiagnostics } from "./combat-policy-diagnostics.js";
 import { chunkLifecycleDiagnostics } from "./chunk-lifecycle-diagnostics.js";
+import { economyPolicyDiagnostics } from "./economy-policy-diagnostics.js";
 import { analyzeRouteNavigationEnvironments } from "./route-navigation-environment-analysis.js";
 import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
@@ -247,6 +248,9 @@ export async function inspectDirectory(
     ),
     ...chunkLifecycleDiagnostics(
       chunkLifecycle,
+    ),
+    ...economyPolicyDiagnostics(
+      runtimeAnalysis.economyPolicy,
     ),
   );
 
