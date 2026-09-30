@@ -12,7 +12,7 @@ import type {
 } from "../src/index.js";
 
 describe("domain repair strategy source safety", () => {
-  it("keeps chunk, combat, and economy remediation proposal-only", () => {
+  it("keeps domain remediation proposal-only when mutation is not deterministic", () => {
     const byId = new Map(
       BUILTIN_REPAIR_STRATEGY_SOURCES.sources.map(
         (item) => [item.id, item],
@@ -54,6 +54,31 @@ describe("domain repair strategy source safety", () => {
       supportedDiagnosticCodes: [
         "ECONOMY_POLICY_CONFLICT",
         "ECONOMY_POLICY_COVERAGE_GAP",
+      ],
+    });
+
+    expect(
+      byId.get(
+        "inventory-lifecycle-remediation",
+      ),
+    ).toMatchObject({
+      deterministic: false,
+      selectionMode: "proposal-only",
+      supportedDiagnosticCodes: [
+        "INVENTORY_POLICY_CONFLICT",
+        "INVENTORY_LIFECYCLE_COVERAGE_GAP",
+      ],
+    });
+
+    expect(
+      byId.get(
+        "spatial-authority-remediation",
+      ),
+    ).toMatchObject({
+      deterministic: false,
+      selectionMode: "proposal-only",
+      supportedDiagnosticCodes: [
+        "SPATIAL_AUTHORITY_POLICY_GAP",
       ],
     });
   });
