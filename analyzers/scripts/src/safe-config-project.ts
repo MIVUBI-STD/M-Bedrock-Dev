@@ -64,16 +64,18 @@ function resolveRelativeModule(
   const base = normalizePath(
     [dirname(importerPath), specifier].filter(Boolean).join("/"),
   );
+  const extensionless = base.replace(/\\.(?:[cm]?[jt]sx?)$/i, "");
   const candidates = [
     base,
-    base + ".ts",
-    base + ".tsx",
-    base + ".js",
-    base + ".jsx",
-    base + "/index.ts",
-    base + "/index.tsx",
-    base + "/index.js",
-    base + "/index.jsx",
+    extensionless,
+    extensionless + ".ts",
+    extensionless + ".tsx",
+    extensionless + ".js",
+    extensionless + ".jsx",
+    extensionless + "/index.ts",
+    extensionless + "/index.tsx",
+    extensionless + "/index.js",
+    extensionless + "/index.jsx",
   ];
   return candidates.find((candidate) => knownPaths.has(candidate));
 }
