@@ -153,15 +153,39 @@ const completeAiStack = [{
   navigationPresent: true,
   movementGoalCandidatePresent: true,
   attackBehaviorPresent: true,
+  navigationCapabilities: [
+    "navigation:walk",
+  ],
   missingSurfaces: [],
   status: "targeted-stack-complete" as const,
 }];
+
+const compatibleRouteEnvironment = {
+  contracts: 1,
+  compatible: 1,
+  incompatible: 0,
+  stateDependent: 0,
+  unresolved: 0,
+  assessments: [{
+    contractId: "bridge-ground",
+    routeId: "bridge",
+    entityKey: "demo:zombie",
+    status: "compatible" as const,
+    states: [{
+      stateId: "base",
+      compatible: true,
+      missingCapabilities: [],
+    }],
+    reasons: ["compatible"],
+  }],
+};
 
 describe("gameplay route candidate analysis", () => {
   it("isolates engine navigation only after all upstream candidates are rejected", () => {
     const result = analyzeGameplayRouteCauseCandidates(
       baseAssessment(),
       completeAiStack,
+      compatibleRouteEnvironment,
     );
 
     expect(result.supportedCandidateIds).toEqual([
@@ -203,10 +227,12 @@ describe("gameplay route candidate analysis", () => {
           navigationPresent: false,
           movementGoalCandidatePresent: true,
           attackBehaviorPresent: true,
+          navigationCapabilities: [],
           missingSurfaces: ["navigation"],
           status:
             "targeted-stack-incomplete",
         }],
+        compatibleRouteEnvironment,
       );
 
     expect(result.leadingCandidateId)
