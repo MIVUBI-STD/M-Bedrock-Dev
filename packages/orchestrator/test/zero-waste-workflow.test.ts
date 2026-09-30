@@ -65,6 +65,14 @@ const transaction:
   id: "patch",
   title: "arena fix",
   sourceFingerprint: "fp",
+  authorization: {
+    schemaVersion: 1,
+    authorized: true,
+    sourceFingerprint: "fp",
+    diagnosisEvidenceIds: ["e:authorization"],
+    invariantIds: ["inv:arena"],
+    evidenceFreshness: "fresh",
+  },
   operations: [{
     kind: "replace-command",
     source: {
@@ -203,6 +211,82 @@ describe("zero-waste workflow facade", () => {
     ).toContain(
       "function:pack:arena",
     );
+  });
+
+  it("rejects runtime proof reuse across arena generations", () => {
+    const graph = graphFixture();
+    const runtimeProof =
+      createSemanticProofClaim({
+        claimId: "claim:arena:g4",
+        claimRevision: "1",
+        kind: "runtime",
+        graph,
+        basisNodeIds: ["function:pack:arena"],
+        evidenceIds: ["runtime:arena:g4"],
+        targetProfileFingerprint: "runtime-a",
+        runtimeScope: {
+          arenaId: "arena-2",
+          arenaGeneration: 4,
+        },
+      });
+
+    const plan = prepareZeroWasteWorkflow({
+      goal: "repair arena",
+      graph,
+      postPatchGraph: graph,
+      intent,
+      transaction,
+      validationScenarios: [],
+      validationBindings: [],
+      proofClaims: [{
+        claim: runtimeProof,
+        claimRevision: "1",
+        availableEvidenceIds: ["runtime:arena:g4"],
+        targetProfileFingerprint: "runtime-a",
+        runtimeScope: {
+          arenaId: "arena-2",
+          arenaGeneration: 5,
+        },
+      }],
+    });
+
+    expect(plan.staleProofClaimIds).toEqual([
+      "claim:arena:g4",
+    ]);
+    expect(plan.reusableProofClaimIds).toEqual([]);
+  });
+
+  it("rejects explicitly stale evidence from zero-waste reuse", () => {
+    const graph = graphFixture();
+    const proof =
+      createSemanticProofClaim({
+        claimId: "claim:arena:stale",
+        claimRevision: "1",
+        kind: "static",
+        graph,
+        basisNodeIds: ["function:pack:arena"],
+        evidenceIds: ["e:arena:old"],
+      });
+
+    const plan = prepareZeroWasteWorkflow({
+      goal: "repair arena",
+      graph,
+      postPatchGraph: graph,
+      intent,
+      transaction,
+      validationScenarios: [],
+      validationBindings: [],
+      proofClaims: [{
+        claim: proof,
+        claimRevision: "1",
+        availableEvidenceIds: ["e:arena:old"],
+        staleEvidenceIds: ["e:arena:old"],
+      }],
+    });
+
+    expect(plan.staleProofClaimIds).toEqual([
+      "claim:arena:stale",
+    ]);
   });
 
   it("falls back to conservative validation and blocks proof reuse without a post-patch graph", () => {
