@@ -1,6 +1,6 @@
 # M-Bedrock-Dev
 
-M-Bedrock-Dev is a modular Minecraft Bedrock and Minecraft Education content-engineering workspace for inspection, diagnosis, repair, modification, validation, and deterministic repackaging of worlds, packs, add-ons, structures, commands, and related content.
+M-Bedrock-Dev is a modular Minecraft Bedrock and Minecraft Education content-engineering workspace for inspection, diagnosis, repair, modification, validation, and deterministic repackaging.
 
 ## Branch authority
 
@@ -9,64 +9,65 @@ Local  → active development / working authority
 main   → stable / release authority
 ```
 
-Routine development uses `Local`. Promotion to `main` is explicit.
-
 ## Canonical product flow
 
 ```text
 Artifact
 → safe ingest
-→ physical inventory
 → normalized project model
-→ semantic dependency graph
-→ gameplay intent reconstruction
-→ analyzers / diagnostics
-→ patch plan
-→ transactional working-copy mutation
+→ semantic/gameplay analysis
+→ diagnostics
+→ repair plan
+→ transactional mutation
 → validation
 → deterministic package output
 → evidence report
 ```
 
+## Repository map
+
+```text
+apps/          user-facing executable/UI surfaces
+docs/          canonical product, system, and operations documentation
+engine/        Bedrock analysis and repair engine
+experiments/   bounded non-authoritative research
+tooling/       repository/developer/build/verification tooling
+workspace/     local project continuity + tracked report handoff
+```
+
+### Engine map
+
+```text
+engine/
+├── adapters/      external/container/format adapters
+├── analyzers/     semantic analysis and derived diagnostics
+├── fixtures/      minimized reproducible evidence
+├── knowledge/     machine-readable Bedrock/Education facts and policy
+├── packages/      reusable deterministic engine/control-plane modules
+├── reliability/   reliability catalogs and history
+├── rules/         versioned Bedrock/Education rules
+├── runtime/       bounded runtime-proof harness content
+└── schemas/       structural/internal schemas
+```
+
+The repository root is intentionally sparse. New top-level entries are allowed only for repository-wide configuration/governance or a durable product domain. Feature folders, fixtures, schemas, experiments, reports, and implementation subdomains must live under their canonical owner.
+
+Interfaces remain thin: Bedrock semantics belong to `engine/`, not CLI/UI/tooling.
+
 ## Repository operating model
 
 ```text
-AGENTS.md                         routing / task class / execution context
-GITHUB_RULES.md                   GitHub delivery / proof / retry / STOP rules
-CONTEXT.md                        stable product and architecture facts
-docs/README.md                    canonical documentation router
-docs/06-system/                   ownership / implementation / development operations
-docs/07-operations/               current continuation and current proof state
-.agents/skills/                   bounded specialist procedures
-DEV.cmd                           sole repository-level developer entrypoint
-tooling/windows-toolchain/        developer/build/verification routing
-toolchain.json                    supported toolchain policy
-Experimental/                     bounded research only
+AGENTS.md                    task routing / execution context
+GITHUB_RULES.md              GitHub delivery / proof / STOP rules
+CONTEXT.md                   stable architecture facts
+docs/README.md               documentation router
+.agents/skills/              bounded specialist procedures
+DEV.cmd                      sole repository-level developer entrypoint
+tooling/windows-toolchain/   developer/build routing
+toolchain.json               toolchain authority
 ```
-
-## Core source ownership
-
-```text
-apps/           user-facing command/application surfaces
-packages/       reusable deterministic engine modules
-adapters/       external/container/format adapters
-analyzers/      semantic analysis and derived diagnostics
-rules/          versioned Bedrock/Education rules
-schemas/        structural/internal schemas
-fixtures/       minimized reproducible evidence
-knowledge/      machine-readable domain facts and project policy
-reliability/    reliability catalogs and history data
-runtime/        bounded runtime-proof harness content
-workspace/      ignored local artifact continuity
-tooling/        repository-owned developer/build control plane
-docs/           canonical durable documentation
-```
-
-Interfaces must remain thin. Core Bedrock semantics do not belong in CLI, future MCP, or desktop surfaces.
 
 ## Developer commands
-
-Normal repository-level development starts from:
 
 ```text
 DEV.cmd setup
@@ -78,10 +79,8 @@ DEV.cmd inspect <artifact>
 DEV.cmd finalize-local
 ```
 
-`DEV.cmd` delegates to `tooling/windows-toolchain/dev.ps1`. Do not add parallel root command surfaces.
-
 ## Documentation
 
-Start at `docs/README.md`. Read selectively by domain instead of loading the whole tree.
+Start at `docs/README.md`. Read selectively by domain.
 
-Historical audits, superseded architecture, abandoned experiments, and obsolete continuation belong in Git history or `Experimental/`, not as parallel current-state authorities.
+Historical audits, superseded architecture, abandoned experiments, and obsolete continuation belong in Git history or `experiments/`, not as parallel current-state authorities.

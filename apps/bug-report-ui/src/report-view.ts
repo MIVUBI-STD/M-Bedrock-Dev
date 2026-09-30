@@ -1,7 +1,7 @@
 import type {
   BugReportV2,
   BugReportV2Bug,
-} from "../../../packages/bug-report/src/index.js";
+} from "../../../engine/packages/bug-report/src/index.js";
 
 export type BugReportView = "all" | "not-fixed" | "fixed";
 export type BugReportSeverityFilter =

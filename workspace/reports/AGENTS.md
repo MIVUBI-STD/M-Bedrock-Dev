@@ -1,6 +1,6 @@
 # Bug Reports Agent Rules
 
-Applies to persisted bug reports under `bug-reports/`.
+Applies to persisted bug reports under `workspace/reports/`.
 
 ## Authority
 
@@ -21,7 +21,7 @@ Applies to persisted bug reports under `bug-reports/`.
 - repair forms;
 - duplicate Markdown copies of the same report.
 
-Use `packages/bug-report/` as the semantic owner of the report contract.
+Use `engine/packages/bug-report/` as the semantic owner of the report contract.
 
 - New reports use Bug Report V2 only. V1 exists solely for compatibility migration.
 - Canonical bug origin is exactly `ai` or `tester`; do not introduce `both` / `ai+tester` in V2.

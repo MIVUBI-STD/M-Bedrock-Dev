@@ -5,7 +5,7 @@
     serializeBugReportV2,
     type BugReportParseIssue,
     type BugReportV2,
-  } from "../../../packages/bug-report/src/index.js";
+  } from "../../../engine/packages/bug-report/src/index.js";
   import {
     buildBugReportDownloadName,
     readBugReportFile,

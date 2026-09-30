@@ -1,29 +1,29 @@
 import { basename, resolve } from "node:path";
-import { compareArtifacts } from "../../../packages/orchestrator/src/index.js";
-import { compareArtifactsForUpdate } from "../../../packages/orchestrator/src/index.js";
-import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";
-import { buildEngineeringReviewProjection } from "../../../packages/orchestrator/src/index.js";
-import { buildArenaEngineeringProjection } from "../../../packages/orchestrator/src/index.js";
-import { buildMapEngineeringWorkflow } from "../../../packages/orchestrator/src/index.js";
-import { planRepositoryTasks } from "../../../packages/orchestrator/src/index.js";
-import { verifyPostRepairOutcome } from "../../../packages/orchestrator/src/index.js";
-import { buildArenaGoldenBaselineCandidate } from "../../../packages/orchestrator/src/index.js";
-import { buildArenaRuntimeAdapterScaffold } from "../../../packages/orchestrator/src/index.js";
-import { inspectArenaGoldenCorpusStatusFromFile } from "../../../packages/orchestrator/src/index.js";
-import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/index.js";
-import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
+import { compareArtifacts } from "../../../engine/packages/orchestrator/src/index.js";
+import { compareArtifactsForUpdate } from "../../../engine/packages/orchestrator/src/index.js";
+import { inspectArtifact } from "../../../engine/packages/orchestrator/src/index.js";
+import { buildEngineeringReviewProjection } from "../../../engine/packages/orchestrator/src/index.js";
+import { buildArenaEngineeringProjection } from "../../../engine/packages/orchestrator/src/index.js";
+import { buildMapEngineeringWorkflow } from "../../../engine/packages/orchestrator/src/index.js";
+import { planRepositoryTasks } from "../../../engine/packages/orchestrator/src/index.js";
+import { verifyPostRepairOutcome } from "../../../engine/packages/orchestrator/src/index.js";
+import { buildArenaGoldenBaselineCandidate } from "../../../engine/packages/orchestrator/src/index.js";
+import { buildArenaRuntimeAdapterScaffold } from "../../../engine/packages/orchestrator/src/index.js";
+import { inspectArenaGoldenCorpusStatusFromFile } from "../../../engine/packages/orchestrator/src/index.js";
+import { loadKnowledgeDirectory } from "../../../engine/packages/knowledge/src/index.js";
+import { aggregateScriptApiUsage } from "../../../engine/packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
-import { loadTelemetryFile } from "../../../packages/orchestrator/src/index.js";
-import { loadRuntimeProbeTranscript, assertRuntimeProbeTranscriptArtifact } from "../../../packages/orchestrator/src/index.js";
-import { loadRuntimeProbeBindings } from "../../../packages/orchestrator/src/index.js";
-import { prepareRuntimeProbeBundle } from "../../../packages/orchestrator/src/index.js";
-import { replayRuntimeProbeTranscript } from "../../../packages/orchestrator/src/index.js";
-import { compileRuntimeProbeRequests } from "../../../packages/orchestrator/src/index.js";
+import { loadTelemetryFile } from "../../../engine/packages/orchestrator/src/index.js";
+import { loadRuntimeProbeTranscript, assertRuntimeProbeTranscriptArtifact } from "../../../engine/packages/orchestrator/src/index.js";
+import { loadRuntimeProbeBindings } from "../../../engine/packages/orchestrator/src/index.js";
+import { prepareRuntimeProbeBundle } from "../../../engine/packages/orchestrator/src/index.js";
+import { replayRuntimeProbeTranscript } from "../../../engine/packages/orchestrator/src/index.js";
+import { compileRuntimeProbeRequests } from "../../../engine/packages/orchestrator/src/index.js";
 import {
   calibrateGameplayCorpusFromFile,
   loadArenaRegionContractsFile,
   runArenaGoldenCorpusFromFile,
-} from "../../../packages/orchestrator/src/index.js";
+} from "../../../engine/packages/orchestrator/src/index.js";
 
 async function main(): Promise<void> {
   const [, , command, ...rawArgs] = process.argv;
@@ -554,7 +554,7 @@ async function main(): Promise<void> {
       resolve(input),
       resolve(secondInput),
       thirdInput,
-      resolve("reliability/catalogs"),
+      resolve("engine/reliability/catalogs"),
       target,
       knowledge,
     );

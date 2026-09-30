@@ -4,58 +4,58 @@ Use this before broad repository search.
 
 | Responsibility | Canonical owner |
 |---|---|
-| Shared dependency-neutral primitives | packages/common/ |
-| Artifact kind/identity/fingerprint | packages/artifact/ |
-| ZIP/archive safety, inventory, package transport | packages/archive/ |
-| Workspace/session/file inventory + telemetry data contracts | packages/project-model/ |
-| Runtime telemetry emission helpers / sinks / instrumentation guards | packages/telemetry/ |
-| Semantic dependency graph/invalidation | packages/graph/ |
-| Repository capability dependencies, domain path ownership, affected closure, execution planning | packages/task-graph/ |
-| Minimum-sufficient evidence/capability planning | packages/analysis-planner/ |
-| Execution/state/temporal Semantic IR contracts and queries | packages/semantic-ir/ |
-| Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | packages/gameplay-intent/ |
-| Formal behavioral state/transition/temporal property kernel + Minecraft overlays | packages/behavior-model/ |
-| Constraint-backed reachability, invariant proof, and counterexample traces | packages/logic-solver/ |
-| Competing hypotheses, falsifiers, and diagnostic probe discrimination | packages/diagnostic-reasoning/ |
-| Diagnostic contract/IDs | packages/diagnostics/ |
-| Validation step/result contracts | packages/validation/ |
-| Bug Report V2 canonical tracker contract/export; V1 import compatibility only | packages/bug-report/ + schemas/bug-report/ |
-| Repair preservation contracts, baselines, and verification receipts | packages/preservation/ |
-| Reliability invariants/fingerprint/update delta/retest/runtime evidence | packages/reliability/ |
-| Reliability search/corpus/interleavings/minimization | packages/reliability-search/ |
-| Controlled Minecraft experiment planning/qualification/provenance | packages/runtime-lab/ + runtime/lab/ |
-| Compatibility engine/version/track contracts | packages/compatibility/ |
-| Exact target Minecraft runtime identity and inventory completeness | packages/runtime-profile/ |
-| Versioned evidence-backed Minecraft knowledge and applicability | packages/knowledge/ + knowledge/ |
-| Education edition/feature profile | packages/compatibility/education* |
-| Repair transactions/preconditions/application | packages/repair/ |
-| Cross-owner inspect/repair-validation orchestration | packages/orchestrator/ |
-| Fail-closed repository task planning | packages/orchestrator/src/repository-task-plan.ts |
-| Affected semantic/context compression for Codex | packages/orchestrator/src/semantic-affected-plan.ts + context-compiler.ts |
-| Arena lifecycle + cleanup convergence | packages/orchestrator/src/arena-lifecycle-* + arena-cleanup-* |
-| Spatial gameplay authority | packages/behavior-model/src/minecraft/spatial-authority.ts + packages/orchestrator/src/spatial-authority-* |
-| Inventory/equipment lifecycle + item policy | packages/behavior-model/src/minecraft/inventory-* + packages/orchestrator/src/inventory-* |
-| Entity AI/navigation source readiness + route environment | analyzers/entities/ + packages/orchestrator/src/entity-ai-* + route-navigation-* |
-| Combat/downed/revive policy and lifecycle | packages/behavior-model/src/minecraft/combat-* + packages/orchestrator/src/combat-* + packages/telemetry/src/revive-* |
-| Chunk lifecycle/readiness/lease reasoning | packages/behavior-model/src/minecraft/chunk.ts + packages/orchestrator/src/chunk-* |
-| Economy/reward source arbitration | packages/behavior-model/src/minecraft/economy-* + packages/orchestrator/src/economy-* + reward-source-analysis.ts |
-| Generic Bedrock NBT transport | adapters/nbt/ |
-| mcstructure semantic normalization | adapters/mcstructure/ |
-| Bedrock LevelDB snapshot/transport | adapters/leveldb/ |
-| World DB semantic decoding | analyzers/world-db/ |
-| Script source/module/capability analysis | analyzers/scripts/ |
-| Entity behavior/navigation/targeting/loot semantics | analyzers/entities/ |
-| Gameplay-intent signal extraction from authored source evidence | analyzers/gameplay-intent/ |
-| File/path discovery | analyzers/discovery/ |
-| Manifest semantics + compatibility fact extraction | analyzers/manifest/ |
-| Function source/reference extraction | analyzers/functions/ |
-| Command semantics/effects | analyzers/commands/ |
-| Reference resolution | analyzers/references/ |
-| Derived diagnostics | analyzers/diagnostics/ |
-| Coordinate/topology derivation | analyzers/topology/ |
-| Regression fixtures | fixtures/regressions/ |
-| Versioned Bedrock/Education capability data | rules/ |
-| Structural/internal schemas | schemas/ |
+| Shared dependency-neutral primitives | engine/packages/common/ |
+| Artifact kind/identity/fingerprint | engine/packages/artifact/ |
+| ZIP/archive safety, inventory, package transport | engine/packages/archive/ |
+| Workspace/session/file inventory + telemetry data contracts | engine/packages/project-model/ |
+| Runtime telemetry emission helpers / sinks / instrumentation guards | engine/packages/telemetry/ |
+| Semantic dependency graph/invalidation | engine/packages/graph/ |
+| Repository capability dependencies, domain path ownership, affected closure, execution planning | engine/packages/task-graph/ |
+| Minimum-sufficient evidence/capability planning | engine/packages/analysis-planner/ |
+| Execution/state/temporal Semantic IR contracts and queries | engine/packages/semantic-ir/ |
+| Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | engine/packages/gameplay-intent/ |
+| Formal behavioral state/transition/temporal property kernel + Minecraft overlays | engine/packages/behavior-model/ |
+| Constraint-backed reachability, invariant proof, and counterexample traces | engine/packages/logic-solver/ |
+| Competing hypotheses, falsifiers, and diagnostic probe discrimination | engine/packages/diagnostic-reasoning/ |
+| Diagnostic contract/IDs | engine/packages/diagnostics/ |
+| Validation step/result contracts | engine/packages/validation/ |
+| Bug Report V2 canonical tracker contract/export; V1 import compatibility only | engine/packages/bug-report/ + engine/schemas/bug-report/ |
+| Repair preservation contracts, baselines, and verification receipts | engine/packages/preservation/ |
+| Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
+| Reliability search/corpus/interleavings/minimization | engine/packages/reliability-search/ |
+| Controlled Minecraft experiment planning/qualification/provenance | engine/packages/runtime-lab/ + engine/runtime/lab/ |
+| Compatibility engine/version/track contracts | engine/packages/compatibility/ |
+| Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
+| Versioned evidence-backed Minecraft knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
+| Education edition/feature profile | engine/packages/compatibility/education* |
+| Repair transactions/preconditions/application | engine/packages/repair/ |
+| Cross-owner inspect/repair-validation orchestration | engine/packages/orchestrator/ |
+| Fail-closed repository task planning | engine/packages/orchestrator/src/repository-task-plan.ts |
+| Affected semantic/context compression for Codex | engine/packages/orchestrator/src/semantic-affected-plan.ts + context-compiler.ts |
+| Arena lifecycle + cleanup convergence | engine/packages/orchestrator/src/arena-lifecycle-* + arena-cleanup-* |
+| Spatial gameplay authority | engine/packages/behavior-model/src/minecraft/spatial-authority.ts + engine/packages/orchestrator/src/spatial-authority-* |
+| Inventory/equipment lifecycle + item policy | engine/packages/behavior-model/src/minecraft/inventory-* + engine/packages/orchestrator/src/inventory-* |
+| Entity AI/navigation source readiness + route environment | engine/analyzers/entities/ + engine/packages/orchestrator/src/entity-ai-* + route-navigation-* |
+| Combat/downed/revive policy and lifecycle | engine/packages/behavior-model/src/minecraft/combat-* + engine/packages/orchestrator/src/combat-* + engine/packages/telemetry/src/revive-* |
+| Chunk lifecycle/readiness/lease reasoning | engine/packages/behavior-model/src/minecraft/chunk.ts + engine/packages/orchestrator/src/chunk-* |
+| Economy/reward source arbitration | engine/packages/behavior-model/src/minecraft/economy-* + engine/packages/orchestrator/src/economy-* + reward-source-analysis.ts |
+| Generic Bedrock NBT transport | engine/adapters/nbt/ |
+| mcstructure semantic normalization | engine/adapters/mcstructure/ |
+| Bedrock LevelDB snapshot/transport | engine/adapters/leveldb/ |
+| World DB semantic decoding | engine/analyzers/world-db/ |
+| Script source/module/capability analysis | engine/analyzers/scripts/ |
+| Entity behavior/navigation/targeting/loot semantics | engine/analyzers/entities/ |
+| Gameplay-intent signal extraction from authored source evidence | engine/analyzers/gameplay-intent/ |
+| File/path discovery | engine/analyzers/discovery/ |
+| Manifest semantics + compatibility fact extraction | engine/analyzers/manifest/ |
+| Function source/reference extraction | engine/analyzers/functions/ |
+| Command semantics/effects | engine/analyzers/commands/ |
+| Reference resolution | engine/analyzers/references/ |
+| Derived diagnostics | engine/analyzers/diagnostics/ |
+| Coordinate/topology derivation | engine/analyzers/topology/ |
+| Regression fixtures | engine/fixtures/regressions/ |
+| Versioned Bedrock/Education capability data | engine/rules/ |
+| Structural/internal schemas | engine/schemas/ |
 | Thin user interfaces | apps/ |
 | Root developer routing | DEV.cmd → tooling/windows-toolchain/dev.ps1 |
 | Repository/source boundary verification | tooling/repository/ |
@@ -63,6 +63,6 @@ Use this before broad repository search.
 | GitHub execution | GITHUB_RULES.md |
 | Current continuation | docs/07-operations/next-action.md |
 | Current proof | docs/07-operations/current-validation.md |
-| Research | Experimental/ |
+| Research | experiments/ |
 
 Use docs/06-system/architecture.md for enforceable dependency direction.

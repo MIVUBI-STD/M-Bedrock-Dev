@@ -13,9 +13,9 @@
   },
   "include": [
     "apps/**/*.ts",
-    "packages/**/*.ts",
-    "adapters/**/*.ts",
-    "analyzers/**/*.ts",
+    "engine/packages/**/*.ts",
+    "engine/adapters/**/*.ts",
+    "engine/analyzers/**/*.ts",
     "tooling/**/*.ts"
   ]
 }

@@ -34,7 +34,7 @@ const canonicalRevision = createHash("sha256")
   .digest("hex");
 
 const revisionOwner =
-  "packages/project-model/src/contract-registry-revision.ts";
+  "engine/packages/project-model/src/contract-registry-revision.ts";
 if (!existsSync(revisionOwner)) {
   console.error(
     "Missing generated contract registry revision owner: " +

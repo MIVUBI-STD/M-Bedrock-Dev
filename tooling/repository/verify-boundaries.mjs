@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, normalize, relative, resolve, sep } from "node:path";
 
 const ROOT = process.cwd();
-const SOURCE_ROOTS = ["apps", "packages", "analyzers", "adapters"];
+const SOURCE_ROOTS = ["apps", "engine/packages", "engine/analyzers", "engine/adapters"];
 const EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".cts", ".js", ".mjs", ".cjs"]);
 const IMPORT_RE = /(?:import|export)\s+(?:type\s+)?(?:[^"'()]*?\s+from\s+)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)/g;
 
@@ -20,13 +20,17 @@ function walk(dir) {
   return output;
 }
 
-function topArea(path) {
+function logicalParts(path) {
   const rel = relative(ROOT, path).split(sep);
-  return rel[0] ?? "";
+  return rel[0] === "engine" ? rel.slice(1) : rel;
+}
+
+function topArea(path) {
+  return logicalParts(path)[0] ?? "";
 }
 
 function packageName(path) {
-  const rel = relative(resolve(ROOT, "packages"), path).split(sep);
+  const rel = relative(resolve(ROOT, "engine/packages"), path).split(sep);
   return rel[0] ?? "";
 }
 

@@ -1,5 +1,5 @@
-import type { InspectTargetProfile } from "../../../packages/orchestrator/src/index.js";
-import type { DiagnosticExecutionContext } from "../../../packages/project-model/src/index.js";
+import type { InspectTargetProfile } from "../../../engine/packages/orchestrator/src/index.js";
+import type { DiagnosticExecutionContext } from "../../../engine/packages/project-model/src/index.js";
 
 export interface ParsedCliTargetOptions {
   positionals: string[];

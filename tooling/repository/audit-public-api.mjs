@@ -2,7 +2,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, extname, relative, resolve, sep } from "node:path";
 
 const ROOT = process.cwd();
-const SOURCE_ROOTS = ["apps", "packages", "analyzers", "adapters"];
+const SOURCE_ROOTS = ["apps", "engine/packages", "engine/analyzers", "engine/adapters"];
+const LOGICAL_SOURCE_ROOTS = ["apps", "packages", "analyzers", "adapters"];
 const EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".cts", ".js", ".mjs", ".cjs"]);
 const IMPORT_RE = /(?:import|export)\s+(?:type\s+)?(?:[^"'()]*?\s+from\s+)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)/g;
 
@@ -20,9 +21,14 @@ function walk(dir) {
   return out;
 }
 
-function owner(file) {
+function logicalParts(file) {
   const parts = relative(ROOT, file).split(sep);
-  if (parts.length < 2 || !SOURCE_ROOTS.includes(parts[0])) return undefined;
+  return parts[0] === "engine" ? parts.slice(1) : parts;
+}
+
+function owner(file) {
+  const parts = logicalParts(file);
+  if (parts.length < 2 || !LOGICAL_SOURCE_ROOTS.includes(parts[0])) return undefined;
   return parts[0] + "/" + parts[1];
 }
 
@@ -69,7 +75,10 @@ for (const rootName of SOURCE_ROOTS) {
       const toOwner = owner(target);
       if (!toOwner || toOwner === fromOwner) continue;
 
-      const normalizedTarget = normalizePath(relative(ROOT, target));
+      const normalizedTargetPhysical = normalizePath(relative(ROOT, target));
+      const normalizedTarget = normalizedTargetPhysical.startsWith("engine/")
+        ? normalizedTargetPhysical.slice("engine/".length)
+        : normalizedTargetPhysical;
       const ownerRoot = toOwner + "/src";
       const expectedEntrypoint = ownerRoot + "/index.js";
 

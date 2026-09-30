@@ -8,13 +8,13 @@ The repository now has a domain-aware, fail-closed execution control plane. The 
 
 The active `Local` branch now owns:
 
-- bounded repository path ownership in `packages/task-graph/`;
+- bounded repository path ownership in `engine/packages/task-graph/`;
 - exact/directory ownership plus one trailing-prefix wildcard for colocated domain files;
 - granular core-versus-domain invalidation for scripts, entities, behavior contracts, and orchestrator domain analysis;
 - `BUILTIN_TASK_CAPABILITIES` with selective reverse dependency closure;
 - `planRepositoryTasks()` as the fail-closed repository planning wrapper;
 - conservative fallback whenever any changed path has no registered owner;
-- minimum-sufficient domain capability planning in `packages/analysis-planner/`;
+- minimum-sufficient domain capability planning in `engine/packages/analysis-planner/`;
 - compact domain attention signals in AI Context Compiler;
 - optional repository execution scope in compiled context packs;
 - proposal-only repair coverage separated from genuinely missing deterministic realizers;

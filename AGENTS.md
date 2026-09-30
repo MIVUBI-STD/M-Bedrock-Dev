@@ -190,7 +190,7 @@ system ownership         → docs/06-system/
 current continuation     → docs/07-operations/next-action.md
 current proof            → docs/07-operations/current-validation.md
 local artifact continuity→ workspace/
-research                 → Experimental/
+research                 → experiments/
 ```
 
 Do not create duplicate roadmaps, state systems, architecture summaries, or proof owners.

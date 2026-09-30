@@ -1,6 +1,6 @@
 import type {
   BugReportV2,
-} from "../../../packages/bug-report/src/index.js";
+} from "../../../engine/packages/bug-report/src/index.js";
 
 export type ReportSource =
   | {

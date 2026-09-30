@@ -6,7 +6,7 @@ import {
   type BugReportV1,
   type BugReportV2,
   type BugReportV2Map,
-} from "../../../packages/bug-report/src/index.js";
+} from "../../../engine/packages/bug-report/src/index.js";
 
 export interface ReadableReportFile {
   readonly name: string;

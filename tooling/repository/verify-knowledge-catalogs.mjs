@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 function stringRegistry(constantName) {
-  const source = readFileSync("packages/knowledge/src/registry.ts", "utf8");
+  const source = readFileSync("engine/packages/knowledge/src/registry.ts", "utf8");
   const match = source.match(
     new RegExp(
       `export const ${constantName} = \\[([\\s\\S]*?)\\] as const`,
@@ -20,7 +20,7 @@ const confidences = stringRegistry("KNOWLEDGE_CONFIDENCES");
 const editions = stringRegistry("KNOWLEDGE_EDITIONS");
 const diagnosticSeverities = stringRegistry("KNOWLEDGE_DIAGNOSTIC_SEVERITIES");
 
-const directory = "knowledge";
+const directory = "engine/knowledge";
 const files = readdirSync(directory)
   .filter((name) => name.endsWith(".json"))
   .map((name) => join(directory, name))

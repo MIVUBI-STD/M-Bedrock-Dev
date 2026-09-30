@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 
-const directory = "reliability/history";
+const directory = "engine/reliability/history";
 if (!existsSync(directory)) process.exit(0);
 
 function identity(record) {

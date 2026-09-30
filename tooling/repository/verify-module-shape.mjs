@@ -4,9 +4,9 @@ import { resolve } from "node:path";
 const ROOT = process.cwd();
 
 const areaPolicies = {
-  packages: { entrypoints: ["src/index.ts"] },
-  analyzers: { entrypoints: ["src/index.ts"] },
-  adapters: { entrypoints: ["src/index.ts"] },
+  "engine/packages": { entrypoints: ["src/index.ts"] },
+  "engine/analyzers": { entrypoints: ["src/index.ts"] },
+  "engine/adapters": { entrypoints: ["src/index.ts"] },
   apps: { entrypoints: ["src/main.ts", "src/index.ts"] },
 };
 

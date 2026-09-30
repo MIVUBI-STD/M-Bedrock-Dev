@@ -24,27 +24,28 @@ const required = [
   "docs/06-system/development-discipline.md",
   "docs/06-system/implementation-map.md",
   "docs/06-system/contract-registry.json",
-  "tooling/repository/verify-contract-registry.mjs",
-  "tooling/repository/verify-module-shape.mjs",
-  "tooling/repository/verify-dependency-graph.mjs",
-  "tooling/repository/audit-public-api.mjs",
-  "tooling/repository/public-api-baseline.json",
   "docs/06-system/skill-routing.md",
   "docs/06-system/development-operations.md",
   "docs/07-operations/current-validation.md",
   "docs/07-operations/next-action.md",
   "DEV.cmd",
-  "packages/AGENTS.md",
-  "analyzers/AGENTS.md",
-  "adapters/AGENTS.md",
+  "engine/README.md",
+  "engine/packages/AGENTS.md",
+  "engine/analyzers/AGENTS.md",
+  "engine/adapters/AGENTS.md",
+  "engine/rules/AGENTS.md",
+  "engine/schemas/AGENTS.md",
+  "engine/fixtures/AGENTS.md",
   "apps/AGENTS.md",
-  "rules/AGENTS.md",
-  "schemas/AGENTS.md",
-  "fixtures/AGENTS.md",
   "tooling/AGENTS.md",
   "workspace/AGENTS.md",
-  "bug-reports/AGENTS.md",
-  "bug-reports/README.md",
+  "workspace/reports/AGENTS.md",
+  "workspace/reports/README.md",
+  "tooling/repository/verify-contract-registry.mjs",
+  "tooling/repository/verify-module-shape.mjs",
+  "tooling/repository/verify-dependency-graph.mjs",
+  "tooling/repository/audit-public-api.mjs",
+  "tooling/repository/public-api-baseline.json",
   "tooling/windows-toolchain/dev.ps1"
 ];
 
@@ -63,25 +64,16 @@ const allowedRootEntries = new Set([
   "CONTEXT.md",
   "CONTRIBUTING.md",
   "DEV.cmd",
-  "Experimental",
   "GITHUB_RULES.md",
   "README.md",
   "SECURITY.md",
   "VERSION",
-  "adapters",
-  "analyzers",
   "apps",
-  "bug-reports",
   "docs",
-  "fixtures",
-  "knowledge",
+  "engine",
+  "experiments",
   "package-lock.json",
   "package.json",
-  "packages",
-  "reliability",
-  "rules",
-  "runtime",
-  "schemas",
   "toolchain.json",
   "tooling",
   "tsconfig.json",
@@ -97,13 +89,23 @@ const unexpectedRootEntries = [...trackedRootEntries]
 
 if (unexpectedRootEntries.length > 0) {
   console.error("Unexpected tracked repository root entries:");
-  for (const entry of unexpectedRootEntries) console.error(`- ${entry}`);
+  for (const entry of unexpectedRootEntries) console.error("- " + entry);
   process.exit(1);
 }
 
 const forbiddenLegacyPrefixes = [
   "scripts/",
-  "fixtures/regression/"
+  "fixtures/",
+  "packages/",
+  "analyzers/",
+  "adapters/",
+  "knowledge/",
+  "reliability/",
+  "rules/",
+  "runtime/",
+  "schemas/",
+  "Experimental/",
+  "bug-reports/"
 ];
 
 const legacyTracked = trackedFiles.filter((path) =>
@@ -112,14 +114,14 @@ const legacyTracked = trackedFiles.filter((path) =>
 
 if (legacyTracked.length > 0) {
   console.error("Legacy repository paths are forbidden:");
-  for (const path of legacyTracked) console.error(`- ${path}`);
+  for (const path of legacyTracked) console.error("- " + path);
   process.exit(1);
 }
 
 const missing = required.filter((path) => !existsSync(path));
 if (missing.length > 0) {
   console.error("Missing canonical repository owners:");
-  for (const path of missing) console.error(`- ${path}`);
+  for (const path of missing) console.error("- " + path);
   process.exit(1);
 }
 
@@ -206,14 +208,7 @@ for (const pattern of ["*.mcworld", "*.mcpack", "*.mcaddon"]) {
   }
 }
 
-const forbiddenRootNames = [
-  "TEST.cmd",
-  "BUILD.cmd",
-  "VERIFY.cmd",
-  "RUN.cmd"
-];
-
-for (const path of forbiddenRootNames) {
+for (const path of ["TEST.cmd", "BUILD.cmd", "VERIFY.cmd", "RUN.cmd"]) {
   if (existsSync(path)) {
     console.error(`Parallel root command surface is forbidden: ${path}`);
     process.exit(1);

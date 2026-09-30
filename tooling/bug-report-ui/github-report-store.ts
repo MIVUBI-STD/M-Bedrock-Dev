@@ -3,7 +3,7 @@ import {
   parseBugReportV2Json,
   serializeBugReportV2,
   type BugReportV2,
-} from "../../packages/bug-report/src/index.js";
+} from "../../engine/packages/bug-report/src/index.js";
 
 export interface GitHubBugReportStoreOptions {
   readonly owner: string;

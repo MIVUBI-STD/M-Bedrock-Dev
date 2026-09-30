@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, normalize, relative, resolve, sep } from "node:path";
 
 const ROOT = process.cwd();
-const SOURCE_ROOTS = ["apps", "packages", "analyzers", "adapters"];
+const SOURCE_ROOTS = ["apps", "engine/packages", "engine/analyzers", "engine/adapters"];
 const SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".mjs", ".cjs"];
 const SKIP_DIRS = new Set(["node_modules", "dist", "coverage", "test", "tests", "fixtures", "__tests__"]);
 const IMPORT_RE = /(?:import|export)\s+(?:type\s+)?(?:[^"'()]*?\s+from\s+)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)/g;

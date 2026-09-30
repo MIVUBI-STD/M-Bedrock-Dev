@@ -63,19 +63,19 @@ The Task Graph never upgrades semantic or runtime proof and never owns Minecraft
 ```text
 DEV.cmd        sole repository-level developer entrypoint
 apps/          user-facing surfaces only
-packages/      reusable deterministic engine/control-plane owners
-adapters/      external/source format adapters
-analyzers/     semantic derivation and diagnostics
-rules/         versioned Bedrock/Education rules
-schemas/       structural/internal schemas
-fixtures/      minimized reproducible evidence
-knowledge/     machine-readable Bedrock/Education facts and project policy
-reliability/   repository-owned reliability catalogs/history data
-runtime/       bounded runtime proof harness content
+engine/packages/      reusable deterministic engine/control-plane owners
+engine/adapters/      external/source format adapters
+engine/analyzers/     semantic derivation and diagnostics
+engine/rules/         versioned Bedrock/Education rules
+engine/schemas/       structural/internal schemas
+engine/fixtures/      minimized reproducible evidence
+engine/knowledge/     machine-readable Bedrock/Education facts and project policy
+engine/reliability/   repository-owned reliability catalogs/history data
+engine/runtime/       bounded runtime proof harness content
 docs/          canonical product/system/operations docs
 tooling/       repository-owned developer/build control plane
-workspace/     ignored local artifact continuity
-Experimental/  bounded research only
+workspace/     local artifact continuity + tracked report handoff
+experiments/   bounded research only
 ```
 
 The root is reserved for repository policy, version/toolchain authority, command entrypoints, and canonical documentation entrypoints.
@@ -122,17 +122,17 @@ Rust, Python, databases, desktop frameworks, and MCP infrastructure are not mand
 ## Semantic and control-plane owners
 
 ```text
-artifact identity/fingerprint      → packages/artifact
-archive safety/transport           → packages/archive
-normalized project state           → packages/project-model
-Minecraft dependency graph         → packages/graph
-repository affected execution      → packages/task-graph
-diagnostic contracts               → packages/diagnostics
-repair transactions                → packages/repair
-cross-owner composition            → packages/orchestrator
-Bedrock content parsing            → analyzers/*
-format adaptation                  → adapters/*
-compatibility/version policy       → rules/* + packages/compatibility
+artifact identity/fingerprint      → engine/packages/artifact
+archive safety/transport           → engine/packages/archive
+normalized project state           → engine/packages/project-model
+Minecraft dependency graph         → engine/packages/graph
+repository affected execution      → engine/packages/task-graph
+diagnostic contracts               → engine/packages/diagnostics
+repair transactions                → engine/packages/repair
+cross-owner composition            → engine/packages/orchestrator
+Bedrock content parsing            → engine/analyzers/*
+format adaptation                  → engine/adapters/*
+compatibility/version policy       → engine/rules/* + engine/packages/compatibility
 interface presentation             → apps/*
 ```
 

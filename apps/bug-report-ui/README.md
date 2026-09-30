@@ -22,7 +22,7 @@ The UI does not analyze maps or diagnose bugs. ChatGPT performs the audit and pr
 - Bugs can be filtered by Fixed state and Severity.
 - New exports are V2 JSON.
 
-The canonical vocabulary is owned by `packages/bug-report/README.md`. Frontend wording must not invent alternate meanings for persisted fields.
+The canonical vocabulary is owned by `engine/packages/bug-report/README.md`. Frontend wording must not invent alternate meanings for persisted fields.
 
 Commands:
 

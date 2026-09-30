@@ -2,7 +2,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, normalize, relative, resolve, sep } from "node:path";
 
 const ROOT = process.cwd();
-const SOURCE_ROOTS = ["apps", "packages", "analyzers", "adapters"];
+const SOURCE_ROOTS = ["apps", "engine/packages", "engine/analyzers", "engine/adapters"];
+const LOGICAL_SOURCE_ROOTS = ["apps", "packages", "analyzers", "adapters"];
 const SOURCE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".mjs", ".cjs"];
 const IMPORT_RE = /(?:import|export)\s+(?:type\s+)?(?:[^"'()]*?\s+from\s+)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)/g;
 
@@ -27,9 +28,14 @@ function packageName(specifier) {
   return specifier.split("/")[0];
 }
 
-function moduleId(file) {
+function logicalParts(file) {
   const rel = relative(ROOT, file).split(sep);
-  if (rel.length < 2 || !SOURCE_ROOTS.includes(rel[0])) return undefined;
+  return rel[0] === "engine" ? rel.slice(1) : rel;
+}
+
+function moduleId(file) {
+  const rel = logicalParts(file);
+  if (rel.length < 2 || !LOGICAL_SOURCE_ROOTS.includes(rel[0])) return undefined;
   return rel[0] + "/" + rel[1];
 }
 

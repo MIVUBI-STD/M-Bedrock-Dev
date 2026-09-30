@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-const root = "reliability/catalogs";
+const root = "engine/reliability/catalogs";
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));

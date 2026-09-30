@@ -1,7 +1,7 @@
 import {
   parseBugReportV2,
   type BugReportV2,
-} from "../../../packages/bug-report/src/index.js";
+} from "../../../engine/packages/bug-report/src/index.js";
 import type {
   GitHubReportStore,
   GitHubReportSummary,
