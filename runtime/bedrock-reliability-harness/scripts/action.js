@@ -278,6 +278,8 @@ function evidence(
         ? "unknown"
         : "observed",
     origin: "controlled-experiment",
+    proofAuthority:
+      mapAdapterMetadata().proofAuthority,
     ...(scope ? { scope } : {}),
     ...(measurements
       ? { measurements }
