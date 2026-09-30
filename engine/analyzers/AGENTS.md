@@ -1,6 +1,6 @@
 # Analyzers Agent Rules
 
-Applies to semantic analysis under `analyzers/`.
+Applies to semantic analysis under `engine/analyzers/`.
 
 ## Boundary
 

@@ -1,6 +1,6 @@
 # Packages Agent Rules
 
-Applies to reusable deterministic engine modules under packages/.
+Applies to reusable deterministic engine modules under `engine/packages/`.
 
 ## Boundary
 
@@ -11,7 +11,7 @@ Packages own stable reusable behavior. They must not depend on CLI presentation,
 - Keep one semantic owner per package.
 - Prefer pure/domain functions and explicit inputs over mutable process-wide state.
 - Package APIs expose typed domain contracts, not UI-shaped payloads.
-- Do not import from apps/.
+- Do not import from `apps/`.
 - Do not duplicate analyzer semantics inside packages that merely consume analyzer output.
 - Cross-package dependency must follow docs/06-system/architecture.md and implementation-map.md.
 - Derived caches remain rebuildable and never become source authority.
