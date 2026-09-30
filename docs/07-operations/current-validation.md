@@ -877,7 +877,7 @@ compatibility-workaround
 runtime-recovery-mitigation
 ```
 
-Non-deterministic or not-yet-realized source families remain proposal-only. Current deterministic causal-auto source families include scheduler/session generation guards, persistence idempotency guards, arena capacity guards, and arena start-ownership guards. Current proposal-only surfaces include arena replica/capacity remediation, chunk lifecycle remediation, bounded navigation recovery, and compatibility workarounds. Proposal-only sources do not become PatchTransactions until a safe deterministic mutation surface exists.
+Non-deterministic or not-yet-realized source families remain proposal-only. Current deterministic causal-auto source families include scheduler/session generation guards, persistence idempotency guards, arena capacity guards, and arena start-ownership guards. Current proposal-only surfaces include arena replica/capacity remediation, chunk lifecycle remediation, combat revive remediation, bounded navigation recovery, and compatibility workarounds. Proposal-only sources do not become PatchTransactions until a safe deterministic mutation surface exists.
 
 Repair source semantics are intentionally distinct: arena capacity transforms use the `arena-capacity-guard` family, while exclusive start-owner acquisition uses `arena-ownership-guard`. These families are not interchangeable.
 
