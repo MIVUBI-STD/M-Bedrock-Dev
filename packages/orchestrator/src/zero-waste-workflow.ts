@@ -23,6 +23,7 @@ import {
   type SemanticAffectedPlan,
 } from "./semantic-affected-plan.js";
 import type {
+  RuntimeScope,
   SemanticProofClaim,
 } from "../../project-model/src/index.js";
 import {
@@ -41,6 +42,8 @@ export interface ZeroWasteWorkflowProofInput {
   availableEvidenceIds:
     readonly string[];
   targetProfileFingerprint?: string;
+  runtimeScope?: RuntimeScope;
+  staleEvidenceIds?: readonly string[];
 }
 
 export interface ZeroWasteWorkflowInput {
@@ -215,6 +218,18 @@ export function prepareZeroWasteWorkflow(
                       targetProfileFingerprint:
                         item
                           .targetProfileFingerprint,
+                    }),
+                ...(item.runtimeScope === undefined
+                  ? {}
+                  : {
+                      runtimeScope:
+                        item.runtimeScope,
+                    }),
+                ...(item.staleEvidenceIds === undefined
+                  ? {}
+                  : {
+                      staleEvidenceIds:
+                        item.staleEvidenceIds,
                     }),
               },
             )
