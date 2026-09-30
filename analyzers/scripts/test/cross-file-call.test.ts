@@ -34,4 +34,32 @@ describe("cross-file call resolution", () => {
       }),
     ]);
   });
+
+  it("keeps a call unresolved when the module exists but the imported export does not", () => {
+    const edges = deriveCrossFileCallEdges([
+      {
+        path: "scripts/cleanup.ts",
+        text: "export function cleanupArena() {}",
+        source: { artifactId: "map", relativePath: "scripts/cleanup.ts" },
+      },
+      {
+        path: "scripts/main.ts",
+        text: `
+          import { releaseArena } from "./cleanup.js";
+          export function finishGame() {
+            releaseArena();
+          }
+        `,
+        source: { artifactId: "map", relativePath: "scripts/main.ts" },
+      },
+    ]);
+
+    expect(edges[0]).toEqual(
+      expect.objectContaining({
+        targetModule: "scripts/cleanup.ts",
+        targetExport: "releaseArena",
+        status: "unresolved",
+      }),
+    );
+  });
 });
