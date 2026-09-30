@@ -13,10 +13,12 @@ import {
 } from "./repair-changed-node-derivation.js";
 import {
   repairRealizerForSource,
+  validateRepairRealizerRegistry,
   type RepairRealizerRegistry,
 } from "./repair-realizer-registry.js";
-import type {
-  RepairStrategySourceRegistry,
+import {
+  validateRepairStrategySourceRegistry,
+  type RepairStrategySourceRegistry,
 } from "./repair-strategy-source-registry.js";
 
 export type RepairRealizerCoverageStatus =
@@ -132,6 +134,7 @@ export interface RepairRegistryCoverageItem {
   status:
     | "covered"
     | "missing-required-realizer"
+    | "incompatible-realizer"
     | "proposal-only-no-realizer";
   realizerId?: string;
   realizerVersion?: string;
@@ -142,6 +145,7 @@ export interface RepairRegistryCoverageReport {
   requiredRealizers: number;
   coveredRequiredRealizers: number;
   missingRequiredRealizers: number;
+  incompatibleRealizers: number;
   proposalOnlyWithoutRealizer: number;
   complete: boolean;
 }
@@ -150,6 +154,26 @@ export function assessRepairRegistryCoverage(
   sourceRegistry: RepairStrategySourceRegistry,
   realizerRegistry: RepairRealizerRegistry,
 ): RepairRegistryCoverageReport {
+  const sourceErrors =
+    validateRepairStrategySourceRegistry(
+      sourceRegistry,
+    );
+  const realizerErrors =
+    validateRepairRealizerRegistry(
+      realizerRegistry,
+    );
+  if (
+    sourceErrors.length > 0 ||
+    realizerErrors.length > 0
+  ) {
+    throw new Error(
+      "Invalid repair registry coverage input: " +
+        [...sourceErrors, ...realizerErrors].join(
+          "; ",
+        ),
+    );
+  }
+
   const items = sourceRegistry.sources
     .map((source): RepairRegistryCoverageItem => {
       const realizer = repairRealizerForSource(
@@ -162,6 +186,9 @@ export function assessRepairRegistryCoverage(
         source.deterministic;
 
       if (realizer) {
+        const compatible =
+          realizer.repairClass ===
+          source.repairClass;
         return {
           sourceKind: source.kind,
           sourceId: source.id,
@@ -169,7 +196,9 @@ export function assessRepairRegistryCoverage(
           selectionMode: source.selectionMode,
           deterministic: source.deterministic,
           requiresRealizer,
-          status: "covered",
+          status: compatible
+            ? "covered"
+            : "incompatible-realizer",
           realizerId: realizer.id,
           realizerVersion: realizer.version,
         };
@@ -206,6 +235,12 @@ export function assessRepairRegistryCoverage(
         item.status ===
         "missing-required-realizer",
     ).length;
+  const incompatibleRealizers =
+    items.filter(
+      (item) =>
+        item.status ===
+        "incompatible-realizer",
+    ).length;
   const proposalOnlyWithoutRealizer =
     items.filter(
       (item) =>
@@ -218,9 +253,11 @@ export function assessRepairRegistryCoverage(
     requiredRealizers: required.length,
     coveredRequiredRealizers,
     missingRequiredRealizers,
+    incompatibleRealizers,
     proposalOnlyWithoutRealizer,
     complete:
-      missingRequiredRealizers === 0,
+      missingRequiredRealizers === 0 &&
+      incompatibleRealizers === 0,
   };
 }
 
