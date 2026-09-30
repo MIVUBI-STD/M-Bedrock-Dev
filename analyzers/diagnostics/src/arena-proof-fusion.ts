@@ -1,9 +1,9 @@
 import type {
   ArenaCanonicalProof,
-} from "../../topology/src/arena-canonical-proof.js";
+} from "../../topology/src/index.js";
 import type {
   SpatialSemanticDiff,
-} from "../../world-db/src/spatial-diff.js";
+} from "../../world-db/src/index.js";
 
 export interface ArenaProofFusion {
   disposition:
