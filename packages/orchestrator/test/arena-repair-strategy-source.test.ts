@@ -27,6 +27,23 @@ describe("arena repair strategy source coverage", () => {
     );
   });
 
+  it("keeps chunk lifecycle remediation proposal-only without requiring an unsafe deterministic mutation", () => {
+    const source =
+      BUILTIN_REPAIR_STRATEGY_SOURCES.sources.find(
+        (item) =>
+          item.id ===
+          "chunk-lifecycle-remediation",
+      );
+
+    expect(source).toMatchObject({
+      selectionMode: "proposal-only",
+      deterministic: false,
+      supportedDiagnosticCodes: [
+        "CHUNK_LIFECYCLE_RUNTIME_RISK",
+      ],
+    });
+  });
+
   it("keeps the built-in source registry valid", () => {
     expect(
       validateRepairStrategySourceRegistry(
