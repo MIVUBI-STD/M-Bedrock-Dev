@@ -287,6 +287,26 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Routes proven arena capacity shortfall toward backend selection, lease reduction, queueing, or authored capacity guard localization. Proposal-only until the exact limiting resource ownership path is localized.",
     }, {
+      id: "combat-revive-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedPredicateIds: [
+        "revive-anomaly-observed",
+        "revive-anomaly:self-revive",
+        "revive-anomaly:multiple-revivers",
+        "revive-anomaly:stale-revive",
+        "revive-anomaly:revive-after-death",
+        "revive-anomaly:invalid-reviver",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes observed revive transaction anomalies toward life-generation ownership, reviver eligibility, exclusive revive-owner, and death-terminal review. Proposal-only because telemetry identifies the violated transaction semantics but not one universally safe source mutation.",
+    }, {
       id: "chunk-lifecycle-remediation",
       version: "1",
       kind: "built-in-planner",
