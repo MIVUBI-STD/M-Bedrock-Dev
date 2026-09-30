@@ -127,7 +127,8 @@ function realizeGenerationGuardHint(
     | "scheduler-generation-guard"
     | "session-generation-guard"
     | "persistence-idempotency-guard"
-    | "arena-ownership-guard",
+    | "arena-ownership-guard"
+    | "arena-capacity-guard",
   sourceId: string,
   label: string,
 ): RepairTransformHintRealization {
@@ -443,7 +444,7 @@ export function realizeArenaCapacityGuardHint(
     sourceRegistry,
     realizerRegistry,
     hint,
-    "arena-ownership-guard",
+    "arena-capacity-guard",
     "arena-capacity-guard-template",
     "Arena capacity guard",
   );
