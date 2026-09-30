@@ -224,4 +224,22 @@ describe("safe-config project linker", () => {
     ).toThrow();
   });
 
+
+  it("reports missing modules behind star re-exports", () => {
+    const project = linkScriptSafeConfigProject([
+      {
+        path: "scripts/index.ts",
+        source: source("scripts/index.ts"),
+        text: 'export * from "./missing.js";',
+      },
+    ]);
+
+    expect(project.diagnostics).toEqual([
+      expect.objectContaining({
+        kind: "missing-module",
+        modulePath: "scripts/index.ts",
+      }),
+    ]);
+  });
+
 });
