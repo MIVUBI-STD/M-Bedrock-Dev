@@ -72,3 +72,21 @@ The harness now supports the Runtime Lab capability/action transport:
 The current built-in action provider covers multi-arena stress fixtures, repeated-cycle cleanup validation, and generation-scoped global-state lease races.
 
 Server-simulated disconnect/session controls remain fixture evidence only. They do not establish real client/network lifecycle proof.
+
+
+## Map-specific adapter
+
+Runtime actions call `scripts/map-adapter.js` instead of hard-coding one
+map's join/start/finish implementation into the harness protocol.
+
+The bundled adapter uses the generic `arena:<id>` and `session:*` tag
+fixture and declares `proofAuthority: "server-simulated"`.
+
+For a production map validation harness:
+
+1. copy `scripts/map-adapter.example.js`;
+2. implement the authored map reset/start/finish/baseline hooks;
+3. preserve arena/generation scoping;
+4. use an external multi-client adapter for true disconnect/reconnect proof;
+5. declare `live-runtime` authority only when the hook controls the real
+   authored gameplay path rather than fixture tags.

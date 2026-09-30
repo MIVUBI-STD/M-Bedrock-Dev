@@ -1,4 +1,5 @@
 import { system, world } from "@minecraft/server";
+import { MAP_ADAPTER, mapAdapterMetadata } from "./map-adapter.js";
 
 const ACTION_PREFIX = "[M-BEDROCK-ACTION]";
 const CAPABILITIES_PREFIX =
@@ -249,6 +250,19 @@ function emit(prefix, payload) {
   console.warn(prefix + JSON.stringify(payload));
 }
 
+function authorityNote(note) {
+  const metadata =
+    mapAdapterMetadata();
+  const suffix =
+    "proofAuthority=" +
+    metadata.proofAuthority +
+    "; adapter=" +
+    metadata.adapter;
+  return note
+    ? note + " " + suffix
+    : suffix;
+}
+
 function evidence(
   predicate,
   state,
@@ -271,7 +285,8 @@ function evidence(
     observedAt: {
       tick: system.currentTick,
     },
-    ...(note ? { note } : {}),
+    note:
+      authorityNote(note),
   };
 }
 
@@ -324,15 +339,9 @@ function findPlayer(playerKey) {
 }
 
 function assignedPlayers(arenaId) {
-  return world
-    .getAllPlayers()
-    .filter((player) =>
-      player
-        .getTags()
-        .includes(
-          "arena:" + arenaId
-        )
-    );
+  return MAP_ADAPTER.playersInArena(
+    arenaId
+  );
 }
 
 function resetPlayerSession(player) {
@@ -384,12 +393,11 @@ function executeStressReset(parameters) {
 
   const records = [];
   for (const target of targets) {
-    for (
-      const player of
-        assignedPlayers(target.arenaId)
-    ) {
-      resetPlayerSession(player);
-    }
+    const outcome =
+      MAP_ADAPTER.resetArena(
+        target.arenaId,
+        target.arenaGeneration
+      );
     records.push(
       evidence(
         "arena-stress-fixture-reset",
@@ -400,11 +408,11 @@ function executeStressReset(parameters) {
         ),
         {
           activePlayers:
-            assignedPlayers(
-              target.arenaId
-            ).length,
+            Number(
+              outcome?.players ?? 0
+            ),
         },
-        "Harness fixture reset is server-simulated; it does not prove real client connection lifecycle."
+        "Arena reset executed through the configured map adapter."
       )
     );
   }
@@ -418,15 +426,15 @@ function executeAllArenaStart(parameters) {
   const records = [];
 
   for (const target of targets) {
-    const players =
-      assignedPlayers(target.arenaId)
-        .slice(
-          0,
-          parameters.playerCountPerArena
-        );
-    for (const player of players) {
-      markPlaying(player);
-    }
+    const outcome =
+      MAP_ADAPTER.startArena(
+        target.arenaId,
+        target.arenaGeneration,
+        parameters.playerCountPerArena
+      );
+    const players = Number(
+      outcome?.players ?? 0
+    );
 
     records.push(
       evidence(
@@ -438,7 +446,7 @@ function executeAllArenaStart(parameters) {
         ),
         {
           playerCount:
-            players.length,
+            players,
         },
         "Server-side harness contention fixture."
       ),
@@ -456,7 +464,7 @@ function executeAllArenaStart(parameters) {
               ? 1
               : Math.max(
                   1,
-                  players.length
+                  players
                 ),
         },
         "Ownership count is fixture-generated and should only be used for controlled server-state experiments."
@@ -473,12 +481,14 @@ function executeAllArenaFinish(parameters) {
   const records = [];
 
   for (const target of targets) {
-    const players =
-      assignedPlayers(target.arenaId);
-    for (const player of players) {
-      markCompleted(player);
-      resetPlayerSession(player);
-    }
+    const outcome =
+      MAP_ADAPTER.finishArena(
+        target.arenaId,
+        target.arenaGeneration
+      );
+    const players = Number(
+      outcome?.players ?? 0
+    );
     records.push(
       evidence(
         "arena-session-cleanup-complete",
@@ -499,7 +509,7 @@ function executeAllArenaFinish(parameters) {
         ),
         {
           returnedPlayers:
-            players.length,
+            players,
         },
         "Harness does not teleport clients; this predicate represents fixture session reset only."
       ),
@@ -522,24 +532,21 @@ function executeAllArenaFinish(parameters) {
 }
 
 function executeCleanupStartOverlap(parameters) {
-  const endingPlayers =
-    assignedPlayers(
-      parameters.endingArenaId
-    );
-  for (const player of endingPlayers) {
-    resetPlayerSession(player);
-  }
+  MAP_ADAPTER.finishArena(
+    parameters.endingArenaId,
+    parameters.endingArenaGeneration
+  );
 
-  const startingPlayers =
-    assignedPlayers(
-      parameters.startingArenaId
-    ).slice(
-      0,
+  const startingOutcome =
+    MAP_ADAPTER.startArena(
+      parameters.startingArenaId,
+      parameters.startingArenaGeneration,
       parameters.startingPlayerCount
     );
-  for (const player of startingPlayers) {
-    markPlaying(player);
-  }
+  const startingPlayers =
+    Number(
+      startingOutcome?.players ?? 0
+    );
 
   return [
     evidence(
@@ -561,7 +568,7 @@ function executeCleanupStartOverlap(parameters) {
       ),
       {
         activePlayers:
-          startingPlayers.length,
+          startingPlayers,
       },
       "Starting arena fixture remained active during other-arena cleanup."
     ),
@@ -587,15 +594,15 @@ function executeStaggeredJoin(parameters) {
   const records = [];
 
   for (const target of targets) {
-    const players =
-      assignedPlayers(target.arenaId)
-        .slice(
-          0,
-          parameters.playersPerArena
-        );
-    for (const player of players) {
-      resetPlayerSession(player);
-    }
+    const outcome =
+      MAP_ADAPTER.staggeredJoin(
+        target.arenaId,
+        target.arenaGeneration,
+        parameters.playersPerArena
+      );
+    const players = Number(
+      outcome?.players ?? 0
+    );
     records.push(
       evidence(
         "arena-staggered-join-complete",
@@ -606,7 +613,7 @@ function executeStaggeredJoin(parameters) {
         ),
         {
           activePlayers:
-            players.length,
+            players,
         },
         "Join ordering is server-simulated; joinSpacingTicks is a fixture scheduling hint."
       ),
@@ -629,19 +636,22 @@ function executeStaggeredJoin(parameters) {
 }
 
 function executeDisconnect(parameters, phase) {
-  const player =
-    findPlayer(parameters.playerKey);
-  if (!player) {
-    throw new Error(
-      "Player not found: " +
-        parameters.playerKey
-    );
-  }
-
-  player.addTag(
-    "test:disconnect-requested"
+  MAP_ADAPTER.disconnectPlayer(
+    parameters.playerKey,
+    {
+      arenaId:
+        parameters.arenaId,
+      arenaGeneration:
+        parameters.arenaGeneration,
+      connectionGeneration:
+        parameters.connectionGeneration,
+      participationGeneration:
+        parameters.participationGeneration,
+      lifeGeneration:
+        parameters.lifeGeneration,
+    },
+    phase
   );
-  resetPlayerSession(player);
 
   const scope = {
     arenaId: parameters.arenaId,
@@ -699,12 +709,12 @@ function cleanupStressFixture(parameters) {
     parseCsv(parameters.arenaIds);
   const records = [];
   for (const arenaId of arenaIds) {
-    for (
-      const player of
-        assignedPlayers(arenaId)
-    ) {
-      resetPlayerSession(player);
-    }
+    MAP_ADAPTER.resetArena(
+      arenaId,
+      STATE.arenaGenerations.get(
+        arenaId
+      ) ?? 0
+    );
     records.push(
       evidence(
         "arena-stress-fixture-clean",
@@ -728,13 +738,12 @@ function captureArenaBaseline(parameters) {
 
   const records = [];
   for (const target of targets) {
-    const snapshot = {
-      assignedPlayers:
-        assignedPlayers(
-          target.arenaId
-        ).length,
-      surfaces,
-    };
+    const snapshot =
+      MAP_ADAPTER.captureArenaBaseline(
+        target.arenaId,
+        target.arenaGeneration,
+        surfaces
+      );
     STATE.arenaBaselines.set(
       target.arenaId,
       snapshot
@@ -780,18 +789,11 @@ function executeRepeatedCycles(parameters) {
       index < parameters.cycles;
       index += 1
     ) {
-      const players =
-        assignedPlayers(target.arenaId)
-          .slice(
-            0,
-            parameters.playersPerArena
-          );
-      for (const player of players) {
-        markPlaying(player);
-      }
-      for (const player of players) {
-        resetPlayerSession(player);
-      }
+      MAP_ADAPTER.executeArenaCycle(
+        target.arenaId,
+        target.arenaGeneration,
+        parameters.playersPerArena
+      );
       cycles += 1;
     }
 
@@ -833,34 +835,27 @@ function compareArenaBaseline(parameters) {
       STATE.repeatedCycles.get(
         target.arenaId
       ) ?? 0;
-    const players =
-      assignedPlayers(
-        target.arenaId
-      );
+    const comparison =
+      baseline === undefined
+        ? undefined
+        : MAP_ADAPTER.compareArenaBaseline(
+            baseline
+          );
     const currentCount =
-      players.length;
+      Number(
+        comparison?.actualPlayers ?? -1
+      );
     const baselineCount =
       baseline?.assignedPlayers;
-
-    let residueCount = 0;
-    for (const player of players) {
-      const tags =
-        player.getTags();
-      if (
-        tags.includes("session:playing") ||
-        tags.includes("session:starting") ||
-        tags.includes("session:completed") ||
-        tags.includes("test:disconnect-requested")
-      ) {
-        residueCount += 1;
-      }
-    }
+    const residueCount =
+      Number(
+        comparison?.residueCount ?? -1
+      );
 
     const baselineMatches =
       baseline !== undefined &&
-      baselineCount === currentCount &&
-      cycles === parameters.expectedCycles &&
-      residueCount === 0;
+      comparison?.matches === true &&
+      cycles === parameters.expectedCycles;
 
     records.push(
       evidence(
