@@ -30,6 +30,7 @@ import { analyzeArenaGlobalState } from "./arena-global-state-analysis.js";
 import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
 import { analyzeInventoryPolicy } from "./inventory-policy-analysis.js";
 import { analyzeInventoryRestoreOwnership } from "./inventory-restore-ownership-analysis.js";
+import { analyzeCombatLifecycle } from "./combat-lifecycle-analysis.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
@@ -184,6 +185,10 @@ export function analyzeInspectionRuntimeState(
     );
   const inventoryRestoreOwnership =
     analyzeInventoryRestoreOwnership(
+      parsedScriptModels,
+    );
+  const combatLifecycle =
+    analyzeCombatLifecycle(
       parsedScriptModels,
     );
   const arenaGlobalState =
@@ -374,6 +379,7 @@ export function analyzeInspectionRuntimeState(
     inventoryLifecycle,
     inventoryPolicy,
     inventoryRestoreOwnership,
+    combatLifecycle,
     arenaGlobalState,
     arenaStateIsolation,
     arenaLayoutReconciliation,
