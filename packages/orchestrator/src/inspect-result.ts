@@ -22,6 +22,7 @@ import { analyzeInspectionEducation } from "./inspect-education-stage.js";
 import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
 import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
 import { deriveArenaAuthoredSpatialSources } from "./arena-authored-source-index.js";
+import { analyzeCombatPolicy } from "./combat-policy-analysis.js";
 
 type SourceIndex = Awaited<
   ReturnType<typeof indexInspectionSources>
@@ -256,6 +257,13 @@ export function buildInspectionResult(
     authoredSources,
   };
 
+  const combatPolicy =
+    analyzeCombatPolicy(
+      combatLifecycle,
+      combatRuntimeTelemetry,
+      input.target.combatPolicy,
+    );
+
   const gameplayWorld = deriveGameplayWorldModel({
     artifactId: input.artifactId,
     intent: input.gameplayIntent,
@@ -267,6 +275,7 @@ export function buildInspectionResult(
     combatLifecycle,
     combatRuntime:
       combatRuntimeTelemetry,
+    combatPolicy,
     semanticIr: {
       stateSurfaces: semanticSummary.stateSurfaces,
       stateOperations: semanticSummary.stateOperations,
@@ -346,6 +355,7 @@ export function buildInspectionResult(
     combatLifecycle,
     combatRuntime:
       combatRuntimeTelemetry,
+    combatPolicy,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
     structures: nodes.filter(
