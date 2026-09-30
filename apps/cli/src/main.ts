@@ -5,6 +5,7 @@ import { inspectArtifact } from "../../../packages/orchestrator/src/index.js";
 import { buildEngineeringReviewProjection } from "../../../packages/orchestrator/src/index.js";
 import { buildArenaEngineeringProjection } from "../../../packages/orchestrator/src/index.js";
 import { buildMapEngineeringWorkflow } from "../../../packages/orchestrator/src/index.js";
+import { planRepositoryTasks } from "../../../packages/orchestrator/src/index.js";
 import { verifyPostRepairOutcome } from "../../../packages/orchestrator/src/index.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/index.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
@@ -33,6 +34,34 @@ async function main(): Promise<void> {
     probeContext,
   } = parseCliTargetOptions(rawArgs);
   const [input, secondInput, thirdInput] = args;
+
+  if (
+    (command === "affected" ||
+      command === "plan") &&
+    args.length > 0
+  ) {
+    const taskPlan = planRepositoryTasks({
+      changedPaths: args,
+      context: "LOCAL_ARTIFACT",
+    });
+
+    console.log(
+      JSON.stringify(
+        command === "affected"
+          ? {
+              schemaVersion: taskPlan.schemaVersion,
+              status: taskPlan.status,
+              affected: taskPlan.affected,
+              reasons: taskPlan.reasons,
+            }
+          : taskPlan,
+        null,
+        2,
+      ),
+    );
+    return;
+  }
+
   if (arenaRegionContractsPath) {
     target.arenaRegionContracts =
       await loadArenaRegionContractsFile(
@@ -449,6 +478,8 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
+    "  npm run cli -- affected <changed-path> [changed-path ...]",
+    "  npm run cli -- plan <changed-path> [changed-path ...]",
     "  npm run cli -- arena-corpus <manifest.json> [artifact-root] [--edition ...] [--version ...] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
