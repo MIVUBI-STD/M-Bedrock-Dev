@@ -23,6 +23,7 @@ import {
   type SemanticAffectedPlan,
 } from "./semantic-affected-plan.js";
 import type {
+  RuntimeEvidenceRecord,
   RuntimeScope,
   SemanticProofClaim,
 } from "../../project-model/src/index.js";
@@ -44,6 +45,8 @@ export interface ZeroWasteWorkflowProofInput {
   targetProfileFingerprint?: string;
   runtimeScope?: RuntimeScope;
   staleEvidenceIds?: readonly string[];
+  runtimeEvidenceRecords?: readonly RuntimeEvidenceRecord[];
+  dependsOnClaimIds?: readonly string[];
 }
 
 export interface ZeroWasteWorkflowInput {
@@ -79,6 +82,7 @@ export type ZeroWasteProofActionKind =
 export interface ZeroWasteProofAction {
   claimId: string;
   action: ZeroWasteProofActionKind;
+  dependsOnClaimIds: readonly string[];
   reasons: readonly string[];
 }
 
@@ -244,6 +248,12 @@ export function prepareZeroWasteWorkflow(
                       staleEvidenceIds:
                         item.staleEvidenceIds,
                     }),
+                ...(item.runtimeEvidenceRecords === undefined
+                  ? {}
+                  : {
+                      runtimeEvidenceRecords:
+                        item.runtimeEvidenceRecords,
+                    }),
               },
             )
           : {
@@ -296,23 +306,91 @@ export function prepareZeroWasteWorkflow(
           item.claimId,
       );
 
-  const proofActions: ZeroWasteProofAction[] =
-    proofReuse.map((item) => ({
-      claimId: item.claimId,
-      action:
-        item.status === "reusable"
-          ? "reuse"
-          : item.status === "stale"
-            ? "recompute"
-            : "restore-evidence",
-      reasons: [...item.reasons],
-    }));
+  const proofInputByClaim = new Map(
+    (input.proofClaims ?? []).map((item) => [
+      item.claim.claimId,
+      item,
+    ]),
+  );
+
+  const actionByClaim = new Map(
+    proofReuse.map((item) => [
+      item.claimId,
+      {
+        claimId: item.claimId,
+        action:
+          item.status === "reusable"
+            ? "reuse" as const
+            : item.status === "stale"
+              ? "recompute" as const
+              : "restore-evidence" as const,
+        dependsOnClaimIds: [
+          ...new Set(
+            proofInputByClaim
+              .get(item.claimId)
+              ?.dependsOnClaimIds ?? [],
+          ),
+        ].sort(),
+        reasons: [...item.reasons],
+      },
+    ]),
+  );
+
+  const proofActionErrors: string[] = [];
+  for (const action of actionByClaim.values()) {
+    for (const dependencyId of action.dependsOnClaimIds) {
+      if (!actionByClaim.has(dependencyId)) {
+        proofActionErrors.push(
+          "Proof action " +
+            action.claimId +
+            " depends on unknown claim " +
+            dependencyId +
+            ".",
+        );
+      }
+    }
+  }
+
+  const proofActions: ZeroWasteProofAction[] = [];
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+
+  const visitProofAction = (claimId: string): void => {
+    if (visited.has(claimId)) return;
+    if (visiting.has(claimId)) {
+      proofActionErrors.push(
+        "Proof action dependency cycle detected at " +
+          claimId +
+          ".",
+      );
+      return;
+    }
+
+    const action = actionByClaim.get(claimId);
+    if (!action) return;
+
+    visiting.add(claimId);
+    for (const dependencyId of action.dependsOnClaimIds) {
+      visitProofAction(dependencyId);
+    }
+    visiting.delete(claimId);
+
+    if (!visited.has(claimId)) {
+      visited.add(claimId);
+      proofActions.push(action);
+    }
+  };
+
+  for (const claimId of [...actionByClaim.keys()].sort()) {
+    visitProofAction(claimId);
+  }
 
   const blocked =
     affected.status ===
       "blocked" ||
     validation.status ===
-      "blocked";
+      "blocked" ||
+    proofActionErrors.length > 0;
   const needsContextExpansion =
     !blocked &&
     context.complete === false;
@@ -374,6 +452,12 @@ export function prepareZeroWasteWorkflow(
       context.complete
         ? "Compiled AI context is complete; changed semantic nodes are always retained as required scope."
         : "Compiled AI context is incomplete; expand the context or resolve missing requested ids before using it as decision authority.",
+      ...(proofActionErrors.length === 0
+        ? []
+        : [
+            "Proof dependency routing is blocked: " +
+              proofActionErrors.join(" "),
+          ]),
       staleProofClaimIds.length >
       0
         ? String(
