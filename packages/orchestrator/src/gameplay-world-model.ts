@@ -159,6 +159,7 @@ export interface GameplayWorldModel {
     pairedLeases: number;
     acquireWithoutRelease: number;
     releaseUnreachable: number;
+    cleanupOrderUnproven: number;
     dynamicLeaseKeys: number;
     capacityUncheckedLeases: number;
     readinessUnverifiedLeases: number;
@@ -604,6 +605,8 @@ export function deriveGameplayWorldModel(
         source.chunkLifecycle?.acquireWithoutRelease ?? 0,
       releaseUnreachable:
         source.chunkLifecycle?.releaseUnreachable ?? 0,
+      cleanupOrderUnproven:
+        source.chunkLifecycle?.cleanupOrderUnproven ?? 0,
       dynamicLeaseKeys:
         source.chunkLifecycle?.dynamicLeaseKeys ?? 0,
       capacityUncheckedLeases:
