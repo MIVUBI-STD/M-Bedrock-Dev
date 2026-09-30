@@ -643,6 +643,9 @@ export function inferScriptMethodCalls(
       executionRegion: executionRegionId(call, file),
       argumentCount: call.arguments.length,
       argumentKinds: call.arguments.map((argument) => argumentKind(argument)),
+      argumentTexts: call.arguments.map((argument) =>
+        argument.getText(file)
+      ),
       hasSpreadArgument: call.arguments.some(ts.isSpreadElement),
       resultUse: methodResultUse(call),
       source: lineSource(file, call, source),

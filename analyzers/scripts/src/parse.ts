@@ -2452,6 +2452,11 @@ export function parseScriptFile(
           executionRegion: localExecutionRegionId(node, file),
           source: lineSource(file, node, source),
         };
+        const propertyArgument = node.arguments[0];
+        if (propertyArgument) {
+          access.propertyExpression =
+            propertyArgument.getText(file);
+        }
         const propertyId = stringArgument(node);
         if (propertyId) access.propertyId = propertyId;
         dynamicProperties.push(access);

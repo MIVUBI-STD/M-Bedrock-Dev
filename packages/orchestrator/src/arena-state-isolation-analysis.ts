@@ -127,27 +127,110 @@ function statusForScope(
   return "unknown";
 }
 
+function normalizedExpression(
+  value: string,
+): string {
+  return value
+    .replace(/\s+/g, "")
+    .toLowerCase();
+}
+
+function expressionUsesAuthority(
+  expression: string | undefined,
+  authorities: readonly string[],
+): boolean {
+  if (!expression) return false;
+  const normalized =
+    normalizedExpression(expression);
+  return authorities.some((authority) => {
+    const candidate =
+      normalizedExpression(authority);
+    return (
+      candidate.length > 0 &&
+      (
+        normalized.includes(candidate) ||
+        normalized.includes(candidate + ".id") ||
+        normalized.includes(candidate + ".generation") ||
+        normalized.includes(candidate + ".index")
+      )
+    );
+  });
+}
+
 function scoreboardObservation(
   script: ParsedScriptFile,
   call: ScriptMethodCall,
   region: string,
+  authorities: readonly string[],
 ): ArenaStateIsolationObservation | undefined {
   if (
-    call.receiverType !== "Scoreboard" &&
-    call.receiverType !== "ScoreboardObjective"
+    call.receiverType !== "ScoreboardObjective" ||
+    ![
+      "setScore",
+      "addScore",
+      "removeParticipant",
+    ].includes(call.method)
   ) {
     return undefined;
+  }
+
+  const participant =
+    call.argumentTexts?.[0];
+
+  if (
+    expressionUsesAuthority(
+      participant,
+      authorities,
+    )
+  ) {
+    return {
+      scriptId: script.identifier,
+      region,
+      surface: "scoreboard",
+      key:
+        call.symbol +
+        ":" +
+        participant,
+      scope: "arena-local",
+      status: "isolated",
+      reason:
+        "Scoreboard participant expression is explicitly keyed by the authored arena authority expression.",
+    };
+  }
+
+  if (
+    participant &&
+    /(?:player|participant|member|scoreboardidentity)/i.test(
+      participant,
+    )
+  ) {
+    return {
+      scriptId: script.identifier,
+      region,
+      surface: "scoreboard",
+      key:
+        call.symbol +
+        ":" +
+        participant,
+      scope: "player-local",
+      status: "isolated",
+      reason:
+        "Scoreboard participant expression is player/participant scoped.",
+    };
   }
 
   return {
     scriptId: script.identifier,
     region,
     surface: "scoreboard",
-    key: call.symbol,
+    key:
+      call.symbol +
+      ":" +
+      (participant ?? "*"),
     scope: "world-global",
     status: "partition-proof-required",
     reason:
-      "Scoreboard state is world-shared. Arena isolation requires objective/participant keys to prove arena partitioning.",
+      "Scoreboard objective is world-shared and the participant expression does not prove arena/player partitioning.",
   };
 }
 
@@ -185,6 +268,13 @@ function analyzeScript(
   observations: ArenaStateIsolationObservation[];
 } {
   const regions = arenaRegions(script);
+  const authorities = [
+    ...new Set(
+      (script.arenaAuthorityPaths ?? [])
+        .map((item) => item.arenaExpression)
+        .filter(Boolean),
+    ),
+  ];
   const observations: ArenaStateIsolationObservation[] = [];
 
   for (const access of script.dynamicProperties) {
@@ -198,7 +288,32 @@ function analyzeScript(
     const region = access.executionRegion ?? "module";
     if (!regions.has(region)) continue;
 
-    const scope = receiverScope(access.receiverHint);
+    const receiver =
+      receiverScope(access.receiverHint);
+    const keyExpression =
+      access.propertyExpression ??
+      access.propertyId;
+
+    const authorityPartitioned =
+      receiver === "world-global" &&
+      expressionUsesAuthority(
+        keyExpression,
+        authorities,
+      );
+    const playerPartitioned =
+      receiver === "world-global" &&
+      keyExpression !== undefined &&
+      /(?:player|participant|member|scoreboardidentity)/i.test(
+        keyExpression,
+      );
+
+    const scope: ArenaStateScope =
+      authorityPartitioned
+        ? "arena-local"
+        : playerPartitioned
+          ? "player-local"
+          : receiver;
+
     observations.push({
       scriptId: script.identifier,
       region,
@@ -206,16 +321,27 @@ function analyzeScript(
       key:
         (access.receiverHint ?? "unknown") +
         ":" +
-        (access.propertyId ?? "*"),
+        (
+          access.propertyExpression ??
+          access.propertyId ??
+          "*"
+        ),
       scope,
       status:
-        scope === "world-global"
-          ? "partition-proof-required"
-          : statusForScope(scope),
+        authorityPartitioned ||
+        playerPartitioned
+          ? "isolated"
+          : scope === "world-global"
+            ? "partition-proof-required"
+            : statusForScope(scope),
       reason:
-        scope === "world-global"
-          ? "World dynamic properties are shared by all arenas; the property key must prove arena/session partitioning."
-          : "Dynamic-property receiver scope inferred from the static receiver expression.",
+        authorityPartitioned
+          ? "World dynamic-property key expression is explicitly partitioned by the authored arena authority expression."
+          : playerPartitioned
+            ? "World dynamic-property key expression is explicitly partitioned by player/participant identity."
+            : scope === "world-global"
+              ? "World dynamic properties are shared by all arenas; the property key must prove arena/session partitioning."
+              : "Dynamic-property receiver scope inferred from the static receiver expression.",
     });
   }
 
@@ -226,6 +352,7 @@ function analyzeScript(
       script,
       call,
       region,
+      authorities,
     );
     if (observation) observations.push(observation);
   }

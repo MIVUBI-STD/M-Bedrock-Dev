@@ -32,6 +32,7 @@ export interface ScriptEventSubscription {
 export interface DynamicPropertyAccess {
   operation: "get" | "set" | "delete" | "clear" | "ids" | "size" | "unknown";
   propertyId?: string;
+  propertyExpression?: string;
   receiverHint?: string;
   executionRegion?: string;
   source: SourceRef;
@@ -89,6 +90,7 @@ export interface ScriptMethodCall {
   executionRegion?: string;
   argumentCount: number;
   argumentKinds: ScriptArgumentKind[];
+  argumentTexts?: string[];
   hasSpreadArgument: boolean;
   resultUse: ScriptMethodResultUse;
   source: SourceRef;
