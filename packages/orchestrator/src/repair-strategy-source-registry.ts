@@ -302,6 +302,21 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Routes observed revive transaction anomalies toward life-generation ownership, reviver eligibility, exclusive revive-owner, and death-terminal review. Proposal-only because telemetry identifies the violated transaction semantics but not one universally safe source mutation.",
     }, {
+      id: "entity-ai-navigation-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedDiagnosticCodes: [
+        "ENTITY_AI_NAVIGATION_COVERAGE_GAP",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes static AI-stack and route-environment coverage gaps toward movement/navigation/goal ownership, active-state binding, route capability, crowding, and bounded recovery review. Proposal-only because entity AI remediation is state- and map-specific.",
+    }, {
       id: "inventory-lifecycle-remediation",
       version: "1",
       kind: "built-in-planner",
