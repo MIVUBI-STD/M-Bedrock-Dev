@@ -276,6 +276,13 @@ describe("behavioral world model", () => {
           "minecraft.inventory:p1:commit-requires-verification",
       ),
     ).toBe(true);
+    expect(
+      composed.properties.some(
+        (property) =>
+          property.id ===
+          "minecraft.chunk:overworld:0:0:simulation-requires-loaded-state",
+      ),
+    ).toBe(true);
   });
 
   it("resolves spatial authority by most-specific authored rule", () => {
