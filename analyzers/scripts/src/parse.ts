@@ -60,6 +60,7 @@ import { deriveScriptSpatialMutations } from "./spatial-mutation-evidence.js";
 import { deriveScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
 import { deriveScriptCombatLifecycleEvidence } from "./combat-lifecycle-evidence.js";
 import { deriveScriptChunkLifecycleEvidence } from "./chunk-lifecycle-evidence.js";
+import { deriveScriptEconomyEvidence } from "./economy-evidence.js";
 import { deriveScriptInventoryLifecycleEvidence } from "./inventory-lifecycle-evidence.js";
 import { deriveScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
 
@@ -1722,6 +1723,11 @@ export function parseScriptFile(
       text,
       source,
     );
+  const economyEvidence =
+    deriveScriptEconomyEvidence(
+      text,
+      source,
+    );
   const cleanupResourceEvidence =
     deriveScriptCleanupResourceEvidence(
       text,
@@ -2535,6 +2541,9 @@ export function parseScriptFile(
     ],
     combatLifecycleEvidence: [
       ...combatLifecycleEvidence,
+    ],
+    economyEvidence: [
+      ...economyEvidence,
     ],
     inventoryLifecycleEvidence: [
       ...inventoryLifecycleEvidence,
