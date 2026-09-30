@@ -18,6 +18,7 @@ export interface ScriptLifecycleProjectGraph {
     callerRegion: string;
     targetRegion: string;
     targetName: string;
+    controlFlow: "unconditional" | "conditional" | "deferred" | "unknown";
   }[];
   reachableReleaseFunctions: readonly string[];
 }
@@ -41,6 +42,7 @@ export function composeScriptLifecycleProjectGraph(
         callerRegion: call.callerRegion,
         targetRegion: call.targetRegion,
         targetName: call.targetName,
+        controlFlow: call.controlFlow ?? "unknown",
       }))
     );
 
