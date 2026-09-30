@@ -67,6 +67,14 @@ export interface MapEngineeringWorkflowProjection {
     chunkWorldLoadReconciliationMissing: number;
     chunkUnguardedDeferredWork: number;
     chunkResidencyObservabilityGaps: number;
+    economyDeathRewardOverlapContradictions: number;
+    economyDeathRewardOverlapUnresolved: number;
+    economyPickupCurrencyContradictions: number;
+    economyIdempotencyCoverageGaps: number;
+    economyStaleDropCleanupGaps: number;
+    economyInventoryFullPolicyGaps: number;
+    economyPickupScopeValidationUnproven: number;
+    economyTerminalRewardCommitUnproven: number;
   };
   nextActions: readonly string[];
 }
@@ -429,6 +437,36 @@ export function buildMapEngineeringWorkflow(
               ?.entityResidencyObservability === "partial"
           ? 1
           : 2,
+    economyDeathRewardOverlapContradictions:
+      source.gameplayWorld.economy
+        ?.policy.deathRewardOverlapContradictions ?? 0,
+    economyDeathRewardOverlapUnresolved:
+      source.gameplayWorld.economy
+        ?.policy.deathRewardOverlapUnresolved ?? 0,
+    economyPickupCurrencyContradictions:
+      (
+        source.gameplayWorld.economy
+          ?.policy.pickupCurrencyConsumeContradictions ?? 0
+      ) +
+      (
+        source.gameplayWorld.economy
+          ?.policy.pickupCurrencyPolicyMismatch ?? 0
+      ),
+    economyIdempotencyCoverageGaps:
+      source.gameplayWorld.economy
+        ?.policy.idempotencyCoverageGaps ?? 0,
+    economyStaleDropCleanupGaps:
+      source.gameplayWorld.economy
+        ?.policy.staleDropCleanupCoverageGaps ?? 0,
+    economyInventoryFullPolicyGaps:
+      source.gameplayWorld.economy
+        ?.policy.inventoryFullPolicyGaps ?? 0,
+    economyPickupScopeValidationUnproven:
+      source.gameplayWorld.economy
+        ?.policy.pickupScopeValidationUnproven ?? 0,
+    economyTerminalRewardCommitUnproven:
+      source.gameplayWorld.economy
+        ?.policy.terminalRewardResultCommitUnproven ?? 0,
   };
 
   const nextActions = stages
