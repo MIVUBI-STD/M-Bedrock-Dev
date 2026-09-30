@@ -370,3 +370,5 @@ export * from "./arena-runtime-adapter-requirements.js";
 export * from "./arena-runtime-adapter-scaffold.js";
 
 export * from "./post-repair-validation-obligations.js";
+
+export * from "./arena-golden-status.js";

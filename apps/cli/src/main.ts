@@ -9,6 +9,7 @@ import { planRepositoryTasks } from "../../../packages/orchestrator/src/index.js
 import { verifyPostRepairOutcome } from "../../../packages/orchestrator/src/index.js";
 import { buildArenaGoldenBaselineCandidate } from "../../../packages/orchestrator/src/index.js";
 import { buildArenaRuntimeAdapterScaffold } from "../../../packages/orchestrator/src/index.js";
+import { inspectArenaGoldenCorpusStatusFromFile } from "../../../packages/orchestrator/src/index.js";
 import { loadKnowledgeDirectory } from "../../../packages/knowledge/src/index.js";
 import { aggregateScriptApiUsage } from "../../../packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
@@ -300,6 +301,27 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "arena-corpus-status" && input) {
+    const status =
+      await inspectArenaGoldenCorpusStatusFromFile(
+        resolve(input),
+        secondInput === undefined
+          ? undefined
+          : resolve(secondInput),
+      );
+    console.log(
+      JSON.stringify(
+        status,
+        null,
+        2,
+      ),
+    );
+    if (status.blocked > 0) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (command === "arena-corpus" && input) {
     const report = await runArenaGoldenCorpusFromFile(
       resolve(input),
@@ -560,6 +582,7 @@ async function main(): Promise<void> {
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- arena-baseline <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json]",
+    "  npm run cli -- arena-corpus-status <manifest.json> [artifact-root]",
     "  npm run cli -- arena-adapter <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json]",
     "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- verify-repair <before-mcworld> <after-mcworld> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
