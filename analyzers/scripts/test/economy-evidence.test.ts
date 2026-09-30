@@ -60,11 +60,12 @@ describe("script economy evidence", () => {
         },
       );
 
-    expect(result).toEqual([
-      expect.objectContaining({
-        kind: "score-adjust",
-        amount: undefined,
-      }),
-    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      kind: "score-adjust",
+    });
+    expect(
+      "amount" in result[0]!,
+    ).toBe(false);
   });
 });
