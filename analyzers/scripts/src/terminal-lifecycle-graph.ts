@@ -1,7 +1,7 @@
 import ts from "typescript";
 import type {
   LifecycleProofTransition,
-} from "../../../packages/behavior-model/src/lifecycle-proof.js";
+} from "../../../packages/behavior-model/src/index.js";
 import type {
   SourceRef,
 } from "../../../packages/project-model/src/index.js";
