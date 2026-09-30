@@ -1,3 +1,4 @@
+import type { ScriptEconomyEvidence } from "./economy-evidence.js";
 import type { ScriptChunkLifecycleEvidence } from "./chunk-lifecycle-evidence.js";
 import type { ScriptCombatLifecycleEvidence } from "./combat-lifecycle-evidence.js";
 import type { ScriptInventoryLifecycleEvidence } from "./inventory-lifecycle-evidence.js";
@@ -454,6 +455,7 @@ export interface ParsedScriptFile {
   cleanupResourceEvidence?: ScriptCleanupResourceEvidence[];
   chunkLifecycleEvidence?: ScriptChunkLifecycleEvidence[];
   combatLifecycleEvidence?: ScriptCombatLifecycleEvidence[];
+  economyEvidence?: ScriptEconomyEvidence[];
   inventoryLifecycleEvidence?: ScriptInventoryLifecycleEvidence[];
   globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
   repairTransformHints?: RepairSourceTransformHint[];
