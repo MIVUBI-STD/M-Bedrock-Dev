@@ -135,7 +135,12 @@ function normalizedExpression(
     .toLowerCase();
 }
 
-function expressionUsesAuthority(
+function escapedRegex(
+  value: string,
+): string {
+  return value.replace(
+    /[.*+?^$()|[\]\\]/g,
+    "\\function expressionUsesAuthority(
   expression: string | undefined,
   authorities: readonly string[],
 ): boolean {
@@ -154,6 +159,41 @@ function expressionUsesAuthority(
         normalized.includes(candidate + ".index")
       )
     );
+  });
+}
+",
+  );
+}
+
+function expressionUsesAuthority(
+  expression: string | undefined,
+  authorities: readonly string[],
+): boolean {
+  if (!expression) return false;
+  const normalized =
+    normalizedExpression(expression);
+
+  return authorities.some((authority) => {
+    const candidate =
+      normalizedExpression(authority);
+    if (!candidate) return false;
+
+    if (
+      /^[a-z_$][a-z0-9_$]*$/i.test(
+        candidate,
+      )
+    ) {
+      const token =
+        new RegExp(
+          "(^|[^a-z0-9_$])" +
+            escapedRegex(candidate) +
+            "(?=$|[^a-z0-9_$])",
+          "i",
+        );
+      return token.test(normalized);
+    }
+
+    return normalized.includes(candidate);
   });
 }
 
