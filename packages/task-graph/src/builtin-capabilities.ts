@@ -88,6 +88,19 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "source.scripts.persistence",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/persistent-*",
+        "analyzers/scripts/src/persistence-*",
+      ],
+      dependsOn: ["source.scripts.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "source.entities.core",
       owner: "analyzers/entities",
       pathPrefixes: [
@@ -230,6 +243,20 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "domain.persistence",
+      owner: "packages/orchestrator",
+      pathPrefixes: [
+        "packages/orchestrator/src/persistence-*",
+      ],
+      dependsOn: [
+        "source.scripts.persistence",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "moderate",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "domain.arena-lifecycle",
       owner: "packages/orchestrator",
       pathPrefixes: [
@@ -338,6 +365,21 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "runtime.persistence",
+      owner: "packages/runtime-lab",
+      pathPrefixes: [
+        "packages/runtime-lab/src/persistence-*",
+      ],
+      dependsOn: ["domain.persistence"],
+      deterministic: false,
+      cacheable: false,
+      cost: "expensive",
+      contexts: [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+    },
+    {
       id: "runtime.entity-ai",
       owner: "packages/runtime-lab",
       pathPrefixes: [
@@ -375,6 +417,7 @@ export const BUILTIN_TASK_CAPABILITIES:
       ],
       dependsOn: [
         "domain.arena-lifecycle",
+        "domain.persistence",
         "domain.spatial-authority",
         "domain.inventory",
         "domain.entity-ai",
