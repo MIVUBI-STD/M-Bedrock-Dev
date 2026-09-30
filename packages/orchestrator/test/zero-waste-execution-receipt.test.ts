@@ -115,5 +115,10 @@ describe("zero-waste execution receipt", () => {
       "e:a",
       "e:b",
     ]);
+    expect(receipt.avoidedWork).toEqual({
+      proofExecutions: 1,
+      validationScenarios: 1,
+      totalUnits: 2,
+    });
   });
 });
