@@ -8,9 +8,9 @@ import type {
 export interface EconomyPolicyAnalysis {
   configured: boolean;
   policyId?: string;
-  deathRewardOverlapContradictions: number;
+  deathRewardOverlapPolicyConflicts: number;
   deathRewardOverlapUnresolved: number;
-  pickupCurrencyConsumeContradictions: number;
+  pickupCurrencyConsumeCoverageGaps: number;
   pickupCurrencyPolicyMismatch: number;
   idempotencyCoverageGaps: number;
   staleDropCleanupCoverageGaps: number;
@@ -27,10 +27,10 @@ export function analyzeEconomyPolicy(
   if (!policy) {
     return {
       configured: false,
-      deathRewardOverlapContradictions: 0,
+      deathRewardOverlapPolicyConflicts: 0,
       deathRewardOverlapUnresolved:
         rewards.deathRewardSourceOverlapCandidates,
-      pickupCurrencyConsumeContradictions: 0,
+      pickupCurrencyConsumeCoverageGaps: 0,
       pickupCurrencyPolicyMismatch: 0,
       idempotencyCoverageGaps: 0,
       staleDropCleanupCoverageGaps: 0,
@@ -43,7 +43,7 @@ export function analyzeEconomyPolicy(
     };
   }
 
-  const deathRewardOverlapContradictions =
+  const deathRewardOverlapPolicyConflicts =
     policy.deathRewardArbitration ===
       "mutually-exclusive"
       ? rewards
@@ -57,7 +57,7 @@ export function analyzeEconomyPolicy(
           .deathRewardSourceOverlapCandidates
       : 0;
 
-  const pickupCurrencyConsumeContradictions =
+  const pickupCurrencyConsumeCoverageGaps =
     policy.pickupCurrencyItemPolicy ===
       "consume"
       ? rewards
@@ -103,10 +103,10 @@ export function analyzeEconomyPolicy(
   const reasons: string[] = [];
 
   if (
-    deathRewardOverlapContradictions > 0
+    deathRewardOverlapPolicyConflicts > 0
   ) {
     reasons.push(
-      "Engine death loot and scripted death reward paths overlap while authored policy marks them mutually exclusive.",
+      "Engine death loot and scripted death reward paths overlap while authored policy marks equivalent death rewards mutually exclusive; source-to-entitlement correlation is still required before defect promotion.",
     );
   }
   if (deathRewardOverlapUnresolved > 0) {
@@ -115,10 +115,10 @@ export function analyzeEconomyPolicy(
     );
   }
   if (
-    pickupCurrencyConsumeContradictions > 0
+    pickupCurrencyConsumeCoverageGaps > 0
   ) {
     reasons.push(
-      "Pickup-to-currency path lacks a recognized consume/reconciliation surface while authored policy requires consuming the pickup item.",
+      "Pickup-to-currency path lacks recognized consume/reconciliation evidence while authored policy requires consuming the pickup item; this remains a coverage gap until runtime/source correlation proves the same item entitlement.",
     );
   }
   if (
@@ -173,9 +173,9 @@ export function analyzeEconomyPolicy(
   return {
     configured: true,
     policyId: policy.id,
-    deathRewardOverlapContradictions,
+    deathRewardOverlapPolicyConflicts,
     deathRewardOverlapUnresolved,
-    pickupCurrencyConsumeContradictions,
+    pickupCurrencyConsumeCoverageGaps,
     pickupCurrencyPolicyMismatch,
     idempotencyCoverageGaps,
     staleDropCleanupCoverageGaps,
