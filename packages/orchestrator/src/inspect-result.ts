@@ -140,6 +140,7 @@ export function buildInspectionResult(
 
   const {
     telemetryEvidence,
+    combatRuntimeTelemetry,
     runtimeProbeEvidence,
     telemetryContinuity,
     telemetryEvidenceIntegrity,
@@ -264,6 +265,8 @@ export function buildInspectionResult(
     inventoryPolicy,
     inventoryRestoreOwnership,
     combatLifecycle,
+    combatRuntime:
+      combatRuntimeTelemetry,
     semanticIr: {
       stateSurfaces: semanticSummary.stateSurfaces,
       stateOperations: semanticSummary.stateOperations,
@@ -341,6 +344,8 @@ export function buildInspectionResult(
     inventoryPolicy,
     inventoryRestoreOwnership,
     combatLifecycle,
+    combatRuntime:
+      combatRuntimeTelemetry,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
     structures: nodes.filter(
