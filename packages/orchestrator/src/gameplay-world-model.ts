@@ -153,6 +153,8 @@ export interface GameplayWorldModel {
     dynamicLeaseKeys: number;
     capacityUncheckedLeases: number;
     shutdownOnlyCleanupRisk: number;
+    worldLoadReconciliationPaths: number;
+    unguardedDeferredChunkWork: number;
     entityResidencyObservability:
       "complete" | "partial" | "absent";
   };
@@ -559,6 +561,10 @@ export function deriveGameplayWorldModel(
         source.chunkLifecycle?.capacityUncheckedLeases ?? 0,
       shutdownOnlyCleanupRisk:
         source.chunkLifecycle?.shutdownOnlyCleanupRisk ?? 0,
+      worldLoadReconciliationPaths:
+        source.chunkLifecycle?.worldLoadReconciliationPaths ?? 0,
+      unguardedDeferredChunkWork:
+        source.chunkLifecycle?.unguardedDeferredChunkWork ?? 0,
       entityResidencyObservability:
         source.chunkLifecycle?.entityResidencyObservability ?? "absent",
     },
