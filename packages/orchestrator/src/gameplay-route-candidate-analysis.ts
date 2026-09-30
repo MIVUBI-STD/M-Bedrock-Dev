@@ -7,11 +7,15 @@ import type {
 import type {
   EntityAiStackStateAssessment,
 } from "./entity-ai-stack-analysis.js";
+import type {
+  RouteNavigationEnvironmentAnalysis,
+} from "./route-navigation-environment-analysis.js";
 
 export type GameplayRouteCauseCandidateId =
   | "route-context"
   | "target-assignment"
   | "entity-ai-stack"
+  | "navigation-environment"
   | "chunk-availability"
   | "route-reachability"
   | "navigation-target"
@@ -50,6 +54,7 @@ const ORDER: readonly GameplayRouteCauseCandidateId[] = [
   "route-context",
   "target-assignment",
   "entity-ai-stack",
+  "navigation-environment",
   "chunk-availability",
   "route-reachability",
   "navigation-target",
@@ -62,6 +67,7 @@ const LABELS: Readonly<
   "route-context": "Route context / authored route resolution",
   "target-assignment": "Route target assignment / progression",
   "entity-ai-stack": "Entity movement / navigation / movement-goal source stack",
+  "navigation-environment": "Authored route environment versus entity navigation capabilities",
   "chunk-availability": "Route target chunk availability",
   "route-reachability": "Route target reachability",
   "navigation-target": "Engine navigation target alignment",
@@ -108,6 +114,7 @@ export function analyzeGameplayRouteCauseCandidates(
   assessment: GameplayRouteCauseAnalysisInput,
   aiStackAssessments:
     readonly EntityAiStackStateAssessment[] = [],
+  routeEnvironment?: RouteNavigationEnvironmentAnalysis,
 ): GameplayRouteCauseAnalysis {
   const stallEvidence = [
     assessment.stallObservation.evidenceId,
@@ -285,6 +292,63 @@ export function analyzeGameplayRouteCauseCandidates(
     ),
   );
 
+  const routeId =
+    assessment.routeAssessment?.assessment.routeId ??
+    assessment.stallObservation.routeId;
+  const environmentMatches =
+    routeId === undefined
+      ? []
+      : routeEnvironment?.assessments.filter(
+          (item) =>
+            item.routeId === routeId &&
+            item.entityKey ===
+              assessment.stallObservation.entityKey,
+        ) ?? [];
+
+  const environmentStatus:
+    GameplayRouteCauseCandidateStatus =
+      environmentMatches.length === 0
+        ? "unresolved"
+        : environmentMatches.every(
+            (item) =>
+              item.status === "compatible",
+          )
+          ? "rejected"
+          : environmentMatches.every(
+              (item) =>
+                item.status === "incompatible",
+            )
+            ? "supported"
+            : "unresolved";
+
+  candidates.push(
+    candidate(
+      "navigation-environment",
+      environmentStatus,
+      environmentMatches.map(
+        (item) =>
+          "route-navigation-environment:" +
+          item.contractId +
+          ":" +
+          item.entityKey,
+      ),
+      environmentStatus === "supported"
+        ? [
+            "Every applicable authored route-environment contract is incompatible with the entity navigation capabilities discovered in source.",
+          ]
+        : environmentStatus === "rejected"
+          ? [
+              "Every applicable authored route-environment contract is compatible with the entity navigation capabilities discovered in source.",
+            ]
+          : [
+              environmentMatches.length === 0
+                ? "No applicable authored route-environment contract is available for this stalled entity and route."
+                : "Route-environment compatibility is state-dependent or unresolved and requires active-state/runtime binding.",
+            ],
+      "hypothesis",
+    ),
+  );
+
   const chunkState =
     assessment.chunkAvailabilityObservation?.state;
   candidates.push(
@@ -392,6 +456,7 @@ export function analyzeGameplayRouteCauseCandidates(
       "route-context",
       "target-assignment",
       "entity-ai-stack",
+      "navigation-environment",
       "chunk-availability",
       "route-reachability",
       "navigation-target",
