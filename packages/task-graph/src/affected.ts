@@ -11,7 +11,18 @@ function matchesPrefix(
   path: string,
   prefix: string,
 ): boolean {
-  const normalizedPrefix = normalizePath(prefix).replace(/\/$/, "");
+  const normalizedPrefix =
+    normalizePath(prefix).replace(/\/$/, "");
+
+  if (normalizedPrefix.endsWith("*")) {
+    const literalPrefix =
+      normalizedPrefix.slice(0, -1);
+    return (
+      literalPrefix.length > 0 &&
+      path.startsWith(literalPrefix)
+    );
+  }
+
   return (
     path === normalizedPrefix ||
     path.startsWith(normalizedPrefix + "/")
