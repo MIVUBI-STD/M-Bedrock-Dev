@@ -720,6 +720,86 @@ export function buildInspectionResult(
             sum + item.queuedTickPositions,
           0,
         ),
+      structureTransitions:
+        structureRuntime
+          .structureTransitionResidue
+          .length,
+      analyzedStructureTransitions:
+        structureRuntime
+          .structureTransitionResidue
+          .filter(
+            (item) =>
+              item.status === "analyzed",
+          )
+          .length,
+      incompleteStructureTransitions:
+        structureRuntime
+          .structureTransitionResidue
+          .filter(
+            (item) =>
+              item.status === "incomplete",
+          )
+          .length,
+      preservedByVoidCells:
+        structureRuntime
+          .structureTransitionResidue
+          .reduce(
+            (sum, item) =>
+              sum +
+              item.preservedByVoid,
+            0,
+          ),
+      explicitlyClearedTransitionCells:
+        structureRuntime
+          .structureTransitionResidue
+          .reduce(
+            (sum, item) =>
+              sum +
+              item.explicitlyCleared,
+            0,
+          ),
+      replacedTransitionCells:
+        structureRuntime
+          .structureTransitionResidue
+          .reduce(
+            (sum, item) =>
+              sum +
+              item.replaced,
+            0,
+          ),
+      structureTransitionResidue:
+        structureRuntime
+          .structureTransitionResidue
+          .map((item) => ({
+            functionId:
+              item.functionId,
+            previousTarget:
+              item.previousTarget,
+            nextTarget:
+              item.nextTarget,
+            ...(item.previousLine === undefined
+              ? {}
+              : {
+                  previousLine:
+                    item.previousLine,
+                }),
+            ...(item.nextLine === undefined
+              ? {}
+              : {
+                  nextLine:
+                    item.nextLine,
+                }),
+            status: item.status,
+            preservedByVoid:
+              item.preservedByVoid,
+            explicitlyCleared:
+              item.explicitlyCleared,
+            replaced:
+              item.replaced,
+            reasons: [
+              ...item.reasons,
+            ],
+          })),
       educationSpecialtyBlocks,
       structurePlacements:
         structureRuntime.absoluteStructurePlacements,
