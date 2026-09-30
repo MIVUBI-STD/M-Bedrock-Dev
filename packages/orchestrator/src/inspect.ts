@@ -44,6 +44,7 @@ import { economyPolicyDiagnostics } from "./economy-policy-diagnostics.js";
 import { spatialAuthorityDiagnostics } from "./spatial-authority-diagnostics.js";
 import { inventoryLifecycleDiagnostics } from "./inventory-lifecycle-diagnostics.js";
 import { entityAiNavigationDiagnostics } from "./entity-ai-navigation-diagnostics.js";
+import { arenaLifecycleDiagnostics } from "./arena-lifecycle-diagnostics.js";
 import { analyzeRouteNavigationEnvironments } from "./route-navigation-environment-analysis.js";
 import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
@@ -266,6 +267,10 @@ export async function inspectDirectory(
     ...entityAiNavigationDiagnostics(
       runtimeAnalysis.entityAiStack,
       runtimeAnalysis.routeNavigationEnvironment,
+    ),
+    ...arenaLifecycleDiagnostics(
+      runtimeAnalysis.arenaLifecycle,
+      runtimeAnalysis.arenaCleanupSurfaces,
     ),
   );
 
