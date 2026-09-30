@@ -444,6 +444,7 @@ export function createReconnectGenerationResetExperiment(
       id: "old-connection-disconnected",
       predicateId: "player-disconnected",
       state: "present",
+      minimumProofAuthority: "live-runtime",
       scope: {
         ...baseScope,
         connectionGeneration: oldConnection,
@@ -453,6 +454,7 @@ export function createReconnectGenerationResetExperiment(
       id: "new-connection-reconnected",
       predicateId: "player-reconnected",
       state: "present",
+      minimumProofAuthority: "live-runtime",
       scope: {
         ...baseScope,
         connectionGeneration: newConnection,
@@ -553,6 +555,7 @@ export function createDeathDuringJoinExperiment(
       id: "death-observed-old-life",
       predicateId: "player-death-observed",
       state: "present",
+      minimumProofAuthority: "live-runtime",
       scope: {
         ...baseScope,
         lifeGeneration: oldLife,
@@ -562,6 +565,7 @@ export function createDeathDuringJoinExperiment(
       id: "respawn-observed-new-life",
       predicateId: "player-respawn-observed",
       state: "present",
+      minimumProofAuthority: "live-runtime",
       scope: {
         ...baseScope,
         lifeGeneration: newLife,
