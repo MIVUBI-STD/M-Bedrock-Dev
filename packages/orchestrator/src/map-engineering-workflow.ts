@@ -64,6 +64,8 @@ export interface MapEngineeringWorkflowProjection {
     chunkDynamicLeaseKeys: number;
     chunkCapacityUncheckedLeases: number;
     chunkShutdownOnlyCleanupRisk: number;
+    chunkWorldLoadReconciliationMissing: number;
+    chunkUnguardedDeferredWork: number;
     chunkResidencyObservabilityGaps: number;
   };
   nextActions: readonly string[];
@@ -405,6 +407,20 @@ export function buildMapEngineeringWorkflow(
     chunkShutdownOnlyCleanupRisk:
       source.gameplayWorld.chunks
         ?.shutdownOnlyCleanupRisk ?? 0,
+    chunkWorldLoadReconciliationMissing:
+      (
+        source.gameplayWorld.chunks
+          ?.tickingAreaAcquires ?? 0
+      ) > 0 &&
+      (
+        source.gameplayWorld.chunks
+          ?.worldLoadReconciliationPaths ?? 0
+      ) === 0
+        ? 1
+        : 0,
+    chunkUnguardedDeferredWork:
+      source.gameplayWorld.chunks
+        ?.unguardedDeferredChunkWork ?? 0,
     chunkResidencyObservabilityGaps:
       source.gameplayWorld.chunks
         ?.entityResidencyObservability === "complete"
