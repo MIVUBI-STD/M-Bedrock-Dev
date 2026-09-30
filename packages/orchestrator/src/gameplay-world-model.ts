@@ -187,9 +187,9 @@ export interface GameplayWorldModel {
     dropCleanupSurfaces: number;
     policy: {
       configured: boolean;
-      deathRewardOverlapContradictions: number;
+      deathRewardOverlapPolicyConflicts: number;
       deathRewardOverlapUnresolved: number;
-      pickupCurrencyConsumeContradictions: number;
+      pickupCurrencyConsumeCoverageGaps: number;
       pickupCurrencyPolicyMismatch: number;
       idempotencyCoverageGaps: number;
       staleDropCleanupCoverageGaps: number;
@@ -655,15 +655,15 @@ export function deriveGameplayWorldModel(
       policy: {
         configured:
           source.economyPolicy?.configured ?? false,
-        deathRewardOverlapContradictions:
+        deathRewardOverlapPolicyConflicts:
           source.economyPolicy
-            ?.deathRewardOverlapContradictions ?? 0,
+            ?.deathRewardOverlapPolicyConflicts ?? 0,
         deathRewardOverlapUnresolved:
           source.economyPolicy
             ?.deathRewardOverlapUnresolved ?? 0,
-        pickupCurrencyConsumeContradictions:
+        pickupCurrencyConsumeCoverageGaps:
           source.economyPolicy
-            ?.pickupCurrencyConsumeContradictions ?? 0,
+            ?.pickupCurrencyConsumeCoverageGaps ?? 0,
         pickupCurrencyPolicyMismatch:
           source.economyPolicy
             ?.pickupCurrencyPolicyMismatch ?? 0,
