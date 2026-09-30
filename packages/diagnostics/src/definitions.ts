@@ -11,6 +11,7 @@ export type DiagnosticDefinitionCategory =
   | "education"
   | "script"
   | "structure"
+  | "chunk"
   | "entity"
   | "combat"
   | "dialogue"
@@ -65,7 +66,8 @@ function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
   if (code === "TOPOLOGY_TRANSLATION_OUTLIER") return "topology";
   if (code.startsWith("EDUCATION_")) return "education";
   if (code.startsWith("SCRIPT_")) return "script";
-  if (code.startsWith("STRUCTURE_") || code === "CHUNK_LIFECYCLE_RUNTIME_RISK") return "structure";
+  if (code.startsWith("CHUNK_")) return "chunk";
+  if (code.startsWith("STRUCTURE_")) return "structure";
   if (code.startsWith("ENTITY_")) return "entity";
   if (code.startsWith("COMBAT_")) return "combat";
   if (code.startsWith("DIALOGUE_")) return "dialogue";
