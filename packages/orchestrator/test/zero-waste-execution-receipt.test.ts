@@ -81,8 +81,8 @@ const plan: ZeroWasteWorkflowPlan = {
   staleProofClaimIds: ["claim:b"],
   blockedProofClaimIds: [],
   proofActions: [
-    { claimId: "claim:a", action: "reuse", reasons: [] },
-    { claimId: "claim:b", action: "recompute", reasons: [] },
+    { claimId: "claim:a", action: "reuse", dependsOnClaimIds: [], reasons: [] },
+    { claimId: "claim:b", action: "recompute", dependsOnClaimIds: [], reasons: [] },
   ],
   reasons: [],
 };
