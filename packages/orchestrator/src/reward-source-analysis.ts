@@ -30,6 +30,7 @@ export interface ScriptRewardPathAssessment {
   scoreDebits: number;
   scoreWrites: number;
   itemConsumes: number;
+  idempotencyGuards: number;
 }
 
 export interface RewardSourceAnalysis {
@@ -45,6 +46,9 @@ export interface RewardSourceAnalysis {
   scoreboardCredits: number;
   scoreboardDebits: number;
   scoreboardWrites: number;
+  itemConsumes: number;
+  dropCleanupSurfaces: number;
+  rewardPathsWithoutIdempotency: number;
   deathRewardPaths: number;
   pickupCurrencyPaths: number;
   deathRewardSourceOverlapCandidates: number;
@@ -180,6 +184,16 @@ function pathAssessment(
       script,
       regionSet,
     );
+  const idempotencyGuards =
+    (
+      script.persistenceIdempotencyGuards ??
+      []
+    ).filter(
+      (guard) =>
+        regionSet.has(
+          guard.executionRegion,
+        ),
+    ).length;
 
   return {
     scriptId: script.identifier,
@@ -234,6 +248,7 @@ function pathAssessment(
         economy,
         "item-consume",
       ),
+    idempotencyGuards,
   };
 }
 
@@ -282,6 +297,19 @@ function scriptRewardPaths(
       script,
       root.trigger,
       root.region,
+    )
+  );
+}
+
+function isItemCleanupCommand(
+  command: string,
+): boolean {
+  const normalized =
+    normalizedCommand(command);
+  return (
+    normalized.startsWith("kill ") &&
+    /type\s*=\s*(?:minecraft:)?item\b/i.test(
+      normalized,
     )
   );
 }
@@ -464,6 +492,28 @@ export function analyzeRewardSources(
     );
   }
 
+  const itemConsumes =
+    countKind(
+      economy,
+      "item-consume",
+    );
+  const dropCleanupSurfaces =
+    itemConsumes +
+    [
+      ...scriptCommands,
+      ...functionCommands,
+    ].filter(isItemCleanupCommand)
+      .length;
+  const rewardRelevantPaths = [
+    ...deathRewardPaths,
+    ...pickupCurrencyPaths,
+  ];
+  const rewardPathsWithoutIdempotency =
+    rewardRelevantPaths.filter(
+      (path) =>
+        path.idempotencyGuards === 0,
+    ).length;
+
   return {
     sourceKinds:
       [...sourceKinds].sort(),
@@ -490,6 +540,9 @@ export function analyzeRewardSources(
     scoreboardCredits,
     scoreboardDebits,
     scoreboardWrites,
+    itemConsumes,
+    dropCleanupSurfaces,
+    rewardPathsWithoutIdempotency,
     deathRewardPaths:
       deathRewardPaths.length,
     pickupCurrencyPaths:
