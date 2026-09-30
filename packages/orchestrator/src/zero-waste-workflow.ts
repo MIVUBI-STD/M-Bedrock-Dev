@@ -87,6 +87,7 @@ export interface ZeroWasteProofAction {
 }
 
 export interface ZeroWasteWorkflowPlan {
+  transactionId: string;
   impactAuthority:
     | "post-patch"
     | "pre-patch-conservative";
@@ -396,6 +397,8 @@ export function prepareZeroWasteWorkflow(
     context.complete === false;
 
   return {
+    transactionId:
+      input.transaction.id,
     impactAuthority,
     status:
       blocked
