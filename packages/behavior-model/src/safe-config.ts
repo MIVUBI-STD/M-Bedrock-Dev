@@ -211,6 +211,7 @@ export function evaluateSafeConfig(
         const value = evaluate(
           part.expression,
           depth + 1,
+          activeEnvironment,
         );
         if (part.spread) {
           if (!Array.isArray(value)) {
@@ -331,6 +332,7 @@ export function evaluateSafeConfig(
         evaluate(
           node.right,
           depth + 1,
+          activeEnvironment,
         );
       if (typeof right !== "boolean") {
         throw new SafeConfigEvaluationError(
@@ -352,6 +354,7 @@ export function evaluateSafeConfig(
         evaluate(
           node.right,
           depth + 1,
+          activeEnvironment,
         );
 
       if (
