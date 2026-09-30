@@ -53,6 +53,32 @@ describe("chunk lifecycle analysis", () => {
     expect(result.pairedLeases).toBe(0);
   });
 
+  it("accepts a capacity check in a caller that reaches the acquire helper", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function recover(manager, options) {",
+        "  if (!manager.hasCapacity(options)) return;",
+        "  await acquire(manager, options);",
+        "}",
+        "async function acquire(manager, options) {",
+        "  await manager.createTickingArea('arena:recover', options);",
+        "  manager.removeTickingArea('arena:recover');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(result.pairedLeases).toBe(1);
+    expect(result.capacityUncheckedLeases).toBe(0);
+  });
+
   it("keeps runtime-dynamic lease identity unresolved", () => {
     const script = parseScriptFile(
       "main",
@@ -73,6 +99,32 @@ describe("chunk lifecycle analysis", () => {
 
     expect(result.dynamicLeaseKeys).toBe(1);
     expect(result.pairedLeases).toBe(0);
+  });
+
+  it("detects shutdown-only release even when shutdown calls a cleanup helper", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "async function recover(manager, options) {",
+        "  await manager.createTickingArea('arena:recover', options);",
+        "}",
+        "system.beforeEvents.shutdown.subscribe(() => {",
+        "  cleanup(manager);",
+        "});",
+        "function cleanup(manager) {",
+        "  manager.removeTickingArea('arena:recover');",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeChunkLifecycle([script]);
+
+    expect(result.shutdownOnlyCleanupRisk).toBe(1);
   });
 
   it("reports partial entity residency observability when only load is observed", () => {
