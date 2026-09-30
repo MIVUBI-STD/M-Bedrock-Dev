@@ -356,3 +356,5 @@ export * from "./economy-policy-diagnostics.js";
 export * from "./spatial-authority-diagnostics.js";
 
 export * from "./inventory-lifecycle-diagnostics.js";
+
+export * from "./entity-ai-navigation-diagnostics.js";
