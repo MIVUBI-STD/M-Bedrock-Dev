@@ -121,8 +121,31 @@ const completeEntityAiStack = {
     navigationPresent: true,
     movementGoalCandidatePresent: true,
     attackBehaviorPresent: true,
+    navigationCapabilities: [
+      "navigation:walk",
+    ],
     missingSurfaces: [],
     status: "targeted-stack-complete" as const,
+  }],
+};
+
+const compatibleRouteEnvironment = {
+  contracts: 1,
+  compatible: 1,
+  incompatible: 0,
+  stateDependent: 0,
+  unresolved: 0,
+  assessments: [{
+    contractId: "bridge-ground",
+    routeId: "bridge",
+    entityKey: "demo:zombie",
+    status: "compatible" as const,
+    states: [{
+      stateId: "base",
+      compatible: true,
+      missingCapabilities: [],
+    }],
+    reasons: ["compatible"],
   }],
 };
 
@@ -501,6 +524,8 @@ describe("gameplay intent runtime stage", () => {
       {
         dimension: "overworld",
         entityAiStack: completeEntityAiStack,
+        routeNavigationEnvironment:
+          compatibleRouteEnvironment,
       },
     );
 
@@ -655,6 +680,8 @@ describe("gameplay intent runtime stage", () => {
       {
         dimension: "overworld",
         entityAiStack: completeEntityAiStack,
+        routeNavigationEnvironment:
+          compatibleRouteEnvironment,
       },
     );
 
@@ -747,6 +774,8 @@ describe("gameplay intent runtime stage", () => {
       {
         dimension: "overworld",
         entityAiStack: completeEntityAiStack,
+        routeNavigationEnvironment:
+          compatibleRouteEnvironment,
       },
     );
 
