@@ -47,6 +47,4 @@ export * from "./live-client-lifecycle.js";
 
 export * from "./harness-capability-audit.js";
 
-export * from "./probe-plan.js";
 
-export * from "./finding-probe-generator.js";
