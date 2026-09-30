@@ -45,6 +45,7 @@ import type { RouteNavigationEnvironmentAnalysis } from "./route-navigation-envi
 import type { CombatLifecycleAnalysis } from "./combat-lifecycle-analysis.js";
 import type { CombatRuntimeTelemetryAnalysis } from "./combat-runtime-telemetry-analysis.js";
 import type { CombatPolicyAnalysis } from "./combat-policy-analysis.js";
+import type { ChunkLifecycleAnalysis } from "./chunk-lifecycle-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
@@ -105,6 +106,7 @@ export interface InspectDirectoryResult {
   combatLifecycle: CombatLifecycleAnalysis;
   combatRuntime: CombatRuntimeTelemetryAnalysis;
   combatPolicy: CombatPolicyAnalysis;
+  chunkLifecycle: ChunkLifecycleAnalysis;
   releaseIdentity: ReleaseIdentityAnalysis;
   gameplayWorld: GameplayWorldModel;
   structures: number;
