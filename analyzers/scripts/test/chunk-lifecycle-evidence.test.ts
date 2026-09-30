@@ -17,6 +17,7 @@ describe("chunk lifecycle evidence", () => {
           "  manager.hasCapacity(options);",
           "  manager.createTickingArea('lease-1', options);",
           "  manager.removeTickingArea('lease-1');",
+          "  if (area.isFullyLoaded) return;",
           "}",
         ].join("\n"),
         {
@@ -37,6 +38,7 @@ describe("chunk lifecycle evidence", () => {
         "ticking-area-acquire",
         "ticking-area-release",
         "ticking-area-capacity-check",
+        "ticking-area-readiness-state",
       ]),
     );
   });
