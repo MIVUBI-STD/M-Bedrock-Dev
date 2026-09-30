@@ -142,4 +142,19 @@ describe("safe config compiler", () => {
       ),
     ).toBe(6);
   });
+
+  it("rejects namespace re-exports explicitly", () => {
+    const result = compileScriptSafeConfig(
+      'export * as config from "./base.js";',
+      source,
+    );
+
+    expect(result.rejected).toEqual([
+      expect.objectContaining({
+        name: "config",
+        reason: "unsupported-expression",
+      }),
+    ]);
+  });
+
 });
