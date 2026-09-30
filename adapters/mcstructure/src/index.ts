@@ -6,3 +6,5 @@ export * from "./semantics.js";
 export * from "./types.js";
 export * from "./command-chain.js";
 export * from "./placement-transform.js";
+
+export * from "./footprint.js";

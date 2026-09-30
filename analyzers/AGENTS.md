@@ -36,5 +36,4 @@ commands     → command effects / coordinate syntax
 references   → semantic target resolution
 diagnostics  → findings derived from supported facts
 topology     → coordinate context / repeated spatial/state topology
-structures   → .mcstructure syntax normalization only; gameplay residue semantics stay with world-db
 ```

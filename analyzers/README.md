@@ -12,7 +12,6 @@ commands/      typed command effects
 references/    target resolution
 diagnostics/   diagnostic derivation
 topology/      coordinate/state/repeated-pattern analysis
-structures/    .mcstructure syntax normalization and footprint extraction
 ```
 
 Analyzers preserve source evidence and never directly mutate artifacts.
