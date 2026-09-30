@@ -36,6 +36,7 @@ describe("reward source analysis", () => {
       "main",
       [
         "world.afterEvents.entityDie.subscribe((event) => {",
+        "  if (event.deadEntity.typeId !== 'demo:zombie') return;",
         "  grantReward(event.deadEntity);",
         "});",
         "function grantReward(player) {",
@@ -60,12 +61,68 @@ describe("reward source analysis", () => {
     expect(
       result.deathRewardSourceOverlapCandidates,
     ).toBe(1);
+    expect(
+      result.deathRewardSourceOverlapUnresolved,
+    ).toBe(0);
     expect(result.sourceKinds).toEqual(
       expect.arrayContaining([
         "ENGINE_LOOT_TABLE",
         "SCRIPT_INVENTORY_GRANT",
       ]),
     );
+  });
+
+  it("keeps generic death reward overlap unresolved without entity binding", () => {
+    const entity = parseEntityDefinition(
+      {
+        "minecraft:entity": {
+          description: {
+            identifier: "demo:zombie",
+          },
+          components: {
+            "minecraft:loot": {
+              table:
+                "loot_tables/entities/zombie.json",
+            },
+          },
+        },
+      },
+      {
+        artifactId: "fixture",
+        relativePath:
+          "entities/zombie.json",
+      },
+    );
+
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  grantReward(event.deadEntity);",
+        "});",
+        "function grantReward(player) {",
+        "  const token = new ItemStack('minecraft:gold_nugget');",
+        "  player.getComponent('inventory').container.addItem(token);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeRewardSources(
+      [script],
+      [],
+      [entity],
+    );
+
+    expect(
+      result.deathRewardSourceOverlapCandidates,
+    ).toBe(0);
+    expect(
+      result.deathRewardSourceOverlapUnresolved,
+    ).toBe(1);
   });
 
   it("finds pickup-to-currency paths without assuming they are defects", () => {
