@@ -54,3 +54,5 @@ export * from "./work-session.js";
 export * from "./semantic-proof.js";
 
 export * from "./route-navigation-environment.js";
+
+export * from "./evidence-identity.js";
