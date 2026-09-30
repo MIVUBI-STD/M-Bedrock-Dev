@@ -12,6 +12,9 @@ import type {
 import type {
   SemanticAffectedPlan,
 } from "./semantic-affected-plan.js";
+import type {
+  RepositoryTaskPlan,
+} from "./repository-task-plan.js";
 
 export interface ContextCompilerBudget {
   maxSemanticNodes: number;
@@ -32,6 +35,7 @@ export interface ContextCompilerRequest {
   relevantInvariantIds?: readonly string[];
   relevantEvidenceIds?: readonly string[];
   worldModel?: GameplayWorldModel;
+  repositoryTaskPlan?: RepositoryTaskPlan;
   budget?: Partial<ContextCompilerBudget>;
 }
 
@@ -103,7 +107,7 @@ export interface CompiledContextPack {
     broadWrites: number;
     unresolvedScriptMutations: number;
     intentUnknowns: number;
-    domainSignals: {
+    domainSignals: Partial<{
       arenaLifecycle: number;
       spatialAuthority: number;
       inventory: number;
@@ -111,7 +115,13 @@ export interface CompiledContextPack {
       combat: number;
       chunks: number;
       economy: number;
-    };
+    }>;
+  };
+  executionScope?: {
+    status: RepositoryTaskPlan["status"];
+    affectedCapabilityIds: readonly string[];
+    selectedCapabilityIds: readonly string[];
+    unmatchedPaths: readonly string[];
   };
   budget: ContextCompilerBudget;
   truncation: {
@@ -854,6 +864,70 @@ export function compileContextPack(
               .terminalRewardResultCommitUnproven,
         };
 
+  const affectedCapabilities =
+    input.repositoryTaskPlan?.status === "planned"
+      ? new Set(
+          input.repositoryTaskPlan
+            .affected.affectedCapabilityIds,
+        )
+      : undefined;
+  const domainScope = {
+    arenaLifecycle:
+      affectedCapabilities?.has(
+        "domain.arena-lifecycle",
+      ) ?? false,
+    spatialAuthority:
+      affectedCapabilities?.has(
+        "domain.spatial-authority",
+      ) ?? false,
+    inventory:
+      affectedCapabilities?.has(
+        "domain.inventory",
+      ) ?? false,
+    entityAiNavigation:
+      (
+        affectedCapabilities?.has(
+          "domain.entity-ai",
+        ) ||
+        affectedCapabilities?.has(
+          "runtime.entity-ai",
+        )
+      ) ?? false,
+    combat:
+      affectedCapabilities?.has(
+        "domain.combat",
+      ) ?? false,
+    chunks:
+      (
+        affectedCapabilities?.has(
+          "domain.chunks",
+        ) ||
+        affectedCapabilities?.has(
+          "runtime.chunks",
+        )
+      ) ?? false,
+    economy:
+      affectedCapabilities?.has(
+        "domain.economy",
+      ) ?? false,
+  };
+  const hasScopedDomain =
+    Object.values(domainScope).some(Boolean);
+  const scopedDomainSignals =
+    domainSignals === undefined
+      ? undefined
+      : affectedCapabilities === undefined ||
+          !hasScopedDomain
+        ? domainSignals
+        : Object.fromEntries(
+            Object.entries(domainSignals)
+              .filter(([domain]) =>
+                domainScope[
+                  domain as keyof typeof domainScope
+                ]
+              ),
+          );
+
   const world = worldModel === undefined
     ? undefined
     : {
@@ -902,13 +976,37 @@ export function compileContextPack(
             .rejectedScriptMutations,
         intentUnknowns:
           worldModel.intent.unknowns.length,
-        domainSignals: domainSignals!,
+        domainSignals:
+          scopedDomainSignals!,
       };
+
+  const executionScope =
+    input.repositoryTaskPlan === undefined
+      ? undefined
+      : {
+          status:
+            input.repositoryTaskPlan.status,
+          affectedCapabilityIds: [
+            ...input.repositoryTaskPlan
+              .affected.affectedCapabilityIds,
+          ],
+          selectedCapabilityIds: [
+            ...input.repositoryTaskPlan
+              .execution.selectedCapabilityIds,
+          ],
+          unmatchedPaths: [
+            ...input.repositoryTaskPlan
+              .affected.unmatchedPaths,
+          ],
+        };
 
   return {
     schemaVersion: 1,
     goal: input.goal,
     ...(world === undefined ? {} : { world }),
+    ...(executionScope === undefined
+      ? {}
+      : { executionScope }),
     semantic: {
       nodes:
         semanticSelection.values.map(
