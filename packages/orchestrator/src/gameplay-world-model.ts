@@ -190,6 +190,7 @@ export interface GameplayWorldModel {
     pickupCurrencyWithoutConsumeCandidates: number;
     rewardPathsWithoutIdempotency: number;
     dropCleanupSurfaces: number;
+    worldDropRewardPathsWithoutCleanup: number;
     policy: {
       configured: boolean;
       deathRewardOverlapPolicyConflicts: number;
