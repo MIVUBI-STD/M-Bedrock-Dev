@@ -302,6 +302,22 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Routes observed revive transaction anomalies toward life-generation ownership, reviver eligibility, exclusive revive-owner, and death-terminal review. Proposal-only because telemetry identifies the violated transaction semantics but not one universally safe source mutation.",
     }, {
+      id: "economy-policy-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedDiagnosticCodes: [
+        "ECONOMY_POLICY_CONFLICT",
+        "ECONOMY_POLICY_COVERAGE_GAP",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes authored economy conflicts and coverage gaps toward reward-source arbitration, entitlement correlation, idempotency, pickup reconciliation, inventory-full handling, and stale-drop cleanup review. Proposal-only because these gameplay semantics do not identify one universally safe source mutation.",
+    }, {
       id: "chunk-lifecycle-remediation",
       version: "1",
       kind: "built-in-planner",
