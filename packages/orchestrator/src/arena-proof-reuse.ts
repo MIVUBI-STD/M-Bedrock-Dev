@@ -87,6 +87,73 @@ function layoutFingerprint(
   });
 }
 
+function arenaChunkScope(
+  result: InspectArtifactResult,
+): ReadonlySet<string> | undefined {
+  const layout =
+    result.arenaAnalysis.spatialLayout;
+  const plan =
+    result.arenaAnalysis.regionPlan;
+  if (!layout || !plan) {
+    return undefined;
+  }
+
+  const offsets = [
+    { x: 0, z: 0 },
+    ...layout.offsets.map((offset) => ({
+      x: offset.x,
+      z: offset.z,
+    })),
+  ];
+  const keys = new Set<string>();
+
+  for (const offset of offsets) {
+    for (const volume of plan.volumes) {
+      const minChunkX =
+        Math.floor(
+          (volume.min.x + offset.x) /
+            16,
+        );
+      const maxChunkX =
+        Math.floor(
+          (volume.max.x + offset.x) /
+            16,
+        );
+      const minChunkZ =
+        Math.floor(
+          (volume.min.z + offset.z) /
+            16,
+        );
+      const maxChunkZ =
+        Math.floor(
+          (volume.max.z + offset.z) /
+            16,
+        );
+
+      for (
+        let chunkX = minChunkX;
+        chunkX <= maxChunkX;
+        chunkX += 1
+      ) {
+        for (
+          let chunkZ = minChunkZ;
+          chunkZ <= maxChunkZ;
+          chunkZ += 1
+        ) {
+          keys.add(
+            "0:" +
+              chunkX +
+              ":" +
+              chunkZ,
+          );
+        }
+      }
+    }
+  }
+
+  return keys;
+}
+
 function completeWorldDbFingerprint(
   result: InspectArtifactResult,
 ):
@@ -126,21 +193,62 @@ function completeWorldDbFingerprint(
     };
   }
 
+  const scope =
+    arenaChunkScope(result);
+  if (!scope) {
+    return {
+      complete: false,
+      reason:
+        "Arena layout/region scope is unavailable for dependency-scoped world DB proof reuse.",
+    };
+  }
+
+  const observations =
+    scan.chunkContentObservations
+      .filter((item) =>
+        scope.has(
+          item.dimensionId +
+            ":" +
+            item.chunkX +
+            ":" +
+            item.chunkZ,
+        )
+      )
+      .map((item) => ({
+        chunkX: item.chunkX,
+        chunkZ: item.chunkZ,
+        dimensionId:
+          item.dimensionId,
+        kind: item.kind,
+        valueHash:
+          item.valueHash,
+        ...(item.subChunkIndex ===
+        undefined
+          ? {}
+          : {
+              subChunkIndex:
+                item.subChunkIndex,
+            }),
+      }))
+      .sort((a, b) =>
+        a.dimensionId -
+          b.dimensionId ||
+        a.chunkX - b.chunkX ||
+        a.chunkZ - b.chunkZ ||
+        a.kind.localeCompare(b.kind) ||
+        (a.subChunkIndex ?? -1) -
+          (b.subChunkIndex ?? -1) ||
+        a.valueHash.localeCompare(
+          b.valueHash,
+        )
+      );
+
   return {
     complete: true,
     fingerprint: hash({
-      observations:
-        scan.chunkContentObservations,
-      blockEntityRecords:
-        scan.blockEntityRecords,
-      pendingTickRecords:
-        scan.pendingTickRecords,
-      randomTickRecords:
-        scan.randomTickRecords,
-      finalizedStateRecords:
-        scan.finalizedStateRecords,
-      subChunkRecords:
-        scan.subChunkRecords,
+      arenaChunkScope:
+        [...scope].sort(),
+      observations,
     }),
   };
 }
@@ -209,13 +317,13 @@ function physicalAssessment(
         layer,
         status: "reusable",
         reason:
-          "Arena layout and complete hashed world DB dependencies are unchanged.",
+          "Arena layout and complete arena-scoped hashed world DB dependencies are unchanged.",
       }
     : {
         layer,
         status: "stale",
         reason:
-          "Hashed world DB dependency changed.",
+          "Arena-scoped hashed world DB dependency changed.",
       };
 }
 
