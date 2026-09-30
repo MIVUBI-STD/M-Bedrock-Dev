@@ -295,13 +295,8 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       deterministic: false,
       selectionMode: "proposal-only",
       repairClass: "implementation-repair",
-      supportedPredicateIds: [
-        "revive-anomaly-observed",
-        "revive-anomaly:self-revive",
-        "revive-anomaly:multiple-revivers",
-        "revive-anomaly:stale-revive",
-        "revive-anomaly:revive-after-death",
-        "revive-anomaly:invalid-reviver",
+      supportedDiagnosticCodes: [
+        "COMBAT_REVIVE_POLICY_VIOLATION",
       ],
       requiresExactSourceEvidence: false,
       rationale:
