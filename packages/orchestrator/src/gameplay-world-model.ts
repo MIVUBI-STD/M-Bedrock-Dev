@@ -146,6 +146,7 @@ export interface GameplayWorldModel {
     entityLoadObservers: number;
     entityRemoveObservers: number;
     readinessProbes: number;
+    tickingAreaReadinessStates: number;
     tickingAreaAcquires: number;
     tickingAreaReleases: number;
     pairedLeases: number;
@@ -547,6 +548,8 @@ export function deriveGameplayWorldModel(
         source.chunkLifecycle?.entityRemoveObservers ?? 0,
       readinessProbes:
         source.chunkLifecycle?.readinessProbes ?? 0,
+      tickingAreaReadinessStates:
+        source.chunkLifecycle?.tickingAreaReadinessStates ?? 0,
       tickingAreaAcquires:
         source.chunkLifecycle?.tickingAreaAcquires ?? 0,
       tickingAreaReleases:
