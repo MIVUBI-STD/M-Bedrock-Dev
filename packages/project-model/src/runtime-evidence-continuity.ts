@@ -21,6 +21,70 @@ export interface RuntimeEvidenceContinuityResult {
   reasons: readonly string[];
 }
 
+function ownerGenerationConflicts(
+  records: readonly RuntimeEvidenceRecord[],
+  ownerKey:
+    | "arenaId"
+    | "playerKey"
+    | "entityKey",
+  generationKeys: readonly (
+    | "arenaGeneration"
+    | "connectionGeneration"
+    | "lifeGeneration"
+    | "participationGeneration"
+    | "entityGeneration"
+  )[],
+): string[] {
+  const conflicts: string[] = [];
+  const byOwner = new Map<
+    string,
+    RuntimeEvidenceRecord[]
+  >();
+
+  for (const record of records) {
+    const owner =
+      record.scope?.[ownerKey];
+    if (owner === undefined) continue;
+    const bucket =
+      byOwner.get(String(owner)) ?? [];
+    bucket.push(record);
+    byOwner.set(String(owner), bucket);
+  }
+
+  for (const [owner, bucket] of byOwner) {
+    for (const generationKey of generationKeys) {
+      const values = new Set(
+        bucket
+          .map((record) =>
+            record.scope?.[
+              generationKey
+            ],
+          )
+          .filter(
+            (value) =>
+              value !== undefined,
+          )
+          .map(String),
+      );
+
+      if (values.size > 1) {
+        conflicts.push(
+          ownerKey +
+            "=" +
+            owner +
+            " mixes " +
+            generationKey +
+            " values: " +
+            [...values].sort().join(", ") +
+            ".",
+        );
+      }
+    }
+  }
+
+  return conflicts;
+}
+
 export function evaluateRuntimeEvidenceContinuity(
   records: readonly RuntimeEvidenceRecord[],
   contract: RuntimeEvidenceContinuityContract,
@@ -97,39 +161,83 @@ export function evaluateRuntimeEvidenceContinuity(
     };
   }
 
-  const continuityKeys = [
-    "arenaId",
-    "arenaGeneration",
-    "playerKey",
-    "connectionGeneration",
-    "lifeGeneration",
-    "participationGeneration",
-    "entityKey",
-    "entityGeneration",
-    "operationId",
-    "subsystemGeneration",
-    "bootGeneration",
-  ] as const;
+  const provenanceKeys = new Set(
+    accepted
+      .map((record) =>
+        record.provenanceKey,
+      )
+      .filter(
+        (value):
+          value is string =>
+          value !== undefined,
+      ),
+  );
 
-  const mixedScopeKeys = continuityKeys.filter((key) => {
-    const values = new Set(
-      accepted
-        .map((record) => record.scope?.[key])
-        .filter((value) => value !== undefined)
-        .map(String),
+  const conflicts = [
+    ...ownerGenerationConflicts(
+      accepted,
+      "arenaId",
+      ["arenaGeneration"],
+    ),
+    ...ownerGenerationConflicts(
+      accepted,
+      "playerKey",
+      [
+        "connectionGeneration",
+        "lifeGeneration",
+        "participationGeneration",
+      ],
+    ),
+    ...ownerGenerationConflicts(
+      accepted,
+      "entityKey",
+      ["entityGeneration"],
+    ),
+  ];
+
+  const bootGenerations = new Set(
+    accepted
+      .map((record) =>
+        record.scope?.bootGeneration,
+      )
+      .filter(
+        (value) =>
+          value !== undefined,
+      )
+      .map(String),
+  );
+
+  if (bootGenerations.size > 1) {
+    conflicts.push(
+      "Proof campaign mixes bootGeneration values: " +
+        [...bootGenerations]
+          .sort()
+          .join(", ") +
+        ".",
     );
-    return values.size > 1;
-  });
+  }
 
-  if (mixedScopeKeys.length > 0) {
+  if (
+    contract.provenanceKey === undefined &&
+    provenanceKeys.size > 1
+  ) {
+    conflicts.push(
+      "Proof campaign mixes provenance keys: " +
+        [...provenanceKeys]
+          .sort()
+          .join(", ") +
+        ".",
+    );
+  }
+
+  if (conflicts.length > 0) {
     return {
       status: "broken",
       acceptedRecords: accepted,
       rejectedRecords: rejected,
       reasons: [
-        "Runtime evidence campaign mixes generation/ownership identities: " +
-          mixedScopeKeys.join(", ") +
-          ".",
+        "Runtime evidence campaign mixes generation or provenance identity within the same owner.",
+        ...conflicts.sort(),
       ],
     };
   }
@@ -140,7 +248,7 @@ export function evaluateRuntimeEvidenceContinuity(
       acceptedRecords: accepted,
       rejectedRecords: rejected,
       reasons: [
-        "Runtime evidence campaign contains records from another profile, scope, provenance campaign, or insufficient confidence.",
+        "Runtime evidence campaign contains records from another profile, required scope, provenance campaign, or insufficient confidence.",
       ],
     };
   }
@@ -150,7 +258,7 @@ export function evaluateRuntimeEvidenceContinuity(
     acceptedRecords: accepted,
     rejectedRecords: [],
     reasons: [
-      "All runtime evidence records match the exact target profile, scope, and requested provenance continuity.",
+      "All runtime evidence records match the target profile and required scope, while each arena/player/entity owner keeps a stable generation identity.",
     ],
   };
 }
