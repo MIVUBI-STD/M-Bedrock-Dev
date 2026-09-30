@@ -38,6 +38,7 @@ import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
 import { indexAuthoredIntentSources } from "./inspect-authored-intent-source.js";
 import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js";
 import { analyzeEntityAiStacks } from "./entity-ai-stack-analysis.js";
+import { analyzeRouteNavigationEnvironments } from "./route-navigation-environment-analysis.js";
 import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
 export async function inspectDirectory(
@@ -131,6 +132,12 @@ export async function inspectDirectory(
       ),
     );
 
+  const routeNavigationEnvironment =
+    analyzeRouteNavigationEnvironments(
+      target.routeNavigationEnvironments ?? [],
+      entityAiStack,
+    );
+
   const gameplayIntentRuntime = analyzeGameplayIntentRuntime(
     gameplayIntent,
     runtimeEvidenceStage.runtimeStateObservations,
@@ -148,6 +155,7 @@ export async function inspectDirectory(
               target.staticExecutionDimension,
           }),
       entityAiStack,
+      routeNavigationEnvironment,
     },
   );
 
@@ -207,6 +215,7 @@ export async function inspectDirectory(
       parsedScripts,
       parsedEntities,
       entityAiStack,
+      routeNavigationEnvironment,
       parsedStructureModels,
     });
   const {
