@@ -766,8 +766,15 @@ function captureArenaBaseline(parameters) {
         {
           baselinePlayers:
             snapshot.assignedPlayers,
+          supportedSurfaceCount:
+            snapshot.supportedSurfaces?.length ?? 0,
+          unsupportedSurfaceCount:
+            snapshot.unsupportedSurfaces?.length ?? 0,
         },
-        "Baseline currently covers harness-observable session state; map-specific surfaces require adapter extensions."
+        (snapshot.unsupportedSurfaces?.length ?? 0) > 0
+          ? "Baseline capture is incomplete because the configured map adapter does not support: " +
+            snapshot.unsupportedSurfaces.join(", ")
+          : "All requested baseline surfaces are supported by the configured map adapter."
       )
     );
   }
@@ -854,17 +861,22 @@ function compareArenaBaseline(parameters) {
         comparison?.residueCount ?? -1
       );
 
+    const complete =
+      comparison?.complete === true;
     const baselineMatches =
       baseline !== undefined &&
+      complete &&
       comparison?.matches === true &&
       cycles === parameters.expectedCycles;
 
     records.push(
       evidence(
         "arena-baseline-snapshot-match",
-        baselineMatches
-          ? "present"
-          : "absent",
+        !complete
+          ? "unknown"
+          : baselineMatches
+            ? "present"
+            : "absent",
         arenaScope(
           target.arenaId,
           target.arenaGeneration
@@ -879,11 +891,15 @@ function compareArenaBaseline(parameters) {
           actualCycles:
             cycles,
         },
-        "Baseline comparison currently covers harness-observable player/session residue. Map-specific scoreboard/dynamic-property/entity surfaces require adapter extensions."
+        !complete
+          ? "Baseline comparison is incomplete because one or more requested surfaces are unsupported by the configured map adapter."
+          : "All requested baseline surfaces were compared by the configured map adapter."
       ),
       evidence(
         "arena-residue-count-sampled",
-        "present",
+        complete
+          ? "present"
+          : "unknown",
         arenaScope(
           target.arenaId,
           target.arenaGeneration
