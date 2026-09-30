@@ -362,3 +362,5 @@ export * from "./entity-ai-navigation-diagnostics.js";
 export * from "./arena-lifecycle-diagnostics.js";
 
 export * from "./repository-task-plan.js";
+
+export * from "./arena-golden-baseline.js";
