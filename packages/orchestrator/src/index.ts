@@ -338,3 +338,5 @@ export * from "./combat-runtime-telemetry-analysis.js";
 
 export * from "./combat-policy-analysis.js";
 export * from "./combat-policy-load.js";
+
+export * from "./chunk-lifecycle-analysis.js";
