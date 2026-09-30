@@ -1,6 +1,7 @@
 import { system, world } from "@minecraft/server";
 import { enqueueControlAction } from "./control.js";
 import { enqueueProbeRequest } from "./probe.js";
+import { announceCapabilities, executeRuntimeAction } from "./action.js";
 
 const PREFIX = "[M-BEDROCK-OBS]";
 const PROFILE_PREFIX = "[M-BEDROCK-PROFILE]";
@@ -218,6 +219,52 @@ world.afterEvents.scriptEventReceive.subscribe((event) => {
         tick: system.currentTick,
         error: String(error)
       })}`);
+    }
+    return;
+  }
+
+  if (event.id === "m-bedrock:capabilities") {
+    try {
+      announceCapabilities(
+        JSON.parse(event.message)
+      );
+    } catch (error) {
+      console.warn(
+        "[M-BEDROCK-CAPABILITIES]" +
+        JSON.stringify({
+          schemaVersion: 1,
+          requestId: "invalid",
+          runtimeTick:
+            system.currentTick,
+          registry: {
+            schemaVersion: 1,
+            actions: []
+          },
+          error: String(error)
+        })
+      );
+    }
+    return;
+  }
+
+  if (event.id === "m-bedrock:action") {
+    try {
+      executeRuntimeAction(
+        JSON.parse(event.message)
+      );
+    } catch (error) {
+      console.warn(
+        "[M-BEDROCK-ACTION]" +
+        JSON.stringify({
+          schemaVersion: 1,
+          requestId: "invalid",
+          actionId: "invalid",
+          runtimeTick:
+            system.currentTick,
+          ok: false,
+          error: String(error)
+        })
+      );
     }
     return;
   }

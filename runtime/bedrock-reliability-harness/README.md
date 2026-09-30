@@ -59,3 +59,16 @@ Server-state simulation is not client lifecycle proof.
 The development control actions named `disconnect` and `reconnect` only toggle harness/session tags on an already connected player. They are useful for deterministic state-machine testing, but they do **not** disconnect a Minecraft client from the server or prove network reconnect behavior.
 
 Any orchestration built on these controls must declare `proofAuthority: "server-simulated"`. Only an adapter that controls independent real Minecraft client processes/connections may declare `proofAuthority: "live-runtime"`.
+
+
+## Runtime Lab action protocol
+
+The harness now supports the Runtime Lab capability/action transport:
+
+- `m-bedrock:capabilities` announces only action capabilities implemented by this harness;
+- `m-bedrock:action` executes one capability-validated action request and emits `[M-BEDROCK-ACTION]` evidence;
+- existing `m-bedrock:probe`, `m-bedrock:capture`, and legacy `m-bedrock:control` remain supported.
+
+The current built-in action provider covers multi-arena stress fixtures, repeated-cycle cleanup validation, and generation-scoped global-state lease races.
+
+Server-simulated disconnect/session controls remain fixture evidence only. They do not establish real client/network lifecycle proof.
