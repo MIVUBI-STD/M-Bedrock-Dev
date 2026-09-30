@@ -242,4 +242,35 @@ describe("safe-config project linker", () => {
     ]);
   });
 
+
+  it("materializes only value exports in namespace objects", () => {
+    const project = linkScriptSafeConfigProject([
+      {
+        path: "scripts/base.ts",
+        source: source("scripts/base.ts"),
+        text: `
+          export const COUNT = 5;
+          export function make(value) { return value + 1; }
+        `,
+      },
+      {
+        path: "scripts/config.ts",
+        source: source("scripts/config.ts"),
+        text: `
+          import * as base from "./base.js";
+          export const VALUE = base.COUNT;
+        `,
+      },
+    ]);
+
+    expect(project.diagnostics).toEqual([]);
+    expect(
+      evaluateScriptSafeConfigExport(
+        project,
+        "scripts/config.ts",
+        "VALUE",
+      ),
+    ).toBe(5);
+  });
+
 });
