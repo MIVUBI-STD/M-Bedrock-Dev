@@ -14,6 +14,7 @@ export interface ChunkLeaseAssessment {
     | "acquire-without-release"
     | "release-without-acquire"
     | "release-unreachable"
+    | "cleanup-order-unproven"
     | "dynamic-key"
     | "capacity-unchecked"
     | "readiness-unverified";
@@ -33,6 +34,7 @@ export interface ChunkLifecycleAnalysis {
   acquireWithoutRelease: number;
   releaseWithoutAcquire: number;
   releaseUnreachable: number;
+  cleanupOrderUnproven: number;
   dynamicLeaseKeys: number;
   capacityUncheckedLeases: number;
   readinessUnverifiedLeases: number;
@@ -112,7 +114,6 @@ function commonCallerCanReachBoth(
 
 function releaseReachableForAcquire(
   graph: ReadonlyMap<string, ReadonlySet<string>>,
-  knownRegions: readonly string[],
   acquireRegion: string,
   releaseRegion: string,
 ): boolean {
@@ -120,12 +121,6 @@ function releaseReachableForAcquire(
     acquireRegion === releaseRegion ||
     regionCanReach(
       graph,
-      acquireRegion,
-      releaseRegion,
-    ) ||
-    commonCallerCanReachBoth(
-      graph,
-      knownRegions,
       acquireRegion,
       releaseRegion,
     )
@@ -220,6 +215,17 @@ function analyzeScriptLeases(
           keyReleases.some((release) =>
             releaseReachableForAcquire(
               graph,
+              acquire.executionRegion,
+              release.executionRegion,
+            ),
+          ),
+        );
+      const hasSharedCleanupOwner =
+        !hasReachableRelease &&
+        keyAcquires.some((acquire) =>
+          keyReleases.some((release) =>
+            commonCallerCanReachBoth(
+              graph,
               knownRegions,
               acquire.executionRegion,
               release.executionRegion,
@@ -240,6 +246,13 @@ function analyzeScriptLeases(
         keyReleases.length > 0
       ) {
         status = "release-without-acquire";
+      } else if (
+        keyAcquires.length > 0 &&
+        keyReleases.length > 0 &&
+        !hasReachableRelease &&
+        hasSharedCleanupOwner
+      ) {
+        status = "cleanup-order-unproven";
       } else if (
         keyAcquires.length > 0 &&
         keyReleases.length > 0 &&
@@ -533,6 +546,11 @@ export function analyzeChunkLifecycle(
       (item) =>
         item.status ===
         "release-unreachable",
+    ).length,
+    cleanupOrderUnproven: leases.filter(
+      (item) =>
+        item.status ===
+        "cleanup-order-unproven",
     ).length,
     dynamicLeaseKeys: leases.filter(
       (item) =>
