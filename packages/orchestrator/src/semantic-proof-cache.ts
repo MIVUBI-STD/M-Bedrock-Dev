@@ -5,11 +5,13 @@ import type {
   SemanticNode,
 } from "../../graph/src/index.js";
 import type {
+  RuntimeEvidenceRecord,
   RuntimeScope,
   SemanticProofClaim,
   SemanticProofKind,
 } from "../../project-model/src/index.js";
 import {
+  evaluateRuntimeEvidenceContinuity,
   runtimeScopeKey,
 } from "../../project-model/src/index.js";
 
@@ -337,6 +339,7 @@ export function assessSemanticProofReuse(
     targetProfileFingerprint?: string;
     runtimeScope?: RuntimeScope;
     staleEvidenceIds?: readonly string[];
+    runtimeEvidenceRecords?: readonly RuntimeEvidenceRecord[];
   },
 ): SemanticProofReuseResult {
   if (
@@ -454,6 +457,44 @@ export function assessSemanticProofReuse(
         "Runtime scope changed since this proof was recorded.",
       ],
     };
+  }
+
+  if (
+    claim.kind === "runtime" &&
+    input.runtimeScope !== undefined &&
+    input.runtimeEvidenceRecords !== undefined
+  ) {
+    const continuity =
+      evaluateRuntimeEvidenceContinuity(
+        input.runtimeEvidenceRecords,
+        {
+          targetProfileFingerprint:
+            input.targetProfileFingerprint ?? "",
+          scope: input.runtimeScope,
+        },
+      );
+
+    if (continuity.status === "broken") {
+      return {
+        status: "stale",
+        claimId: claim.claimId,
+        reasons: [
+          "Runtime evidence continuity is broken for this proof scope.",
+          ...continuity.reasons,
+        ],
+      };
+    }
+
+    if (continuity.status === "unknown") {
+      return {
+        status: "blocked",
+        claimId: claim.claimId,
+        reasons: [
+          "Runtime evidence continuity cannot be established for this proof scope.",
+          ...continuity.reasons,
+        ],
+      };
+    }
   }
 
   let currentBasisFingerprint:
