@@ -1,6 +1,7 @@
 import type {
   DiagnosticFinding,
 } from "../../diagnostics/src/index.js";
+import { deriveArenaRuntimeAdapterRequirements } from "./arena-runtime-adapter-requirements.js";
 import type {
   InspectArtifactResult,
 } from "./inspect-artifact.js";
@@ -113,6 +114,9 @@ export interface ArenaEngineeringProjection {
       reasons: readonly string[];
     }[];
   };
+  runtimeAdapter: ReturnType<
+    typeof deriveArenaRuntimeAdapterRequirements
+  >;
   repairLocalization: {
     localized: number;
     unresolved: number;
@@ -192,6 +196,10 @@ export function buildArenaEngineeringProjection(
   source: InspectArtifactResult,
 ): ArenaEngineeringProjection {
   const arena = source.arenaAnalysis;
+  const runtimeAdapter =
+    deriveArenaRuntimeAdapterRequirements(
+      source,
+    );
   const capacity = arena.capacity;
   const stress = arena.stressPlan;
   const layout = arena.spatialLayout;
@@ -540,6 +548,7 @@ export function buildArenaEngineeringProjection(
                 "Arena stress plan has not been derived.",
               ],
           },
+    runtimeAdapter,
     repairBridge: {
       deterministicRepairs:
         arena.repairBridge
