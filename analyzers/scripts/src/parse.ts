@@ -63,6 +63,10 @@ import { deriveScriptChunkLifecycleEvidence } from "./chunk-lifecycle-evidence.j
 import { deriveScriptEconomyEvidence } from "./economy-evidence.js";
 import { deriveScriptInventoryLifecycleEvidence } from "./inventory-lifecycle-evidence.js";
 import { deriveScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
+import { derivePersistentDataLifecycleEvidence } from "./persistent-data-lifecycle.js";
+import { inferPersistentStateScopes } from "./persistent-state-scope.js";
+import { deriveTerminalRaceEvidence } from "./terminal-race-evidence.js";
+import { deriveScriptTerminalLifecycleGraph } from "./terminal-lifecycle-graph.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -1738,6 +1742,21 @@ export function parseScriptFile(
       text,
       source,
     );
+  const persistentDataLifecycleEvidence =
+    derivePersistentDataLifecycleEvidence(
+      text,
+      source,
+    );
+  const terminalRaceEvidence =
+    deriveTerminalRaceEvidence(
+      text,
+      source,
+    );
+  const terminalLifecycleGraph =
+    deriveScriptTerminalLifecycleGraph(
+      text,
+      source,
+    );
   const topLevelFunctionNames = new Set(
     file.statements
       .filter(ts.isFunctionDeclaration)
@@ -2554,6 +2573,17 @@ export function parseScriptFile(
       ...inventoryLifecycleEvidence,
     ],
     globalLeaseEvidence: [...globalLeaseEvidence],
+    persistentDataLifecycleEvidence: [
+      ...persistentDataLifecycleEvidence,
+    ],
+    persistentStateScopes:
+      inferPersistentStateScopes(
+        dynamicProperties,
+      ),
+    terminalRaceEvidence: [
+      ...terminalRaceEvidence,
+    ],
+    terminalLifecycleGraph,
     spatialMutationRejected: [...spatialMutations.rejected],
     capabilities,
   };

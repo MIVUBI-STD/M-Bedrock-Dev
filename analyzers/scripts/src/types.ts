@@ -4,6 +4,10 @@ import type { ScriptCombatLifecycleEvidence } from "./combat-lifecycle-evidence.
 import type { ScriptInventoryLifecycleEvidence } from "./inventory-lifecycle-evidence.js";
 import type { ScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
 import type { ScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
+import type { PersistentDataLifecycleEvidence } from "./persistent-data-lifecycle.js";
+import type { PersistentStateScopeEvidence } from "./persistent-state-scope.js";
+import type { ScriptTerminalRaceEvidence } from "./terminal-race-evidence.js";
+import type { ScriptLifecycleGraph } from "./terminal-lifecycle-graph.js";
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "./spatial-mutation-evidence.js";
 import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigFunction, ScriptSafeConfigImport, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
 import type {
@@ -460,6 +464,10 @@ export interface ParsedScriptFile {
   economyEvidence?: ScriptEconomyEvidence[];
   inventoryLifecycleEvidence?: ScriptInventoryLifecycleEvidence[];
   globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
+  persistentDataLifecycleEvidence?: PersistentDataLifecycleEvidence[];
+  persistentStateScopes?: PersistentStateScopeEvidence[];
+  terminalRaceEvidence?: ScriptTerminalRaceEvidence[];
+  terminalLifecycleGraph?: ScriptLifecycleGraph;
   repairTransformHints?: RepairSourceTransformHint[];
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
