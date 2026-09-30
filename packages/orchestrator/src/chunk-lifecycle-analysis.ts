@@ -46,6 +46,47 @@ function uniqueSorted(values: readonly string[]): string[] {
   return [...new Set(values)].sort();
 }
 
+function callGraphFor(
+  script: ParsedScriptFile,
+): Map<string, Set<string>> {
+  const graph = new Map<string, Set<string>>();
+  for (const call of script.localFunctionCalls) {
+    const next =
+      graph.get(call.callerRegion) ??
+      new Set<string>();
+    next.add(call.targetRegion);
+    graph.set(call.callerRegion, next);
+  }
+  return graph;
+}
+
+function reachableRegions(
+  graph: ReadonlyMap<string, ReadonlySet<string>>,
+  root: string,
+): Set<string> {
+  const seen = new Set<string>([root]);
+  const queue = [root];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const next of graph.get(current) ?? []) {
+      if (seen.has(next)) continue;
+      seen.add(next);
+      queue.push(next);
+    }
+  }
+
+  return seen;
+}
+
+function regionCanReach(
+  graph: ReadonlyMap<string, ReadonlySet<string>>,
+  from: string,
+  to: string,
+): boolean {
+  return reachableRegions(graph, from).has(to);
+}
+
 function analyzeScriptLeases(
   script: ParsedScriptFile,
 ): ChunkLeaseAssessment[] {
@@ -60,6 +101,7 @@ function analyzeScriptLeases(
     (item) =>
       item.kind === "ticking-area-capacity-check",
   );
+  const graph = callGraphFor(script);
 
   const keys = new Set<string | undefined>([
     ...acquires.map((item) => item.leaseKey),
@@ -74,7 +116,21 @@ function analyzeScriptLeases(
       const keyReleases = releases.filter(
         (item) => item.leaseKey === leaseKey,
       );
-      const hasCapacity = capacity.length > 0;
+      const relevantCapacity = capacity.filter(
+        (check) =>
+          keyAcquires.some(
+            (acquire) =>
+              check.executionRegion ===
+                acquire.executionRegion ||
+              regionCanReach(
+                graph,
+                check.executionRegion,
+                acquire.executionRegion,
+              ),
+          ),
+      );
+      const hasCapacity =
+        relevantCapacity.length > 0;
 
       let status: ChunkLeaseAssessment["status"];
       if (leaseKey === undefined) {
@@ -115,7 +171,7 @@ function analyzeScriptLeases(
           ),
         ),
         capacityCheckRegions: uniqueSorted(
-          capacity.map(
+          relevantCapacity.map(
             (item) => item.executionRegion,
           ),
         ),
@@ -185,23 +241,53 @@ export function analyzeChunkLifecycle(
       "ticking-area-capacity-check",
   ).length;
 
-  const shutdownRegions = new Set(
-    all
-      .filter(
-        (item) =>
-          item.kind ===
-          "shutdown-subscription",
-      )
-      .map((item) => item.executionRegion),
+  const releasesByScript = scripts.flatMap(
+    (script) => {
+      const evidence = evidenceFor(script);
+      const graph = callGraphFor(script);
+      const shutdownRoots = evidence
+        .filter(
+          (item) =>
+            item.kind ===
+            "shutdown-subscription",
+        )
+        .map((item) => item.executionRegion);
+      const shutdownReachable =
+        new Set(
+          shutdownRoots.flatMap(
+            (root) =>
+              [
+                ...reachableRegions(
+                  graph,
+                  root,
+                ),
+              ],
+          ),
+        );
+
+      return evidence
+        .filter(
+          (item) =>
+            item.kind ===
+            "ticking-area-release",
+        )
+        .map((release) => ({
+          release,
+          shutdownReachable:
+            shutdownReachable.has(
+              release.executionRegion,
+            ),
+        }));
+    },
   );
-  const nonShutdownRelease = all.some(
-    (item) =>
-      item.kind ===
-        "ticking-area-release" &&
-      !shutdownRegions.has(
-        item.executionRegion,
-      ),
-  );
+  const anyShutdownRelease =
+    releasesByScript.some(
+      (item) => item.shutdownReachable,
+    );
+  const anyNonShutdownRelease =
+    releasesByScript.some(
+      (item) => !item.shutdownReachable,
+    );
 
   const entityResidencyObservability =
     entityLoadObservers > 0 &&
@@ -247,7 +333,8 @@ export function analyzeChunkLifecycle(
       tickingAreaAcquires > 0 &&
       tickingAreaReleases > 0 &&
       shutdownObservers > 0 &&
-      !nonShutdownRelease
+      anyShutdownRelease &&
+      !anyNonShutdownRelease
         ? tickingAreaAcquires
         : 0,
     entityResidencyObservability,
