@@ -63,6 +63,11 @@ export const MAP_ADAPTER = {
   proofAuthority:
     "server-simulated",
 
+  supportedBaselineSurfaces: [
+    "arena-membership",
+    "tags",
+  ],
+
   findPlayer,
 
   playersInArena,
@@ -187,11 +192,29 @@ export const MAP_ADAPTER = {
     arenaGeneration,
     compareSurfaces
   ) {
+    const supported =
+      new Set(
+        this.supportedBaselineSurfaces
+      );
+    const requested = [
+      ...new Set(compareSurfaces),
+    ].sort();
+
     return {
       arenaId,
       arenaGeneration,
       compareSurfaces:
-        [...compareSurfaces],
+        requested,
+      supportedSurfaces:
+        requested.filter(
+          (surface) =>
+            supported.has(surface)
+        ),
+      unsupportedSurfaces:
+        requested.filter(
+          (surface) =>
+            !supported.has(surface)
+        ),
       assignedPlayers:
         playersInArena(arenaId)
           .length,
@@ -228,11 +251,18 @@ export const MAP_ADAPTER = {
       }
     }
 
+    const unsupportedSurfaces =
+      baseline.unsupportedSurfaces ?? [];
+
     return {
       matches:
+        unsupportedSurfaces.length === 0 &&
         players.length ===
           baseline.assignedPlayers &&
         residueCount === 0,
+      complete:
+        unsupportedSurfaces.length === 0,
+      unsupportedSurfaces,
       actualPlayers:
         players.length,
       residueCount,
