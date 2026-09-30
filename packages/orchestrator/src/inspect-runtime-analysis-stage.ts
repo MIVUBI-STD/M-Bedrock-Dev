@@ -21,6 +21,9 @@ import { analyzeScriptCommandMutationTransactions } from "./script-command-trans
 import { extractArenaConcurrencyCapacity } from "./arena-capacity-extraction.js";
 import { arenaCapacityDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { analyzeScriptSafeConfig } from "./script-safe-config-analysis.js";
+import {
+  deriveCrossFileCallEdges,
+} from "../../../analyzers/scripts/src/index.js";
 import { reconcileArenaLayouts } from "./arena-layout-reconciliation.js";
 import { analyzeArenaLifecycleConvergence } from "./arena-lifecycle-analysis.js";
 import { analyzeArenaCleanupSurfaces } from "./arena-cleanup-surface-analysis.js";
@@ -180,9 +183,25 @@ export function analyzeInspectionRuntimeState(
 
   const scriptSafeConfig =
     analyzeScriptSafeConfig(parsedScriptModels);
+
+  const crossFileCalls =
+    deriveCrossFileCallEdges(
+      input.parsedScripts.flatMap((item) =>
+        item.text === undefined
+          ? []
+          : [{
+              path:
+                item.node.source.relativePath,
+              text: item.text,
+              source: item.node.source,
+            }],
+      ),
+    );
+
   const arenaLifecycle =
     analyzeArenaLifecycleConvergence(
       parsedScriptModels,
+      crossFileCalls,
     );
   const arenaCleanupSurfaces =
     analyzeArenaCleanupSurfaces(
