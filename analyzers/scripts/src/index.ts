@@ -36,3 +36,5 @@ export * from "./terminal-lifecycle-graph.js";
 
 export * from "./terminal-lifecycle-project.js";
 export * from "./persistent-state-lifetime.js";
+
+export * from "./terminal-release-proof.js";
