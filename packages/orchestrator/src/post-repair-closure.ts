@@ -220,6 +220,19 @@ export function createPostRepairClosureReceipt(
       );
     }
 
+    if (
+      evidence.zeroWaste
+        .dependencyViolations
+        .length > 0 ||
+      evidence.zeroWaste
+        .executionViolations
+        .length > 0
+    ) {
+      throw new Error(
+        "Zero-waste execution receipt contains unresolved execution violations.",
+      );
+    }
+
     zeroWasteExecution = {
       transactionId:
         evidence.zeroWaste.transactionId,
