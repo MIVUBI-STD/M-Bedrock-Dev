@@ -378,3 +378,10 @@ export * from "./release-identity-evidence.js";
 export * from "./zero-waste-execution-receipt.js";
 
 export * from "./persistence-source-analysis.js";
+export * from "./arena-semantic-voxel-divergence.js";
+export * from "./ticking-area-consolidation.js";
+export * from "./world-release-state.js";
+export * from "./pending-world-operation-analysis.js";
+export * from "./structure-transition-residue.js";
+export * from "./multiplayer-static-risk-analysis.js";
+export * from "./arena-last-mile-audit.js";
