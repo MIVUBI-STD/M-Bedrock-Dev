@@ -366,3 +366,5 @@ export * from "./repository-task-plan.js";
 export * from "./arena-golden-baseline.js";
 
 export * from "./arena-runtime-adapter-requirements.js";
+
+export * from "./arena-runtime-adapter-scaffold.js";
