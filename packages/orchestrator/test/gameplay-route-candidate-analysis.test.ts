@@ -195,6 +195,7 @@ describe("gameplay route candidate analysis", () => {
       "route-context",
       "target-assignment",
       "entity-ai-stack",
+      "navigation-environment",
       "chunk-availability",
       "route-reachability",
       "navigation-target",
