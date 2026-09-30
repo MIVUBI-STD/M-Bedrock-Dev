@@ -462,12 +462,6 @@ function assessProject(
       scripts.map((script) => ({
         fileId:
           script.source.relativePath,
-        graph:
-          script.terminalLifecycleGraph ??
-          {
-            transitions: [],
-            states: [],
-          },
         localFunctionCalls:
           script.localFunctionCalls,
       })),

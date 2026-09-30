@@ -8,7 +8,6 @@ import type { PersistentDataLifecycleEvidence } from "./persistent-data-lifecycl
 import type { PersistentStateScopeEvidence } from "./persistent-state-scope.js";
 import type { PersistentStateLifetimeEvidence } from "./persistent-state-lifetime.js";
 import type { ScriptTerminalRaceEvidence } from "./terminal-race-evidence.js";
-import type { ScriptLifecycleGraph } from "./terminal-lifecycle-graph.js";
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "./spatial-mutation-evidence.js";
 import type { ScriptSafeConfigBinding, ScriptSafeConfigExport, ScriptSafeConfigFunction, ScriptSafeConfigImport, ScriptSafeConfigRejection } from "./safe-config-compiler.js";
 import type {
@@ -470,7 +469,6 @@ export interface ParsedScriptFile {
   persistentStateScopes?: PersistentStateScopeEvidence[];
   persistentStateLifetimes?: PersistentStateLifetimeEvidence[];
   terminalRaceEvidence?: ScriptTerminalRaceEvidence[];
-  terminalLifecycleGraph?: ScriptLifecycleGraph;
   repairTransformHints?: RepairSourceTransformHint[];
   arenaAuthorityEvidence?: ScriptArenaAuthorityEvidence[];
   arenaAuthorityPaths?: ScriptArenaAuthorityPath[];
