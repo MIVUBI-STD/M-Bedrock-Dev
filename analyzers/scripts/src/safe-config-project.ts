@@ -788,6 +788,43 @@ export function linkScriptSafeConfigProject(
     new Set(
       compiled.keys(),
     );
+
+  for (
+    const [modulePath, unit] of
+      compiled
+  ) {
+    for (
+      const reExport of
+        unit.reExports
+    ) {
+      const targetPath =
+        resolveRelativeModule(
+          modulePath,
+          reExport.module,
+          knownPaths,
+        );
+      if (!targetPath) {
+        diagnostics.push({
+          kind: "missing-module",
+          modulePath,
+          ...(reExport.exportedName ===
+          undefined
+            ? {}
+            : {
+                symbol:
+                  reExport.exportedName,
+              }),
+          detail:
+            "Unable to resolve " +
+            reExport.module +
+            " from " +
+            modulePath +
+            ".",
+        });
+      }
+    }
+  }
+
   const bindings:
     Record<
       string,
@@ -1073,6 +1110,28 @@ export function linkScriptSafeConfigProject(
     }
   }
 
+  const uniqueDiagnostics =
+    new Map<
+      string,
+      ScriptSafeConfigProjectDiagnostic
+    >();
+
+  for (
+    const diagnostic of
+      diagnostics
+  ) {
+    const key = [
+      diagnostic.kind,
+      diagnostic.modulePath,
+      diagnostic.symbol ?? "",
+      diagnostic.detail,
+    ].join("|");
+    uniqueDiagnostics.set(
+      key,
+      diagnostic,
+    );
+  }
+
   return {
     environment: {
       bindings,
@@ -1081,7 +1140,9 @@ export function linkScriptSafeConfigProject(
     exports:
       projectExports,
     diagnostics:
-      diagnostics.sort(
+      [
+        ...uniqueDiagnostics.values(),
+      ].sort(
         (a, b) =>
           a.modulePath.localeCompare(
             b.modulePath,
@@ -1092,6 +1153,9 @@ export function linkScriptSafeConfigProject(
             ) ||
           a.kind.localeCompare(
             b.kind,
+          ) ||
+          a.detail.localeCompare(
+            b.detail,
           ),
       ),
   };
