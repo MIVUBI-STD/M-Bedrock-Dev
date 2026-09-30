@@ -6,6 +6,7 @@ export type DiagnosticDefinitionCategory =
   | "command"
   | "state"
   | "spatial-authority"
+  | "inventory"
   | "world-state"
   | "topology"
   | "arena"
@@ -65,6 +66,7 @@ function categoryFor(code: DiagnosticCode): DiagnosticDefinitionCategory {
   if (code === "UNKNOWN_COMMAND_EFFECT") return "command";
   if (code === "SUSPICIOUS_REGION_MUTATION" || code === "CROSS_SCOPE_STATE_RISK") return "state";
   if (code.startsWith("SPATIAL_AUTHORITY_")) return "spatial-authority";
+  if (code.startsWith("INVENTORY_")) return "inventory";
   if (code.startsWith("WORLDSTATE_")) return "world-state";
   if (code === "TOPOLOGY_TRANSLATION_OUTLIER") return "topology";
   if (code.startsWith("EDUCATION_")) return "education";
