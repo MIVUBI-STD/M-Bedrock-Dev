@@ -1,6 +1,7 @@
 import type {
   DiagnosticExecutionContext,
   RuntimeEvidenceRecord,
+  RuntimeEvidenceProofAuthority,
   RuntimeScope,
 } from "../../project-model/src/index.js";
 
@@ -60,6 +61,7 @@ export interface RuntimeExperimentEvidenceRequirement {
   state: "present" | "absent";
   armIds?: readonly string[];
   scope?: RuntimeScope;
+  minimumProofAuthority?: RuntimeEvidenceProofAuthority;
   measurements?: Readonly<
     Record<string, RuntimeExperimentMeasurementRequirement>
   >;
