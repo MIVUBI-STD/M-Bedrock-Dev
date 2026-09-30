@@ -7,6 +7,7 @@ import {
 } from "../src/zero-waste-execution-receipt.js";
 
 const plan: ZeroWasteWorkflowPlan = {
+  transactionId: "tx",
   impactAuthority: "post-patch",
   status: "ready",
   affected: {
