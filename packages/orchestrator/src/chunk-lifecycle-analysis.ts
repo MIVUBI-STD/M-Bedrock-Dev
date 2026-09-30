@@ -23,6 +23,7 @@ export interface ChunkLifecycleAnalysis {
   entityRemoveObservers: number;
   shutdownObservers: number;
   readinessProbes: number;
+  tickingAreaReadinessStates: number;
   tickingAreaAcquires: number;
   tickingAreaReleases: number;
   capacityChecks: number;
@@ -304,6 +305,11 @@ export function analyzeChunkLifecycle(
       item.kind ===
       "chunk-readiness-probe",
   ).length;
+  const tickingAreaReadinessStates = all.filter(
+    (item) =>
+      item.kind ===
+      "ticking-area-readiness-state",
+  ).length;
   const tickingAreaAcquires = all.filter(
     (item) =>
       item.kind ===
@@ -402,6 +408,7 @@ export function analyzeChunkLifecycle(
     entityRemoveObservers,
     shutdownObservers,
     readinessProbes,
+    tickingAreaReadinessStates,
     tickingAreaAcquires,
     tickingAreaReleases,
     capacityChecks,
