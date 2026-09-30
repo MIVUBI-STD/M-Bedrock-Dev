@@ -337,6 +337,24 @@ export interface InspectDirectoryResult {
     embeddedCommandBlocks: number;
     unknownEmbeddedCommandEffects: number;
     queuedTickPositions: number;
+    structureTransitions: number;
+    analyzedStructureTransitions: number;
+    incompleteStructureTransitions: number;
+    preservedByVoidCells: number;
+    explicitlyClearedTransitionCells: number;
+    replacedTransitionCells: number;
+    structureTransitionResidue: Array<{
+      functionId: string;
+      previousTarget: string;
+      nextTarget: string;
+      previousLine?: number;
+      nextLine?: number;
+      status: "analyzed" | "incomplete";
+      preservedByVoid: number;
+      explicitlyCleared: number;
+      replaced: number;
+      reasons: readonly string[];
+    }>;
     educationSpecialtyBlocks: {
       allow: number;
       deny: number;
