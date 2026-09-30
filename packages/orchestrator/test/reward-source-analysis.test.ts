@@ -125,6 +125,39 @@ describe("reward source analysis", () => {
     ).toBe(1);
   });
 
+  it("does not let unrelated global cleanup satisfy a world-drop reward path", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "world.afterEvents.entityDie.subscribe((event) => {",
+        "  dropReward(event.deadEntity.dimension);",
+        "});",
+        "function dropReward(dimension) {",
+        "  const token = new ItemStack('minecraft:gold_nugget');",
+        "  dimension.spawnItem(token, { x: 0, y: 0, z: 0 });",
+        "}",
+        "function unrelatedCleanup(item) {",
+        "  item.remove();",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result = analyzeRewardSources(
+      [script],
+      [],
+      [],
+    );
+
+    expect(
+      result.worldDropRewardPathsWithoutCleanup,
+    ).toBe(1);
+    expect(result.dropCleanupSurfaces).toBe(1);
+  });
+
   it("finds pickup-to-currency paths without assuming they are defects", () => {
     const script = parseScriptFile(
       "main",
