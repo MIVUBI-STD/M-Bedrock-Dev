@@ -8,5 +8,4 @@ export * from "./validate.js";
 export * from "./compose.js";
 export * from "./nondeterminism.js";
 export * from "./safe-config.js";
-export * from "./lifecycle-proof.js";
 export * from "./minecraft/index.js";
