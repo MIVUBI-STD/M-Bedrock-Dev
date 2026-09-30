@@ -24,3 +24,4 @@ export * from "./cleanup-resource-evidence.js";
 export * from "./global-lease-evidence.js";
 export * from "./inventory-lifecycle-evidence.js";
 export * from "./combat-lifecycle-evidence.js";
+export * from "./chunk-lifecycle-evidence.js";
