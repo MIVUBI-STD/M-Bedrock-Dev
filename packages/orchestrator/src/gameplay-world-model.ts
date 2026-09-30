@@ -39,6 +39,9 @@ import type {
   RouteNavigationEnvironmentAnalysis,
 } from "./route-navigation-environment-analysis.js";
 import type {
+  CombatLifecycleAnalysis,
+} from "./combat-lifecycle-analysis.js";
+import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
@@ -128,6 +131,16 @@ export interface GameplayWorldModel {
       conflicts: number;
       unknownRegions: number;
     };
+  };
+  combat: {
+    hurtHandlers: number;
+    deathHandlers: number;
+    damageApplications: number;
+    secondaryEffects: number;
+    projectileSpawns: number;
+    projectileRemovals: number;
+    projectileCleanupGap: number;
+    hurtOnlyTerminalRisk: number;
   };
   inventory: {
     regions: number;
@@ -224,6 +237,7 @@ export interface GameplayWorldModelSource {
   };
   scriptSpatial: ScriptSpatialAnalysis;
   spatialAuthority?: SpatialAuthorityCoverageReport;
+  combatLifecycle?: CombatLifecycleAnalysis;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
   inventoryPolicy?: InventoryPolicyAnalysis;
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
@@ -478,6 +492,24 @@ export function deriveGameplayWorldModel(
         unknownRegions:
           source.spatialAuthority?.unknownRegions ?? 0,
       },
+    },
+    combat: {
+      hurtHandlers:
+        source.combatLifecycle?.hurtHandlers ?? 0,
+      deathHandlers:
+        source.combatLifecycle?.deathHandlers ?? 0,
+      damageApplications:
+        source.combatLifecycle?.damageApplications ?? 0,
+      secondaryEffects:
+        source.combatLifecycle?.secondaryEffects ?? 0,
+      projectileSpawns:
+        source.combatLifecycle?.projectileSpawns ?? 0,
+      projectileRemovals:
+        source.combatLifecycle?.projectileRemovals ?? 0,
+      projectileCleanupGap:
+        source.combatLifecycle?.projectileCleanupGap ?? 0,
+      hurtOnlyTerminalRisk:
+        source.combatLifecycle?.hurtOnlyTerminalRisk ?? 0,
     },
     inventory: {
       regions:
