@@ -36,6 +36,7 @@ function evidence(request, state, note) {
     predicate: request.predicate,
     state,
     confidence: state === "unknown" ? "unknown" : "observed",
+    proofAuthority: "live-runtime",
     ...(request.scope ? { scope: request.scope } : {}),
     relatedNodeIds: ["runtime-probe:" + request.requestId],
     ...(note ? { note } : {})
