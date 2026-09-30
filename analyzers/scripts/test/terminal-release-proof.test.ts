@@ -4,7 +4,7 @@ import {
 } from "../src/terminal-release-proof.js";
 
 describe("interprocedural terminal release proof", () => {
-  it("proves release only when every terminal continuation reaches cleanup", () => {
+  it("does not treat another sequential call as a branch bypass", () => {
     const result = proveInterproceduralTerminalRelease({
       transitions: [],
       reachableReleaseFunctions: [
@@ -15,11 +15,19 @@ describe("interprocedural terminal release proof", () => {
           callerRegion: "function:finishGame",
           targetRegion: "function:cleanupArena",
           targetName: "cleanupArena",
+          controlFlow: "unconditional",
+        },
+        {
+          callerRegion: "function:finishGame",
+          targetRegion: "function:notifyPlayers",
+          targetName: "notifyPlayers",
+          controlFlow: "unconditional",
         },
         {
           callerRegion: "function:cleanupArena",
           targetRegion: "function:releaseArena",
           targetName: "releaseArena",
+          controlFlow: "unconditional",
         },
       ],
     });
@@ -27,7 +35,7 @@ describe("interprocedural terminal release proof", () => {
     expect(result.status).toBe("proven");
   });
 
-  it("fails proof when a terminal branch can bypass release", () => {
+  it("keeps conditional-only release unknown instead of falsely proving it", () => {
     const result = proveInterproceduralTerminalRelease({
       transitions: [],
       reachableReleaseFunctions: [
@@ -36,22 +44,16 @@ describe("interprocedural terminal release proof", () => {
       callEdges: [
         {
           callerRegion: "function:finishGame",
-          targetRegion: "function:cleanupArena",
-          targetName: "cleanupArena",
-        },
-        {
-          callerRegion: "function:finishGame",
-          targetRegion: "function:notifyPlayers",
-          targetName: "notifyPlayers",
-        },
-        {
-          callerRegion: "function:cleanupArena",
           targetRegion: "function:releaseArena",
           targetName: "releaseArena",
+          controlFlow: "conditional",
         },
       ],
     });
 
-    expect(result.status).toBe("violated");
+    expect(result.status).toBe("unknown");
+    expect(result.unknownRegions).toEqual([
+      "function:finishGame",
+    ]);
   });
 });
