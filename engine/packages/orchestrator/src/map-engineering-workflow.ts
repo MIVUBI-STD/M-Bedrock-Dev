@@ -30,7 +30,10 @@ export interface MapEngineeringWorkflowProjection {
     target: InspectArtifactResult["targetCompatibility"];
   };
   stages: readonly MapWorkflowStage[];
+  /** @deprecated Compatibility composite. */
   world: InspectArtifactResult["gameplayWorld"];
+  semantic: InspectArtifactResult["gameplaySemantic"];
+  engineering: InspectArtifactResult["engineeringAssessment"];
   arena: ReturnType<
     typeof buildArenaEngineeringProjection
   >;
@@ -88,27 +91,27 @@ function understandingStage(
   source: InspectArtifactResult,
 ): MapWorkflowStage {
   const unknowns =
-    source.gameplayWorld.intent.unknowns.length;
+    source.gameplaySemantic.intent.unknowns.length;
   const unresolved =
     source.unresolvedReferences;
   const lifecycleUnresolved =
-    source.gameplayWorld.arenas.lifecycle.unresolved;
+    source.engineeringAssessment.arena.lifecycle.unresolved;
   const cleanupMissing =
-    source.gameplayWorld.arenas.cleanup
+    source.engineeringAssessment.arena.cleanup
       .resourceLedger?.missing ?? 0;
   const spatialAuthorityUncovered =
-    source.gameplayWorld.spatial.authority
+    source.engineeringAssessment.spatial.authority
       ?.uncovered ?? 0;
   const spatialAuthorityConflicts =
-    source.gameplayWorld.spatial.authority
+    source.engineeringAssessment.spatial.authority
       ?.conflicts ?? 0;
   const spatialAuthorityUnknownRegions =
-    source.gameplayWorld.spatial.authority
+    source.engineeringAssessment.spatial.authority
       ?.unknownRegions ?? 0;
   const spatialAuthorityPolicyInvalid =
-    source.gameplayWorld.spatial.authority
+    source.engineeringAssessment.spatial.authority
       ?.configured === true &&
-    source.gameplayWorld.spatial.authority
+    source.engineeringAssessment.spatial.authority
       ?.policyValid === false
       ? 1
       : 0;
@@ -359,7 +362,7 @@ export function buildMapEngineeringWorkflow(
     unresolvedReferences:
       source.unresolvedReferences,
     intentUnknowns:
-      source.gameplayWorld.intent.unknowns.length,
+      source.gameplaySemantic.intent.unknowns.length,
     repairCandidatesPlanned:
       source.repairCandidates.filter(
         (item) => item.status === "planned",
@@ -372,23 +375,23 @@ export function buildMapEngineeringWorkflow(
     evidenceRecoveryActions:
       source.evidenceRecovery.actions.length,
     lifecycleUnresolved:
-      source.gameplayWorld.arenas.lifecycle.unresolved,
+      source.engineeringAssessment.arena.lifecycle.unresolved,
     cleanupResourcesMissing:
-      source.gameplayWorld.arenas.cleanup
+      source.engineeringAssessment.arena.cleanup
         .resourceLedger?.missing ?? 0,
     spatialAuthorityUncovered:
-      source.gameplayWorld.spatial.authority
+      source.engineeringAssessment.spatial.authority
         ?.uncovered ?? 0,
     spatialAuthorityConflicts:
-      source.gameplayWorld.spatial.authority
+      source.engineeringAssessment.spatial.authority
         ?.conflicts ?? 0,
     spatialAuthorityUnknownRegions:
-      source.gameplayWorld.spatial.authority
+      source.engineeringAssessment.spatial.authority
         ?.unknownRegions ?? 0,
     spatialAuthorityPolicyInvalid:
-      source.gameplayWorld.spatial.authority
+      source.engineeringAssessment.spatial.authority
         ?.configured === true &&
-      source.gameplayWorld.spatial.authority
+      source.engineeringAssessment.spatial.authority
         ?.policyValid === false
         ? 1
         : 0,
@@ -438,45 +441,45 @@ export function buildMapEngineeringWorkflow(
           ?.runtime.scopedArenaGenerationMissing ?? 0
       ),
     chunkLeaseAcquireWithoutRelease:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.acquireWithoutRelease ?? 0,
     chunkLeaseReleaseUnreachable:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.releaseUnreachable ?? 0,
     chunkCleanupOrderUnproven:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.cleanupOrderUnproven ?? 0,
     chunkDynamicLeaseKeys:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.dynamicLeaseKeys ?? 0,
     chunkCapacityUncheckedLeases:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.capacityUncheckedLeases ?? 0,
     chunkReadinessUnverifiedLeases:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.readinessUnverifiedLeases ?? 0,
     chunkShutdownOnlyCleanupRisk:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.shutdownOnlyCleanupRisk ?? 0,
     chunkWorldLoadReconciliationMissing:
       (
-        source.gameplayWorld.chunks
+        source.engineeringAssessment.chunks
           ?.tickingAreaAcquires ?? 0
       ) > 0 &&
       (
-        source.gameplayWorld.chunks
+        source.engineeringAssessment.chunks
           ?.worldLoadReconciliationPaths ?? 0
       ) === 0
         ? 1
         : 0,
     chunkUnguardedDeferredWork:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.unguardedDeferredChunkWork ?? 0,
     chunkResidencyObservabilityGaps:
-      source.gameplayWorld.chunks
+      source.engineeringAssessment.chunks
         ?.entityResidencyObservability === "complete"
         ? 0
-        : source.gameplayWorld.chunks
+        : source.engineeringAssessment.chunks
               ?.entityResidencyObservability === "partial"
           ? 1
           : 2,
@@ -534,6 +537,8 @@ export function buildMapEngineeringWorkflow(
     },
     stages,
     world: source.gameplayWorld,
+    semantic: source.gameplaySemantic,
+    engineering: source.engineeringAssessment,
     arena:
       buildArenaEngineeringProjection(source),
     attention,
