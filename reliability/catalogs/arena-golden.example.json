@@ -23,7 +23,14 @@
         "nominalStressPlayers": 30,
         "requirePackIdentityDrift": false
       },
-      "note": "Example template only. Replace artifact paths and assertions with approved production baselines."
+      "note": "Example template only. Replace artifact paths and assertions with approved production baselines.",
+      "approval": {
+        "status": "approved",
+        "approvedBy": "REPLACE_WITH_REVIEWER",
+        "approvedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+        "sourceFingerprint": "REPLACE_WITH_APPROVED_ARTIFACT_FINGERPRINT"
+      }
     }
-  ]
+  ],
+  "requireApproval": true
 }
