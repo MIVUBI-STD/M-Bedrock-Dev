@@ -302,6 +302,21 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Routes observed revive transaction anomalies toward life-generation ownership, reviver eligibility, exclusive revive-owner, and death-terminal review. Proposal-only because telemetry identifies the violated transaction semantics but not one universally safe source mutation.",
     }, {
+      id: "arena-lifecycle-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedDiagnosticCodes: [
+        "ARENA_LIFECYCLE_COVERAGE_GAP",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes unresolved arena terminal convergence and cleanup obligations toward membership release, generation invalidation, resource cleanup, and terminal-path review. Proposal-only because lifecycle coverage alone does not identify one universally safe source mutation.",
+    }, {
       id: "entity-ai-navigation-remediation",
       version: "1",
       kind: "built-in-planner",
