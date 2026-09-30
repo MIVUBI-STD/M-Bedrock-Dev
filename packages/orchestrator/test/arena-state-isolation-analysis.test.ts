@@ -29,6 +29,82 @@ describe("arena state isolation analysis", () => {
     });
   });
 
+  it("proves arena-keyed dynamic properties and scoreboard participants automatically", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function join(arena, player, objective: ScoreboardObjective) {",
+        "  arena.players.add(player);",
+        "  world.setDynamicProperty('arena:' + arena.id, 1);",
+        "  objective.setScore(arena.id, 1);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaStateIsolation(
+        [script],
+      );
+
+    expect(
+      result.observations.filter(
+        (item) =>
+          item.surface === "dynamic-property" ||
+          item.surface === "scoreboard",
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          surface: "dynamic-property",
+          scope: "arena-local",
+          status: "isolated",
+        }),
+        expect.objectContaining({
+          surface: "scoreboard",
+          scope: "arena-local",
+          status: "isolated",
+        }),
+      ]),
+    );
+  });
+
+  it("does not treat an arena-like literal key as authority partitioning", () => {
+    const script = parseScriptFile(
+      "main",
+      [
+        "function join(arena, player) {",
+        "  arena.players.add(player);",
+        "  world.setDynamicProperty('arenaState', 1);",
+        "}",
+      ].join("\n"),
+      {
+        artifactId: "fixture",
+        relativePath: "scripts/main.ts",
+      },
+    );
+
+    const result =
+      analyzeArenaStateIsolation(
+        [script],
+      );
+
+    expect(
+      result.observations.find(
+        (item) =>
+          item.surface ===
+          "dynamic-property",
+      ),
+    ).toMatchObject({
+      scope: "world-global",
+      status:
+        "partition-proof-required",
+    });
+  });
+
   it("uses authored state authority contracts to prove arena partitioning", () => {
     const script = parseScriptFile(
       "main",
