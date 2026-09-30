@@ -329,3 +329,4 @@ export * from "./inventory-policy-analysis.js";
 export * from "./inventory-policy-load.js";
 export * from "./inventory-restore-ownership-analysis.js";
 export * from "./entity-ai-stack-analysis.js";
+export * from "./route-navigation-environment-analysis.js";
