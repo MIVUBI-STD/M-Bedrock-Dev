@@ -18,6 +18,23 @@ export interface CrossFileCallEdge {
   source: SourceRef;
 }
 
+interface ExportTarget {
+  modulePath: string;
+  exportName: string;
+}
+
+interface ReExportBinding {
+  exportedName: string;
+  importedName: string;
+  moduleSpecifier: string;
+}
+
+interface ParsedModuleExports {
+  localExports: Set<string>;
+  namedReExports: readonly ReExportBinding[];
+  starReExports: readonly string[];
+}
+
 function normalizePath(value: string): string {
   const parts: string[] = [];
   for (const part of value.replaceAll("\\", "/").split("/")) {
@@ -119,21 +136,26 @@ function controlFlow(
     ) {
       return "conditional";
     }
+
     if (ts.isArrowFunction(current) || ts.isFunctionExpression(current)) {
       const parent = current.parent;
       if (
         ts.isCallExpression(parent) &&
         parent.arguments.includes(current) &&
         ts.isPropertyAccessExpression(parent.expression) &&
-        /^(?:run|runTimeout|runInterval|runJob)$/.test(parent.expression.name.text)
+        /^(?:run|runTimeout|runInterval|runJob)$/.test(
+          parent.expression.name.text,
+        )
       ) {
         return "deferred";
       }
       return "unconditional";
     }
+
     if (ts.isFunctionDeclaration(current) || ts.isMethodDeclaration(current)) {
       return "unconditional";
     }
+
     current = current.parent;
   }
   return "unconditional";
@@ -146,25 +168,53 @@ function hasModifier(
   return node.modifiers?.some((modifier) => modifier.kind === kind) ?? false;
 }
 
-function exportedNames(file: ts.SourceFile): Set<string> {
-  const output = new Set<string>();
+function moduleExports(
+  file: ts.SourceFile,
+): ParsedModuleExports {
+  const localExports = new Set<string>();
+  const namedReExports: ReExportBinding[] = [];
+  const starReExports: string[] = [];
 
   for (const statement of file.statements) {
     if (ts.isExportDeclaration(statement)) {
+      const moduleSpecifier =
+        statement.moduleSpecifier &&
+        ts.isStringLiteralLike(statement.moduleSpecifier)
+          ? statement.moduleSpecifier.text
+          : undefined;
       const clause = statement.exportClause;
-      if (clause && ts.isNamedExports(clause)) {
+
+      if (moduleSpecifier && clause && ts.isNamedExports(clause)) {
         for (const item of clause.elements) {
-          output.add(item.name.text);
+          namedReExports.push({
+            exportedName: item.name.text,
+            importedName:
+              item.propertyName?.text ?? item.name.text,
+            moduleSpecifier,
+          });
+        }
+        continue;
+      }
+
+      if (moduleSpecifier && !clause) {
+        starReExports.push(moduleSpecifier);
+        continue;
+      }
+
+      if (!moduleSpecifier && clause && ts.isNamedExports(clause)) {
+        for (const item of clause.elements) {
+          localExports.add(item.name.text);
         }
       }
       continue;
     }
 
-    const exported = hasModifier(statement, ts.SyntaxKind.ExportKeyword);
+    const exported =
+      hasModifier(statement, ts.SyntaxKind.ExportKeyword);
     if (!exported) continue;
 
     if (hasModifier(statement, ts.SyntaxKind.DefaultKeyword)) {
-      output.add("default");
+      localExports.add("default");
     }
 
     if (
@@ -172,31 +222,110 @@ function exportedNames(file: ts.SourceFile): Set<string> {
         ts.isClassDeclaration(statement)) &&
       statement.name
     ) {
-      output.add(statement.name.text);
+      localExports.add(statement.name.text);
       continue;
     }
 
     if (ts.isVariableStatement(statement)) {
       for (const declaration of statement.declarationList.declarations) {
         if (ts.isIdentifier(declaration.name)) {
-          output.add(declaration.name.text);
+          localExports.add(declaration.name.text);
         }
       }
     }
   }
 
-  return output;
+  return {
+    localExports,
+    namedReExports,
+    starReExports,
+  };
+}
+
+function resolveExportTarget(
+  modulePath: string,
+  exportName: string,
+  exportsByModule: ReadonlyMap<string, ParsedModuleExports>,
+  knownPaths: ReadonlySet<string>,
+  stack = new Set<string>(),
+): ExportTarget | undefined {
+  const key = modulePath + "#" + exportName;
+  if (stack.has(key)) return undefined;
+
+  const info = exportsByModule.get(modulePath);
+  if (!info) return undefined;
+
+  if (info.localExports.has(exportName)) {
+    return {
+      modulePath,
+      exportName,
+    };
+  }
+
+  const nextStack = new Set(stack);
+  nextStack.add(key);
+
+  const named = info.namedReExports.find(
+    (item) => item.exportedName === exportName,
+  );
+  if (named) {
+    const targetModule = resolveRelative(
+      modulePath,
+      named.moduleSpecifier,
+      knownPaths,
+    );
+    if (!targetModule) return undefined;
+    return resolveExportTarget(
+      targetModule,
+      named.importedName,
+      exportsByModule,
+      knownPaths,
+      nextStack,
+    );
+  }
+
+  const starTargets = info.starReExports.flatMap((specifier) => {
+    const targetModule = resolveRelative(
+      modulePath,
+      specifier,
+      knownPaths,
+    );
+    if (!targetModule) return [];
+    const resolved = resolveExportTarget(
+      targetModule,
+      exportName,
+      exportsByModule,
+      knownPaths,
+      nextStack,
+    );
+    return resolved ? [resolved] : [];
+  });
+
+  const unique = new Map(
+    starTargets.map((item) => [
+      item.modulePath + "#" + item.exportName,
+      item,
+    ]),
+  );
+
+  return unique.size === 1
+    ? [...unique.values()][0]
+    : undefined;
 }
 
 export function deriveCrossFileCallEdges(
   modules: readonly ScriptModuleSourceInput[],
 ): CrossFileCallEdge[] {
   const normalizedModules = new Map(
-    modules.map((module) => [normalizePath(module.path), module]),
+    modules.map((module) => [
+      normalizePath(module.path),
+      module,
+    ]),
   );
   const known = new Set(normalizedModules.keys());
   const parsedFiles = new Map<string, ts.SourceFile>();
-  const exportsByModule = new Map<string, Set<string>>();
+  const exportsByModule =
+    new Map<string, ParsedModuleExports>();
 
   for (const [path, module] of normalizedModules) {
     const file = ts.createSourceFile(
@@ -207,73 +336,134 @@ export function deriveCrossFileCallEdges(
       scriptKind(path),
     );
     parsedFiles.set(path, file);
-    exportsByModule.set(path, exportedNames(file));
+    exportsByModule.set(path, moduleExports(file));
   }
 
   const output: CrossFileCallEdge[] = [];
 
   for (const [modulePath, module] of normalizedModules) {
     const file = parsedFiles.get(modulePath)!;
-    const imports = new Map<string, {
+    const directImports = new Map<string, {
       moduleSpecifier: string;
       importedName: string;
     }>();
+    const namespaceImports = new Map<string, string>();
 
     for (const statement of file.statements) {
       if (
         !ts.isImportDeclaration(statement) ||
         !ts.isStringLiteralLike(statement.moduleSpecifier) ||
         !statement.moduleSpecifier.text.startsWith(".")
-      ) continue;
+      ) {
+        continue;
+      }
 
+      const moduleSpecifier =
+        statement.moduleSpecifier.text;
       const clause = statement.importClause;
+
       if (clause?.name) {
-        imports.set(clause.name.text, {
-          moduleSpecifier: statement.moduleSpecifier.text,
+        directImports.set(clause.name.text, {
+          moduleSpecifier,
           importedName: "default",
         });
       }
+
       const named = clause?.namedBindings;
       if (named && ts.isNamedImports(named)) {
         for (const element of named.elements) {
-          imports.set(element.name.text, {
-            moduleSpecifier: statement.moduleSpecifier.text,
-            importedName: element.propertyName?.text ?? element.name.text,
+          directImports.set(element.name.text, {
+            moduleSpecifier,
+            importedName:
+              element.propertyName?.text ??
+              element.name.text,
           });
         }
+      } else if (named && ts.isNamespaceImport(named)) {
+        namespaceImports.set(
+          named.name.text,
+          moduleSpecifier,
+        );
       }
     }
 
-    const visit = (node: ts.Node): void => {
-      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-        const imported = imports.get(node.expression.text);
-        if (imported) {
-          const targetModule = resolveRelative(
-            modulePath,
-            imported.moduleSpecifier,
-            known,
-          );
-          const exportExists =
-            targetModule !== undefined &&
-            exportsByModule
-              .get(targetModule)
-              ?.has(imported.importedName) === true;
+    const appendEdge = (
+      node: ts.CallExpression,
+      imported: {
+        moduleSpecifier: string;
+        importedName: string;
+        localName: string;
+      },
+    ): void => {
+      const importedModule = resolveRelative(
+        modulePath,
+        imported.moduleSpecifier,
+        known,
+      );
+      const target =
+        importedModule === undefined
+          ? undefined
+          : resolveExportTarget(
+              importedModule,
+              imported.importedName,
+              exportsByModule,
+              known,
+            );
 
-          output.push({
-            callerModule: modulePath,
-            callerRegion: region(node, file),
-            ...(targetModule ? { targetModule } : {}),
-            targetExport: imported.importedName,
-            localName: node.expression.text,
-            controlFlow: controlFlow(node),
-            status: exportExists ? "resolved" : "unresolved",
-            source: nodeSource(file, node, {
-              ...module.source,
-              relativePath: modulePath,
-            }),
-          });
+      output.push({
+        callerModule: modulePath,
+        callerRegion: region(node, file),
+        ...(target
+          ? { targetModule: target.modulePath }
+          : importedModule
+            ? { targetModule: importedModule }
+            : {}),
+        targetExport:
+          target?.exportName ??
+          imported.importedName,
+        localName: imported.localName,
+        controlFlow: controlFlow(node),
+        status: target ? "resolved" : "unresolved",
+        source: nodeSource(file, node, {
+          ...module.source,
+          relativePath: modulePath,
+        }),
+      });
+    };
+
+    const visit = (node: ts.Node): void => {
+      if (ts.isCallExpression(node)) {
+        if (ts.isIdentifier(node.expression)) {
+          const imported =
+            directImports.get(node.expression.text);
+          if (imported) {
+            appendEdge(node, {
+              ...imported,
+              localName: node.expression.text,
+            });
+          }
+        } else if (
+          ts.isPropertyAccessExpression(node.expression) &&
+          ts.isIdentifier(node.expression.expression)
+        ) {
+          const namespace =
+            node.expression.expression.text;
+          const moduleSpecifier =
+            namespaceImports.get(namespace);
+          if (moduleSpecifier) {
+            appendEdge(node, {
+              moduleSpecifier,
+              importedName:
+                node.expression.name.text,
+              localName:
+                namespace +
+                "." +
+                node.expression.name.text,
+            });
+          }
         }
       }
+
       ts.forEachChild(node, visit);
     };
 
