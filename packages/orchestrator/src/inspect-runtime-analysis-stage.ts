@@ -37,6 +37,7 @@ import { analyzeInventoryRestoreOwnership } from "./inventory-restore-ownership-
 import { analyzeCombatLifecycle } from "./combat-lifecycle-analysis.js";
 import { analyzeCombatPolicy } from "./combat-policy-analysis.js";
 import { analyzeChunkLifecycle } from "./chunk-lifecycle-analysis.js";
+import { analyzePersistenceSource } from "./persistence-source-analysis.js";
 import { analyzeRewardSources } from "./reward-source-analysis.js";
 import { analyzeEconomyPolicy } from "./economy-policy-analysis.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
@@ -226,6 +227,10 @@ export function analyzeInspectionRuntimeState(
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(
+      parsedScriptModels,
+    );
+  const persistenceSource =
+    analyzePersistenceSource(
       parsedScriptModels,
     );
   const rewardSources =
@@ -440,6 +445,7 @@ export function analyzeInspectionRuntimeState(
     inventoryRestoreOwnership,
     combatLifecycle,
     chunkLifecycle,
+    persistenceSource,
     rewardSources,
     combatPolicy,
     economyPolicy,
