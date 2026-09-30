@@ -2,6 +2,9 @@ import type { SourceRef } from "./source-ref.js";
 
 export type RuntimeEvidenceState = "present" | "absent" | "unknown";
 export type RuntimeEvidenceConfidence = "observed" | "derived" | "unknown";
+export type RuntimeEvidenceProofAuthority =
+  | "server-simulated"
+  | "live-runtime";
 export type RuntimeEvidenceOrigin =
   | "static"
   | "telemetry"
@@ -37,6 +40,7 @@ export interface RuntimeEvidenceRecord {
   state: RuntimeEvidenceState;
   confidence: RuntimeEvidenceConfidence;
   origin?: RuntimeEvidenceOrigin;
+  proofAuthority?: RuntimeEvidenceProofAuthority;
   /** Stable provenance identity for the observation campaign/trial/source. */
   provenanceKey?: string;
   /** Exact runtime profile fingerprint when the observation is target-bound. */
