@@ -9,6 +9,7 @@ export type ScriptEconomyEvidenceKind =
   | "world-drop"
   | "score-credit"
   | "score-debit"
+  | "score-adjust"
   | "score-write"
   | "item-consume";
 
@@ -354,10 +355,11 @@ export function deriveScriptEconomyEvidence(
           );
         push(node, {
           kind:
-            amount !== undefined &&
-            amount < 0
-              ? "score-debit"
-              : "score-credit",
+            amount === undefined
+              ? "score-adjust"
+              : amount < 0
+                ? "score-debit"
+                : "score-credit",
           subjectExpression: receiver,
           objectiveExpression: receiver,
           ...(participant === undefined
