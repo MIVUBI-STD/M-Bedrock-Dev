@@ -464,6 +464,68 @@ describe("context compiler", () => {
       })
     ).toThrow(/positive integers/);
   });
+  it("carries repository execution scope without widening semantic context", () => {
+    const pack = compileContextPack({
+      goal: "scoped-execution",
+      graph: fixtureGraph(),
+      intent,
+      repositoryTaskPlan: {
+        schemaVersion: 1,
+        status: "planned",
+        affected: {
+          changedPaths: [
+            "analyzers/scripts/src/inventory-lifecycle-evidence.ts",
+          ],
+          directCapabilityIds: [
+            "source.scripts.inventory",
+          ],
+          affectedCapabilityIds: [
+            "source.scripts.inventory",
+            "domain.inventory",
+            "domain.economy",
+            "projection.world-model",
+            "context.compile",
+          ],
+          unmatchedPaths: [],
+        },
+        execution: {
+          status: "ready",
+          selectedCapabilityIds: [
+            "source.scripts.inventory",
+            "domain.inventory",
+            "domain.economy",
+            "projection.world-model",
+            "context.compile",
+          ],
+          skippedCapabilityIds: [],
+          blockedCapabilityIds: [],
+          reasons: [],
+        },
+        reasons: [],
+      },
+    });
+
+    expect(pack.executionScope)
+      .toEqual({
+        status: "planned",
+        affectedCapabilityIds: [
+          "source.scripts.inventory",
+          "domain.inventory",
+          "domain.economy",
+          "projection.world-model",
+          "context.compile",
+        ],
+        selectedCapabilityIds: [
+          "source.scripts.inventory",
+          "domain.inventory",
+          "domain.economy",
+          "projection.world-model",
+          "context.compile",
+        ],
+        unmatchedPaths: [],
+      });
+  });
+
   it("compresses domain attention into compact world signals", () => {
     const pack = compileContextPack({
       goal: "domain-risk",
