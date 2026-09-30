@@ -385,3 +385,6 @@ export * from "./pending-world-operation-analysis.js";
 export * from "./structure-transition-residue.js";
 export * from "./multiplayer-static-risk-analysis.js";
 export * from "./arena-last-mile-audit.js";
+
+export * from "./gameplay-semantic-model.js";
+export * from "./map-engineering-assessment.js";

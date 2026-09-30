@@ -21,6 +21,8 @@ import { analyzeInspectionRuntimeState } from "./inspect-runtime-analysis-stage.
 import { analyzeInspectionEducation } from "./inspect-education-stage.js";
 import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
 import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
+import { projectGameplaySemanticModel } from "./gameplay-semantic-model.js";
+import { projectMapEngineeringAssessment } from "./map-engineering-assessment.js";
 import { deriveArenaAuthoredSpatialSources } from "./arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
@@ -305,6 +307,9 @@ export function buildInspectionResult(
     },
   });
 
+  const gameplaySemantic = projectGameplaySemanticModel(gameplayWorld);
+  const engineeringAssessment = projectMapEngineeringAssessment(gameplayWorld);
+
   const reliability = deriveReliabilityFingerprint({
     mapId: input.artifactId,
     ...(input.sourceFingerprint
@@ -365,6 +370,8 @@ export function buildInspectionResult(
     economyPolicy,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
+    gameplaySemantic,
+    engineeringAssessment,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,

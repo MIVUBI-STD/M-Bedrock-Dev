@@ -14,6 +14,9 @@ Use this before broad repository search.
 | Minimum-sufficient evidence/capability planning | engine/packages/analysis-planner/ |
 | Execution/state/temporal Semantic IR contracts and queries | engine/packages/semantic-ir/ |
 | Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | engine/packages/gameplay-intent/ |
+| Canonical gameplay semantic projection | engine/packages/orchestrator/src/gameplay-semantic-model.ts |
+| Canonical map engineering/QA assessment projection | engine/packages/orchestrator/src/map-engineering-assessment.ts |
+| Legacy mixed gameplay/engineering compatibility projection | engine/packages/orchestrator/src/gameplay-world-model.ts |
 | Formal behavioral state/transition/temporal property kernel + Minecraft overlays | engine/packages/behavior-model/ |
 | Constraint-backed reachability, invariant proof, and counterexample traces | engine/packages/logic-solver/ |
 | Competing hypotheses, falsifiers, and diagnostic probe discrimination | engine/packages/diagnostic-reasoning/ |

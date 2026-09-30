@@ -53,3 +53,21 @@ Orchestrator may compose analyzers and core packages. It must not:
 - treat static/package evidence as runtime proof.
 
 `inspect.ts` should remain readable as a top-to-bottom composition flow. Detailed parsing, derivation, diagnostics, and result projection belong in the nearest bounded stage or their existing semantic owner.
+
+
+## Projection boundary
+
+New consumers should not use `gameplayWorld` as their primary model.
+
+```text
+gameplaySemantic
+→ gameplay meaning, subjects, arena structure, authored systems
+
+engineeringAssessment
+→ capacity, lifecycle convergence, cleanup, isolation, proof, contract/runtime gaps
+
+gameplayWorld
+→ deprecated compatibility composite only
+```
+
+This prevents QA state from becoming gameplay meaning and prevents inferred gameplay structure from being treated as engineering proof.

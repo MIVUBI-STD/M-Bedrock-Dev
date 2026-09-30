@@ -51,6 +51,8 @@ import type { RewardSourceAnalysis } from "./reward-source-analysis.js";
 import type { EconomyPolicyAnalysis } from "./economy-policy-analysis.js";
 import type { SpatialAuthorityCoverageReport, SpatialAuthorityCoverageRequirement } from "./spatial-authority-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
+import type { GameplaySemanticModel } from "./gameplay-semantic-model.js";
+import type { MapEngineeringAssessment } from "./map-engineering-assessment.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "./arena-authored-source-index.js";
@@ -127,7 +129,10 @@ export interface InspectDirectoryResult {
   rewardSources: RewardSourceAnalysis;
   economyPolicy: EconomyPolicyAnalysis;
   releaseIdentity: ReleaseIdentityAnalysis;
+  /** @deprecated Composite compatibility view. Prefer gameplaySemantic + engineeringAssessment. */
   gameplayWorld: GameplayWorldModel;
+  gameplaySemantic: GameplaySemanticModel;
+  engineeringAssessment: MapEngineeringAssessment;
   structures: number;
   parsedStructures: number;
   entities: number;

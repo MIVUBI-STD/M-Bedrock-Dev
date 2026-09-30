@@ -36,6 +36,8 @@ import { localizeArenaRepairSources } from "./arena-repair-localization.js";
 import { bridgeArenaRepairLocalization } from "./arena-repair-bridge.js";
 import { arenaProofLayerEnabled, planArenaProofExecution } from "./arena-proof-execution-plan.js";
 import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
+import { projectGameplaySemanticModel } from "./gameplay-semantic-model.js";
+import { projectMapEngineeringAssessment } from "./map-engineering-assessment.js";
 import { collectArtifactReleaseObservations } from "./release-identity-evidence.js";
 import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
@@ -747,6 +749,9 @@ export async function inspectArtifact(
         },
       });
 
+    const finalGameplaySemantic = projectGameplaySemanticModel(finalGameplayWorld);
+    const finalEngineeringAssessment = projectMapEngineeringAssessment(finalGameplayWorld);
+
     return {
       artifactId,
       fingerprint,
@@ -755,6 +760,8 @@ export async function inspectArtifact(
       releaseIdentity:
         finalReleaseIdentity,
       gameplayWorld: finalGameplayWorld,
+      gameplaySemantic: finalGameplaySemantic,
+      engineeringAssessment: finalEngineeringAssessment,
       arenaAnalysis: finalArenaAnalysis,
       worldDatabase: {
         ...result.worldDatabase,
