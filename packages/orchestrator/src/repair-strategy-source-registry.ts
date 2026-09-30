@@ -302,6 +302,22 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Routes observed revive transaction anomalies toward life-generation ownership, reviver eligibility, exclusive revive-owner, and death-terminal review. Proposal-only because telemetry identifies the violated transaction semantics but not one universally safe source mutation.",
     }, {
+      id: "inventory-lifecycle-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedDiagnosticCodes: [
+        "INVENTORY_POLICY_CONFLICT",
+        "INVENTORY_LIFECYCLE_COVERAGE_GAP",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes inventory policy conflicts and lifecycle coverage gaps toward reset ownership, equipment reconciliation, ItemStack writeback, restore ownership, and drop-policy review. Proposal-only because inventory semantics are gameplay-authored and current evidence does not identify one universally safe source mutation.",
+    }, {
       id: "spatial-authority-remediation",
       version: "1",
       kind: "built-in-planner",
