@@ -33,7 +33,73 @@ describe("cross-file call resolution", () => {
         status: "resolved",
       }),
     ]);
+    it("resolves namespace imports to the implementation module", () => {
+    const edges = deriveCrossFileCallEdges([
+      {
+        path: "scripts/arena.ts",
+        text: "export function cleanupArena() {}",
+        source: { artifactId: "map", relativePath: "scripts/arena.ts" },
+      },
+      {
+        path: "scripts/main.ts",
+        text: `
+          import * as arena from "./arena.js";
+          export function finishGame() {
+            arena.cleanupArena();
+          }
+        `,
+        source: { artifactId: "map", relativePath: "scripts/main.ts" },
+      },
+    ]);
+
+    expect(edges[0]).toEqual(
+      expect.objectContaining({
+        targetModule: "scripts/arena.ts",
+        targetExport: "cleanupArena",
+        localName: "arena.cleanupArena",
+        status: "resolved",
+      }),
+    );
   });
+
+  it("follows named re-export barrel chains to the implementation module", () => {
+    const edges = deriveCrossFileCallEdges([
+      {
+        path: "scripts/cleanup.ts",
+        text: "export function cleanupArena() {}",
+        source: { artifactId: "map", relativePath: "scripts/cleanup.ts" },
+      },
+      {
+        path: "scripts/barrel.ts",
+        text: 'export { cleanupArena } from "./cleanup.js";',
+        source: { artifactId: "map", relativePath: "scripts/barrel.ts" },
+      },
+      {
+        path: "scripts/index.ts",
+        text: 'export { cleanupArena } from "./barrel.js";',
+        source: { artifactId: "map", relativePath: "scripts/index.ts" },
+      },
+      {
+        path: "scripts/main.ts",
+        text: `
+          import { cleanupArena } from "./index.js";
+          export function finishGame() {
+            cleanupArena();
+          }
+        `,
+        source: { artifactId: "map", relativePath: "scripts/main.ts" },
+      },
+    ]);
+
+    expect(edges[0]).toEqual(
+      expect.objectContaining({
+        targetModule: "scripts/cleanup.ts",
+        targetExport: "cleanupArena",
+        status: "resolved",
+      }),
+    );
+  });
+});
 
   it("keeps a call unresolved when the module exists but the imported export does not", () => {
     const edges = deriveCrossFileCallEdges([
