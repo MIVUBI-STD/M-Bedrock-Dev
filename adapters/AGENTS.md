@@ -14,4 +14,4 @@ Adapters translate external Bedrock/Education representations into canonical eng
 - Specialized binary formats may have dedicated adapters, but transport and semantics remain separate.
 - Every adapter must state its supported format/version assumptions.
 
-Expected future lanes include `.mcstructure`, LevelDB/world database, and other specialized Bedrock binary formats only when implementation begins.
+Active format owners include `mcstructure/` for little-endian NBT normalization, canonical block indexing, placement transforms, runtime content, and footprint extraction; `leveldb/` owns persisted world-database format translation. Gameplay diagnosis remains outside adapters.
