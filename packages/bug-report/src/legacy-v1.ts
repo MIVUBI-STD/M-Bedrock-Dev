@@ -1,3 +1,8 @@
+import type {
+  BugFinderCategory,
+  BugSeverity,
+} from "./vocabulary.js";
+
 /**
  * Legacy Bug Report V1 compatibility surface.
  *
@@ -5,11 +10,6 @@
  * reading, validating, and migrating existing V1 files.
  */
 export const BUG_REPORT_SCHEMA = "m-bedrock-bug-report/v1" as const;
-
-import type {
-  BugFinderCategory,
-  BugSeverity,
-} from "./vocabulary.js";
 
 export type BugFoundBy = "ai" | "tester" | "ai+tester";
 export type BugVerification = "candidate" | "observed" | "verified";
