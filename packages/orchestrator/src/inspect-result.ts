@@ -23,6 +23,7 @@ import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
 import { deriveGameplayWorldModel } from "./gameplay-world-model.js";
 import { deriveArenaAuthoredSpatialSources } from "./arena-authored-source-index.js";
 import { analyzeCombatPolicy } from "./combat-policy-analysis.js";
+import { analyzeEconomyPolicy } from "./economy-policy-analysis.js";
 
 type SourceIndex = Awaited<
   ReturnType<typeof indexInspectionSources>
@@ -263,6 +264,11 @@ export function buildInspectionResult(
       combatRuntimeTelemetry,
       input.target.combatPolicy,
     );
+  const economyPolicy =
+    analyzeEconomyPolicy(
+      rewardSources,
+      input.target.economyPolicy,
+    );
 
   const gameplayWorld = deriveGameplayWorldModel({
     artifactId: input.artifactId,
@@ -277,6 +283,8 @@ export function buildInspectionResult(
       combatRuntimeTelemetry,
     combatPolicy,
     chunkLifecycle,
+    rewardSources,
+    economyPolicy,
     semanticIr: {
       stateSurfaces: semanticSummary.stateSurfaces,
       stateOperations: semanticSummary.stateOperations,
@@ -358,6 +366,8 @@ export function buildInspectionResult(
       combatRuntimeTelemetry,
     combatPolicy,
     chunkLifecycle,
+    rewardSources,
+    economyPolicy,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
     structures: nodes.filter(
