@@ -36,6 +36,9 @@ import type {
   EntityAiStackAnalysis,
 } from "./entity-ai-stack-analysis.js";
 import type {
+  RouteNavigationEnvironmentAnalysis,
+} from "./route-navigation-environment-analysis.js";
+import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
@@ -178,6 +181,13 @@ export interface GameplayWorldModel {
       targetedWithoutNavigation: number;
       movementGoalWithoutNavigation: number;
     };
+    navigationEnvironment: {
+      contracts: number;
+      compatible: number;
+      incompatible: number;
+      stateDependent: number;
+      unresolved: number;
+    };
   };
   intent: {
     invariants: number;
@@ -230,6 +240,7 @@ export interface GameplayWorldModelSource {
     runtimeLogicLoads: number;
   };
   entityAiStack?: EntityAiStackAnalysis;
+  routeNavigationEnvironment?: RouteNavigationEnvironmentAnalysis;
   entities: {
     definitions: number;
     knowledgePrerequisiteGaps: number;
@@ -560,6 +571,23 @@ export function deriveGameplayWorldModel(
         movementGoalWithoutNavigation:
           source.entityAiStack
             ?.movementGoalWithoutNavigation ?? 0,
+      },
+      navigationEnvironment: {
+        contracts:
+          source.routeNavigationEnvironment
+            ?.contracts ?? 0,
+        compatible:
+          source.routeNavigationEnvironment
+            ?.compatible ?? 0,
+        incompatible:
+          source.routeNavigationEnvironment
+            ?.incompatible ?? 0,
+        stateDependent:
+          source.routeNavigationEnvironment
+            ?.stateDependent ?? 0,
+        unresolved:
+          source.routeNavigationEnvironment
+            ?.unresolved ?? 0,
       },
     },
     intent: {
