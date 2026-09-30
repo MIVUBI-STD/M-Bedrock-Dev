@@ -178,6 +178,7 @@ export interface GameplayWorldModel {
     functionLootCommands: number;
     scoreboardCredits: number;
     scoreboardDebits: number;
+    scoreboardAdjustments: number;
     scoreboardWrites: number;
     deathRewardPaths: number;
     pickupCurrencyPaths: number;
@@ -635,6 +636,8 @@ export function deriveGameplayWorldModel(
         source.rewardSources?.scoreboardCredits ?? 0,
       scoreboardDebits:
         source.rewardSources?.scoreboardDebits ?? 0,
+      scoreboardAdjustments:
+        source.rewardSources?.scoreboardAdjustments ?? 0,
       scoreboardWrites:
         source.rewardSources?.scoreboardWrites ?? 0,
       deathRewardPaths:
