@@ -1,4 +1,8 @@
 import { world } from "@minecraft/server";
+import {
+  captureBaselineSurfaces,
+  compareBaselineSurfaces,
+} from "./baseline-surface.js";
 
 function findPlayer(playerKey) {
   return world
@@ -59,14 +63,135 @@ function markCompleted(player) {
  * explicit so a map-specific implementation cannot hide long-running
  * background work from the experiment protocol.
  */
+const BASELINE_SURFACE_PROVIDERS = {
+  "arena-membership": {
+    capture(context) {
+      return {
+        assignedPlayers:
+          context.players.length,
+      };
+    },
+
+    compare(snapshot, context) {
+      const expected =
+        Number(
+          snapshot?.assignedPlayers ??
+          -1
+        );
+      const actual =
+        context.players.length;
+      return {
+        matches:
+          expected >= 0 &&
+          expected === actual,
+        residueCount: 0,
+        measurements: {
+          expectedPlayers:
+            expected,
+          actualPlayers:
+            actual,
+        },
+      };
+    },
+  },
+
+  tags: {
+    capture(context) {
+      return Object.fromEntries(
+        context.players
+          .map((player) => [
+            player.id,
+            player
+              .getTags()
+              .filter((tag) =>
+                tag.startsWith(
+                  "session:"
+                ) ||
+                tag ===
+                  "test:disconnect-requested"
+              )
+              .sort(),
+          ])
+          .sort(([a], [b]) =>
+            a.localeCompare(b)
+          )
+      );
+    },
+
+    compare(snapshot, context) {
+      const expected =
+        snapshot &&
+        typeof snapshot === "object"
+          ? snapshot
+          : {};
+      const actual =
+        Object.fromEntries(
+          context.players
+            .map((player) => [
+              player.id,
+              player
+                .getTags()
+                .filter((tag) =>
+                  tag.startsWith(
+                    "session:"
+                  ) ||
+                  tag ===
+                    "test:disconnect-requested"
+                )
+                .sort(),
+            ])
+            .sort(([a], [b]) =>
+              a.localeCompare(b)
+            )
+        );
+
+      const ids =
+        new Set([
+          ...Object.keys(
+            expected
+          ),
+          ...Object.keys(
+            actual
+          ),
+        ]);
+      let residueCount = 0;
+      for (const id of ids) {
+        if (
+          JSON.stringify(
+            expected[id] ?? []
+          ) !==
+          JSON.stringify(
+            actual[id] ?? []
+          )
+        ) {
+          residueCount += 1;
+        }
+      }
+
+      return {
+        matches:
+          residueCount === 0,
+        residueCount,
+        measurements: {
+          changedPlayers:
+            residueCount,
+        },
+      };
+    },
+  },
+};
+
 export const MAP_ADAPTER = {
   proofAuthority:
     "server-simulated",
 
-  supportedBaselineSurfaces: [
-    "arena-membership",
-    "tags",
-  ],
+  baselineSurfaceProviders:
+    BASELINE_SURFACE_PROVIDERS,
+
+  supportedBaselineSurfaces:
+    Object.keys(
+      BASELINE_SURFACE_PROVIDERS
+    ).sort(),
 
   findPlayer,
 
@@ -192,32 +317,33 @@ export const MAP_ADAPTER = {
     arenaGeneration,
     compareSurfaces
   ) {
-    const supported =
-      new Set(
-        this.supportedBaselineSurfaces
+    const players =
+      playersInArena(arenaId);
+    const captured =
+      captureBaselineSurfaces(
+        this.baselineSurfaceProviders,
+        compareSurfaces,
+        {
+          arenaId,
+          arenaGeneration,
+          players,
+          world,
+        }
       );
-    const requested = [
-      ...new Set(compareSurfaces),
-    ].sort();
 
     return {
       arenaId,
       arenaGeneration,
       compareSurfaces:
-        requested,
+        captured.requestedSurfaces,
       supportedSurfaces:
-        requested.filter(
-          (surface) =>
-            supported.has(surface)
-        ),
+        captured.supportedSurfaces,
       unsupportedSurfaces:
-        requested.filter(
-          (surface) =>
-            !supported.has(surface)
-        ),
+        captured.unsupportedSurfaces,
+      surfaceSnapshots:
+        captured.surfaceSnapshots,
       assignedPlayers:
-        playersInArena(arenaId)
-          .length,
+        players.length,
     };
   },
 
@@ -228,44 +354,24 @@ export const MAP_ADAPTER = {
       playersInArena(
         baseline.arenaId
       );
-    let residueCount = 0;
-
-    for (const player of players) {
-      const tags =
-        player.getTags();
-      if (
-        tags.includes(
-          "session:playing"
-        ) ||
-        tags.includes(
-          "session:starting"
-        ) ||
-        tags.includes(
-          "session:completed"
-        ) ||
-        tags.includes(
-          "test:disconnect-requested"
-        )
-      ) {
-        residueCount += 1;
-      }
-    }
-
-    const unsupportedSurfaces =
-      baseline.unsupportedSurfaces ?? [];
+    const comparison =
+      compareBaselineSurfaces(
+        this.baselineSurfaceProviders,
+        baseline,
+        {
+          arenaId:
+            baseline.arenaId,
+          arenaGeneration:
+            baseline.arenaGeneration,
+          players,
+          world,
+        }
+      );
 
     return {
-      matches:
-        unsupportedSurfaces.length === 0 &&
-        players.length ===
-          baseline.assignedPlayers &&
-        residueCount === 0,
-      complete:
-        unsupportedSurfaces.length === 0,
-      unsupportedSurfaces,
+      ...comparison,
       actualPlayers:
         players.length,
-      residueCount,
     };
   },
 

@@ -10,6 +10,22 @@ export const MAP_ADAPTER = {
   proofAuthority:
     "live-runtime",
 
+  /**
+   * Add map-specific baseline surface providers here.
+   *
+   * Each provider owns:
+   * - capture({ arenaId, arenaGeneration, players, world })
+   * - compare(snapshot, { arenaId, arenaGeneration, players, world })
+   *
+   * compare() returns:
+   * { matches, residueCount, measurements?, note? }
+   *
+   * This lets repeated-run 1/2/5/20 validation cover scoreboard,
+   * dynamic properties, effects, permissions, timers, or authored
+   * lease state without changing Runtime Lab protocol code.
+   */
+  baselineSurfaceProviders: {},
+
   resetArena(
     arenaId,
     arenaGeneration

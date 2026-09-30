@@ -110,3 +110,28 @@ fixture transitions.
 
 Use an external multi-client controller for actual disconnect/reconnect
 authority.
+
+
+## Repeated-run baseline surface providers
+
+Repeated-cycle validation is intentionally fail-closed. A requested
+surface that the active map adapter does not implement makes the
+baseline comparison incomplete rather than silently passing.
+
+The bundled generic adapter implements:
+
+- `arena-membership`
+- `tags`
+
+Map-specific adapters can add providers for surfaces such as:
+
+- scoreboard objectives/participants;
+- dynamic properties;
+- active effects;
+- input permissions;
+- map-owned deferred timer handles;
+- global lease ownership state.
+
+A provider captures one generation-scoped snapshot and compares the
+post-cycle state against that snapshot. Runtime Lab remains unaware of
+map-specific storage details.
