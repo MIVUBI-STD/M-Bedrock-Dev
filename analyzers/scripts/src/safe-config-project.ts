@@ -944,6 +944,23 @@ export function linkScriptSafeConfigProject(
             continue;
           }
 
+          const targetUnit =
+            compiled.get(
+              resolution.target
+                .modulePath,
+            );
+          const valueExport =
+            targetUnit?.bindings.some(
+              (binding) =>
+                binding.name ===
+                resolution.target
+                  .localName,
+            ) === true;
+
+          if (!valueExport) {
+            continue;
+          }
+
           entries[exportName] = {
             kind: "ref",
             name: prefixed(
