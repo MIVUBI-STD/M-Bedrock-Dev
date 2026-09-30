@@ -44,18 +44,27 @@ export interface ArenaGoldenAssertions {
   structureInstanceStatus?: string;
 }
 
+export interface ArenaGoldenApproval {
+  status: "approved";
+  approvedBy: string;
+  approvedAt: string;
+  sourceFingerprint?: string;
+}
+
 export interface ArenaGoldenCase {
   id: string;
   label: string;
   artifactFile: string;
   regionContractsFile?: string;
   assertions: ArenaGoldenAssertions;
+  approval?: ArenaGoldenApproval;
   note?: string;
 }
 
 export interface ArenaGoldenManifest {
   schemaVersion: 1;
   id: string;
+  requireApproval?: boolean;
   cases: readonly ArenaGoldenCase[];
 }
 
@@ -357,6 +366,14 @@ export function parseArenaGoldenManifest(
   if (!nonEmptyString(input.id)) {
     throw new Error("Arena golden manifest id must be non-empty.");
   }
+  if (
+    input.requireApproval !== undefined &&
+    typeof input.requireApproval !== "boolean"
+  ) {
+    throw new Error(
+      "Arena golden manifest requireApproval must be boolean when provided.",
+    );
+  }
   if (!Array.isArray(input.cases)) {
     throw new Error("Arena golden manifest cases must be an array.");
   }
@@ -393,6 +410,45 @@ export function parseArenaGoldenManifest(
       );
     }
 
+    let approval: ArenaGoldenApproval | undefined;
+    if (raw.approval !== undefined) {
+      if (!isRecord(raw.approval)) {
+        throw new Error(
+          "Arena golden case " + raw.id + " approval must be an object.",
+        );
+      }
+      if (
+        raw.approval.status !== "approved" ||
+        !nonEmptyString(raw.approval.approvedBy) ||
+        !nonEmptyString(raw.approval.approvedAt)
+      ) {
+        throw new Error(
+          "Arena golden case " + raw.id + " approval requires status=approved, approvedBy, and approvedAt.",
+        );
+      }
+      if (
+        raw.approval.sourceFingerprint !== undefined &&
+        !nonEmptyString(raw.approval.sourceFingerprint)
+      ) {
+        throw new Error(
+          "Arena golden case " + raw.id + " approval sourceFingerprint must be non-empty when provided.",
+        );
+      }
+      approval = {
+        status: "approved",
+        approvedBy:
+          raw.approval.approvedBy,
+        approvedAt:
+          raw.approval.approvedAt,
+        ...(raw.approval.sourceFingerprint === undefined
+          ? {}
+          : {
+              sourceFingerprint:
+                raw.approval.sourceFingerprint,
+            }),
+      };
+    }
+
     return {
       id: raw.id,
       label: raw.label,
@@ -401,6 +457,9 @@ export function parseArenaGoldenManifest(
         ? {}
         : { regionContractsFile: raw.regionContractsFile }),
       assertions: parseAssertions(raw.assertions, raw.id),
+      ...(approval === undefined
+        ? {}
+        : { approval }),
       ...(raw.note === undefined ? {} : { note: raw.note }),
     };
   });
@@ -408,8 +467,40 @@ export function parseArenaGoldenManifest(
   return {
     schemaVersion: 1,
     id: input.id,
+    ...(input.requireApproval === undefined
+      ? {}
+      : {
+          requireApproval:
+            input.requireApproval,
+        }),
     cases,
   };
+}
+
+export function assertArenaGoldenApprovals(
+  manifest: ArenaGoldenManifest,
+): void {
+  if (manifest.requireApproval !== true) {
+    return;
+  }
+
+  const missing =
+    manifest.cases
+      .filter(
+        (item) =>
+          item.approval?.status !==
+          "approved",
+      )
+      .map((item) => item.id)
+      .sort();
+
+  if (missing.length > 0) {
+    throw new Error(
+      "Arena golden corpus requires approved cases before execution. Missing approval: " +
+        missing.join(", ") +
+        ".",
+    );
+  }
 }
 
 export function observeArenaGolden(
@@ -751,6 +842,8 @@ export async function runArenaGoldenCorpus(
   target: InspectTargetProfile = {},
   knowledgeCatalog?: KnowledgeCatalog,
 ): Promise<ArenaGoldenCorpusReport> {
+  assertArenaGoldenApprovals(manifest);
+
   const reports: ArenaGoldenCaseReport[] = [];
 
   for (const item of manifest.cases) {
