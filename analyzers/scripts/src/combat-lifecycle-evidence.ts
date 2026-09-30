@@ -180,15 +180,25 @@ export function deriveScriptCombatLifecycleEvidence(
           push(node, "effect-apply", receiver);
         } else if (method === "setOnFire") {
           push(node, "ignite", receiver);
-        } else if (method === "spawnProjectile") {
+        } else if (
+          (
+            method === "shoot" ||
+            method === "shootAt" ||
+            method === "spawnProjectile"
+          ) &&
+          /projectile/i.test(receiver)
+        ) {
           push(
             node,
             "projectile-spawn",
             receiver,
           );
         } else if (
-          method === "remove" ||
-          method === "kill"
+          (
+            method === "remove" ||
+            method === "kill"
+          ) &&
+          /projectile/i.test(receiver)
         ) {
           push(
             node,
