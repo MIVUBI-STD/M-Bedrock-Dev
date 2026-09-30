@@ -512,6 +512,57 @@ function assessProject(
     );
   };
 
+  const scriptsByPath =
+    new Map(
+      scripts.map((script) => [
+        script.source.relativePath,
+        script,
+      ]),
+    );
+
+  for (const call of crossFileCalls) {
+    const callerScript =
+      scriptsByPath.get(
+        call.callerModule,
+      );
+    if (
+      callerScript &&
+      terminalNameCandidate(
+        call.callerRegion,
+      )
+    ) {
+      addCandidate(
+        callerScript,
+        call.callerRegion,
+        "terminal-name",
+      );
+    }
+
+    if (
+      call.status === "resolved" &&
+      call.targetModule !== undefined
+    ) {
+      const targetScript =
+        scriptsByPath.get(
+          call.targetModule,
+        );
+      if (
+        targetScript &&
+        terminalNameCandidate(
+          "function:" +
+            call.targetExport,
+        )
+      ) {
+        addCandidate(
+          targetScript,
+          "function:" +
+            call.targetExport,
+          "terminal-name",
+        );
+      }
+    }
+  }
+
   for (const script of scripts) {
     for (
       const path of
