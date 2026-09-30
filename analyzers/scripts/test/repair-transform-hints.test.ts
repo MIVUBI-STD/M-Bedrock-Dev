@@ -166,6 +166,47 @@ describe("scheduler generation guard repair hints", () => {
     }
   });
 
+  it("reuses the generic scheduler guard for deferred chunk-generation work", () => {
+    const text = [
+      'import { system } from "@minecraft/server";',
+      "class ChunkRecovery {",
+      "  chunkGeneration = 0;",
+      "  retryChunkOperation() {}",
+      "  scheduleRetry() {",
+      "    const capturedChunkGeneration = this.chunkGeneration;",
+      "    system.runTimeout(() => this.retryChunkOperation(), 2);",
+      "  }",
+      "}",
+    ].join("\n");
+
+    const hints =
+      deriveSchedulerGenerationGuardTransformHints(
+        "chunk-recovery",
+        text,
+        {
+          artifactId: "art-chunk",
+          relativePath:
+            "scripts/chunk-recovery.ts",
+        },
+      );
+
+    expect(hints).toHaveLength(1);
+    expect(hints[0]).toMatchObject({
+      family: "scheduler-generation-guard",
+      supportedPredicateIds: [
+        "stale-callback-observed",
+      ],
+      supportedFactorIds: [
+        "generation-guard-enabled",
+      ],
+    });
+    expect(
+      hints[0]?.replacementText,
+    ).toContain(
+      "capturedChunkGeneration !== this.chunkGeneration",
+    );
+  });
+
   it("supports aliased system imports without changing causal semantics", () => {
     const text = [
       'import { system as scheduler } from "@minecraft/server";',
