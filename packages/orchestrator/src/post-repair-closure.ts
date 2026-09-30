@@ -5,6 +5,9 @@ import {
 import type {
   RepairLifecycleState,
 } from "./repair-lifecycle.js";
+import type {
+  ZeroWasteExecutionReceipt,
+} from "./zero-waste-execution-receipt.js";
 
 export interface DefectRegressionReceipt {
   transactionId: string;
@@ -118,6 +121,7 @@ export interface PostRepairProofLayerEvidence {
   runtime: readonly string[];
   preservation: readonly string[];
   package: readonly string[];
+  zeroWaste?: ZeroWasteExecutionReceipt;
 }
 
 export interface PostRepairClosureReceipt {
@@ -127,6 +131,12 @@ export interface PostRepairClosureReceipt {
   disposition: "fixed";
   proofLayerEvidence: PostRepairProofLayerEvidence;
   regressionEvidenceIds: readonly string[];
+  zeroWasteExecution?: {
+    transactionId: string;
+    status: "complete";
+    avoidedWork: ZeroWasteExecutionReceipt["avoidedWork"];
+    evidenceIds: readonly string[];
+  };
   evidenceIds: readonly string[];
 }
 
@@ -189,6 +199,41 @@ export function createPostRepairClosureReceipt(
     ),
   };
 
+  let zeroWasteExecution:
+    PostRepairClosureReceipt["zeroWasteExecution"];
+
+  if (evidence.zeroWaste !== undefined) {
+    if (
+      evidence.zeroWaste.transactionId !==
+      result.transactionId
+    ) {
+      throw new Error(
+        "Zero-waste execution receipt belongs to another repair transaction.",
+      );
+    }
+    if (
+      evidence.zeroWaste.status !==
+      "complete"
+    ) {
+      throw new Error(
+        "Post-repair closure requires a complete zero-waste execution receipt when one is supplied.",
+      );
+    }
+
+    zeroWasteExecution = {
+      transactionId:
+        evidence.zeroWaste.transactionId,
+      status: "complete",
+      avoidedWork:
+        evidence.zeroWaste.avoidedWork,
+      evidenceIds: [
+        ...new Set(
+          evidence.zeroWaste.evidenceIds,
+        ),
+      ].sort(),
+    };
+  }
+
   const regressionEvidenceIds = [
     ...new Set(
       result.defectRegression.evidenceIds,
@@ -208,6 +253,7 @@ export function createPostRepairClosureReceipt(
       ...proofLayerEvidence.preservation,
       ...proofLayerEvidence.package,
       ...regressionEvidenceIds,
+      ...(zeroWasteExecution?.evidenceIds ?? []),
     ]),
   ].sort();
 
@@ -219,6 +265,9 @@ export function createPostRepairClosureReceipt(
     disposition: "fixed",
     proofLayerEvidence,
     regressionEvidenceIds,
+    ...(zeroWasteExecution === undefined
+      ? {}
+      : { zeroWasteExecution }),
     evidenceIds,
   };
 }
