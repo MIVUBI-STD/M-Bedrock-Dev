@@ -96,6 +96,19 @@ export function parseBedrockRuntimeActionResponse(
             "] is invalid.",
         );
       }
+      const proofAuthority =
+        (record as RuntimeEvidenceRecord).proofAuthority;
+      if (
+        proofAuthority !== undefined &&
+        proofAuthority !== "server-simulated" &&
+        proofAuthority !== "live-runtime"
+      ) {
+        throw new Error(
+          "Bedrock runtime action response evidence[" +
+            index +
+            "].proofAuthority is invalid.",
+        );
+      }
       const measurements =
         (record as RuntimeEvidenceRecord).measurements;
       if (measurements !== undefined) {
