@@ -129,4 +129,64 @@ describe("cross-file call resolution", () => {
       }),
     );
   });
+
+  it("resolves local export aliases to the implementation symbol", () => {
+    const edges = deriveCrossFileCallEdges([
+      {
+        path: "scripts/cleanup.ts",
+        text: `
+          function cleanup() {}
+          export { cleanup as cleanupArena };
+        `,
+        source: { artifactId: "map", relativePath: "scripts/cleanup.ts" },
+      },
+      {
+        path: "scripts/main.ts",
+        text: `
+          import { cleanupArena } from "./cleanup.js";
+          export function finishGame() {
+            cleanupArena();
+          }
+        `,
+        source: { artifactId: "map", relativePath: "scripts/main.ts" },
+      },
+    ]);
+
+    expect(edges[0]).toEqual(
+      expect.objectContaining({
+        targetModule: "scripts/cleanup.ts",
+        targetExport: "cleanup",
+        status: "resolved",
+      }),
+    );
+  });
+
+  it("resolves named default exports to the implementation symbol", () => {
+    const edges = deriveCrossFileCallEdges([
+      {
+        path: "scripts/cleanup.ts",
+        text: "export default function cleanupArena() {}",
+        source: { artifactId: "map", relativePath: "scripts/cleanup.ts" },
+      },
+      {
+        path: "scripts/main.ts",
+        text: `
+          import cleanup from "./cleanup.js";
+          export function finishGame() {
+            cleanup();
+          }
+        `,
+        source: { artifactId: "map", relativePath: "scripts/main.ts" },
+      },
+    ]);
+
+    expect(edges[0]).toEqual(
+      expect.objectContaining({
+        targetModule: "scripts/cleanup.ts",
+        targetExport: "cleanupArena",
+        status: "resolved",
+      }),
+    );
+  });
+
 });
