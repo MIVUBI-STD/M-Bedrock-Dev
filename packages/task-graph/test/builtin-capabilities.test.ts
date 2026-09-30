@@ -84,6 +84,7 @@ describe("builtin task capabilities", () => {
     ).toEqual(
       expect.arrayContaining([
         "domain.arena-lifecycle",
+        "domain.persistence",
         "domain.inventory",
         "domain.combat",
         "domain.chunks",
@@ -153,4 +154,47 @@ describe("builtin task capabilities", () => {
       ]),
     );
   });
+
+  it("keeps persistence source changes scoped to persistence and downstream projections", () => {
+    const graph =
+      createTaskGraph(
+        BUILTIN_TASK_CAPABILITIES,
+      );
+    const affected =
+      resolveAffectedTasks(
+        graph,
+        [
+          "analyzers/scripts/src/persistent-data-lifecycle.ts",
+        ],
+      );
+
+    expect(
+      affected.directCapabilityIds,
+    ).toEqual([
+      "source.scripts.persistence",
+    ]);
+    expect(
+      affected.affectedCapabilityIds,
+    ).toEqual(
+      expect.arrayContaining([
+        "source.scripts.persistence",
+        "domain.persistence",
+        "runtime.persistence",
+        "projection.world-model",
+        "projection.workflow",
+        "repair.routing",
+        "context.compile",
+      ]),
+    );
+    expect(
+      affected.affectedCapabilityIds,
+    ).not.toEqual(
+      expect.arrayContaining([
+        "domain.combat",
+        "domain.entity-ai",
+        "domain.chunks",
+      ]),
+    );
+  });
+
 });
