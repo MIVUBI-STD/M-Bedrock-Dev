@@ -51,6 +51,13 @@ import type {
   ChunkLifecycleAnalysis,
 } from "./chunk-lifecycle-analysis.js";
 import type {
+  RewardSourceAnalysis,
+  RewardSourceKind,
+} from "./reward-source-analysis.js";
+import type {
+  EconomyPolicyAnalysis,
+} from "./economy-policy-analysis.js";
+import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
@@ -158,6 +165,38 @@ export interface GameplayWorldModel {
     unguardedDeferredChunkWork: number;
     entityResidencyObservability:
       "complete" | "partial" | "absent";
+  };
+  economy: {
+    sourceKinds: readonly RewardSourceKind[];
+    engineLootEntities: number;
+    engineLootTables: number;
+    unresolvedEngineLootTables: number;
+    scriptInventoryGrants: number;
+    worldDrops: number;
+    pickupObservers: number;
+    scriptLootCommands: number;
+    functionLootCommands: number;
+    scoreboardCredits: number;
+    scoreboardDebits: number;
+    scoreboardWrites: number;
+    deathRewardPaths: number;
+    pickupCurrencyPaths: number;
+    deathRewardSourceOverlapCandidates: number;
+    pickupCurrencyWithoutConsumeCandidates: number;
+    rewardPathsWithoutIdempotency: number;
+    dropCleanupSurfaces: number;
+    policy: {
+      configured: boolean;
+      deathRewardOverlapContradictions: number;
+      deathRewardOverlapUnresolved: number;
+      pickupCurrencyConsumeContradictions: number;
+      pickupCurrencyPolicyMismatch: number;
+      idempotencyCoverageGaps: number;
+      staleDropCleanupCoverageGaps: number;
+      inventoryFullPolicyGaps: number;
+      pickupScopeValidationUnproven: number;
+      terminalRewardResultCommitUnproven: number;
+    };
   };
   combat: {
     hurtHandlers: number;
@@ -284,6 +323,8 @@ export interface GameplayWorldModelSource {
   combatRuntime?: CombatRuntimeTelemetryAnalysis;
   combatPolicy?: CombatPolicyAnalysis;
   chunkLifecycle?: ChunkLifecycleAnalysis;
+  rewardSources?: RewardSourceAnalysis;
+  economyPolicy?: EconomyPolicyAnalysis;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
   inventoryPolicy?: InventoryPolicyAnalysis;
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
@@ -570,6 +611,78 @@ export function deriveGameplayWorldModel(
         source.chunkLifecycle?.unguardedDeferredChunkWork ?? 0,
       entityResidencyObservability:
         source.chunkLifecycle?.entityResidencyObservability ?? "absent",
+    },
+    economy: {
+      sourceKinds:
+        source.rewardSources?.sourceKinds ?? [],
+      engineLootEntities:
+        source.rewardSources?.engineLootEntities ?? 0,
+      engineLootTables:
+        source.rewardSources?.engineLootTables ?? 0,
+      unresolvedEngineLootTables:
+        source.rewardSources?.unresolvedEngineLootTables ?? 0,
+      scriptInventoryGrants:
+        source.rewardSources?.scriptInventoryGrants ?? 0,
+      worldDrops:
+        source.rewardSources?.worldDrops ?? 0,
+      pickupObservers:
+        source.rewardSources?.pickupObservers ?? 0,
+      scriptLootCommands:
+        source.rewardSources?.scriptLootCommands ?? 0,
+      functionLootCommands:
+        source.rewardSources?.functionLootCommands ?? 0,
+      scoreboardCredits:
+        source.rewardSources?.scoreboardCredits ?? 0,
+      scoreboardDebits:
+        source.rewardSources?.scoreboardDebits ?? 0,
+      scoreboardWrites:
+        source.rewardSources?.scoreboardWrites ?? 0,
+      deathRewardPaths:
+        source.rewardSources?.deathRewardPaths ?? 0,
+      pickupCurrencyPaths:
+        source.rewardSources?.pickupCurrencyPaths ?? 0,
+      deathRewardSourceOverlapCandidates:
+        source.rewardSources
+          ?.deathRewardSourceOverlapCandidates ?? 0,
+      pickupCurrencyWithoutConsumeCandidates:
+        source.rewardSources
+          ?.pickupCurrencyWithoutConsumeCandidates ?? 0,
+      rewardPathsWithoutIdempotency:
+        source.rewardSources
+          ?.rewardPathsWithoutIdempotency ?? 0,
+      dropCleanupSurfaces:
+        source.rewardSources?.dropCleanupSurfaces ?? 0,
+      policy: {
+        configured:
+          source.economyPolicy?.configured ?? false,
+        deathRewardOverlapContradictions:
+          source.economyPolicy
+            ?.deathRewardOverlapContradictions ?? 0,
+        deathRewardOverlapUnresolved:
+          source.economyPolicy
+            ?.deathRewardOverlapUnresolved ?? 0,
+        pickupCurrencyConsumeContradictions:
+          source.economyPolicy
+            ?.pickupCurrencyConsumeContradictions ?? 0,
+        pickupCurrencyPolicyMismatch:
+          source.economyPolicy
+            ?.pickupCurrencyPolicyMismatch ?? 0,
+        idempotencyCoverageGaps:
+          source.economyPolicy
+            ?.idempotencyCoverageGaps ?? 0,
+        staleDropCleanupCoverageGaps:
+          source.economyPolicy
+            ?.staleDropCleanupCoverageGaps ?? 0,
+        inventoryFullPolicyGaps:
+          source.economyPolicy
+            ?.inventoryFullPolicyGaps ?? 0,
+        pickupScopeValidationUnproven:
+          source.economyPolicy
+            ?.pickupScopeValidationUnproven ?? 0,
+        terminalRewardResultCommitUnproven:
+          source.economyPolicy
+            ?.terminalRewardResultCommitUnproven ?? 0,
+      },
     },
     combat: {
       hurtHandlers:
