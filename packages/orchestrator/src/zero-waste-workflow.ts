@@ -71,6 +71,17 @@ export interface ZeroWasteWorkflowInput {
     Partial<ContextCompilerBudget>;
 }
 
+export type ZeroWasteProofActionKind =
+  | "reuse"
+  | "recompute"
+  | "restore-evidence";
+
+export interface ZeroWasteProofAction {
+  claimId: string;
+  action: ZeroWasteProofActionKind;
+  reasons: readonly string[];
+}
+
 export interface ZeroWasteWorkflowPlan {
   impactAuthority:
     | "post-patch"
@@ -93,6 +104,8 @@ export interface ZeroWasteWorkflowPlan {
     readonly string[];
   blockedProofClaimIds:
     readonly string[];
+  proofActions:
+    readonly ZeroWasteProofAction[];
   reasons: readonly string[];
 }
 
@@ -283,6 +296,18 @@ export function prepareZeroWasteWorkflow(
           item.claimId,
       );
 
+  const proofActions: ZeroWasteProofAction[] =
+    proofReuse.map((item) => ({
+      claimId: item.claimId,
+      action:
+        item.status === "reusable"
+          ? "reuse"
+          : item.status === "stale"
+            ? "recompute"
+            : "restore-evidence",
+      reasons: [...item.reasons],
+    }));
+
   const blocked =
     affected.status ===
       "blocked" ||
@@ -307,6 +332,7 @@ export function prepareZeroWasteWorkflow(
     reusableProofClaimIds,
     staleProofClaimIds,
     blockedProofClaimIds,
+    proofActions,
     reasons: [
       impactAuthority === "post-patch"
         ? "Affected closure, selective validation, and proof reuse are bound to the post-patch semantic graph."
@@ -416,6 +442,24 @@ export function zeroWasteWorkflowPlanText(
         plan
           .blockedProofClaimIds
           .length,
+      ),
+    "- reuse actions: " +
+      String(
+        plan.proofActions.filter(
+          (item) => item.action === "reuse",
+        ).length,
+      ),
+    "- recompute actions: " +
+      String(
+        plan.proofActions.filter(
+          (item) => item.action === "recompute",
+        ).length,
+      ),
+    "- restore-evidence actions: " +
+      String(
+        plan.proofActions.filter(
+          (item) => item.action === "restore-evidence",
+        ).length,
       ),
     "",
     "Context",
