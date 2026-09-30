@@ -87,6 +87,36 @@
       "status": "canonical"
     },
     {
+      "id": "post-repair-closure-receipt",
+      "symbol": "PostRepairClosureReceipt",
+      "owner": "packages/orchestrator/src/post-repair-closure.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator",
+        "apps"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "repair-closure",
+      "status": "canonical"
+    },
+    {
+      "id": "repair-authorization-receipt",
+      "symbol": "RepairAuthorizationReceipt",
+      "owner": "packages/repair/src/authorization.ts",
+      "producers": [
+        "packages/repair"
+      ],
+      "consumers": [
+        "packages/repair",
+        "packages/orchestrator"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "repair-authorization",
+      "status": "canonical"
+    },
+    {
       "id": "repair-lifecycle-state",
       "symbol": "RepairLifecycleState",
       "owner": "packages/orchestrator/src/repair-lifecycle.ts",
@@ -259,6 +289,21 @@
       ],
       "schemaVersion": 1,
       "verificationLevel": "workflow-continuity",
+      "status": "canonical"
+    },
+    {
+      "id": "zero-waste-execution-receipt",
+      "symbol": "ZeroWasteExecutionReceipt",
+      "owner": "packages/orchestrator/src/zero-waste-execution-receipt.ts",
+      "producers": [
+        "packages/orchestrator"
+      ],
+      "consumers": [
+        "packages/orchestrator",
+        "apps"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "zero-waste-execution",
       "status": "canonical"
     }
   ]
