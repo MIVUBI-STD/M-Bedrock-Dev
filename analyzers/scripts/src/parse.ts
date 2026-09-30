@@ -67,6 +67,7 @@ import { derivePersistentDataLifecycleEvidence } from "./persistent-data-lifecyc
 import { inferPersistentStateScopes } from "./persistent-state-scope.js";
 import { deriveTerminalRaceEvidence } from "./terminal-race-evidence.js";
 import { deriveScriptTerminalLifecycleGraph } from "./terminal-lifecycle-graph.js";
+import { inferPersistentStateLifetimes } from "./persistent-state-lifetime.js";
 
 function scriptKind(path: string): ts.ScriptKind {
   if (path.endsWith(".ts")) return ts.ScriptKind.TS;
@@ -2579,6 +2580,14 @@ export function parseScriptFile(
     persistentStateScopes:
       inferPersistentStateScopes(
         dynamicProperties,
+      ),
+    persistentStateLifetimes:
+      inferPersistentStateLifetimes(
+        persistentDataLifecycleEvidence,
+        inferPersistentStateScopes(
+          dynamicProperties,
+        ),
+        cleanupResourceEvidence,
       ),
     terminalRaceEvidence: [
       ...terminalRaceEvidence,

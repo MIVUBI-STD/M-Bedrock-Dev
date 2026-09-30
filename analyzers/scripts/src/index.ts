@@ -33,3 +33,6 @@ export * from "./terminal-race-evidence.js";
 
 export * from "./persistent-state-scope.js";
 export * from "./terminal-lifecycle-graph.js";
+
+export * from "./terminal-lifecycle-project.js";
+export * from "./persistent-state-lifetime.js";

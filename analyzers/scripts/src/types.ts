@@ -6,6 +6,7 @@ import type { ScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
 import type { ScriptCleanupResourceEvidence } from "./cleanup-resource-evidence.js";
 import type { PersistentDataLifecycleEvidence } from "./persistent-data-lifecycle.js";
 import type { PersistentStateScopeEvidence } from "./persistent-state-scope.js";
+import type { PersistentStateLifetimeEvidence } from "./persistent-state-lifetime.js";
 import type { ScriptTerminalRaceEvidence } from "./terminal-race-evidence.js";
 import type { ScriptLifecycleGraph } from "./terminal-lifecycle-graph.js";
 import type { ScriptSpatialMutationEvidence, ScriptSpatialMutationRejection } from "./spatial-mutation-evidence.js";
@@ -466,6 +467,7 @@ export interface ParsedScriptFile {
   globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
   persistentDataLifecycleEvidence?: PersistentDataLifecycleEvidence[];
   persistentStateScopes?: PersistentStateScopeEvidence[];
+  persistentStateLifetimes?: PersistentStateLifetimeEvidence[];
   terminalRaceEvidence?: ScriptTerminalRaceEvidence[];
   terminalLifecycleGraph?: ScriptLifecycleGraph;
   repairTransformHints?: RepairSourceTransformHint[];
