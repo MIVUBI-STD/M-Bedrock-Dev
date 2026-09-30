@@ -344,3 +344,5 @@ export * from "./chunk-lifecycle-analysis.js";
 export * from "./reward-source-analysis.js";
 export * from "./economy-policy-analysis.js";
 export * from "./economy-policy-load.js";
+
+export * from "./combat-policy-diagnostics.js";
