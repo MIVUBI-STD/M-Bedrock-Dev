@@ -567,7 +567,7 @@ export function deriveArenaCapacityGuardTransformHints(
               commitSource.range.lineStart,
               commitSource.range.columnStart ?? 0,
             ].join(":"),
-            family: "arena-ownership-guard",
+            family: "arena-capacity-guard",
             analyzerId:
               SCRIPT_REPAIR_HINT_ANALYZER_ID,
             analyzerRevision:
