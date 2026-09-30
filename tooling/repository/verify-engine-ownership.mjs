@@ -10,6 +10,26 @@ const AREAS = [
 const ignoredDirectories = new Set(["node_modules", "dist", "coverage"]);
 const failures = [];
 
+const DOMAIN_REGISTRIES = [
+  { root: "apps", registry: "apps/ownership.json", ignored: new Set([]) },
+  { root: "tooling", registry: "tooling/ownership.json", ignored: new Set([]) },
+  { root: "workspace", registry: "workspace/ownership.json", ignored: new Set([]) },
+];
+
+for (const domain of DOMAIN_REGISTRIES) {
+  const registry = JSON.parse(readFileSync(domain.registry, "utf8"));
+  const physical = readdirSync(domain.root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !domain.ignored.has(entry.name))
+    .map((entry) => entry.name)
+    .sort();
+  const assigned = Object.values(registry.groups ?? {})
+    .flatMap((group) => Array.isArray(group.entries) ? group.entries : [])
+    .sort();
+  if (JSON.stringify(physical) !== JSON.stringify(assigned)) {
+    failures.push(domain.registry + ": must assign every direct child directory exactly once");
+  }
+}
+
 const engineRegistry = JSON.parse(readFileSync("engine/ownership.json", "utf8"));
 const expectedEngineEntries = ["adapters","analyzers","fixtures","knowledge","packages","reliability","rules","runtime","schemas"].sort();
 const assignedEngineEntries = Object.values(engineRegistry.groups ?? {})

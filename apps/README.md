@@ -1,11 +1,13 @@
 # Apps
 
-Thin user-facing interfaces over M-Bedrock-Dev core.
-
-Current surface:
+Thin user-facing interfaces over the deterministic engine.
 
 ```text
-cli/   command-line inspection interface
+apps/
+├─ cli/             command-line inspection / engineering interface
+└─ bug-report-ui/   Svelte report review/presentation interface
 ```
 
-Future MCP/desktop interfaces must consume the same orchestrator/core and must not become alternate semantic owners.
+Both surfaces consume canonical engine APIs. Neither may own Bedrock parsing, diagnosis, repair policy, or persistent semantic truth.
+
+`ownership.json` is the canonical app-surface registry. New interfaces must be added there and must reuse the same engine rather than creating a parallel implementation.

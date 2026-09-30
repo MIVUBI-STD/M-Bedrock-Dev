@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "groups": {
+    "repository": {
+      "purpose": "Repository policy, structure, API and dependency verification.",
+      "entries": [
+        "repository"
+      ]
+    },
+    "developer": {
+      "purpose": "Developer command routing and environment/toolchain entrypoints.",
+      "entries": [
+        "windows-toolchain"
+      ]
+    },
+    "interfaceSupport": {
+      "purpose": "Build/dev support for app presentation surfaces without owning product semantics.",
+      "entries": [
+        "bug-report-ui"
+      ]
+    }
+  }
+}

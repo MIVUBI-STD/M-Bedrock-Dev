@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "groups": {
+    "interfaces": {
+      "purpose": "User-facing executable/UI surfaces that consume engine APIs.",
+      "entries": [
+        "cli",
+        "bug-report-ui"
+      ]
+    }
+  }
+}
