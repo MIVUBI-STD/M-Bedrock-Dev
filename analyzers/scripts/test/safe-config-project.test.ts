@@ -71,4 +71,157 @@ describe("safe-config project linker", () => {
       }),
     ]);
   });
+
+  it("resolves multi-hop named re-export barrels", () => {
+    const project = linkScriptSafeConfigProject([
+      {
+        path: "scripts/base.ts",
+        source: source("scripts/base.ts"),
+        text: `
+          export const ARENA_COUNT = 6;
+        `,
+      },
+      {
+        path: "scripts/barrel.ts",
+        source: source("scripts/barrel.ts"),
+        text: `
+          export { ARENA_COUNT } from "./base.js";
+        `,
+      },
+      {
+        path: "scripts/index.ts",
+        source: source("scripts/index.ts"),
+        text: `
+          export { ARENA_COUNT } from "./barrel.js";
+        `,
+      },
+      {
+        path: "scripts/config.ts",
+        source: source("scripts/config.ts"),
+        text: `
+          import { ARENA_COUNT } from "./index.js";
+          export const VALUE = ARENA_COUNT + 1;
+        `,
+      },
+    ]);
+
+    expect(project.diagnostics).toEqual([]);
+    expect(
+      evaluateScriptSafeConfigExport(
+        project,
+        "scripts/config.ts",
+        "VALUE",
+      ),
+    ).toBe(7);
+  });
+
+  it("resolves deterministic default exports and imports", () => {
+    const project = linkScriptSafeConfigProject([
+      {
+        path: "scripts/base.ts",
+        source: source("scripts/base.ts"),
+        text: `
+          const CONFIG = { arenaCount: 4 };
+          export default CONFIG;
+        `,
+      },
+      {
+        path: "scripts/config.ts",
+        source: source("scripts/config.ts"),
+        text: `
+          import CONFIG from "./base.js";
+          export const COUNT = CONFIG.arenaCount;
+        `,
+      },
+    ]);
+
+    expect(project.diagnostics).toEqual([]);
+    expect(
+      evaluateScriptSafeConfigExport(
+        project,
+        "scripts/config.ts",
+        "COUNT",
+      ),
+    ).toBe(4);
+  });
+
+  it("exposes deterministic namespace imports as read-only export objects", () => {
+    const project = linkScriptSafeConfigProject([
+      {
+        path: "scripts/base.ts",
+        source: source("scripts/base.ts"),
+        text: `
+          export const COUNT = 3;
+          export const OFFSET = 64;
+        `,
+      },
+      {
+        path: "scripts/config.ts",
+        source: source("scripts/config.ts"),
+        text: `
+          import * as base from "./base.js";
+          export const VALUE = base.COUNT * base.OFFSET;
+        `,
+      },
+    ]);
+
+    expect(project.diagnostics).toEqual([]);
+    expect(
+      evaluateScriptSafeConfigExport(
+        project,
+        "scripts/config.ts",
+        "VALUE",
+      ),
+    ).toBe(192);
+  });
+
+  it("fails closed on ambiguous star re-exports", () => {
+    const project = linkScriptSafeConfigProject([
+      {
+        path: "scripts/a.ts",
+        source: source("scripts/a.ts"),
+        text: "export const COUNT = 2;",
+      },
+      {
+        path: "scripts/b.ts",
+        source: source("scripts/b.ts"),
+        text: "export const COUNT = 3;",
+      },
+      {
+        path: "scripts/index.ts",
+        source: source("scripts/index.ts"),
+        text: `
+          export * from "./a.js";
+          export * from "./b.js";
+        `,
+      },
+      {
+        path: "scripts/config.ts",
+        source: source("scripts/config.ts"),
+        text: `
+          import { COUNT } from "./index.js";
+          export const VALUE = COUNT;
+        `,
+      },
+    ]);
+
+    expect(
+      project.diagnostics,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "ambiguous-export",
+          symbol: "COUNT",
+        }),
+      ]),
+    );
+    expect(() =>
+      evaluateScriptSafeConfigExport(
+        project,
+        "scripts/config.ts",
+        "VALUE",
+      )
+    ).toThrow();
+  });
+
 });
