@@ -31,6 +31,7 @@ export interface ScriptRewardPathAssessment {
   scoreAdjustments: number;
   scoreWrites: number;
   itemConsumes: number;
+  dropCleanupSurfaces: number;
   deathEntityTypeGuards: readonly string[];
   idempotencyGuards: number;
 }
@@ -51,6 +52,7 @@ export interface RewardSourceAnalysis {
   scoreboardWrites: number;
   itemConsumes: number;
   dropCleanupSurfaces: number;
+  worldDropRewardPathsWithoutCleanup: number;
   rewardPathsWithoutIdempotency: number;
   deathRewardPaths: number;
   pickupCurrencyPaths: number;
@@ -257,6 +259,14 @@ function pathAssessment(
         economy,
         "item-consume",
       ),
+    dropCleanupSurfaces:
+      countKind(
+        economy,
+        "item-consume",
+      ) +
+      commands.filter(
+        isItemCleanupCommand,
+      ).length,
     deathEntityTypeGuards: [
       ...new Set(
         economy.flatMap((item) =>
@@ -542,6 +552,12 @@ export function analyzeRewardSources(
     ...deathRewardPaths,
     ...pickupCurrencyPaths,
   ];
+  const worldDropRewardPathsWithoutCleanup =
+    deathRewardPaths.filter(
+      (path) =>
+        path.worldDrops > 0 &&
+        path.dropCleanupSurfaces === 0,
+    ).length;
   const rewardPathsWithoutIdempotency =
     rewardRelevantPaths.filter(
       (path) =>
@@ -577,6 +593,7 @@ export function analyzeRewardSources(
     scoreboardWrites,
     itemConsumes,
     dropCleanupSurfaces,
+    worldDropRewardPathsWithoutCleanup,
     rewardPathsWithoutIdempotency,
     deathRewardPaths:
       deathRewardPaths.length,
