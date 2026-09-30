@@ -101,6 +101,7 @@ function legacyToV2(
     map: {
       name: report.map.name,
       mapVersion: report.map.version,
+      drive: report.map.drive,
       baseVersion:
         report.map.minecraftVersion,
       testedVersion:

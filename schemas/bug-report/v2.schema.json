@@ -4,42 +4,89 @@
   "title": "M-Bedrock Bug Report V2",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "map", "repairBy", "bugs"],
+  "required": [
+    "schema",
+    "map",
+    "repairBy",
+    "bugs"
+  ],
   "properties": {
-    "schema": { "const": "m-bedrock-bug-report/v2" },
+    "schema": {
+      "const": "m-bedrock-bug-report/v2"
+    },
     "map": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "mapVersion", "baseVersion", "testedVersion"],
+      "required": [
+        "name",
+        "mapVersion",
+        "drive",
+        "baseVersion",
+        "testedVersion"
+      ],
       "properties": {
-        "name": { "type": "string", "minLength": 1 },
-        "mapVersion": { "type": "string", "minLength": 1 },
-        "baseVersion": { "type": "string", "minLength": 1 },
-        "testedVersion": { "type": "string", "minLength": 1 }
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mapVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "testedVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "drive": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^https://drive\\.google\\.com/"
+        }
       }
     },
     "repairBy": {
-      "enum": ["chatgpt", "developer"]
+      "enum": [
+        "chatgpt",
+        "developer"
+      ]
     },
     "bugs": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/bug" }
+      "items": {
+        "$ref": "#/$defs/bug"
+      }
     }
   },
   "$defs": {
     "stringList": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "relevantCode": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["file", "reason"],
+      "required": [
+        "file",
+        "reason"
+      ],
       "properties": {
-        "file": { "type": "string", "minLength": 1 },
-        "reason": { "type": "string", "minLength": 1 }
+        "file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "bug": {
@@ -57,9 +104,20 @@
         "observed"
       ],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "fixed": { "type": "boolean" },
-        "severity": { "enum": ["blocker", "major", "minor"] },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fixed": {
+          "type": "boolean"
+        },
+        "severity": {
+          "enum": [
+            "blocker",
+            "major",
+            "minor"
+          ]
+        },
         "category": {
           "enum": [
             "game-flow",
@@ -74,20 +132,49 @@
             "compatibility"
           ]
         },
-        "foundBy": { "enum": ["ai", "tester"] },
-        "title": { "type": "string", "minLength": 1 },
-        "problem": { "type": "string", "minLength": 1 },
-        "expected": { "type": "string", "minLength": 1 },
-        "observed": { "type": "string", "minLength": 1 },
-        "reproduction": { "$ref": "#/$defs/stringList" },
-        "aiAnalysis": { "type": "string", "minLength": 1 },
+        "foundBy": {
+          "enum": [
+            "ai",
+            "tester"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "problem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reproduction": {
+          "$ref": "#/$defs/stringList"
+        },
+        "aiAnalysis": {
+          "type": "string",
+          "minLength": 1
+        },
         "relevantCode": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/relevantCode" }
+          "items": {
+            "$ref": "#/$defs/relevantCode"
+          }
         },
-        "suggestedFix": { "type": "string", "minLength": 1 },
-        "mustPreserve": { "$ref": "#/$defs/stringList" }
+        "suggestedFix": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mustPreserve": {
+          "$ref": "#/$defs/stringList"
+        }
       }
     }
   }

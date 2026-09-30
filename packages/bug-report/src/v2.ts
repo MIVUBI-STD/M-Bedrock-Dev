@@ -5,6 +5,7 @@ export const BUG_REPORT_V2_SCHEMA = "m-bedrock-bug-report/v2" as const;
 
 export const BUG_REPORT_V2_LABELS = {
   mapVersion: "Map Version",
+  drive: "Map Drive",
   baseVersion: "Base Version",
   testedVersion: "Tested Version",
   repairBy: "Repair By",
@@ -29,6 +30,7 @@ export type BugReportV2FoundBy = "ai" | "tester";
 export interface BugReportV2Map {
   readonly name: string;
   readonly mapVersion: string;
+  readonly drive: string;
   readonly baseVersion: string;
   readonly testedVersion: string;
 }
@@ -185,18 +187,37 @@ function parseMap(
 
   rejectUnknown(
     value,
-    ["name", "mapVersion", "baseVersion", "testedVersion"],
+    ["name", "mapVersion", "drive", "baseVersion", "testedVersion"],
     "map",
     issues,
   );
 
   const name = requiredText(value, "name", "map", issues);
   const mapVersion = requiredText(value, "mapVersion", "map", issues);
+  const drive = requiredText(value, "drive", "map", issues);
   const baseVersion = requiredText(value, "baseVersion", "map", issues);
   const testedVersion = requiredText(value, "testedVersion", "map", issues);
 
-  return name && mapVersion && baseVersion && testedVersion
-    ? { name, mapVersion, baseVersion, testedVersion }
+  if (
+    drive !== undefined &&
+    !drive.startsWith("https://drive.google.com/")
+  ) {
+    issues.push({
+      code: "invalid-value",
+      path: "map.drive",
+      message: "Map drive must be a Google Drive URL.",
+    });
+  }
+
+  return (
+    name &&
+    mapVersion &&
+    drive &&
+    drive.startsWith("https://drive.google.com/") &&
+    baseVersion &&
+    testedVersion
+  )
+    ? { name, mapVersion, drive, baseVersion, testedVersion }
     : undefined;
 }
 
