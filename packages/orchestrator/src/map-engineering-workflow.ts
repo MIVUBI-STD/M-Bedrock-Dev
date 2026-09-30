@@ -64,6 +64,7 @@ export interface MapEngineeringWorkflowProjection {
     chunkLeaseReleaseUnreachable: number;
     chunkDynamicLeaseKeys: number;
     chunkCapacityUncheckedLeases: number;
+    chunkReadinessUnverifiedLeases: number;
     chunkShutdownOnlyCleanupRisk: number;
     chunkWorldLoadReconciliationMissing: number;
     chunkUnguardedDeferredWork: number;
@@ -416,6 +417,9 @@ export function buildMapEngineeringWorkflow(
     chunkCapacityUncheckedLeases:
       source.gameplayWorld.chunks
         ?.capacityUncheckedLeases ?? 0,
+    chunkReadinessUnverifiedLeases:
+      source.gameplayWorld.chunks
+        ?.readinessUnverifiedLeases ?? 0,
     chunkShutdownOnlyCleanupRisk:
       source.gameplayWorld.chunks
         ?.shutdownOnlyCleanupRisk ?? 0,
