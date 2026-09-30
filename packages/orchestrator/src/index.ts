@@ -331,3 +331,4 @@ export * from "./inventory-restore-ownership-analysis.js";
 export * from "./entity-ai-stack-analysis.js";
 export * from "./route-navigation-environment-analysis.js";
 export * from "./entity-navigation-runtime-classification.js";
+export * from "./route-navigation-environment-load.js";
