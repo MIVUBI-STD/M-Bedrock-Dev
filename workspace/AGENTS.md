@@ -17,6 +17,7 @@ Expected local project session layout:
 ```text
 workspace/active/<project-id>/
 ├── source/
+├── design/   # map-scoped Game Design authority
 ├── working/
 ├── output/
 ├── reports/

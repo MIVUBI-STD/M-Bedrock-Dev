@@ -18,6 +18,7 @@ Canonical local project shape:
 ```text
 workspace/active/<project-id>/
 ├─ source/     immutable extracted/source representation
+├─ design/     map-scoped Game Design authority (`game-design.json`)
 ├─ working/    transaction mutation target
 ├─ output/     packaged outputs
 ├─ reports/    local diagnostics/evidence
@@ -28,3 +29,8 @@ workspace/active/<project-id>/
 `workspace/reports/` stores only repository-tracked canonical audit handoff reports. Private artifacts, extracted maps, caches, local verification output, and working state remain ignored.
 
 Nothing under `workspace/active/` or `workspace/saved/` is repository source authority.
+
+
+## Map Game Design authority
+
+`workspace/active/<project-id>/design/game-design.json` is the canonical local Game Design for that map/project. Engine schemas and compilers validate/compile it, but engine-global knowledge or contracts must never replace it.

@@ -117,6 +117,90 @@
         },
         "additionalProperties": false
       }
+    },
+    "behaviorConstraints": {
+      "type": "object",
+      "properties": {
+        "combat": {
+          "type": "object",
+          "properties": {
+            "friendlyFireAllowed": {
+              "type": "boolean"
+            },
+            "crossArenaDamageAllowed": {
+              "type": "boolean"
+            },
+            "environmentalDamageAllowed": {
+              "type": "boolean"
+            },
+            "selfReviveAllowed": {
+              "type": "boolean"
+            },
+            "multipleReviversAllowed": {
+              "type": "boolean"
+            },
+            "reviveAfterDeathAllowed": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "economy": {
+          "type": "object",
+          "properties": {
+            "deathRewardArbitration": {
+              "enum": [
+                "complementary",
+                "mutually-exclusive",
+                "unresolved"
+              ]
+            },
+            "pickupCurrencyItemPolicy": {
+              "enum": [
+                "consume",
+                "retain",
+                "not-applicable"
+              ]
+            },
+            "inventoryFullPolicy": {
+              "enum": [
+                "leave-remainder",
+                "defer",
+                "convert",
+                "reject",
+                "compensate",
+                "not-applicable"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "inventory": {
+          "type": "object",
+          "required": [
+            "rules"
+          ],
+          "properties": {
+            "rules": {
+              "type": "array"
+            }
+          },
+          "additionalProperties": false
+        },
+        "spatial": {
+          "type": "object",
+          "required": [
+            "rules"
+          ],
+          "properties": {
+            "rules": {
+              "type": "array"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

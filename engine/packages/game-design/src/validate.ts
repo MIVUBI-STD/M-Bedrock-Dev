@@ -15,6 +15,7 @@ export function validateGameDesignSpec(value: unknown): string[] {
   }
   if (!Array.isArray(item.mechanics)) errors.push("Game Design mechanics must be an array.");
   if (!Array.isArray(item.invariants)) errors.push("Game Design invariants must be an array.");
+  if (item.behaviorConstraints !== undefined && (!item.behaviorConstraints || typeof item.behaviorConstraints !== "object" || Array.isArray(item.behaviorConstraints))) errors.push("Game Design behaviorConstraints must be an object when provided.");
   return errors;
 }
 
