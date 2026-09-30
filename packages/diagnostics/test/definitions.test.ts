@@ -26,6 +26,14 @@ describe("diagnostic definitions", () => {
     expect(
       diagnosticDefinition("UNRESOLVED_REFERENCE").evidenceBoundary,
     ).toBe("static");
+    expect(
+      diagnosticDefinition(
+        "COMBAT_REVIVE_POLICY_VIOLATION",
+      ),
+    ).toMatchObject({
+      category: "combat",
+      evidenceBoundary: "runtime-evidence",
+    });
   });
 
   it("deduplicates definitions for repeated finding codes", () => {
