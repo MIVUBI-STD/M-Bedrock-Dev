@@ -17,4 +17,4 @@ export * from "./script-property-mutability-matrix.js";
 export * from "./script-execution-privilege-matrix.js";
 export * from "./script-enum-value-matrix.js";
 
-export * from "./runtime-profile.js";
+export * from "./runtime-profile-adapter.js";

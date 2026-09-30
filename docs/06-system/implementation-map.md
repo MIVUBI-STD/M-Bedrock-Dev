@@ -26,6 +26,7 @@ Use this before broad repository search.
 | Controlled Minecraft experiment planning/qualification/provenance | engine/packages/runtime-lab/ + engine/runtime/lab/ |
 | Compatibility engine/version/track contracts | engine/packages/compatibility/ |
 | Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
+| Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
 | Explicit Game Design specification schema/loader | engine/packages/game-design/ + engine/game-design/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
 | Engineering/validation contracts | engine/contracts/engineering/ |

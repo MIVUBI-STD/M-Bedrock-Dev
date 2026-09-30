@@ -23,7 +23,7 @@ export type InventoryFullRewardPolicy =
   | "compensate"
   | "not-applicable";
 
-export interface EconomyPolicy {
+export interface EconomyBehaviorContract {
   schemaVersion: 1;
   id: string;
   deathRewardArbitration:
@@ -38,6 +38,9 @@ export interface EconomyPolicy {
   terminalRewardRequiresResultCommit: boolean;
   provenance?: BehaviorClaimProvenance;
 }
+
+/** @deprecated Compatibility alias. Use EconomyBehaviorContract. */
+export type EconomyPolicy = EconomyBehaviorContract;
 
 const provenance = projectPolicyProvenance(
   "behavior-spec:economy-policy-v1",
@@ -66,3 +69,5 @@ export function validateEconomyPolicy(
 
   return errors;
 }
+
+export const validateEconomyBehaviorContract = validateEconomyPolicy;

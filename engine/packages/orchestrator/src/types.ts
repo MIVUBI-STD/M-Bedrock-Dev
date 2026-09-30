@@ -1,5 +1,5 @@
 import type { MinecraftEdition } from "../../compatibility/src/index.js";
-import type { CombatPolicy, EconomyPolicy, InventoryItemPolicy, SpatialAuthorityPolicy } from "../../behavior-model/src/index.js";
+import type { CombatBehaviorContract, CombatPolicy, EconomyBehaviorContract, EconomyPolicy, InventoryItemBehaviorContract, InventoryItemPolicy, SpatialAuthorityPolicy } from "../../behavior-model/src/index.js";
 import type { EducationFeatureState } from "../../compatibility/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
@@ -73,6 +73,8 @@ export interface InspectTargetProfile {
   routeCorridors?: readonly RouteCorridorContract[];
   routeNavigationEnvironments?: readonly RouteNavigationEnvironmentContract[];
   arenaRegionContracts?: readonly ArenaRegionContract[];
+  spatialAuthorityContract?: SpatialAuthorityPolicy;
+  /** @deprecated Use spatialAuthorityContract. */
   spatialAuthorityPolicy?: SpatialAuthorityPolicy;
   spatialAuthorityRequirements?: readonly SpatialAuthorityCoverageRequirement[];
   mutationDependentActions?: readonly MutationDependentActionContract[];
@@ -81,8 +83,14 @@ export interface InspectTargetProfile {
   staticExecutionDimension?: string;
   releaseVersion?: string;
   arenaProofMode?: ArenaProofExecutionMode;
+  inventoryItemContract?: InventoryItemBehaviorContract;
+  combatContract?: CombatBehaviorContract;
+  economyContract?: EconomyBehaviorContract;
+  /** @deprecated Use inventoryItemContract. */
   inventoryItemPolicy?: InventoryItemPolicy;
+  /** @deprecated Use combatContract. */
   combatPolicy?: CombatPolicy;
+  /** @deprecated Use economyContract. */
   economyPolicy?: EconomyPolicy;
 }
 

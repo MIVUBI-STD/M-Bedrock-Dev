@@ -54,6 +54,10 @@ The registry:
 
 A documented claim and a contradictory runtime observation are not silently ranked. They remain an explicit conflict until a stronger reconciled revision supersedes both.
 
+## Canonical terminology
+
+Target-specific combat, inventory, economy, and spatial constraints are **Behavior Contracts**. Legacy `*Policy` type names remain compatibility aliases; they must not be confused with global Engineering Contracts or Game Design.
+
 ## Safety
 
 Behavioral model fragments are evaluation specifications, not Game Design authority. Intended gameplay originates in approved Game Design or sufficiently grounded authored intent.

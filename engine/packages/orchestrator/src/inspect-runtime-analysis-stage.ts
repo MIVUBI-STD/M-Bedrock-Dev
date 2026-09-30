@@ -162,11 +162,11 @@ export function analyzeInspectionRuntimeState(
   const scriptSpatial =
     analyzeScriptSpatialMutations(parsedScriptModels);
   const spatialAuthority =
-    input.target.spatialAuthorityPolicy === undefined
+    (input.target.spatialAuthorityContract ?? input.target.spatialAuthorityPolicy) === undefined
       ? undefined
       : analyzeSpatialAuthorityCoverage(
           input.target.arenaRegionContracts ?? [],
-          input.target.spatialAuthorityPolicy,
+          (input.target.spatialAuthorityContract ?? input.target.spatialAuthorityPolicy)!,
           input.target.spatialAuthorityRequirements ?? [],
         );
 
@@ -218,7 +218,7 @@ export function analyzeInspectionRuntimeState(
   const inventoryPolicy =
     analyzeInventoryPolicy(
       parsedScriptModels,
-      input.target.inventoryItemPolicy,
+      input.target.inventoryItemContract ?? input.target.inventoryItemPolicy,
     );
   const inventoryRestoreOwnership =
     analyzeInventoryRestoreOwnership(
@@ -248,12 +248,12 @@ export function analyzeInspectionRuntimeState(
     analyzeCombatPolicy(
       combatLifecycle,
       input.combatRuntimeTelemetry,
-      input.target.combatPolicy,
+      input.target.combatContract ?? input.target.combatPolicy,
     );
   const economyPolicy =
     analyzeEconomyPolicy(
       rewardSources,
-      input.target.economyPolicy,
+      input.target.economyContract ?? input.target.economyPolicy,
     );
   const arenaGlobalState =
     analyzeArenaGlobalState(

@@ -5,7 +5,7 @@ import type {
   BehaviorClaimProvenance,
 } from "../provenance.js";
 
-export interface CombatPolicy {
+export interface CombatBehaviorContract {
   schemaVersion: 1;
   id: string;
   friendlyFireAllowed: boolean;
@@ -20,6 +20,9 @@ export interface CombatPolicy {
   reviveAfterDeathAllowed: boolean;
   provenance?: BehaviorClaimProvenance;
 }
+
+/** @deprecated Compatibility alias. Use CombatBehaviorContract. */
+export type CombatPolicy = CombatBehaviorContract;
 
 export interface CombatDamageEligibilityQuery {
   attackerPresent?: boolean;
@@ -220,3 +223,5 @@ export function combatSecondaryEffectAllowed(
   }
   return damageEligibility;
 }
+
+export const validateCombatBehaviorContract = validateCombatPolicy;

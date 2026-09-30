@@ -33,11 +33,14 @@ export interface InventoryItemPolicyRule {
   rationale?: string;
 }
 
-export interface InventoryItemPolicy {
+export interface InventoryItemBehaviorContract {
   schemaVersion: 1;
   id: string;
   rules: readonly InventoryItemPolicyRule[];
 }
+
+/** @deprecated Compatibility alias. Use InventoryItemBehaviorContract. */
+export type InventoryItemPolicy = InventoryItemBehaviorContract;
 
 export interface InventoryItemPolicyQuery {
   itemClass: string;
@@ -204,3 +207,5 @@ export function resolveInventoryItemPolicy(
         : "Resolved from fallback item-class policy.",
   };
 }
+
+export const validateInventoryItemBehaviorContract = validateInventoryItemPolicy;
