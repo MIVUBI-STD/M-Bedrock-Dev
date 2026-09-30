@@ -44,6 +44,7 @@ import type { EntityAiStackAnalysis } from "./entity-ai-stack-analysis.js";
 import type { RouteNavigationEnvironmentAnalysis } from "./route-navigation-environment-analysis.js";
 import type { CombatLifecycleAnalysis } from "./combat-lifecycle-analysis.js";
 import type { CombatRuntimeTelemetryAnalysis } from "./combat-runtime-telemetry-analysis.js";
+import type { CombatPolicyAnalysis } from "./combat-policy-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
@@ -103,6 +104,7 @@ export interface InspectDirectoryResult {
   inventoryRestoreOwnership: InventoryRestoreOwnershipAnalysis;
   combatLifecycle: CombatLifecycleAnalysis;
   combatRuntime: CombatRuntimeTelemetryAnalysis;
+  combatPolicy: CombatPolicyAnalysis;
   releaseIdentity: ReleaseIdentityAnalysis;
   gameplayWorld: GameplayWorldModel;
   structures: number;
