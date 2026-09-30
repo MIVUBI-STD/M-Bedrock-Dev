@@ -28,6 +28,7 @@ export interface ScriptRewardPathAssessment {
   lootCommands: number;
   scoreCredits: number;
   scoreDebits: number;
+  scoreAdjustments: number;
   scoreWrites: number;
   itemConsumes: number;
   idempotencyGuards: number;
@@ -45,6 +46,7 @@ export interface RewardSourceAnalysis {
   functionLootCommands: number;
   scoreboardCredits: number;
   scoreboardDebits: number;
+  scoreboardAdjustments: number;
   scoreboardWrites: number;
   itemConsumes: number;
   dropCleanupSurfaces: number;
@@ -233,6 +235,11 @@ function pathAssessment(
           scoreboardCommandKind(command) ===
           "debit",
       ).length,
+    scoreAdjustments:
+      countKind(
+        economy,
+        "score-adjust",
+      ),
     scoreWrites:
       countKind(
         economy,
@@ -430,6 +437,11 @@ export function analyzeRewardSources(
         scoreboardCommandKind(command) ===
         "debit",
     ).length;
+  const scoreboardAdjustments =
+    countKind(
+      economy,
+      "score-adjust",
+    );
   const scoreboardWrites =
     countKind(economy, "score-write") +
     [
@@ -539,6 +551,7 @@ export function analyzeRewardSources(
     functionLootCommands,
     scoreboardCredits,
     scoreboardDebits,
+    scoreboardAdjustments,
     scoreboardWrites,
     itemConsumes,
     dropCleanupSurfaces,
