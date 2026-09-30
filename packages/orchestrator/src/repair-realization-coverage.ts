@@ -13,6 +13,7 @@ import type {
 
 export type RepairRealizationCoverageDisposition =
   | "realized"
+  | "proposal-only"
   | "blocked"
   | "missing-realizer"
   | "no-applicable-source";
@@ -31,6 +32,7 @@ export interface RepairRealizationCoverageReport {
   candidateId: string;
   items: readonly RepairRealizationCoverageItem[];
   realizedCount: number;
+  proposalOnlyCount: number;
   blockedCount: number;
   missingRealizerCount: number;
   noImplementationCoverage: boolean;
@@ -78,6 +80,7 @@ export function buildRepairRealizationCoverageReport(
         ],
       }],
       realizedCount: 0,
+      proposalOnlyCount: 0,
       blockedCount: 0,
       missingRealizerCount: 0,
       noImplementationCoverage: true,
@@ -98,6 +101,18 @@ export function buildRepairRealizationCoverageReport(
           item.sourceId === source.sourceId &&
           item.sourceVersion === source.sourceVersion,
       );
+
+      if (
+        realizerItem?.status ===
+        "realizer-not-required"
+      ) {
+        return {
+          sourceId: source.sourceId,
+          sourceVersion: source.sourceVersion,
+          disposition: "proposal-only",
+          reasons: realizerItem.reasons,
+        };
+      }
 
       if (
         !realizerItem ||
@@ -155,6 +170,10 @@ export function buildRepairRealizationCoverageReport(
   const realizedCount = items.filter(
     (item) => item.disposition === "realized",
   ).length;
+  const proposalOnlyCount = items.filter(
+    (item) =>
+      item.disposition === "proposal-only",
+  ).length;
   const blockedCount = items.filter(
     (item) => item.disposition === "blocked",
   ).length;
@@ -168,6 +187,7 @@ export function buildRepairRealizationCoverageReport(
     candidateId: enumeration.envelope.candidateId,
     items,
     realizedCount,
+    proposalOnlyCount,
     blockedCount,
     missingRealizerCount,
     noImplementationCoverage:
