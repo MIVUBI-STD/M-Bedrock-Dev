@@ -4,6 +4,7 @@ export type RepairSourceTransformFamily =
   | "session-generation-guard"
   | "scheduler-generation-guard"
   | "arena-ownership-guard"
+  | "arena-capacity-guard"
   | "persistence-idempotency-guard"
   | "compatibility-transform";
 
