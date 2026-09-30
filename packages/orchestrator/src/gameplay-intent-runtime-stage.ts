@@ -22,6 +22,9 @@ import {
 import type {
   EntityAiStackAnalysis,
 } from "./entity-ai-stack-analysis.js";
+import type {
+  RouteNavigationEnvironmentAnalysis,
+} from "./route-navigation-environment-analysis.js";
 import {
   resolveRuntimeStateSnapshot,
   type RuntimeNavigationStallObservation,
@@ -68,6 +71,7 @@ export type GameplayRouteStallInvestigationDirection =
   | "route-unreachable"
   | "navigation-target-divergence"
   | "entity-ai-stack-incomplete"
+  | "navigation-environment-incompatible"
   | "navigation-runtime-suspect"
   | "evidence-incomplete";
 
@@ -616,6 +620,7 @@ function navigationTargetComparison(
 export interface GameplayIntentRuntimeOptions {
   dimension?: string;
   entityAiStack?: EntityAiStackAnalysis;
+  routeNavigationEnvironment?: RouteNavigationEnvironmentAnalysis;
 }
 
 export function analyzeGameplayIntentRuntime(
@@ -896,7 +901,10 @@ export function analyzeGameplayIntentRuntime(
             candidateAnalysis.leadingCandidateId ===
             "entity-ai-stack"
               ? "entity-ai-stack-incomplete"
-              : investigationDirection;
+              : candidateAnalysis.leadingCandidateId ===
+                  "navigation-environment"
+                ? "navigation-environment-incompatible"
+                : investigationDirection;
 
         return {
           ...completeAssessment,
