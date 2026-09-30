@@ -6,6 +6,7 @@ import {
 import {
   BUILTIN_TASK_CAPABILITIES,
   createTaskGraph,
+  planTaskExecution,
   resolveAffectedTasks,
 } from "../src/index.js";
 
@@ -89,6 +90,38 @@ describe("builtin task capabilities", () => {
         "domain.economy",
       ]),
     );
+  });
+
+  it("allows affected static prerequisites to execute before runtime work in live context", () => {
+    const graph =
+      createTaskGraph(
+        BUILTIN_TASK_CAPABILITIES,
+      );
+    const affected =
+      resolveAffectedTasks(
+        graph,
+        [
+          "analyzers/entities/src/ai-stack.ts",
+        ],
+      );
+    const plan =
+      planTaskExecution({
+        graph,
+        affected,
+        context: "LIVE_MINECRAFT",
+        targetCapabilityIds: [
+          "runtime.entity-ai",
+        ],
+      });
+
+    expect(plan.status).toBe("ready");
+    expect(
+      plan.selectedCapabilityIds,
+    ).toEqual([
+      "source.entities.ai",
+      "domain.entity-ai",
+      "runtime.entity-ai",
+    ]);
   });
 
   it("keeps runtime-lab changes out of unrelated static domains", () => {
