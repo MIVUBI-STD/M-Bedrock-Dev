@@ -63,6 +63,7 @@ export interface InspectionSourceIndex {
   parsedScripts: Array<{
     node: SemanticNode;
     parsed: ParsedScriptFile;
+    text?: string;
   }>;
   parsedEntities: Array<{
     node: SemanticNode;
@@ -176,14 +177,17 @@ export async function indexInspectionSources(
       };
       graph.addNode(node);
       nodes.push(node);
+      const scriptText =
+        await readFile(
+          join(root, file.relativePath),
+          "utf8",
+        );
       parsedScripts.push({
         node,
+        text: scriptText,
         parsed: parseScriptFile(
           scriptId,
-          await readFile(
-            join(root, file.relativePath),
-            "utf8",
-          ),
+          scriptText,
           node.source,
         ),
       });
