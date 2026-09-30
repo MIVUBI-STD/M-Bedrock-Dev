@@ -114,6 +114,7 @@ describe("post-repair closure receipt", () => {
             },
             evidenceIds: ["zero-waste:receipt"],
             dependencyViolations: [],
+            executionViolations: [],
             reasons: ["complete"],
           },
         },
