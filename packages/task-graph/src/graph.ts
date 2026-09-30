@@ -27,6 +27,30 @@ export function createTaskGraph(
         "Task capability owner must be non-empty for " + id + ".",
       );
     }
+
+    for (const prefix of capability.pathPrefixes) {
+      const wildcardCount =
+        [...prefix].filter(
+          (character) => character === "*",
+        ).length;
+      if (
+        wildcardCount > 0 &&
+        (
+          wildcardCount !== 1 ||
+          !prefix.endsWith("*") ||
+          prefix.length === 1
+        )
+      ) {
+        throw new Error(
+          "Task capability " +
+            id +
+            " path prefix wildcard must be one trailing * after a literal prefix: " +
+            prefix +
+            ".",
+        );
+      }
+    }
+
     byId.set(id, {
       ...capability,
       id,
