@@ -216,6 +216,9 @@ export async function inspectDirectory(
       parsedEntities,
       entityAiStack,
       routeNavigationEnvironment,
+      combatRuntimeTelemetry:
+        runtimeEvidenceStage
+          .combatRuntimeTelemetry,
       parsedStructureModels,
     });
   const {
