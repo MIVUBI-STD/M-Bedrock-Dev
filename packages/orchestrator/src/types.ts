@@ -1,5 +1,5 @@
 import type { MinecraftEdition } from "../../compatibility/src/index.js";
-import type { CombatPolicy, EconomyPolicy, InventoryItemPolicy } from "../../behavior-model/src/index.js";
+import type { CombatPolicy, EconomyPolicy, InventoryItemPolicy, SpatialAuthorityPolicy } from "../../behavior-model/src/index.js";
 import type { EducationFeatureState } from "../../compatibility/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../reliability/src/index.js";
@@ -48,6 +48,7 @@ import type { CombatPolicyAnalysis } from "./combat-policy-analysis.js";
 import type { ChunkLifecycleAnalysis } from "./chunk-lifecycle-analysis.js";
 import type { RewardSourceAnalysis } from "./reward-source-analysis.js";
 import type { EconomyPolicyAnalysis } from "./economy-policy-analysis.js";
+import type { SpatialAuthorityCoverageReport, SpatialAuthorityCoverageRequirement } from "./spatial-authority-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { ArenaStressPlan } from "./arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "./arena-repeated-run-validation.js";
@@ -70,6 +71,8 @@ export interface InspectTargetProfile {
   routeCorridors?: readonly RouteCorridorContract[];
   routeNavigationEnvironments?: readonly RouteNavigationEnvironmentContract[];
   arenaRegionContracts?: readonly ArenaRegionContract[];
+  spatialAuthorityPolicy?: SpatialAuthorityPolicy;
+  spatialAuthorityRequirements?: readonly SpatialAuthorityCoverageRequirement[];
   mutationDependentActions?: readonly MutationDependentActionContract[];
   stateAuthorityContracts?: readonly StateAuthorityContract[];
   authoredSourceRoots?: readonly string[];
@@ -103,6 +106,7 @@ export interface InspectDirectoryResult {
   scriptApiUsage: ScriptApiUsageInventory;
   scriptSafeConfig: ScriptSafeConfigAnalysis;
   scriptSpatial: ScriptSpatialAnalysis;
+  spatialAuthority?: SpatialAuthorityCoverageReport;
   inventoryLifecycle: InventoryLifecycleAnalysis;
   inventoryPolicy: InventoryPolicyAnalysis;
   inventoryRestoreOwnership: InventoryRestoreOwnershipAnalysis;
