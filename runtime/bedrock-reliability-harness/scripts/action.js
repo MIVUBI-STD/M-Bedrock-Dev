@@ -1,5 +1,6 @@
 import { system, world } from "@minecraft/server";
 import { MAP_ADAPTER, mapAdapterMetadata } from "./map-adapter.js";
+import { SESSION_ACTION_CAPABILITIES, sessionActionHandler } from "./session-action.js";
 
 const ACTION_PREFIX = "[M-BEDROCK-ACTION]";
 const CAPABILITIES_PREFIX =
@@ -16,6 +17,7 @@ const STATE = {
 const CAPABILITIES = {
   schemaVersion: 1,
   actions: [
+    ...SESSION_ACTION_CAPABILITIES,
     {
       id: "multiplayer.reset-arena-stress-fixture",
       description:
@@ -1294,6 +1296,9 @@ export function executeRuntimeAction(
 
   const handler =
     HANDLERS.get(
+      message.actionId
+    ) ??
+    sessionActionHandler(
       message.actionId
     );
   if (!handler) {

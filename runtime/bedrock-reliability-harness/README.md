@@ -90,3 +90,23 @@ For a production map validation harness:
 4. use an external multi-client adapter for true disconnect/reconnect proof;
 5. declare `live-runtime` authority only when the hook controls the real
    authored gameplay path rather than fixture tags.
+
+
+## Session lifecycle action provider
+
+`scripts/session-action.js` implements the server-side fixture actions used
+by multiplayer session experiments:
+
+- join-pad enter/leave;
+- connection-generation simulation;
+- life-generation simulation;
+- pending transition invalidation;
+- fixture cleanup.
+
+Its evidence inherits the configured map adapter proof authority. With the
+bundled generic adapter this is `server-simulated`, so requirements that
+explicitly demand `live-runtime` authority will not qualify from these
+fixture transitions.
+
+Use an external multi-client controller for actual disconnect/reconnect
+authority.
