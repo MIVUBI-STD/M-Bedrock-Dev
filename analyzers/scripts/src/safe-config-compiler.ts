@@ -35,6 +35,15 @@ export interface ScriptSafeConfigImport {
   module: string;
   importedName: string;
   localName: string;
+  kind: "named" | "default" | "namespace";
+  source: SourceRef;
+}
+
+export interface ScriptSafeConfigReExport {
+  module: string;
+  importedName?: string;
+  exportedName?: string;
+  exportAll: boolean;
   source: SourceRef;
 }
 
@@ -49,6 +58,7 @@ export interface ScriptSafeConfigCompilation {
   functions: readonly ScriptSafeConfigFunction[];
   imports: readonly ScriptSafeConfigImport[];
   exports: readonly ScriptSafeConfigExport[];
+  reExports: readonly ScriptSafeConfigReExport[];
   rejected: readonly ScriptSafeConfigRejection[];
 }
 
@@ -759,6 +769,7 @@ export function compileScriptSafeConfig(
   const functions: ScriptSafeConfigFunction[] = [];
   const imports: ScriptSafeConfigImport[] = [];
   const exports: ScriptSafeConfigExport[] = [];
+  const reExports: ScriptSafeConfigReExport[] = [];
   const rejected: ScriptSafeConfigRejection[] = [];
 
   for (const statement of file.statements) {
@@ -770,16 +781,132 @@ export function compileScriptSafeConfig(
         statement.moduleSpecifier.text.startsWith("/")
       )
     ) {
-      const named = statement.importClause?.namedBindings;
+      const clause = statement.importClause;
+      if (!clause || clause.isTypeOnly) {
+        continue;
+      }
+
+      if (clause.name) {
+        imports.push({
+          module: statement.moduleSpecifier.text,
+          importedName: "default",
+          localName: clause.name.text,
+          kind: "default",
+          source: nodeSource(file, clause.name, source),
+        });
+      }
+
+      const named = clause.namedBindings;
       if (named && ts.isNamedImports(named)) {
         for (const element of named.elements) {
+          if (element.isTypeOnly) continue;
           imports.push({
             module: statement.moduleSpecifier.text,
             importedName:
               element.propertyName?.text ??
               element.name.text,
             localName: element.name.text,
+            kind: "named",
             source: nodeSource(file, element, source),
+          });
+        }
+      } else if (
+        named &&
+        ts.isNamespaceImport(named)
+      ) {
+        imports.push({
+          module: statement.moduleSpecifier.text,
+          importedName: "*",
+          localName: named.name.text,
+          kind: "namespace",
+          source: nodeSource(file, named, source),
+        });
+      }
+      continue;
+    }
+
+    if (
+      ts.isExportDeclaration(statement)
+    ) {
+      const moduleSpecifier =
+        statement.moduleSpecifier &&
+        ts.isStringLiteralLike(
+          statement.moduleSpecifier,
+        )
+          ? statement.moduleSpecifier.text
+          : undefined;
+
+      if (
+        moduleSpecifier &&
+        (
+          moduleSpecifier.startsWith(".") ||
+          moduleSpecifier.startsWith("/")
+        )
+      ) {
+        if (
+          statement.exportClause &&
+          ts.isNamedExports(
+            statement.exportClause,
+          )
+        ) {
+          for (
+            const element of
+              statement.exportClause.elements
+          ) {
+            reExports.push({
+              module: moduleSpecifier,
+              importedName:
+                element.propertyName?.text ??
+                element.name.text,
+              exportedName:
+                element.name.text,
+              exportAll: false,
+              source: nodeSource(
+                file,
+                element,
+                source,
+              ),
+            });
+          }
+        } else if (
+          statement.exportClause ===
+          undefined
+        ) {
+          reExports.push({
+            module: moduleSpecifier,
+            exportAll: true,
+            source: nodeSource(
+              file,
+              statement,
+              source,
+            ),
+          });
+        }
+        continue;
+      }
+
+      if (
+        !moduleSpecifier &&
+        statement.exportClause &&
+        ts.isNamedExports(
+          statement.exportClause,
+        )
+      ) {
+        for (
+          const element of
+            statement.exportClause.elements
+        ) {
+          exports.push({
+            localName:
+              element.propertyName?.text ??
+              element.name.text,
+            exportedName:
+              element.name.text,
+            source: nodeSource(
+              file,
+              element,
+              source,
+            ),
           });
         }
       }
@@ -787,20 +914,49 @@ export function compileScriptSafeConfig(
     }
 
     if (
-      ts.isExportDeclaration(statement) &&
-      !statement.moduleSpecifier &&
-      statement.exportClause &&
-      ts.isNamedExports(statement.exportClause)
+      ts.isExportAssignment(statement) &&
+      !statement.isExportEquals
     ) {
-      for (const element of statement.exportClause.elements) {
-        exports.push({
-          localName:
-            element.propertyName?.text ??
-            element.name.text,
-          exportedName: element.name.text,
-          source: nodeSource(file, element, source),
+      const expression =
+        compileSafeConfigExpression(
+          statement.expression,
+        );
+      if (!expression) {
+        rejected.push({
+          name: "default",
+          reason:
+            rejectionReason(
+              statement.expression,
+            ),
+          detail:
+            "Default export is outside the deterministic safe-config subset and was not executed.",
+          source: nodeSource(
+            file,
+            statement,
+            source,
+          ),
         });
+        continue;
       }
+
+      const defaultName =
+        "$safeConfigDefault";
+      const defaultSource =
+        nodeSource(
+          file,
+          statement,
+          source,
+        );
+      bindings.push({
+        name: defaultName,
+        expression,
+        source: defaultSource,
+      });
+      exports.push({
+        localName: defaultName,
+        exportedName: "default",
+        source: defaultSource,
+      });
       continue;
     }
 
@@ -829,11 +985,19 @@ export function compileScriptSafeConfig(
               ts.SyntaxKind.ExportKeyword,
           ) ?? false;
         if (exported) {
+          const isDefault =
+            statement.modifiers?.some(
+              (modifier) =>
+                modifier.kind ===
+                ts.SyntaxKind.DefaultKeyword,
+            ) ?? false;
           exports.push({
             localName:
               statement.name.text,
             exportedName:
-              statement.name.text,
+              isDefault
+                ? "default"
+                : statement.name.text,
             source: sourceRef,
           });
         }
@@ -981,6 +1145,12 @@ export function compileScriptSafeConfig(
     exports: exports.sort((a, b) =>
       a.exportedName.localeCompare(b.exportedName) ||
       a.localName.localeCompare(b.localName)
+    ),
+    reExports: reExports.sort((a, b) =>
+      a.module.localeCompare(b.module) ||
+      (a.exportedName ?? "").localeCompare(
+        b.exportedName ?? "",
+      )
     ),
     rejected: rejected.sort((a, b) =>
       (a.name ?? "").localeCompare(b.name ?? "") ||
