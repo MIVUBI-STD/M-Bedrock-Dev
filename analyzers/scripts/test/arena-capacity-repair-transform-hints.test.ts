@@ -27,7 +27,7 @@ describe("arena capacity repair transform hints", () => {
 
     expect(hints).toHaveLength(1);
     expect(hints[0]).toMatchObject({
-      family: "arena-ownership-guard",
+      family: "arena-capacity-guard",
       source: {
         ...source,
         range: expect.objectContaining({
@@ -56,7 +56,7 @@ describe("arena capacity repair transform hints", () => {
     ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          family: "arena-ownership-guard",
+          family: "arena-capacity-guard",
           supportedPredicateIds: [
             "arena-capacity-overflow-observed",
           ],
