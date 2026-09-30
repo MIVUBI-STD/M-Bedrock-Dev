@@ -130,6 +130,7 @@ describe("zero-waste execution receipt", () => {
     expect(receipt.evidenceIds).toEqual([
       "e:a",
       "e:b",
+      "validation:a",
     ]);
     expect(receipt.avoidedWork).toEqual({
       proofExecutions: 1,
@@ -179,6 +180,11 @@ describe("zero-waste execution receipt", () => {
           evidenceIds: ["e:dependency"],
         },
       ],
+      [{
+        scenarioId: "scenario:a",
+        completed: true,
+        evidenceIds: ["validation:a"],
+      }],
     );
 
     expect(receipt.status).toBe("incomplete");
