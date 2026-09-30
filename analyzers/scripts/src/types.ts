@@ -1,3 +1,4 @@
+import type { ScriptChunkLifecycleEvidence } from "./chunk-lifecycle-evidence.js";
 import type { ScriptCombatLifecycleEvidence } from "./combat-lifecycle-evidence.js";
 import type { ScriptInventoryLifecycleEvidence } from "./inventory-lifecycle-evidence.js";
 import type { ScriptGlobalLeaseEvidence } from "./global-lease-evidence.js";
@@ -451,6 +452,7 @@ export interface ParsedScriptFile {
   spatialMutationRejected?: ScriptSpatialMutationRejection[];
   spatialWorldMutations?: ScriptSpatialWorldMutation[];
   cleanupResourceEvidence?: ScriptCleanupResourceEvidence[];
+  chunkLifecycleEvidence?: ScriptChunkLifecycleEvidence[];
   combatLifecycleEvidence?: ScriptCombatLifecycleEvidence[];
   inventoryLifecycleEvidence?: ScriptInventoryLifecycleEvidence[];
   globalLeaseEvidence?: ScriptGlobalLeaseEvidence[];
