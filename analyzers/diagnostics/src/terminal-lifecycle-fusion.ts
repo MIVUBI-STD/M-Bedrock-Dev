@@ -1,9 +1,9 @@
 import type {
   LifecycleReleaseProof,
-} from "../../../packages/behavior-model/src/lifecycle-proof.js";
+} from "../../../packages/behavior-model/src/index.js";
 import type {
   ScriptTerminalRaceEvidence,
-} from "../../scripts/src/terminal-race-evidence.js";
+} from "../../scripts/src/index.js";
 
 export interface TerminalLifecycleFusion {
   disposition:
