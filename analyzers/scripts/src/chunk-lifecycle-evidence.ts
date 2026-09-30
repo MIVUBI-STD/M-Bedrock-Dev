@@ -258,8 +258,7 @@ export function deriveScriptChunkLifecycleEvidence(
       }
 
       if (
-        method === "createTickingArea" &&
-        /tickingArea/i.test(receiver)
+        method === "createTickingArea"
       ) {
         push(
           node,
@@ -275,8 +274,7 @@ export function deriveScriptChunkLifecycleEvidence(
       }
 
       if (
-        method === "removeTickingArea" &&
-        /tickingArea/i.test(receiver)
+        method === "removeTickingArea"
       ) {
         push(
           node,
@@ -293,7 +291,17 @@ export function deriveScriptChunkLifecycleEvidence(
 
       if (
         method === "hasCapacity" &&
-        /tickingArea/i.test(receiver)
+        (
+          /tickingArea/i.test(receiver) ||
+          output.some(
+            (item) =>
+              item.receiverExpression === receiver &&
+              (
+                item.kind === "ticking-area-acquire" ||
+                item.kind === "ticking-area-release"
+              ),
+          )
+        )
       ) {
         push(
           node,
