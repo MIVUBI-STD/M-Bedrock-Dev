@@ -39,6 +39,10 @@ export interface SessionLifecyclePolicyViolation {
   actual: unknown;
 }
 
+/**
+ * Caller-supplied rules are required. This module intentionally owns no
+ * project-specific reconnect/disconnect default.
+ */
 export interface SessionLifecyclePolicyAssessment {
   status: "proven" | "violated" | "unknown";
   checkedRules: number;
@@ -135,50 +139,3 @@ export function assessSessionLifecyclePolicy(
   };
 }
 
-export function defaultRestartOnReconnectPolicy():
-  readonly SessionLifecyclePolicyRule[] {
-  return [
-    {
-      phase: "assigned",
-      event: "disconnect",
-      expectedPhase: "assigned",
-      preserveArenaAssignment: true,
-      preserveProgress: false,
-    },
-    {
-      phase: "starting",
-      event: "disconnect",
-      expectedPhase: "assigned",
-      preserveArenaAssignment: true,
-      preserveProgress: false,
-    },
-    {
-      phase: "playing",
-      event: "disconnect",
-      expectedPhase: "assigned",
-      preserveArenaAssignment: true,
-      preserveProgress: false,
-    },
-    {
-      phase: "assigned",
-      event: "reconnect",
-      expectedPhase: "assigned",
-      preserveArenaAssignment: true,
-      preserveProgress: false,
-    },
-    {
-      phase: "starting",
-      event: "reconnect",
-      expectedPhase: "assigned",
-      preserveArenaAssignment: true,
-      preserveProgress: false,
-    },
-    {
-      phase: "playing",
-      event: "reconnect",
-      expectedPhase: "assigned",
-      preserveArenaAssignment: true,
-      preserveProgress: false,
-    },
-  ] as const;
-}
