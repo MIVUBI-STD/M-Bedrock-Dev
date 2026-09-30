@@ -45,6 +45,9 @@ import type {
   CombatRuntimeTelemetryAnalysis,
 } from "./combat-runtime-telemetry-analysis.js";
 import type {
+  CombatPolicyAnalysis,
+} from "./combat-policy-analysis.js";
+import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
@@ -144,6 +147,12 @@ export interface GameplayWorldModel {
     projectileRemovals: number;
     projectileCleanupGap: number;
     hurtOnlyTerminalRisk: number;
+    policy: {
+      configured: boolean;
+      revivePolicyContradictions: number;
+      projectileCleanupPolicyGap: number;
+      secondaryEffectEligibilitySurfaces: number;
+    };
     runtime: {
       reviveAnomalies: number;
       selfRevive: number;
@@ -252,6 +261,7 @@ export interface GameplayWorldModelSource {
   spatialAuthority?: SpatialAuthorityCoverageReport;
   combatLifecycle?: CombatLifecycleAnalysis;
   combatRuntime?: CombatRuntimeTelemetryAnalysis;
+  combatPolicy?: CombatPolicyAnalysis;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
   inventoryPolicy?: InventoryPolicyAnalysis;
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
@@ -524,6 +534,16 @@ export function deriveGameplayWorldModel(
         source.combatLifecycle?.projectileCleanupGap ?? 0,
       hurtOnlyTerminalRisk:
         source.combatLifecycle?.hurtOnlyTerminalRisk ?? 0,
+      policy: {
+        configured:
+          source.combatPolicy?.configured ?? false,
+        revivePolicyContradictions:
+          source.combatPolicy?.revivePolicyContradictions ?? 0,
+        projectileCleanupPolicyGap:
+          source.combatPolicy?.projectileCleanupPolicyGap ?? 0,
+        secondaryEffectEligibilitySurfaces:
+          source.combatPolicy?.secondaryEffectEligibilitySurfaces ?? 0,
+      },
       runtime: {
         reviveAnomalies:
           source.combatRuntime?.reviveAnomalies ?? 0,
