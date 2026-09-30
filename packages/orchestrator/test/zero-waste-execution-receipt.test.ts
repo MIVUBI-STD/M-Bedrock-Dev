@@ -81,8 +81,18 @@ const plan: ZeroWasteWorkflowPlan = {
   staleProofClaimIds: ["claim:b"],
   blockedProofClaimIds: [],
   proofActions: [
-    { claimId: "claim:a", action: "reuse", dependsOnClaimIds: [], reasons: [] },
-    { claimId: "claim:b", action: "recompute", dependsOnClaimIds: [], reasons: [] },
+    {
+      claimId: "claim:a",
+      action: "reuse",
+      dependsOnClaimIds: [],
+      reasons: [],
+    },
+    {
+      claimId: "claim:b",
+      action: "recompute",
+      dependsOnClaimIds: [],
+      reasons: [],
+    },
   ],
   reasons: [],
 };
@@ -119,7 +129,11 @@ describe("zero-waste execution receipt", () => {
       proofExecutions: 1,
       validationScenarios: 1,
       totalUnits: 2,
-      it("rejects outcomes that violate proof dependency order", () => {
+    });
+    expect(receipt.dependencyViolations).toEqual([]);
+  });
+
+  it("rejects outcomes that violate proof dependency order", () => {
     const dependentPlan: ZeroWasteWorkflowPlan = {
       ...plan,
       proofActions: [
@@ -165,7 +179,5 @@ describe("zero-waste execution receipt", () => {
     expect(receipt.dependencyViolations.join(" ")).toMatch(
       /before dependency/i,
     );
-  });
-});
   });
 });
