@@ -55,6 +55,11 @@ export interface MapEngineeringWorkflowProjection {
     inventoryMultipleRestoreOwners: number;
     entityAiTargetedStackIncomplete: number;
     entityAiNavigationEnvironmentIncompatible: number;
+    combatHurtOnlyTerminalRisk: number;
+    combatProjectileCleanupPolicyGap: number;
+    combatSecondaryEffectEligibilitySurfaces: number;
+    combatRevivePolicyContradictions: number;
+    combatReviveScopeGaps: number;
   };
   nextActions: readonly string[];
 }
@@ -362,6 +367,27 @@ export function buildMapEngineeringWorkflow(
     entityAiNavigationEnvironmentIncompatible:
       source.gameplayWorld.entities
         ?.navigationEnvironment.incompatible ?? 0,
+    combatHurtOnlyTerminalRisk:
+      source.gameplayWorld.combat
+        ?.hurtOnlyTerminalRisk ?? 0,
+    combatProjectileCleanupPolicyGap:
+      source.gameplayWorld.combat
+        ?.policy.projectileCleanupPolicyGap ?? 0,
+    combatSecondaryEffectEligibilitySurfaces:
+      source.gameplayWorld.combat
+        ?.policy.secondaryEffectEligibilitySurfaces ?? 0,
+    combatRevivePolicyContradictions:
+      source.gameplayWorld.combat
+        ?.policy.revivePolicyContradictions ?? 0,
+    combatReviveScopeGaps:
+      (
+        source.gameplayWorld.combat
+          ?.runtime.scopedLifeGenerationMissing ?? 0
+      ) +
+      (
+        source.gameplayWorld.combat
+          ?.runtime.scopedArenaGenerationMissing ?? 0
+      ),
   };
 
   const nextActions = stages
