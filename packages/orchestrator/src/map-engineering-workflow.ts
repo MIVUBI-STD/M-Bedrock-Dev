@@ -60,6 +60,11 @@ export interface MapEngineeringWorkflowProjection {
     combatSecondaryEffectEligibilitySurfaces: number;
     combatRevivePolicyContradictions: number;
     combatReviveScopeGaps: number;
+    chunkLeaseAcquireWithoutRelease: number;
+    chunkDynamicLeaseKeys: number;
+    chunkCapacityUncheckedLeases: number;
+    chunkShutdownOnlyCleanupRisk: number;
+    chunkResidencyObservabilityGaps: number;
   };
   nextActions: readonly string[];
 }
@@ -388,6 +393,26 @@ export function buildMapEngineeringWorkflow(
         source.gameplayWorld.combat
           ?.runtime.scopedArenaGenerationMissing ?? 0
       ),
+    chunkLeaseAcquireWithoutRelease:
+      source.gameplayWorld.chunks
+        ?.acquireWithoutRelease ?? 0,
+    chunkDynamicLeaseKeys:
+      source.gameplayWorld.chunks
+        ?.dynamicLeaseKeys ?? 0,
+    chunkCapacityUncheckedLeases:
+      source.gameplayWorld.chunks
+        ?.capacityUncheckedLeases ?? 0,
+    chunkShutdownOnlyCleanupRisk:
+      source.gameplayWorld.chunks
+        ?.shutdownOnlyCleanupRisk ?? 0,
+    chunkResidencyObservabilityGaps:
+      source.gameplayWorld.chunks
+        ?.entityResidencyObservability === "complete"
+        ? 0
+        : source.gameplayWorld.chunks
+              ?.entityResidencyObservability === "partial"
+          ? 1
+          : 2,
   };
 
   const nextActions = stages
