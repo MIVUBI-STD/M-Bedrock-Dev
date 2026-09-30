@@ -14,6 +14,7 @@ import {
 import { runtimeProbeResponseEvidence } from "./runtime-probe-evidence.js";
 import { assessRuntimeEvidenceSetIntegrity } from "./runtime-evidence-integrity.js";
 import { planEvidenceRecovery } from "./evidence-recovery.js";
+import { analyzeCombatRuntimeTelemetry } from "./combat-runtime-telemetry-analysis.js";
 
 export interface InspectionRuntimeEvidenceInput {
   telemetryEvents: readonly TelemetryEvent[];
@@ -27,6 +28,10 @@ export function prepareInspectionRuntimeEvidence(
 ) {
   const telemetryEvidence =
     telemetryRuntimeEvidence(input.telemetryEvents);
+  const combatRuntimeTelemetry =
+    analyzeCombatRuntimeTelemetry(
+      input.telemetryEvents,
+    );
   const telemetryStateObservations =
     telemetryRuntimeStateObservations(input.telemetryEvents);
   const runtimeOutcomeObservations =
@@ -183,6 +188,7 @@ export function prepareInspectionRuntimeEvidence(
 
   return {
     telemetryEvidence,
+    combatRuntimeTelemetry,
     runtimeProbeEvidence,
     runtimeStateObservations,
     runtimeOutcomeObservations,
