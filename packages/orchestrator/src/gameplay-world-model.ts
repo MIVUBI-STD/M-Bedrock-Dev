@@ -151,7 +151,7 @@ export interface GameplayWorldModel {
       unknownRegions: number;
     };
   };
-  persistence: {
+  persistence?: {
     properties: number;
     appendWithoutClear: number;
     worldScopedAppendWithoutClear: number;
