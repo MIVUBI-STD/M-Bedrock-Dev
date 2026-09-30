@@ -189,4 +189,33 @@ describe("cross-file call resolution", () => {
     );
   });
 
+
+  it("treats cross-file calls after early return as conditional", () => {
+    const edges = deriveCrossFileCallEdges([
+      {
+        path: "scripts/cleanup.ts",
+        text: "export function cleanupArena() {}",
+        source: { artifactId: "map", relativePath: "scripts/cleanup.ts" },
+      },
+      {
+        path: "scripts/main.ts",
+        text: `
+          import { cleanupArena } from "./cleanup.js";
+          export function finishGame(skipCleanup) {
+            if (skipCleanup) return;
+            cleanupArena();
+          }
+        `,
+        source: { artifactId: "map", relativePath: "scripts/main.ts" },
+      },
+    ]);
+
+    expect(edges[0]).toEqual(
+      expect.objectContaining({
+        controlFlow: "conditional",
+        status: "resolved",
+      }),
+    );
+  });
+
 });
