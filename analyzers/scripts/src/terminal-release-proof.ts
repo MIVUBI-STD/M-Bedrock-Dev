@@ -7,6 +7,7 @@ export interface TerminalReleaseProof {
   terminalRegions: readonly string[];
   releaseRegions: readonly string[];
   violatingRegions: readonly string[];
+  unknownRegions: readonly string[];
   reasons: readonly string[];
 }
 
@@ -30,15 +31,10 @@ export function proveInterproceduralTerminalRelease(
     options.releaseFunctionPattern ??
     /(?:releasearena|cleanup(?:arena)?|resetarena)/i;
 
-  const adjacency = new Map<string, string[]>();
   const regions = new Set<string>();
-
   for (const edge of graph.callEdges) {
     regions.add(edge.callerRegion);
     regions.add(edge.targetRegion);
-    const list = adjacency.get(edge.callerRegion) ?? [];
-    list.push(edge.targetRegion);
-    adjacency.set(edge.callerRegion, list);
   }
 
   const terminalRegions = [...regions]
@@ -47,6 +43,7 @@ export function proveInterproceduralTerminalRelease(
       return Boolean(name && terminalPattern.test(name));
     })
     .sort();
+
   const releaseRegions = new Set(
     [...regions].filter((region) => {
       const name = functionName(region);
@@ -60,6 +57,7 @@ export function proveInterproceduralTerminalRelease(
       terminalRegions,
       releaseRegions: [...releaseRegions].sort(),
       violatingRegions: [],
+      unknownRegions: terminalRegions,
       reasons: [
         terminalRegions.length === 0
           ? "No terminal function regions were established."
@@ -68,42 +66,121 @@ export function proveInterproceduralTerminalRelease(
     };
   }
 
-  const guaranteed = new Set(releaseRegions);
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const region of regions) {
-      if (guaranteed.has(region)) continue;
-      const outgoing = adjacency.get(region) ?? [];
+  const outgoing = new Map<
+    string,
+    ScriptLifecycleProjectGraph["callEdges"][number][]
+  >();
+  for (const edge of graph.callEdges) {
+    const list = outgoing.get(edge.callerRegion) ?? [];
+    list.push(edge);
+    outgoing.set(edge.callerRegion, list);
+  }
+
+  const memo = new Map<
+    string,
+    "guaranteed" | "not-guaranteed" | "unknown"
+  >();
+
+  const evaluate = (
+    region: string,
+    stack = new Set<string>(),
+  ): "guaranteed" | "not-guaranteed" | "unknown" => {
+    if (releaseRegions.has(region)) {
+      return "guaranteed";
+    }
+
+    const cached = memo.get(region);
+    if (cached) return cached;
+
+    if (stack.has(region)) {
+      return "unknown";
+    }
+
+    const nextStack = new Set(stack);
+    nextStack.add(region);
+
+    const edges = outgoing.get(region) ?? [];
+    if (edges.length === 0) {
+      memo.set(region, "not-guaranteed");
+      return "not-guaranteed";
+    }
+
+    const unconditional = edges.filter(
+      (edge) => edge.controlFlow === "unconditional",
+    );
+    const uncertain = edges.filter(
+      (edge) =>
+        edge.controlFlow === "conditional" ||
+        edge.controlFlow === "deferred" ||
+        edge.controlFlow === "unknown",
+    );
+
+    // One proven unconditional call to release/cleanup is enough to prove
+    // that release is reached along the straight-line execution path.
+    for (const edge of unconditional) {
       if (
-        outgoing.length > 0 &&
-        outgoing.every((target) => guaranteed.has(target))
+        evaluate(edge.targetRegion, nextStack) ===
+        "guaranteed"
       ) {
-        guaranteed.add(region);
-        changed = true;
+        memo.set(region, "guaranteed");
+        return "guaranteed";
       }
+    }
+
+    if (unconditional.length > 0) {
+      const outcomes = unconditional.map((edge) =>
+        evaluate(edge.targetRegion, nextStack)
+      );
+      if (
+        outcomes.every((outcome) => outcome === "not-guaranteed") &&
+        uncertain.length === 0
+      ) {
+        memo.set(region, "not-guaranteed");
+        return "not-guaranteed";
+      }
+    }
+
+    // Conditional/deferred/unknown calls cannot prove inevitable release.
+    memo.set(region, "unknown");
+    return "unknown";
+  };
+
+  const violatingRegions: string[] = [];
+  const unknownRegions: string[] = [];
+
+  for (const region of terminalRegions) {
+    const state = evaluate(region);
+    if (state === "not-guaranteed") {
+      violatingRegions.push(region);
+    } else if (state === "unknown") {
+      unknownRegions.push(region);
     }
   }
 
-  const violatingRegions = terminalRegions
-    .filter((region) => !guaranteed.has(region))
-    .sort();
+  const status =
+    violatingRegions.length > 0
+      ? "violated"
+      : unknownRegions.length > 0
+        ? "unknown"
+        : "proven";
 
   return {
-    status:
-      violatingRegions.length === 0
-        ? "proven"
-        : "violated",
+    status,
     terminalRegions,
     releaseRegions: [...releaseRegions].sort(),
-    violatingRegions,
+    violatingRegions: violatingRegions.sort(),
+    unknownRegions: unknownRegions.sort(),
     reasons:
-      violatingRegions.length === 0
+      status === "proven"
         ? [
-            "Every modeled terminal function has only continuations that inevitably reach a release/cleanup function.",
+            "Every modeled terminal function has an unconditional call path that proves release/cleanup is reached.",
           ]
-        : [
-            "At least one modeled terminal function has a call path that does not inevitably reach release/cleanup.",
-          ],
+        : status === "violated"
+          ? [
+              "At least one modeled terminal function has only non-release straight-line continuations.",
+            ]
+          : [
+              "Release may exist only behind conditional, deferred, cyclic, or otherwise unresolved call paths; runtime or stronger control-flow proof is required.",
+            ],
   };
 }
