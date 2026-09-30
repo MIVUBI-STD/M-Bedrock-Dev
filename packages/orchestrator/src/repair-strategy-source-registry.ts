@@ -287,6 +287,21 @@ export const BUILTIN_REPAIR_STRATEGY_SOURCES:
       rationale:
         "Routes proven arena capacity shortfall toward backend selection, lease reduction, queueing, or authored capacity guard localization. Proposal-only until the exact limiting resource ownership path is localized.",
     }, {
+      id: "chunk-lifecycle-remediation",
+      version: "1",
+      kind: "built-in-planner",
+      owner:
+        "packages/orchestrator/src/repair-strategy-source-registry.ts",
+      deterministic: false,
+      selectionMode: "proposal-only",
+      repairClass: "implementation-repair",
+      supportedDiagnosticCodes: [
+        "CHUNK_LIFECYCLE_RUNTIME_RISK",
+      ],
+      requiresExactSourceEvidence: false,
+      rationale:
+        "Routes chunk lifecycle risk toward loader/readiness evidence, lease ownership, cleanup/reconciliation, and generation-guard review. Proposal-only because a chunk lifecycle risk does not identify one safe source mutation surface.",
+    }, {
       id: "navigation-recovery-configuration",
       version: "1",
       kind: "runtime-recovery-mitigation",
