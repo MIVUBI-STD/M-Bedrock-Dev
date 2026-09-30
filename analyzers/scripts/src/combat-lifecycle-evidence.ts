@@ -127,14 +127,41 @@ export function deriveScriptCombatLifecycleEvidence(
     node: ts.Node,
     kind: ScriptCombatEvidenceKind,
     subjectExpression: string,
+    regionOverride?: string,
   ) => {
     output.push({
       kind,
       executionRegion:
+        regionOverride ??
         executionRegion(node, file),
       subjectExpression,
       source: nodeSource(file, node, source),
     });
+  };
+
+  const subscriptionCallbackRegion = (
+    call: ts.CallExpression,
+  ): string | undefined => {
+    const callback = call.arguments[0];
+    if (
+      !callback ||
+      (
+        !ts.isArrowFunction(callback) &&
+        !ts.isFunctionExpression(callback)
+      )
+    ) {
+      return undefined;
+    }
+    const start =
+      file.getLineAndCharacterOfPosition(
+        callback.getStart(file),
+      );
+    return (
+      "callback@" +
+      (start.line + 1) +
+      ":" +
+      (start.character + 1)
+    );
   };
 
   const visit = (node: ts.Node): void => {
@@ -146,12 +173,14 @@ export function deriveScriptCombatLifecycleEvidence(
           node,
           "hurt-subscription",
           node.expression.getText(file),
+          subscriptionCallbackRegion(node),
         );
       } else if (event === "entityDie") {
         push(
           node,
           "death-subscription",
           node.expression.getText(file),
+          subscriptionCallbackRegion(node),
         );
       }
 
