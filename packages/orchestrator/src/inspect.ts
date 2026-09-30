@@ -39,6 +39,7 @@ import { indexAuthoredIntentSources } from "./inspect-authored-intent-source.js"
 import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js";
 import { analyzeEntityAiStacks } from "./entity-ai-stack-analysis.js";
 import { combatPolicyDiagnostics } from "./combat-policy-diagnostics.js";
+import { chunkLifecycleDiagnostics } from "./chunk-lifecycle-diagnostics.js";
 import { analyzeRouteNavigationEnvironments } from "./route-navigation-environment-analysis.js";
 import { analyzeReleaseIdentity } from "./release-identity-analysis.js";
 
@@ -236,12 +237,16 @@ export async function inspectDirectory(
     scriptMutationTransactions,
     scriptCommandTransactions,
     combatPolicy,
+    chunkLifecycle,
   } = runtimeAnalysis;
   diagnostics.push(...runtimeAnalysis.diagnostics);
 
   diagnostics.push(
     ...combatPolicyDiagnostics(
       combatPolicy,
+    ),
+    ...chunkLifecycleDiagnostics(
+      chunkLifecycle,
     ),
   );
 
