@@ -226,14 +226,14 @@ describe("repair realizer registry and graph binding", () => {
     });
     expect(report.items).toEqual([
       expect.objectContaining({
+        sourceId: "intentional-proposal",
+        status: "realizer-not-required",
+      }),
+      expect.objectContaining({
         sourceId: "linear-topology-repair",
         status: "realizer-available",
         realizerId:
           "linear-topology-repair-realizer",
-      }),
-      expect.objectContaining({
-        sourceId: "intentional-proposal",
-        status: "realizer-not-required",
       }),
       expect.objectContaining({
         sourceId: "missing-realizer",
