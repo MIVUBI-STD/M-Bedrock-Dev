@@ -34,6 +34,14 @@ describe("diagnostic definitions", () => {
       category: "combat",
       evidenceBoundary: "runtime-evidence",
     });
+    expect(
+      diagnosticDefinition(
+        "CHUNK_LIFECYCLE_SOURCE_RISK",
+      ),
+    ).toMatchObject({
+      category: "chunk",
+      evidenceBoundary: "static",
+    });
   });
 
   it("deduplicates definitions for repeated finding codes", () => {
