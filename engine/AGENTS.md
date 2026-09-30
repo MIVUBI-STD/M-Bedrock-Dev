@@ -12,7 +12,9 @@ semantic/source analysis                      → analyzers/
 reusable contracts and orchestration          → packages/
 versioned capability policy                   → rules/
 structural schemas                            → schemas/
-machine-readable domain facts                 → knowledge/
+explicit intended gameplay                    → game-design/
+engineering/validation constraints             → contracts/
+machine-readable Minecraft platform facts      → knowledge/
 regression/update/history evidence             → reliability/
 runtime proof harnesses                        → runtime/
 reduced regression evidence                    → fixtures/
@@ -26,7 +28,9 @@ Use `docs/06-system/implementation-map.md` when ownership is unclear. Do not bro
 - `analyzers/` derives evidence and diagnostics without mutating artifacts.
 - `packages/` owns reusable contracts, repair behavior, orchestration, and stable engine APIs.
 - `packages/orchestrator` is the only normal cross-analyzer composition boundary.
-- `rules/` and `knowledge/` provide versioned facts/policy; they do not become runtime proof by themselves.
+- `game-design/` is the only explicit intended-gameplay authority.
+- `contracts/` owns engineering/validation constraints and must not be promoted into map design.
+- `rules/` and `knowledge/` provide versioned platform decisions/facts; they do not become runtime proof by themselves.
 - `runtime/` captures bounded runtime evidence; production source must not depend on test harness state.
 - `fixtures/` protects durable regressions and must never become semantic authority.
 - `experiments/` is outside the engine and may not be imported by production engine code.

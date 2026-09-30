@@ -11,10 +11,14 @@ engine/
 ├─ analysis
 │  ├─ adapters/        physical/native format translation
 │  └─ analyzers/       read-only semantic derivation
+├─ design-authority
+│  └─ game-design/     explicit map/mode intended gameplay
 ├─ policy-data
-│  ├─ knowledge/       evidence-backed domain facts and project policy
-│  ├─ rules/           versioned capability rules
-│  └─ schemas/         persisted/internal structural contracts
+│  ├─ knowledge/       descriptive Minecraft platform facts
+│  ├─ rules/           executable version/capability rules
+│  └─ schemas/         persisted/internal structural schemas
+├─ engineering-governance
+│  └─ contracts/       implementation + validation contracts
 ├─ quality
 │  ├─ fixtures/        minimized reproducible evidence
 │  └─ reliability/     regressions, coverage, update/history intelligence
@@ -39,7 +43,7 @@ external bytes / native storage
 Policy/data owners inform the pipeline without becoming runtime proof:
 
 ```text
-knowledge + rules + schemas
+game-design + knowledge + rules + contracts + schemas
         ↓
 analysis / compatibility / diagnosis
 ```
@@ -59,7 +63,7 @@ fixtures + reliability + runtime
 - `engine/adapters` translates representations.
 - `engine/analyzers` derives evidence without mutation.
 - `engine/packages/orchestrator` is the normal cross-owner composition boundary.
-- `engine/knowledge`, `rules`, and `schemas` are policy/data authorities, not execution owners.
+- `engine/game-design` owns intended gameplay; `engine/knowledge` owns platform facts; `engine/contracts` owns engineering constraints; `rules` and `schemas` remain executable policy/structure owners.
 - `engine/fixtures` and `reliability` protect quality but do not define gameplay semantics.
 - `engine/runtime` provides bounded runtime proof.
 - Research under `experiments/` is non-authoritative and must not become a production dependency.

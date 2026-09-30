@@ -1,6 +1,6 @@
 # Gameplay Intent
 
-This package owns the parser-independent semantic model for what an authored Minecraft experience is trying to do.
+This package owns the parser-independent **reconstruction model** for what an authored Minecraft experience appears to be trying to do.
 
 It sits between low-level source semantics and defect diagnosis:
 
@@ -14,7 +14,7 @@ Behavioral World Model
 Diagnostic Reasoning
 ```
 
-The model is evidence-backed and intentionally separates authored intent, inferred intent, open hypotheses, and unresolved unknowns.
+The model is evidence-backed and intentionally separates authored intent, inferred intent, open hypotheses, and unresolved unknowns. Explicit Game Design is a stronger upstream authority and is represented with `game-design-spec` evidence.
 
 It does not mutate artifacts and it does not decide root cause. Its job is to reconstruct enough game meaning that downstream diagnostics do not mistake designed behavior for a defect.
 
@@ -25,6 +25,10 @@ The Gameplay Intent Graph contains typed nodes for concepts such as game, mechan
 Typed edges express ownership, participation, production/consumption, state transitions, scope, reset, persistence, recovery, requirements, and win/loss relationships.
 
 Every material node, edge, and invariant can bind to evidence. Unknowns are first-class and may explicitly block diagnosis for affected subjects.
+
+## Authority boundary
+
+Gameplay Intent is not the canonical Game Design owner. Minecraft documentation and generic engineering contracts may inform interpretation, but they do not independently create gameplay requirements.
 
 ## Safety rule
 

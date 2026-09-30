@@ -1,51 +1,18 @@
-# Minecraft Bedrock / Education Knowledge Base
+# Minecraft Bedrock / Education Platform Knowledge
 
-Repository-owned machine-readable knowledge. This directory is intentionally separated from analyzers, compatibility evaluation, runtime identity, reliability planning, and repair mutation.
+This directory contains **descriptive, evidence-backed Minecraft platform knowledge**.
 
-## Domain hierarchy
+Knowledge answers: **What does this Minecraft runtime support, expose, or do for the declared version/profile?**
 
-```text
-platform
-├─ core / compatibility
-├─ Education
-├─ permissions
-├─ Script API / LevelDB
-└─ validation contracts
+It does not define map design and it does not own MIVUBI engineering requirements.
 
-world-runtime
-├─ chunks / persistence
-├─ world state / mutation
-├─ automation / event ordering
-├─ command context
-└─ performance / observability
+## Authority boundary
 
-player-experience
-├─ player lifecycle/session
-├─ inventory
-├─ interaction / input
-├─ teleport
-└─ client feedback
+- Game Design → `engine/game-design/` + `engine/packages/game-design/`
+- Engineering/validation contracts → `engine/contracts/engineering/`
+- Runtime observations → runtime evidence layers
+- Repair decisions → repair/orchestrator
 
-entity-systems
-├─ entity runtime/population
-├─ combat / effects
-├─ loot economy
-├─ NPC dialogue
-└─ mounts / physics
+Global `*-policy.json` catalogs were migrated out of this directory. Repository verification forbids `project-policy` authority/classification here.
 
-arena-gameplay
-├─ arena cleanup
-├─ round integrity
-├─ state authority
-├─ spatial containment
-├─ cinematic
-└─ environment hazards
-```
-
-`ownership.json` is the canonical machine-readable assignment. Every knowledge JSON file must belong to exactly one group.
-
-## Epistemic boundary
-
-Knowledge distinguishes documented contract, observed implementation, derived rule, project policy, and hypothesis. Conflicting evidence remains visible rather than silently overridden.
-
-Knowledge answers what evidence is relevant to interpreting a target. It does **not** by itself prove runtime behavior or authorize repair.
+Platform knowledge keeps provenance, applicability, confidence, and contradictions explicit. UNKNOWN is preferable to invented behavior.

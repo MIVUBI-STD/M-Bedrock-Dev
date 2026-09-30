@@ -130,6 +130,7 @@ export async function inspectDirectory(
     artifactId,
     parsedScripts,
     authoredScripts: authoredIntentSources,
+    ...(target.gameDesign === undefined ? {} : { gameDesign: target.gameDesign }),
   });
 
   const entityAiStack =

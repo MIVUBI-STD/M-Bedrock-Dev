@@ -16,6 +16,7 @@ import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/ind
 import type { DecisionBasisRevision } from "../../project-model/src/index.js";
 import type { EvidenceRecoveryPlan } from "./evidence-recovery.js";
 import type { GameplayIntentModel } from "../../gameplay-intent/src/index.js";
+import type { GameDesignSpec } from "../../game-design/src/index.js";
 import type { ArenaRegionClassification, ArenaRegionPartitionResult, ArenaRegionPlan, ArenaReplicaDiscovery, ArenaSpatialLayout, ResolvedEffect } from "../../../analyzers/topology/src/index.js";
 import type { ArenaNativeSpatialAudit } from "./arena-native-extraction.js";
 import type { ArenaVoxelProof } from "./arena-voxel-proof.js";
@@ -63,6 +64,7 @@ import type {
 } from "./gameplay-intent-runtime-stage.js";
 
 export interface InspectTargetProfile {
+  gameDesign?: GameDesignSpec;
   edition?: MinecraftEdition;
   version?: string;
   educationFeatures?: Exclude<EducationFeatureState, "unknown">;

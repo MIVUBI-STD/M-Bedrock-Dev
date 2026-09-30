@@ -35,6 +35,7 @@ export type GameplayIntentStatus =
   | "hypothesis";
 
 export type GameplayIntentEvidenceOrigin =
+  | "game-design-spec"
   | "source-code"
   | "manifest"
   | "command"

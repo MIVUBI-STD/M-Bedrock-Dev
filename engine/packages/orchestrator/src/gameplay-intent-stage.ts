@@ -6,6 +6,7 @@ import {
 import type {
   ParsedScriptFile,
 } from "../../../analyzers/scripts/src/index.js";
+import type { GameDesignSpec } from "../../game-design/src/index.js";
 import {
   validateGameplayIntentModel,
   type GameplayIntentEdge,
@@ -25,6 +26,7 @@ export interface GameplayIntentStageInput {
   authoredScripts?: readonly {
     parsed: ParsedScriptFile;
   }[];
+  gameDesign?: GameDesignSpec;
 }
 
 const STATUS_RANK: Readonly<Record<GameplayIntentStatus, number>> = {
@@ -59,6 +61,53 @@ export function buildGameplayIntentModel(
   const edges = new Map<string, GameplayIntentEdge>();
   const invariants = new Map<string, GameplayIntentInvariant>();
   const intentUnknowns: GameplayIntentModel["unknowns"][number][] = [];
+
+  if (input.gameDesign !== undefined) {
+    const designStatus: GameplayIntentStatus =
+      input.gameDesign.status === "approved"
+        ? "authored"
+        : "hypothesis";
+
+    for (const mechanic of input.gameDesign.mechanics) {
+      const evidenceKey =
+        "design-evidence:mechanic:" + mechanic.id;
+      evidence.set(evidenceKey, {
+        id: evidenceKey,
+        origin: "game-design-spec",
+        locator: input.gameDesign.source.reference,
+        summary: mechanic.statement,
+      });
+      const subjectKey =
+        "mechanic:design:" + mechanic.id;
+      nodes.set(subjectKey, {
+        id: subjectKey,
+        kind: "mechanic",
+        label: mechanic.id,
+        status: designStatus,
+        evidenceIds: [evidenceKey],
+        description: mechanic.statement,
+      });
+    }
+
+    for (const invariant of input.gameDesign.invariants) {
+      const evidenceKey =
+        "design-evidence:invariant:" + invariant.id;
+      evidence.set(evidenceKey, {
+        id: evidenceKey,
+        origin: "game-design-spec",
+        locator: input.gameDesign.source.reference,
+        summary: invariant.statement,
+      });
+      invariants.set("design:" + invariant.id, {
+        id: "design:" + invariant.id,
+        statement: invariant.statement,
+        strength: invariant.strength,
+        status: designStatus,
+        subjectIds: invariant.subjectIds ?? [],
+        evidenceIds: [evidenceKey],
+      });
+    }
+  }
 
   for (const signal of extracted.signals) {
     const id = evidenceId(signal);

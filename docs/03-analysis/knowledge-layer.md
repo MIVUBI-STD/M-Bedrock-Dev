@@ -1,52 +1,17 @@
-# Bedrock / Education Knowledge Layer
+# Bedrock / Education Platform Knowledge Layer
 
-The analyzer stack now has a dedicated machine-readable knowledge authority.
-
-## Problem
-
-Pattern detection alone cannot distinguish:
-
-- a suspicious pattern;
-- a valid Bedrock mechanic;
-- a version/profile-specific behavior;
-- an Education-specific execution context;
-- a real engine regression.
+The analyzer stack has a dedicated machine-readable **Minecraft platform knowledge** authority.
 
 ## Ownership
 
-`packages/knowledge` owns knowledge contracts, validation and effective-profile selection.
+`engine/packages/knowledge` owns platform-knowledge contracts, validation, and effective-profile selection.
 
-`knowledge/*.json` owns curated facts and provenance.
+`engine/knowledge/*.json` owns descriptive Minecraft facts and provenance only.
 
-Analyzers remain responsible for parsing project content. They should consume knowledge rather than duplicate Minecraft semantics internally.
+It does **not** own Game Design, MIVUBI engineering policy, validation/release contracts, or runtime observations. Those belong to `engine/game-design/`, `engine/contracts/`, and runtime evidence layers.
 
-## Initial scope
+Analyzers consume platform knowledge rather than duplicating Minecraft semantics internally.
 
-Phase 1 seeds:
+Knowledge can be filtered by edition, Minecraft version, format version, experiments, and Script API module/version.
 
-- command coordinate/execution context;
-- target selector semantics;
-- scoreboard state semantics;
-- execute conditional state;
-- teleport selector constraints;
-- entity component-group/event lifecycle;
-- summon/spawn-event distinction;
-- AI priority;
-- navigation/movement dependencies;
-- NPC initiator context.
-
-## Effective profile
-
-Knowledge can be filtered by:
-
-- Bedrock vs Education;
-- Minecraft version;
-- format version;
-- experiments;
-- Script API module/version.
-
-## Evidence rule
-
-Every durable fact requires source provenance and authority/confidence metadata.
-
-UNKNOWN is preferable to invented behavior.
+Every durable platform fact requires provenance and authority/confidence metadata. `project-policy` is forbidden in the platform knowledge directory. UNKNOWN is preferable to invented behavior.

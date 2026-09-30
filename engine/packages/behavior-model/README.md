@@ -56,7 +56,7 @@ A documented claim and a contradictory runtime observation are not silently rank
 
 ## Safety
 
-Designed model fragments remain specifications.
+Behavioral model fragments are evaluation specifications, not Game Design authority. Intended gameplay originates in approved Game Design or sufficiently grounded authored intent.
 
 Observed behavior does not automatically become a general engine fact.
 

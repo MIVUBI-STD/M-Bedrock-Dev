@@ -1,13 +1,12 @@
-# Knowledge Package Rules
+# Platform Knowledge Package Rules
 
-Own canonical Minecraft Bedrock/Education domain knowledge contracts and catalog loading.
+Own canonical Minecraft Bedrock/Education **platform knowledge** contracts and catalog loading.
 
-Rules:
-
-- knowledge is evidence-backed data, not analyzer implementation;
-- every durable rule requires provenance;
-- official Microsoft/Mojang documentation outranks community/observed sources;
-- version/profile applicability must be explicit;
-- UNKNOWN is preferable to invented semantics;
-- analyzers may consume knowledge; knowledge must not import analyzers;
-- observed map/runtime behavior is evidence, never automatically promoted to documented truth.
+- Knowledge is descriptive evidence-backed data, not map design.
+- Every durable fact requires provenance.
+- Version/profile applicability must be explicit.
+- UNKNOWN is preferable to invented semantics.
+- Analyzers may consume knowledge; knowledge must not import analyzers.
+- Project engineering policy belongs under `engine/contracts/`.
+- Game Design belongs under `engine/game-design/`.
+- Observed runtime behavior is evidence, never automatically promoted to documented truth.

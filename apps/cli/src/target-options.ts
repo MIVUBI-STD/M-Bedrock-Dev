@@ -5,6 +5,7 @@ export interface ParsedCliTargetOptions {
   positionals: string[];
   target: InspectTargetProfile;
   telemetryPath?: string;
+  gameDesignPath?: string;
   arenaRegionContractsPath?: string;
   probeTranscriptPath?: string;
   probeBindingsPath?: string;
@@ -17,6 +18,7 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
   const authoredSourceRoots: string[] = [];
   const target: InspectTargetProfile = {};
   let telemetryPath: string | undefined;
+  let gameDesignPath: string | undefined;
   let arenaRegionContractsPath: string | undefined;
   let probeTranscriptPath: string | undefined;
   let probeBindingsPath: string | undefined;
@@ -94,6 +96,16 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
       continue;
     }
 
+    if (token === "--game-design") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error("--game-design requires a JSON file path");
+      }
+      gameDesignPath = value;
+      index += 1;
+      continue;
+    }
+
     if (token === "--telemetry") {
       const value = args[index + 1];
       if (!value || value.startsWith("--")) {
@@ -156,6 +168,7 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
     positionals,
     target,
     ...(telemetryPath === undefined ? {} : { telemetryPath }),
+    ...(gameDesignPath === undefined ? {} : { gameDesignPath }),
     ...(arenaRegionContractsPath === undefined
       ? {}
       : { arenaRegionContractsPath }),
