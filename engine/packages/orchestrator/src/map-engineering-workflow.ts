@@ -396,48 +396,48 @@ export function buildMapEngineeringWorkflow(
         ? 1
         : 0,
     inventoryPartialResets:
-      source.gameplayWorld.inventory
+      source.engineeringAssessment.inventory
         ?.partialResets ?? 0,
     inventoryCopyMutationRisks:
-      source.gameplayWorld.inventory
+      source.engineeringAssessment.inventory
         ?.copyMutationRisks ?? 0,
     inventoryDeniedDrops:
-      source.gameplayWorld.inventory
-        ?.policy.deniedDrops ?? 0,
+      source.engineeringAssessment.inventory
+        ?.contract.deniedDrops ?? 0,
     inventoryUncoveredDrops:
-      source.gameplayWorld.inventory
-        ?.policy.uncoveredDrops ?? 0,
+      source.engineeringAssessment.inventory
+        ?.contract.uncoveredDrops ?? 0,
     inventoryUnresolvedEquipmentSlots:
-      source.gameplayWorld.inventory
+      source.engineeringAssessment.inventory
         ?.unresolvedEquipmentSlotEvidence ?? 0,
     inventoryMultipleRestoreOwners:
-      source.gameplayWorld.inventory
+      source.engineeringAssessment.inventory
         ?.restoreOwnership.multipleRestoreOwners ?? 0,
     entityAiTargetedStackIncomplete:
-      source.gameplayWorld.entities
-        ?.aiStack.targetedStackIncomplete ?? 0,
+      source.engineeringAssessment.entities
+        ?.targetedStackIncomplete ?? 0,
     entityAiNavigationEnvironmentIncompatible:
-      source.gameplayWorld.entities
+      source.engineeringAssessment.entities
         ?.navigationEnvironment.incompatible ?? 0,
     combatHurtOnlyTerminalRisk:
-      source.gameplayWorld.combat
+      source.engineeringAssessment.combat
         ?.hurtOnlyTerminalRisk ?? 0,
     combatProjectileCleanupPolicyGap:
-      source.gameplayWorld.combat
-        ?.policy.projectileCleanupPolicyGap ?? 0,
+      source.engineeringAssessment.combat
+        ?.contract.projectileCleanupPolicyGap ?? 0,
     combatSecondaryEffectEligibilitySurfaces:
-      source.gameplayWorld.combat
-        ?.policy.secondaryEffectEligibilitySurfaces ?? 0,
+      source.engineeringAssessment.combat
+        ?.contract.secondaryEffectEligibilitySurfaces ?? 0,
     combatRevivePolicyContradictions:
-      source.gameplayWorld.combat
-        ?.policy.revivePolicyContradictions ?? 0,
+      source.engineeringAssessment.combat
+        ?.contract.revivePolicyContradictions ?? 0,
     combatReviveScopeGaps:
       (
-        source.gameplayWorld.combat
+        source.engineeringAssessment.combat
           ?.runtime.scopedLifeGenerationMissing ?? 0
       ) +
       (
-        source.gameplayWorld.combat
+        source.engineeringAssessment.combat
           ?.runtime.scopedArenaGenerationMissing ?? 0
       ),
     chunkLeaseAcquireWithoutRelease:
@@ -484,35 +484,35 @@ export function buildMapEngineeringWorkflow(
           ? 1
           : 2,
     economyDeathRewardOverlapPolicyConflicts:
-      source.gameplayWorld.economy
-        ?.policy.deathRewardOverlapPolicyConflicts ?? 0,
+      source.engineeringAssessment.economy
+        ?.contract.deathRewardOverlapPolicyConflicts ?? 0,
     economyDeathRewardOverlapUnresolved:
-      source.gameplayWorld.economy
-        ?.policy.deathRewardOverlapUnresolved ?? 0,
+      source.engineeringAssessment.economy
+        ?.contract.deathRewardOverlapUnresolved ?? 0,
     economyPickupCurrencyCoverageGaps:
       (
-        source.gameplayWorld.economy
-          ?.policy.pickupCurrencyConsumeCoverageGaps ?? 0
+        source.engineeringAssessment.economy
+          ?.contract.pickupCurrencyConsumeCoverageGaps ?? 0
       ) +
       (
-        source.gameplayWorld.economy
-          ?.policy.pickupCurrencyPolicyMismatch ?? 0
+        source.engineeringAssessment.economy
+          ?.contract.pickupCurrencyPolicyMismatch ?? 0
       ),
     economyIdempotencyCoverageGaps:
-      source.gameplayWorld.economy
-        ?.policy.idempotencyCoverageGaps ?? 0,
+      source.engineeringAssessment.economy
+        ?.contract.idempotencyCoverageGaps ?? 0,
     economyStaleDropCleanupGaps:
-      source.gameplayWorld.economy
-        ?.policy.staleDropCleanupCoverageGaps ?? 0,
+      source.engineeringAssessment.economy
+        ?.contract.staleDropCleanupCoverageGaps ?? 0,
     economyInventoryFullPolicyGaps:
-      source.gameplayWorld.economy
-        ?.policy.inventoryFullPolicyGaps ?? 0,
+      source.engineeringAssessment.economy
+        ?.contract.inventoryFullPolicyGaps ?? 0,
     economyPickupScopeValidationUnproven:
-      source.gameplayWorld.economy
-        ?.policy.pickupScopeValidationUnproven ?? 0,
+      source.engineeringAssessment.economy
+        ?.contract.pickupScopeValidationUnproven ?? 0,
     economyTerminalRewardCommitUnproven:
-      source.gameplayWorld.economy
-        ?.policy.terminalRewardResultCommitUnproven ?? 0,
+      source.engineeringAssessment.economy
+        ?.contract.terminalRewardResultCommitUnproven ?? 0,
   };
 
   const nextActions = stages
