@@ -30,7 +30,7 @@ interface ReExportBinding {
 }
 
 interface ParsedModuleExports {
-  localExports: Set<string>;
+  localExports: ReadonlyMap<string, string>;
   namedReExports: readonly ReExportBinding[];
   starReExports: readonly string[];
 }
@@ -171,7 +171,7 @@ function hasModifier(
 function moduleExports(
   file: ts.SourceFile,
 ): ParsedModuleExports {
-  const localExports = new Set<string>();
+  const localExports = new Map<string, string>();
   const namedReExports: ReExportBinding[] = [];
   const starReExports: string[] = [];
 
@@ -203,7 +203,10 @@ function moduleExports(
 
       if (!moduleSpecifier && clause && ts.isNamedExports(clause)) {
         for (const item of clause.elements) {
-          localExports.add(item.name.text);
+          localExports.set(
+            item.name.text,
+            item.propertyName?.text ?? item.name.text,
+          );
         }
       }
       continue;
@@ -213,23 +216,33 @@ function moduleExports(
       hasModifier(statement, ts.SyntaxKind.ExportKeyword);
     if (!exported) continue;
 
-    if (hasModifier(statement, ts.SyntaxKind.DefaultKeyword)) {
-      localExports.add("default");
-    }
+    const isDefault =
+      hasModifier(statement, ts.SyntaxKind.DefaultKeyword);
 
     if (
       (ts.isFunctionDeclaration(statement) ||
-        ts.isClassDeclaration(statement)) &&
-      statement.name
+        ts.isClassDeclaration(statement))
     ) {
-      localExports.add(statement.name.text);
+      const localName =
+        statement.name?.text ?? "default";
+      if (isDefault) {
+        localExports.set("default", localName);
+      } else if (statement.name) {
+        localExports.set(
+          statement.name.text,
+          statement.name.text,
+        );
+      }
       continue;
     }
 
     if (ts.isVariableStatement(statement)) {
       for (const declaration of statement.declarationList.declarations) {
         if (ts.isIdentifier(declaration.name)) {
-          localExports.add(declaration.name.text);
+          localExports.set(
+            declaration.name.text,
+            declaration.name.text,
+          );
         }
       }
     }
@@ -255,10 +268,12 @@ function resolveExportTarget(
   const info = exportsByModule.get(modulePath);
   if (!info) return undefined;
 
-  if (info.localExports.has(exportName)) {
+  const localTarget =
+    info.localExports.get(exportName);
+  if (localTarget !== undefined) {
     return {
       modulePath,
-      exportName,
+      exportName: localTarget,
     };
   }
 
