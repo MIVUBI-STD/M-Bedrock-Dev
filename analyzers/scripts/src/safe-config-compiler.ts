@@ -845,6 +845,28 @@ export function compileScriptSafeConfig(
       ) {
         if (
           statement.exportClause &&
+          ts.isNamespaceExport(
+            statement.exportClause,
+          )
+        ) {
+          rejected.push({
+            name:
+              statement.exportClause.name.text,
+            reason:
+              "unsupported-expression",
+            detail:
+              "Namespace re-export is outside the bounded safe-config module subset.",
+            source: nodeSource(
+              file,
+              statement.exportClause,
+              source,
+            ),
+          });
+          continue;
+        }
+
+        if (
+          statement.exportClause &&
           ts.isNamedExports(
             statement.exportClause,
           )
@@ -956,6 +978,32 @@ export function compileScriptSafeConfig(
         localName: defaultName,
         exportedName: "default",
         source: defaultSource,
+      });
+      continue;
+    }
+
+    if (
+      ts.isFunctionDeclaration(statement) &&
+      statement.name === undefined &&
+      (
+        statement.modifiers?.some(
+          (modifier) =>
+            modifier.kind ===
+            ts.SyntaxKind.ExportKeyword,
+        ) ?? false
+      )
+    ) {
+      rejected.push({
+        name: "default",
+        reason:
+          "unsupported-expression",
+        detail:
+          "Anonymous exported functions are not accepted by safe-config compilation; use a named pure helper.",
+        source: nodeSource(
+          file,
+          statement,
+          source,
+        ),
       });
       continue;
     }
