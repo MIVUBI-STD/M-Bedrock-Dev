@@ -335,3 +335,6 @@ export * from "./route-navigation-environment-load.js";
 
 export * from "./combat-lifecycle-analysis.js";
 export * from "./combat-runtime-telemetry-analysis.js";
+
+export * from "./combat-policy-analysis.js";
+export * from "./combat-policy-load.js";
