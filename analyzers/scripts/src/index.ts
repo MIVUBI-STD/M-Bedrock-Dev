@@ -38,3 +38,5 @@ export * from "./terminal-lifecycle-project.js";
 export * from "./persistent-state-lifetime.js";
 
 export * from "./terminal-release-proof.js";
+
+export * from "./cross-file-call.js";
