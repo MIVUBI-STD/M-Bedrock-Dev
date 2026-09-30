@@ -112,6 +112,49 @@ describe("task graph", () => {
     ]);
   });
 
+  it("supports bounded trailing wildcard ownership for colocated domain files", () => {
+    const graph = createTaskGraph([
+      {
+        id: "inventory.domain",
+        owner: "packages/orchestrator",
+        pathPrefixes: [
+          "packages/orchestrator/src/inventory-*",
+        ],
+        deterministic: true,
+        cacheable: true,
+        cost: "moderate",
+      },
+      {
+        id: "combat.domain",
+        owner: "packages/orchestrator",
+        pathPrefixes: [
+          "packages/orchestrator/src/combat-*",
+        ],
+        deterministic: true,
+        cacheable: true,
+        cost: "moderate",
+      },
+    ]);
+
+    expect(
+      resolveAffectedTasks(
+        graph,
+        [
+          "packages/orchestrator/src/inventory-policy-analysis.ts",
+        ],
+      ).directCapabilityIds,
+    ).toEqual(["inventory.domain"]);
+
+    expect(
+      resolveAffectedTasks(
+        graph,
+        [
+          "packages/orchestrator/src/inventoryPolicy.ts",
+        ],
+      ).directCapabilityIds,
+    ).toEqual([]);
+  });
+
   it("keeps unrelated changes explicit instead of claiming safety", () => {
     const graph = createTaskGraph(capabilities);
     const affected = resolveAffectedTasks(
