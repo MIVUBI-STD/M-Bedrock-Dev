@@ -67,9 +67,9 @@ export interface MapEngineeringWorkflowProjection {
     chunkWorldLoadReconciliationMissing: number;
     chunkUnguardedDeferredWork: number;
     chunkResidencyObservabilityGaps: number;
-    economyDeathRewardOverlapContradictions: number;
+    economyDeathRewardOverlapPolicyConflicts: number;
     economyDeathRewardOverlapUnresolved: number;
-    economyPickupCurrencyContradictions: number;
+    economyPickupCurrencyCoverageGaps: number;
     economyIdempotencyCoverageGaps: number;
     economyStaleDropCleanupGaps: number;
     economyInventoryFullPolicyGaps: number;
@@ -437,16 +437,16 @@ export function buildMapEngineeringWorkflow(
               ?.entityResidencyObservability === "partial"
           ? 1
           : 2,
-    economyDeathRewardOverlapContradictions:
+    economyDeathRewardOverlapPolicyConflicts:
       source.gameplayWorld.economy
-        ?.policy.deathRewardOverlapContradictions ?? 0,
+        ?.policy.deathRewardOverlapPolicyConflicts ?? 0,
     economyDeathRewardOverlapUnresolved:
       source.gameplayWorld.economy
         ?.policy.deathRewardOverlapUnresolved ?? 0,
-    economyPickupCurrencyContradictions:
+    economyPickupCurrencyCoverageGaps:
       (
         source.gameplayWorld.economy
-          ?.policy.pickupCurrencyConsumeContradictions ?? 0
+          ?.policy.pickupCurrencyConsumeCoverageGaps ?? 0
       ) +
       (
         source.gameplayWorld.economy
