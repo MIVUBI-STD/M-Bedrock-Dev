@@ -21,10 +21,16 @@ const editions = stringRegistry("KNOWLEDGE_EDITIONS");
 const diagnosticSeverities = stringRegistry("KNOWLEDGE_DIAGNOSTIC_SEVERITIES");
 
 const directory = "engine/knowledge";
-const files = readdirSync(directory)
-  .filter((name) => name.endsWith(".json") && name !== "ownership.json")
-  .map((name) => join(directory, name))
-  .sort();
+function catalogFiles(root) {
+  return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) return catalogFiles(path);
+    return entry.isFile() && entry.name.endsWith(".json") && entry.name !== "ownership.json"
+      ? [path]
+      : [];
+  }).sort();
+}
+const files = catalogFiles(directory);
 
 const sourceIdsGlobal = new Map();
 const factIdsGlobal = new Map();

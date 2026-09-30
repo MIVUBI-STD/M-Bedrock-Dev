@@ -4,67 +4,67 @@
     "platform": {
       "purpose": "Core platform, edition, compatibility, permission and API facts.",
       "files": [
-        "compatibility-bedrock.json",
-        "core-bedrock.json",
-        "education-runtime.json",
-        "education.json",
-        "leveldb-bedrock.json",
-        "permissions-bedrock.json",
-        "script-api-bedrock.json",
-        "validation-bedrock.json"
+        "platform/compatibility-bedrock.json",
+        "platform/core-bedrock.json",
+        "platform/education-runtime.json",
+        "platform/education.json",
+        "platform/leveldb-bedrock.json",
+        "platform/permissions-bedrock.json",
+        "platform/script-api-bedrock.json",
+        "platform/validation-bedrock.json"
       ]
     },
     "world-runtime": {
       "purpose": "World persistence, chunks, mutation, ordering and runtime-system facts.",
       "files": [
-        "automation-bedrock.json",
-        "chunks-bedrock.json",
-        "command-context-bedrock.json",
-        "event-ordering-bedrock.json",
-        "observability-bedrock.json",
-        "performance-bedrock.json",
-        "persistence-bedrock.json",
-        "structure-bedrock.json",
-        "world-mutation-bedrock.json",
-        "world-state-bedrock.json"
+        "world-runtime/automation-bedrock.json",
+        "world-runtime/chunks-bedrock.json",
+        "world-runtime/command-context-bedrock.json",
+        "world-runtime/event-ordering-bedrock.json",
+        "world-runtime/observability-bedrock.json",
+        "world-runtime/performance-bedrock.json",
+        "world-runtime/persistence-bedrock.json",
+        "world-runtime/structure-bedrock.json",
+        "world-runtime/world-mutation-bedrock.json",
+        "world-runtime/world-state-bedrock.json"
       ]
     },
     "player-experience": {
       "purpose": "Player lifecycle, input, interaction, inventory and feedback behavior.",
       "files": [
-        "client-feedback-bedrock.json",
-        "input-gesture-bedrock.json",
-        "interaction-bedrock.json",
-        "interactive-blocks-bedrock.json",
-        "inventory-bedrock.json",
-        "player-life-bedrock.json",
-        "player-runtime-bedrock.json",
-        "teleport-bedrock.json"
+        "player-experience/client-feedback-bedrock.json",
+        "player-experience/input-gesture-bedrock.json",
+        "player-experience/interaction-bedrock.json",
+        "player-experience/interactive-blocks-bedrock.json",
+        "player-experience/inventory-bedrock.json",
+        "player-experience/player-life-bedrock.json",
+        "player-experience/player-runtime-bedrock.json",
+        "player-experience/teleport-bedrock.json"
       ]
     },
     "entity-systems": {
       "purpose": "Entity runtime, combat, effects, economy, mounts and NPC behavior.",
       "files": [
-        "combat-bedrock.json",
-        "effects-bedrock.json",
-        "entity-bedrock.json",
-        "entity-population-bedrock.json",
-        "entity-runtime-bedrock.json",
-        "loot-economy-bedrock.json",
-        "mounts-bedrock.json",
-        "npc-dialogue-bedrock.json",
-        "physics-bedrock.json"
+        "entity-systems/combat-bedrock.json",
+        "entity-systems/effects-bedrock.json",
+        "entity-systems/entity-bedrock.json",
+        "entity-systems/entity-population-bedrock.json",
+        "entity-systems/entity-runtime-bedrock.json",
+        "entity-systems/loot-economy-bedrock.json",
+        "entity-systems/mounts-bedrock.json",
+        "entity-systems/npc-dialogue-bedrock.json",
+        "entity-systems/physics-bedrock.json"
       ]
     },
     "arena-gameplay": {
       "purpose": "Arena lifecycle, round integrity, spatial/state authority and environment behavior.",
       "files": [
-        "arena-cleanup-bedrock.json",
-        "cinematic-bedrock.json",
-        "environment-hazards-bedrock.json",
-        "round-integrity-bedrock.json",
-        "spatial-containment-bedrock.json",
-        "state-authority-bedrock.json"
+        "arena-gameplay/arena-cleanup-bedrock.json",
+        "arena-gameplay/cinematic-bedrock.json",
+        "arena-gameplay/environment-hazards-bedrock.json",
+        "arena-gameplay/round-integrity-bedrock.json",
+        "arena-gameplay/spatial-containment-bedrock.json",
+        "arena-gameplay/state-authority-bedrock.json"
       ]
     }
   }

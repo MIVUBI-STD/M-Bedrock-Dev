@@ -25,20 +25,36 @@ export async function loadKnowledgeCatalog(
   return parsed;
 }
 
+async function knowledgeFiles(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...await knowledgeFiles(path));
+    } else if (
+      entry.isFile() &&
+      entry.name.endsWith(".json") &&
+      entry.name !== "ownership.json"
+    ) {
+      files.push(path);
+    }
+  }
+  return files.sort();
+}
+
 export async function loadKnowledgeDirectory(
   directory: string,
 ): Promise<KnowledgeCatalog> {
-  const names = (await readdir(directory))
-    .filter((name) => name.endsWith(".json") && name !== "ownership.json")
-    .sort();
+  const files = await knowledgeFiles(directory);
 
-  if (names.length === 0) {
+  if (files.length === 0) {
     throw new Error(`No knowledge catalogs found in ${directory}`);
   }
 
   const catalogs: KnowledgeCatalog[] = [];
-  for (const name of names) {
-    catalogs.push(await loadKnowledgeCatalog(join(directory, name)));
+  for (const path of files) {
+    catalogs.push(await loadKnowledgeCatalog(path));
   }
 
   try {

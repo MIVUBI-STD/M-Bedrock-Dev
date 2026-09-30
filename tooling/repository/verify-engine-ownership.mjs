@@ -40,10 +40,17 @@ if (JSON.stringify(expectedEngineEntries) !== JSON.stringify(assignedEngineEntri
 }
 
 const knowledgeRegistry = JSON.parse(readFileSync("engine/knowledge/ownership.json", "utf8"));
-const physicalKnowledgeFiles = readdirSync("engine/knowledge", { withFileTypes: true })
-  .filter((entry) => entry.isFile() && entry.name.endsWith(".json") && entry.name !== "ownership.json")
-  .map((entry) => entry.name)
-  .sort();
+function relativeJsonFiles(root, prefix = "") {
+  return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+    const relativePath = prefix ? prefix + "/" + entry.name : entry.name;
+    const fullPath = root + "/" + entry.name;
+    if (entry.isDirectory()) return relativeJsonFiles(fullPath, relativePath);
+    return entry.isFile() && entry.name.endsWith(".json") && entry.name !== "ownership.json"
+      ? [relativePath]
+      : [];
+  });
+}
+const physicalKnowledgeFiles = relativeJsonFiles("engine/knowledge").sort();
 const assignedKnowledgeFiles = Object.values(knowledgeRegistry.groups ?? {})
   .flatMap((group) => Array.isArray(group.files) ? group.files : [])
   .sort();
