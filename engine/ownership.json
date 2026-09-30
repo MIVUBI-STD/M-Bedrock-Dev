@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "groups": {
+    "core": {
+      "purpose": "Reusable deterministic contracts, models, repair behavior and orchestration.",
+      "entries": [
+        "packages"
+      ]
+    },
+    "analysis": {
+      "purpose": "External format translation and read-only semantic derivation.",
+      "entries": [
+        "adapters",
+        "analyzers"
+      ]
+    },
+    "policy-data": {
+      "purpose": "Versioned facts, rules and persisted structural contracts.",
+      "entries": [
+        "knowledge",
+        "rules",
+        "schemas"
+      ]
+    },
+    "quality": {
+      "purpose": "Regression evidence, coverage, update intelligence and reproducible fixtures.",
+      "entries": [
+        "fixtures",
+        "reliability"
+      ]
+    },
+    "runtime-proof": {
+      "purpose": "Bounded Minecraft runtime proof harnesses and controlled laboratories.",
+      "entries": [
+        "runtime"
+      ]
+    }
+  }
+}

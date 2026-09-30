@@ -10,6 +10,27 @@ const AREAS = [
 const ignoredDirectories = new Set(["node_modules", "dist", "coverage"]);
 const failures = [];
 
+const engineRegistry = JSON.parse(readFileSync("engine/ownership.json", "utf8"));
+const expectedEngineEntries = ["adapters","analyzers","fixtures","knowledge","packages","reliability","rules","runtime","schemas"].sort();
+const assignedEngineEntries = Object.values(engineRegistry.groups ?? {})
+  .flatMap((group) => Array.isArray(group.entries) ? group.entries : [])
+  .sort();
+if (JSON.stringify(expectedEngineEntries) !== JSON.stringify(assignedEngineEntries)) {
+  failures.push("engine/ownership.json must assign every canonical engine domain exactly once");
+}
+
+const knowledgeRegistry = JSON.parse(readFileSync("engine/knowledge/ownership.json", "utf8"));
+const physicalKnowledgeFiles = readdirSync("engine/knowledge", { withFileTypes: true })
+  .filter((entry) => entry.isFile() && entry.name.endsWith(".json") && entry.name !== "ownership.json")
+  .map((entry) => entry.name)
+  .sort();
+const assignedKnowledgeFiles = Object.values(knowledgeRegistry.groups ?? {})
+  .flatMap((group) => Array.isArray(group.files) ? group.files : [])
+  .sort();
+if (JSON.stringify(physicalKnowledgeFiles) !== JSON.stringify(assignedKnowledgeFiles)) {
+  failures.push("engine/knowledge/ownership.json must assign every knowledge catalog exactly once");
+}
+
 for (const area of AREAS) {
   if (!existsSync(area.registry)) {
     failures.push(area.registry + ": missing ownership registry");
