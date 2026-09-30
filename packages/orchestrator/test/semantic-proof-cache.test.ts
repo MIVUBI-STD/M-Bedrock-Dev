@@ -176,6 +176,59 @@ describe("semantic proof cache", () => {
       .toBe("stale");
   });
 
+  it("invalidates arena runtime proof when generation changes", () => {
+    const claim =
+      createSemanticProofClaim({
+        claimId: "claim:arena-generation",
+        claimRevision: "1",
+        kind: "runtime",
+        graph: graph(),
+        basisNodeIds: ["function:pack:arena"],
+        evidenceIds: ["runtime:arena:g4"],
+        targetProfileFingerprint: "runtime-a",
+        runtimeScope: {
+          arenaId: "arena-2",
+          arenaGeneration: 4,
+        },
+      });
+
+    const result =
+      assessSemanticProofReuse(claim, {
+        graph: graph(),
+        claimRevision: "1",
+        availableEvidenceIds: ["runtime:arena:g4"],
+        targetProfileFingerprint: "runtime-a",
+        runtimeScope: {
+          arenaId: "arena-2",
+          arenaGeneration: 5,
+        },
+      });
+
+    expect(result.status).toBe("stale");
+  });
+
+  it("invalidates proof when its evidence is explicitly stale", () => {
+    const claim =
+      createSemanticProofClaim({
+        claimId: "claim:stale-evidence",
+        claimRevision: "1",
+        kind: "static",
+        graph: graph(),
+        basisNodeIds: ["function:pack:arena"],
+        evidenceIds: ["evidence:old"],
+      });
+
+    const result =
+      assessSemanticProofReuse(claim, {
+        graph: graph(),
+        claimRevision: "1",
+        availableEvidenceIds: ["evidence:old"],
+        staleEvidenceIds: ["evidence:old"],
+      });
+
+    expect(result.status).toBe("stale");
+  });
+
   it("invalidates runtime-bound proof when target profile changes", () => {
     const claim =
       createSemanticProofClaim({
