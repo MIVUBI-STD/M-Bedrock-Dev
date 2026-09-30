@@ -164,6 +164,37 @@ export function deriveScriptChunkLifecycleEvidence(
     scriptKind(source.relativePath),
   );
   const output: ScriptChunkLifecycleEvidence[] = [];
+  const tickingAreaReceivers =
+    new Set<string>();
+
+  const collectTickingAreaReceivers = (
+    node: ts.Node,
+  ): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(
+        node.expression,
+      ) &&
+      (
+        node.expression.name.text ===
+          "createTickingArea" ||
+        node.expression.name.text ===
+          "removeTickingArea"
+      )
+    ) {
+      tickingAreaReceivers.add(
+        node.expression.expression.getText(
+          file,
+        ),
+      );
+    }
+    ts.forEachChild(
+      node,
+      collectTickingAreaReceivers,
+    );
+  };
+
+  collectTickingAreaReceivers(file);
 
   const push = (
     node: ts.Node,
@@ -293,14 +324,7 @@ export function deriveScriptChunkLifecycleEvidence(
         method === "hasCapacity" &&
         (
           /tickingArea/i.test(receiver) ||
-          output.some(
-            (item) =>
-              item.receiverExpression === receiver &&
-              (
-                item.kind === "ticking-area-acquire" ||
-                item.kind === "ticking-area-release"
-              ),
-          )
+          tickingAreaReceivers.has(receiver)
         )
       ) {
         push(
