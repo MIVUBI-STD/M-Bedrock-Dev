@@ -12,6 +12,11 @@ export interface TerminalReleaseProof {
 }
 
 function functionName(region: string): string | undefined {
+  const marker = "#function:";
+  const qualified = region.lastIndexOf(marker);
+  if (qualified >= 0) {
+    return region.slice(qualified + marker.length);
+  }
   return region.startsWith("function:")
     ? region.slice("function:".length)
     : undefined;
