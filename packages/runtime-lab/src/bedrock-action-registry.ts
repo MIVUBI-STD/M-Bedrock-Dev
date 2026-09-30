@@ -154,7 +154,9 @@ export function requiredBedrockActionCapabilities(
     definition.protocol
       .filter(
         (step) =>
-          step.phase !== "observe",
+          !step.actionId.startsWith(
+            "probe."
+          ),
       )
       .map((step) => step.actionId),
   );
