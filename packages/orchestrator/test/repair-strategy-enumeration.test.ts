@@ -686,7 +686,7 @@ describe("repair strategy enumeration and realization", () => {
             "session-proposal-only",
       ),
     ).toMatchObject({
-      status: "missing-realizer",
+      status: "realizer-not-required",
     });
 
     const report =
@@ -697,6 +697,8 @@ describe("repair strategy enumeration and realization", () => {
       );
 
     expect(report.noImplementationCoverage).toBe(true);
+    expect(report.proposalOnlyCount).toBe(1);
+    expect(report.missingRealizerCount).toBe(0);
     expect(
       report.items.find(
         (item) =>
@@ -704,7 +706,7 @@ describe("repair strategy enumeration and realization", () => {
             "session-proposal-only",
       ),
     ).toMatchObject({
-      disposition: "missing-realizer",
+      disposition: "proposal-only",
     });
   });
 
