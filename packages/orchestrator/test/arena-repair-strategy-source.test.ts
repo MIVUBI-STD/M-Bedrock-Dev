@@ -40,6 +40,7 @@ describe("arena repair strategy source coverage", () => {
       deterministic: false,
       supportedDiagnosticCodes: [
         "CHUNK_LIFECYCLE_RUNTIME_RISK",
+        "CHUNK_LIFECYCLE_SOURCE_RISK",
       ],
     });
   });
