@@ -18,12 +18,15 @@ import {
 
 export type RepairRealizerCoverageStatus =
   | "realizer-available"
-  | "missing-realizer";
+  | "missing-realizer"
+  | "realizer-not-required";
 
 export interface RepairRealizerCoverageItem {
   sourceKind: string;
   sourceId: string;
   sourceVersion: string;
+  selectionMode: "causal-auto" | "proposal-only";
+  deterministic: boolean;
   status: RepairRealizerCoverageStatus;
   realizerId?: string;
   realizerVersion?: string;
@@ -34,6 +37,7 @@ export interface RepairRealizerCoverageReport {
   items: readonly RepairRealizerCoverageItem[];
   coveredSources: number;
   uncoveredSources: number;
+  realizerNotRequiredSources: number;
   complete: boolean;
 }
 
@@ -50,13 +54,24 @@ export function assessRepairRealizerCoverage(
       );
 
       if (!realizer) {
+        const realizerRequired =
+          source.deterministic ||
+          source.automaticRealizationEligible ||
+          source.selectionMode === "causal-auto";
+
         return {
           sourceKind: source.sourceKind,
           sourceId: source.sourceId,
           sourceVersion: source.sourceVersion,
-          status: "missing-realizer",
+          selectionMode: source.selectionMode,
+          deterministic: source.deterministic,
+          status: realizerRequired
+            ? "missing-realizer"
+            : "realizer-not-required",
           reasons: [
-            "Applicable repair strategy source has no registered deterministic realizer.",
+            realizerRequired
+              ? "Applicable deterministic repair strategy source has no registered realizer."
+              : "Applicable source is intentionally proposal-only and nondeterministic; no automatic deterministic realizer is required.",
           ],
         };
       }
@@ -65,6 +80,8 @@ export function assessRepairRealizerCoverage(
         sourceKind: source.sourceKind,
         sourceId: source.sourceId,
         sourceVersion: source.sourceVersion,
+        selectionMode: source.selectionMode,
+        deterministic: source.deterministic,
         status: "realizer-available",
         realizerId: realizer.id,
         realizerVersion: realizer.version,
@@ -81,13 +98,21 @@ export function assessRepairRealizerCoverage(
   const coveredSources = items.filter(
     (item) => item.status === "realizer-available",
   ).length;
-  const uncoveredSources =
-    items.length - coveredSources;
+  const uncoveredSources = items.filter(
+    (item) => item.status === "missing-realizer",
+  ).length;
+  const realizerNotRequiredSources =
+    items.filter(
+      (item) =>
+        item.status ===
+        "realizer-not-required",
+    ).length;
 
   return {
     items,
     coveredSources,
     uncoveredSources,
+    realizerNotRequiredSources,
     complete:
       items.length > 0 &&
       uncoveredSources === 0,
