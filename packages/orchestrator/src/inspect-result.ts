@@ -276,6 +276,7 @@ export function buildInspectionResult(
     combatRuntime:
       combatRuntimeTelemetry,
     combatPolicy,
+    chunkLifecycle,
     semanticIr: {
       stateSurfaces: semanticSummary.stateSurfaces,
       stateOperations: semanticSummary.stateOperations,
@@ -356,6 +357,7 @@ export function buildInspectionResult(
     combatRuntime:
       combatRuntimeTelemetry,
     combatPolicy,
+    chunkLifecycle,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
     structures: nodes.filter(
