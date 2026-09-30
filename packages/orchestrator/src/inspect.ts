@@ -13,6 +13,7 @@ import { prepareInspectionRuntimeEvidence } from "./inspect-runtime-evidence.js"
 import { classifyContentPath } from "../../../analyzers/discovery/src/index.js";
 import { referenceDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
 import { duplicateManifestUuidDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+import { createDiagnostic } from "../../diagnostics/src/index.js";
 import { buildFilesystemInventory } from "../../project-model/src/index.js";
 import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
 import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
@@ -234,8 +235,45 @@ export async function inspectDirectory(
     mutationTransactions,
     scriptMutationTransactions,
     scriptCommandTransactions,
+    combatPolicy,
   } = runtimeAnalysis;
   diagnostics.push(...runtimeAnalysis.diagnostics);
+
+  if (
+    combatPolicy.configured &&
+    combatPolicy.revivePolicyContradictions > 0
+  ) {
+    diagnostics.push(
+      createDiagnostic({
+        code:
+          "COMBAT_REVIVE_POLICY_VIOLATION",
+        severity: "medium",
+        message:
+          String(
+            combatPolicy
+              .revivePolicyContradictions,
+          ) +
+          " observed revive anomaly event(s) contradict the authored combat policy.",
+        data: {
+          selfRevive:
+            combatPolicy
+              .selfReviveContradictions,
+          multipleRevivers:
+            combatPolicy
+              .multipleReviverContradictions,
+          staleRevive:
+            combatPolicy
+              .staleReviveContradictions,
+          reviveAfterDeath:
+            combatPolicy
+              .reviveAfterDeathContradictions,
+          invalidReviverObservations:
+            combatPolicy
+              .invalidReviverObservations,
+        },
+      }),
+    );
+  }
 
   const releaseIdentity = analyzeReleaseIdentity(
     packs,
