@@ -10,21 +10,29 @@ describe("repair authorization", () => {
         confirmedDefect: true,
         diagnosisEvidenceIds: ["evidence_1"],
         invariantIds: ["arena.release"],
+        sourceFingerprint: "abc",
         sourceFingerprintMatches: true,
         evidenceFreshness: "stale",
       }).authorized,
     ).toBe(false);
   });
 
-  it("authorizes only fully grounded fresh repair plans", () => {
-    expect(
-      authorizeRepair({
-        confirmedDefect: true,
-        diagnosisEvidenceIds: ["evidence_1"],
-        invariantIds: ["arena.release"],
-        sourceFingerprintMatches: true,
+  it("returns a receipt only for fully grounded fresh repair plans", () => {
+    const result = authorizeRepair({
+      confirmedDefect: true,
+      diagnosisEvidenceIds: ["evidence_1"],
+      invariantIds: ["arena.release"],
+      sourceFingerprint: "abc",
+      sourceFingerprintMatches: true,
+      evidenceFreshness: "fresh",
+    });
+
+    expect(result.authorized).toBe(true);
+    expect(result.receipt).toEqual(
+      expect.objectContaining({
+        sourceFingerprint: "abc",
         evidenceFreshness: "fresh",
-      }).authorized,
-    ).toBe(true);
+      }),
+    );
   });
 });

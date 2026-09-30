@@ -7,13 +7,24 @@ export interface RepairAuthorizationInput {
   confirmedDefect: boolean;
   diagnosisEvidenceIds: readonly string[];
   invariantIds: readonly string[];
+  sourceFingerprint: string;
   sourceFingerprintMatches: boolean;
   evidenceFreshness: RepairEvidenceFreshness;
+}
+
+export interface RepairAuthorizationReceipt {
+  schemaVersion: 1;
+  authorized: true;
+  sourceFingerprint: string;
+  diagnosisEvidenceIds: readonly string[];
+  invariantIds: readonly string[];
+  evidenceFreshness: "fresh";
 }
 
 export interface RepairAuthorizationDecision {
   authorized: boolean;
   reasons: readonly string[];
+  receipt?: RepairAuthorizationReceipt;
 }
 
 export function authorizeRepair(
@@ -36,6 +47,11 @@ export function authorizeRepair(
       "Repair requires at least one violated invariant.",
     );
   }
+  if (!input.sourceFingerprint.trim()) {
+    reasons.push(
+      "Repair authorization requires the diagnosed source fingerprint.",
+    );
+  }
   if (!input.sourceFingerprintMatches) {
     reasons.push(
       "Source fingerprint changed since diagnosis; repair preconditions are stale.",
@@ -49,13 +65,32 @@ export function authorizeRepair(
     );
   }
 
+  if (reasons.length > 0) {
+    return {
+      authorized: false,
+      reasons,
+    };
+  }
+
   return {
-    authorized: reasons.length === 0,
-    reasons:
-      reasons.length === 0
-        ? [
-            "Confirmed diagnosis, invariant authority, source identity, and evidence freshness authorize repair planning.",
-          ]
-        : reasons,
+    authorized: true,
+    reasons: [
+      "Confirmed diagnosis, invariant authority, source identity, and evidence freshness authorize repair planning.",
+    ],
+    receipt: {
+      schemaVersion: 1,
+      authorized: true,
+      sourceFingerprint:
+        input.sourceFingerprint,
+      diagnosisEvidenceIds: [
+        ...new Set(
+          input.diagnosisEvidenceIds,
+        ),
+      ].sort(),
+      invariantIds: [
+        ...new Set(input.invariantIds),
+      ].sort(),
+      evidenceFreshness: "fresh",
+    },
   };
 }

@@ -1,5 +1,8 @@
 import type { SourceRef } from "../../project-model/src/index.js";
 import type { ValidationStep } from "../../validation/src/index.js";
+import type {
+  RepairAuthorizationReceipt,
+} from "./authorization.js";
 
 export type PatchOperation =
   | {
@@ -28,6 +31,7 @@ export interface PatchTransaction {
   id: string;
   title: string;
   sourceFingerprint: string;
+  authorization: RepairAuthorizationReceipt;
   requiredProofs?: readonly PatchRequiredProof[];
   operations: PatchOperation[];
   preconditions: PatchPrecondition[];
