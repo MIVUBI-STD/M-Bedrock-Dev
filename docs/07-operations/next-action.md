@@ -1,60 +1,83 @@
 # Next Action
 
-## Current lane — Workflow Compression
+## Current lane — Workflow Compression Integration
 
-The repository already has strong semantic analysis, intent reconstruction, evidence discipline, repair safety, runtime-proof contracts, and zero-waste planning. The current priority is to make those capabilities cheaper and easier to use.
+The repository now has a domain-aware, fail-closed execution control plane. The priority is no longer to invent more analyzers; it is to make the existing semantic owners cheap to invoke without weakening proof.
 
-### Goal
+### Current implemented foundation
 
-Create one repository execution control plane that answers:
+The active `Local` branch now owns:
+
+- bounded repository path ownership in `packages/task-graph/`;
+- exact/directory ownership plus one trailing-prefix wildcard for colocated domain files;
+- granular core-versus-domain invalidation for scripts, entities, behavior contracts, and orchestrator domain analysis;
+- `BUILTIN_TASK_CAPABILITIES` with selective reverse dependency closure;
+- `planRepositoryTasks()` as the fail-closed repository planning wrapper;
+- conservative fallback whenever any changed path has no registered owner;
+- minimum-sufficient domain capability planning in `packages/analysis-planner/`;
+- compact domain attention signals in AI Context Compiler;
+- optional repository execution scope in compiled context packs;
+- proposal-only repair coverage separated from genuinely missing deterministic realizers;
+- domain diagnostics/remediation routing for arena lifecycle, spatial authority, inventory, entity AI/navigation, combat/revive, chunk lifecycle, and economy/reward.
+
+### Canonical control flow
 
 ```text
-what changed
-→ what capability owns it
-→ what depends on it
-→ what work is affected
-→ what valid work can be reused
-→ what still must execute
+changed paths
+→ builtin Task Graph ownership
+→ direct capability owners
+→ reverse dependent closure
+→ execution-context filter
+→ validated reusable work
+→ repository task plan
+→ affected semantic scope
+→ compact AI context
+→ required analysis only
 → STOP
 ```
 
-### Current implementation step
+Unknown ownership never proves that work can be skipped.
 
-`packages/task-graph/` is the new bounded control-plane owner.
+### Next non-CI integration step
 
-It must remain domain-neutral and must not absorb Minecraft semantics from analyzers/packages.
+1. expose repository `affected` / `plan` through the existing developer command surface;
+2. connect repository verification to the task plan so owned changes may use affected-only verification;
+3. preserve a mandatory conservative full-verification fallback for unmatched ownership or blocked dependencies;
+4. make reusable-capability identity explicit before accepting cached/completed work;
+5. keep runtime-only proof behind `LOCAL_MINECRAFT` / `LIVE_MINECRAFT`;
+6. only after those contracts are stable, expose the same control plane through MCP or CI.
 
-Current acceptance:
+### Domain intelligence now available
 
-- explicit capability dependency graph;
-- cycle and missing-owner protection;
-- changed-path → directly affected capability resolution;
-- reverse dependency closure;
-- execution-context filtering;
-- cache/completed-work reuse filtering;
-- deterministic dependency-ordered plan;
-- unmatched paths remain explicit so callers can fail conservative.
+```text
+gameplay intent
+→ arena/player lifecycle
+→ cleanup resource ledger
+→ spatial authority
+→ multiplayer interleavings
+→ inventory/equipment ownership
+→ entity AI/navigation readiness
+→ combat/downed/revive
+→ chunk lifecycle/readiness
+→ economy/reward arbitration
+→ diagnostics
+→ causal/proposal repair routing
+```
 
-### Next integration step
-
-After Task Graph source/tests are stable:
-
-1. register real repository capabilities from existing owners;
-2. expose `affected` and `plan` through the existing `DEV.cmd` surface;
-3. connect repository verification to affected execution with a conservative full-check fallback;
-4. feed the same plan into AI Context Compiler so Codex loads only the required owners/evidence;
-5. only then expose the control plane through MCP.
+These domains remain separate semantic owners. Task Graph and Context Compiler only route/compress their work.
 
 ### Non-goals
 
 Do not:
 
-- rename or move the existing architecture yet;
-- split `packages/orchestrator` before dependency evidence identifies clean boundaries;
-- add another agent hierarchy;
-- make AI responsible for deterministic dependency traversal;
-- weaken proof levels or runtime gates for speed.
+- create another generic detector layer;
+- move Minecraft semantics into Task Graph;
+- auto-patch proposal-only domains without exact mutation authority;
+- interpret runtime-sensitive claims from static evidence;
+- make unmatched paths silently skippable;
+- broaden wildcard ownership beyond the bounded trailing-prefix form;
+- expand CI before the non-CI control plane is stable.
 
 ### Success metric
 
-A small source change should produce a small, explainable execution plan. Full verification remains the fallback whenever ownership or dependency coverage is incomplete.
+A small owned change produces a small, explainable task plan and compact AI context. A core or unknown change expands conservatively. Deterministic repair sources have realizers; gameplay-authored or ambiguous domains remain explicitly proposal-only.
