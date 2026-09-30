@@ -663,6 +663,8 @@ export async function inspectArtifact(
           result.combatRuntime,
         combatPolicy:
           result.combatPolicy,
+        chunkLifecycle:
+          result.chunkLifecycle,
         inventoryLifecycle:
           result.inventoryLifecycle,
         inventoryPolicy:
