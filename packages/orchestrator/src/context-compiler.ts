@@ -103,6 +103,15 @@ export interface CompiledContextPack {
     broadWrites: number;
     unresolvedScriptMutations: number;
     intentUnknowns: number;
+    domainSignals: {
+      arenaLifecycle: number;
+      spatialAuthority: number;
+      inventory: number;
+      entityAiNavigation: number;
+      combat: number;
+      chunks: number;
+      economy: number;
+    };
   };
   budget: ContextCompilerBudget;
   truncation: {
@@ -761,54 +770,139 @@ export function compileContextPack(
     requestedInvariants.size === 0 &&
     requestedEvidence.size === 0;
 
-  const world = input.worldModel === undefined
+  const worldModel =
+    input.worldModel;
+  const domainSignals =
+    worldModel === undefined
+      ? undefined
+      : {
+          arenaLifecycle:
+            worldModel.arenas.lifecycle.partial +
+            worldModel.arenas.lifecycle.unresolved +
+            worldModel.arenas.cleanup.partial +
+            worldModel.arenas.cleanup.unresolved +
+            (worldModel.arenas.cleanup
+              .resourceLedger?.partial ?? 0) +
+            (worldModel.arenas.cleanup
+              .resourceLedger?.missing ?? 0),
+          spatialAuthority:
+            worldModel.spatial.authority.uncovered +
+            worldModel.spatial.authority.conflicts +
+            worldModel.spatial.authority.unknownRegions +
+            (
+              worldModel.spatial.authority.configured &&
+              !worldModel.spatial.authority.policyValid
+                ? 1
+                : 0
+            ),
+          inventory:
+            worldModel.inventory.partialResets +
+            worldModel.inventory.copyMutationRisks +
+            worldModel.inventory
+              .unresolvedEquipmentSlotEvidence +
+            worldModel.inventory.restoreOwnership
+              .multipleRestoreOwners +
+            worldModel.inventory.policy.deniedDrops +
+            worldModel.inventory.policy.uncoveredDrops +
+            worldModel.inventory.policy.unknownDrops,
+          entityAiNavigation:
+            worldModel.entities.aiStack
+              .targetedStackIncomplete +
+            worldModel.entities.navigationEnvironment
+              .incompatible +
+            worldModel.entities.navigationEnvironment
+              .stateDependent +
+            worldModel.entities.navigationEnvironment
+              .unresolved,
+          combat:
+            worldModel.combat.hurtOnlyTerminalRisk +
+            worldModel.combat.policy
+              .revivePolicyContradictions +
+            worldModel.combat.policy
+              .projectileCleanupPolicyGap +
+            worldModel.combat.runtime
+              .scopedLifeGenerationMissing +
+            worldModel.combat.runtime
+              .scopedArenaGenerationMissing,
+          chunks:
+            worldModel.chunks.acquireWithoutRelease +
+            worldModel.chunks.releaseUnreachable +
+            worldModel.chunks.cleanupOrderUnproven +
+            worldModel.chunks.dynamicLeaseKeys +
+            worldModel.chunks.capacityUncheckedLeases +
+            worldModel.chunks.readinessUnverifiedLeases +
+            worldModel.chunks.shutdownOnlyCleanupRisk +
+            worldModel.chunks.unguardedDeferredChunkWork,
+          economy:
+            worldModel.economy.policy
+              .deathRewardOverlapPolicyConflicts +
+            worldModel.economy.policy
+              .deathRewardOverlapUnresolved +
+            worldModel.economy.policy
+              .pickupCurrencyConsumeCoverageGaps +
+            worldModel.economy.policy
+              .pickupCurrencyPolicyMismatch +
+            worldModel.economy.policy
+              .idempotencyCoverageGaps +
+            worldModel.economy.policy
+              .staleDropCleanupCoverageGaps +
+            worldModel.economy.policy
+              .inventoryFullPolicyGaps +
+            worldModel.economy.policy
+              .pickupScopeValidationUnproven +
+            worldModel.economy.policy
+              .terminalRewardResultCommitUnproven,
+        };
+
+  const world = worldModel === undefined
     ? undefined
     : {
-        ...(input.worldModel.arenas.count === undefined
+        ...(worldModel.arenas.count === undefined
           ? {}
-          : { arenaCount: input.worldModel.arenas.count }),
-        ...(input.worldModel.arenas.basis === undefined
+          : { arenaCount: worldModel.arenas.count }),
+        ...(worldModel.arenas.basis === undefined
           ? {}
-          : { arenaBasis: input.worldModel.arenas.basis }),
+          : { arenaBasis: worldModel.arenas.basis }),
         objectives:
-          input.worldModel.subjects.find(
+          worldModel.subjects.find(
             (item) => item.kind === "objective",
           )?.ids ?? [],
         phases:
-          input.worldModel.subjects.find(
+          worldModel.subjects.find(
             (item) => item.kind === "phase",
           )?.ids ?? [],
         outcomes:
-          input.worldModel.subjects.find(
+          worldModel.subjects.find(
             (item) => item.kind === "outcome",
           )?.ids ?? [],
-        lifecycle: input.worldModel.arenas.lifecycle,
-        cleanup: input.worldModel.arenas.cleanup,
-        isolation: input.worldModel.arenas.isolation,
+        lifecycle: worldModel.arenas.lifecycle,
+        cleanup: worldModel.arenas.cleanup,
+        isolation: worldModel.arenas.isolation,
         globalState:
-          input.worldModel.arenas.globalState,
+          worldModel.arenas.globalState,
         stress:
-          input.worldModel.arenas.stress,
-        ...(input.worldModel.arenas
+          worldModel.arenas.stress,
+        ...(worldModel.arenas
           .proofExecution === undefined
           ? {}
           : {
               proofMode:
-                input.worldModel.arenas
+                worldModel.arenas
                   .proofExecution.mode,
             }),
         skippedProofLayers:
-          input.worldModel.arenas
+          worldModel.arenas
             .proofExecution?.skippedLayers ?? [],
         broadWrites:
-          input.worldModel.state.broadWrites,
+          worldModel.state.broadWrites,
         unresolvedScriptMutations:
-          input.worldModel.spatial
+          worldModel.spatial
             .unresolvedScriptMutations +
-          input.worldModel.spatial
+          worldModel.spatial
             .rejectedScriptMutations,
         intentUnknowns:
-          input.worldModel.intent.unknowns.length,
+          worldModel.intent.unknowns.length,
+        domainSignals: domainSignals!,
       };
 
   return {
