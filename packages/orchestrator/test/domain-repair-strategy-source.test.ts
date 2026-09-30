@@ -44,6 +44,70 @@ describe("domain repair strategy source safety", () => {
     });
   });
 
+  it("routes combat revive policy diagnostics to proposal-only remediation without requiring automatic realization", () => {
+    const emptyProviders:
+      RepairStrategyProviderRegistry = {
+        schemaVersion: 1,
+        providers: [],
+      };
+    const enumeration =
+      enumerateRepairStrategySources(
+        {
+          incidentId: "incident-combat",
+          candidateId: "cause-revive",
+          sourceFingerprint: "source-a",
+          chainIds: ["chain-combat"],
+          relationIds: [],
+          invariantIds: [],
+          diagnosticIds: ["diag-combat"],
+          diagnosticCodes: [
+            "COMBAT_REVIVE_POLICY_VIOLATION",
+          ],
+          sourceRefs: [],
+          exactSourceRefs: [],
+          causalBinding: {},
+          targetProfileFingerprints: [],
+          automaticRealizationAllowed: false,
+          reasons: [],
+        },
+        [{
+          id: "diag-combat",
+          code:
+            "COMBAT_REVIVE_POLICY_VIOLATION",
+          severity: "medium",
+          message:
+            "Observed revive transaction contradicts authored combat policy.",
+        }],
+        emptyProviders,
+        BUILTIN_REPAIR_STRATEGY_SOURCES,
+      );
+
+    expect(
+      enumeration.applicableSources.find(
+        (item) =>
+          item.sourceId ===
+          "combat-revive-remediation",
+      ),
+    ).toMatchObject({
+      selectionMode: "proposal-only",
+      deterministic: false,
+      automaticRealizationEligible: false,
+    });
+
+    expect(
+      assessRepairRealizerCoverage(
+        enumeration,
+        BUILTIN_REPAIR_REALIZERS,
+      ).items.find(
+        (item) =>
+          item.sourceId ===
+          "combat-revive-remediation",
+      ),
+    ).toMatchObject({
+      status: "realizer-not-required",
+    });
+  });
+
   it("keeps the builtin registry unique and all required realizers covered", () => {
     expect(
       validateRepairStrategySourceRegistry(
