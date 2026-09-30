@@ -23,6 +23,7 @@ const rewards: RewardSourceAnalysis = {
   functionLootCommands: 0,
   scoreboardCredits: 1,
   scoreboardDebits: 0,
+  scoreboardAdjustments: 0,
   scoreboardWrites: 0,
   itemConsumes: 0,
   dropCleanupSurfaces: 0,
