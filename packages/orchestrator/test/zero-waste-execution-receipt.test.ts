@@ -116,6 +116,11 @@ describe("zero-waste execution receipt", () => {
           evidenceIds: ["e:b"],
         },
       ],
+      [{
+        scenarioId: "scenario:a",
+        completed: true,
+        evidenceIds: ["validation:a"],
+      }],
     );
 
     expect(receipt.status).toBe("complete");
@@ -181,4 +186,36 @@ describe("zero-waste execution receipt", () => {
       /before dependency/i,
     );
   });
+
+  it("marks the receipt incomplete when selected validation has not executed", () => {
+    const receipt =
+      createZeroWasteExecutionReceipt(
+        plan,
+        [
+          {
+            claimId: "claim:a",
+            action: "reuse",
+            completed: true,
+            evidenceIds: ["e:a"],
+          },
+          {
+            claimId: "claim:b",
+            action: "recompute",
+            completed: true,
+            evidenceIds: ["e:b"],
+          },
+        ],
+        [],
+      );
+
+    expect(receipt.status).toBe(
+      "incomplete",
+    );
+    expect(
+      receipt.reasons.join(" "),
+    ).toMatch(
+      /selected validation scenarios are incomplete/i,
+    );
+  });
+
 });
