@@ -1,6 +1,6 @@
 param(
     [Parameter(Position=0)]
-    [ValidateSet("setup","doctor","audit","check","test","inspect","finalize-local","help")]
+    [ValidateSet("setup","doctor","audit","check","test","inspect","affected","plan","finalize-local","help")]
     [string]$Command = "help",
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
@@ -9,6 +9,24 @@ param(
 
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+
+function Get-ChangedRepositoryPaths {
+    $gitCommand = Get-Command git -ErrorAction SilentlyContinue
+    if (-not $gitCommand) {
+        throw "Git is required to discover changed repository paths."
+    }
+
+    $paths = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($path in (& git diff --name-only HEAD --)) {
+        if ($path) { $paths.Add($path.Trim()) }
+    }
+    foreach ($path in (& git ls-files --others --exclude-standard)) {
+        if ($path) { $paths.Add($path.Trim()) }
+    }
+
+    return @($paths | Sort-Object -Unique)
+}
 
 function Write-DoctorStatus {
     param(
@@ -152,6 +170,36 @@ try {
             }
             npm run cli -- inspect $Arguments[0]
         }
+        "affected" {
+            $paths = if ($Arguments -and $Arguments.Count -gt 0) {
+                @($Arguments)
+            }
+            else {
+                @(Get-ChangedRepositoryPaths)
+            }
+
+            if ($paths.Count -eq 0) {
+                Write-Host "No changed repository paths."
+                break
+            }
+
+            npm run cli -- affected @paths
+        }
+        "plan" {
+            $paths = if ($Arguments -and $Arguments.Count -gt 0) {
+                @($Arguments)
+            }
+            else {
+                @(Get-ChangedRepositoryPaths)
+            }
+
+            if ($paths.Count -eq 0) {
+                Write-Host "No changed repository paths."
+                break
+            }
+
+            npm run cli -- plan @paths
+        }
         "finalize-local" {
             npm run verify:ready
         }
@@ -163,6 +211,8 @@ try {
             Write-Host "  DEV.cmd check"
             Write-Host "  DEV.cmd test [vitest args]"
             Write-Host "  DEV.cmd inspect <artifact>"
+            Write-Host "  DEV.cmd affected [changed-path ...]"
+            Write-Host "  DEV.cmd plan [changed-path ...]"
             Write-Host "  DEV.cmd finalize-local"
         }
     }
