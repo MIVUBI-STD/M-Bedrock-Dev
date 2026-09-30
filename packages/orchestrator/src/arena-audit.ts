@@ -20,6 +20,11 @@ import {
 } from "../../../analyzers/diagnostics/src/index.js";
 import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
 import type { SourceRef } from "../../project-model/src/index.js";
+import {
+  runArenaLastMileAudit,
+  type ArenaLastMileAuditInput,
+  type ArenaLastMileAuditResult,
+} from "./arena-last-mile-audit.js";
 
 export interface ArenaAuditInput {
   canonicalReplica?: ArenaReplicaSnapshot;
@@ -35,6 +40,7 @@ export interface ArenaAuditInput {
   persistedPackIdentities?: readonly PersistedPackIdentityObservation[];
   releaseIdentities?: readonly ReleaseIdentityObservation[];
   source?: SourceRef;
+  lastMile?: ArenaLastMileAuditInput;
 }
 
 export interface ArenaAuditResult {
@@ -45,6 +51,7 @@ export interface ArenaAuditResult {
     comparison: ReturnType<typeof compareSpatialFingerprints>;
   }[];
   capacity?: ArenaCapacityReport;
+  lastMile?: ArenaLastMileAuditResult;
 }
 
 export function runArenaAudit(
@@ -115,10 +122,15 @@ export function runArenaAudit(
     );
   }
 
+  const lastMile = input.lastMile === undefined
+    ? undefined
+    : runArenaLastMileAudit(input.lastMile);
+
   return {
     findings,
     replicaComparisons,
     spatialComparisons,
     ...(capacity === undefined ? {} : { capacity }),
+    ...(lastMile === undefined ? {} : { lastMile }),
   };
 }
