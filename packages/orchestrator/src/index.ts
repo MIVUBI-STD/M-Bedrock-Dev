@@ -348,3 +348,5 @@ export * from "./economy-policy-load.js";
 export * from "./combat-policy-diagnostics.js";
 
 export * from "./chunk-lifecycle-diagnostics.js";
+
+export * from "./chunk-readiness-runtime-classification.js";
