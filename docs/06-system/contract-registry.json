@@ -13,6 +13,21 @@
       ],
       "schemaVersion": 1,
       "verificationLevel": "bug-fixing-report",
+      "status": "deprecated",
+      "replacedBy": "bug-report-v2"
+    },
+    {
+      "id": "bug-report-v2",
+      "symbol": "BugReportV2",
+      "owner": "packages/bug-report/src/v2.ts",
+      "producers": [
+        "packages/bug-report"
+      ],
+      "consumers": [
+        "apps"
+      ],
+      "schemaVersion": 1,
+      "verificationLevel": "bug-fixing-report",
       "status": "canonical"
     },
     {
