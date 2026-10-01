@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   semanticIrSummary,
-} from "../../semantic-ir/src/index.js";
+} from "../../../semantic-ir/src/index.js";
 import {
   buildInspectionSemanticIr,
-} from "../src/semantic-ir-stage.js";
+} from "../../src/diagnosis/semantic-ir-stage.js";
 
 describe("inspection semantic IR", () => {
   it("links event, deferred callback, state operations and mcfunction calls without guessing unresolved targets", () => {

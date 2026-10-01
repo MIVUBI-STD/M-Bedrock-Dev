@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
 import {
   proveStaticGraphPreservation,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function graph(options?: {
   changedAllowed?: boolean;

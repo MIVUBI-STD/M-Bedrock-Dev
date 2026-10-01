@@ -41,9 +41,9 @@ export * from "../runtime-profile-differential-reclassification.js";
 export * from "../runtime-reclassification-repair-gate.js";
 export * from "../runtime-scheduler-diagnostic-bindings.js";
 export * from "../runtime-temporal-analysis.js";
-export * from "../semantic-ir-diagnostics.js";
-export * from "../semantic-ir-stage.js";
-export * from "../static-graph-preservation-proof.js";
+export * from "./semantic-ir-diagnostics.js";
+export * from "./semantic-ir-stage.js";
+export * from "./static-graph-preservation-proof.js";
 export * from "../telemetry-evidence.js";
 export * from "../telemetry-load.js";
 export {

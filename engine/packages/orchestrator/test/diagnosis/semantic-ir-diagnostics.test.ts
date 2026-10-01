@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { SemanticIr } from "../../semantic-ir/src/index.js";
-import { semanticIrDiagnostics } from "../src/semantic-ir-diagnostics.js";
+import type { SemanticIr } from "../../../semantic-ir/src/index.js";
+import { semanticIrDiagnostics } from "../../src/diagnosis/semantic-ir-diagnostics.js";
 
 const source = {
   artifactId: "a",
