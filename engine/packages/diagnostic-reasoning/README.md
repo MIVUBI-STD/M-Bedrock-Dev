@@ -27,15 +27,9 @@ External design/reference material is ignored in normal audit mode.
 
 Candidate discovery requires a matching Gameplay Contract with `READY` or scoped-safe `PARTIAL` readiness.
 
-Candidate families remain intentionally small:
+Primary discovery is a generic Gameplay Contract contradiction. Named candidate families are optional tags for grouping/prioritization, not a discovery whitelist.
 
-- progression dead-end;
-- objective loss;
-- reset leakage;
-- terminal-state conflict;
-- multiplayer ownership conflict;
-- critical inventory loss;
-- entity route dead-end.
+Current tags include progression dead-end, objective loss, reset leakage, terminal-state conflict, multiplayer ownership conflict, critical inventory loss, and entity route dead-end.
 
 Counter-evidence is fail-closed:
 
