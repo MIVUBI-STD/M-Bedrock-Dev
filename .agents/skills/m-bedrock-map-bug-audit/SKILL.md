@@ -73,7 +73,7 @@ Do not show Repair By, repair ownership, or Fixed progress during normal bug-fin
 Normal ChatGPT preview uses one compact table:
 
 ```text
-No. | Severity | Bug | Issue | Action
+No. | Severity | Bug | Issue | Reproduce / Verify | Action
 ```
 
 Rules:
@@ -81,9 +81,12 @@ Rules:
 - do not create one vertical section per bug by default;
 - keep one row per bug;
 - use `#1`, `#2`, ... for preview references and keep canonical Bug ID hidden unless detail/full mode is requested;
+- every tester-facing bug must include a concise in-game reproduction / verification path;
+- if no tester-verifiable path exists yet, keep the finding internal rather than presenting it as a ready bug;
 - do not invent Action when Suggested Fix is absent;
 - hide fixed bugs unless requested;
-- do not show Expected / Observed / Reproduction / technical fields unless the user requests detail;
+- show concise Reproduce / Verify steps in the default table;
+- do not show Expected / Observed / technical fields unless the user requests detail;
 - never expose internal proof plumbing, semantic keys, evidence graph IDs, repair-unit IDs, cache state, or orchestration data in normal report preview;
 - use `full` only when the user asks for root-cause or implementation detail.
 
