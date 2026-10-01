@@ -206,7 +206,7 @@ function candidateExpectedBasis(
     );
 
   return {
-    authority: "authored-intent",
+    authority: "selected-artifact",
     statement: candidate.defect.expectedStatement,
     evidenceIds: [
       ...new Set(
