@@ -261,39 +261,24 @@ The reconciliation contract is conservative:
 
 This prevents detection variability from becoming destructive report mutation.
 
-## Verified completion and retest
+## Verified completion
 
 `fixed` is not a general editing field.
 
-Use `applyVerifiedBugRetest()` for completion/retest mutation.
-
-A passing retest may set `fixed: true` only when:
-
-- Bug ID exists in the canonical report;
-- map name, map version, and exact tested runtime version match;
-- explicit retest evidence IDs exist;
-- at least one required defect-fixing invariant is supplied;
-- each required invariant has a current passing validation run;
-- proof level is sufficient;
-- the proving run carries evidence;
-- when Must Preserve exists, explicit preservation invariant IDs and a passing preservation receipt prove those invariants.
-
-A failed retest with explicit evidence sets `fixed: false`, including reopening a previously fixed bug.
-
 Generic creation, import, refresh, preview, or reconciliation must not close a bug.
+
+Canonical `fixed: true` is produced by the repair lifecycle owner in the orchestrator through `completeBugReportFromClosedRepair()`. That path requires a fixed post-repair closure receipt plus matching passed preservation proof before the canonical report is updated.
 
 ```text
 generic save / refresh
     ≠ completion
 
-verified passing retest
+closed repair + proof
+    → completeBugReportFromClosedRepair()
     → fixed: true
-
-verified failing retest
-    → fixed: false
 ```
 
-Completion evidence is not duplicated inside Bug Report V2; validation/preservation subsystems remain the evidence authorities and Git remains history.
+Bug Report V2 stores the resulting state only. Validation, preservation, and repair orchestration remain the proof authorities; Git remains revision history.
 
 ## Output density
 
