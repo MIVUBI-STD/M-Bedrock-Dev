@@ -35,3 +35,18 @@ Gameplay Intent is not the canonical Game Design owner. Minecraft documentation 
 A downstream defect conclusion must not be stronger than the intent evidence that supports the expected behavior.
 
 Authored intent contradicted by observed evidence can support a confirmed defect classification. Inferred intent can support only a probable defect until stronger evidence is obtained. Unresolved intent ambiguity blocks defect classification.
+
+
+## Authority resolution
+
+Gameplay intent and actual behavior use separate authority domains.
+
+- intended gameplay: current user decision → approved Game Design → current gameplay documentation → derived intent;
+- actual behavior: current runtime observation → current root artifact → current source → derived static behavior;
+- release identity: explicitly selected artifact → current root artifact → manifest → changelog.
+
+Historical evidence is a regression/design-evolution hint only. It never becomes current authority by itself.
+
+Authority is resolved per exact scope. A rule for retry does not silently apply to next-tier or new-session behavior. Equally authoritative current claims with different values remain ambiguous instead of being guessed.
+
+Current implementation can describe actual behavior, but source code alone does not independently prove intended gameplay.

@@ -65,6 +65,32 @@ export interface IntentDiagnosticGateResult {
   reasons: readonly string[];
 }
 
+const independentIntentOrigins = new Set([
+  "game-design-spec",
+  "project-policy",
+  "official-documentation",
+]);
+
+function invariantHasIndependentIntentAuthority(
+  model: GameplayIntentModel,
+  evidenceIds: readonly string[],
+): boolean {
+  const evidenceById = new Map(
+    model.evidence.map((evidence) => [
+      evidence.id,
+      evidence,
+    ]),
+  );
+
+  return evidenceIds.some((id) => {
+    const evidence = evidenceById.get(id);
+    return (
+      evidence !== undefined &&
+      independentIntentOrigins.has(evidence.origin)
+    );
+  });
+}
+
 export function gateIntentDiagnostic(
   input: IntentDiagnosticGateInput,
 ): IntentDiagnosticGateResult {
@@ -377,6 +403,20 @@ export function gateIntentDiagnostic(
   const authored = applicable.filter(
     (invariant) => invariant.status === "authored",
   );
+  const authoritativeAuthored = authored.filter(
+    (invariant) =>
+      invariantHasIndependentIntentAuthority(
+        input.intent,
+        invariant.evidenceIds,
+      ),
+  );
+  const implementationOnlyAuthored = authored.filter(
+    (invariant) =>
+      !invariantHasIndependentIntentAuthority(
+        input.intent,
+        invariant.evidenceIds,
+      ),
+  );
   const inferred = applicable.filter(
     (invariant) => invariant.status === "inferred",
   );
@@ -384,12 +424,12 @@ export function gateIntentDiagnostic(
   if (
     input.observationEvidenceIds.length > 0 &&
     (input.contradictionEvidenceIds?.length ?? 0) > 0 &&
-    authored.length > 0
+    authoritativeAuthored.length > 0
   ) {
     return {
       disposition: "confirmed-defect",
       subjectIds: [...input.subjectIds],
-      basisInvariantIds: authored.map((item) => item.id),
+      basisInvariantIds: authoritativeAuthored.map((item) => item.id),
       basisDesignRuleIds: [],
       basisDesignEvidenceIds: [],
       evidenceIds: [
@@ -399,7 +439,7 @@ export function gateIntentDiagnostic(
       ],
       nextEvidenceNeed: "none",
       reasons: [
-        "Observed evidence contradicts an evidence-grounded authored invariant.",
+        "Observed evidence contradicts authored intent grounded independently of the current implementation.",
       ],
     };
   }
@@ -407,12 +447,18 @@ export function gateIntentDiagnostic(
   if (
     input.observationEvidenceIds.length > 0 &&
     (input.contradictionEvidenceIds?.length ?? 0) > 0 &&
-    inferred.length > 0
+    (
+      implementationOnlyAuthored.length > 0 ||
+      inferred.length > 0
+    )
   ) {
     return {
-      disposition: "probable-defect",
+      disposition: "ambiguous-intent",
       subjectIds: [...input.subjectIds],
-      basisInvariantIds: inferred.map((item) => item.id),
+      basisInvariantIds: [
+        ...implementationOnlyAuthored,
+        ...inferred,
+      ].map((item) => item.id),
       basisDesignRuleIds: [],
       basisDesignEvidenceIds: [],
       evidenceIds: [
@@ -422,7 +468,9 @@ export function gateIntentDiagnostic(
       ],
       nextEvidenceNeed: "authored-intent",
       reasons: [
-        "Observed evidence contradicts inferred intent, but authored intent is not yet strong enough for confirmation.",
+        implementationOnlyAuthored.length > 0
+          ? "Current implementation evidence cannot independently establish intended gameplay; authored design authority is required before defect classification."
+          : "Observed evidence contradicts inferred intent, but inferred intent is not sufficient to classify a gameplay bug.",
       ],
     };
   }

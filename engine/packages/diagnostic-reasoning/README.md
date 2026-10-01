@@ -57,3 +57,12 @@ When an applicable approved Game Design `intentRule` is available, the gate eval
 - contradiction against approved reconstruction → `probable-defect`.
 
 Implementation code is evidence of implementation, not authority for intended gameplay. Missing intent fails closed instead of inventing a defect.
+
+
+## Intent safety boundary
+
+Diagnostic Reasoning must not convert implementation shape into gameplay intent.
+
+A contradiction can become a confirmed defect only when intended behavior is grounded independently of the current implementation, such as approved Game Design, project policy, or authoritative documentation. Source-only authored/inferred intent remains ambiguous until independent intent authority exists.
+
+Historical findings may guide where to inspect, but they do not prove a current defect. Runtime observation proves actual behavior, not intended behavior.

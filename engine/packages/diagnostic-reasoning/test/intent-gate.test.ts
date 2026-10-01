@@ -9,15 +9,25 @@ import type {
 function model(
   invariantStatus: "authored" | "inferred",
   withUnknown = false,
+  origin:
+    | "game-design-spec"
+    | "source-code"
+    = "game-design-spec",
 ): GameplayIntentModel {
   return {
     schemaVersion: 1,
     id: "arena-game",
     evidence: [{
       id: "e:intent",
-      origin: "source-code",
-      locator: "src/session.ts",
-      summary: "Session source defines cleanup behavior.",
+      origin,
+      locator:
+        origin === "game-design-spec"
+          ? "design/game-design.json"
+          : "src/session.ts",
+      summary:
+        origin === "game-design-spec"
+          ? "Approved design defines cleanup behavior."
+          : "Session source defines cleanup behavior.",
     }],
     nodes: [{
       id: "lifecycle:cleanup",
@@ -53,13 +63,28 @@ describe("intent diagnostic gate", () => {
     }).disposition).toBe("confirmed-defect");
   });
 
-  it("limits contradiction against inferred intent to probable defect", () => {
-    expect(gateIntentDiagnostic({
+  it("does not promote contradiction against inferred intent into a bug", () => {
+    const result = gateIntentDiagnostic({
       intent: model("inferred"),
       subjectIds: ["lifecycle:cleanup"],
       observationEvidenceIds: ["runtime:arena-not-reusable"],
       contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
-    }).disposition).toBe("probable-defect");
+    });
+
+    expect(result.disposition).toBe("ambiguous-intent");
+    expect(result.nextEvidenceNeed).toBe("authored-intent");
+  });
+
+  it("does not let current implementation evidence define intended gameplay", () => {
+    const result = gateIntentDiagnostic({
+      intent: model("authored", false, "source-code"),
+      subjectIds: ["lifecycle:cleanup"],
+      observationEvidenceIds: ["runtime:arena-not-reusable"],
+      contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
+    });
+
+    expect(result.disposition).toBe("ambiguous-intent");
+    expect(result.nextEvidenceNeed).toBe("authored-intent");
   });
 
   it("blocks defect classification while intent is ambiguous", () => {
