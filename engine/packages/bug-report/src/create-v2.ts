@@ -1,4 +1,5 @@
 import { reviewBugReportCopy } from "./copy-quality.js";
+import { reviewBugReportReadiness } from "./report-readiness.js";
 import {
   BUG_REPORT_V2_SCHEMA,
   parseBugReportV2,
@@ -37,6 +38,19 @@ export function createBugReportV2(
     throw new Error(
       "Bug Report V2 creation failed: " +
         parsed.issues
+          .map((issue) =>
+            issue.path + ": " + issue.message
+          )
+          .join("; "),
+    );
+  }
+
+  const readinessIssues =
+    reviewBugReportReadiness(parsed.report.bugs);
+  if (readinessIssues.length > 0) {
+    throw new Error(
+      "Bug Report V2 readiness failed: " +
+        readinessIssues
           .map((issue) =>
             issue.path + ": " + issue.message
           )
