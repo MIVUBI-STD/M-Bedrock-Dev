@@ -12,6 +12,8 @@ export * from "./preview.js";
 export * from "./copy-quality.js";
 export * from "./report-readiness.js";
 export * from "./bug-trigger.js";
+export * from "./migrate.js";
+export * from "./report-summary.js";
 
 export * from "./v2.js";
 export * from "./create-v2.js";
