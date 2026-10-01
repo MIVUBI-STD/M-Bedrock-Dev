@@ -1,4 +1,7 @@
-import { planLinearTopologyRepair } from "../../../repair/src/index.js";
+import {
+  planLinearTopologyRepair,
+  type TopologyRepairProposal,
+} from "../../../repair/src/index.js";
 import type { analyzeFunctionTopology } from "../topology-analysis.js";
 
 export interface InspectionRepairCandidate {
@@ -8,13 +11,7 @@ export interface InspectionRepairCandidate {
   line?: number;
   status: "proposal" | "unsupported" | "unavailable";
   reason?: string;
-  proposal?: NonNullable<
-    ReturnType<typeof planLinearTopologyRepair> extends infer Result
-      ? Result extends { status: "proposed"; proposal: infer Proposal }
-        ? Proposal
-        : never
-      : never
-  >;
+  proposal?: TopologyRepairProposal;
 }
 
 export function planInspectionRepairs(
