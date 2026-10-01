@@ -152,6 +152,27 @@ if(!existsSync(registryPath)){
     if(typeof lane.outputSchema!=="string" || !existsSync(lane.outputSchema)) failures.push("Work lane outputSchema missing/not found: "+name);
     if(typeof lane.deterministicEntrypoint!=="string" || !existsSync(lane.deterministicEntrypoint)) failures.push("Work lane deterministicEntrypoint missing/not found: "+name);
     if(!Array.isArray(lane.evidenceTiers) || lane.evidenceTiers.length===0) failures.push("Work lane lacks evidence tiers: "+name);
+    for(const field of ["spec","sources","eval"]){
+      if(typeof lane[field]!=="string" || !existsSync(lane[field])) failures.push("Work lane "+field+" missing/not found: "+name);
+    }
+  }
+
+  for(const field of ["permissionProfiles","pathAccess","securityPolicy","securityScanner","evalManifest"]){
+    if(typeof registry[field]!=="string" || !existsSync(registry[field])) failures.push("Skill registry "+field+" missing/not found.");
+  }
+
+  const benchmark=registry.workLanes?.["m-bedrock-detection-benchmark"];
+  if(!Array.isArray(benchmark?.benchmarkTools) || benchmark.benchmarkTools.length<3){
+    failures.push("Detection Benchmark requires score, blind-compare, and aggregate-run tools.");
+  }else{
+    for(const path of benchmark.benchmarkTools){
+      if(!existsSync(path)) failures.push("Detection Benchmark tool missing: "+path);
+    }
+  }
+
+  const audit=registry.workLanes?.["m-bedrock-map-bug-audit"];
+  if(typeof audit?.runtimeInstrumentation!=="string" || !existsSync(audit.runtimeInstrumentation)){
+    failures.push("Map Bug Audit requires runtime instrumentation lifecycle reference.");
   }
 }
 
