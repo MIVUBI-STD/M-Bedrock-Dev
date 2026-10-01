@@ -22,6 +22,7 @@ const readyContract = {
 const rule: GameplayBugCandidateRule = {
   id: "reset-leak",
   kind: "reset-leakage",
+  scopeSubjectIds: ["objective:test"],
   requiredPredicates: [
     "retry-occurs",
     "old-state-survives",
@@ -39,6 +40,18 @@ describe("gameplay bug candidate evidence gate", () => {
     const result = evaluateGameplayBugCandidateEvidence(
       rule,
       [],
+    );
+    expect(result.disposition).toBe("design-readiness-missing");
+  });
+
+  it("rejects a Gameplay Contract from another scope", () => {
+    const result = evaluateGameplayBugCandidateEvidence(
+      rule,
+      [],
+      {
+        ...readyContract,
+        subjectIds: ["objective:other"],
+      },
     );
     expect(result.disposition).toBe("design-readiness-missing");
   });
