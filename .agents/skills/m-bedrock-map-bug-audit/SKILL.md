@@ -91,6 +91,7 @@ Rules:
 - hide fixed bugs unless requested;
 - keep each bug in one two-column block;
 - place `Bug Trigger (In-Game)` directly below Issue and above Solution;
+- render every trigger step on a separate numbered line; do not use arrow-chained inline steps;
 - do not show Expected / Observed / technical fields unless the user requests detail;
 - never expose internal proof plumbing, semantic keys, evidence graph IDs, repair-unit IDs, cache state, or orchestration data in normal report preview;
 - use `full` only when the user asks for root-cause or implementation detail.
