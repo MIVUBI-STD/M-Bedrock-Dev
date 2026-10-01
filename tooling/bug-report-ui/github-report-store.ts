@@ -362,7 +362,7 @@ export class GitHubBugReportStore {
     );
     if (unverifiedCompletion) {
       throw new Error(
-        "Generic report save cannot mark bugs fixed; use verified repair completion.",
+        "Generic report save cannot mark bugs fixed; use closed repair completion.",
       );
     }
 
