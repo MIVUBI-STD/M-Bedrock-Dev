@@ -1,8 +1,4 @@
-import {
-  describe,
-  expect,
-  it,
-} from "vitest";
+import { describe, expect, it } from "vitest";
 import type {
   IntentDiagnosticGateResult,
 } from "../../../diagnostic-reasoning/src/index.js";
@@ -13,147 +9,88 @@ import {
   confirmStaticIntentDefectForReport,
 } from "../../src/reporting/static-report-confirmation-adapter.js";
 
-const intent: GameplayIntentModel = {
-  schemaVersion: 1,
-  id: "intent",
-  evidence: [{
-    id: "intent:evidence",
-    origin: "game-design-spec",
-    locator: "scripts/session.ts",
-    summary: "Authored cleanup rule.",
-  }],
-  nodes: [{
-    id: "outcome:cleanup",
-    kind: "outcome",
-    label: "Cleanup",
-    status: "authored",
-    evidenceIds: ["intent:evidence"],
-  }],
-  edges: [],
-  invariants: [{
-    id: "inv:cleanup",
-    statement: "Cleanup must clear match-owned state.",
-    strength: "must",
-    status: "authored",
-    subjectIds: ["outcome:cleanup"],
-    evidenceIds: ["intent:evidence"],
-  }],
-  unknowns: [],
-};
-
-function result(
-  disposition: IntentDiagnosticGateResult["disposition"],
-): IntentDiagnosticGateResult {
+function intent(
+  scope: "selected-artifact" | "external-reference" =
+    "selected-artifact",
+): GameplayIntentModel {
   return {
-    disposition,
+    schemaVersion: 1,
+    id: "intent",
+    artifactId: "artifact:v1",
+    evidence: [{
+      id: "intent:evidence",
+      origin: "source-code",
+      locator: "behavior_packs/demo/scripts/session.js",
+      summary: "Cleanup contract.",
+      scope,
+    }],
+    nodes: [{
+      id: "outcome:cleanup",
+      kind: "outcome",
+      label: "Cleanup",
+      status: "authored",
+      evidenceIds: ["intent:evidence"],
+    }],
+    edges: [],
+    invariants: [{
+      id: "inv:cleanup",
+      statement: "Cleanup must clear match-owned state.",
+      strength: "must",
+      status: "authored",
+      subjectIds: ["outcome:cleanup"],
+      evidenceIds: ["intent:evidence"],
+    }],
+    unknowns: [],
+  };
+}
+
+function result(): IntentDiagnosticGateResult {
+  return {
+    disposition: "confirmed-defect",
     subjectIds: ["outcome:cleanup"],
-    basisInvariantIds:
-      disposition === "confirmed-defect"
-        ? ["inv:cleanup"]
-        : [],
+    basisInvariantIds: ["inv:cleanup"],
     basisDesignRuleIds: [],
     basisDesignEvidenceIds: [],
     evidenceIds: ["static:contradiction"],
-    nextEvidenceNeed:
-      disposition === "confirmed-defect"
-        ? "none"
-        : "contradiction-proof",
-    reasons: [
-      disposition === "confirmed-defect"
-        ? "Static evidence contradicts authored intent."
-        : "The static evidence does not confirm a defect.",
-    ],
+    nextEvidenceNeed: "none",
+    reasons: ["Selected-artifact contract contradiction."],
   };
 }
 
 describe("static report confirmation adapter", () => {
-  it("confirms an authored static contract violation", () => {
-    const confirmation =
+  it("confirms only selected-artifact contract violations", () => {
+    expect(
       confirmStaticIntentDefectForReport(
-        intent,
-        result("confirmed-defect"),
-      );
-
-    expect(confirmation.confirmed).toBe(true);
-    if (!confirmation.confirmed) return;
-    expect(confirmation.confirmation.basis).toBe(
-      "authored-contract-violation",
-    );
+        intent(),
+        result(),
+      ).confirmed,
+    ).toBe(true);
   });
 
-  it.each([
-        "designed-behavior",
-    "design-review",
-    "engine-constraint",
-    "compatibility-difference",
-    "insufficient-evidence",
-    "ambiguous-intent",
-    "runtime-proof-required",
-  ] as const)(
-    "does not promote %s static results",
-    (disposition) => {
-      const confirmation =
-        confirmStaticIntentDefectForReport(
-          intent,
-          result(disposition),
-        );
+  it("rejects external/reference intent even when disposition says confirmed", () => {
+    expect(
+      confirmStaticIntentDefectForReport(
+        intent("external-reference"),
+        result(),
+      ).confirmed,
+    ).toBe(false);
+  });
 
-      expect(confirmation.confirmed).toBe(false);
-    },
-  );
-
-  it("rejects source-code-only authored intent even when disposition says confirmed", () => {
+  it("rejects manually supplied external design evidence without selected-artifact invariant authority", () => {
     const confirmation =
       confirmStaticIntentDefectForReport(
         {
-          ...intent,
-          evidence: [{
-            ...intent.evidence[0]!,
-            origin: "source-code",
-          }],
+          ...intent(),
+          invariants: [],
         },
-        result("confirmed-defect"),
-      );
-
-    expect(confirmation.confirmed).toBe(false);
-  });
-
-  it("rejects inferred invariants even when disposition says confirmed", () => {
-    const confirmation =
-      confirmStaticIntentDefectForReport(
         {
-          ...intent,
-          invariants: [{
-            ...intent.invariants[0]!,
-            status: "inferred",
-          }],
-        },
-        result("confirmed-defect"),
-      );
-
-    expect(confirmation.confirmed).toBe(false);
-  });
-
-  it("confirms an authoritative approved Game Design rule contradiction", () => {
-    const confirmation =
-      confirmStaticIntentDefectForReport(
-        intent,
-        {
-          disposition: "confirmed-defect",
-          subjectIds: ["combat:team-damage"],
+          ...result(),
           basisInvariantIds: [],
-          basisDesignRuleIds: ["friendly-fire"],
-          basisDesignEvidenceIds: [
-            "game-design:offense:rule:friendly-fire",
-          ],
-          evidenceIds: ["static:friendly-fire-path"],
-          nextEvidenceNeed: "none",
-          reasons: [
-            "Static behavior contradicts approved Game Design.",
-          ],
+          basisDesignRuleIds: ["external-rule"],
+          basisDesignEvidenceIds: ["external:design"],
         },
       );
 
-    expect(confirmation.confirmed).toBe(true);
+    expect(confirmation.confirmed).toBe(false);
   });
 });
