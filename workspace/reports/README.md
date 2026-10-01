@@ -1,8 +1,8 @@
 # Bug Reports
 
-This directory is the GitHub-persisted handoff workspace for completed audits.
+This directory is the GitHub-persisted canonical state workspace for completed/current audit handoff.
 
-Each new report represents one audited map/version set and must be tester-facing, handoff-ready, and canonical Bug Report V2.
+Each new report represents one audited map/version set and must be tester-facing, handoff-ready, and canonical Bug Report V2. Active recording is current-version-first: do not create historical reports solely to fill missing coverage.
 
 Canonical flow:
 
@@ -10,7 +10,7 @@ Canonical flow:
 AUDIT → BUG REPORT → REPAIR
 ```
 
-Store only canonical Bug Report V2 JSON here. Do not store raw analysis traces, caches, temporary evidence indexes, repair forms, verification records, or duplicate Markdown copies.
+Store only canonical Bug Report V2 JSON here. This directory is the persisted bug-state authority; UI state, Drive files, PDFs, spreadsheets, and external QA notes are not parallel authorities. Do not store raw analysis traces, caches, temporary evidence indexes, repair forms, verification records, or duplicate Markdown copies.
 
 
 Report policy is owned by `engine/packages/bug-report/`:
