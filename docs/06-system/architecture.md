@@ -9,6 +9,10 @@ artifact + archive
         ↓
 project-model
         ↓
+current map Game Design
+        ↓
+scoped Gameplay Contract / design readiness
+        ↓
 analyzers
         ↓
 semantic graph + Semantic IR
@@ -70,6 +74,10 @@ network-input-order
 Happens-before graphs must be acyclic. A cycle is a model error, not an empty valid schedule space.
 
 ## Separation of authorities
+
+Game Design owns explicit intended gameplay for the current map/mode.
+
+Gameplay Contract is a scoped derived working projection used by audit/repair. It is never a second persisted Game Design authority.
 
 The semantic graph owns references/dependencies.
 
