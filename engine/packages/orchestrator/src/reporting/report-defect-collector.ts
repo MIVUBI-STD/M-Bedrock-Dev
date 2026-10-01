@@ -676,6 +676,49 @@ function aiBugTrigger(
     };
   }
 
+  if (
+    candidate.route === "static" &&
+    compiled.gameplayBasis !== "authored-gameplay"
+  ) {
+    return {
+      issues: [
+        "Static AI Bug Trigger must be grounded in authored gameplay intent.",
+      ],
+    };
+  }
+
+  if (
+    candidate.route === "runtime" &&
+    compiled.gameplayBasis === "tester-gameplay"
+  ) {
+    return {
+      issues: [
+        "Runtime AI Bug Trigger cannot claim tester gameplay provenance.",
+      ],
+    };
+  }
+
+  const gameplayBasisEvidence =
+    compiled.gameplayBasis === "authored-gameplay"
+      ? new Set(
+          candidateExpectedBasis(candidate).evidenceIds,
+        )
+      : new Set(
+          candidateObservedBasis(candidate).evidenceIds,
+        );
+
+  if (
+    !compiled.evidenceIds.some(
+      (id) => gameplayBasisEvidence.has(id),
+    )
+  ) {
+    return {
+      issues: [
+        "Bug Trigger gameplay basis is not supported by matching gameplay evidence from the same defect.",
+      ],
+    };
+  }
+
   return {
     steps: compiled.steps,
     issues: [],
