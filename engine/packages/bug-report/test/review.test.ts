@@ -196,6 +196,32 @@ describe("proposed bug chat approval", () => {
     expect(report.report.bugs).toHaveLength(1);
   });
 
+  it("rejects fabricated approval state that does not match review decisions", () => {
+    const a = defect("a");
+    const proposed = projectProposedBugSet(map, [a]);
+    const reviewed = applyProposedBugReview(
+      proposed,
+      [{
+        semanticKey: a.semanticKey,
+        decision: "approve",
+      }],
+    );
+
+    expect(reviewed.ok).toBe(true);
+    if (!reviewed.ok) return;
+
+    const report = buildBugReportFromApprovedBugSet({
+      approved: {
+        ...reviewed.approved,
+        approvedSemanticKeys: [],
+      },
+      repairBy: "developer",
+      defects: [a],
+    });
+
+    expect(report.ok).toBe(false);
+  });
+
   it("refuses artifact generation when chat review approves no bugs", () => {
     const a = defect("a");
     const proposed = projectProposedBugSet(map, [a]);
