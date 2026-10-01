@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type {
   HistoryDrivenQaPlan,
-} from "../src/index.js";
+} from "../../src/index.js";
 import type {
   PortfolioRegressionSchedule,
-} from "../../reliability/src/index.js";
+} from "../../../reliability/src/index.js";
 import {
   planQaExecutionBudget,
   qaExecutionBudgetPlanText,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 const schedule: PortfolioRegressionSchedule = {
   updateVersion: "1.26.40",

@@ -11,12 +11,12 @@ import {
 } from "vitest";
 import type {
   PortfolioReleaseManifest,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   comparePortfolioReleaseManifests,
   loadPortfolioReleaseManifest,
   persistPortfolioReleaseManifest,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function manifest(
   statusA:

@@ -5,14 +5,14 @@ import {
 } from "vitest";
 import type {
   PortfolioRegressionSchedule,
-} from "../../reliability/src/index.js";
+} from "../../../reliability/src/index.js";
 import type {
   PortfolioReleaseIntelligence,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   historyDrivenQaPlanText,
   recommendHistoryDrivenQa,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 const schedule: PortfolioRegressionSchedule = {
   updateVersion: "1.26.40",
