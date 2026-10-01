@@ -21,6 +21,13 @@ export interface RepairProofPostTransformBinding {
   transactionFingerprint: string;
 }
 
+export interface RepairWorkflowProofAuthority {
+  readonly kind: "approved-bug" | "intentional-modification";
+  readonly approvedBugSemanticKey?: string;
+  readonly mustChangeInvariantIds: readonly string[];
+  readonly mustPreserveInvariantIds: readonly string[];
+}
+
 export interface RepairProofBundle {
   transactionId: string;
   transactionFingerprint?: string;
@@ -39,6 +46,10 @@ export interface RepairProofBundle {
   preservationContractId?: string;
   preservationReadinessDisposition?: PreservationReadinessResult["disposition"];
   preservationBaselineEvidenceIds?: readonly string[];
+  workflowAuthorityKind?: RepairWorkflowProofAuthority["kind"];
+  approvedBugSemanticKey?: string;
+  mustChangeInvariantIds?: readonly string[];
+  mustPreserveInvariantIds?: readonly string[];
   postTransformProofBinding?: RepairProofPostTransformBinding;
   supportingInvariantIds: readonly string[];
   changedNodeIds: readonly string[];
@@ -59,6 +70,7 @@ export function createRepairProofBundle(
   supportingInvariantIds: readonly string[] = [],
   preservationReadiness?: PreservationReadinessResult,
   postTransformProofBinding?: RepairProofPostTransformBinding,
+  workflowAuthority?: RepairWorkflowProofAuthority,
 ): RepairProofBundle {
   for (const [label, id] of [
     ["counterfactual impact", impact.transactionId],
@@ -146,6 +158,23 @@ export function createRepairProofBundle(
             preservationReadiness.disposition,
           preservationBaselineEvidenceIds:
             [...preservationReadiness.baselineEvidenceIds],
+        }),
+    ...(workflowAuthority === undefined
+      ? {}
+      : {
+          workflowAuthorityKind: workflowAuthority.kind,
+          ...(workflowAuthority.approvedBugSemanticKey === undefined
+            ? {}
+            : {
+                approvedBugSemanticKey:
+                  workflowAuthority.approvedBugSemanticKey,
+              }),
+          mustChangeInvariantIds: [
+            ...new Set(workflowAuthority.mustChangeInvariantIds),
+          ].sort(),
+          mustPreserveInvariantIds: [
+            ...new Set(workflowAuthority.mustPreserveInvariantIds),
+          ].sort(),
         }),
     ...(postTransformProofBinding === undefined
       ? {}
@@ -485,6 +514,36 @@ export function validateRepairProofBundle(
     proof.admissionDisposition === "eligible" ||
     proof.admissionDisposition === "guarded"
   ) {
+    if (!proof.workflowAuthorityKind) {
+      errors.push(
+        "Mutation-authorizing proof requires explicit Approved Bug or intentional-modification workflow authority.",
+      );
+    }
+    if (
+      proof.workflowAuthorityKind === "approved-bug" &&
+      !proof.approvedBugSemanticKey?.trim()
+    ) {
+      errors.push(
+        "Approved bug repair proof requires approvedBugSemanticKey.",
+      );
+    }
+    if (
+      !Array.isArray(proof.mustChangeInvariantIds) ||
+      proof.mustChangeInvariantIds.length === 0
+    ) {
+      errors.push(
+        "Mutation-authorizing proof requires Must Change invariants.",
+      );
+    }
+    if (
+      !Array.isArray(proof.mustPreserveInvariantIds) ||
+      proof.mustPreserveInvariantIds.length === 0
+    ) {
+      errors.push(
+        "Mutation-authorizing proof requires Must Preserve invariants.",
+      );
+    }
+
     if (
       proof.preservationReadinessDisposition !== "ready" ||
       !proof.preservationContractId?.trim() ||
