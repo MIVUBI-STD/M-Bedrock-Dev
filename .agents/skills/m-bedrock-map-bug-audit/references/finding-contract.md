@@ -15,7 +15,7 @@ Then record:
 
 ```text
 Target identity / map version
-Game Design authority
+Selected-artifact authority
 Gameplay Contract scope
 Design readiness: READY | PARTIAL | BLOCKED
 Material unknowns, if any
@@ -43,7 +43,7 @@ Detection Gap or runtime residue, if any
 
 ## Required decision order
 
-Game Design → Gameplay Contract → design readiness → actual behavior contradiction → counter-evidence → player-visible consequence → tester-verifiable trigger → defect disposition → severity.
+Selected Map Version → Gameplay Contract → readiness → Actual Behavior contradiction → counter-evidence → player-visible consequence → tester-verifiable trigger → defect disposition → severity.
 
 Do not severity-score a candidate before the first three gates are resolved.
 
@@ -53,7 +53,7 @@ Do not severity-score a candidate before the first three gates are resolved.
 Requires grounded expected behavior, contradictory evidence strong enough for the stated proof ceiling, a material player-visible gameplay consequence, and an in-game tester path that can visibly confirm the failure. Normal client output includes Blocker and Major defects only.
 
 ### designed-behavior
-Observed behavior is consistent with grounded Map Game Design / authored intent. Severe-looking technical behavior is still not a bug when it is explicitly part of the design.
+Observed behavior is consistent with the Gameplay Contract grounded from the selected map version. Severe-looking technical behavior is still not a bug when it is explicitly part of the design.
 
 ### ambiguous-intent
 Evidence exists, but intended behavior is not uniquely grounded. Do not choose the interpretation that creates the more dramatic bug.
