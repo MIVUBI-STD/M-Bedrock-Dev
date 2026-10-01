@@ -1,6 +1,7 @@
-import type {
-  BugReportV2,
-  BugReportV2Bug,
+import {
+  compareBugReportPreviewOrder,
+  type BugReportV2,
+  type BugReportV2Bug,
 } from "../../../engine/packages/bug-report/src/index.js";
 
 export type BugReportView = "all" | "not-fixed" | "fixed";
@@ -59,5 +60,5 @@ export function filterBugReportBugs(
       .join(" ")
       .toLowerCase()
       .includes(query);
-  });
+  }).sort(compareBugReportPreviewOrder);
 }
