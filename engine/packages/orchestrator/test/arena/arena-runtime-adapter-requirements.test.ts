@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveArenaRuntimeAdapterRequirements } from "../src/arena-runtime-adapter-requirements.js";
+import { deriveArenaRuntimeAdapterRequirements } from "../../src/arena/arena-runtime-adapter-requirements.js";
 
 describe("arena runtime adapter requirements", () => {
   it("derives baseline surfaces and live-client needs from validation plans", () => {

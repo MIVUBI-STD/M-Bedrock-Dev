@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildArenaRuntimeAdapterScaffold } from "../src/arena-runtime-adapter-scaffold.js";
+import { buildArenaRuntimeAdapterScaffold } from "../../src/arena/arena-runtime-adapter-scaffold.js";
 
 describe("arena runtime adapter scaffold", () => {
   it("fails closed for live client lifecycle requirements", () => {

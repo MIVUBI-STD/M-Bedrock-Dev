@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createSpatialFingerprint } from "../../../analyzers/world-db/src/index.js";
-import { runArenaAudit } from "../src/arena-audit.js";
+import { createSpatialFingerprint } from "../../../../analyzers/world-db/src/index.js";
+import { runArenaAudit } from "../../src/arena/arena-audit.js";
 
 describe("runArenaAudit", () => {
   it("combines replica, spatial, capacity, persistence, and release checks without duplicate analyzer ownership", () => {

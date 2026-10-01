@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localizeArenaRepairSources } from "../src/arena-repair-localization.js";
+import { localizeArenaRepairSources } from "../../src/arena/arena-repair-localization.js";
 
 describe("arena repair localization", () => {
   it("localizes voxel mismatch to an overlapping authored mutation", () => {

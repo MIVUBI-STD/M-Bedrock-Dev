@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bridgeArenaRepairLocalization } from "../src/arena-repair-bridge.js";
+import { bridgeArenaRepairLocalization } from "../../src/arena/arena-repair-bridge.js";
 
 describe("arena repair bridge", () => {
   it("allows deterministic repair only when exact localization matches an existing planned candidate", () => {
