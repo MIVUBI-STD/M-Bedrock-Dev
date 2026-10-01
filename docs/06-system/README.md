@@ -13,3 +13,5 @@ Canonical entrypoints:
 Do not turn audit notes or temporary migration plans into durable parallel owners.
 
 - `canonical-naming.md` — repository-wide authority and naming vocabulary;
+
+- `skill-contract.md` — mandatory work-lane structure and handoff semantics;

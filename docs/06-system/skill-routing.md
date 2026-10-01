@@ -26,9 +26,9 @@ Forbidden:
 - improving analyzers/rules/knowledge during the audit;
 - turning unsupported capability into a defect.
 
-### 2. Capability Development
+### 2. Detection Development
 
-`m-bedrock-capability-development`
+`m-bedrock-detection-development`
 
 Use to improve M-Bedrock-Dev bug-finding capability.
 
@@ -41,9 +41,9 @@ Forbidden:
 - treating a production Bug Report as development completion;
 - map-specific hardcoded logic.
 
-### 3. Capability Benchmark
+### 3. Detection Benchmark
 
-`m-bedrock-capability-benchmark`
+`m-bedrock-detection-benchmark`
 
 Use to measure current capability against frozen expectations.
 
@@ -56,9 +56,9 @@ Forbidden:
 - changing production implementation;
 - changing expectations to fit current output.
 
-### 4. Operational Repair
+### 4. Target Repair
 
-`m-bedrock-repair-engineering`
+`m-bedrock-target-repair`
 
 Use only after an evidence-backed defect or intentional modification requires target source/artifact mutation.
 
@@ -87,11 +87,11 @@ user goal
 → continue lane
 ```
 
-A lane remains active across domain handoffs. Do not replace Map Audit with Capability Development automatically when a capability gap appears.
+A lane remains active across domain handoffs. Do not replace Map Audit with Detection Development automatically when a capability gap appears.
 
 ## Handoff contracts
 
-### Map Audit → Capability Development
+### Map Audit → Detection Development
 
 Emit:
 
@@ -107,12 +107,12 @@ Capability Gap
 
 Then STOP that claim in the audit.
 
-### Capability Development → Benchmark
+### Detection Development → Benchmark
 
 Emit:
 
 ```text
-Capability Delta
+Detection Capability Delta
 - gap class
 - owner changed
 - generalized behavior added
@@ -128,7 +128,22 @@ Benchmark does not automatically reopen a map audit. A new operational run must 
 ## Separation rule
 
 ```text
-USE existing capability != DEVELOP capability != EVALUATE capability
+USE detection capability != DEVELOP detection capability != BENCHMARK detection capability
 ```
 
 Never combine all three in one implicit skill flow.
+
+
+## Development naming
+
+`DEVELOP` alone means generic Product Development unless the goal is explicitly to improve bug-detection correctness/coverage.
+
+```text
+add/change product feature
+→ Product Development execution contract
+
+make bug finding smarter/more accurate
+→ Detection Development
+```
+
+Read `skill-contract.md` for the mandatory lane structure.

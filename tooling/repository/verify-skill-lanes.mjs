@@ -3,9 +3,9 @@ import { existsSync, readFileSync } from "node:fs";
 const failures=[];
 const requiredLaneSkills={
   "m-bedrock-map-bug-audit": "OPERATIONAL / MAP USE",
-  "m-bedrock-capability-development": "DEVELOPMENT / ENGINE IMPROVEMENT",
-  "m-bedrock-capability-benchmark": "EVALUATION / REGRESSION",
-  "m-bedrock-repair-engineering": "operational map/source repair"
+  "m-bedrock-detection-development": "DEVELOPMENT / BUG-DETECTION IMPROVEMENT",
+  "m-bedrock-detection-benchmark": "EVALUATION / DETECTION REGRESSION",
+  "m-bedrock-target-repair": "OPERATIONAL / TARGET REPAIR"
 };
 
 for(const [name, marker] of Object.entries(requiredLaneSkills)){
@@ -30,12 +30,43 @@ if(existsSync(".agents/skills/m-bedrock-development-brief/SKILL.md")){
 const routing=readFileSync("docs/06-system/skill-routing.md","utf8");
 for(const phrase of [
   "Operational Map Audit",
-  "Capability Development",
-  "Capability Benchmark",
+  "Detection Development",
+  "Detection Benchmark",
   "Domain specialists",
   "capability-gap"
 ]){
   if(!routing.includes(phrase)) failures.push("Skill routing is missing canonical concept: "+phrase);
+}
+
+for (const name of [
+  "m-bedrock-map-bug-audit",
+  "m-bedrock-detection-development",
+  "m-bedrock-detection-benchmark",
+  "m-bedrock-target-repair"
+]) {
+  const path=".agents/skills/"+name+"/SKILL.md";
+  const lane=readFileSync(path,"utf8");
+  for (const heading of [
+    "## Purpose",
+    "## Entry criteria",
+    "## Allowed actions",
+    "## Forbidden actions",
+    "## Output contract",
+    "## Handoff",
+    "## STOP"
+  ]) {
+    if(!lane.includes(heading)) failures.push(path+": missing required lane section "+heading);
+  }
+}
+
+for(const legacy of [
+  "m-bedrock-capability-development",
+  "m-bedrock-capability-benchmark",
+  "m-bedrock-repair-engineering"
+]) {
+  if(existsSync(".agents/skills/"+legacy+"/SKILL.md")){
+    failures.push("Legacy work-lane skill is forbidden: "+legacy);
+  }
 }
 
 const contentAnalysis=readFileSync(".agents/skills/m-bedrock-content-analysis/SKILL.md","utf8");

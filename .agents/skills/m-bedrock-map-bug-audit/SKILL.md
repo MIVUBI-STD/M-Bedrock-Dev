@@ -2,29 +2,53 @@
 
 **Lane:** OPERATIONAL / MAP USE
 
-Use when the goal is to inspect a Minecraft Bedrock/Education map and find gameplay-relevant defects using capabilities that already exist.
+## Purpose
 
-This skill is the operational counterpart to capability development. It **consumes** analyzers, Platform Knowledge, Platform Rules, Behavior Contracts, and runtime evidence. It does not improve those systems during the audit.
+Use current stable capabilities to find and classify gameplay-relevant defects in a Minecraft Bedrock/Education map.
 
-## Goal
+This lane consumes analyzers, Platform Knowledge, Platform Rules, Map Game Design, Behavior Contracts, package/runtime evidence, and tester evidence. It does not improve those capabilities during the audit.
 
-Answer:
+## Entry criteria
 
-1. What behavior/design is expected?
-2. What implementation/runtime evidence exists?
-3. Is there a real defect, designed behavior, ambiguity, or evidence gap?
-4. What is the smallest evidence-backed severity?
-5. What still requires higher-context runtime proof?
+Use this lane when the requested outcome is a map-specific answer such as:
+
+- find bugs;
+- retest a map;
+- explain a suspected gameplay issue;
+- classify Blocker/Major/Minor defects;
+- compare observed behavior with intended map behavior.
+
+A map/artifact may be incomplete. That does not justify switching to development.
+
+## Allowed actions
+
+- inspect artifact identity and target profile;
+- reconstruct Map Game Design / Gameplay Intent;
+- run current static/native/runtime analyzers;
+- consult Platform Knowledge / Rules;
+- compare current Behavior Contracts;
+- classify findings and proof ceilings;
+- record manual checks and known limits;
+- emit a capability-gap handoff.
+
+## Forbidden actions
+
+- modify parser/analyzer/knowledge/rule/proof capability;
+- add fixtures for a new detector while audit is active;
+- change expected behavior to make a finding disappear;
+- mutate the original artifact;
+- treat unsupported analysis as a defect;
+- silently switch into Detection Development.
 
 ## Audit pipeline
 
 ```text
 Artifact identity / target profile
 → Map Game Design + authored intent
-→ relevant static/source evidence
+→ relevant static/source/native evidence
 → Platform Knowledge / Rules
 → Behavior Contract comparison
-→ runtime/package evidence when available
+→ package/runtime evidence when available
 → defect classification
 → report
 → STOP
@@ -45,58 +69,83 @@ Do not convert `capability-gap` into a defect.
 
 ## Defect severity
 
-Use project Bug Report severity only for confirmed/sufficiently grounded defects:
+Use Bug Report severity only for sufficiently grounded defects:
 
-- **Blocker** — blocks game/progression or makes the intended experience impossible.
+- **Blocker** — blocks game/progression or makes intended gameplay impossible.
 - **Major** — materially disrupts gameplay or core flow.
-- **Minor** — limited disruption with a viable intended flow remaining.
+- **Minor** — limited disruption while viable intended flow remains.
 
-Development priority is a different concept and must not use these labels.
+Detection-development priority is a separate concept.
+
+## Output contract
+
+For every in-scope candidate record:
+
+```text
+Candidate
+Disposition
+Expected behavior authority
+Observed/static evidence
+Platform fact/rule used
+Proof ceiling
+Bug severity (defect only)
+Uncertainty / residue
+Next owner (only when needed)
+```
 
 ## Capability-gap handoff
 
-When the engine cannot reliably inspect something:
+When M-Bedrock-Dev cannot reliably inspect the claim, emit:
 
-1. describe the unsupported evidence/semantic;
-2. record the cheapest reproducing evidence;
-3. name the likely canonical owner;
-4. mark `capability-gap`;
-5. STOP operational audit work on that claim.
+```text
+Capability Gap
+- unsupported claim/evidence
+- seed artifact/reference
+- smallest reproduction
+- current proof ceiling
+- likely canonical owner
+- audit impact
+- manual fallback, if any
+```
 
-Do **not** add parser/analyzer/knowledge/rule/proof logic while this skill is active.
+Then STOP that claim.
 
-Hand off to `m-bedrock-capability-development` only as a separate work lane.
+A capability gap may start a separate `m-bedrock-detection-development` run later. It never changes the active lane automatically.
+
+## Manual checks and known limits
+
+Read only when relevant:
+
+- `references/manual-checks.md`
+- `references/known-limits.md`
+
+Manual checks are explicit higher-cost/human/runtime residues, not hidden analyzer behavior.
 
 ## Domain specialist routing
 
-Consult only the smallest relevant specialist:
-
 - artifact/container/world extraction → `m-bedrock-artifact-engineering`
-- manifests/functions/commands/references/semantic derivation → `m-bedrock-content-analysis`
+- source/commands/references/semantic derivation → `m-bedrock-content-analysis`
 - version/edition/Script API capability → `m-bedrock-compatibility`
-- reproduced defect requiring map/source change → after audit, hand off to `m-bedrock-repair-engineering`
-
-Do not preload all specialists.
+- proven target defect requiring mutation → hand off to `m-bedrock-repair-engineering`
 
 ## Proof ceiling
 
-Use the repository proof vocabulary exactly:
+Use exactly:
 
 `STATIC VERIFIED / PACKAGE VERIFIED / LOCAL GAME VERIFIED / LIVE GAME VERIFIED / UNKNOWN`.
 
-Static findings must not be phrased as runtime proof.
+Static/package evidence never becomes runtime proof by wording.
 
-## Never
+## Handoff
 
-- modify engine capability while auditing the map;
-- mutate the original artifact;
-- convert generic Engineering Contracts into Map Game Design;
-- use Minecraft Platform Knowledge as proof of intended map behavior;
-- call a suspicious pattern a defect without design/evidence grounding;
-- broaden the audit because a new capability idea appears.
+Audit may hand off to:
 
-## Completion
+- Detection Development for `capability-gap`;
+- Target Repair for a reproduced defect;
+- runtime/manual validation for `runtime-proof-required`.
 
-Operational audit is complete when all in-scope candidates have a disposition, evidence ceiling, severity when applicable, and explicit higher-context residue.
+Do not perform the handed-off work inside this lane.
 
-Then STOP.
+## STOP
+
+Stop when every in-scope candidate has a disposition, proof ceiling, severity when applicable, and explicit residue/handoff.

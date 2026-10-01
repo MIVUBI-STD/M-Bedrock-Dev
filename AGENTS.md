@@ -70,7 +70,7 @@ Inspection establishes what exists.
 Diagnosis identifies the first wrong owner.
 Repair corrects a reproduced defect.
 Modify intentionally changes behavior/content.
-Develop adds product capability.
+Develop adds product capability. Use Detection Development only when that capability specifically improves bug detection/diagnosis/proof; otherwise use normal Product Development.
 Validate tests a claim against the strongest available evidence.
 Research gathers external/domain evidence without mutating production ownership.
 
@@ -110,13 +110,13 @@ find/classify bugs in a map
 → m-bedrock-map-bug-audit
 
 improve reusable bug-finding capability
-→ m-bedrock-capability-development
+→ m-bedrock-detection-development
 
 measure capability/regression
-→ m-bedrock-capability-benchmark
+→ m-bedrock-detection-benchmark
 
 repair a proven defect in target source/artifact
-→ m-bedrock-repair-engineering
+→ m-bedrock-target-repair
 ```
 
 Then consult the smallest **domain specialist** when needed:
