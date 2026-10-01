@@ -29,14 +29,28 @@ Approved Game Design is the oracle for deciding whether an observed gameplay beh
 
 Use `intentRules` only for behavior whose correctness depends on gameplay context. A rule states whether an outcome is `required`, `forbidden`, `allowed`, or explicitly `unspecified`, and may be scoped by mode, phase, actor type, and state tags.
 
-The diagnosis boundary is:
+The gameplay workflow is design-first:
 
 ```text
-observation
-→ resolve applicable intent rule
+current approved Game Design
+→ scoped Gameplay Contract
+→ actual behavior
 → canonical diagnostic-reasoning intent gate
-→ designed-behavior | ambiguous-intent | design-review | probable-defect | confirmed-defect
-→ defect confirmation
+→ designed-behavior | ambiguous-intent | design-review | confirmed-defect
 ```
 
-Only `confirmed-defect` may proceed directly to Bug Report confirmation. `probable-defect` remains a diagnosis candidate that needs stronger intent authority or evidence. Implementation code is evidence of what exists, not authority for what the game is supposed to do.
+Only `confirmed-defect` may continue toward bug admission. Implementation code is evidence of what exists, not authority for what the game is supposed to do.
+
+## Design readiness
+
+Before gameplay bug discovery, recover the current map/mode Game Design and establish readiness for the audit scope.
+
+```text
+READY    all material rules for the scope are grounded
+PARTIAL  unresolved rules exist, but none can change the current scoped decision
+BLOCKED  a material unknown/conflict can change bug-vs-feature classification
+```
+
+READY and scoped-safe PARTIAL may proceed to actual-behavior analysis. BLOCKED stops defect classification for the affected scope.
+
+Derived Gameplay Contract understanding is temporary. Do not persist it as a second design authority. If discussion changes intended gameplay, update and approve the canonical project-local Game Design first.
