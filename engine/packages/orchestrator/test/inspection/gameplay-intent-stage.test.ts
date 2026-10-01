@@ -112,6 +112,31 @@ function parsed(): ParsedScriptFile {
 }
 
 describe("gameplay intent stage", () => {
+  it("ignores external authored/reference scripts in normal audit mode", () => {
+    const external = {
+      ...parsed(),
+      source: {
+        artifactId: "external",
+        relativePath: "external-src/session-state-machine.ts",
+      },
+    };
+
+    const model = buildGameplayIntentModel({
+      id: "selected-only",
+      artifactId: "art_test",
+      parsedScripts: [{ parsed: parsed() }],
+      authoredScripts: [{ parsed: external }],
+    });
+
+    expect(
+      model.evidence.some(
+        (item) =>
+          item.locator ===
+          "external-src/session-state-machine.ts",
+      ),
+    ).toBe(false);
+  });
+
   it("builds a validated parser-independent model from analyzer signals", () => {
     const model = buildGameplayIntentModel({
       id: "mtt-level-2",
@@ -251,6 +276,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "typed-transition",
       parsedScripts: [{ parsed: runtimeParsed }],
+      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
@@ -312,6 +338,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-transition-invariant",
       parsedScripts: [{ parsed: runtimeParsed }],
+      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
@@ -330,6 +357,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-policy-invariant",
       parsedScripts: [],
+      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
@@ -385,6 +413,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-policy-with-runtime-duplicate",
       parsedScripts: [{ parsed: runtimeParsed }],
+      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
@@ -459,6 +488,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "relation-merge",
       parsedScripts: [{ parsed: runtimeParsed }],
+      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
