@@ -80,15 +80,15 @@ export function gateObservedOutcomeAgainstIntent(
     );
 
   return {
-    disposition: "probable-defect",
+    disposition: "ambiguous-intent",
     subjectIds: [input.outcomeId],
     basisInvariantIds:
       admissibilityInvariants.map((item) => item.id),
     evidenceIds: [...input.observationEvidenceIds],
-    nextEvidenceNeed: "authored-intent",
+    nextEvidenceNeed: "contract-evidence",
     reasons: [
       ...assessment.reasons,
-      "The admissibility contract is inferred from complete recognized direct-guard coverage, so this cannot be promoted to confirmed defect without stronger evidence.",
+      "The admissibility contract is inferred rather than grounded strongly enough in selected-artifact evidence, so the observation remains ambiguous.",
     ],
   };
 }
