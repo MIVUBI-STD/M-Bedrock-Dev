@@ -36,9 +36,22 @@ Selected Map Version
 
 Expected Behavior and Actual Behavior must come from the same selected artifact.
 
-Before finishing the audit, every discovered gameplay surface must be explicitly marked `checked`, `blocked`, or `not-applicable`. Silent omission is not allowed.
+Before finishing the audit, every **discovered** gameplay surface must be explicitly marked `checked`, `blocked`, or `not-applicable`. Silent omission is not allowed. This accounting does not prove that undiscovered mechanics do not exist.
 
 If the artifact cannot ground a material expected behavior, mark that scope `BLOCKED / ambiguous`; do not borrow intent from stale sources.
+
+## Discovery rule
+
+Primary discovery is generic:
+
+```text
+Gameplay Contract
+≠
+Actual Behavior
+→ contract contradiction
+```
+
+Candidate families are tags for grouping/prioritization, not a whitelist of what may be found. A bug must not be missed merely because it does not fit a named family.
 
 ## Bug admission
 
