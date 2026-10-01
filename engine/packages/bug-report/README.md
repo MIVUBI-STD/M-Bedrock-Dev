@@ -222,41 +222,36 @@ It demonstrates one Blocker, Major, and Minor bug using the current tester-facin
 
 ## Creation
 
-New reports must be created directly as V2 through `createBugReportV2()`. The creator always creates each bug with `fixed: false`; callers cannot set completion during creation. It validates V2 semantics, enforces tester readiness through `report-readiness.ts`, and then enforces the wording contract in `COPY.md` before emission.
+Normal user-facing report creation is approval-gated:
 
-Do not generate V1 and convert it to V2 for new audits. V1 conversion exists only for old saved reports.
+```text
+Confirmed Defect
+→ Tester Readiness
+→ Proposed Bug Set
+→ Chat Approval
+→ Approved Bug Set
+→ buildBugReportFromApprovedBugSet()
+→ Bug Report V2
+```
 
+`createBugReportV2()` and direct confirmed-defect projection are low-level engine primitives. They do not replace the approval boundary.
+
+New bugs always start with `fixed: false`. V1 conversion remains import-only compatibility.
 
 ## Promotion gate
 
 Internal diagnostics are not bug reports.
 
-A Diagnostic Finding may represent a risk, evidence gap, compatibility warning, or unresolved hypothesis. Do not copy diagnostics directly into developer-facing V2.
+Only evidence-confirmed, tester-ready, explicitly approved defects enter normal Bug Report V2 publication.
 
-New audit output follows:
+Rules:
 
-```text
-internal analysis
-→ Confirmed Defect
-→ tester-readiness gate
-→ Proposed Bug Set
-→ chat approval
-→ Approved Bug
-→ Bug Report V2
-```
-
-Only approved defects enter the normal user-facing report path.
-
-Promotion quality rules:
-
-- Every tester-facing confirmed defect requires Bug Trigger (In-Game) steps; the canonical JSON field remains `reproduction`.
-- AI-found confirmed defects require AI Analysis and Relevant Code.
-- Relevant Code stays focused on at most three primary locations.
-- Suggested Fix is advisory and requires supporting analysis/code context.
-- Root-cause certainty is never required to describe a confirmed defect.
-- Candidate, possible, speculative, and insufficient-evidence findings stay internal.
-
-The promotion-only `status` is not persisted in Bug Report V2.
+- Severity and Category remain engine-derived.
+- Every visible bug requires an in-game Bug Trigger.
+- AI-found bugs require bounded technical evidence.
+- Candidate/speculative/ambiguous findings stay internal.
+- Confirmed Defect is evidence state, not user approval.
+- Approved Bug is the report/repair workflow authority.
 
 ## Canonical current-version reconciliation
 
