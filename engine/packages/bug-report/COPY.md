@@ -82,7 +82,7 @@ Rules:
 - describe what actually happens;
 - must not duplicate Expected.
 
-### Reproduction / Verify
+### Reproduction — displayed as How to Reproduce the Bug
 
 Purpose: give the tester a short path to **prove the bug in-game**.
 
@@ -114,9 +114,9 @@ Rules:
 - do not repeat Problem;
 - internal evidence graph IDs and orchestration details are forbidden.
 
-### Suggested Fix / Action
+### Suggested Fix — displayed as Solution
 
-Purpose: let the reader understand **what must be changed** without reading the technical analysis first.
+Purpose: let the reader understand **what should be changed to resolve the issue** without reading the technical analysis first.
 
 Required structure:
 
