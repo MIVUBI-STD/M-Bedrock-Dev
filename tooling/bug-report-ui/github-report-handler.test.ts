@@ -65,7 +65,7 @@ describe("bug report handler", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: "bug-reports/golden.json",
+          path: "workspace/reports/golden.json",
           report: report(),
         }),
       }),
@@ -93,7 +93,7 @@ describe("bug report handler", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          path: "bug-reports/golden.json",
+          path: "workspace/reports/golden.json",
           report: {
             ...value,
             bugs: [withoutTrigger],
