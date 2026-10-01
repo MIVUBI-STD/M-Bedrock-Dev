@@ -460,6 +460,28 @@ export const BUILTIN_TASK_CAPABILITIES:
       ],
     },
     {
+      id: "reliability.metamorphic",
+      owner: "packages/reliability-search",
+      pathPrefixes: [
+        "packages/reliability-search/src/metamorphic.ts",
+      ],
+      deterministic: true,
+      cacheable: false,
+      cost: "moderate",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
+      id: "reliability.parser-robustness",
+      owner: "packages/reliability-search",
+      pathPrefixes: [
+        "packages/reliability-search/src/parser-robustness.ts",
+      ],
+      deterministic: true,
+      cacheable: false,
+      cost: "moderate",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "projection.world-model",
       owner: "packages/orchestrator",
       pathPrefixes: [

@@ -54,3 +54,14 @@ Only a `passed` receipt may authorize an invariant promotion draft.
 - never treat coverage as proof of safety;
 - never treat absence of counterexamples as invariant proof;
 - minimize every reproducible failure before promoting it to the regression corpus.
+
+## Metamorphic testing
+
+Metamorphic campaigns compare a baseline with caller-declared semantic-preserving variants.
+Useful relations may include identifier rename when identity is non-semantic, formatting/minification changes, translated arena coordinates with equivalent relative topology, or independent declaration ordering.
+The reliability layer never invents the equivalence relation; the semantic owner supplies it.
+
+## Parser robustness
+
+Deterministic malformed/edge-shape text cases exercise parser safety separately from gameplay mutation testing.
+Robustness results measure parser behavior only. Harness errors are Detection Development evidence, not map defects.
