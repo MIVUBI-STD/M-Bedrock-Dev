@@ -9,7 +9,14 @@ Canonical ownership and storage boundaries are defined in `docs/06-system/bug-re
 User-facing flow:
 
 ```text
-AUDIT → BUG REPORT → REPAIR
+Game Design
+→ Gameplay Contract
+→ Audit
+→ Proposed Bug Set
+→ Chat Approval
+→ Approved Bug
+→ Bug Report V2
+→ Repair
 ```
 
 V1 remains import-only compatibility. New reports and exports use V2. Compatibility consumers must enter through `parseBugReportToCurrent()`; V1→V2 mapping is engine-owned and must not be duplicated in UI or adapters.
@@ -60,13 +67,20 @@ The intended flow is:
 Internal Detection
 → Confirmed Defect
 → Tester Readiness
+→ Proposed Bug Set
+→ Chat Approval
+→ Approved Bug
 → Bug Report V2
 → Tester Preview
 
                      ↘ Repair Detail on demand
 ```
 
+A Confirmed Defect is evidence state. It is not user approval and does not authorize repair.
+
 ## Canonical vocabulary
+
+Canonical workflow terminology is owned by `docs/01-product/flow.md`. This package owns report fields and report lifecycle only.
 
 Persisted field names and presentation labels must keep the same meaning, but they are not always the same wording.
 
@@ -142,8 +156,6 @@ Client-facing HTML publication uses one format-neutral projection owned by `src/
 Bug Report V2
 → projectBugReportClientDocument()
 → reviewBugReportClientDocument()
-→ publication adapter
-→ Google Doc
 → self-contained HTML renderer
 ```
 
@@ -171,7 +183,7 @@ Map Version
 Tested Version: Minecraft Education <exact tested version>
 
 Open Issues
-Blocker · Major · Minor
+Blocker · Major
 
 # + Severity | Bug title
 Issue | gameplay problem + impact
@@ -225,13 +237,15 @@ New audit output follows:
 
 ```text
 internal analysis
-→ confirmed defect
+→ Confirmed Defect
 → tester-readiness gate
-→ promoteConfirmedBugsToV2()
+→ Proposed Bug Set
+→ chat approval
+→ Approved Bug
 → Bug Report V2
 ```
 
-Only `confirmed-defect` inputs enter the final report.
+Only approved defects enter the normal user-facing report path.
 
 Promotion quality rules:
 
@@ -703,7 +717,8 @@ Bug Report V2 remains the canonical progress record, but `fixed: true` is not a 
 The repair lifecycle is:
 
 ```text
-Bug Report V2
+Approved Bug
++ Repair Contract
 → selectBugRepairTarget()
 → authorized repair / mutation
 → validation
