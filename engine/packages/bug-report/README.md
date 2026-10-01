@@ -635,3 +635,24 @@ Classification automation is intentionally partial.
 Runtime-derived classification may affect a defect only when its source evidence intersects the same runtime evidence used to confirm that defect.
 
 Explicit and derived primary-failure signals are combined without precedence. If they disagree, classification is rejected as ambiguous.
+
+
+## Repair completion
+
+Bug Report V2 remains the canonical progress record, but `fixed: true` is not a manual completion flag.
+
+The repair lifecycle is:
+
+```text
+Bug Report V2
+→ selectBugRepairTarget()
+→ authorized repair / mutation
+→ validation
+→ current passing ValidationRun with evidence
+→ completeVerifiedBugRepair()
+→ fixed: true
+```
+
+Generic report persistence must not promote `fixed: false` to `fixed: true`. That transition is owned by the repair verification bridge in `engine/packages/repair/src/report-lifecycle.ts`.
+
+A validation run used for completion must be current for the present artifact/runtime context, passing, and carry evidence IDs. Stale validation does not close a bug.
