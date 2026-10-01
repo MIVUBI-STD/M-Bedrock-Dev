@@ -5,7 +5,7 @@ import {
 } from "vitest";
 import {
   derivePrimaryFailureSignalsFromDiagnostics,
-} from "../src/report-classification-producers.js";
+} from "../../src/reporting/report-classification-producers.js";
 
 describe("report classification producers", () => {
   it("maps explicit entity diagnostic families to entity-decision", () => {

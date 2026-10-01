@@ -5,7 +5,7 @@ import {
 } from "vitest";
 import {
   deriveReportDefectClassification,
-} from "../src/report-defect-classification.js";
+} from "../../src/reporting/report-defect-classification.js";
 
 describe("report defect classification", () => {
   it("derives a major player-state defect from structured signals", () => {

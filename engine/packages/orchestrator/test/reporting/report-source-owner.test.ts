@@ -5,11 +5,11 @@ import {
 } from "vitest";
 import type {
   SemanticIr,
-} from "../../semantic-ir/src/index.js";
+} from "../../../semantic-ir/src/index.js";
 import {
   bindSourceEvidenceSemanticOwners,
   resolveSourceSemanticOwner,
-} from "../src/report-source-owner.js";
+} from "../../src/reporting/report-source-owner.js";
 
 const ir: SemanticIr = {
   schemaVersion: 1,

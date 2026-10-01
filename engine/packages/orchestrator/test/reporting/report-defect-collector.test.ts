@@ -5,20 +5,20 @@ import {
 } from "vitest";
 import type {
   IntentDiagnosticGateResult,
-} from "../../diagnostic-reasoning/src/index.js";
+} from "../../../diagnostic-reasoning/src/index.js";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import type {
   GameplayIntentRuntimeAssessment,
-} from "../src/gameplay-intent-runtime-stage.js";
+} from "../../src/gameplay-intent-runtime-stage.js";
 import {
   groupConfirmedDefects,
-} from "../../bug-report/src/index.js";
+} from "../../../bug-report/src/index.js";
 import {
   buildBugReportFromAuditCandidates,
   collectConfirmedDefects,
-} from "../src/report-defect-collector.js";
+} from "../../src/reporting/report-defect-collector.js";
 
 const intent: GameplayIntentModel = {
   schemaVersion: 1,

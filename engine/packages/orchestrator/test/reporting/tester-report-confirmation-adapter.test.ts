@@ -5,7 +5,7 @@ import {
 } from "vitest";
 import {
   confirmTesterDefectForReport,
-} from "../src/tester-report-confirmation-adapter.js";
+} from "../../src/reporting/tester-report-confirmation-adapter.js";
 
 describe("tester report confirmation adapter", () => {
   it("confirms a reproduced mismatch against an explicit requirement", () => {

@@ -6,14 +6,14 @@ import {
 import {
   deriveConfirmedDefectSemanticKey,
   type ConfirmedDefect,
-} from "../../bug-report/src/index.js";
+} from "../../../bug-report/src/index.js";
 import type {
   InvariantRegistrySnapshot,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   applyReportRepairContext,
   deriveMustPreserveFromRepairInvariants,
-} from "../src/report-repair-context.js";
+} from "../../src/reporting/report-repair-context.js";
 
 const defectIdentity = {
   subjectIds: ["outcome:cleanup"],

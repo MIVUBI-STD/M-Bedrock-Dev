@@ -5,13 +5,13 @@ import {
 } from "vitest";
 import type {
   IntentDiagnosticGateResult,
-} from "../../diagnostic-reasoning/src/index.js";
+} from "../../../diagnostic-reasoning/src/index.js";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import {
   confirmStaticIntentDefectForReport,
-} from "../src/static-report-confirmation-adapter.js";
+} from "../../src/reporting/static-report-confirmation-adapter.js";
 
 const intent: GameplayIntentModel = {
   schemaVersion: 1,

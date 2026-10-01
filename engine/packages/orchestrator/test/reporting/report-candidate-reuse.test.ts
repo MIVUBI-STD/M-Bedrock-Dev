@@ -5,14 +5,14 @@ import {
 } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import {
   collectConfirmedDefects,
   describeAuditReportCandidate,
-} from "../src/report-defect-collector.js";
+} from "../../src/reporting/report-defect-collector.js";
 import {
   planReportCandidateReuse,
-} from "../src/report-candidate-reuse.js";
+} from "../../src/reporting/report-candidate-reuse.js";
 
 const intent: GameplayIntentModel = {
   schemaVersion: 1,

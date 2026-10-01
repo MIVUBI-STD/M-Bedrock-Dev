@@ -5,10 +5,10 @@ import {
 } from "vitest";
 import type {
   RuntimeExperimentDefinition,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import {
   deriveReportClassificationFromRuntimeExperiment,
-} from "../src/report-runtime-classification.js";
+} from "../../src/reporting/report-runtime-classification.js";
 
 function definition(
   domain: RuntimeExperimentDefinition["domain"],

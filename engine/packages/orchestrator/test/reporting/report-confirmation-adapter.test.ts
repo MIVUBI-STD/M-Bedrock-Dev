@@ -5,13 +5,13 @@ import {
 } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import {
   confirmGameplayIntentRuntimeDefectForReport,
-} from "../src/report-confirmation-adapter.js";
+} from "../../src/reporting/report-confirmation-adapter.js";
 import type {
   GameplayIntentRuntimeAssessment,
-} from "../src/gameplay-intent-runtime-stage.js";
+} from "../../src/gameplay-intent-runtime-stage.js";
 
 const intent: GameplayIntentModel = {
   schemaVersion: 1,

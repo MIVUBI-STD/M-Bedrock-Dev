@@ -28,6 +28,11 @@ Implementation files remain temporarily flat beneath `src/` while CI/local verif
 
 The next physical-move phase may relocate implementation files family-by-family once import verification is available; the family boundaries above should remain stable.
 
+### Physical migration status
+
+`reporting/` is the first family whose implementation and tests have moved physically into the hierarchy. Legacy flat source paths remain as compatibility re-export stubs while CI/local verification is deferred.
+
+
 ## Inspection pipeline
 
 `inspect.ts` is the public orchestration flow. Detailed work is delegated to bounded stages:
