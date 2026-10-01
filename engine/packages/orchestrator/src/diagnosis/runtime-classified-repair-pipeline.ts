@@ -34,6 +34,13 @@ export function evaluateRuntimeClassifiedRepairPipeline(
     input.reclassification,
     input.diagnostic,
     input.runtimeIntegrity,
+    input.repairAuthority === undefined
+      ? undefined
+      : {
+          approvedBug:
+            input.repairAuthority.kind === "approved-bug",
+          preservationContractReady: true,
+        },
   );
 
   if (
@@ -70,6 +77,17 @@ export function evaluateRuntimeClassifiedRepairPipeline(
       : {
           preservationReadiness:
             input.preservationReadiness,
+        }),
+    ...(input.repairAuthority === undefined
+      ? {}
+      : {
+          repairAuthority: input.repairAuthority,
+        }),
+    ...(input.postTransformProofBinding === undefined
+      ? {}
+      : {
+          postTransformProofBinding:
+            input.postTransformProofBinding,
         }),
   });
 
