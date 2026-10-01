@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { proveArenaStructureInstances } from "../src/arena-structure-instance-proof.js";
+import { proveArenaStructureInstances } from "../../src/arena/arena-structure-instance-proof.js";
 
 describe("arena structure instance proof", () => {
   const layout = {

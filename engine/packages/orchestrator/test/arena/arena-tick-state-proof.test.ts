@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { proveArenaTickStateEquivalence } from "../src/arena-tick-state-proof.js";
+import { proveArenaTickStateEquivalence } from "../../src/arena/arena-tick-state-proof.js";
 
 const layout = {
   basis: "topology" as const,

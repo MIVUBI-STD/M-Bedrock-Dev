@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ResolvedEffect } from "../../../analyzers/topology/src/index.js";
-import { proveArenaEntityPopulation } from "../src/arena-entity-population-proof.js";
+import type { ResolvedEffect } from "../../../../analyzers/topology/src/index.js";
+import { proveArenaEntityPopulation } from "../../src/arena/arena-entity-population-proof.js";
 
 describe("arena entity population proof", () => {
   const layout = {

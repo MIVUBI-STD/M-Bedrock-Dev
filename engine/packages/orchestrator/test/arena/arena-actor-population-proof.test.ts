@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { comp, float, list, string, writeUncompressed, type NBT } from "prismarine-nbt";
-import { proveArenaActorPopulation } from "../src/arena-actor-population-proof.js";
+import { proveArenaActorPopulation } from "../../src/arena/arena-actor-population-proof.js";
 
 function actor(
   identifier: string,

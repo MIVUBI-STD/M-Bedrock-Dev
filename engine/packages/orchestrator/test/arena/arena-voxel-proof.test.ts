@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { BedrockLevelDbReader } from "../../../adapters/leveldb/src/index.js";
+import type { BedrockLevelDbReader } from "../../../../adapters/leveldb/src/index.js";
 import { comp, int, string, writeUncompressed, type NBT } from "prismarine-nbt";
-import { proveArenaVoxelEquivalence } from "../src/arena-voxel-proof.js";
+import { proveArenaVoxelEquivalence } from "../../src/arena/arena-voxel-proof.js";
 
 function singleBlockSubchunk(name: string): Uint8Array {
   const palette = writeUncompressed(

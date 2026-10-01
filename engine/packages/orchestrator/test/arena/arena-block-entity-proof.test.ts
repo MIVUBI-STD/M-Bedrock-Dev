@@ -6,8 +6,8 @@ import {
   type NBT,
 } from "prismarine-nbt";
 import { describe, expect, it } from "vitest";
-import type { BedrockLevelDbReader } from "../../../adapters/leveldb/src/index.js";
-import { proveArenaBlockEntityEquivalence } from "../src/arena-block-entity-proof.js";
+import type { BedrockLevelDbReader } from "../../../../adapters/leveldb/src/index.js";
+import { proveArenaBlockEntityEquivalence } from "../../src/arena/arena-block-entity-proof.js";
 
 function key(chunkX: number, chunkZ: number): string {
   const bytes = Buffer.alloc(9);
