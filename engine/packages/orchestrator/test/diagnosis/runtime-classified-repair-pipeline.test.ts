@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
-} from "../../project-model/src/index.js";
-import { createPatchTransaction } from "../../repair/src/index.js";
+} from "../../../project-model/src/index.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
 import type {
   RuntimeIntentDiagnosticReclassification,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   evaluateRuntimeClassifiedRepairPipeline,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function source(relativePath: string) {
   return {

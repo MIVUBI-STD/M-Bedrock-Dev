@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import type {
   DiagnosticRepairDecision,
   RuntimeEvidenceIntegrityReport,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import type {
   RuntimeIntentDiagnosticReclassification,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   decideReclassifiedRepairEntry,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function reclassification(
   disposition:

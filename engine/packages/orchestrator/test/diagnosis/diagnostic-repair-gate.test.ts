@@ -3,14 +3,14 @@ import type {
   CausalIncident,
   CausalProofState,
   RuntimeEvidenceIntegrityReport,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   capCausalProofState,
   capRootCauseEvidenceLevel,
   decideDiagnosticRepair,
   diagnosticEvidenceCeiling,
-} from "../src/diagnostic-repair-gate.js";
-import type { DiagnosticInvestigationState } from "../src/diagnostic-investigation.js";
+} from "../../src/diagnosis/diagnostic-repair-gate.js";
+import type { DiagnosticInvestigationState } from "../../src/diagnostic-investigation.js";
 
 function incident(
   level: CausalIncident["rootCauseCandidates"][number]["evidenceLevel"],

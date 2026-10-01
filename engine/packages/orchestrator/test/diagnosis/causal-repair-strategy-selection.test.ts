@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
-import { createPatchTransaction } from "../../repair/src/index.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
 import type {
   CausalChain,
   CausalIncident,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import type {
   InvariantRegistrySnapshot,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   selectRepairStrategyForIncident,
-} from "../src/causal-repair-strategy-selection.js";
+} from "../../src/diagnosis/causal-repair-strategy-selection.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };
