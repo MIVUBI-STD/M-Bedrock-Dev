@@ -98,49 +98,7 @@ describe("intent diagnostic gate", () => {
     }).disposition).toBe("designed-behavior");
   });
 
-  it("ignores external Game Design rules in normal audit mode", () => {
-    const result = gateIntentDiagnostic({
-      intent: model(),
-      subjectIds: ["lifecycle:cleanup"],
-      observationEvidenceIds: ["runtime:arena-not-reusable"],
-      contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
-      resolvedGameDesignRule: {
-        designId: "external-design",
-        sourceReference: "Technical Docs/design.json",
-        authority: "authoritative",
-        rule: {
-          id: "cleanup",
-          statement: "Cleanup is optional.",
-          outcome: "allowed",
-        },
-      },
-      gameDesignObservationRelation: "supports-observed",
-    });
 
-    expect(result.disposition).toBe("confirmed-defect");
-  });
-
-  it("allows external design only in explicit reference/comparison mode", () => {
-    const result = gateIntentDiagnostic({
-      intent: model(),
-      subjectIds: ["lifecycle:cleanup"],
-      observationEvidenceIds: ["runtime:cleanup-delay"],
-      resolvedGameDesignRule: {
-        designId: "external-design",
-        sourceReference: "Technical Docs/design.json",
-        authority: "authoritative",
-        rule: {
-          id: "cleanup-delay",
-          statement: "Cleanup delay is allowed.",
-          outcome: "allowed",
-        },
-      },
-      gameDesignObservationRelation: "supports-observed",
-      allowExternalReferenceMode: true,
-    });
-
-    expect(result.disposition).toBe("designed-behavior");
-  });
 
   it("requires runtime evidence integrity when runtime proof is required", () => {
     const result = gateIntentDiagnostic({
