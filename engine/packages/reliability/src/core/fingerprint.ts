@@ -18,6 +18,14 @@ export interface MapFingerprintFacts {
   parsedStructureCount?: number;
   worldDatabasePresent?: boolean;
   riskSurfaces?: readonly string[];
+  mapVersion?: string;
+  evidenceBasis?: "artifact-inspection" | "historical-regression";
+  evidenceRefs?: readonly string[];
+  architectureTags?: readonly string[];
+  gameplayPatternTags?: readonly string[];
+  knownInvariantIds?: readonly string[];
+  knownRegressionIds?: readonly string[];
+  failurePatternIds?: readonly string[];
 }
 
 function uniqueSorted(values: readonly string[] = []): string[] {
@@ -48,6 +56,14 @@ export function createMapCompatibilityFingerprint(
     },
     worldDatabasePresent: facts.worldDatabasePresent ?? false,
     riskSurfaces: uniqueSorted(facts.riskSurfaces),
+    ...(facts.mapVersion === undefined ? {} : { mapVersion: facts.mapVersion }),
+    ...(facts.evidenceBasis === undefined ? {} : { evidenceBasis: facts.evidenceBasis }),
+    ...(facts.evidenceRefs === undefined ? {} : { evidenceRefs: uniqueSorted(facts.evidenceRefs) }),
+    ...(facts.architectureTags === undefined ? {} : { architectureTags: uniqueSorted(facts.architectureTags) }),
+    ...(facts.gameplayPatternTags === undefined ? {} : { gameplayPatternTags: uniqueSorted(facts.gameplayPatternTags) }),
+    ...(facts.knownInvariantIds === undefined ? {} : { knownInvariantIds: uniqueSorted(facts.knownInvariantIds) }),
+    ...(facts.knownRegressionIds === undefined ? {} : { knownRegressionIds: uniqueSorted(facts.knownRegressionIds) }),
+    ...(facts.failurePatternIds === undefined ? {} : { failurePatternIds: uniqueSorted(facts.failurePatternIds) }),
   };
 }
 
