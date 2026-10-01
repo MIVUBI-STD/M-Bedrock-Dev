@@ -161,6 +161,43 @@ Development/
 Example Map v1.1.0.mcworld   ← current in root
 ```
 
+
+## Audit target rule
+
+Bug audit is **single-version and closed-scope by default**.
+
+```text
+explicitly selected map file
+or, when none is explicitly selected,
+the single current .mcworld in that map root
+→ audit target
+```
+
+Rules:
+
+1. Read and analyze only the selected current map version for gameplay behavior.
+2. Do not read every file in `Development/Versions/` to reconstruct how the mechanic evolved.
+3. Do not use `Development/Source/`, previous versions, old Bug Reports, Technical Docs, other maps, or external references as authority for current gameplay.
+4. Historical/source material is archive/reference only unless the user explicitly asks to compare versions or inspect history.
+5. A behavior that existed in an older version is not evidence that the selected current version should still behave that way.
+6. Client-requested changes in newer versions override older behavior by virtue of the selected current artifact being the audit target.
+7. If more than one root `.mcworld` could be current, do not guess. Resolve the exact target first.
+
+For audit purposes:
+
+```text
+Selected current .mcworld
+→ source of Actual Behavior
+
+Game Design explicitly bound to that same map/version
+→ source of Expected Behavior
+
+Everything else
+→ archive only
+```
+
+Do not cross-pollinate mechanics between maps or versions.
+
 ## New-current-version procedure
 
 When a new stable version becomes current:
