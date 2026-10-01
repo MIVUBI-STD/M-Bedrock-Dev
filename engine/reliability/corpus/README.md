@@ -56,3 +56,17 @@ node .agents/skills/m-bedrock-detection-benchmark/scripts/check-case-ready.mjs <
 ```
 
 Promotion is fail-closed: unresolved source references or any declared missing prerequisite keep the case out of benchmark-ready state.
+
+
+## Evidence role
+
+Where the source evidence already supports classification, a case may declare:
+
+```text
+positive  known defect/failure evidence
+negative  known-good/non-defect evidence
+```
+
+Do not infer an evidence role merely from the map name or from the absence of a recorded issue outside a defined QA scope.
+
+Existing semantic-understanding calibration cases remain role-unspecified until an independent expectation is grounded.
