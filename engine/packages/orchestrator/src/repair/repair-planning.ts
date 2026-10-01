@@ -1,5 +1,4 @@
 import { planLinearTopologyRepair } from "../../../repair/src/index.js";
-import type { PatchTransaction } from "../../../repair/src/index.js";
 import type { analyzeFunctionTopology } from "../topology-analysis.js";
 
 export interface InspectionRepairCandidate {
@@ -7,9 +6,15 @@ export interface InspectionRepairCandidate {
   diagnosticCode: "TOPOLOGY_TRANSLATION_OUTLIER";
   sourcePath: string;
   line?: number;
-  status: "planned" | "unsupported" | "unavailable";
+  status: "proposal" | "unsupported" | "unavailable";
   reason?: string;
-  transaction?: PatchTransaction;
+  proposal?: NonNullable<
+    ReturnType<typeof planLinearTopologyRepair> extends infer Result
+      ? Result extends { status: "proposed"; proposal: infer Proposal }
+        ? Proposal
+        : never
+      : never
+  >;
 }
 
 export function planInspectionRepairs(
@@ -67,8 +72,8 @@ export function planInspectionRepairs(
 
     return {
       ...base,
-      status: "planned" as const,
-      transaction: plan.transaction,
+      status: "proposal" as const,
+      proposal: plan.proposal,
     };
   });
 }
