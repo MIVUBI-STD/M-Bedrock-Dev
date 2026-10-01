@@ -278,7 +278,7 @@ DOCX is the editable client-facing document and the single layout source for fil
 Renderer requirements:
 
 - use semantic Title / Heading 1 / Heading 2 styles;
-- use real numbered lists for reproduction steps;
+- use clearly numbered reproduction steps that restart from 1 for every issue;
 - use real tables only for compact summary/index data;
 - avoid large issue-detail tables;
 - use page breaks intentionally;
@@ -297,8 +297,9 @@ Export PDF from the generated DOCX so Word and PDF do not drift.
 Pagination requirements:
 
 - never leave an issue heading alone at the bottom of a page;
-- keep issue title and Issue paragraph together when possible;
-- keep “How to Reproduce” with at least the first steps;
+- keep a normal-size issue block together on one page when possible;
+- keep issue title and Issue paragraph together;
+- keep “How to Reproduce” with its numbered steps when the block fits;
 - avoid splitting short Observed/Expected pairs unnecessarily;
 - do not let footers overlap content;
 - use text labels in addition to severity colors.
