@@ -349,6 +349,10 @@ export class GitHubBugReportStore {
     expectedRevision: string,
   ): Promise<SavedGitHubBugReport> {
     const current = await this.loadReport(path);
+    if (current.revision !== expectedRevision) {
+      throw new GitHubBugReportConflictError();
+    }
+
     const currentById = new Map(
       current.report.bugs.map((bug) => [bug.id, bug.fixed]),
     );
