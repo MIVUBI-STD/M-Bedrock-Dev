@@ -16,8 +16,9 @@ The first screen must answer, without opening technical detail:
 
 1. What is broken?
 2. How severe is it?
-3. What supported action should be taken?
-4. How many open issues remain?
+3. How can a tester trigger it in-game?
+4. What supported solution exists?
+5. How many open issues remain?
 
 Canonical Bug Report V2 owns facts. Presentation owns density and ordering.
 
@@ -58,8 +59,8 @@ The report workspace has four visual levels:
 
 1. **Identity** — map name and versions.
 2. **Signal** — open count and Blocker/Major/Minor counts.
-3. **Bug list** — checkbox, severity, ID, title, short issue/solution signal.
-4. **Bug detail** — expected, observed, reproduction, technical analysis, relevant code, must preserve.
+3. **Bug list** — severity, title, Issue, Bug Trigger (In-Game), and Solution.
+4. **Bug detail** — expected, observed, technical analysis, relevant code, must preserve.
 
 A reader should understand the problem and next supported action before opening bug detail.
 
@@ -81,19 +82,18 @@ Available filters stay intentionally small:
 
 Do not add category, Found By, owner, date, confidence, or workflow filters until real report volume proves they are needed.
 
-## Bug row
+## Bug block
 
-Collapsed rows prioritize the repair signal:
+The reader-facing scan order is:
 
 ```text
-[checkbox]  BLOCKER  BUG-ID · Short title
-            Issue summary
-            Solution summary, when supported
+# + Severity · Bug title
+Issue
+Bug Trigger (In-Game)
+Solution
 ```
 
-Category and Found By are secondary metadata and must not compete with Issue or Solution.
-
-The checkbox is a progress guard. It is not a workflow status.
+Bug Trigger must be player-facing and executable entirely inside Minecraft. Category, Found By, code analysis, and internal IDs are secondary and must not compete with this scan path.
 
 ## Bug detail
 
@@ -108,7 +108,7 @@ Relevant Code
 Must Preserve
 ```
 
-Problem/Issue and supported Action belong in the scan layer, not buried in expanded detail.
+Problem/Issue, Bug Trigger (In-Game), and supported Solution belong in the scan layer, not buried in expanded detail.
 
 Fact precedes technical interpretation. Empty sections are omitted.
 
@@ -119,7 +119,8 @@ Do not define separate copy limits in the UI. Use `engine/packages/bug-report/CO
 UI-specific density rules:
 
 - Solution is shown only when Suggested Fix exists.
-- Technical detail is subordinate to repair signal.
+- Bug Trigger (In-Game) is always visible for tester-ready bugs.
+- Technical detail is subordinate to the tester-facing bug block.
 - Fixed bugs are visually reduced and hidden by default when open bugs exist.
 
 ## Persistence
