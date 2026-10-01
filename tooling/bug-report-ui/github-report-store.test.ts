@@ -41,13 +41,27 @@ function report() {
 
 describe("GitHubBugReportStore", () => {
   it("updates only the revision that was opened", async () => {
+    const encoded = Buffer.from(
+      JSON.stringify(report()),
+      "utf8",
+    ).toString("base64");
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
           path: "workspace/reports/a.json",
           sha: "abc",
-          content: "",
+          content: encoded,
+          encoding: "base64",
+        }),
+        { status: 200 },
+      ))
+      .mockResolvedValueOnce(new Response(
+        JSON.stringify({
+          type: "file",
+          path: "workspace/reports/a.json",
+          sha: "abc",
+          content: encoded,
           encoding: "base64",
         }),
         { status: 200 },
@@ -77,7 +91,7 @@ describe("GitHubBugReportStore", () => {
       revision: "def",
     });
 
-    const saveInit = fetchMock.mock.calls[1]?.[1] as RequestInit;
+    const saveInit = fetchMock.mock.calls[2]?.[1] as RequestInit;
     expect(JSON.parse(String(saveInit.body))).toMatchObject({
       sha: "abc",
       branch: "Local",
@@ -165,4 +179,42 @@ describe("GitHubBugReportStore", () => {
       ),
     ).rejects.toThrow("inside workspace/reports/");
   });
+  it("rejects unverified fixed transitions through generic save", async () => {
+    const current = report();
+    const encoded = Buffer.from(
+      JSON.stringify({
+        ...current,
+        bugs: current.bugs.map((bug) => ({ ...bug, fixed: false })),
+      }),
+      "utf8",
+    ).toString("base64");
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(
+        JSON.stringify({
+          type: "file",
+          path: "workspace/reports/a.json",
+          sha: "abc",
+          content: encoded,
+          encoding: "base64",
+        }),
+        { status: 200 },
+      ));
+
+    const store = new GitHubBugReportStore({
+      owner: "MIVUBI-STD",
+      repository: "M-Bedrock-Dev",
+      branch: "Local",
+      token: "secret",
+      fetchImpl: fetchMock as unknown as typeof fetch,
+    });
+
+    await expect(
+      store.saveReport(
+        "workspace/reports/a.json",
+        current,
+        "abc",
+      ),
+    ).rejects.toThrow(/verified repair completion/);
+  });
+
 });
