@@ -34,6 +34,8 @@ The UI does not analyze maps or diagnose bugs. It presents confirmed bugs so a t
 
 Presentation rules are owned by `engine/packages/bug-report/PREVIEW.md`. Wording quality is owned by `engine/packages/bug-report/COPY.md`.
 
+Client publication uses `buildBugReportPublicationPayload()` to project canonical V2 into the quality-gated client document defined by `engine/packages/bug-report/DOCUMENT.md`. Google Docs is the editable publication surface; PDF should be exported from that same document so wording and layout do not drift.
+
 Commands:
 
 ```bash
