@@ -1,10 +1,15 @@
 import { reviewBugReportCopy } from "./copy-quality.js";
 import {
+  reviewBugReportReadiness,
+  type BugReportReadinessIssueCode,
+} from "./report-readiness.js";
+import {
   createBugReportV2,
   type CreateBugReportV2BugInput,
 } from "./create-v2.js";
 import type {
   BugReportV2,
+  BugReportV2Bug,
   BugReportV2Map,
   BugReportV2RepairBy,
 } from "./v2.js";
@@ -67,10 +72,45 @@ export type PromoteConfirmedBugsResult =
       readonly issues: readonly BugReportPromotionIssue[];
     };
 
-function hasItems<T>(
-  value: readonly T[] | undefined,
-): value is readonly T[] {
-  return Array.isArray(value) && value.length > 0;
+function toV2Bug(
+  bug: ConfirmedBugReportInput,
+): BugReportV2Bug {
+  return {
+    id: bug.id,
+    fixed: false,
+    severity: bug.severity,
+    category: bug.category,
+    foundBy: bug.foundBy,
+    title: bug.title,
+    problem: bug.problem,
+    expected: bug.expected,
+    observed: bug.observed,
+    ...(bug.reproduction === undefined
+      ? {}
+      : { reproduction: bug.reproduction }),
+    ...(bug.aiAnalysis === undefined
+      ? {}
+      : { aiAnalysis: bug.aiAnalysis }),
+    ...(bug.relevantCode === undefined
+      ? {}
+      : { relevantCode: bug.relevantCode }),
+    ...(bug.suggestedFix === undefined
+      ? {}
+      : { suggestedFix: bug.suggestedFix }),
+    ...(bug.mustPreserve === undefined
+      ? {}
+      : { mustPreserve: bug.mustPreserve }),
+  };
+}
+
+function readinessPromotionCode(
+  code: BugReportReadinessIssueCode,
+): BugReportPromotionIssueCode {
+  if (code === "missing-bug-trigger") return "missing-reproduction";
+  if (code === "solution-without-support") {
+    return "suggested-fix-without-analysis";
+  }
+  return code;
 }
 
 export function reviewConfirmedBugInputs(
@@ -118,97 +158,24 @@ export function reviewConfirmedBugInputs(
       });
     }
 
-    if (!hasItems(bug.reproduction)) {
-      issues.push({
-        code: "missing-reproduction",
-        bugId: bug.id,
-        message:
-          "Tester-facing confirmed defects require a clear Bug Trigger (In-Game) path.",
-      });
-    }
+  const reportBugs = bugs.map(toV2Bug);
 
-    if (
-      bug.foundBy === "ai" &&
-      (
-        typeof bug.aiAnalysis !== "string" ||
-        bug.aiAnalysis.trim().length === 0
-      )
-    ) {
-      issues.push({
-        code: "ai-missing-analysis",
-        bugId: bug.id,
-        message:
-          "AI-found confirmed defects must include AI Analysis explaining the technical basis.",
-      });
-    }
-
-    if (
-      bug.foundBy === "ai" &&
-      !hasItems(bug.relevantCode)
-    ) {
-      issues.push({
-        code: "ai-missing-relevant-code",
-        bugId: bug.id,
-        message:
-          "AI-found confirmed defects must point to the small set of source locations that support the finding.",
-      });
-    }
-
-    if (
-      bug.suggestedFix !== undefined &&
-      bug.aiAnalysis === undefined &&
-      !hasItems(bug.relevantCode)
-    ) {
-      issues.push({
-        code: "suggested-fix-without-analysis",
-        bugId: bug.id,
-        message:
-          "Suggested Fix requires supporting AI Analysis or Relevant Code.",
-      });
-    }
-
-    if (
-      bug.relevantCode !== undefined &&
-      bug.relevantCode.length > 3
-    ) {
-      issues.push({
-        code: "too-many-relevant-code-locations",
-        bugId: bug.id,
-        message:
-          "Relevant Code should contain at most three primary locations; keep the report focused on where the developer should look first.",
-      });
-    }
+  const readinessIssues =
+    reviewBugReportReadiness(reportBugs);
+  for (const issue of readinessIssues) {
+    const indexMatch =
+      /^bugs\[(\d+)\]/.exec(issue.path);
+    const bugId = indexMatch
+      ? bugs[Number(indexMatch[1])]?.id
+      : undefined;
+    issues.push({
+      code: readinessPromotionCode(issue.code),
+      ...(bugId === undefined ? {} : { bugId }),
+      message: issue.path + ": " + issue.message,
+    });
   }
 
-  const copyIssues = reviewBugReportCopy(
-    bugs.map((bug) => ({
-      id: bug.id,
-      fixed: false,
-      severity: bug.severity,
-      category: bug.category,
-      foundBy: bug.foundBy,
-      title: bug.title,
-      problem: bug.problem,
-      expected: bug.expected,
-      observed: bug.observed,
-      ...(bug.reproduction === undefined
-        ? {}
-        : { reproduction: bug.reproduction }),
-      ...(bug.aiAnalysis === undefined
-        ? {}
-        : { aiAnalysis: bug.aiAnalysis }),
-      ...(bug.relevantCode === undefined
-        ? {}
-        : { relevantCode: bug.relevantCode }),
-      ...(bug.suggestedFix === undefined
-        ? {}
-        : { suggestedFix: bug.suggestedFix }),
-      ...(bug.mustPreserve === undefined
-        ? {}
-        : { mustPreserve: bug.mustPreserve }),
-    })),
-  );
-
+  const copyIssues = reviewBugReportCopy(reportBugs);
   for (const issue of copyIssues) {
     issues.push({
       code: "copy-quality",
@@ -235,31 +202,10 @@ export function promoteConfirmedBugsToV2(
     report: createBugReportV2({
       map: input.map,
       repairBy: input.repairBy,
-      bugs: input.bugs.map((bug) => ({
-        id: bug.id,
-        severity: bug.severity,
-        category: bug.category,
-        foundBy: bug.foundBy,
-        title: bug.title,
-        problem: bug.problem,
-        expected: bug.expected,
-        observed: bug.observed,
-        ...(bug.reproduction === undefined
-          ? {}
-          : { reproduction: bug.reproduction }),
-        ...(bug.aiAnalysis === undefined
-          ? {}
-          : { aiAnalysis: bug.aiAnalysis }),
-        ...(bug.relevantCode === undefined
-          ? {}
-          : { relevantCode: bug.relevantCode }),
-        ...(bug.suggestedFix === undefined
-          ? {}
-          : { suggestedFix: bug.suggestedFix }),
-        ...(bug.mustPreserve === undefined
-          ? {}
-          : { mustPreserve: bug.mustPreserve }),
-      })),
+      bugs: input.bugs.map((bug) => {
+        const { fixed: _fixed, ...draft } = toV2Bug(bug);
+        return draft;
+      }),
     }),
     issues: [],
   };
