@@ -2,10 +2,9 @@ import type {
   ResolvedGameDesignIntentRule,
 } from "../../game-design-spec/src/index.js";
 import {
-  assessGameplayDesignReadiness,
   assessGameplayIntentGrounding,
-  independentGameplayIntentEvidenceIds,
-  type GameplayDesignReadinessResult,
+  buildGameplayContract,
+  type GameplayContract,
   type GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
 
@@ -54,7 +53,7 @@ export interface IntentDiagnosticGateInput {
   runtimeProofRequired?: boolean;
   runtimeProofEvidenceIds?: readonly string[];
   runtimeEvidenceIntegritySatisfied?: boolean;
-  designReadiness?: GameplayDesignReadinessResult;
+  gameplayContract?: GameplayContract;
 }
 
 export interface IntentDiagnosticGateResult {
@@ -72,33 +71,28 @@ export function gateIntentDiagnostic(
   input: IntentDiagnosticGateInput,
 ): IntentDiagnosticGateResult {
   const resolvedRule = input.resolvedGameDesignRule;
-  const scopedInvariantIds = input.intent.invariants
-    .filter((invariant) =>
-      invariant.subjectIds.some((subjectId) =>
-        input.subjectIds.includes(subjectId),
-      ),
-    )
-    .map((invariant) => invariant.id);
-  const independentIntentEvidence =
-    independentGameplayIntentEvidenceIds(
-      input.intent,
-      scopedInvariantIds,
-    );
-  const authoritativeDesignAvailable =
-    resolvedRule?.authority === "authoritative" ||
-    independentIntentEvidence.length > 0;
-
-  const designReadiness =
-    input.designReadiness ??
-    assessGameplayDesignReadiness(
+  const gameplayContract =
+    input.gameplayContract ??
+    buildGameplayContract(
       input.intent,
       {
-        scopeSubjectIds: input.subjectIds,
-        authoritativeDesignAvailable,
+        subjectIds: input.subjectIds,
+        ...(resolvedRule?.authority === "authoritative"
+          ? {
+              designRuleEvidenceIds: [
+                "game-design:" +
+                  resolvedRule.designId +
+                  ":rule:" +
+                  resolvedRule.rule.id,
+                "game-design-source:" +
+                  resolvedRule.sourceReference,
+              ],
+            }
+          : {}),
       },
     );
 
-  if (designReadiness.disposition === "blocked") {
+  if (gameplayContract.readiness.disposition === "blocked") {
     return {
       disposition: "ambiguous-intent",
       subjectIds: [...input.subjectIds],
@@ -108,7 +102,7 @@ export function gateIntentDiagnostic(
       evidenceIds: [...input.observationEvidenceIds],
       nextEvidenceNeed: "intent-clarification",
       reasons: [
-        ...designReadiness.reasons,
+        ...gameplayContract.readiness.reasons,
         "Gameplay defect classification is blocked until material Game Design unknowns are resolved for this scope.",
       ],
     };
