@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "m-bedrock-calibration-corpus-v1",
+  "lane": "calibration",
+  "cases": [],
+  "policy": {
+    "mayInformDetectorDevelopment": true,
+    "blindEvaluationRequired": false,
+    "artifactFingerprintRequiredForScoring": true,
+    "frozenExpectationRequiredForScoring": true
+  }
+}
