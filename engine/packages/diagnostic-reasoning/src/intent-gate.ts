@@ -1,7 +1,7 @@
 import {
   assessGameplayIntentGrounding,
   buildGameplayContract,
-  independentGameplayIntentEvidenceIds,
+  selectedArtifactGameplayContractEvidenceIds,
   type GameplayContract,
   type GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
@@ -244,18 +244,18 @@ export function gateIntentDiagnostic(
   );
   const independentEvidenceIds =
     new Set(
-      independentGameplayIntentEvidenceIds(
+      selectedArtifactGameplayContractEvidenceIds(
         input.intent,
         authored.map((invariant) => invariant.id),
       ),
     );
-  const authoritativeAuthored = authored.filter(
+  const selectedArtifactAuthored = authored.filter(
     (invariant) =>
       invariant.evidenceIds.some((id) =>
         independentEvidenceIds.has(id)
       ),
   );
-  const implementationOnlyAuthored = authored.filter(
+  const nonContractAuthored = authored.filter(
     (invariant) =>
       !invariant.evidenceIds.some((id) =>
         independentEvidenceIds.has(id)
@@ -268,12 +268,12 @@ export function gateIntentDiagnostic(
   if (
     input.observationEvidenceIds.length > 0 &&
     (input.contradictionEvidenceIds?.length ?? 0) > 0 &&
-    authoritativeAuthored.length > 0
+    selectedArtifactAuthored.length > 0
   ) {
     return {
       disposition: "confirmed-defect",
       subjectIds: [...input.subjectIds],
-      basisInvariantIds: authoritativeAuthored.map((item) => item.id),
+      basisInvariantIds: selectedArtifactAuthored.map((item) => item.id),
       basisDesignRuleIds: [],
       basisDesignEvidenceIds: [],
       evidenceIds: [
@@ -292,7 +292,7 @@ export function gateIntentDiagnostic(
     input.observationEvidenceIds.length > 0 &&
     (input.contradictionEvidenceIds?.length ?? 0) > 0 &&
     (
-      implementationOnlyAuthored.length > 0 ||
+      nonContractAuthored.length > 0 ||
       inferred.length > 0
     )
   ) {
@@ -300,7 +300,7 @@ export function gateIntentDiagnostic(
       disposition: "ambiguous-intent",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [
-        ...implementationOnlyAuthored,
+        ...nonContractAuthored,
         ...inferred,
       ].map((item) => item.id),
       basisDesignRuleIds: [],
@@ -312,7 +312,7 @@ export function gateIntentDiagnostic(
       ],
       nextEvidenceNeed: "authored-intent",
       reasons: [
-        implementationOnlyAuthored.length > 0
+        nonContractAuthored.length > 0
           ? "The selected artifact does not ground expected gameplay strongly enough for defect classification."
           : "Observed evidence contradicts inferred behavior, but the selected artifact does not ground the expected behavior strongly enough to classify a gameplay bug.",
       ],
