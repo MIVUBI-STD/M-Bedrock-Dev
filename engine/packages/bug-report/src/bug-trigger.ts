@@ -1,4 +1,10 @@
+export type BugTriggerGameplayBasis =
+  | "authored-gameplay"
+  | "runtime-gameplay"
+  | "tester-gameplay";
+
 export interface BugTriggerDraft {
+  readonly gameplayBasis: BugTriggerGameplayBasis;
   readonly startingCondition: string;
   readonly actions?: readonly string[];
   readonly observableFailure: string;
@@ -22,6 +28,7 @@ export type CompileBugTriggerResult =
       readonly ok: true;
       readonly steps: readonly string[];
       readonly evidenceIds: readonly string[];
+      readonly gameplayBasis: BugTriggerGameplayBasis;
       readonly issues: readonly [];
     }
   | {
@@ -113,6 +120,7 @@ export function compileBugTrigger(
         terminal(observableFailure),
     ],
     evidenceIds,
+    gameplayBasis: draft.gameplayBasis,
     issues: [],
   };
 }
