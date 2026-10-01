@@ -66,9 +66,89 @@
           },
           "nextOwner": {
             "type": "string"
+          },
+          "playerImpact": {
+            "enum": [
+              "blocking",
+              "material",
+              "limited",
+              "none"
+            ]
+          },
+          "counterEvidence": {
+            "enum": [
+              "cleared",
+              "present",
+              "unresolved"
+            ]
+          },
+          "testerTriggerReady": {
+            "type": "boolean"
           }
         },
-        "additionalProperties": true
+        "additionalProperties": true,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "disposition": {
+                  "const": "defect"
+                }
+              },
+              "required": [
+                "disposition"
+              ]
+            },
+            "then": {
+              "required": [
+                "severity",
+                "expectedAuthority",
+                "playerImpact",
+                "counterEvidence",
+                "testerTriggerReady"
+              ],
+              "properties": {
+                "playerImpact": {
+                  "enum": [
+                    "blocking",
+                    "material"
+                  ]
+                },
+                "counterEvidence": {
+                  "const": "cleared"
+                },
+                "testerTriggerReady": {
+                  "const": true
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "disposition": {
+                  "enum": [
+                    "designed-behavior",
+                    "ambiguous-intent",
+                    "insufficient-evidence",
+                    "runtime-proof-required",
+                    "detection-gap"
+                  ]
+                }
+              },
+              "required": [
+                "disposition"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "severity"
+                ]
+              }
+            }
+          }
+        ]
       }
     }
   },

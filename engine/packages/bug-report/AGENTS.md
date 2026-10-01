@@ -51,3 +51,27 @@ Solution | supported change
 ```
 
 Do not expand every bug vertically unless full detail is explicitly requested. Do not optimize for exhaustive prose at the expense of scan clarity.
+
+
+## Admission and review authority
+
+Normal user-facing publication is approval-gated.
+
+- `decision.ts` is the single owner for Bug Report severity and default reportability threshold.
+- Diagnostic/analyzer severity must never be copied into Bug Report severity.
+- `review.ts` is the single owner for Proposed Bug Set → explicit chat decision → Approved Bug Set.
+- A proposed item with no decision or `needs-discussion` blocks canonical report publication.
+- Rejected items never enter Bug Report V2.
+- If no Blocker/Major items are approved, stop without HTML.
+- HTML rendering owns presentation only and may not infer admission, severity, approval, or bug facts.
+- Low-level direct confirmed-defect projection is internal compatibility; normal user-facing publication uses the approved-set path.
+
+Severity is consequence-based:
+
+```text
+Blocker = required gameplay cannot normally start/continue/complete
+          AND no intended normal in-game recovery exists
+Major   = core gameplay/state/fairness materially wrong
+          BUT normal continuation or recovery remains
+Minor   = limited player-visible impact; hidden by default
+```

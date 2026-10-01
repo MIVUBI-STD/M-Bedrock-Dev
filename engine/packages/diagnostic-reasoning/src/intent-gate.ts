@@ -8,7 +8,6 @@ import {
 
 export type IntentDiagnosticDisposition =
   | "confirmed-defect"
-  | "probable-defect"
   | "designed-behavior"
   | "design-review"
   | "engine-constraint"
@@ -174,10 +173,7 @@ export function gateIntentDiagnostic(
     if (
       input.observationEvidenceIds.length > 0 &&
       contradictionEvidence.length > 0 &&
-      (
-        resolvedRule.authority === "authoritative" ||
-        resolvedRule.authority === "strong"
-      )
+      resolvedRule.authority === "authoritative"
     ) {
       if (
         input.runtimeProofRequired === true &&
@@ -201,10 +197,7 @@ export function gateIntentDiagnostic(
       }
 
       return {
-        disposition:
-          resolvedRule.authority === "authoritative"
-            ? "confirmed-defect"
-            : "probable-defect",
+        disposition: "confirmed-defect",
         subjectIds: [...input.subjectIds],
         basisInvariantIds: [],
         basisDesignRuleIds: [rule.id],
@@ -215,19 +208,35 @@ export function gateIntentDiagnostic(
           ...(input.runtimeProofEvidenceIds ?? []),
           ...designEvidenceIds,
         ],
-        nextEvidenceNeed:
-          resolvedRule.authority === "authoritative"
-            ? "none"
-            : "authored-intent",
+        nextEvidenceNeed: "none",
         reasons: [
-          resolvedRule.authority === "authoritative"
-            ? "Observed evidence contradicts an authoritative approved Game Design rule."
-            : "Observed evidence contradicts approved reconstructed intent; authored/client authority is still preferred for final confirmation.",
+          "Observed evidence contradicts an authoritative approved Game Design rule.",
         ],
       };
     }
 
     if (input.gameDesignObservationRelation === "contradicts-observed") {
+      if (
+        resolvedRule.authority === "strong"
+      ) {
+        return {
+          disposition: "ambiguous-intent",
+          subjectIds: [...input.subjectIds],
+          basisInvariantIds: [],
+          basisDesignRuleIds: [rule.id],
+          basisDesignEvidenceIds: designEvidenceIds,
+          evidenceIds: [
+            ...input.observationEvidenceIds,
+            ...contradictionEvidence,
+            ...designEvidenceIds,
+          ],
+          nextEvidenceNeed: "authored-intent",
+          reasons: [
+            "Approved reconstruction is useful intent evidence but is not independent authored/client authority for confirming a gameplay defect.",
+          ],
+        };
+      }
+
       if (
         resolvedRule.authority === "unknown" ||
         resolvedRule.authority === "inferred"

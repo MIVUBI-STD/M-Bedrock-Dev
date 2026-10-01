@@ -169,6 +169,29 @@ describe("intent diagnostic gate", () => {
     expect(result.disposition).toBe("design-review");
   });
 
+  it("keeps approved reconstruction below defect confirmation", () => {
+    const result = gateIntentDiagnostic({
+      intent: model("inferred"),
+      subjectIds: ["combat:team-damage"],
+      observationEvidenceIds: ["static:friendly-fire"],
+      contradictionEvidenceIds: ["trace:same-team-damage"],
+      resolvedGameDesignRule: {
+        designId: "design:reconstructed",
+        sourceReference: "design/reconstructed.json",
+        authority: "strong",
+        rule: {
+          id: "friendly-fire",
+          statement: "Same-team damage is forbidden.",
+          outcome: "forbidden",
+        },
+      },
+      gameDesignObservationRelation: "contradicts-observed",
+    });
+
+    expect(result.disposition).toBe("ambiguous-intent");
+    expect(result.nextEvidenceNeed).toBe("authored-intent");
+  });
+
   it("confirms contradiction against authoritative Game Design rule", () => {
     const result = gateIntentDiagnostic({
       intent: model("inferred"),
