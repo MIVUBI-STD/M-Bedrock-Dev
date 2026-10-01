@@ -65,6 +65,7 @@ const required = [
   "tooling/repository/verify-engine-ownership.mjs",
   "tooling/repository/verify-authority-separation.mjs",
   "tooling/repository/verify-canonical-naming.mjs",
+  "tooling/repository/verify-skill-lanes.mjs",
   "tooling/repository/verify-dependency-graph.mjs",
   "tooling/repository/audit-public-api.mjs",
   "tooling/repository/public-api-baseline.json",
