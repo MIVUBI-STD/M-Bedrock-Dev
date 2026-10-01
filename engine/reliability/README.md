@@ -20,6 +20,8 @@ Durable knowledge that survives individual benchmark runs.
 Examples:
 
 - historical regression metadata;
+- reusable failure pattern knowledge;
+- evidence-backed per-map engineering knowledge;
 - capability proof bindings;
 - coverage state;
 - map fingerprints;
@@ -58,6 +60,12 @@ The relationship is:
 ```text
 historical bug knowledge
   → catalogs/regressions.json
+
+reusable failure abstractions
+  → catalogs/failure-patterns.json
+
+per-map engineering knowledge
+  → catalogs/map-knowledge/
 
 approved benchmark expectation
   → corpus/regressions.json

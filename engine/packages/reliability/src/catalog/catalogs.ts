@@ -134,12 +134,6 @@ export function validateMapCompatibilityFingerprint(
   if (fingerprint.artifactFingerprint !== undefined && !fingerprint.artifactFingerprint.trim()) {
     errors.push("Map fingerprint artifactFingerprint cannot be empty.");
   }
-  if (
-    fingerprint.evidenceBasis === "artifact-inspection" &&
-    !fingerprint.artifactFingerprint?.trim()
-  ) {
-    errors.push("Artifact-inspection map fingerprint requires artifactFingerprint.");
-  }
   for (const domain of fingerprint.domains ?? []) {
     if (!DOMAINS.has(domain)) {
       errors.push(`Invalid map fingerprint domain: ${domain}`);
@@ -153,12 +147,6 @@ export function validateMapCompatibilityFingerprint(
     fingerprint.scriptModules,
     fingerprint.capabilityTags,
     fingerprint.riskSurfaces,
-    fingerprint.evidenceRefs ?? [],
-    fingerprint.architectureTags ?? [],
-    fingerprint.gameplayPatternTags ?? [],
-    fingerprint.knownInvariantIds ?? [],
-    fingerprint.knownRegressionIds ?? [],
-    fingerprint.failurePatternIds ?? [],
   ]) {
     if (!Array.isArray(field) || field.some((value) => typeof value !== "string" || !value.trim())) {
       errors.push("Map fingerprint list fields must contain non-empty strings.");

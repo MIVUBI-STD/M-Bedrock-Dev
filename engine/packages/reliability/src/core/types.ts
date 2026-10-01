@@ -110,14 +110,6 @@ export interface MapCompatibilityFingerprint {
   };
   worldDatabasePresent: boolean;
   riskSurfaces: readonly string[];
-  mapVersion?: string;
-  evidenceBasis?: "artifact-inspection" | "historical-regression";
-  evidenceRefs?: readonly string[];
-  architectureTags?: readonly string[];
-  gameplayPatternTags?: readonly string[];
-  knownInvariantIds?: readonly string[];
-  knownRegressionIds?: readonly string[];
-  failurePatternIds?: readonly string[];
 }
 
 export interface MapKnowledgeRecord {
