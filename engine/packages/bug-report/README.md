@@ -64,18 +64,23 @@ Bug Report V2
 → human / ChatGPT
 ```
 
-Default preview is open-bugs-only and uses this reading order:
+Default audit preview is open-bugs-only and table-first:
 
 ```text
-Severity + ID + Title
-Issue
-Action, when Suggested Fix exists
-Expected
-Observed
-Reproduction
+Map Version
+Tested Version: Minecraft Education <exact tested version>
+
+Open Issues
+Blocker · Major · Minor
+
+No. | Severity | Bug | Issue | Action
 ```
 
-Technical Analysis, Relevant Code, and Must Preserve are secondary detail and belong in full mode.
+Normal bug-finding preview does not show Repair By, Fixed progress, Category, Found By, or technical detail.
+
+The exact tested build comes from `map.testedVersion`. The label `(Latest)` may be added only when the audit workflow has verified the official current Minecraft Education release and the tested build matches it.
+
+Technical Analysis, Relevant Code, Expected, Observed, Reproduction, and Must Preserve are detail-on-demand.
 
 Preview must never invent an Action, persist a second report format, or expose internal diagnostic plumbing.
 
