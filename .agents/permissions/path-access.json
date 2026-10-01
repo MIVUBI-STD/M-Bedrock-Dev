@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "path": "engine/**",
+      "audit": "read",
+      "detectionDevelopment": "read-write",
+      "benchmark": "read",
+      "targetRepair": "read"
+    },
+    {
+      "path": "workspace/active/**/source/**",
+      "audit": "read",
+      "detectionDevelopment": "read",
+      "benchmark": "read",
+      "targetRepair": "read"
+    },
+    {
+      "path": "workspace/active/**/working/**",
+      "audit": "read",
+      "detectionDevelopment": "read",
+      "benchmark": "read",
+      "targetRepair": "read-write"
+    },
+    {
+      "path": "workspace/active/**/design/**",
+      "audit": "read",
+      "detectionDevelopment": "read",
+      "benchmark": "read",
+      "targetRepair": "read"
+    },
+    {
+      "path": "engine/fixtures/**",
+      "audit": "read",
+      "detectionDevelopment": "read-write",
+      "benchmark": "read",
+      "targetRepair": "read"
+    },
+    {
+      "path": ".agents/evals/**",
+      "audit": "read",
+      "detectionDevelopment": "read-write",
+      "benchmark": "read-write",
+      "targetRepair": "read"
+    },
+    {
+      "path": ".agents/skills/**",
+      "audit": "read",
+      "detectionDevelopment": "read-write",
+      "benchmark": "read",
+      "targetRepair": "read"
+    }
+  ]
+}

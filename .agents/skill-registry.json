@@ -39,7 +39,10 @@
         "E3",
         "E4",
         "E5"
-      ]
+      ],
+      "spec": ".agents/skills/m-bedrock-map-bug-audit/SPEC.md",
+      "sources": ".agents/skills/m-bedrock-map-bug-audit/SOURCES.md",
+      "eval": ".agents/skills/m-bedrock-map-bug-audit/EVAL.md"
     },
     "m-bedrock-detection-development": {
       "label": "Detection Development",
@@ -67,7 +70,10 @@
         "E3",
         "E4",
         "E5"
-      ]
+      ],
+      "spec": ".agents/skills/m-bedrock-detection-development/SPEC.md",
+      "sources": ".agents/skills/m-bedrock-detection-development/SOURCES.md",
+      "eval": ".agents/skills/m-bedrock-detection-development/EVAL.md"
     },
     "m-bedrock-detection-benchmark": {
       "label": "Detection Benchmark",
@@ -94,7 +100,10 @@
         "E3",
         "E4",
         "E5"
-      ]
+      ],
+      "spec": ".agents/skills/m-bedrock-detection-benchmark/SPEC.md",
+      "sources": ".agents/skills/m-bedrock-detection-benchmark/SOURCES.md",
+      "eval": ".agents/skills/m-bedrock-detection-benchmark/EVAL.md"
     },
     "m-bedrock-target-repair": {
       "label": "Target Repair",
@@ -122,7 +131,10 @@
         "E3",
         "E4",
         "E5"
-      ]
+      ],
+      "spec": ".agents/skills/m-bedrock-target-repair/SPEC.md",
+      "sources": ".agents/skills/m-bedrock-target-repair/SOURCES.md",
+      "eval": ".agents/skills/m-bedrock-target-repair/EVAL.md"
     }
   },
   "domainSpecialists": {
@@ -149,6 +161,8 @@
       "mutatesTarget": false
     }
   },
-  "registryRevision": 2,
-  "evalManifest": ".agents/evals/manifest.json"
+  "registryRevision": 3,
+  "evalManifest": ".agents/evals/manifest.json",
+  "permissionProfiles": ".agents/permissions/lane-permissions.json",
+  "pathAccess": ".agents/permissions/path-access.json"
 }

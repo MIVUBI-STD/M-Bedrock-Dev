@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "profiles": {
+    "m-bedrock-map-bug-audit": {
+      "default": "read",
+      "engine": {
+        "read": true,
+        "write": false
+      },
+      "target": {
+        "read": true,
+        "write": false
+      },
+      "workspace": {
+        "read": true,
+        "write": false
+      },
+      "network": "evidence-only",
+      "processExecution": "deterministic-readonly",
+      "askBefore": [
+        "live-minecraft-interaction",
+        "external-network-source-not-already-authorized"
+      ],
+      "never": [
+        "engine-write",
+        "target-write",
+        "original-artifact-write",
+        "package-install"
+      ]
+    },
+    "m-bedrock-detection-development": {
+      "default": "read",
+      "engine": {
+        "read": true,
+        "write": true
+      },
+      "target": {
+        "read": true,
+        "write": false
+      },
+      "workspace": {
+        "read": true,
+        "write": true
+      },
+      "network": "evidence-only",
+      "processExecution": "development",
+      "askBefore": [
+        "new-dependency",
+        "external-network-source-not-already-authorized"
+      ],
+      "never": [
+        "target-write",
+        "original-artifact-write",
+        "rewrite-frozen-expectation-to-pass"
+      ]
+    },
+    "m-bedrock-detection-benchmark": {
+      "default": "read",
+      "engine": {
+        "read": true,
+        "write": false
+      },
+      "target": {
+        "read": true,
+        "write": false
+      },
+      "workspace": {
+        "read": true,
+        "write": true
+      },
+      "network": "off-by-default",
+      "processExecution": "benchmark-only",
+      "askBefore": [
+        "live-runtime-benchmark"
+      ],
+      "never": [
+        "engine-write",
+        "target-write",
+        "expectation-rewrite-during-run",
+        "package-install"
+      ]
+    },
+    "m-bedrock-target-repair": {
+      "default": "read",
+      "engine": {
+        "read": true,
+        "write": false
+      },
+      "target": {
+        "read": true,
+        "write": true
+      },
+      "workspace": {
+        "read": true,
+        "write": true
+      },
+      "network": "off-by-default",
+      "processExecution": "repair-only",
+      "askBefore": [
+        "live-minecraft-interaction"
+      ],
+      "never": [
+        "engine-write",
+        "original-artifact-write",
+        "package-install"
+      ]
+    }
+  }
+}
