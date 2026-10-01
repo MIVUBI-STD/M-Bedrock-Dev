@@ -90,7 +90,6 @@ describe("bug report view behavior", () => {
     const byTrigger = filterBugReportBugs(
       value.bugs,
       {
-        view: "not-fixed",
         severity: "all",
         query: "arena 3",
       },
@@ -102,7 +101,6 @@ describe("bug report view behavior", () => {
     const bySolution = filterBugReportBugs(
       value.bugs,
       {
-        view: "not-fixed",
         severity: "all",
         query: "reset the affected gameplay state",
       },
@@ -115,7 +113,6 @@ describe("bug report view behavior", () => {
     const visible = filterBugReportBugs(
       value.bugs,
       {
-        view: "not-fixed",
         severity: "blocker",
         query: "gameplay issue",
       },
