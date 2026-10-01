@@ -19,6 +19,7 @@ CURRENT OPERATIONS        → 07-operations/
 Core system documents answer different questions:
 
 ```text
+How does gameplay bug work flow?  → 01-product/flow.md
 How much should we build?      → 06-system/development-discipline.md
 Who owns the implementation?   → 06-system/implementation-map.md
 Which specialist procedure?    → 06-system/skill-routing.md
