@@ -10,6 +10,7 @@ import type {
 
 export interface ReliabilityCatalogs {
   regressions: readonly RegressionCase[];
+  failurePatterns: readonly FailurePattern[];
   coverage: readonly BlindspotCoverage[];
 }
 
@@ -25,7 +26,7 @@ const LANES = new Set<ReliabilityLane>([
 ]);
 
 export function emptyReliabilityCatalogs(): ReliabilityCatalogs {
-  return { regressions: [], coverage: [] };
+  return { regressions: [], failurePatterns: [], coverage: [] };
 }
 
 
