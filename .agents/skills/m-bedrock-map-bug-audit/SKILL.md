@@ -33,9 +33,32 @@ Use for bug finding, retest, suspected gameplay issues, or Blocker/Major/Minor c
 
 ## Workflow
 
-Expected behavior authority → cheapest sufficient evidence → actual behavior/effect → compare → disposition → severity if defect → residue/handoff.
+Expected behavior authority → cheapest sufficient evidence → actual behavior/effect → intent/design gate → player-visible impact gate → tester-verifiable in-game trigger gate → disposition → severity only if reportable defect → residue/handoff.
 
 Use the evidence ladder in ../../references/evidence-cost-ladder.md; do not escalate evidence cost without need.
+
+## Bug vs feature gate
+
+A suspicious implementation pattern is not a bug by itself.
+
+Before a candidate can become a tester-facing defect:
+
+1. Intent must be grounded. If current Game Design or authored intent explicitly allows the behavior, classify it as designed-behavior. If intent is not uniquely grounded, classify it as ambiguous-intent. Only a grounded contradiction may continue toward a bug.
+2. The player must experience a material consequence. Technical-only anomalies, metadata drift, stale internal state, unusual callbacks, or implementation complexity are not reportable unless they produce a player-visible gameplay failure.
+3. The failure must have an in-game proof path. The tester must be able to perform player actions and observe the wrong result. If the path requires code, logs, or internal state, the finding is not tester-ready.
+4. Default report threshold is Blocker or Major. Minor findings remain canonical only when useful, but stay hidden unless explicitly requested.
+
+Use classifyBugCandidate() and classifyBugSeverity() from the canonical bug-report package when constructing or reporting a candidate.
+
+## Severity
+
+Severity is based on player consequence and recovery, not technical complexity.
+
+- Blocker: match/gameplay cannot start, mandatory objective/progression cannot continue, the game crashes/freezes, or recovery requires leaving/restarting outside normal gameplay.
+- Major: core gameplay, important player state, or fairness is materially wrong, but the session can still continue or recover through normal play.
+- Minor: limited player-visible impact that does not materially affect core gameplay. Hidden from default output.
+
+Do not escalate severity merely because the implementation looks risky or touches many systems.
 
 ## Output contract
 
@@ -54,7 +77,7 @@ Use the canonical report contracts:
 - `../../../engine/packages/bug-report/COPY.md` for wording quality;
 - `../../../engine/packages/bug-report/PREVIEW.md` for presentation.
 
-Default presentation is `standard`, open-bugs-only, and **table-first**.
+Default presentation is standard, open bugs only, Blocker/Major only, and **table-first**.
 
 Audit header is fixed:
 
@@ -63,7 +86,7 @@ Map Version: <map version>
 Tested Version: Minecraft Education <exact version> (Latest)
 
 Open Issues: <count>
-Blocker: <count> · Major: <count> · Minor: <count>
+Blocker: <count> · Major: <count>
 ```
 
 Before claiming `(Latest)`, verify the current Minecraft Education version from an official Minecraft Education source and ensure the audit's canonical `testedVersion` matches that exact build. If freshness cannot be verified, show the exact tested version without `(Latest)`.
@@ -82,6 +105,8 @@ Solution | supported change
 Rules:
 
 - keep one compact two-column block per bug;
+- Issue must describe what the player experiences and the gameplay impact, never the technical mechanism;
+- if a technical finding cannot be translated into a concrete player-visible failure, keep it internal;
 - do not split one bug across distant sections;
 - use `#1`, `#2`, ... for preview references and keep canonical Bug ID hidden unless detail/full mode is requested;
 - every tester-facing bug must include a concise `Bug Trigger (In-Game)` path written only as player actions, game states, locations, objects, UI interactions, and visible outcomes;
@@ -95,6 +120,7 @@ Rules:
 - if no tester-verifiable in-game path exists yet, keep the finding internal rather than presenting it as a ready bug;
 - do not invent Solution when Suggested Fix is absent;
 - hide fixed bugs unless requested;
+- hide Minor issues unless requested;
 - place `Bug Trigger (In-Game)` directly below Issue and above Solution;
 - render every trigger step on a separate numbered line; do not use arrow-chained inline steps;
 - do not show Expected / Observed / technical fields unless the user requests detail;
