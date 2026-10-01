@@ -66,6 +66,7 @@ Use this before broad repository search.
 | Engineering/validation contracts | engine/contracts/engineering/ |
 | Education edition/feature profile | engine/packages/compatibility/education* |
 | Repair transactions/preconditions/application | engine/packages/repair/ |
+| Repair workflow authority / Approved Bug mutation gate | engine/packages/orchestrator/src/repair/repair-admission-pipeline.ts + repair-proof-bundle.ts |
 | Cross-owner inspect/repair-validation orchestration | engine/packages/orchestrator/ |
 | Fail-closed repository task planning | engine/packages/orchestrator/src/repository-task-plan.ts |
 | Affected semantic/context compression for Codex | engine/packages/orchestrator/src/semantic-affected-plan.ts + context-compiler.ts |
