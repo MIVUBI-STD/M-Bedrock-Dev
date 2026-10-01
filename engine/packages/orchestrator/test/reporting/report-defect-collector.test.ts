@@ -160,9 +160,10 @@ describe("report defect collector", () => {
           impactEvidenceIds: ["tester:observation"],
           primaryEvidenceIds: ["requirement:cleanup"],
           reproduction: [
-            "Complete a match.",
-            "Return to lobby.",
+            "Complete a match normally.",
+            "Return to the lobby.",
             "Start another match.",
+            "Confirm the previous match state remains active.",
           ],
         }),
       },
@@ -775,7 +776,11 @@ describe("report defect collector", () => {
       defect: defect("tester-route-provenance", {
         impactEvidenceIds: ["tester:cleanup"],
         primaryEvidenceIds: ["requirement:cleanup"],
-        reproduction: ["Reproduce the mismatch."],
+        reproduction: [
+          "Complete a match and return to the lobby.",
+          "Start the next match.",
+          "Confirm the previous match state remains active.",
+        ],
       }),
     }]);
 
@@ -1002,7 +1007,10 @@ describe("report defect collector", () => {
           ai: true,
           impactEvidenceIds: ["tester:observation"],
           primaryEvidenceIds: ["requirement:cleanup"],
-          reproduction: ["Reproduce A."],
+          reproduction: [
+            "Enter the gameplay state for symptom A.",
+            "Confirm symptom A remains visible after the expected cleanup.",
+          ],
         }),
         causalIncidentId: "incident:cleanup",
       },
@@ -1023,7 +1031,10 @@ describe("report defect collector", () => {
           ai: true,
           impactEvidenceIds: ["tester:observation"],
           primaryEvidenceIds: ["requirement:cleanup"],
-          reproduction: ["Reproduce B."],
+          reproduction: [
+            "Enter the gameplay state for symptom B.",
+            "Confirm symptom B remains visible after the expected cleanup.",
+          ],
         }),
         causalIncidentId: "incident:cleanup",
       },
