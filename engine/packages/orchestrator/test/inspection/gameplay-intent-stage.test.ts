@@ -112,30 +112,32 @@ function parsed(): ParsedScriptFile {
 }
 
 describe("gameplay intent stage", () => {
-  it("ignores external authored/reference scripts in normal audit mode", () => {
-    const external = {
+  it("includes authored source files contained in the selected artifact", () => {
+    const authored = {
       ...parsed(),
       source: {
-        artifactId: "external",
-        relativePath: "external-src/session-state-machine.ts",
+        artifactId: "art_test",
+        relativePath: "behavior_packs/demo/src/session-state-machine.ts",
       },
     };
 
     const model = buildGameplayIntentModel({
-      id: "selected-only",
+      id: "selected-authored-source",
       artifactId: "art_test",
       parsedScripts: [{ parsed: parsed() }],
-      authoredScripts: [{ parsed: external }],
+      authoredScripts: [{ parsed: authored }],
     });
 
     expect(
       model.evidence.some(
         (item) =>
           item.locator ===
-          "external-src/session-state-machine.ts",
+          "behavior_packs/demo/src/session-state-machine.ts" &&
+          item.scope === "selected-artifact",
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
+
 
   it("builds a validated parser-independent model from analyzer signals", () => {
     const model = buildGameplayIntentModel({
@@ -276,7 +278,6 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "typed-transition",
       parsedScripts: [{ parsed: runtimeParsed }],
-      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
@@ -338,7 +339,6 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-transition-invariant",
       parsedScripts: [{ parsed: runtimeParsed }],
-      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
@@ -357,7 +357,6 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-policy-invariant",
       parsedScripts: [],
-      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
@@ -413,7 +412,6 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-policy-with-runtime-duplicate",
       parsedScripts: [{ parsed: runtimeParsed }],
-      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
@@ -488,7 +486,6 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "relation-merge",
       parsedScripts: [{ parsed: runtimeParsed }],
-      referenceMode: "comparison",
       authoredScripts: [{ parsed: authoredParsed }],
     });
 
