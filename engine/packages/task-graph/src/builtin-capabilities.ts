@@ -469,6 +469,18 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "context.dataflow-slice",
+      owner: "packages/orchestrator",
+      pathPrefixes: [
+        "packages/orchestrator/src/script-dataflow-context.ts",
+      ],
+      dependsOn: ["source.scripts.dataflow"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "context.compile",
       owner: "packages/orchestrator",
       pathPrefixes: [

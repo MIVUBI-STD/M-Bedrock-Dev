@@ -15,6 +15,9 @@ import type {
 import type {
   RepositoryTaskPlan,
 } from "./repository-task-plan.js";
+import type {
+  CompiledDataFlowContextSlice,
+} from "./script-dataflow-context.js";
 
 export interface ContextCompilerBudget {
   maxSemanticNodes: number;
@@ -36,6 +39,7 @@ export interface ContextCompilerRequest {
   relevantEvidenceIds?: readonly string[];
   worldModel?: GameplayWorldModel;
   repositoryTaskPlan?: RepositoryTaskPlan;
+  dataFlowSlice?: CompiledDataFlowContextSlice;
   budget?: Partial<ContextCompilerBudget>;
 }
 
@@ -119,6 +123,7 @@ export interface CompiledContextPack {
       persistence: number;
     }>;
   };
+  dataFlow?: CompiledDataFlowContextSlice;
   executionScope?: {
     status: RepositoryTaskPlan["status"];
     affectedCapabilityIds: readonly string[];
@@ -768,6 +773,7 @@ export function compileContextPack(
       .evidenceIds.length;
   const complete =
     missingRequestedCount === 0 &&
+    (input.dataFlowSlice?.complete ?? true) &&
     (
       semanticScopeExplicit ||
       !semanticOptionalTruncated
@@ -1027,6 +1033,9 @@ export function compileContextPack(
     ...(executionScope === undefined
       ? {}
       : { executionScope }),
+    ...(input.dataFlowSlice === undefined
+      ? {}
+      : { dataFlow: input.dataFlowSlice }),
     semantic: {
       nodes:
         semanticSelection.values.map(
@@ -1165,6 +1174,11 @@ export function compileContextPack(
       missingRequestedCount > 0
         ? "One or more explicitly requested intent/invariant/evidence ids are missing; the context pack is incomplete."
         : "All explicitly requested intent/invariant/evidence ids are present.",
+      input.dataFlowSlice === undefined
+        ? "No data-flow slice was supplied; context remains semantic/intent scoped only."
+        : input.dataFlowSlice.complete
+          ? "Supplied data-flow slice is complete for its explicit seed/budget contract."
+          : "Supplied data-flow slice is incomplete because seeds are missing or its explicit budget truncated value flow.",
     ],
   };
 }

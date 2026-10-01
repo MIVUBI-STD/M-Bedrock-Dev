@@ -13,6 +13,9 @@ Use this before broad repository search.
 | Repository capability dependencies, domain path ownership, affected closure, execution planning | engine/packages/task-graph/ |
 | Minimum-sufficient evidence/capability planning | engine/packages/analysis-planner/ |
 | Execution/state/temporal Semantic IR contracts and queries | engine/packages/semantic-ir/ |
+| Parser-independent value-flow graph + forward/backward semantic slicing | engine/packages/dataflow/ |
+| JavaScript/TypeScript direct interprocedural value-flow extraction | engine/analyzers/scripts/src/dataflow.ts |
+| Compact data-flow context slice for diagnosis/AI context | engine/packages/orchestrator/src/script-dataflow-context.ts |
 | Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | engine/packages/gameplay-intent/ |
 | Canonical gameplay semantic projection | engine/packages/orchestrator/src/gameplay-semantic-model.ts |
 | Canonical map engineering/QA assessment projection | engine/packages/orchestrator/src/map-engineering-assessment.ts |
@@ -30,7 +33,7 @@ Use this before broad repository search.
 | Compatibility engine/version/track contracts | engine/packages/compatibility/ |
 | Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
 | Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
-| Explicit Game Design specification schema/loader | engine/packages/game-design-spec/ + engine/game-design/ |
+| Game Design specification schema/loader/compiler | engine/packages/game-design-spec/ + engine/design/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
 | Engineering/validation contracts | engine/contracts/engineering/ |
 | Education edition/feature profile | engine/packages/compatibility/education* |
