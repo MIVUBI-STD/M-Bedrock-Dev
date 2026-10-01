@@ -29,7 +29,6 @@ export interface IntentGroundingDiagnosisPayload {
   id: string;
   sourceIndex: InspectionSourceIndex;
   artifactId?: string;
-  gameDesign?: GameDesignSpec;
 }
 
 export interface AuthoredIntentDiagnosisPayload
@@ -38,6 +37,7 @@ export interface AuthoredIntentDiagnosisPayload
   artifactId: string;
   files: readonly FileInventoryEntry[];
   authoredSourceRoots?: readonly string[];
+  referenceGameDesign?: GameDesignSpec;
 }
 
 function isSourceIndex(
@@ -87,14 +87,6 @@ function parseIntentPayload(
     return undefined;
   }
 
-  let gameDesign: GameDesignSpec | undefined;
-  if (record.gameDesign !== undefined) {
-    try {
-      gameDesign = assertGameDesignSpec(record.gameDesign);
-    } catch {
-      return undefined;
-    }
-  }
 
   return {
     id: record.id,
@@ -105,9 +97,6 @@ function parseIntentPayload(
           artifactId:
             record.artifactId as string,
         }),
-    ...(gameDesign === undefined
-      ? {}
-      : { gameDesign }),
   };
 }
 
@@ -171,6 +160,18 @@ function parseAuthoredPayload(
     return undefined;
   }
 
+  let referenceGameDesign: GameDesignSpec | undefined;
+  if (record.referenceGameDesign !== undefined) {
+    try {
+      referenceGameDesign =
+        assertGameDesignSpec(
+          record.referenceGameDesign,
+        );
+    } catch {
+      return undefined;
+    }
+  }
+
   return {
     ...base,
     root: record.root,
@@ -182,6 +183,9 @@ function parseAuthoredPayload(
           authoredSourceRoots:
             record.authoredSourceRoots as readonly string[],
         }),
+    ...(referenceGameDesign === undefined
+      ? {}
+      : { referenceGameDesign }),
   };
 }
 
@@ -413,9 +417,12 @@ export function createAuthoredIntentDiagnosisExecutor():
               .parsedScripts,
           referenceMode: "comparison",
           authoredScripts,
-          ...(payload.gameDesign === undefined
+          ...(payload.referenceGameDesign === undefined
             ? {}
-            : { gameDesign: payload.gameDesign }),
+            : {
+                gameDesign:
+                  payload.referenceGameDesign,
+              }),
         });
 
       if (!authoredIntentPresent(output)) {
