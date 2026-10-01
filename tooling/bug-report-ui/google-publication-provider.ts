@@ -75,7 +75,7 @@ interface TextPlan {
   readonly numberedRanges: readonly NumberedRange[];
 }
 
-interface GooglePublicationProviderOptions {
+export interface GooglePublicationProviderOptions {
   readonly accessToken: string;
   readonly fetchImpl?: typeof fetch;
 }
@@ -458,9 +458,9 @@ function requestsForTextPlan(
         updateParagraphStyle: {
           range,
           paragraphStyle:
-          paragraphStyle.style,
-        fields:
-          paragraphStyle.fields,
+            paragraphStyle.style,
+          fields:
+            paragraphStyle.fields,
         },
       });
     }
