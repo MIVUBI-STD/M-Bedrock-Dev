@@ -1,40 +1,38 @@
 # Google Drive Storage
 
-Google Drive is the human-facing storage location for map binaries, active map documents, development material, version history, and advanced technical references.
-
-It is not an M-Bedrock database, cache, registry, sync layer, or semantic authority.
+Google Drive is the human-facing storage location for map binaries, active map documents, development source, version history, and technical references.
 
 ## Canonical map layout
 
 ```text
 <Map Folder>/
 ├── <Map Name> vX.Y.Z.mcworld
-├── <Map Name> - Guide              [Google Doc, when available]
-├── <Map Name> - Changelog          [Google Doc]
-├── <Map Name> - Bug Report.pdf     [latest completed report, when available]
-├── Development/                    [optional]
-│   ├── Source/                     [optional]
-│   └── Versions/                   [optional]
-└── Technical Docs/                 [optional]
+├── <Map Name> - Guide
+├── <Map Name> - Changelog
+├── <Map Name> - Bug Report.pdf
+├── Development/
+│   ├── Source/
+│   └── Versions/
+└── Technical Docs/
 ```
 
-Do not create empty optional folders.
+Create optional folders only when they contain real content.
 
-## Root roles
+## Root
+
+The map root contains active/current material.
 
 ### Current world
-
-Keep one obvious current world in the map root:
 
 ```text
 <Map Name> vMAJOR.MINOR.PATCH.mcworld
 ```
 
-The root location means current. Do not add words such as `latest`, `final`, `new`, `fixed`, or `backup`.
+Location in the root means current. Do not add status words such as `latest`, `final`, `new`, `fixed`, or `backup`.
 
 ### Guide
 
-The active Guide is a native Google Doc in the root:
+Use one active native Google Doc:
 
 ```text
 <Map Name> - Guide
@@ -42,17 +40,17 @@ The active Guide is a native Google Doc in the root:
 
 ### Changelog
 
-Keep one living native Google Doc:
+Use one living native Google Doc:
 
 ```text
 <Map Name> - Changelog
 ```
 
-It records version history and known Added / Changed / Fixed / Removed facts. Do not create a changelog file per version.
+It records real version and change history. Do not create one changelog file per version.
 
 ### Bug Report
 
-The latest generated human-facing report may live in the root:
+The latest completed human-facing report may live in the root:
 
 ```text
 <Map Name> - Bug Report.pdf
@@ -62,98 +60,142 @@ Canonical Bug Report V2 JSON remains in Git/workspace.
 
 ## Development
 
-`Development/` has only two concepts.
+Development has only two concepts:
+
+```text
+Development/
+├── Source/
+└── Versions/
+```
 
 ### Source
 
-`Development/Source/` contains the original/raw development material.
+`Source/` contains original/raw development material, for example:
 
-This may include:
-
-- the raw/unversioned map;
-- raw world exports;
+- raw or unversioned map;
+- raw world export;
 - Behavior Pack / Resource Pack source;
 - scripts;
-- raw pack ZIPs;
-- structures or other source assets.
+- source ZIPs;
+- structures and source assets.
 
-When a raw map exists, name it clearly:
+A raw map may use:
 
 ```text
 <Map Name> - Raw Map.mcworld
 ```
 
-A raw map is not a versioned build.
+A raw map is not part of numbered version history.
 
 ### Versions
 
-`Development/Versions/` contains every retained world build that has entered the versioning lifecycle but is not the current root build.
+`Versions/` contains retained internal test builds and previous stable versions.
 
-Pre-release development builds use an explicit development suffix:
+There are only two version states.
+
+#### Test
+
+Internal/non-release builds use the `Test` suffix.
+
+When the internal version number is known:
 
 ```text
-<Map Name> v1.0.0-dev.1.mcworld
-<Map Name> v1.0.0-dev.2.mcworld
+<Map Name> v0.8.0 Test.mcworld
+<Map Name> v0.9.0 Test.mcworld
+<Map Name> v0.9.5 Test.mcworld
 ```
 
-These are Development Builds: snapshots before the corresponding official version is accepted.
-
-The first official version is the Base Version:
+If a legacy internal build has no trustworthy version number, keep the known date or identifier and mark it as Test instead of inventing a version:
 
 ```text
-<Map Name> v1.0.0 (Base Version).mcworld
+<Map Name> Test (2026-07-09).mcworld
 ```
 
-Later official versions use normal semantic-version naming:
+#### Stable
+
+Stable/released versions use plain semantic versions:
 
 ```text
+<Map Name> v1.0.0.mcworld
 <Map Name> v1.0.1.mcworld
 <Map Name> v1.0.2.mcworld
-...
 ```
 
-Do not create separate folders named:
+`v1.0.0` is normally the first stable version. Do not append `Base Version`, `Stable`, or another status label to a normal stable filename.
 
-- `Base Map`;
-- `Development Builds`;
-- `Previous Versions`;
-- `Source Files`;
-- `Raw Dev`;
-- `Old Version`.
+The latest stable version stays in the map root. Older stable versions stay in `Development/Versions/`.
 
 ## Lifecycle
 
 ```text
-Raw Map / source material
-→ v1.0.0-dev.1
-→ v1.0.0-dev.2
-→ v1.0.0 (Base Version)
+Source / Raw Map
+→ v0.x.x Test
+→ v1.0.0
 → v1.0.1
 → v1.0.2
 → ...
-→ current version in root
+→ current stable in root
 ```
 
-When a new current version is accepted:
+Example:
 
 ```text
-current v1.1.1
-→ v1.1.2 becomes current
-→ move v1.1.1 to Development/Versions/
-→ place v1.1.2 in root
-→ update the single Changelog
-→ regenerate Bug Report.pdf only after a completed audit
+Development/
+├── Source/
+│   ├── Example Map - Raw Map.mcworld
+│   └── raw-packs.zip
+└── Versions/
+    ├── Example Map v0.8.0 Test.mcworld
+    ├── Example Map v0.9.0 Test.mcworld
+    ├── Example Map v1.0.0.mcworld
+    └── Example Map v1.0.1.mcworld
+
+Example Map v1.1.0.mcworld   ← current in root
 ```
+
+## New-current-version procedure
+
+When a new stable version becomes current:
+
+```text
+1. Move the previous current .mcworld from root to Development/Versions/.
+2. Place the new stable .mcworld in root.
+3. Keep its filename as <Map Name> vX.Y.Z.mcworld.
+4. Update the single Changelog Google Doc.
+5. Replace Bug Report.pdf only after a completed audit.
+```
+
+Do not delete retained stable history unless explicitly requested.
+
+## Deprecated naming
+
+Do not create these Drive folders or naming concepts:
+
+- `Raw Dev/`
+- `Base Map/`
+- `Development Builds/`
+- `Previous Versions/`
+- `Source Files/`
+- `Old Version/`
+- Alpha/Beta/Release folder trees.
+
+Safely classifiable existing content should be consolidated into `Source/` or `Versions/`.
 
 ## Technical Docs
 
-`Technical Docs/` is optional and contains advanced/supporting documents such as DAIGON/game-design references, scoring formulas, technical specifications, building previews, legacy QA references, client references, or technical reviews.
+`Technical Docs/` is optional and contains advanced/supporting documents such as game-design references, scoring formulas, technical specifications, building previews, legacy QA references, client references, and technical reviews.
 
 Do not use `Technical Docs/` for map binaries or source packs.
 
 ## Multi-level projects
 
-Do not flatten independent levels. Shared active documents may stay at project root. Each level may have its own current world and, only when needed, its own `Development/Source` and `Development/Versions`.
+Do not flatten independent levels. Shared active documents may stay at project root. Each level may have its own current world and, only when needed:
+
+```text
+Development/
+├── Source/
+└── Versions/
+```
 
 ## Drive root
 
@@ -167,33 +209,27 @@ The configured Drive root stays map-centric:
 
 Do not add M-Bedrock system folders to the Drive root.
 
-## Exact lookup
+## Reproduction rules
 
-Initial access may discover a map by browsing the configured root. Later work should reuse exact map/world IDs when available.
+When organizing a map from scratch:
 
 ```text
-Drive root
-→ map folder ID
-→ current world file ID + fingerprint
+1. Put the current stable world in the map root.
+2. Put raw/unversioned material in Development/Source/.
+3. Put internal builds in Development/Versions/ and mark them Test.
+4. Put previous stable builds in Development/Versions/ with plain semantic versions.
+5. Keep Guide, Changelog, and latest Bug Report in the root when available.
+6. Put advanced supporting documents in Technical Docs/.
+7. Do not create empty folders.
+8. Do not invent missing version numbers.
 ```
-
-Search by title is discovery only, not artifact identity.
-
-## Keep out of Drive
-
-Do not automatically store semantic graphs, analysis caches, AI context, sync receipts, registry metadata, internal runtime state, repository metadata, temporary extraction, or canonical Bug Report V2 JSON in Drive.
 
 ## Operating rule
 
-Prefer the shallowest valid structure.
+Prefer the shallowest valid structure:
 
 ```text
-Source
-= where the map came from
-
-Versions
-= how the map evolved
-
-Root
-= what is current
+Source   = where the map came from
+Versions = how the map evolved
+Root     = what is current
 ```
