@@ -1,59 +1,44 @@
 # Next Action
 
-## Current lane — Design-First Workflow Hardening
+## Current lane — Workflow Simplification
 
-Real-map testing remains intentionally deferred.
+Real-map testing remains deferred.
 
-The current objective is to make Game Design understanding a mandatory predecessor to gameplay bug discovery and repair.
-
-## Canonical workflow
+Canonical flow:
 
 ```text
-Target Identity
-→ Game Design
+Game Design
 → Gameplay Contract
-→ Design Readiness
 → Actual Behavior
-→ Gameplay Contradiction
-→ Bug Candidate
-→ Counter-Evidence / Player Impact / Trigger
+→ Confirmed Defect
 → Proposed Bug Set
 → Chat Approval
 → Approved Bug
 → Repair Contract
-→ Repair
-→ Defect Verification
-→ Game Design Preservation Verification
-→ HTML / handoff
+→ Authorized Repair
+→ Verify Defect + Preserve Design
 ```
 
-## Current rules
+## Non-negotiable gates
 
-- no design understanding → no gameplay bug search;
-- Gameplay Contract is derived, scoped, and temporary;
-- canonical intended gameplay remains project-local `design/game-design.json`;
-- material design unknowns block classification for their scope;
-- source code proves implementation, not intended gameplay;
-- historical QA is hint/regression evidence only;
-- no Approved Bug → no bug repair;
-- no Must Preserve constraints → no bug-repair mutation;
-- symptom removal alone does not prove repair correctness;
-- HTML/report publication remains downstream of approval.
+- no authoritative Game Design → no gameplay bug classification;
+- no matching Gameplay Contract → no candidate discovery;
+- Confirmed Defect ≠ Approved Bug;
+- internal `repair-eligible` ≠ mutation approval;
+- no Approved Bug/design change + Must Change + Must Preserve → no mutation;
+- inspection may produce repair proposals only;
+- report/HTML remains downstream of approval.
+
+## Remaining hardening
+
+1. remove stale duplicate terminology or bypass wording;
+2. keep one semantic owner per decision;
+3. keep operator docs short and reference canonical owners instead of duplicating rules.
 
 ## Deferred
 
-Do not start yet:
-
 - Challenge map audit/retest;
 - Minecraft runtime testing;
-- benchmark/calibration execution;
-- HTML generation for Challenge maps;
+- benchmark/calibration;
+- HTML generation;
 - CI expansion.
-
-## Next repository hardening target
-
-Audit remaining orchestrator/repair entry points for any path that can:
-
-1. discover gameplay bugs before design readiness;
-2. promote implementation-derived intent into defect authority;
-3. mutate a target bug without Approved Bug + preservation constraints.
