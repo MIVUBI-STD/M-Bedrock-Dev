@@ -249,60 +249,6 @@ export class GitHubBugReportStore {
     };
   }
 
-  async createReport(
-    path: string,
-    report: BugReportV2,
-  ): Promise<SavedGitHubBugReport> {
-    this.#assertReportPath(path);
-
-    const handoffIssues = [
-      ...reviewBugReportReadiness(report.bugs),
-      ...reviewBugReportCopy(report.bugs),
-    ];
-    if (handoffIssues.length > 0) {
-      throw new Error(
-        "Refusing to create a report that is not handoff-ready: " +
-          handoffIssues
-            .map((issue) =>
-              issue.path + ": " + issue.message
-            )
-            .join("; "),
-      );
-    }
-
-    const serialized = serializeBugReportV2(report);
-    if (!serialized.ok || !serialized.json) {
-      throw new Error("Refusing to save invalid Bug Report V2.");
-    }
-
-    const current = await this.#currentFile(path);
-    if (current) {
-      throw new GitHubBugReportConflictError(
-        "GitHub bug report already exists.",
-      );
-    }
-
-    const response = await this.#request(
-      this.#contentsPath(path),
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: "chore(bug-report): create " + report.map.name,
-          content: encodeBase64Utf8(serialized.json),
-          branch: this.#branch,
-        }),
-      },
-    );
-    const result = await response.json() as GitHubWriteResponse;
-    const revision = result.content?.sha;
-    if (!revision) {
-      throw new Error("GitHub did not return the created report revision.");
-    }
-    return { revision };
-  }
 
   async #saveReport(
     path: string,
