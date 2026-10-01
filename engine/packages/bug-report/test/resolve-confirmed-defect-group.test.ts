@@ -49,7 +49,11 @@ function defect(
       statement: "State remains.",
       evidenceIds: ["obs:" + subject],
     },
-    reproduction: ["Step " + subject],
+    reproduction: [
+      "Enter the cleanup scenario for " + subject + ".",
+      "Complete the match and return to the lobby.",
+      "Confirm the affected state remains after cleanup.",
+    ],
     brokenInvariantIds: ["inv:cleanup"],
     repairUnitIds: ["unit:cleanup"],
     causalIncidentId: "incident:cleanup",
@@ -194,7 +198,10 @@ describe("canonical defect group resolution", () => {
           observed: { statement: "Observed" },
           expectedAuthority: "explicit-requirement",
           primaryFailure: "player-owned-state",
-          reproduction: ["Reproduce."],
+          reproduction: [
+          "Complete a match and return to the lobby.",
+          "Confirm the affected match state remains after cleanup.",
+        ],
         },
       )
     ).toThrow(/explicit foundBy/);
@@ -209,7 +216,10 @@ describe("canonical defect group resolution", () => {
         expectedAuthority: "explicit-requirement",
         foundBy: "tester",
         primaryFailure: "player-owned-state",
-        reproduction: ["Reproduce."],
+        reproduction: [
+          "Complete a match and return to the lobby.",
+          "Confirm the affected match state remains after cleanup.",
+        ],
       },
     );
 
@@ -243,7 +253,10 @@ describe("canonical defect group resolution", () => {
         observed: { statement: "State remains." },
         expectedAuthority: "explicit-requirement",
         primaryFailure: "player-owned-state",
-        reproduction: ["Reproduce."],
+        reproduction: [
+          "Complete a match and return to the lobby.",
+          "Confirm the affected match state remains after cleanup.",
+        ],
       },
     );
 
@@ -270,7 +283,10 @@ describe("canonical defect group resolution", () => {
           observed: { statement: "Observed" },
           expectedAuthority: "explicit-requirement",
           primaryFailure: "player-owned-state",
-          reproduction: ["Reproduce."],
+          reproduction: [
+          "Complete a match and return to the lobby.",
+          "Confirm the affected match state remains after cleanup.",
+        ],
         },
       )
     ).toThrow(/multiple primary failures/);
@@ -291,7 +307,11 @@ describe("canonical defect group resolution", () => {
         observed: { statement: "Observed" },
         expectedAuthority: "explicit-requirement",
         primaryFailure: "player-owned-state",
-        reproduction: ["Reproduce the merged defect."],
+        reproduction: [
+          "Complete a match and return to the lobby.",
+          "Start the next match.",
+          "Confirm the merged match-owned state remains from the previous match.",
+        ],
       },
     );
 
@@ -315,7 +335,10 @@ describe("canonical defect group resolution", () => {
         observed: { statement: "Observed" },
         expectedAuthority: "explicit-requirement",
         primaryFailure: "player-owned-state",
-        reproduction: ["Reproduce."],
+        reproduction: [
+          "Complete a match and return to the lobby.",
+          "Confirm the affected match state remains after cleanup.",
+        ],
       },
     );
 
@@ -343,7 +366,10 @@ describe("canonical defect group resolution", () => {
           observed: { statement: "Observed" },
           expectedAuthority: "explicit-requirement",
           primaryFailure: "player-owned-state",
-          reproduction: ["Reproduce."],
+          reproduction: [
+          "Complete a match and return to the lobby.",
+          "Confirm the affected match state remains after cleanup.",
+        ],
         },
       )
     ).toThrow(/semantically incompatible/);
