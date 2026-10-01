@@ -36,7 +36,6 @@ export interface PromoteConfirmedBugsInput {
 export type BugReportPromotionIssueCode =
   | "no-confirmed-bugs"
   | "missing-reproduction"
-  | "tester-missing-reproduction"
   | "ai-missing-analysis"
   | "ai-missing-relevant-code"
   | "suggested-fix-without-analysis"
@@ -124,19 +123,7 @@ export function reviewConfirmedBugInputs(
         code: "missing-reproduction",
         bugId: bug.id,
         message:
-          "Tester-facing confirmed defects require an in-game reproduction / verification path.",
-      });
-    }
-
-    if (
-      bug.foundBy === "tester" &&
-      !hasItems(bug.reproduction)
-    ) {
-      issues.push({
-        code: "tester-missing-reproduction",
-        bugId: bug.id,
-        message:
-          "Tester-found confirmed defects must include a reproduction path for the developer.",
+          "Tester-facing confirmed defects require a clear Bug Trigger (In-Game) path.",
       });
     }
 
