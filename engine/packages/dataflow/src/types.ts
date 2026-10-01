@@ -4,6 +4,7 @@ export type DataFlowNodeKind =
   | "binding"
   | "parameter"
   | "return"
+  | "call"
   | "call-result"
   | "property"
   | "literal"
@@ -25,6 +26,7 @@ export type DataFlowEdgeKind =
   | "argument"
   | "return"
   | "call-result"
+  | "invocation-result"
   | "property-read"
   | "capture"
   | "unknown";

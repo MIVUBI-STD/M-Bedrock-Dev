@@ -230,7 +230,38 @@ export function deriveScriptDataFlowGraph(
       }
 
       if(ts.isCallExpression(node)){
+        const region=regionId(node);
+        const callNode=pushNode(nodes,{
+          id:module.path+"#"+region+"#call#"+posId(file,node),
+          kind:"call",
+          modulePath:module.path,
+          regionId:region,
+          symbol:node.expression.getText(file),
+          label:node.expression.getText(file),
+          source:src(node),
+        });
         const callResult=pushNode(nodes,expressionNode(module.path,file,node,module.source));
+
+        node.arguments.forEach((arg)=>{
+          const from=pushNode(nodes,expressionNode(module.path,file,arg,module.source));
+          edges.push({
+            id:edgeId("argument",from,callNode,ordinal++),
+            from,
+            to:callNode,
+            kind:"argument",
+            confidence:"exact",
+            source:src(arg),
+          });
+        });
+        edges.push({
+          id:edgeId("invocation-result",callNode,callResult,ordinal++),
+          from:callNode,
+          to:callResult,
+          kind:"invocation-result",
+          confidence:"exact",
+          source:src(node),
+        });
+
         let targetModule=module.path;
         let targetName:string|undefined;
 
