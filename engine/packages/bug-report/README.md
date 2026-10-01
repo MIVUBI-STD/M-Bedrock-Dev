@@ -659,3 +659,21 @@ A validation run used for completion must be current for the present artifact/ru
 
 
 When a bug carries `mustPreserve`, repair completion must also provide explicit preservation invariant IDs. These IDs are not inferred from free-text report wording. Each preservation invariant must have current passing coverage from one of the selected validation runs, at a sufficient proof level.
+
+
+## Orchestrator closure bridge
+
+The production-strength repair path may close a bug from a full orchestrator `PostRepairClosureReceipt` instead of a generic validation trace. Use `completeBugReportFromClosedRepair()` with the matching passed `PreservationVerificationReceipt`.
+
+This route is intentionally separate from generic report save:
+
+```text
+PostRepairClosureReceipt
++ PreservationVerificationReceipt
++ matching Repair By owner
+→ completeBugReportFromClosedRepair()
+→ fixed: true
+→ dedicated closed-repair persistence
+```
+
+`verify-repair` differential inspection is not sufficient for this transition.
