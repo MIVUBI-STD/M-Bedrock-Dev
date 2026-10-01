@@ -92,10 +92,7 @@ function reclassification(
       subjectIds: ["arena"],
       basisInvariantIds: ["invariant::ready"],
       evidenceIds: ["runtime:evidence"],
-      nextEvidenceNeed:
-        disposition === "probable-defect"
-          ? "authored-intent"
-          : "none",
+      nextEvidenceNeed: "none",
       reasons: [],
     },
     matchedPredicates: {
@@ -104,6 +101,35 @@ function reclassification(
       engineConstraints: [],
       compatibilityDifferences: [],
       runtimeProof: [],
+    },
+  };
+}
+
+function repairAuthority(transactionId: string) {
+  return {
+    kind: "approved-bug" as const,
+    approved: {
+      map: {
+        name: "Runtime Repair",
+        mapVersion: "1.0.0",
+        drive: "https://drive.google.com/file/d/map/view",
+        baseVersion: "1.26.20",
+        testedVersion: "1.26.32",
+      },
+      approvedSemanticKeys: ["bug:approved"],
+      rejectedSemanticKeys: [],
+      decisions: [{
+        semanticKey: "bug:approved",
+        decision: "approve" as const,
+      }],
+    },
+    bugSemanticKey: "bug:approved",
+    preservationContract: {
+      schemaVersion: 1 as const,
+      id: "preserve:" + transactionId,
+      transactionId,
+      mustChangeInvariantIds: ["invariant::ready"],
+      mustPreserveInvariantIds: ["invariant::preserve"],
     },
   };
 }
@@ -134,6 +160,7 @@ describe("runtime classified repair pipeline", () => {
         reclassification:
           reclassification("confirmed-defect"),
         runtimeIntegrity: integrity,
+        repairAuthority: repairAuthority(transaction.id),
         diagnostic: {
           incidentId: "incident-1",
           activeCandidateIds: ["candidate"],
@@ -184,6 +211,36 @@ describe("runtime classified repair pipeline", () => {
     ).toBe("ready");
   });
 
+  it("blocks a confirmed defect before workflow approval", () => {
+    const { graph, transaction } = fixture();
+
+    const result =
+      evaluateRuntimeClassifiedRepairPipeline({
+        graph,
+        transaction,
+        reclassification:
+          reclassification("confirmed-defect"),
+        runtimeIntegrity: integrity,
+        diagnostic: {
+          incidentId: "incident-1",
+          activeCandidateIds: ["candidate"],
+          disposition: "repair-eligible",
+          selectedCandidateId: "candidate",
+          effectiveEvidenceLevel:
+            "proven-with-observed-outcome",
+          proofState: "causal",
+          claimStrength: "proven-runtime",
+          reasons: ["causal runtime proof"],
+        },
+        changedNodeIds: [
+          "function:p:target",
+        ],
+      });
+
+    expect(result.entry.disposition).toBe("blocked");
+    expect(result.pipeline).toBeUndefined();
+  });
+
   it("does not even enter the repair pipeline for designed behavior", () => {
     const { graph, transaction } = fixture();
 
@@ -194,6 +251,7 @@ describe("runtime classified repair pipeline", () => {
         reclassification:
           reclassification("designed-behavior"),
         runtimeIntegrity: integrity,
+        repairAuthority: repairAuthority(transaction.id),
         diagnostic: {
           incidentId: "incident-1",
           activeCandidateIds: ["candidate"],
@@ -216,38 +274,6 @@ describe("runtime classified repair pipeline", () => {
     expect(result.pipeline).toBeUndefined();
   });
 
-  it("keeps probable defects outside mutation even if a repair candidate exists", () => {
-    const { graph, transaction } = fixture();
-
-    const result =
-      evaluateRuntimeClassifiedRepairPipeline({
-        graph,
-        transaction,
-        reclassification:
-          reclassification("probable-defect"),
-        runtimeIntegrity: integrity,
-        diagnostic: {
-          incidentId: "incident-1",
-          activeCandidateIds: ["candidate"],
-          disposition: "repair-eligible",
-          selectedCandidateId: "candidate",
-          effectiveEvidenceLevel:
-            "proven-with-observed-outcome",
-          proofState: "causal",
-          claimStrength: "proven-runtime",
-          reasons: ["candidate exists"],
-        },
-        changedNodeIds: [
-          "function:p:target",
-        ],
-      });
-
-    expect(result.entry.disposition).toBe(
-      "proposal-only",
-    );
-    expect(result.pipeline).toBeUndefined();
-  });
-
   it("preserves guarded admission as guarded through the existing pipeline", () => {
     const { graph, transaction } = fixture();
 
@@ -258,6 +284,7 @@ describe("runtime classified repair pipeline", () => {
         reclassification:
           reclassification("confirmed-defect"),
         runtimeIntegrity: integrity,
+        repairAuthority: repairAuthority(transaction.id),
         diagnostic: {
           incidentId: "incident-1",
           activeCandidateIds: ["candidate"],
