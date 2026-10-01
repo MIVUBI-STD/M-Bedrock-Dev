@@ -7,6 +7,7 @@
     "artifactId",
     "mapVersion",
     "evidenceScope",
+    "coverage",
     "candidates"
   ],
   "properties": {
@@ -174,6 +175,46 @@
         },
         "archiveSourcesUsed": {
           "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "disposition",
+        "totalSurfaces",
+        "checked",
+        "blocked",
+        "notApplicable",
+        "missingSubjectIds"
+      ],
+      "properties": {
+        "disposition": {
+          "const": "complete"
+        },
+        "totalSurfaces": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notApplicable": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missingSubjectIds": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false
