@@ -58,8 +58,11 @@ export function confirmStaticIntentDefectForReport(
     };
   }
 
+  const expectedEvidenceSet = new Set(expectedEvidence);
   const contradictionEvidence = result.evidenceIds.filter(
-    (id) => id.trim().length > 0,
+    (id) =>
+      id.trim().length > 0 &&
+      !expectedEvidenceSet.has(id),
   );
 
   if (contradictionEvidence.length === 0) {

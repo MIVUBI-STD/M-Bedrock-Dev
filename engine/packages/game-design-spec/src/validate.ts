@@ -57,6 +57,36 @@ function validateIntentRules(
     ) {
       errors.push("Game Design intent rule " + rule.id + " has invalid determinism.");
     }
+    if (rule.appliesWhen !== undefined) {
+      const scope = rule.appliesWhen as Record<string, unknown>;
+      for (const key of ["modes", "phases", "stateTags"] as const) {
+        const value = scope[key];
+        if (value !== undefined && !nonEmptyStringArray(value)) {
+          errors.push(
+            "Game Design intent rule " + rule.id +
+              " appliesWhen." + key +
+              " must contain non-empty strings.",
+          );
+        }
+      }
+      const actorTypes = scope.actorTypes;
+      if (
+        actorTypes !== undefined &&
+        (
+          !Array.isArray(actorTypes) ||
+          actorTypes.some((value) =>
+            !["player", "entity", "system"].includes(String(value))
+          )
+        )
+      ) {
+        errors.push(
+          "Game Design intent rule " + rule.id +
+            " appliesWhen.actorTypes is invalid.",
+        );
+      }
+    }
+
+    const exceptionIds = new Set<string>();
     for (const exception of rule.exceptions ?? []) {
       if (
         !exception.id?.trim() ||
@@ -64,7 +94,15 @@ function validateIntentRules(
         !nonEmptyStringArray(exception.stateTags)
       ) {
         errors.push("Game Design intent rule " + rule.id + " has an invalid exception.");
+        continue;
       }
+      if (exceptionIds.has(exception.id)) {
+        errors.push(
+          "Game Design intent rule " + rule.id +
+            " has duplicate exception id: " + exception.id + ".",
+        );
+      }
+      exceptionIds.add(exception.id);
     }
   }
 

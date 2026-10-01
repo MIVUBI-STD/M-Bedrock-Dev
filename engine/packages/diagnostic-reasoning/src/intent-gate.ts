@@ -58,8 +58,8 @@ export interface IntentDiagnosticGateResult {
   disposition: IntentDiagnosticDisposition;
   subjectIds: readonly string[];
   basisInvariantIds: readonly string[];
-  basisDesignRuleIds: readonly string[];
-  basisDesignEvidenceIds: readonly string[];
+  basisDesignRuleIds?: readonly string[];
+  basisDesignEvidenceIds?: readonly string[];
   evidenceIds: readonly string[];
   nextEvidenceNeed: IntentDiagnosticNextEvidenceNeed;
   reasons: readonly string[];
@@ -197,6 +197,45 @@ export function gateIntentDiagnostic(
           resolvedRule.authority === "authoritative"
             ? "Observed evidence contradicts an authoritative approved Game Design rule."
             : "Observed evidence contradicts approved reconstructed intent; authored/client authority is still preferred for final confirmation.",
+        ],
+      };
+    }
+
+    if (input.gameDesignObservationRelation === "contradicts-observed") {
+      if (
+        resolvedRule.authority === "unknown" ||
+        resolvedRule.authority === "inferred"
+      ) {
+        return {
+          disposition: "ambiguous-intent",
+          subjectIds: [...input.subjectIds],
+          basisInvariantIds: [],
+          basisDesignRuleIds: [rule.id],
+          basisDesignEvidenceIds: designEvidenceIds,
+          evidenceIds: [
+            ...input.observationEvidenceIds,
+            ...designEvidenceIds,
+          ],
+          nextEvidenceNeed: "intent-clarification",
+          reasons: [
+            "Applicable Game Design intent is not authoritative enough to classify the contradiction as a defect.",
+          ],
+        };
+      }
+
+      return {
+        disposition: "insufficient-evidence",
+        subjectIds: [...input.subjectIds],
+        basisInvariantIds: [],
+        basisDesignRuleIds: [rule.id],
+        basisDesignEvidenceIds: designEvidenceIds,
+        evidenceIds: [
+          ...input.observationEvidenceIds,
+          ...designEvidenceIds,
+        ],
+        nextEvidenceNeed: "contradiction-proof",
+        reasons: [
+          "Applicable Game Design rule exists, but contradiction evidence is not sufficient for defect classification.",
         ],
       };
     }
