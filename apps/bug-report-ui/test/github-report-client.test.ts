@@ -60,7 +60,7 @@ describe("GitHubReportClient", () => {
     }]);
   });
 
-  it("loads report plus source revision", async () => {
+  it("loads a canonical report for audit reading", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({
         report,
@@ -73,41 +73,7 @@ describe("GitHubReportClient", () => {
 
     await expect(
       client.loadReport("bug-reports/a.json"),
-    ).resolves.toEqual({
-      report,
-      revision: "abc",
-    });
-  });
-
-  it("saves using expected revision without browser credentials", async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify({
-        revision: "def",
-      }), { status: 200 }),
-    );
-    const client = new GitHubReportClient({
-      fetchImpl: fetchMock as unknown as typeof fetch,
-    });
-
-    await expect(
-      client.saveReport(
-        "bug-reports/a.json",
-        report,
-        "abc",
-      ),
-    ).resolves.toEqual({
-      revision: "def",
-    });
-
-    const call = fetchMock.mock.calls[0] as unknown as [
-      unknown,
-      RequestInit,
-    ];
-    const init = call[1];
-    expect(JSON.parse(String(init.body))).toMatchObject({
-      expectedRevision: "abc",
-    });
-    expect(JSON.stringify(init)).not.toContain("Bearer");
+    ).resolves.toEqual(report);
   });
 
   it("creates a GitHub report from an imported file", async () => {
@@ -125,9 +91,7 @@ describe("GitHubReportClient", () => {
         "bug-reports/a.json",
         report,
       ),
-    ).resolves.toEqual({
-      revision: "new",
-    });
+    ).resolves.toBeUndefined();
 
     const call = fetchMock.mock.calls[0] as unknown as [
       unknown,
@@ -136,7 +100,7 @@ describe("GitHubReportClient", () => {
     expect(call[1].method).toBe("POST");
   });
 
-  it("maps revision conflicts to a dedicated error", async () => {
+  it("maps create conflicts to a dedicated error", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({
         code: "report-conflict",
@@ -148,10 +112,9 @@ describe("GitHubReportClient", () => {
     });
 
     await expect(
-      client.saveReport(
+      client.createReport(
         "bug-reports/a.json",
         report,
-        "abc",
       ),
     ).rejects.toBeInstanceOf(GitHubReportConflictError);
   });
