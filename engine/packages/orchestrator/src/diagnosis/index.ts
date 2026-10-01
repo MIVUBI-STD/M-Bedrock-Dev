@@ -51,3 +51,4 @@ export {
   type TelemetryTextParseOptions,
 } from "../telemetry-text.js";
 export * from "./topology-runtime-evidence.js";
+export * from "./telemetry-text.js";
