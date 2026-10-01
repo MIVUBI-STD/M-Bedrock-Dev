@@ -1,9 +1,9 @@
+import { reviewBugReportCopy } from "./copy-quality.js";
+import { reviewBugReportReadiness } from "./report-readiness.js";
 import {
-  createBugReportV2,
-} from "./create-v2.js";
-import type {
-  BugReportV2,
-  BugReportV2Bug,
+  parseBugReportV2,
+  type BugReportV2,
+  type BugReportV2Bug,
 } from "./v2.js";
 
 export type CanonicalReportReconcileIssueCode =
@@ -114,16 +114,47 @@ export function reconcileCanonicalBugReport(
     (bug) => !incomingIds.has(bug.id),
   );
 
+  const candidate: BugReportV2 = {
+    schema: incoming.schema,
+    map: incoming.map,
+    repairBy: incoming.repairBy,
+    bugs: [
+      ...refreshed,
+      ...retained,
+    ],
+  };
+
+  const parsed = parseBugReportV2(candidate);
+  if (!parsed.ok) {
+    return {
+      ok: false,
+      issues: [{
+        code: "bug-id-semantic-conflict",
+        message:
+          "Reconciled canonical report failed V2 validation: " +
+          parsed.issues
+            .map((issue) => issue.path + ": " + issue.message)
+            .join("; "),
+      }],
+    };
+  }
+
+  const readiness = reviewBugReportReadiness(parsed.report.bugs);
+  const copy = reviewBugReportCopy(parsed.report.bugs);
+  if (readiness.length > 0 || copy.length > 0) {
+    return {
+      ok: false,
+      issues: [{
+        code: "bug-id-semantic-conflict",
+        message:
+          "Reconciled canonical report failed report-quality validation.",
+      }],
+    };
+  }
+
   return {
     ok: true,
-    report: createBugReportV2({
-      map: incoming.map,
-      repairBy: incoming.repairBy,
-      bugs: [
-        ...refreshed,
-        ...retained,
-      ],
-    }),
+    report: parsed.report,
     issues: [],
   };
 }
