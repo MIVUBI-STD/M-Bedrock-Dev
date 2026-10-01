@@ -25,7 +25,7 @@ const model: GameplayIntentModel = {
 };
 
 describe("gameplay design readiness", () => {
-  it("blocks when authoritative Game Design is missing", () => {
+  it("blocks when selected-artifact contract evidence is missing", () => {
     const result = assessGameplayDesignReadiness(
       model,
       {
@@ -34,7 +34,7 @@ describe("gameplay design readiness", () => {
     );
 
     expect(result.disposition).toBe("blocked");
-    expect(result.reasons.join(" ")).toMatch(/authoritative current Game Design/i);
+    expect(result.reasons.join(" ")).toMatch(/selected map artifact/i);
   });
 
 
