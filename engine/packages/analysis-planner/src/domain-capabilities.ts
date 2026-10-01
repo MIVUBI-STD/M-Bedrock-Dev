@@ -137,7 +137,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
       ],
     },
     {
-      id: "combat-lifecycle-policy",
+      id: "combat-lifecycle-contract",
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -334,7 +334,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
         "runtime-observation",
       ],
       prerequisites: [
-        "combat-lifecycle-policy",
+        "combat-lifecycle-contract",
       ],
     },
   ] as const;

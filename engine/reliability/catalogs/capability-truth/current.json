@@ -2,18 +2,18 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "1a4eb461b1744a33e65c1b990b07a98cbb547f1f",
+    "commit": "1c18b6797ef09ec762b1822c970b07fc8f096c4d",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "fb405964",
-    "proofInventoryFingerprint": "a7ec1b0d"
+    "registryFingerprint": "fc95bfca",
+    "proofInventoryFingerprint": "16fa2389"
   },
   "summary": {
-    "taskCapabilities": 38,
-    "ownerTested": 38,
+    "taskCapabilities": 40,
+    "ownerTested": 40,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
@@ -538,6 +538,56 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "reliability.metamorphic",
+      "owner": "packages/reliability-search",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 49,
+      "testFiles": 22,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
+        "engine/packages/reliability-search/test/bounded-explorer.test.ts",
+        "engine/packages/reliability-search/test/extended-mutations.test.ts",
+        "engine/packages/reliability-search/test/generation-aware.test.ts",
+        "engine/packages/reliability-search/test/happens-before.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "reliability.parser-robustness",
+      "owner": "packages/reliability-search",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 49,
+      "testFiles": 22,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
+        "engine/packages/reliability-search/test/bounded-explorer.test.ts",
+        "engine/packages/reliability-search/test/extended-mutations.test.ts",
+        "engine/packages/reliability-search/test/generation-aware.test.ts",
+        "engine/packages/reliability-search/test/happens-before.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
@@ -1192,7 +1242,7 @@
       ]
     },
     {
-      "id": "combat-lifecycle-policy",
+      "id": "combat-lifecycle-contract",
       "evidenceLevel": "semantic",
       "cost": "moderate",
       "deterministic": true,
