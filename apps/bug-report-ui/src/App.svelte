@@ -45,6 +45,15 @@
     | "saving"
     | "failed"
     | "conflict" = "saved";
+  let githubRevision = "";
+  let publicationState:
+    | "idle"
+    | "publishing"
+    | "published"
+    | "failed"
+    | "conflict" = "idle";
+  let publishedGoogleDocUrl = "";
+  let publishedPdfUrl = "";
   let searchInput: HTMLInputElement | undefined;
 
   $: openSignal = report
@@ -79,6 +88,9 @@
     report = next;
     source = nextSource;
     saveState = "saved";
+    publicationState = "idle";
+    publishedGoogleDocUrl = "";
+    publishedPdfUrl = "";
     importIssues = [];
     readinessIssues = reviewBugReportReadiness(next.bugs);
     copyIssues = reviewBugReportCopy(next.bugs);
@@ -98,6 +110,7 @@
       copyIssues = reviewBugReportCopy([]);
       return;
     }
+    githubRevision = "";
     openDocument(result.report, {
       kind: "file",
       fileName: file.name,
@@ -133,8 +146,10 @@
     githubLoading = true;
     githubError = "";
     try {
-      const loaded = await github.loadReport(path);
-      openDocument(loaded, {
+      const loaded =
+        await github.loadReportSnapshot(path);
+      githubRevision = loaded.revision;
+      openDocument(loaded.report, {
         kind: "github",
         path,
       });
@@ -188,6 +203,10 @@
 
     try {
       await github.createReport(path, report);
+      const loaded =
+        await github.loadReportSnapshot(path);
+      report = loaded.report;
+      githubRevision = loaded.revision;
       source = {
         kind: "github",
         path,
@@ -195,6 +214,38 @@
       saveState = "saved";
     } catch (error) {
       saveState =
+        error instanceof GitHubReportConflictError
+          ? "conflict"
+          : "failed";
+    }
+  }
+
+  async function publishClientReport() {
+    if (
+      !report ||
+      source?.kind !== "github" ||
+      !githubRevision ||
+      readinessIssues.length > 0 ||
+      copyIssues.length > 0
+    ) return;
+
+    publicationState = "publishing";
+    publishedGoogleDocUrl = "";
+    publishedPdfUrl = "";
+
+    try {
+      const published =
+        await github.publishReport(
+          source.path,
+          githubRevision,
+        );
+      publicationState = "published";
+      publishedGoogleDocUrl =
+        published.googleDoc.url;
+      publishedPdfUrl =
+        published.pdf.url ?? "";
+    } catch (error) {
+      publicationState =
         error instanceof GitHubReportConflictError
           ? "conflict"
           : "failed";
@@ -230,6 +281,10 @@
     query = "";
     severity = "all";
     saveState = "saved";
+    githubRevision = "";
+    publicationState = "idle";
+    publishedGoogleDocUrl = "";
+    publishedPdfUrl = "";
   }
 </script>
 
@@ -245,7 +300,39 @@
     {#if report}
       <div class="actions">
         {#if source?.kind === "github"}
-          <button class="primary" on:click={exportReport}>Export JSON</button>
+          <button
+            class="primary"
+            on:click={publishClientReport}
+            disabled={
+              publicationState === "publishing" ||
+              readinessIssues.length > 0 ||
+              copyIssues.length > 0 ||
+              !githubRevision
+            }
+            title={
+              readinessIssues.length > 0 ||
+              copyIssues.length > 0
+                ? "Resolve report handoff issues before publishing the client report."
+                : undefined
+            }
+          >
+            {publicationState === "publishing"
+              ? "Publishing…"
+              : "Publish Client Report"}
+          </button>
+          {#if publicationState === "published"}
+            <span class="publish-links">
+              <a href={publishedGoogleDocUrl} target="_blank" rel="noreferrer">Google Doc</a>
+              {#if publishedPdfUrl}
+                <a href={publishedPdfUrl} target="_blank" rel="noreferrer">PDF</a>
+              {/if}
+            </span>
+          {:else if publicationState === "failed"}
+            <span class="save-state failed">Publish failed</span>
+          {:else if publicationState === "conflict"}
+            <span class="save-state conflict">Report changed — reopen before publishing</span>
+          {/if}
+          <button class="secondary" on:click={exportReport}>Export JSON</button>
         {:else}
           {#if saveState === "saving"}
             <span class="save-state">Saving…</span>
@@ -480,7 +567,7 @@
   .inline-error{margin-top:14px;color:#efb1b5}.errors{margin-top:16px;border:1px solid #553037;border-radius:10px;padding:16px}.error-row{display:grid;grid-template-columns:220px 1fr;gap:12px;padding-top:8px}
   .sourcebar{display:flex;gap:9px;align-items:center;padding:8px 30px;border-bottom:1px solid #20252a;background:#0d1013;color:#7f8994;font-size:11px}.source-kind{color:#eef1f4;font-weight:700}.readiness-warning{display:grid;gap:5px;padding:12px 30px;border-bottom:1px solid #554522;background:#18150e;color:#d7c79b;font-size:11px}.readiness-warning strong{color:#f0d58b}.readiness-warning ul{margin:2px 0 0;padding-left:18px}.readiness-warning code{color:#d9d0b5}
   .mapbar{display:flex;align-items:flex-end;justify-content:space-between;padding:24px 30px;border-bottom:1px solid #20252a;background:#101317}.summary{display:grid;gap:2px;text-align:right}.summary strong{font-size:22px}.summary span{font-size:10px;text-transform:uppercase;color:#aab2bb}.meta{gap:14px}
-  .save-state{font-size:11px}.save-state.failed,.save-state.conflict{color:#efb1b5}
+  .save-state{font-size:11px}.save-state.failed,.save-state.conflict{color:#efb1b5}.publish-links{display:flex;gap:7px;font-size:11px}.publish-links a{color:#aeb5ff;text-decoration:none}.publish-links a:hover{text-decoration:underline}
   .controlbar{display:flex;align-items:center;gap:16px;padding:12px 30px;border-bottom:1px solid #20252a;background:#0f1215}.severity-filter{display:flex;align-items:center;gap:7px;font-size:11px;color:#7f8994}.severity-filter select{border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:7px 9px}.controlbar>input{margin-left:auto;min-width:240px;border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:8px 10px}
   .workspace{max-width:1100px;padding:18px 30px 80px}.bug{border-bottom:1px solid #20262c}.bug summary{list-style:none;display:grid;grid-template-columns:1fr auto;align-items:start;gap:12px;padding:16px 4px;cursor:pointer}.bug summary::-webkit-details-marker{display:none}.bug-title{display:grid;gap:4px}.bug-title strong{line-height:1.35}.bug-problem{font-size:12px;color:#aeb6bf;line-height:1.45}.bug-trigger,.bug-solution{font-size:11px;color:#c9d0d7;line-height:1.45}.bug-trigger{display:grid;grid-template-columns:max-content 1fr;gap:8px;align-items:start;margin-top:3px}.bug-trigger b,.bug-solution b{color:#8f98ff;text-transform:uppercase;font-size:9px;letter-spacing:.08em}.bug-trigger ol{margin:0;padding-left:18px}.bug-trigger li{margin:0 0 2px}.bug-solution b{margin-right:6px}
   .severity{border-radius:999px;padding:3px 7px;font-size:10px;font-weight:750;text-transform:uppercase}.severity.blocker{background:#3b171c;color:#ff9da6}.severity.major{background:#382b16;color:#eec477}.severity.minor{background:#1d2931;color:#9dc5dc}
