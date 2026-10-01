@@ -179,7 +179,7 @@ export function renderBugReportPreviewMarkdown(
   preview.bugs.forEach((bug, index) => {
     out.push(
       `| #${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.title)} | ${tableCell(bug.issue)} | ${bug.action ? tableCell(bug.action) : "—"} |`,
-      `|  |  | **How to Reproduce (In-Game)** | ${tableCell(reproductionCell(bug.reproduction))} |  |`,
+      `|  |  | **Bug Trigger (In-Game)** | ${tableCell(reproductionCell(bug.reproduction))} |  |`,
     );
   });
 
@@ -201,7 +201,7 @@ export function renderBugReportPreviewMarkdown(
     if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
 
     if (bug.reproduction?.length) {
-      out.push("**How to Reproduce (In-Game):**");
+      out.push("**Bug Trigger (In-Game):**");
       bug.reproduction.forEach((step, index) => {
         out.push(`${index + 1}. ${line(step)}`);
       });
