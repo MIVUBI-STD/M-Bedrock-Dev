@@ -2,7 +2,38 @@
   "schemaVersion": 1,
   "id": "m-bedrock-regression-corpus-v1",
   "lane": "regression",
-  "cases": [],
+  "cases": [
+    {
+      "id": "reg_capture_run_gate_blocked",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_capture_run_gate_blocked",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_loadout_entity_wall_not_broken",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_loadout_entity_wall_not_broken",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_multi_arena_cutscene_queue",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_multi_arena_cutscene_queue",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    }
+  ],
   "policy": {
     "preferMinimizedFixture": true,
     "artifactFingerprintRequiredForScoring": true,
