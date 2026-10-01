@@ -1,17 +1,17 @@
 # Topology Repair Planning
 
-Automatic repair begins only where the diagnostic can be converted into a deterministic reversible source transform.
+Topology inspection may derive a deterministic **repair proposal**. It does not create a production PatchTransaction before workflow approval.
 
-## Initial supported class
+## Initial supported proposal class
 
-Current automatic topology planning supports:
+Current topology proposal derivation supports:
 
 - strongly evidenced linear topology outlier;
-- original command is absolute-coordinate fill or setblock;
-- exact single-line SourceRef exists;
-- expected replacement preserves command shape and only translates the outlier axis.
+- absolute-coordinate `fill` or `setblock`;
+- exact single-line SourceRef;
+- replacement preserves command shape and only translates the outlier axis.
 
-Unsupported automatically:
+Unsupported:
 
 - relative/local coordinates;
 - clone;
@@ -25,18 +25,16 @@ Unsupported automatically:
 
 ```text
 topology diagnostic
-→ identify original typed command effect
-→ verify repair eligibility
-→ derive replacement
-→ PatchTransaction
-→ independent source fingerprint precondition
-→ exact source line check at apply
+→ derive deterministic replacement proposal
+→ STOP
+
+Approved Bug / approved intentional modification
+→ Repair Contract
+→ authorized PatchTransaction
+→ source fingerprint + exact source preconditions
 → working-copy mutation
 → executable validation
-    ├── reparse exact source
-    ├── topology compare at exact source
-    └── rerun exact diagnostic at source
-→ accepted / rejected
+→ preservation verification
 ```
 
-Planning, application, and validation are separate stages.
+Mechanical transformability never substitutes for Game Design understanding or bug approval.
