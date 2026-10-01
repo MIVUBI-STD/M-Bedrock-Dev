@@ -127,6 +127,23 @@ UI-specific density rules:
 - Technical detail is subordinate to the tester-facing bug block.
 - Fixed bugs are excluded from the current audit surface.
 
+## Compatibility readiness
+
+Schema-valid does not automatically mean tester-ready.
+
+Older, imported, or externally authored reports may be opened when they are structurally valid even if they do not satisfy the current tester-readiness gate.
+
+When readiness issues exist:
+
+- show a compact `Compatibility report — not tester-ready` warning;
+- list the specific readiness gaps;
+- keep read and Export JSON available;
+- disable creating the report on GitHub from the file-import path;
+- do not mutate or silently rewrite legacy content;
+- do not hide missing Bug Trigger or technical-support requirements.
+
+This keeps compatibility separate from promotion quality.
+
 ## Persistence
 
 The UI always knows its current source, but source metadata is never written into Bug Report V2.
@@ -140,7 +157,7 @@ Export JSON
 Save to GitHub
 ```
 
-`Save to GitHub` creates the imported report as a GitHub report. It is not a repair-state save.
+`Save to GitHub` creates the imported report as a GitHub report. It is not a repair-state save and is available only when the report passes tester readiness.
 
 ### GitHub source
 
