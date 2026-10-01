@@ -47,7 +47,7 @@ function trace(overrides: Partial<ValidationTraceReport["runs"][number]> = {}): 
       runId: "run:1",
       scenarioId: "scenario:1",
       scenarioRevision: "rev-1",
-      intentInvariantIds: ["intent:round-flow"],
+      intentInvariantIds: ["intent:round-flow", "intent:score-state"],
       ok: true,
       proofLevel: "LIVE GAME VERIFIED",
       current: true,
@@ -55,7 +55,13 @@ function trace(overrides: Partial<ValidationTraceReport["runs"][number]> = {}): 
       evidenceIds: ["evidence:1"],
       ...overrides,
     }],
-    invariants: [],
+    invariants: [{
+      invariantId: "intent:score-state",
+      scenarioIds: ["scenario:1"],
+      runIds: ["run:1"],
+      currentPassingRunIds: ["run:1"],
+      current: true,
+    }],
   };
 }
 
@@ -80,6 +86,7 @@ describe("report to repair lifecycle", () => {
       {
         bugId: "BUG-001",
         validationRunIds: ["run:1"],
+        preservationInvariantIds: ["intent:score-state"],
       },
       trace(),
     );
@@ -115,4 +122,29 @@ describe("report to repair lifecycle", () => {
       )
     ).toThrow(/current passing validation with evidence/);
   });
+  it("requires explicit current coverage for Must Preserve behavior", () => {
+    expect(() =>
+      completeVerifiedBugRepair(
+        report(),
+        {
+          bugId: "BUG-001",
+          validationRunIds: ["run:1"],
+        },
+        trace(),
+      )
+    ).toThrow(/preservation invariant IDs/);
+
+    expect(() =>
+      completeVerifiedBugRepair(
+        report(),
+        {
+          bugId: "BUG-001",
+          validationRunIds: ["run:1"],
+          preservationInvariantIds: ["intent:missing"],
+        },
+        trace(),
+      )
+    ).toThrow(/not currently validated/);
+  });
+
 });
