@@ -8,7 +8,6 @@ import type {
   BugReportV2Bug,
 } from "../../../engine/packages/bug-report/src/index.js";
 import {
-  defaultBugReportView,
   filterBugReportBugs,
 } from "../src/report-view.js";
 
@@ -72,12 +71,9 @@ describe("bug report view behavior", () => {
     "keeps unfinished work focused for a %i-bug report",
     (count) => {
       const value = report(count, [2, 3]);
-      expect(defaultBugReportView(value)).toBe("not-fixed");
-
       const visible = filterBugReportBugs(
         value.bugs,
         {
-          view: "not-fixed",
           severity: "all",
           query: "",
         },
@@ -87,11 +83,6 @@ describe("bug report view behavior", () => {
       expect(visible.some((item) => item.fixed)).toBe(false);
     },
   );
-
-  it("shows all bugs when the report is fully fixed", () => {
-    const value = report(5, [1, 2, 3, 4, 5]);
-    expect(defaultBugReportView(value)).toBe("all");
-  });
 
   it("searches tester-facing trigger and solution copy", () => {
     const value = report(5);
