@@ -125,7 +125,7 @@ describe("gameplay intent stage", () => {
       id: "selected-authored-source",
       artifactId: "art_test",
       parsedScripts: [{ parsed: parsed() }],
-      authoredScripts: [{ parsed: authored }],
+      contractScripts: [{ parsed: authored }],
     });
 
     expect(
@@ -278,7 +278,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "typed-transition",
       parsedScripts: [{ parsed: runtimeParsed }],
-      authoredScripts: [{ parsed: authoredParsed }],
+      contractScripts: [{ parsed: authoredParsed }],
     });
 
     expect(
@@ -339,7 +339,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-transition-invariant",
       parsedScripts: [{ parsed: runtimeParsed }],
-      authoredScripts: [{ parsed: authoredParsed }],
+      contractScripts: [{ parsed: authoredParsed }],
     });
 
     expect(
@@ -357,7 +357,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-policy-invariant",
       parsedScripts: [],
-      authoredScripts: [{ parsed: authoredParsed }],
+      contractScripts: [{ parsed: authoredParsed }],
     });
 
     expect(
@@ -412,7 +412,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "authored-policy-with-runtime-duplicate",
       parsedScripts: [{ parsed: runtimeParsed }],
-      authoredScripts: [{ parsed: authoredParsed }],
+      contractScripts: [{ parsed: authoredParsed }],
     });
 
     expect(
@@ -486,7 +486,7 @@ describe("gameplay intent stage", () => {
     const model = buildGameplayIntentModel({
       id: "relation-merge",
       parsedScripts: [{ parsed: runtimeParsed }],
-      authoredScripts: [{ parsed: authoredParsed }],
+      contractScripts: [{ parsed: authoredParsed }],
     });
 
     const matching = model.edges.filter(
