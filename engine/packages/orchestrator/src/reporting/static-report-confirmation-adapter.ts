@@ -6,15 +6,15 @@ import type {
   IntentDiagnosticGateResult,
 } from "../../../diagnostic-reasoning/src/index.js";
 import {
-  independentGameplayIntentEvidenceIds,
+  selectedArtifactGameplayContractEvidenceIds,
   type GameplayIntentModel,
 } from "../../../gameplay-intent/src/index.js";
 
-function authoredInvariantEvidence(
+function selectedArtifactInvariantEvidence(
   intent: GameplayIntentModel,
   invariantIds: readonly string[],
 ): readonly string[] {
-  return independentGameplayIntentEvidenceIds(
+  return selectedArtifactGameplayContractEvidenceIds(
     intent,
     invariantIds,
   );
@@ -35,12 +35,12 @@ export function confirmStaticIntentDefectForReport(
     };
   }
 
-  const authoredEvidence = authoredInvariantEvidence(
+  const selectedArtifactEvidence = selectedArtifactInvariantEvidence(
     intent,
     result.basisInvariantIds,
   );
   const expectedEvidence = [
-    ...authoredEvidence,
+    ...selectedArtifactEvidence,
   ];
 
   if (expectedEvidence.length === 0) {
