@@ -141,4 +141,41 @@ describe("validation traceability", () => {
       },
     ]);
   });
+  it("does not count passing runs below the scenario proof requirement", () => {
+    const context = {
+      artifactFingerprint: "artifact-a",
+      intentModelId: "intent-model-a",
+      targetProfileFingerprint: "runtime-a",
+    };
+    const run: ValidationRun = {
+      schemaVersion: 1,
+      id: "run:static-only",
+      snapshot: snapshotValidationScenario(
+        scenario,
+        context,
+      ),
+      result: {
+        ok: true,
+        steps: [{
+          step: { kind: "rebuild-graph" },
+          ok: true,
+          message: "ok",
+        }],
+      },
+      evidenceIds: ["evidence:static"],
+      proofLevel: "STATIC VERIFIED",
+    };
+
+    const report = assessValidationTrace(
+      [scenario],
+      [run],
+      context,
+    );
+
+    expect(report.runs[0]?.proofSufficient).toBe(false);
+    expect(report.invariants.every(
+      (item) => item.current === false,
+    )).toBe(true);
+  });
+
 });
