@@ -381,7 +381,7 @@
       </div>
 
       <div class="summary">
-        <strong>{openSignal.open} Open</strong>
+        <strong>Open Issues: {openSignal.open}</strong>
         <span>
           {openSignal.blocker} Blocker ·
           {openSignal.major} Major ·
