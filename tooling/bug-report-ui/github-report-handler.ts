@@ -3,6 +3,8 @@ import type {
 } from "../../engine/packages/bug-report/src/index.js";
 import {
   parseBugReportV2,
+  reviewBugReportCopy,
+  reviewBugReportReadiness,
 } from "../../engine/packages/bug-report/src/index.js";
 import {
   GitHubBugReportConflictError,
@@ -49,6 +51,46 @@ export async function handleBugReportStoreRequest(
         return json({ error: "Missing path." }, 400);
       }
       return json(await store.loadReport(path));
+    }
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/api/bug-report"
+    ) {
+      const input = await request.json() as {
+        path?: unknown;
+        report?: unknown;
+      };
+      if (typeof input.path !== "string" || !input.path.trim()) {
+        return json({ error: "Missing path." }, 400);
+      }
+
+      const parsed = parseBugReportV2(input.report);
+      if (!parsed.ok) {
+        return json({
+          error: "Invalid Bug Report V2.",
+          issues: parsed.issues,
+        }, 400);
+      }
+
+      const issues = [
+        ...reviewBugReportReadiness(parsed.report.bugs),
+        ...reviewBugReportCopy(parsed.report.bugs),
+      ];
+      if (issues.length > 0) {
+        return json({
+          error: "Bug Report V2 is not handoff-ready.",
+          issues,
+        }, 400);
+      }
+
+      return json(
+        await store.createReport(
+          input.path,
+          parsed.report as BugReportV2,
+        ),
+        201,
+      );
     }
 
     if (
