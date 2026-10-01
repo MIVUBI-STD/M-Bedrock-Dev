@@ -68,7 +68,7 @@ RESEARCH
 
 Inspection establishes what exists.
 Diagnosis identifies the first wrong owner.
-Repair corrects a reproduced defect.
+Repair mutates only an Approved Bug or explicit design change.
 Modify intentionally changes behavior/content.
 Develop adds product capability. Use Detection Development only when that capability specifically improves bug detection/diagnosis/proof; otherwise use normal Product Development.
 Validate tests a claim against the strongest available evidence.
@@ -154,7 +154,7 @@ improve reusable bug-finding capability
 measure capability/regression
 → m-bedrock-detection-benchmark
 
-repair a proven defect in target source/artifact
+repair an Approved Bug or explicit design change in target source/artifact
 → m-bedrock-target-repair
 ```
 
