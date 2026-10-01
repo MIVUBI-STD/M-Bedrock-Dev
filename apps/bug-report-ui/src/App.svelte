@@ -2,6 +2,7 @@
   import {
     BUG_REPORT_V2_LABELS,
     projectBugReportPreview,
+    reviewBugReportReadiness,
     serializeBugReportV2,
     type BugReportParseIssue,
     type BugReportV2,
@@ -27,6 +28,7 @@
   let report: BugReportV2 | undefined;
   let source: ReportSource | undefined;
   let importIssues: readonly BugReportParseIssue[] = [];
+  let readinessIssues = reviewBugReportReadiness([]);
   let sourceFile = "";
   let query = "";
   let severity: "all" | "blocker" | "major" | "minor" = "all";
@@ -75,6 +77,7 @@
     source = nextSource;
     saveState = "saved";
     importIssues = [];
+    readinessIssues = reviewBugReportReadiness(next.bugs);
     githubBrowser = false;
     githubError = "";
     resetFilters(next);
@@ -87,6 +90,7 @@
       report = undefined;
       source = undefined;
       importIssues = result.issues;
+      readinessIssues = reviewBugReportReadiness([]);
       return;
     }
     openDocument(result.report, {
@@ -169,7 +173,11 @@
   }
 
   async function saveToGitHub() {
-    if (!report || source?.kind !== "file") return;
+    if (
+      !report ||
+      source?.kind !== "file" ||
+      readinessIssues.length > 0
+    ) return;
     saveState = "saving";
     const path =
       "bug-reports/" +
@@ -214,6 +222,7 @@
     report = undefined;
     source = undefined;
     importIssues = [];
+    readinessIssues = reviewBugReportReadiness([]);
     sourceFile = "";
     query = "";
     severity = "all";
@@ -242,7 +251,14 @@
           {:else if saveState === "conflict"}
             <span class="save-state conflict">Already on GitHub</span>
           {/if}
-          <button class="secondary" on:click={saveToGitHub} disabled={saveState === "saving"}>
+          <button
+            class="secondary"
+            on:click={saveToGitHub}
+            disabled={saveState === "saving" || readinessIssues.length > 0}
+            title={readinessIssues.length > 0
+              ? "Resolve tester-readiness issues before saving this report to GitHub."
+              : undefined}
+          >
             Save to GitHub
           </button>
           <button class="primary" on:click={exportReport}>Export JSON</button>
@@ -323,6 +339,21 @@
       <span class="source-kind">{source?.kind === "github" ? "GitHub" : "File"}</span>
       <span>{source?.kind === "github" ? source.path : source?.fileName}</span>
     </section>
+
+    {#if readinessIssues.length > 0}
+      <section class="readiness-warning" aria-live="polite">
+        <strong>Compatibility report — not tester-ready</strong>
+        <span>
+          This report can be read and exported, but {readinessIssues.length}
+          tester-readiness issue{readinessIssues.length === 1 ? "" : "s"} must be resolved before handoff.
+        </span>
+        <ul>
+          {#each readinessIssues as issue}
+            <li><code>{issue.path}</code> — {issue.message}</li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
 
     <section class="mapbar">
       <div>
@@ -432,7 +463,7 @@
   .landing{max-width:780px;margin:auto;padding:76px 24px}.entry-card,.github-browser{padding:30px;border:1px solid #242a31;border-radius:14px;background:#101419}.eyebrow{font-size:10px;font-weight:750;letter-spacing:.13em;color:#818b96}.entry-card h1,.mapbar h1{margin:6px 0}.entry-card p{margin:0 0 22px;color:#98a1aa}.file-button input{display:none}
   .github-browser{margin-top:16px;padding:18px}.github-browser>header{display:flex;align-items:center;justify-content:space-between}.github-browser>header div{display:grid}.github-browser>header span{font-size:11px;color:#7f8994}.report-list{margin-top:12px;border-top:1px solid #242a31}.report-row{width:100%;display:flex;align-items:center;justify-content:space-between;border:0;border-bottom:1px solid #20262c;border-radius:0;background:transparent;padding:13px 4px;text-align:left}.report-row:hover{background:#14191e}.report-row div{display:grid}.report-row div span,.progress{font-size:11px;color:#7f8994}.report-signals{display:flex;align-items:center;gap:12px}.report-signals b{font-size:10px;text-transform:uppercase;color:#ff9da6}
   .inline-error{margin-top:14px;color:#efb1b5}.errors{margin-top:16px;border:1px solid #553037;border-radius:10px;padding:16px}.error-row{display:grid;grid-template-columns:220px 1fr;gap:12px;padding-top:8px}
-  .sourcebar{display:flex;gap:9px;align-items:center;padding:8px 30px;border-bottom:1px solid #20252a;background:#0d1013;color:#7f8994;font-size:11px}.source-kind{color:#eef1f4;font-weight:700}
+  .sourcebar{display:flex;gap:9px;align-items:center;padding:8px 30px;border-bottom:1px solid #20252a;background:#0d1013;color:#7f8994;font-size:11px}.source-kind{color:#eef1f4;font-weight:700}.readiness-warning{display:grid;gap:5px;padding:12px 30px;border-bottom:1px solid #554522;background:#18150e;color:#d7c79b;font-size:11px}.readiness-warning strong{color:#f0d58b}.readiness-warning ul{margin:2px 0 0;padding-left:18px}.readiness-warning code{color:#d9d0b5}
   .mapbar{display:flex;align-items:flex-end;justify-content:space-between;padding:24px 30px;border-bottom:1px solid #20252a;background:#101317}.summary{display:grid;gap:2px;text-align:right}.summary strong{font-size:22px}.summary span{font-size:10px;text-transform:uppercase;color:#aab2bb}.meta{gap:14px}
   .save-state{font-size:11px}.save-state.failed,.save-state.conflict{color:#efb1b5}
   .controlbar{display:flex;align-items:center;gap:16px;padding:12px 30px;border-bottom:1px solid #20252a;background:#0f1215}.severity-filter{display:flex;align-items:center;gap:7px;font-size:11px;color:#7f8994}.severity-filter select{border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:7px 9px}.controlbar>input{margin-left:auto;min-width:240px;border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:8px 10px}
