@@ -9,6 +9,7 @@ export type GameplayDesignReadiness =
 
 export interface GameplayDesignReadinessInput {
   readonly scopeSubjectIds: readonly string[];
+  readonly authoritativeDesignAvailable?: boolean;
   readonly materialUnknownIds?: readonly string[];
   readonly nonMaterialUnknownIds?: readonly string[];
 }
@@ -25,6 +26,18 @@ export function assessGameplayDesignReadiness(
   model: GameplayIntentModel,
   input: GameplayDesignReadinessInput,
 ): GameplayDesignReadinessResult {
+  if (input.authoritativeDesignAvailable !== true) {
+    return {
+      disposition: "blocked",
+      scopeSubjectIds: [...input.scopeSubjectIds],
+      blockingUnknownIds: [],
+      toleratedUnknownIds: [],
+      reasons: [
+        "No authoritative current Game Design is available for this scoped gameplay decision.",
+      ],
+    };
+  }
+
   const scoped = new Set(input.scopeSubjectIds);
   const requestedBlocking = new Set(
     input.materialUnknownIds ?? [],
