@@ -180,6 +180,47 @@ Examples:
 
 Do not split issues into artificial pages merely to match a sample document.
 
+## Adaptive layout thresholds
+
+The renderer consumes `buildBugReportClientLayoutPlan()`; layout thresholds are not duplicated in adapters.
+
+Current rules:
+
+```text
+0 issues
+→ no Issue Summary table; show no-open-issues result
+
+1 issue
+→ no Issue Summary table; go directly to the issue detail
+
+2–3 issues
+→ show Issue Summary table; keep overview and details in natural flow
+
+4–7 issues
+→ show Issue Summary table; start issue details on a new page
+
+8+ issues
+→ same page separation + compact issue-detail rhythm
+```
+
+These are density rules, not semantic rules. Do not add filler or split/merge bugs to satisfy them.
+
+## Golden reference
+
+The canonical client-document regression reference is:
+
+```text
+fixtures/golden-client-document-v1.json
+```
+
+It is a deterministic projection of:
+
+```text
+fixtures/golden-tester-report-v2.json
+```
+
+The client-document fixture is design/regression evidence only. Bug Report V2 remains the semantic authority.
+
 ## Typography and hierarchy
 
 Recommended defaults for Google Docs/PDF:
