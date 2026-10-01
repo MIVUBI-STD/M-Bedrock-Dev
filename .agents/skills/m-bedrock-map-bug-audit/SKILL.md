@@ -1,34 +1,28 @@
 ---
 name: m-bedrock-map-bug-audit
 description: >
-  Audit one Minecraft Bedrock/Education map for gameplay bugs using stable detection capability. Design-first; no detector development or target repair.
+  Audit one Minecraft Bedrock/Education map version for gameplay bugs using stable detection capability. Selected-version-only; no detector development or target repair.
 ---
 
 # M-Bedrock Map Bug Audit
 
 **Lane:** OPERATIONAL / MAP USE
 
-## Entry
+## Source of truth
 
-Use for bug finding, retest, or defect classification.
+Audit exactly one selected `.mcworld`.
 
-## Version scope
+Default target = the single current `.mcworld` in that map root. If the user explicitly selects another version, that exact file is the target.
 
-Audit exactly one selected map version.
+That selected map version is the **only current gameplay source of truth**.
 
-Default target = the single current `.mcworld` in that map root. If the user explicitly selects another file/version, that exact file is the target.
+Do not use older versions, Development/Source, old QA/Bug Reports, Technical Docs, changelogs, other maps, or external design documents to infer current mechanics. They are archive/reference only unless comparison/history is explicitly requested.
 
-Do not read older versions, Development/Source, old QA/Bug Reports, Technical Docs, other maps, or external sources to infer current mechanics. Those are archive/reference only unless the user explicitly requests comparison/history.
-
-Expected and Actual Behavior must belong to the same selected map/version.
-
-## Required order
+## Workflow
 
 ```text
-Target Identity
-→ Game Design
+Selected Map Version
 → Gameplay Contract
-→ Design Readiness
 → Actual Behavior
 → Contradiction
 → Counter-Evidence
@@ -38,35 +32,27 @@ Target Identity
 → Chat Approval
 ```
 
-No Game Design understanding → no gameplay bug search.
+Expected Behavior and Actual Behavior must come from the same selected artifact.
 
-## Design readiness
-
-- `READY` — material rules grounded.
-- `PARTIAL` — unresolved rules exist but cannot change this scoped decision.
-- `BLOCKED` — a material unknown/conflict can change bug-vs-feature classification.
-
-Only `READY` or scoped-safe `PARTIAL` may continue.
-
-Gameplay Contract is a scoped derived view of approved Game Design, not a second authority.
+If the artifact cannot ground a material expected behavior, mark that scope `BLOCKED / ambiguous`; do not borrow intent from stale sources.
 
 ## Bug admission
 
-A reportable bug requires all of:
+A reportable bug requires:
 
-1. grounded gameplay contradiction;
+1. grounded contradiction inside the selected version;
 2. counter-evidence cleared;
 3. material player-visible impact;
 4. tester-verifiable in-game trigger.
 
-Technical anomaly, metadata drift, unusual code, or historical QA alone is not a gameplay bug.
+Technical anomaly, metadata drift, historical QA, or behavior from another version is not enough.
 
 Severity is assigned only after admission:
 - Blocker — required gameplay cannot normally start/continue/complete and normal recovery is unavailable;
 - Major — core gameplay/state/fairness is materially wrong but normal continuation/recovery remains;
 - Minor — limited impact; hidden by default.
 
-## Review boundary
+## Review
 
 ```text
 Proposed Bug Set
@@ -80,7 +66,8 @@ Missing decision or `needs-discussion` blocks publication. No approved bugs mean
 
 ## Forbidden
 
-- infer Game Design from source code;
+- mix evidence from different map versions;
+- use external/stale docs as current gameplay authority;
 - mutate target or detector;
 - severity-score non-defects;
 - publish before chat approval.
@@ -89,7 +76,7 @@ Missing decision or `needs-discussion` blocks publication. No approved bugs mean
 
 Validate against `../../schemas/map-audit-output.schema.json`.
 
-Normal preview: Blocker/Major only, player-facing Issue + Bug Trigger. Technical detail stays internal unless requested.
+Normal preview: Blocker/Major only, player-facing Issue + Bug Trigger.
 
 ## Handoff
 
@@ -100,10 +87,9 @@ Normal preview: Blocker/Major only, player-facing Issue + Bug Trigger. Technical
 ## Canonical references
 
 - `../../../docs/01-product/flow.md`
+- `../../../docs/06-system/drive-storage.md`
 - `references/finding-contract.md`
-- `../../../engine/packages/bug-report/COPY.md`
-- `../../../engine/packages/bug-report/PREVIEW.md`
 
 ## STOP
 
-Stop when every in-scope candidate has a disposition and all unresolved material design questions are explicit.
+Stop when every in-scope candidate has a disposition and unresolved material rules remain explicit.
