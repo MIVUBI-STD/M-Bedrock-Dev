@@ -55,7 +55,7 @@ const capabilities: AnalysisCapability[] = [{
   cost: "moderate",
   tags: ["session", "state"],
   deterministic: true,
-  producesTraits: ["authored-intent"],
+  producesTraits: ["contract-evidence"],
   prerequisites: ["semantic-lifecycle"],
   contexts: [
     "LOCAL_ARTIFACT",
@@ -156,7 +156,7 @@ describe(
       () => {
         const plan =
           planMinimumSufficientAnalysis({
-            goal: "authored-intent",
+            goal: "contract-evidence",
             relevantTags: ["session"],
             context: "LOCAL_ARTIFACT",
             availableEvidence: [{
@@ -168,7 +168,7 @@ describe(
               level: "formal",
               evidenceIds: ["formal:stale"],
               quality: "stale",
-              traits: ["authored-intent"],
+              traits: ["contract-evidence"],
             }],
             completedCapabilityIds: [
               "source-graph",
@@ -184,7 +184,7 @@ describe(
           plan.steps[0]?.capabilityId,
         ).toBe("intent-authorship");
         expect(plan.missingEvidenceTraits)
-          .toEqual(["authored-intent"]);
+          .toEqual(["contract-evidence"]);
       },
     );
 
