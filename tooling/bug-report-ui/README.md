@@ -58,6 +58,20 @@ The access token must never be sent to the browser or persisted in canonical rep
 
 The host is responsible for OAuth/token acquisition and refresh. The provider only consumes a valid token.
 
+### Runtime environment
+
+Vite dev/preview API wiring uses:
+
+```text
+M_BEDROCK_GITHUB_TOKEN         required for canonical GitHub report access
+M_BEDROCK_GITHUB_OWNER         optional, default MIVUBI-STD
+M_BEDROCK_GITHUB_REPOSITORY    optional, default M-Bedrock-Dev
+M_BEDROCK_GITHUB_BRANCH        optional, default Local
+M_BEDROCK_GOOGLE_ACCESS_TOKEN  optional; required only for client publication
+```
+
+Without the GitHub token, bug-report API routes fail closed with 503. Without the Google token, normal GitHub report reading still works but publication returns 503.
+
 The token must have access sufficient to:
 
 - read the audited map Drive item and its parent;
