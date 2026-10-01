@@ -213,3 +213,22 @@ The tracker is a focused tester-facing bug handoff surface, not a general projec
 GitHub report rows may show the number of unfinished Blocker bugs. This value is derived from report content and is not persisted separately.
 
 Reports with unfinished Blockers scan before ordinary unfinished reports.
+
+
+## Client publication
+
+Client publication is a canonical-state action, not a local export shortcut.
+
+Rules:
+
+- show **Publish Client Report** only for a report opened from canonical GitHub state;
+- local/imported JSON must be saved to GitHub first;
+- disable publication while tester-readiness or copy-quality issues exist;
+- publication must carry the loaded GitHub revision;
+- stale revision returns conflict and instructs the user to reopen the report;
+- successful publication surfaces links to the Google Doc and PDF;
+- the UI never handles Google OAuth tokens;
+- Google Doc and PDF are generated from the same client document projection;
+- PDF is exported from the Google Doc, not rendered independently.
+
+The primary action label is **Publish Client Report** rather than “Generate PDF” because one action produces the editable Google Doc and its matching PDF snapshot.
