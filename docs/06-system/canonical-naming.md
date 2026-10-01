@@ -6,8 +6,8 @@ This document defines repository-wide canonical terminology.
 
 | Canonical term | Meaning | Canonical location |
 |---|---|---|
-| Map Game Design | Approved intended gameplay for a specific map/mode | `workspace/active/<project-id>/design/game-design.json` |
-| Gameplay Contract | Scoped derived view of Map Game Design used by audit/repair; not persisted authority | `engine/packages/gameplay-intent/` |
+| Selected Map Version | Exact `.mcworld` currently being audited; sole current gameplay truth | selected current root artifact |
+| Gameplay Contract | Scoped expected behavior derived only from the Selected Map Version | `engine/packages/gameplay-intent/` |
 | Actual Behavior | What current source/artifact/runtime does | analyzers + behavior/runtime layers |
 | Confirmed Defect | Evidence-proven gameplay contradiction; not user approval | diagnostic/bug-report bridge |
 | Approved Bug | Confirmed defect explicitly approved in chat for report/repair flow | `engine/packages/bug-report/src/review.ts` |
@@ -30,7 +30,7 @@ This document defines repository-wide canonical terminology.
 Use these terms in human-facing workflow:
 
 ```text
-Game Design
+Selected Map Version
 → Gameplay Contract
 → Actual Behavior
 → Confirmed Defect
@@ -80,6 +80,6 @@ Legacy aliases may remain only when explicitly marked deprecated and resolving t
 
 Ask whether a statement would remain true if the map were replaced by a completely different map.
 
-- **No** → Map Game Design / Behavior Contract.
+- **No** → selected-map Gameplay Contract / Behavior Contract.
 - **Yes, because Minecraft behaves that way** → Platform Knowledge / Platform Rule.
 - **Yes, because MIVUBI requires implementations to be safe that way** → Engineering Contract.
