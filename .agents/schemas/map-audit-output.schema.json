@@ -5,6 +5,8 @@
   "required": [
     "schemaVersion",
     "artifactId",
+    "mapVersion",
+    "evidenceScope",
     "candidates"
   ],
   "properties": {
@@ -150,6 +152,31 @@
           }
         ]
       }
+    },
+    "mapVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceScope": {
+      "type": "object",
+      "required": [
+        "mode",
+        "selectedArtifact",
+        "archiveSourcesUsed"
+      ],
+      "properties": {
+        "mode": {
+          "const": "selected-map-version-only"
+        },
+        "selectedArtifact": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archiveSourcesUsed": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true
