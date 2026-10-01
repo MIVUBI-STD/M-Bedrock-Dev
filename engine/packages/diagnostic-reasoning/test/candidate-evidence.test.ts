@@ -36,12 +36,12 @@ const rule: GameplayBugCandidateRule = {
 };
 
 describe("gameplay bug candidate evidence gate", () => {
-  it("fails closed when design readiness is missing", () => {
+  it("fails closed when Gameplay Contract is missing", () => {
     const result = evaluateGameplayBugCandidateEvidence(
       rule,
       [],
     );
-    expect(result.disposition).toBe("design-readiness-missing");
+    expect(result.disposition).toBe("contract-missing");
   });
 
   it("rejects a Gameplay Contract from another scope", () => {
@@ -53,10 +53,10 @@ describe("gameplay bug candidate evidence gate", () => {
         subjectIds: ["objective:other"],
       },
     );
-    expect(result.disposition).toBe("design-readiness-missing");
+    expect(result.disposition).toBe("contract-missing");
   });
 
-  it("blocks candidate discovery when material Game Design is unresolved", () => {
+  it("blocks candidate discovery when the Gameplay Contract is blocked", () => {
     const result = evaluateGameplayBugCandidateEvidence(
       rule,
       [],
@@ -67,11 +67,11 @@ describe("gameplay bug candidate evidence gate", () => {
           scopeSubjectIds: ["objective:test"],
           blockingUnknownIds: ["unknown:design"],
           toleratedUnknownIds: [],
-          reasons: ["material design unknown"],
+          reasons: ["material contract unknown"],
         },
       },
     );
-    expect(result.disposition).toBe("design-blocked");
+    expect(result.disposition).toBe("contract-blocked");
   });
 
 
