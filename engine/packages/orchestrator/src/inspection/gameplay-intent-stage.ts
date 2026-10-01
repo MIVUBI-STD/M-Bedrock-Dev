@@ -118,16 +118,20 @@ export function buildGameplayIntentModel(
 
   for (const signal of extracted.signals) {
     const id = evidenceId(signal);
+    const signalScope =
+      selectedArtifactSourcePaths.has(signal.locator)
+        ? "selected-artifact" as const
+        : authoredSourcePaths.has(signal.locator)
+          ? "external-reference" as const
+          : undefined;
     evidence.set(id, {
       id,
       origin: signal.evidenceOrigin,
       locator: signal.locator,
       summary: signal.summary,
-      scope: selectedArtifactSourcePaths.has(signal.locator)
-        ? "selected-artifact"
-        : authoredSourcePaths.has(signal.locator)
-          ? "external-reference"
-          : undefined,
+      ...(signalScope === undefined
+        ? {}
+        : { scope: signalScope }),
     });
 
     const existing = nodes.get(signal.subjectKey);
@@ -181,16 +185,20 @@ export function buildGameplayIntentModel(
     }
 
     const id = evidenceId(relation);
+    const relationScope =
+      selectedArtifactSourcePaths.has(relation.locator)
+        ? "selected-artifact" as const
+        : authoredSourcePaths.has(relation.locator)
+          ? "external-reference" as const
+          : undefined;
     evidence.set(id, {
       id,
       origin: relation.evidenceOrigin,
       locator: relation.locator,
       summary: relation.summary,
-      scope: selectedArtifactSourcePaths.has(relation.locator)
-        ? "selected-artifact"
-        : authoredSourcePaths.has(relation.locator)
-          ? "external-reference"
-          : undefined,
+      ...(relationScope === undefined
+        ? {}
+        : { scope: relationScope }),
     });
 
     const semanticKey = [
