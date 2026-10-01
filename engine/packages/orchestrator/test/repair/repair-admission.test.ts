@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createPatchTransaction } from "../../repair/src/index.js";
-import { decideRepairAdmission } from "../src/repair-admission.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
+import { decideRepairAdmission } from "../../src/repair/repair-admission.js";
 
 const transaction = createPatchTransaction({
   title: "demo",

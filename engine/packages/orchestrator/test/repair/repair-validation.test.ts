@@ -2,11 +2,11 @@ import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { applyPatchTransaction } from "../../repair/src/index.js";
-import { planLinearTopologyRepair } from "../../repair/src/index.js";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { analyzeFunctionTopology } from "../src/topology-analysis.js";
-import { validatePatchTransaction } from "../src/repair-validation.js";
+import { applyPatchTransaction } from "../../../repair/src/index.js";
+import { planLinearTopologyRepair } from "../../../repair/src/index.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { analyzeFunctionTopology } from "../../src/topology-analysis.js";
+import { validatePatchTransaction } from "../../src/repair/repair-validation.js";
 
 describe("repair validation executor", () => {
   it("accepts an applied topology repair only after the target outlier disappears", async () => {

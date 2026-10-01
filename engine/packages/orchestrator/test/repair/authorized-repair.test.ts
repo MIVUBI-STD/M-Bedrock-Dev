@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   createPatchTransaction,
   patchTransactionSemanticFingerprint,
-} from "../../repair/src/index.js";
+} from "../../../repair/src/index.js";
 import {
   authorizeRepairMutation,
-} from "../src/authorized-repair.js";
-import type { RepairProofBundle } from "../src/repair-proof-bundle.js";
+} from "../../src/repair/authorized-repair.js";
+import type { RepairProofBundle } from "../../src/repair-proof-bundle.js";
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 
 function transaction(validation = true) {
   return createPatchTransaction({

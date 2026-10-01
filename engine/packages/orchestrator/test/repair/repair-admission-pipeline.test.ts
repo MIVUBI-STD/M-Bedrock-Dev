@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
-import { createPatchTransaction } from "../../repair/src/index.js";
-import { evaluateRepairAdmissionPipeline } from "../src/repair-admission-pipeline.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
+import { evaluateRepairAdmissionPipeline } from "../../src/repair/repair-admission-pipeline.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };

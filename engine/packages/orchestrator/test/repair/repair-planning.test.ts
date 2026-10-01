@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { analyzeFunctionTopology } from "../src/topology-analysis.js";
-import { planInspectionRepairs } from "../src/repair-planning.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { analyzeFunctionTopology } from "../../src/topology-analysis.js";
+import { planInspectionRepairs } from "../../src/repair/repair-planning.js";
 
 const source = {
   artifactId: "art",
