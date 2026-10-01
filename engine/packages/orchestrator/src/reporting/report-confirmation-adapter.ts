@@ -44,7 +44,7 @@ export function confirmGameplayIntentRuntimeDefectForReport(
     return {
       confirmed: false,
       reasons: [
-        "Confirmed-defect disposition has no authored invariant evidence and cannot be promoted safely.",
+        "Confirmed-defect disposition has no selected-artifact Gameplay Contract evidence and cannot be promoted safely.",
       ],
     };
   }
@@ -65,7 +65,7 @@ export function confirmGameplayIntentRuntimeDefectForReport(
     evidence:
       "Runtime evidence " +
       runtimeEvidence.join(", ") +
-      " contradicts authored intent evidence " +
+      " contradicts selected-artifact contract evidence " +
       authoredEvidence.join(", ") +
       ".",
   });
