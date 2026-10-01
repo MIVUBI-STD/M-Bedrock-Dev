@@ -464,7 +464,7 @@ describe("report defect collector", () => {
               ...runtimeAssessment.result,
               disposition: "ambiguous-intent",
               basisInvariantIds: [],
-              nextEvidenceNeed: "selected-artifact",
+              nextEvidenceNeed: "contract-evidence",
             },
           },
           defect: defect("rejected", {
@@ -520,7 +520,7 @@ describe("report defect collector", () => {
             ...runtimeAssessment.result,
             disposition: "ambiguous-intent",
             basisInvariantIds: [],
-            nextEvidenceNeed: "selected-artifact",
+            nextEvidenceNeed: "contract-evidence",
           },
         },
         defect: defect("needs-authored-intent", {
@@ -554,7 +554,7 @@ describe("report defect collector", () => {
           semanticKey: expect.stringContaining(
             "subjects=outcome:cleanup",
           ),
-          nextEvidenceNeed: "selected-artifact",
+          nextEvidenceNeed: "contract-evidence",
           evidenceIds: expect.arrayContaining([
             "runtime:cleanup",
           ]),
