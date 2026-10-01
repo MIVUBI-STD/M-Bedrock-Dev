@@ -258,6 +258,7 @@ describe("report defect collector", () => {
           intent,
           result: staticResult,
           bugTrigger: {
+            gameplayBasis: "authored-gameplay",
             startingCondition:
               "Finish a match and return to the lobby",
             actions: [
@@ -291,6 +292,7 @@ describe("report defect collector", () => {
       intent,
       result: staticResult,
       bugTrigger: {
+        gameplayBasis: "authored-gameplay",
         startingCondition: "Finish a match",
         observableFailure:
           "the next match does not start",
@@ -310,6 +312,52 @@ describe("report defect collector", () => {
     expect(
       result.rejected[0]?.reasons.join(" "),
     ).toMatch(/Bug Trigger evidence/);
+  });
+
+  it("rejects static AI triggers that claim runtime gameplay basis", () => {
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      bugTrigger: {
+        gameplayBasis: "runtime-gameplay",
+        startingCondition: "Finish a match.",
+        observableFailure:
+          "the next match does not start",
+        evidenceIds: ["static:cleanup"],
+      },
+      defect: defect("invalid-trigger-basis", {
+        ai: true,
+      }),
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(
+      result.rejected[0]?.reasons.join(" "),
+    ).toMatch(/authored gameplay intent/);
+  });
+
+  it("rejects authored gameplay triggers without authored gameplay evidence", () => {
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      bugTrigger: {
+        gameplayBasis: "authored-gameplay",
+        startingCondition: "Finish a match.",
+        observableFailure:
+          "the next match does not start",
+        evidenceIds: ["static:cleanup"],
+      },
+      defect: defect("unsupported-gameplay-basis", {
+        ai: true,
+      }),
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(
+      result.rejected[0]?.reasons.join(" "),
+    ).toMatch(/matching gameplay evidence/);
   });
 
   it("derives severity category and ids during final projection", () => {
