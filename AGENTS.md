@@ -121,13 +121,13 @@ Do not infer current mechanics from older versions, Development/Source, historic
 
 Expected and Actual Behavior must be derived from the same selected map/version. The selected map artifact is the sole current gameplay source of truth.
 
-## Design-first gameplay workflow
+## Single-source gameplay workflow
 
-Gameplay bug work is design-first. Do not begin bug discovery from suspicious implementation patterns.
+Gameplay bug work is selected-version-first. Do not begin bug discovery from external documents or suspicious implementation patterns alone.
 
 ```text
-Target Identity
-→ Game Design
+Selected Map Version
+→ Gameplay Surface Inventory
 → Gameplay Contract
 → Actual Behavior
 → Gameplay Contradiction
