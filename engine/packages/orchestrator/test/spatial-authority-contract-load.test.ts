@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseSpatialAuthorityPolicy,
-} from "../src/spatial-authority-policy-load.js";
+  parseSpatialAuthorityBehaviorContract,
+} from "../src/spatial-authority-contract-load.js";
 
-describe("spatial authority policy parser", () => {
-  it("normalizes a valid policy without inventing defaults", () => {
+describe("spatial authority contract parser", () => {
+  it("normalizes a valid contract without inventing defaults", () => {
     expect(
-      parseSpatialAuthorityPolicy({
+      parseSpatialAuthorityBehaviorContract({
         schemaVersion: 1,
         id: "blitz-build",
         rules: [
@@ -38,7 +38,7 @@ describe("spatial authority policy parser", () => {
 
   it("rejects duplicate rule ids at the parser boundary", () => {
     expect(() =>
-      parseSpatialAuthorityPolicy({
+      parseSpatialAuthorityBehaviorContract({
         schemaVersion: 1,
         id: "duplicate",
         rules: [
@@ -63,7 +63,7 @@ describe("spatial authority policy parser", () => {
 
   it("rejects unknown actions instead of silently accepting typos", () => {
     expect(() =>
-      parseSpatialAuthorityPolicy({
+      parseSpatialAuthorityBehaviorContract({
         schemaVersion: 1,
         id: "invalid",
         rules: [

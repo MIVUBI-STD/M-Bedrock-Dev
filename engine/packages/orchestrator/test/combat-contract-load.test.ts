@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseCombatPolicy,
-} from "../src/combat-policy-load.js";
+  parseCombatBehaviorContract,
+} from "../src/combat-contract-load.js";
 
-describe("combat policy loader", () => {
-  it("requires every combat policy decision explicitly", () => {
+describe("combat contract loader", () => {
+  it("requires every combat contract decision explicitly", () => {
     expect(
-      parseCombatPolicy({
+      parseCombatBehaviorContract({
         schemaVersion: 1,
         id: "arena-combat",
         friendlyFireAllowed: false,
@@ -29,7 +29,7 @@ describe("combat policy loader", () => {
 
   it("rejects missing booleans instead of applying hidden defaults", () => {
     expect(() =>
-      parseCombatPolicy({
+      parseCombatBehaviorContract({
         schemaVersion: 1,
         id: "bad",
         friendlyFireAllowed: false,

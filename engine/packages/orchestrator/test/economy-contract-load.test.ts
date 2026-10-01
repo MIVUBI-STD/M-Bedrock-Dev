@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseEconomyPolicy,
-} from "../src/economy-policy-load.js";
+  parseEconomyBehaviorContract,
+} from "../src/economy-contract-load.js";
 
-describe("economy policy loader", () => {
-  it("parses explicit reward transaction policy", () => {
+describe("economy contract loader", () => {
+  it("parses explicit reward transaction contract", () => {
     expect(
-      parseEconomyPolicy({
+      parseEconomyBehaviorContract({
         schemaVersion: 1,
         id: "arena-economy",
         deathRewardArbitration:
           "mutually-exclusive",
-        pickupCurrencyItemPolicy:
+        pickupCurrencyItemContract:
           "consume",
-        inventoryFullPolicy:
+        inventoryFullContract:
           "compensate",
         rewardIdempotencyRequired: true,
         pickupScopeValidationRequired: true,
@@ -25,21 +25,21 @@ describe("economy policy loader", () => {
       id: "arena-economy",
       deathRewardArbitration:
         "mutually-exclusive",
-      pickupCurrencyItemPolicy:
+      pickupCurrencyItemContract:
         "consume",
     });
   });
 
   it("rejects enum typos rather than inventing defaults", () => {
     expect(() =>
-      parseEconomyPolicy({
+      parseEconomyBehaviorContract({
         schemaVersion: 1,
         id: "invalid",
         deathRewardArbitration:
           "exclusive",
-        pickupCurrencyItemPolicy:
+        pickupCurrencyItemContract:
           "consume",
-        inventoryFullPolicy:
+        inventoryFullContract:
           "compensate",
         rewardIdempotencyRequired: true,
         pickupScopeValidationRequired: true,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  analyzeCombatPolicy,
-} from "../src/combat-policy-analysis.js";
+  analyzeCombatContract,
+} from "../src/combat-contract-analysis.js";
 
 const lifecycle = {
   hurtHandlers: 1,
@@ -29,9 +29,9 @@ const runtime = {
   affectedPlayers: ["p1"],
 };
 
-describe("combat policy analysis", () => {
-  it("counts only anomalies that contradict authored revive policy", () => {
-    const result = analyzeCombatPolicy(
+describe("combat contract analysis", () => {
+  it("counts only anomalies that contradict authored revive contract", () => {
+    const result = analyzeCombatContract(
       lifecycle,
       runtime,
       {
@@ -51,26 +51,26 @@ describe("combat policy analysis", () => {
     );
 
     expect(result).toMatchObject({
-      revivePolicyContradictions: 3,
+      reviveContractContradictions: 3,
       selfReviveContradictions: 0,
       multipleReviverContradictions: 1,
       staleReviveContradictions: 1,
       reviveAfterDeathContradictions: 1,
-      projectileCleanupPolicyGap: 1,
+      projectileCleanupContractGap: 1,
       secondaryEffectEligibilitySurfaces: 2,
     });
   });
 
-  it("does not invent mode-specific contradictions without a combat policy", () => {
+  it("does not invent mode-specific contradictions without a combat contract", () => {
     const result =
-      analyzeCombatPolicy(
+      analyzeCombatContract(
         lifecycle,
         runtime,
       );
 
     expect(result.configured).toBe(false);
     expect(
-      result.revivePolicyContradictions,
+      result.reviveContractContradictions,
     ).toBe(0);
   });
 });

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
 import {
-  analyzeInventoryPolicy,
-} from "../src/inventory-policy-analysis.js";
+  analyzeInventoryContract,
+} from "../src/inventory-contract-analysis.js";
 
-describe("inventory policy analysis", () => {
-  it("binds deterministic item drop evidence to authored deny policy", () => {
+describe("inventory contract analysis", () => {
+  it("binds deterministic item drop evidence to authored deny contract", () => {
     const script = parseScriptFile(
       "main",
       [
@@ -20,11 +20,11 @@ describe("inventory policy analysis", () => {
       },
     );
 
-    const result = analyzeInventoryPolicy(
+    const result = analyzeInventoryContract(
       [script],
       {
         schemaVersion: 1,
-        id: "policy",
+        id: "contract",
         rules: [
           {
             id: "sword",
@@ -59,11 +59,11 @@ describe("inventory policy analysis", () => {
       },
     );
 
-    const result = analyzeInventoryPolicy(
+    const result = analyzeInventoryContract(
       [script],
       {
         schemaVersion: 1,
-        id: "policy",
+        id: "contract",
         rules: [],
       },
     );
@@ -72,7 +72,7 @@ describe("inventory policy analysis", () => {
     expect(result.deniedDrops).toBe(0);
   });
 
-  it("does not treat world spawnItem as player-drop policy evidence", () => {
+  it("does not treat world spawnItem as player-drop contract evidence", () => {
     const script = parseScriptFile(
       "main",
       [
@@ -87,11 +87,11 @@ describe("inventory policy analysis", () => {
       },
     );
 
-    const result = analyzeInventoryPolicy(
+    const result = analyzeInventoryContract(
       [script],
       {
         schemaVersion: 1,
-        id: "policy",
+        id: "contract",
         rules: [
           {
             id: "sword",

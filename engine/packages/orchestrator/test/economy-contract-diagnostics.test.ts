@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
-  economyPolicyDiagnostics,
-} from "../src/economy-policy-diagnostics.js";
+  economyContractDiagnostics,
+} from "../src/economy-contract-diagnostics.js";
 
-describe("economy policy diagnostics", () => {
+describe("economy contract diagnostics", () => {
   it("separates authored conflicts from coverage gaps", () => {
     const findings =
-      economyPolicyDiagnostics({
+      economyContractDiagnostics({
         configured: true,
-        policyId: "economy",
-        deathRewardOverlapPolicyConflicts: 1,
+        contractId: "economy",
+        deathRewardOverlapContractConflicts: 1,
         deathRewardOverlapUnresolved: 1,
         pickupCurrencyConsumeCoverageGaps: 0,
-        pickupCurrencyPolicyMismatch: 0,
+        pickupCurrencyContractMismatch: 0,
         idempotencyCoverageGaps: 1,
         staleDropCleanupCoverageGaps: 0,
-        inventoryFullPolicyGaps: 0,
+        inventoryFullContractGaps: 0,
         pickupScopeValidationUnproven: 1,
         terminalRewardResultCommitUnproven: 0,
         reasons: [],
@@ -24,8 +24,8 @@ describe("economy policy diagnostics", () => {
     expect(
       findings.map((item) => item.code),
     ).toEqual([
-      "ECONOMY_POLICY_CONFLICT",
-      "ECONOMY_POLICY_COVERAGE_GAP",
+      "ECONOMY_CONTRACT_CONFLICT",
+      "ECONOMY_CONTRACT_COVERAGE_GAP",
     ]);
     expect(findings[0]?.severity)
       .toBe("medium");
@@ -33,17 +33,17 @@ describe("economy policy diagnostics", () => {
       .toBe("minor");
   });
 
-  it("emits nothing when no authored economy policy is configured", () => {
+  it("emits nothing when no authored economy contract is configured", () => {
     expect(
-      economyPolicyDiagnostics({
+      economyContractDiagnostics({
         configured: false,
-        deathRewardOverlapPolicyConflicts: 0,
+        deathRewardOverlapContractConflicts: 0,
         deathRewardOverlapUnresolved: 1,
         pickupCurrencyConsumeCoverageGaps: 0,
-        pickupCurrencyPolicyMismatch: 0,
+        pickupCurrencyContractMismatch: 0,
         idempotencyCoverageGaps: 0,
         staleDropCleanupCoverageGaps: 0,
-        inventoryFullPolicyGaps: 0,
+        inventoryFullContractGaps: 0,
         pickupScopeValidationUnproven: 0,
         terminalRewardResultCommitUnproven: 0,
         reasons: [],

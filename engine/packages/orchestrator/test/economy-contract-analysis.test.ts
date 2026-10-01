@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  analyzeEconomyPolicy,
-} from "../src/economy-policy-analysis.js";
+  analyzeEconomyContract,
+} from "../src/economy-contract-analysis.js";
 import type {
   RewardSourceAnalysis,
 } from "../src/reward-source-analysis.js";
@@ -37,11 +37,11 @@ const rewards: RewardSourceAnalysis = {
   paths: [],
 };
 
-const basePolicy = {
+const baseContract = {
   schemaVersion: 1 as const,
   id: "economy",
-  pickupCurrencyItemPolicy: "consume" as const,
-  inventoryFullPolicy:
+  pickupCurrencyItemContract: "consume" as const,
+  inventoryFullContract:
     "compensate" as const,
   rewardIdempotencyRequired: true,
   pickupScopeValidationRequired: true,
@@ -49,19 +49,19 @@ const basePolicy = {
   terminalRewardRequiresResultCommit: true,
 };
 
-describe("economy policy analysis", () => {
-  it("keeps complementary death reward sources out of policy conflict", () => {
-    const result = analyzeEconomyPolicy(
+describe("economy contract analysis", () => {
+  it("keeps complementary death reward sources out of contract conflict", () => {
+    const result = analyzeEconomyContract(
       rewards,
       {
-        ...basePolicy,
+        ...baseContract,
         deathRewardArbitration:
           "complementary",
       },
     );
 
     expect(
-      result.deathRewardOverlapPolicyConflicts,
+      result.deathRewardOverlapContractConflicts,
     ).toBe(0);
     expect(
       result.pickupCurrencyConsumeCoverageGaps,
@@ -74,33 +74,33 @@ describe("economy policy analysis", () => {
     ).toBe(1);
   });
 
-  it("surfaces mutually-exclusive death reward overlap as policy conflict, not confirmed defect", () => {
-    const result = analyzeEconomyPolicy(
+  it("surfaces mutually-exclusive death reward overlap as contract conflict, not confirmed defect", () => {
+    const result = analyzeEconomyContract(
       rewards,
       {
-        ...basePolicy,
+        ...baseContract,
         deathRewardArbitration:
           "mutually-exclusive",
       },
     );
 
     expect(
-      result.deathRewardOverlapPolicyConflicts,
+      result.deathRewardOverlapContractConflicts,
     ).toBe(1);
     expect(result.reasons.join(" "))
       .toMatch(/correlation is still required/);
   });
 
-  it("keeps overlap unresolved when no economy policy is configured", () => {
+  it("keeps overlap unresolved when no economy contract is configured", () => {
     const result =
-      analyzeEconomyPolicy(rewards);
+      analyzeEconomyContract(rewards);
 
     expect(result.configured).toBe(false);
     expect(
       result.deathRewardOverlapUnresolved,
     ).toBe(1);
     expect(
-      result.deathRewardOverlapPolicyConflicts,
+      result.deathRewardOverlapContractConflicts,
     ).toBe(0);
   });
 });

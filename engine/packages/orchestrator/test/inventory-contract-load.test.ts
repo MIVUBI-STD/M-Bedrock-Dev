@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseInventoryItemPolicy,
-} from "../src/inventory-policy-load.js";
+  parseInventoryItemBehaviorContract,
+} from "../src/inventory-contract-load.js";
 
-describe("inventory item policy parser", () => {
+describe("inventory item contract parser", () => {
   it("parses explicit ownership, drop, reset, and restore rules", () => {
     expect(
-      parseInventoryItemPolicy({
+      parseInventoryItemBehaviorContract({
         schemaVersion: 1,
         id: "arena-items",
         rules: [
@@ -38,7 +38,7 @@ describe("inventory item policy parser", () => {
 
   it("rejects invalid transitions instead of accepting typos", () => {
     expect(() =>
-      parseInventoryItemPolicy({
+      parseInventoryItemBehaviorContract({
         schemaVersion: 1,
         id: "invalid",
         rules: [
@@ -56,7 +56,7 @@ describe("inventory item policy parser", () => {
 
   it("rejects durable items with automatic reset transitions", () => {
     expect(() =>
-      parseInventoryItemPolicy({
+      parseInventoryItemBehaviorContract({
         schemaVersion: 1,
         id: "invalid-durable",
         rules: [
@@ -69,6 +69,6 @@ describe("inventory item policy parser", () => {
           },
         ],
       }),
-    ).toThrow(/Player-durable item policy rule/);
+    ).toThrow(/Player-durable item contract rule/);
   });
 });
