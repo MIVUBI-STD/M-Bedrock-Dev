@@ -15,6 +15,7 @@ export * from "./bug-trigger.js";
 export * from "./migrate.js";
 export * from "./report-summary.js";
 export * from "./persistence.js";
+export * from "./reconcile-current.js";
 
 export * from "./v2.js";
 export * from "./create-v2.js";
