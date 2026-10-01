@@ -43,46 +43,41 @@ function report(count: number): BugReportV2 {
   };
 }
 
-describe("client document adaptive layout", () => {
-  it("avoids a redundant issue index for one issue", () => {
-    const document =
-      projectBugReportClientDocument(report(1));
-    expect(
-      buildBugReportClientLayoutPlan(document),
-    ).toEqual({
-      showIssueIndex: false,
-      showSeverityGuide: true,
-      pageBreakBeforeIssueDetails: false,
-      issueDetailDensity: "standard",
-    });
-  });
-
-  it("uses an index without forcing a page break for a short report", () => {
+describe("client document table-first layout", () => {
+  it("does not duplicate a short report with an issue index", () => {
     const document =
       projectBugReportClientDocument(report(3));
     const layout =
       buildBugReportClientLayoutPlan(document);
 
-    expect(layout.showIssueIndex).toBe(true);
-    expect(layout.pageBreakBeforeIssueDetails).toBe(false);
-    expect(layout.issueDetailDensity).toBe("standard");
+    expect(layout.showIssueIndex).toBe(false);
+    expect(layout.showSeverityLegend).toBe(true);
+    expect(layout.compactTables).toBe(false);
   });
 
-  it("separates overview from issue details when the report becomes dense", () => {
+  it("uses compact issue tables from four issues onward", () => {
     const document =
       projectBugReportClientDocument(report(4));
+
     expect(
       buildBugReportClientLayoutPlan(document)
-        .pageBreakBeforeIssueDetails,
+        .compactTables,
     ).toBe(true);
   });
 
-  it("uses compact issue rhythm only for long reports", () => {
-    const document =
-      projectBugReportClientDocument(report(8));
+  it("adds a separate index only for large reports", () => {
+    const six =
+      projectBugReportClientDocument(report(6));
+    const seven =
+      projectBugReportClientDocument(report(7));
+
     expect(
-      buildBugReportClientLayoutPlan(document)
-        .issueDetailDensity,
-    ).toBe("compact");
+      buildBugReportClientLayoutPlan(six)
+        .showIssueIndex,
+    ).toBe(false);
+    expect(
+      buildBugReportClientLayoutPlan(seven)
+        .showIssueIndex,
+    ).toBe(true);
   });
 });
