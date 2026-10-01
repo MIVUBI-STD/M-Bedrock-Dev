@@ -1,3 +1,8 @@
+import type {
+  GameplayIntentEvidenceOrigin,
+  GameplayIntentModel,
+} from "./types.js";
+
 export type GameplayAuthorityDomain =
   | "intended-gameplay"
   | "actual-behavior"
@@ -43,6 +48,58 @@ export interface GameplayAuthorityResolution {
   readonly basisClaimIds: readonly string[];
   readonly historicalHintIds: readonly string[];
   readonly reasons: readonly string[];
+}
+
+export const INDEPENDENT_GAMEPLAY_INTENT_EVIDENCE_ORIGINS =
+  [
+    "game-design-spec",
+    "project-policy",
+    "official-documentation",
+  ] as const satisfies readonly GameplayIntentEvidenceOrigin[];
+
+const independentGameplayIntentEvidenceOrigins =
+  new Set<GameplayIntentEvidenceOrigin>(
+    INDEPENDENT_GAMEPLAY_INTENT_EVIDENCE_ORIGINS,
+  );
+
+export function isIndependentGameplayIntentEvidenceOrigin(
+  origin: GameplayIntentEvidenceOrigin,
+): boolean {
+  return independentGameplayIntentEvidenceOrigins.has(origin);
+}
+
+export function independentGameplayIntentEvidenceIds(
+  model: GameplayIntentModel,
+  invariantIds: readonly string[],
+): readonly string[] {
+  const ids = new Set(invariantIds);
+  const evidenceById = new Map(
+    model.evidence.map((evidence) => [
+      evidence.id,
+      evidence,
+    ]),
+  );
+
+  return [
+    ...new Set(
+      model.invariants
+        .filter(
+          (invariant) =>
+            ids.has(invariant.id) &&
+            invariant.status === "authored",
+        )
+        .flatMap((invariant) => invariant.evidenceIds)
+        .filter((id) => {
+          const evidence = evidenceById.get(id);
+          return (
+            evidence !== undefined &&
+            isIndependentGameplayIntentEvidenceOrigin(
+              evidence.origin,
+            )
+          );
+        }),
+    ),
+  ].sort();
 }
 
 const intendedRank: Readonly<
