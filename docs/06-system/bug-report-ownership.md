@@ -113,6 +113,21 @@ A bug observed again in a newer build keeps its semantic identity when it is the
 
 Do not invent historical identities for legacy records that cannot be grounded reliably.
 
+## Refresh and reconciliation
+
+A repeated audit of the same current map version does not replace canonical state blindly.
+
+```text
+existing canonical report
++ refreshed confirmed-defect projection
+→ reconcileCanonicalBugReport()
+→ canonical current-version report
+```
+
+Reconciliation preserves existing completion state, retains omitted known bugs, opens newly discovered bugs, and rejects cross-version merges or obvious stable-ID semantic conflicts.
+
+Absence from a later scan is not proof that a bug never existed or is fixed.
+
 ## Completion
 
 `fixed: true` is canonical only after current passing verification with sufficient evidence.
