@@ -4,6 +4,7 @@ import type {
 import {
   assessGameplayIntentGrounding,
   buildGameplayContract,
+  independentGameplayIntentEvidenceIds,
   type GameplayContract,
   type GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
@@ -91,6 +92,27 @@ export function gateIntentDiagnostic(
           : {}),
       },
     );
+
+  if (
+    gameplayContract.modelId !== input.intent.id ||
+    input.subjectIds.some(
+      (subjectId) =>
+        !gameplayContract.subjectIds.includes(subjectId),
+    )
+  ) {
+    return {
+      disposition: "ambiguous-intent",
+      subjectIds: [...input.subjectIds],
+      basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
+      evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "intent-clarification",
+      reasons: [
+        "Gameplay Contract does not match the current intent model or diagnostic scope.",
+      ],
+    };
+  }
 
   if (gameplayContract.readiness.disposition === "blocked") {
     return {
