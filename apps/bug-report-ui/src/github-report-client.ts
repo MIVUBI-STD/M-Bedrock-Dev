@@ -5,8 +5,6 @@ import {
 import type {
   GitHubReportStore,
   GitHubReportSummary,
-  LoadedGitHubReport,
-  SavedGitHubReport,
 } from "./report-source.js";
 
 export class GitHubReportConflictError extends Error {
@@ -90,7 +88,7 @@ export class GitHubReportClient
     ).reports;
   }
 
-  async loadReport(path: string): Promise<LoadedGitHubReport> {
+  async loadReport(path: string): Promise<BugReportV2> {
     const body = await this.#json(
       "/api/bug-report?path=" +
         encodeURIComponent(path),
@@ -98,9 +96,7 @@ export class GitHubReportClient
     if (
       typeof body !== "object" ||
       body === null ||
-      !("report" in body) ||
-      !("revision" in body) ||
-      typeof (body as { revision?: unknown }).revision !== "string"
+      !("report" in body)
     ) {
       throw new Error(
         "GitHub report response is invalid.",
@@ -114,17 +110,14 @@ export class GitHubReportClient
         "GitHub report response is not valid V2.",
       );
     }
-    return {
-      report: parsed.report,
-      revision: (body as { revision: string }).revision,
-    };
+    return parsed.report;
   }
 
   async createReport(
     path: string,
     report: BugReportV2,
-  ): Promise<SavedGitHubReport> {
-    const body = await this.#json(
+  ): Promise<void> {
+    await this.#json(
       "/api/bug-report",
       {
         method: "POST",
@@ -137,48 +130,5 @@ export class GitHubReportClient
         }),
       },
     );
-    if (
-      typeof body !== "object" ||
-      body === null ||
-      !("revision" in body) ||
-      typeof (body as { revision?: unknown }).revision !== "string"
-    ) {
-      throw new Error("GitHub create response is invalid.");
-    }
-    return {
-      revision: (body as { revision: string }).revision,
-    };
-  }
-
-  async saveReport(
-    path: string,
-    report: BugReportV2,
-    expectedRevision: string,
-  ): Promise<SavedGitHubReport> {
-    const body = await this.#json(
-      "/api/bug-report",
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          path,
-          report,
-          expectedRevision,
-        }),
-      },
-    );
-    if (
-      typeof body !== "object" ||
-      body === null ||
-      !("revision" in body) ||
-      typeof (body as { revision?: unknown }).revision !== "string"
-    ) {
-      throw new Error("GitHub save response is invalid.");
-    }
-    return {
-      revision: (body as { revision: string }).revision,
-    };
   }
 }
