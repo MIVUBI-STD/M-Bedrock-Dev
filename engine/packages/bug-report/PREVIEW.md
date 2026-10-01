@@ -21,13 +21,8 @@ The normal bug-finding preview MUST NOT show repair ownership or fixed-progress 
 
 | No. | Severity | Bug | Issue | Solution |
 |---:|---|---|---|---|
-
-Then show a separate reproduction block:
-
-### How to Reproduce the Bug
-
-| No. | Steps |
-|---:|---|
+| #1 | BLOCKER | Match cannot restart | ... | ... |
+|  |  | **How to Reproduce:** 1) ... → 2) ... → 3) ... |  |  |
 
 Rules:
 
@@ -47,7 +42,8 @@ Rules:
 - `Solution` is canonical Suggested Fix and must answer **what should be changed**;
 - `How to Reproduce the Bug` is canonical Reproduction and must tell a tester exactly how to make the bug occur again in-game;
 - when Suggested Fix is absent, show `—`;
-- keep reproduction outside the main table to avoid horizontal scrolling;
+- keep reproduction inside the same table as a second row immediately below its bug;
+- do not create a separate reproduction section or second table;
 - do not add Expected, Observed, Technical Analysis, Relevant Code, or Must Preserve to the default table;
 - do not create one section per bug in default preview;
 - do not dump JSON.
@@ -110,7 +106,7 @@ Compact main table with:
 - Issue
 - Solution
 
-Then a separate `How to Reproduce the Bug` block keyed by the same preview number.
+Each bug is immediately followed by a second row labeled `How to Reproduce` containing its reproduction steps.
 
 ### standard — default
 
@@ -136,31 +132,21 @@ Open bugs are the default scope. Fixed bugs appear only when explicitly requeste
 
 ## Reader test
 
-A reader should understand the problem and proposed solution from the main table, then verify it from the reproduction block without horizontal scrolling.
+A reader should understand each bug in one local block without jumping to another section.
 
 Good:
 
 | No. | Severity | Bug | Issue | Solution |
 |---:|---|---|---|---|
 | #1 | BLOCKER | Match cannot restart | Arena keeps the previous session ownership after match end, so a new match cannot start. | Clear arena session ownership during cleanup so the arena becomes available again. |
-
-### How to Reproduce the Bug
-
-| No. | Steps |
-|---:|---|
-| #1 | 1) Finish a match → 2) Return to lobby → 3) Start the same arena again → 4) Confirm the new match does not start. |
+|  |  | **How to Reproduce:** 1) Finish a match → 2) Return to lobby → 3) Start the same arena again → 4) Confirm the new match does not start. |  |  |
 
 Bad:
 
 | No. | Severity | Bug | Issue | Solution |
 |---:|---|---|---|---|
 | #1 | BLOCKER | Match issue | There may be an issue with cleanup. | Investigate and fix the issue. |
-
-### How to Reproduce the Bug
-
-| No. | Steps |
-|---:|---|
-| #1 | Check if the bug happens. |
+|  |  | **How to Reproduce:** Check if the bug happens. |  |  |
 
 If the Issue or Solution requires Technical Analysis to understand its basic meaning, the copy is not ready for the default preview.
 
