@@ -10,8 +10,8 @@ import {
   buildGameplayIntentModel,
 } from "../gameplay-intent-stage.js";
 import {
-  indexAuthoredIntentSources,
-} from "../inspect-authored-intent-source.js";
+  indexSelectedArtifactContractSources,
+} from "../inspection/inspect-contract-source.js";
 import type {
   InspectionSourceIndex,
 } from "../inspect-source-index.js";
@@ -32,7 +32,7 @@ export interface ContractEvidenceDiagnosisPayload
   root: string;
   artifactId: string;
   files: readonly FileInventoryEntry[];
-  authoredSourceRoots?: readonly string[];
+  contractSourceRoots?: readonly string[];
 }
 
 function isSourceIndex(
@@ -142,10 +142,10 @@ function parseContractEvidencePayload(
   }
 
   if (
-    record.authoredSourceRoots !== undefined &&
+    record.contractSourceRoots !== undefined &&
     (
-      !Array.isArray(record.authoredSourceRoots) ||
-      !record.authoredSourceRoots.every(
+      !Array.isArray(record.contractSourceRoots) ||
+      !record.contractSourceRoots.every(
         (value) =>
           typeof value === "string" &&
           value.trim().length > 0,
@@ -161,11 +161,11 @@ function parseContractEvidencePayload(
     root: record.root,
     artifactId: record.artifactId,
     files: record.files,
-    ...(record.authoredSourceRoots === undefined
+    ...(record.contractSourceRoots === undefined
       ? {}
       : {
-          authoredSourceRoots:
-            record.authoredSourceRoots as readonly string[],
+          contractSourceRoots:
+            record.contractSourceRoots as readonly string[],
         }),
   };
 }
@@ -353,18 +353,18 @@ export function createContractEvidenceDiagnosisExecutor():
         };
       }
 
-      let authoredScripts;
+      let contractScripts;
       try {
-        authoredScripts =
-          await indexAuthoredIntentSources(
+        contractScripts =
+          await indexSelectedArtifactContractSources(
             payload.root,
             payload.artifactId,
             payload.files,
-            payload.authoredSourceRoots === undefined
+            payload.contractSourceRoots === undefined
               ? {}
               : {
-                  authoredSourceRoots:
-                    payload.authoredSourceRoots,
+                  contractSourceRoots:
+                    payload.contractSourceRoots,
                 },
           );
       } catch (error) {
@@ -379,7 +379,7 @@ export function createContractEvidenceDiagnosisExecutor():
         };
       }
 
-      if (authoredScripts.length === 0) {
+      if (contractScripts.length === 0) {
         return {
           status: "blocked",
           reasons: [
@@ -396,7 +396,7 @@ export function createContractEvidenceDiagnosisExecutor():
           parsedScripts:
             payload.sourceIndex
               .parsedScripts,
-          authoredScripts,
+          contractScripts,
         });
 
       if (!contractEvidencePresent(output)) {
@@ -404,7 +404,7 @@ export function createContractEvidenceDiagnosisExecutor():
           status: "blocked",
           output,
           reasons: [
-            "Authored source files were present, but no gameplay-intent evidence was classified as authored.",
+            "Contract source files were present, but no gameplay-intent evidence was classified as authored.",
           ],
         };
       }
