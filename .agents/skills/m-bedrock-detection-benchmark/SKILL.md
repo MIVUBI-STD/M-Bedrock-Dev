@@ -51,6 +51,12 @@ Expectation schema: `../../schemas/benchmark-expectation.schema.json`
 
 Result schema: `../../schemas/benchmark-result.schema.json`
 
+Validate a frozen expectation:
+
+```text
+node scripts/validate-expectation.mjs expectation.json
+```
+
 Score:
 
 ```text
