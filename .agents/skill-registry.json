@@ -167,10 +167,12 @@
       "mutatesTarget": false
     }
   },
-  "registryRevision": 4,
+  "registryRevision": 5,
   "evalManifest": ".agents/evals/manifest.json",
   "permissionProfiles": ".agents/permissions/lane-permissions.json",
   "pathAccess": ".agents/permissions/path-access.json",
   "securityPolicy": ".agents/references/skill-supply-chain-security.md",
-  "securityScanner": "tooling/repository/skill-security-scan.mjs"
+  "securityScanner": "tooling/repository/skill-security-scan.mjs",
+  "permissionEvaluator": ".agents/permissions/evaluate-lane-permission.mjs",
+  "permissionEvalCorpus": ".agents/evals/permission-cases.json"
 }

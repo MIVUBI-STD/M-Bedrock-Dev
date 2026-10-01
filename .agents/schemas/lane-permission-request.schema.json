@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock Lane Permission Request",
+  "type": "object",
+  "required": [
+    "lane",
+    "action"
+  ],
+  "properties": {
+    "lane": {
+      "enum": [
+        "m-bedrock-map-bug-audit",
+        "m-bedrock-detection-development",
+        "m-bedrock-detection-benchmark",
+        "m-bedrock-target-repair"
+      ]
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resource": {
+      "enum": [
+        "engine",
+        "target",
+        "workspace",
+        "network",
+        "processExecution"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "read",
+        "write"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

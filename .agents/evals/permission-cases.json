@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "audit-read-engine",
+      "request": {
+        "lane": "m-bedrock-map-bug-audit",
+        "action": "inspect",
+        "path": "engine/packages/knowledge/src/types.ts",
+        "resource": "engine",
+        "mode": "read"
+      },
+      "expected": "allow"
+    },
+    {
+      "id": "audit-write-engine",
+      "request": {
+        "lane": "m-bedrock-map-bug-audit",
+        "action": "engine-write",
+        "path": "engine/packages/knowledge/src/types.ts",
+        "resource": "engine",
+        "mode": "write"
+      },
+      "expected": "deny"
+    },
+    {
+      "id": "dev-write-engine",
+      "request": {
+        "lane": "m-bedrock-detection-development",
+        "action": "modify-detector",
+        "path": "engine/analyzers/scripts/src/dataflow.ts",
+        "resource": "engine",
+        "mode": "write"
+      },
+      "expected": "allow"
+    },
+    {
+      "id": "dev-write-target",
+      "request": {
+        "lane": "m-bedrock-detection-development",
+        "action": "target-write",
+        "path": "workspace/active/demo/working/scripts/main.js",
+        "resource": "target",
+        "mode": "write"
+      },
+      "expected": "deny"
+    },
+    {
+      "id": "repair-write-working",
+      "request": {
+        "lane": "m-bedrock-target-repair",
+        "action": "repair",
+        "path": "workspace/active/demo/working/scripts/main.js",
+        "resource": "target",
+        "mode": "write"
+      },
+      "expected": "allow"
+    },
+    {
+      "id": "repair-write-engine",
+      "request": {
+        "lane": "m-bedrock-target-repair",
+        "action": "engine-write",
+        "path": "engine/packages/repair/src/index.ts",
+        "resource": "engine",
+        "mode": "write"
+      },
+      "expected": "deny"
+    },
+    {
+      "id": "audit-live",
+      "request": {
+        "lane": "m-bedrock-map-bug-audit",
+        "action": "live-minecraft-interaction"
+      },
+      "expected": "ask"
+    },
+    {
+      "id": "benchmark-network",
+      "request": {
+        "lane": "m-bedrock-detection-benchmark",
+        "action": "network",
+        "resource": "network",
+        "mode": "read"
+      },
+      "expected": "ask"
+    }
+  ]
+}
