@@ -327,13 +327,23 @@ def add_body(doc: Document, text: str, *, keep: bool = False) -> None:
     add_run(p, text, size=10.5, color=INK)
 
 
-def add_reproduction(doc: Document, steps: list[str]) -> None:
-    for step in steps:
-        p = doc.add_paragraph(style="List Number")
-        p.paragraph_format.left_indent = Inches(0.22)
-        p.paragraph_format.first_line_indent = Inches(-0.12)
+def add_reproduction(doc: Document, steps: list[str]) -> list[Any]:
+    paragraphs: list[Any] = []
+    for index, step in enumerate(steps, start=1):
+        p = doc.add_paragraph()
+        p.paragraph_format.left_indent = Inches(0.24)
+        p.paragraph_format.first_line_indent = Inches(-0.18)
         p.paragraph_format.space_after = Pt(3)
-        add_run(p, step, size=10.5, color=INK)
+        add_run(
+            p,
+            f"{index}.",
+            bold=True,
+            size=10,
+            color=NAVY,
+        )
+        add_run(p, "  " + step, size=10.5, color=INK)
+        paragraphs.append(p)
+    return paragraphs
 
 
 def add_issue_details(doc: Document, document: dict[str, Any]) -> None:
@@ -350,6 +360,8 @@ def add_issue_details(doc: Document, document: dict[str, Any]) -> None:
     compact = len(document["issues"]) >= 8
 
     for index, issue in enumerate(document["issues"]):
+        block: list[Any] = []
+
         if index > 0 and not compact:
             spacer = doc.add_paragraph()
             spacer.paragraph_format.space_after = Pt(2)
@@ -357,7 +369,6 @@ def add_issue_details(doc: Document, document: dict[str, Any]) -> None:
         meta = doc.add_paragraph()
         meta.paragraph_format.space_before = Pt(8 if compact else 12)
         meta.paragraph_format.space_after = Pt(2)
-        set_keep_with_next(meta)
         color = GREEN if issue["status"] == "fixed" else AMBER
         add_run(
             meta,
@@ -366,29 +377,81 @@ def add_issue_details(doc: Document, document: dict[str, Any]) -> None:
             size=9,
             color=color,
         )
+        block.append(meta)
 
         title = doc.add_paragraph(issue["title"], style="Heading 2")
-        set_keep_with_next(title)
+        block.append(title)
 
-        add_label(doc, "Issue")
-        add_body(doc, issue["issue"], keep=True)
+        label = doc.add_paragraph()
+        label.paragraph_format.space_before = Pt(7)
+        label.paragraph_format.space_after = Pt(2)
+        add_run(label, "Issue", bold=True, size=9.5, color=BLUE)
+        block.append(label)
 
-        add_label(doc, "How to Reproduce")
-        add_reproduction(doc, issue["reproduction"])
+        body = doc.add_paragraph()
+        body.paragraph_format.space_after = Pt(5)
+        set_keep_lines(body)
+        add_run(body, issue["issue"], size=10.5, color=INK)
+        block.append(body)
 
-        add_label(doc, "Observed")
-        add_body(doc, issue["observed"], keep=True)
+        label = doc.add_paragraph()
+        label.paragraph_format.space_before = Pt(7)
+        label.paragraph_format.space_after = Pt(2)
+        add_run(
+            label,
+            "How to Reproduce",
+            bold=True,
+            size=9.5,
+            color=BLUE,
+        )
+        block.append(label)
+        block.extend(add_reproduction(doc, issue["reproduction"]))
 
-        add_label(doc, "Expected")
-        add_body(doc, issue["expected"], keep=True)
+        for label_text, key in (
+            ("Observed", "observed"),
+            ("Expected", "expected"),
+        ):
+            label = doc.add_paragraph()
+            label.paragraph_format.space_before = Pt(7)
+            label.paragraph_format.space_after = Pt(2)
+            add_run(
+                label,
+                label_text,
+                bold=True,
+                size=9.5,
+                color=BLUE,
+            )
+            block.append(label)
+
+            body = doc.add_paragraph()
+            body.paragraph_format.space_after = Pt(5)
+            set_keep_lines(body)
+            add_run(
+                body,
+                issue[key],
+                size=10.5,
+                color=INK,
+            )
+            block.append(body)
 
         resolution = issue.get("recommendedResolution")
         if resolution:
-            add_label(doc, "Recommended Resolution")
-            p = doc.add_paragraph()
-            p.paragraph_format.space_after = Pt(7)
-            set_keep_lines(p)
-            p_pr = p._p.get_or_add_pPr()
+            label = doc.add_paragraph()
+            label.paragraph_format.space_before = Pt(7)
+            label.paragraph_format.space_after = Pt(2)
+            add_run(
+                label,
+                "Recommended Resolution",
+                bold=True,
+                size=9.5,
+                color=BLUE,
+            )
+            block.append(label)
+
+            body = doc.add_paragraph()
+            body.paragraph_format.space_after = Pt(7)
+            set_keep_lines(body)
+            p_pr = body._p.get_or_add_pPr()
             borders = OxmlElement("w:pBdr")
             left = OxmlElement("w:left")
             left.set(qn("w:val"), "single")
@@ -397,7 +460,19 @@ def add_issue_details(doc: Document, document: dict[str, Any]) -> None:
             left.set(qn("w:color"), BLUE)
             borders.append(left)
             p_pr.append(borders)
-            add_run(p, resolution, size=10.5, color=INK)
+            add_run(
+                body,
+                resolution,
+                size=10.5,
+                color=INK,
+            )
+            block.append(body)
+
+        # Keep a normal-size issue together where Word can do so.
+        # If the block is too tall for one page, Word may still split it,
+        # but it will not orphan labels/headings unnecessarily.
+        for paragraph in block[:-1]:
+            set_keep_with_next(paragraph)
 
 
 def render_docx(data: dict[str, Any], output: Path) -> None:
