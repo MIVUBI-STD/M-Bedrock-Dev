@@ -70,7 +70,7 @@ export function confirmStaticIntentDefectForReport(
 
   return confirmDefectForReport({
     foundBy: "ai",
-    expectedBehaviorAuthority: "authored-intent",
+    expectedBehaviorAuthority: "selected-artifact",
     authoredContractViolation: true,
     evidence:
       "Static evidence " +
