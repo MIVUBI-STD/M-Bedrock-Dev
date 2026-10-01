@@ -20,17 +20,10 @@ export type IntentDiagnosticNextEvidenceNeed =
   | "none"
   | "intent-grounding"
   | "intent-clarification"
-  | "authored-intent"
+  | "contract-evidence"
   | "contradiction-proof"
   | "runtime-proof"
   | "runtime-evidence-integrity";
-
-export type IntentConcernKind =
-  | "implementation"
-  | "balance"
-  | "ux"
-  | "content"
-  | "compatibility";
 
 export interface IntentDiagnosticGateInput {
   intent: GameplayIntentModel;
@@ -310,7 +303,7 @@ export function gateIntentDiagnostic(
         ...(input.contradictionEvidenceIds ?? []),
         ...(input.runtimeProofEvidenceIds ?? []),
       ],
-      nextEvidenceNeed: "authored-intent",
+      nextEvidenceNeed: "contract-evidence",
       reasons: [
         nonContractAuthored.length > 0
           ? "The selected artifact does not ground expected gameplay strongly enough for defect classification."
