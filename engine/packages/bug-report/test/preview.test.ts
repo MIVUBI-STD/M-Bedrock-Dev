@@ -28,6 +28,11 @@ function report(): BugReportV2 {
         problem: "Join feedback remains visible after leaving.",
         expected: "Feedback clears after leaving.",
         observed: "Feedback remains visible.",
+        reproduction: [
+          "Enter the join area.",
+          "Leave the join area.",
+          "Confirm the feedback remains visible.",
+        ],
       },
       {
         id: "BUG-001",
@@ -39,6 +44,12 @@ function report(): BugReportV2 {
         problem: "A completed arena cannot start again.",
         expected: "The arena can start a new match.",
         observed: "The previous session remains active.",
+        reproduction: [
+          "Finish a match.",
+          "Return to the lobby.",
+          "Start the same arena again.",
+          "Confirm the new match does not start.",
+        ],
         suggestedFix: "Clear stale session ownership during cleanup.",
         aiAnalysis: "Cleanup leaves stale session ownership.",
         relevantCode: [{
@@ -56,6 +67,10 @@ function report(): BugReportV2 {
         problem: "Already fixed.",
         expected: "Works.",
         observed: "Was broken.",
+        reproduction: [
+          "Trigger the combat state.",
+          "Confirm the fixed behavior remains correct.",
+        ],
       },
     ],
   };
@@ -109,6 +124,9 @@ describe("bug report preview", () => {
       mode: "full",
     });
     const markdown = renderBugReportPreviewMarkdown(preview, "full");
+
+    expect(markdown).toContain("| Reproduce / Verify |");
+    expect(markdown).toContain("1) Finish a match.");
 
     expect(markdown.indexOf("**Issue:**")).toBeLessThan(
       markdown.indexOf("**Expected:**"),
