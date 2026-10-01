@@ -60,7 +60,6 @@
 
   $: visibleBugs = report
     ? filterBugReportBugs(report.bugs, {
-        view: "not-fixed",
         severity,
         query,
       })
