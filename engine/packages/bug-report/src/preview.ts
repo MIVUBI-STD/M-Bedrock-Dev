@@ -142,6 +142,15 @@ function tableCell(value: string): string {
   return line(value).replaceAll("|", "\\|");
 }
 
+function reproductionCell(
+  steps: readonly string[] | undefined,
+): string {
+  if (!steps?.length) return "—";
+  return steps
+    .map((step, index) => `${index + 1}) ${line(step)}`)
+    .join(" → ");
+}
+
 export function renderBugReportPreviewMarkdown(
   preview: BugReportPreview,
   mode: BugReportPreviewMode = "standard",
@@ -163,13 +172,13 @@ export function renderBugReportPreviewMarkdown(
 
   out.push(
     "",
-    "| No. | Severity | Bug | Issue | Action |",
-    "|---:|---|---|---|---|",
+    "| No. | Severity | Bug | Issue | Reproduce / Verify | Action |",
+    "|---:|---|---|---|---|---|",
   );
 
   preview.bugs.forEach((bug, index) => {
     out.push(
-      `| #${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.title)} | ${tableCell(bug.issue)} | ${bug.action ? tableCell(bug.action) : "—"} |`,
+      `| #${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.title)} | ${tableCell(bug.issue)} | ${tableCell(reproductionCell(bug.reproduction))} | ${bug.action ? tableCell(bug.action) : "—"} |`,
     );
   });
 
