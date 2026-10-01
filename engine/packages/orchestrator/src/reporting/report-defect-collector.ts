@@ -680,9 +680,12 @@ function collectOne(
     };
   }
 
-  const trigger =
+  const trigger: {
+    readonly steps?: readonly string[];
+    readonly issues: readonly string[];
+  } =
     candidate.route === "tester"
-      ? { issues: [] as readonly string[] }
+      ? { issues: [] }
       : aiBugTrigger(candidate);
   if (trigger.issues.length > 0) {
     return {
@@ -758,6 +761,8 @@ function collectOne(
       _expectedStatement,
     observedStatement:
       _observedStatement,
+    reproduction:
+      rawReproduction,
     ...defectDraft
   } = candidate.defect;
 
@@ -784,10 +789,13 @@ function collectOne(
         ? "tester"
         : "ai",
     confirmation: decision.confirmation,
-    ...(candidate.route === "tester" ||
-        trigger.steps === undefined
-      ? {}
-      : { reproduction: trigger.steps }),
+    ...(candidate.route === "tester"
+      ? rawReproduction === undefined
+        ? {}
+        : { reproduction: rawReproduction }
+      : trigger.steps === undefined
+        ? {}
+        : { reproduction: trigger.steps }),
   };
 
   return {
