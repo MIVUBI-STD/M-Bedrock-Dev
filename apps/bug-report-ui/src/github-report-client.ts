@@ -14,6 +14,20 @@ export class GitHubReportConflictError extends Error {
   }
 }
 
+export interface PublishedBugReportLinks {
+  readonly revision: string;
+  readonly googleDoc: {
+    readonly documentId: string;
+    readonly url: string;
+    readonly title: string;
+    readonly parentFolderId?: string;
+  };
+  readonly pdf: {
+    readonly fileName: string;
+    readonly url?: string;
+  };
+}
+
 export interface GitHubReportClientOptions {
   readonly baseUrl?: string;
   readonly fetchImpl?: typeof fetch;
@@ -111,6 +125,48 @@ export class GitHubReportClient
       );
     }
     return parsed.report;
+  }
+
+  async publishReport(
+    path: string,
+    expectedRevision: string,
+    options: {
+      readonly includeFixed?: boolean;
+    } = {},
+  ): Promise<PublishedBugReportLinks> {
+    const body = await this.#json(
+      "/api/bug-report/publish",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path,
+          expectedRevision,
+          ...(options.includeFixed === undefined
+            ? {}
+            : {
+                includeFixed:
+                  options.includeFixed,
+              }),
+        }),
+      },
+    );
+
+    if (
+      typeof body !== "object" ||
+      body === null ||
+      !("revision" in body) ||
+      !("googleDoc" in body) ||
+      !("pdf" in body)
+    ) {
+      throw new Error(
+        "Bug report publication response is invalid.",
+      );
+    }
+
+    return body as PublishedBugReportLinks;
   }
 
   async createReport(
