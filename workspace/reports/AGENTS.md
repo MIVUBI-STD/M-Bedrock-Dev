@@ -15,7 +15,7 @@ Applies to persisted bug reports under `workspace/reports/`.
 
 Persist canonical JSON; present a projection.
 
-For ChatGPT or human-readable previews, follow `engine/packages/bug-report/PREVIEW.md`.
+For new report wording, follow `engine/packages/bug-report/COPY.md`. For ChatGPT or human-readable previews, follow `engine/packages/bug-report/PREVIEW.md`.
 
 Default behavior:
 
