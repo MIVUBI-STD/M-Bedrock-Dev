@@ -4,14 +4,12 @@ Workspace separates local artifact continuity from tracked audit handoff.
 
 ```text
 workspace/
-├─ local
-│  ├─ active/<project-id>/   ignored active project state
-│  └─ saved/                 ignored user-selected continuity
-└─ handoff
-   └─ reports/               tracked canonical Bug Report V2 handoff
+├─ active/<project-id>/   ignored active project state
+├─ saved/                 ignored user-selected continuity
+├─ reports/               tracked canonical Bug Report V2 state
+├─ drive-root.json
+└─ ownership.json
 ```
-
-Physical paths stay short (`active/`, `saved/`, `reports/`); `ownership.json` records their semantic grouping.
 
 Canonical local project shape:
 
