@@ -1,5 +1,7 @@
 import type {
   BlindspotCoverage,
+  FailurePattern,
+  MapCompatibilityFingerprint,
   MinecraftUpdateDelta,
   RegressionCase,
   ReliabilityDomain,
@@ -13,7 +15,9 @@ export interface ReliabilityCatalogs {
 
 const DOMAINS = new Set<ReliabilityDomain>([
   "artifact", "commands", "entities", "structures", "scripts", "world-db",
-  "multiplayer", "state", "chunks", "compatibility", "education", "unknown",
+  "multiplayer", "state", "chunks", "compatibility", "education",
+  "combat", "inventory", "economy", "ui", "persistence", "environment",
+  "unknown",
 ]);
 
 const LANES = new Set<ReliabilityLane>([
@@ -22,6 +26,110 @@ const LANES = new Set<ReliabilityLane>([
 
 export function emptyReliabilityCatalogs(): ReliabilityCatalogs {
   return { regressions: [], coverage: [] };
+}
+
+
+export function validateFailurePatternCatalog(
+  patterns: readonly FailurePattern[],
+  regressions: readonly RegressionCase[] = [],
+): string[] {
+  const errors: string[] = [];
+  const ids = new Set<string>();
+  const regressionIds = new Set(regressions.map((item) => item.id));
+
+  for (const pattern of patterns) {
+    if (!pattern.id?.trim()) errors.push("Failure pattern id is required.");
+    if (ids.has(pattern.id)) errors.push(`Duplicate failure pattern id: ${pattern.id}`);
+    ids.add(pattern.id);
+    if (!pattern.title?.trim()) errors.push(`Failure pattern ${pattern.id} requires a title.`);
+    if (!DOMAINS.has(pattern.domain)) errors.push(`Invalid failure pattern domain: ${pattern.domain}`);
+    if (!pattern.summary?.trim()) errors.push(`Failure pattern ${pattern.id} requires a summary.`);
+
+    for (const field of [
+      ["invariantIds", pattern.invariantIds],
+      ["triggerTags", pattern.triggerTags],
+      ["capabilityTags", pattern.capabilityTags],
+      ["supportingRegressionIds", pattern.supportingRegressionIds],
+      ["detectionHints", pattern.detectionHints],
+      ["retestFocus", pattern.retestFocus],
+    ] as const) {
+      if (
+        !Array.isArray(field[1]) ||
+        field[1].length === 0 ||
+        field[1].some((value) => typeof value !== "string" || !value.trim())
+      ) {
+        errors.push(`Failure pattern ${pattern.id} requires non-empty ${field[0]}.`);
+      }
+    }
+
+    for (const regressionId of pattern.supportingRegressionIds ?? []) {
+      if (regressions.length > 0 && !regressionIds.has(regressionId)) {
+        errors.push(
+          `Failure pattern ${pattern.id} references unknown regression: ${regressionId}`,
+        );
+      }
+    }
+  }
+
+  return errors;
+}
+
+export function validateMapCompatibilityFingerprint(
+  fingerprint: MapCompatibilityFingerprint,
+): string[] {
+  const errors: string[] = [];
+  if (fingerprint.schemaVersion !== 1) {
+    errors.push("Map fingerprint schemaVersion must be 1.");
+  }
+  if (!fingerprint.mapId?.trim()) errors.push("Map fingerprint mapId is required.");
+  if (fingerprint.artifactFingerprint !== undefined && !fingerprint.artifactFingerprint.trim()) {
+    errors.push("Map fingerprint artifactFingerprint cannot be empty.");
+  }
+  if (
+    fingerprint.evidenceBasis === "artifact-inspection" &&
+    !fingerprint.artifactFingerprint?.trim()
+  ) {
+    errors.push("Artifact-inspection map fingerprint requires artifactFingerprint.");
+  }
+  for (const domain of fingerprint.domains ?? []) {
+    if (!DOMAINS.has(domain)) {
+      errors.push(`Invalid map fingerprint domain: ${domain}`);
+    }
+  }
+  for (const field of [
+    fingerprint.minEngineVersions,
+    fingerprint.editions,
+    fingerprint.experiments,
+    fingerprint.commandVerbs,
+    fingerprint.scriptModules,
+    fingerprint.capabilityTags,
+    fingerprint.riskSurfaces,
+    fingerprint.evidenceRefs ?? [],
+    fingerprint.architectureTags ?? [],
+    fingerprint.gameplayPatternTags ?? [],
+    fingerprint.knownInvariantIds ?? [],
+    fingerprint.knownRegressionIds ?? [],
+    fingerprint.failurePatternIds ?? [],
+  ]) {
+    if (!Array.isArray(field) || field.some((value) => typeof value !== "string" || !value.trim())) {
+      errors.push("Map fingerprint list fields must contain non-empty strings.");
+      break;
+    }
+  }
+  if (
+    !fingerprint.structures ||
+    !Number.isInteger(fingerprint.structures.count) ||
+    !Number.isInteger(fingerprint.structures.parsed) ||
+    fingerprint.structures.count < 0 ||
+    fingerprint.structures.parsed < 0 ||
+    fingerprint.structures.parsed > fingerprint.structures.count
+  ) {
+    errors.push("Map fingerprint structures counts are invalid.");
+  }
+  if (typeof fingerprint.worldDatabasePresent !== "boolean") {
+    errors.push("Map fingerprint worldDatabasePresent must be boolean.");
+  }
+  return errors;
 }
 
 export function validateUpdateDelta(delta: MinecraftUpdateDelta): string[] {
