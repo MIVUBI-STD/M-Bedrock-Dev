@@ -1,15 +1,25 @@
 # Product
 
-Canonical product identity and user-facing lifecycle.
+Canonical product identity and human-facing workflow.
 
 ```text
-Inspect
-→ Understand
-→ Diagnose
+Understand
+→ Audit
+→ Approve
 → Repair / Modify
 → Validate
-→ Package
-→ Report
+→ Package / Report
 ```
+
+For gameplay bug work, Understand is mandatory before Audit:
+
+```text
+Game Design
+→ Gameplay Contract
+→ Actual Behavior
+→ Contradiction
+```
+
+Internal package names such as game-design-spec, gameplay-intent, behavior-model, and diagnostic-reasoning are implementation ownership names. Human/operator workflow uses the canonical terms above.
 
 This domain owns what the product does and the expected user flow. It does not own implementation mechanics.
