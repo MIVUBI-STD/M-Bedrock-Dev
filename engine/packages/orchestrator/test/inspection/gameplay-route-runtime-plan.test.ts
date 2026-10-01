@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   planGameplayRouteRuntimeEvidence,
-} from "../src/gameplay-route-runtime-plan.js";
+} from "../../src/inspection/gameplay-route-runtime-plan.js";
 import type {
   GameplayRouteObservationAssessment,
   GameplayRouteRuntimeObservationNeed,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import type {
   RuntimeNavigationStallObservation,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 
 const stall: RuntimeNavigationStallObservation = {
   entityKey: "demo:zombie",

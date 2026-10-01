@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import {
   deriveGameplayRouteCorridors,
-} from "../src/gameplay-route-corridor.js";
+} from "../../src/inspection/gameplay-route-corridor.js";
 
 function model(): GameplayIntentModel {
   return {

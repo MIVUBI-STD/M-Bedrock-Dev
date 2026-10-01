@@ -3,10 +3,10 @@ import {
   compareGameplayCalibrationReports,
   parseGameplayCalibrationManifest,
   type GameplayCalibrationReport,
-} from "../src/gameplay-calibration-corpus.js";
+} from "../../src/inspection/gameplay-calibration-corpus.js";
 import type {
   GameplayUnderstandingFingerprint,
-} from "../src/gameplay-understanding-fingerprint.js";
+} from "../../src/gameplay-understanding-fingerprint.js";
 
 function fingerprint(
   nodes: number,
@@ -143,7 +143,7 @@ describe("gameplay calibration corpus", () => {
     const {
       evaluateCalibrationAssertions,
     } = await import(
-      "../src/gameplay-calibration-corpus.js"
+      "../../src/inspection/gameplay-calibration-corpus.js"
     );
 
     const sample = fingerprint(3);

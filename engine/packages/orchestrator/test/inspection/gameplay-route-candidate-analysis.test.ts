@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   analyzeGameplayRouteCauseCandidates,
   type GameplayRouteCauseAnalysisInput,
-} from "../src/gameplay-route-candidate-analysis.js";
+} from "../../src/inspection/gameplay-route-candidate-analysis.js";
 
 function baseAssessment(): GameplayRouteCauseAnalysisInput {
   return {
