@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   planRepositoryTasks,
-} from "../src/repository-task-plan.js";
+} from "../../src/workflow/repository-task-plan.js";
 
 describe("repository task planning", () => {
   it("plans affected-only work when every changed path has an owner", () => {

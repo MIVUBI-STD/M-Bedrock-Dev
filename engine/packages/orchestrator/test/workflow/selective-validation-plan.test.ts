@@ -5,14 +5,14 @@ import {
 } from "vitest";
 import type {
   ValidationScenario,
-} from "../../validation/src/index.js";
+} from "../../../validation/src/index.js";
 import {
   planSelectiveValidation,
   selectiveValidationPlanText,
-} from "../src/selective-validation-plan.js";
+} from "../../src/workflow/selective-validation-plan.js";
 import type {
   SemanticAffectedPlan,
-} from "../src/semantic-affected-plan.js";
+} from "../../src/workflow/semantic-affected-plan.js";
 
 const scenarios:
   readonly ValidationScenario[] = [

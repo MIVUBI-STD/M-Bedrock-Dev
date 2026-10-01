@@ -5,14 +5,14 @@ import {
 } from "vitest";
 import {
   SemanticGraph,
-} from "../../graph/src/index.js";
+} from "../../../graph/src/index.js";
 import type {
   PatchTransaction,
-} from "../../repair/src/index.js";
+} from "../../../repair/src/index.js";
 import {
   planPatchSemanticAffectedSet,
   planSemanticAffectedSet,
-} from "../src/semantic-affected-plan.js";
+} from "../../src/workflow/semantic-affected-plan.js";
 
 function graphFixture(): SemanticGraph {
   const graph = new SemanticGraph();

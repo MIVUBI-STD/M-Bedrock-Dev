@@ -5,11 +5,11 @@ import {
 } from "vitest";
 import {
   SemanticGraph,
-} from "../../graph/src/index.js";
+} from "../../../graph/src/index.js";
 import {
   assessSemanticProofReuse,
   createSemanticProofClaim,
-} from "../src/semantic-proof-cache.js";
+} from "../../src/workflow/semantic-proof-cache.js";
 
 function graph(
   changedShop = false,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
-import { semanticGraphFingerprint } from "../src/semantic-graph-fingerprint.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
+import { semanticGraphFingerprint } from "../../src/workflow/semantic-graph-fingerprint.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };
