@@ -23,8 +23,8 @@ Rules:
 - `No.` is a simple preview row number (`#1`, `#2`, ...);
 - `Bug` contains only the short human-readable title;
 - canonical Bug ID stays internal in default preview and is shown only in detail/full mode;
-- `Issue` is canonical Problem;
-- `Action` is canonical Suggested Fix;
+- `Issue` is canonical Problem and must answer **what is wrong + impact**;
+- `Action` is canonical Suggested Fix and must answer **what should be changed**;
 - when Suggested Fix is absent, show `—`;
 - do not add Expected, Observed, Reproduction, Technical Analysis, Relevant Code, or Must Preserve to the default table;
 - do not create one section per bug in default preview;
@@ -82,6 +82,24 @@ Blocker → Major → Minor → Bug ID
 ```
 
 Open bugs are the default scope. Fixed bugs appear only when explicitly requested or when historical context is required.
+
+## Reader test
+
+A reader should be able to cover the Issue and Action columns only and still understand the repair handoff.
+
+Good:
+
+| No. | Severity | Bug | Issue | Action |
+|---:|---|---|---|---|
+| #1 | BLOCKER | Match cannot restart | Arena keeps the previous session ownership after match end, so a new match cannot start. | Clear arena session ownership during cleanup so the arena becomes available again. |
+
+Bad:
+
+| No. | Severity | Bug | Issue | Action |
+|---:|---|---|---|---|
+| #1 | BLOCKER | Match issue | There may be an issue with cleanup. | Investigate and fix the issue. |
+
+If the Issue or Action requires Technical Analysis to understand its basic meaning, the copy is not ready for the default preview.
 
 ## Table density
 
