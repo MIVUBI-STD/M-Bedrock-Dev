@@ -47,3 +47,12 @@ Check current readiness manually:
 ```text
 node .agents/skills/m-bedrock-detection-benchmark/scripts/corpus-status.mjs
 ```
+
+
+Before changing a case to `ready`, run:
+
+```text
+node .agents/skills/m-bedrock-detection-benchmark/scripts/check-case-ready.mjs <manifest.json> <case-id>
+```
+
+Promotion is fail-closed: unresolved source references or any declared missing prerequisite keep the case out of benchmark-ready state.
