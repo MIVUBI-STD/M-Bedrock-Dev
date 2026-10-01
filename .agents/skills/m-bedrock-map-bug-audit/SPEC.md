@@ -2,77 +2,52 @@
 
 ## Intent
 
-Use stable detection capability to find gameplay contradictions only after current Game Design for the audited scope is understood.
+Find gameplay contradictions using only one selected map version.
 
-## Version isolation
-
-The audit is closed to one map/version.
+## Source isolation
 
 ```text
 explicit selected .mcworld
 or
 single current root .mcworld
-→ only gameplay artifact in scope
+→ sole current gameplay evidence universe
 ```
 
-Older versions, raw source, previous QA, other maps, and external documents are archival inputs only and do not define current expected/actual gameplay.
+Older versions, raw/development source, previous QA, Technical Docs, changelogs, other maps, and external documents are archive/reference only.
 
 ## Required entry state
 
 ```text
-target identity pinned
-+ current Game Design recovered
-+ scoped Gameplay Contract derived
-+ design readiness = READY | scoped-safe PARTIAL
+target artifact pinned
++ map version pinned
++ Gameplay Contract derived from that artifact
++ readiness = READY | scoped-safe PARTIAL
 ```
 
-BLOCKED design readiness prevents defect classification for that scope.
-
-## In scope
-
-- map-specific design understanding;
-- actual-behavior inspection/retest;
-- defect vs designed-behavior vs ambiguity;
-- counter-evidence;
-- player impact and tester trigger;
-- proof-ceiling classification;
-- Proposed Bug Set review;
-- detection-gap handoff.
-
-## Out of scope
-
-- inventing missing Game Design from implementation;
-- engine detector development;
-- target repair;
-- generic product development.
+`BLOCKED` prevents defect classification for that scope.
 
 ## Evidence model
 
-Expected behavior and actual behavior are independent authorities.
-
 ```text
-approved Game Design
-→ derived Gameplay Contract
+selected artifact authored gameplay signals
+→ Expected Behavior
 
-current artifact/source/runtime
+selected artifact executable/runtime evidence
 → Actual Behavior
 
-Gameplay Contract ≠ Actual Behavior
-→ contradiction candidate
+Expected ≠ Actual
+→ candidate
 ```
-
-Platform Knowledge explains Minecraft behavior but never defines Map Game Design. Historical QA is a search/regression hint only.
 
 ## Acceptance
 
-- design readiness is explicit before candidate discovery;
+- one artifact/version only;
 - every candidate has one disposition;
-- only defects receive Blocker/Major/Minor;
-- counter-evidence and player impact are settled before reporting;
+- only defects receive severity;
+- counter-evidence and player impact are settled;
 - proof ceiling is explicit;
-- unresolved detector limitations become detection-gap;
 - no engine or target mutation occurs.
 
-## Limits
+## Limit
 
-Static/package evidence does not prove live runtime behavior. Unknown design remains ambiguous rather than defaulting to defect.
+Missing intent stays unknown. Never fill it from another version or stale documentation.
