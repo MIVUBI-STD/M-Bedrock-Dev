@@ -58,7 +58,7 @@ The report workspace has four visual levels:
 
 1. **Identity** — map name and versions.
 2. **Signal** — open count and Blocker/Major/Minor counts.
-3. **Bug list** — checkbox, severity, ID, title, short issue/action signal.
+3. **Bug list** — checkbox, severity, ID, title, short issue/solution signal.
 4. **Bug detail** — expected, observed, reproduction, technical analysis, relevant code, must preserve.
 
 A reader should understand the problem and next supported action before opening bug detail.
@@ -88,10 +88,10 @@ Collapsed rows prioritize the repair signal:
 ```text
 [checkbox]  BLOCKER  BUG-ID · Short title
             Issue summary
-            Action summary, when supported
+            Solution summary, when supported
 ```
 
-Category and Found By are secondary metadata and must not compete with Issue or Action.
+Category and Found By are secondary metadata and must not compete with Issue or Solution.
 
 The checkbox is a progress guard. It is not a workflow status.
 
@@ -118,7 +118,7 @@ Do not define separate copy limits in the UI. Use `engine/packages/bug-report/CO
 
 UI-specific density rules:
 
-- Action is shown only when Suggested Fix exists.
+- Solution is shown only when Suggested Fix exists.
 - Technical detail is subordinate to repair signal.
 - Fixed bugs are visually reduced and hidden by default when open bugs exist.
 
@@ -187,7 +187,7 @@ Keyboard support follows the same productivity principle used by mature issue tr
 
 - Dense, not cramped.
 - Dark neutral surface; severity is the strongest color signal.
-- Issue and Action are stronger than metadata.
+- Issue and Solution are stronger than metadata.
 - Fixed bugs remain available but visually reduced.
 - Blocker must scan before secondary metadata.
 - One primary action per persistence source.
