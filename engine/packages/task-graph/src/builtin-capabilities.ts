@@ -26,13 +26,26 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "foundation.dataflow",
+      owner: "packages/dataflow",
+      pathPrefixes: [
+        "packages/dataflow/src/*",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "source.scripts.dataflow",
       owner: "analyzers/scripts",
       pathPrefixes: [
         "analyzers/scripts/src/dataflow.ts",
-        "packages/dataflow/src/*",
       ],
-      dependsOn: ["source.scripts.core"],
+      dependsOn: [
+        "source.scripts.core",
+        "foundation.dataflow",
+      ],
       deterministic: true,
       cacheable: true,
       cost: "moderate",
