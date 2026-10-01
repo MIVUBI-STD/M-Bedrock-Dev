@@ -71,7 +71,7 @@ describe("gameplay audit coverage", () => {
     ]);
   });
 
-  it("is complete only when every gameplay surface has one explicit result", () => {
+  it("is accounted only when every discovered gameplay surface has one explicit result", () => {
     const result = evaluateGameplayAuditCoverage(
       model,
       [
@@ -88,7 +88,7 @@ describe("gameplay audit coverage", () => {
       ],
     );
 
-    expect(result.disposition).toBe("complete");
+    expect(result.disposition).toBe("accounted");
   });
 
   it("requires a reason for blocked coverage", () => {
