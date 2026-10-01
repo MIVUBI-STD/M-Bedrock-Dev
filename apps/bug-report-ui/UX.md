@@ -64,7 +64,7 @@ The report workspace has four visual levels:
 3. **Bug block** — preview number, severity, title, Issue, Bug Trigger (In-Game), and Solution.
 4. **Bug detail** — Expected, Observed, Technical Analysis, Relevant Code, and Must Preserve.
 
-A reader should understand the problem and next supported action before opening bug detail.
+A reader should understand the problem, in-game trigger, and supported solution before opening technical detail.
 
 ## List behavior
 
@@ -188,7 +188,6 @@ Do not add:
 - dashboards;
 - activity feeds;
 - generic custom fields;
-- mandatory notes when checking Fixed.
 
 The tracker is a focused tester-facing bug handoff surface, not a general project-management product.
 
