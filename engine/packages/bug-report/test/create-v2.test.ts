@@ -33,6 +33,10 @@ describe("createBugReportV2", () => {
           "Confirm the previous arena membership remains bound to the old session.",
         ],
         aiAnalysis: "The reconnect path keeps stale arena membership.",
+        relevantCode: [{
+          file: "scripts/session.ts",
+          reason: "Owns reconnect session membership.",
+        }],
         suggestedFix: "Rebind arena membership to the new session.",
       }],
     });
