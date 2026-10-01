@@ -2,10 +2,6 @@ import { createHash } from "node:crypto";
 import type {
   FileInventoryEntry,
 } from "../../../project-model/src/index.js";
-import {
-  assertGameDesignSpec,
-  type GameDesignSpec,
-} from "../../../game-design-spec/src/index.js";
 import type {
   DiagnosisCapabilityExecutor,
   DiagnosisExecutorRequest,
@@ -37,7 +33,6 @@ export interface AuthoredIntentDiagnosisPayload
   artifactId: string;
   files: readonly FileInventoryEntry[];
   authoredSourceRoots?: readonly string[];
-  referenceGameDesign?: GameDesignSpec;
 }
 
 function isSourceIndex(
@@ -160,17 +155,6 @@ function parseAuthoredPayload(
     return undefined;
   }
 
-  let referenceGameDesign: GameDesignSpec | undefined;
-  if (record.referenceGameDesign !== undefined) {
-    try {
-      referenceGameDesign =
-        assertGameDesignSpec(
-          record.referenceGameDesign,
-        );
-    } catch {
-      return undefined;
-    }
-  }
 
   return {
     ...base,
@@ -183,9 +167,6 @@ function parseAuthoredPayload(
           authoredSourceRoots:
             record.authoredSourceRoots as readonly string[],
         }),
-    ...(referenceGameDesign === undefined
-      ? {}
-      : { referenceGameDesign }),
   };
 }
 
@@ -415,14 +396,7 @@ export function createAuthoredIntentDiagnosisExecutor():
           parsedScripts:
             payload.sourceIndex
               .parsedScripts,
-          referenceMode: "comparison",
           authoredScripts,
-          ...(payload.referenceGameDesign === undefined
-            ? {}
-            : {
-                gameDesign:
-                  payload.referenceGameDesign,
-              }),
         });
 
       if (!authoredIntentPresent(output)) {
@@ -451,7 +425,7 @@ export function createAuthoredIntentDiagnosisExecutor():
           ],
         }],
         reasons: [
-          "Reference/comparison intent was reconstructed from configured authored/reference sources. It is not normal-audit authority.",
+          "Gameplay intent was reconstructed from authored source files contained in the selected artifact.",
         ],
       };
     },
