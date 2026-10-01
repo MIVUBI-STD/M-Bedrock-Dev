@@ -49,7 +49,9 @@ export * from "./route-mutation-analysis.js";
 export * from "./route-navigation-environment-analysis.js";
 export * from "./route-navigation-environment-load.js";
 export * from "./script-api-usage.js";
+export * from "./script-command-transaction-analysis.js";
 export * from "./script-dataflow-context.js";
+export * from "./script-safe-config-analysis.js";
 export * from "./script-spatial-analysis.js";
 export * from "./script-structure-correlation.js";
 export * from "./script-update-correlation.js";
@@ -106,6 +108,7 @@ export * from "./arena-structure-instance-proof.js";
 export * from "./arena-tick-state-proof.js";
 export * from "./arena-voxel-proof.js";
 export * from "./multiplayer-static-risk-analysis.js";
+export * from "./script-arena-layout-fallback.js";
 
 // Diagnosis and runtime evidence
 export * from "./adaptive-runtime-probe.js";
@@ -160,6 +163,7 @@ export {
   parseTelemetryText as parseRawTelemetryText,
   type TelemetryTextParseOptions,
 } from "./telemetry-text.js";
+export * from "./topology-runtime-evidence.js";
 
 // Repair composition
 export * from "./authorized-repair.js";
@@ -200,6 +204,7 @@ export * from "./repair-strategy-selection.js";
 export * from "./repair-strategy-source-registry.js";
 export * from "./repair-validation.js";
 export * from "./script-mutation-detection.js";
+export * from "./script-mutation-transaction-analysis.js";
 export * from "./script-transform-hint-discovery.js";
 export * from "./script-transform-hint-realizer.js";
 export * from "./script-transform-postcondition.js";
@@ -250,6 +255,7 @@ export * from "./engineering-review-projection.js";
 export * from "./repository-task-plan.js";
 export * from "./selective-validation-plan.js";
 export * from "./semantic-affected-plan.js";
+export * from "./semantic-graph-fingerprint.js";
 export * from "./semantic-proof-cache.js";
 export * from "./semantic-proof-store.js";
 export * from "./work-session-store.js";
@@ -265,11 +271,3 @@ export * from "./release-identity-analysis.js";
 export * from "./release-identity-evidence.js";
 export * from "./ticking-area-consolidation.js";
 export * from "./world-release-state.js";
-
-// Other composition
-export * from "./script-arena-layout-fallback.js";
-export * from "./script-command-transaction-analysis.js";
-export * from "./script-mutation-transaction-analysis.js";
-export * from "./script-safe-config-analysis.js";
-export * from "./semantic-graph-fingerprint.js";
-export * from "./topology-runtime-evidence.js";

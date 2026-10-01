@@ -23,7 +23,6 @@ This directory remains intentionally shallow for path stability. Use this index 
 - [Entity state analysis](./entity-state-analysis.md)
 - [Entity event reachability](./entity-event-reachability.md)
 - [Entity knowledge graph](./entity-knowledge-graph.md)
-- [Gameplay intent](./gameplay-intent.md)
 - [Script API](./script-api.md)
 - [Script API usage inventory](./script-api-usage-inventory.md)
 
