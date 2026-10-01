@@ -1,91 +1,64 @@
 # Product Flow
 
-Canonical gameplay-engineering lifecycle:
+## Single source of truth
+
+For gameplay audit, **one selected map version is the only current source of truth**.
 
 ```text
-Target Identity
-→ Game Design
+explicit selected .mcworld
+or single current root .mcworld
+→ Selected Map Version
+```
+
+Older versions, Development/Source, old QA/Bug Reports, Technical Docs, changelogs, other maps, and external documents are archive/reference only.
+
+## Canonical flow
+
+```text
+Selected Map Version
 → Gameplay Contract
 → Actual Behavior
-→ Diagnose Contradictions
+→ Confirmed Defect
 → Proposed Bug Set
 → Chat Approval
 → Approved Bug
 → Repair Contract
-→ Transactional Repair
-→ Verify Defect Removed
-→ Verify Game Design Preserved
-→ Package
-→ Report
+→ Authorized Repair
+→ Verify Defect + Preserve Gameplay
 ```
 
-## Canonical vocabulary
+## Terms
 
 | Term | Meaning |
 |---|---|
-| Game Design | approved intended gameplay |
-| Gameplay Contract | scoped derived view of Game Design |
-| Actual Behavior | what current implementation/runtime does |
-| Confirmed Defect | evidence proves a gameplay contradiction |
-| Approved Bug | user-approved defect allowed into report/repair flow |
-| Repair Candidate | technically plausible fix; no mutation authority |
+| Selected Map Version | exact current artifact being audited; sole current gameplay truth |
+| Gameplay Contract | scoped expected behavior derived only from that artifact |
+| Actual Behavior | what that same artifact can/do actually perform |
+| Confirmed Defect | proven contradiction inside that same version |
+| Approved Bug | confirmed defect explicitly approved for report/repair |
 | Repair Contract | Must Change + Must Preserve |
-| Authorized Repair | Approved Bug/design change + Repair Contract + proof |
+| Authorized Repair | Approved Bug/design change + Repair Contract + current proof |
 
-`Confirmed Defect` is not `Approved Bug`. `repair-eligible` in internal diagnostics means only that causal proof is sufficient to consider a repair candidate; it never means mutation is approved.
+## Audit rule
 
-## Understand
+Expected Behavior and Actual Behavior must come from the **same selected map version**.
 
-Current approved Game Design must be recovered before gameplay bug discovery. Gameplay Contract is a scoped derived working model, not a second persisted design authority.
+If the artifact does not contain enough evidence to determine intended behavior for a mechanic, keep it `UNKNOWN / BLOCKED`. Do not read older versions or external documents to fill the gap.
 
-Design readiness:
+Historical material may be consulted only when the user explicitly asks for comparison/history. It never silently changes the current audit truth.
 
-- READY — all material rules for the audited scope are grounded;
-- PARTIAL — unresolved rules exist but cannot change the scoped decision;
-- BLOCKED — a material unknown or conflict can change bug-vs-feature classification.
+## Repair rule
 
-BLOCKED stops defect classification for the affected scope.
-
-## Audit
-
-Bug discovery is difference-search:
-
-```text
-Grounded Gameplay Contract
-≠
-Grounded Actual Behavior
-→ contradiction candidate
-```
-
-A technical anomaly is not a gameplay bug without a grounded contradiction, material player impact, cleared counter-evidence, and a tester-verifiable trigger.
-
-## Approval
-
-Proposed bugs are discussed before canonical report creation. Only explicitly approved Blocker/Major bugs enter the report/publication path.
-
-## Repair
+Bug repair starts only from an Approved Bug.
 
 ```text
 Approved Bug
-+ violated Gameplay Contract
-→ Repair Contract
-   - Must Change
-   - Must Preserve
-→ smallest target mutation
++ Repair Contract
+  - Must Change
+  - Must Preserve
+→ mutation
+→ defect verification
+→ preservation verification
 ```
 
-Bug repair must not silently redefine intended gameplay.
-
-## Validate
-
-A repair is not complete merely because the original symptom disappears. The defect must be removed and relevant approved gameplay behavior must remain preserved.
-
-## Principles
-
-- understand design before looking for gameplay defects;
-- current approved design and actual implementation are separate authorities;
-- unknown design stays unknown;
-- historical QA is search/regression evidence, not current truth;
-- repairs are explicit and reversible;
-- validation strength matches the claim;
-- HTML/reporting is downstream of approval and never owns gameplay semantics.
+A repair is incomplete if the symptom disappears but intended gameplay in the selected version is damaged.
