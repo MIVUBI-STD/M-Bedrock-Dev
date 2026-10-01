@@ -82,6 +82,44 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       }
+    },
+    {
+      "id": "gauntlet-v1-level-2-known-good",
+      "status": "candidate",
+      "artifactFile": "The Gauntlet v1.0.0-dev",
+      "evidenceRole": "negative",
+      "provenance": {
+        "source": "Gauntlet Minigames - QA Version Pre-Release V1.0.0",
+        "testDate": "2026-06-12",
+        "edition": "education",
+        "minecraftVersion": "1.21.133",
+        "scope": "Level 2",
+        "observation": "No issues recorded"
+      },
+      "expectedDisposition": "designed-behavior",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "gauntlet-v1-level-3-known-good",
+      "status": "candidate",
+      "artifactFile": "The Gauntlet v1.0.0-dev",
+      "evidenceRole": "negative",
+      "provenance": {
+        "source": "Gauntlet Minigames - QA Version Pre-Release V1.0.0",
+        "testDate": "2026-06-12",
+        "edition": "education",
+        "minecraftVersion": "1.21.133",
+        "scope": "Level 3",
+        "observation": "No issues recorded"
+      },
+      "expectedDisposition": "designed-behavior",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
     }
   ],
   "policy": {
