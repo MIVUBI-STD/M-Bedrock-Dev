@@ -342,6 +342,27 @@ function classificationIssues(
     };
   }
 
+  const gameplayBasisEvidence =
+    compiled.gameplayBasis === "authored-gameplay"
+      ? new Set(
+          candidateExpectedBasis(candidate).evidenceIds,
+        )
+      : new Set(
+          candidateObservedBasis(candidate).evidenceIds,
+        );
+
+  if (
+    !compiled.evidenceIds.some(
+      (id) => gameplayBasisEvidence.has(id),
+    )
+  ) {
+    return {
+      issues: [
+        "Bug Trigger gameplay basis is not supported by matching gameplay evidence from the same defect.",
+      ],
+    };
+  }
+
   const universe = new Set(
     candidateEvidenceUniverse(candidate),
   );
