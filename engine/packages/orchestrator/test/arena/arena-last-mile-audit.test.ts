@@ -5,8 +5,8 @@ import {
   assessStructureTransitionResidue,
   assessWorldReleaseState,
   proposeTickingAreaConsolidation,
-} from "../src/index.js";
-import type { McStructureModel } from "../../../adapters/mcstructure/src/index.js";
+} from "../../src/index.js";
+import type { McStructureModel } from "../../../../adapters/mcstructure/src/index.js";
 
 describe("last-mile arena audit helpers", () => {
   it("finds a feasible ticking-area consolidation without guessing runtime state", () => {

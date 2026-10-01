@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   compileArenaInterleavingAnalysis,
-} from "../src/arena-interleaving-analysis.js";
+} from "../../src/arena/arena-interleaving-analysis.js";
 
 describe("arena interleaving analysis", () => {
   it("compiles reconnect stress into generation-aware bounded schedules", () => {

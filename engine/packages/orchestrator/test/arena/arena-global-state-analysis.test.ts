@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { analyzeArenaGlobalState } from "../src/arena-global-state-analysis.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { analyzeArenaGlobalState } from "../../src/arena/arena-global-state-analysis.js";
 
 describe("arena global state analysis", () => {
   it("recognizes paired lease evidence for arena-scoped gamerule mutation", () => {

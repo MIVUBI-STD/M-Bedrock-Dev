@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   buildMultiplayerStressMatrix,
-} from "../../reliability/src/index.js";
+} from "../../../reliability/src/index.js";
 import {
   compileArenaInterleavingPortfolio,
-} from "../src/arena-interleaving-portfolio.js";
+} from "../../src/arena/arena-interleaving-portfolio.js";
 
 describe("arena interleaving portfolio", () => {
   it("reuses the canonical stress matrix without creating a second scenario catalog", () => {
