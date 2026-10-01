@@ -88,6 +88,14 @@ describe("CLI target options", () => {
     ])).toThrow(/probe-context/);
   });
 
+  it("rejects external Game Design input in normal audit", () => {
+    expect(() => parseCliTargetOptions([
+      "map.mcworld",
+      "--game-design",
+      "design.json",
+    ])).toThrow(/Unknown option/);
+  });
+
   it("rejects invalid edition instead of guessing", () => {
     expect(() => parseCliTargetOptions(["map.mcworld", "--edition", "java"]))
       .toThrow(/bedrock or education/);
