@@ -103,6 +103,12 @@ describe("bug report preview", () => {
       "Clear stale session ownership during cleanup.",
     );
     expect(preview.bugs[1]?.action).toBeUndefined();
+    expect(preview.bugs[0]?.reproduction).toEqual([
+      "Finish a match.",
+      "Return to the lobby.",
+      "Start the same arena again.",
+      "Confirm the new match does not start.",
+    ]);
   });
 
   it("keeps technical context out of standard preview", () => {
