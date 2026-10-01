@@ -51,7 +51,7 @@ function defect(
     title: "Cleanup retains match state",
     problem: "Match-owned state remains after cleanup.",
     expected: {
-      authority: "authored-intent",
+      authority: "selected-artifact",
       statement: "Match-owned state is reset after cleanup.",
       evidenceIds: ["intent:cleanup"],
     },
@@ -292,7 +292,7 @@ describe("confirmed defect projection", () => {
           observed: {
             statement: "Multiple state surfaces remain active.",
           },
-          expectedAuthority: "authored-intent",
+          expectedAuthority: "selected-artifact",
           primaryFailure: "player-owned-state",
           aiAnalysis: "Grouped symptoms share one cleanup defect.",
           ...(a.sourceEvidence === undefined
@@ -320,7 +320,7 @@ describe("confirmed defect projection", () => {
           problem: "Unused",
           expected: { statement: "Unused" },
           observed: { statement: "Unused" },
-          expectedAuthority: "authored-intent",
+          expectedAuthority: "selected-artifact",
           primaryFailure: "player-owned-state",
         },
       }],
