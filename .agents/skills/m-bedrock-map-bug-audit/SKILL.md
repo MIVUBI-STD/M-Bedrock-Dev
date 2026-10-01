@@ -86,7 +86,9 @@ Rules:
 - use `#1`, `#2`, ... for preview references and keep canonical Bug ID hidden unless detail/full mode is requested;
 - every tester-facing bug must include a concise `Bug Trigger (In-Game)` path written only as player actions, game states, locations, objects, UI interactions, and visible outcomes;
 - for AI-found defects, author the trigger through evidence-bound `BugTriggerDraft` / `compileBugTrigger()`; do not write raw reproduction arrays from technical prose;
-- every AI trigger evidence ID must belong to the same confirmed-defect evidence universe;
+- declare `gameplayBasis`: use `authored-gameplay` for grounded game-design/intent flow or `runtime-gameplay` for grounded runtime observation;
+- static AI findings may not claim `runtime-gameplay`;
+- every AI trigger evidence ID must belong to the same confirmed-defect evidence universe, and at least one must support the declared gameplay basis;
 - include required starting context when relevant: player count, location/arena, game phase, team/role, required item, prerequisite state;
 - the final trigger step must explicitly state the visible wrong result that proves the bug;
 - reproduction must never ask the tester to inspect scripts, functions, variables, source files, logs, or architecture;
