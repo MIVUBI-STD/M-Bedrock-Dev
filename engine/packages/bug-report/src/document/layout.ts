@@ -4,17 +4,16 @@ import type {
 
 export interface BugReportClientLayoutPlan {
   readonly showIssueIndex: boolean;
-  readonly showSeverityGuide: boolean;
-  readonly pageBreakBeforeIssueDetails: boolean;
-  readonly issueDetailDensity:
-    | "compact"
-    | "standard";
+  readonly showSeverityLegend: boolean;
+  readonly compactTables: boolean;
 }
 
 /**
- * Reader-facing layout decisions derived only from visible document density.
+ * Reader-facing layout decisions for Word/PDF.
  *
- * Renderers consume this plan; they do not invent their own thresholds.
+ * Default documents are table-first and intentionally compact.
+ * A separate issue index is used only when the report is large
+ * enough that scanning the full issue tables becomes slower.
  */
 export function buildBugReportClientLayoutPlan(
   document: BugReportClientDocument,
@@ -22,13 +21,8 @@ export function buildBugReportClientLayoutPlan(
   const count = document.issues.length;
 
   return {
-    showIssueIndex: count >= 2,
-    showSeverityGuide: count > 0,
-    pageBreakBeforeIssueDetails:
-      count >= 4,
-    issueDetailDensity:
-      count >= 8
-        ? "compact"
-        : "standard",
+    showIssueIndex: count >= 7,
+    showSeverityLegend: count > 0,
+    compactTables: count >= 4,
   };
 }
