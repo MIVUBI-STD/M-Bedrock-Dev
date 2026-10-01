@@ -25,13 +25,10 @@ Do not create parallel report formats, duplicate Markdown reports, or competing 
 
 ## Reader priority
 
+Default ChatGPT preview is a compact table:
+
 ```text
-Severity + ID + Title
-→ Issue
-→ Action when supported
-→ Expected / Observed
-→ Reproduction
-→ Technical context when needed
+Severity | Bug (ID + title) | Issue | Action
 ```
 
-Do not optimize for exhaustive prose at the expense of scan clarity.
+Do not expand every bug vertically unless full detail is explicitly requested. Do not optimize for exhaustive prose at the expense of scan clarity.
