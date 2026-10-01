@@ -32,7 +32,7 @@ docs/          canonical product, system, and operations documentation
 engine/        Bedrock analysis and repair engine
 experiments/   bounded non-authoritative research
 tooling/       repository/developer/build/verification tooling
-workspace/     local project continuity + tracked report handoff
+workspace/     local project continuity + Map Game Design + tracked report handoff
 ```
 
 ### Engine map
@@ -42,7 +42,9 @@ engine/
 ├── adapters/      external/container/format adapters
 ├── analyzers/     semantic analysis and derived diagnostics
 ├── fixtures/      minimized reproducible evidence
-├── knowledge/     machine-readable Bedrock/Education facts and policy
+├── design/        Game Design schema/compiler system
+├── knowledge/     Minecraft platform/runtime facts
+├── contracts/     Engineering Contracts
 ├── packages/      reusable deterministic engine/control-plane modules
 ├── reliability/   reliability catalogs and history
 ├── rules/         versioned Bedrock/Education rules

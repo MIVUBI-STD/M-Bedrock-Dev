@@ -65,3 +65,8 @@ Behavioral model fragments are evaluation specifications, not Game Design author
 Observed behavior does not automatically become a general engine fact.
 
 Absence of a claim is unknown, not false.
+
+
+## Provenance naming
+
+Canonical provenance for target-specific authored constraints is `behavior-contract`. `project-policy` is retained only as a legacy compatibility value and must not be used for new data.

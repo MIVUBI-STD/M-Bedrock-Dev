@@ -11,3 +11,5 @@ Canonical entrypoints:
 - `architecture.md` — dependency direction and subsystem boundaries.
 
 Do not turn audit notes or temporary migration plans into durable parallel owners.
+
+- `canonical-naming.md` — repository-wide authority and naming vocabulary;

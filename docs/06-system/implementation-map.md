@@ -40,9 +40,9 @@ Use this before broad repository search.
 | Affected semantic/context compression for Codex | engine/packages/orchestrator/src/semantic-affected-plan.ts + context-compiler.ts |
 | Arena lifecycle + cleanup convergence | engine/packages/orchestrator/src/arena-lifecycle-* + arena-cleanup-* |
 | Spatial gameplay authority | engine/packages/behavior-model/src/minecraft/spatial-authority.ts + engine/packages/orchestrator/src/spatial-authority-* |
-| Inventory/equipment lifecycle + item policy | engine/packages/behavior-model/src/minecraft/inventory-* + engine/packages/orchestrator/src/inventory-* |
+| Inventory/equipment lifecycle + item Behavior Contract | engine/packages/behavior-model/src/minecraft/inventory-* + engine/packages/orchestrator/src/inventory-* |
 | Entity AI/navigation source readiness + route environment | engine/analyzers/entities/ + engine/packages/orchestrator/src/entity-ai-* + route-navigation-* |
-| Combat/downed/revive policy and lifecycle | engine/packages/behavior-model/src/minecraft/combat-* + engine/packages/orchestrator/src/combat-* + engine/packages/telemetry/src/revive-* |
+| Combat/downed/revive Behavior Contract and lifecycle | engine/packages/behavior-model/src/minecraft/combat-* + engine/packages/orchestrator/src/combat-* + engine/packages/telemetry/src/revive-* |
 | Chunk lifecycle/readiness/lease reasoning | engine/packages/behavior-model/src/minecraft/chunk.ts + engine/packages/orchestrator/src/chunk-* |
 | Economy/reward source arbitration | engine/packages/behavior-model/src/minecraft/economy-* + engine/packages/orchestrator/src/economy-* + reward-source-analysis.ts |
 | Generic Bedrock NBT transport | engine/adapters/nbt/ |

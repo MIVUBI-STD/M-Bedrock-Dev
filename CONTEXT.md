@@ -69,12 +69,14 @@ engine/analyzers/     semantic derivation and diagnostics
 engine/rules/         versioned Bedrock/Education rules
 engine/schemas/       structural/internal schemas
 engine/fixtures/      minimized reproducible evidence
-engine/knowledge/     machine-readable Bedrock/Education facts and project policy
+engine/design/        Game Design schema/compiler system
+engine/knowledge/     Minecraft platform/runtime facts
+engine/contracts/     Engineering Contracts
 engine/reliability/   repository-owned reliability catalogs/history data
 engine/runtime/       bounded runtime proof harness content
 docs/          canonical product/system/operations docs
 tooling/       repository-owned developer/build control plane
-workspace/     local artifact continuity + tracked report handoff
+workspace/     local artifact continuity + Map Game Design + tracked report handoff
 experiments/   bounded research only
 ```
 
@@ -132,7 +134,7 @@ repair transactions                → engine/packages/repair
 cross-owner composition            → engine/packages/orchestrator
 Bedrock content parsing            → engine/analyzers/*
 format adaptation                  → engine/adapters/*
-compatibility/version policy       → engine/rules/* + engine/packages/compatibility
+compatibility/version rules       → engine/rules/* + engine/packages/compatibility
 interface presentation             → apps/*
 ```
 

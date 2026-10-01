@@ -11,7 +11,7 @@ MINECRAFT PLATFORM KNOWLEDGE
 What does the target Minecraft runtime support or do?
         ↓
 ENGINEERING CONTRACTS
-What implementation/reliability constraints apply?
+What global implementation/reliability constraints apply?
         ↓
 BEHAVIOR + RUNTIME EVIDENCE
 What can happen / what actually happened?
@@ -27,3 +27,6 @@ Hard boundaries:
 - Engineering Contracts are normative for implementation quality, not gameplay meaning.
 - Behavior Model is an evaluation formalism, not an origin of intended behavior.
 - Runtime observations can falsify expectations but do not silently redefine design or platform facts.
+
+
+Canonical terminology is defined in `canonical-naming.md`.

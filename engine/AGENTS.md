@@ -10,7 +10,7 @@ Choose the smallest owning domain before reading implementation:
 external/binary/container format translation → adapters/
 semantic/source analysis                      → analyzers/
 reusable contracts and orchestration          → packages/
-versioned capability policy                   → rules/
+versioned capability rules                    → rules/
 structural schemas                            → schemas/
 Game Design schema/compiler                  → design/
 engineering/validation constraints             → contracts/

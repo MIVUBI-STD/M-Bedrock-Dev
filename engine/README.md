@@ -13,11 +13,11 @@ engine/
 │  └─ analyzers/       read-only semantic derivation
 ├─ design-system
 │  └─ design/          Game Design schema, vocabulary, templates, compiler
-├─ policy-data
+├─ platform-semantics
 │  ├─ knowledge/       descriptive Minecraft platform facts
 │  ├─ rules/           executable version/capability rules
 │  └─ schemas/         persisted/internal structural schemas
-├─ engineering-governance
+├─ engineering-contracts
 │  └─ contracts/       implementation + validation contracts
 ├─ quality
 │  ├─ fixtures/        minimized reproducible evidence
@@ -40,7 +40,7 @@ external bytes / native storage
 → orchestrator
 ```
 
-Policy/data owners inform the pipeline without becoming runtime proof:
+Authority/data owners inform the pipeline without becoming runtime proof:
 
 ```text
 project Game Design + design system + knowledge + rules + contracts + schemas

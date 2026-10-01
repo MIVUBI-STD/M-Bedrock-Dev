@@ -1,6 +1,8 @@
 export type BehaviorProvenanceKind =
   | "source-inference"
   | "official-knowledge"
+  | "behavior-contract"
+  /** @deprecated Historical compatibility only. */
   | "project-policy"
   | "runtime-evidence"
   | "controlled-experiment";
@@ -90,14 +92,17 @@ export function auditBehaviorModelProvenance(
   return gaps;
 }
 
-export function projectPolicyProvenance(
+export function behaviorContractProvenance(
   id: string,
   note?: string,
 ): BehaviorClaimProvenance {
   return {
-    kind: "project-policy",
+    kind: "behavior-contract",
     evidenceCeiling: "designed",
     evidenceIds: [id],
     ...(note === undefined ? {} : { note }),
   };
 }
+
+/** @deprecated Use behaviorContractProvenance. */
+export const projectPolicyProvenance = behaviorContractProvenance;
