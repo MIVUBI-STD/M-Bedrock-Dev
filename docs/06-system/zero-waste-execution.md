@@ -62,7 +62,7 @@ adaptive runtime probe budgeting
 → packages/orchestrator/src/adaptive-runtime-probe.ts
 
 multi-client execution contract
-→ packages/runtime-lab/src/multi-client-orchestrator.ts
+→ packages/runtime-lab/src/host/multi-client-orchestrator.ts
 ```
 
 ## Safety rules
