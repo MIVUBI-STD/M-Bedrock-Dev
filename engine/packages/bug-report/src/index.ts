@@ -16,7 +16,6 @@ export * from "./migrate.js";
 export * from "./report-summary.js";
 export * from "./persistence.js";
 export * from "./reconcile-current.js";
-export * from "./verified-completion.js";
 export * from "./document/model.js";
 export * from "./document/project.js";
 export * from "./document/quality.js";
