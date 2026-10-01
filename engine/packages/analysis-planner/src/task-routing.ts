@@ -70,15 +70,15 @@ export function routeEngineeringTask(
       return {
         kind: input.kind,
         initialGoal:
-          "authored-intent",
+          "contract-evidence",
         mutationAllowed: false,
         runtimeMayBeRequired:
           false,
         requiredPreconditions: [],
         stopCondition:
-          "Authored gameplay intent is grounded or the remaining unknown is explicitly named.",
+          "Selected-artifact Gameplay Contract evidence is grounded or the remaining unknown is explicitly named.",
         reasons: [
-          "Understanding prioritizes authored intent before defect classification.",
+          "Understanding prioritizes selected-artifact Gameplay Contract evidence before defect classification.",
         ],
       };
 
@@ -96,7 +96,7 @@ export function routeEngineeringTask(
         stopCondition:
           "A defect/design classification is supported by sufficient evidence or the cheapest separating evidence is named.",
         reasons: [
-          "Bug search begins from intent classification rather than assuming unusual behavior is defective.",
+          "Bug search begins from selected-artifact contract classification rather than assuming unusual behavior is defective.",
           ...(input.runtimeSensitive ===
           true
             ? [
@@ -150,13 +150,13 @@ export function routeEngineeringTask(
         runtimeMayBeRequired:
           true,
         requiredPreconditions: [
-          "proven-diagnosis",
+          "approved-bug",
           "repair-invariants",
         ],
         stopCondition:
           "The smallest causally bound repair is applied and its required proof obligations are satisfied.",
         reasons: [
-          "Repair authority starts only after diagnosis and preservation obligations are explicit.",
+          "Repair authority starts only after an Approved Bug and preservation obligations are explicit.",
           ...(runtimeCapable(input.context)
             ? [
                 "Runtime-capable context may close causal repair proof directly.",
@@ -251,7 +251,7 @@ export function routeEngineeringTask(
         stopCondition:
           "Profile-specific behavior is distinguished from authored defects with isolated evidence per runtime profile.",
         reasons: [
-          "Compatibility differences must not be promoted to project defects without target-policy and authored-intent evidence.",
+          "Compatibility differences must not be promoted to map defects without target runtime evidence and selected-artifact contract evidence.",
         ],
       };
   }
@@ -261,7 +261,7 @@ export function assertEngineeringTaskPreconditions(
   route: EngineeringTaskRoute,
   state: {
     hasCandidateBug?: boolean;
-    hasProvenDiagnosis?: boolean;
+    hasApprovedBug?: boolean;
     hasRepairInvariants?: boolean;
     hasAppliedRepair?: boolean;
     hasTargetRuntimeProfile?: boolean;
@@ -283,8 +283,8 @@ export function assertEngineeringTaskPreconditions(
     }
     if (
       requirement ===
-        "proven-diagnosis" &&
-      state.hasProvenDiagnosis !==
+        "approved-bug" &&
+      state.hasApprovedBug !==
         true
     ) {
       missing.push(requirement);
