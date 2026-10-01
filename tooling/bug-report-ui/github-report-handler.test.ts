@@ -53,6 +53,7 @@ function storeStub() {
     })),
     saveReport: vi.fn(),
     completeVerifiedRepair: vi.fn(async () => ({ revision: "verified" })),
+    completeClosedRepair: vi.fn(async () => ({ revision: "closed" })),
   } as unknown as GitHubBugReportStore;
 }
 
@@ -179,6 +180,50 @@ describe("bug report handler", () => {
 
     expect(response.status).toBe(400);
     expect(store.completeVerifiedRepair).not.toHaveBeenCalled();
+  });
+
+  it("routes full lifecycle closure through closed repair persistence", async () => {
+    const store = storeStub();
+    const response = await handleBugReportStoreRequest(
+      new Request("http://localhost/api/bug-report/closed", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: "workspace/reports/golden.json",
+          bugId: "BUG-G-001",
+          repairBy: "developer",
+          closure: {
+            schemaVersion: 1,
+            transactionId: "tx:1",
+            scenarioId: "scenario:1",
+            disposition: "fixed",
+            proofLayerEvidence: {
+              transitive: ["e:t"],
+              runtime: ["e:r"],
+              preservation: ["e:p"],
+              package: ["e:pkg"],
+            },
+            regressionEvidenceIds: ["e:reg"],
+            evidenceIds: ["e:t", "e:r", "e:p", "e:pkg", "e:reg"],
+          },
+          preservation: {
+            contractId: "contract:1",
+            transactionId: "tx:1",
+            passed: true,
+            verifiedMustChangeInvariantIds: ["intent:change"],
+            verifiedMustPreserveInvariantIds: ["intent:preserve"],
+            evidenceIds: ["e:p"],
+          },
+          expectedRevision: "abc",
+        }),
+      }),
+      store,
+    );
+
+    expect(response.status).toBe(200);
+    expect(store.completeClosedRepair).toHaveBeenCalledTimes(1);
   });
 
 });
