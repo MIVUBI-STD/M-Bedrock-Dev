@@ -7,7 +7,7 @@
 User-facing flow:
 
 ```text
-AUDIT → REPORT → FIX
+AUDIT → BUG REPORT → REPAIR
 ```
 
 V1 remains import-only compatibility. New reports and exports use V2.
@@ -90,6 +90,7 @@ Tester-facing display mappings are intentionally limited to:
 Problem       → Issue
 Reproduction  → Bug Trigger (In-Game)
 Suggested Fix → Solution
+AI Analysis   → Technical Analysis
 ```
 
 Do not create additional synonyms for these concepts. Do not introduce alternate workflow terms such as Open, Closed, Done, Verified, Repair Status, Do Not Break, or Repair With when the persisted V2 field already has a canonical term.
