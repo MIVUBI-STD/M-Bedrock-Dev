@@ -18,7 +18,7 @@ const intent: GameplayIntentModel = {
   id: "intent",
   evidence: [{
     id: "intent:evidence",
-    origin: "source-code",
+    origin: "game-design-spec",
     locator: "scripts/session.ts",
     summary: "Authored session cleanup rule.",
   }],
@@ -88,8 +88,7 @@ describe("report confirmation adapter", () => {
   });
 
   it.each([
-    "probable-defect",
-    "designed-behavior",
+        "designed-behavior",
     "compatibility-difference",
     "insufficient-evidence",
     "ambiguous-intent",
@@ -120,5 +119,21 @@ describe("report confirmation adapter", () => {
       );
 
     expect(result.confirmed).toBe(false);
+  });  it("rejects source-code-only authored intent even when disposition says confirmed", () => {
+    const confirmation =
+      confirmGameplayIntentRuntimeDefectForReport(
+        {
+          ...intent,
+          evidence: [{
+            ...intent.evidence[0]!,
+            origin: "source-code",
+          }],
+        },
+        assessment("confirmed-defect"),
+      );
+
+    expect(confirmation.confirmed).toBe(false);
   });
+
+
 });
