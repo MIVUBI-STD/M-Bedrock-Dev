@@ -12,6 +12,16 @@ description: >
 
 Use for bug finding, retest, or defect classification.
 
+## Version scope
+
+Audit exactly one selected map version.
+
+Default target = the single current `.mcworld` in that map root. If the user explicitly selects another file/version, that exact file is the target.
+
+Do not read older versions, Development/Source, old QA/Bug Reports, Technical Docs, other maps, or external sources to infer current mechanics. Those are archive/reference only unless the user explicitly requests comparison/history.
+
+Expected and Actual Behavior must belong to the same selected map/version.
+
 ## Required order
 
 ```text
