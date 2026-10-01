@@ -60,7 +60,7 @@ export function confirmGameplayIntentRuntimeDefectForReport(
 
   return confirmDefectForReport({
     foundBy: "ai",
-    expectedBehaviorAuthority: "authored-intent",
+    expectedBehaviorAuthority: "selected-artifact",
     runtimeMismatchObserved: true,
     evidence:
       "Runtime evidence " +
