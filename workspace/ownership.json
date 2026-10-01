@@ -13,6 +13,12 @@
       "entries": [
         "reports"
       ]
+    },
+    "integration": {
+      "purpose": "Tracked external artifact-store bindings; no private artifact bytes.",
+      "entries": [
+        "drive-root.json"
+      ]
     }
   }
 }

@@ -2,6 +2,7 @@ export * from "./context-compiler.js";
 export * from "./decision-basis.js";
 export * from "./decision-ledger.js";
 export * from "./decision-ledger-recording.js";
+export * from "./drive-project-binding-store.js";
 export * from "./engineering-review-invalidation.js";
 export * from "./engineering-review-priority.js";
 export * from "./engineering-review-projection.js";

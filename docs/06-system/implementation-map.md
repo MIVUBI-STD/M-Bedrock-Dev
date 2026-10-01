@@ -8,6 +8,7 @@ Use this before broad repository search.
 | Artifact kind/identity/fingerprint | engine/packages/artifact/ |
 | ZIP/archive safety, inventory, package transport | engine/packages/archive/ |
 | Workspace/session/file inventory + telemetry data contracts | engine/packages/project-model/ |
+| Drive project/root binding and exact artifact pointers | engine/packages/project-model/src/project/drive-binding.ts + workspace/drive-root.json |
 | Runtime semantic attribute convention | engine/packages/project-model/src/runtime/runtime-semantic-convention.ts |
 | Runtime telemetry emission helpers / sinks / instrumentation guards | engine/packages/telemetry/ |
 | Semantic dependency graph/invalidation | engine/packages/graph/ |
@@ -55,6 +56,7 @@ Use this before broad repository search.
 | Education edition/feature profile | engine/packages/compatibility/education* |
 | Repair transactions/preconditions/application | engine/packages/repair/ |
 | Cross-owner inspect/repair-validation orchestration | engine/packages/orchestrator/ |
+| Per-project Drive binding persistence | engine/packages/orchestrator/src/workflow/drive-project-binding-store.ts |
 | Fail-closed repository task planning | engine/packages/orchestrator/src/repository-task-plan.ts |
 | Affected semantic/context compression for Codex | engine/packages/orchestrator/src/semantic-affected-plan.ts + context-compiler.ts |
 | Arena lifecycle + cleanup convergence | engine/packages/orchestrator/src/arena-lifecycle-* + arena-cleanup-* |
