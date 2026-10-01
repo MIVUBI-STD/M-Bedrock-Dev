@@ -14,7 +14,7 @@ export interface ParsedCliTargetOptions {
 export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetOptions {
   const positionals: string[] = [];
   const experiments: string[] = [];
-  const authoredSourceRoots: string[] = [];
+  const contractSourceRoots: string[] = [];
   const target: InspectTargetProfile = {};
   let telemetryPath: string | undefined;
   let arenaRegionContractsPath: string | undefined;
@@ -55,14 +55,14 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
       continue;
     }
 
-    if (token === "--authored-source-root") {
+    if (token === "--contract-source-root") {
       const value = args[index + 1];
       if (!value || value.startsWith("--")) {
         throw new Error(
-          "--authored-source-root requires a source root path",
+          "--contract-source-root requires a source root path",
         );
       }
-      authoredSourceRoots.push(value);
+      contractSourceRoots.push(value);
       index += 1;
       continue;
     }
@@ -149,8 +149,8 @@ export function parseCliTargetOptions(args: readonly string[]): ParsedCliTargetO
   }
 
   if (experiments.length > 0) target.experiments = experiments;
-  if (authoredSourceRoots.length > 0) {
-    target.authoredSourceRoots = authoredSourceRoots;
+  if (contractSourceRoots.length > 0) {
+    target.contractSourceRoots = contractSourceRoots;
   }
   return {
     positionals,
