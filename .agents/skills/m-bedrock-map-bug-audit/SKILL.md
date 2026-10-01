@@ -74,9 +74,8 @@ Normal ChatGPT preview uses one compact table:
 
 ```text
 No. | Severity | Bug | Issue | Solution
-
-How to Reproduce the Bug
-No. | Steps
+#1  | ...      | ... | ...   | ...
+    |          | How to Reproduce: ...
 ```
 
 Rules:
@@ -88,8 +87,8 @@ Rules:
 - if no tester-verifiable path exists yet, keep the finding internal rather than presenting it as a ready bug;
 - do not invent Solution when Suggested Fix is absent;
 - hide fixed bugs unless requested;
-- keep reproduction out of the main table;
-- show a separate `How to Reproduce the Bug` table immediately below the main bug table;
+- put `How to Reproduce` immediately below the matching bug row inside the same table;
+- do not create a separate reproduction section or second table;
 - do not show Expected / Observed / technical fields unless the user requests detail;
 - never expose internal proof plumbing, semantic keys, evidence graph IDs, repair-unit IDs, cache state, or orchestration data in normal report preview;
 - use `full` only when the user asks for root-cause or implementation detail.
