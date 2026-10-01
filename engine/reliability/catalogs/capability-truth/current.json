@@ -11,17 +11,17 @@
   },
   "summary": {
     "taskCapabilities": 34,
-    "sourceVerified": 34,
-    "implementedUnverified": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
-    "analysisCapabilities": 27
+    "analysisCapabilities": 27,
+    "ownerTested": 34,
+    "implementationPresent": 0
   },
   "taskCapabilities": [
     {
       "id": "behavior.arena",
       "owner": "packages/behavior-model",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -40,12 +40,13 @@
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "behavior.chunks",
       "owner": "packages/behavior-model",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -64,12 +65,13 @@
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "behavior.combat",
       "owner": "packages/behavior-model",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -88,12 +90,13 @@
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "behavior.core",
       "owner": "packages/behavior-model",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -112,12 +115,13 @@
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "behavior.economy",
       "owner": "packages/behavior-model",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -136,12 +140,13 @@
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "behavior.entity-ai",
       "owner": "packages/behavior-model",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -160,12 +165,13 @@
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "behavior.inventory",
       "owner": "packages/behavior-model",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -184,12 +190,13 @@
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "behavior.spatial",
       "owner": "packages/behavior-model",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -208,12 +215,13 @@
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "context.compile",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -232,12 +240,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "domain.arena-lifecycle",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -256,12 +265,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "domain.chunks",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -280,12 +290,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "domain.combat",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -304,12 +315,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "domain.economy",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -328,12 +340,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "domain.entity-ai",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -352,12 +365,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "domain.inventory",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -376,12 +390,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "domain.persistence",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -400,12 +415,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "domain.spatial-authority",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -424,12 +440,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "projection.workflow",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -448,12 +465,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "projection.world-model",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -472,12 +490,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "repair.routing",
       "owner": "packages/orchestrator",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -496,12 +515,13 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "runtime.chunks",
       "owner": "packages/runtime-lab",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": false,
       "cost": "very-expensive",
       "contexts": [
@@ -518,12 +538,13 @@
         "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "runtime.entity-ai",
       "owner": "packages/runtime-lab",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": false,
       "cost": "very-expensive",
       "contexts": [
@@ -540,12 +561,13 @@
         "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "runtime.persistence",
       "owner": "packages/runtime-lab",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": false,
       "cost": "expensive",
       "contexts": [
@@ -562,12 +584,13 @@
         "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.entities.ai",
       "owner": "analyzers/entities",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -586,12 +609,13 @@
         "engine/analyzers/entities/test/entity.test.ts",
         "engine/analyzers/entities/test/loot.test.ts",
         "engine/analyzers/entities/test/navigation.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.entities.core",
       "owner": "analyzers/entities",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -610,12 +634,13 @@
         "engine/analyzers/entities/test/entity.test.ts",
         "engine/analyzers/entities/test/loot.test.ts",
         "engine/analyzers/entities/test/navigation.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.entities.economy",
       "owner": "analyzers/entities",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -634,12 +659,13 @@
         "engine/analyzers/entities/test/entity.test.ts",
         "engine/analyzers/entities/test/loot.test.ts",
         "engine/analyzers/entities/test/navigation.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.scripts.arena",
       "owner": "analyzers/scripts",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -658,12 +684,13 @@
         "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.scripts.chunks",
       "owner": "analyzers/scripts",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -682,12 +709,13 @@
         "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.scripts.combat",
       "owner": "analyzers/scripts",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -706,12 +734,13 @@
         "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.scripts.core",
       "owner": "analyzers/scripts",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -730,12 +759,13 @@
         "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.scripts.dataflow",
       "owner": "analyzers/scripts",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -754,12 +784,13 @@
         "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.scripts.economy",
       "owner": "analyzers/scripts",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -778,12 +809,13 @@
         "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.scripts.inventory",
       "owner": "analyzers/scripts",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -802,12 +834,13 @@
         "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "source.scripts.persistence",
       "owner": "analyzers/scripts",
-      "status": "source-verified",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -826,7 +859,8 @@
         "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
-      ]
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     }
   ],
   "analysisCapabilities": [

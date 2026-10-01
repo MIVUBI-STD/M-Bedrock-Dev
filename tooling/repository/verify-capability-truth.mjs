@@ -14,7 +14,7 @@ const ids=new Set();
 for(const item of data.taskCapabilities??[]){
   if(ids.has(item.id)) errors.push("duplicate task capability id: "+item.id);
   ids.add(item.id);
-  if(!["declared-only","implemented-unverified","source-verified"].includes(item.status)) errors.push("invalid capability status: "+item.id);
+  if(!["declared-only","implementation-present","owner-tested"].includes(item.status)) errors.push("invalid capability status: "+item.id);
   if(typeof item.owner!=="string"||!item.owner.trim()) errors.push("missing owner: "+item.id);
 }
 if(errors.length){

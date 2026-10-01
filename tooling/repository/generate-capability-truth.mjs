@@ -99,8 +99,8 @@ const taskCapabilities=task.map((item)=>{
   const status=stats.sourceFiles===0
     ?"declared-only"
     :stats.testFiles>0
-      ?"source-verified"
-      :"implemented-unverified";
+      ?"owner-tested"
+      :"implementation-present";
   const runtimeOnly=item.contexts.length>0 &&
     item.contexts.every((x)=>x==="LOCAL_MINECRAFT"||x==="LIVE_MINECRAFT");
   return {
@@ -126,8 +126,8 @@ const output={
   },
   summary:{
     taskCapabilities:taskCapabilities.length,
-    sourceVerified:taskCapabilities.filter((x)=>x.status==="source-verified").length,
-    implementedUnverified:taskCapabilities.filter((x)=>x.status==="implemented-unverified").length,
+    ownerTested:taskCapabilities.filter((x)=>x.status==="owner-tested").length,
+    implementationPresent:taskCapabilities.filter((x)=>x.status==="implementation-present").length,
     declaredOnly:taskCapabilities.filter((x)=>x.status==="declared-only").length,
     runtimeOnly:taskCapabilities.filter((x)=>x.runtimeOnly).length,
     analysisCapabilities:analysis.length
