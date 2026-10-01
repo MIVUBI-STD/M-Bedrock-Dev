@@ -87,6 +87,7 @@ export interface ValidationRunTrace {
   intentInvariantIds: readonly string[];
   ok: boolean;
   proofLevel: ValidationProofLevel;
+  proofSufficient: boolean;
   current: boolean;
   staleReasons: readonly string[];
   evidenceIds: readonly string[];
