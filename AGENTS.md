@@ -107,6 +107,20 @@ Once selected, the work lane remains active until its STOP or explicit handoff. 
 
 Generic Product Development has no detection-lane skill: use the normal development execution contract and canonical semantic owner unless the requested capability specifically improves bug detection/diagnosis/proof.
 
+## Map/version isolation
+
+Gameplay audit defaults to one closed target:
+
+```text
+explicitly selected map/version
+or single current root .mcworld
+→ only current gameplay artifact
+```
+
+Do not infer current mechanics from older versions, Development/Source, historical QA, Technical Docs, other maps, or external references. They remain archive/reference unless the user explicitly requests comparison/history.
+
+Expected and Actual Behavior must be scoped to the same selected map/version.
+
 ## Design-first gameplay workflow
 
 Gameplay bug work is design-first. Do not begin bug discovery from suspicious implementation patterns.
