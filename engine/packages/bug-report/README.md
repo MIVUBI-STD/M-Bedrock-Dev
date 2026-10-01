@@ -73,7 +73,7 @@ Tested Version: Minecraft Education <exact tested version>
 Open Issues
 Blocker · Major · Minor
 
-No. | Severity | Bug | Issue | Action
+No. | Severity | Bug | Issue | Solution
 ```
 
 Normal bug-finding preview does not show Repair By, Fixed progress, Category, Found By, or technical detail.
@@ -82,7 +82,7 @@ The exact tested build comes from `map.testedVersion`. The label `(Latest)` may 
 
 Technical Analysis, Relevant Code, Expected, Observed, Reproduction, and Must Preserve are detail-on-demand.
 
-Preview must never invent an Action, persist a second report format, or expose internal diagnostic plumbing.
+Preview must never invent a Solution, persist a second report format, or expose internal diagnostic plumbing.
 
 ## Repair ownership
 
@@ -138,7 +138,7 @@ Developer-facing report text should answer the minimum useful questions:
 What is wrong?
 What should happen?
 What actually happens?
-How can I reproduce it?
+How can I trigger it in-game?
 Where should I look?
 What does the AI analysis suggest?
 What must the repair preserve?
