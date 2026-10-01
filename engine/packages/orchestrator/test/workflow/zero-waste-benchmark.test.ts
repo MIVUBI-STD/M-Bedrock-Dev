@@ -6,7 +6,7 @@ import {
 import {
   evaluateZeroWasteBenchmark,
   zeroWasteBenchmarkText,
-} from "../src/zero-waste-benchmark.js";
+} from "../../src/workflow/zero-waste-benchmark.js";
 
 describe("zero-waste benchmark", () => {
   it("scores reuse, semantic skipping, validation skipping, and context truncation", () => {

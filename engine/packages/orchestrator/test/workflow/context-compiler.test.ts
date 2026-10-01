@@ -5,13 +5,13 @@ import {
 } from "vitest";
 import {
   SemanticGraph,
-} from "../../graph/src/index.js";
+} from "../../../graph/src/index.js";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import {
   compileContextPack,
-} from "../src/context-compiler.js";
+} from "../../src/workflow/context-compiler.js";
 
 function fixtureGraph() {
   const graph =

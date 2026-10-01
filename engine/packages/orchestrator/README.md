@@ -30,7 +30,7 @@ The next physical-move phase may relocate implementation files family-by-family 
 
 ### Physical migration status
 
-`reporting/` and `release/` have their implementations and tests physically inside the hierarchy. `workflow/` physical migration is now incremental: repository planning, affected-scope, selective-validation, semantic-fingerprint, and semantic-proof state modules live under the family while remaining workflow modules stay flat until their own bounded migration. Legacy flat source paths remain compatibility re-export stubs while CI/local verification is deferred.
+`workflow/`, `reporting/`, and `release/` now have their implementations physically inside the hierarchy; matching tests mirror those families where present. Legacy flat source paths remain compatibility re-export stubs while CI/local verification is deferred.
 
 
 ## Inspection pipeline

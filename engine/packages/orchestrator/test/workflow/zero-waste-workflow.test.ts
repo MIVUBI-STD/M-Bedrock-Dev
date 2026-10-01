@@ -5,18 +5,18 @@ import {
 } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import {
   SemanticGraph,
-} from "../../graph/src/index.js";
+} from "../../../graph/src/index.js";
 import type {
   PatchTransaction,
-} from "../../repair/src/index.js";
+} from "../../../repair/src/index.js";
 import {
   createSemanticProofClaim,
   prepareZeroWasteWorkflow,
   zeroWasteWorkflowPlanText,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function graphFixture() {
   const graph =

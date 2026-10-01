@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
   ZeroWasteWorkflowPlan,
-} from "../src/zero-waste-workflow.js";
+} from "../../src/workflow/zero-waste-workflow.js";
 import {
   createZeroWasteExecutionReceipt,
-} from "../src/zero-waste-execution-receipt.js";
+} from "../../src/workflow/zero-waste-execution-receipt.js";
 
 const plan: ZeroWasteWorkflowPlan = {
   transactionId: "tx",

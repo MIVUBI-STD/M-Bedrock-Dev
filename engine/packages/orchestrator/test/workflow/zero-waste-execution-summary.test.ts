@@ -6,10 +6,10 @@ import {
 import {
   summarizeZeroWasteExecution,
   zeroWasteExecutionSummaryText,
-} from "../src/zero-waste-execution-summary.js";
+} from "../../src/workflow/zero-waste-execution-summary.js";
 import type {
   ProgressiveDiagnosisRunResult,
-} from "../../diagnosis-pipeline/src/index.js";
+} from "../../../diagnosis-pipeline/src/index.js";
 
 describe("zero-waste execution summary", () => {
   it("reports reuse and skip ratios without changing execution authority", () => {
