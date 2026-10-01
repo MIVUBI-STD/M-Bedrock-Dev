@@ -157,6 +157,7 @@ export function reviewConfirmedBugInputs(
           "AI-found defects require authored contract violation or runtime observation.",
       });
     }
+  }
 
   const reportBugs = bugs.map(toV2Bug);
 
