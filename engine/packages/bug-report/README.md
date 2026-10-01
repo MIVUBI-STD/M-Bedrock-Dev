@@ -12,6 +12,19 @@ AUDIT → REPORT → FIX
 
 V1 remains import-only compatibility. New reports and exports use V2.
 
+## Contract ownership
+
+The bug-report package keeps one authority per concern:
+
+| Concern | Authority |
+|---|---|
+| Persisted data semantics | `v2.ts` + V2 schema |
+| New-report wording quality | `COPY.md` + `copy-quality.ts` |
+| Human / ChatGPT presentation | `PREVIEW.md` + `preview.ts` |
+| Confirmation / promotion semantics | this package's confirmation and promotion modules |
+
+Other UI, agent, and workspace documents reference these contracts. They must not redefine them.
+
 ## Canonical vocabulary
 
 Frontend labels must keep the same meaning as persisted V2 fields.
@@ -79,7 +92,7 @@ All persisted report content and canonical UI labels are English.
 
 ## Creation
 
-New reports must be created directly as V2 through `createBugReportV2()`. The creator defaults each bug to `fixed: false` unless an explicit value is supplied and validates the complete report before it can be emitted.
+New reports must be created directly as V2 through `createBugReportV2()`. The creator defaults each bug to `fixed: false`, validates V2 semantics, and enforces the wording contract in `COPY.md` before emission.
 
 Do not generate V1 and convert it to V2 for new audits. V1 conversion exists only for old saved reports.
 
