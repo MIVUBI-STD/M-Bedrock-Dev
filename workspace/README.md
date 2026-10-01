@@ -36,42 +36,23 @@ Nothing under `workspace/active/` or `workspace/saved/` is repository source aut
 `workspace/active/<project-id>/design/game-design.json` is the canonical local Game Design for that map/project. Engine schemas and compilers validate/compile it, but engine-global knowledge or contracts must never replace it.
 
 
-## Drive artifact store
 
-Google Drive is the binary/evidence artifact store, not a second semantic authority.
+## Drive source storage
 
-Tracked root binding:
+Google Drive remains user-managed storage for map binaries and source-development material.
+
+Tracked root pointer:
 
 ```text
 workspace/drive-root.json
 ```
 
-Per-project exact Drive binding is local and ignored:
+Per-project exact pointer is local and ignored:
 
 ```text
 workspace/active/<project-id>/state/drive-binding.json
 ```
 
-The hot path uses Drive file/folder IDs from the binding. Drive search is discovery/fallback only.
+The binding may remember only the map folder, current world file, and existing `Raw Dev` / `Old Version` folders. M-Bedrock does not create Drive-side system, QA, report, registry, sync, or release folders.
 
-Canonical authority remains:
-
-```text
-engine/code/rules/schema            -> GitHub
-workspace structured project state -> workspace/active
-Bug Report V2 handoff               -> workspace/reports
-.mcworld/raw docs/evidence/release  -> Google Drive
-```
-
-Map folders are provisioned lazily. When a map first needs a role, ChatGPT creates only the missing conventional folders:
-
-```text
-Docs/
-QA/
-  Current/
-  Runs/
-  Archive/
-Release/
-```
-
-Existing `Raw Dev/` and `Old Version/` folders are preserved. Bug Report V2 JSON in Git remains canonical; Drive receives human-facing report projections and run evidence.
+Canonical Bug Report V2 remains under `workspace/reports/`.

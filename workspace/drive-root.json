@@ -1,10 +1,5 @@
 {
   "schemaVersion": 1,
   "provider": "google-drive",
-  "rootFolderId": "1NxbWh-dYiarjDJ23q99G_WIQwjn_V-AD",
-  "systemFolderId": "1jhdZeoHCYz0ijRei5imaqlJctZQRUm3C",
-  "registryFolderId": "1xnScJVDMB6pAB5UW7KqQxNYzSW-YAIo4",
-  "portfolioQaFolderId": "1PYuKdgRfT5G24FHbxUg3O98A_yV2niwl",
-  "syncFolderId": "1pYKBfRuSOLuEYhJLK1Qqd1iKEAA_K_AM",
-  "provisioning": "lazy"
+  "rootFolderId": "1NxbWh-dYiarjDJ23q99G_WIQwjn_V-AD"
 }
