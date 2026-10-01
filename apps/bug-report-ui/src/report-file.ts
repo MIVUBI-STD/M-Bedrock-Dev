@@ -1,4 +1,5 @@
 import {
+  buildBugReportFileName,
   parseBugReportToCurrent,
   type BugReportParseIssue,
   type BugReportV2,
@@ -38,21 +39,8 @@ export async function readBugReportFile(
   return parseBugReportToCurrent(await file.text());
 }
 
-function safeSegment(value: string): string {
-  const cleaned = value
-    .trim()
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return cleaned || "map";
-}
-
 export function buildBugReportDownloadName(
   map: BugReportV2Map,
 ): string {
-  return (
-    safeSegment(map.name) +
-    "-v" +
-    safeSegment(map.mapVersion) +
-    "-BugReport.json"
-  );
+  return buildBugReportFileName(map);
 }
