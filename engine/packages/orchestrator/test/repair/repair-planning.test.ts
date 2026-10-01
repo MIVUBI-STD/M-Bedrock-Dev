@@ -15,7 +15,7 @@ function topologyFor(lines: string[]) {
 }
 
 describe("orchestrated repair planning", () => {
-  it("returns a patch transaction when artifact fingerprint is available", () => {
+  it("returns a repair proposal without creating a transaction during inspection", () => {
     const topology = topologyFor([
       "fill 0 0 0 3 2 3 stone",
       "fill 100 0 0 103 2 3 stone",
@@ -28,9 +28,9 @@ describe("orchestrated repair planning", () => {
 
     expect(plans).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        status: "planned",
+        status: "proposal",
         sourcePath: source.relativePath,
-        transaction: expect.objectContaining({
+        proposal: expect.objectContaining({
           sourceFingerprint: "artifact-sha",
         }),
       }),
