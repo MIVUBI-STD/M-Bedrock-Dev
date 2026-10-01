@@ -184,6 +184,7 @@
       "required": [
         "disposition",
         "scope",
+        "discoveryCompleteness",
         "totalSurfaces",
         "checked",
         "blocked",
@@ -219,6 +220,9 @@
         },
         "scope": {
           "const": "discovered-surfaces-only"
+        },
+        "discoveryCompleteness": {
+          "const": "not-proven"
         }
       },
       "additionalProperties": false
