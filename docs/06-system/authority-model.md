@@ -1,32 +1,31 @@
 # Semantic Authority Model
 
+Gameplay correctness uses separate authorities:
+
 ```text
-GAME DESIGN
-What should this map/mode do?
-        ↓
-GAMEPLAY INTENT
-What intent can be reconstructed from authored artifact evidence?
-        ↓
-MINECRAFT PLATFORM KNOWLEDGE
-What does the target Minecraft runtime support or do?
-        ↓
-ENGINEERING CONTRACTS
-What global implementation/reliability constraints apply?
-        ↓
-BEHAVIOR + RUNTIME EVIDENCE
-What can happen / what actually happened?
-        ↓
-DIAGNOSIS
-Does observed/derived behavior violate grounded design?
+Map Game Design
+→ Gameplay Contract
+→ expected gameplay
+
+current source / artifact / runtime
+→ Actual Behavior
+
+expected gameplay ≠ Actual Behavior
+→ diagnosis
 ```
 
-Hard boundaries:
-- Game Design is explicit and map/mode scoped.
-- Gameplay Intent is reconstruction, not independent design authority.
-- Platform Knowledge is descriptive and version/runtime scoped.
-- Engineering Contracts are normative for implementation quality, not gameplay meaning.
-- Behavior Model is an evaluation formalism, not an origin of intended behavior.
-- Runtime observations can falsify expectations but do not silently redefine design or platform facts.
+Supporting domains:
 
+- Gameplay Intent reconstructs implementation meaning; it is not independent design authority.
+- Platform Knowledge describes Minecraft behavior/capability.
+- Engineering Contracts define MIVUBI implementation/reliability requirements.
+- Behavior Model evaluates possible behavior.
+- Runtime Evidence records observed behavior.
 
-Canonical terminology is defined in `canonical-naming.md`.
+Hard rules:
+
+- source code never becomes Map Game Design merely because it is explicit or repeated;
+- approved reconstruction is clarification evidence, not enough by itself to confirm a gameplay defect;
+- runtime observation proves what happened, not what should happen;
+- material design unknowns block bug classification for that scope;
+- canonical terminology is defined in `canonical-naming.md`.
