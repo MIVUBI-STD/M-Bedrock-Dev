@@ -13,11 +13,13 @@ function model(): GameplayIntentModel {
   return {
     schemaVersion: 1,
     id: "reconnect-policy",
+    artifactId: "artifact:reconnect",
     evidence: [{
       id: "e:policy",
       origin: "source-code",
       locator: "src/recovery-policy.ts",
       summary: "Authored cleanup policy.",
+      scope: "selected-artifact",
     }],
     nodes: [
       {
@@ -89,7 +91,7 @@ describe("runtime state outcome intent gate", () => {
     ]);
   });
 
-  it("caps policy violation at probable defect", () => {
+  it("caps policy violation at ambiguous outcome", () => {
     const snapshot: RuntimeStateSnapshot = {
       schemaVersion: 1,
       observations: [{
@@ -108,7 +110,7 @@ describe("runtime state outcome intent gate", () => {
         stateSnapshot: snapshot,
         observationEvidenceIds: ["e:observed-outcome"],
       }).disposition,
-    ).toBe("probable-defect");
+    ).toBe("ambiguous-intent");
   });
 
   it("selects state from the requested runtime scope", () => {
