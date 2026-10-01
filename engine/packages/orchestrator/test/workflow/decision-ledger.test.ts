@@ -5,7 +5,7 @@ import {
   createDecisionLedger,
   invalidateStaleDecisionLedger,
   supersedeDecisionLedgerEntry,
-} from "../src/decision-ledger.js";
+} from "../../src/workflow/decision-ledger.js";
 
 describe("decision ledger", () => {
   it("appends deterministic monotonic entries without overwriting history", () => {

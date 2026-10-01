@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildEngineeringReviewPriority,
-} from "../src/engineering-review-priority.js";
+} from "../../src/workflow/engineering-review-priority.js";
 
 const emptyRuntime = {
   "confirmed-defect": 0,

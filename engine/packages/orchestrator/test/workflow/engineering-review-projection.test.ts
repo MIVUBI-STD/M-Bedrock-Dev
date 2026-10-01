@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildEngineeringReviewProjection,
   type EngineeringReviewSource,
-} from "../src/engineering-review-projection.js";
+} from "../../src/workflow/engineering-review-projection.js";
 
 function sourceFixture(): EngineeringReviewSource {
   return {

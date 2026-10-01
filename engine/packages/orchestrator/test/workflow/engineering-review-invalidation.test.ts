@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type {
   DecisionLedgerSnapshot,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import type {
   ValidationTraceReport,
-} from "../../validation/src/index.js";
+} from "../../../validation/src/index.js";
 import {
   buildEngineeringReviewInvalidationProjection,
-} from "../src/engineering-review-invalidation.js";
+} from "../../src/workflow/engineering-review-invalidation.js";
 
 describe("engineering review invalidation projection", () => {
   it("translates basis drift into a human-readable blocking action", () => {

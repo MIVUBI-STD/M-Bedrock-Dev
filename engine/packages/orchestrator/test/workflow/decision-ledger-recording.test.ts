@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   appendDecisionLedgerEntry,
   createDecisionLedger,
-} from "../src/decision-ledger.js";
+} from "../../src/workflow/decision-ledger.js";
 import {
   recordDiagnosticRepairDecision,
   recordPackageVerificationDecision,
@@ -11,16 +11,16 @@ import {
   recordRepairAdmissionDecision,
   recordRepairRealizationCoverage,
   recordRuntimeVerificationDecision,
-} from "../src/decision-ledger-recording.js";
+} from "../../src/workflow/decision-ledger-recording.js";
 import type {
   RepairLifecycleState,
-} from "../src/repair-lifecycle.js";
+} from "../../src/repair-lifecycle.js";
 import type {
   RepairProofBundle,
-} from "../src/repair-proof-bundle.js";
+} from "../../src/repair-proof-bundle.js";
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 
 const basis = {
   contractRegistryRevision: CONTRACT_REGISTRY_REVISION,
