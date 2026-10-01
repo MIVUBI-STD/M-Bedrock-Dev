@@ -1,28 +1,163 @@
 # Google Drive Storage
 
-Google Drive is the human-facing storage location for map binaries, active map documents, development material, previous builds, and advanced technical references.
+Google Drive is the human-facing storage location for map binaries, active map documents, development material, version history, and advanced technical references.
 
 It is not an M-Bedrock database, cache, registry, sync layer, or semantic authority.
 
-## Authority
+## Canonical map layout
 
 ```text
-Google Drive
-  map/storage surface used by humans and ChatGPT
-
-workspace/active/<project-id>
-  active engine working state
-
-workspace/reports/
-  canonical Bug Report V2 JSON handoff
-
-GitHub
-  engine + rules + schemas + storage guidance
+<Map Folder>/
+├── <Map Name> vX.Y.Z.mcworld
+├── <Map Name> - Guide              [Google Doc, when available]
+├── <Map Name> - Changelog          [Google Doc]
+├── <Map Name> - Bug Report.pdf     [latest completed report, when available]
+├── Development/                    [optional]
+│   ├── Source/                     [optional]
+│   └── Versions/                   [optional]
+└── Technical Docs/                 [optional]
 ```
 
-## Root collection
+Do not create empty optional folders.
 
-The Drive root stays map-centric:
+## Root roles
+
+### Current world
+
+Keep one obvious current world in the map root:
+
+```text
+<Map Name> vMAJOR.MINOR.PATCH.mcworld
+```
+
+The root location means current. Do not add words such as `latest`, `final`, `new`, `fixed`, or `backup`.
+
+### Guide
+
+The active Guide is a native Google Doc in the root:
+
+```text
+<Map Name> - Guide
+```
+
+### Changelog
+
+Keep one living native Google Doc:
+
+```text
+<Map Name> - Changelog
+```
+
+It records version history and known Added / Changed / Fixed / Removed facts. Do not create a changelog file per version.
+
+### Bug Report
+
+The latest generated human-facing report may live in the root:
+
+```text
+<Map Name> - Bug Report.pdf
+```
+
+Canonical Bug Report V2 JSON remains in Git/workspace.
+
+## Development
+
+`Development/` has only two concepts.
+
+### Source
+
+`Development/Source/` contains the original/raw development material.
+
+This may include:
+
+- the raw/unversioned map;
+- raw world exports;
+- Behavior Pack / Resource Pack source;
+- scripts;
+- raw pack ZIPs;
+- structures or other source assets.
+
+When a raw map exists, name it clearly:
+
+```text
+<Map Name> - Raw Map.mcworld
+```
+
+A raw map is not a versioned build.
+
+### Versions
+
+`Development/Versions/` contains every retained world build that has entered the versioning lifecycle but is not the current root build.
+
+Pre-release development builds use an explicit development suffix:
+
+```text
+<Map Name> v1.0.0-dev.1.mcworld
+<Map Name> v1.0.0-dev.2.mcworld
+```
+
+These are Development Builds: snapshots before the corresponding official version is accepted.
+
+The first official version is the Base Version:
+
+```text
+<Map Name> v1.0.0 (Base Version).mcworld
+```
+
+Later official versions use normal semantic-version naming:
+
+```text
+<Map Name> v1.0.1.mcworld
+<Map Name> v1.0.2.mcworld
+...
+```
+
+Do not create separate folders named:
+
+- `Base Map`;
+- `Development Builds`;
+- `Previous Versions`;
+- `Source Files`;
+- `Raw Dev`;
+- `Old Version`.
+
+## Lifecycle
+
+```text
+Raw Map / source material
+→ v1.0.0-dev.1
+→ v1.0.0-dev.2
+→ v1.0.0 (Base Version)
+→ v1.0.1
+→ v1.0.2
+→ ...
+→ current version in root
+```
+
+When a new current version is accepted:
+
+```text
+current v1.1.1
+→ v1.1.2 becomes current
+→ move v1.1.1 to Development/Versions/
+→ place v1.1.2 in root
+→ update the single Changelog
+→ regenerate Bug Report.pdf only after a completed audit
+```
+
+## Technical Docs
+
+`Technical Docs/` is optional and contains advanced/supporting documents such as DAIGON/game-design references, scoring formulas, technical specifications, building previews, legacy QA references, client references, or technical reviews.
+
+Do not use `Technical Docs/` for map binaries or source packs.
+
+## Multi-level projects
+
+Do not flatten independent levels. Shared active documents may stay at project root. Each level may have its own current world and, only when needed, its own `Development/Source` and `Development/Versions`.
+
+## Drive root
+
+The configured Drive root stays map-centric:
 
 ```text
 <Category> - <Map Name>/
@@ -31,127 +166,6 @@ The Drive root stays map-centric:
 ```
 
 Do not add M-Bedrock system folders to the Drive root.
-
-Use consistent category spelling: Build, Challenge, Find The Button, Minigame, PvP, Skills.
-
-## Canonical single-map layout
-
-```text
-<Map Folder>/
-├── <Map Name> vX.Y.Z.mcworld
-├── <Map Name> - Guide              [Google Doc, when available]
-├── <Map Name> - Changelog          [Google Doc]
-├── <Map Name> - Bug Report.pdf     [generated latest report, when available]
-├── Development/                    [optional]
-│   ├── Base Map/                   [optional]
-│   ├── Development Builds/         [optional]
-│   ├── Previous Versions/          [optional]
-│   └── Source Files/               [optional]
-└── Technical Docs/                 [optional]
-```
-
-Do not create empty optional folders.
-
-## Root file roles
-
-### Current world
-
-`<Map Name> vMAJOR.MINOR.PATCH.mcworld` is the current production/test world. Keep one obvious current world in the map root.
-
-### Guide
-
-The active Guide is a native Google Doc in the map root because it is frequently consulted and edited.
-
-Use `<Map Name> - Guide`.
-
-Do not keep both an active Google Doc and duplicate DOCX Guide in the root after conversion has been verified.
-
-### Changelog
-
-The Changelog is one native Google Doc in the root.
-
-Use `<Map Name> - Changelog`.
-
-It owns human-readable version history and may record Added, Changed, Fixed, and Removed entries when those facts are known. Do not create one Changelog file per version.
-
-### Bug Report
-
-The Drive Bug Report is a generated PDF projection of canonical Bug Report V2 JSON.
-
-Use `<Map Name> - Bug Report.pdf`.
-
-Only the latest completed report belongs in the map root. Do not create a Drive-side Bug Reports history folder. Historical status is summarized in the Changelog; canonical bug state/history remains in Git/workspace.
-
-## Development
-
-`Development/` groups non-current map development material. Create only subfolders that have content.
-
-### Base Map
-
-Use only for a clearly identified clean/raw starting map.
-
-### Development Builds
-
-Use for intermediate or development-log `.mcworld` snapshots that are not released/current versions.
-
-### Previous Versions
-
-Use for superseded released/tested world versions.
-
-### Source Files
-
-Use for raw packs, source ZIPs, scripts, source assets, exported packs, and development logs that are not standalone technical documents.
-
-## Technical Docs
-
-`Technical Docs/` contains advanced/supporting material that is not part of the everyday active root, including DAIGON/game-design source documents, scoring formulas, technical specifications, building previews, legacy QA references, client references, and technical reviews.
-
-Preserve source document names unless a rename is necessary to remove genuine ambiguity.
-
-## Multi-level / multi-artifact projects
-
-Do not flatten independent levels.
-
-Shared active documents may remain at project root, while each level keeps its own current world and only the development hierarchy it actually needs.
-
-```text
-<Project Folder>/
-├── <Project Name> - Guide           [optional shared Google Doc]
-├── <Project Name> - Changelog       [Google Doc]
-├── <Project Name> - Bug Report.pdf  [optional latest generated report]
-├── Development/                     [optional shared development]
-├── Technical Docs/                  [optional shared technical docs]
-├── Level 1/
-│   ├── <current>.mcworld
-│   └── Development/                 [only when level-specific history exists]
-└── Level 2/
-    └── ...
-```
-
-## Naming rules
-
-Current world:
-
-```text
-<Map Name> vMAJOR.MINOR.PATCH.mcworld
-```
-
-Avoid status words such as `final`, `final2`, `latest`, `new`, `fixed`, or `backup`.
-
-Current status is determined by location in the map/level root. Previous released versions belong under `Development/Previous Versions/`.
-
-## Version lifecycle
-
-```text
-current v1.1.1
-→ v1.1.2 becomes the new current build
-→ move v1.1.1 to Development/Previous Versions/
-→ place v1.1.2 in the root
-→ update the single Changelog Google Doc
-→ regenerate/replace Bug Report.pdf only after a completed audit
-```
-
-Do not delete historical worlds unless explicitly requested.
 
 ## Exact lookup
 
@@ -169,8 +183,17 @@ Search by title is discovery only, not artifact identity.
 
 Do not automatically store semantic graphs, analysis caches, AI context, sync receipts, registry metadata, internal runtime state, repository metadata, temporary extraction, or canonical Bug Report V2 JSON in Drive.
 
-## ChatGPT operating rule
+## Operating rule
 
-ChatGPT may organize Drive content only to serve the user's map/source storage workflow and this layout.
+Prefer the shallowest valid structure.
 
-Prefer the shallowest valid structure, preserve existing useful content, avoid duplicate active documents, and never create empty folders merely for symmetry.
+```text
+Source
+= where the map came from
+
+Versions
+= how the map evolved
+
+Root
+= what is current
+```
