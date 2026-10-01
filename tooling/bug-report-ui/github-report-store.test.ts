@@ -130,13 +130,17 @@ describe("GitHubBugReportStore", () => {
   });
 
   it("refuses to overwrite a changed report", async () => {
+    const encoded = Buffer.from(
+      JSON.stringify(report()),
+      "utf8",
+    ).toString("base64");
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
           path: "workspace/reports/a.json",
           sha: "newer",
-          content: "",
+          content: encoded,
           encoding: "base64",
         }),
         { status: 200 },
