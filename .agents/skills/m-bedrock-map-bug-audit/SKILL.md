@@ -33,9 +33,54 @@ Use for bug finding, retest, suspected gameplay issues, or Blocker/Major/Minor c
 
 ## Workflow
 
-Expected behavior authority → cheapest sufficient evidence → actual behavior/effect → intent/design gate → player-visible impact gate → tester-verifiable in-game trigger gate → disposition → severity only if reportable defect → residue/handoff.
+```text
+Target identity
+→ current approved Game Design
+→ scoped Gameplay Contract
+→ design readiness gate
+→ actual behavior/effect
+→ contradiction search
+→ counter-evidence
+→ player-visible impact
+→ tester-verifiable in-game trigger
+→ disposition
+→ severity only if reportable defect
+→ Proposed Bug Set
+→ chat approval
+```
+
+**Do not run gameplay bug discovery before the design-readiness gate.**
 
 Use the evidence ladder in ../../references/evidence-cost-ladder.md; do not escalate evidence cost without need.
+
+## Game Design understanding gate
+
+Before candidate discovery:
+
+1. pin the current audited artifact/map version;
+2. load the project-local approved Game Design when available;
+3. derive only the scoped Gameplay Contract needed for the audit;
+4. identify material unknowns/conflicts;
+5. classify design readiness:
+   - `READY` — required material rules are grounded;
+   - `PARTIAL` — unknowns exist but cannot change this scoped decision;
+   - `BLOCKED` — a material unknown/conflict can change bug-vs-feature classification.
+
+Minimum Gameplay Contract for an audited mechanic should cover only what is relevant:
+
+- objective;
+- start/success/failure conditions;
+- progression;
+- reset/persistence;
+- recovery;
+- allowed player actions;
+- critical state/resources;
+- multiplayer ownership when applicable;
+- intentional exceptions.
+
+Do not write a second GDD. The contract is a derived working view of canonical Game Design.
+
+If readiness is `BLOCKED`, stop the affected scope as `ambiguous-intent` / discussion residue. Do not inspect suspicious source patterns and then invent design intent afterward.
 
 ## Bug vs feature gate
 
