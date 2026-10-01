@@ -23,6 +23,7 @@ export interface BugRepairTarget {
 export interface BugRepairVerification {
   readonly bugId: string;
   readonly validationRunIds: readonly string[];
+  readonly preservationInvariantIds?: readonly string[];
 }
 
 function findBug(
@@ -98,6 +99,48 @@ function verifiedRuns(
   return runs;
 }
 
+function verifyPreservationCoverage(
+  bug: BugReportV2Bug,
+  runs: readonly ValidationRunTrace[],
+  trace: ValidationTraceReport,
+  verification: BugRepairVerification,
+): void {
+  if ((bug.mustPreserve?.length ?? 0) === 0) {
+    return;
+  }
+
+  const invariantIds = [
+    ...new Set(verification.preservationInvariantIds ?? []),
+  ];
+  if (invariantIds.length === 0) {
+    throw new Error(
+      "Bug repair completion with Must Preserve requirements needs explicit preservation invariant IDs.",
+    );
+  }
+
+  const selectedRunIds = new Set(runs.map((run) => run.runId));
+  for (const invariantId of invariantIds) {
+    const invariant = trace.invariants.find(
+      (item) => item.invariantId === invariantId,
+    );
+    if (!invariant || !invariant.current) {
+      throw new Error(
+        "Must Preserve invariant is not currently validated.",
+      );
+    }
+
+    const coveredBySelectedRun =
+      invariant.currentPassingRunIds.some((runId) =>
+        selectedRunIds.has(runId)
+      );
+    if (!coveredBySelectedRun) {
+      throw new Error(
+        "Must Preserve invariant is not covered by the selected validation runs.",
+      );
+    }
+  }
+}
+
 export function completeVerifiedBugRepair(
   report: BugReportV2,
   verification: BugRepairVerification,
@@ -108,7 +151,13 @@ export function completeVerifiedBugRepair(
     return report;
   }
 
-  verifiedRuns(trace, verification);
+  const runs = verifiedRuns(trace, verification);
+  verifyPreservationCoverage(
+    bug,
+    runs,
+    trace,
+    verification,
+  );
 
   return {
     ...report,
