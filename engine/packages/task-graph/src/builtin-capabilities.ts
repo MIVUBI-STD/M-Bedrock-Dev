@@ -415,6 +415,17 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "runtime.semantic-convention",
+      owner: "packages/project-model",
+      pathPrefixes: [
+        "packages/project-model/src/runtime-semantic-convention.ts",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "runtime.persistence",
       owner: "packages/runtime-lab",
       pathPrefixes: [

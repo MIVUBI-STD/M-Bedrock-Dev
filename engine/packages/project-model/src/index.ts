@@ -58,3 +58,5 @@ export * from "./route-navigation-environment.js";
 
 
 export * from "./runtime-evidence-continuity.js";
+
+export * from "./runtime-semantic-convention.js";
