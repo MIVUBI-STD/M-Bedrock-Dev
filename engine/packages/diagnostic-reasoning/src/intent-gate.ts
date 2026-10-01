@@ -55,6 +55,7 @@ export interface IntentDiagnosticGateInput {
   runtimeProofEvidenceIds?: readonly string[];
   runtimeEvidenceIntegritySatisfied?: boolean;
   gameplayContract?: GameplayContract;
+  allowExternalReferenceMode?: boolean;
 }
 
 export interface IntentDiagnosticGateResult {
@@ -71,27 +72,26 @@ export interface IntentDiagnosticGateResult {
 export function gateIntentDiagnostic(
   input: IntentDiagnosticGateInput,
 ): IntentDiagnosticGateResult {
-  const resolvedRule = input.resolvedGameDesignRule;
+  const resolvedRule =
+    input.allowExternalReferenceMode === true
+      ? input.resolvedGameDesignRule
+      : undefined;
   const gameplayContract =
     input.gameplayContract ??
     buildGameplayContract(
       input.intent,
       {
         subjectIds: input.subjectIds,
-        ...(resolvedRule?.authority === "authoritative"
-          ? {
-              designRuleEvidenceIds: [
-                "game-design:" +
-                  resolvedRule.designId +
-                  ":rule:" +
-                  resolvedRule.rule.id,
-                "game-design-source:" +
-                  resolvedRule.sourceReference,
-              ],
-            }
-          : {}),
       },
     );
+
+  if (
+    input.resolvedGameDesignRule !== undefined &&
+    input.allowExternalReferenceMode !== true
+  ) {
+    // Normal audit is closed to the selected artifact. External design
+    // material may be inspected only in an explicit comparison/history mode.
+  }
 
   if (
     gameplayContract.modelId !== input.intent.id ||
