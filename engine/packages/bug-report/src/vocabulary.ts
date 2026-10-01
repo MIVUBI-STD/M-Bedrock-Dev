@@ -14,7 +14,11 @@ export const BUG_FINDER_CATEGORIES = [
 export type BugFinderCategory =
   (typeof BUG_FINDER_CATEGORIES)[number];
 
+export const BUG_SEVERITIES = [
+  "blocker",
+  "major",
+  "minor",
+] as const;
+
 export type BugSeverity =
-  | "blocker"
-  | "major"
-  | "minor";
+  (typeof BUG_SEVERITIES)[number];
