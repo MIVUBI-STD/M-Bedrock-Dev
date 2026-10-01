@@ -33,7 +33,8 @@
     "capability:truth": "tsx tooling/repository/generate-capability-truth.mjs",
     "verify:capability-truth": "node tooling/repository/verify-capability-truth.mjs",
     "generate:known-limits": "node tooling/repository/generate-known-limits.mjs",
-    "verify:permissions": "node tooling/repository/verify-lane-permissions.mjs"
+    "verify:permissions": "node tooling/repository/verify-lane-permissions.mjs",
+    "score:agent-eval": "node tooling/repository/score-agent-eval.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",

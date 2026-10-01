@@ -4,5 +4,8 @@
   "routingCorpus": ".agents/evals/skill-routing.json",
   "procedureCorpus": ".agents/evals/skill-procedure.json",
   "evidenceModel": ".agents/references/evidence-cost-ladder.md",
-  "qualityModel": ".agents/references/detector-quality-metrics.md"
+  "qualityModel": ".agents/references/detector-quality-metrics.md",
+  "agentRunSchema": ".agents/schemas/agent-eval-runs.schema.json",
+  "agentEvalScorer": "tooling/repository/score-agent-eval.mjs",
+  "note": "Model/provider execution is external; scorer consumes provider-neutral repeated run receipts."
 }

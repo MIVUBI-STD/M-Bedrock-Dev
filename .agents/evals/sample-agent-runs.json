@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "runs": [
+    {
+      "caseId": "audit-id-01",
+      "runId": "r1",
+      "selectedLane": "m-bedrock-map-bug-audit",
+      "latencyMs": 1200,
+      "inputTokens": 1000,
+      "outputTokens": 300
+    },
+    {
+      "caseId": "audit-id-01",
+      "runId": "r2",
+      "selectedLane": "m-bedrock-map-bug-audit",
+      "latencyMs": 1100,
+      "inputTokens": 980,
+      "outputTokens": 320
+    },
+    {
+      "caseId": "dev-id-01",
+      "runId": "r3",
+      "selectedLane": "m-bedrock-detection-development",
+      "latencyMs": 1400,
+      "inputTokens": 1200,
+      "outputTokens": 400
+    }
+  ]
+}
