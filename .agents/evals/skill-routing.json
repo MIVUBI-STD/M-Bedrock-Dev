@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "audit-1",
+      "prompt": "cek map ini full untuk bug blocker major minor",
+      "expectedLane": "m-bedrock-map-bug-audit",
+      "forbidden": [
+        "m-bedrock-detection-development"
+      ]
+    },
+    {
+      "id": "audit-2",
+      "prompt": "retest map ini dan cek apakah bug sebelumnya masih ada",
+      "expectedLane": "m-bedrock-map-bug-audit",
+      "forbidden": [
+        "m-bedrock-target-repair"
+      ]
+    },
+    {
+      "id": "dev-1",
+      "prompt": "kenapa analyzer kita gagal menemukan self revive ini? perkuat detectornya secara reusable",
+      "expectedLane": "m-bedrock-detection-development",
+      "forbidden": [
+        "m-bedrock-map-bug-audit"
+      ]
+    },
+    {
+      "id": "dev-2",
+      "prompt": "tambahkan pemahaman semantic agar false positive selector turun",
+      "expectedLane": "m-bedrock-detection-development",
+      "forbidden": [
+        "m-bedrock-target-repair"
+      ]
+    },
+    {
+      "id": "bench-1",
+      "prompt": "ukur apakah detector baru sekarang menangkap fixture yang dulu miss dan apakah ada false positive",
+      "expectedLane": "m-bedrock-detection-benchmark",
+      "forbidden": [
+        "m-bedrock-detection-development"
+      ]
+    },
+    {
+      "id": "repair-1",
+      "prompt": "bug self revive ini sudah terbukti, sekarang perbaiki mapnya",
+      "expectedLane": "m-bedrock-target-repair",
+      "forbidden": [
+        "m-bedrock-detection-development"
+      ]
+    },
+    {
+      "id": "product-1",
+      "prompt": "buat UI report lebih rapi",
+      "expectedLane": null,
+      "expectedTaskClass": "DEVELOP",
+      "note": "Product Development, not Detection Development"
+    }
+  ]
+}

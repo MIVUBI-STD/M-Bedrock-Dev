@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "audit-no-engine-mutation",
+      "lane": "m-bedrock-map-bug-audit",
+      "assertions": [
+        "mutatesEngine=false",
+        "detection-gap does not auto-switch lane",
+        "non-defect cannot receive Blocker/Major/Minor"
+      ]
+    },
+    {
+      "id": "dev-no-target-mutation",
+      "lane": "m-bedrock-detection-development",
+      "assertions": [
+        "mutatesTarget=false",
+        "seed-map hardcode forbidden",
+        "handoff to benchmark after generalized acceptance"
+      ]
+    },
+    {
+      "id": "benchmark-frozen-expectation",
+      "lane": "m-bedrock-detection-benchmark",
+      "assertions": [
+        "mutatesEngine=false",
+        "frozen expectation cannot be rewritten to pass",
+        "precision/recall tracked"
+      ]
+    },
+    {
+      "id": "repair-target-only",
+      "lane": "m-bedrock-target-repair",
+      "assertions": [
+        "mutatesEngine=false",
+        "mutatesTarget=true",
+        "original artifact immutable"
+      ]
+    }
+  ]
+}
