@@ -25,6 +25,25 @@ This document defines repository-wide canonical terminology.
 | Engineering Assessment | Canonical QA/engineering projection | orchestrator `engineeringAssessment` |
 | Runtime Evidence | What was observed in Minecraft/runtime | runtime/telemetry/probe layers |
 
+## Operator workflow vocabulary
+
+Use these terms in human-facing workflow:
+
+```text
+Game Design
+→ Gameplay Contract
+→ Actual Behavior
+→ Confirmed Defect
+→ Approved Bug
+→ Repair Contract
+→ Authorized Repair
+→ Verification
+```
+
+Internal terms such as Gameplay Intent, `repair-eligible`, causal proof state, semantic keys, and evidence IDs stay internal unless technical detail is requested.
+
+Do not use `Confirmed Defect` and `Approved Bug` interchangeably.
+
 ## Filesystem disambiguation
 
 Several domains intentionally have a data/source owner and a reusable typed package. When referring to them in prose, use the qualified term rather than the bare folder name.
