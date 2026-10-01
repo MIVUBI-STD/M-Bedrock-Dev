@@ -2,6 +2,10 @@ import { createHash } from "node:crypto";
 import type {
   FileInventoryEntry,
 } from "../../../project-model/src/index.js";
+import {
+  assertGameDesignSpec,
+  type GameDesignSpec,
+} from "../../../game-design-spec/src/index.js";
 import type {
   DiagnosisCapabilityExecutor,
   DiagnosisExecutorRequest,
@@ -17,14 +21,15 @@ import type {
 } from "../inspect-source-index.js";
 
 export const INTENT_GROUNDING_EXECUTOR_REVISION =
-  "intent-grounding-executor:2";
+  "intent-grounding-executor:3";
 export const AUTHORED_INTENT_EXECUTOR_REVISION =
-  "authored-intent-executor:3";
+  "authored-intent-executor:4";
 
 export interface IntentGroundingDiagnosisPayload {
   id: string;
   sourceIndex: InspectionSourceIndex;
   artifactId?: string;
+  gameDesign?: GameDesignSpec;
 }
 
 export interface AuthoredIntentDiagnosisPayload
@@ -82,6 +87,15 @@ function parseIntentPayload(
     return undefined;
   }
 
+  let gameDesign: GameDesignSpec | undefined;
+  if (record.gameDesign !== undefined) {
+    try {
+      gameDesign = assertGameDesignSpec(record.gameDesign);
+    } catch {
+      return undefined;
+    }
+  }
+
   return {
     id: record.id,
     sourceIndex: record.sourceIndex,
@@ -91,6 +105,9 @@ function parseIntentPayload(
           artifactId:
             record.artifactId as string,
         }),
+    ...(gameDesign === undefined
+      ? {}
+      : { gameDesign }),
   };
 }
 
@@ -264,6 +281,9 @@ export function createIntentGroundingDiagnosisExecutor():
           parsedScripts:
             payload.sourceIndex
               .parsedScripts,
+          ...(payload.gameDesign === undefined
+            ? {}
+            : { gameDesign: payload.gameDesign }),
         });
 
       if (
@@ -295,7 +315,9 @@ export function createIntentGroundingDiagnosisExecutor():
           ],
         }],
         reasons: [
-          "Gameplay intent was grounded from indexed script evidence.",
+          payload.gameDesign === undefined
+            ? "Gameplay intent was reconstructed from indexed implementation evidence. This does not establish Game Design authority."
+            : "Gameplay intent reconstruction includes the supplied current Game Design authority.",
         ],
       };
     },
@@ -395,6 +417,9 @@ export function createAuthoredIntentDiagnosisExecutor():
             payload.sourceIndex
               .parsedScripts,
           authoredScripts,
+          ...(payload.gameDesign === undefined
+            ? {}
+            : { gameDesign: payload.gameDesign }),
         });
 
       if (!authoredIntentPresent(output)) {
@@ -423,7 +448,9 @@ export function createAuthoredIntentDiagnosisExecutor():
           ],
         }],
         reasons: [
-          "Gameplay intent is supported by explicitly recognized authored source evidence.",
+          payload.gameDesign === undefined
+            ? "Gameplay intent is supported by explicitly recognized authored implementation source evidence, but Game Design authority is still required before gameplay defect classification."
+            : "Gameplay intent includes authored implementation evidence and the supplied current Game Design authority.",
         ],
       };
     },
