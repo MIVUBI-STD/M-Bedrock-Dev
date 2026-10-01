@@ -1,3 +1,4 @@
+import { reviewBugReportCopy } from "./copy-quality.js";
 import {
   createBugReportV2,
   type CreateBugReportV2BugInput,
@@ -46,7 +47,8 @@ export type BugReportPromotionIssueCode =
   | "duplicate-semantic-key"
   | "unresolved-defect-group"
   | "invalid-defect-group-resolution"
-  | "unused-defect-group-resolution";
+  | "unused-defect-group-resolution"
+  | "copy-quality";
 
 export interface BugReportPromotionIssue {
   readonly code: BugReportPromotionIssueCode;
@@ -179,6 +181,42 @@ export function reviewConfirmedBugInputs(
           "Relevant Code should contain at most three primary locations; keep the report focused on where the developer should look first.",
       });
     }
+  }
+
+  const copyIssues = reviewBugReportCopy(
+    bugs.map((bug) => ({
+      id: bug.id,
+      fixed: false,
+      severity: bug.severity,
+      category: bug.category,
+      foundBy: bug.foundBy,
+      title: bug.title,
+      problem: bug.problem,
+      expected: bug.expected,
+      observed: bug.observed,
+      ...(bug.reproduction === undefined
+        ? {}
+        : { reproduction: bug.reproduction }),
+      ...(bug.aiAnalysis === undefined
+        ? {}
+        : { aiAnalysis: bug.aiAnalysis }),
+      ...(bug.relevantCode === undefined
+        ? {}
+        : { relevantCode: bug.relevantCode }),
+      ...(bug.suggestedFix === undefined
+        ? {}
+        : { suggestedFix: bug.suggestedFix }),
+      ...(bug.mustPreserve === undefined
+        ? {}
+        : { mustPreserve: bug.mustPreserve }),
+    })),
+  );
+
+  for (const issue of copyIssues) {
+    issues.push({
+      code: "copy-quality",
+      message: issue.path + ": " + issue.message,
+    });
   }
 
   return issues;
