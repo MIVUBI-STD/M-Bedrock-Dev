@@ -15,3 +15,5 @@ export * from "./invariant-compiler.js";
 
 export * from "./applicability-v2.js";
 export * from "./claims-v2.js";
+
+export * from "./freshness.js";

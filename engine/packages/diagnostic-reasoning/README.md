@@ -36,3 +36,9 @@ It records TP/FP/FN/Unknown, precision, recall, and reviewed sample size.
 
 Calibration is descriptive evidence about historical detector behavior. It is not a truth score, posterior probability, Bug Report severity, or permission to override current evidence.
 Segments below the configured reviewed-sample threshold remain `insufficient-sample`.
+
+## Declarative diagnostic rules
+
+Simple evidence-comparison rules may be represented declaratively when their required predicates, any-of alternatives, and false-positive guards are explicit.
+
+Unknown required evidence yields `insufficient-evidence`; rules never guess missing predicates. Complex temporal, causal, or Minecraft-specific semantics remain in their canonical analyzers/reasoners.

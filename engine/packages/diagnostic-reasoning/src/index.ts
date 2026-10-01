@@ -10,3 +10,5 @@ export * from "./runtime-state-outcome-intent.js";
 export * from "./counterexample-explanation.js";
 
 export * from "./calibration.js";
+
+export * from "./declarative-rules.js";
