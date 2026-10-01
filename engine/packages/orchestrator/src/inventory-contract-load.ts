@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import {
-  validateInventoryItemPolicy,
-  type InventoryItemPolicy,
-  type InventoryItemPolicyRule,
+  validateInventoryItemBehaviorContract,
+  type InventoryItemBehaviorContract,
+  type InventoryItemBehaviorContractRule,
   type InventoryLifecycleTransition,
   type InventoryOwnershipScope,
 } from "../../behavior-model/src/index.js";
@@ -35,7 +35,7 @@ function nonEmptyString(
     value.trim().length === 0
   ) {
     throw new Error(
-      "Inventory item policy " +
+      "Inventory Item Behavior Contract " +
         field +
         " must be a non-empty string.",
     );
@@ -54,7 +54,7 @@ function transitions(
   }
   if (!Array.isArray(value)) {
     throw new Error(
-      "Inventory item policy rule " +
+      "Inventory Item Behavior Contract rule " +
         ruleId +
         " " +
         field +
@@ -71,7 +71,7 @@ function transitions(
       )
     ) {
       throw new Error(
-        "Inventory item policy rule " +
+        "Inventory Item Behavior Contract rule " +
           ruleId +
           " contains invalid " +
           field +
@@ -88,14 +88,14 @@ function transitions(
 function parseRule(
   value: unknown,
   index: number,
-): InventoryItemPolicyRule {
+): InventoryItemBehaviorContractRule {
   if (
     !value ||
     typeof value !== "object" ||
     Array.isArray(value)
   ) {
     throw new Error(
-      "Inventory item policy rule at index " +
+      "Inventory Item Behavior Contract rule at index " +
         index +
         " must be an object.",
     );
@@ -115,14 +115,14 @@ function parseRule(
     )
   ) {
     throw new Error(
-      "Inventory item policy rule " +
+      "Inventory Item Behavior Contract rule " +
         id +
         " has an invalid ownershipScope.",
     );
   }
   if (typeof item.dropAllowed !== "boolean") {
     throw new Error(
-      "Inventory item policy rule " +
+      "Inventory Item Behavior Contract rule " +
         id +
         " requires boolean dropAllowed.",
     );
@@ -163,16 +163,16 @@ function parseRule(
   };
 }
 
-export function parseInventoryItemPolicy(
+export function parseInventoryItemBehaviorContract(
   value: unknown,
-): InventoryItemPolicy {
+): InventoryItemBehaviorContract {
   if (
     !value ||
     typeof value !== "object" ||
     Array.isArray(value)
   ) {
     throw new Error(
-      "Inventory item policy must be an object.",
+      "Inventory Item Behavior Contract must be an object.",
     );
   }
 
@@ -180,16 +180,16 @@ export function parseInventoryItemPolicy(
     value as Record<string, unknown>;
   if (item.schemaVersion !== 1) {
     throw new Error(
-      "Inventory item policy schemaVersion must be 1.",
+      "Inventory Item Behavior Contract schemaVersion must be 1.",
     );
   }
   if (!Array.isArray(item.rules)) {
     throw new Error(
-      "Inventory item policy requires a rules array.",
+      "Inventory Item Behavior Contract requires a rules array.",
     );
   }
 
-  const policy: InventoryItemPolicy = {
+  const contract: InventoryItemBehaviorContract = {
     schemaVersion: 1,
     id: nonEmptyString(
       item.id,
@@ -199,22 +199,22 @@ export function parseInventoryItemPolicy(
   };
 
   const errors =
-    validateInventoryItemPolicy(policy);
+    validateInventoryItemBehaviorContract(contract);
   if (errors.length > 0) {
     throw new Error(
-      "Invalid inventory item policy: " +
+      "Invalid inventory item behavior contract: " +
         errors.join(" "),
     );
   }
 
-  return policy;
+  return contract;
 }
 
-export async function loadInventoryItemPolicyFile(
+export async function loadInventoryItemBehaviorContractFile(
   path: string,
-): Promise<InventoryItemPolicy> {
+): Promise<InventoryItemBehaviorContract> {
   const value = JSON.parse(
     await readFile(path, "utf8"),
   ) as unknown;
-  return parseInventoryItemPolicy(value);
+  return parseInventoryItemBehaviorContract(value);
 }

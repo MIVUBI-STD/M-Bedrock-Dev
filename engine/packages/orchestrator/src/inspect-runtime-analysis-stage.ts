@@ -32,14 +32,14 @@ import { analyzeScriptSpatialMutations } from "./script-spatial-analysis.js";
 import { analyzeSpatialAuthorityCoverage } from "./spatial-authority-analysis.js";
 import { analyzeArenaGlobalState } from "./arena-global-state-analysis.js";
 import { analyzeInventoryLifecycle } from "./inventory-lifecycle-analysis.js";
-import { analyzeInventoryPolicy } from "./inventory-policy-analysis.js";
+import { analyzeInventoryContract } from "./inventory-contract-analysis.js";
 import { analyzeInventoryRestoreOwnership } from "./inventory-restore-ownership-analysis.js";
 import { analyzeCombatLifecycle } from "./combat-lifecycle-analysis.js";
-import { analyzeCombatPolicy } from "./combat-policy-analysis.js";
+import { analyzeCombatContract } from "./combat-contract-analysis.js";
 import { analyzeChunkLifecycle } from "./chunk-lifecycle-analysis.js";
 import { analyzePersistenceSource } from "./persistence-source-analysis.js";
 import { analyzeRewardSources } from "./reward-source-analysis.js";
-import { analyzeEconomyPolicy } from "./economy-policy-analysis.js";
+import { analyzeEconomyContract } from "./economy-contract-analysis.js";
 import { createDiagnostic } from "../../diagnostics/src/index.js";
 
 export interface InspectionRuntimeAnalysisInput {
@@ -216,7 +216,7 @@ export function analyzeInspectionRuntimeState(
       parsedScriptModels,
     );
   const inventoryPolicy =
-    analyzeInventoryPolicy(
+    analyzeInventoryContract(
       parsedScriptModels,
       input.target.inventoryItemContract ?? input.target.inventoryItemPolicy,
     );
@@ -245,13 +245,13 @@ export function analyzeInspectionRuntimeState(
       ),
     );
   const combatPolicy =
-    analyzeCombatPolicy(
+    analyzeCombatContract(
       combatLifecycle,
       input.combatRuntimeTelemetry,
       input.target.combatContract ?? input.target.combatPolicy,
     );
   const economyPolicy =
-    analyzeEconomyPolicy(
+    analyzeEconomyContract(
       rewardSources,
       input.target.economyContract ?? input.target.economyPolicy,
     );

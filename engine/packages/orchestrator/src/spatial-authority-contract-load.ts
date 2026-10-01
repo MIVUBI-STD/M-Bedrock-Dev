@@ -3,7 +3,7 @@ import type {
   SpatialAuthorityAction,
   SpatialAuthorityActor,
   SpatialAuthorityDecision,
-  SpatialAuthorityPolicy,
+  SpatialAuthorityBehaviorContract,
   SpatialAuthorityRule,
 } from "../../behavior-model/src/index.js";
 
@@ -147,16 +147,16 @@ function parseRule(
   };
 }
 
-export function parseSpatialAuthorityPolicy(
+export function parseSpatialAuthorityBehaviorContract(
   value: unknown,
-): SpatialAuthorityPolicy {
+): SpatialAuthorityBehaviorContract {
   if (
     !value ||
     typeof value !== "object" ||
     Array.isArray(value)
   ) {
     throw new Error(
-      "Spatial authority policy must be an object.",
+      "Spatial Authority Behavior Contract must be an object.",
     );
   }
 
@@ -164,16 +164,16 @@ export function parseSpatialAuthorityPolicy(
     value as Record<string, unknown>;
   if (item.schemaVersion !== 1) {
     throw new Error(
-      "Spatial authority policy schemaVersion must be 1.",
+      "Spatial Authority Behavior Contract schemaVersion must be 1.",
     );
   }
   if (!Array.isArray(item.rules)) {
     throw new Error(
-      "Spatial authority policy requires a rules array.",
+      "Spatial Authority Behavior Contract requires a rules array.",
     );
   }
 
-  const policy: SpatialAuthorityPolicy = {
+  const policy: SpatialAuthorityBehaviorContract = {
     schemaVersion: 1,
     id: nonEmptyString(
       item.id,
@@ -183,10 +183,10 @@ export function parseSpatialAuthorityPolicy(
   };
 
   const errors =
-    validateSpatialAuthorityPolicy(policy);
+    validateSpatialAuthorityBehaviorContract(policy);
   if (errors.length > 0) {
     throw new Error(
-      "Invalid spatial authority policy: " +
+      "Invalid spatial authority behavior contract: " +
         errors.join(" "),
     );
   }
@@ -194,11 +194,11 @@ export function parseSpatialAuthorityPolicy(
   return policy;
 }
 
-export async function loadSpatialAuthorityPolicyFile(
+export async function loadSpatialAuthorityBehaviorContractFile(
   path: string,
-): Promise<SpatialAuthorityPolicy> {
+): Promise<SpatialAuthorityBehaviorContract> {
   const raw = JSON.parse(
     await readFile(path, "utf8"),
   ) as unknown;
-  return parseSpatialAuthorityPolicy(raw);
+  return parseSpatialAuthorityBehaviorContract(raw);
 }

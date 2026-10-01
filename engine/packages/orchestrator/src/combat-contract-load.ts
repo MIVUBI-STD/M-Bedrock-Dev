@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import {
-  validateCombatPolicy,
-  type CombatPolicy,
+  validateCombatBehaviorContract,
+  type CombatBehaviorContract,
 } from "../../behavior-model/src/index.js";
 
 function nonEmptyString(
@@ -13,7 +13,7 @@ function nonEmptyString(
     value.trim().length === 0
   ) {
     throw new Error(
-      "Combat policy " +
+      "Combat Behavior Contract " +
         field +
         " must be a non-empty string.",
     );
@@ -27,7 +27,7 @@ function requiredBoolean(
 ): boolean {
   if (typeof value !== "boolean") {
     throw new Error(
-      "Combat policy " +
+      "Combat Behavior Contract " +
         field +
         " must be boolean.",
     );
@@ -35,16 +35,16 @@ function requiredBoolean(
   return value;
 }
 
-export function parseCombatPolicy(
+export function parseCombatBehaviorContract(
   value: unknown,
-): CombatPolicy {
+): CombatBehaviorContract {
   if (
     !value ||
     typeof value !== "object" ||
     Array.isArray(value)
   ) {
     throw new Error(
-      "Combat policy must be an object.",
+      "Combat Behavior Contract must be an object.",
     );
   }
 
@@ -53,11 +53,11 @@ export function parseCombatPolicy(
 
   if (item.schemaVersion !== 1) {
     throw new Error(
-      "Combat policy schemaVersion must be 1.",
+      "Combat Behavior Contract schemaVersion must be 1.",
     );
   }
 
-  const policy: CombatPolicy = {
+  const contract: CombatBehaviorContract = {
     schemaVersion: 1,
     id: nonEmptyString(
       item.id,
@@ -116,23 +116,23 @@ export function parseCombatPolicy(
   };
 
   const errors =
-    validateCombatPolicy(policy);
+    validateCombatBehaviorContract(contract);
   if (errors.length > 0) {
     throw new Error(
-      "Invalid combat policy: " +
+      "Invalid combat behavior contract: " +
         errors.join(" "),
     );
   }
 
-  return policy;
+  return contract;
 }
 
-export async function loadCombatPolicyFile(
+export async function loadCombatBehaviorContractFile(
   path: string,
-): Promise<CombatPolicy> {
+): Promise<CombatBehaviorContract> {
   const value = JSON.parse(
     await readFile(path, "utf8"),
   ) as unknown;
 
-  return parseCombatPolicy(value);
+  return parseCombatBehaviorContract(value);
 }

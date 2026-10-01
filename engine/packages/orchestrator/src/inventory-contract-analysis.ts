@@ -3,8 +3,8 @@ import type {
   ScriptInventoryLifecycleEvidence,
 } from "../../../analyzers/scripts/src/index.js";
 import {
-  resolveInventoryItemPolicy,
-  type InventoryItemPolicy,
+  resolveInventoryItemBehaviorContract,
+  type InventoryItemBehaviorContract,
 } from "../../behavior-model/src/index.js";
 
 export interface InventoryDropPolicyAssessment {
@@ -20,9 +20,9 @@ export interface InventoryDropPolicyAssessment {
   reason: string;
 }
 
-export interface InventoryPolicyAnalysis {
+export interface InventoryContractAnalysis {
   configured: boolean;
-  policyId?: string;
+  contractId?: string;
   resolvedItemClasses: number;
   uncoveredItemClasses: number;
   unknownIdentityEvidence: number;
@@ -52,13 +52,13 @@ function itemEvidence(
   );
 }
 
-export function analyzeInventoryPolicy(
+export function analyzeInventoryContract(
   scripts: readonly ParsedScriptFile[],
-  policy?: InventoryItemPolicy,
-): InventoryPolicyAnalysis {
+  contract?: InventoryItemBehaviorContract,
+): InventoryContractAnalysis {
   const evidence = itemEvidence(scripts);
 
-  if (!policy) {
+  if (!contract) {
     return {
       configured: false,
       resolvedItemClasses: 0,
@@ -90,7 +90,7 @@ export function analyzeInventoryPolicy(
             "unknown-item" as const,
           matchedRuleIds: [],
           reason:
-            "Inventory item policy is not configured for this inspection.",
+            "Inventory item behavior contract is not configured for this inspection.",
         })),
       deniedDrops: 0,
       uncoveredDrops: 0,
@@ -118,8 +118,8 @@ export function analyzeInventoryPolicy(
     (itemClass) => ({
       itemClass,
       resolution:
-        resolveInventoryItemPolicy(
-          policy,
+        resolveInventoryItemBehaviorContract(
+          contract,
           { itemClass },
         ),
     }),
@@ -188,8 +188,8 @@ export function analyzeInventoryPolicy(
               resolution.matchedRuleIds,
             reason:
               resolution.rule.dropAllowed
-                ? "Authored item policy allows this item class to be dropped."
-                : "Authored item policy denies dropping this item class.",
+                ? "Authored item behavior contract allows this item class to be dropped."
+                : "Authored item behavior contract denies dropping this item class.",
           };
         },
       )
@@ -205,7 +205,7 @@ export function analyzeInventoryPolicy(
 
   return {
     configured: true,
-    policyId: policy.id,
+    contractId: contract.id,
     resolvedItemClasses:
       resolutions.filter(
         (item) =>

@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import {
-  validateEconomyPolicy,
+  validateEconomyBehaviorContract,
   type DeathRewardArbitration,
-  type EconomyPolicy,
+  type EconomyBehaviorContract,
   type InventoryFullRewardPolicy,
   type PickupCurrencyItemPolicy,
 } from "../../behavior-model/src/index.js";
@@ -40,7 +40,7 @@ function nonEmptyString(
     value.trim().length === 0
   ) {
     throw new Error(
-      "Economy policy " +
+      "Economy Behavior Contract " +
         field +
         " must be a non-empty string.",
     );
@@ -54,7 +54,7 @@ function requiredBoolean(
 ): boolean {
   if (typeof value !== "boolean") {
     throw new Error(
-      "Economy policy " +
+      "Economy Behavior Contract " +
         field +
         " must be boolean.",
     );
@@ -72,7 +72,7 @@ function enumValue<T extends string>(
     !values.has(value as T)
   ) {
     throw new Error(
-      "Economy policy " +
+      "Economy Behavior Contract " +
         field +
         " has an invalid value.",
     );
@@ -80,16 +80,16 @@ function enumValue<T extends string>(
   return value as T;
 }
 
-export function parseEconomyPolicy(
+export function parseEconomyBehaviorContract(
   value: unknown,
-): EconomyPolicy {
+): EconomyBehaviorContract {
   if (
     !value ||
     typeof value !== "object" ||
     Array.isArray(value)
   ) {
     throw new Error(
-      "Economy policy must be an object.",
+      "Economy Behavior Contract must be an object.",
     );
   }
 
@@ -97,11 +97,11 @@ export function parseEconomyPolicy(
     value as Record<string, unknown>;
   if (item.schemaVersion !== 1) {
     throw new Error(
-      "Economy policy schemaVersion must be 1.",
+      "Economy Behavior Contract schemaVersion must be 1.",
     );
   }
 
-  const policy: EconomyPolicy = {
+  const contract: EconomyBehaviorContract = {
     schemaVersion: 1,
     id: nonEmptyString(item.id, "id"),
     deathRewardArbitration:
@@ -145,22 +145,22 @@ export function parseEconomyPolicy(
   };
 
   const errors =
-    validateEconomyPolicy(policy);
+    validateEconomyBehaviorContract(contract);
   if (errors.length > 0) {
     throw new Error(
-      "Invalid economy policy: " +
+      "Invalid economy behavior contract: " +
         errors.join(" "),
     );
   }
 
-  return policy;
+  return contract;
 }
 
-export async function loadEconomyPolicyFile(
+export async function loadEconomyBehaviorContractFile(
   path: string,
-): Promise<EconomyPolicy> {
+): Promise<EconomyBehaviorContract> {
   const value = JSON.parse(
     await readFile(path, "utf8"),
   ) as unknown;
-  return parseEconomyPolicy(value);
+  return parseEconomyBehaviorContract(value);
 }

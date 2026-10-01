@@ -38,9 +38,9 @@ import { buildGameplayIntentModel } from "./gameplay-intent-stage.js";
 import { indexAuthoredIntentSources } from "./inspect-authored-intent-source.js";
 import { analyzeGameplayIntentRuntime } from "./gameplay-intent-runtime-stage.js";
 import { analyzeEntityAiStacks } from "./entity-ai-stack-analysis.js";
-import { combatPolicyDiagnostics } from "./combat-policy-diagnostics.js";
+import { combatContractDiagnostics } from "./combat-contract-diagnostics.js";
 import { chunkLifecycleDiagnostics } from "./chunk-lifecycle-diagnostics.js";
-import { economyPolicyDiagnostics } from "./economy-policy-diagnostics.js";
+import { economyContractDiagnostics } from "./economy-contract-diagnostics.js";
 import { spatialAuthorityDiagnostics } from "./spatial-authority-diagnostics.js";
 import { inventoryLifecycleDiagnostics } from "./inventory-lifecycle-diagnostics.js";
 import { entityAiNavigationDiagnostics } from "./entity-ai-navigation-diagnostics.js";
@@ -248,13 +248,13 @@ export async function inspectDirectory(
   diagnostics.push(...runtimeAnalysis.diagnostics);
 
   diagnostics.push(
-    ...combatPolicyDiagnostics(
+    ...combatContractDiagnostics(
       combatPolicy,
     ),
     ...chunkLifecycleDiagnostics(
       chunkLifecycle,
     ),
-    ...economyPolicyDiagnostics(
+    ...economyContractDiagnostics(
       runtimeAnalysis.economyPolicy,
     ),
     ...spatialAuthorityDiagnostics(

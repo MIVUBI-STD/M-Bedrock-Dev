@@ -3,24 +3,24 @@ import {
   type DiagnosticFinding,
 } from "../../diagnostics/src/index.js";
 import type {
-  EconomyPolicyAnalysis,
-} from "./economy-policy-analysis.js";
+  EconomyContractAnalysis,
+} from "./economy-contract-analysis.js";
 
-export function economyPolicyDiagnostics(
-  analysis: EconomyPolicyAnalysis,
+export function economyContractDiagnostics(
+  analysis: EconomyContractAnalysis,
 ): DiagnosticFinding[] {
   if (!analysis.configured) return [];
 
   const conflicts =
-    analysis.deathRewardOverlapPolicyConflicts +
-    analysis.pickupCurrencyPolicyMismatch;
+    analysis.deathRewardOverlapContractConflicts +
+    analysis.pickupCurrencyContractMismatch;
 
   const coverageGaps =
     analysis.deathRewardOverlapUnresolved +
     analysis.pickupCurrencyConsumeCoverageGaps +
     analysis.idempotencyCoverageGaps +
     analysis.staleDropCleanupCoverageGaps +
-    analysis.inventoryFullPolicyGaps +
+    analysis.inventoryFullContractGaps +
     analysis.pickupScopeValidationUnproven +
     analysis.terminalRewardResultCommitUnproven;
 
@@ -29,16 +29,16 @@ export function economyPolicyDiagnostics(
   if (conflicts > 0) {
     findings.push(
       createDiagnostic({
-        code: "ECONOMY_POLICY_CONFLICT",
+        code: "ECONOMY_CONTRACT_CONFLICT",
         severity: "medium",
         message:
-          "Authored economy policy conflicts with one or more correlated reward/currency source paths.",
+          "Authored economy behavior contract conflicts with one or more correlated reward/currency source paths.",
         data: {
-          policyId: analysis.policyId,
-          deathRewardOverlapPolicyConflicts:
-            analysis.deathRewardOverlapPolicyConflicts,
-          pickupCurrencyPolicyMismatch:
-            analysis.pickupCurrencyPolicyMismatch,
+          contractId: analysis.contractId,
+          deathRewardOverlapContractConflicts:
+            analysis.deathRewardOverlapContractConflicts,
+          pickupCurrencyContractMismatch:
+            analysis.pickupCurrencyContractMismatch,
         },
       }),
     );
@@ -47,12 +47,12 @@ export function economyPolicyDiagnostics(
   if (coverageGaps > 0) {
     findings.push(
       createDiagnostic({
-        code: "ECONOMY_POLICY_COVERAGE_GAP",
+        code: "ECONOMY_CONTRACT_COVERAGE_GAP",
         severity: "minor",
         message:
           "Economy policy obligations remain unproven or only partially covered by current static/runtime evidence.",
         data: {
-          policyId: analysis.policyId,
+          contractId: analysis.contractId,
           deathRewardOverlapUnresolved:
             analysis.deathRewardOverlapUnresolved,
           pickupCurrencyConsumeCoverageGaps:
@@ -61,8 +61,8 @@ export function economyPolicyDiagnostics(
             analysis.idempotencyCoverageGaps,
           staleDropCleanupCoverageGaps:
             analysis.staleDropCleanupCoverageGaps,
-          inventoryFullPolicyGaps:
-            analysis.inventoryFullPolicyGaps,
+          inventoryFullContractGaps:
+            analysis.inventoryFullContractGaps,
           pickupScopeValidationUnproven:
             analysis.pickupScopeValidationUnproven,
           terminalRewardResultCommitUnproven:

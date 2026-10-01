@@ -38,17 +38,17 @@ import type { ArenaStateIsolationAnalysis } from "./arena-state-isolation-analys
 import type { ArenaGlobalStateAnalysis } from "./arena-global-state-analysis.js";
 import type { ScriptSpatialAnalysis } from "./script-spatial-analysis.js";
 import type { InventoryLifecycleAnalysis } from "./inventory-lifecycle-analysis.js";
-import type { InventoryPolicyAnalysis } from "./inventory-policy-analysis.js";
+import type { InventoryContractAnalysis } from "./inventory-contract-analysis.js";
 import type { InventoryRestoreOwnershipAnalysis } from "./inventory-restore-ownership-analysis.js";
 import type { ReleaseIdentityAnalysis } from "./release-identity-analysis.js";
 import type { EntityAiStackAnalysis } from "./entity-ai-stack-analysis.js";
 import type { RouteNavigationEnvironmentAnalysis } from "./route-navigation-environment-analysis.js";
 import type { CombatLifecycleAnalysis } from "./combat-lifecycle-analysis.js";
 import type { CombatRuntimeTelemetryAnalysis } from "./combat-runtime-telemetry-analysis.js";
-import type { CombatPolicyAnalysis } from "./combat-policy-analysis.js";
+import type { CombatContractAnalysis } from "./combat-contract-analysis.js";
 import type { ChunkLifecycleAnalysis } from "./chunk-lifecycle-analysis.js";
 import type { RewardSourceAnalysis } from "./reward-source-analysis.js";
-import type { EconomyPolicyAnalysis } from "./economy-policy-analysis.js";
+import type { EconomyContractAnalysis } from "./economy-contract-analysis.js";
 import type { SpatialAuthorityCoverageReport, SpatialAuthorityCoverageRequirement } from "./spatial-authority-analysis.js";
 import type { GameplayWorldModel } from "./gameplay-world-model.js";
 import type { GameplaySemanticModel } from "./gameplay-semantic-model.js";
@@ -120,14 +120,14 @@ export interface InspectDirectoryResult {
   scriptSpatial: ScriptSpatialAnalysis;
   spatialAuthority?: SpatialAuthorityCoverageReport;
   inventoryLifecycle: InventoryLifecycleAnalysis;
-  inventoryPolicy: InventoryPolicyAnalysis;
+  inventoryPolicy: InventoryContractAnalysis;
   inventoryRestoreOwnership: InventoryRestoreOwnershipAnalysis;
   combatLifecycle: CombatLifecycleAnalysis;
   combatRuntime: CombatRuntimeTelemetryAnalysis;
-  combatPolicy: CombatPolicyAnalysis;
+  combatPolicy: CombatContractAnalysis;
   chunkLifecycle: ChunkLifecycleAnalysis;
   rewardSources: RewardSourceAnalysis;
-  economyPolicy: EconomyPolicyAnalysis;
+  economyPolicy: EconomyContractAnalysis;
   releaseIdentity: ReleaseIdentityAnalysis;
   /** @deprecated Composite compatibility view. Prefer gameplaySemantic + engineeringAssessment. */
   gameplayWorld: GameplayWorldModel;

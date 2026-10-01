@@ -424,13 +424,13 @@ export function buildMapEngineeringWorkflow(
         ?.hurtOnlyTerminalRisk ?? 0,
     combatProjectileCleanupPolicyGap:
       source.engineeringAssessment.combat
-        ?.contract.projectileCleanupPolicyGap ?? 0,
+        ?.contract.projectileCleanupContractGap ?? 0,
     combatSecondaryEffectEligibilitySurfaces:
       source.engineeringAssessment.combat
         ?.contract.secondaryEffectEligibilitySurfaces ?? 0,
     combatRevivePolicyContradictions:
       source.engineeringAssessment.combat
-        ?.contract.revivePolicyContradictions ?? 0,
+        ?.contract.reviveContractContradictions ?? 0,
     combatReviveScopeGaps:
       (
         source.engineeringAssessment.combat
@@ -485,7 +485,7 @@ export function buildMapEngineeringWorkflow(
           : 2,
     economyDeathRewardOverlapPolicyConflicts:
       source.engineeringAssessment.economy
-        ?.contract.deathRewardOverlapPolicyConflicts ?? 0,
+        ?.contract.deathRewardOverlapContractConflicts ?? 0,
     economyDeathRewardOverlapUnresolved:
       source.engineeringAssessment.economy
         ?.contract.deathRewardOverlapUnresolved ?? 0,
@@ -496,7 +496,7 @@ export function buildMapEngineeringWorkflow(
       ) +
       (
         source.engineeringAssessment.economy
-          ?.contract.pickupCurrencyPolicyMismatch ?? 0
+          ?.contract.pickupCurrencyContractMismatch ?? 0
       ),
     economyIdempotencyCoverageGaps:
       source.engineeringAssessment.economy
@@ -506,7 +506,7 @@ export function buildMapEngineeringWorkflow(
         ?.contract.staleDropCleanupCoverageGaps ?? 0,
     economyInventoryFullPolicyGaps:
       source.engineeringAssessment.economy
-        ?.contract.inventoryFullPolicyGaps ?? 0,
+        ?.contract.inventoryFullContractGaps ?? 0,
     economyPickupScopeValidationUnproven:
       source.engineeringAssessment.economy
         ?.contract.pickupScopeValidationUnproven ?? 0,

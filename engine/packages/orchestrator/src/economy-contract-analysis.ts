@@ -1,115 +1,115 @@
 import type {
-  EconomyPolicy,
+  EconomyBehaviorContract,
 } from "../../behavior-model/src/index.js";
 import type {
   RewardSourceAnalysis,
 } from "./reward-source-analysis.js";
 
-export interface EconomyPolicyAnalysis {
+export interface EconomyBehaviorContractAnalysis {
   configured: boolean;
-  policyId?: string;
-  deathRewardOverlapPolicyConflicts: number;
+  contractId?: string;
+  deathRewardOverlapContractConflicts: number;
   deathRewardOverlapUnresolved: number;
   pickupCurrencyConsumeCoverageGaps: number;
-  pickupCurrencyPolicyMismatch: number;
+  pickupCurrencyContractMismatch: number;
   idempotencyCoverageGaps: number;
   staleDropCleanupCoverageGaps: number;
-  inventoryFullPolicyGaps: number;
+  inventoryFullContractGaps: number;
   pickupScopeValidationUnproven: number;
   terminalRewardResultCommitUnproven: number;
   reasons: readonly string[];
 }
 
-export function analyzeEconomyPolicy(
+export function analyzeEconomyBehaviorContract(
   rewards: RewardSourceAnalysis,
-  policy?: EconomyPolicy,
-): EconomyPolicyAnalysis {
-  if (!policy) {
+  contract?: EconomyBehaviorContract,
+): EconomyBehaviorContractAnalysis {
+  if (!contract) {
     return {
       configured: false,
-      deathRewardOverlapPolicyConflicts: 0,
+      deathRewardOverlapContractConflicts: 0,
       deathRewardOverlapUnresolved:
         rewards.deathRewardSourceOverlapCandidates +
         rewards.deathRewardSourceOverlapUnresolved,
       pickupCurrencyConsumeCoverageGaps: 0,
-      pickupCurrencyPolicyMismatch: 0,
+      pickupCurrencyContractMismatch: 0,
       idempotencyCoverageGaps: 0,
       staleDropCleanupCoverageGaps: 0,
-      inventoryFullPolicyGaps: 0,
+      inventoryFullContractGaps: 0,
       pickupScopeValidationUnproven: 0,
       terminalRewardResultCommitUnproven: 0,
       reasons: [
-        "No authored economy policy is configured; reward source overlaps remain unresolved rather than being classified as defects.",
+        "No authored economy behavior contract is configured; reward source overlaps remain unresolved rather than being classified as defects.",
       ],
     };
   }
 
-  const deathRewardOverlapPolicyConflicts =
-    policy.deathRewardArbitration ===
+  const deathRewardOverlapContractConflicts =
+    contract.deathRewardArbitration ===
       "mutually-exclusive"
       ? rewards
           .deathRewardSourceOverlapCandidates
       : 0;
 
   const deathRewardOverlapUnresolved =
-    policy.deathRewardArbitration ===
+    contract.deathRewardArbitration ===
       "unresolved"
       ? rewards.deathRewardSourceOverlapCandidates +
         rewards.deathRewardSourceOverlapUnresolved
-      : policy.deathRewardArbitration ===
+      : contract.deathRewardArbitration ===
           "mutually-exclusive"
         ? rewards.deathRewardSourceOverlapUnresolved
         : 0;
 
   const pickupCurrencyConsumeCoverageGaps =
-    policy.pickupCurrencyItemPolicy ===
+    contract.pickupCurrencyItemPolicy ===
       "consume"
       ? rewards
           .pickupCurrencyWithoutConsumeCandidates
       : 0;
 
-  const pickupCurrencyPolicyMismatch =
-    policy.pickupCurrencyItemPolicy ===
+  const pickupCurrencyContractMismatch =
+    contract.pickupCurrencyItemPolicy ===
         "not-applicable" &&
       rewards.pickupCurrencyPaths > 0
       ? rewards.pickupCurrencyPaths
       : 0;
 
   const idempotencyCoverageGaps =
-    policy.rewardIdempotencyRequired
+    contract.rewardIdempotencyRequired
       ? rewards.rewardPathsWithoutIdempotency
       : 0;
 
   const staleDropCleanupCoverageGaps =
-    policy.staleDropCleanupRequired
+    contract.staleDropCleanupRequired
       ? rewards
           .worldDropRewardPathsWithoutCleanup
       : 0;
 
-  const inventoryFullPolicyGaps =
+  const inventoryFullContractGaps =
     rewards.scriptInventoryGrants > 0 &&
-    policy.inventoryFullPolicy ===
+    contract.inventoryFullPolicy ===
       "not-applicable"
       ? 1
       : 0;
 
   const pickupScopeValidationUnproven =
-    policy.pickupScopeValidationRequired
+    contract.pickupScopeValidationRequired
       ? rewards.pickupCurrencyPaths
       : 0;
 
   const terminalRewardResultCommitUnproven =
-    policy.terminalRewardRequiresResultCommit
+    contract.terminalRewardRequiresResultCommit
       ? rewards.deathRewardPaths
       : 0;
 
   const reasons: string[] = [];
 
   if (
-    deathRewardOverlapPolicyConflicts > 0
+    deathRewardOverlapContractConflicts > 0
   ) {
     reasons.push(
-      "Engine death loot and scripted death reward paths overlap while authored policy marks equivalent death rewards mutually exclusive; source-to-entitlement correlation is still required before defect promotion.",
+      "Engine death loot and scripted death reward paths overlap while authored behavior contract marks equivalent death rewards mutually exclusive; source-to-entitlement correlation is still required before defect promotion.",
     );
   }
   if (deathRewardOverlapUnresolved > 0) {
@@ -121,14 +121,14 @@ export function analyzeEconomyPolicy(
     pickupCurrencyConsumeCoverageGaps > 0
   ) {
     reasons.push(
-      "Pickup-to-currency path lacks recognized consume/reconciliation evidence while authored policy requires consuming the pickup item; this remains a coverage gap until runtime/source correlation proves the same item entitlement.",
+      "Pickup-to-currency path lacks recognized consume/reconciliation evidence while authored behavior contract requires consuming the pickup item; this remains a coverage gap until runtime/source correlation proves the same item entitlement.",
     );
   }
   if (
-    pickupCurrencyPolicyMismatch > 0
+    pickupCurrencyContractMismatch > 0
   ) {
     reasons.push(
-      "Pickup-to-currency behavior exists while authored policy marks pickup currency conversion as not applicable.",
+      "Pickup-to-currency behavior exists while authored behavior contract marks pickup currency conversion as not applicable.",
     );
   }
   if (idempotencyCoverageGaps > 0) {
@@ -144,7 +144,7 @@ export function analyzeEconomyPolicy(
       "World-drop reward paths exist without an explicit recognized drop cleanup surface while stale-drop cleanup is required.",
     );
   }
-  if (inventoryFullPolicyGaps > 0) {
+  if (inventoryFullContractGaps > 0) {
     reasons.push(
       "Direct inventory reward grants exist while inventory-full behavior is marked not applicable.",
     );
@@ -169,20 +169,20 @@ export function analyzeEconomyPolicy(
   }
   if (reasons.length === 0) {
     reasons.push(
-      "Current reward source evidence does not contradict authored economy policy.",
+      "Current reward source evidence does not contradict authored economy contract.",
     );
   }
 
   return {
     configured: true,
-    policyId: policy.id,
-    deathRewardOverlapPolicyConflicts,
+    contractId: contract.id,
+    deathRewardOverlapContractConflicts,
     deathRewardOverlapUnresolved,
     pickupCurrencyConsumeCoverageGaps,
-    pickupCurrencyPolicyMismatch,
+    pickupCurrencyContractMismatch,
     idempotencyCoverageGaps,
     staleDropCleanupCoverageGaps,
-    inventoryFullPolicyGaps,
+    inventoryFullContractGaps,
     pickupScopeValidationUnproven,
     terminalRewardResultCommitUnproven,
     reasons,

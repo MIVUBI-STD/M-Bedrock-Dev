@@ -321,12 +321,12 @@ export * from "./arena-proof-reuse.js";
 export * from "./arena-repair-bridge.js";
 
 export * from "./spatial-authority-analysis.js";
-export * from "./spatial-authority-policy-load.js";
+export * from "./spatial-authority-contract-load.js";
 export * from "./arena-interleaving-analysis.js";
 export * from "./arena-interleaving-portfolio.js";
 export * from "./inventory-lifecycle-analysis.js";
-export * from "./inventory-policy-analysis.js";
-export * from "./inventory-policy-load.js";
+export * from "./inventory-contract-analysis.js";
+export * from "./inventory-contract-load.js";
 export * from "./inventory-restore-ownership-analysis.js";
 export * from "./entity-ai-stack-analysis.js";
 export * from "./route-navigation-environment-analysis.js";
@@ -336,22 +336,22 @@ export * from "./route-navigation-environment-load.js";
 export * from "./combat-lifecycle-analysis.js";
 export * from "./combat-runtime-telemetry-analysis.js";
 
-export * from "./combat-policy-analysis.js";
-export * from "./combat-policy-load.js";
+export * from "./combat-contract-analysis.js";
+export * from "./combat-contract-load.js";
 
 export * from "./chunk-lifecycle-analysis.js";
 
 export * from "./reward-source-analysis.js";
-export * from "./economy-policy-analysis.js";
-export * from "./economy-policy-load.js";
+export * from "./economy-contract-analysis.js";
+export * from "./economy-contract-load.js";
 
-export * from "./combat-policy-diagnostics.js";
+export * from "./combat-contract-diagnostics.js";
 
 export * from "./chunk-lifecycle-diagnostics.js";
 
 export * from "./chunk-readiness-runtime-classification.js";
 
-export * from "./economy-policy-diagnostics.js";
+export * from "./economy-contract-diagnostics.js";
 
 export * from "./spatial-authority-diagnostics.js";
 

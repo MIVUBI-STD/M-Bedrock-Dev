@@ -3,15 +3,15 @@ import {
   type DiagnosticFinding,
 } from "../../diagnostics/src/index.js";
 import type {
-  CombatPolicyAnalysis,
-} from "./combat-policy-analysis.js";
+  CombatContractAnalysis,
+} from "./combat-contract-analysis.js";
 
-export function combatPolicyDiagnostics(
-  analysis: CombatPolicyAnalysis,
+export function combatContractDiagnostics(
+  analysis: CombatContractAnalysis,
 ): DiagnosticFinding[] {
   if (
     !analysis.configured ||
-    analysis.revivePolicyContradictions === 0
+    analysis.reviveContractContradictions === 0
   ) {
     return [];
   }
@@ -19,13 +19,13 @@ export function combatPolicyDiagnostics(
   return [
     createDiagnostic({
       code:
-        "COMBAT_REVIVE_POLICY_VIOLATION",
+        "COMBAT_REVIVE_CONTRACT_VIOLATION",
       severity: "medium",
       message:
         String(
-          analysis.revivePolicyContradictions,
+          analysis.reviveContractContradictions,
         ) +
-        " observed revive anomaly event(s) contradict the authored combat policy.",
+        " observed revive anomaly event(s) contradict the authored combat behavior contract.",
       data: {
         selfRevive:
           analysis

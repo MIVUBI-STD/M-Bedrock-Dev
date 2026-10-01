@@ -45,8 +45,8 @@ import type {
   CombatRuntimeTelemetryAnalysis,
 } from "./combat-runtime-telemetry-analysis.js";
 import type {
-  CombatPolicyAnalysis,
-} from "./combat-policy-analysis.js";
+  CombatContractAnalysis,
+} from "./combat-contract-analysis.js";
 import type {
   ChunkLifecycleAnalysis,
 } from "./chunk-lifecycle-analysis.js";
@@ -55,14 +55,14 @@ import type {
   RewardSourceKind,
 } from "./reward-source-analysis.js";
 import type {
-  EconomyPolicyAnalysis,
-} from "./economy-policy-analysis.js";
+  EconomyContractAnalysis,
+} from "./economy-contract-analysis.js";
 import type {
   InventoryLifecycleAnalysis,
 } from "./inventory-lifecycle-analysis.js";
 import type {
-  InventoryPolicyAnalysis,
-} from "./inventory-policy-analysis.js";
+  InventoryContractAnalysis,
+} from "./inventory-contract-analysis.js";
 import type {
   InventoryRestoreOwnershipAnalysis,
 } from "./inventory-restore-ownership-analysis.js";
@@ -203,13 +203,13 @@ export interface GameplayWorldModel {
     worldDropRewardPathsWithoutCleanup: number;
     policy: {
       configured: boolean;
-      deathRewardOverlapPolicyConflicts: number;
+      deathRewardOverlapContractConflicts: number;
       deathRewardOverlapUnresolved: number;
       pickupCurrencyConsumeCoverageGaps: number;
-      pickupCurrencyPolicyMismatch: number;
+      pickupCurrencyContractMismatch: number;
       idempotencyCoverageGaps: number;
       staleDropCleanupCoverageGaps: number;
-      inventoryFullPolicyGaps: number;
+      inventoryFullContractGaps: number;
       pickupScopeValidationUnproven: number;
       terminalRewardResultCommitUnproven: number;
     };
@@ -225,8 +225,8 @@ export interface GameplayWorldModel {
     hurtOnlyTerminalRisk: number;
     policy: {
       configured: boolean;
-      revivePolicyContradictions: number;
-      projectileCleanupPolicyGap: number;
+      reviveContractContradictions: number;
+      projectileCleanupContractGap: number;
       secondaryEffectEligibilitySurfaces: number;
     };
     runtime: {
@@ -337,13 +337,13 @@ export interface GameplayWorldModelSource {
   spatialAuthority?: SpatialAuthorityCoverageReport;
   combatLifecycle?: CombatLifecycleAnalysis;
   combatRuntime?: CombatRuntimeTelemetryAnalysis;
-  combatPolicy?: CombatPolicyAnalysis;
+  combatPolicy?: CombatContractAnalysis;
   chunkLifecycle?: ChunkLifecycleAnalysis;
   persistenceSource?: PersistenceSourceAnalysis;
   rewardSources?: RewardSourceAnalysis;
-  economyPolicy?: EconomyPolicyAnalysis;
+  economyPolicy?: EconomyContractAnalysis;
   inventoryLifecycle?: InventoryLifecycleAnalysis;
-  inventoryPolicy?: InventoryPolicyAnalysis;
+  inventoryPolicy?: InventoryContractAnalysis;
   inventoryRestoreOwnership?: InventoryRestoreOwnershipAnalysis;
   semanticIr: {
     stateSurfaces: number;
@@ -695,27 +695,27 @@ export function deriveGameplayWorldModel(
       policy: {
         configured:
           source.economyPolicy?.configured ?? false,
-        deathRewardOverlapPolicyConflicts:
+        deathRewardOverlapContractConflicts:
           source.economyPolicy
-            ?.deathRewardOverlapPolicyConflicts ?? 0,
+            ?.deathRewardOverlapContractConflicts ?? 0,
         deathRewardOverlapUnresolved:
           source.economyPolicy
             ?.deathRewardOverlapUnresolved ?? 0,
         pickupCurrencyConsumeCoverageGaps:
           source.economyPolicy
             ?.pickupCurrencyConsumeCoverageGaps ?? 0,
-        pickupCurrencyPolicyMismatch:
+        pickupCurrencyContractMismatch:
           source.economyPolicy
-            ?.pickupCurrencyPolicyMismatch ?? 0,
+            ?.pickupCurrencyContractMismatch ?? 0,
         idempotencyCoverageGaps:
           source.economyPolicy
             ?.idempotencyCoverageGaps ?? 0,
         staleDropCleanupCoverageGaps:
           source.economyPolicy
             ?.staleDropCleanupCoverageGaps ?? 0,
-        inventoryFullPolicyGaps:
+        inventoryFullContractGaps:
           source.economyPolicy
-            ?.inventoryFullPolicyGaps ?? 0,
+            ?.inventoryFullContractGaps ?? 0,
         pickupScopeValidationUnproven:
           source.economyPolicy
             ?.pickupScopeValidationUnproven ?? 0,
@@ -744,10 +744,10 @@ export function deriveGameplayWorldModel(
       policy: {
         configured:
           source.combatPolicy?.configured ?? false,
-        revivePolicyContradictions:
-          source.combatPolicy?.revivePolicyContradictions ?? 0,
-        projectileCleanupPolicyGap:
-          source.combatPolicy?.projectileCleanupPolicyGap ?? 0,
+        reviveContractContradictions:
+          source.combatPolicy?.reviveContractContradictions ?? 0,
+        projectileCleanupContractGap:
+          source.combatPolicy?.projectileCleanupContractGap ?? 0,
         secondaryEffectEligibilitySurfaces:
           source.combatPolicy?.secondaryEffectEligibilitySurfaces ?? 0,
       },
