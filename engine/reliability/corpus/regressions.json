@@ -32,6 +32,56 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       }
+    },
+    {
+      "id": "reg_fotp_l1_friendly_fire_enabled",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_friendly_fire_enabled",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_fotp_l1_weapon_durability_loss",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_weapon_durability_loss",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_fotp_l1_knocked_player_targeted",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_knocked_player_targeted",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_fotp_l1_self_revive_shift",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_self_revive_shift",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_fotp_l1_upgraded_item_droppable",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_fotp_l1_upgraded_item_droppable",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
     }
   ],
   "policy": {
