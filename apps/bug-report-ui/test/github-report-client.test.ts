@@ -60,7 +60,7 @@ describe("GitHubReportClient", () => {
     }]);
   });
 
-  it("loads a canonical report for audit reading", async () => {
+  it("loads a schema-valid canonical report for audit reading", async () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({
         report,
