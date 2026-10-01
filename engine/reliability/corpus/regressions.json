@@ -12,7 +12,11 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_loadout_entity_wall_not_broken",
@@ -23,7 +27,11 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present"
+      ]
     },
     {
       "id": "reg_multi_arena_cutscene_queue",
@@ -34,7 +42,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_fotp_l1_friendly_fire_enabled",
@@ -45,7 +58,11 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_fotp_l1_weapon_durability_loss",
@@ -56,7 +73,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "intermittent-reproduction",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_fotp_l1_knocked_player_targeted",
@@ -67,7 +89,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "repeated-across-maps",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_fotp_l1_self_revive_shift",
@@ -78,7 +105,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "repeated-across-maps",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_fotp_l1_upgraded_item_droppable",
@@ -89,7 +121,11 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_cutscene_reconnect_loadout_loss",
@@ -100,7 +136,13 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "repeated-across-maps",
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l1_lobby_final_countdown_revalidation",
@@ -111,7 +153,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l1_enchant_purchase_no_effect",
@@ -122,7 +169,11 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l1_duplicate_armor_purchase",
@@ -133,7 +184,11 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l1_zombie_path_barrier",
@@ -144,7 +199,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l1_unloaded_spawn_chunk_auto_win",
@@ -155,7 +215,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l1_spawn_position_inconsistent",
@@ -166,7 +231,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l2_keepinventory_disabled",
@@ -177,7 +247,11 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l2_builditems_shop_missing",
@@ -188,7 +262,11 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l2_pillager_bridge_stuck",
@@ -199,7 +277,12 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     },
     {
       "id": "reg_defense_l2_time_weather_unlocked",
@@ -210,7 +293,10 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       },
-      "evidenceRole": "positive"
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "explicit-invariant"
+      ]
     }
   ],
   "policy": {
