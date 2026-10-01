@@ -58,7 +58,9 @@ describe("bug report publication payload", () => {
     expect(payload.document.issues[0]?.title).toBe(
       "Level cannot continue",
     );
-    it("exports PDF from the created Google Doc instead of rebuilding content", async () => {
+  });
+
+  it("exports PDF from the created Google Doc instead of rebuilding content", async () => {
     const calls: string[] = [];
     const provider: BugReportPublicationProvider = {
       async createGoogleDoc(input) {
@@ -94,5 +96,4 @@ describe("bug report publication payload", () => {
       "Attack Challenge v1.1.1 - Bug Report.pdf",
     );
   });
-});
 });
