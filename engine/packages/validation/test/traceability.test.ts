@@ -124,6 +124,7 @@ describe("validation traceability", () => {
     );
 
     expect(report.runs[0]?.current).toBe(true);
+    expect(report.runs[0]?.proofSufficient).toBe(true);
     expect(report.invariants).toEqual([
       {
         invariantId: "intent:cleanup",
