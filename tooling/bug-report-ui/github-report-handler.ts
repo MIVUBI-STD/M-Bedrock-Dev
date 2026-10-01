@@ -11,6 +11,33 @@ import {
   type GitHubBugReportStore,
 } from "./github-report-store.js";
 
+function validationTraceInput(value: unknown): value is import(
+  "../../engine/packages/validation/src/index.js"
+).ValidationTraceReport {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("runs" in value) ||
+    !Array.isArray((value as { runs?: unknown }).runs) ||
+    !("invariants" in value) ||
+    !Array.isArray((value as { invariants?: unknown }).invariants)
+  ) {
+    return false;
+  }
+
+  return (value as { runs: unknown[] }).runs.every((run) =>
+    typeof run === "object" &&
+    run !== null &&
+    typeof (run as { runId?: unknown }).runId === "string" &&
+    typeof (run as { ok?: unknown }).ok === "boolean" &&
+    typeof (run as { current?: unknown }).current === "boolean" &&
+    Array.isArray((run as { evidenceIds?: unknown }).evidenceIds) &&
+    (run as { evidenceIds: unknown[] }).evidenceIds.every(
+      (item) => typeof item === "string",
+    )
+  );
+}
+
 function json(
   value: unknown,
   status = 200,
@@ -113,8 +140,7 @@ export async function handleBugReportStoreRequest(
         input.validationRunIds.some((item) => typeof item !== "string") ||
         typeof input.expectedRevision !== "string" ||
         !input.expectedRevision.trim() ||
-        typeof input.validationTrace !== "object" ||
-        input.validationTrace === null
+        !validationTraceInput(input.validationTrace)
       ) {
         return json({ error: "Invalid verified repair completion request." }, 400);
       }
@@ -125,9 +151,7 @@ export async function handleBugReportStoreRequest(
           bugId: input.bugId,
           validationRunIds: input.validationRunIds as string[],
         },
-        input.validationTrace as import(
-          "../../engine/packages/validation/src/index.js"
-        ).ValidationTraceReport,
+        input.validationTrace,
         input.expectedRevision,
       ));
     }
