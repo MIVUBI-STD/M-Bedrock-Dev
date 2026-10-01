@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "m-bedrock-acceptance-corpus-v1",
+  "lane": "acceptance",
+  "cases": [],
+  "policy": {
+    "mayInformDetectorDevelopment": false,
+    "blindEvaluationRequired": true,
+    "artifactFingerprintRequiredForScoring": true,
+    "frozenExpectationRequiredForScoring": true
+  }
+}
