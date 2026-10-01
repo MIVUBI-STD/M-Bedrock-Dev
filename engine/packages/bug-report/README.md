@@ -227,6 +227,23 @@ Promotion quality rules:
 
 The promotion-only `status` is not persisted in Bug Report V2.
 
+## Canonical current-version reconciliation
+
+Refreshing an audit is not equivalent to replacing canonical state.
+
+Use `reconcileCanonicalBugReport()` when a new current-version audit projection must be reconciled with an existing canonical report.
+
+The reconciliation contract is conservative:
+
+- map name and map version must match;
+- existing `fixed` state is preserved by generic refresh;
+- newly discovered bugs always start with `fixed: false`;
+- a bug omitted by a refreshed audit is retained rather than silently deleted;
+- a stable Bug ID cannot be reused for a different canonical category;
+- verified repair completion remains a separate workflow and is the only path that may change canonical completion state.
+
+This prevents detection variability from becoming destructive report mutation.
+
 ## Output density
 
 The normal tester-facing scan should answer only the minimum useful questions:
@@ -358,7 +375,7 @@ confirmation evidence
 
 Callers do not supply Severity, Category, or Bug ID.
 
-Bug IDs are deterministic from map identity plus `semanticKey`, so adding an unrelated defect does not renumber existing bugs.
+Bug IDs are deterministic from map identity plus `semanticKey`, so adding an unrelated defect does not renumber existing bugs. `semanticKey` represents stable defect semantics (affected subjects + broken invariants + primary failure); observation-specific `causalIncidentId` is intentionally excluded from stable identity and remains grouping/evidence context.
 
 For the high-level audit-to-report path, AI source evidence is checked against the audited file inventory before V2 promotion.
 
