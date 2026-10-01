@@ -170,16 +170,14 @@ export function renderBugReportPreviewMarkdown(
     return out.join("\n") + "\n";
   }
 
-  out.push(
-    "",
-    "| No. | Severity | Bug | Issue | Solution |",
-    "|---:|---|---|---|---|",
-  );
-
   preview.bugs.forEach((bug, index) => {
     out.push(
-      `| #${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.title)} | ${tableCell(bug.issue)} | ${bug.action ? tableCell(bug.action) : "—"} |`,
-      `|  |  | **Bug Trigger (In-Game)** | ${tableCell(reproductionCell(bug.reproduction))} |  |`,
+      "",
+      `| #${index + 1} · ${severityLabel(bug.severity)} | ${tableCell(bug.title)} |`,
+      "|---|---|",
+      `| **Issue** | ${tableCell(bug.issue)} |`,
+      `| **Bug Trigger (In-Game)** | ${tableCell(reproductionCell(bug.reproduction))} |`,
+      `| **Solution** | ${bug.action ? tableCell(bug.action) : "—"} |`,
     );
   });
 
