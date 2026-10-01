@@ -19,7 +19,7 @@ Do not create parallel report formats, duplicate Markdown reports, or competing 
 - Compatibility imports may remain more permissive than new-report creation.
 - New report creation must pass copy quality.
 - Preview code must never mutate, infer, or persist report facts.
-- Suggested Fix is the only source for preview Action.
+- Suggested Fix is the only source for preview Solution.
 - Internal diagnostic IDs, proof plumbing, semantic keys, repair-unit IDs, cache state, and orchestration data stay out of normal preview.
 - UI and agent skills should reference `COPY.md` / `PREVIEW.md` instead of redefining their rules.
 
@@ -28,7 +28,7 @@ Do not create parallel report formats, duplicate Markdown reports, or competing 
 Default ChatGPT preview is a compact table:
 
 ```text
-Severity | Bug (ID + title) | Issue | Action
+Severity | Bug | Issue | Solution
 ```
 
 Do not expand every bug vertically unless full detail is explicitly requested. Do not optimize for exhaustive prose at the expense of scan clarity.
