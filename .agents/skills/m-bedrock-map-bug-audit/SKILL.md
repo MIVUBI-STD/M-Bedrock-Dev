@@ -56,6 +56,18 @@ Use the canonical report contracts:
 
 Default presentation is `standard`, open-bugs-only, and **table-first**.
 
+Audit header is fixed:
+
+```text
+Map Version: <map version>
+Tested Version: Latest Education
+
+Open Issues: <count>
+Blocker: <count> · Major: <count> · Minor: <count>
+```
+
+Do not show Repair By, repair ownership, or Fixed progress during normal bug-finding preview.
+
 Normal ChatGPT preview uses one compact table:
 
 ```text
