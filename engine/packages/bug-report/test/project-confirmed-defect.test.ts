@@ -167,6 +167,28 @@ describe("confirmed defect projection", () => {
       .not.toBe(ids.get(z.semanticKey));
   });
 
+  it("keeps defect identity stable when causal incident evidence changes", () => {
+    const first = defect("cleanup", {
+      causalIncidentId: "incident:first-observation",
+    });
+    const second = defect("cleanup", {
+      causalIncidentId: "incident:later-observation",
+    });
+
+    expect(first.semanticKey).toBe(second.semanticKey);
+
+    const firstId = allocateBugIds(
+      map.name,
+      [first],
+    ).get(first.semanticKey);
+    const secondId = allocateBugIds(
+      map.name,
+      [second],
+    ).get(second.semanticKey);
+
+    expect(firstId).toBe(secondId);
+  });
+
   it("keeps defect identity stable when repair-unit knowledge changes", () => {
     const first = defect("cleanup", {
       repairUnitIds: ["source-range:scripts/session.ts#L10-L12"],
