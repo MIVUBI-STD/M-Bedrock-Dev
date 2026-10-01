@@ -1,31 +1,46 @@
 # Semantic Authority Model
 
-Gameplay correctness uses separate authorities:
+## Current gameplay authority
+
+For a normal map audit:
 
 ```text
-Map Game Design
-→ Gameplay Contract
-→ expected gameplay
+Selected Map Version
+= one current gameplay evidence universe
+```
 
-current source / artifact / runtime
+Inside that artifact:
+
+```text
+explicit authored gameplay signals
+→ Gameplay Contract / expected behavior
+
+executable source + artifact state + runtime observation
 → Actual Behavior
 
-expected gameplay ≠ Actual Behavior
+Expected ≠ Actual
 → diagnosis
 ```
 
-Supporting domains:
+## Not current authority
 
-- Gameplay Intent reconstructs implementation meaning; it is not independent design authority.
-- Platform Knowledge describes Minecraft behavior/capability.
-- Engineering Contracts define MIVUBI implementation/reliability requirements.
-- Behavior Model evaluates possible behavior.
-- Runtime Evidence records observed behavior.
+These are archive/reference only:
 
-Hard rules:
+- older map versions;
+- Development/Source;
+- old Bug Reports / QA;
+- Technical Docs;
+- changelogs;
+- other maps;
+- external design/reference documents.
 
-- source code never becomes Map Game Design merely because it is explicit or repeated;
-- approved reconstruction is clarification evidence, not enough by itself to confirm a gameplay defect;
-- runtime observation proves what happened, not what should happen;
-- material design unknowns block bug classification for that scope;
+They may be used only for an explicitly requested comparison/history task.
+
+## Hard rules
+
+- never mix evidence from different map versions in one current audit;
+- do not use stale documents to fill missing gameplay intent;
+- missing intent stays unknown;
+- runtime observation does not redefine expected behavior;
+- external Minecraft knowledge may explain engine capability, but not map-specific gameplay intent;
 - canonical terminology is defined in `canonical-naming.md`.
