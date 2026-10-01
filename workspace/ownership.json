@@ -15,7 +15,7 @@
       ]
     },
     "integration": {
-      "purpose": "Tracked external artifact-store bindings; no private artifact bytes.",
+      "purpose": "Tracked pointer to the user-managed Drive map/source storage root.",
       "entries": [
         "drive-root.json"
       ]

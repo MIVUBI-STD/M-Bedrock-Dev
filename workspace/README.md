@@ -37,9 +37,15 @@ Nothing under `workspace/active/` or `workspace/saved/` is repository source aut
 
 
 
-## Drive source storage
+## Drive storage
 
-Google Drive remains user-managed storage for map binaries and source-development material.
+Google Drive is user-managed storage for map binaries and source-development files.
+
+Canonical guidance:
+
+```text
+docs/06-system/drive-storage.md
+```
 
 Tracked root pointer:
 
@@ -47,12 +53,6 @@ Tracked root pointer:
 workspace/drive-root.json
 ```
 
-Per-project exact pointer is local and ignored:
+Per-project exact pointers, when useful, belong only in ignored local state under `workspace/active/<project-id>/state/`.
 
-```text
-workspace/active/<project-id>/state/drive-binding.json
-```
-
-The binding may remember only the map folder, current world file, and existing `Raw Dev` / `Old Version` folders. M-Bedrock does not create Drive-side system, QA, report, registry, sync, or release folders.
-
-Canonical Bug Report V2 remains under `workspace/reports/`.
+M-Bedrock does not create Drive-side system folders or store internal engine state in Drive.
