@@ -460,6 +460,17 @@ export const BUILTIN_TASK_CAPABILITIES:
       ],
     },
     {
+      id: "reliability.behavior-patterns",
+      owner: "packages/reliability-search",
+      pathPrefixes: [
+        "packages/reliability-search/src/behavioral-pattern-library.ts",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "reliability.metamorphic",
       owner: "packages/reliability-search",
       pathPrefixes: [

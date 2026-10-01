@@ -48,3 +48,5 @@ export * from "./multiplayer-interleaving.js";
 
 export * from "./metamorphic.js";
 export * from "./parser-robustness.js";
+
+export * from "./behavioral-pattern-library.js";

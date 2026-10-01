@@ -65,3 +65,10 @@ The reliability layer never invents the equivalence relation; the semantic owner
 
 Deterministic malformed/edge-shape text cases exercise parser safety separately from gameplay mutation testing.
 Robustness results measure parser behavior only. Harness errors are Detection Development evidence, not map defects.
+
+## Cross-map behavioral pattern library
+
+Reviewed map evidence may be aggregated into reusable behavioral patterns, implementation variants, and failure signatures.
+
+Promotion is cross-map and conservative: a pattern remains a candidate until it has support from multiple distinct maps and no reviewed rejection.
+Map IDs are provenance only; production detection logic must rediscover the pattern from artifact evidence rather than match map names.
