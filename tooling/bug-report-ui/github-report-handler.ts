@@ -31,6 +31,7 @@ function validationTraceInput(value: unknown): value is import(
     typeof (run as { runId?: unknown }).runId === "string" &&
     typeof (run as { ok?: unknown }).ok === "boolean" &&
     typeof (run as { current?: unknown }).current === "boolean" &&
+    typeof (run as { proofSufficient?: unknown }).proofSufficient === "boolean" &&
     Array.isArray((run as { evidenceIds?: unknown }).evidenceIds) &&
     (run as { evidenceIds: unknown[] }).evidenceIds.every(
       (item) => typeof item === "string",
@@ -128,6 +129,7 @@ export async function handleBugReportStoreRequest(
         path?: unknown;
         bugId?: unknown;
         validationRunIds?: unknown;
+        preservationInvariantIds?: unknown;
         validationTrace?: unknown;
         expectedRevision?: unknown;
       };
@@ -138,6 +140,11 @@ export async function handleBugReportStoreRequest(
         !input.bugId.trim() ||
         !Array.isArray(input.validationRunIds) ||
         input.validationRunIds.some((item) => typeof item !== "string") ||
+        (input.preservationInvariantIds !== undefined &&
+          (!Array.isArray(input.preservationInvariantIds) ||
+            input.preservationInvariantIds.some(
+              (item) => typeof item !== "string",
+            ))) ||
         typeof input.expectedRevision !== "string" ||
         !input.expectedRevision.trim() ||
         !validationTraceInput(input.validationTrace)
@@ -150,6 +157,12 @@ export async function handleBugReportStoreRequest(
         {
           bugId: input.bugId,
           validationRunIds: input.validationRunIds as string[],
+          ...(input.preservationInvariantIds === undefined
+            ? {}
+            : {
+                preservationInvariantIds:
+                  input.preservationInvariantIds as string[],
+              }),
         },
         input.validationTrace,
         input.expectedRevision,
