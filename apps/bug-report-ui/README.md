@@ -22,7 +22,10 @@ The UI does not analyze maps or diagnose bugs. It presents confirmed bugs so a t
 - Bug Trigger uses numbered, player-facing steps and must end with an observable wrong result.
 - Severity and tester-facing text are searchable.
 - Expected, Observed, Technical Analysis, Relevant Code, and Must Preserve remain detail-on-demand.
-- A file report can be exported or explicitly created on GitHub.
+- Older or externally supplied canonical reports may be opened in compatibility mode.
+- Compatibility mode shows tester-readiness issues without mutating the report.
+- Compatibility reports may be read and exported.
+- A file report can be created on GitHub only after tester-readiness issues are resolved.
 - A GitHub report is read/export oriented during the audit phase.
 - Canonical V2 fields remain unchanged for compatibility with later repair workflows.
 
