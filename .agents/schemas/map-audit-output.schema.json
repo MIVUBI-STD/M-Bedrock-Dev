@@ -124,7 +124,8 @@
                 "playerImpact": {
                   "enum": [
                     "blocking",
-                    "material"
+                    "material",
+                    "limited"
                   ]
                 },
                 "counterEvidence": {
