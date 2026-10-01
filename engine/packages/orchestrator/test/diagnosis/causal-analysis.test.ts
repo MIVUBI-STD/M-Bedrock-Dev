@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { DiagnosticFinding } from "../../diagnostics/src/index.js";
-import { synthesizeCausalChains } from "../src/causal-analysis.js";
+import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
+import { synthesizeCausalChains } from "../../src/diagnosis/causal-analysis.js";
 
 function finding(
   code: "KNOWLEDGE_RELATION_VIOLATION" | "KNOWLEDGE_EVIDENCE_GAP",

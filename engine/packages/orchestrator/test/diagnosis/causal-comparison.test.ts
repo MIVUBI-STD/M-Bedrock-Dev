@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareCausalAnalysis } from "../src/causal-comparison.js";
+import { compareCausalAnalysis } from "../../src/diagnosis/causal-comparison.js";
 
 function result(input: {
   confidence: "low" | "medium" | "high";

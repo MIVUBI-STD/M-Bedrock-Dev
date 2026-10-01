@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { CausalComparison } from "../src/causal-comparison.js";
-import { causalRetestReasons } from "../src/causal-retest.js";
+import type { CausalComparison } from "../../src/diagnosis/causal-comparison.js";
+import { causalRetestReasons } from "../../src/diagnosis/causal-retest.js";
 
 function comparison(delta: Partial<CausalComparison["delta"]>): CausalComparison {
   const snapshot = {
