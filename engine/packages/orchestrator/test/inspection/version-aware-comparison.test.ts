@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { VersionAwareEvidenceLink } from "../src/version-aware-comparison.js";
+import type { VersionAwareEvidenceLink } from "../../src/inspection/version-aware-comparison.js";
 
 describe("version-aware comparison contract", () => {
   it("keeps update/native/regression evidence descriptive", () => {

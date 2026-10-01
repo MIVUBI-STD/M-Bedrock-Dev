@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   parseScriptFile,
-} from "../../../analyzers/scripts/src/index.js";
+} from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzePersistenceSource,
-} from "../src/persistence-source-analysis.js";
+} from "../../src/inspection/persistence-source-analysis.js";
 
 describe("persistence source analysis", () => {
   it("summarizes growth without promoting it to a defect", () => {
