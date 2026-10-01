@@ -74,6 +74,14 @@ for (const manifestPath of manifests) {
     ) {
       errors.push(`${manifestPath}: invalid status for ${item.id}`);
     }
+
+    if (
+      item.evidenceRole !== undefined &&
+      item.evidenceRole !== "positive" &&
+      item.evidenceRole !== "negative"
+    ) {
+      errors.push(`${manifestPath}: invalid evidenceRole for ${item.id}`);
+    }
   }
 
   if (lane === "acceptance") {
