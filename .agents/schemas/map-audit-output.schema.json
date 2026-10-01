@@ -183,6 +183,7 @@
       "type": "object",
       "required": [
         "disposition",
+        "scope",
         "totalSurfaces",
         "checked",
         "blocked",
@@ -191,7 +192,7 @@
       ],
       "properties": {
         "disposition": {
-          "const": "complete"
+          "const": "accounted"
         },
         "totalSurfaces": {
           "type": "integer",
@@ -215,6 +216,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "scope": {
+          "const": "discovered-surfaces-only"
         }
       },
       "additionalProperties": false
