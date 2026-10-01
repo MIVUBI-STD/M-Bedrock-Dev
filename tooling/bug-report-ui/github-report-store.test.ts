@@ -15,6 +15,7 @@ function report() {
     map: {
       name: "A",
       mapVersion: "1.0.0",
+      drive: "https://drive.google.com/file/d/map/view",
       baseVersion: "1.26.20",
       testedVersion: "1.26.20",
     },
@@ -25,10 +26,15 @@ function report() {
       severity: "minor" as const,
       category: "ui-feedback" as const,
       foundBy: "tester" as const,
-      title: "A",
-      problem: "A",
-      expected: "A",
-      observed: "A",
+      title: "Join feedback remains visible",
+      problem: "The join prompt remains visible after the player leaves the join area.",
+      expected: "The join prompt disappears after leaving the join area.",
+      observed: "The join prompt remains visible outside the join area.",
+      reproduction: [
+        "Enter the join area until the prompt appears.",
+        "Leave the join area.",
+        "Confirm the join prompt remains visible outside the area.",
+      ],
     }],
   };
 }
