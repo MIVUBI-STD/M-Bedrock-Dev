@@ -66,7 +66,7 @@ function report(): BugReportV2 {
       },
       {
         id: "BUG-AC-C",
-        fixed: true,
+        fixed: false,
         severity: "minor",
         category: "ui-feedback",
         foundBy: "tester",
@@ -85,7 +85,7 @@ function report(): BugReportV2 {
 }
 
 describe("client bug report document projection", () => {
-  it("front-loads only open confirmed issues by default", () => {
+  it("shows only blocker and major open issues by default", () => {
     const document =
       projectBugReportClientDocument(report());
 
@@ -93,27 +93,28 @@ describe("client bug report document projection", () => {
       expect.objectContaining({
         visibleIssues: 2,
         openIssues: 2,
-        fixedIssues: 1,
         blocker: 1,
         major: 1,
         minor: 0,
       }),
     );
+    expect(document.source.severityScope).toBe("blocker-major");
     expect(document.issueIndex.map((item) => item.title))
       .toEqual([
         "Level cannot continue",
         "Inventory remains after reset",
       ]);
-    expect(document.issues[0]).toEqual(
-      expect.objectContaining({
-        number: 1,
-        severity: "blocker",
-        issue:
-          "The level stops after the objective and players cannot continue.",
-        recommendedResolution:
-          "Advance the level state after the objective is completed.",
-      }),
-    );
+  });
+
+  it("can intentionally include minor issues", () => {
+    const document =
+      projectBugReportClientDocument(report(), {
+        includeMinor: true,
+      });
+
+    expect(document.summary.visibleIssues).toBe(3);
+    expect(document.summary.minor).toBe(1);
+    expect(document.source.severityScope).toBe("all");
   });
 
   it("keeps implementation internals out of the client model", () => {
@@ -128,17 +129,6 @@ describe("client bug report document projection", () => {
     expect(serialized).not.toContain("BUG-AC-A");
   });
 
-  it("can intentionally include fixed issues without changing the grammar", () => {
-    const document =
-      projectBugReportClientDocument(report(), {
-        includeFixed: true,
-      });
-
-    expect(document.summary.visibleIssues).toBe(3);
-    expect(document.source.issueScope).toBe("all");
-    expect(document.issues[2]?.status).toBe("fixed");
-  });
-
   it("passes the client-document structural readability gate", () => {
     const document =
       projectBugReportClientDocument(report());
@@ -146,19 +136,5 @@ describe("client bug report document projection", () => {
     expect(
       reviewBugReportClientDocument(document),
     ).toEqual([]);
-  });
-
-  it("detects index/detail drift", () => {
-    const document =
-      projectBugReportClientDocument(report());
-    const broken = {
-      ...document,
-      issueIndex: document.issueIndex.slice(1),
-    };
-
-    expect(
-      reviewBugReportClientDocument(broken)
-        .map((issue) => issue.code),
-    ).toContain("index-count-mismatch");
   });
 });

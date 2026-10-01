@@ -5,6 +5,7 @@ export type BugReportCopyIssueCode =
   | "field-too-long"
   | "duplicate-core-copy"
   | "vague-issue"
+  | "technical-issue-copy"
   | "vague-solution"
   | "missing-reproduction"
   | "invalid-reproduction-length"
@@ -41,6 +42,20 @@ const vagueIssuePatterns = [
   /\bpossible issue\b/i,
   /\bpotential issue\b/i,
   /\bneeds? checking\b/i,
+] as const;
+
+const technicalIssuePatterns = [
+  /\brace condition\b/i,
+  /\bcallback\b/i,
+  /\bsubscriber\b/i,
+  /\bevent handler\b/i,
+  /\bdynamic propert(?:y|ies)\b/i,
+  /\bsource code\b/i,
+  /\bcode path\b/i,
+  /\bimplementation\b/i,
+  /\barchitecture\b/i,
+  /\bfunction\b/i,
+  /\bscript\b/i,
 ] as const;
 
 const codeCentricReproductionPatterns = [
@@ -115,9 +130,23 @@ export function reviewBugReportCopy(
         code: "vague-issue",
         path: base + ".problem",
         message:
-          "Issue must state the affected feature, concrete failure, and gameplay impact without tentative investigation wording.",
+          "Issue must state the player-visible failure and gameplay impact without tentative investigation wording.",
       });
     }
+
+    if (
+      technicalIssuePatterns.some((pattern) =>
+        pattern.test(bug.problem)
+      )
+    ) {
+      issues.push({
+        code: "technical-issue-copy",
+        path: base + ".problem",
+        message:
+          "Issue must describe what the player experiences in-game. Keep implementation causes in Technical Analysis.",
+      });
+    }
+
     tooLong(issues, base + ".expected", bug.expected, limits.expected);
     tooLong(issues, base + ".observed", bug.observed, limits.observed);
 

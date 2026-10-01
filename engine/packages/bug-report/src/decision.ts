@@ -34,20 +34,104 @@ export interface BugImpactAssessment {
   readonly fairness: FairnessImpact;
 }
 
+export type GameplayIntentAssessment =
+  | "grounded-contradiction"
+  | "grounded-designed-behavior"
+  | "ambiguous";
+
+export type PlayerObservableImpact =
+  | "blocking"
+  | "material"
+  | "limited"
+  | "none";
+
+export type BugCandidateDisposition =
+  | "reportable-bug"
+  | "designed-behavior"
+  | "ambiguous-intent"
+  | "no-player-impact"
+  | "below-report-threshold"
+  | "tester-trigger-missing";
+
+export interface BugCandidateAssessment {
+  readonly intent: GameplayIntentAssessment;
+  readonly playerImpact: PlayerObservableImpact;
+  readonly testerObservable: boolean;
+}
+
+export interface BugCandidateDecision {
+  readonly disposition: BugCandidateDisposition;
+  readonly reportable: boolean;
+}
+
+export function classifyBugCandidate(
+  candidate: BugCandidateAssessment,
+): BugCandidateDecision {
+  if (candidate.intent === "grounded-designed-behavior") {
+    return {
+      disposition: "designed-behavior",
+      reportable: false,
+    };
+  }
+
+  if (candidate.intent === "ambiguous") {
+    return {
+      disposition: "ambiguous-intent",
+      reportable: false,
+    };
+  }
+
+  if (
+    candidate.playerImpact === "none" ||
+    !candidate.testerObservable
+  ) {
+    return {
+      disposition:
+        candidate.playerImpact === "none"
+          ? "no-player-impact"
+          : "tester-trigger-missing",
+      reportable: false,
+    };
+  }
+
+  if (candidate.playerImpact === "limited") {
+    return {
+      disposition: "below-report-threshold",
+      reportable: false,
+    };
+  }
+
+  return {
+    disposition: "reportable-bug",
+    reportable: true,
+  };
+}
+
 export function classifyBugSeverity(
   impact: BugImpactAssessment,
 ): BugSeverity {
+  if (impact.stability === "crash-or-freeze") {
+    return "blocker";
+  }
+
   if (
-    impact.progression === "blocked" ||
-    impact.recovery === "none" ||
-    impact.stability === "crash-or-freeze"
+    impact.progression === "blocked" &&
+    impact.recovery !== "normal"
   ) {
     return "blocker";
   }
 
   if (
+    impact.progression === "blocked" ||
     impact.progression === "degraded" ||
     impact.recovery === "abnormal" ||
+    (
+      impact.recovery === "none" &&
+      (
+        impact.coreMechanic === "materially-wrong" ||
+        impact.importantState === "materially-wrong"
+      )
+    ) ||
     impact.coreMechanic === "materially-wrong" ||
     impact.importantState === "materially-wrong" ||
     impact.fairness === "materially-affected"
@@ -56,6 +140,12 @@ export function classifyBugSeverity(
   }
 
   return "minor";
+}
+
+export function shouldIncludeInDefaultBugReport(
+  severity: BugSeverity,
+): boolean {
+  return severity === "blocker" || severity === "major";
 }
 
 export const BUG_PRIMARY_FAILURES = [

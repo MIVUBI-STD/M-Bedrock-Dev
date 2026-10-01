@@ -1,6 +1,9 @@
 import {
   compareBugReportPreviewOrder,
 } from "../preview.js";
+import {
+  shouldIncludeInDefaultBugReport,
+} from "../decision.js";
 import type {
   BugReportV2,
   BugReportV2Bug,
@@ -14,6 +17,7 @@ import {
 
 export interface ProjectBugReportClientDocumentOptions {
   readonly includeFixed?: boolean;
+  readonly includeMinor?: boolean;
 }
 
 const severityLegend =
@@ -22,19 +26,19 @@ const severityLegend =
       severity: "blocker",
       label: "Blocker",
       meaning:
-        "Prevents normal progression or makes the affected gameplay unusable.",
+        "Stops normal progression, prevents the objective, or leaves no normal in-game recovery.",
     },
     {
       severity: "major",
       label: "Major",
       meaning:
-        "Materially affects gameplay, state, fairness, or reliability.",
+        "Materially breaks core gameplay, important player state, or fairness while play can still continue or recover.",
     },
     {
       severity: "minor",
       label: "Minor",
       meaning:
-        "Limited issue that does not prevent normal gameplay.",
+        "Limited player-visible issue that does not materially affect core gameplay.",
     },
   ] as const;
 
@@ -73,17 +77,36 @@ export function projectBugReportClientDocument(
 ): BugReportClientDocument {
   const includeFixed =
     options.includeFixed ?? false;
+  const includeMinor =
+    options.includeMinor ?? false;
+
   const visible = report.bugs
     .filter((bug) =>
-      includeFixed || !bug.fixed
+      (includeFixed || !bug.fixed) &&
+      (
+        includeMinor ||
+        shouldIncludeInDefaultBugReport(bug.severity)
+      )
     )
     .slice()
     .sort(compareBugReportPreviewOrder);
 
   const openIssues =
-    report.bugs.filter((bug) => !bug.fixed).length;
+    report.bugs.filter((bug) =>
+      !bug.fixed &&
+      (
+        includeMinor ||
+        shouldIncludeInDefaultBugReport(bug.severity)
+      )
+    ).length;
   const fixedIssues =
-    report.bugs.length - openIssues;
+    report.bugs.filter((bug) =>
+      bug.fixed &&
+      (
+        includeMinor ||
+        shouldIncludeInDefaultBugReport(bug.severity)
+      )
+    ).length;
 
   const issues = visible.map(
     (bug, index) =>
@@ -105,10 +128,10 @@ export function projectBugReportClientDocument(
 
   const statement =
     issues.length === 0
-      ? "No open issues are recorded for this report."
+      ? "No gameplay-blocking or materially disruptive open issues are recorded for this report."
       : (
           String(issues.length) +
-          " confirmed issue" +
+          " gameplay-blocking or materially disruptive issue" +
           (issues.length === 1 ? "" : "s") +
           " are included in this client report."
         );
@@ -120,7 +143,7 @@ export function projectBugReportClientDocument(
     title:
       report.map.name + " — Bug Report",
     subtitle:
-      "Confirmed gameplay issues and testing summary",
+      "Player-visible gameplay issues requiring attention",
     audience: "client",
     map: {
       name: report.map.name,
@@ -137,7 +160,12 @@ export function projectBugReportClientDocument(
       minor,
       statement,
     },
-    severityLegend,
+    severityLegend:
+      includeMinor
+        ? severityLegend
+        : severityLegend.filter(
+            (entry) => entry.severity !== "minor",
+          ),
     issueIndex: issues.map((issue) => ({
       number: issue.number,
       severity: issue.severity,
@@ -149,6 +177,10 @@ export function projectBugReportClientDocument(
       schema: report.schema,
       issueScope:
         includeFixed ? "all" : "open",
+      severityScope:
+        includeMinor
+          ? "all"
+          : "blocker-major",
     },
   };
 }

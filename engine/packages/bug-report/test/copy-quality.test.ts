@@ -36,8 +36,23 @@ function report(): BugReportV2 {
 }
 
 describe("bug report copy quality", () => {
-  it("accepts concise role-separated copy", () => {
+  it("accepts concise player-facing copy", () => {
     expect(reviewBugReportCopy(report().bugs)).toEqual([]);
+  });
+
+  it("rejects implementation language in Issue", () => {
+    const source = report();
+    const issues = reviewBugReportCopy([{
+      ...source.bugs[0]!,
+      problem:
+        "A race condition in the event handler can prevent the gate transition.",
+    }]);
+
+    expect(
+      issues.some(
+        (issue) => issue.code === "technical-issue-copy",
+      ),
+    ).toBe(true);
   });
 
   it("rejects duplicated core copy", () => {

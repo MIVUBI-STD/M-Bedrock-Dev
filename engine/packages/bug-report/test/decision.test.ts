@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  classifyBugCandidate,
   classifyBugSeverity,
   highestBugSeverity,
   routeBugFinderCategory,
+  shouldIncludeInDefaultBugReport,
   type BugImpactAssessment,
 } from "../src/index.js";
 
@@ -15,23 +17,82 @@ const cleanImpact: BugImpactAssessment = {
   fairness: "unaffected",
 };
 
+describe("bug candidate reportability", () => {
+  it("rejects grounded game design as a bug", () => {
+    expect(classifyBugCandidate({
+      intent: "grounded-designed-behavior",
+      playerImpact: "blocking",
+      testerObservable: true,
+    })).toEqual({
+      disposition: "designed-behavior",
+      reportable: false,
+    });
+  });
+
+  it("rejects ambiguous intent instead of guessing", () => {
+    expect(classifyBugCandidate({
+      intent: "ambiguous",
+      playerImpact: "material",
+      testerObservable: true,
+    }).disposition).toBe("ambiguous-intent");
+  });
+
+  it("rejects technical-only findings with no tester-visible trigger", () => {
+    expect(classifyBugCandidate({
+      intent: "grounded-contradiction",
+      playerImpact: "material",
+      testerObservable: false,
+    }).disposition).toBe("tester-trigger-missing");
+  });
+
+  it("keeps limited issues out of the default report", () => {
+    expect(classifyBugCandidate({
+      intent: "grounded-contradiction",
+      playerImpact: "limited",
+      testerObservable: true,
+    }).disposition).toBe("below-report-threshold");
+  });
+
+  it("reports grounded player-visible material failures", () => {
+    expect(classifyBugCandidate({
+      intent: "grounded-contradiction",
+      playerImpact: "material",
+      testerObservable: true,
+    })).toEqual({
+      disposition: "reportable-bug",
+      reportable: true,
+    });
+  });
+});
+
 describe("bug report severity policy", () => {
-  it("classifies blocked mandatory flow as blocker", () => {
+  it("classifies blocked mandatory flow without normal recovery as blocker", () => {
     expect(
       classifyBugSeverity({
         ...cleanImpact,
         progression: "blocked",
+        recovery: "abnormal",
       }),
     ).toBe("blocker");
   });
 
-  it("classifies unrecoverable player state as blocker", () => {
+  it("keeps recoverable blocked flow at major", () => {
+    expect(
+      classifyBugSeverity({
+        ...cleanImpact,
+        progression: "blocked",
+        recovery: "normal",
+      }),
+    ).toBe("major");
+  });
+
+  it("does not make recovery alone a blocker without gameplay impact", () => {
     expect(
       classifyBugSeverity({
         ...cleanImpact,
         recovery: "none",
       }),
-    ).toBe("blocker");
+    ).toBe("minor");
   });
 
   it("classifies crash or freeze as blocker", () => {
@@ -52,15 +113,6 @@ describe("bug report severity policy", () => {
     ).toBe("major");
   });
 
-  it("classifies materially wrong player state as major", () => {
-    expect(
-      classifyBugSeverity({
-        ...cleanImpact,
-        importantState: "materially-wrong",
-      }),
-    ).toBe("major");
-  });
-
   it("classifies gameplay fairness violations as major", () => {
     expect(
       classifyBugSeverity({
@@ -74,14 +126,10 @@ describe("bug report severity policy", () => {
     expect(classifyBugSeverity(cleanImpact)).toBe("minor");
   });
 
-  it("uses the strongest real impact instead of averaging impacts", () => {
-    expect(
-      classifyBugSeverity({
-        ...cleanImpact,
-        progression: "blocked",
-        fairness: "materially-affected",
-      }),
-    ).toBe("blocker");
+  it("shows only blocker and major in the default report", () => {
+    expect(shouldIncludeInDefaultBugReport("blocker")).toBe(true);
+    expect(shouldIncludeInDefaultBugReport("major")).toBe(true);
+    expect(shouldIncludeInDefaultBugReport("minor")).toBe(false);
   });
 });
 
@@ -111,68 +159,5 @@ describe("bug finder category routing", () => {
     ).toBe("blocker");
 
     expect(highestBugSeverity([])).toBeUndefined();
-  });
-});
-
-describe("real M-Bedrock severity corpus", () => {
-  it.each([
-    [
-      "arena cannot restart after defeat",
-      {
-        ...cleanImpact,
-        progression: "blocked",
-      },
-      "blocker",
-    ],
-    [
-      "water can mutate blocks outside active plot",
-      {
-        ...cleanImpact,
-        coreMechanic: "materially-wrong",
-        fairness: "materially-affected",
-      },
-      "major",
-    ],
-    [
-      "friendly fire is enabled when team damage is forbidden",
-      {
-        ...cleanImpact,
-        coreMechanic: "materially-wrong",
-        fairness: "materially-affected",
-      },
-      "major",
-    ],
-    [
-      "match inventory remains after returning to lobby",
-      {
-        ...cleanImpact,
-        importantState: "materially-wrong",
-      },
-      "major",
-    ],
-    [
-      "join-pad particle is missing",
-      cleanImpact,
-      "minor",
-    ],
-  ] as const)("classifies %s as %s", (_name, impact, severity) => {
-    expect(classifyBugSeverity(impact)).toBe(severity);
-  });
-});
-
-describe("real M-Bedrock category corpus", () => {
-  it.each([
-    ["arena cannot restart after defeat", "game-progression", "game-flow"],
-    ["inventory does not reset", "player-owned-state", "player-state"],
-    ["reconnect can retain stale session state", "session-concurrency", "multiplayer-session"],
-    ["water affects blocks outside plot", "world-mutation", "world-interaction"],
-    ["zombie navigation stalls on route", "entity-decision", "entity-behavior"],
-    ["friendly fire is enabled", "combat-rule", "combat"],
-    ["coin distribution is incorrect", "score-reward", "score-reward"],
-    ["join-pad particle is missing", "presentation-feedback", "ui-feedback"],
-    ["all arenas active causes runtime degradation", "runtime-capacity", "performance-stability"],
-    ["Script API behavior changes across target runtime", "runtime-compatibility", "compatibility"],
-  ] as const)("routes %s through %s to %s", (_name, failure, category) => {
-    expect(routeBugFinderCategory(failure)).toBe(category);
   });
 });

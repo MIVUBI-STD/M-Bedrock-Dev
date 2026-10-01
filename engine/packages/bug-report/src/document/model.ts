@@ -70,5 +70,6 @@ export interface BugReportClientDocument {
   readonly source: {
     readonly schema: BugReportV2["schema"];
     readonly issueScope: "open" | "all";
+    readonly severityScope: "blocker-major" | "all";
   };
 }
