@@ -1,61 +1,59 @@
 # Next Action
 
-## Current lane — Detection Decision Hardening
+## Current lane — Design-First Workflow Hardening
 
-The current priority is to strengthen bug-finding semantics, authority boundaries, candidate admission, review flow, and repository ownership before any new real-map test campaign.
+Real-map testing remains intentionally deferred.
 
-## Canonical decision flow
+The current objective is to make Game Design understanding a mandatory predecessor to gameplay bug discovery and repair.
+
+## Canonical workflow
 
 ```text
-current map/design evidence
-→ intended gameplay authority
-→ actual behavior evidence
-→ candidate discovery
-→ counter-evidence search
-→ player-impact gate
-→ tester-trigger gate
-→ severity
+Target Identity
+→ Game Design
+→ Gameplay Contract
+→ Design Readiness
+→ Actual Behavior
+→ Gameplay Contradiction
+→ Bug Candidate
+→ Counter-Evidence / Player Impact / Trigger
 → Proposed Bug Set
-→ chat review
-→ Approved Bug Set
-→ canonical Bug Report V2
-→ HTML
+→ Chat Approval
+→ Approved Bug
+→ Repair Contract
+→ Repair
+→ Defect Verification
+→ Game Design Preservation Verification
+→ HTML / handoff
 ```
 
-## Immediate non-test work
+## Current rules
 
-1. Remove stale or contradictory policy wording around intent authority, severity, report publication, and historical evidence.
-2. Keep one semantic owner per decision: Gameplay Intent for authority/intent, Diagnostic Reasoning for candidates/counter-evidence, Bug Report for admission/severity/review/publication.
-3. Keep historical QA as search/regression hints only, never current defect proof.
-4. Ensure implementation maps and routing docs point to current owners and filenames.
-5. Keep Minor/non-material findings out of normal client output.
-6. Keep HTML strictly derived; discussion and approval happen before publication.
-7. Do not add new detector families, databases, dashboards, approval UIs, or report schemas without a repeated proven need.
+- no design understanding → no gameplay bug search;
+- Gameplay Contract is derived, scoped, and temporary;
+- canonical intended gameplay remains project-local `design/game-design.json`;
+- material design unknowns block classification for their scope;
+- source code proves implementation, not intended gameplay;
+- historical QA is hint/regression evidence only;
+- no Approved Bug → no bug repair;
+- no Must Preserve constraints → no bug-repair mutation;
+- symptom removal alone does not prove repair correctness;
+- HTML/report publication remains downstream of approval.
 
-## Deferred intentionally
+## Deferred
 
 Do not start yet:
 
-- Challenge-map audit/retest;
+- Challenge map audit/retest;
 - Minecraft runtime testing;
-- calibration/benchmark execution;
-- HTML generation for current Challenge maps;
+- benchmark/calibration execution;
+- HTML generation for Challenge maps;
 - CI expansion.
 
-## Success condition
+## Next repository hardening target
 
-This phase is complete when repository rules tell one consistent story:
+Audit remaining orchestrator/repair entry points for any path that can:
 
-```text
-feature/design
-≠ technical anomaly
-≠ gameplay bug
-
-bug = grounded design contradiction
-    + material player-visible consequence
-    + tester-verifiable trigger
-    + cleared counter-evidence
-    + severity based on progression/recovery
-```
-
-After this policy/ownership pass is approved, real-map testing can resume as a separate step.
+1. discover gameplay bugs before design readiness;
+2. promote implementation-derived intent into defect authority;
+3. mutate a target bug without Approved Bug + preservation constraints.
