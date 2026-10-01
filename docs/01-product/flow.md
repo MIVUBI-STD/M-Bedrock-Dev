@@ -16,8 +16,10 @@ Older versions, Development/Source, old QA/Bug Reports, Technical Docs, changelo
 
 ```text
 Selected Map Version
+→ Gameplay Surface Inventory
 → Gameplay Contract
 → Actual Behavior
+→ Coverage Check
 → Confirmed Defect
 → Proposed Bug Set
 → Chat Approval
