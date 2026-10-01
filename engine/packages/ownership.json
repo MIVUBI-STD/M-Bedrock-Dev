@@ -4,11 +4,12 @@
     "foundation": {
       "purpose": "Stable primitives, artifact transport/identity, normalized state, graph and semantic representation.",
       "modules": [
-        "common",
-        "artifact",
         "archive",
-        "project-model",
+        "artifact",
+        "common",
+        "dataflow",
         "graph",
+        "project-model",
         "semantic-ir"
       ]
     },
