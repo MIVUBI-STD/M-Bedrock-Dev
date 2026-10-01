@@ -5,6 +5,29 @@ import type {
 export const DOMAIN_ANALYSIS_CAPABILITIES:
   readonly AnalysisCapability[] = [
     {
+      id: "script-dataflow-lineage",
+      evidenceLevel: "semantic",
+      cost: "moderate",
+      tags: [
+        "script",
+        "dataflow",
+        "taint",
+        "identity",
+        "state",
+        "lineage",
+      ],
+      deterministic: true,
+      contexts: [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+      producesTraits: [
+        "semantic-model",
+      ],
+    },
+    {
       id: "arena-lifecycle-integrity",
       evidenceLevel: "semantic",
       cost: "cheap",

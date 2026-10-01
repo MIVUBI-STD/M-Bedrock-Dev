@@ -16,4 +16,24 @@ Current facts:
 
 Unknown/computed behavior remains unknown rather than being evaluated.
 
-This analyzer does not attempt arbitrary data-flow execution, bundling, type-checking against Minecraft declarations, or JavaScript evaluation.
+This analyzer does not execute JavaScript or attempt arbitrary symbolic execution. A conservative project-level data-flow extractor now covers direct assignments and resolvable direct function argument/return flow; unsupported dynamic aliasing/calls remain unresolved.
+
+
+## Data-flow v1
+
+`deriveScriptDataFlowGraph()` builds evidence-bearing value flow across modules for direct/resolved calls.
+
+Supported:
+- direct variable assignment;
+- simple reassignment;
+- direct local function parameters/arguments;
+- resolved imported function parameters/arguments;
+- direct return → call-result flow;
+- forward/backward slicing through `packages/dataflow`.
+
+Not yet claimed:
+- arbitrary alias analysis;
+- prototype/reflection flow;
+- computed dynamic call resolution;
+- full closure/environment modeling;
+- JavaScript execution.

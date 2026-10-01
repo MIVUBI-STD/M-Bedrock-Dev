@@ -26,6 +26,19 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "source.scripts.dataflow",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/dataflow.ts",
+        "packages/dataflow/src/*",
+      ],
+      dependsOn: ["source.scripts.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "moderate",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "source.scripts.arena",
       owner: "analyzers/scripts",
       pathPrefixes: [
