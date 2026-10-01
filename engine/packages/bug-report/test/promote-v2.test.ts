@@ -35,6 +35,11 @@ describe("confirmed bug promotion", () => {
         problem: "The player returns to the lobby after reconnecting.",
         expected: "The player remains assigned to the same arena.",
         observed: "The previous arena membership remains bound to the old session.",
+        reproduction: [
+          "Join an arena and start a match.",
+          "Disconnect and reconnect.",
+          "Confirm the player is not cleanly rebound to the same arena session.",
+        ],
         aiAnalysis: "Reconnect creates a new session without fully rebinding arena membership.",
         relevantCode: [{
           file: "scripts/session.ts",
@@ -93,6 +98,11 @@ describe("confirmed bug promotion", () => {
       problem: "Feedback persists after leaving.",
       expected: "Feedback clears.",
       observed: "The UI state is not cleared.",
+      reproduction: [
+        "Enter the join area until feedback appears.",
+        "Leave the join area.",
+        "Confirm the feedback remains visible.",
+      ],
     }]);
 
     expect(issues.map((issue) => issue.code)).toEqual(
@@ -157,6 +167,11 @@ describe("confirmed bug promotion", () => {
       problem: "The behavior is wrong.",
       expected: "Expected behavior.",
       observed: "Observed behavior.",
+      reproduction: [
+        "Trigger the affected game flow.",
+        "Repeat the action that reaches the affected state.",
+        "Confirm the reported behavior occurs.",
+      ],
       aiAnalysis: "A possible path exists.",
       relevantCode: [{
         file: "scripts/game.ts",
@@ -184,6 +199,11 @@ describe("confirmed bug promotion", () => {
       problem: "Match items remain in the lobby.",
       expected: "Match-owned items are cleared.",
       observed: "Cleanup does not clear match items.",
+      reproduction: [
+        "Start a match and obtain match-owned items.",
+        "Finish the match and return to the lobby.",
+        "Confirm the match items remain in inventory.",
+      ],
       aiAnalysis: "Inventory cleanup is missing from the match-end path.",
       relevantCode: [1, 2, 3, 4].map((index) => ({
         file: "scripts/file-" + index + ".ts",
