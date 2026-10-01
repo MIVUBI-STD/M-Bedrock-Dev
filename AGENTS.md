@@ -130,6 +130,7 @@ Selected Map Version
 → Gameplay Surface Inventory
 → Gameplay Contract
 → Actual Behavior
+→ Discovered-Surface Accounting
 → Gameplay Contradiction
 → Bug Candidate
 → Counter-Evidence / Player Impact / Trigger
