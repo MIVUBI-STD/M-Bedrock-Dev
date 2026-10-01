@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   intentAuthorityStrength,
   resolveGameDesignIntentRules,
+  validateGameDesignSpec,
   type GameDesignSpec,
 } from "../src/index.js";
 
@@ -61,5 +62,21 @@ describe("Game Design intent resolution", () => {
       ["combat:team-damage"],
     );
     expect(rule?.exceptionId).toBe("developer-mode");
+  });
+
+  it("rejects malformed scoped intent rules", () => {
+    const errors = validateGameDesignSpec({
+      ...design,
+      intentRules: [{
+        id: "invalid",
+        statement: "Invalid scope.",
+        outcome: "allowed",
+        appliesWhen: {
+          actorTypes: ["invalid-actor"],
+        },
+      }],
+    });
+
+    expect(errors.join(" ")).toMatch(/actorTypes/);
   });
 });

@@ -166,4 +166,26 @@ describe("intent diagnostic gate", () => {
     expect(result.disposition).toBe("confirmed-defect");
     expect(result.basisDesignEvidenceIds.length).toBeGreaterThan(0);
   });
+
+  it("fails closed when an authoritative rule lacks contradiction proof", () => {
+    const result = gateIntentDiagnostic({
+      intent: model("inferred"),
+      subjectIds: ["combat:team-damage"],
+      observationEvidenceIds: ["runtime:friendly-fire"],
+      resolvedGameDesignRule: {
+        designId: "design:offense",
+        sourceReference: "design/game-design.json",
+        authority: "authoritative",
+        rule: {
+          id: "friendly-fire",
+          statement: "Same-team damage is forbidden.",
+          outcome: "forbidden",
+        },
+      },
+      gameDesignObservationRelation: "contradicts-observed",
+    });
+
+    expect(result.disposition).toBe("insufficient-evidence");
+    expect(result.nextEvidenceNeed).toBe("contradiction-proof");
+  });
 });
