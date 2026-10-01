@@ -123,7 +123,7 @@ export function reviewConfirmedBugInputs(
     issues.push({
       code: "no-confirmed-bugs",
       message:
-        "A developer-facing Bug Report V2 must contain at least one confirmed defect.",
+        "A canonical Bug Report V2 must contain at least one confirmed defect.",
     });
   }
 
@@ -176,7 +176,8 @@ export function reviewConfirmedBugInputs(
     });
   }
 
-  const copyIssues = reviewBugReportCopy(reportBugs);
+  const copyIssues = reviewBugReportCopy(reportBugs)
+    .filter((issue) => issue.code !== "missing-reproduction");
   for (const issue of copyIssues) {
     issues.push({
       code: "copy-quality",
