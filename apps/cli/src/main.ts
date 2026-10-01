@@ -67,6 +67,15 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "package-roundtrip" && input) {
+    const proof = await proveNoopPackageRoundtrip(resolve(input));
+    console.log(JSON.stringify(proof, null, 2));
+    if (!proof.equivalent) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (arenaRegionContractsPath) {
     target.arenaRegionContracts =
       await loadArenaRegionContractsFile(
@@ -76,15 +85,6 @@ async function main(): Promise<void> {
   const knowledge = await loadKnowledgeDirectory(resolve("engine/knowledge"));
   if (gameDesignPath) {
     target.gameDesign = await loadGameDesignSpec(resolve(gameDesignPath));
-  }
-
-  if (command === "package-roundtrip" && input) {
-    const proof = await proveNoopPackageRoundtrip(resolve(input));
-    console.log(JSON.stringify(proof, null, 2));
-    if (!proof.equivalent) {
-      process.exitCode = 1;
-    }
-    return;
   }
 
   if (command === "probe-plan" && input) {
