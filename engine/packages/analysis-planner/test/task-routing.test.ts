@@ -60,8 +60,6 @@ describe("engineering task routing", () => {
       );
     expect(route.runtimeMayBeRequired)
       .toBe(true);
-    expect(route.requiredPreconditions)
-      .toContain("approved-bug");
   });
 
   it("keeps lower-context repair work below the runtime proof ceiling", () => {
@@ -78,6 +76,8 @@ describe("engineering task routing", () => {
       );
     expect(route.runtimeMayBeRequired)
       .toBe(true);
+    expect(route.requiredPreconditions)
+      .toContain("approved-bug");
   });
 
   it("does not allow repair without Approved Bug and preservation preconditions", () => {
