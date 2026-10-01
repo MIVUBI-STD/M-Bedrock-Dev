@@ -8,6 +8,12 @@ Generated from Capability Truth. Do not hand-edit.
 - Owner: packages/runtime-lab
 - Reason: Capability requires LOCAL_MINECRAFT or LIVE_MINECRAFT context.
 
+## runtime.cross-version-differential-executor
+
+- State: runtime-required
+- Owner: packages/runtime-lab
+- Reason: Capability requires LOCAL_MINECRAFT or LIVE_MINECRAFT context.
+
 ## runtime.entity-ai
 
 - State: runtime-required

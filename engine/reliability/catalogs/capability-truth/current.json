@@ -2,21 +2,21 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "856e5b584d424ba3bfea109ec7527688e771f945",
+    "commit": "c7eb2077c8707cbbf882a77ca28efe131f58ff91",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "aa84edb1",
-    "proofInventoryFingerprint": "9c6d6cfa"
+    "registryFingerprint": "113300dc",
+    "proofInventoryFingerprint": "4ef39648"
   },
   "summary": {
-    "taskCapabilities": 49,
-    "ownerTested": 49,
+    "taskCapabilities": 50,
+    "ownerTested": 50,
     "implementationPresent": 0,
     "declaredOnly": 0,
-    "runtimeOnly": 3,
+    "runtimeOnly": 4,
     "analysisCapabilities": 30
   },
   "taskCapabilities": [
@@ -752,8 +752,31 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": true,
-      "sourceFiles": 34,
-      "testFiles": 30,
+      "sourceFiles": 35,
+      "testFiles": 31,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/packages/runtime-lab/test/action-capability.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-action-registry.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-host.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "runtime.cross-version-differential-executor",
+      "owner": "packages/runtime-lab",
+      "status": "owner-tested",
+      "deterministic": false,
+      "cost": "very-expensive",
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": true,
+      "sourceFiles": 35,
+      "testFiles": 31,
       "hasReadme": false,
       "proofPaths": [
         "engine/packages/runtime-lab/test/action-capability.test.ts",
@@ -777,8 +800,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 34,
-      "testFiles": 30,
+      "sourceFiles": 35,
+      "testFiles": 31,
       "hasReadme": false,
       "proofPaths": [
         "engine/packages/runtime-lab/test/action-capability.test.ts",
@@ -800,8 +823,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": true,
-      "sourceFiles": 34,
-      "testFiles": 30,
+      "sourceFiles": 35,
+      "testFiles": 31,
       "hasReadme": false,
       "proofPaths": [
         "engine/packages/runtime-lab/test/action-capability.test.ts",
@@ -823,8 +846,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": true,
-      "sourceFiles": 34,
-      "testFiles": 30,
+      "sourceFiles": 35,
+      "testFiles": 31,
       "hasReadme": false,
       "proofPaths": [
         "engine/packages/runtime-lab/test/action-capability.test.ts",
