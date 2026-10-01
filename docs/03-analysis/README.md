@@ -4,6 +4,33 @@ Canonical semantic-analysis policy. Analyzers are read-only: they derive support
 
 This directory remains intentionally shallow for path stability. Use this index as the navigation taxonomy; do not add a new analysis document unless it fits one of these groups.
 
+## Gameplay audit workflow
+
+For Minecraft world bug audits, start from the selected world version and build understanding before finding defects:
+
+```text
+Selected World Version
+→ Game Design Reconstruction
+→ Gameplay Flow Mapping
+→ State Transition Mapping
+→ Reset / Preserve Rules
+→ Progression Rules
+→ Multiplayer / Multi Arena Rules
+→ Actual Behavior
+→ Gameplay Contradiction
+→ Bug Classification
+→ Production Bug Report
+```
+
+Related contracts:
+
+- [Audit routing](./map-audit-routing.md)
+- [Game design audit checklist](./game-design-audit-checklist.md)
+- [Gameplay bug report v2](./gameplay-bug-report-v2.md)
+- [Bug report v2 schema](./map-audit-report-v2-schema.md)
+- [Bug report HTML structure](./bug-report-v2-html-template.md)
+- [Multi arena audit contract](./multi-arena-audit-contract.md)
+
 ## Core models and graphs
 
 - [Project model](./project-model.md)
