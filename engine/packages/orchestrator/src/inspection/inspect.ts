@@ -35,7 +35,7 @@ import { externalEventRootsForEntity } from "../entity-event-evidence.js";
 import { buildInspectionSemanticIr } from "../semantic-ir-stage.js";
 import { semanticIrDiagnostics } from "../semantic-ir-diagnostics.js";
 import { buildGameplayIntentModel } from "../gameplay-intent-stage.js";
-import { indexAuthoredIntentSources } from "../inspect-authored-intent-source.js";
+import { indexSelectedArtifactContractSources } from "./inspect-contract-source.js";
 import { analyzeGameplayIntentRuntime } from "../gameplay-intent-runtime-stage.js";
 import { analyzeEntityAiStacks } from "../entity-ai-stack-analysis.js";
 import { combatContractDiagnostics } from "../combat-contract-diagnostics.js";
@@ -101,16 +101,16 @@ export async function inspectDirectory(
   } = sourceIndex;
   diagnostics.push(...sourceDiagnostics);
 
-  const authoredIntentSources =
-    await indexAuthoredIntentSources(
+  const contractSources =
+    await indexSelectedArtifactContractSources(
       root,
       artifactId,
       files,
-      target.authoredSourceRoots === undefined
+      target.contractSourceRoots === undefined
         ? {}
         : {
-            authoredSourceRoots:
-              target.authoredSourceRoots,
+            contractSourceRoots:
+              target.contractSourceRoots,
           },
     );
 
@@ -129,7 +129,7 @@ export async function inspectDirectory(
     id: "gameplay-intent:" + artifactId,
     artifactId,
     parsedScripts,
-    authoredScripts: authoredIntentSources,
+    contractScripts: contractSources,
   });
 
   const entityAiStack =
@@ -370,8 +370,8 @@ export async function inspectDirectory(
     sourceIndex,
     semanticIr,
     gameplayIntent,
-    authoredIntentSources:
-      authoredIntentSources.length,
+    contractSources:
+      contractSources.length,
     gameplayIntentRuntime,
     runtimeEvidenceStage,
     entityKnowledge,
