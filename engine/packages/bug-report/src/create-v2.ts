@@ -10,9 +10,7 @@ import {
 } from "./v2.js";
 
 export interface CreateBugReportV2BugInput
-  extends Omit<BugReportV2Bug, "fixed"> {
-  readonly fixed?: boolean;
-}
+  extends Omit<BugReportV2Bug, "fixed"> {}
 
 export interface CreateBugReportV2Input {
   readonly map: BugReportV2Map;
@@ -29,7 +27,7 @@ export function createBugReportV2(
     repairBy: input.repairBy,
     bugs: input.bugs.map((bug) => ({
       ...bug,
-      fixed: bug.fixed ?? false,
+      fixed: false,
     })),
   };
 
