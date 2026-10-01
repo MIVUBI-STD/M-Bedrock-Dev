@@ -13,3 +13,4 @@ export * from "./calibration.js";
 
 export * from "./declarative-rules.js";
 export * from "./candidate-evidence.js";
+export * from "./audit-coverage.js";
