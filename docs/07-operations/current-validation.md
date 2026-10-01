@@ -26,6 +26,7 @@ calibration candidates   8
 regression candidates    3
 acceptance cases         0
 benchmark-ready cases    0
+stored map fingerprints  0
 ```
 
 The 8 calibration candidates are indexed from:
@@ -40,7 +41,7 @@ The 3 regression candidates are indexed from:
 engine/reliability/catalogs/regressions.json
 ```
 
-These are **candidates**, not benchmark proof. They remain unscored until required artifact identity and frozen expectations exist.
+These are **candidates**, not benchmark proof. The stored map-fingerprint catalog currently contains no map entries, so no candidate may be promoted from cached identity. They remain unscored until required artifact identity and frozen expectations exist.
 
 ## Package proof state
 
@@ -85,3 +86,18 @@ full test suite             pass
 Current work intentionally does not run CI. Therefore the changes above are implementation/state updates, not upgraded CI proof.
 
 Historical validation remains recoverable from Git history. Longitudinal execution evidence belongs under `engine/reliability/history/`.
+
+
+## Corpus integrity guardrails
+
+The benchmark lane now provides manual non-CI checks for:
+
+```text
+validate-corpus.mjs      duplicate IDs, broken sourceRef, cross-lane contamination, false-ready state
+corpus-status.mjs        current candidate/ready/blocked readiness
+check-case-ready.mjs     fail-closed candidate promotion
+validate-expectation.mjs frozen expectation identity/provenance
+score-benchmark.mjs      TP/TN/FP/FN quality metrics
+```
+
+These checks improve evidence discipline but are not runtime proof.
