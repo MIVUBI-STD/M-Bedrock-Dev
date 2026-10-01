@@ -20,6 +20,7 @@ Older versions, raw/development source, previous QA, Technical Docs, changelogs,
 ```text
 target artifact pinned
 + map version pinned
++ gameplay surfaces inventoried from that artifact
 + Gameplay Contract derived from that artifact
 + readiness = READY | scoped-safe PARTIAL
 ```
@@ -42,6 +43,8 @@ Expected ≠ Actual
 ## Acceptance
 
 - one artifact/version only;
+- every discovered gameplay surface has one coverage disposition;
+- no gameplay surface is silently skipped;
 - every candidate has one disposition;
 - only defects receive severity;
 - counter-evidence and player impact are settled;
