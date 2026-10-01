@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 
 const required = [
   "AGENTS.md",
+  ".agents/skill-registry.json",
   "CONTEXT.md",
   "GITHUB_RULES.md",
   "CONTRIBUTING.md",

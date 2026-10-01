@@ -30,3 +30,13 @@ Select exactly one active work lane. Consult the smallest domain specialist only
 A `capability-gap` is a handoff boundary, not permission to start Detection Development inside an operational audit. Generic Product Development is a separate execution class.
 
 Canonical routing is owned by `../docs/06-system/skill-routing.md`.
+
+
+## Machine-readable registry
+
+`.agents/skill-registry.json` is the routing index and classification authority.
+
+- registry decides whether a skill is a work lane, domain specialist, or routing-only;
+- `SKILL.md` owns the detailed procedure;
+- every skill folder must appear exactly once in the registry;
+- adding a skill without registry ownership is forbidden.

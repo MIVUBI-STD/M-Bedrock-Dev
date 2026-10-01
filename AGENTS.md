@@ -101,6 +101,12 @@ STOP condition
 
 Use `.agents/skills/m-bedrock-cross-owner-routing/SKILL.md` only when architecture, cross-owner ambiguity, or unresolved success criteria materially prevent a reliable standard contract.
 
+## Active lane lock
+
+Once selected, the work lane remains active until its STOP or explicit handoff. Domain-specialist calls do not change the lane. A handoff record does not execute the next lane automatically.
+
+Generic Product Development has no detection-lane skill: use the normal development execution contract and canonical semantic owner unless the requested capability specifically improves bug detection/diagnosis/proof.
+
 ## Skill routing
 
 Choose a **work lane first**:

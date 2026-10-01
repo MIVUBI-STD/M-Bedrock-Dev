@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 
 const failures=[];
 const requiredLaneSkills={
@@ -83,3 +83,44 @@ if(failures.length){
   process.exit(1);
 }
 console.log("Skill-lane verification passed.");
+
+
+const registryPath=".agents/skill-registry.json";
+if(!existsSync(registryPath)){
+  failures.push("Missing machine-readable skill registry: "+registryPath);
+}else{
+  const registry=JSON.parse(readFileSync(registryPath,"utf8"));
+  if(registry.schemaVersion!==1) failures.push("Skill registry schemaVersion must be 1.");
+
+  const classified=new Map();
+  for(const [kind,group] of [
+    ["work-lane",registry.workLanes ?? {}],
+    ["domain-specialist",registry.domainSpecialists ?? {}],
+    ["routing-only",registry.routingOnly ?? {}]
+  ]){
+    for(const name of Object.keys(group)){
+      const previous=classified.get(name);
+      if(previous) failures.push("Skill appears in multiple registry classes: "+name+" ("+previous+", "+kind+")");
+      classified.set(name,kind);
+    }
+  }
+
+  const physical=readdirSync(".agents/skills",{withFileTypes:true})
+    .filter((entry)=>entry.isDirectory() && existsSync(".agents/skills/"+entry.name+"/SKILL.md"))
+    .map((entry)=>entry.name)
+    .sort();
+  const registered=[...classified.keys()].sort();
+
+  for(const name of physical){
+    if(!classified.has(name)) failures.push("Unclassified skill folder: "+name);
+  }
+  for(const name of registered){
+    if(!physical.includes(name)) failures.push("Skill registry references missing folder: "+name);
+  }
+
+  for(const [name,lane] of Object.entries(registry.workLanes ?? {})){
+    if(typeof lane.selection!=="string" || !lane.selection.trim()) failures.push("Work lane lacks selection rule: "+name);
+    if(!Array.isArray(lane.outputs) || lane.outputs.length===0) failures.push("Work lane lacks output contract index: "+name);
+    if(typeof lane.mutatesEngine!=="boolean" || typeof lane.mutatesTarget!=="boolean") failures.push("Work lane lacks mutation boundary: "+name);
+  }
+}

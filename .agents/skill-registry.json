@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "terminology": {
+    "mapAudit": "Use stable detection capability on a target map.",
+    "detectionDevelopment": "Improve reusable bug-detection/diagnosis/proof capability.",
+    "detectionBenchmark": "Measure detection capability against frozen expectations.",
+    "targetRepair": "Mutate target working copy after grounded diagnosis.",
+    "productDevelopment": "General repository/product development outside bug-detection improvement; uses normal development contract, not a detection lane."
+  },
+  "workLanes": {
+    "m-bedrock-map-bug-audit": {
+      "label": "Map Bug Audit",
+      "taskClasses": [
+        "INSPECT",
+        "DIAGNOSE",
+        "VALIDATE"
+      ],
+      "selection": "Goal is map-specific bug finding/classification/retest.",
+      "mutatesEngine": false,
+      "mutatesTarget": false,
+      "outputs": [
+        "audit-candidate-dispositions",
+        "bug-findings",
+        "capability-gap",
+        "runtime-proof-residue"
+      ],
+      "handoffs": [
+        "m-bedrock-detection-development",
+        "m-bedrock-target-repair"
+      ]
+    },
+    "m-bedrock-detection-development": {
+      "label": "Detection Development",
+      "taskClasses": [
+        "DEVELOP"
+      ],
+      "selection": "Goal explicitly improves reusable bug-detection, diagnosis, platform semantics, or proof capability.",
+      "mutatesEngine": true,
+      "mutatesTarget": false,
+      "outputs": [
+        "detection-capability-delta",
+        "reduced-fixture",
+        "benchmark-expectation"
+      ],
+      "handoffs": [
+        "m-bedrock-detection-benchmark"
+      ]
+    },
+    "m-bedrock-detection-benchmark": {
+      "label": "Detection Benchmark",
+      "taskClasses": [
+        "VALIDATE"
+      ],
+      "selection": "Goal measures detector correctness/coverage/regression against frozen expectations.",
+      "mutatesEngine": false,
+      "mutatesTarget": false,
+      "outputs": [
+        "benchmark-result",
+        "detection-development-handoff"
+      ],
+      "handoffs": [
+        "m-bedrock-detection-development"
+      ]
+    },
+    "m-bedrock-target-repair": {
+      "label": "Target Repair",
+      "taskClasses": [
+        "REPAIR",
+        "MODIFY"
+      ],
+      "selection": "Goal mutates a target map/source working copy after a grounded defect or explicit modification request.",
+      "mutatesEngine": false,
+      "mutatesTarget": true,
+      "outputs": [
+        "patch-transaction",
+        "repair-verification",
+        "runtime-residue"
+      ],
+      "handoffs": [
+        "m-bedrock-detection-development"
+      ]
+    }
+  },
+  "domainSpecialists": {
+    "m-bedrock-artifact-engineering": {
+      "role": "artifact/container/workspace/package semantics",
+      "mutatesEngine": false,
+      "mutatesTarget": false
+    },
+    "m-bedrock-content-analysis": {
+      "role": "read-only source/semantic analysis",
+      "mutatesEngine": false,
+      "mutatesTarget": false
+    },
+    "m-bedrock-compatibility": {
+      "role": "version/edition/API/platform capability semantics",
+      "mutatesEngine": false,
+      "mutatesTarget": false
+    }
+  },
+  "routingOnly": {
+    "m-bedrock-cross-owner-routing": {
+      "role": "resolve owner/lane ambiguity only",
+      "mutatesEngine": false,
+      "mutatesTarget": false
+    }
+  }
+}
