@@ -45,9 +45,9 @@ function report(): BugReportV2 {
         expected: "The arena can start a new match.",
         observed: "The previous session remains active.",
         reproduction: [
-          "Start a match.",
-          "Finish the match.",
-          "Attempt to start again.",
+          "Start and finish a match normally.",
+          "Return to the lobby and start the same arena again.",
+          "Confirm the new match does not start.",
         ],
         aiAnalysis: "Cleanup leaves stale session ownership.",
         relevantCode: [{
@@ -64,7 +64,7 @@ function report(): BugReportV2 {
 }
 
 describe("bug report v2", () => {
-  it("round-trips the canonical developer-facing vocabulary", () => {
+  it("round-trips the canonical persisted vocabulary", () => {
     const serialized = serializeBugReportV2(report());
     expect(serialized.ok).toBe(true);
     if (!serialized.ok || !serialized.json) return;
