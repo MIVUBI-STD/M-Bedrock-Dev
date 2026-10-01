@@ -43,7 +43,7 @@ export interface MapEngineeringWorkflowProjection {
     minorDiagnostics: number;
     unresolvedReferences: number;
     intentUnknowns: number;
-    repairCandidatesPlanned: number;
+    repairProposals: number;
     repairCandidatesUnsupported: number;
     evidenceRecoveryActions: number;
     lifecycleUnresolved: number;
@@ -206,7 +206,7 @@ function repairStage(
 ): MapWorkflowStage {
   const planned =
     source.repairCandidates.filter(
-      (item) => item.status === "planned",
+      (item) => item.status === "proposal",
     ).length;
   const unsupported =
     source.repairCandidates.filter(
@@ -244,15 +244,15 @@ function repairStage(
           : "blocked",
     reasons: [
       String(planned) +
-        " deterministic repair candidate(s) are planned.",
+        " deterministic repair proposal(s) are available.",
       String(localized) +
         " arena divergence source localization(s) are available.",
       String(localizationUnresolved) +
         " arena divergence source localization(s) remain unresolved.",
       unsupported > 0
         ? String(unsupported) +
-          " repair candidate(s) are intentionally unsupported for automatic mutation."
-        : "No current repair candidate is marked unsupported.",
+          " repair proposal(s) are unsupported for deterministic transformation."
+        : "No current repair proposal is marked unsupported.",
     ],
   };
 }
@@ -270,16 +270,16 @@ function validationStage(
   return {
     id: "validate",
     status:
-      stress?.status === "planned" &&
+      stress?.status === "proposal" &&
       repeated !== undefined &&
       recovery === 0
         ? "ready"
-        : stress?.status === "planned" ||
+        : stress?.status === "proposal" ||
             repeated !== undefined
           ? "partial"
           : "blocked",
     reasons: [
-      stress?.status === "planned"
+      stress?.status === "proposal"
         ? String(stress.matrix?.scenarios.length ?? 0) +
           " arena stress scenario(s) are planned."
         : "Arena stress scenario planning is unavailable.",
@@ -363,9 +363,9 @@ export function buildMapEngineeringWorkflow(
       source.unresolvedReferences,
     intentUnknowns:
       source.gameplaySemantic.intent.unknowns.length,
-    repairCandidatesPlanned:
+    repairProposals:
       source.repairCandidates.filter(
-        (item) => item.status === "planned",
+        (item) => item.status === "proposal",
       ).length,
     repairCandidatesUnsupported:
       source.repairCandidates.filter(
