@@ -4,6 +4,9 @@
   "type": "object",
   "required": [
     "schemaVersion",
+    "repairAuthority",
+    "mustChange",
+    "mustPreserve",
     "targetOwner",
     "changedSemanticSurface",
     "verification"
@@ -30,7 +33,54 @@
       "items": {
         "type": "string"
       }
+    },
+    "repairAuthority": {
+      "enum": [
+        "approved-bug",
+        "intentional-modification"
+      ]
+    },
+    "approvedBugSemanticKey": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mustChange": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "mustPreserve": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
     }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "repairAuthority": {
+            "const": "approved-bug"
+          }
+        },
+        "required": [
+          "repairAuthority"
+        ]
+      },
+      "then": {
+        "required": [
+          "approvedBugSemanticKey"
+        ]
+      }
+    }
+  ]
 }
