@@ -3,7 +3,7 @@ import {
   type GameplayDesignReadinessResult,
 } from "./design-readiness.js";
 import {
-  independentGameplayIntentEvidenceIds,
+  selectedArtifactGameplayContractEvidenceIds,
 } from "./authority.js";
 import type {
   GameplayIntentModel,
@@ -11,7 +11,6 @@ import type {
 
 export interface GameplayContractBuildInput {
   readonly subjectIds: readonly string[];
-  readonly designRuleEvidenceIds?: readonly string[];
   readonly materialUnknownIds?: readonly string[];
   readonly nonMaterialUnknownIds?: readonly string[];
 }
@@ -19,6 +18,8 @@ export interface GameplayContractBuildInput {
 export interface GameplayContract {
   readonly schemaVersion: 1;
   readonly modelId: string;
+  readonly artifactId?: string;
+  readonly evidenceScope: "selected-artifact-only";
   readonly subjectIds: readonly string[];
   readonly invariantIds: readonly string[];
   readonly authorityEvidenceIds: readonly string[];
@@ -39,23 +40,18 @@ export function buildGameplayContract(
     .map((invariant) => invariant.id)
     .sort();
 
-  const authorityEvidenceIds = [
-    ...new Set([
-      ...independentGameplayIntentEvidenceIds(
-        model,
-        invariantIds,
-      ),
-      ...(input.designRuleEvidenceIds ?? []),
-    ]),
-  ]
-    .filter((id) => id.trim().length > 0)
-    .sort();
+  const authorityEvidenceIds =
+    selectedArtifactGameplayContractEvidenceIds(
+      model,
+      invariantIds,
+    );
 
   const readiness = assessGameplayDesignReadiness(
     model,
     {
       scopeSubjectIds: [...input.subjectIds],
       authoritativeDesignAvailable:
+        model.artifactId !== undefined &&
         authorityEvidenceIds.length > 0,
       ...(input.materialUnknownIds === undefined
         ? {}
@@ -75,6 +71,10 @@ export function buildGameplayContract(
   return {
     schemaVersion: 1,
     modelId: model.id,
+    ...(model.artifactId === undefined
+      ? {}
+      : { artifactId: model.artifactId }),
+    evidenceScope: "selected-artifact-only",
     subjectIds: [...input.subjectIds],
     invariantIds,
     authorityEvidenceIds,
