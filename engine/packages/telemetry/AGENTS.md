@@ -4,30 +4,26 @@ Applies to `packages/telemetry/`.
 
 ## Ownership
 
-This package owns runtime-independent telemetry emission behavior:
+This package owns runtime-independent telemetry emission and observation mechanics.
 
-- typed event emitters;
-- scope leases/providers;
-- id generation;
-- bounded buffering and drop accounting;
-- callback/fanout/json-line sinks;
-- instrumentation guards.
+Use the internal hierarchy before broad search:
 
-It does **not** own:
+```text
+core/         event construction, framing, buffering, sinks, transport, profile
+probes/       active/runtime probe execution and sessions
+observation/  monitors, observers, reporters
+bedrock/      Bedrock bridge/lifecycle/kit integration
+domains/      bounded arena/entity/mutation/revive instrumentation helpers
+```
 
-- telemetry data contracts or schema validation authority
-  (owned by `packages/project-model`);
-- Minecraft Script API semantics
-  (owned by analyzers/compatibility);
-- evidence adaptation, diagnostics, or causal reasoning
-  (owned by `packages/orchestrator` + diagnostics/knowledge).
+These folders are internal navigation groups, not public subpackages.
 
 ## Boundary
 
-- Do not import `@minecraft/server`.
-- Do not import from `apps/`, `analyzers/`, or `packages/orchestrator`.
-- Keep emitters synchronous and deterministic.
-- Runtime-specific transport is injected through `TelemetrySink`.
+- Do not import from `apps/`, analyzer internals, or orchestrator internals.
+- Keep emitters deterministic and bounded.
 - Do not mutate gameplay state.
-- Guards are observation helpers only; they never become gameplay authority.
-- Bounded buffers must report dropped evidence; never silently discard without accounting.
+- Guards/probes/monitors never become gameplay authority.
+- Bounded buffers must report dropped evidence.
+- Runtime-facing adapters must not silently promote static/package evidence to runtime proof.
+- Cross-owner consumers use `src/index.ts`.

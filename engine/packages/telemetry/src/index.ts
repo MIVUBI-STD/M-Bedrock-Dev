@@ -1,48 +1,48 @@
-export * from "./types.js";
-export * from "./emitter.js";
-export * from "./sink.js";
+export * from "./core/types.js";
+export * from "./core/emitter.js";
+export * from "./core/sink.js";
 
-export * from "./guards.js";
+export * from "./core/guards.js";
 
-export * from "./probes.js";
+export * from "./probes/probes.js";
 
-export * from "./revive-guard.js";
+export * from "./domains/revive/revive-guard.js";
 
 
-export * from "./kit.js";
+export * from "./bedrock/kit.js";
 
-export * from "./reporters.js";
+export * from "./observation/reporters.js";
 
-export * from "./framing.js";
+export * from "./core/framing.js";
 
-export * from "./frame-collector.js";
+export * from "./core/frame-collector.js";
 
-export * from "./active-probe.js";
+export * from "./probes/active-probe.js";
 
-export * from "./probe-responder.js";
+export * from "./probes/probe-responder.js";
 
-export * from "./bedrock.js";
-export * from "./transport.js";
-export * from "./observers.js";
+export * from "./bedrock/bedrock.js";
+export * from "./core/transport.js";
+export * from "./observation/observers.js";
 export {
   createEntityProgressMonitor as createLegacyEntityProgressMonitor,
   type Position3 as LegacyPosition3,
   type EntityProgressSample as LegacyEntityProgressSample,
   type EntityProgressMonitorOptions as LegacyEntityProgressMonitorOptions,
   type EntityProgressMonitor as LegacyEntityProgressMonitor,
-} from "./entity-progress.js";
+} from "./domains/entity/entity-progress.js";
 
-export * from "./mutation-lifecycle.js";
+export * from "./domains/mutation/mutation-lifecycle.js";
 
-export * from "./scheduler.js";
+export * from "./core/scheduler.js";
 
-export * from "./runtime-probe-executor.js";
+export * from "./probes/runtime-probe-executor.js";
 
-export * from "./runtime-probe-session.js";
+export * from "./probes/runtime-probe-session.js";
 
-export * from "./runtime-probe-bundle-runner.js";
+export * from "./probes/runtime-probe-bundle-runner.js";
 
-export * from "./bedrock-bridge.js";
+export * from "./bedrock/bedrock-bridge.js";
 
 export {
   createEntityProgressMonitor,
@@ -53,7 +53,7 @@ export {
   type EntityProgressMonitor,
   type StateMirrorSample as StateMirrorMonitorSample,
   type StateMirrorMonitor,
-} from "./monitors.js";
+} from "./observation/monitors.js";
 
 export {
   createReviveTransactionMonitor,
@@ -62,14 +62,14 @@ export {
   type ReviveDeathObservation,
   type ReviveGenerationObservation,
   type ReviveTransactionMonitor,
-} from "./revive-monitor.js";
+} from "./domains/revive/revive-monitor.js";
 
-export * from "./budget.js";
+export * from "./core/budget.js";
 
-export * from "./bedrock-lifecycle.js";
+export * from "./bedrock/bedrock-lifecycle.js";
 
-export * from "./arena-generation-monitor.js";
+export * from "./domains/arena/arena-generation-monitor.js";
 
-export * from "./profile.js";
+export * from "./core/profile.js";
 
-export * from "./priority-buffer.js";
+export * from "./core/priority-buffer.js";
