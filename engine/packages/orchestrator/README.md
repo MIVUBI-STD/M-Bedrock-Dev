@@ -24,10 +24,6 @@ src/
 
 These family barrels are the canonical navigation hierarchy for orchestrator.
 
-Implementation files remain temporarily flat beneath `src/` while CI/local verification is intentionally deferred. This avoids a mass import-path migration without proof. New orchestrator work should enter through the matching family and should not add another uncategorized root export.
-
-The next physical-move phase may relocate implementation files family-by-family once import verification is available; the family boundaries above should remain stable.
-
 ## Compatibility alias rule
 
 Legacy flat `src/*.ts` re-export stubs are compatibility-only. They are not canonical owners.
@@ -41,10 +37,9 @@ Rules:
 
 This keeps current work practical without a risky mass-delete while CI/local verification is deferred.
 
-### Physical migration status
+## Physical layout
 
-`core/`, `arena/`, `inspection/`, `diagnosis/`, `repair/`, `workflow/`, `reliability/`, `reporting/`, and `release/` now have their orchestrator implementations physically inside the hierarchy; matching tests mirror those families where present. Arena-authored static source risk analysis is owned by the Script Analyzer rather than duplicated in orchestrator. Legacy flat source paths remain compatibility re-export stubs while CI/local verification is deferred.
-
+Canonical implementations live under the family directories above. Legacy flat source paths are compatibility re-export stubs only and must not receive new implementation logic.
 
 ## Inspection pipeline
 
