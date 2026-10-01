@@ -7,7 +7,7 @@ Each new report represents one audited map/version set and must be tester-facing
 Canonical flow:
 
 ```text
-AUDIT → REPORT → FIX
+AUDIT → BUG REPORT → REPAIR
 ```
 
 Store only canonical Bug Report V2 JSON here. Do not store raw analysis traces, caches, temporary evidence indexes, repair forms, verification records, or duplicate Markdown copies.
