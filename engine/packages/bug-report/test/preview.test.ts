@@ -94,15 +94,15 @@ describe("bug report preview", () => {
     });
   });
 
-  it("keeps action grounded in Suggested Fix", () => {
+  it("keeps solution grounded in Suggested Fix", () => {
     const preview = projectBugReportPreview(report(), {
       mode: "summary",
     });
 
-    expect(preview.bugs[0]?.action).toBe(
+    expect(preview.bugs[0]?.solution).toBe(
       "Clear stale session ownership during cleanup.",
     );
-    expect(preview.bugs[1]?.action).toBeUndefined();
+    expect(preview.bugs[1]?.solution).toBeUndefined();
     expect(preview.bugs[0]?.reproduction).toEqual([
       "Finish a match.",
       "Return to the lobby.",
