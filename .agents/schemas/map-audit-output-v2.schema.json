@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock Map Audit Output V2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "artifactId",
+    "mapVersion",
+    "gameDesign",
+    "gameplayFlow",
+    "stateTransitions",
+    "multiArena",
+    "bugs"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "artifactId": {
+      "type": "string"
+    },
+    "mapVersion": {
+      "type": "string"
+    },
+    "gameDesign": {
+      "type": "object",
+      "required": ["objective", "winCondition", "loseCondition", "resetRules"],
+      "properties": {
+        "objective": {"type": "string"},
+        "winCondition": {"type": "string"},
+        "loseCondition": {"type": "string"},
+        "resetRules": {"type": "array"},
+        "preserveRules": {"type": "array"},
+        "progressionRules": {"type": "array"}
+      }
+    },
+    "gameplayFlow": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "stateTransitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": {"type": "string"},
+          "to": {"type": "string"}
+        }
+      }
+    },
+    "multiArena": {
+      "type": "object",
+      "required": ["supported", "isolationRules"],
+      "properties": {
+        "supported": {"type": "boolean"},
+        "isolationRules": {"type": "array"}
+      }
+    },
+    "bugs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "category",
+          "gameplayFlow",
+          "issue",
+          "reproduceSteps",
+          "expected",
+          "actual"
+        ],
+        "properties": {
+          "id": {"type": "string"},
+          "status": {"enum":["Confirmed","Needs Validation","Ambiguous"]},
+          "category": {"type":"string"},
+          "gameplayFlow": {"type":"string"},
+          "severity": {"enum":["Blocker","Major","Minor"]},
+          "issue": {"type":"string"},
+          "reproduceSteps": {"type":"array"},
+          "expected": {"type":"string"},
+          "actual": {"type":"string"},
+          "evidence": {"type":"string"}
+        }
+      }
+    }
+  }
+}
