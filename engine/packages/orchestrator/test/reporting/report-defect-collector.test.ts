@@ -462,7 +462,7 @@ describe("report defect collector", () => {
             ...runtimeAssessment,
             result: {
               ...runtimeAssessment.result,
-              disposition: "probable-defect",
+              disposition: "ambiguous-intent",
               basisInvariantIds: [],
               nextEvidenceNeed: "authored-intent",
             },
@@ -518,7 +518,7 @@ describe("report defect collector", () => {
           ...runtimeAssessment,
           result: {
             ...runtimeAssessment.result,
-            disposition: "probable-defect",
+            disposition: "ambiguous-intent",
             basisInvariantIds: [],
             nextEvidenceNeed: "authored-intent",
           },
