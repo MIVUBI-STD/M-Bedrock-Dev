@@ -34,7 +34,7 @@ export interface BugReportPreviewBug {
   readonly solution?: string;
   readonly expected?: string;
   readonly observed?: string;
-  readonly reproduction?: readonly string[];
+  readonly bugTrigger?: readonly string[];
   readonly technicalAnalysis?: string;
   readonly relevantCode?: BugReportV2Bug["relevantCode"];
   readonly mustPreserve?: readonly string[];
@@ -87,7 +87,7 @@ function projectBug(
     foundBy: bug.foundBy,
     fixed: bug.fixed,
     issue: bug.problem,
-    ...(bug.reproduction ? { reproduction: bug.reproduction } : {}),
+    ...(bug.bugTrigger ? { bugTrigger: bug.bugTrigger } : {}),
     ...(bug.suggestedFix ? { solution: bug.suggestedFix } : {}),
   };
 
@@ -142,7 +142,7 @@ function tableCell(value: string): string {
   return line(value).replaceAll("|", "\\|");
 }
 
-function reproductionCell(
+function bugTriggerCell(
   steps: readonly string[] | undefined,
 ): string {
   if (!steps?.length) return "—";
@@ -176,7 +176,7 @@ export function renderBugReportPreviewMarkdown(
       `| #${index + 1} · ${severityLabel(bug.severity)} | ${tableCell(bug.title)} |`,
       "|---|---|",
       `| **Issue** | ${tableCell(bug.issue)} |`,
-      `| **Bug Trigger (In-Game)** | ${tableCell(reproductionCell(bug.reproduction))} |`,
+      `| **Bug Trigger (In-Game)** | ${tableCell(bugTriggerCell(bug.bugTrigger))} |`,
       `| **Solution** | ${bug.solution ? tableCell(bug.solution) : "—"} |`,
     );
   });
@@ -194,9 +194,9 @@ export function renderBugReportPreviewMarkdown(
       `**Issue:** ${line(bug.issue)}`,
     );
 
-    if (bug.reproduction?.length) {
+    if (bug.bugTrigger?.length) {
       out.push("**Bug Trigger (In-Game):**");
-      bug.reproduction.forEach((step, index) => {
+      bug.bugTrigger.forEach((step, index) => {
         out.push(`${index + 1}. ${line(step)}`);
       });
     }
