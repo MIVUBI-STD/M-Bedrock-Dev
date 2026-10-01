@@ -2,82 +2,68 @@
 
 Used by **Map Bug Audit**.
 
-Before any candidate exists, record:
+## Audit header
 
 ```text
-Selected current artifact
-Selected map version
-Evidence scope = selected map/version only
-Historical/archive sources excluded by default
+Selected Artifact
+Map Version
+Evidence Scope = selected-map-version-only
+Archive Sources Used = false
 ```
 
-Then record:
+## Surface accounting
+
+Every discovered gameplay surface must have exactly one record:
 
 ```text
-Target identity / map version
-Selected-artifact authority
-Gameplay Contract scope
-Design readiness: READY | PARTIAL | BLOCKED
-Material unknowns, if any
+Subject
+Kind
+Status = checked | blocked | not-applicable
+Candidate IDs, if any
+Reason, required when blocked
 ```
 
-Only READY or scoped-safe PARTIAL may enter candidate discovery.
+`accounted` means every **discovered** surface has a record. It does not prove all map mechanics were discovered.
 
-Every candidate must then record:
+## Candidate
+
+Every candidate records:
 
 ```text
-Candidate ID / subject
+Subject IDs
 Disposition
-Expected-behavior authority
-Intent assessment
-Observed/static evidence
-Player-visible consequence
-Tester-verifiable in-game trigger availability
-Platform Knowledge / Rule used
-Behavior Contract used, if any
-Proof ceiling
-Severity (defect only)
-Confidence / uncertainty
-Detection Gap or runtime residue, if any
+Expected Authority = selected-artifact
+Evidence
+Player Impact
+Counter-Evidence
+Tester Trigger Ready
+Proof Ceiling
+Severity, defect only
 ```
 
-## Required decision order
+Decision order:
 
-Selected Map Version → Gameplay Contract → readiness → Actual Behavior contradiction → counter-evidence → player-visible consequence → tester-verifiable trigger → defect disposition → severity.
+```text
+Selected Map Version
+→ Gameplay Contract
+→ Actual Behavior
+→ Contradiction
+→ Counter-Evidence
+→ Player Impact
+→ Tester Trigger
+→ Defect
+→ Severity
+```
 
-Do not severity-score a candidate before the first three gates are resolved.
+## Reportable defect
 
-## Disposition rules
+Requires all of:
 
-### defect
-Requires grounded expected behavior, contradictory evidence strong enough for the stated proof ceiling, a material player-visible gameplay consequence, and an in-game tester path that can visibly confirm the failure. Normal client output includes Blocker and Major defects only.
+- grounded contradiction;
+- cleared counter-evidence;
+- material player-visible impact;
+- tester-verifiable in-game trigger.
 
-### designed-behavior
-Observed behavior is consistent with the Gameplay Contract grounded from the selected map version. Severe-looking technical behavior is still not a bug when it is explicitly part of the design.
+Blocker/Major are shown by default. Minor stays hidden unless requested.
 
-### ambiguous-intent
-Evidence exists, but intended behavior is not uniquely grounded. Do not choose the interpretation that creates the more dramatic bug.
-
-### insufficient-evidence
-Expected behavior may be known, but current evidence cannot prove the observed state.
-
-### runtime-proof-required
-Static/package evidence cannot resolve the claim and a defined runtime observation can.
-
-### detection-gap
-Current M-Bedrock-Dev capability cannot represent/read/derive/classify the required evidence reliably.
-
-A detection gap is never assigned Blocker/Major/Minor severity.
-
-
-## Player-impact rule
-
-Do not report metadata/version drift with no gameplay effect, implementation complexity, duplicated handlers with no demonstrated player effect, internal state differences invisible to the player, or cosmetic/polish issues in the default report.
-
-A candidate becomes reportable only when its issue can be expressed as a player-visible failure plus gameplay consequence.
-
-## Severity rule
-
-- Blocker: the player cannot normally continue, start, or complete required gameplay; the game crashes/freezes; or normal in-game recovery is unavailable.
-- Major: core gameplay, important player state, or fairness is materially wrong but gameplay can still continue or recover normally.
-- Minor: limited player-visible impact; keep it out of the default report unless explicitly requested.
+Unknown intent, missing evidence, runtime-only residue, or detection gaps remain internal and never receive defect severity.
