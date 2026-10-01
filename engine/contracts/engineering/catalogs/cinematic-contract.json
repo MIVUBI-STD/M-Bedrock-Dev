@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-cinematic-policy-v1",
-      "title": "MIVUBI Camera Cutscene and Cinematic Lifecycle Policy v1",
-      "url": "project://knowledge/cinematic-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-cinematic-contract-v1",
+      "title": "MIVUBI Camera Cutscene and Cinematic Lifecycle Engineering Contract v1",
+      "url": "project://contracts/engineering/cinematic-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-24"
     }
@@ -16,7 +16,7 @@
       "domain": "cinematic",
       "subject": "cutscene ownership",
       "statement": "Treat each player's cutscene as a generation-scoped transaction, not as one global arena-wide camera job. Ownership should include playerKey, connectionGeneration, arenaGeneration, cinematicGeneration, sceneId, and stepIndex.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "cutscene",
@@ -40,7 +40,7 @@
       "domain": "cinematic",
       "subject": "multi-arena cutscene concurrency",
       "statement": "Independent arenas must not serialize unrelated cutscenes through one global lock or queue unless the cinematic resource is truly global. Per-player camera ownership allows simultaneous arena starts without artificial queueing.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -48,7 +48,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "multi-arena",
@@ -64,7 +64,7 @@
       "domain": "cinematic",
       "subject": "cutscene lifecycle",
       "statement": "Model cinematic lifecycle explicitly as PREPARE -> LOCK_CONTROL -> CAMERA_APPLY -> PLAYING -> RESTORE_CAMERA -> RESTORE_CONTROL -> VERIFIED_COMPLETE, with ABORT/RECOVER paths for disconnect, skip, arena reset, or failure.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -72,7 +72,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "state-machine",
@@ -88,7 +88,7 @@
       "domain": "cinematic",
       "subject": "camera and input restore",
       "statement": "Camera restore, FOV restore, target detach, HUD restore, gamemode restore, and input-permission restore must be owned by the same current cinematic/session generation or delegated through scoped leases; stale cleanup must not overwrite a newer scene.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -96,7 +96,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "restore",
@@ -112,7 +112,7 @@
       "domain": "cinematic",
       "subject": "cutscene skip",
       "statement": "Skip is a first-class transition, not an early return. It must advance or abort the current cinematic generation, cancel pending scene steps, restore owned camera/control state, and commit the same gameplay postconditions expected from normal completion where appropriate.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -120,7 +120,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "skip",
@@ -136,7 +136,7 @@
       "domain": "cinematic",
       "subject": "disconnect during cutscene",
       "statement": "Player disconnect invalidates current cinematic ownership immediately. Reconnect must not resume an old camera/input transaction unless the mode explicitly reconstructs a fresh cinematic generation.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -144,7 +144,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "disconnect",
@@ -160,7 +160,7 @@
       "domain": "cinematic",
       "subject": "arena reset during cutscene",
       "statement": "Arena reset or terminal abort invalidates all current cutscene generations for that arena before cleanup. Pending fade/ease/teleport callbacks must revalidate ownership before acting.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -168,7 +168,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "arena-reset",
@@ -184,7 +184,7 @@
       "domain": "cinematic",
       "subject": "cutscene completion",
       "statement": "Cutscene completion should verify gameplay postconditions such as final player location, camera normalized or intentionally retained, input locks resolved, gamemode correct, HUD state correct, and arena phase still current before gameplay start commits.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -192,7 +192,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "verification",
@@ -209,7 +209,7 @@
       "domain": "cinematic",
       "subject": "cinematic timeline callback",
       "statement": "Every delayed step in a cinematic timeline captures cinematicGeneration and expected stepIndex. Old steps become no-ops after skip, replacement, disconnect, or arena generation change.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -217,7 +217,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "timeline",
@@ -233,7 +233,7 @@
       "domain": "cinematic",
       "subject": "fade and teleport sequencing",
       "statement": "When fades hide teleports or world transitions, destination readiness and teleport success remain separate requirements; fade duration must not be treated as proof that destination chunks or structures are ready.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -241,7 +241,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "fade",
@@ -257,7 +257,7 @@
       "domain": "cinematic",
       "subject": "camera selectors",
       "statement": "Critical cinematic commands must target the intended player/session set explicitly. Broad @a camera/input commands are prohibited for independent multi-arena cutscenes unless global behavior is explicitly intended.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -265,7 +265,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ],
       "capabilityTags": [
         "selector-scope",
@@ -284,7 +284,7 @@
       "subject": "PREPARE",
       "kind": "gates",
       "object": "LOCK_CONTROL",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -292,7 +292,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ]
     },
     {
@@ -301,7 +301,7 @@
       "subject": "verified-camera-and-control-restore",
       "kind": "gates",
       "object": "VERIFIED_COMPLETE",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -309,7 +309,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ]
     },
     {
@@ -318,7 +318,7 @@
       "subject": "arena-generation-reset",
       "kind": "deactivates",
       "object": "old-cinematic-generation",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -326,7 +326,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-cinematic-policy-v1"
+        "mivubi-cinematic-contract-v1"
       ]
     }
   ]

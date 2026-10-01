@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-spatial-containment-policy-v1",
-      "title": "MIVUBI Spatial Containment and Arena Bounds Policy v1",
-      "url": "project://knowledge/spatial-containment-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-spatial-containment-contract-v1",
+      "title": "MIVUBI Spatial Containment and Arena Bounds Engineering Contract v1",
+      "url": "project://contracts/engineering/spatial-containment-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-24"
     }
@@ -16,7 +16,7 @@
       "domain": "spatial-containment",
       "subject": "arena spatial authority",
       "statement": "Every arena must declare a spatial contract containing dimension id, playable bounds, setup/loader bounds, projectile/entity containment bounds, entry/exit anchors, void/fall thresholds, and neighboring-arena separation rules.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "arena-bounds",
@@ -40,7 +40,7 @@
       "domain": "spatial-containment",
       "subject": "spatial membership",
       "statement": "Arena membership checks compare dimension before coordinates. Matching x/z/y ranges in a different dimension must never satisfy arena spatial membership.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -48,7 +48,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "dimension",
@@ -63,7 +63,7 @@
       "domain": "spatial-containment",
       "subject": "arena membership authority",
       "statement": "Physical containment is evidence and safety policy, not sole gameplay authority. Being inside an arena volume does not automatically enroll an entity/player without current arena-generation ownership.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -71,7 +71,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "state-authority",
@@ -87,7 +87,7 @@
       "domain": "spatial-containment",
       "subject": "entity outside arena",
       "statement": "When an arena-owned entity exits its permitted volume, classify the cause before recovery: valid route extension, knockback, AI path failure, teleport error, world mutation opening, crowd displacement, or stale generation. Do not immediately teleport without diagnosis.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -95,7 +95,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "escape",
@@ -111,7 +111,7 @@
       "domain": "spatial-containment",
       "subject": "void/fall recovery",
       "statement": "Anti-void/fall recovery must capture player/entity identity, arenaGeneration, life/entity generation, recoveryGeneration, intended safe destination, and current dimension; stale recovery cannot pull a player/entity back into an old arena.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -119,7 +119,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "void-recovery",
@@ -135,7 +135,7 @@
       "domain": "spatial-containment",
       "subject": "vertical bounds",
       "statement": "Use the current dimension heightRange or declared custom-dimension bounds for Y validation. Hard-coded global Y assumptions are prohibited in reusable analyzers.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -143,7 +143,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "height-range",
@@ -159,7 +159,7 @@
       "domain": "spatial-containment",
       "subject": "projectile boundary",
       "statement": "Projectiles and combat effects must be checked against arena spatial and generation ownership when they cross arena boundaries; leaving the combat volume should invalidate or constrain gameplay attribution according to mode policy.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -167,7 +167,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "projectile",
@@ -183,7 +183,7 @@
       "domain": "spatial-containment",
       "subject": "multi-arena layout",
       "statement": "Multi-arena layouts must define minimum separation or explicit isolation sufficient for selectors, projectiles, sounds/particles where relevant, mob navigation, and recovery teleports so one arena's physical activity cannot accidentally enter another's scope.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -191,7 +191,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "multi-arena",
@@ -208,7 +208,7 @@
       "domain": "spatial-containment",
       "subject": "spatial selector",
       "statement": "Selectors using radius/volume filters must combine spatial filters with project-owned arena/generation identity for critical logic. Proximity alone is insufficient in adjacent or overlapping operational regions.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -216,7 +216,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "selector",
@@ -232,7 +232,7 @@
       "domain": "spatial-containment",
       "subject": "boundary geometry",
       "statement": "World mutation that changes walls, gates, floors, void barriers, bridges, or containment blocks invalidates spatial-containment assumptions and requires boundary re-verification before arena start or reuse.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -240,7 +240,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "world-mutation",
@@ -256,7 +256,7 @@
       "domain": "spatial-containment",
       "subject": "out-of-bounds recovery",
       "statement": "Out-of-bounds recovery should use an ordered safe-return chain tied to current authority: local safe anchor, arena recovery anchor, lobby/safe-world fallback. Failed or invalid primary recovery must not commit stale arena membership.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -264,7 +264,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "fallback",
@@ -280,7 +280,7 @@
       "domain": "spatial-containment",
       "subject": "boundary monitoring",
       "statement": "Continuous containment checks must use targeted registries and bounded cadence rather than broad all-entity scans every tick; spatial safety remains subject to per-arena/global performance budgets.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -288,7 +288,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ],
       "capabilityTags": [
         "performance",
@@ -307,7 +307,7 @@
       "subject": "arena-volume-contract",
       "kind": "validates",
       "object": "entity-or-player-spatial-membership-evidence",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -315,7 +315,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ]
     },
     {
@@ -324,7 +324,7 @@
       "subject": "boundary-affecting-world-mutation",
       "kind": "deactivates",
       "object": "cached-containment-validity",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -332,7 +332,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ]
     },
     {
@@ -341,7 +341,7 @@
       "subject": "stale-recovery-generation",
       "kind": "deactivates",
       "object": "void-or-out-of-bounds-teleport",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -349,7 +349,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-spatial-containment-policy-v1"
+        "mivubi-spatial-containment-contract-v1"
       ]
     }
   ]

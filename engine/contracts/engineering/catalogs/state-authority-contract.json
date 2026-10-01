@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-state-authority-policy-v1",
-      "title": "MIVUBI State Authority and Consistency Policy v1",
-      "url": "project://knowledge/state-authority-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-state-authority-contract-v1",
+      "title": "MIVUBI State Authority and Consistency Engineering Contract v1",
+      "url": "project://contracts/engineering/state-authority-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-23"
     }
@@ -16,7 +16,7 @@
       "domain": "state-authority",
       "subject": "logical gameplay state",
       "statement": "Every logical gameplay concept must declare exactly one authoritative owner. Scoreboard, tag, dynamic property, inventory, entity property, and script memory may mirror that concept, but mirrors must not independently decide truth.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "source-of-truth",
@@ -41,7 +41,7 @@
       "domain": "state-authority",
       "subject": "state replication",
       "statement": "For every mirrored state, declare replication direction explicitly: authority->mirror, mirror->authority migration, or bidirectional reconciliation. Unspecified two-way synchronization is prohibited.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -49,7 +49,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "replication",
@@ -66,7 +66,7 @@
       "domain": "state-authority",
       "subject": "state durability",
       "statement": "Classify each state field as transient-session, round-scoped, arena-scoped, player-durable, or world-durable. Do not restore transient-session state from durable storage after reconnect or restart unless an explicit reconciliation rule permits it.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -74,7 +74,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "durability",
@@ -91,7 +91,7 @@
       "domain": "state-authority",
       "subject": "authoritative record version",
       "statement": "Authoritative mutable records should carry a generation, revision, or epoch where stale writers are possible. Mirrors must record which authoritative revision they represent.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -99,7 +99,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "revision",
@@ -115,7 +115,7 @@
       "domain": "state-authority",
       "subject": "display/state mirrors",
       "statement": "UI-facing scoreboards, tags, actionbar values, names, or visual markers must not be read back as authoritative gameplay state unless they are explicitly designated as the owner for that concept.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -123,7 +123,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "display-mirror",
@@ -140,7 +140,7 @@
       "domain": "state-authority",
       "subject": "bootstrap reconciliation",
       "statement": "At worldLoad, player initial-spawn/reconnect, arena creation, and round reset, reconcile declared mirrors against their authority before accepting gameplay decisions.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -148,7 +148,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "bootstrap",
@@ -165,7 +165,7 @@
       "domain": "state-authority",
       "subject": "state conflict",
       "statement": "When two non-authoritative surfaces disagree and authority cannot be proven, emit a conflict diagnostic and fail closed for critical gameplay rather than silently choosing whichever value was read last.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -173,7 +173,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "conflict-detection",
@@ -189,7 +189,7 @@
       "domain": "state-authority",
       "subject": "mutation ordering",
       "statement": "For critical state transitions, commit the authoritative state first, then update mirrors. If mirror update fails, record mirror drift; do not roll authority backward solely to preserve display consistency unless the transaction explicitly requires atomic rollback.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -197,7 +197,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "commit-order",
@@ -213,7 +213,7 @@
       "domain": "state-authority",
       "subject": "reset semantics",
       "statement": "Arena/round/player reset must enumerate and clear or rewrite every mirror owned by that scope. Clearing only the authoritative record while leaving tags/scores/properties behind creates resurrection bugs on later queries.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -221,7 +221,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "reset",
@@ -237,7 +237,7 @@
       "domain": "state-authority",
       "subject": "inventory and equipment",
       "statement": "Inventory/equipment may be authoritative for item possession, but should not implicitly serve as authority for unrelated session/arena state such as role, readiness, revive eligibility, or round membership.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -245,7 +245,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "capabilityTags": [
         "inventory",
@@ -265,7 +265,7 @@
       "subject": "authoritative-state",
       "kind": "produces",
       "object": "derived-mirror-state",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -273,7 +273,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ]
     },
     {
@@ -282,7 +282,7 @@
       "subject": "authoritative-state-proof",
       "kind": "gates",
       "object": "critical-gameplay-branch",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -290,7 +290,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ]
     },
     {
@@ -299,7 +299,7 @@
       "subject": "state-conflict",
       "kind": "requires",
       "object": "authority-reconciliation",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -307,7 +307,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ]
     },
     {
@@ -316,7 +316,7 @@
       "subject": "state-authority-observed",
       "kind": "requires",
       "object": "state-mirror-consistent",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -324,7 +324,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "diagnosticSeverity": "medium",
       "causalConsequences": [
@@ -346,7 +346,7 @@
       "subject": "state-mirror-observed",
       "kind": "requires",
       "object": "state-authority-observed",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -354,7 +354,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-state-authority-policy-v1"
+        "mivubi-state-authority-contract-v1"
       ],
       "diagnosticSeverity": "medium",
       "causalConsequences": [

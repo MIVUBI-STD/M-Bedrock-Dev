@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-environment-policy-v1",
-      "title": "MIVUBI Environmental Hazard Integrity Policy v1",
-      "url": "project://knowledge/environment-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-environment-contract-v1",
+      "title": "MIVUBI Environmental Hazard Integrity Engineering Contract v1",
+      "url": "project://contracts/engineering/environment-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-24"
     }
@@ -16,7 +16,7 @@
       "domain": "environment-hazards",
       "subject": "arena hazard",
       "statement": "Arena hazards should declare source type, spatial bounds, damage/mutation policy, arenaGeneration, affected teams/entities, recovery behavior, and cleanup/restore expectations.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-environment-policy-v1"
+        "mivubi-environment-contract-v1"
       ],
       "capabilityTags": [
         "hazard",
@@ -40,7 +40,7 @@
       "domain": "environment-hazards",
       "subject": "explosion containment",
       "statement": "Gameplay explosions must validate source and impacted blocks against arena spatial/world-mutation ownership; cross-arena block damage or stale-generation explosions are rejected or compensated.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -48,7 +48,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-environment-policy-v1"
+        "mivubi-environment-contract-v1"
       ],
       "capabilityTags": [
         "explosion",
@@ -64,7 +64,7 @@
       "domain": "environment-hazards",
       "subject": "damage-over-time",
       "statement": "Repeated environmental damage and hazard callbacks must be tied to current life/entity and arena generations so reset, teleport, respawn, or immunity changes invalidate stale hazard effects.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -72,7 +72,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-environment-policy-v1"
+        "mivubi-environment-contract-v1"
       ],
       "capabilityTags": [
         "damage-over-time",
@@ -88,7 +88,7 @@
       "domain": "environment-hazards",
       "subject": "destructive hazard cleanup",
       "statement": "If explosions/fire/hazards mutate critical arena geometry, cleanup uses the world-mutation transaction and verifies route, automation, containment, and interactive-object baselines before reuse.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -96,7 +96,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-environment-policy-v1"
+        "mivubi-environment-contract-v1"
       ],
       "capabilityTags": [
         "cleanup",
@@ -115,7 +115,7 @@
       "subject": "validated-hazard-scope",
       "kind": "gates",
       "object": "hazard-gameplay-sideeffect",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -123,7 +123,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-environment-policy-v1"
+        "mivubi-environment-contract-v1"
       ]
     }
   ]
