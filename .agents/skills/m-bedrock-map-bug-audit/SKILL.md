@@ -60,11 +60,13 @@ Audit header is fixed:
 
 ```text
 Map Version: <map version>
-Tested Version: Latest Education
+Tested Version: Minecraft Education <exact version> (Latest)
 
 Open Issues: <count>
 Blocker: <count> · Major: <count> · Minor: <count>
 ```
+
+Before claiming `(Latest)`, verify the current Minecraft Education version from an official Minecraft Education source and ensure the audit's canonical `testedVersion` matches that exact build. If freshness cannot be verified, show the exact tested version without `(Latest)`.
 
 Do not show Repair By, repair ownership, or Fixed progress during normal bug-finding preview.
 
