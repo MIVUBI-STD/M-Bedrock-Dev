@@ -17,6 +17,7 @@ Use this before broad repository search.
 | Parser-independent value-flow graph + forward/backward semantic slicing | engine/packages/dataflow/ |
 | JavaScript/TypeScript direct interprocedural value-flow extraction | engine/analyzers/scripts/src/dataflow.ts |
 | Minecraft semantic source/sink bindings over value flow | engine/analyzers/scripts/src/semantic-flow-bindings.ts |
+| Semantic source→sink taint witness | engine/analyzers/scripts/src/semantic-flow-witness.ts |
 | Bundled/minified source-shape recovery + source-map discovery | engine/analyzers/scripts/src/source-recovery.ts |
 | Source-map generated→original binding | engine/analyzers/scripts/src/source-map-binding.ts |
 | Compact data-flow context slice for diagnosis/AI context | engine/packages/orchestrator/src/script-dataflow-context.ts |

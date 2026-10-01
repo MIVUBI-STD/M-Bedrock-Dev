@@ -38,6 +38,16 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
       prerequisites: ["script-dataflow-lineage"],
     },
     {
+      id: "script-semantic-flow-witness",
+      evidenceLevel: "semantic",
+      cost: "moderate",
+      tags: ["script","dataflow","taint","witness","identity","state","reward"],
+      deterministic: true,
+      contexts: ["REMOTE_GITHUB","LOCAL_ARTIFACT","LOCAL_MINECRAFT","LIVE_MINECRAFT"],
+      producesTraits: ["semantic-model","structural-proof"],
+      prerequisites: ["script-semantic-flow"],
+    },
+    {
       id: "script-source-recovery",
       evidenceLevel: "static",
       cost: "cheap",

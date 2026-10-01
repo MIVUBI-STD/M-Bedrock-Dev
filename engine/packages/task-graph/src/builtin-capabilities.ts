@@ -64,6 +64,21 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "source.scripts.semantic-flow-witness",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/semantic-flow-witness.ts",
+      ],
+      dependsOn: [
+        "source.scripts.semantic-flow",
+        "foundation.dataflow",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "source.scripts.recovery",
       owner: "analyzers/scripts",
       pathPrefixes: [

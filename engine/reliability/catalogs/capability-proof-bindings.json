@@ -3,6 +3,22 @@
   "semantics": "Bindings identify capability-specific regression/proof surfaces. They do not imply those artifacts were executed in the current session.",
   "bindings": [
     {
+      "capabilityId": "diagnosis.calibration",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/diagnostic-reasoning/test/calibration.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "diagnosis.declarative-rules",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "foundation.dataflow",
       "kind": "unit-contract",
       "paths": [
@@ -11,42 +27,10 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
-      "capabilityId": "source.scripts.semantic-flow",
+      "capabilityId": "knowledge.freshness",
       "kind": "unit-contract",
       "paths": [
-        "engine/analyzers/scripts/test/semantic-flow-bindings.test.ts"
-      ],
-      "executionContext": "REMOTE_GITHUB"
-    },
-    {
-      "capabilityId": "source.scripts.recovery",
-      "kind": "unit-contract",
-      "paths": [
-        "engine/analyzers/scripts/test/source-recovery.test.ts"
-      ],
-      "executionContext": "REMOTE_GITHUB"
-    },
-    {
-      "capabilityId": "source.scripts.source-map",
-      "kind": "unit-contract",
-      "paths": [
-        "engine/analyzers/scripts/test/source-map-binding.test.ts"
-      ],
-      "executionContext": "REMOTE_GITHUB"
-    },
-    {
-      "capabilityId": "reliability.metamorphic",
-      "kind": "unit-contract",
-      "paths": [
-        "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
-      ],
-      "executionContext": "REMOTE_GITHUB"
-    },
-    {
-      "capabilityId": "reliability.parser-robustness",
-      "kind": "unit-contract",
-      "paths": [
-        "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
+        "engine/packages/knowledge/test/freshness.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -67,34 +51,35 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
-      "capabilityId": "diagnosis.calibration",
+      "capabilityId": "reliability.metamorphic",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/diagnostic-reasoning/test/calibration.test.ts"
+        "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
     {
-      "capabilityId": "diagnosis.declarative-rules",
+      "capabilityId": "reliability.parser-robustness",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts"
+        "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
     {
-      "capabilityId": "knowledge.freshness",
-      "kind": "unit-contract",
+      "capabilityId": "runtime.cross-version-differential-executor",
+      "kind": "contract-only",
       "paths": [
-        "engine/packages/knowledge/test/freshness.test.ts"
+        "engine/packages/runtime-lab/test/cross-version-differential-executor.test.ts"
       ],
-      "executionContext": "REMOTE_GITHUB"
+      "executionContext": "REMOTE_GITHUB",
+      "note": "Binds fail-closed orchestration behavior only; live cross-version proof still requires LOCAL/LIVE Minecraft hosts."
     },
     {
-      "capabilityId": "runtime.semantic-convention",
+      "capabilityId": "runtime.cross-version-differential-plan",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/project-model/test/runtime-semantic-convention.test.ts"
+        "engine/packages/runtime-lab/test/cross-version-differential-plan.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -107,21 +92,44 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
-      "capabilityId": "runtime.cross-version-differential-plan",
+      "capabilityId": "runtime.semantic-convention",
       "kind": "unit-contract",
       "paths": [
-        "engine/packages/runtime-lab/test/cross-version-differential-plan.test.ts"
+        "engine/packages/project-model/test/runtime-semantic-convention.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
     {
-      "capabilityId": "runtime.cross-version-differential-executor",
-      "kind": "contract-only",
+      "capabilityId": "source.scripts.recovery",
+      "kind": "unit-contract",
       "paths": [
-        "engine/packages/runtime-lab/test/cross-version-differential-executor.test.ts"
+        "engine/analyzers/scripts/test/source-recovery.test.ts"
       ],
-      "executionContext": "REMOTE_GITHUB",
-      "note": "Binds fail-closed orchestration behavior only; live cross-version proof still requires LOCAL/LIVE Minecraft hosts."
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.semantic-flow",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/semantic-flow-bindings.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.semantic-flow-witness",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/semantic-flow-witness.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.source-map",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/source-map-binding.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
     }
   ]
 }
