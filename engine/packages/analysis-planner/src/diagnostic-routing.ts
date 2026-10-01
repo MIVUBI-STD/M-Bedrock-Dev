@@ -60,12 +60,12 @@ export function routeIntentDiagnosticNextAnalysis(
           "Gameplay intent evidence must be strengthened before defect classification can advance.",
       };
 
-    case "authored-intent":
+    case "contract-evidence":
       return {
         disposition: "analyze",
-        goal: "authored-intent",
+        goal: "contract-evidence",
         reason:
-          "Authored gameplay intent evidence is required before a probable defect can be promoted.",
+          "Selected-artifact contract evidence is required before a ambiguous observation can be promoted.",
       };
   }
 }
