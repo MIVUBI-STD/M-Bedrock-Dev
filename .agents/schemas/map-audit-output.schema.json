@@ -25,7 +25,8 @@
         "required": [
           "id",
           "disposition",
-          "proofCeiling"
+          "proofCeiling",
+          "subjectIds"
         ],
         "properties": {
           "id": {
@@ -59,7 +60,7 @@
             ]
           },
           "expectedAuthority": {
-            "type": "string"
+            "const": "selected-artifact"
           },
           "evidenceIds": {
             "type": "array",
@@ -87,6 +88,15 @@
           },
           "testerTriggerReady": {
             "type": "boolean"
+          },
+          "subjectIds": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
           }
         },
         "additionalProperties": true,
@@ -189,7 +199,8 @@
         "checked",
         "blocked",
         "notApplicable",
-        "missingSubjectIds"
+        "missingSubjectIds",
+        "records"
       ],
       "properties": {
         "disposition": {
@@ -223,6 +234,69 @@
         },
         "discoveryCompleteness": {
           "const": "not-proven"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "subjectId",
+              "status"
+            ],
+            "properties": {
+              "subjectId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "enum": [
+                  "checked",
+                  "blocked",
+                  "not-applicable"
+                ]
+              },
+              "candidateIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "status": {
+                      "const": "blocked"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "reason"
+                  ]
+                }
+              }
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
