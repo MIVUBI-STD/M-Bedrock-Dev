@@ -7,6 +7,37 @@ function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };
 }
 
+function repairAuthority(transaction: {
+  id: string;
+}) {
+  return {
+    kind: "approved-bug" as const,
+    approved: {
+      map: {
+        name: "Repair Test",
+        mapVersion: "1.0.0",
+        drive: "https://drive.google.com/file/d/map/view",
+        baseVersion: "1.26.20",
+        testedVersion: "1.26.32",
+      },
+      approvedSemanticKeys: ["bug:approved"],
+      rejectedSemanticKeys: [],
+      decisions: [{
+        semanticKey: "bug:approved",
+        decision: "approve" as const,
+      }],
+    },
+    bugSemanticKey: "bug:approved",
+    preservationContract: {
+      schemaVersion: 1 as const,
+      id: "preserve:" + transaction.id,
+      transactionId: transaction.id,
+      mustChangeInvariantIds: ["invariant::ready"],
+      mustPreserveInvariantIds: ["invariant::preserve"],
+    },
+  };
+}
+
 function fixture() {
   const graph = new SemanticGraph();
   graph.addNode({
@@ -52,6 +83,42 @@ function fixture() {
 }
 
 describe("repair admission pipeline", () => {
+  it("blocks mutation-authorizing repair without Approved Bug authority", () => {
+    const { graph, transaction } = fixture();
+    const result = evaluateRepairAdmissionPipeline({
+      graph,
+      transaction,
+      diagnostic: {
+        incidentId: "incident-1",
+        activeCandidateIds: ["candidate"],
+        disposition: "repair-eligible",
+        selectedCandidateId: "candidate",
+        effectiveEvidenceLevel: "proven-dependency-violation",
+        proofState: "causal",
+        claimStrength: "proven-static",
+        reasons: ["static causal proof"],
+      },
+      changedNodeIds: ["function:p:target"],
+      decisionBasis: {
+        preservationContractRevision: "preservation-contract-current",
+        preservationBaselineRevision: "preservation-baseline-current",
+      },
+      preservationReadiness: {
+        contractId: "preserve:" + transaction.id,
+        transactionId: transaction.id,
+        disposition: "ready",
+        baselineEvidenceIds: ["baseline:ready"],
+        reasons: ["ready"],
+      },
+    });
+
+    expect(result.admission.disposition).toBe("blocked");
+    expect(result.admission.reasons.join(" ")).toMatch(
+      /workflow authority|Approved Bug/i,
+    );
+  });
+
+
   it("runs counterfactual, blast radius, admission, and proof in one deterministic path", () => {
     const { graph, transaction } = fixture();
     const result = evaluateRepairAdmissionPipeline({
@@ -68,6 +135,7 @@ describe("repair admission pipeline", () => {
         reasons: ["causal runtime proof"],
       },
       changedNodeIds: ["function:p:target"],
+      repairAuthority: repairAuthority(transaction),
       supportingInvariantIds: ["invariant::ready"],
       decisionBasis: {
         runtimeEvidenceRevision: "evidence-current",
@@ -135,6 +203,7 @@ describe("repair admission pipeline", () => {
         reasons: ["controlled runtime proof"],
       },
       changedNodeIds: ["function:p:target"],
+      repairAuthority: repairAuthority(transaction),
       decisionBasis: {
         runtimeEvidenceRevision: "evidence-current",
         preservationContractRevision:
@@ -214,6 +283,7 @@ describe("repair admission pipeline", () => {
         reasons: ["intervention-supported runtime proof"],
       },
       changedNodeIds: ["function:p:target"],
+      repairAuthority: repairAuthority(transaction),
       decisionBasis: {
         runtimeEvidenceRevision: "evidence-current",
       },
@@ -241,6 +311,7 @@ describe("repair admission pipeline", () => {
         reasons: ["intervention-supported runtime proof"],
       },
       changedNodeIds: ["function:p:target"],
+      repairAuthority: repairAuthority(transaction),
       decisionBasis: {
         runtimeEvidenceRevision: "evidence-current",
         preservationContractRevision:
