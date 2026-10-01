@@ -1,48 +1,48 @@
-export * from "./module-usage.js";
-export * from "./parse.js";
-export * from "./resolve.js";
-export * from "./types.js";
+export * from "./parser/module-usage.js";
+export * from "./parser/parse.js";
+export * from "./parser/resolve.js";
+export * from "./core/types.js";
 
-export * from "./runtime-evidence.js";
+export * from "./runtime/runtime-evidence.js";
 
-export * from "./repair-transform-hints.js";
+export * from "./repair/repair-transform-hints.js";
 
-export * from "./arena-authority-evidence.js";
+export * from "./domains/arena/arena-authority-evidence.js";
 
-export * from "./arena-repair-transform-hints.js";
+export * from "./domains/arena/arena-repair-transform-hints.js";
 
-export * from "./persistence-idempotency-evidence.js";
+export * from "./domains/persistence/persistence-idempotency-evidence.js";
 
-export * from "./safe-config-compiler.js";
-export * from "./safe-config-project.js";
+export * from "./config/safe-config-compiler.js";
+export * from "./config/safe-config-project.js";
 
-export * from "./spatial-mutation-evidence.js";
+export * from "./domains/spatial/spatial-mutation-evidence.js";
 
-export * from "./spatial-world-mutation.js";
+export * from "./domains/spatial/spatial-world-mutation.js";
 
-export * from "./cleanup-resource-evidence.js";
+export * from "./domains/cleanup/cleanup-resource-evidence.js";
 
-export * from "./global-lease-evidence.js";
-export * from "./inventory-lifecycle-evidence.js";
-export * from "./combat-lifecycle-evidence.js";
-export * from "./chunk-lifecycle-evidence.js";
-export * from "./economy-evidence.js";
+export * from "./domains/arena/global-lease-evidence.js";
+export * from "./domains/inventory/inventory-lifecycle-evidence.js";
+export * from "./domains/combat/combat-lifecycle-evidence.js";
+export * from "./domains/chunk/chunk-lifecycle-evidence.js";
+export * from "./domains/economy/economy-evidence.js";
 
-export * from "./persistent-data-lifecycle.js";
+export * from "./domains/persistence/persistent-data-lifecycle.js";
 
-export * from "./persistent-state-scope.js";
+export * from "./domains/persistence/persistent-state-scope.js";
 
-export * from "./terminal-lifecycle-project.js";
-export * from "./persistent-state-lifetime.js";
+export * from "./domains/lifecycle/terminal-lifecycle-project.js";
+export * from "./domains/persistence/persistent-state-lifetime.js";
 
 
-export * from "./cross-file-call.js";
+export * from "./parser/cross-file-call.js";
 
-export * from "./dataflow.js";
+export * from "./flow/dataflow.js";
 
-export * from "./semantic-flow-bindings.js";
-export * from "./source-recovery.js";
+export * from "./flow/semantic-flow-bindings.js";
+export * from "./recovery/source-recovery.js";
 
-export * from "./source-map-binding.js";
+export * from "./recovery/source-map-binding.js";
 
-export * from "./semantic-flow-witness.js";
+export * from "./flow/semantic-flow-witness.js";

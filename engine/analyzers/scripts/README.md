@@ -4,7 +4,35 @@ Static analysis for Bedrock Script API source.
 
 The analyzer uses the TypeScript compiler parser for JavaScript/TypeScript syntax and never executes artifact code.
 
-Current facts:
+## Internal hierarchy
+
+```text
+src/
+├── core/       shared script-analysis contracts
+├── parser/     parse/module/call/receiver resolution
+├── flow/       parser-independent value-flow extraction bindings/witnesses
+├── recovery/   bundled/minified source recovery and source-map binding
+├── config/     safe configuration projection/compilation
+├── repair/     script transform hint derivation
+├── runtime/    script-authored runtime evidence projection
+├── domains/
+│   ├── arena/
+│   ├── chunk/
+│   ├── cleanup/
+│   ├── combat/
+│   ├── economy/
+│   ├── inventory/
+│   ├── lifecycle/
+│   ├── persistence/
+│   └── spatial/
+└── index.ts    sole cross-owner public entrypoint
+```
+
+Tests mirror the same hierarchy under `test/`.
+
+The domain folders contain read-only authored-source evidence extraction. They do not become gameplay policy owners.
+
+## Current facts
 
 - imports and imported bindings;
 - @minecraft/* module usage;
@@ -16,14 +44,14 @@ Current facts:
 
 Unknown/computed behavior remains unknown rather than being evaluated.
 
-This analyzer does not execute JavaScript or attempt arbitrary symbolic execution. A conservative project-level data-flow extractor now covers direct assignments and resolvable direct function argument/return flow; unsupported dynamic aliasing/calls remain unresolved.
+This analyzer does not execute JavaScript or attempt arbitrary symbolic execution. A conservative project-level data-flow extractor covers direct assignments and resolvable direct function argument/return flow; unsupported dynamic aliasing/calls remain unresolved.
 
-
-## Data-flow v1
+## Data-flow
 
 `deriveScriptDataFlowGraph()` builds evidence-bearing value flow across modules for direct/resolved calls.
 
 Supported:
+
 - direct variable assignment;
 - simple reassignment;
 - direct local function parameters/arguments;
@@ -32,12 +60,12 @@ Supported:
 - forward/backward slicing through `packages/dataflow`.
 
 Not yet claimed:
+
 - arbitrary alias analysis;
 - prototype/reflection flow;
 - computed dynamic call resolution;
 - full closure/environment modeling;
 - JavaScript execution.
-
 
 ## Semantic data-flow bindings
 
@@ -48,3 +76,10 @@ Minecraft-specific source/sink labels are derived separately from the generic da
 `analyzeScriptSourceRecovery()` classifies explicit, modular, bundled/minified, mixed, or unknown source shapes. It detects source-map references and structural bundler/minification signals without executing or rewriting artifact code.
 
 Source recovery never invents original symbol names or module boundaries.
+
+## Boundary
+
+- Parsing and authored evidence extraction remain read-only.
+- Diagnostics policy belongs to `engine/analyzers/diagnostics/` and diagnostic packages.
+- Repair execution belongs to repair/orchestrator owners; this analyzer may only derive bounded transform hints/evidence.
+- Cross-owner consumers import through `src/index.ts`.
