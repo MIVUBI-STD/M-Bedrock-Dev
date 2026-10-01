@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock Detection Benchmark Expectation",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "lane",
+    "artifact",
+    "target",
+    "expected",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "lane": {
+      "enum": ["calibration", "acceptance", "regression"]
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["label", "sha256"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "file": { "type": "string", "minLength": 1 },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "mapVersion": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "object",
+      "required": ["edition", "minecraftVersion"],
+      "properties": {
+        "edition": { "enum": ["bedrock", "education"] },
+        "minecraftVersion": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "expected": {
+      "type": "object",
+      "required": ["disposition"],
+      "properties": {
+        "disposition": {
+          "enum": [
+            "defect",
+            "designed-behavior",
+            "ambiguous-intent",
+            "insufficient-evidence",
+            "runtime-proof-required"
+          ]
+        },
+        "domain": { "type": "string", "minLength": 1 },
+        "findingKey": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["blocker", "major", "minor"] },
+        "proofCeiling": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["frozenBeforeRun", "source"],
+      "properties": {
+        "frozenBeforeRun": { "const": true },
+        "source": { "type": "string", "minLength": 1 },
+        "approvedBy": { "type": "string", "minLength": 1 },
+        "approvedAt": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
