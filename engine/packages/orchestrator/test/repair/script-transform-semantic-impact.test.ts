@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveSchedulerGenerationGuardTransformHints,
-} from "../../../analyzers/scripts/src/index.js";
+} from "../../../../analyzers/scripts/src/index.js";
 import {
   proveScriptTransformPostcondition,
   proveScriptTransformSemanticImpact,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 const source = {
   artifactId: "artifact",

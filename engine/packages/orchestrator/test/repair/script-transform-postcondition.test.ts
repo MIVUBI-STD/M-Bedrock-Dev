@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   parseScriptFile,
-} from "../../../analyzers/scripts/src/index.js";
+} from "../../../../analyzers/scripts/src/index.js";
 import {
   proveScriptTransformPostcondition,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function hintFor(
   identifier: string,
