@@ -93,15 +93,14 @@ Body:
 ```text
 Issue            | concise gameplay problem + impact
 How to Reproduce | numbered in-game steps
-Observed         | actual wrong result
-Expected         | intended result
+Result           | Observed + Expected, clearly labeled
 Resolution       | supported Suggested Fix, when available
 ```
 
 Rules:
 
-- left column is a stable short label;
-- right column owns the useful content;
+- left column is narrow and reserved for stable short labels;
+- right column receives most of the width and owns the useful content;
 - title and severity remain visible at the top of the same table;
 - reproduction numbering restarts from 1 for every bug;
 - omit Resolution entirely when no supported Suggested Fix exists;
@@ -246,6 +245,10 @@ Can the reader scan the bug tables and identify which issues need attention firs
 ### Single-bug test
 
 Can one bug be understood without reading another bug or any source code?
+
+### Space-efficiency test
+
+Is page area being spent on useful bug information rather than oversized headings, wide label columns, or repeated sections?
 
 ### Action test
 
