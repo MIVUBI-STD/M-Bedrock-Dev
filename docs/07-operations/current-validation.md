@@ -104,19 +104,18 @@ score-benchmark.mjs      TP/TN/FP/FN quality metrics
 
 These checks improve evidence discipline but are not runtime proof.
 
-## Unvalidated design-first hardening
+## Unvalidated single-source hardening
 
-Current `Local` source now also contains a design-first gameplay workflow hardening pass:
+Current `Local` source now also contains a single-source gameplay workflow pass:
 
-- authoritative Game Design is required for scoped design readiness;
-- `GameplayContract` is the derived audit boundary;
-- gameplay candidate discovery fails closed without a matching ready/partial contract;
-- the intent gate derives/validates the same contract boundary;
+- one Selected Map Version is the only current gameplay evidence universe;
+- Gameplay Contract is derived only from evidence inside that artifact;
+- stale/external design material is excluded from normal audit authority;
+- candidate discovery fails closed without a matching ready/partial Gameplay Contract;
 - duplicate candidate-discovery ownership was removed;
-- inspection topology repair output is proposal-only rather than a PatchTransaction;
-- runtime repair entry requires Approved Bug + Repair Contract readiness;
-- repair admission validates the actual Approved Bug Set and preservation-contract lineage;
-- final mutation authorization revalidates the same Approved Bug and Must Change / Must Preserve contract;
-- target-repair output contract now requires approval and preservation fields.
+- inspection repair output is proposal-only;
+- runtime repair requires Approved Bug + Repair Contract;
+- final mutation authorization revalidates Approved Bug + Must Change + Must Preserve;
+- target-repair output requires approval and preservation fields.
 
 These changes have **not** been upgraded to CI/local/runtime proof in the current lane. The last retained integrated verification revision above remains the latest integrated test proof.
