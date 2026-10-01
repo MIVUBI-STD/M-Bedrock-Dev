@@ -35,6 +35,7 @@ export interface PromoteConfirmedBugsInput {
 
 export type BugReportPromotionIssueCode =
   | "no-confirmed-bugs"
+  | "missing-reproduction"
   | "tester-missing-reproduction"
   | "ai-missing-analysis"
   | "ai-missing-relevant-code"
@@ -115,6 +116,15 @@ export function reviewConfirmedBugInputs(
         bugId: bug.id,
         message:
           "AI-found defects require authored contract violation or runtime observation.",
+      });
+    }
+
+    if (!hasItems(bug.reproduction)) {
+      issues.push({
+        code: "missing-reproduction",
+        bugId: bug.id,
+        message:
+          "Tester-facing confirmed defects require an in-game reproduction / verification path.",
       });
     }
 
