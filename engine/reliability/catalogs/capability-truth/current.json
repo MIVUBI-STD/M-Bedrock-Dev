@@ -2,18 +2,19 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "cfb1323bca29399704578857290d4e7f908249ab",
+    "commit": "829f9e5f993fd6ea30f4b3d66c36f7b38025d4e4",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "c7effb07"
+    "registryFingerprint": "c7effb07",
+    "proofInventoryFingerprint": "3a8b672f"
   },
   "summary": {
     "taskCapabilities": 36,
-    "ownerTested": 35,
-    "implementationPresent": 1,
+    "ownerTested": 36,
+    "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
     "analysisCapabilities": 27
@@ -472,7 +473,7 @@
     {
       "id": "foundation.dataflow",
       "owner": "packages/dataflow",
-      "status": "implementation-present",
+      "status": "owner-tested",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -483,10 +484,12 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 4,
-      "testFiles": 0,
+      "testFiles": 1,
       "hasReadme": true,
-      "proofPaths": [],
-      "proofSemantics": "Owner implementation exists without owner-level test presence."
+      "proofPaths": [
+        "engine/packages/dataflow/test/dataflow.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
       "id": "projection.workflow",

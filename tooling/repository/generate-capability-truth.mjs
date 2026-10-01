@@ -107,6 +107,18 @@ const analysisRegistries=[
 const task=extractCapabilities(taskRegistry).filter((x)=>x.owner);
 const analysis=analysisRegistries.flatMap(extractCapabilities).filter((x)=>x.evidenceLevel);
 
+const proofInventoryFingerprint=contentFingerprint(
+  [...new Set(task.map((item)=>item.owner).filter(Boolean))]
+    .flatMap((owner)=>filesUnder("engine/"+owner)
+      .filter((path)=>
+        path.includes("/src/") ||
+        path.includes("/test/") ||
+        path.endsWith("/README.md")
+      ))
+    .sort()
+    .join("\n")
+);
+
 const taskCapabilities=task.map((item)=>{
   const stats=ownerStats(item.owner);
   const status=stats.sourceFiles===0
@@ -136,7 +148,8 @@ const output={
   generatedFrom:{
     taskRegistry,
     analysisRegistries,
-    registryFingerprint: registryFingerprint([taskRegistry,...analysisRegistries])
+    registryFingerprint: registryFingerprint([taskRegistry,...analysisRegistries]),
+    proofInventoryFingerprint
   },
   summary:{
     taskCapabilities:taskCapabilities.length,

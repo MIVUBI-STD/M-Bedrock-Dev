@@ -1,4 +1,13 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+
+function filesUnder(root){
+  if(!existsSync(root)) return [];
+  return readdirSync(root,{withFileTypes:true}).flatMap((entry)=>{
+    const path=join(root,entry.name);
+    return entry.isDirectory()?filesUnder(path):[path.replaceAll("\\","/")];
+  });
+}
 
 function contentFingerprint(text){
   let h=0x811c9dc5;
@@ -28,6 +37,20 @@ if(registryPaths.length<2 || registryPaths.some((p)=>!existsSync(p))){
   );
   if(currentFingerprint!==data.generatedFrom?.registryFingerprint){
     errors.push("Capability Truth Index is stale; regenerate after registry changes.");
+  }
+
+  const owners=[...new Set((data.taskCapabilities??[]).map((item)=>item.owner).filter(Boolean))];
+  const proofPaths=owners
+    .flatMap((owner)=>filesUnder("engine/"+owner)
+      .filter((path)=>
+        path.includes("/src/") ||
+        path.includes("/test/") ||
+        path.endsWith("/README.md")
+      ))
+    .sort();
+  const proofInventoryFingerprint=contentFingerprint(proofPaths.join("\n"));
+  if(proofInventoryFingerprint!==data.generatedFrom?.proofInventoryFingerprint){
+    errors.push("Capability Truth Index is stale; regenerate after owner source/test inventory changes.");
   }
 }
 if(data.schemaVersion!==1) errors.push("schemaVersion must be 1");
