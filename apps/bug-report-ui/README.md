@@ -1,6 +1,6 @@
 # Bug Report UI
 
-Thin Svelte/Vite reader for canonical M-Bedrock Bug Report V2.
+Thin Svelte/Vite client/projection for canonical M-Bedrock Bug Report V2.
 
 Current user-facing surface:
 
@@ -28,6 +28,8 @@ The UI does not analyze maps or diagnose bugs. It presents confirmed bugs so a t
 - A file report can be created on GitHub only after all handoff-quality issues are resolved.
 - A GitHub report is read/export oriented during the audit phase.
 - Canonical GitHub persistence lives under `workspace/reports/`; UI code must build paths through the shared engine persistence helpers.
+- The UI owns no independent bug database, status history, or bug identity.
+- Legacy or external files are review/import inputs only; they do not become canonical until promoted through the engine-owned V2 workflow.
 - Canonical V2 fields remain unchanged for compatibility with later repair workflows.
 
 Presentation rules are owned by `engine/packages/bug-report/PREVIEW.md`. Wording quality is owned by `engine/packages/bug-report/COPY.md`.
