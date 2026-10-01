@@ -64,7 +64,6 @@ describe("GitHubReportClient", () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({
         report,
-        revision: "abc",
       }), { status: 200 }),
     );
     const client = new GitHubReportClient({
