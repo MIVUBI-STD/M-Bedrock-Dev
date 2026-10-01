@@ -29,6 +29,7 @@ function report(): BugReportV2 {
       reproduction: [
         "Complete the objective.",
         "Walk to the gate.",
+        "Confirm the gate remains closed and blocks progression.",
       ],
     }],
   };
@@ -49,6 +50,24 @@ describe("bug report copy quality", () => {
 
     expect(
       issues.some((issue) => issue.code === "duplicate-core-copy"),
+    ).toBe(true);
+  });
+
+  it("rejects trigger paths without an observable final result", () => {
+    const source = report();
+    const issues = reviewBugReportCopy([{
+      ...source.bugs[0]!,
+      reproduction: [
+        "Complete the objective.",
+        "Walk to the gate.",
+      ],
+    }]);
+
+    expect(
+      issues.some(
+        (issue) =>
+          issue.code === "missing-observable-result",
+      ),
     ).toBe(true);
   });
 
