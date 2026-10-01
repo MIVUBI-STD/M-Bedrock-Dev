@@ -60,9 +60,11 @@ Internal Detection
 
 ## Canonical vocabulary
 
-Frontend labels must keep the same meaning as persisted V2 fields.
+Persisted field names and presentation labels must keep the same meaning, but they are not always the same wording.
 
-| JSON field | UI label | Meaning |
+`BUG_REPORT_V2_LABELS` describes canonical/storage field labels. Tester-facing presentation is owned by `PREVIEW.md`.
+
+| JSON field | Canonical field label | Meaning |
 |---|---|---|
 | `mapVersion` | Map Version | Internal map version. |
 | `baseVersion` | Base Version | Minecraft version the map was designed for. |
@@ -82,7 +84,15 @@ Frontend labels must keep the same meaning as persisted V2 fields.
 | `suggestedFix` | Solution | Advisory repair direction shown to the reader. |
 | `mustPreserve` | Must Preserve | Behavior that the repair must not break. |
 
-Do not introduce alternate workflow terms such as Open, Closed, Done, Verified, Repair Status, Do Not Break, or Repair With when the persisted V2 field already has a canonical term.
+Tester-facing display mappings are intentionally limited to:
+
+```text
+Problem       → Issue
+Reproduction  → Bug Trigger (In-Game)
+Suggested Fix → Solution
+```
+
+Do not create additional synonyms for these concepts. Do not introduce alternate workflow terms such as Open, Closed, Done, Verified, Repair Status, Do Not Break, or Repair With when the persisted V2 field already has a canonical term.
 
 ## AI Bug Trigger authoring
 
