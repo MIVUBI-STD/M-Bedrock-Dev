@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   economyContractDiagnostics,
-} from "../src/economy-contract-diagnostics.js";
+} from "../../src/inspection/economy-contract-diagnostics.js";
 
 describe("economy contract diagnostics", () => {
   it("separates authored conflicts from coverage gaps", () => {

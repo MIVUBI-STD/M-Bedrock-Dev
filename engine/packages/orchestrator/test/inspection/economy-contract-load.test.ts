@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   parseEconomyBehaviorContract,
-} from "../src/economy-contract-load.js";
+} from "../../src/inspection/economy-contract-load.js";
 
 describe("economy contract loader", () => {
   it("parses explicit reward transaction contract", () => {

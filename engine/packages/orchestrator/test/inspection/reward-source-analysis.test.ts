@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   parseEntityDefinition,
-} from "../../../analyzers/entities/src/index.js";
+} from "../../../../analyzers/entities/src/index.js";
 import {
   parseScriptFile,
-} from "../../../analyzers/scripts/src/index.js";
+} from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzeRewardSources,
-} from "../src/reward-source-analysis.js";
+} from "../../src/inspection/reward-source-analysis.js";
 
 describe("reward source analysis", () => {
   it("surfaces engine/script death reward overlap as a candidate", () => {

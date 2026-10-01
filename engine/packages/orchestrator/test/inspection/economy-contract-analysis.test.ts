@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeEconomyContract,
-} from "../src/economy-contract-analysis.js";
+} from "../../src/inspection/economy-contract-analysis.js";
 import type {
   RewardSourceAnalysis,
-} from "../src/reward-source-analysis.js";
+} from "../../src/inspection/reward-source-analysis.js";
 
 const rewards: RewardSourceAnalysis = {
   sourceKinds: [
