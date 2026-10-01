@@ -1,3 +1,4 @@
+import { reviewBugReportCopy } from "./copy-quality.js";
 import {
   BUG_REPORT_V2_SCHEMA,
   parseBugReportV2,
@@ -36,6 +37,18 @@ export function createBugReportV2(
     throw new Error(
       "Bug Report V2 creation failed: " +
         parsed.issues
+          .map((issue) =>
+            issue.path + ": " + issue.message
+          )
+          .join("; "),
+    );
+  }
+
+  const copyIssues = reviewBugReportCopy(parsed.report.bugs);
+  if (copyIssues.length > 0) {
+    throw new Error(
+      "Bug Report V2 copy quality failed: " +
+        copyIssues
           .map((issue) =>
             issue.path + ": " + issue.message
           )
