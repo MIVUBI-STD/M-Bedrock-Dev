@@ -47,6 +47,16 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
       producesTraits: ["structural-proof"],
     },
     {
+      id: "script-source-map-binding",
+      evidenceLevel: "static",
+      cost: "cheap",
+      tags: ["script","source-map","bundle","source-recovery"],
+      deterministic: true,
+      contexts: ["REMOTE_GITHUB","LOCAL_ARTIFACT","LOCAL_MINECRAFT","LIVE_MINECRAFT"],
+      producesTraits: ["structural-proof"],
+      prerequisites: ["script-source-recovery"],
+    },
+    {
       id: "arena-lifecycle-integrity",
       evidenceLevel: "semantic",
       cost: "cheap",

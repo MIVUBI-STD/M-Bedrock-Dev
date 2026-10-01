@@ -42,3 +42,5 @@ export * from "./dataflow.js";
 
 export * from "./semantic-flow-bindings.js";
 export * from "./source-recovery.js";
+
+export * from "./source-map-binding.js";

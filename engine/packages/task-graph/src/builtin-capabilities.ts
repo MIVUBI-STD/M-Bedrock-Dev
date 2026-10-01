@@ -76,6 +76,18 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "source.scripts.source-map",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/source-map-binding.ts",
+      ],
+      dependsOn: ["source.scripts.recovery"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "source.scripts.arena",
       owner: "analyzers/scripts",
       pathPrefixes: [
