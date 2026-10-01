@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
+import type { RuntimeEvidenceRecord } from "../../../project-model/src/index.js";
 import {
   assessRuntimeTemporalRequirement,
-} from "../src/runtime-temporal-analysis.js";
+} from "../../src/diagnosis/runtime-temporal-analysis.js";
 
 function record(
   predicate: string,

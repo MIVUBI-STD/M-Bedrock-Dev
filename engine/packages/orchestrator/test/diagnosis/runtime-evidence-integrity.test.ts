@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { RuntimeEvidenceRecord } from "../../project-model/src/index.js";
-import { assessRuntimeEvidenceIntegrity } from "../src/runtime-evidence-integrity.js";
+import type { RuntimeEvidenceRecord } from "../../../project-model/src/index.js";
+import { assessRuntimeEvidenceIntegrity } from "../../src/diagnosis/runtime-evidence-integrity.js";
 
 const observed: RuntimeEvidenceRecord = {
   predicate: "route-ready",
@@ -12,7 +12,7 @@ const observed: RuntimeEvidenceRecord = {
 describe("runtime evidence integrity", () => {
   it("fails closed when no observed runtime evidence exists", async () => {
     const { assessRuntimeEvidenceSetIntegrity } = await import(
-      "../src/runtime-evidence-integrity.js"
+      "../../src/diagnosis/runtime-evidence-integrity.js"
     );
     const report = assessRuntimeEvidenceSetIntegrity([]);
 
@@ -134,7 +134,7 @@ describe("runtime evidence integrity", () => {
 
   it("aggregates integrity per scope without cross-scope false conflicts", async () => {
     const { assessRuntimeEvidenceSetIntegrity } = await import(
-      "../src/runtime-evidence-integrity.js"
+      "../../src/diagnosis/runtime-evidence-integrity.js"
     );
 
     const report = assessRuntimeEvidenceSetIntegrity([

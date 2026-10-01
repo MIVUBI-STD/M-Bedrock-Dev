@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type {
   DiagnosticHypothesisSet,
-} from "../../diagnostic-reasoning/src/index.js";
+} from "../../../diagnostic-reasoning/src/index.js";
 import type {
   RuntimeEvidenceRecord,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import type {
   RuntimeExperimentQualification,
   RuntimeExperimentTrial,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import {
   reassessHypothesesFromRuntimeExperiment,
   runtimeExperimentDiagnosticEvidence,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function trial(
   id: string,

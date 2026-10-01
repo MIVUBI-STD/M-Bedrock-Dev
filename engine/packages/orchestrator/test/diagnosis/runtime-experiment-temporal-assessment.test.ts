@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   assessRuntimeExperimentTemporalTrials,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   createNestedSystemRunOrderingExperiment,
   runtimeExperimentDefinitionRevision,
   type RuntimeExperimentTrial,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 
 const plan = createNestedSystemRunOrderingExperiment({
   id: "exp:scheduler-ordering",
