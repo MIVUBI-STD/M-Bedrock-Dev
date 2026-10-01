@@ -7,7 +7,9 @@ export type BugReportCopyIssueCode =
   | "vague-issue"
   | "vague-action"
   | "missing-reproduction"
-  | "invalid-reproduction-length";
+  | "invalid-reproduction-length"
+  | "code-centric-reproduction"
+  | "vague-reproduction";
 
 export interface BugReportCopyIssue {
   readonly code: BugReportCopyIssueCode;
@@ -38,6 +40,27 @@ const vagueIssuePatterns = [
   /\bpossible issue\b/i,
   /\bpotential issue\b/i,
   /\bneeds? checking\b/i,
+] as const;
+
+const codeCentricReproductionPatterns = [
+  /\bscript\b/i,
+  /\bfunction\b/i,
+  /\bmethod\b/i,
+  /\bclass\b/i,
+  /\bvariable\b/i,
+  /\bsource code\b/i,
+  /\bcode path\b/i,
+  /\bimplementation\b/i,
+  /\barchitecture\b/i,
+  /\.tsx?\b/i,
+  /\.jsx?\b/i,
+] as const;
+
+const vagueReproductionPatterns = [
+  /\btest it\b/i,
+  /\bcheck the bug\b/i,
+  /\bverify the logic\b/i,
+  /\bsee if it happens\b/i,
 ] as const;
 
 const vagueActionPatterns = [
@@ -115,12 +138,41 @@ export function reviewBugReportCopy(
       }
 
       bug.reproduction.forEach((step, stepIndex) => {
+        const stepPath =
+          `${base}.reproduction[${stepIndex}]`;
+
         tooLong(
           issues,
-          `${base}.reproduction[${stepIndex}]`,
+          stepPath,
           step,
           limits.reproduction,
         );
+
+        if (
+          codeCentricReproductionPatterns.some((pattern) =>
+            pattern.test(step)
+          )
+        ) {
+          issues.push({
+            code: "code-centric-reproduction",
+            path: stepPath,
+            message:
+              "Reproduction must describe in-game tester actions and visible outcomes, not source-code or architecture inspection.",
+          });
+        }
+
+        if (
+          vagueReproductionPatterns.some((pattern) =>
+            pattern.test(step)
+          )
+        ) {
+          issues.push({
+            code: "vague-reproduction",
+            path: stepPath,
+            message:
+              "Reproduction step must state a concrete in-game action or observable result.",
+          });
+        }
       });
     }
 
