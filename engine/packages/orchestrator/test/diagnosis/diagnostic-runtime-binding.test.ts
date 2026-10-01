@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
-import { bindDiagnosticProbeToRuntime } from "../src/diagnostic-runtime-binding.js";
+import type { DiagnosticProbeDefinition } from "../../../project-model/src/index.js";
+import { bindDiagnosticProbeToRuntime } from "../../src/diagnosis/diagnostic-runtime-binding.js";
 
 const probe: DiagnosticProbeDefinition = {
   id: "chunk-ready",

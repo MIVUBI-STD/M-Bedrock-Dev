@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
-import { loadRuntimeProbeBindings } from "../src/runtime-probe-binding-load.js";
+import { loadRuntimeProbeBindings } from "../../src/diagnosis/runtime-probe-binding-load.js";
 
 describe("runtime probe binding loader", () => {
   it("loads a validated binding registry", async () => {

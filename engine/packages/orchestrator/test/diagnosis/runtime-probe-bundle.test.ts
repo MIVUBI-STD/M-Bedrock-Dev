@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { CausalIncident } from "../../project-model/src/index.js";
+import type { CausalIncident } from "../../../project-model/src/index.js";
 import type {
   DiagnosticProbeDefinition,
   DiagnosticProbePlan,
-} from "../../project-model/src/index.js";
-import type { RuntimeProbeBinding } from "../../project-model/src/index.js";
-import type { DiagnosticProbeAnalysis } from "../src/diagnostic-probe-analysis.js";
-import { prepareRuntimeProbeBundle } from "../src/runtime-probe-bundle.js";
+} from "../../../project-model/src/index.js";
+import type { RuntimeProbeBinding } from "../../../project-model/src/index.js";
+import type { DiagnosticProbeAnalysis } from "../../src/diagnostic-probe-analysis.js";
+import { prepareRuntimeProbeBundle } from "../../src/diagnosis/runtime-probe-bundle.js";
 
 const incident: CausalIncident = {
   id: "incident-1",

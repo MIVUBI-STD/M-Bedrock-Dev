@@ -6,7 +6,7 @@ import {
 import {
   prepareAdaptiveRuntimeProbeBundle,
   type AdaptiveRuntimeProbeInspection,
-} from "../src/adaptive-runtime-probe.js";
+} from "../../src/diagnosis/adaptive-runtime-probe.js";
 
 describe("adaptive runtime probe bundle", () => {
   it("spends a global budget on the highest-value probes first", () => {
