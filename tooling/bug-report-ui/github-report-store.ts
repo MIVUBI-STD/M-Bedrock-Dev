@@ -2,6 +2,13 @@ import {
   completeVerifiedBugRepair,
   type BugRepairVerification,
 } from "../../engine/packages/repair/src/index.js";
+import {
+  completeBugReportFromClosedRepair,
+  type PostRepairClosureReceipt,
+} from "../../engine/packages/orchestrator/src/index.js";
+import type {
+  PreservationVerificationReceipt,
+} from "../../engine/packages/preservation/src/index.js";
 import type {
   ValidationTraceReport,
 } from "../../engine/packages/validation/src/index.js";
@@ -386,6 +393,36 @@ export class GitHubBugReportStore {
       trace,
     );
     return this.#saveReport(path, completed, expectedRevision);
+  }
+
+  async completeClosedRepair(
+    path: string,
+    input: {
+      readonly bugId: string;
+      readonly repairBy: BugReportV2["repairBy"];
+      readonly closure: PostRepairClosureReceipt;
+      readonly preservation: PreservationVerificationReceipt;
+    },
+    expectedRevision: string,
+  ): Promise<SavedGitHubBugReport> {
+    const current = await this.loadReport(path);
+    if (current.revision !== expectedRevision) {
+      throw new GitHubBugReportConflictError();
+    }
+
+    const completed = completeBugReportFromClosedRepair({
+      report: current.report,
+      bugId: input.bugId,
+      repairBy: input.repairBy,
+      closure: input.closure,
+      preservation: input.preservation,
+    });
+
+    return this.#saveReport(
+      path,
+      completed,
+      expectedRevision,
+    );
   }
 
 }
