@@ -2,26 +2,26 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "ae6f20caa4bca6a4b0318152c964f12c9c773c8c",
+    "commit": "8ea8d4f8357af551b9480e0eb4481a5eaa9e9559",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "113300dc",
+    "registryFingerprint": "09f5e0a0",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
-    "proofRegistryFingerprint": "a401e7bc",
-    "proofInventoryFingerprint": "4ef39648"
+    "proofRegistryFingerprint": "78ca641e",
+    "proofInventoryFingerprint": "cb310c04"
   },
   "summary": {
-    "taskCapabilities": 50,
-    "ownerTested": 50,
+    "taskCapabilities": 51,
+    "ownerTested": 51,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 4,
-    "proofBound": 15,
+    "proofBound": 16,
     "proofUnbound": 35,
-    "analysisCapabilities": 30
+    "analysisCapabilities": 31
   },
   "taskCapabilities": [
     {
@@ -1178,8 +1178,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1206,8 +1206,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1234,8 +1234,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1262,8 +1262,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1290,8 +1290,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1318,8 +1318,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1346,8 +1346,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1374,8 +1374,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1402,8 +1402,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1435,8 +1435,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1456,6 +1456,39 @@
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
+      "id": "source.scripts.semantic-flow-witness",
+      "owner": "analyzers/scripts",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 32,
+      "testFiles": 28,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/analyzers/scripts/test/semantic-flow-witness.test.ts"
+        ]
+      },
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
       "id": "source.scripts.source-map",
       "owner": "analyzers/scripts",
       "status": "owner-tested",
@@ -1468,8 +1501,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 31,
-      "testFiles": 27,
+      "sourceFiles": 32,
+      "testFiles": 28,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1968,6 +2001,27 @@
         "reward",
         "state",
         "world-mutation"
+      ]
+    },
+    {
+      "id": "script-semantic-flow-witness",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "script",
+        "dataflow",
+        "taint",
+        "witness",
+        "identity",
+        "state",
+        "reward"
       ]
     },
     {
