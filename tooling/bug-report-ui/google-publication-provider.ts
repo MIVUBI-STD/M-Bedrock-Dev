@@ -335,34 +335,52 @@ function textStyleFor(
 
 function paragraphStyleFor(
   kind: StyledRange["kind"],
-): Record<string, unknown> | undefined {
+): {
+  style: Record<string, unknown>;
+  fields: string;
+} | undefined {
   if (kind === "title") {
     return {
-      namedStyleType: "TITLE",
-      spaceBelow: { magnitude: 6, unit: "PT" },
+      style: {
+        namedStyleType: "TITLE",
+        spaceBelow: { magnitude: 6, unit: "PT" },
+      },
+      fields: "namedStyleType,spaceBelow",
     };
   }
   if (kind === "heading1") {
     return {
-      namedStyleType: "HEADING_1",
-      spaceAbove: { magnitude: 16, unit: "PT" },
-      spaceBelow: { magnitude: 8, unit: "PT" },
-      keepWithNext: true,
+      style: {
+        namedStyleType: "HEADING_1",
+        spaceAbove: { magnitude: 16, unit: "PT" },
+        spaceBelow: { magnitude: 8, unit: "PT" },
+        keepWithNext: true,
+      },
+      fields:
+        "namedStyleType,spaceAbove,spaceBelow,keepWithNext",
     };
   }
   if (kind === "heading2") {
     return {
-      namedStyleType: "HEADING_2",
-      spaceAbove: { magnitude: 12, unit: "PT" },
-      spaceBelow: { magnitude: 6, unit: "PT" },
-      keepWithNext: true,
+      style: {
+        namedStyleType: "HEADING_2",
+        spaceAbove: { magnitude: 12, unit: "PT" },
+        spaceBelow: { magnitude: 6, unit: "PT" },
+        keepWithNext: true,
+      },
+      fields:
+        "namedStyleType,spaceAbove,spaceBelow,keepWithNext",
     };
   }
   if (kind === "label") {
     return {
-      keepWithNext: true,
-      spaceAbove: { magnitude: 7, unit: "PT" },
-      spaceBelow: { magnitude: 2, unit: "PT" },
+      style: {
+        keepWithNext: true,
+        spaceAbove: { magnitude: 7, unit: "PT" },
+        spaceBelow: { magnitude: 2, unit: "PT" },
+      },
+      fields:
+        "spaceAbove,spaceBelow,keepWithNext",
     };
   }
   return undefined;
@@ -439,9 +457,10 @@ function requestsForTextPlan(
       requests.push({
         updateParagraphStyle: {
           range,
-          paragraphStyle,
-          fields:
-            "namedStyleType,spaceAbove,spaceBelow,keepWithNext",
+          paragraphStyle:
+          paragraphStyle.style,
+        fields:
+          paragraphStyle.fields,
         },
       });
     }
@@ -645,8 +664,7 @@ export class GoogleBugReportPublicationProvider
         "/files?q=" +
         encodeURIComponent(q) +
         "&fields=files(id,name,mimeType,parents,webViewLink)" +
-        "&includeItemsFromAllDrives=true" +
-        "&supportsAllDrives=true",
+        "&includeItemsFromAllDrives=true",
     );
     const list =
       await response.json() as GoogleDriveFileList;
