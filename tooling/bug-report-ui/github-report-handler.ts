@@ -123,6 +123,55 @@ export async function handleBugReportStoreRequest(
 
     if (
       request.method === "PATCH" &&
+      url.pathname === "/api/bug-report/closed"
+    ) {
+      const input = await request.json() as {
+        path?: unknown;
+        bugId?: unknown;
+        repairBy?: unknown;
+        closure?: unknown;
+        preservation?: unknown;
+        expectedRevision?: unknown;
+      };
+
+      if (
+        typeof input.path !== "string" ||
+        !input.path.trim() ||
+        typeof input.bugId !== "string" ||
+        !input.bugId.trim() ||
+        (input.repairBy !== "chatgpt" &&
+          input.repairBy !== "developer") ||
+        typeof input.expectedRevision !== "string" ||
+        !input.expectedRevision.trim() ||
+        typeof input.closure !== "object" ||
+        input.closure === null ||
+        typeof input.preservation !== "object" ||
+        input.preservation === null
+      ) {
+        return json(
+          { error: "Invalid closed repair completion request." },
+          400,
+        );
+      }
+
+      return json(await store.completeClosedRepair(
+        input.path,
+        {
+          bugId: input.bugId,
+          repairBy: input.repairBy,
+          closure: input.closure as import(
+            "../../engine/packages/orchestrator/src/index.js"
+          ).PostRepairClosureReceipt,
+          preservation: input.preservation as import(
+            "../../engine/packages/preservation/src/index.js"
+          ).PreservationVerificationReceipt,
+        },
+        input.expectedRevision,
+      ));
+    }
+
+    if (
+      request.method === "PATCH" &&
       url.pathname === "/api/bug-report/fixed"
     ) {
       const input = await request.json() as {
