@@ -1,6 +1,7 @@
 # Sources
 
 Methodology sources:
+- canonical product flow: docs/01-product/flow.md
 - docs/04-repair/
 - repository preservation/repair contracts
 - .agents/references/evidence-cost-ladder.md
