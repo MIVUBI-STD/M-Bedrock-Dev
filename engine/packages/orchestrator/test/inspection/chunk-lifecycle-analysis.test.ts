@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzeChunkLifecycle,
-} from "../src/chunk-lifecycle-analysis.js";
+} from "../../src/inspection/chunk-lifecycle-analysis.js";
 
 describe("chunk lifecycle analysis", () => {
   it("recognizes a paired ticking-area lease with capacity check", () => {

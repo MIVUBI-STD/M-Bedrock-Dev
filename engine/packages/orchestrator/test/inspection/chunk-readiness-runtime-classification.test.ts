@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyChunkReadinessRuntimeExperiment,
-} from "../src/chunk-readiness-runtime-classification.js";
+} from "../../src/inspection/chunk-readiness-runtime-classification.js";
 
 describe("chunk readiness runtime classification", () => {
   it("classifies player-loader intervention when readiness contrast is supported", () => {

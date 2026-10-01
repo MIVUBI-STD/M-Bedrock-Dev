@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   chunkLifecycleDiagnostics,
-} from "../src/chunk-lifecycle-diagnostics.js";
+} from "../../src/inspection/chunk-lifecycle-diagnostics.js";
 
 const base = {
   worldLoadObservers: 0,
