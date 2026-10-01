@@ -76,9 +76,9 @@ describe("tester report confirmation adapter", () => {
     expect(result.confirmed).toBe(false);
   });
 
-  it("does not promote authored behavior that the intent gate classifies as designed", () => {
+  it("does not promote selected-artifact behavior that the intent gate classifies as designed", () => {
     const result = confirmTesterDefectForReport({
-      expectedBehaviorAuthority: "authored-intent",
+      expectedBehaviorAuthority: "selected-artifact",
       intentDiagnostic: {
         disposition: "designed-behavior",
         subjectIds: ["combat:team-damage"],
@@ -99,9 +99,9 @@ describe("tester report confirmation adapter", () => {
     expect(result.confirmed).toBe(false);
   });
 
-  it("allows authored tester mismatch only after canonical intent confirmation", () => {
+  it("allows selected-artifact tester mismatch only after canonical intent confirmation", () => {
     const result = confirmTesterDefectForReport({
-      expectedBehaviorAuthority: "authored-intent",
+      expectedBehaviorAuthority: "selected-artifact",
       intentDiagnostic: {
         disposition: "confirmed-defect",
         subjectIds: ["combat:team-damage"],
