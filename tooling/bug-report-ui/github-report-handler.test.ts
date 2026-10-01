@@ -8,6 +8,9 @@ import {
   handleBugReportStoreRequest,
 } from "./github-report-handler.js";
 import type {
+  BugReportPublicationProvider,
+} from "../../apps/bug-report-ui/src/publication-provider.js";
+import type {
   GitHubBugReportStore,
 } from "./github-report-store.js";
 
@@ -160,5 +163,86 @@ describe("bug report handler", () => {
     expect(response.status).toBe(200);
     expect(store.completeClosedRepair).toHaveBeenCalledTimes(1);
   });
+
+  it("publishes only the loaded canonical revision", async () => {
+    const store = storeStub();
+    store.loadReport = vi.fn(async () => ({
+      report: report(),
+      revision: "rev-1",
+    })) as never;
+
+    const provider: BugReportPublicationProvider = {
+      createGoogleDoc: vi.fn(async (input) => ({
+        documentId: "doc-1",
+        url: "https://docs.google.com/document/d/doc-1/edit",
+        title: input.title,
+        parentFolderId: "folder-1",
+      })),
+      exportGoogleDocAsPdf: vi.fn(async (input) => ({
+        fileName: input.fileName,
+        url: "https://drive.google.com/file/d/pdf-1/view",
+      })),
+    };
+
+    const response = await handleBugReportStoreRequest(
+      new Request(
+        "http://localhost/api/bug-report/publish",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            path: "workspace/reports/golden.json",
+            expectedRevision: "rev-1",
+          }),
+        },
+      ),
+      store,
+      provider,
+    );
+
+    expect(response.status).toBe(200);
+    expect(provider.createGoogleDoc)
+      .toHaveBeenCalledTimes(1);
+    expect(provider.exportGoogleDocAsPdf)
+      .toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects publication when the report revision is stale", async () => {
+    const store = storeStub();
+    store.loadReport = vi.fn(async () => ({
+      report: report(),
+      revision: "rev-new",
+    })) as never;
+
+    const provider: BugReportPublicationProvider = {
+      createGoogleDoc: vi.fn(),
+      exportGoogleDocAsPdf: vi.fn(),
+    };
+
+    const response = await handleBugReportStoreRequest(
+      new Request(
+        "http://localhost/api/bug-report/publish",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            path: "workspace/reports/golden.json",
+            expectedRevision: "rev-old",
+          }),
+        },
+      ),
+      store,
+      provider,
+    );
+
+    expect(response.status).toBe(409);
+    expect(provider.createGoogleDoc)
+      .not.toHaveBeenCalled();
+  });
+
 
 });
