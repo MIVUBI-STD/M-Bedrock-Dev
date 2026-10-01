@@ -130,7 +130,9 @@ Absence from a later scan is not proof that a bug never existed or is fixed.
 
 ## Completion
 
-`fixed: true` is canonical only after current passing verification with sufficient evidence.
+`fixed: true` is canonical only through `applyVerifiedBugRetest()` after current passing verification with sufficient evidence. New report creation always starts bugs open, and generic reconciliation preserves existing completion state without creating a new completion decision.
+
+A failed retest with explicit evidence sets the bug back to `fixed: false`. The report does not persist a separate `reopened` status.
 
 Intermediate workflow labels such as "in progress", "ready for retest", or "reopened" are not persisted unless a proven product need later justifies a schema change.
 
