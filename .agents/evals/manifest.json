@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "description": "Static golden corpus for skill routing and lane-procedure invariants. It validates eval structure; model-level routing accuracy is measured separately when an agent-eval runner is available.",
+  "routingCorpus": ".agents/evals/skill-routing.json",
+  "procedureCorpus": ".agents/evals/skill-procedure.json",
+  "evidenceModel": ".agents/references/evidence-cost-ladder.md",
+  "qualityModel": ".agents/references/detector-quality-metrics.md"
+}

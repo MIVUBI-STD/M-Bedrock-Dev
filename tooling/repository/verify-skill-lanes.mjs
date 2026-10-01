@@ -77,6 +77,25 @@ if(!contentAnalysis.includes("detection-gap")){
   failures.push("Content Analysis must hand unsupported operational evidence back as detection-gap.");
 }
 
+function parseFrontmatter(text){
+  if(!text.startsWith("---\n")) return undefined;
+  const end=text.indexOf("\n---\n",4);
+  if(end<0) return undefined;
+  const block=text.slice(4,end);
+  const name=block.match(/^name:\s*(.+)$/m)?.[1]?.trim();
+  const descLines=[];
+  const lines=block.split(/\r?\n/);
+  let inDescription=false;
+  for(const line of lines){
+    if(/^description:\s*>?\s*$/.test(line)){ inDescription=true; continue; }
+    if(inDescription){
+      if(/^\S/.test(line)) break;
+      descLines.push(line.trim());
+    }
+  }
+  return {name,description:descLines.join(" ").trim()};
+}
+
 const registryPath=".agents/skill-registry.json";
 if(!existsSync(registryPath)){
   failures.push("Missing machine-readable skill registry: "+registryPath);
@@ -101,6 +120,17 @@ if(!existsSync(registryPath)){
     .filter((entry)=>entry.isDirectory() && existsSync(".agents/skills/"+entry.name+"/SKILL.md"))
     .map((entry)=>entry.name)
     .sort();
+
+  for(const name of physical){
+    const path=".agents/skills/"+name+"/SKILL.md";
+    const fm=parseFrontmatter(readFileSync(path,"utf8"));
+    if(!fm) failures.push(path+": missing YAML frontmatter");
+    else{
+      if(fm.name!==name) failures.push(path+": frontmatter name must equal folder name");
+      if(!fm.description || fm.description.length<40) failures.push(path+": description is too weak for reliable routing");
+      if(fm.description && fm.description.length>320) failures.push(path+": description is too long; keep discovery metadata concise");
+    }
+  }
   const registered=[...classified.keys()].sort();
 
   for(const name of physical){
@@ -110,10 +140,18 @@ if(!existsSync(registryPath)){
     if(!physical.includes(name)) failures.push("Skill registry references missing folder: "+name);
   }
 
+  if(!Number.isInteger(registry.registryRevision) || registry.registryRevision<1){
+    failures.push("Skill registry requires positive registryRevision.");
+  }
+
   for(const [name,lane] of Object.entries(registry.workLanes ?? {})){
     if(typeof lane.selection!=="string" || !lane.selection.trim()) failures.push("Work lane lacks selection rule: "+name);
     if(!Array.isArray(lane.outputs) || lane.outputs.length===0) failures.push("Work lane lacks output contract index: "+name);
     if(typeof lane.mutatesEngine!=="boolean" || typeof lane.mutatesTarget!=="boolean") failures.push("Work lane lacks mutation boundary: "+name);
+    if(!Number.isInteger(lane.revision) || lane.revision<1) failures.push("Work lane lacks positive revision: "+name);
+    if(typeof lane.outputSchema!=="string" || !existsSync(lane.outputSchema)) failures.push("Work lane outputSchema missing/not found: "+name);
+    if(typeof lane.deterministicEntrypoint!=="string" || !existsSync(lane.deterministicEntrypoint)) failures.push("Work lane deterministicEntrypoint missing/not found: "+name);
+    if(!Array.isArray(lane.evidenceTiers) || lane.evidenceTiers.length===0) failures.push("Work lane lacks evidence tiers: "+name);
   }
 }
 

@@ -149,5 +149,6 @@
       "mutatesTarget": false
     }
   },
-  "registryRevision": 1
+  "registryRevision": 2,
+  "evalManifest": ".agents/evals/manifest.json"
 }
