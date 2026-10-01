@@ -6,19 +6,28 @@ Default ChatGPT presentation is **table-first**. The goal is minimum vertical sc
 
 ## Default compact preview
 
-Show one report signal line followed by one compact table:
+Show a compact audit header followed by one compact table:
 
 ```text
-Map · Version · Tested · Repair
-Open · Blocker · Major · Minor · Fixed
+Map Name — Bug Report
+Map Version: <map version>
+Tested Version: Latest Education
+
+Open Issues: <count>
+Blocker: <count> · Major: <count> · Minor: <count>
 ```
+
+The normal bug-finding preview MUST NOT show repair ownership or fixed-progress metadata. Those belong to a later repair workflow, not the audit preview.
 
 | No. | Severity | Bug | Issue | Action |
 |---:|---|---|---|---|
 
 Rules:
 
-- default scope is open bugs only;
+- default scope is newly found/open bugs only;
+- show `Open Issues` on its own line before the severity breakdown;
+- do not show `Repair By`, repair ownership, or `Fixed` progress in normal bug-finding preview;
+- display `Tested Version: Latest Education` in the audit preview; the canonical exact tested version may remain stored internally;
 - order is Blocker → Major → Minor → Bug ID;
 - `No.` is a simple preview row number (`#1`, `#2`, ...);
 - `Bug` contains only the short human-readable title;
@@ -29,6 +38,20 @@ Rules:
 - do not add Expected, Observed, Reproduction, Technical Analysis, Relevant Code, or Must Preserve to the default table;
 - do not create one section per bug in default preview;
 - do not dump JSON.
+
+## Audit-phase boundary
+
+Normal preview represents **bug finding**, not repair execution.
+
+Do not surface these by default:
+
+- Repair By;
+- repair owner;
+- fixed count;
+- repair workflow status;
+- implementation progress.
+
+Suggested Fix may still populate the table's Action column when the confirmed report already contains supported repair direction, but it is not workflow ownership or repair status.
 
 ## Detail on demand
 
