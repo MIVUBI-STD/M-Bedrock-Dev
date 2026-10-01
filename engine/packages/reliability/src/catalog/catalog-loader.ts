@@ -2,11 +2,15 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type {
   BlindspotCoverage,
+  FailurePattern,
+  MapCompatibilityFingerprint,
   MinecraftUpdateDelta,
   RegressionCase,
 } from "../core/types.js";
 import {
   validateCoverageCatalog,
+  validateFailurePatternCatalog,
+  validateMapCompatibilityFingerprint,
   validateRegressionCatalog,
   validateUpdateDelta,
 } from "./catalogs.js";
@@ -14,6 +18,11 @@ import {
 interface RegressionCatalogFile {
   schemaVersion: number;
   regressions: RegressionCase[];
+}
+
+interface FailurePatternCatalogFile {
+  schemaVersion: number;
+  patterns: FailurePattern[];
 }
 
 interface CoverageCatalogFile {
@@ -58,6 +67,44 @@ export async function loadRegressionCatalog(
   return regressions;
 }
 
+
+export async function loadFailurePatternCatalog(
+  catalogRoot: string,
+  regressions: readonly RegressionCase[] = [],
+): Promise<FailurePattern[]> {
+  const root = record(await readJson(join(catalogRoot, "failure-patterns.json")));
+  requireSchemaVersion(root.schemaVersion);
+  if (!Array.isArray(root.patterns)) {
+    throw new Error("Failure pattern catalog requires a patterns array.");
+  }
+
+  const patterns = root.patterns as FailurePattern[];
+  const errors = validateFailurePatternCatalog(patterns, regressions);
+  if (errors.length) throw new Error(errors.join("\n"));
+  return patterns;
+}
+
+export async function loadMapFingerprintCatalog(
+  catalogRoot: string,
+  mapId: string,
+): Promise<MapCompatibilityFingerprint> {
+  if (!/^[A-Za-z0-9._-]+$/.test(mapId)) {
+    throw new Error("Unsafe map fingerprint id.");
+  }
+  const root = record(await readJson(
+    join(catalogRoot, "map-fingerprints", `${mapId}.json`),
+  ));
+  const fingerprint = root as unknown as MapCompatibilityFingerprint;
+  const errors = validateMapCompatibilityFingerprint(fingerprint);
+  if (errors.length) throw new Error(errors.join("\n"));
+  if (fingerprint.mapId !== mapId) {
+    throw new Error(
+      `Map fingerprint filename/id mismatch: requested ${mapId}, mapId=${fingerprint.mapId}`,
+    );
+  }
+  return fingerprint;
+}
+
 export async function loadCoverageCatalog(
   catalogRoot: string,
 ): Promise<BlindspotCoverage[]> {
@@ -100,11 +147,16 @@ export async function loadUpdateDeltaCatalog(
 
 export async function loadReliabilityCatalogs(
   catalogRoot: string,
-): Promise<{ regressions: RegressionCase[]; coverage: BlindspotCoverage[] }> {
-  const [regressions, coverage] = await Promise.all([
-    loadRegressionCatalog(catalogRoot),
+): Promise<{
+  regressions: RegressionCase[];
+  failurePatterns: FailurePattern[];
+  coverage: BlindspotCoverage[];
+}> {
+  const regressions = await loadRegressionCatalog(catalogRoot);
+  const [failurePatterns, coverage] = await Promise.all([
+    loadFailurePatternCatalog(catalogRoot, regressions),
     loadCoverageCatalog(catalogRoot),
   ]);
 
-  return { regressions, coverage };
+  return { regressions, failurePatterns, coverage };
 }
