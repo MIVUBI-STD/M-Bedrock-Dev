@@ -1,6 +1,7 @@
 # Sources
 
 Methodology sources for this lane:
+- canonical product flow: docs/01-product/flow.md
 - repository authority model: docs/06-system/authority-model.md
 - canonical naming: docs/06-system/canonical-naming.md
 - evidence tiers: .agents/references/evidence-cost-ladder.md
