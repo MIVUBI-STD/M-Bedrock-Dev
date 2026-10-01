@@ -50,6 +50,7 @@ function trace(overrides: Partial<ValidationTraceReport["runs"][number]> = {}): 
       intentInvariantIds: ["intent:round-flow", "intent:score-state"],
       ok: true,
       proofLevel: "LIVE GAME VERIFIED",
+      proofSufficient: true,
       current: true,
       staleReasons: [],
       evidenceIds: ["evidence:1"],
@@ -80,7 +81,7 @@ describe("report to repair lifecycle", () => {
     ).toThrow(/Repair By owner/);
   });
 
-  it("marks a bug fixed only after current passing validation with evidence", () => {
+  it("marks a bug fixed only after current passing validation with sufficient proof and evidence", () => {
     const completed = completeVerifiedBugRepair(
       report(),
       {
@@ -107,7 +108,7 @@ describe("report to repair lifecycle", () => {
           staleReasons: ["artifact changed"],
         }),
       )
-    ).toThrow(/current passing validation with evidence/);
+    ).toThrow(/current passing validation with sufficient proof and evidence/);
 
     expect(() =>
       completeVerifiedBugRepair(
@@ -120,7 +121,7 @@ describe("report to repair lifecycle", () => {
           evidenceIds: [],
         }),
       )
-    ).toThrow(/current passing validation with evidence/);
+    ).toThrow(/current passing validation with sufficient proof and evidence/);
   });
   it("requires explicit current coverage for Must Preserve behavior", () => {
     expect(() =>
@@ -145,6 +146,23 @@ describe("report to repair lifecycle", () => {
         trace(),
       )
     ).toThrow(/not currently validated/);
+  });
+
+  it("rejects validation below the required proof level", () => {
+    expect(() =>
+      completeVerifiedBugRepair(
+        report(),
+        {
+          bugId: "BUG-001",
+          validationRunIds: ["run:1"],
+          preservationInvariantIds: ["intent:score-state"],
+        },
+        trace({
+          proofLevel: "STATIC VERIFIED",
+          proofSufficient: false,
+        }),
+      )
+    ).toThrow(/sufficient proof/);
   });
 
 });
