@@ -4,7 +4,28 @@ High-end bug-discovery search layer for M-Bedrock-Dev.
 
 This package owns search strategy, not Minecraft semantics.
 
-Core engines include:
+## Internal hierarchy
+
+```text
+src/
+├── core/          shared search-layer types
+├── search/        bounded exploration, schedules, state/session domains, search budgets
+├── invariant/     mining, diversity, challenge, falsification, promotion and revalidation
+├── mutation/      mutation operators, campaigns and effectiveness measurement
+├── minimization/  graph/source/timing/counterexample reduction
+├── coverage/      semantic/runtime coverage and known-limit projection
+├── corpus/        retained semantic/runtime corpus and cross-map behavioral patterns
+├── history/       search/campaign history analysis and persistence
+├── blindspot/     blindspot aggregation and follow-up task derivation
+├── robustness/    metamorphic and parser-robustness campaigns
+└── index.ts       sole cross-owner public entrypoint
+```
+
+Tests mirror the same hierarchy under `test/`.
+
+These folders are internal navigation groups, not separate semantic owners.
+
+## Core engines
 
 - semantic coverage-guided corpus search;
 - bounded state exploration;

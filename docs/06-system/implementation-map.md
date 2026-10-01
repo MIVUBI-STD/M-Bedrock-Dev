@@ -36,10 +36,10 @@ Use this before broad repository search.
 | Capability-specific proof binding registry | engine/reliability/catalogs/capability-proof-bindings.json |
 | Runtime session recording/replay contract + first divergence | engine/packages/reliability/src/runtime-session-replay.ts |
 | Reliability search/corpus/interleavings/minimization | engine/packages/reliability-search/ |
-| Cross-map behavioral pattern aggregation | engine/packages/reliability-search/src/behavioral-pattern-library.ts |
-| Metamorphic detector testing | engine/packages/reliability-search/src/metamorphic.ts |
-| Parser robustness campaigns | engine/packages/reliability-search/src/parser-robustness.ts |
-| Coverage-quality dashboard + generated known-limits | engine/packages/reliability-search/src/coverage-quality-dashboard.ts + generated-known-limits.ts |
+| Cross-map behavioral pattern aggregation | engine/packages/reliability-search/src/corpus/behavioral-pattern-library.ts |
+| Metamorphic detector testing | engine/packages/reliability-search/src/robustness/metamorphic.ts |
+| Parser robustness campaigns | engine/packages/reliability-search/src/robustness/parser-robustness.ts |
+| Coverage-quality dashboard + generated known-limits | engine/packages/reliability-search/src/coverage/coverage-quality-dashboard.ts + coverage/generated-known-limits.ts |
 | Empirical diagnostic calibration | engine/packages/diagnostic-reasoning/src/calibration.ts |
 | Controlled Minecraft experiment planning/qualification/provenance | engine/packages/runtime-lab/ + engine/runtime/lab/ |
 | Cross-version runtime differential planning/receipt | engine/packages/runtime-lab/src/cross-version-differential-plan.ts |
