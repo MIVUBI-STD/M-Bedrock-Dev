@@ -261,6 +261,7 @@ def add_bug_table(doc: Document, issue: dict[str, Any], compact: bool) -> None:
     table.columns[1].width = Inches(5.95)
 
     header = table.rows[0]
+    set_repeat_header(header)
     left = header.cells[0]
     right = header.cells[1]
     set_cell_width(left, 1.35)
