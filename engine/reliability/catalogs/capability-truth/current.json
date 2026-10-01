@@ -2,18 +2,18 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "5bac2630bf1da010f302b9ec0886e3391464bd0e",
+    "commit": "cfb1323bca29399704578857290d4e7f908249ab",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "95bd48dd"
+    "registryFingerprint": "c7effb07"
   },
   "summary": {
-    "taskCapabilities": 35,
+    "taskCapabilities": 36,
     "ownerTested": 35,
-    "implementationPresent": 0,
+    "implementationPresent": 1,
     "declaredOnly": 0,
     "runtimeOnly": 3,
     "analysisCapabilities": 27
@@ -468,6 +468,25 @@
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "foundation.dataflow",
+      "owner": "packages/dataflow",
+      "status": "implementation-present",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 4,
+      "testFiles": 0,
+      "hasReadme": true,
+      "proofPaths": [],
+      "proofSemantics": "Owner implementation exists without owner-level test presence."
     },
     {
       "id": "projection.workflow",
