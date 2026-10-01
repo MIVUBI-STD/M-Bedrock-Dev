@@ -26,7 +26,7 @@ workspace/active/<project-id>/
 └─ state/      rebuildable derived indexes/cache
 ```
 
-`workspace/reports/` stores only repository-tracked canonical audit handoff reports. Private artifacts, extracted maps, caches, local verification output, and working state remain ignored.
+`workspace/reports/` stores only repository-tracked canonical Bug Report V2 current state for audited map versions. It is the persisted bug-report authority; current-version recording takes priority and missing historical reports are not backfilled for completeness. Private artifacts, extracted maps, caches, local verification output, and working state remain ignored.
 
 Nothing under `workspace/active/` or `workspace/saved/` is repository source authority.
 
