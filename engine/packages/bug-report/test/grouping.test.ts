@@ -108,7 +108,11 @@ function defect(
       statement: "Gameplay diverges from the contract.",
       evidenceIds: ["tester:observation"],
     },
-    reproduction: ["Reproduce the failure."],
+    reproduction: [
+      "Enter the affected gameplay state.",
+      "Perform the action that reaches the failure.",
+      "Confirm the gameplay result diverges from the expected contract.",
+    ],
     brokenInvariantIds: [
       options.invariant ?? "inv:gameplay",
     ],
