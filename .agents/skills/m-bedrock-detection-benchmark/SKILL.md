@@ -63,6 +63,12 @@ Check corpus readiness:
 node scripts/corpus-status.mjs
 ```
 
+Filter regression candidates by objective priority basis:
+
+```text
+node scripts/regression-priority.mjs [basis]
+```
+
 Validate a frozen expectation:
 
 ```text
