@@ -79,7 +79,7 @@ export interface InspectTargetProfile {
   spatialAuthorityRequirements?: readonly SpatialAuthorityCoverageRequirement[];
   mutationDependentActions?: readonly MutationDependentActionContract[];
   stateAuthorityContracts?: readonly StateAuthorityContract[];
-  authoredSourceRoots?: readonly string[];
+  contractSourceRoots?: readonly string[];
   staticExecutionDimension?: string;
   releaseVersion?: string;
   arenaProofMode?: ArenaProofExecutionMode;
@@ -267,7 +267,7 @@ export interface InspectDirectoryResult {
   };
   gameplayIntent: {
     model: GameplayIntentModel;
-    authoredSourceFiles: number;
+    contractSourceFiles: number;
     nodes: number;
     authoredNodes: number;
     inferredNodes: number;
