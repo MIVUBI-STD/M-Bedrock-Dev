@@ -11,6 +11,24 @@ Applies to persisted bug reports under `workspace/reports/`.
 - Per-bug `Fixed` is the only persisted repair-progress field.
 - Git history is the revision history; do not duplicate revision logs in report JSON.
 
+## Presentation
+
+Persist canonical JSON; present a projection.
+
+For ChatGPT or human-readable previews, follow `engine/packages/bug-report/PREVIEW.md`.
+
+Default behavior:
+
+- standard preview;
+- open bugs only;
+- Blocker → Major → Minor → Bug ID;
+- show Issue before evidence;
+- show Action only when canonical Suggested Fix exists;
+- omit empty sections;
+- keep internal diagnostics out of normal preview.
+
+Do not persist preview Markdown as a second report artifact.
+
 ## Do not store
 
 - raw map artifacts;
