@@ -87,6 +87,7 @@ function projectBug(
     foundBy: bug.foundBy,
     fixed: bug.fixed,
     issue: bug.problem,
+    ...(bug.reproduction ? { reproduction: bug.reproduction } : {}),
     ...(bug.suggestedFix ? { action: bug.suggestedFix } : {}),
   };
 
@@ -96,7 +97,6 @@ function projectBug(
     ...base,
     expected: bug.expected,
     observed: bug.observed,
-    ...(bug.reproduction ? { reproduction: bug.reproduction } : {}),
   };
 
   if (mode === "standard") return standard;
@@ -194,16 +194,16 @@ export function renderBugReportPreviewMarkdown(
       `**Issue:** ${line(bug.issue)}`,
     );
 
-    if (bug.action) out.push(`**Solution:** ${line(bug.action)}`);
-    if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
-    if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
-
     if (bug.reproduction?.length) {
       out.push("**Bug Trigger (In-Game):**");
       bug.reproduction.forEach((step, index) => {
         out.push(`${index + 1}. ${line(step)}`);
       });
     }
+
+    if (bug.action) out.push(`**Solution:** ${line(bug.action)}`);
+    if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
+    if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
 
     if (bug.technicalAnalysis) {
       out.push(`**Technical:** ${line(bug.technicalAnalysis)}`);
