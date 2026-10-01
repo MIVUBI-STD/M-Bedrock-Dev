@@ -1,4 +1,11 @@
 import {
+  completeVerifiedBugRepair,
+  type BugRepairVerification,
+} from "../../engine/packages/repair/src/index.js";
+import type {
+  ValidationTraceReport,
+} from "../../engine/packages/validation/src/index.js";
+import {
   BUG_REPORT_WORKSPACE_DIRECTORY,
   bugReportV2Progress,
   parseBugReportV2Json,
@@ -297,7 +304,7 @@ export class GitHubBugReportStore {
     return { revision };
   }
 
-  async saveReport(
+  async #saveReport(
     path: string,
     report: BugReportV2,
     expectedRevision: string,
@@ -336,4 +343,45 @@ export class GitHubBugReportStore {
     }
     return { revision };
   }
+  async saveReport(
+    path: string,
+    report: BugReportV2,
+    expectedRevision: string,
+  ): Promise<SavedGitHubBugReport> {
+    const current = await this.loadReport(path);
+    const currentById = new Map(
+      current.report.bugs.map((bug) => [bug.id, bug.fixed]),
+    );
+
+    const unverifiedCompletion = report.bugs.some((bug) =>
+      currentById.get(bug.id) === false && bug.fixed
+    );
+    if (unverifiedCompletion) {
+      throw new Error(
+        "Generic report save cannot mark bugs fixed; use verified repair completion.",
+      );
+    }
+
+    return this.#saveReport(path, report, expectedRevision);
+  }
+
+  async completeVerifiedRepair(
+    path: string,
+    verification: BugRepairVerification,
+    trace: ValidationTraceReport,
+    expectedRevision: string,
+  ): Promise<SavedGitHubBugReport> {
+    const current = await this.loadReport(path);
+    if (current.revision !== expectedRevision) {
+      throw new GitHubBugReportConflictError();
+    }
+
+    const completed = completeVerifiedBugRepair(
+      current.report,
+      verification,
+      trace,
+    );
+    return this.#saveReport(path, completed, expectedRevision);
+  }
+
 }
