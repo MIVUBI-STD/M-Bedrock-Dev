@@ -75,7 +75,7 @@ Normal ChatGPT preview uses one compact table:
 ```text
 No. | Severity | Bug | Issue | Solution
 #1  | ...      | ... | ...   | ...
-    |          | How to Reproduce: ...
+    |          | How to Reproduce (In-Game): ...
 ```
 
 Rules:
@@ -83,8 +83,9 @@ Rules:
 - do not create one vertical section per bug by default;
 - keep one row per bug;
 - use `#1`, `#2`, ... for preview references and keep canonical Bug ID hidden unless detail/full mode is requested;
-- every tester-facing bug must include a concise in-game reproduction / verification path;
-- if no tester-verifiable path exists yet, keep the finding internal rather than presenting it as a ready bug;
+- every tester-facing bug must include a concise `How to Reproduce (In-Game)` path written only as player actions, game states, locations, objects, UI interactions, and visible outcomes;
+- reproduction must never ask the tester to inspect scripts, functions, variables, source files, logs, or architecture;
+- if no tester-verifiable in-game path exists yet, keep the finding internal rather than presenting it as a ready bug;
 - do not invent Solution when Suggested Fix is absent;
 - hide fixed bugs unless requested;
 - put `How to Reproduce` immediately below the matching bug row inside the same table;
