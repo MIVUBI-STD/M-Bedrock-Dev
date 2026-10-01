@@ -9,7 +9,7 @@ import type {
 
 export class GitHubReportConflictError extends Error {
   constructor() {
-    super("This GitHub report changed after you opened it.");
+    super("This GitHub report conflicts with the current remote report.");
     this.name = "GitHubReportConflictError";
   }
 }
