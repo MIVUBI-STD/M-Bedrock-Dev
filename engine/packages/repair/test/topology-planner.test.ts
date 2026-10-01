@@ -23,9 +23,9 @@ describe("linear topology repair planner", () => {
       outlier: { axis: "x", expectedCoordinate: 200, actualCoordinate: 198 },
     }, "source-sha");
 
-    expect(result.status).toBe("planned");
-    if (result.status !== "planned") return;
-    expect(result.transaction.operations[0]).toMatchObject({
+    expect(result.status).toBe("proposed");
+    if (result.status !== "proposed") return;
+    expect(result.proposal.operation).toMatchObject({
       expected: "fill 198 0 0 201 2 3 stone",
       replacement: "fill 200 0 0 203 2 3 stone",
     });
