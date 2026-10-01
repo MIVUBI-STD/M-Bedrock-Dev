@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { bugReportApiPlugin } from "./vite-api-plugin.ts";
 
 const appRoot = fileURLToPath(
   new URL("../../apps/bug-report-ui/", import.meta.url),
@@ -11,7 +12,10 @@ const outDir = fileURLToPath(
 
 export default defineConfig({
   root: appRoot,
-  plugins: [svelte()],
+  plugins: [
+    svelte(),
+    bugReportApiPlugin(),
+  ],
   build: {
     outDir,
     emptyOutDir: true,
