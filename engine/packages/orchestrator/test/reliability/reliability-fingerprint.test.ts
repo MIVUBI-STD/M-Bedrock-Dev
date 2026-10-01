@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { deriveReliabilityFingerprint } from "../src/reliability-fingerprint.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { deriveReliabilityFingerprint } from "../../src/reliability/reliability-fingerprint.js";
 
 describe("automatic reliability fingerprint", () => {
   it("derives capability and risk tags only from observed facts", () => {

@@ -7,7 +7,7 @@ import {
   evaluateGoldenDiagnosisBenchmark,
   goldenDiagnosisBenchmarkText,
   validateReviewedGoldenDiagnosisCases,
-} from "../src/golden-diagnosis-benchmark.js";
+} from "../../src/reliability/golden-diagnosis-benchmark.js";
 
 describe("golden diagnosis benchmark", () => {
   it("accepts reviewed labels only when they bind to a real regression case", () => {

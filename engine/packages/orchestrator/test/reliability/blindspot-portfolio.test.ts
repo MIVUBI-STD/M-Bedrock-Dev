@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildBlindspotPortfolio } from "../src/blindspot-portfolio.js";
+import { buildBlindspotPortfolio } from "../../src/reliability/blindspot-portfolio.js";
 
 describe("blindspot portfolio", () => {
   it("builds one portfolio snapshot from multiple mutation campaigns", () => {
