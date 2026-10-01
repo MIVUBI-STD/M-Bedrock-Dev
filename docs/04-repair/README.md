@@ -11,7 +11,7 @@ Owns:
 - typed coordinate/effect transformation;
 - repair revalidation.
 
-Approved diagnosis and a Repair Contract precede bug mutation. Original artifacts remain immutable.
+Approved Bug and a Repair Contract precede bug mutation. Original artifacts remain immutable.
 
 
 ## Real execution closure
@@ -35,7 +35,7 @@ The final Bug Report transition uses `completeBugReportFromClosedRepair()`. It r
 
 ## Gameplay preservation boundary
 
-Bug repair consumes approved gameplay meaning; it does not define it.
+Bug repair consumes the selected-version Gameplay Contract; it does not invent new gameplay meaning.
 
 ```text
 Approved Bug
@@ -52,4 +52,4 @@ Must Change describes the proven defect outcome that must no longer occur.
 
 Must Preserve describes relevant approved gameplay behavior that must remain true after the fix.
 
-If intended gameplay itself is changing, that is an intentional modification: update/approve Game Design first instead of disguising the change as bug repair.
+If intended gameplay itself is changing, treat it as an explicit modification request, not as bug repair.
