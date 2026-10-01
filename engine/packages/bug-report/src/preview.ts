@@ -31,7 +31,7 @@ export interface BugReportPreviewBug {
   readonly foundBy: BugReportV2Bug["foundBy"];
   readonly fixed: boolean;
   readonly issue: string;
-  readonly action?: string;
+  readonly solution?: string;
   readonly expected?: string;
   readonly observed?: string;
   readonly reproduction?: readonly string[];
@@ -88,7 +88,7 @@ function projectBug(
     fixed: bug.fixed,
     issue: bug.problem,
     ...(bug.reproduction ? { reproduction: bug.reproduction } : {}),
-    ...(bug.suggestedFix ? { action: bug.suggestedFix } : {}),
+    ...(bug.suggestedFix ? { solution: bug.suggestedFix } : {}),
   };
 
   if (mode === "summary") return base;
@@ -177,7 +177,7 @@ export function renderBugReportPreviewMarkdown(
       "|---|---|",
       `| **Issue** | ${tableCell(bug.issue)} |`,
       `| **Bug Trigger (In-Game)** | ${tableCell(reproductionCell(bug.reproduction))} |`,
-      `| **Solution** | ${bug.action ? tableCell(bug.action) : "—"} |`,
+      `| **Solution** | ${bug.solution ? tableCell(bug.solution) : "—"} |`,
     );
   });
 
@@ -201,7 +201,7 @@ export function renderBugReportPreviewMarkdown(
       });
     }
 
-    if (bug.action) out.push(`**Solution:** ${line(bug.action)}`);
+    if (bug.solution) out.push(`**Solution:** ${line(bug.solution)}`);
     if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
     if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
 
