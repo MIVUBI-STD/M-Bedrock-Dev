@@ -89,6 +89,8 @@ describe("gameplay audit coverage", () => {
     );
 
     expect(result.disposition).toBe("accounted");
+    expect(result.scope).toBe("discovered-surfaces-only");
+    expect(result.discoveryCompleteness).toBe("not-proven");
   });
 
   it("requires a reason for blocked coverage", () => {
