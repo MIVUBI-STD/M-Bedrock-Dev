@@ -1,4 +1,5 @@
 export * from "./authorized-repair.js";
+export * from "./bug-report-closure.js";
 export * from "./closed-repair-regression.js";
 export * from "./function-graph-mutation.js";
 export * from "./mutation-campaign.js";
