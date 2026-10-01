@@ -28,9 +28,11 @@ workspace/active/<project-id>/
 
 Nothing under `workspace/active/` or `workspace/saved/` is repository source authority.
 
-## Map Game Design authority
+## Audit authority
 
-`workspace/active/<project-id>/design/game-design.json` is the canonical local Game Design for that map/project. Engine schemas and compilers validate/compile it, but engine-global knowledge or contracts must never replace it.
+For gameplay audit, the selected current `.mcworld` is the sole current source of truth.
+
+`workspace/active/<project-id>/design/game-design.json`, when present, is authoring/reference material. It does not override the selected map artifact during audit.
 
 
 
@@ -54,10 +56,10 @@ Per-project exact map/current-world pointers, when useful, belong only in ignore
 
 M-Bedrock does not create Drive-side system folders or store internal engine state in Drive.
 
-## Gameplay Contract persistence rule
+## Gameplay Contract rule
 
-`design/game-design.json` is the only project-local persisted Game Design authority.
+Gameplay Contract is derived for the current scope from evidence inside the selected map version.
 
-Derived Gameplay Contract is not stored as a second authority by default. It is reconstructed for the current audit/repair scope from approved Game Design plus explicitly identified unknowns.
+It is rebuildable and is not a second persisted authority.
 
-If discussion changes intended gameplay, update and approve `design/game-design.json`; do not persist a competing derived contract.
+If the selected map does not contain enough evidence to ground a material rule, keep that rule unknown. Do not import intent from stale documents or older builds.
