@@ -191,16 +191,51 @@ function contractEvidencePresent(
   model: ReturnType<
     typeof buildGameplayIntentModel
   >,
+  contractScripts: readonly {
+    parsed: {
+      source: {
+        relativePath: string;
+      };
+    };
+  }[],
 ): boolean {
+  const contractPaths = new Set(
+    contractScripts.map(
+      (item) => item.parsed.source.relativePath,
+    ),
+  );
+  const contractEvidenceIds = new Set(
+    model.evidence
+      .filter(
+        (item) =>
+          item.scope === "selected-artifact" &&
+          contractPaths.has(item.locator),
+      )
+      .map((item) => item.id),
+  );
+
+  const hasContractEvidence = (
+    evidenceIds: readonly string[],
+  ): boolean =>
+    evidenceIds.some((id) =>
+      contractEvidenceIds.has(id),
+    );
+
   return (
     model.nodes.some(
-      (item) => item.status === "authored",
+      (item) =>
+        item.status === "authored" &&
+        hasContractEvidence(item.evidenceIds),
     ) ||
     model.edges.some(
-      (item) => item.status === "authored",
+      (item) =>
+        item.status === "authored" &&
+        hasContractEvidence(item.evidenceIds),
     ) ||
     model.invariants.some(
-      (item) => item.status === "authored",
+      (item) =>
+        item.status === "authored" &&
+        hasContractEvidence(item.evidenceIds),
     )
   );
 }
@@ -399,12 +434,12 @@ export function createContractEvidenceDiagnosisExecutor():
           contractScripts,
         });
 
-      if (!contractEvidencePresent(output)) {
+      if (!contractEvidencePresent(output, contractScripts)) {
         return {
           status: "blocked",
           output,
           reasons: [
-            "Contract source files were present, but no gameplay-intent evidence was classified as authored.",
+            "Contract source files were present, but they did not add grounded selected-artifact Gameplay Contract evidence.",
           ],
         };
       }
