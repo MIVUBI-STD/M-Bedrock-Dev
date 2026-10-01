@@ -126,7 +126,7 @@ export function reviewBugReportCopy(
         code: "missing-reproduction",
         path: base + ".reproduction",
         message:
-          "Tester-facing bugs require a concise in-game reproduction / verification path.",
+          "Tester-facing bugs require a clear Bug Trigger (In-Game) path.",
       });
     } else {
       if (
@@ -137,7 +137,7 @@ export function reviewBugReportCopy(
           code: "invalid-reproduction-length",
           path: base + ".reproduction",
           message:
-            "Use 2 to 5 concise reproduction steps so a tester can verify the bug quickly.",
+            "Use 2 to 5 concise Bug Trigger steps so a tester can reproduce and prove the bug quickly.",
         });
       }
 
@@ -161,7 +161,7 @@ export function reviewBugReportCopy(
             code: "code-centric-reproduction",
             path: stepPath,
             message:
-              "Reproduction must describe in-game tester actions and visible outcomes, not source-code or architecture inspection.",
+              "Bug Trigger must describe in-game tester actions and visible outcomes, not source-code or architecture inspection.",
           });
         }
 
@@ -174,7 +174,7 @@ export function reviewBugReportCopy(
             code: "vague-reproduction",
             path: stepPath,
             message:
-              "Reproduction step must state a concrete in-game action or observable result.",
+              "Bug Trigger step must state a concrete in-game action or observable result.",
           });
         }
       });
@@ -221,7 +221,7 @@ export function reviewBugReportCopy(
           code: "vague-action",
           path: base + ".suggestedFix",
           message:
-            "Action must state a direct repair step and target instead of asking the reader to investigate or generally fix the issue.",
+            "Solution must state a direct repair step and target instead of asking the reader to investigate or generally fix the issue.",
         });
       }
     }
