@@ -40,3 +40,5 @@ export * from "./regression-execution-queue.js";
 export * from "./portfolio-regression-scheduler.js";
 
 export * from "./multiplayer-stress-matrix.js";
+
+export * from "./runtime-session-replay.js";
