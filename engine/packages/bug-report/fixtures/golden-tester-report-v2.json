@@ -1,0 +1,94 @@
+{
+  "schema": "m-bedrock-bug-report/v2",
+  "map": {
+    "name": "Golden Tester Map",
+    "mapVersion": "1.0.0",
+    "drive": "https://drive.google.com/file/d/golden-tester-map/view",
+    "baseVersion": "1.26.20",
+    "testedVersion": "1.26.32"
+  },
+  "repairBy": "developer",
+  "bugs": [
+    {
+      "id": "BUG-GTM-RESTART",
+      "fixed": false,
+      "severity": "blocker",
+      "category": "game-flow",
+      "foundBy": "ai",
+      "title": "Arena cannot start a second match",
+      "problem": "After one match ends, the same arena cannot start again, blocking the next round for players.",
+      "expected": "The arena returns to an available state after match cleanup.",
+      "observed": "The previous session remains active and the next match does not start.",
+      "reproduction": [
+        "Join the arena with 2 players.",
+        "Finish the match normally.",
+        "Return both players to the lobby.",
+        "Start the same arena again.",
+        "Confirm the new match does not start."
+      ],
+      "aiAnalysis": "Match cleanup leaves arena session ownership active after the round ends.",
+      "relevantCode": [
+        {
+          "file": "scripts/session.ts",
+          "reason": "Owns arena session cleanup and availability state."
+        }
+      ],
+      "suggestedFix": "Clear arena session ownership during match cleanup so the arena becomes available for the next round.",
+      "mustPreserve": [
+        "Players from another active arena must remain unaffected."
+      ]
+    },
+    {
+      "id": "BUG-GTM-DROP",
+      "fixed": false,
+      "severity": "major",
+      "category": "player-state",
+      "foundBy": "ai",
+      "title": "Match loadout drops when the player dies",
+      "problem": "Match-owned loadout items drop into the world on death, allowing equipment to be lost or collected by other players.",
+      "expected": "Match-owned loadout items are restored through the intended respawn flow without becoming world drops.",
+      "observed": "Loadout items appear as world drops at the death location.",
+      "reproduction": [
+        "Start a match and receive the normal player loadout.",
+        "Let the player die during the active match.",
+        "Return to the death location after respawn.",
+        "Confirm the loadout items are present as world drops."
+      ],
+      "aiAnalysis": "The death path allows match-owned inventory to enter the normal item-drop flow before respawn restoration.",
+      "relevantCode": [
+        {
+          "file": "scripts/inventory.ts",
+          "reason": "Owns match inventory reset and restore behavior."
+        }
+      ],
+      "suggestedFix": "Prevent match-owned loadout items from entering the world-drop path and restore them through the respawn flow.",
+      "mustPreserve": [
+        "Normal non-match item drops must keep their existing behavior."
+      ]
+    },
+    {
+      "id": "BUG-GTM-FEEDBACK",
+      "fixed": false,
+      "severity": "minor",
+      "category": "ui-feedback",
+      "foundBy": "tester",
+      "title": "Join feedback remains visible after leaving the pad",
+      "problem": "The join prompt remains visible after the player leaves the join pad, creating misleading lobby feedback.",
+      "expected": "The join prompt disappears when the player leaves the join pad.",
+      "observed": "The prompt remains visible outside the join pad.",
+      "reproduction": [
+        "Walk onto the join pad until the join prompt appears.",
+        "Walk away from the join pad.",
+        "Confirm the join prompt remains visible outside the pad."
+      ],
+      "aiAnalysis": "The leave path does not clear the player-facing join feedback state.",
+      "relevantCode": [
+        {
+          "file": "scripts/lobby.ts",
+          "reason": "Owns join-pad enter and leave feedback."
+        }
+      ],
+      "suggestedFix": "Clear the join feedback state when the player leaves the join pad so the prompt disappears immediately."
+    }
+  ]
+}
