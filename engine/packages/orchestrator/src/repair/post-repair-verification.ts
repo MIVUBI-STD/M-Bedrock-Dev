@@ -23,7 +23,10 @@ export interface PostRepairVerificationInput {
 export interface PostRepairVerificationReport {
   schemaVersion: 1;
   status: PostRepairVerificationStatus;
-  releaseReady: boolean;
+  differentialPass: boolean;
+  /** @deprecated Differential inspection alone cannot establish release eligibility. */
+  releaseReady: false;
+  closureRequired: true;
   beforeFingerprint: string;
   afterFingerprint: string;
   targetDiagnosticsRemaining:
@@ -381,8 +384,10 @@ export function verifyPostRepairOutcome(
   return {
     schemaVersion: 1,
     status,
-    releaseReady:
+    differentialPass:
       status === "pass",
+    releaseReady: false,
+    closureRequired: true,
     beforeFingerprint:
       input.before.fingerprint,
     afterFingerprint:
