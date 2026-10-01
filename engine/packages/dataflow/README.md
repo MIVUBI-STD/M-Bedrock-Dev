@@ -19,3 +19,12 @@ A missing edge is not proof that values cannot flow.
 Dynamic property access, reflection, computed calls, unknown aliases, and unsupported JavaScript shapes remain unresolved unless an analyzer can prove the edge.
 
 The graph is evidence for diagnostics; it is not an interpreter.
+
+
+## Taint propagation
+
+The package can propagate caller-supplied semantic labels over proven flow edges and produce shortest witnesses.
+
+It does not decide which values are sensitive or unsafe. Labels such as `player-identity`, `arena-authority`, `untrusted-command-input`, or `reward-entitlement` must come from the semantic owner consuming the graph.
+
+Barrier nodes are also explicit inputs; Dataflow never invents sanitizers.
