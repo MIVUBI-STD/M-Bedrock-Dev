@@ -3,6 +3,14 @@ import type { BugReportParseIssue } from "./parse.js";
 
 export const BUG_REPORT_V2_SCHEMA = "m-bedrock-bug-report/v2" as const;
 
+/**
+ * Canonical persisted-field labels.
+ *
+ * This is not the tester-facing presentation contract.
+ * Reader-facing labels are owned by PREVIEW.md / preview.ts
+ * (for example Problem → Issue, Reproduction → Bug Trigger
+ * (In-Game), Suggested Fix → Solution).
+ */
 export const BUG_REPORT_V2_LABELS = {
   mapVersion: "Map Version",
   drive: "Map Drive",
