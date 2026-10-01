@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import type {
   PortfolioRegressionBatchRunResult,
   PortfolioRegressionMapRunResult,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   decidePortfolioRelease,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function mapResult(
   mapId: string,

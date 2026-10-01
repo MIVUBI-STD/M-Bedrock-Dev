@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import type {
   RegressionExecutionQueue,
   RetestPlan,
-} from "../../reliability/src/index.js";
+} from "../../../reliability/src/index.js";
 import type {
   RegressionBatchRunResult,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   applyRegressionBatchRetestFeedback,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 const plan: RetestPlan = {
   mapId: "blitz-build",

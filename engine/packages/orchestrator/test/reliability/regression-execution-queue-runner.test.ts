@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import type {
   RegressionExecutionQueue,
-} from "../../reliability/src/index.js";
+} from "../../../reliability/src/index.js";
 import type {
   CounterexampleScenario,
   RuntimeActionCapabilityRegistry,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import {
   runRegressionExecutionQueue,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 const scenario: CounterexampleScenario = {
   schemaVersion: 1,

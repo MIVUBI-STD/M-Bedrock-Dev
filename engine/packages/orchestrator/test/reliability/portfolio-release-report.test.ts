@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type {
   PortfolioRegressionBatchRunResult,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   createPortfolioReleaseManifest,
   portfolioReleaseManifestJson,
   portfolioReleaseReportText,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 const batch: PortfolioRegressionBatchRunResult = {
   updateVersion: "1.26.40",

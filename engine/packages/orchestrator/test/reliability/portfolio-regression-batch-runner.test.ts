@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type {
   PortfolioRegressionSchedule,
-} from "../../reliability/src/index.js";
+} from "../../../reliability/src/index.js";
 import type {
   CounterexampleScenario,
   RuntimeActionCapabilityRegistry,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import {
   runPortfolioRegressionSchedule,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 const scenario: CounterexampleScenario = {
   schemaVersion: 1,
