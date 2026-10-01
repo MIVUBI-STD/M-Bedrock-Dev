@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   parseCombatBehaviorContract,
-} from "../src/combat-contract-load.js";
+} from "../../src/inspection/combat-contract-load.js";
 
 describe("combat contract loader", () => {
   it("requires every combat contract decision explicitly", () => {

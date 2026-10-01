@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzeCombatLifecycle,
-} from "../src/combat-lifecycle-analysis.js";
+} from "../../src/inspection/combat-lifecycle-analysis.js";
 
 describe("combat lifecycle analysis", () => {
   it("keeps hurt-only handling as a terminal-lifecycle review risk", () => {

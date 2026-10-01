@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   combatContractDiagnostics,
-} from "../src/combat-contract-diagnostics.js";
+} from "../../src/inspection/combat-contract-diagnostics.js";
 
 describe("combat contract diagnostics", () => {
   it("emits no finding when authored combat contract has no observed contradiction", () => {

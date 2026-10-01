@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeCombatContract,
-} from "../src/combat-contract-analysis.js";
+} from "../../src/inspection/combat-contract-analysis.js";
 
 const lifecycle = {
   hurtHandlers: 1,
