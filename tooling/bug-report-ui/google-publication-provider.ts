@@ -108,9 +108,7 @@ const COLORS = {
   ink: rgb("#26343d"),
   navy: rgb("#173c56"),
   blue: rgb("#35789a"),
-  amber: rgb("#c68232"),
   white: rgb("#ffffff"),
-  line: rgb("#d8dee1"),
 } as const;
 
 function escapeDriveQuery(value: string): string {
@@ -140,10 +138,6 @@ class TextPlanBuilder {
   #text = "";
   readonly #styles: StyledRange[] = [];
   readonly #numberedRanges: NumberedRange[] = [];
-
-  get length(): number {
-    return this.#text.length;
-  }
 
   line(
     value: string,
