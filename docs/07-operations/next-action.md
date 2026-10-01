@@ -1,83 +1,78 @@
 # Next Action
 
-## Current lane — Workflow Compression Integration
+## Current lane — Real Evidence Calibration
 
-The repository now has a domain-aware, fail-closed execution control plane. The priority is no longer to invent more analyzers; it is to make the existing semantic owners cheap to invoke without weakening proof.
+The architecture foundation is sufficiently mature. The current priority is to prove detector quality and package safety using existing real-map evidence without broadening the system.
 
-### Current implemented foundation
-
-The active `Local` branch now owns:
-
-- bounded repository path ownership in `engine/packages/task-graph/`;
-- exact/directory ownership plus one trailing-prefix wildcard for colocated domain files;
-- granular core-versus-domain invalidation for scripts, entities, behavior contracts, and orchestrator domain analysis;
-- `BUILTIN_TASK_CAPABILITIES` with selective reverse dependency closure;
-- `planRepositoryTasks()` as the fail-closed repository planning wrapper;
-- conservative fallback whenever any changed path has no registered owner;
-- minimum-sufficient domain capability planning in `engine/packages/analysis-planner/`;
-- compact domain attention signals in AI Context Compiler;
-- optional repository execution scope in compiled context packs;
-- proposal-only repair coverage separated from genuinely missing deterministic realizers;
-- domain diagnostics/remediation routing for arena lifecycle, spatial authority, inventory, entity AI/navigation, combat/revive, chunk lifecycle, and economy/reward.
-
-### Canonical control flow
+## Canonical flow
 
 ```text
-changed paths
-→ builtin Task Graph ownership
-→ direct capability owners
-→ reverse dependent closure
-→ execution-context filter
-→ validated reusable work
-→ repository task plan
-→ affected semantic scope
-→ compact AI context
-→ required analysis only
-→ STOP
+existing map evidence
+→ verify artifact identity
+→ freeze expectation
+→ classify corpus lane
+→ run current detector unchanged
+→ freeze observed output
+→ score TP / TN / FP / FN
+→ identify actual gap
+→ bounded detector improvement only where evidence requires it
+→ minimized regression fixture
+→ retest
 ```
 
-Unknown ownership never proves that work can be skipped.
+## Immediate non-CI steps
 
-### Next non-CI integration step
+1. Resolve artifact SHA-256 for calibration candidates that are actually available.
+2. Keep unavailable artifacts as `candidate`; do not fabricate identity.
+3. Create frozen expectations only from already grounded manual/design/runtime evidence.
+4. Add at least one known-good negative case before judging detector quality.
+5. Run current detector unchanged and record baseline precision/recall/specificity/FPR.
+6. Promote only reproduced, reusable failures into minimized regression fixtures.
+7. Bind capability-specific proof only when the new evidence genuinely proves that capability.
+8. Use Minecraft runtime validation only for claims whose proof ceiling requires it.
 
-1. expose repository `affected` / `plan` through the existing developer command surface;
-2. connect repository verification to the task plan so owned changes may use affected-only verification;
-3. preserve a mandatory conservative full-verification fallback for unmatched ownership or blocked dependencies;
-4. make reusable-capability identity explicit before accepting cached/completed work;
-5. keep runtime-only proof behind `LOCAL_MINECRAFT` / `LIVE_MINECRAFT`;
-6. only after those contracts are stable, expose the same control plane through MCP or CI.
-
-### Domain intelligence now available
+## Current corpus
 
 ```text
-gameplay intent
-→ arena/player lifecycle
-→ cleanup resource ledger
-→ spatial authority
-→ multiplayer interleavings
-→ inventory/equipment ownership
-→ entity AI/navigation readiness
-→ combat/downed/revive
-→ chunk lifecycle/readiness
-→ economy/reward arbitration
-→ diagnostics
-→ causal/proposal repair routing
+engine/reliability/corpus/
+├── calibration.json
+├── acceptance.json
+└── regressions.json
 ```
 
-These domains remain separate semantic owners. Task Graph and Context Compiler only route/compress their work.
+Readiness:
 
-### Non-goals
+```text
+candidate → source exists but prerequisites are incomplete
+ready     → artifact identity + frozen expectation complete
+blocked   → source/evidence cannot currently be evaluated
+```
+
+## Non-goals
 
 Do not:
 
-- create another generic detector layer;
-- move Minecraft semantics into Task Graph;
-- auto-patch proposal-only domains without exact mutation authority;
-- interpret runtime-sensitive claims from static evidence;
-- make unmatched paths silently skippable;
-- broaden wildcard ownership beyond the bounded trailing-prefix form;
-- expand CI before the non-CI control plane is stable.
+- add new detector domains without a measured gap;
+- create another benchmark/corpus owner;
+- duplicate expectations across files;
+- promote calibration cases into blind acceptance;
+- rewrite expectations after seeing detector output;
+- treat package proof as runtime proof;
+- expand auto-repair before no-op/repair delta safety is demonstrated;
+- add CI work in this lane.
 
-### Success metric
+## Success condition
 
-A small owned change produces a small, explainable task plan and compact AI context. A core or unknown change expands conservatively. Deterministic repair sources have realizers; gameplay-authored or ambiguous domains remain explicitly proposal-only.
+The next milestone is not “more features.”
+
+It is:
+
+```text
+a small real corpus
++ verified artifact identity
++ frozen positive/negative expectations
++ reproducible baseline quality metrics
++ explicit runtime residue
+```
+
+Only measured failures should drive the next implementation change.
