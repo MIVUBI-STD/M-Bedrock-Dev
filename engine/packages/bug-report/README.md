@@ -656,3 +656,6 @@ Bug Report V2
 Generic report persistence must not promote `fixed: false` to `fixed: true`. That transition is owned by the repair verification bridge in `engine/packages/repair/src/report-lifecycle.ts`.
 
 A validation run used for completion must be current for the present artifact/runtime context, passing, and carry evidence IDs. Stale validation does not close a bug.
+
+
+When a bug carries `mustPreserve`, repair completion must also provide explicit preservation invariant IDs. These IDs are not inferred from free-text report wording. Each preservation invariant must have current passing coverage from one of the selected validation runs, at a sufficient proof level.
