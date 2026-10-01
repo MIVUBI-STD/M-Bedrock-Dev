@@ -87,4 +87,40 @@ describe("defect confirmation for report promotion", () => {
 
     expect(result.confirmed).toBe(false);
   });
+
+  it("rejects working-as-designed adjudication even when behavior is repeatable", () => {
+    const result = confirmDefectForReport({
+      foundBy: "tester",
+      expectedBehaviorAuthority: "authored-intent",
+      intentDisposition: "working-as-designed",
+      testerReproduced: true,
+      evidence: "The mechanic repeats consistently.",
+    });
+
+    expect(result.confirmed).toBe(false);
+  });
+
+  it("rejects design ambiguity instead of inventing a bug expectation", () => {
+    const result = confirmDefectForReport({
+      foundBy: "ai",
+      expectedBehaviorAuthority: "authored-intent",
+      intentDisposition: "design-ambiguous",
+      runtimeMismatchObserved: true,
+      evidence: "Runtime differs from an inferred expectation.",
+    });
+
+    expect(result.confirmed).toBe(false);
+  });
+
+  it("allows suspected-defect adjudication to continue through normal evidence gates", () => {
+    const result = confirmDefectForReport({
+      foundBy: "tester",
+      expectedBehaviorAuthority: "explicit-requirement",
+      intentDisposition: "suspected-defect",
+      testerReproduced: true,
+      evidence: "Observed gameplay contradicts the approved rule.",
+    });
+
+    expect(result.confirmed).toBe(true);
+  });
 });

@@ -4,6 +4,9 @@ import type {
 import type {
   DefectConfirmation,
 } from "./promote-v2.js";
+import type {
+  IntentAdjudicationDisposition,
+} from "../../game-design-spec/src/index.js";
 
 export type ExpectedBehaviorAuthority =
   | "authored-intent"
@@ -13,6 +16,7 @@ export type ExpectedBehaviorAuthority =
 export interface DefectConfirmationAssessment {
   readonly foundBy: BugReportV2FoundBy;
   readonly expectedBehaviorAuthority: ExpectedBehaviorAuthority;
+  readonly intentDisposition?: IntentAdjudicationDisposition;
   readonly testerReproduced?: boolean;
   readonly authoredContractViolation?: boolean;
   readonly runtimeMismatchObserved?: boolean;
@@ -37,6 +41,22 @@ export function confirmDefectForReport(
   const evidence = assessment.evidence.trim();
   const expectedAuthority =
     assessment.expectedBehaviorAuthority;
+
+  if (
+    assessment.intentDisposition !== undefined &&
+    assessment.intentDisposition !== "suspected-defect"
+  ) {
+    return {
+      confirmed: false,
+      reasons: [
+        assessment.intentDisposition === "working-as-designed"
+          ? "Observed behavior is working as designed and must not be promoted as a bug."
+          : assessment.intentDisposition === "design-review"
+            ? "The concern is a design/UX review item, not an implementation defect."
+            : "Expected behavior is not authoritative enough to confirm a defect.",
+      ],
+    };
+  }
 
   if (assessment.compatibilityDifferenceOnly === true) {
     return {

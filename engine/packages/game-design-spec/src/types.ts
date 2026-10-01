@@ -9,6 +9,7 @@ export interface GameDesignSpec {
   scope?: { mapId?: string; modeId?: string };
   source: { kind: GameDesignSourceKind; reference: string };
   mechanics: readonly { id: string; statement: string; tags?: readonly string[] }[];
+  intentRules?: readonly GameDesignIntentRule[];
   behaviorConstraints?: GameDesignBehaviorConstraints;
   invariants: readonly {
     id: string;
@@ -53,3 +54,50 @@ export interface GameDesignBehaviorConstraints {
     }[];
   };
 }
+
+
+export type GameDesignIntentOutcome =
+  | "required"
+  | "forbidden"
+  | "allowed"
+  | "unspecified";
+
+export type GameDesignIntentDeterminism =
+  | "deterministic"
+  | "bounded-random"
+  | "unspecified";
+
+export interface GameDesignIntentScope {
+  readonly modes?: readonly string[];
+  readonly phases?: readonly string[];
+  readonly actorTypes?: readonly ("player" | "entity" | "system")[];
+  readonly stateTags?: readonly string[];
+}
+
+export interface GameDesignIntentException {
+  readonly id: string;
+  readonly statement: string;
+  readonly stateTags: readonly string[];
+}
+
+export interface GameDesignIntentRule {
+  readonly id: string;
+  readonly statement: string;
+  readonly subjectIds?: readonly string[];
+  readonly outcome: GameDesignIntentOutcome;
+  readonly appliesWhen?: GameDesignIntentScope;
+  readonly exceptions?: readonly GameDesignIntentException[];
+  readonly determinism?: GameDesignIntentDeterminism;
+}
+
+export type IntentAuthorityStrength =
+  | "authoritative"
+  | "strong"
+  | "inferred"
+  | "unknown";
+
+export type IntentAdjudicationDisposition =
+  | "working-as-designed"
+  | "design-ambiguous"
+  | "design-review"
+  | "suspected-defect";

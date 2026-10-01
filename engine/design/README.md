@@ -22,3 +22,22 @@ Minecraft documentation, global engineering contracts, generic reliability rules
 
 Project-local design belongs at `workspace/active/<project-id>/design/game-design.json`.
 The typed contract is owned by `engine/packages/game-design/`.
+
+
+## Intent adjudication
+
+Approved Game Design is the oracle for deciding whether an observed gameplay behavior is intended.
+
+Use `intentRules` only for behavior whose correctness depends on gameplay context. A rule states whether an outcome is `required`, `forbidden`, `allowed`, or explicitly `unspecified`, and may be scoped by mode, phase, actor type, and state tags.
+
+The diagnosis boundary is:
+
+```text
+observation
+→ resolve applicable intent rule
+→ intent adjudication
+→ working-as-designed | design-ambiguous | design-review | suspected-defect
+→ defect confirmation
+```
+
+Only `suspected-defect` may proceed to defect confirmation. Implementation code is evidence of what exists, not authority for what the game is supposed to do.
