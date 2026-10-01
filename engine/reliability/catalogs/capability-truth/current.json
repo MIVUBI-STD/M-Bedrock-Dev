@@ -2,18 +2,18 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "1c18b6797ef09ec762b1822c970b07fc8f096c4d",
+    "commit": "fa229f8aa1fd9b266b9879fd7e8f7f14590934e0",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "fc95bfca",
-    "proofInventoryFingerprint": "16fa2389"
+    "registryFingerprint": "98a7b749",
+    "proofInventoryFingerprint": "086a221c"
   },
   "summary": {
-    "taskCapabilities": 40,
-    "ownerTested": 40,
+    "taskCapabilities": 42,
+    "ownerTested": 42,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
@@ -267,6 +267,31 @@
         "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "diagnosis.calibration",
+      "owner": "packages/diagnostic-reasoning",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 12,
+      "testFiles": 8,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/diagnostic-reasoning/test/behavior-evidence.test.ts",
+        "engine/packages/diagnostic-reasoning/test/calibration.test.ts",
+        "engine/packages/diagnostic-reasoning/test/counterexample-explanation.test.ts",
+        "engine/packages/diagnostic-reasoning/test/diagnostic-reasoning.test.ts",
+        "engine/packages/diagnostic-reasoning/test/intent-gate.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
@@ -542,6 +567,31 @@
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
+      "id": "reliability.behavior-patterns",
+      "owner": "packages/reliability-search",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 50,
+      "testFiles": 23,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts",
+        "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
+        "engine/packages/reliability-search/test/bounded-explorer.test.ts",
+        "engine/packages/reliability-search/test/extended-mutations.test.ts",
+        "engine/packages/reliability-search/test/generation-aware.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
       "id": "reliability.metamorphic",
       "owner": "packages/reliability-search",
       "status": "owner-tested",
@@ -554,15 +604,15 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 49,
-      "testFiles": 22,
+      "sourceFiles": 50,
+      "testFiles": 23,
       "hasReadme": true,
       "proofPaths": [
+        "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/bounded-explorer.test.ts",
         "engine/packages/reliability-search/test/extended-mutations.test.ts",
-        "engine/packages/reliability-search/test/generation-aware.test.ts",
-        "engine/packages/reliability-search/test/happens-before.test.ts"
+        "engine/packages/reliability-search/test/generation-aware.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
@@ -579,15 +629,15 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 49,
-      "testFiles": 22,
+      "sourceFiles": 50,
+      "testFiles": 23,
       "hasReadme": true,
       "proofPaths": [
+        "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/bounded-explorer.test.ts",
         "engine/packages/reliability-search/test/extended-mutations.test.ts",
-        "engine/packages/reliability-search/test/generation-aware.test.ts",
-        "engine/packages/reliability-search/test/happens-before.test.ts"
+        "engine/packages/reliability-search/test/generation-aware.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },

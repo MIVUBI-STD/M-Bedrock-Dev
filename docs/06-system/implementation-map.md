@@ -31,6 +31,10 @@ Use this before broad repository search.
 | Repair preservation contracts, baselines, and verification receipts | engine/packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
 | Reliability search/corpus/interleavings/minimization | engine/packages/reliability-search/ |
+| Cross-map behavioral pattern aggregation | engine/packages/reliability-search/src/behavioral-pattern-library.ts |
+| Metamorphic detector testing | engine/packages/reliability-search/src/metamorphic.ts |
+| Parser robustness campaigns | engine/packages/reliability-search/src/parser-robustness.ts |
+| Empirical diagnostic calibration | engine/packages/diagnostic-reasoning/src/calibration.ts |
 | Controlled Minecraft experiment planning/qualification/provenance | engine/packages/runtime-lab/ + engine/runtime/lab/ |
 | Compatibility engine/version/track contracts | engine/packages/compatibility/ |
 | Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
