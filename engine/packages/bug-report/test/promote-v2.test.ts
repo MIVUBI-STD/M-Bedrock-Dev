@@ -79,7 +79,7 @@ describe("confirmed bug promotion", () => {
     }]);
 
     expect(issues.map((issue) => issue.code)).toContain(
-      "tester-missing-reproduction",
+      "missing-reproduction",
     );
   });
 
