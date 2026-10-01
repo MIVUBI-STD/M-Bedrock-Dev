@@ -45,18 +45,26 @@ export type PlayerObservableImpact =
   | "limited"
   | "none";
 
+export type CounterEvidenceAssessment =
+  | "cleared"
+  | "present"
+  | "unresolved";
+
 export type BugCandidateDisposition =
   | "reportable-bug"
   | "designed-behavior"
   | "ambiguous-intent"
   | "no-player-impact"
   | "below-report-threshold"
-  | "tester-trigger-missing";
+  | "tester-trigger-missing"
+  | "counter-evidence-present"
+  | "counter-evidence-unresolved";
 
 export interface BugCandidateAssessment {
   readonly intent: GameplayIntentAssessment;
   readonly playerImpact: PlayerObservableImpact;
   readonly testerObservable: boolean;
+  readonly counterEvidence: CounterEvidenceAssessment;
 }
 
 export interface BugCandidateDecision {
@@ -67,6 +75,20 @@ export interface BugCandidateDecision {
 export function classifyBugCandidate(
   candidate: BugCandidateAssessment,
 ): BugCandidateDecision {
+  if (candidate.counterEvidence === "present") {
+    return {
+      disposition: "counter-evidence-present",
+      reportable: false,
+    };
+  }
+
+  if (candidate.counterEvidence === "unresolved") {
+    return {
+      disposition: "counter-evidence-unresolved",
+      reportable: false,
+    };
+  }
+
   if (candidate.intent === "grounded-designed-behavior") {
     return {
       disposition: "designed-behavior",

@@ -18,11 +18,30 @@ const cleanImpact: BugImpactAssessment = {
 };
 
 describe("bug candidate reportability", () => {
+  it("rejects candidates when counter-evidence is present", () => {
+    expect(classifyBugCandidate({
+      intent: "grounded-contradiction",
+      playerImpact: "blocking",
+      testerObservable: true,
+      counterEvidence: "present",
+    }).disposition).toBe("counter-evidence-present");
+  });
+
+  it("fails closed while counter-evidence remains unresolved", () => {
+    expect(classifyBugCandidate({
+      intent: "grounded-contradiction",
+      playerImpact: "blocking",
+      testerObservable: true,
+      counterEvidence: "unresolved",
+    }).disposition).toBe("counter-evidence-unresolved");
+  });
+
   it("rejects grounded game design as a bug", () => {
     expect(classifyBugCandidate({
       intent: "grounded-designed-behavior",
       playerImpact: "blocking",
       testerObservable: true,
+      counterEvidence: "cleared",
     })).toEqual({
       disposition: "designed-behavior",
       reportable: false,
@@ -34,6 +53,7 @@ describe("bug candidate reportability", () => {
       intent: "ambiguous",
       playerImpact: "material",
       testerObservable: true,
+      counterEvidence: "cleared",
     }).disposition).toBe("ambiguous-intent");
   });
 
@@ -42,6 +62,7 @@ describe("bug candidate reportability", () => {
       intent: "grounded-contradiction",
       playerImpact: "material",
       testerObservable: false,
+      counterEvidence: "cleared",
     }).disposition).toBe("tester-trigger-missing");
   });
 
@@ -50,6 +71,7 @@ describe("bug candidate reportability", () => {
       intent: "grounded-contradiction",
       playerImpact: "limited",
       testerObservable: true,
+      counterEvidence: "cleared",
     }).disposition).toBe("below-report-threshold");
   });
 
@@ -58,6 +80,7 @@ describe("bug candidate reportability", () => {
       intent: "grounded-contradiction",
       playerImpact: "material",
       testerObservable: true,
+      counterEvidence: "cleared",
     })).toEqual({
       disposition: "reportable-bug",
       reportable: true,

@@ -66,3 +66,28 @@ Diagnostic Reasoning must not convert implementation shape into gameplay intent.
 A contradiction can become a confirmed defect only when intended behavior is grounded independently of the current implementation, such as approved Game Design, project policy, or authoritative documentation. Source-only authored/inferred intent remains ambiguous until independent intent authority exists.
 
 Historical findings may guide where to inspect, but they do not prove a current defect. Runtime observation proves actual behavior, not intended behavior.
+
+
+## Candidate discovery boundary
+
+Candidate discovery is pre-report reasoning, not severity assignment and not bug publication.
+
+The reusable candidate families are intentionally small:
+
+- progression dead-end;
+- objective loss;
+- reset leakage;
+- terminal-state conflict;
+- multiplayer ownership conflict;
+- critical inventory loss;
+- entity route dead-end.
+
+Each candidate rule declares the evidence pattern that must exist, the player-visible gameplay impact that must be grounded, and counter-evidence predicates that can explain or permit the behavior.
+
+Counter-evidence is mandatory and fail-closed:
+
+- present counter-evidence -> suppress the candidate;
+- unresolved counter-evidence -> keep the candidate unresolved;
+- cleared counter-evidence plus material player impact -> candidate may continue to intent/admission review.
+
+This layer never assigns Blocker/Major/Minor. Severity remains owned by the bug-report decision layer after intent, impact, trigger, and counter-evidence gates are settled.

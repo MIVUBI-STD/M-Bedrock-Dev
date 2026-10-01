@@ -50,6 +50,31 @@ Before a candidate can become a tester-facing defect:
 
 Use classifyBugCandidate() and classifyBugSeverity() from the canonical bug-report package when constructing or reporting a candidate.
 
+## Candidate discovery and counter-evidence
+
+Before proposing a bug, search both for evidence that supports the failure and evidence that would explain or permit it.
+
+Preferred candidate families are bounded to gameplay-critical patterns:
+
+- progression dead-end;
+- objective loss;
+- reset leakage;
+- terminal-state conflict;
+- multiplayer ownership conflict;
+- critical inventory loss;
+- entity route dead-end.
+
+Do not add a new candidate family for one map-specific symptom when an existing family can represent it.
+
+Counter-evidence handling is fail-closed:
+
+- counter-evidence present -> suppress or reclassify;
+- counter-evidence unresolved -> keep as internal unresolved candidate;
+- counter-evidence cleared -> candidate may continue;
+- historical bug reports count only as search hints, never as counter-evidence or current defect proof by themselves.
+
+A candidate must still pass intent, player-impact, and in-game-trigger gates before becoming tester-facing.
+
 ## Severity
 
 Severity is based on player consequence and recovery, not technical complexity.

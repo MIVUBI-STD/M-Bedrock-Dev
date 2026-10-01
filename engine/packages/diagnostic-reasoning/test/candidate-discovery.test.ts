@@ -1,0 +1,89 @@
+import { describe, expect, it } from "vitest";
+import {
+  evaluateGameplayBugCandidateEvidence,
+  type GameplayBugCandidateRule,
+} from "../src/index.js";
+
+const rule: GameplayBugCandidateRule = {
+  id: "reset-leak",
+  kind: "reset-leakage",
+  requiredPredicates: [
+    "retry-occurs",
+    "old-state-survives",
+  ],
+  playerImpactPredicates: [
+    "next-attempt-gameplay-changed",
+  ],
+  counterEvidencePredicates: [
+    "design-allows-persistence",
+  ],
+};
+
+describe("gameplay bug candidate evidence gate", () => {
+  it("suppresses a candidate when current design counter-evidence permits it", () => {
+    const result = evaluateGameplayBugCandidateEvidence(
+      rule,
+      [
+        { predicate: "retry-occurs", state: "present", evidenceId: "e:retry" },
+        { predicate: "old-state-survives", state: "present", evidenceId: "e:state" },
+        { predicate: "next-attempt-gameplay-changed", state: "present", evidenceId: "e:impact" },
+        { predicate: "design-allows-persistence", state: "present", evidenceId: "e:design" },
+      ],
+    );
+
+    expect(result.disposition).toBe(
+      "suppressed-by-counter-evidence",
+    );
+    expect(result.counterEvidenceIds).toEqual(["e:design"]);
+  });
+
+  it("fails closed while a declared counter-evidence check is unresolved", () => {
+    const result = evaluateGameplayBugCandidateEvidence(
+      rule,
+      [
+        { predicate: "retry-occurs", state: "present" },
+        { predicate: "old-state-survives", state: "present" },
+        { predicate: "next-attempt-gameplay-changed", state: "present" },
+      ],
+    );
+
+    expect(result.disposition).toBe(
+      "counter-evidence-unresolved",
+    );
+  });
+
+  it("does not report technical patterns without player-visible impact", () => {
+    const result = evaluateGameplayBugCandidateEvidence(
+      rule,
+      [
+        { predicate: "retry-occurs", state: "present" },
+        { predicate: "old-state-survives", state: "present" },
+        { predicate: "next-attempt-gameplay-changed", state: "absent" },
+        { predicate: "design-allows-persistence", state: "absent" },
+      ],
+    );
+
+    expect(result.disposition).toBe("no-player-impact");
+  });
+
+  it("emits a candidate only after counter-evidence is cleared and player impact is grounded", () => {
+    const result = evaluateGameplayBugCandidateEvidence(
+      rule,
+      [
+        { predicate: "retry-occurs", state: "present", evidenceId: "e:retry" },
+        { predicate: "old-state-survives", state: "present", evidenceId: "e:state" },
+        { predicate: "next-attempt-gameplay-changed", state: "present", evidenceId: "e:impact" },
+        { predicate: "design-allows-persistence", state: "absent" },
+      ],
+    );
+
+    expect(result.disposition).toBe("candidate");
+    expect(result.supportingEvidenceIds).toEqual([
+      "e:retry",
+      "e:state",
+    ]);
+    expect(result.playerImpactEvidenceIds).toEqual([
+      "e:impact",
+    ]);
+  });
+});

@@ -29,6 +29,7 @@ Use this before broad repository search.
 | Formal behavioral state/transition/temporal property kernel + Minecraft overlays | engine/packages/behavior-model/ |
 | Constraint-backed reachability, invariant proof, and counterexample traces | engine/packages/logic-solver/ |
 | Competing hypotheses, falsifiers, and diagnostic probe discrimination | engine/packages/diagnostic-reasoning/ |
+| Gameplay-critical candidate discovery + counter-evidence suppression | engine/packages/diagnostic-reasoning/src/candidate-discovery.ts |
 | Diagnostic contract/IDs | engine/packages/diagnostics/ |
 | Validation step/result contracts | engine/packages/validation/ |
 | Bug Report V2 semantics/lifecycle; V1 import compatibility only | engine/packages/bug-report/ + engine/schemas/bug-report/ |
