@@ -87,7 +87,7 @@ function projectBug(
     foundBy: bug.foundBy,
     fixed: bug.fixed,
     issue: bug.problem,
-    ...(bug.bugTrigger ? { bugTrigger: bug.bugTrigger } : {}),
+    ...(bug.reproduction ? { bugTrigger: bug.reproduction } : {}),
     ...(bug.suggestedFix ? { solution: bug.suggestedFix } : {}),
   };
 
@@ -206,7 +206,7 @@ export function renderBugReportPreviewMarkdown(
     if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
 
     if (bug.technicalAnalysis) {
-      out.push(`**Technical:** ${line(bug.technicalAnalysis)}`);
+      out.push(`**Technical Analysis:** ${line(bug.technicalAnalysis)}`);
     }
 
     if (bug.relevantCode?.length) {
