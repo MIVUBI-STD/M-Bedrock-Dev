@@ -7,8 +7,8 @@ import {
   repairLifecycleFromApplyResult,
   repairReleaseEligible,
   type RepairLifecycleState,
-} from "../src/repair-lifecycle.js";
-import type { RepairProofBundle } from "../src/repair-proof-bundle.js";
+} from "../../src/repair/repair-lifecycle.js";
+import type { RepairProofBundle } from "../../src/repair-proof-bundle.js";
 
 const proof: RepairProofBundle = {
   transactionId: "tx-1",

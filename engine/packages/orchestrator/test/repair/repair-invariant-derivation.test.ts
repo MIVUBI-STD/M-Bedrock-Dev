@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import type {
   CausalChain,
   CausalIncident,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import type {
   InvariantRegistrySnapshot,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   deriveRepairInvariants,
-} from "../src/repair-invariant-derivation.js";
+} from "../../src/repair/repair-invariant-derivation.js";
 
 const chain: CausalChain = {
   id: "chain-1",

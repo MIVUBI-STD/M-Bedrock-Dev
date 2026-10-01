@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
-import { createPatchTransaction } from "../../repair/src/index.js";
-import { analyzeRepairCounterfactual } from "../src/repair-counterfactual.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
+import { analyzeRepairCounterfactual } from "../../src/repair/repair-counterfactual.js";
 import {
   DEFAULT_REPAIR_BLAST_RADIUS_POLICY,
   decideRepairBlastRadius,
-} from "../src/repair-blast-radius.js";
+} from "../../src/repair-blast-radius.js";
 
 function graphFixture(): SemanticGraph {
   const graph = new SemanticGraph();
