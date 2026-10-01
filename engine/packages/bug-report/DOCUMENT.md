@@ -1,23 +1,28 @@
 # Bug Report Client Document Contract
 
-This file owns the client-facing document grammar for Google Docs and PDF.
+This file owns the Word/PDF presentation grammar for client-facing bug reports.
 
-Bug Report V2 owns facts. This contract owns how those facts are presented to clients and non-technical readers.
+Bug Report V2 owns facts. The document layer owns only how those facts are made easy to scan.
 
-## Purpose
+## Reader goal
 
-The document must let a reader answer, quickly and without source-code knowledge:
+A client or non-technical reviewer should understand the report in this order:
 
-1. What map/version was tested?
-2. How many confirmed issues are included?
-3. Which issues are most severe?
-4. What is wrong in gameplay?
-5. How can the issue be reproduced in-game?
-6. What was observed?
-7. What should have happened?
-8. What supported resolution is recommended, when available?
+1. Which map/version was tested?
+2. How many open issues exist?
+3. Which issues are Blocker / Major / Minor?
+4. For each bug: what failed, how to reproduce it, what happened, what should happen, and what resolution is supported?
 
-The document is not a diagnostic dump and is not a developer implementation report.
+The reader should not need to understand code, AI analysis, or internal Bug IDs.
+
+## Core principle
+
+```text
+information-first
+not narrative-first
+```
+
+Word/PDF is not ChatGPT. Default presentation is a compact QA table, not a sequence of long headings and paragraphs.
 
 ## Authority chain
 
@@ -25,124 +30,118 @@ The document is not a diagnostic dump and is not a developer implementation repo
 Bug Report V2
 → projectBugReportClientDocument()
 → reviewBugReportClientDocument()
-→ Google Docs renderer
-→ PDF export
+→ DOCX renderer
+→ PDF converted from the same DOCX
 ```
 
-Google Docs and PDF consume the same client document projection. They must not independently rewrite, infer, or enrich bug facts.
+DOCX and PDF must not independently rewrite bug facts.
 
-## Reader
-
-Primary reader:
-
-- client;
-- producer;
-- QA stakeholder;
-- non-technical project reviewer.
-
-Secondary reader:
-
-- developer who needs a fast, gameplay-first handoff.
-
-Technical implementation details remain on-demand and outside the default client document.
-
-## Document order
+## Default document structure
 
 ```text
-Report Overview
-→ Issue Summary
-→ Severity Guide
-→ Issue Details
+MIVUBI
+Map Name
+BUG REPORT
+
+Map Version | Tested Version | Open Issues | Severity counts
+small severity legend
+
+Bug Table 01
+Bug Table 02
+Bug Table 03
+...
 ```
 
-Do not insert technical-analysis sections before issue details.
+A separate Issue Index is shown only for large reports.
 
-## Report Overview
+Do not add separate sections for Severity Guide or Issue Details in ordinary reports.
 
-Show:
+## Header
 
-- MIVUBI / document identity;
-- Bug Report;
+The top of the document should fit in a compact area.
+
+Show only:
+
+- MIVUBI;
 - map name;
+- Bug Report;
 - map version;
 - exact tested Minecraft version;
-- short subtitle: “Confirmed gameplay issues and testing summary”;
-- visible issue count;
+- open issue count;
 - Blocker / Major / Minor counts.
 
-Use concise explanatory copy. Do not add generic project-management metadata, internal IDs, repair ownership, schema names, or implementation status.
+Use one short severity legend:
 
-## Issue Summary
+```text
+Blocker = stops progression · Major = materially affects gameplay · Minor = limited impact
+```
 
-Render one compact index row per visible issue:
+Do not create a full-page or full-section severity explanation.
+
+## Bug table
+
+Each visible bug is one two-column table.
+
+Header:
+
+```text
+01 · BLOCKER | Arena cannot start a second match
+```
+
+Body:
+
+```text
+Issue            | concise gameplay problem + impact
+How to Reproduce | numbered in-game steps
+Observed         | actual wrong result
+Expected         | intended result
+Resolution       | supported Suggested Fix, when available
+```
+
+Rules:
+
+- left column is a stable short label;
+- right column owns the useful content;
+- title and severity remain visible at the top of the same table;
+- reproduction numbering restarts from 1 for every bug;
+- omit Resolution entirely when no supported Suggested Fix exists;
+- do not add empty rows;
+- do not repeat the bug title inside Issue;
+- keep wording compact enough to scan but do not delete material meaning.
+
+## Large-report index
+
+A separate issue index is useful only when there are 7 or more visible issues.
+
+Index columns:
 
 ```text
 No. | Severity | Issue
 ```
 
-Optional Status may be shown only when fixed issues are intentionally included in the published document.
+For 1–6 bugs, do not duplicate the report with an index.
 
-The index is for scanning. Do not repeat full Issue or reproduction text here.
-
-## Severity Guide
-
-Use plain-language meaning:
-
-- Blocker — prevents normal progression or makes the affected gameplay unusable.
-- Major — materially affects gameplay, state, fairness, or reliability.
-- Minor — limited issue that does not prevent normal gameplay.
-
-Severity must always be communicated with text. Color is supportive only.
-
-## Issue Details
-
-One issue block follows this order:
+## Adaptive density
 
 ```text
-Number + Severity
-Title
-Issue
-How to Reproduce
-Observed
-Expected
-Recommended Resolution — only when supported
+0 issues
+→ header + no-open-issues message
+
+1–3 issues
+→ standard bug tables
+
+4–6 issues
+→ slightly tighter table spacing
+
+7+ issues
+→ compact Issue Index + compact bug tables
 ```
 
-### Title
-
-Use the canonical bug title.
-
-It should describe the visible gameplay failure, not the code mechanism.
-
-### Issue
-
-Explain what is wrong and why it matters in gameplay.
-
-### How to Reproduce
-
-Use numbered, player-facing steps.
-
-Each step must stand on its own line.
-
-The final step must make the wrong result observable.
-
-### Observed
-
-State the actual wrong behavior.
-
-### Expected
-
-State the intended behavior.
-
-### Recommended Resolution
-
-Present only canonical Suggested Fix.
-
-If no supported resolution exists, omit the section rather than inventing or displaying filler.
+These thresholds affect presentation only. They must never merge, split, invent, or remove bugs.
 
 ## Hidden by default
 
-Do not show in the client document:
+Do not show in client Word/PDF:
 
 - canonical Bug ID;
 - Category;
@@ -154,184 +153,133 @@ Do not show in the client document:
 - evidence IDs;
 - invariant IDs;
 - repair-unit IDs;
-- validation plumbing;
-- cache/orchestration data.
+- validation/orchestration details.
 
-These remain engine/developer context.
+Those remain internal/developer information.
 
-## Adaptive density
+## Word / DOCX
 
-The document structure is stable, but issue count is data-driven.
+DOCX is the editable file and single layout source.
 
-Do not add filler to make the report look larger.
+Requirements:
 
-Examples:
+- use real Word tables;
+- keep row labels short and consistent;
+- keep table rows from splitting where practical;
+- keep a normal-size bug table together when practical;
+- use actual paragraph structure inside reproduction cells;
+- keep header/footer minimal;
+- use compact page margins;
+- use Aptos with common fallbacks;
+- do not simulate tables with tabs or spaces.
 
-```text
-1 issue
-→ overview + compact summary + one issue block
+## PDF
 
-8 issues
-→ overview + issue index + issue blocks
+PDF must be converted from the generated DOCX.
 
-20 issues
-→ overview + issue index + severity-organized issue blocks
-```
+There is no independent PDF content renderer.
 
-Do not split issues into artificial pages merely to match a sample document.
-
-## Adaptive layout thresholds
-
-The renderer consumes `buildBugReportClientLayoutPlan()`; layout thresholds are not duplicated in adapters.
-
-Current rules:
+This guarantees:
 
 ```text
-0 issues
-→ no Issue Summary table; show no-open-issues result
-
-1 issue
-→ no Issue Summary table; go directly to the issue detail
-
-2–3 issues
-→ show Issue Summary table; keep overview and details in natural flow
-
-4–7 issues
-→ show Issue Summary table; start issue details on a new page
-
-8+ issues
-→ same page separation + compact issue-detail rhythm
+same wording
+same table structure
+same visual hierarchy
 ```
 
-These are density rules, not semantic rules. Do not add filler or split/merge bugs to satisfy them.
+between Word and PDF.
 
-## Golden reference
+## Pagination
 
-The canonical client-document regression reference is:
+Preferred behavior:
 
-```text
-fixtures/golden-client-document-v1.json
-```
+- never orphan a bug-table header from its body;
+- never split a single table row across pages;
+- move a normal-size table to the next page rather than leaving only one row behind;
+- allow a genuinely long issue table to continue naturally if it cannot fit on one page;
+- do not force one bug per page.
 
-It is a deterministic projection of:
-
-```text
-fixtures/golden-tester-report-v2.json
-```
-
-The client-document fixture is design/regression evidence only. Bug Report V2 remains the semantic authority.
-
-## Typography and hierarchy
-
-Recommended defaults for Google Docs/PDF:
-
-- body: 10.5–11 pt;
-- body line spacing: approximately 1.4–1.5;
-- document title: 26–32 pt;
-- section headings: 18–22 pt;
-- issue title: 13–15 pt;
-- use native semantic heading styles;
-- keep line length comfortable and avoid overly wide body text.
-
-Preferred font stack follows the established MIVUBI document language:
-
-```text
-Aptos
-Segoe UI
-Arial fallback
-```
+The goal is density without losing context.
 
 ## Visual language
 
-Use a restrained professional system derived from the M-PRD-Creator visual language:
+Use a restrained MIVUBI document system:
 
-- navy — primary hierarchy;
-- blue — information/accent;
-- amber — emphasis;
-- green — verified/fixed when shown;
-- neutral gray — supporting metadata;
-- white — primary reading surface.
+- navy = table headers / primary hierarchy;
+- blue = row labels and information;
+- amber = emphasis;
+- green = fixed status when intentionally shown;
+- light neutral = label/background support;
+- white = reading surface.
 
-Do not create multiple themes, dark mode, decorative illustration systems, or interactive navigation for the initial document renderer.
+Severity must always be written as text. Color is secondary.
 
-## Components
+## Typography
 
-Keep the component vocabulary small:
+Recommended:
+
+- map title: about 20 pt;
+- bug title: about 10 pt, bold;
+- body/value cells: about 9–9.5 pt;
+- label cells: about 8–8.5 pt;
+- footer/legend: about 7.5–8 pt.
+
+Avoid oversized report titles that consume page space without improving comprehension.
+
+## User-side quality test
+
+Before considering a document good, verify:
+
+### 5-second test
+
+Without reading details, can the reader identify:
+
+- map;
+- version;
+- issue count;
+- highest severity?
+
+### 15-second test
+
+Can the reader scan the bug tables and identify which issues need attention first?
+
+### Single-bug test
+
+Can one bug be understood without reading another bug or any source code?
+
+### Action test
+
+Can a tester reproduce the bug from the table alone?
+
+### Duplication test
+
+Is the same information repeated in another section without adding navigation value?
+
+If duplication does not improve navigation, remove it.
+
+## Golden reference
+
+Regression references:
 
 ```text
-Cover / Report Header
-Metric Summary
-Issue Index
-Severity Guide
-Issue Block
-Simple Table
-Callout
-Footer
+fixtures/golden-tester-report-v2.json
+fixtures/golden-client-document-v1.json
 ```
 
-Do not create new component families unless a real report cannot be represented clearly with these.
-
-## Word / DOCX rules
-
-DOCX is the editable client-facing document and the single layout source for file publication.
-
-Renderer requirements:
-
-- use semantic Title / Heading 1 / Heading 2 styles;
-- use clearly numbered reproduction steps that restart from 1 for every issue;
-- use real tables only for compact summary/index data;
-- avoid large issue-detail tables;
-- use page breaks intentionally;
-- preserve readable spacing around headings and issue blocks;
-- keep headers/footers minimal;
-- do not simulate layout with spaces or repeated tabs.
-
-The DOCX is a projection, not canonical bug state.
-
-## PDF rules
-
-PDF is the published snapshot of the same DOCX.
-
-Export PDF from the generated DOCX so Word and PDF do not drift.
-
-Pagination requirements:
-
-- never leave an issue heading alone at the bottom of a page;
-- keep a normal-size issue block together on one page when possible;
-- keep issue title and Issue paragraph together;
-- keep “How to Reproduce” with its numbered steps when the block fits;
-- avoid splitting short Observed/Expected pairs unnecessarily;
-- do not let footers overlap content;
-- use text labels in addition to severity colors.
-
-## Accessibility
-
-The structure must remain understandable without color.
-
-Use semantic headings, lists, and tables.
-
-Do not encode meaning through decoration alone.
-
-If images/screenshots are introduced later, they require meaningful alt text or captions and must be evidence-supporting rather than decorative.
-
-## Quality boundary
-
-`reviewBugReportClientDocument()` validates structural readability and projection consistency.
-
-It must not become another copywriting engine.
-
-Canonical wording quality remains owned by `COPY.md` and tester readiness by `report-readiness.ts`.
+The client fixture is projection/design evidence only. Bug Report V2 remains canonical.
 
 ## Non-goals
 
 Do not add:
 
-- an HTML renderer merely for parity with M-PRD-Creator;
-- a second PDF-specific content model;
-- per-client themes;
-- interactive sidebar/navigation;
-- a custom rich-text editor;
-- another report database;
-- duplicated technical appendices by default.
+- HTML renderer;
+- Vite publication flow;
+- Google API publishing;
+- separate PDF renderer;
+- multiple themes;
+- custom document editor;
+- decorative cover pages;
+- dashboards;
+- technical appendices by default.
 
-The target is one clear client document model, one editable DOCX/Word output, and one matching PDF snapshot.
+The target is a compact professional QA document that a client can understand quickly.
