@@ -100,6 +100,11 @@ function ownerStats(owner){
 }
 
 const taskRegistry="engine/packages/task-graph/src/builtin-capabilities.ts";
+const proofRegistryPath="engine/reliability/catalogs/capability-proof-bindings.json";
+const proofRegistry=JSON.parse(readFileSync(proofRegistryPath,"utf8"));
+const proofByCapability=new Map(
+  (proofRegistry.bindings ?? []).map((item)=>[item.capabilityId,item])
+);
 const analysisRegistries=[
   "engine/packages/analysis-planner/src/domain-capabilities.ts",
   "engine/packages/analysis-planner/src/arena-capabilities.ts"
@@ -128,6 +133,7 @@ const taskCapabilities=task.map((item)=>{
       :"implementation-present";
   const runtimeOnly=item.contexts.length>0 &&
     item.contexts.every((x)=>x==="LOCAL_MINECRAFT"||x==="LIVE_MINECRAFT");
+  const proofBinding=proofByCapability.get(item.id);
   return {
     id:item.id,
     owner:item.owner,
@@ -139,7 +145,16 @@ const taskCapabilities=task.map((item)=>{
     sourceFiles:stats.sourceFiles,
     testFiles:stats.testFiles,
     hasReadme:stats.hasReadme,
-    proofPaths:stats.proofPaths
+    proofPaths:stats.proofPaths,
+    proofBinding: proofBinding
+      ? {
+          state:"bound",
+          kind:proofBinding.kind,
+          executionContext:proofBinding.executionContext,
+          paths:[...(proofBinding.paths ?? [])].sort(),
+          ...(proofBinding.note?{note:proofBinding.note}:{})
+        }
+      : {state:"unbound"}
   };
 }).sort((a,b)=>a.id.localeCompare(b.id));
 
@@ -149,6 +164,8 @@ const output={
     taskRegistry,
     analysisRegistries,
     registryFingerprint: registryFingerprint([taskRegistry,...analysisRegistries]),
+    proofRegistry: proofRegistryPath,
+    proofRegistryFingerprint: contentFingerprint(readFileSync(proofRegistryPath,"utf8")),
     proofInventoryFingerprint
   },
   summary:{
@@ -157,6 +174,8 @@ const output={
     implementationPresent:taskCapabilities.filter((x)=>x.status==="implementation-present").length,
     declaredOnly:taskCapabilities.filter((x)=>x.status==="declared-only").length,
     runtimeOnly:taskCapabilities.filter((x)=>x.runtimeOnly).length,
+    proofBound:taskCapabilities.filter((x)=>x.proofBinding.state==="bound").length,
+    proofUnbound:taskCapabilities.filter((x)=>x.proofBinding.state==="unbound").length,
     analysisCapabilities:analysis.length
   },
   taskCapabilities,

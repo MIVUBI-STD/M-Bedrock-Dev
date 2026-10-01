@@ -25,6 +25,29 @@ if(!existsSync(path)){
 }
 const data=JSON.parse(readFileSync(path,"utf8"));
 const errors=[];
+const proofRegistryPath=data.generatedFrom?.proofRegistry;
+if(typeof proofRegistryPath!=="string" || !existsSync(proofRegistryPath)){
+  errors.push("generatedFrom proofRegistry path is missing or invalid");
+}else{
+  const proofText=readFileSync(proofRegistryPath,"utf8");
+  const proofFingerprint=contentFingerprint(proofText);
+  if(proofFingerprint!==data.generatedFrom?.proofRegistryFingerprint){
+    errors.push("Capability Truth Index is stale; regenerate after proof binding registry changes.");
+  }
+  const proofRegistry=JSON.parse(proofText);
+  const seenProofCapabilities=new Set();
+  const taskIds=new Set((data.taskCapabilities??[]).map((item)=>item.id));
+  for(const binding of proofRegistry.bindings ?? []){
+    if(seenProofCapabilities.has(binding.capabilityId)) errors.push("duplicate capability proof binding: "+binding.capabilityId);
+    seenProofCapabilities.add(binding.capabilityId);
+    if(!taskIds.has(binding.capabilityId)) errors.push("proof binding references unknown capability: "+binding.capabilityId);
+    if(!Array.isArray(binding.paths)||binding.paths.length===0) errors.push("proof binding requires paths: "+binding.capabilityId);
+    for(const path of binding.paths ?? []){
+      if(!existsSync(path)) errors.push("proof binding path missing: "+binding.capabilityId+" -> "+path);
+    }
+  }
+}
+
 const registryPaths=[
   data.generatedFrom?.taskRegistry,
   ...(data.generatedFrom?.analysisRegistries ?? [])
@@ -62,6 +85,10 @@ for(const item of data.taskCapabilities??[]){
   ids.add(item.id);
   if(!["declared-only","implementation-present","owner-tested"].includes(item.status)) errors.push("invalid capability status: "+item.id);
   if(typeof item.owner!=="string"||!item.owner.trim()) errors.push("missing owner: "+item.id);
+  if(!item.proofBinding || !["bound","unbound"].includes(item.proofBinding.state)) errors.push("invalid proofBinding state: "+item.id);
+  if(item.proofBinding?.state==="bound"){
+    if(!Array.isArray(item.proofBinding.paths)||item.proofBinding.paths.length===0) errors.push("bound capability requires proof paths: "+item.id);
+  }
 }
 if(errors.length){
   console.error("Capability Truth Index violations:");

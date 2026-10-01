@@ -32,6 +32,7 @@ Use this before broad repository search.
 | Bug Report V2 canonical tracker contract/export; V1 import compatibility only | engine/packages/bug-report/ + engine/schemas/bug-report/ |
 | Repair preservation contracts, baselines, and verification receipts | engine/packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
+| Capability-specific proof binding registry | engine/reliability/catalogs/capability-proof-bindings.json |
 | Runtime session recording/replay contract + first divergence | engine/packages/reliability/src/runtime-session-replay.ts |
 | Reliability search/corpus/interleavings/minimization | engine/packages/reliability-search/ |
 | Cross-map behavioral pattern aggregation | engine/packages/reliability-search/src/behavioral-pattern-library.ts |

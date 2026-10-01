@@ -6,6 +6,7 @@ export interface CapabilityTruthLike {
     owner: string;
     status: "declared-only" | "implementation-present" | "owner-tested";
     runtimeOnly: boolean;
+    proofBinding?: { state: "bound" | "unbound"; kind?: string; paths?: readonly string[] };
   }[];
 }
 
@@ -44,11 +45,25 @@ export function buildCoverageQualityDashboard(input: CoverageQualityInput): Cove
       rows.push({ key: capability.id, category: "capability", status: "runtime-only", reasons: ["Capability requires LOCAL_MINECRAFT or LIVE_MINECRAFT context."] });
       continue;
     }
+    const proofBound=capability.proofBinding?.state==="bound";
     rows.push({
       key: capability.id,
       category: "capability",
-      status: capability.status === "owner-tested" ? "partial" : capability.status === "implementation-present" ? "weak" : "insufficient-data",
-      reasons: [capability.status === "owner-tested" ? "Owner module has tests, but capability-specific proof is not implied." : capability.status === "implementation-present" ? "Implementation exists without owner-level test presence." : "Capability is declared without detected implementation."],
+      status:
+        capability.status === "owner-tested" && proofBound
+          ? "partial"
+          : capability.status === "implementation-present"
+            ? "weak"
+            : "insufficient-data",
+      reasons: [
+        capability.status === "owner-tested" && proofBound
+          ? "Owner has tests and capability has an explicit proof binding; execution is not implied."
+          : capability.status === "owner-tested"
+            ? "Owner has tests but capability-specific regression proof is unbound."
+            : capability.status === "implementation-present"
+              ? "Implementation exists without owner-level test presence."
+              : "Capability is declared without detected implementation.",
+      ],
     });
   }
   for (const [domain, item] of Object.entries(input.mutation?.byDomain ?? {})) {
