@@ -59,13 +59,14 @@ Default presentation is `standard`, open-bugs-only, and **table-first**.
 Normal ChatGPT preview uses one compact table:
 
 ```text
-Severity | Bug (ID + title) | Issue | Action
+No. | Severity | Bug | Issue | Action
 ```
 
 Rules:
 
 - do not create one vertical section per bug by default;
 - keep one row per bug;
+- use `#1`, `#2`, ... for preview references and keep canonical Bug ID hidden unless detail/full mode is requested;
 - do not invent Action when Suggested Fix is absent;
 - hide fixed bugs unless requested;
 - do not show Expected / Observed / Reproduction / technical fields unless the user requests detail;
