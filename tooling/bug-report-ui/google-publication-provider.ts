@@ -209,17 +209,38 @@ function buildIntro(
   b.blank();
 
   b.line(document.summary.statement);
-  b.line(
-    "Open Issues " +
-      String(document.summary.openIssues) +
-      "   ·   Blocker " +
-      String(document.summary.blocker) +
-      "   ·   Major " +
-      String(document.summary.major) +
-      "   ·   Minor " +
-      String(document.summary.minor),
-    "metric",
-  );
+  if (document.source.issueScope === "all") {
+    b.line(
+      "Included Issues " +
+        String(document.summary.visibleIssues) +
+        "   ·   Open " +
+        String(document.summary.openIssues) +
+        "   ·   Fixed " +
+        String(document.summary.fixedIssues),
+      "metric",
+    );
+    b.line(
+      "Included Severity   Blocker " +
+        String(document.summary.blocker) +
+        "   ·   Major " +
+        String(document.summary.major) +
+        "   ·   Minor " +
+        String(document.summary.minor),
+      "metric",
+    );
+  } else {
+    b.line(
+      "Open Issues " +
+        String(document.summary.openIssues) +
+        "   ·   Blocker " +
+        String(document.summary.blocker) +
+        "   ·   Major " +
+        String(document.summary.major) +
+        "   ·   Minor " +
+        String(document.summary.minor),
+      "metric",
+    );
+  }
   if (options.showIssueIndex) {
     b.blank();
     b.line("Issue Summary", "heading1");
