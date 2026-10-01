@@ -4,7 +4,7 @@ import {
   parseRuntimeProbeRequestBundle,
   validateRuntimeProbeBindingSet,
   validateRuntimeProbeRequestBundle,
-} from "../src/runtime-probe-validate.js";
+} from "../../src/runtime/runtime-probe-validate.js";
 
 describe("runtime probe binding and request bundles", () => {
   it("validates explicit incident-scoped bindings", () => {

@@ -1,4 +1,4 @@
-import type { ArtifactChildRef, ArtifactIdentity } from "../../artifact/src/index.js";
+import type { ArtifactChildRef, ArtifactIdentity } from "../../../artifact/src/index.js";
 import type { ProjectComponent } from "./component.js";
 
 export interface FileInventoryEntry {

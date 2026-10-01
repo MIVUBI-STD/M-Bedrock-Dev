@@ -49,7 +49,7 @@ workflow composition
 → packages/orchestrator/src/zero-waste-workflow.ts
 
 durable continuation
-→ packages/project-model/src/work-session.ts
+→ packages/project-model/src/session/work-session.ts
 → packages/orchestrator/src/work-session-store.ts
 
 efficiency measurement

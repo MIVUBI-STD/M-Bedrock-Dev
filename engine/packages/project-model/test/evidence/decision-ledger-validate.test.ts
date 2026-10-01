@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   parseDecisionLedgerSnapshot,
   validateDecisionLedgerSnapshot,
-} from "../src/decision-ledger-validate.js";
+} from "../../src/evidence/decision-ledger-validate.js";
 
 function entry(
   id: string,

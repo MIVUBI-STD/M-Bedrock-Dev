@@ -4,10 +4,10 @@ import type {
 import type {
   RuntimeEvidenceState,
   RuntimeScope,
-} from "./runtime-evidence.js";
+} from "../runtime/runtime-evidence.js";
 import type {
   RuntimeTemporalRequirement,
-} from "./runtime-temporal.js";
+} from "../runtime/runtime-temporal.js";
 
 export type InvariantRegistrySourceKind =
   | "knowledge-relation"

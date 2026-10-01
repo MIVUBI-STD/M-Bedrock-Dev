@@ -1,7 +1,7 @@
 import type {
   CausalControlledFactorContrast,
   CausalInterventionProvenance,
-} from "./causal-proof.js";
+} from "../evidence/causal-proof.js";
 
 export interface RuntimeVerificationExpectedContrast {
   predicateId: string;

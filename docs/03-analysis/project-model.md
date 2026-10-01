@@ -39,3 +39,18 @@ Every derived component or graph edge should be traceable to source using `Sourc
 - JSON Pointer.
 
 This enables diagnostics to explain exactly why a relationship or finding exists.
+
+
+## Package hierarchy
+
+Implementation lives under `engine/packages/project-model/` with one public package entrypoint and five internal navigation groups:
+
+```text
+project/    project identity, inventory, source references
+contracts/  project-level cross-owner contracts
+evidence/   telemetry, causal, diagnostic, invariant and decision evidence
+runtime/    normalized runtime evidence/probe/state contracts
+session/    durable work/session continuity
+```
+
+These groups organize one package; they are not separate semantic authorities.

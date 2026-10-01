@@ -6,7 +6,7 @@ import {
   validateRuntimeProbeRequest,
   validateRuntimeProbeResponse,
   validateRuntimeProbeTranscript,
-} from "../src/runtime-probe-validate.js";
+} from "../../src/runtime/runtime-probe-validate.js";
 
 describe("runtime probe contracts", () => {
   it("accepts bounded typed probe requests", () => {

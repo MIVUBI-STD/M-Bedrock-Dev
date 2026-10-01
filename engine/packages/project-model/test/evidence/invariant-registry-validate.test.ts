@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   parseInvariantRegistrySnapshot,
   validateInvariantRegistrySnapshot,
-} from "../src/invariant-registry-validate.js";
+} from "../../src/evidence/invariant-registry-validate.js";
 
 function entry(overrides: Record<string, unknown> = {}) {
   return {

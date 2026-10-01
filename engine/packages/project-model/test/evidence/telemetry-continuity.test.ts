@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { analyzeTelemetryContinuity } from "../src/telemetry-continuity.js";
-import type { TelemetryBatch } from "../src/telemetry.js";
+import { analyzeTelemetryContinuity } from "../../src/evidence/telemetry-continuity.js";
+import type { TelemetryBatch } from "../../src/evidence/telemetry.js";
 
 function batch(
   events: TelemetryBatch["events"],

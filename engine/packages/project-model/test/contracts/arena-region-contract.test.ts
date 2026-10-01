@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveArenaRegionContractVolume } from "../src/arena-region-contract.js";
+import { resolveArenaRegionContractVolume } from "../../src/contracts/arena-region-contract.js";
 
 describe("arena region contract", () => {
   it("resolves canonical-relative volumes against the detected canonical anchor", () => {

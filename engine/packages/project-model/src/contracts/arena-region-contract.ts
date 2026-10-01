@@ -1,5 +1,5 @@
 import type { BlockVolume } from "./route-corridor.js";
-import type { SourceRef } from "./source-ref.js";
+import type { SourceRef } from "../project/source-ref.js";
 
 export type ArenaRegionContractRole =
   | "static"

@@ -1,6 +1,6 @@
-import type { Severity } from "../../common/src/index.js";
-import type { SourceRef } from "./source-ref.js";
-import type { RuntimeScope } from "./runtime-evidence.js";
+import type { Severity } from "../../../common/src/index.js";
+import type { SourceRef } from "../project/source-ref.js";
+import type { RuntimeScope } from "../runtime/runtime-evidence.js";
 import type { CausalProof } from "./causal-proof.js";
 
 export type CausalLinkStrength =

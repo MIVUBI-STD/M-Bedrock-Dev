@@ -2,7 +2,7 @@
 
 Snapshot date: 2026-10-01  
 Branch: `Local`  
-Behavior/source baseline before this non-behavioral consolidation: `160b7bd6914820357abff7cb5299acb0912619bf`
+Last recorded behavior/source proof baseline predates the current non-behavioral hierarchy refactor; current source-path changes are not runtime proof.
 
 This file is a current-state proof snapshot, not a chronological validation log.
 
@@ -84,6 +84,6 @@ typecheck                   pass
 full test suite             pass
 ```
 
-The current `Local` branch is newer than that recorded proof point. The later consolidation commits change documentation/routing surfaces only; this pass intentionally does not run CI and therefore does **not** upgrade behavioral proof.
+The current `Local` branch is newer than that recorded proof point. Later consolidation work includes documentation cleanup and non-behavioral source-path hierarchy refactors. This work intentionally does not run CI and therefore does **not** upgrade behavioral proof.
 
 Detailed historical validation entries remain recoverable from Git history; longitudinal machine-readable evidence belongs under `engine/reliability/history/`.

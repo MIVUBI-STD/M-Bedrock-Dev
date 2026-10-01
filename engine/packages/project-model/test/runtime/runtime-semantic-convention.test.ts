@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateRuntimeSemanticAttributes } from "../src/index.js";
+import { validateRuntimeSemanticAttributes } from "../../src/index.js";
 
 describe("runtime semantic convention", () => {
   it("validates canonical identity/generation attributes", () => {

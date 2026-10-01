@@ -1,4 +1,4 @@
-import type { SourceRef } from "./source-ref.js";
+import type { SourceRef } from "../project/source-ref.js";
 
 export interface BlockVolume {
   min: { x: number; y: number; z: number };

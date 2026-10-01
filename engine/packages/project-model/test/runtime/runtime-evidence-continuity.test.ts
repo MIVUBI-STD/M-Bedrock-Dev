@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   evaluateRuntimeEvidenceContinuity,
-} from "../src/runtime-evidence-continuity.js";
+} from "../../src/runtime/runtime-evidence-continuity.js";
 
 describe("runtime evidence continuity", () => {
   it("rejects mixed arena generations in one proof campaign", () => {

@@ -1,9 +1,9 @@
-import type { RuntimeScope } from "./runtime-evidence.js";
-import type { SourceRef } from "./source-ref.js";
+import type { RuntimeScope } from "../runtime/runtime-evidence.js";
+import type { SourceRef } from "../project/source-ref.js";
 import type {
   StateObservedValue,
   StateSurfaceRef,
-} from "./state-authority-contract.js";
+} from "../contracts/state-authority-contract.js";
 
 export type TelemetryProducer =
   | "runtime"

@@ -1,4 +1,4 @@
-import type { SourceRef } from "./source-ref.js";
+import type { SourceRef } from "../project/source-ref.js";
 
 export type RuntimeEvidenceState = "present" | "absent" | "unknown";
 export type RuntimeEvidenceConfidence = "observed" | "derived" | "unknown";

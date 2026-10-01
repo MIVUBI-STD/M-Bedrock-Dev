@@ -7,7 +7,7 @@ import {
   sourceRefHasPreciseLocation,
   sourceRefPrecision,
   validateSourceRef,
-} from "../src/source-ref.js";
+} from "../../src/project/source-ref.js";
 
 describe("source ref precision", () => {
   it("recognizes line and json pointer precision", () => {

@@ -7,7 +7,7 @@ import {
   advanceWorkSessionCheckpoint,
   createWorkSessionCheckpoint,
   workSessionIsBlocked,
-} from "../src/work-session.js";
+} from "../../src/session/work-session.js";
 
 describe("work session checkpoint", () => {
   it("advances monotonically while accumulating references", () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   parseTelemetryBatch,
   validateTelemetryBatch,
-} from "../src/telemetry-validate.js";
+} from "../../src/evidence/telemetry-validate.js";
 
 describe("telemetry validation", () => {
   it("accepts a standardized telemetry batch", () => {

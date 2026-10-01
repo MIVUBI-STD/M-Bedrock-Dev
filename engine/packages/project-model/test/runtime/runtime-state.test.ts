@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   resolveRuntimeStateSnapshot,
   type RuntimeStateSnapshot,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 describe("runtime state snapshot", () => {
   it("resolves scalar observations into nested policy values", () => {
