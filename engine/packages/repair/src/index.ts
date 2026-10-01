@@ -1,5 +1,3 @@
-export * from "./apply.js";
-export * from "./atomic-write.js";
 export * from "./create.js";
 export * from "./id.js";
 export * from "./preconditions.js";
