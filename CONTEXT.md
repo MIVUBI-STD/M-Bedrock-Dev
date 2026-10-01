@@ -140,8 +140,25 @@ interface presentation             → apps/*
 
 ## Current phase
 
-Repository foundation, domain-intelligence layers, repair routing, and domain-aware affected planning exist. The active lane is detection-decision hardening: gameplay-intent authority, counter-evidence, player-impact admission, severity discipline, chat approval, and derived HTML publication.
+Repository foundation, domain-intelligence layers, repair routing, and domain-aware affected planning exist. The active lane is design-first workflow hardening: authoritative Game Design → scoped Gameplay Contract → candidate discovery → chat-approved bug → preservation-bound repair.
 
 Current continuation: `docs/07-operations/next-action.md`.
 Current proof state: `docs/07-operations/current-validation.md`.
 Implementation ownership: `docs/06-system/implementation-map.md`.
+
+## Gameplay bug workflow invariant
+
+```text
+current approved Game Design
+→ scoped Gameplay Contract
+→ design readiness
+→ actual behavior contradiction
+→ candidate admission
+→ Proposed Bug Set
+→ chat-approved bug
+→ Repair Contract
+→ mutation
+→ defect + preservation verification
+```
+
+Source-derived intent is implementation evidence, not Map Game Design authority. Inspection may derive repair proposals, but production PatchTransaction/mutation authority starts only after approval and preservation binding.
