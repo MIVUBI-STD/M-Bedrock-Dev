@@ -7,11 +7,11 @@ import type {
   ApplyTransactionContext,
   ApplyTransactionResult,
   RollbackAppliedFilesResult,
-} from "../../../repair/src/index.js";
+} from "../../../repair/src/apply.js";
 import {
   applyPatchTransaction,
   rollbackAppliedFiles,
-} from "../../../repair/src/index.js";
+} from "../../../repair/src/apply.js";
 import type { PatchTransaction } from "../../../repair/src/index.js";
 import type { MutationWorkspace } from "../../../repair/src/index.js";
 import type { TransactionValidationResult } from "../../../validation/src/index.js";
