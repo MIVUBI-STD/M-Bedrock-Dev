@@ -150,7 +150,7 @@ export function renderBugReportPreviewMarkdown(
     `# ${preview.map.name} — Bug Report`,
     "",
     `**Map Version:** ${preview.map.mapVersion}`,
-    "**Tested Version:** Latest Education",
+    `**Tested Version:** Minecraft Education ${preview.map.testedVersion}`,
     "",
     `**Open Issues:** ${preview.counts.open}`,
     `Blocker: ${preview.counts.blocker} · Major: ${preview.counts.major} · Minor: ${preview.counts.minor}`,
