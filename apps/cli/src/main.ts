@@ -405,7 +405,7 @@ async function main(): Promise<void> {
     console.log(
       JSON.stringify(report, null, 2),
     );
-    if (!report.releaseReady) {
+    if (!report.differentialPass) {
       process.exitCode = 1;
     }
     return;
