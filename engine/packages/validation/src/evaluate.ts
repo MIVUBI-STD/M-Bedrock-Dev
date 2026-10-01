@@ -10,6 +10,21 @@ import type {
   ValidationTraceReport,
 } from "./types.js";
 
+const proofRank = {
+  "UNKNOWN": 0,
+  "STATIC VERIFIED": 1,
+  "PACKAGE VERIFIED": 2,
+  "LOCAL GAME VERIFIED": 3,
+  "LIVE GAME VERIFIED": 4,
+} as const;
+
+function proofSatisfies(
+  actual: keyof typeof proofRank,
+  required: keyof typeof proofRank,
+): boolean {
+  return proofRank[actual] >= proofRank[required];
+}
+
 export function summarizeValidation(
   steps: readonly ValidationStepResult[],
 ): TransactionValidationResult {
@@ -98,6 +113,14 @@ export function assessValidationTrace(
       context,
     );
 
+    const scenario = scenariosById.get(run.snapshot.scenarioId);
+    const proofSufficient =
+      scenario !== undefined &&
+      proofSatisfies(
+        run.proofLevel,
+        scenario.requiredProofLevel,
+      );
+
     return {
       runId: run.id,
       scenarioId: run.snapshot.scenarioId,
@@ -107,6 +130,7 @@ export function assessValidationTrace(
       ],
       ok: run.result.ok,
       proofLevel: run.proofLevel,
+      proofSufficient,
       current: staleReasons.length === 0,
       staleReasons,
       evidenceIds: [...run.evidenceIds],
@@ -131,7 +155,7 @@ export function assessValidationTrace(
         run.intentInvariantIds.includes(invariantId)
       );
       const currentPassingRunIds = matchingRuns
-        .filter((run) => run.current && run.ok)
+        .filter((run) => run.current && run.ok && run.proofSufficient)
         .map((run) => run.runId);
 
       return {
