@@ -65,7 +65,7 @@ export function routeIntentDiagnosticNextAnalysis(
         disposition: "analyze",
         goal: "contract-evidence",
         reason:
-          "Selected-artifact contract evidence is required before a ambiguous observation can be promoted.",
+          "Selected-artifact contract evidence is required before an ambiguous observation can be classified further.",
       };
   }
 }
