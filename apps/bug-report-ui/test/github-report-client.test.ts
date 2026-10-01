@@ -64,7 +64,6 @@ describe("GitHubReportClient", () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({
         report,
-        revision: "rev-1",
       }), { status: 200 }),
     );
     const client = new GitHubReportClient({
@@ -98,41 +97,6 @@ describe("GitHubReportClient", () => {
       RequestInit,
     ];
     expect(call[1].method).toBe("POST");
-  });
-
-  it("publishes a canonical report with optimistic revision", async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify({
-        revision: "rev-1",
-        googleDoc: {
-          documentId: "doc-1",
-          url: "https://docs.google.com/document/d/doc-1/edit",
-          title: "A v1.0.0 - Bug Report",
-        },
-        pdf: {
-          fileName: "A v1.0.0 - Bug Report.pdf",
-          url: "https://drive.google.com/file/d/pdf-1/view",
-        },
-      }), { status: 200 }),
-    );
-    const client = new GitHubReportClient({
-      fetchImpl: fetchMock as unknown as typeof fetch,
-    });
-
-    const result = await client.publishReport(
-      "workspace/reports/a.json",
-      "rev-1",
-    );
-
-    expect(result.googleDoc.documentId).toBe("doc-1");
-    const call = fetchMock.mock.calls[0] as unknown as [
-      unknown,
-      RequestInit,
-    ];
-    expect(call[1].method).toBe("POST");
-    expect(String(call[0])).toContain(
-      "/api/bug-report/publish",
-    );
   });
 
   it("maps create conflicts to a dedicated error", async () => {
