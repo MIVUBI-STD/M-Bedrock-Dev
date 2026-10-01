@@ -76,3 +76,11 @@ Repair completion rule:
 - completion requires current passing validation with evidence;
 - stale validation cannot be used to close a bug;
 - Git history remains the persisted change history; do not add a second repair-status log.
+
+
+Must Preserve verification:
+
+- free-text `mustPreserve` remains reader/repair context and is not converted into guessed invariant IDs;
+- verified completion supplies explicit preservation invariant IDs when Must Preserve requirements exist;
+- those invariants must be current and covered by the selected passing validation runs;
+- the selected runs must satisfy their scenarios' required proof levels.
