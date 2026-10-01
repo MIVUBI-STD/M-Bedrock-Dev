@@ -34,6 +34,7 @@ Do not create parallel report formats, duplicate Markdown reports, or competing 
 - Confirmed does not automatically mean tester-ready.
 - Never use technical analysis as a substitute for Bug Trigger (In-Game).
 - AI routes must use evidence-bound `BugTriggerDraft`; raw AI reproduction arrays are not a valid authoring path.
+- AI Bug Trigger drafts must declare a gameplay basis and include matching gameplay evidence; source-code contradiction alone is not gameplay provenance.
 
 ## Reader priority
 
