@@ -3,6 +3,7 @@ import type {
 } from "../../game-design-spec/src/index.js";
 import {
   assessGameplayIntentGrounding,
+  independentGameplayIntentEvidenceIds,
   type GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
 
@@ -62,32 +63,6 @@ export interface IntentDiagnosticGateResult {
   evidenceIds: readonly string[];
   nextEvidenceNeed: IntentDiagnosticNextEvidenceNeed;
   reasons: readonly string[];
-}
-
-const independentIntentOrigins = new Set([
-  "game-design-spec",
-  "project-policy",
-  "official-documentation",
-]);
-
-function invariantHasIndependentIntentAuthority(
-  model: GameplayIntentModel,
-  evidenceIds: readonly string[],
-): boolean {
-  const evidenceById = new Map(
-    model.evidence.map((evidence) => [
-      evidence.id,
-      evidence,
-    ]),
-  );
-
-  return evidenceIds.some((id) => {
-    const evidence = evidenceById.get(id);
-    return (
-      evidence !== undefined &&
-      independentIntentOrigins.has(evidence.origin)
-    );
-  });
 }
 
 export function gateIntentDiagnostic(
@@ -412,18 +387,23 @@ export function gateIntentDiagnostic(
   const authored = applicable.filter(
     (invariant) => invariant.status === "authored",
   );
+  const independentEvidenceIds =
+    new Set(
+      independentGameplayIntentEvidenceIds(
+        input.intent,
+        authored.map((invariant) => invariant.id),
+      ),
+    );
   const authoritativeAuthored = authored.filter(
     (invariant) =>
-      invariantHasIndependentIntentAuthority(
-        input.intent,
-        invariant.evidenceIds,
+      invariant.evidenceIds.some((id) =>
+        independentEvidenceIds.has(id)
       ),
   );
   const implementationOnlyAuthored = authored.filter(
     (invariant) =>
-      !invariantHasIndependentIntentAuthority(
-        input.intent,
-        invariant.evidenceIds,
+      !invariant.evidenceIds.some((id) =>
+        independentEvidenceIds.has(id)
       ),
   );
   const inferred = applicable.filter(
