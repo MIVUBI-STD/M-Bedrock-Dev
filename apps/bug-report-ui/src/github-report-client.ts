@@ -3,8 +3,8 @@ import {
   type BugReportV2,
 } from "../../../engine/packages/bug-report/src/index.js";
 import type {
-  GitHubReportStore,
-  GitHubReportSummary,
+  ReportStore,
+  ReportSummary,
 } from "./report-source.js";
 
 export class GitHubReportConflictError extends Error {
@@ -20,7 +20,7 @@ export interface GitHubReportClientOptions {
 }
 
 export class GitHubReportClient
-  implements GitHubReportStore {
+  implements ReportStore {
   readonly #baseUrl: string;
   readonly #fetch: typeof fetch;
 
@@ -65,7 +65,7 @@ export class GitHubReportClient
     return body;
   }
 
-  async listReports(): Promise<readonly GitHubReportSummary[]> {
+  async listReports(): Promise<readonly ReportSummary[]> {
     const body = await this.#json(
       "/api/bug-reports",
     );
@@ -83,7 +83,7 @@ export class GitHubReportClient
     }
     return (
       body as {
-        reports: GitHubReportSummary[];
+        reports: ReportSummary[];
       }
     ).reports;
   }
