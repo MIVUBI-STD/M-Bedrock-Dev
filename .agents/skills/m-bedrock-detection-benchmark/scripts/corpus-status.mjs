@@ -15,6 +15,9 @@ const summary = {
     ready: 0,
     candidate: 0,
     blocked: 0,
+    positiveEvidence: 0,
+    negativeEvidence: 0,
+    unspecifiedEvidence: 0,
   },
 };
 
@@ -37,11 +40,27 @@ for (const path of manifests) {
     summary.totals.cases += 1;
     summary.totals[status] += 1;
 
+    const evidenceRole =
+      item.evidenceRole === "negative"
+        ? "negative"
+        : item.evidenceRole === "positive"
+          ? "positive"
+          : "unspecified";
+
+    if (evidenceRole === "negative") {
+      summary.totals.negativeEvidence += 1;
+    } else if (evidenceRole === "positive") {
+      summary.totals.positiveEvidence += 1;
+    } else {
+      summary.totals.unspecifiedEvidence += 1;
+    }
+
     return {
       id: item.id,
       status,
       missing,
       sourceRef: item.sourceRef ?? null,
+      evidenceRole,
     };
   });
 
