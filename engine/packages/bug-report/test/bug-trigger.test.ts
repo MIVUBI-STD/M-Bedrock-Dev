@@ -33,7 +33,7 @@ describe("Bug Trigger compiler", () => {
       "Finish the match normally.",
       "Return to the lobby.",
       "Start the same arena again.",
-      "Confirm the wrong result: the new match does not start.",
+      "Confirm: the new match does not start.",
     ]);
     expect(result.evidenceIds).toEqual([
       "intent:arena-restart",
