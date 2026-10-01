@@ -10,7 +10,7 @@ User-facing flow:
 AUDIT → BUG REPORT → REPAIR
 ```
 
-V1 remains import-only compatibility. New reports and exports use V2.
+V1 remains import-only compatibility. New reports and exports use V2. Compatibility consumers must enter through `parseBugReportToCurrent()`; V1→V2 mapping is engine-owned and must not be duplicated in UI or adapters.
 
 ## Contract ownership
 
@@ -22,6 +22,8 @@ The bug-report package keeps one authority per concern:
 | New-report wording quality | `COPY.md` + `copy-quality.ts` |
 | AI Bug Trigger authoring | `bug-trigger.ts` |
 | Tester-ready report gate | `report-readiness.ts` |
+| Compatibility migration | `migrate.ts` |
+| Report-list summary shape | `report-summary.ts` |
 | Human / ChatGPT presentation | `PREVIEW.md` + `preview.ts` |
 | Confirmation / promotion semantics | this package's confirmation and promotion modules |
 
