@@ -21,6 +21,12 @@ Report policy is owned by `engine/packages/bug-report/`:
 - `PREVIEW.md` — human / ChatGPT presentation;
 - Bug Report V2 — only persisted report format.
 
+Canonical repository directory:
+
+```text
+workspace/reports/
+```
+
 Recommended filename:
 
 ```text
