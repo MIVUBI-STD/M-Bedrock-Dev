@@ -82,6 +82,116 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       }
+    },
+    {
+      "id": "reg_defense_cutscene_reconnect_loadout_loss",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_cutscene_reconnect_loadout_loss",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l1_lobby_final_countdown_revalidation",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_lobby_final_countdown_revalidation",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l1_enchant_purchase_no_effect",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_enchant_purchase_no_effect",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l1_duplicate_armor_purchase",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_duplicate_armor_purchase",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l1_zombie_path_barrier",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_zombie_path_barrier",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l1_unloaded_spawn_chunk_auto_win",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_unloaded_spawn_chunk_auto_win",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l1_spawn_position_inconsistent",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l1_spawn_position_inconsistent",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l2_keepinventory_disabled",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l2_keepinventory_disabled",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l2_builditems_shop_missing",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l2_builditems_shop_missing",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l2_pillager_bridge_stuck",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l2_pillager_bridge_stuck",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "reg_defense_l2_time_weather_unlocked",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_l2_time_weather_unlocked",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
     }
   ],
   "policy": {
