@@ -64,11 +64,11 @@ describe("diagnostic analysis routing", () => {
 
     expect(
       routeIntentDiagnosticNextAnalysis(
-        result("authored-intent"),
+        result("contract-evidence"),
       ),
     ).toMatchObject({
       disposition: "analyze",
-      goal: "authored-intent",
+      goal: "contract-evidence",
     });
   });
 });
