@@ -12,6 +12,13 @@ AUDIT → REPORT → FIX
 
 Store only canonical Bug Report V2 JSON here. Do not store raw analysis traces, caches, temporary evidence indexes, repair forms, verification records, or duplicate Markdown copies.
 
+
+Report policy is owned by `engine/packages/bug-report/`:
+
+- `COPY.md` — wording quality for new reports;
+- `PREVIEW.md` — human / ChatGPT presentation;
+- Bug Report V2 — only persisted report format.
+
 Recommended filename:
 
 ```text
