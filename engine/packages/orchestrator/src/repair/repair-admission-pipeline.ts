@@ -15,8 +15,9 @@ import {
   type PreservationReadinessResult,
   type RepairPreservationContract,
 } from "../../../preservation/src/index.js";
-import type {
-  ApprovedBugSet,
+import {
+  validateApprovedBugSet,
+  type ApprovedBugSet,
 } from "../../../bug-report/src/index.js";
 import {
   analyzeRepairCounterfactual,
@@ -57,6 +58,7 @@ export type RepairWorkflowAuthority =
 function repairWorkflowAuthorityIssues(
   transaction: PatchTransaction,
   authority: RepairWorkflowAuthority | undefined,
+  preservationReadiness: PreservationReadinessResult | undefined,
 ): readonly string[] {
   if (authority === undefined) {
     return [
@@ -96,6 +98,15 @@ function repairWorkflowAuthorityIssues(
   }
 
   if (authority.kind === "approved-bug") {
+    const approvalIssues =
+      validateApprovedBugSet(authority.approved);
+    if (approvalIssues.length > 0) {
+      errors.push(
+        "Approved Bug Set is internally inconsistent: " +
+          approvalIssues.join(" "),
+      );
+    }
+
     if (!authority.bugSemanticKey.trim()) {
       errors.push(
         "Bug repair requires an approved bug semantic key.",
@@ -109,6 +120,16 @@ function repairWorkflowAuthorityIssues(
         "Bug repair semantic key is not present in the Approved Bug Set.",
       );
     }
+  }
+
+  if (
+    preservationReadiness !== undefined &&
+    preservationReadiness.contractId !==
+      authority.preservationContract.id
+  ) {
+    errors.push(
+      "Preservation readiness does not match the Repair Contract.",
+    );
   }
 
   return [...new Set(errors)];
@@ -175,6 +196,7 @@ export function evaluateRepairAdmissionPipeline(
     repairWorkflowAuthorityIssues(
       input.transaction,
       input.repairAuthority,
+      input.preservationReadiness,
     );
 
   const transactionFingerprint =
