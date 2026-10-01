@@ -59,7 +59,7 @@ A reportable bug requires:
 
 1. grounded contradiction inside the selected version;
 2. counter-evidence cleared;
-3. material player-visible impact;
+3. player-visible impact (`blocking`, `material`, or `limited`);
 4. tester-verifiable in-game trigger.
 
 Technical anomaly, metadata drift, historical QA, or behavior from another version is not enough.
@@ -67,7 +67,7 @@ Technical anomaly, metadata drift, historical QA, or behavior from another versi
 Severity is assigned only after admission:
 - Blocker — required gameplay cannot normally start/continue/complete and normal recovery is unavailable;
 - Major — core gameplay/state/fairness is materially wrong but normal continuation/recovery remains;
-- Minor — limited impact; hidden by default.
+- Minor — limited but real player-visible impact; still reportable.
 
 ## Review
 
@@ -93,13 +93,13 @@ Missing decision or `needs-discussion` blocks publication. No approved bugs mean
 
 Validate against `../../schemas/map-audit-output.schema.json`.
 
-Normal preview: Blocker/Major only, player-facing Issue + Bug Trigger. Keep the per-surface accounting internal unless the user asks for audit completeness/detail.
+Normal preview: all confirmed defects (Blocker/Major/Minor), player-facing Issue + Bug Trigger. Keep the per-surface accounting internal unless the user asks for audit completeness/detail.
 
 ### Chat output contract
 
 Default user-facing audit output is intentionally minimal.
 
-Show **only confirmed Blocker/Major defects**. For each defect, output exactly:
+Show **all confirmed defects: Blocker, Major, and Minor**. For each defect, output exactly:
 
 ```text
 [Severity]
@@ -124,10 +124,10 @@ Do not expose by default:
 - candidate IDs;
 - analyzer reasoning or discovery notes.
 
-If no reportable Blocker/Major defect is confirmed, output only:
+If no confirmed defect is found, output only:
 
 ```text
-No Blocker/Major bugs confirmed.
+No confirmed bugs found.
 ```
 
 Expose internal audit detail only when the user explicitly asks for audit completeness, technical evidence, or debugging detail.
