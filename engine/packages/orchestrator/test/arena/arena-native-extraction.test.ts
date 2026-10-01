@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditArenaNativeSpatialContent } from "../src/arena-native-extraction.js";
+import { auditArenaNativeSpatialContent } from "../../src/arena/arena-native-extraction.js";
 
 describe("arena native spatial extraction", () => {
   const discovery = {

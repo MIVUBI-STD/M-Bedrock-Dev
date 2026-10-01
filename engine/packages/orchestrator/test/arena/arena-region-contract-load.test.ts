@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseArenaRegionContracts } from "../src/arena-region-contract-load.js";
+import { parseArenaRegionContracts } from "../../src/arena/arena-region-contract-load.js";
 
 describe("arena region contract loader", () => {
   it("parses compact contract documents", () => {

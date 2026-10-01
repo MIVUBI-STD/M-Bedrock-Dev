@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveArenaAuthoredSpatialSources } from "../src/arena-authored-source-index.js";
+import { deriveArenaAuthoredSpatialSources } from "../../src/arena/arena-authored-source-index.js";
 
 describe("arena authored spatial source index", () => {
   it("indexes command and structure placement source locations", () => {

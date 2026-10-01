@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { extractArenaConcurrencyCapacity } from "../src/arena-capacity-extraction.js";
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { extractArenaConcurrencyCapacity } from "../../src/arena/arena-capacity-extraction.js";
+import type { ParsedScriptFile } from "../../../../analyzers/scripts/src/index.js";
 
 const absolute = (x: number, y: number, z: number) => ({
   x: { mode: "absolute" as const, value: x },

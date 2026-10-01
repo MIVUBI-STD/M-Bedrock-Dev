@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { reconcileArenaLayouts } from "../src/arena-layout-reconciliation.js";
+import { reconcileArenaLayouts } from "../../src/arena/arena-layout-reconciliation.js";
 
 describe("arena layout reconciliation", () => {
   const discovery = {
