@@ -25,10 +25,13 @@ Do not create parallel report formats, duplicate Markdown reports, or competing 
 
 ## Reader priority
 
-Default ChatGPT preview is a compact table:
+Default ChatGPT preview uses one compact two-column table per bug:
 
 ```text
-Severity | Bug | Issue | Solution
+# + Severity | Bug title
+Issue | gameplay problem + impact
+Bug Trigger (In-Game) | exact tester actions + visible wrong result
+Solution | supported change
 ```
 
 Do not expand every bug vertically unless full detail is explicitly requested. Do not optimize for exhaustive prose at the expense of scan clarity.
