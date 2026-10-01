@@ -1,82 +1,72 @@
 ---
 name: m-bedrock-target-repair
 description: >
-  Repair or intentionally modify a target map/source working copy after grounded diagnosis. Use for target mutation; not detector development.
+  Repair an approved gameplay bug or apply an explicit design change to a target working copy. No detector development.
 ---
 
 # M-Bedrock Target Repair
 
 **Lane:** OPERATIONAL / TARGET REPAIR
 
-## Purpose
+## Entry
 
-Mutate only the target working copy after an evidence-backed defect or explicit modification request.
-
-## Entry criteria
-
-For **bug repair**, require:
+Bug repair requires:
 
 ```text
 Approved Bug
 + violated Gameplay Contract
-+ exact repair scope
-+ preservation constraints
++ Repair Contract
+  - Must Change
+  - Must Preserve
 ```
 
-For **intentional modification**, require an explicit requested design change; update/approve Game Design before treating the new behavior as expected.
-
-## Allowed actions
-
-- identify smallest target owner/scope;
-- create preconditioned patch transaction;
-- mutate working copy only;
-- preserve rollback state;
-- reparse/rebuild affected semantic branches;
-- rerun the check that justified the repair.
-
-## Forbidden actions
-
-- repair an unapproved bug;
-- mutate before preservation constraints are known;
-- change Game Design implicitly as a way to fix the defect;
-- mutate original source;
-- improve detection capability;
-- use successful mutation as proof diagnosis was correct;
-- widen into unrelated cleanup.
+Intentional modification requires an explicitly approved Game Design change first.
 
 ## Workflow
 
 ```text
-Approved Bug
-→ re-read violated Gameplay Contract
-→ Repair Contract
-   ├─ Must Change
-   └─ Must Preserve
+Approved authority
 → smallest target owner
-→ patch transaction
+→ authorized PatchTransaction
 → preconditions
-→ atomic working-copy mutation
-→ verify defect removed
-→ verify Game Design preserved
-→ runtime residue
+→ working-copy mutation
+→ defect verification
+→ preservation verification
+→ runtime/package residue
 ```
 
-A disappearance of the original symptom is not sufficient if the repair changes intended gameplay.
+## Rules
 
-## Output contract
+- Confirmed Defect alone is not repair authority.
+- Internal `repair-eligible` means causal repair readiness only, not user approval.
+- PatchTransaction describes a mutation; it does not define intended gameplay.
+- Must Change proves what the fix must remove.
+- Must Preserve protects approved gameplay semantics.
+- Original artifacts remain immutable.
+- Symptom removal without preservation proof is not completion.
 
-Validate against ../../schemas/target-repair-output.schema.json.
+## Forbidden
 
-Run: node scripts/validate-output.mjs repair.json
+- repair an unapproved bug;
+- infer Game Design from implementation;
+- mutate without Must Change + Must Preserve;
+- silently change intended gameplay;
+- widen into unrelated cleanup;
+- change detector capability in this lane.
+
+## Output
+
+Validate against `../../schemas/target-repair-output.schema.json`.
 
 ## Handoff
 
-Detection weakness discovered during repair → separate m-bedrock-detection-development handoff.
+Detection weakness → separate `m-bedrock-detection-development` handoff.
 
-## Reference routing
+## Canonical references
 
-Use repository repair semantics and ../../references/evidence-cost-ladder.md only as needed.
+- `../../../docs/01-product/flow.md`
+- `../../../docs/04-repair/README.md`
 
 ## STOP
 
-Stop on stale fingerprint, ambiguous match, workspace escape, unresolved semantic target, or after requested repair + matching verification completes.
+Stop on stale fingerprint, ambiguous target, workspace escape, missing approval/preservation authority, or after requested repair + matching verification.
