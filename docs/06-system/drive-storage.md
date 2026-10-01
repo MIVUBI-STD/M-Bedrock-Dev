@@ -56,7 +56,15 @@ The latest completed human-facing report may live in the root:
 <Map Name> - Bug Report.pdf
 ```
 
-Canonical Bug Report V2 JSON remains in Git/workspace.
+This PDF is a derived published snapshot only. Canonical Bug Report V2 JSON remains in `workspace/reports/` and is the only persisted bug-state authority.
+
+Do not:
+
+- maintain a second canonical JSON in Drive;
+- edit a Drive PDF/spreadsheet and treat it as current bug state;
+- backfill missing reports for older map versions merely for completeness.
+
+Legacy QA spreadsheets/PDFs are reference/import material only. Current-version recording takes priority.
 
 ## Development
 
