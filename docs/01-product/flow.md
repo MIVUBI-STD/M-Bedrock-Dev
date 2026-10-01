@@ -1,28 +1,76 @@
 # Product Flow
 
-Canonical lifecycle:
+Canonical gameplay-engineering lifecycle:
 
 ```text
-artifact
-→ fingerprint
-→ safe ingest
-→ discovery
-→ normalization
-→ semantic index / dependency graph
-→ diagnostics
-→ patch plan
-→ transactional mutation
-→ validation
-→ regression checks
-→ repackage
-→ evidence report
+Target Identity
+→ Game Design
+→ Gameplay Contract
+→ Actual Behavior
+→ Diagnose Contradictions
+→ Proposed Bug Set
+→ Chat Approval
+→ Approved Bug
+→ Repair Contract
+→ Transactional Repair
+→ Verify Defect Removed
+→ Verify Game Design Preserved
+→ Package
+→ Report
 ```
+
+## Understand
+
+Current approved Game Design must be recovered before gameplay bug discovery. Gameplay Contract is a scoped derived working model, not a second persisted design authority.
+
+Design readiness:
+
+- READY — all material rules for the audited scope are grounded;
+- PARTIAL — unresolved rules exist but cannot change the scoped decision;
+- BLOCKED — a material unknown or conflict can change bug-vs-feature classification.
+
+BLOCKED stops defect classification for the affected scope.
+
+## Audit
+
+Bug discovery is difference-search:
+
+```text
+Grounded Gameplay Contract
+≠
+Grounded Actual Behavior
+→ contradiction candidate
+```
+
+A technical anomaly is not a gameplay bug without a grounded contradiction, material player impact, cleared counter-evidence, and a tester-verifiable trigger.
+
+## Approval
+
+Proposed bugs are discussed before canonical report creation. Only explicitly approved Blocker/Major bugs enter the report/publication path.
+
+## Repair
+
+```text
+Approved Bug
++ violated Gameplay Contract
+→ Repair Contract
+   - Must Change
+   - Must Preserve
+→ smallest target mutation
+```
+
+Bug repair must not silently redefine intended gameplay.
+
+## Validate
+
+A repair is not complete merely because the original symptom disappears. The defect must be removed and relevant approved gameplay behavior must remain preserved.
 
 ## Principles
 
-- inspection must be useful without mutation;
-- diagnostics explain findings rather than silently fixing them;
-- repairs are explicit, reproducible transactions;
-- validation is matched to the claim being made;
-- packaging is separate from semantic correctness;
-- runtime acceptance remains distinct from source/static validation.
+- understand design before looking for gameplay defects;
+- current approved design and actual implementation are separate authorities;
+- unknown design stays unknown;
+- historical QA is search/regression evidence, not current truth;
+- repairs are explicit and reversible;
+- validation strength matches the claim;
+- HTML/reporting is downstream of approval and never owns gameplay semantics.
