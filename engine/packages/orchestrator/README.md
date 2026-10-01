@@ -28,6 +28,19 @@ Implementation files remain temporarily flat beneath `src/` while CI/local verif
 
 The next physical-move phase may relocate implementation files family-by-family once import verification is available; the family boundaries above should remain stable.
 
+## Compatibility alias rule
+
+Legacy flat `src/*.ts` re-export stubs are compatibility-only. They are not canonical owners.
+
+Rules:
+
+- new code imports from the family path (`inspection/`, `diagnosis/`, `repair/`, etc.);
+- do not add new flat root re-export stubs;
+- do not duplicate implementation behind an alias;
+- remove legacy aliases only in a verified import-migration pass.
+
+This keeps current work practical without a risky mass-delete while CI/local verification is deferred.
+
 ### Physical migration status
 
 `core/`, `arena/`, `inspection/`, `diagnosis/`, `repair/`, `workflow/`, `reliability/`, `reporting/`, and `release/` now have their orchestrator implementations physically inside the hierarchy; matching tests mirror those families where present. Arena-authored static source risk analysis is owned by the Script Analyzer rather than duplicated in orchestrator. Legacy flat source paths remain compatibility re-export stubs while CI/local verification is deferred.
