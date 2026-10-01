@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   spatialAuthorityDiagnostics,
-} from "../src/spatial-authority-diagnostics.js";
+} from "../../src/inspection/spatial-authority-diagnostics.js";
 
 describe("spatial authority diagnostics", () => {
   it("emits medium severity for conflicting or invalid policy coverage", () => {

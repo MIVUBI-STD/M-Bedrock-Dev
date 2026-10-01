@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   parseSpatialAuthorityBehaviorContract,
-} from "../src/spatial-authority-contract-load.js";
+} from "../../src/inspection/spatial-authority-contract-load.js";
 
 describe("spatial authority contract parser", () => {
   it("normalizes a valid contract without inventing defaults", () => {

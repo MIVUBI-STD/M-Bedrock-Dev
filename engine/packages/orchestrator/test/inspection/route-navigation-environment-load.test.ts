@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   parseRouteNavigationEnvironmentContracts,
-} from "../src/route-navigation-environment-load.js";
+} from "../../src/inspection/route-navigation-environment-load.js";
 
 describe("route navigation environment loader", () => {
   it("parses explicit route capability requirements", () => {

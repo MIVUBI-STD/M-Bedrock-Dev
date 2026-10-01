@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeRouteNavigationEnvironments,
-} from "../src/route-navigation-environment-analysis.js";
+} from "../../src/inspection/route-navigation-environment-analysis.js";
 
 describe("route navigation environment analysis", () => {
   it("marks route incompatible when all navigation states miss authored capability", () => {

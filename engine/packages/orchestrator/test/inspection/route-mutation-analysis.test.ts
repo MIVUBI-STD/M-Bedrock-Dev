@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { analyzeFunctionTopology } from "../src/topology-analysis.js";
-import { analyzeStructureAndChunkRuntime } from "../src/structure-runtime-analysis.js";
-import { derivePlacementProofs } from "../src/structure-proof-analysis.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { analyzeFunctionTopology } from "../../src/topology-analysis.js";
+import { analyzeStructureAndChunkRuntime } from "../../src/structure-runtime-analysis.js";
+import { derivePlacementProofs } from "../../src/structure-proof-analysis.js";
 import {
   correlateRouteMutations,
   routeMutationRuntimeEvidence,
-} from "../src/route-mutation-analysis.js";
+} from "../../src/inspection/route-mutation-analysis.js";
 
 const fn = parseMcFunction(
   "demo:mutate",

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeSpatialAuthorityCoverage,
-} from "../src/spatial-authority-analysis.js";
+} from "../../src/inspection/spatial-authority-analysis.js";
 
 const regions = [
   {
