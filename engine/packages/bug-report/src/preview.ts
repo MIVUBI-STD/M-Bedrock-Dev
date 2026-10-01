@@ -53,6 +53,16 @@ const severityRank: Readonly<Record<BugSeverity, number>> = {
   minor: 2,
 };
 
+export function compareBugReportPreviewOrder(
+  left: Pick<BugReportV2Bug, "severity" | "id">,
+  right: Pick<BugReportV2Bug, "severity" | "id">,
+): number {
+  const severity =
+    severityRank[left.severity] - severityRank[right.severity];
+  if (severity !== 0) return severity;
+  return left.id.localeCompare(right.id);
+}
+
 function counts(report: BugReportV2): BugReportPreviewCounts {
   const open = report.bugs.filter((bug) => !bug.fixed);
   return {
@@ -113,12 +123,7 @@ export function projectBugReportPreview(
     bugs: report.bugs
       .filter((bug) => includeFixed || !bug.fixed)
       .slice()
-      .sort((left, right) => {
-        const severity =
-          severityRank[left.severity] - severityRank[right.severity];
-        if (severity !== 0) return severity;
-        return left.id.localeCompare(right.id);
-      })
+      .sort(compareBugReportPreviewOrder)
       .map((bug) => projectBug(bug, mode)),
   };
 }
