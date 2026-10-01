@@ -119,7 +119,7 @@ or single current root .mcworld
 
 Do not infer current mechanics from older versions, Development/Source, historical QA, Technical Docs, other maps, or external references. They remain archive/reference unless the user explicitly requests comparison/history.
 
-Expected and Actual Behavior must be scoped to the same selected map/version.
+Expected and Actual Behavior must be derived from the same selected map/version. The selected map artifact is the sole current gameplay source of truth.
 
 ## Design-first gameplay workflow
 
@@ -143,11 +143,11 @@ Target Identity
 
 Rules:
 
-- recover current approved map Game Design before gameplay bug discovery;
-- Gameplay Contract is the normalized working understanding of approved design, not a second authority;
-- derived understanding stays temporary unless the user explicitly approves it into map Game Design;
-- material design unknowns block bug classification for their scope;
-- implementation/source code proves actual behavior, never intended gameplay by itself;
+- derive the Gameplay Contract from explicit gameplay evidence inside the selected map version before bug discovery;
+- do not import map-specific intent from external docs, old versions, Development/Source, or other maps;
+- Gameplay Contract is a scoped working model, not a second authority;
+- material unknowns inside the selected artifact block bug classification for their scope;
+- if expected behavior cannot be grounded from the selected artifact, keep it unknown rather than borrowing stale intent;
 - no Approved Bug → no bug repair;
 - no preservation contract → no target mutation for bug repair;
 - repair verification proves both defect removal and preservation of approved gameplay.
