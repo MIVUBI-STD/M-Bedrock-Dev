@@ -1,4 +1,5 @@
 import {
+  BUG_REPORT_WORKSPACE_DIRECTORY,
   bugReportV2Progress,
   parseBugReportV2Json,
   reviewBugReportCopy,
@@ -97,7 +98,7 @@ export class GitHubBugReportStore {
     this.#repository = options.repository;
     this.#branch = options.branch;
     this.#token = options.token;
-    this.#directory = (options.directory ?? "bug-reports").replace(/^\/+|\/+$/g, "");
+    this.#directory = (options.directory ?? BUG_REPORT_WORKSPACE_DIRECTORY).replace(/^\/+|\/+$/g, "");
     this.#apiBaseUrl = (options.apiBaseUrl ?? "https://api.github.com").replace(/\/$/, "");
     this.#fetch = options.fetchImpl ?? fetch;
   }
