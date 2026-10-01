@@ -5,6 +5,15 @@ Used by **Map Bug Audit**.
 Before any candidate exists, record:
 
 ```text
+Selected current artifact
+Selected map version
+Evidence scope = selected map/version only
+Historical/archive sources excluded by default
+```
+
+Then record:
+
+```text
 Target identity / map version
 Game Design authority
 Gameplay Contract scope
