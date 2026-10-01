@@ -22,7 +22,7 @@ Then render **one compact two-column table per bug**:
 | #1 · BLOCKER | Match cannot restart |
 |---|---|
 | **Issue** | Arena keeps the previous session ownership after match end, so a new match cannot start. |
-| **Bug Trigger (In-Game)** | 1) Join the arena with 2 players → 2) Finish the match → 3) Return to lobby → 4) Start the same arena again → 5) Confirm the match does not start. |
+| **Bug Trigger (In-Game)** | 1. Join the arena with 2 players.<br>2. Finish the match normally.<br>3. Return to the lobby.<br>4. Start the same arena again.<br>5. Confirm the new match does not start. |
 | **Solution** | Clear arena session ownership during cleanup so the arena becomes available again. |
 
 Rules:
@@ -34,6 +34,7 @@ Rules:
 - keep each bug in one local two-column table;
 - `Issue` must answer **what is wrong + gameplay impact**;
 - `Bug Trigger (In-Game)` must answer **exactly what the tester does in Minecraft + what wrong result to observe**;
+- render each trigger step on its own numbered line; never join steps with arrows or long inline chains;
 - `Solution` must answer **what should be changed to resolve the issue**;
 - when Suggested Fix is absent, show `—`;
 - do not show Category, Found By, Repair By, Fixed progress, Expected, Observed, Technical Analysis, Relevant Code, or Must Preserve in normal preview;
@@ -138,6 +139,7 @@ If Issue or Solution requires Technical Analysis to understand its basic meaning
 ## Table density
 
 - use two columns only;
+- keep Bug Trigger steps vertically stacked (`1.`, `2.`, `3.`...) inside the value cell;
 - keep labels short and fixed;
 - no empty filler columns;
 - no duplicate text between Bug, Issue, Trigger, and Solution;
