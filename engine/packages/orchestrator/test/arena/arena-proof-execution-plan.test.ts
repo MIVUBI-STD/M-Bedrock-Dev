@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planArenaProofExecution } from "../src/arena-proof-execution-plan.js";
+import { planArenaProofExecution } from "../../src/arena/arena-proof-execution-plan.js";
 
 describe("arena proof execution plan", () => {
   const nativeMatch = {

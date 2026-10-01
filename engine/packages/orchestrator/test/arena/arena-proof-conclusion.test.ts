@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { concludeArenaProof } from "../src/arena-proof-conclusion.js";
+import { concludeArenaProof } from "../../src/arena/arena-proof-conclusion.js";
 
 describe("arena proof conclusion", () => {
   it("only emits complete-proof for full coverage plus verified voxel proof", () => {

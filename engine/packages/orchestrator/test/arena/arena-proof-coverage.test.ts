@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveArenaProofCoverage } from "../src/arena-proof-coverage.js";
+import { deriveArenaProofCoverage } from "../../src/arena/arena-proof-coverage.js";
 
 describe("arena proof coverage", () => {
   it("reports exact coverage after mutable subtraction", () => {

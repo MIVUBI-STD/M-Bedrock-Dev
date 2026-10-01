@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assessArenaProofReuse } from "../src/arena-proof-reuse.js";
+import { assessArenaProofReuse } from "../../src/arena/arena-proof-reuse.js";
 
 function inspection(
   overrides:

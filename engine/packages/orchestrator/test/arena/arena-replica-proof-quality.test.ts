@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveArenaReplicaProofQuality } from "../src/arena-replica-proof-quality.js";
+import { deriveArenaReplicaProofQuality } from "../../src/arena/arena-replica-proof-quality.js";
 
 describe("arena replica proof quality", () => {
   it("keeps replica completeness independent", () => {
