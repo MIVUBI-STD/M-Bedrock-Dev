@@ -36,7 +36,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   producesTraits: ["structural-proof"],
 }, {
   id: "diagnosis.semantic-ir",
-  owner: "packages/orchestrator/src/semantic-ir-stage.ts",
+  owner: "packages/orchestrator/src/diagnosis/semantic-ir-stage.ts",
   executorId: "diagnosis.semantic-ir",
   cacheRevision: "1",
   evidenceLevel: "semantic",
@@ -58,7 +58,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   prerequisites: ["diagnosis.source-index"],
 }, {
   id: "diagnosis.intent-grounding",
-  owner: "packages/orchestrator/src/gameplay-intent-stage.ts",
+  owner: "packages/orchestrator/src/inspection/gameplay-intent-stage.ts",
   executorId: "diagnosis.intent-grounding",
   cacheRevision: "1",
   evidenceLevel: "semantic",
@@ -78,9 +78,9 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   producesTraits: ["intent-grounded"],
   prerequisites: ["diagnosis.source-index"],
 }, {
-  id: "diagnosis.authored-intent",
-  owner: "packages/orchestrator/src/gameplay-intent-stage.ts",
-  executorId: "diagnosis.authored-intent",
+  id: "diagnosis.contract-evidence",
+  owner: "packages/orchestrator/src/inspection/gameplay-intent-stage.ts",
+  executorId: "diagnosis.contract-evidence",
   cacheRevision: "1",
   evidenceLevel: "semantic",
   cost: "moderate",
@@ -96,7 +96,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
     "LOCAL_MINECRAFT",
     "LIVE_MINECRAFT",
   ],
-  producesTraits: ["authored-intent"],
+  producesTraits: ["contract-evidence"],
   prerequisites: ["diagnosis.intent-grounding"],
 }, {
   id: "diagnosis.contradiction-proof",
@@ -144,7 +144,7 @@ const capabilities: readonly RegisteredDiagnosisCapability[] = [{
   prerequisites: ["diagnosis.intent-grounding"],
 }, {
   id: "diagnosis.runtime-integrity",
-  owner: "packages/orchestrator/src/runtime-evidence-integrity.ts",
+  owner: "packages/orchestrator/src/diagnosis/runtime-evidence-integrity.ts",
   executorId: "diagnosis.runtime-integrity",
   cacheRevision: "1",
   evidenceLevel: "runtime",
