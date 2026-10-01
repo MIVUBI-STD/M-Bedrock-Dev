@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
   CompiledDiagnosticInvariant,
-} from "../../knowledge/src/index.js";
+} from "../../../knowledge/src/index.js";
 import {
   materializeInvariantRegistry,
-} from "../src/invariant-registry.js";
+} from "../../src/diagnosis/invariant-registry.js";
 
 function invariant(
   id: string,

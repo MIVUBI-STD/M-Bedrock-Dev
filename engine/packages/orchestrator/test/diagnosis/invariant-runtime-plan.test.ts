@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { CompiledDiagnosticInvariant } from "../../knowledge/src/index.js";
-import { materializeInvariantRuntimePlan } from "../src/invariant-runtime-plan.js";
+import type { CompiledDiagnosticInvariant } from "../../../knowledge/src/index.js";
+import { materializeInvariantRuntimePlan } from "../../src/diagnosis/invariant-runtime-plan.js";
 
 function invariant(
   id: string,

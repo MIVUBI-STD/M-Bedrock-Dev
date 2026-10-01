@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildInvariantIntelligence } from "../src/invariant-intelligence.js";
+import { buildInvariantIntelligence } from "../../src/diagnosis/invariant-intelligence.js";
 
 describe("invariant intelligence orchestration", () => {
   it("never auto-promotes challenged candidates", () => {
