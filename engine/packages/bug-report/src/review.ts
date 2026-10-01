@@ -201,6 +201,97 @@ export function applyProposedBugReview(
   };
 }
 
+export function validateApprovedBugSet(
+  approved: ApprovedBugSet,
+): readonly string[] {
+  const issues: string[] = [];
+  const approvedKeys = new Set(approved.approvedSemanticKeys);
+  const rejectedKeys = new Set(approved.rejectedSemanticKeys);
+  const decisions = new Map<string, ProposedBugReviewDecision>();
+
+  if (approvedKeys.size !== approved.approvedSemanticKeys.length) {
+    issues.push("Approved semantic keys must be unique.");
+  }
+  if (rejectedKeys.size !== approved.rejectedSemanticKeys.length) {
+    issues.push("Rejected semantic keys must be unique.");
+  }
+
+  for (const key of approvedKeys) {
+    if (rejectedKeys.has(key)) {
+      issues.push(
+        "A proposed bug cannot be both approved and rejected: " +
+          key +
+          ".",
+      );
+    }
+  }
+
+  for (const item of approved.decisions) {
+    if (decisions.has(item.semanticKey)) {
+      issues.push(
+        "Duplicate approved-set decision: " +
+          item.semanticKey +
+          ".",
+      );
+      continue;
+    }
+    decisions.set(item.semanticKey, item.decision);
+
+    if (item.decision === "needs-discussion") {
+      issues.push(
+        "Approved Bug Set cannot contain unresolved discussion: " +
+          item.semanticKey +
+          ".",
+      );
+    }
+  }
+
+  for (const key of approvedKeys) {
+    if (decisions.get(key) !== "approve") {
+      issues.push(
+        "Approved semantic key lacks a matching approve decision: " +
+          key +
+          ".",
+      );
+    }
+  }
+
+  for (const key of rejectedKeys) {
+    if (decisions.get(key) !== "reject") {
+      issues.push(
+        "Rejected semantic key lacks a matching reject decision: " +
+          key +
+          ".",
+      );
+    }
+  }
+
+  for (const [key, decision] of decisions) {
+    if (
+      decision === "approve" &&
+      !approvedKeys.has(key)
+    ) {
+      issues.push(
+        "Approve decision is missing from approvedSemanticKeys: " +
+          key +
+          ".",
+      );
+    }
+    if (
+      decision === "reject" &&
+      !rejectedKeys.has(key)
+    ) {
+      issues.push(
+        "Reject decision is missing from rejectedSemanticKeys: " +
+          key +
+          ".",
+      );
+    }
+  }
+
+  return issues;
+}
+
 export function buildBugReportFromApprovedBugSet(
   input: {
     readonly approved: ApprovedBugSet;
@@ -210,6 +301,18 @@ export function buildBugReportFromApprovedBugSet(
       readonly ConfirmedDefectGroupResolution[];
   },
 ): PromoteConfirmedBugsResult {
+  const approvalIssues =
+    validateApprovedBugSet(input.approved);
+  if (approvalIssues.length > 0) {
+    return {
+      ok: false,
+      issues: approvalIssues.map((message) => ({
+        code: "invalid-confirmed-defect" as const,
+        message,
+      })),
+    };
+  }
+
   const approvedKeys = new Set(
     input.approved.approvedSemanticKeys,
   );
