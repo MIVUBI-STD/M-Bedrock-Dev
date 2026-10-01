@@ -6,7 +6,6 @@ import {
 import type {
   ParsedScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
-import type { GameDesignSpec } from "../../../game-design-spec/src/index.js";
 import {
   validateGameplayIntentModel,
   type GameplayIntentEdge,
@@ -23,11 +22,9 @@ export interface GameplayIntentStageInput {
   parsedScripts: readonly {
     parsed: ParsedScriptFile;
   }[];
-  referenceMode?: "comparison";
   authoredScripts?: readonly {
     parsed: ParsedScriptFile;
   }[];
-  gameDesign?: GameDesignSpec;
 }
 
 const STATUS_RANK: Readonly<Record<GameplayIntentStatus, number>> = {
@@ -45,28 +42,22 @@ function evidenceId(
 export function buildGameplayIntentModel(
   input: GameplayIntentStageInput,
 ): GameplayIntentModel {
-  const includeReferences =
-    input.referenceMode === "comparison";
-  const referenceScripts =
-    includeReferences
-      ? (input.authoredScripts ?? [])
-      : [];
+  const authoredScripts =
+    input.authoredScripts ?? [];
   const extracted = extractGameplayIntentSignals([
     ...input.parsedScripts.map((item) => item.parsed),
-    ...referenceScripts.map(
+    ...authoredScripts.map(
       (item) => item.parsed,
     ),
   ]);
-  const selectedArtifactSourcePaths = new Set(
-    input.parsedScripts.map(
+  const selectedArtifactSourcePaths = new Set([
+    ...input.parsedScripts.map(
       (item) => item.parsed.source.relativePath,
     ),
-  );
-  const authoredSourcePaths = new Set(
-    referenceScripts.map(
+    ...authoredScripts.map(
       (item) => item.parsed.source.relativePath,
     ),
-  );
+  ]);
 
   const evidence = new Map<string, GameplayIntentEvidence>();
   const nodes = new Map<string, GameplayIntentNode>();
@@ -74,66 +65,13 @@ export function buildGameplayIntentModel(
   const invariants = new Map<string, GameplayIntentInvariant>();
   const intentUnknowns: GameplayIntentModel["unknowns"][number][] = [];
 
-  if (
-    includeReferences &&
-    input.gameDesign !== undefined
-  ) {
-    const designStatus: GameplayIntentStatus =
-      input.gameDesign.status === "approved"
-        ? "authored"
-        : "hypothesis";
-
-    for (const mechanic of input.gameDesign.mechanics) {
-      const evidenceKey =
-        "design-evidence:mechanic:" + mechanic.id;
-      evidence.set(evidenceKey, {
-        id: evidenceKey,
-        origin: "game-design-spec",
-        locator: input.gameDesign.source.reference,
-        summary: mechanic.statement,
-        scope: "external-reference",
-      });
-      const subjectKey =
-        "mechanic:design:" + mechanic.id;
-      nodes.set(subjectKey, {
-        id: subjectKey,
-        kind: "mechanic",
-        label: mechanic.id,
-        status: designStatus,
-        evidenceIds: [evidenceKey],
-        description: mechanic.statement,
-      });
-    }
-
-    for (const invariant of input.gameDesign.invariants) {
-      const evidenceKey =
-        "design-evidence:invariant:" + invariant.id;
-      evidence.set(evidenceKey, {
-        id: evidenceKey,
-        origin: "game-design-spec",
-        locator: input.gameDesign.source.reference,
-        summary: invariant.statement,
-        scope: "external-reference",
-      });
-      invariants.set("design:" + invariant.id, {
-        id: "design:" + invariant.id,
-        statement: invariant.statement,
-        strength: invariant.strength,
-        status: designStatus,
-        subjectIds: invariant.subjectIds ?? [],
-        evidenceIds: [evidenceKey],
-      });
-    }
-  }
 
   for (const signal of extracted.signals) {
     const id = evidenceId(signal);
     const signalScope =
       selectedArtifactSourcePaths.has(signal.locator)
         ? "selected-artifact" as const
-        : authoredSourcePaths.has(signal.locator)
-          ? "external-reference" as const
-          : undefined;
+        : undefined;
     evidence.set(id, {
       id,
       origin: signal.evidenceOrigin,
@@ -198,9 +136,7 @@ export function buildGameplayIntentModel(
     const relationScope =
       selectedArtifactSourcePaths.has(relation.locator)
         ? "selected-artifact" as const
-        : authoredSourcePaths.has(relation.locator)
-          ? "external-reference" as const
-          : undefined;
+        : undefined;
     evidence.set(id, {
       id,
       origin: relation.evidenceOrigin,
