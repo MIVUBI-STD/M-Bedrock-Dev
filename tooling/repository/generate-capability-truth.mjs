@@ -4,6 +4,19 @@ import ts from "typescript";
 
 const ROOT=process.cwd();
 
+function contentFingerprint(text){
+  let h=0x811c9dc5;
+  for(let i=0;i<text.length;i++){
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h,0x01000193)>>>0;
+  }
+  return h.toString(16).padStart(8,"0");
+}
+
+function registryFingerprint(paths){
+  return contentFingerprint(paths.map((path)=>readFileSync(path,"utf8")).join("\n--registry--\n"));
+}
+
 function filesUnder(root){
   if(!existsSync(root)) return [];
   return readdirSync(root,{withFileTypes:true}).flatMap((entry)=>{
@@ -122,7 +135,8 @@ const output={
   schemaVersion:1,
   generatedFrom:{
     taskRegistry,
-    analysisRegistries
+    analysisRegistries,
+    registryFingerprint: registryFingerprint([taskRegistry,...analysisRegistries])
   },
   summary:{
     taskCapabilities:taskCapabilities.length,

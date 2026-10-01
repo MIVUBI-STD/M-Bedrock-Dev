@@ -2,20 +2,21 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "ed69d9cb8ac0f864d41fa88e988fabfc59852abf",
+    "commit": "5bac2630bf1da010f302b9ec0886e3391464bd0e",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
-    "analysisRegistry": [
+    "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
-    ]
+    ],
+    "registryFingerprint": "95bd48dd"
   },
   "summary": {
-    "taskCapabilities": 34,
+    "taskCapabilities": 35,
+    "ownerTested": 35,
+    "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
-    "analysisCapabilities": 27,
-    "ownerTested": 34,
-    "implementationPresent": 0
+    "analysisCapabilities": 27
   },
   "taskCapabilities": [
     {
@@ -231,7 +232,32 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "context.dataflow-slice",
+      "owner": "packages/orchestrator",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -256,7 +282,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -281,7 +307,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -306,7 +332,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -331,7 +357,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -356,7 +382,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -381,7 +407,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -406,7 +432,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -431,7 +457,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -456,7 +482,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -481,7 +507,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
@@ -506,7 +532,7 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 269,
+      "sourceFiles": 270,
       "testFiles": 254,
       "hasReadme": true,
       "proofPaths": [
