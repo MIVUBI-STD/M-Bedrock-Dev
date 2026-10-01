@@ -127,6 +127,9 @@ export function parseBugReportToCurrent(
   const legacy = parseBugReportJson(source);
   if (!legacy.ok) return legacy;
 
-  const migrated = migrateBugReportV1ToV2(legacy.report);
-  return parseBugReportV2(migrated);
+  return {
+    ok: true,
+    report: migrateBugReportV1ToV2(legacy.report),
+    issues: [],
+  };
 }
