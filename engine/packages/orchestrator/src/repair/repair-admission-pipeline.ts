@@ -276,6 +276,23 @@ export function evaluateRepairAdmissionPipeline(
     input.supportingInvariantIds ?? [],
     input.preservationReadiness,
     input.postTransformProofBinding,
+    input.repairAuthority === undefined
+      ? undefined
+      : {
+          kind: input.repairAuthority.kind,
+          ...(input.repairAuthority.kind === "approved-bug"
+            ? {
+                approvedBugSemanticKey:
+                  input.repairAuthority.bugSemanticKey,
+              }
+            : {}),
+          mustChangeInvariantIds:
+            input.repairAuthority.preservationContract
+              .mustChangeInvariantIds,
+          mustPreserveInvariantIds:
+            input.repairAuthority.preservationContract
+              .mustPreserveInvariantIds,
+        },
   );
 
   return {
