@@ -5,8 +5,8 @@ import {
   writeUncompressed,
   type NBT,
 } from "prismarine-nbt";
-import type { BedrockLevelDbReader } from "../../../adapters/leveldb/src/index.js";
-import { extractPersistedPackIdentities } from "../src/persisted-pack-identity.js";
+import type { BedrockLevelDbReader } from "../../../../adapters/leveldb/src/index.js";
+import { extractPersistedPackIdentities } from "../../src/release/persisted-pack-identity.js";
 
 describe("persisted pack identity extraction", () => {
   it("reads DynamicProperties as bounded named NBT evidence", async () => {

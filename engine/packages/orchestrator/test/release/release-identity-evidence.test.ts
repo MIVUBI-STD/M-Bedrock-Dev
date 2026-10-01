@@ -3,7 +3,7 @@ import {
   artifactFilenameReleaseObservation,
   extractExplicitReleaseVersion,
   levelNameReleaseObservation,
-} from "../src/release-identity-evidence.js";
+} from "../../src/release/release-identity-evidence.js";
 
 describe("release identity evidence", () => {
   it("extracts explicit v/version/release markers", () => {

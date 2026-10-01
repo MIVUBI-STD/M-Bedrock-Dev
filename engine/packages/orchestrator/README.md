@@ -30,7 +30,7 @@ The next physical-move phase may relocate implementation files family-by-family 
 
 ### Physical migration status
 
-`reporting/` is the first family whose implementation and tests have moved physically into the hierarchy. Legacy flat source paths remain as compatibility re-export stubs while CI/local verification is deferred.
+`reporting/` and `release/` now have their implementations and tests physically inside the hierarchy. Legacy flat source paths remain as compatibility re-export stubs while CI/local verification is deferred.
 
 
 ## Inspection pipeline

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeReleaseIdentity } from "../src/release-identity-analysis.js";
+import { analyzeReleaseIdentity } from "../../src/release/release-identity-analysis.js";
 
 describe("release identity analysis", () => {
   it("keeps pack engine and script API versions separate from release identity", () => {
