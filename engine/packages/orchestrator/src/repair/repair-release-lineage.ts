@@ -1,0 +1,830 @@
+import {
+  CONTRACT_REGISTRY_REVISION,
+  causalProofAtLeast,
+  runtimeVerificationExperimentContractCompatible,
+  runtimeVerificationExperimentContractsFromProvenance,
+} from "../../../project-model/src/index.js";
+import type {
+  DecisionBasisRevision,
+  DecisionLedgerEntry,
+  DecisionLedgerKind,
+  DecisionLedgerSnapshot,
+} from "../../../project-model/src/index.js";
+import {
+  validateDecisionLedgerSnapshot,
+} from "../../../project-model/src/index.js";
+import type { RepairLifecycleState } from "../repair-lifecycle.js";
+import type { RepairProofBundle } from "../repair-proof-bundle.js";
+import {
+  invalidateStaleDecisionLedger,
+} from "../decision-ledger.js";
+import {
+  decideRepairRelease,
+  type RepairReleaseDecision,
+} from "./repair-release-gate.js";
+
+export interface RepairReleaseLineageResult {
+  decision: RepairReleaseDecision;
+  ledger: DecisionLedgerSnapshot;
+  lineageDecisionIds: readonly string[];
+  reasons: readonly string[];
+}
+
+function activeForTransaction(
+  ledger: DecisionLedgerSnapshot,
+  transactionId: string,
+  kind: DecisionLedgerKind,
+): DecisionLedgerEntry[] {
+  return ledger.entries.filter(
+    (entry) =>
+      entry.status === "active" &&
+      entry.transactionId === transactionId &&
+      entry.kind === kind,
+  );
+}
+
+function ancestorIds(
+  ledger: DecisionLedgerSnapshot,
+  entry: DecisionLedgerEntry,
+): Set<string> {
+  const byId = new Map(
+    ledger.entries.map((item) => [item.id, item]),
+  );
+  const output = new Set<string>();
+  const queue = [...entry.upstreamDecisionIds];
+
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    if (output.has(id)) continue;
+    output.add(id);
+    const parent = byId.get(id);
+    if (!parent) continue;
+    queue.push(...parent.upstreamDecisionIds);
+  }
+
+  return output;
+}
+
+function activeAncestorsOfKind(
+  ledger: DecisionLedgerSnapshot,
+  entry: DecisionLedgerEntry,
+  kind: DecisionLedgerKind,
+): DecisionLedgerEntry[] {
+  const byId = new Map(
+    ledger.entries.map((item) => [item.id, item]),
+  );
+
+  return [...ancestorIds(ledger, entry)]
+    .map((id) => byId.get(id))
+    .filter(
+      (ancestor): ancestor is DecisionLedgerEntry =>
+        ancestor !== undefined &&
+        ancestor.status === "active" &&
+        ancestor.kind === kind,
+    );
+}
+
+function decisionBasisMismatch(
+  entry: DecisionLedgerEntry,
+  expected: DecisionBasisRevision,
+): string | undefined {
+  for (const key of [
+    "sourceFingerprint",
+    "graphFingerprint",
+    "semanticIrRevision",
+    "contractRegistryRevision",
+    "knowledgeRevision",
+    "invariantRegistryRevision",
+    "repairProviderRegistryRevision",
+    "repairStrategySourceRegistryRevision",
+    "repairRealizerRegistryRevision",
+    "postTransformProofRevision",
+    "targetProfileFingerprint",
+    "probeBindingRevision",
+    "runtimeEvidenceRevision",
+    "runtimeExperimentContractRevision",
+    "preservationContractRevision",
+    "preservationBaselineRevision",
+  ] as const) {
+    const expectedValue = expected[key];
+    if (expectedValue === undefined) continue;
+    if (entry.basis[key] !== expectedValue) {
+      return (
+        "Decision " +
+        entry.id +
+        " does not carry current proof basis " +
+        key +
+        ": expected " +
+        expectedValue +
+        ", received " +
+        String(entry.basis[key] ?? "<missing>") +
+        "."
+      );
+    }
+  }
+  return undefined;
+}
+
+function uniqueActiveStage(
+  ledger: DecisionLedgerSnapshot,
+  transactionId: string,
+  kind: DecisionLedgerKind,
+): {
+  entry?: DecisionLedgerEntry;
+  error?: string;
+} {
+  const entries = activeForTransaction(
+    ledger,
+    transactionId,
+    kind,
+  );
+
+  if (entries.length === 0) {
+    return {
+      error:
+        "Missing active " +
+        kind +
+        " decision for transaction " +
+        transactionId +
+        ".",
+    };
+  }
+
+  if (entries.length > 1) {
+    return {
+      error:
+        "Multiple active " +
+        kind +
+        " decisions make release lineage ambiguous for transaction " +
+        transactionId +
+        ".",
+    };
+  }
+
+  return { entry: entries[0]! };
+}
+
+function proofBasisMismatch(
+  proof: RepairProofBundle,
+  currentBasis: DecisionBasisRevision,
+): string | undefined {
+  for (const key of [
+    "sourceFingerprint",
+    "graphFingerprint",
+    "semanticIrRevision",
+    "contractRegistryRevision",
+    "knowledgeRevision",
+    "invariantRegistryRevision",
+    "repairProviderRegistryRevision",
+    "repairStrategySourceRegistryRevision",
+    "repairRealizerRegistryRevision",
+    "postTransformProofRevision",
+    "targetProfileFingerprint",
+    "probeBindingRevision",
+    "runtimeEvidenceRevision",
+    "runtimeExperimentContractRevision",
+    "preservationContractRevision",
+    "preservationBaselineRevision",
+  ] as const) {
+    const expected = proof.decisionBasis[key];
+    if (
+      expected !== undefined &&
+      currentBasis[key] !== expected
+    ) {
+      return (
+        key +
+        " changed from " +
+        expected +
+        " to " +
+        String(currentBasis[key] ?? "<missing>") +
+        "."
+      );
+    }
+  }
+  return undefined;
+}
+
+export function decideRepairReleaseWithLineage(
+  lifecycle: RepairLifecycleState,
+  proof: RepairProofBundle,
+  ledgerSnapshot: DecisionLedgerSnapshot,
+  currentBasis: DecisionBasisRevision,
+): RepairReleaseLineageResult {
+  const lifecycleDecision = decideRepairRelease(lifecycle);
+
+  if (
+    currentBasis.contractRegistryRevision !==
+      CONTRACT_REGISTRY_REVISION
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Current release basis contract registry revision is stale or missing.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Release evaluation must use the canonical contract registry revision.",
+      ],
+    };
+  }
+
+  if (
+    proof.decisionBasis.contractRegistryRevision !==
+      CONTRACT_REGISTRY_REVISION
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof contract registry revision is stale.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Repair proof must be recreated under the canonical contract registry.",
+      ],
+    };
+  }
+
+  if (
+    proof.claimStrength === "proven-runtime" &&
+    !proof.decisionBasis.runtimeEvidenceRevision?.trim()
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Runtime-proven repair proof has no runtimeEvidenceRevision.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Runtime-proven repair proof must be bound to the runtime evidence snapshot that authorized it.",
+      ],
+    };
+  }
+
+  if (
+    !proof.decisionBasis.preservationContractRevision?.trim() ||
+    !proof.decisionBasis.preservationBaselineRevision?.trim()
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Release proof is not bound to a preservation contract and baseline.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Release requires preservationContractRevision and preservationBaselineRevision in the repair proof decision basis.",
+      ],
+    };
+  }
+
+  if (!causalProofAtLeast(proof.proofState, "causal")) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Release requires causal root-cause proof; guarded intervention evidence is not releaseable.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Repair proof state must be causal or stronger before release.",
+      ],
+    };
+  }
+
+  if (
+    proof.preservationReadinessDisposition !== "ready" ||
+    !proof.preservationContractId?.trim() ||
+    !Array.isArray(proof.preservationBaselineEvidenceIds) ||
+    proof.preservationBaselineEvidenceIds.length === 0
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof does not carry a ready preservation baseline.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Release requires pre-mutation preservation readiness and explicit baseline evidence.",
+      ],
+    };
+  }
+
+  if (
+    proof.postTransformProofBinding !== undefined &&
+    (
+      lifecycle.staticPreservationRequired !== true ||
+      lifecycle.staticPreservationComplete !== true ||
+      !lifecycle.staticPreservationProofFingerprint?.trim()
+    )
+  ) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Transform-bound repair lifecycle does not carry a proven static graph preservation fingerprint.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Release requires static graph preservation proof for every post-transform-bound repair.",
+      ],
+    };
+  }
+
+  if (proof.transactionId !== lifecycle.transactionId) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof does not belong to the lifecycle transaction.",
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: [
+        "Repair proof transactionId does not match lifecycle transactionId.",
+      ],
+    };
+  }
+
+  const ledgerErrors = validateDecisionLedgerSnapshot(
+    ledgerSnapshot,
+  );
+  if (ledgerErrors.length > 0) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Decision ledger is structurally invalid.",
+          ...ledgerErrors,
+        ],
+      },
+      ledger: ledgerSnapshot,
+      lineageDecisionIds: [],
+      reasons: ledgerErrors,
+    };
+  }
+
+  const ledger = invalidateStaleDecisionLedger(
+    ledgerSnapshot,
+    currentBasis,
+  );
+
+  const basisMismatch = proofBasisMismatch(
+    proof,
+    currentBasis,
+  );
+  if (basisMismatch) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair proof decision basis is stale.",
+          basisMismatch,
+        ],
+      },
+      ledger,
+      lineageDecisionIds: [],
+      reasons: [basisMismatch],
+    };
+  }
+
+  if (lifecycleDecision.disposition !== "release-eligible") {
+    return {
+      decision: lifecycleDecision,
+      ledger,
+      lineageDecisionIds: [],
+      reasons: lifecycleDecision.reasons,
+    };
+  }
+
+  const authorizingRuntimeContracts =
+    runtimeVerificationExperimentContractsFromProvenance(
+      proof.causalInterventionProvenance ?? [],
+    );
+  const verifiedRuntimeContracts =
+    lifecycle.runtimeVerificationContracts ??
+    (lifecycle.runtimeVerificationContract === undefined
+      ? []
+      : [lifecycle.runtimeVerificationContract]);
+
+  const missingRuntimeContracts =
+    authorizingRuntimeContracts.filter(
+      (expected) =>
+        !verifiedRuntimeContracts.some((actual) =>
+          runtimeVerificationExperimentContractCompatible(
+            expected,
+            actual,
+          )
+        ),
+    );
+
+  if (missingRuntimeContracts.length > 0) {
+    return {
+      decision: {
+        transactionId: lifecycle.transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Runtime verification does not cover the complete repair-authorizing experiment envelope.",
+        ],
+      },
+      ledger,
+      lineageDecisionIds: [],
+      reasons: missingRuntimeContracts.map(
+        (contract) =>
+          "Missing compatible runtime verification for " +
+          contract.interventionId +
+          "@" +
+          contract.experimentRevision +
+          ".",
+      ),
+    };
+  }
+
+  const transactionId = lifecycle.transactionId;
+  const strategy = uniqueActiveStage(
+    ledger,
+    transactionId,
+    "repair-strategy-selection",
+  );
+  const admission = uniqueActiveStage(
+    ledger,
+    transactionId,
+    "repair-admission",
+  );
+  const runtimeEntries = activeForTransaction(
+    ledger,
+    transactionId,
+    "runtime-verification",
+  );
+  const runtimeError =
+    runtimeEntries.length === 0
+      ? "Missing active runtime-verification decision for transaction " +
+        transactionId +
+        "."
+      : undefined;
+  const preservationVerification = uniqueActiveStage(
+    ledger,
+    transactionId,
+    "preservation-verification",
+  );
+  const packageVerification = uniqueActiveStage(
+    ledger,
+    transactionId,
+    "package-verification",
+  );
+
+  const needsTransitiveRevalidation =
+    proof.requiredRevalidationNodeIds.length > 0 ||
+    proof.requiredRevalidationPaths.length > 0;
+
+  const transitive = needsTransitiveRevalidation
+    ? uniqueActiveStage(
+        ledger,
+        transactionId,
+        "transitive-revalidation",
+      )
+    : {};
+
+  const stageErrors = [
+    strategy.error,
+    admission.error,
+    ...(needsTransitiveRevalidation
+      ? [transitive.error]
+      : []),
+    runtimeError,
+    preservationVerification.error,
+    packageVerification.error,
+  ].filter((value): value is string => value !== undefined);
+
+  if (stageErrors.length > 0) {
+    return {
+      decision: {
+        transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair lifecycle is complete, but decision lineage is incomplete or ambiguous.",
+          ...stageErrors,
+        ],
+      },
+      ledger,
+      lineageDecisionIds: [],
+      reasons: stageErrors,
+    };
+  }
+
+  const strategyEntry = strategy.entry!;
+  const admissionEntry = admission.entry!;
+  const runtimeVerificationEntries = runtimeEntries;
+  const preservationEntry = preservationVerification.entry!;
+  const packageEntry = packageVerification.entry!;
+  const transitiveEntry = needsTransitiveRevalidation
+    ? transitive.entry!
+    : undefined;
+
+  const authorizationEntries = activeAncestorsOfKind(
+    ledger,
+    strategyEntry,
+    "repair-authorization",
+  );
+
+  const lineageErrors: string[] = [];
+
+  if (authorizationEntries.length !== 1) {
+    lineageErrors.push(
+      authorizationEntries.length === 0
+        ? "Repair strategy selection is not descended from an active repair authorization."
+        : "Repair strategy selection has multiple active repair authorization ancestors.",
+    );
+  }
+
+  if (
+    proof.selectedCandidateId !== undefined &&
+    !authorizationEntries.some((entry) =>
+      entry.outputIds.includes(
+        "root-cause:" + proof.selectedCandidateId,
+      )
+    )
+  ) {
+    lineageErrors.push(
+      "Repair authorization lineage does not prove the root cause selected by the repair proof.",
+    );
+  }
+
+  const admissionAncestors = ancestorIds(
+    ledger,
+    admissionEntry,
+  );
+  if (!admissionAncestors.has(strategyEntry.id)) {
+    lineageErrors.push(
+      "Repair admission is not descended from the selected repair strategy.",
+    );
+  }
+
+  if (
+    !strategyEntry.outputIds.includes(
+      "repair-strategy:selected",
+    )
+  ) {
+    lineageErrors.push(
+      "Active repair strategy decision does not record a selected strategy.",
+    );
+  }
+
+  if (
+    !strategyEntry.outputIds.includes(
+      "repair-transaction:" + transactionId,
+    )
+  ) {
+    lineageErrors.push(
+      "Active repair strategy decision does not bind the selected strategy to this transaction.",
+    );
+  }
+
+  if (
+    proof.decisionBasis.repairProviderRegistryRevision !== undefined &&
+    !strategyEntry.inputIds.some((id) =>
+      id.startsWith("repair-provider:")
+    )
+  ) {
+    lineageErrors.push(
+      "Provider-bound repair strategy lineage has no provider provenance.",
+    );
+  }
+
+  for (const invariantId of proof.supportingInvariantIds) {
+    if (
+      !strategyEntry.outputIds.includes(
+        "repair-invariant:" + invariantId,
+      )
+    ) {
+      lineageErrors.push(
+        "Repair strategy lineage does not carry supporting invariant: " +
+          invariantId +
+          ".",
+      );
+    }
+  }
+
+  if (transitiveEntry) {
+    const transitiveAncestors = ancestorIds(
+      ledger,
+      transitiveEntry,
+    );
+    if (!transitiveAncestors.has(admissionEntry.id)) {
+      lineageErrors.push(
+        "Transitive revalidation is not descended from repair admission.",
+      );
+    }
+
+    if (
+      !transitiveEntry.outputIds.includes(
+        "transitive-revalidation:passed",
+      )
+    ) {
+      lineageErrors.push(
+        "Active transitive revalidation decision is not a passing decision.",
+      );
+    }
+
+    for (const nodeId of proof.requiredRevalidationNodeIds) {
+      if (
+        !transitiveEntry.inputIds.includes(
+          "revalidation-node:" + nodeId,
+        )
+      ) {
+        lineageErrors.push(
+          "Transitive revalidation lineage does not cover required node: " +
+            nodeId +
+            ".",
+        );
+      }
+    }
+
+    for (const revalidationPath of proof.requiredRevalidationPaths) {
+      if (
+        !transitiveEntry.inputIds.includes(
+          "revalidation-path:" + revalidationPath,
+        )
+      ) {
+        lineageErrors.push(
+          "Transitive revalidation lineage does not cover required path: " +
+            revalidationPath +
+            ".",
+        );
+      }
+    }
+  }
+
+  const requiredVerificationParent =
+    transitiveEntry?.id ?? admissionEntry.id;
+
+  for (const runtimeEntry of runtimeVerificationEntries) {
+    const runtimeAncestors = ancestorIds(
+      ledger,
+      runtimeEntry,
+    );
+    if (!runtimeAncestors.has(requiredVerificationParent)) {
+      lineageErrors.push(
+        "Runtime verification " +
+          runtimeEntry.id +
+          " is not descended from " +
+          (transitiveEntry
+            ? "transitive revalidation."
+            : "repair admission."),
+      );
+    }
+  }
+
+  const preservationAncestors = ancestorIds(
+    ledger,
+    preservationEntry,
+  );
+  if (!preservationAncestors.has(requiredVerificationParent)) {
+    lineageErrors.push(
+      "Preservation verification is not descended from " +
+        (transitiveEntry
+          ? "transitive revalidation."
+          : "repair admission."),
+    );
+  }
+
+  const packageAncestors = ancestorIds(
+    ledger,
+    packageEntry,
+  );
+  if (!packageAncestors.has(requiredVerificationParent)) {
+    lineageErrors.push(
+      "Package verification is not descended from " +
+        (transitiveEntry
+          ? "transitive revalidation."
+          : "repair admission."),
+    );
+  }
+
+  const expectedAdmission =
+    proof.admissionDisposition === "guarded"
+      ? "repair-admission:guarded"
+      : "repair-admission:eligible";
+
+  if (
+    !admissionEntry.outputIds.includes(expectedAdmission)
+  ) {
+    lineageErrors.push(
+      "Repair admission lineage does not match proof admission disposition.",
+    );
+  }
+
+  for (const runtimeEntry of runtimeVerificationEntries) {
+    if (
+      !runtimeEntry.outputIds.includes(
+        "runtime-verification:passed",
+      )
+    ) {
+      lineageErrors.push(
+        "Active runtime verification decision " +
+          runtimeEntry.id +
+          " is not a passing decision.",
+      );
+    }
+  }
+
+  if (
+    !preservationEntry.outputIds.includes(
+      "preservation-verification:passed",
+    )
+  ) {
+    lineageErrors.push(
+      "Active preservation verification decision is not a passing decision.",
+    );
+  }
+
+  if (
+    !packageEntry.outputIds.includes(
+      "package-verification:passed",
+    )
+  ) {
+    lineageErrors.push(
+      "Active package verification decision is not a passing decision.",
+    );
+  }
+
+  const lineageEntries = [
+    ...authorizationEntries,
+    strategyEntry,
+    admissionEntry,
+    ...(transitiveEntry ? [transitiveEntry] : []),
+    ...runtimeVerificationEntries,
+    preservationEntry,
+    packageEntry,
+  ];
+
+  for (const entry of lineageEntries) {
+    const mismatch = decisionBasisMismatch(
+      entry,
+      proof.decisionBasis,
+    );
+    if (mismatch) lineageErrors.push(mismatch);
+  }
+
+  const lineageDecisionIds = lineageEntries
+    .map((entry) => entry.id)
+    .sort();
+
+  if (lineageErrors.length > 0) {
+    return {
+      decision: {
+        transactionId,
+        disposition: "blocked",
+        reasons: [
+          "Repair lifecycle proof exists, but active decision lineage is not release-safe.",
+          ...lineageErrors,
+        ],
+      },
+      ledger,
+      lineageDecisionIds,
+      reasons: lineageErrors,
+    };
+  }
+
+  return {
+    decision: {
+      transactionId,
+      disposition: "release-eligible",
+      reasons: [
+        ...lifecycleDecision.reasons,
+        "Active decision lineage is complete, current, causally authorized, invariant-bound, and verified through runtime/preservation/package evidence.",
+      ],
+    },
+    ledger,
+    lineageDecisionIds,
+    reasons: [],
+  };
+}

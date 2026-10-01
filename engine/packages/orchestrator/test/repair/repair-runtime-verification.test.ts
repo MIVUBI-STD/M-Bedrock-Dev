@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   repairRuntimeExperimentContractsFromProof,
   verifyRepairRuntimeEvidence,
-} from "../src/repair-runtime-verification.js";
+} from "../../src/repair/repair-runtime-verification.js";
 import {
   runtimeVerificationExperimentEnvelopeRevision,
   type RuntimeEvidenceRecord,
   type RuntimeVerificationExperimentContract,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 
 const records: RuntimeEvidenceRecord[] = [{
   predicate: "target-ready",

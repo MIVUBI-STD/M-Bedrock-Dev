@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   decideRepairPackageStaging,
   decideRepairRelease,
-} from "../src/repair-release-gate.js";
+} from "../../src/repair/repair-release-gate.js";
 import {
   markRepairPackageVerified,
   markRepairPreservationVerified,
   markRepairRuntimeVerified,
   type RepairLifecycleState,
-} from "../src/repair-lifecycle.js";
+} from "../../src/repair-lifecycle.js";
 
 function state(): RepairLifecycleState {
   return {

@@ -2,19 +2,19 @@ import { describe, expect, it } from "vitest";
 import {
   appendDecisionLedgerEntry,
   createDecisionLedger,
-} from "../src/decision-ledger.js";
+} from "../../src/decision-ledger.js";
 import {
   decideRepairReleaseWithLineage,
-} from "../src/repair-release-lineage.js";
+} from "../../src/repair/repair-release-lineage.js";
 import type {
   RepairLifecycleState,
-} from "../src/repair-lifecycle.js";
+} from "../../src/repair-lifecycle.js";
 import type {
   RepairProofBundle,
-} from "../src/repair-proof-bundle.js";
+} from "../../src/repair-proof-bundle.js";
 import {
   CONTRACT_REGISTRY_REVISION,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 
 const lifecycle: RepairLifecycleState = {
   transactionId: "tx-1",
