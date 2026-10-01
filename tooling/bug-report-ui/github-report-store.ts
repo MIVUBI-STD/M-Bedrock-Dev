@@ -1,17 +1,10 @@
 import {
-  completeVerifiedBugRepair,
-  type BugRepairVerification,
-} from "../../engine/packages/repair/src/index.js";
-import {
   completeBugReportFromClosedRepair,
   type PostRepairClosureReceipt,
 } from "../../engine/packages/orchestrator/src/index.js";
 import type {
   PreservationVerificationReceipt,
 } from "../../engine/packages/preservation/src/index.js";
-import type {
-  ValidationTraceReport,
-} from "../../engine/packages/validation/src/index.js";
 import {
   BUG_REPORT_WORKSPACE_DIRECTORY,
   bugReportV2Progress,
@@ -374,25 +367,6 @@ export class GitHubBugReportStore {
     }
 
     return this.#saveReport(path, report, expectedRevision);
-  }
-
-  async completeVerifiedRepair(
-    path: string,
-    verification: BugRepairVerification,
-    trace: ValidationTraceReport,
-    expectedRevision: string,
-  ): Promise<SavedGitHubBugReport> {
-    const current = await this.loadReport(path);
-    if (current.revision !== expectedRevision) {
-      throw new GitHubBugReportConflictError();
-    }
-
-    const completed = completeVerifiedBugRepair(
-      current.report,
-      verification,
-      trace,
-    );
-    return this.#saveReport(path, completed, expectedRevision);
   }
 
   async completeClosedRepair(
