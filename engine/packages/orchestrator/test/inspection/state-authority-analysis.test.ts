@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
+import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
 import {
   correlateStateAuthority,
   stateAuthorityRuntimeEvidence,
-} from "../src/state-authority-analysis.js";
-import { knowledgeRuntimeDiagnostics } from "../../../analyzers/diagnostics/src/index.js";
+} from "../../src/inspection/state-authority-analysis.js";
+import { knowledgeRuntimeDiagnostics } from "../../../../analyzers/diagnostics/src/index.js";
 
 const contract = {
   id: "arena-ready",
