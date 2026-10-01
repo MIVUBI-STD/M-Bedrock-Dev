@@ -2,8 +2,10 @@ import type {
   ResolvedGameDesignIntentRule,
 } from "../../game-design-spec/src/index.js";
 import {
+  assessGameplayDesignReadiness,
   assessGameplayIntentGrounding,
   independentGameplayIntentEvidenceIds,
+  type GameplayDesignReadinessResult,
   type GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
 
@@ -52,6 +54,7 @@ export interface IntentDiagnosticGateInput {
   runtimeProofRequired?: boolean;
   runtimeProofEvidenceIds?: readonly string[];
   runtimeEvidenceIntegritySatisfied?: boolean;
+  designReadiness?: GameplayDesignReadinessResult;
 }
 
 export interface IntentDiagnosticGateResult {
@@ -68,6 +71,31 @@ export interface IntentDiagnosticGateResult {
 export function gateIntentDiagnostic(
   input: IntentDiagnosticGateInput,
 ): IntentDiagnosticGateResult {
+  const designReadiness =
+    input.designReadiness ??
+    assessGameplayDesignReadiness(
+      input.intent,
+      {
+        scopeSubjectIds: input.subjectIds,
+      },
+    );
+
+  if (designReadiness.disposition === "blocked") {
+    return {
+      disposition: "ambiguous-intent",
+      subjectIds: [...input.subjectIds],
+      basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
+      evidenceIds: [...input.observationEvidenceIds],
+      nextEvidenceNeed: "intent-clarification",
+      reasons: [
+        ...designReadiness.reasons,
+        "Gameplay defect classification is blocked until material Game Design unknowns are resolved for this scope.",
+      ],
+    };
+  }
+
   const resolvedRule = input.resolvedGameDesignRule;
   if (resolvedRule) {
     const rule = resolvedRule.rule;
