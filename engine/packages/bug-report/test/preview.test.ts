@@ -138,7 +138,7 @@ describe("bug report preview", () => {
       markdown.indexOf("**Expected:**"),
     );
     expect(markdown.indexOf("**Expected:**")).toBeLessThan(
-      markdown.indexOf("**Technical:**"),
+      markdown.indexOf("**Technical Analysis:**"),
     );
   });
 });
