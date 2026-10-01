@@ -115,25 +115,11 @@ Blocker → Major → Minor → Bug ID
 
 Open bugs are the default scope. Fixed bugs appear only when explicitly requested or when no open bugs remain and historical context is requested.
 
-## Writing rules
+## Wording dependency
 
-Prefer direct, operational language.
+Preview does not rewrite canonical bug copy.
 
-Good:
-
-```text
-Issue: Gate remains closed after the objective completes, blocking progression.
-Action: Clear the gate blocks when the objective completion state is committed.
-```
-
-Avoid:
-
-```text
-Issue: There appears to potentially be a problem where under certain circumstances
-the gate may not behave as expected.
-```
-
-Do not repeat the same fact across Title, Issue, Expected, Observed, and Technical.
+All new-report wording rules and density limits are owned by `COPY.md` and enforced by `copy-quality.ts`. Presentation code may normalize whitespace for display, but must not paraphrase or repair report facts.
 
 ## Ownership
 
