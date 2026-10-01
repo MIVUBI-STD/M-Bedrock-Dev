@@ -37,5 +37,5 @@ export * from "./arena-stress-runtime-compiler.js";
 export * from "./arena-structure-instance-proof.js";
 export * from "./arena-tick-state-proof.js";
 export * from "./arena-voxel-proof.js";
-export * from "../multiplayer-static-risk-analysis.js";
-export * from "../script-arena-layout-fallback.js";
+export * from "../../../../analyzers/scripts/src/domains/arena/multiplayer-static-risk-analysis.js";
+export * from "./script-arena-layout-fallback.js";

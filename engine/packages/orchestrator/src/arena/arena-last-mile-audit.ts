@@ -26,7 +26,7 @@ import {
 import {
   analyzeMultiplayerStaticRisks,
   type MultiplayerStaticRiskAnalysis,
-} from "../multiplayer-static-risk-analysis.js";
+} from "../../../../analyzers/scripts/src/index.js";
 import type { McStructureModel } from "../../../../adapters/mcstructure/src/index.js";
 
 export interface ArenaLastMileAuditInput {

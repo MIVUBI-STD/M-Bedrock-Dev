@@ -23,6 +23,7 @@ export * from "./domains/spatial/spatial-world-mutation.js";
 export * from "./domains/cleanup/cleanup-resource-evidence.js";
 
 export * from "./domains/arena/global-lease-evidence.js";
+export * from "./domains/arena/multiplayer-static-risk-analysis.js";
 export * from "./domains/inventory/inventory-lifecycle-evidence.js";
 export * from "./domains/combat/combat-lifecycle-evidence.js";
 export * from "./domains/chunk/chunk-lifecycle-evidence.js";
