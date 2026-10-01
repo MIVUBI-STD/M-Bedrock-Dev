@@ -23,6 +23,7 @@ export interface GameplayIntentStageInput {
   parsedScripts: readonly {
     parsed: ParsedScriptFile;
   }[];
+  referenceMode?: "comparison";
   authoredScripts?: readonly {
     parsed: ParsedScriptFile;
   }[];
@@ -44,9 +45,15 @@ function evidenceId(
 export function buildGameplayIntentModel(
   input: GameplayIntentStageInput,
 ): GameplayIntentModel {
+  const includeReferences =
+    input.referenceMode === "comparison";
+  const referenceScripts =
+    includeReferences
+      ? (input.authoredScripts ?? [])
+      : [];
   const extracted = extractGameplayIntentSignals([
     ...input.parsedScripts.map((item) => item.parsed),
-    ...(input.authoredScripts ?? []).map(
+    ...referenceScripts.map(
       (item) => item.parsed,
     ),
   ]);
@@ -56,7 +63,7 @@ export function buildGameplayIntentModel(
     ),
   );
   const authoredSourcePaths = new Set(
-    (input.authoredScripts ?? []).map(
+    referenceScripts.map(
       (item) => item.parsed.source.relativePath,
     ),
   );
@@ -67,7 +74,10 @@ export function buildGameplayIntentModel(
   const invariants = new Map<string, GameplayIntentInvariant>();
   const intentUnknowns: GameplayIntentModel["unknowns"][number][] = [];
 
-  if (input.gameDesign !== undefined) {
+  if (
+    includeReferences &&
+    input.gameDesign !== undefined
+  ) {
     const designStatus: GameplayIntentStatus =
       input.gameDesign.status === "approved"
         ? "authored"
