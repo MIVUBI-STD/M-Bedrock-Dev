@@ -22,8 +22,10 @@ Do not use older versions, Development/Source, old QA/Bug Reports, Technical Doc
 
 ```text
 Selected Map Version
+→ Gameplay Surface Inventory
 → Gameplay Contract
 → Actual Behavior
+→ Coverage Check
 → Contradiction
 → Counter-Evidence
 → Player Impact
@@ -33,6 +35,8 @@ Selected Map Version
 ```
 
 Expected Behavior and Actual Behavior must come from the same selected artifact.
+
+Before finishing the audit, every discovered gameplay surface must be explicitly marked `checked`, `blocked`, or `not-applicable`. Silent omission is not allowed.
 
 If the artifact cannot ground a material expected behavior, mark that scope `BLOCKED / ambiguous`; do not borrow intent from stale sources.
 
