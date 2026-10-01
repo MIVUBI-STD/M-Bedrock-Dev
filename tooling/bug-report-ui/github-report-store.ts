@@ -1,6 +1,8 @@
 import {
   bugReportV2Progress,
   parseBugReportV2Json,
+  reviewBugReportCopy,
+  reviewBugReportReadiness,
   serializeBugReportV2,
   type BugReportV2,
 } from "../../engine/packages/bug-report/src/index.js";
@@ -250,6 +252,22 @@ export class GitHubBugReportStore {
     report: BugReportV2,
   ): Promise<SavedGitHubBugReport> {
     this.#assertReportPath(path);
+
+    const handoffIssues = [
+      ...reviewBugReportReadiness(report.bugs),
+      ...reviewBugReportCopy(report.bugs),
+    ];
+    if (handoffIssues.length > 0) {
+      throw new Error(
+        "Refusing to create a report that is not handoff-ready: " +
+          handoffIssues
+            .map((issue) =>
+              issue.path + ": " + issue.message
+            )
+            .join("; "),
+      );
+    }
+
     const serialized = serializeBugReportV2(report);
     if (!serialized.ok || !serialized.json) {
       throw new Error("Refusing to save invalid Bug Report V2.");
