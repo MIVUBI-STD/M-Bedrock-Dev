@@ -19,8 +19,15 @@ Blocker: <count> · Major: <count> · Minor: <count>
 
 The normal bug-finding preview MUST NOT show repair ownership or fixed-progress metadata. Those belong to a later repair workflow, not the audit preview.
 
-| No. | Severity | Bug | Issue | Reproduce / Verify | Action |
-|---:|---|---|---|---|---|
+| No. | Severity | Bug | Issue | Solution |
+|---:|---|---|---|---|
+
+Then show a separate reproduction block:
+
+### How to Reproduce the Bug
+
+| No. | Steps |
+|---:|---|
 
 Rules:
 
@@ -37,9 +44,10 @@ Rules:
 - `Bug` contains only the short human-readable title;
 - canonical Bug ID stays internal in default preview and is shown only in detail/full mode;
 - `Issue` is canonical Problem and must answer **what is wrong + impact**;
-- `Reproduce / Verify` is canonical Reproduction and must tell a tester how to prove the bug in-game;
-- `Action` is canonical Suggested Fix and must answer **what should be changed**;
+- `Solution` is canonical Suggested Fix and must answer **what should be changed**;
+- `How to Reproduce the Bug` is canonical Reproduction and must tell a tester exactly how to make the bug occur again in-game;
 - when Suggested Fix is absent, show `—`;
+- keep reproduction outside the main table to avoid horizontal scrolling;
 - do not add Expected, Observed, Technical Analysis, Relevant Code, or Must Preserve to the default table;
 - do not create one section per bug in default preview;
 - do not dump JSON.
@@ -69,7 +77,7 @@ Do not surface these by default:
 - repair workflow status;
 - implementation progress.
 
-Suggested Fix may still populate the table's Action column when the confirmed report already contains supported repair direction, but it is not workflow ownership or repair status.
+Suggested Fix may still populate the table's Solution column when the confirmed report already contains supported repair direction, but it is not workflow ownership or repair status.
 
 ## Detail on demand
 
@@ -80,7 +88,7 @@ For one selected bug, use this order:
 ```text
 Severity + ID + Title
 Issue
-Action when supported
+Solution when supported
 Expected
 Observed
 Reproduction
@@ -95,13 +103,14 @@ Omit empty fields.
 
 ### summary
 
-Compact table with:
+Compact main table with:
 
 - Severity
 - Bug
 - Issue
-- Reproduce / Verify
-- Action
+- Solution
+
+Then a separate `How to Reproduce the Bug` block keyed by the same preview number.
 
 ### standard — default
 
@@ -127,21 +136,33 @@ Open bugs are the default scope. Fixed bugs appear only when explicitly requeste
 
 ## Reader test
 
-A reader should be able to read Issue + Reproduce / Verify + Action and immediately understand what is wrong, how to prove it, and what supported change is needed.
+A reader should understand the problem and proposed solution from the main table, then verify it from the reproduction block without horizontal scrolling.
 
 Good:
 
-| No. | Severity | Bug | Issue | Reproduce / Verify | Action |
-|---:|---|---|---|---|---|
-| #1 | BLOCKER | Match cannot restart | Arena keeps the previous session ownership after match end, so a new match cannot start. | 1) Finish a match → 2) Return to lobby → 3) Start the same arena again → 4) Confirm the new match does not start. | Clear arena session ownership during cleanup so the arena becomes available again. |
+| No. | Severity | Bug | Issue | Solution |
+|---:|---|---|---|---|
+| #1 | BLOCKER | Match cannot restart | Arena keeps the previous session ownership after match end, so a new match cannot start. | Clear arena session ownership during cleanup so the arena becomes available again. |
+
+### How to Reproduce the Bug
+
+| No. | Steps |
+|---:|---|
+| #1 | 1) Finish a match → 2) Return to lobby → 3) Start the same arena again → 4) Confirm the new match does not start. |
 
 Bad:
 
-| No. | Severity | Bug | Issue | Reproduce / Verify | Action |
-|---:|---|---|---|---|---|
-| #1 | BLOCKER | Match issue | There may be an issue with cleanup. | Check if the bug happens. | Investigate and fix the issue. |
+| No. | Severity | Bug | Issue | Solution |
+|---:|---|---|---|---|
+| #1 | BLOCKER | Match issue | There may be an issue with cleanup. | Investigate and fix the issue. |
 
-If the Issue or Action requires Technical Analysis to understand its basic meaning, the copy is not ready for the default preview.
+### How to Reproduce the Bug
+
+| No. | Steps |
+|---:|---|
+| #1 | Check if the bug happens. |
+
+If the Issue or Solution requires Technical Analysis to understand its basic meaning, the copy is not ready for the default preview.
 
 ## Table density
 
@@ -152,8 +173,8 @@ Keep the table readable:
 - no Status column when only open bugs are shown;
 - do not expose canonical Bug ID in the default table;
 - use a simple `No.` column for quick reference within the current preview;
-- no duplicated text between Bug, Issue, and Action;
-- use `—` for unavailable Action;
+- no duplicated text between Bug, Issue, and Solution;
+- use `—` for unavailable Solution;
 - never infer or rewrite canonical facts.
 
 If a report is unusually large, still preserve one-row-per-bug rather than expanding cards.
