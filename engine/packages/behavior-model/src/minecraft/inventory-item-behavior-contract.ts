@@ -59,11 +59,11 @@ const provenance = projectPolicyProvenance(
   "Item ownership/drop/reset semantics are project-authored policy and must not be inferred from item typeId alone.",
 );
 
-export function inventoryItemPolicyProvenance(): BehaviorClaimProvenance {
+export function inventoryItemBehaviorContractProvenance(): BehaviorClaimProvenance {
   return provenance;
 }
 
-export function validateInventoryItemPolicy(
+export function validateInventoryItemBehaviorContract(
   policy: InventoryItemPolicy,
 ): string[] {
   const errors: string[] = [];
@@ -145,12 +145,12 @@ export function validateInventoryItemPolicy(
   return errors;
 }
 
-export function resolveInventoryItemPolicy(
+export function resolveInventoryItemBehaviorContract(
   policy: InventoryItemPolicy,
   query: InventoryItemPolicyQuery,
 ): InventoryItemPolicyResolution {
   const errors =
-    validateInventoryItemPolicy(policy);
+    validateInventoryItemBehaviorContract(policy);
   if (errors.length > 0) {
     return {
       query,
@@ -208,4 +208,11 @@ export function resolveInventoryItemPolicy(
   };
 }
 
-export const validateInventoryItemBehaviorContract = validateInventoryItemPolicy;
+export const validateInventoryItemBehaviorContract = validateInventoryItemBehaviorContract;
+
+/** @deprecated Use inventoryItemBehaviorContractProvenance. */
+export const inventoryItemPolicyProvenance = inventoryItemBehaviorContractProvenance;
+/** @deprecated Use validateInventoryItemBehaviorContract. */
+export const validateInventoryItemPolicy = validateInventoryItemBehaviorContract;
+/** @deprecated Use resolveInventoryItemBehaviorContract. */
+export const resolveInventoryItemPolicy = resolveInventoryItemBehaviorContract;

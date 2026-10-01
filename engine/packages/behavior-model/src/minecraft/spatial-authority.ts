@@ -35,11 +35,14 @@ export interface SpatialAuthorityRule {
   rationale?: string;
 }
 
-export interface SpatialAuthorityPolicy {
+export interface SpatialAuthorityBehaviorContract {
   schemaVersion: 1;
   id: string;
   rules: readonly SpatialAuthorityRule[];
 }
+
+/** @deprecated Use SpatialAuthorityBehaviorContract. */
+export type SpatialAuthorityPolicy = SpatialAuthorityBehaviorContract;
 
 export interface SpatialAuthorityQuery {
   regionId: string;
@@ -66,7 +69,7 @@ const provenance = projectPolicyProvenance(
   "Spatial authority is authored/project policy. Region geometry is owned separately and this model never infers gameplay permission from voxel comparison roles.",
 );
 
-export function spatialAuthorityPolicyProvenance(): BehaviorClaimProvenance {
+export function spatialAuthorityBehaviorContractProvenance(): BehaviorClaimProvenance {
   return provenance;
 }
 
@@ -91,7 +94,7 @@ function specificity(
   );
 }
 
-export function validateSpatialAuthorityPolicy(
+export function validateSpatialAuthorityBehaviorContract(
   policy: SpatialAuthorityPolicy,
 ): string[] {
   const errors: string[] = [];
@@ -145,12 +148,12 @@ export function validateSpatialAuthorityPolicy(
   return errors;
 }
 
-export function resolveSpatialAuthority(
+export function resolveSpatialAuthorityContract(
   policy: SpatialAuthorityPolicy,
   query: SpatialAuthorityQuery,
 ): SpatialAuthorityResolution {
   const validationErrors =
-    validateSpatialAuthorityPolicy(policy);
+    validateSpatialAuthorityBehaviorContract(policy);
   if (validationErrors.length > 0) {
     return {
       query,
@@ -216,3 +219,10 @@ export function resolveSpatialAuthority(
       "Resolved from the most-specific authored spatial authority rule set.",
   };
 }
+
+/** @deprecated Use spatialAuthorityBehaviorContractProvenance. */
+export const spatialAuthorityPolicyProvenance = spatialAuthorityBehaviorContractProvenance;
+/** @deprecated Use validateSpatialAuthorityBehaviorContract. */
+export const validateSpatialAuthorityPolicy = validateSpatialAuthorityBehaviorContract;
+/** @deprecated Use resolveSpatialAuthorityContract. */
+export const resolveSpatialAuthority = resolveSpatialAuthorityContract;

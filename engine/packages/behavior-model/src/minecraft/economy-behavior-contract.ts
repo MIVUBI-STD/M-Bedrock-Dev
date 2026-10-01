@@ -47,11 +47,11 @@ const provenance = projectPolicyProvenance(
   "Reward source arbitration, pickup conversion, stale-drop cleanup, and inventory-full behavior are authored gameplay policy.",
 );
 
-export function economyPolicyProvenance(): BehaviorClaimProvenance {
+export function economyBehaviorContractProvenance(): BehaviorClaimProvenance {
   return provenance;
 }
 
-export function validateEconomyPolicy(
+export function validateEconomyBehaviorContract(
   policy: EconomyPolicy,
 ): string[] {
   const errors: string[] = [];
@@ -70,4 +70,9 @@ export function validateEconomyPolicy(
   return errors;
 }
 
-export const validateEconomyBehaviorContract = validateEconomyPolicy;
+export const validateEconomyBehaviorContract = validateEconomyBehaviorContract;
+
+/** @deprecated Use economyBehaviorContractProvenance. */
+export const economyPolicyProvenance = economyBehaviorContractProvenance;
+/** @deprecated Use validateEconomyBehaviorContract. */
+export const validateEconomyPolicy = validateEconomyBehaviorContract;

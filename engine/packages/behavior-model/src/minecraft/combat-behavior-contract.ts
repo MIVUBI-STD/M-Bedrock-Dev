@@ -43,11 +43,11 @@ const provenance = projectPolicyProvenance(
   "Combat eligibility and revive ownership are project-authored policy. Engine damage observations alone do not establish gameplay eligibility.",
 );
 
-export function combatPolicyProvenance(): BehaviorClaimProvenance {
+export function combatBehaviorContractProvenance(): BehaviorClaimProvenance {
   return provenance;
 }
 
-export function validateCombatPolicy(
+export function validateCombatBehaviorContract(
   policy: CombatPolicy,
 ): string[] {
   const errors: string[] = [];
@@ -69,7 +69,7 @@ export function resolveCombatDamageEligibility(
   policy: CombatPolicy,
   query: CombatDamageEligibilityQuery,
 ): CombatDamageEligibilityResolution {
-  const errors = validateCombatPolicy(policy);
+  const errors = validateCombatBehaviorContract(policy);
   if (errors.length > 0) {
     return {
       status: "unknown",
@@ -224,4 +224,9 @@ export function combatSecondaryEffectAllowed(
   return damageEligibility;
 }
 
-export const validateCombatBehaviorContract = validateCombatPolicy;
+export const validateCombatBehaviorContract = validateCombatBehaviorContract;
+
+/** @deprecated Use combatBehaviorContractProvenance. */
+export const combatPolicyProvenance = combatBehaviorContractProvenance;
+/** @deprecated Use validateCombatBehaviorContract. */
+export const validateCombatPolicy = validateCombatBehaviorContract;
