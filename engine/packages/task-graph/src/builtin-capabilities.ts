@@ -52,6 +52,30 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "source.scripts.semantic-flow",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/semantic-flow-bindings.ts",
+      ],
+      dependsOn: ["source.scripts.dataflow"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
+      id: "source.scripts.recovery",
+      owner: "analyzers/scripts",
+      pathPrefixes: [
+        "analyzers/scripts/src/source-recovery.ts",
+      ],
+      dependsOn: ["source.scripts.core"],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "source.scripts.arena",
       owner: "analyzers/scripts",
       pathPrefixes: [

@@ -37,3 +37,14 @@ Not yet claimed:
 - computed dynamic call resolution;
 - full closure/environment modeling;
 - JavaScript execution.
+
+
+## Semantic data-flow bindings
+
+Minecraft-specific source/sink labels are derived separately from the generic data-flow graph. Labels are evidence hints, not defect conclusions, and bounded matches remain bounded.
+
+## Source recovery
+
+`analyzeScriptSourceRecovery()` classifies explicit, modular, bundled/minified, mixed, or unknown source shapes. It detects source-map references and structural bundler/minification signals without executing or rewriting artifact code.
+
+Source recovery never invents original symbol names or module boundaries.
