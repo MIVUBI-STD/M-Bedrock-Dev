@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { parseEntityDefinition } from "../../../analyzers/entities/src/index.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { parseEntityDefinition } from "../../../../analyzers/entities/src/index.js";
 import {
   deriveEntityEventExternalEvidence,
   externalEventRootsForEntity,
-} from "../src/entity-event-evidence.js";
+} from "../../src/inspection/entity-event-evidence.js";
 
 describe("entity event external evidence", () => {
   it("collects exact summon events, command strings, and literal triggerEvent calls", () => {

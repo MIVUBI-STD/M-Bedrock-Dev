@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   entityAiNavigationDiagnostics,
-} from "../src/entity-ai-navigation-diagnostics.js";
+} from "../../src/inspection/entity-ai-navigation-diagnostics.js";
 
 describe("entity AI navigation diagnostics", () => {
   it("uses medium severity for missing targeted navigation", () => {

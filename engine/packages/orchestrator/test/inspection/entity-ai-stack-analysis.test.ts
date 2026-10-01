@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeEntityAiStacks,
-} from "../src/entity-ai-stack-analysis.js";
+} from "../../src/inspection/entity-ai-stack-analysis.js";
 
 const source = {
   artifactId: "fixture",

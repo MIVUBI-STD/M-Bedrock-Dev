@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyEntityNavigationRuntimeExperiment,
-} from "../src/entity-navigation-runtime-classification.js";
+} from "../../src/inspection/entity-navigation-runtime-classification.js";
 
 describe("entity navigation runtime classification", () => {
   it("classifies intervention-supported crowding contrast as dynamic congestion", () => {
