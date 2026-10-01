@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { CausalIncident } from "../../project-model/src/index.js";
-import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
-import { planDiagnosticProbes } from "../src/diagnostic-probe-planning.js";
+import type { CausalIncident } from "../../../project-model/src/index.js";
+import type { DiagnosticProbeDefinition } from "../../../project-model/src/index.js";
+import { planDiagnosticProbes } from "../../src/diagnosis/diagnostic-probe-planning.js";
 
 function incident(): CausalIncident {
   return {

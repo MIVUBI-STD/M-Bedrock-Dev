@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { CausalIncident } from "../../project-model/src/index.js";
-import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
+import type { CausalIncident } from "../../../project-model/src/index.js";
+import type { DiagnosticProbeDefinition } from "../../../project-model/src/index.js";
 import {
   applyDiagnosticProbeObservation,
   createDiagnosticInvestigation,
   investigationIncident,
-} from "../src/diagnostic-investigation.js";
+} from "../../src/diagnosis/diagnostic-investigation.js";
 
 const incident: CausalIncident = {
   id: "incident-1",
