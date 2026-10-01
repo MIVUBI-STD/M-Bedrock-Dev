@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-world-mutation-policy-v1",
-      "title": "MIVUBI Structure and World Mutation Transaction Policy v1",
-      "url": "project://knowledge/world-mutation-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-world-mutation-contract-v1",
+      "title": "MIVUBI Structure and World Mutation Transaction Engineering Contract v1",
+      "url": "project://contracts/engineering/world-mutation-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-23"
     }
@@ -16,7 +16,7 @@
       "domain": "world-mutation",
       "subject": "arena world mutation",
       "statement": "Treat structure loads, fills, block writes, marker changes, and entity restoration as a generation-scoped world-mutation transaction with PREPARE, APPLY, VERIFY, COMMIT, and RECOVER/ABORT phases.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "transaction",
@@ -41,7 +41,7 @@
       "domain": "world-mutation",
       "subject": "mutation region ownership",
       "statement": "A world region that can be mutated by structure/fill/block operations must have one current arena-generation owner. Overlapping concurrent mutations from different operations or generations are rejected or serialized.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -49,7 +49,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "region-lock",
@@ -65,7 +65,7 @@
       "domain": "world-mutation",
       "subject": "mutation preparation",
       "statement": "PREPARE must prove destination chunk readiness/coverage for all required mutation bounds before direct block writes and before declaring structure placement safe for immediate dependent work.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -73,7 +73,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "chunk-readiness",
@@ -89,7 +89,7 @@
       "domain": "world-mutation",
       "subject": "structure placement request",
       "statement": "A successful structure-load command or StructureManager.place call is APPLY-stage evidence only. COMMIT requires post-placement verification of required blocks, markers, critical entities, and generation ownership.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -97,7 +97,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "structure-load",
@@ -114,7 +114,7 @@
       "domain": "world-mutation",
       "subject": "structure entity inclusion",
       "statement": "Every gameplay structure must explicitly declare whether entities are included. If entities are included, the transaction must define duplicate-detection and identity reconciliation before placement can commit.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -122,7 +122,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "structure-entities",
@@ -138,7 +138,7 @@
       "domain": "world-mutation",
       "subject": "post-load marker verification",
       "statement": "Structures used for gameplay must expose a verification contract such as sentinel blocks, marker entities, expected block signatures, or region hashes so the analyzer can distinguish requested placement from verified placement.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -146,7 +146,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "sentinel",
@@ -162,7 +162,7 @@
       "domain": "world-mutation",
       "subject": "dependent gameplay after mutation",
       "statement": "Spawns, teleports, pathfinding activation, arena start, scoring activation, and selector queries that depend on mutated world state must wait until VERIFY succeeds for the current mutation generation.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -170,7 +170,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "readiness-gate",
@@ -187,7 +187,7 @@
       "domain": "world-mutation",
       "subject": "world mutation rollback",
       "statement": "Do not assume Bedrock world mutation is inherently atomic. Recovery should use explicit compensating actions or a known baseline structure/snapshot, and recovery itself must be generation-scoped and verified.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -195,7 +195,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "rollback",
@@ -212,7 +212,7 @@
       "domain": "world-mutation",
       "subject": "stale generation mutation",
       "statement": "After any await/deferred callback and before APPLY/VERIFY/COMMIT/RECOVER work, revalidate arenaGeneration and mutationGeneration. Old generations must never mutate or repair a newer round.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -220,7 +220,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "generation-token",
@@ -236,7 +236,7 @@
       "domain": "world-mutation",
       "subject": "rotation and mirror bounds",
       "statement": "Mutation bounds, sentinel locations, path checks, and overlap locks must be computed after applying structure rotation/mirror transforms, not from untransformed source coordinates.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -244,7 +244,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "rotation",
@@ -262,7 +262,7 @@
       "domain": "world-mutation",
       "subject": "animated structure load",
       "statement": "If structure animation is enabled, the transaction must remain APPLYING until animation completion plus verification; gameplay must not treat command return as a completed load.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -270,7 +270,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "capabilityTags": [
         "structure-animation",
@@ -289,7 +289,7 @@
       "subject": "PREPARE",
       "kind": "gates",
       "object": "APPLY",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -297,7 +297,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ]
     },
     {
@@ -306,7 +306,7 @@
       "subject": "VERIFY",
       "kind": "gates",
       "object": "COMMIT",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -314,7 +314,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "diagnosticSeverity": "critical"
     },
@@ -324,7 +324,7 @@
       "subject": "mutation-failure",
       "kind": "fallbacks-to",
       "object": "RECOVER_OR_ABORT",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -332,7 +332,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ]
     },
     {
@@ -341,7 +341,7 @@
       "subject": "mutation-dependent-action",
       "kind": "requires",
       "object": "verification-before-dependent-action",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -349,7 +349,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "diagnosticSeverity": "critical",
       "causalConsequences": [
@@ -363,7 +363,7 @@
       "subject": "script-mutation-dependent-action-candidate",
       "kind": "requires",
       "object": "script-verification-before-dependent-action",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -371,7 +371,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "diagnosticSeverity": "critical",
       "causalConsequences": [
@@ -385,7 +385,7 @@
       "subject": "transaction-order-proof-incomplete",
       "kind": "requires",
       "object": "additional-transaction-order-proof",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -393,7 +393,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-world-mutation-policy-v1"
+        "mivubi-world-mutation-contract-v1"
       ],
       "diagnosticSeverity": "info"
     }

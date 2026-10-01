@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-chunk-runtime-policy-v1",
+      "id": "mivubi-chunk-runtime-contract-v1",
       "title": "MIVUBI Chunk Runtime Loading Policy",
       "url": "https://github.com/MIVUBI-STD/M-Bedrock-Dev/blob/Local/docs/03-analysis/chunk-runtime-loading.md",
-      "authority": "project-policy",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-23"
     }
@@ -16,7 +16,7 @@
       "domain": "chunks",
       "subject": "arena-setup-target-registry",
       "statement": "Before gameplay, build an explicit setup target registry from the original pack covering every entity, spawner, and location required by arena setup; original-pack coordinates and gameplay semantics remain authoritative.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -45,7 +45,7 @@
       "domain": "chunks",
       "subject": "coverage-point-planner",
       "statement": "Plan three initial coverage points per arena/dimension from the distribution of original setup targets, then add deterministic extra points when required to cover outliers.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -53,7 +53,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -69,7 +69,7 @@
       "domain": "chunks",
       "subject": "coverage-radius",
       "statement": "Use a maximum planning distance of 4 chunks from a coverage point to an assigned target, measured in chunk space; this is a project safety envelope and not proof that the target chunk is loaded.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -77,7 +77,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -95,7 +95,7 @@
       "domain": "chunks",
       "subject": "coverage-dimension-isolation",
       "statement": "Coverage planning is dimension-local: targets from different dimensions must never share a coverage point or readiness result.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -103,7 +103,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -119,7 +119,7 @@
       "domain": "chunks",
       "subject": "loader-player-lease",
       "statement": "Normal arena setup uses a temporary loader-player lease: snapshot the chosen player's dimension, location, rotation, and game mode; switch to Spectator; teleport through coverage points; always restore the snapshot when setup ends or aborts.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -127,7 +127,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -146,7 +146,7 @@
       "domain": "chunks",
       "subject": "arena-setup-loading-backend",
       "statement": "Normal pre-game arena setup must not create ticking areas; coverage loading is player-driven so the original arena is not kept persistently active.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -154,7 +154,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -170,7 +170,7 @@
       "domain": "chunks",
       "subject": "coverage-readiness",
       "statement": "After teleporting the loader player, wait for explicit chunk-readiness evidence for every unique assigned target chunk; fixed tick delays alone are not sufficient readiness proof.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -178,7 +178,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -197,7 +197,7 @@
       "domain": "chunks",
       "subject": "arena-setup-failure-semantics",
       "statement": "Coverage gaps, readiness timeouts, ambiguous entity resolution, missing critical targets, or player-state restore failures must be explicit setup failures; gameplay must not start with silently skipped setup targets.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -205,7 +205,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -229,7 +229,7 @@
       "domain": "chunks",
       "subject": "arena-setup-ledger",
       "statement": "Every setup target must have an idempotent processing ledger keyed by arena setup session/generation so retries cannot double-apply initialization and stale async work cannot start gameplay.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -237,7 +237,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -253,7 +253,7 @@
       "domain": "chunks",
       "subject": "arena-setup-completion",
       "statement": "Arena start is gated on final verification that every critical original-pack setup target is processed successfully and the loader player has been restored to the intended gameplay state.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -261,7 +261,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -277,7 +277,7 @@
       "domain": "chunks",
       "subject": "runtime-tickingarea-policy",
       "statement": "Temporary ticking areas are runtime recovery tools for chunk-related entity operations, not permanent arena loaders and not a default dependency for every arena.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -285,7 +285,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -301,7 +301,7 @@
       "domain": "chunks",
       "subject": "spawnEntity-recovery",
       "statement": "Only unloaded-chunk evidence such as LocationInUnloadedChunkError should route spawnEntity into chunk recovery; validation, identifier, boundary, or other spawn errors must preserve their original error classification.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -309,7 +309,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -325,7 +325,7 @@
       "domain": "chunks",
       "subject": "persistent-entity-registry",
       "statement": "Critical persistent entities such as spawners must retain at least entity id, dimension, and last known location; type/tag/role identity should also be retained when available to detect stale or ambiguous resolution.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -333,7 +333,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "entity-registry",
@@ -349,7 +349,7 @@
       "domain": "chunks",
       "subject": "getEntity-recovery",
       "statement": "If a critical persistent entity lookup returns undefined, do not immediately classify the entity as lost when a last known location exists; first prove the known chunk is loaded, perform temporary recovery loading if required, and retry the lookup.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -357,7 +357,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "entity-registry",
@@ -376,7 +376,7 @@
       "domain": "chunks",
       "subject": "chunk-recovery-backend",
       "statement": "Prefer world.tickingAreaManager when the declared @minecraft/server line exposes it; use /tickingarea command as a compatibility fallback for older targets.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -384,7 +384,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -400,7 +400,7 @@
       "domain": "chunks",
       "subject": "script-tickingarea-capacity",
       "statement": "For the Script API TickingAreaManager backend, queue requests by hasCapacity/maxChunkCount rather than imposing the command system's fixed 10-area limit.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -412,7 +412,7 @@
         }
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -429,7 +429,7 @@
       "domain": "chunks",
       "subject": "command-tickingarea-capacity",
       "statement": "For the /tickingarea compatibility backend, one central manager owns leases and queues new requests when the world-level 10-area command limit would be exceeded.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -437,7 +437,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -454,7 +454,7 @@
       "domain": "chunks",
       "subject": "temporary-tickingarea-lease",
       "statement": "Every temporary ticking-area request is a lease with unique id, owning arena/session, reason, bounds, timeout, and cleanup in a finally-equivalent path; leaked leases are diagnosable failures.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -462,7 +462,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -482,7 +482,7 @@
       "domain": "chunks",
       "subject": "chunk-recovery-scheduler",
       "statement": "Coalesce compatible requests for the same dimension/chunk region, prioritize critical persistent-entity recovery over non-critical work, preserve FIFO within priority, and use aging to prevent starvation.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -490,7 +490,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -507,7 +507,7 @@
       "domain": "chunks",
       "subject": "chunk-recovery-retry",
       "statement": "Chunk recovery retries must be bounded and observable: after readiness is proven, retry the original operation using a configured retry budget; repeated failure transitions to a real operation/entity error instead of infinite reload loops.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -515,7 +515,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -534,7 +534,7 @@
       "domain": "chunks",
       "subject": "coverage-anchor-bootstrap",
       "statement": "Before relocating the loader player, classify the coverage anchor as already loaded, bootstrap-required, or unsafe. Do not assume teleporting directly into an unloaded anchor will load it.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -542,7 +542,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -562,7 +562,7 @@
       "domain": "chunks",
       "subject": "coverage-bootstrap-backend",
       "statement": "If an anchor chunk is not loaded and player relocation cannot bootstrap it deterministically, acquire the smallest temporary bootstrap loading lease available for that target environment, prove the anchor ready, teleport the loader, then release the bootstrap lease once player-driven readiness is established.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -570,7 +570,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -590,7 +590,7 @@
       "domain": "chunks",
       "subject": "target-readiness",
       "statement": "Use two readiness gates: first prove the target chunk loaded, then prove the target-specific entity/component/setup contract. Chunk readiness alone cannot complete a target ledger entry.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -598,7 +598,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -615,7 +615,7 @@
       "domain": "chunks",
       "subject": "spectator-loader",
       "statement": "Spectator is an interaction-isolation choice, not a chunk-readiness guarantee. The setup system must remain correct if Spectator-specific loading behavior differs by target/runtime.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -623,7 +623,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -639,7 +639,7 @@
       "domain": "chunks",
       "subject": "loader-player-side-effects",
       "statement": "Before choosing player-driven coverage for an arena, inspect original-pack listeners and mechanics that react to player game-mode changes, dimension changes, location/zone transitions, or player movement. If relocation can mutate gameplay state without a setup guard, use a non-player loading backend for setup.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -647,7 +647,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -667,7 +667,7 @@
       "domain": "chunks",
       "subject": "setup-control-plane",
       "statement": "Do not move the only player away from a control plane whose countdown/setup orchestration depends on command blocks or other simulation-distance-bound systems in the source area. The coordinator must prove its own control plane remains live while coverage loading occurs.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -675,7 +675,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -695,7 +695,7 @@
       "domain": "chunks",
       "subject": "loader-player-concurrency",
       "statement": "A player may hold at most one loader lease at a time. Multi-arena setup must use a global loader allocator and setup-concurrency budget so the same player cannot be teleported by competing arenas and mass coverage loading cannot activate excessive entity AI simultaneously.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -703,7 +703,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -721,7 +721,7 @@
       "domain": "chunks",
       "subject": "coverage-drain-barrier",
       "statement": "Before moving the loader away from a coverage point, all target operations for that coverage lease must reach a terminal ledger state and no unresolved async work may still depend on entity handles from that coverage area.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -729,7 +729,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -747,7 +747,7 @@
       "domain": "chunks",
       "subject": "entity-handle-lifetime",
       "statement": "Do not treat Entity object references as durable registry state across coverage changes or unload boundaries. Persist logical identity, engine id, type/tags, dimension, and last known location; reacquire the Entity handle when needed.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -755,7 +755,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "entity-registry",
@@ -771,7 +771,7 @@
       "domain": "chunks",
       "subject": "critical-entity-persistence-profile",
       "statement": "Every critical entity registry entry must classify the original entity definition as persistent, transient, despawn-capable, or unknown. A critical entity expected to survive unloaded periods must not be assumed recoverable if its behavior definition allows it to disappear.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -779,7 +779,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "entity-registry",
@@ -797,7 +797,7 @@
       "domain": "chunks",
       "subject": "pre-game-entity-survivability",
       "statement": "If an entity is not guaranteed to survive the interval between setup coverage and actual gameplay activation, do not pre-create it merely because its chunk is temporarily loaded. Prefer validating its spawn source/configuration during setup and create it at gameplay activation when player/simulation conditions are correct.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -805,7 +805,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "arena-setup",
@@ -822,7 +822,7 @@
       "domain": "chunks",
       "subject": "recovery-semantics-classification",
       "statement": "Classify recovery operations as load-only or player-presence-required. Ticking-area recovery is valid only for load-only operations; mechanics whose semantics depend on nearby players must use an actual player-presence strategy.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -830,7 +830,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -846,7 +846,7 @@
       "domain": "chunks",
       "subject": "script-tickingarea-allocation",
       "statement": "Treat hasCapacity(options) as advisory, not as a reservation. Serialize create/remove decisions through one allocator; createTickingArea is authoritative and OverChunkLimit must requeue or fail according to policy.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -858,7 +858,7 @@
         }
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -875,7 +875,7 @@
       "domain": "chunks",
       "subject": "tickingarea-error-routing",
       "statement": "Handle TickingAreaError reasons separately: IdentifierAlreadyExists triggers ownership reconciliation, OverChunkLimit triggers capacity handling, SideLengthExceeded is a planner/configuration failure, and UnknownIdentifier during cleanup is reconciled as stale lease state rather than blindly retried.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -887,7 +887,7 @@
         }
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -903,7 +903,7 @@
       "domain": "chunks",
       "subject": "tickingarea-execution-context",
       "statement": "A recovery request detected in restricted execution may be recorded there, but Script TickingAreaManager creation/removal must be deferred into default execution, for example through the system job queue.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -915,7 +915,7 @@
         }
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -931,7 +931,7 @@
       "domain": "chunks",
       "subject": "tickingarea-orphan-reconciliation",
       "statement": "On manager initialization/reload, enumerate pack-owned Script ticking areas, compare them with the current generation/lease ledger, adopt still-valid leases, and remove stale namespaced leases. Never rely solely on in-memory lease state.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -943,7 +943,7 @@
         }
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -963,7 +963,7 @@
       "domain": "chunks",
       "subject": "command-tickingarea-global-contention",
       "statement": "The command backend uses a world-global ticking-area resource. Do not assume all 10 areas belong to this manager; other commands/content may consume capacity, so command-add failure is authoritative and the manager must use namespaced ownership plus conservative reconciliation.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -971,7 +971,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "command:tickingarea",
@@ -987,7 +987,7 @@
       "domain": "chunks",
       "subject": "command-tickingarea-availability",
       "statement": "Before selecting the /tickingarea fallback backend, prove the target environment permits the command. If required permissions/cheats are unavailable, report the recovery backend as unsupported instead of entering an infinite queue.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -995,7 +995,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "command:tickingarea",
@@ -1014,7 +1014,7 @@
       "domain": "chunks",
       "subject": "spawn-retry-idempotency",
       "statement": "Before retrying a spawn after chunk recovery, check for an already-created logical target using a unique role/tag/property identity when possible. Recovery must not create duplicate critical entities if the previous attempt completed but its result was not observed.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1022,7 +1022,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -1039,7 +1039,7 @@
       "domain": "chunks",
       "subject": "recovery-footprint",
       "statement": "Temporary recovery should load the smallest chunk footprint required by the operation. Do not reuse the 4-chunk coverage envelope as the default ticking-area recovery radius; operation-specific margins must be explicit.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1047,7 +1047,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -1063,7 +1063,7 @@
       "domain": "chunks",
       "subject": "original-pack-chunk-loader-inventory",
       "statement": "Before designing coverage or fallback loading, inventory every original-pack chunk-activation mechanism: player proximity assumptions, command ticking areas, Script TickingAreaManager usage, schedule on_area_loaded dependencies, and entities with minecraft:tick_world. Preserve original ownership and avoid double-loading by default.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1071,7 +1071,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-lifecycle",
@@ -1093,7 +1093,7 @@
       "domain": "chunks",
       "subject": "original-loader-ownership",
       "statement": "A repair/setup manager must not remove or rename an original-pack ticking area, tick_world entity, or other loader unless the change is an explicit migration with equivalent behavior and ownership proof.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1101,7 +1101,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "original-pack-preservation",
@@ -1117,7 +1117,7 @@
       "domain": "chunks",
       "subject": "loader-overlap-accounting",
       "statement": "Coverage and recovery planning must account for chunks already activated by original loaders. Existing activation can satisfy readiness evidence, but duplicate Script ticking-area coverage still consumes manager capacity and should be avoided.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1125,7 +1125,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "loader-inventory",
@@ -1141,7 +1141,7 @@
       "domain": "chunks",
       "subject": "legacy-area-loaded-readiness",
       "statement": "For legacy targets, schedule on_area_loaded may be used as a readiness notification only after another mechanism is expected to load the area. It must never be treated as a loader or bootstrap source by itself.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1149,7 +1149,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "command:schedule",
@@ -1168,7 +1168,7 @@
       "domain": "chunks",
       "subject": "coverage-anchor-geometry",
       "statement": "Every coverage anchor must be validated against Dimension.heightRange and use an explicit original/safe Y coordinate. The planner must not invent a universal high-Y teleport anchor across dimensions.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1176,7 +1176,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "coverage-anchor",
@@ -1195,7 +1195,7 @@
       "domain": "chunks",
       "subject": "negative-chunk-coordinate-normalization",
       "statement": "Chunk conversion must use mathematical floor division for negative block coordinates; truncation toward zero produces incorrect chunk ownership west/north of the origin.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1203,7 +1203,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-coordinate",
@@ -1221,7 +1221,7 @@
       "domain": "chunks",
       "subject": "tick-world-entity-ownership",
       "statement": "Entities with minecraft:tick_world are part of the chunk-loading topology. Their radius, never_despawn policy, and distance_to_players behavior must be considered before adding another loader around the same arena.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1229,7 +1229,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "entity-chunk-loader",
@@ -1246,7 +1246,7 @@
       "domain": "chunks",
       "subject": "moving-entity-recovery-footprint",
       "statement": "If a recovered operation creates or activates entities expected to move immediately, the temporary footprint must either include the bounded movement requirement or the operation must hand off to player simulation before releasing the lease. Do not assume an entity remains active after crossing the temporary area boundary.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1254,7 +1254,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -1270,7 +1270,7 @@
       "domain": "chunks",
       "subject": "persistent-entity-residency-state",
       "statement": "Track critical entities with a residency state machine rather than a found/missing boolean: RESIDENT, UNLOADED_OR_REMOVED, DEAD_CONFIRMED, EXPLICITLY_REMOVED, MISSING_CANDIDATE, and UNKNOWN. entityRemove alone transitions away from RESIDENT but does not prove death.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1278,7 +1278,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "entity-registry",
@@ -1295,7 +1295,7 @@
       "domain": "chunks",
       "subject": "entity-registry-event-correlation",
       "statement": "Subscribe to entityLoad/entityRemove/entityDie/entitySpawn where supported and correlate by logical key, entity id, type, tags, dimension, and setup generation. Event evidence augments polling; no single event should overwrite stronger lifecycle evidence without reconciliation.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1303,7 +1303,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "entity-registry",
@@ -1319,7 +1319,7 @@
       "domain": "chunks",
       "subject": "chunk-manager-initialization",
       "statement": "Register subscriptions during startup when allowed, but activate world-state reconciliation, custom-dimension resolution, orphan-lease cleanup, and arena chunk setup only after the worldLoad/default-execution boundary.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1327,7 +1327,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "world-ready",
@@ -1344,7 +1344,7 @@
       "domain": "chunks",
       "subject": "lease-journal-durability",
       "statement": "Persist recovery lease intent/state when leases are created, adopted, renewed, and removed; do not wait for shutdown to write the only copy of lease ownership because shutdown cleanup may run under restricted execution or be skipped by crashes/watchdog termination.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1352,7 +1352,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "lease-reconciliation",
@@ -1369,7 +1369,7 @@
       "domain": "chunks",
       "subject": "async-generation-safety",
       "statement": "After every await or deferred system callback in setup/recovery, revalidate arena/session generation, lease ownership, target criticality, and cancellation state before mutating gameplay. Promise completion does not guarantee the originating session is still current.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1377,7 +1377,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "async-race",
@@ -1394,7 +1394,7 @@
       "domain": "chunks",
       "subject": "recovery-scheduler",
       "statement": "Do not implement chunk-recovery polling or retry loops with recursive system.runTimeout(..., 0). Use system.run or bounded >=1-tick scheduling with retry budgets so the scheduler cannot create same-tick runaway work.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1402,7 +1402,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "chunk-recovery",
@@ -1419,7 +1419,7 @@
       "domain": "chunks",
       "subject": "custom-dimension-coverage-bootstrap",
       "statement": "Custom-dimension coverage must resolve the dimension only after it is registered/world-ready. For an unloaded arrival area, the preferred modern bootstrap is a temporary Script TickingAreaManager lease that resolves before player teleport, matching Microsoft's custom-dimension loading pattern.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1431,7 +1431,7 @@
         }
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "custom-dimension",
@@ -1448,7 +1448,7 @@
       "domain": "chunks",
       "subject": "entity-remove-residency",
       "statement": "An entityRemove event or getEntity(undefined) must never directly set a critical registry entry to permanently lost. Permanent loss requires stronger evidence such as confirmed death/explicit removal or bounded loaded-state recovery that still cannot resolve the logical identity.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1456,7 +1456,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ],
       "capabilityTags": [
         "entity-registry",
@@ -1478,7 +1478,7 @@
       "subject": "countdown-complete",
       "kind": "activates",
       "object": "arena-setup-phase",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1486,7 +1486,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1495,7 +1495,7 @@
       "subject": "coverage-plan",
       "kind": "validates",
       "object": "arena-setup-target-registry",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1503,7 +1503,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1512,7 +1512,7 @@
       "subject": "coverage-chunks-ready",
       "kind": "gates",
       "object": "setup-target-processing",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1520,7 +1520,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1529,7 +1529,7 @@
       "subject": "all-critical-targets-processed",
       "kind": "gates",
       "object": "arena-gameplay-start",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1537,7 +1537,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1546,7 +1546,7 @@
       "subject": "arena-setup-finalization",
       "kind": "restores",
       "object": "loader-player-state-snapshot",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1554,7 +1554,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1563,7 +1563,7 @@
       "subject": "spawnEntity-unloaded-chunk-failure",
       "kind": "fallbacks-to",
       "object": "temporary-chunk-recovery-manager",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1571,7 +1571,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1580,7 +1580,7 @@
       "subject": "chunk-recovery-request",
       "kind": "queues-behind",
       "object": "backend-capacity",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1588,7 +1588,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1597,7 +1597,7 @@
       "subject": "temporary-tickingarea-lease-removal",
       "kind": "deactivates",
       "object": "temporary-loaded-area",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1605,7 +1605,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1614,7 +1614,7 @@
       "subject": "coverage-anchor-unloaded",
       "kind": "fallbacks-to",
       "object": "temporary-bootstrap-loading-lease",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1622,7 +1622,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1631,7 +1631,7 @@
       "subject": "chunk-loaded",
       "kind": "gates",
       "object": "target-specific-readiness-validation",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1639,7 +1639,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1648,7 +1648,7 @@
       "subject": "restricted-execution-recovery-request",
       "kind": "delayed-until-tick",
       "object": "default-execution-allocation",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1656,7 +1656,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     },
     {
@@ -1665,7 +1665,7 @@
       "subject": "critical-entity-persistence-profile",
       "kind": "gates",
       "object": "pre-game-entity-creation",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -1673,7 +1673,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-chunk-runtime-policy-v1"
+        "mivubi-chunk-runtime-contract-v1"
       ]
     }
   ]

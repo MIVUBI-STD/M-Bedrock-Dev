@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-validation-policy-v1",
-      "title": "MIVUBI Automated Validation and GameTest Policy v1",
-      "url": "project://knowledge/validation-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-validation-contract-v1",
+      "title": "MIVUBI Automated Validation and GameTest Engineering Contract v1",
+      "url": "project://contracts/engineering/validation-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-24"
     }
@@ -16,7 +16,7 @@
       "domain": "validation",
       "subject": "current project phase",
       "statement": "During knowledge-enrichment phase, define tests and invariants without requiring live execution. Test plans become executable only when the project explicitly enters validation phase.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-validation-policy-v1"
+        "mivubi-validation-contract-v1"
       ],
       "capabilityTags": [
         "phase",
@@ -39,7 +39,7 @@
       "domain": "validation",
       "subject": "knowledge diagnostic",
       "statement": "Each high-value diagnostic should map to at least one static check, runtime invariant, repeatability scenario, or future GameTest/manual validation case so knowledge remains executable rather than documentation-only.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -47,7 +47,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-validation-policy-v1"
+        "mivubi-validation-contract-v1"
       ],
       "capabilityTags": [
         "diagnostic",
@@ -62,7 +62,7 @@
       "domain": "validation",
       "subject": "arena repeatability",
       "statement": "Future arena validation must include repeated-run scenarios, simultaneous multi-arena scenarios, disconnect/reconnect, reset/restart, stale callback, and update-profile scenarios—not only happy-path first runs.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -70,7 +70,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-validation-policy-v1"
+        "mivubi-validation-contract-v1"
       ],
       "capabilityTags": [
         "regression",
@@ -86,14 +86,14 @@
       "domain": "validation",
       "subject": "test runtime",
       "statement": "GameTest/test harness manifests and module versions must be pinned to an explicit runtime profile and kept separate from production compatibility assumptions because the framework is experimental.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock"
         ]
       },
       "sourceIds": [
-        "mivubi-validation-policy-v1"
+        "mivubi-validation-contract-v1"
       ],
       "capabilityTags": [
         "compatibility",
@@ -111,7 +111,7 @@
       "subject": "high-value-diagnostic",
       "kind": "produces",
       "object": "validation-case-definition",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -119,7 +119,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-validation-policy-v1"
+        "mivubi-validation-contract-v1"
       ]
     }
   ]
