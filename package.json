@@ -35,7 +35,8 @@
     "generate:known-limits": "node tooling/repository/generate-known-limits.mjs",
     "verify:permissions": "node tooling/repository/verify-lane-permissions.mjs",
     "score:agent-eval": "node tooling/repository/score-agent-eval.mjs",
-    "generate:proof-backlog": "node tooling/repository/generate-capability-proof-backlog.mjs"
+    "generate:proof-backlog": "node tooling/repository/generate-capability-proof-backlog.mjs",
+    "bug-report-doc": "tsx tooling/bug-report-documents/render.ts"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
