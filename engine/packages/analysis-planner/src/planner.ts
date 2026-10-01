@@ -57,9 +57,9 @@ const GOAL_REQUIREMENT: Readonly<Record<
     level: "semantic",
     traits: ["intent-grounded"],
   },
-  "authored-intent": {
+  "contract-evidence": {
     level: "semantic",
-    traits: ["authored-intent"],
+    traits: ["contract-evidence"],
   },
   "contradiction-proof": {
     level: "formal",
