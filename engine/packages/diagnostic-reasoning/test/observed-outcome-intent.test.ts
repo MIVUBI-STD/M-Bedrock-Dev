@@ -12,11 +12,13 @@ function policyModel(
   return {
     schemaVersion: 1,
     id: "reconnect-policy",
+    artifactId: "artifact:reconnect",
     evidence: [{
       id: "e:policy",
       origin: "source-code",
       locator: "src/recovery-policy.ts",
       summary: "Direct guarded cleanup outcome.",
+      scope: "selected-artifact",
     }],
     nodes: [
       {
@@ -83,7 +85,7 @@ describe("observed outcome intent gate", () => {
     ).toBe("designed-behavior");
   });
 
-  it("caps a policy-violating outcome at probable defect", () => {
+  it("caps a policy-violating outcome at ambiguous outcome", () => {
     const result = gateObservedOutcomeAgainstIntent({
       intent: policyModel(),
       outcomeId: "outcome:cleanup",
@@ -95,7 +97,7 @@ describe("observed outcome intent gate", () => {
       observationEvidenceIds: ["runtime:cleanup"],
     });
 
-    expect(result.disposition).toBe("probable-defect");
+    expect(result.disposition).toBe("ambiguous-intent");
     expect(result.basisInvariantIds).toEqual([
       "inv:admissible-policy:outcome:cleanup",
     ]);
