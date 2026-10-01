@@ -19,6 +19,21 @@ Target Identity
 → Report
 ```
 
+## Canonical vocabulary
+
+| Term | Meaning |
+|---|---|
+| Game Design | approved intended gameplay |
+| Gameplay Contract | scoped derived view of Game Design |
+| Actual Behavior | what current implementation/runtime does |
+| Confirmed Defect | evidence proves a gameplay contradiction |
+| Approved Bug | user-approved defect allowed into report/repair flow |
+| Repair Candidate | technically plausible fix; no mutation authority |
+| Repair Contract | Must Change + Must Preserve |
+| Authorized Repair | Approved Bug/design change + Repair Contract + proof |
+
+`Confirmed Defect` is not `Approved Bug`. `repair-eligible` in internal diagnostics means only that causal proof is sufficient to consider a repair candidate; it never means mutation is approved.
+
 ## Understand
 
 Current approved Game Design must be recovered before gameplay bug discovery. Gameplay Contract is a scoped derived working model, not a second persisted design authority.
