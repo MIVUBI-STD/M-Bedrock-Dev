@@ -43,7 +43,7 @@ const validV1 = JSON.stringify({
 });
 
 describe("bug report file boundary", () => {
-  it("accepts a V2 report", async () => {
+  it("accepts a schema-valid V2 report for compatibility reading", async () => {
     const result = await readBugReportFile({
       name: "report.json",
       async text() {
@@ -55,7 +55,7 @@ describe("bug report file boundary", () => {
     expect(result.report.map.baseVersion).toBe("1.26.20");
   });
 
-  it("upgrades V1 reports for the V2 tracker", async () => {
+  it("upgrades V1 reports for compatibility reading in the V2 tracker", async () => {
     const result = await readBugReportFile({
       name: "legacy.json",
       async text() {
