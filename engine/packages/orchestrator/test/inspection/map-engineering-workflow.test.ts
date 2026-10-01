@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMapEngineeringWorkflow } from "../src/map-engineering-workflow.js";
+import { buildMapEngineeringWorkflow } from "../../src/inspection/map-engineering-workflow.js";
 
 describe("map engineering workflow projection", () => {
   it("keeps release blocked while critical diagnostics remain", () => {

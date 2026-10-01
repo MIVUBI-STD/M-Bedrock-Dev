@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import {
   analyzeGameplayIntentRuntime,
-} from "../src/gameplay-intent-runtime-stage.js";
+} from "../../src/inspection/gameplay-intent-runtime-stage.js";
 
 const intent: GameplayIntentModel = {
   schemaVersion: 1,

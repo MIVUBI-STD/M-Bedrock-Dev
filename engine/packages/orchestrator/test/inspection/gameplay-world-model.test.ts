@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveGameplayWorldModel } from "../src/gameplay-world-model.js";
+import { deriveGameplayWorldModel } from "../../src/inspection/gameplay-world-model.js";
 
 describe("gameplay world model", () => {
   it("summarizes gameplay and arena subsystems without copying raw evidence", () => {

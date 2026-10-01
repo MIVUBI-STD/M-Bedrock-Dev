@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
   indexAuthoredIntentSources,
-} from "../src/inspect-authored-intent-source.js";
+} from "../../src/inspection/inspect-authored-intent-source.js";
 
 const roots: string[] = [];
 

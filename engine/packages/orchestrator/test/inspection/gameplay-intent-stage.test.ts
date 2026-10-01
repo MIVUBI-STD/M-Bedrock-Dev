@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
   ParsedScriptFile,
-} from "../../../analyzers/scripts/src/index.js";
+} from "../../../../analyzers/scripts/src/index.js";
 import {
   buildGameplayIntentModel,
-} from "../src/gameplay-intent-stage.js";
+} from "../../src/inspection/gameplay-intent-stage.js";
 
 const source = {
   artifactId: "art_test",

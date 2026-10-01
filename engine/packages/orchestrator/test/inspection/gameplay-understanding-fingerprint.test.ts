@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { InspectArtifactResult } from "../src/inspect-artifact.js";
+import type { InspectArtifactResult } from "../../src/inspect-artifact.js";
 import {
   compareGameplayUnderstandingFingerprints,
   deriveGameplayUnderstandingFingerprint,
-} from "../src/gameplay-understanding-fingerprint.js";
+} from "../../src/inspection/gameplay-understanding-fingerprint.js";
 
 function result(): InspectArtifactResult {
   return {
