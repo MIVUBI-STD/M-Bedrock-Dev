@@ -115,6 +115,18 @@ export function validateMapKnowledgeRecord(
       errors.push(`Map knowledge ${record.mapId} references unknown regression: ${id}`);
     }
   }
+  if (record.evidenceBasis === "historical-regression") {
+    const owned = new Set(record.regressionIds ?? []);
+    const unresolved = (record.evidenceRefs ?? []).filter(
+      (id) => !owned.has(id),
+    );
+    if (unresolved.length > 0) {
+      errors.push(
+        "Historical map knowledge evidenceRefs must resolve to regressionIds: " +
+          unresolved.join(", "),
+      );
+    }
+  }
   for (const id of record.failurePatternIds ?? []) {
     if (patterns.length > 0 && !patternIds.has(id)) {
       errors.push(`Map knowledge ${record.mapId} references unknown failure pattern: ${id}`);

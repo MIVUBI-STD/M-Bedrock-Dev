@@ -38,7 +38,8 @@ function hasActionableReason(plan: RetestPlan): boolean {
     reason.kind === "update-overlap" ||
     reason.kind === "historical-regression" ||
     reason.kind === "runtime-sensitive" ||
-    reason.kind === "coverage-gap"
+    reason.kind === "coverage-gap" ||
+    reason.kind === "causal-regression"
   );
 }
 
