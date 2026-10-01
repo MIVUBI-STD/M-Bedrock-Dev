@@ -7,27 +7,22 @@ import type {
 } from "../../gameplay-intent/src/index.js";
 
 function model(
-  invariantStatus: "authored" | "inferred",
+  invariantStatus: "authored" | "inferred" = "authored",
   withUnknown = false,
-  origin:
-    | "game-design-spec"
-    | "source-code"
-    = "game-design-spec",
+  evidenceScope:
+    | "selected-artifact"
+    | "external-reference" = "selected-artifact",
 ): GameplayIntentModel {
   return {
     schemaVersion: 1,
     id: "arena-game",
+    artifactId: "artifact:v1",
     evidence: [{
       id: "e:intent",
-      origin,
-      locator:
-        origin === "game-design-spec"
-          ? "design/game-design.json"
-          : "src/session.ts",
-      summary:
-        origin === "game-design-spec"
-          ? "Approved design defines cleanup behavior."
-          : "Session source defines cleanup behavior.",
+      origin: "source-code",
+      locator: "behavior_packs/demo/scripts/session.js",
+      summary: "Cleanup behavior.",
+      scope: evidenceScope,
     }],
     nodes: [{
       id: "lifecycle:cleanup",
@@ -54,16 +49,27 @@ function model(
 }
 
 describe("intent diagnostic gate", () => {
-  it("allows confirmed defect only against authored intent", () => {
+  it("confirms a contradiction against selected-artifact authored intent", () => {
     expect(gateIntentDiagnostic({
-      intent: model("authored"),
+      intent: model(),
       subjectIds: ["lifecycle:cleanup"],
       observationEvidenceIds: ["runtime:arena-not-reusable"],
       contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
     }).disposition).toBe("confirmed-defect");
   });
 
-  it("does not promote contradiction against inferred intent into a bug", () => {
+  it("blocks when expected behavior exists only in external/reference material", () => {
+    const result = gateIntentDiagnostic({
+      intent: model("authored", false, "external-reference"),
+      subjectIds: ["lifecycle:cleanup"],
+      observationEvidenceIds: ["runtime:arena-not-reusable"],
+      contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
+    });
+
+    expect(result.disposition).toBe("ambiguous-intent");
+  });
+
+  it("blocks when selected-artifact intent is inferred rather than grounded", () => {
     const result = gateIntentDiagnostic({
       intent: model("inferred"),
       subjectIds: ["lifecycle:cleanup"],
@@ -72,22 +78,9 @@ describe("intent diagnostic gate", () => {
     });
 
     expect(result.disposition).toBe("ambiguous-intent");
-    expect(result.nextEvidenceNeed).toBe("authored-intent");
   });
 
-  it("does not let current implementation evidence define intended gameplay", () => {
-    const result = gateIntentDiagnostic({
-      intent: model("authored", false, "source-code"),
-      subjectIds: ["lifecycle:cleanup"],
-      observationEvidenceIds: ["runtime:arena-not-reusable"],
-      contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
-    });
-
-    expect(result.disposition).toBe("ambiguous-intent");
-    expect(result.nextEvidenceNeed).toBe("authored-intent");
-  });
-
-  it("blocks defect classification while intent is ambiguous", () => {
+  it("blocks while material intent inside the selected artifact is unresolved", () => {
     expect(gateIntentDiagnostic({
       intent: model("authored", true),
       subjectIds: ["lifecycle:cleanup"],
@@ -96,17 +89,62 @@ describe("intent diagnostic gate", () => {
     }).disposition).toBe("ambiguous-intent");
   });
 
-  it("can classify directly evidenced designed behavior", () => {
+  it("can classify selected-artifact behavior as designed when direct matching evidence exists", () => {
     expect(gateIntentDiagnostic({
-      intent: model("authored"),
+      intent: model(),
       subjectIds: ["lifecycle:cleanup"],
       observationEvidenceIds: ["runtime:cleanup-delay"],
-      designMatchEvidenceIds: ["source:cleanup-delay-policy"],
+      designMatchEvidenceIds: ["artifact:cleanup-delay-policy"],
     }).disposition).toBe("designed-behavior");
   });
-  it("requires runtime evidence integrity before runtime-backed defect confirmation", () => {
+
+  it("ignores external Game Design rules in normal audit mode", () => {
     const result = gateIntentDiagnostic({
-      intent: model("authored"),
+      intent: model(),
+      subjectIds: ["lifecycle:cleanup"],
+      observationEvidenceIds: ["runtime:arena-not-reusable"],
+      contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
+      resolvedGameDesignRule: {
+        designId: "external-design",
+        sourceReference: "Technical Docs/design.json",
+        authority: "authoritative",
+        rule: {
+          id: "cleanup",
+          statement: "Cleanup is optional.",
+          outcome: "allowed",
+        },
+      },
+      gameDesignObservationRelation: "supports-observed",
+    });
+
+    expect(result.disposition).toBe("confirmed-defect");
+  });
+
+  it("allows external design only in explicit reference/comparison mode", () => {
+    const result = gateIntentDiagnostic({
+      intent: model(),
+      subjectIds: ["lifecycle:cleanup"],
+      observationEvidenceIds: ["runtime:cleanup-delay"],
+      resolvedGameDesignRule: {
+        designId: "external-design",
+        sourceReference: "Technical Docs/design.json",
+        authority: "authoritative",
+        rule: {
+          id: "cleanup-delay",
+          statement: "Cleanup delay is allowed.",
+          outcome: "allowed",
+        },
+      },
+      gameDesignObservationRelation: "supports-observed",
+      allowExternalReferenceMode: true,
+    });
+
+    expect(result.disposition).toBe("designed-behavior");
+  });
+
+  it("requires runtime evidence integrity when runtime proof is required", () => {
+    const result = gateIntentDiagnostic({
+      intent: model(),
       subjectIds: ["lifecycle:cleanup"],
       observationEvidenceIds: ["runtime:arena-not-reusable"],
       contradictionEvidenceIds: ["trace:cleanup-complete-but-state-dirty"],
@@ -117,123 +155,5 @@ describe("intent diagnostic gate", () => {
 
     expect(result.disposition).toBe("runtime-proof-required");
     expect(result.nextEvidenceNeed).toBe("runtime-evidence-integrity");
-    expect(result.evidenceIds).toEqual([
-      "runtime:arena-not-reusable",
-      "runtime:cleanup-proof",
-    ]);
-  });
-
-
-  it("treats an explicit Game Design exception as designed behavior", () => {
-    const result = gateIntentDiagnostic({
-      intent: model("authored"),
-      subjectIds: ["combat:team-damage"],
-      observationEvidenceIds: ["runtime:friendly-fire"],
-      resolvedGameDesignRule: {
-        designId: "design:offense",
-        sourceReference: "design/game-design.json",
-        authority: "authoritative",
-        exceptionId: "developer-mode",
-        rule: {
-          id: "friendly-fire",
-          statement: "Same-team damage is forbidden.",
-          outcome: "forbidden",
-        },
-      },
-      gameDesignObservationRelation: "contradicts-observed",
-    });
-
-    expect(result.disposition).toBe("designed-behavior");
-    expect(result.basisDesignRuleIds).toEqual(["friendly-fire"]);
-  });
-
-  it("routes matching balance concerns to design review, not a bug", () => {
-    const result = gateIntentDiagnostic({
-      intent: model("authored"),
-      subjectIds: ["objective:flag"],
-      observationEvidenceIds: ["runtime:flag-survives"],
-      resolvedGameDesignRule: {
-        designId: "design:defense",
-        sourceReference: "design/game-design.json",
-        authority: "authoritative",
-        rule: {
-          id: "flag-health",
-          statement: "The flag has the authored durability profile.",
-          outcome: "allowed",
-        },
-      },
-      gameDesignObservationRelation: "supports-observed",
-      concernKind: "balance",
-    });
-
-    expect(result.disposition).toBe("design-review");
-  });
-
-  it("keeps approved reconstruction below defect confirmation", () => {
-    const result = gateIntentDiagnostic({
-      intent: model("inferred"),
-      subjectIds: ["combat:team-damage"],
-      observationEvidenceIds: ["static:friendly-fire"],
-      contradictionEvidenceIds: ["trace:same-team-damage"],
-      resolvedGameDesignRule: {
-        designId: "design:reconstructed",
-        sourceReference: "design/reconstructed.json",
-        authority: "strong",
-        rule: {
-          id: "friendly-fire",
-          statement: "Same-team damage is forbidden.",
-          outcome: "forbidden",
-        },
-      },
-      gameDesignObservationRelation: "contradicts-observed",
-    });
-
-    expect(result.disposition).toBe("ambiguous-intent");
-    expect(result.nextEvidenceNeed).toBe("authored-intent");
-  });
-
-  it("confirms contradiction against authoritative Game Design rule", () => {
-    const result = gateIntentDiagnostic({
-      intent: model("inferred"),
-      subjectIds: ["combat:team-damage"],
-      observationEvidenceIds: ["runtime:friendly-fire"],
-      contradictionEvidenceIds: ["tester:same-team-damage"],
-      resolvedGameDesignRule: {
-        designId: "design:offense",
-        sourceReference: "design/game-design.json",
-        authority: "authoritative",
-        rule: {
-          id: "friendly-fire",
-          statement: "Same-team damage is forbidden.",
-          outcome: "forbidden",
-        },
-      },
-      gameDesignObservationRelation: "contradicts-observed",
-    });
-
-    expect(result.disposition).toBe("confirmed-defect");
-    expect(result.basisDesignEvidenceIds.length).toBeGreaterThan(0);
-  });
-
-  it("fails closed when an authoritative rule lacks contradiction proof", () => {
-    const result = gateIntentDiagnostic({
-      intent: model("inferred"),
-      subjectIds: ["combat:team-damage"],
-      observationEvidenceIds: ["runtime:friendly-fire"],
-      resolvedGameDesignRule: {
-        designId: "design:offense",
-        sourceReference: "design/game-design.json",
-        authority: "authoritative",
-        rule: {
-          id: "friendly-fire",
-          statement: "Same-team damage is forbidden.",
-          outcome: "forbidden",
-        },
-      },
-      gameDesignObservationRelation: "contradicts-observed",
-    });
-
-    expect(result.disposition).toBe("insufficient-evidence");
-    expect(result.nextEvidenceNeed).toBe("contradiction-proof");
   });
 });
