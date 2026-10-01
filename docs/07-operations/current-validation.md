@@ -1,78 +1,76 @@
 # Current Validation
 
 Snapshot date: 2026-10-01  
-Branch: `Local`  
-Last recorded behavior/source proof baseline predates the current non-behavioral hierarchy refactor; current source-path changes are not runtime proof.
+Branch: `Local`
 
-This file is a current-state proof snapshot, not a chronological validation log.
+This file is the current proof snapshot. It is not a chronological validation log.
 
-## Current source capabilities
+## Current repository state
 
-The current branch contains the established static/source reasoning stack for:
+The branch now contains:
 
-- Semantic IR and value/data-flow reasoning;
-- evidence-grounded Gameplay Intent reconstruction;
-- Behavioral Model and constraint-backed reasoning;
-- diagnostic reasoning with explicit evidence ceilings;
-- compatibility/runtime-profile reasoning;
-- Runtime Lab experiment contracts and telemetry/evidence binding;
-- repair admission, preservation, realization, and retest obligations;
-- reliability search, regression/corpus support, and capability-proof bookkeeping;
-- repository affected planning, bounded context compilation, and zero-waste execution support.
+- the established static/source reasoning stack;
+- explicit proof ceilings and runtime-required boundaries;
+- separated calibration / blind acceptance / regression corpus lanes;
+- frozen expectation contract with artifact SHA-256 identity;
+- TP/TN/FP/FN benchmark scoring with precision, recall, specificity, and false-positive rate;
+- no-op real-artifact package roundtrip proof;
+- canonical reliability routing under `engine/reliability/`.
 
-These capabilities existing in source does not by itself establish current-head runtime correctness.
+## Reliability corpus readiness
 
-## Diagnostic proof boundary
-
-A defect may be promoted only to the proof level supported by its evidence.
+Current tracked corpus candidates:
 
 ```text
-grounded design / intent
-+ supported semantic evidence
-+ contradiction evidence
-+ matching runtime evidence when the claim depends on runtime behavior
+calibration candidates   8
+regression candidates    3
+acceptance cases         0
+benchmark-ready cases    0
 ```
 
-Inferred intent remains below authored-design authority. Static or package evidence never implies live Minecraft behavior.
-
-## Retained corpus baseline
-
-The reviewed eight-map understanding baseline remains useful as a regression reference:
+The 8 calibration candidates are indexed from:
 
 ```text
-cases                 8
-intent nodes          1145
-authored nodes        181
-inferred nodes        964
-unknown intent        0
-maps with unknowns    0
-route profile cases   1
-authored route points 67
+engine/fixtures/calibration/gameplay-understanding-samples.json
 ```
 
-Baseline revision: `2aaf14bf81856c995cdcaed9b8af330ec7c4065c`.
+The 3 regression candidates are indexed from:
 
-This demonstrates non-empty semantic recovery across the reviewed sample families. It does not prove every recovered classification is correct.
+```text
+engine/reliability/catalogs/regressions.json
+```
+
+These are **candidates**, not benchmark proof. They remain unscored until required artifact identity and frozen expectations exist.
+
+## Package proof state
+
+The package validation model now has three explicit levels:
+
+```text
+Level A  synthetic deterministic transport proof
+Level B  real-artifact no-op roundtrip proof
+Level C  Minecraft runtime acceptance
+```
+
+`package-roundtrip` compares extracted path, file size, and SHA-256 content before and after deterministic packaging.
+
+This proves transport preservation only. It does not prove Minecraft loadability or gameplay correctness.
 
 ## Current proof limits
 
-Still requiring stronger or real runtime evidence where applicable:
+Still requiring stronger evidence:
 
-- complete semantic correctness across representative and production maps;
-- bundled/minified script semantic coverage and false-semantic review;
-- complete official/versioned platform knowledge coverage;
-- observed-vs-documented conflict resolution;
-- real scheduler/fairness behavior;
-- replayability under actual Minecraft runtime conditions;
-- entity AI/pathfinding behavior;
-- real chunk lifecycle/readiness behavior;
-- real multi-client execution and concurrency behavior;
-- cross-version runtime differences outside experiments actually executed;
-- end-to-end validation of newer source changes at the exact current head.
+- real artifact fingerprints for current corpus candidates;
+- frozen positive and negative benchmark expectations;
+- blind acceptance/holdout cases;
+- measured detector TP/TN/FP/FN on real evidence;
+- minimized regression fixtures for historical bugs;
+- Minecraft runtime proof for chunk residency, entity AI, persistence/reconnect, and other runtime-only behavior;
+- end-to-end validation at the exact current head.
 
 ## Integrated verification bookkeeping
 
-The last integrated verification entry retained by the previous chronological version of this file was:
+The last retained integrated verification point predates the current reliability/corpus consolidation:
 
 ```text
 validated source revision  5e02256869b4fc2107a1cbcf0ff85f0aac6745ac
@@ -84,6 +82,6 @@ typecheck                   pass
 full test suite             pass
 ```
 
-The current `Local` branch is newer than that recorded proof point. Later consolidation work includes documentation cleanup and non-behavioral source-path hierarchy refactors. This work intentionally does not run CI and therefore does **not** upgrade behavioral proof.
+Current work intentionally does not run CI. Therefore the changes above are implementation/state updates, not upgraded CI proof.
 
-Detailed historical validation entries remain recoverable from Git history; longitudinal machine-readable evidence belongs under `engine/reliability/history/`.
+Historical validation remains recoverable from Git history. Longitudinal execution evidence belongs under `engine/reliability/history/`.
