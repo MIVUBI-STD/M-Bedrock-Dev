@@ -18,6 +18,7 @@ The UI is a projection of canonical Bug Report V2, not a second report system.
 - Category and Found By are secondary.
 - Exclude fixed bugs from the primary audit surface.
 - Bug Trigger (In-Game) must be player-facing and code-free.
+- Schema-valid compatibility reports may be read, but readiness gaps must be surfaced and must block GitHub promotion from file import.
 - Omit empty sections.
 - Do not expose diagnostic internals.
 - Do not add project-management surfaces such as boards, comments, assignment, approval, or activity feeds.
