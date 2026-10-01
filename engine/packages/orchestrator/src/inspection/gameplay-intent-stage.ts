@@ -22,7 +22,7 @@ export interface GameplayIntentStageInput {
   parsedScripts: readonly {
     parsed: ParsedScriptFile;
   }[];
-  authoredScripts?: readonly {
+  contractScripts?: readonly {
     parsed: ParsedScriptFile;
   }[];
 }
@@ -42,11 +42,11 @@ function evidenceId(
 export function buildGameplayIntentModel(
   input: GameplayIntentStageInput,
 ): GameplayIntentModel {
-  const authoredScripts =
-    input.authoredScripts ?? [];
+  const contractScripts =
+    input.contractScripts ?? [];
   const extracted = extractGameplayIntentSignals([
     ...input.parsedScripts.map((item) => item.parsed),
-    ...authoredScripts.map(
+    ...contractScripts.map(
       (item) => item.parsed,
     ),
   ]);
@@ -54,7 +54,7 @@ export function buildGameplayIntentModel(
     ...input.parsedScripts.map(
       (item) => item.parsed.source.relativePath,
     ),
-    ...authoredScripts.map(
+    ...contractScripts.map(
       (item) => item.parsed.source.relativePath,
     ),
   ]);
