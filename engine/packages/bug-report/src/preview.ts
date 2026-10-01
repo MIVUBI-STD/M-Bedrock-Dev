@@ -172,13 +172,27 @@ export function renderBugReportPreviewMarkdown(
 
   out.push(
     "",
-    "| No. | Severity | Bug | Issue | Reproduce / Verify | Action |",
-    "|---:|---|---|---|---|---|",
+    "| No. | Severity | Bug | Issue | Solution |",
+    "|---:|---|---|---|---|",
   );
 
   preview.bugs.forEach((bug, index) => {
     out.push(
-      `| #${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.title)} | ${tableCell(bug.issue)} | ${tableCell(reproductionCell(bug.reproduction))} | ${bug.action ? tableCell(bug.action) : "—"} |`,
+      `| #${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.title)} | ${tableCell(bug.issue)} | ${bug.action ? tableCell(bug.action) : "—"} |`,
+    );
+  });
+
+  out.push(
+    "",
+    "## How to Reproduce the Bug",
+    "",
+    "| No. | Steps |",
+    "|---:|---|",
+  );
+
+  preview.bugs.forEach((bug, index) => {
+    out.push(
+      `| #${index + 1} | ${tableCell(reproductionCell(bug.reproduction))} |`,
     );
   });
 
@@ -195,7 +209,7 @@ export function renderBugReportPreviewMarkdown(
       `**Issue:** ${line(bug.issue)}`,
     );
 
-    if (bug.action) out.push(`**Action:** ${line(bug.action)}`);
+    if (bug.action) out.push(`**Solution:** ${line(bug.action)}`);
     if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
     if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
 
