@@ -1,13 +1,13 @@
 # Next Action
 
-## Current lane — Workflow Simplification
+## Current lane — Single-Source Workflow Hardening
 
 Real-map testing remains deferred.
 
 Canonical flow:
 
 ```text
-Game Design
+Selected Map Version
 → Gameplay Contract
 → Actual Behavior
 → Confirmed Defect
@@ -16,24 +16,18 @@ Game Design
 → Approved Bug
 → Repair Contract
 → Authorized Repair
-→ Verify Defect + Preserve Design
+→ Verify Defect + Preserve Gameplay
 ```
 
 ## Non-negotiable gates
 
-- no authoritative Game Design → no gameplay bug classification;
+- one selected `.mcworld` = one current gameplay truth;
+- no external/stale document fills missing map intent;
 - no matching Gameplay Contract → no candidate discovery;
 - Confirmed Defect ≠ Approved Bug;
 - internal `repair-eligible` ≠ mutation approval;
 - no Approved Bug/design change + Must Change + Must Preserve → no mutation;
-- inspection may produce repair proposals only;
 - report/HTML remains downstream of approval.
-
-## Remaining hardening
-
-1. remove stale duplicate terminology or bypass wording;
-2. keep one semantic owner per decision;
-3. keep operator docs short and reference canonical owners instead of duplicating rules.
 
 ## Deferred
 
