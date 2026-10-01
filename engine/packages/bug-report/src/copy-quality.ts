@@ -5,7 +5,9 @@ export type BugReportCopyIssueCode =
   | "field-too-long"
   | "duplicate-core-copy"
   | "vague-issue"
-  | "vague-action";
+  | "vague-action"
+  | "missing-reproduction"
+  | "invalid-reproduction-length";
 
 export interface BugReportCopyIssue {
   readonly code: BugReportCopyIssueCode;
@@ -92,14 +94,35 @@ export function reviewBugReportCopy(
     tooLong(issues, base + ".expected", bug.expected, limits.expected);
     tooLong(issues, base + ".observed", bug.observed, limits.observed);
 
-    bug.reproduction?.forEach((step, stepIndex) => {
-      tooLong(
-        issues,
-        `${base}.reproduction[${stepIndex}]`,
-        step,
-        limits.reproduction,
-      );
-    });
+    if (!bug.reproduction || bug.reproduction.length === 0) {
+      issues.push({
+        code: "missing-reproduction",
+        path: base + ".reproduction",
+        message:
+          "Tester-facing bugs require a concise in-game reproduction / verification path.",
+      });
+    } else {
+      if (
+        bug.reproduction.length < 2 ||
+        bug.reproduction.length > 5
+      ) {
+        issues.push({
+          code: "invalid-reproduction-length",
+          path: base + ".reproduction",
+          message:
+            "Use 2 to 5 concise reproduction steps so a tester can verify the bug quickly.",
+        });
+      }
+
+      bug.reproduction.forEach((step, stepIndex) => {
+        tooLong(
+          issues,
+          `${base}.reproduction[${stepIndex}]`,
+          step,
+          limits.reproduction,
+        );
+      });
+    }
 
     if (bug.aiAnalysis) {
       tooLong(
