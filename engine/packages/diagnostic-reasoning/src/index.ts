@@ -12,5 +12,4 @@ export * from "./counterexample-explanation.js";
 export * from "./calibration.js";
 
 export * from "./declarative-rules.js";
-export * from "./candidate-discovery.js";
 export * from "./candidate-evidence.js";
