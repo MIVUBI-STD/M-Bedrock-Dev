@@ -17,6 +17,12 @@ export type ReliabilityDomain =
   | "chunks"
   | "compatibility"
   | "education"
+  | "combat"
+  | "inventory"
+  | "economy"
+  | "ui"
+  | "persistence"
+  | "environment"
   | "unknown";
 
 export type InvariantSeverity = "minor" | "medium" | "critical";
@@ -30,6 +36,19 @@ export interface ReliabilityInvariant {
   lanes: readonly ReliabilityLane[];
   tags: readonly string[];
   source: "built-in" | "project" | "regression";
+}
+
+export interface FailurePattern {
+  id: string;
+  title: string;
+  domain: ReliabilityDomain;
+  summary: string;
+  invariantIds: readonly string[];
+  triggerTags: readonly string[];
+  capabilityTags: readonly string[];
+  supportingRegressionIds: readonly string[];
+  detectionHints: readonly string[];
+  retestFocus: readonly string[];
 }
 
 export interface RegressionCase {
@@ -91,6 +110,14 @@ export interface MapCompatibilityFingerprint {
   };
   worldDatabasePresent: boolean;
   riskSurfaces: readonly string[];
+  mapVersion?: string;
+  evidenceBasis?: "artifact-inspection" | "historical-regression";
+  evidenceRefs?: readonly string[];
+  architectureTags?: readonly string[];
+  gameplayPatternTags?: readonly string[];
+  knownInvariantIds?: readonly string[];
+  knownRegressionIds?: readonly string[];
+  failurePatternIds?: readonly string[];
 }
 
 export type CoverageState = "covered" | "partial" | "unknown" | "not-applicable";
