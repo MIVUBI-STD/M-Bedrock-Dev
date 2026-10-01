@@ -20,7 +20,7 @@ Approved Bug
   - Must Preserve
 ```
 
-Intentional modification requires an explicitly approved Game Design change first.
+Intentional modification requires an explicit user-approved behavior change; it is separate from bug repair.
 
 ## Workflow
 
@@ -48,7 +48,7 @@ Approved authority
 ## Forbidden
 
 - repair an unapproved bug;
-- infer Game Design from implementation;
+- invent expected behavior outside the selected-version Gameplay Contract;
 - mutate without Must Change + Must Preserve;
 - silently change intended gameplay;
 - widen into unrelated cleanup;
