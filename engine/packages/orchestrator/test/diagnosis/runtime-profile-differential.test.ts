@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   captureMinecraftRuntimeProfile,
-} from "../../runtime-profile/src/index.js";
+} from "../../../runtime-profile/src/index.js";
 import {
   qualifyRuntimeExperiment,
   runtimeExperimentDefinitionRevision,
   type RuntimeExperimentDefinition,
   type RuntimeExperimentTrial,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import {
   compareRuntimeExperimentAcrossProfiles,
   runtimeProfileDifferentialEvidence,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function profile(
   edition: "bedrock-retail" | "education",

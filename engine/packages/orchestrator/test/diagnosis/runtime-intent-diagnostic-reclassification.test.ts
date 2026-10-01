@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import type {
   RuntimeExperimentDiagnosticBridge,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   reclassifyIntentDiagnosticFromRuntime,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function intent(
   invariantStatus: "authored" | "inferred",

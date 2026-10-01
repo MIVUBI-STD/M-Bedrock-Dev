@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import {
   reclassifyIntentDiagnosticFromProfileDifferential,
   type RuntimeProfileDifferentialReport,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function intent(): GameplayIntentModel {
   return {
