@@ -21,7 +21,7 @@ The first screen must answer, without opening technical detail:
 
 Canonical Bug Report V2 owns facts. Presentation owns density and ordering.
 
-The shared preview contract is `engine/packages/bug-report/PREVIEW.md`.
+Presentation hierarchy is owned by `engine/packages/bug-report/PREVIEW.md`. Wording quality is owned by `engine/packages/bug-report/COPY.md`.
 
 ## Entry
 
@@ -114,11 +114,11 @@ Fact precedes technical interpretation. Empty sections are omitted.
 
 ## Density rules
 
-- One bug describes one primary failure.
-- Title is short enough to scan in a list.
-- Issue states the concrete gameplay failure.
+Do not define separate copy limits in the UI. Use `engine/packages/bug-report/COPY.md`.
+
+UI-specific density rules:
+
 - Action is shown only when Suggested Fix exists.
-- Do not repeat the same sentence across Issue, Expected, Observed, and Technical Analysis.
 - Technical detail is subordinate to repair signal.
 - Fixed bugs are visually reduced and hidden by default when open bugs exist.
 
