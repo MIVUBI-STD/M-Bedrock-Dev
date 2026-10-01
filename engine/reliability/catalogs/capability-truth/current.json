@@ -2,13 +2,15 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "c7eb2077c8707cbbf882a77ca28efe131f58ff91",
+    "commit": "ae6f20caa4bca6a4b0318152c964f12c9c773c8c",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
     "registryFingerprint": "113300dc",
+    "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
+    "proofRegistryFingerprint": "a401e7bc",
     "proofInventoryFingerprint": "4ef39648"
   },
   "summary": {
@@ -17,6 +19,8 @@
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 4,
+    "proofBound": 15,
+    "proofUnbound": 35,
     "analysisCapabilities": 30
   },
   "taskCapabilities": [
@@ -43,6 +47,9 @@
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -68,6 +75,9 @@
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -93,6 +103,9 @@
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -118,6 +131,9 @@
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -143,6 +159,9 @@
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -168,6 +187,9 @@
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -193,6 +215,9 @@
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -218,6 +243,9 @@
         "engine/packages/behavior-model/test/runtime-overlay.test.ts",
         "engine/packages/behavior-model/test/safe-config.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -243,6 +271,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -268,6 +299,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -293,6 +327,14 @@
         "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts",
         "engine/packages/diagnostic-reasoning/test/diagnostic-reasoning.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/diagnostic-reasoning/test/calibration.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -318,6 +360,14 @@
         "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts",
         "engine/packages/diagnostic-reasoning/test/diagnostic-reasoning.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -343,6 +393,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -368,6 +421,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -393,6 +449,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -418,6 +477,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -443,6 +505,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -468,6 +533,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -493,6 +561,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -518,6 +589,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -539,6 +613,14 @@
       "proofPaths": [
         "engine/packages/dataflow/test/dataflow.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/dataflow/test/dataflow.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -564,6 +646,14 @@
         "engine/packages/knowledge/test/invariant-compiler.test.ts",
         "engine/packages/knowledge/test/knowledge-v2.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/knowledge/test/freshness.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -589,6 +679,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -614,6 +707,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -639,6 +735,14 @@
         "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts",
         "engine/packages/reliability-search/test/extended-mutations.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -664,6 +768,14 @@
         "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts",
         "engine/packages/reliability-search/test/extended-mutations.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -689,6 +801,14 @@
         "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts",
         "engine/packages/reliability-search/test/extended-mutations.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -714,6 +834,14 @@
         "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts",
         "engine/packages/reliability-search/test/extended-mutations.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -739,6 +867,9 @@
         "engine/packages/orchestrator/test/arena-audit.test.ts",
         "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -762,6 +893,9 @@
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -785,6 +919,15 @@
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "contract-only",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/runtime-lab/test/cross-version-differential-executor.test.ts"
+        ],
+        "note": "Binds fail-closed orchestration behavior only; live cross-version proof still requires LOCAL/LIVE Minecraft hosts."
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -810,6 +953,14 @@
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/runtime-lab/test/cross-version-differential-plan.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -833,6 +984,9 @@
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -856,6 +1010,9 @@
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -881,6 +1038,14 @@
         "engine/packages/reliability/test/catalog-writer.test.ts",
         "engine/packages/reliability/test/catalogs.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/reliability/test/runtime-session-replay.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -906,6 +1071,14 @@
         "engine/packages/project-model/test/runtime-evidence-continuity.test.ts",
         "engine/packages/project-model/test/runtime-probe-binding.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/project-model/test/runtime-semantic-convention.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -931,6 +1104,9 @@
         "engine/analyzers/entities/test/loot.test.ts",
         "engine/analyzers/entities/test/navigation.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -956,6 +1132,9 @@
         "engine/analyzers/entities/test/loot.test.ts",
         "engine/analyzers/entities/test/navigation.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -981,6 +1160,9 @@
         "engine/analyzers/entities/test/loot.test.ts",
         "engine/analyzers/entities/test/navigation.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1006,6 +1188,9 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1031,6 +1216,9 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1056,6 +1244,9 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1081,6 +1272,9 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1106,6 +1300,9 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1131,6 +1328,9 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1156,6 +1356,9 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1181,6 +1384,9 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "unbound"
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1206,6 +1412,14 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/analyzers/scripts/test/source-recovery.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1231,6 +1445,14 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/analyzers/scripts/test/semantic-flow-bindings.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
     {
@@ -1256,6 +1478,14 @@
         "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
         "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
       ],
+      "proofBinding": {
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/analyzers/scripts/test/source-map-binding.test.ts"
+        ]
+      },
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     }
   ],
