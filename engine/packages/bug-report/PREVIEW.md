@@ -13,14 +13,16 @@ Map · Version · Tested · Repair
 Open · Blocker · Major · Minor · Fixed
 ```
 
-| Severity | Bug | Issue | Action |
-|---|---|---|---|
+| No. | Severity | Bug | Issue | Action |
+|---:|---|---|---|---|
 
 Rules:
 
 - default scope is open bugs only;
 - order is Blocker → Major → Minor → Bug ID;
-- `Bug` contains ID + short title;
+- `No.` is a simple preview row number (`#1`, `#2`, ...);
+- `Bug` contains only the short human-readable title;
+- canonical Bug ID stays internal in default preview and is shown only in detail/full mode;
 - `Issue` is canonical Problem;
 - `Action` is canonical Suggested Fix;
 - when Suggested Fix is absent, show `—`;
@@ -88,7 +90,8 @@ Keep the table readable:
 - no Category column by default;
 - no Found By column by default;
 - no Status column when only open bugs are shown;
-- no separate ID column; combine ID + title in `Bug`;
+- do not expose canonical Bug ID in the default table;
+- use a simple `No.` column for quick reference within the current preview;
 - no duplicated text between Bug, Issue, and Action;
 - use `—` for unavailable Action;
 - never infer or rewrite canonical facts.
