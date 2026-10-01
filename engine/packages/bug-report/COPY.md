@@ -30,21 +30,37 @@ Good:
 Arena cannot restart after match cleanup
 ```
 
-### Problem
+### Problem / Issue
 
-Purpose: state the concrete gameplay impact.
+Purpose: let the reader understand **what is wrong and why it matters** in one scan.
+
+Required structure:
+
+```text
+Affected feature/object + concrete failure + gameplay impact
+```
 
 Rules:
 
 - maximum 220 characters;
-- describe the failure and relevant impact;
-- do not repeat Expected or Observed verbatim;
-- do not include investigation history.
+- start from the affected gameplay feature, object, or state;
+- state the failure as an observable fact;
+- include the player/game impact when it is not already obvious;
+- use one sentence whenever possible;
+- do not lead with investigation language such as "there may be", "appears to", "possible issue", "seems", or "needs checking";
+- do not describe root-cause speculation here;
+- do not repeat Expected or Observed verbatim.
 
 Good:
 
 ```text
-A completed arena remains owned by the previous session, preventing the next match from starting.
+The arena keeps the previous session ownership after match end, so a new match cannot start.
+```
+
+Bad:
+
+```text
+There appears to be an issue with arena cleanup that may affect restarting.
 ```
 
 ### Expected
@@ -87,16 +103,38 @@ Rules:
 - do not repeat Problem;
 - internal evidence graph IDs and orchestration details are forbidden.
 
-### Suggested Fix
+### Suggested Fix / Action
 
-Purpose: supported repair direction.
+Purpose: let the reader understand **what must be changed** without reading the technical analysis first.
+
+Required structure:
+
+```text
+Direct action + repair target + intended result
+```
 
 Rules:
 
 - maximum 220 characters;
-- state the repair action directly;
+- begin with a direct repair verb when practical: Clear, Reset, Restore, Rebind, Sync, Move, Remove, Add, Guard, Update, Replace, Prevent, or equivalent;
+- identify the state, object, function, or behavior being changed;
+- state the intended result when the action alone could be ambiguous;
+- do not use vague actions such as "check", "investigate", "review", "look into", "fix the issue", or "adjust as needed";
+- do not restate the Issue;
 - must remain advisory;
 - never invent a fix when repair evidence is insufficient.
+
+Good:
+
+```text
+Clear arena session ownership at match cleanup so the arena returns to an available state.
+```
+
+Bad:
+
+```text
+Investigate the cleanup logic and fix the issue.
+```
 
 ### Relevant Code
 
