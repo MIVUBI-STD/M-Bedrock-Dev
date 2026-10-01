@@ -111,6 +111,11 @@ function mutationNeedsRuntimeIntegrity(
   return causalProofAtLeast(proofState, "intervention-supported");
 }
 
+/**
+ * Diagnostic repair eligibility is internal causal readiness only.
+ * It never grants user approval or mutation authority.
+ * Final authority belongs to Approved Bug/design-change + Repair Contract gates.
+ */
 export function decideDiagnosticRepair(
   incident: CausalIncident,
   investigation: DiagnosticInvestigationState,
@@ -145,7 +150,7 @@ export function decideDiagnosticRepair(
       proofState: "unknown",
       reasons: [
         "Multiple root-cause candidates remain active.",
-        "More discriminating evidence is required before repair authorization.",
+        "More discriminating evidence is required before repair-candidate selection.",
       ],
     };
   }
@@ -274,7 +279,7 @@ export function decideDiagnosticRepair(
         claimStrength: claimStrengthFor(proofState),
         reasons: [
           "Mutation-level proof requires an explicit runtime evidence integrity report.",
-          "Observed behavior without evidence sufficiency/continuity checks cannot authorize repair.",
+          "Observed behavior without evidence sufficiency/continuity checks cannot establish repair-candidate readiness.",
         ],
       };
     }
@@ -316,7 +321,7 @@ export function decideDiagnosticRepair(
       claimStrength: claimStrengthFor(proofState),
       reasons: [
         "Exactly one candidate remains and the investigation supports it.",
-        "Causal proof meets the repair-candidate threshold.",
+        "Causal proof meets the internal repair-candidate threshold; mutation still requires workflow approval.",
         "Runtime evidence integrity satisfies the required claim classes.",
       ],
     };
@@ -332,7 +337,7 @@ export function decideDiagnosticRepair(
       reasons: [
         "Exactly one candidate remains and the investigation supports it.",
         "An intervention/reproduction signal exists but causal proof is not yet complete.",
-        "Mutation is limited to a guarded working-copy experiment.",
+        "This status is internal repair readiness only; any guarded mutation still requires workflow approval.",
       ],
     };
   }
@@ -347,7 +352,7 @@ export function decideDiagnosticRepair(
     proofState,
     claimStrength: claimStrengthFor(proofState),
     reasons: [
-      "Evidence is below the mutation authorization threshold.",
+      "Evidence is below the repair-candidate proof threshold.",
       ...(legacyCapped
         ? [
             "Legacy runtime-observed outcome is treated as correlation, not causation.",
