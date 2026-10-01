@@ -2,108 +2,74 @@
 
 Canonical Bug Report V2 owns facts. Preview owns readability.
 
-The preview layer MUST NOT add, alter, infer, or persist bug facts. It is a projection of the canonical report for fast human and ChatGPT reading.
+Default ChatGPT presentation is **table-first**. The goal is minimum vertical scroll while preserving the repair signal.
 
-## Reader goal
+## Default compact preview
 
-A reader should understand within one scan:
-
-1. what is broken;
-2. how severe it is;
-3. what action is supported;
-4. whether deeper evidence is available.
-
-The default preview is intentionally concise. Do not dump canonical JSON unless explicitly requested.
-
-## Information hierarchy
-
-### Level 1 — report signal
-
-Show only:
+Show one report signal line followed by one compact table:
 
 ```text
-Map · Version · Tested Version · Repair owner
+Map · Version · Tested · Repair
 Open · Blocker · Major · Minor · Fixed
 ```
 
-Do not show schema IDs, internal provenance, evidence graph identifiers, semantic keys, repair-unit IDs, diagnostic routing, or cache state.
-
-### Level 2 — issue signal
-
-Every visible bug begins with:
-
-```text
-[SEVERITY] BUG-ID — Short title
-Issue: concrete gameplay failure
-Action: supported repair action, when recorded
-```
-
-This is the minimum useful repair handoff.
+| Severity | Bug | Issue | Action |
+|---|---|---|---|
 
 Rules:
 
-- one title = one primary failure;
-- title is short, concrete, and scannable;
-- Issue states the player/game failure, not the investigation history;
-- Action comes only from canonical Suggested Fix;
-- never invent an Action when Suggested Fix is absent;
-- severity is always visible;
-- fixed bugs are hidden by default.
+- default scope is open bugs only;
+- order is Blocker → Major → Minor → Bug ID;
+- `Bug` contains ID + short title;
+- `Issue` is canonical Problem;
+- `Action` is canonical Suggested Fix;
+- when Suggested Fix is absent, show `—`;
+- do not add Expected, Observed, Reproduction, Technical Analysis, Relevant Code, or Must Preserve to the default table;
+- do not create one section per bug in default preview;
+- do not dump JSON.
 
-### Level 3 — evidence
+## Detail on demand
 
-Standard preview adds:
+Only expand a bug when the user asks for a specific bug, root cause, reproduction, fix implementation, or full detail.
+
+For one selected bug, use this order:
 
 ```text
+Severity + ID + Title
+Issue
+Action when supported
 Expected
 Observed
-Reproduce
-```
-
-Fact precedes interpretation.
-
-### Level 4 — technical context
-
-Full preview may additionally show:
-
-```text
-Technical
+Reproduction
+Technical Analysis
 Relevant Code
 Must Preserve
 ```
 
-Technical context is secondary. It must never bury the Issue or Action.
+Omit empty fields.
 
 ## Modes
 
 ### summary
 
-Use for status checks, multi-map scans, or large reports.
+Compact table with:
 
-Show:
-
-- report signal;
-- Severity + ID + Title;
-- Issue;
-- Action when available.
+- Severity
+- Bug
+- Issue
+- Action
 
 ### standard — default
 
-Use for normal ChatGPT report presentation.
+Same compact table as summary.
 
-Show summary plus:
-
-- Expected;
-- Observed;
-- Reproduction when available.
-
-Do not show Technical, Relevant Code, or Must Preserve unless needed.
+The standard mode intentionally does not expand evidence fields. This keeps normal ChatGPT previews short and scannable.
 
 ### full
 
-Use only when the user asks for full detail, root-cause context, or repair implementation context.
+Use only on explicit request.
 
-Show all supported preview fields.
+Full mode may include the compact table first, then expanded details for the requested bug set.
 
 ## Ordering
 
@@ -113,7 +79,21 @@ Visible bugs are deterministic:
 Blocker → Major → Minor → Bug ID
 ```
 
-Open bugs are the default scope. Fixed bugs appear only when explicitly requested or when no open bugs remain and historical context is requested.
+Open bugs are the default scope. Fixed bugs appear only when explicitly requested or when historical context is required.
+
+## Table density
+
+Keep the table readable:
+
+- no Category column by default;
+- no Found By column by default;
+- no Status column when only open bugs are shown;
+- no separate ID column; combine ID + title in `Bug`;
+- no duplicated text between Bug, Issue, and Action;
+- use `—` for unavailable Action;
+- never infer or rewrite canonical facts.
+
+If a report is unusually large, still preserve one-row-per-bug rather than expanding cards.
 
 ## Wording dependency
 
@@ -121,10 +101,23 @@ Preview does not rewrite canonical bug copy.
 
 All new-report wording rules and density limits are owned by `COPY.md` and enforced by `copy-quality.ts`. Presentation code may normalize whitespace for display, but must not paraphrase or repair report facts.
 
+## Hidden internals
+
+Normal preview must not show:
+
+- schema IDs;
+- semantic keys;
+- evidence graph IDs;
+- repair-unit IDs;
+- proof routing;
+- diagnostic orchestration;
+- cache state.
+
 ## Ownership
 
 - Bug Report V2: source of truth.
+- `COPY.md`: wording quality.
 - `projectBugReportPreview()`: structured projection.
-- `renderBugReportPreviewMarkdown()`: compact text projection.
-- ChatGPT/CLI/UI may consume the projection.
+- `renderBugReportPreviewMarkdown()`: compact table rendering.
+- ChatGPT / CLI / UI may consume the projection.
 - Preview output is never persisted as a second report format.
