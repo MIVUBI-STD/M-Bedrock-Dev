@@ -118,10 +118,7 @@ export const independentGameplayIntentEvidenceIds =
 const intendedRank: Readonly<
   Partial<Record<GameplayAuthoritySource, number>>
 > = {
-  "current-user-decision": 100,
-  "approved-game-design": 90,
-  "current-gameplay-documentation": 80,
-  "derived-intent": 60,
+  "selected-artifact": 100,
 };
 
 const actualRank: Readonly<
