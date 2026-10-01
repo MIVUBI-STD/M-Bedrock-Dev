@@ -51,11 +51,17 @@ export type GameplayIntentEvidenceOrigin =
   | "project-policy"
   | "official-documentation";
 
+export type GameplayIntentEvidenceScope =
+  | "selected-artifact"
+  | "external-reference"
+  | "runtime";
+
 export interface GameplayIntentEvidence {
   id: string;
   origin: GameplayIntentEvidenceOrigin;
   locator: string;
   summary: string;
+  scope?: GameplayIntentEvidenceScope;
 }
 
 export type GameplayIntentScalar =
