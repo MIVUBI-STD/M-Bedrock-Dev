@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { verifyPostRepairOutcome } from "../src/post-repair-verification.js";
+import { verifyPostRepairOutcome } from "../../src/repair/post-repair-verification.js";
 
 function inspection(
   overrides: Record<string, unknown> = {},

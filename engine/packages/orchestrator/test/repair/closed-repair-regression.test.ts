@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   RegressionCorpus,
-} from "../../reliability/src/index.js";
+} from "../../../reliability/src/index.js";
 import type {
   CounterexampleScenario,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import type {
   PostRepairClosureResult,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   addClosedRepairToRegressionCorpus,
   regressionCaseFromClosedRepair,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 const scenario: CounterexampleScenario = {
   schemaVersion: 1,

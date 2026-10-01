@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { derivePostRepairValidationObligations } from "../src/post-repair-validation-obligations.js";
+import { derivePostRepairValidationObligations } from "../../src/repair/post-repair-validation-obligations.js";
 
 function result(
   overrides: Record<string, unknown> = {},

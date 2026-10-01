@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
   RepairLifecycleState,
-} from "../src/index.js";
+} from "../../src/index.js";
 import {
   evaluatePostRepairClosure,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function lifecycle(
   complete: boolean,
