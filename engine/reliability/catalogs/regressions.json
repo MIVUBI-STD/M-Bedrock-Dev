@@ -6,9 +6,19 @@
       "title": "Capture Run extract gate blocked by unintended fill",
       "domain": "commands",
       "discoveredBy": "manual",
-      "invariantIds": ["topology.repeated-layout-consistency"],
-      "triggerTags": ["gameplay", "structure-adjacent", "arena"],
-      "capabilityTags": ["command:fill", "structure-load", "repeated-topology"],
+      "invariantIds": [
+        "topology.repeated-layout-consistency"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "structure-adjacent",
+        "arena"
+      ],
+      "capabilityTags": [
+        "command:fill",
+        "structure-load",
+        "repeated-topology"
+      ],
       "reproduction": [
         "Start Capture Run Tier 1",
         "Approach the extract-zone entrance",
@@ -23,8 +33,16 @@
       "domain": "entities",
       "discoveredBy": "manual",
       "invariantIds": [],
-      "triggerTags": ["minecraft-update", "entity-lifecycle", "gameplay"],
-      "capabilityTags": ["entity-ai", "entity-event", "world-mutation"],
+      "triggerTags": [
+        "minecraft-update",
+        "entity-lifecycle",
+        "gameplay"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "entity-event",
+        "world-mutation"
+      ],
       "reproduction": [
         "Start Loadout Trial level 1",
         "Reach the sequence where the entity should break the wall",
@@ -38,9 +56,18 @@
       "title": "Concurrent arena starts serialize cutscenes across sessions",
       "domain": "multiplayer",
       "discoveredBy": "manual",
-      "invariantIds": ["multiplayer.state-isolation"],
-      "triggerTags": ["multiplayer", "concurrency", "cutscene"],
-      "capabilityTags": ["gameplay-state", "multiplayer-concurrency"],
+      "invariantIds": [
+        "multiplayer.state-isolation"
+      ],
+      "triggerTags": [
+        "multiplayer",
+        "concurrency",
+        "cutscene"
+      ],
+      "capabilityTags": [
+        "gameplay-state",
+        "multiplayer-concurrency"
+      ],
       "reproduction": [
         "Assign players to separate arenas",
         "Start both arenas at nearly the same time",
@@ -48,6 +75,206 @@
       ],
       "expected": "Each arena can start its own cutscene independently.",
       "observed": "Cutscenes behave like a shared queue, leaving one arena apparently unable to start."
+    },
+    {
+      "id": "reg_fotp_l1_friendly_fire_enabled",
+      "title": "Fall of the Pillager L1 allows teammate damage",
+      "domain": "combat",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Fall of The Pillager - Level 1 (Offense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-001",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "combat.team-damage-isolation"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "combat",
+        "team"
+      ],
+      "capabilityTags": [
+        "combat",
+        "multiplayer"
+      ],
+      "reproduction": [
+        "Start Fall of the Pillager Level 1 with teammates",
+        "Attack a teammate during gameplay",
+        "Observe whether teammate damage is applied"
+      ],
+      "expected": "Friendly fire is disabled and teammates cannot damage each other.",
+      "observed": "Players can hit or damage teammates."
+    },
+    {
+      "id": "reg_fotp_l1_weapon_durability_loss",
+      "title": "Fall of the Pillager L1 can permanently lose the required sword",
+      "domain": "inventory",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Fall of The Pillager - Level 1 (Offense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-002",
+        "targetEdition": "education",
+        "targetVersion": null,
+        "reproductionConfidence": "intermittent"
+      },
+      "invariantIds": [
+        "inventory.required-item-continuity"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "inventory",
+        "durability",
+        "intermittent"
+      ],
+      "capabilityTags": [
+        "inventory",
+        "item-lifecycle"
+      ],
+      "reproduction": [
+        "Use the required sword until durability reaches zero",
+        "Observe the post-break weapon state"
+      ],
+      "expected": "The intended durability system restores, repairs, or replaces the required sword.",
+      "observed": "For some players the sword can fail to return or repair after breaking."
+    },
+    {
+      "id": "reg_fotp_l1_knocked_player_targeted",
+      "title": "Fall of the Pillager L1 hostile entities keep targeting knocked players",
+      "domain": "combat",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Fall of The Pillager - Level 1 (Offense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-003",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "combat.knockdown-target-exclusion"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "combat",
+        "revive",
+        "entity-ai"
+      ],
+      "capabilityTags": [
+        "combat",
+        "entity-ai",
+        "revive"
+      ],
+      "reproduction": [
+        "Enter combat and become knocked down",
+        "Observe hostile entity targeting while the player remains knocked down"
+      ],
+      "expected": "Hostile entities stop targeting the player during the knocked-down state.",
+      "observed": "Hostile entities continue targeting and attacking the knocked-down player."
+    },
+    {
+      "id": "reg_fotp_l1_self_revive_shift",
+      "title": "Fall of the Pillager L1 allows self-revive by pre-holding Shift",
+      "domain": "combat",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Fall of The Pillager - Level 1 (Offense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-004",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "combat.revive-requires-eligible-helper"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "combat",
+        "revive",
+        "input-timing"
+      ],
+      "capabilityTags": [
+        "combat",
+        "revive",
+        "input-gesture"
+      ],
+      "reproduction": [
+        "Press or hold Shift immediately before knockdown",
+        "Allow the player to enter the knocked-down state",
+        "Observe whether the player revives without teammate assistance"
+      ],
+      "expected": "A knocked player can only recover through the intended revive mechanic.",
+      "observed": "The player can recover without teammate assistance."
+    },
+    {
+      "id": "reg_fotp_l1_upgraded_item_droppable",
+      "title": "Fall of the Pillager L1 upgraded items remain droppable",
+      "domain": "inventory",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Fall of The Pillager - Level 1 (Offense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-005",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "inventory.progression-item-retention"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "inventory",
+        "upgrade"
+      ],
+      "capabilityTags": [
+        "inventory",
+        "item-lifecycle"
+      ],
+      "reproduction": [
+        "Obtain an upgraded progression item",
+        "Attempt to drop the upgraded item from inventory"
+      ],
+      "expected": "Upgraded or progression-critical items cannot be dropped.",
+      "observed": "Upgraded items can still be dropped."
+    },
+    {
+      "id": "reg_fotp_l1_shop_ui_state_inconsistent",
+      "title": "Fall of the Pillager L1 shop UI changes style after returning to menu",
+      "domain": "ui",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Fall of The Pillager - Level 1 (Offense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-006",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "ui.shop-state-consistency"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "ui",
+        "shop"
+      ],
+      "capabilityTags": [
+        "ui-state"
+      ],
+      "reproduction": [
+        "Open the shop for the first time",
+        "Navigate away and use Back to Menu",
+        "Compare the returned shop UI with the initial shop UI"
+      ],
+      "expected": "The shop uses a consistent visual hierarchy and presentation across menu states.",
+      "observed": "The initial shop UI and the UI after Back to Menu use inconsistent presentation."
     }
   ]
 }
