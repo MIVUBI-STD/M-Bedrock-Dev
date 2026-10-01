@@ -191,7 +191,7 @@ describe("gameplay intent runtime stage", () => {
     );
 
     expect(result.designedBehavior).toBe(1);
-    expect(result.probableDefects).toBe(0);
+    expect(result.confirmedDefects).toBe(0);
     expect(result.assessments[0]?.result.disposition)
       .toBe("designed-behavior");
   });
@@ -824,8 +824,8 @@ describe("gameplay intent runtime stage", () => {
       }],
     );
 
-    expect(result.probableDefects).toBe(1);
+    expect(result.confirmedDefects).toBe(0);
     expect(result.assessments[0]?.result.disposition)
-      .toBe("probable-defect");
+      .toBe("ambiguous-intent");
   });
 });
