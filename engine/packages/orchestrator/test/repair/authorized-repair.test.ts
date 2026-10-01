@@ -36,6 +36,35 @@ function transaction(validation = true) {
   });
 }
 
+function repairAuthority(txId: string) {
+  return {
+    kind: "approved-bug" as const,
+    approved: {
+      map: {
+        name: "Repair Test",
+        mapVersion: "1.0.0",
+        drive: "https://drive.google.com/file/d/map/view",
+        baseVersion: "1.26.20",
+        testedVersion: "1.26.32",
+      },
+      approvedSemanticKeys: ["bug:approved"],
+      rejectedSemanticKeys: [],
+      decisions: [{
+        semanticKey: "bug:approved",
+        decision: "approve" as const,
+      }],
+    },
+    bugSemanticKey: "bug:approved",
+    preservationContract: {
+      schemaVersion: 1 as const,
+      id: "preserve:" + txId,
+      transactionId: txId,
+      mustChangeInvariantIds: ["invariant::change"],
+      mustPreserveInvariantIds: ["invariant::preserve"],
+    },
+  };
+}
+
 function proof(
   txId: string,
   disposition: RepairProofBundle["admissionDisposition"],
@@ -100,6 +129,9 @@ describe("authorized repair mutation", () => {
         preservationContractRevision: "preservation-contract-current",
         preservationBaselineRevision: "preservation-baseline-current",
         runtimeEvidenceRevision: "evidence-current",
+      },
+      {
+        repairAuthority: repairAuthority(tx.id),
       },
     )).toMatchObject({
       authorized: true,
@@ -184,6 +216,9 @@ describe("authorized repair mutation", () => {
           runtimeEvidenceRevision: "evidence-current",
           postTransformProofRevision:
             "guard-proof:impact-proof",
+        },
+        {
+          repairAuthority: repairAuthority(tx.id),
         },
       ),
     ).toMatchObject({
@@ -355,7 +390,10 @@ describe("authorized repair mutation", () => {
         preservationBaselineRevision: "preservation-baseline-current",
         runtimeEvidenceRevision: "evidence-current",
       },
-      { allowGuarded: true },
+      {
+        allowGuarded: true,
+        repairAuthority: repairAuthority(tx.id),
+      },
     )).toMatchObject({
       authorized: true,
       mode: "guarded",
@@ -571,6 +609,9 @@ describe("authorized repair mutation", () => {
         tx,
         boundProof,
         base,
+        {
+          repairAuthority: repairAuthority(tx.id),
+        },
       ),
     ).toMatchObject({
       authorized: true,
@@ -598,6 +639,9 @@ describe("authorized repair mutation", () => {
         preservationContractRevision: "preservation-contract-current",
         preservationBaselineRevision: "preservation-baseline-current",
         runtimeEvidenceRevision: "evidence-a",
+      },
+      {
+        repairAuthority: repairAuthority(tx.id),
       },
     )).toMatchObject({
       authorized: true,
