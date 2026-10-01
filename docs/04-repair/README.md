@@ -11,7 +11,7 @@ Owns:
 - typed coordinate/effect transformation;
 - repair revalidation.
 
-Diagnosis precedes mutation. Original artifacts remain immutable.
+Approved diagnosis and a Repair Contract precede bug mutation. Original artifacts remain immutable.
 
 
 ## Real execution closure
@@ -32,3 +32,24 @@ authorized repair
 ```
 
 The final Bug Report transition uses `completeBugReportFromClosedRepair()`. It requires a fixed closure receipt plus the matching passed preservation receipt. This prevents the CLI differential check from bypassing the full repair lifecycle.
+
+## Gameplay preservation boundary
+
+Bug repair consumes approved gameplay meaning; it does not define it.
+
+```text
+Approved Bug
++ violated Gameplay Contract
+→ Repair Contract
+   ├─ Must Change
+   └─ Must Preserve
+→ mutation
+→ defect verification
+→ preservation verification
+```
+
+Must Change describes the proven defect outcome that must no longer occur.
+
+Must Preserve describes relevant approved gameplay behavior that must remain true after the fix.
+
+If intended gameplay itself is changing, that is an intentional modification: update/approve Game Design first instead of disguising the change as bug repair.
