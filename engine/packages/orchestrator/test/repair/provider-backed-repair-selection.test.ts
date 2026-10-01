@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
-import { createPatchTransaction } from "../../repair/src/index.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
 import type {
   CausalChain,
   CausalIncident,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import type {
   InvariantRegistrySnapshot,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   selectProviderBackedRepairStrategyForIncident,
-} from "../src/provider-backed-repair-selection.js";
+} from "../../src/repair/provider-backed-repair-selection.js";
 import {
   createDecisionLedger,
-} from "../src/decision-ledger.js";
+} from "../../src/decision-ledger.js";
 import {
   recordProviderBackedRepairStrategySelection,
-} from "../src/decision-ledger-recording.js";
+} from "../../src/decision-ledger-recording.js";
 import type {
   RepairStrategyProviderRegistry,
-} from "../src/repair-strategy-provider.js";
+} from "../../src/repair-strategy-provider.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };
