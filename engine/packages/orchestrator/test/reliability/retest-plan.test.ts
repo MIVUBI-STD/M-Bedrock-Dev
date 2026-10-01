@@ -2,8 +2,8 @@ import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createUpdateDelta } from "../../reliability/src/index.js";
-import { planDirectoryRetest } from "../src/retest-plan-directory.js";
+import { createUpdateDelta } from "../../../reliability/src/index.js";
+import { planDirectoryRetest } from "../../src/reliability/retest-plan-directory.js";
 
 describe("retest planning API", () => {
   it("turns inspection facts plus update delta into a map-specific QA plan", async () => {

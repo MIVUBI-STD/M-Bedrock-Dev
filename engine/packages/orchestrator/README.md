@@ -30,7 +30,7 @@ The next physical-move phase may relocate implementation files family-by-family 
 
 ### Physical migration status
 
-`workflow/`, `reporting/`, and `release/` now have their implementations physically inside the hierarchy; matching tests mirror those families where present. Legacy flat source paths remain compatibility re-export stubs while CI/local verification is deferred.
+`workflow/`, `reliability/`, `reporting/`, and `release/` now have their implementations physically inside the hierarchy; matching tests mirror those families where present. Legacy flat source paths remain compatibility re-export stubs while CI/local verification is deferred.
 
 
 ## Inspection pipeline
