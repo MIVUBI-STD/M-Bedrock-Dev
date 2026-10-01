@@ -19,3 +19,5 @@ export const bugReportUiCapabilities: BugReportUiCapabilities = {
 export * from "./github-report-client.js";
 export * from "./report-file.js";
 export * from "./report-source.js";
+
+export * from "./publication.js";
