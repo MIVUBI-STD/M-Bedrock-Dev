@@ -30,7 +30,7 @@ The next physical-move phase may relocate implementation files family-by-family 
 
 ### Physical migration status
 
-`arena/`, `workflow/`, `reliability/`, `reporting/`, and `release/` now have their orchestrator implementations physically inside the hierarchy; matching tests mirror those families where present. Arena-authored static source risk analysis is owned by the Script Analyzer rather than duplicated in orchestrator. Legacy flat source paths remain compatibility re-export stubs while CI/local verification is deferred.
+`arena/`, `inspection/`, `workflow/`, `reliability/`, `reporting/`, and `release/` now have their orchestrator implementations physically inside the hierarchy; matching tests mirror those families where present. Arena-authored static source risk analysis is owned by the Script Analyzer rather than duplicated in orchestrator. Legacy flat source paths remain compatibility re-export stubs while CI/local verification is deferred.
 
 
 ## Inspection pipeline

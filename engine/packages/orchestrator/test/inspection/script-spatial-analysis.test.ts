@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { analyzeScriptSpatialMutations } from "../src/script-spatial-analysis.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { analyzeScriptSpatialMutations } from "../../src/inspection/script-spatial-analysis.js";
 
 describe("script spatial analysis", () => {
   it("resolves deterministic script coordinates into topology effects", () => {

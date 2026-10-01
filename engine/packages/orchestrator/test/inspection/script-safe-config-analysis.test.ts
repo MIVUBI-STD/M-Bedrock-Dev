@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { ParsedScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { analyzeScriptSafeConfig } from "../src/script-safe-config-analysis.js";
+import type { ParsedScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { analyzeScriptSafeConfig } from "../../src/inspection/script-safe-config-analysis.js";
 
 function parsed(identifier: string, text: string): ParsedScriptFile {
   return parseScriptFile(
@@ -40,7 +40,7 @@ describe("script safe config analysis", () => {
       parsed(
         "main",
         [
-          "import { BASE_COUNT as N, ARENA_OFFSETS } from './config';",
+          "import { BASE_COUNT as N, ARENA_OFFSETS } from '../config';",
           "const ARENA_COUNT = N * 2;",
           "const COPY = ARENA_OFFSETS;",
         ].join("\n"),
@@ -73,7 +73,7 @@ describe("script safe config analysis", () => {
       parsed(
         "main",
         [
-          "import { shift as makeArena } from './config';",
+          "import { shift as makeArena } from '../config';",
           "const ARENA_CENTERS = [{ x: 0, y: 0, z: 0 }, { x: 100, y: 0, z: 0 }].map(makeArena);",
         ].join("\n"),
       ),
@@ -101,14 +101,14 @@ describe("script safe config analysis", () => {
       parsed(
         "a",
         [
-          "import { B } from './b';",
+          "import { B } from '../b';",
           "export const A = B;",
         ].join("\n"),
       ),
       parsed(
         "b",
         [
-          "import { A } from './a';",
+          "import { A } from '../a';",
           "export const B = A;",
         ].join("\n"),
       ),

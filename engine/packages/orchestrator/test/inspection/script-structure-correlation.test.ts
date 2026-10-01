@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   correlateScriptStructureLoads,
   scriptStructureRuntimeEvidence,
-} from "../src/script-structure-correlation.js";
-import { analyzeKnowledgeRuntime } from "../src/knowledge-runtime-analysis.js";
+} from "../../src/inspection/script-structure-correlation.js";
+import { analyzeKnowledgeRuntime } from "../../src/knowledge-runtime-analysis.js";
 
 const source = { artifactId: "a", relativePath: "scripts/main.ts" };
 

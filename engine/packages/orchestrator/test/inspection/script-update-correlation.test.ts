@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { deriveScriptApiUsage } from "../src/script-api-usage.js";
-import { correlateScriptUsageWithUpdate } from "../src/script-update-correlation.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { deriveScriptApiUsage } from "../../src/inspection/script-api-usage.js";
+import { correlateScriptUsageWithUpdate } from "../../src/inspection/script-update-correlation.js";
 
 function usage(text: string) {
   return deriveScriptApiUsage([
