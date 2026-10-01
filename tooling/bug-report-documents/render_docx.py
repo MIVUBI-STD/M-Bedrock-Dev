@@ -151,9 +151,11 @@ def add_header(doc: Document, data: dict[str, Any]) -> None:
     p.paragraph_format.space_after = Pt(8)
     add_run(p, "BUG REPORT", bold=True, size=10, color=AMBER)
 
-    table = doc.add_table(rows=1, cols=4)
+    table = doc.add_table(rows=2, cols=4)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = True
+    set_repeat_header(table.rows[0])
+
     metrics = [
         ("Map Version", data["map"]["mapVersion"]),
         ("Tested Version", "Minecraft Education " + data["map"]["testedVersion"]),
@@ -165,17 +167,27 @@ def add_header(doc: Document, data: dict[str, Any]) -> None:
             f'{data["summary"]["minor"]} Minor',
         ),
     ]
+
     for idx, (label, value) in enumerate(metrics):
-        cell = table.rows[0].cells[idx]
-        set_cell_margins(cell, 80, 90, 80, 90)
-        if idx % 2 == 1:
-            set_cell_shading(cell, SOFT)
-        p1 = cell.paragraphs[0]
-        p1.paragraph_format.space_after = Pt(1)
-        add_run(p1, label.upper(), bold=True, size=7.5, color=BLUE)
-        p2 = cell.add_paragraph()
-        p2.paragraph_format.space_after = Pt(0)
-        add_run(p2, value, bold=True, size=8.5, color=NAVY)
+        head = table.rows[0].cells[idx]
+        body = table.rows[1].cells[idx]
+        set_cell_margins(head, 55, 90, 45, 90)
+        set_cell_margins(body, 45, 90, 65, 90)
+        set_cell_shading(head, SOFT)
+        add_run(
+            head.paragraphs[0],
+            label.upper(),
+            bold=True,
+            size=7.5,
+            color=BLUE,
+        )
+        add_run(
+            body.paragraphs[0],
+            value,
+            bold=True,
+            size=8.5,
+            color=NAVY,
+        )
 
     legend = doc.add_paragraph()
     legend.paragraph_format.space_before = Pt(5)
