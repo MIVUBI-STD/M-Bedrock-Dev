@@ -68,3 +68,18 @@ Prefer:
 - deterministic fixtures.
 
 Do not sacrifice validation, recoverability, security, data-loss prevention, or explicit user requirements merely to reduce code.
+
+## User-value gate
+
+Before adding a new subsystem, proof layer, registry, workflow state, dashboard, or candidate family, answer:
+
+```text
+Which real repeated failure does this remove?
+Why can the current owner not solve it?
+What user-visible result improves?
+How will we know it helped?
+```
+
+If those answers are not grounded in repeated evidence, do not add the abstraction.
+
+For M-Bedrock bug finding, discovery breadth and correct classification take priority over additional repair/report infrastructure until real-map evidence proves otherwise.
