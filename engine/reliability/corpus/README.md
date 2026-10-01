@@ -70,3 +70,26 @@ negative  known-good/non-defect evidence
 Do not infer an evidence role merely from the map name or from the absence of a recorded issue outside a defined QA scope.
 
 Existing semantic-understanding calibration cases remain role-unspecified until an independent expectation is grounded.
+
+
+## Regression priority basis
+
+Regression cases may carry objective `priorityBasis` tags such as:
+
+```text
+repeated-across-maps
+runtime-sensitive
+semantic-owner-present
+intermittent-reproduction
+explicit-invariant
+```
+
+These are routing reasons, not a quality score or winner ranking.
+
+Filter current candidates manually:
+
+```text
+node .agents/skills/m-bedrock-detection-benchmark/scripts/regression-priority.mjs
+node .agents/skills/m-bedrock-detection-benchmark/scripts/regression-priority.mjs runtime-sensitive
+node .agents/skills/m-bedrock-detection-benchmark/scripts/regression-priority.mjs repeated-across-maps
+```
