@@ -21,11 +21,11 @@ Use this before broad repository search.
 | Semantic source→sink taint witness | engine/analyzers/scripts/src/flow/semantic-flow-witness.ts |
 | Bundled/minified source-shape recovery + source-map discovery | engine/analyzers/scripts/src/recovery/source-recovery.ts |
 | Source-map generated→original binding | engine/analyzers/scripts/src/recovery/source-map-binding.ts |
-| Compact data-flow context slice for diagnosis/AI context | engine/packages/orchestrator/src/script-dataflow-context.ts |
+| Compact data-flow context slice for diagnosis/AI context | engine/packages/orchestrator/src/inspection/script-dataflow-context.ts |
 | Evidence-backed gameplay intent graph, authored invariants, unknowns, intent grounding, and domain-specific authority resolution | engine/packages/gameplay-intent/ |
-| Canonical gameplay semantic projection | engine/packages/orchestrator/src/gameplay-semantic-model.ts |
-| Canonical map engineering/QA assessment projection | engine/packages/orchestrator/src/map-engineering-assessment.ts |
-| Legacy mixed gameplay/engineering compatibility projection | engine/packages/orchestrator/src/gameplay-world-model.ts |
+| Canonical gameplay semantic projection | engine/packages/orchestrator/src/inspection/gameplay-semantic-model.ts |
+| Canonical map engineering/QA assessment projection | engine/packages/orchestrator/src/inspection/map-engineering-assessment.ts |
+| Legacy mixed gameplay/engineering compatibility projection | engine/packages/orchestrator/src/inspection/gameplay-world-model.ts |
 | Formal behavioral state/transition/temporal property kernel + Minecraft overlays | engine/packages/behavior-model/ |
 | Constraint-backed reachability, invariant proof, and counterexample traces | engine/packages/logic-solver/ |
 | Competing hypotheses, falsifiers, and diagnostic probe discrimination | engine/packages/diagnostic-reasoning/ |
@@ -57,7 +57,7 @@ Use this before broad repository search.
 | Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
 | Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
 | Game Design specification schema/loader/compiler | engine/packages/game-design-spec/ + engine/design/ |
-| Design-readiness / scoped Gameplay Contract workflow | engine/design/ + engine/packages/gameplay-intent/ |
+| Selected-artifact Gameplay Contract / readiness | engine/packages/gameplay-intent/ |
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
 | Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
@@ -68,22 +68,22 @@ Use this before broad repository search.
 | Repair transactions/preconditions/application | engine/packages/repair/ |
 | Repair workflow authority / Approved Bug mutation gate | engine/packages/orchestrator/src/repair/repair-admission-pipeline.ts + repair-proof-bundle.ts |
 | Cross-owner inspect/repair-validation orchestration | engine/packages/orchestrator/ |
-| Fail-closed repository task planning | engine/packages/orchestrator/src/repository-task-plan.ts |
-| Affected semantic/context compression for Codex | engine/packages/orchestrator/src/semantic-affected-plan.ts + context-compiler.ts |
-| Arena lifecycle + cleanup convergence | engine/packages/orchestrator/src/arena-lifecycle-* + arena-cleanup-* |
-| Spatial gameplay authority | engine/packages/behavior-model/src/minecraft/spatial-authority.ts + engine/packages/orchestrator/src/spatial-authority-* |
-| Inventory/equipment lifecycle + item Behavior Contract | engine/packages/behavior-model/src/minecraft/inventory-* + engine/packages/orchestrator/src/inventory-* |
-| Entity AI/navigation source readiness + route environment | engine/analyzers/entities/ + engine/packages/orchestrator/src/entity-ai-* + route-navigation-* |
-| Combat/downed/revive Behavior Contract and lifecycle | engine/packages/behavior-model/src/minecraft/combat-* + engine/packages/orchestrator/src/combat-* + engine/packages/telemetry/src/domains/revive/revive-* |
-| Chunk lifecycle/readiness/lease reasoning | engine/packages/behavior-model/src/minecraft/chunk.ts + engine/packages/orchestrator/src/chunk-* |
-| Economy/reward source arbitration | engine/packages/behavior-model/src/minecraft/economy-* + engine/packages/orchestrator/src/economy-* + reward-source-analysis.ts |
+| Fail-closed repository task planning | engine/packages/orchestrator/src/workflow/repository-task-plan.ts |
+| Affected semantic/context compression for Codex | engine/packages/orchestrator/src/workflow/semantic-affected-plan.ts + workflow/context-compiler.ts |
+| Arena lifecycle + cleanup convergence | engine/packages/orchestrator/src/arena/arena-lifecycle-* + arena/arena-cleanup-* |
+| Spatial gameplay authority | engine/packages/behavior-model/src/minecraft/spatial-authority.ts + engine/packages/orchestrator/src/inspection/spatial-authority-* |
+| Inventory/equipment lifecycle + item Behavior Contract | engine/packages/behavior-model/src/minecraft/inventory-* + engine/packages/orchestrator/src/inspection/inventory-* |
+| Entity AI/navigation source readiness + route environment | engine/analyzers/entities/ + engine/packages/orchestrator/src/inspection/entity-ai-* + inspection/route-navigation-* |
+| Combat/downed/revive Behavior Contract and lifecycle | engine/packages/behavior-model/src/minecraft/combat-* + engine/packages/orchestrator/src/inspection/combat-* + engine/packages/telemetry/src/domains/revive/revive-* |
+| Chunk lifecycle/readiness/lease reasoning | engine/packages/behavior-model/src/minecraft/chunk.ts + engine/packages/orchestrator/src/inspection/chunk-* |
+| Economy/reward source arbitration | engine/packages/behavior-model/src/minecraft/economy-* + engine/packages/orchestrator/src/inspection/economy-* + inspection/reward-source-analysis.ts |
 | Generic Bedrock NBT transport | engine/adapters/nbt/ |
 | mcstructure semantic normalization | engine/adapters/mcstructure/ |
 | Bedrock LevelDB snapshot/transport | engine/adapters/leveldb/ |
 | World DB semantic decoding | engine/analyzers/world-db/ |
 | Script source/module/capability analysis | engine/analyzers/scripts/ |
 | Entity behavior/navigation/targeting/loot semantics | engine/analyzers/entities/ |
-| Gameplay-intent signal extraction from authored source evidence | engine/analyzers/gameplay-intent/ |
+| Gameplay-intent signal extraction from selected-artifact source evidence | engine/analyzers/gameplay-intent/ |
 | File/path discovery | engine/analyzers/discovery/ |
 | Manifest semantics + compatibility fact extraction | engine/analyzers/manifest/ |
 | Function source/reference extraction | engine/analyzers/functions/ |
