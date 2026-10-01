@@ -32,8 +32,8 @@ export interface GameplayBugCandidateRule {
 
 export type GameplayBugCandidateEvidenceDisposition =
   | "candidate"
-  | "design-readiness-missing"
-  | "design-blocked"
+  | "contract-missing"
+  | "contract-blocked"
   | "suppressed-by-counter-evidence"
   | "counter-evidence-unresolved"
   | "no-player-impact"
@@ -85,14 +85,14 @@ export function evaluateGameplayBugCandidateEvidence(
     return {
       ruleId: rule.id,
       kind: rule.kind,
-      disposition: "design-readiness-missing",
+      disposition: "contract-missing",
       supportingEvidenceIds: [],
       playerImpactEvidenceIds: [],
       counterEvidenceIds: [],
       unresolvedCounterPredicates: [],
       missingPredicates: [],
       reasons: [
-        "Gameplay bug candidate discovery requires an explicit Game Design readiness result.",
+        "Gameplay bug candidate discovery requires a matching selected-artifact Gameplay Contract.",
       ],
     };
   }
@@ -101,7 +101,7 @@ export function evaluateGameplayBugCandidateEvidence(
     return {
       ruleId: rule.id,
       kind: rule.kind,
-      disposition: "design-blocked",
+      disposition: "contract-blocked",
       supportingEvidenceIds: [],
       playerImpactEvidenceIds: [],
       counterEvidenceIds: [],
@@ -109,7 +109,7 @@ export function evaluateGameplayBugCandidateEvidence(
       missingPredicates: [],
       reasons: [
         ...gameplayContract.readiness.reasons,
-        "Do not search for gameplay defects in a scope whose material design intent is unresolved.",
+        "Do not classify gameplay defects while the selected-artifact Gameplay Contract is blocked.",
       ],
     };
   }
@@ -125,7 +125,7 @@ export function evaluateGameplayBugCandidateEvidence(
     return {
       ruleId: rule.id,
       kind: rule.kind,
-      disposition: "design-readiness-missing",
+      disposition: "contract-missing",
       supportingEvidenceIds: [],
       playerImpactEvidenceIds: [],
       counterEvidenceIds: [],
