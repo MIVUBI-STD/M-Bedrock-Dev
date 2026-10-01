@@ -2,6 +2,8 @@
 
 ## Current format
 
+Canonical ownership and storage boundaries are defined in `docs/06-system/bug-report-ownership.md`.
+
 `m-bedrock-bug-report/v2` is the canonical bug-tracker format.
 
 User-facing flow:
@@ -11,6 +13,10 @@ AUDIT → BUG REPORT → REPAIR
 ```
 
 V1 remains import-only compatibility. New reports and exports use V2. Compatibility consumers must enter through `parseBugReportToCurrent()`; V1→V2 mapping is engine-owned and must not be duplicated in UI or adapters.
+
+### Current-version-first recording
+
+Bug Report V2 is maintained for the current audited map version. The engine does not require historical coverage completeness. Missing legacy reports remain missing unless an explicit migration is needed for current work. Do not reconstruct, infer, or backfill old bugs merely to populate report history.
 
 ## Contract ownership
 
