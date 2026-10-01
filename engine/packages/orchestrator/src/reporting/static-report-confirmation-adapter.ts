@@ -5,23 +5,20 @@ import {
 import type {
   IntentDiagnosticGateResult,
 } from "../../../diagnostic-reasoning/src/index.js";
-import type {
-  GameplayIntentModel,
+import {
+  independentGameplayIntentEvidenceIds,
+  type GameplayIntentModel,
 } from "../../../gameplay-intent/src/index.js";
 
 function authoredInvariantEvidence(
   intent: GameplayIntentModel,
   invariantIds: readonly string[],
 ): readonly string[] {
-  const ids = new Set(invariantIds);
-  return intent.invariants
-    .filter((invariant) =>
-      ids.has(invariant.id) &&
-      invariant.status === "authored"
-    )
-    .flatMap((invariant) => invariant.evidenceIds);
+  return independentGameplayIntentEvidenceIds(
+    intent,
+    invariantIds,
+  );
 }
-
 export function confirmStaticIntentDefectForReport(
   intent: GameplayIntentModel,
   result: IntentDiagnosticGateResult,
