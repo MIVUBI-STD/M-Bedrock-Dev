@@ -1,6 +1,6 @@
 # Next Action
 
-## Current lane — Single-Source Workflow Hardening
+## Current lane — Simplify Before Real Audit
 
 Real-map testing remains deferred.
 
@@ -11,27 +11,38 @@ Selected Map Version
 → Gameplay Surface Inventory
 → Gameplay Contract
 → Actual Behavior
-→ Coverage Check
+→ Discovered-Surface Accounting
 → Confirmed Defect
-→ Proposed Bug Set
 → Chat Approval
 → Approved Bug
 → Repair Contract
 → Authorized Repair
-→ Verify Defect + Preserve Gameplay
+→ Verification
 ```
 
-## Non-negotiable gates
+## Hard rules
 
 - one selected `.mcworld` = one current gameplay truth;
-- no external/stale document fills missing map intent;
-- no gameplay-surface inventory → audit coverage is unknown;
-- no matching Gameplay Contract → no candidate discovery;
-- every discovered gameplay surface must end as checked, blocked, or not-applicable;
+- no stale/external document fills missing intent;
+- discovered-surface accounting does not claim full-map discovery;
+- generic contract contradiction is the discovery core;
+- candidate families are tags, not a whitelist;
 - Confirmed Defect ≠ Approved Bug;
-- internal `repair-eligible` ≠ mutation approval;
-- no Approved Bug/design change + Must Change + Must Preserve → no mutation;
-- report/HTML remains downstream of approval.
+- no Approved Bug/design change + Must Change + Must Preserve → no mutation.
+
+## Freeze
+
+Until real-map evidence shows a repeated need, do **not** add:
+
+- new repair subsystem;
+- new proof layer;
+- new candidate-family framework;
+- new workflow database/state model;
+- new documentation owner;
+- new orchestrator compatibility alias;
+- new dashboard/scorecard.
+
+Prefer deleting, reusing, or tightening an existing owner.
 
 ## Deferred
 
