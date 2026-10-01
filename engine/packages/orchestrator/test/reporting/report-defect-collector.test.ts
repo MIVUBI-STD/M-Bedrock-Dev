@@ -464,7 +464,7 @@ describe("report defect collector", () => {
               ...runtimeAssessment.result,
               disposition: "ambiguous-intent",
               basisInvariantIds: [],
-              nextEvidenceNeed: "authored-intent",
+              nextEvidenceNeed: "selected-artifact",
             },
           },
           defect: defect("rejected", {
@@ -520,7 +520,7 @@ describe("report defect collector", () => {
             ...runtimeAssessment.result,
             disposition: "ambiguous-intent",
             basisInvariantIds: [],
-            nextEvidenceNeed: "authored-intent",
+            nextEvidenceNeed: "selected-artifact",
           },
         },
         defect: defect("needs-authored-intent", {
@@ -554,7 +554,7 @@ describe("report defect collector", () => {
           semanticKey: expect.stringContaining(
             "subjects=outcome:cleanup",
           ),
-          nextEvidenceNeed: "authored-intent",
+          nextEvidenceNeed: "selected-artifact",
           evidenceIds: expect.arrayContaining([
             "runtime:cleanup",
           ]),
@@ -786,7 +786,7 @@ describe("report defect collector", () => {
 
     expect(result.confirmed).toHaveLength(1);
     expect(result.confirmed[0]?.expected).toEqual({
-      authority: "authored-intent",
+      authority: "selected-artifact",
       statement: "Match-owned state is reset.",
       evidenceIds: ["intent:evidence"],
     });
