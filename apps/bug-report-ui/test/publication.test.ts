@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   buildBugReportPublicationPayload,
+  publishBugReport,
+  type BugReportPublicationProvider,
 } from "../src/index.js";
 import type {
   BugReportV2,
@@ -56,5 +58,41 @@ describe("bug report publication payload", () => {
     expect(payload.document.issues[0]?.title).toBe(
       "Level cannot continue",
     );
+    it("exports PDF from the created Google Doc instead of rebuilding content", async () => {
+    const calls: string[] = [];
+    const provider: BugReportPublicationProvider = {
+      async createGoogleDoc(input) {
+        calls.push("doc:" + input.title);
+        expect(input.document.issues[0]?.title).toBe(
+          "Level cannot continue",
+        );
+        return {
+          documentId: "doc-123",
+          url: "https://docs.google.com/document/d/doc-123/edit",
+          title: input.title,
+        };
+      },
+      async exportGoogleDocAsPdf(input) {
+        calls.push("pdf:" + input.documentId);
+        expect(input.documentId).toBe("doc-123");
+        return {
+          fileName: input.fileName,
+        };
+      },
+    };
+
+    const published = await publishBugReport(
+      report(),
+      provider,
+    );
+
+    expect(calls).toEqual([
+      "doc:Attack Challenge v1.1.1 - Bug Report",
+      "pdf:doc-123",
+    ]);
+    expect(published.pdf.fileName).toBe(
+      "Attack Challenge v1.1.1 - Bug Report.pdf",
+    );
   });
+});
 });
