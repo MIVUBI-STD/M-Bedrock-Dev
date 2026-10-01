@@ -40,6 +40,8 @@ export interface GameplayAuditCoverageRecord {
 
 export interface GameplayAuditCoverageResult {
   readonly disposition: "accounted" | "incomplete";
+  readonly scope: "discovered-surfaces-only";
+  readonly discoveryCompleteness: "not-proven";
   readonly surfaces: readonly GameplayAuditSurface[];
   readonly records: readonly GameplayAuditCoverageRecord[];
   readonly missingSubjectIds: readonly string[];
@@ -126,6 +128,8 @@ export function evaluateGameplayAuditCoverage(
 
   return {
     disposition,
+    scope: "discovered-surfaces-only",
+    discoveryCompleteness: "not-proven",
     surfaces,
     records: [...records],
     missingSubjectIds,
