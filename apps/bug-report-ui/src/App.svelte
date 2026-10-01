@@ -132,10 +132,9 @@
     githubError = "";
     try {
       const loaded = await github.loadReport(path);
-      openDocument(loaded.report, {
+      openDocument(loaded, {
         kind: "github",
         path,
-        revision: loaded.revision,
       });
     } catch (error) {
       githubError =
@@ -188,11 +187,10 @@
       buildBugReportDownloadName(report.map);
 
     try {
-      const saved = await github.createReport(path, report);
+      await github.createReport(path, report);
       source = {
         kind: "github",
         path,
-        revision: saved.revision,
       };
       saveState = "saved";
     } catch (error) {
