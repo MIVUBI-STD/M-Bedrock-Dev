@@ -160,15 +160,15 @@ export function renderBugReportPreviewMarkdown(
 
   out.push(
     "",
-    "| Severity | Bug | Issue | Action |",
-    "|---|---|---|---|",
+    "| No. | Severity | Bug | Issue | Action |",
+    "|---:|---|---|---|---|",
   );
 
-  for (const bug of preview.bugs) {
+  preview.bugs.forEach((bug, index) => {
     out.push(
-      `| ${severityLabel(bug.severity)} | ${tableCell(bug.id + " — " + bug.title)} | ${tableCell(bug.issue)} | ${bug.action ? tableCell(bug.action) : "—"} |`,
+      `| #${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.title)} | ${tableCell(bug.issue)} | ${bug.action ? tableCell(bug.action) : "—"} |`,
     );
-  }
+  });
 
   if (mode !== "full") {
     return out.join("\n") + "\n";
