@@ -73,14 +73,17 @@ Tested Version: Minecraft Education <exact tested version>
 Open Issues
 Blocker · Major · Minor
 
-No. | Severity | Bug | Issue | Solution
+# + Severity | Bug title
+Issue | gameplay problem + impact
+Bug Trigger (In-Game) | exact tester actions + visible wrong result
+Solution | supported change
 ```
 
 Normal bug-finding preview does not show Repair By, Fixed progress, Category, Found By, or technical detail.
 
 The exact tested build comes from `map.testedVersion`. The label `(Latest)` may be added only when the audit workflow has verified the official current Minecraft Education release and the tested build matches it.
 
-Technical Analysis, Relevant Code, Expected, Observed, Reproduction, and Must Preserve are detail-on-demand.
+Technical Analysis, Relevant Code, Expected, Observed, and Must Preserve are detail-on-demand. Bug Trigger (In-Game) remains visible in the normal tester-facing preview.
 
 Preview must never invent a Solution, persist a second report format, or expose internal diagnostic plumbing.
 
