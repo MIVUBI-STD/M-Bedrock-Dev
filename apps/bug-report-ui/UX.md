@@ -127,16 +127,16 @@ UI-specific density rules:
 - Technical detail is subordinate to the tester-facing bug block.
 - Fixed bugs are excluded from the current audit surface.
 
-## Compatibility readiness
+## Compatibility handoff quality
 
-Schema-valid does not automatically mean tester-ready.
+Schema-valid does not automatically mean handoff-ready.
 
-Older, imported, or externally authored reports may be opened when they are structurally valid even if they do not satisfy the current tester-readiness gate.
+Older, imported, or externally authored reports may be opened when they are structurally valid even if they do not satisfy the current tester-readiness and copy-quality gates.
 
-When readiness issues exist:
+When handoff-quality issues exist:
 
-- show a compact `Compatibility report — not tester-ready` warning;
-- list the specific readiness gaps;
+- show a compact `Compatibility report — not handoff-ready` warning;
+- list the specific readiness and wording gaps;
 - keep read and Export JSON available;
 - disable creating the report on GitHub from the file-import path;
 - do not mutate or silently rewrite legacy content;
