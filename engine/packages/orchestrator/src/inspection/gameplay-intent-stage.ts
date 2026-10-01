@@ -50,6 +50,11 @@ export function buildGameplayIntentModel(
       (item) => item.parsed,
     ),
   ]);
+  const selectedArtifactSourcePaths = new Set(
+    input.parsedScripts.map(
+      (item) => item.parsed.source.relativePath,
+    ),
+  );
   const authoredSourcePaths = new Set(
     (input.authoredScripts ?? []).map(
       (item) => item.parsed.source.relativePath,
@@ -76,6 +81,7 @@ export function buildGameplayIntentModel(
         origin: "game-design-spec",
         locator: input.gameDesign.source.reference,
         summary: mechanic.statement,
+        scope: "external-reference",
       });
       const subjectKey =
         "mechanic:design:" + mechanic.id;
@@ -97,6 +103,7 @@ export function buildGameplayIntentModel(
         origin: "game-design-spec",
         locator: input.gameDesign.source.reference,
         summary: invariant.statement,
+        scope: "external-reference",
       });
       invariants.set("design:" + invariant.id, {
         id: "design:" + invariant.id,
@@ -116,6 +123,11 @@ export function buildGameplayIntentModel(
       origin: signal.evidenceOrigin,
       locator: signal.locator,
       summary: signal.summary,
+      scope: selectedArtifactSourcePaths.has(signal.locator)
+        ? "selected-artifact"
+        : authoredSourcePaths.has(signal.locator)
+          ? "external-reference"
+          : undefined,
     });
 
     const existing = nodes.get(signal.subjectKey);
@@ -174,6 +186,11 @@ export function buildGameplayIntentModel(
       origin: relation.evidenceOrigin,
       locator: relation.locator,
       summary: relation.summary,
+      scope: selectedArtifactSourcePaths.has(relation.locator)
+        ? "selected-artifact"
+        : authoredSourcePaths.has(relation.locator)
+          ? "external-reference"
+          : undefined,
     });
 
     const semanticKey = [
@@ -212,14 +229,14 @@ export function buildGameplayIntentModel(
     });
   }
 
-  const evidenceHasAuthoredSource = (
+  const evidenceHasSelectedArtifactSource = (
     evidenceIds: readonly string[],
   ): boolean =>
     evidenceIds.some((id) => {
       const item = evidence.get(id);
       return (
         item !== undefined &&
-        authoredSourcePaths.has(item.locator)
+        item.scope === "selected-artifact"
       );
     });
 
@@ -258,7 +275,7 @@ export function buildGameplayIntentModel(
         " transitions only to declared successors: " +
         targetLabels.join(", "),
       strength: "must",
-      status: evidenceHasAuthoredSource(evidenceIds)
+      status: evidenceHasSelectedArtifactSource(evidenceIds)
         ? "authored"
         : "inferred",
       subjectIds: [from],
@@ -301,7 +318,7 @@ export function buildGameplayIntentModel(
             " is statically observed only under one of these direct guards: " +
             policyLabels.join(" OR "),
           strength: "must",
-          status: evidenceHasAuthoredSource(evidenceIds)
+          status: evidenceHasSelectedArtifactSource(evidenceIds)
             ? "authored"
             : "inferred",
           subjectIds: [coverage.outcomeSubjectKey],
