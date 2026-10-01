@@ -21,3 +21,4 @@ export * from "./report-file.js";
 export * from "./report-source.js";
 
 export * from "./publication.js";
+export * from "./publication-provider.js";
