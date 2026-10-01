@@ -281,7 +281,7 @@ describe("report defect collector", () => {
     ).toEqual([
       "Finish a match and return to the lobby.",
       "Start the same arena again.",
-      "Confirm the wrong result: the new match does not start.",
+      "Confirm: the new match does not start.",
     ]);
   });
 
