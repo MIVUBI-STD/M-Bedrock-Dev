@@ -9,6 +9,7 @@ export * from "./parse.js";
 export * from "./normalize.js";
 export * from "./serialize.js";
 export * from "./preview.js";
+export * from "./copy-quality.js";
 
 export * from "./v2.js";
 export * from "./create-v2.js";
