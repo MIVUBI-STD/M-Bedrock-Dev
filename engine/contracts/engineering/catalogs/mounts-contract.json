@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-mount-policy-v1",
-      "title": "MIVUBI Mount Ride and Passenger Lifecycle Policy v1",
-      "url": "project://knowledge/mount-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-mount-contract-v1",
+      "title": "MIVUBI Mount Ride and Passenger Lifecycle Engineering Contract v1",
+      "url": "project://contracts/engineering/mount-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-24"
     }
@@ -16,7 +16,7 @@
       "domain": "mounts",
       "subject": "mount relationship",
       "statement": "Track rider-vehicle ownership as a generation-scoped relationship including rider identity/session generation, vehicle entityGeneration, arenaGeneration, seat index, controlling status, and relationshipGeneration.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-mount-policy-v1"
+        "mivubi-mount-contract-v1"
       ],
       "capabilityTags": [
         "ownership",
@@ -40,7 +40,7 @@
       "domain": "mounts",
       "subject": "mounted teleport",
       "statement": "Teleport/recovery must explicitly decide whether rider and vehicle move together, dismount first, or are independently rerouted; moving one side without reconciling the other is a partial transition.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -48,7 +48,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-mount-policy-v1"
+        "mivubi-mount-contract-v1"
       ],
       "capabilityTags": [
         "teleport",
@@ -63,7 +63,7 @@
       "domain": "mounts",
       "subject": "arena reset",
       "statement": "Arena cleanup should invalidate the relationship, safely dismount riders, normalize rider physics/location/control, then remove/reset arena-owned vehicles. Deleting a mount before rider reconciliation is unsafe.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -71,7 +71,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-mount-policy-v1"
+        "mivubi-mount-contract-v1"
       ],
       "capabilityTags": [
         "cleanup",
@@ -87,7 +87,7 @@
       "domain": "mounts",
       "subject": "mounted containment",
       "statement": "Mounted movement and dismount positions remain subject to arena spatial containment. Vehicle location alone must not silently substitute for participant location authority.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -95,7 +95,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-mount-policy-v1"
+        "mivubi-mount-contract-v1"
       ],
       "capabilityTags": [
         "spatial-containment",
@@ -111,7 +111,7 @@
       "domain": "mounts",
       "subject": "rider lifecycle boundary",
       "statement": "Disconnect, rider death, vehicle death/despawn, respawn, and arena generation end must reconcile the mount relationship explicitly; reconnect never resumes an old relationship by stale reference.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -119,7 +119,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-mount-policy-v1"
+        "mivubi-mount-contract-v1"
       ],
       "capabilityTags": [
         "disconnect",
@@ -138,7 +138,7 @@
       "subject": "validated-mount-relationship",
       "kind": "gates",
       "object": "vehicle-gameplay-control",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -146,7 +146,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-mount-policy-v1"
+        "mivubi-mount-contract-v1"
       ]
     },
     {
@@ -155,7 +155,7 @@
       "subject": "arena-reset",
       "kind": "deactivates",
       "object": "old-mount-relationship",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -163,7 +163,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-mount-policy-v1"
+        "mivubi-mount-contract-v1"
       ]
     }
   ]

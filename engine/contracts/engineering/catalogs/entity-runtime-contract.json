@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-entity-runtime-policy-v1",
-      "title": "MIVUBI Entity AI Navigation Runtime Policy v1",
-      "url": "project://knowledge/entity-runtime-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-entity-runtime-contract-v1",
+      "title": "MIVUBI Entity AI Navigation Runtime Engineering Contract v1",
+      "url": "project://contracts/engineering/entity-runtime-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-23"
     }
@@ -16,7 +16,7 @@
       "domain": "entity-runtime",
       "subject": "gameplay entity AI stack",
       "statement": "Every path-dependent gameplay entity must declare a runtime AI stack contract covering movement component, navigation component, target acquisition, movement/attack goals, relevant goal priorities/control flags, and required environmental capabilities.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "ai-stack",
@@ -40,7 +40,7 @@
       "domain": "entity-runtime",
       "subject": "entity spawn location",
       "statement": "Before spawning path-dependent entities, validate that the spawn location belongs to a navigable/supportable area for that entity's navigation type and is connected to at least one intended route/objective region where feasible.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -48,7 +48,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "spawn",
@@ -64,7 +64,7 @@
       "domain": "entity-runtime",
       "subject": "target-driven AI",
       "statement": "For target-driven entities, analyzer should distinguish NO_TARGET from PATH_UNREACHABLE and GOAL_NOT_RUNNING. A stationary entity must not be diagnosed as pathfinding failure until target acquisition and goal arbitration are verified.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -72,7 +72,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "target",
@@ -87,7 +87,7 @@
       "domain": "entity-runtime",
       "subject": "navigation progress",
       "statement": "Critical moving entities should be observed with bounded progress evidence such as displacement toward objective, waypoint advancement, or distance reduction over a configured window; lack of progress transitions to STALLED_CANDIDATE rather than immediately teleporting.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -95,7 +95,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "progress",
@@ -111,7 +111,7 @@
       "domain": "entity-runtime",
       "subject": "stuck recovery",
       "statement": "Model navigation recovery as MOVING, STALLED_CANDIDATE, REPATHING, RECOVERY_MOVE, TELEPORT_FALLBACK, and TERMINAL_STUCK. Each escalation requires stronger evidence and bounded retry counts.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -119,7 +119,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "stuck-recovery",
@@ -135,7 +135,7 @@
       "domain": "entity-runtime",
       "subject": "stuck fallback",
       "statement": "Do not teleport an entity merely because velocity/displacement is temporarily low. First verify target presence, goal validity, navigation environment, obstruction/world mutation state, and recovery budget.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -143,7 +143,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "stuck",
@@ -159,7 +159,7 @@
       "domain": "entity-runtime",
       "subject": "world mutation path invalidation",
       "statement": "After structure load, fill/setblock, door/gate state changes, bridge changes, or other route-affecting world mutation, invalidate prior route assumptions and reverify path-critical regions before blaming the entity AI.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -167,7 +167,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "world-mutation",
@@ -183,7 +183,7 @@
       "domain": "entity-runtime",
       "subject": "designed gameplay route",
       "statement": "For authored arena paths such as bridges, gates, lanes, and corridors, define route corridor contracts including passable width/height, support blocks, jump/drop limits, forbidden hazards, gate states, and expected entry/exit anchors.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -191,7 +191,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "route-corridor",
@@ -208,7 +208,7 @@
       "domain": "entity-runtime",
       "subject": "crowd pathing",
       "statement": "Analyzer should consider entity-entity congestion separately from static path obstruction. A route usable by one mob may deadlock or bottleneck when many entities occupy a narrow corridor simultaneously.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -216,7 +216,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "crowd",
@@ -232,7 +232,7 @@
       "domain": "entity-runtime",
       "subject": "AI goal arbitration",
       "statement": "Audit movement/attack goals for priority and control-flag conflicts; a path can exist and target can be valid while another higher-priority goal owns move/look/jump control.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -240,7 +240,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "ai-priority",
@@ -256,7 +256,7 @@
       "domain": "entity-runtime",
       "subject": "navigation environment compatibility",
       "statement": "Compare navigation capabilities against actual route materials and topology: water, doors, climb, jumps, drops, damaging blocks, portals, and blocks_to_avoid. An unreachable route caused by capability mismatch is not a generic AI failure.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -264,7 +264,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "navigation-capability",
@@ -280,7 +280,7 @@
       "domain": "entity-runtime",
       "subject": "AI recovery ownership",
       "statement": "Stuck detection and recovery callbacks must be bound to entity identity/residency, arenaGeneration, entityGeneration, routeGeneration, and recoveryGeneration so stale recovery cannot move a replaced or newer-round entity.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -288,7 +288,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "generation-token",
@@ -304,7 +304,7 @@
       "domain": "entity-runtime",
       "subject": "AI path monitoring budget",
       "statement": "Progress checks, route probes, and recovery scans must obey per-arena/global performance budgets and should prefer targeted registries over scanning every mob every tick.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -312,7 +312,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "capabilityTags": [
         "performance",
@@ -331,7 +331,7 @@
       "subject": "target-validity-proof",
       "kind": "gates",
       "object": "pathfinding-failure-diagnosis",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -339,7 +339,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ]
     },
     {
@@ -348,7 +348,7 @@
       "subject": "route-corridor-contract",
       "kind": "validates",
       "object": "current-world-route-geometry",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -356,7 +356,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ]
     },
     {
@@ -365,7 +365,7 @@
       "subject": "STALLED_CANDIDATE",
       "kind": "fallbacks-to",
       "object": "bounded-navigation-recovery",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -373,7 +373,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ]
     },
     {
@@ -382,7 +382,7 @@
       "subject": "route-affecting-world-mutation",
       "kind": "requires",
       "object": "route-revalidation",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -390,7 +390,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-entity-runtime-policy-v1"
+        "mivubi-entity-runtime-contract-v1"
       ],
       "diagnosticSeverity": "medium",
       "causalConsequences": [

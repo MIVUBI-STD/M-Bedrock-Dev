@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "sources": [
     {
-      "id": "mivubi-player-life-policy-v1",
-      "title": "MIVUBI Downed Death Respawn Revive Policy v1",
-      "url": "project://knowledge/player-life-policy-v1",
-      "authority": "project-policy",
+      "id": "mivubi-player-life-contract-v1",
+      "title": "MIVUBI Downed Death Respawn Revive Engineering Contract v1",
+      "url": "project://contracts/engineering/player-life-contract-v1",
+      "authority": "engineering-contract",
       "confidence": "designed",
       "retrievedDate": "2026-09-23"
     }
@@ -16,7 +16,7 @@
       "domain": "player-life",
       "subject": "downed state",
       "statement": "DOWNED is a project-defined gameplay state layered above engine health/death. It requires explicit authority and must not be inferred solely from low health, crouch input, gamemode, tags, or animation.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -24,7 +24,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "downed",
@@ -41,7 +41,7 @@
       "domain": "player-life",
       "subject": "player life state",
       "statement": "Model arena life state explicitly as ACTIVE, DOWNED, BEING_REVIVED, REVIVED, DEAD_CONFIRMED, RESPAWNING, ELIMINATED, and DISCONNECTED, with generation-scoped transitions.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -49,7 +49,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "state-machine",
@@ -66,7 +66,7 @@
       "domain": "player-life",
       "subject": "revive ownership",
       "statement": "A downed player must not satisfy their own reviver requirement unless the specific game mode explicitly supports self-revive. Input such as crouch/shift from the downed player is never sufficient evidence of an external reviver.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -74,7 +74,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "revive",
@@ -90,7 +90,7 @@
       "domain": "player-life",
       "subject": "reviver eligibility",
       "statement": "A valid reviver must be a distinct current participant in the same arena generation, connected, eligible, non-downed/non-dead, within the configured interaction condition, and still current when revive completes.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -98,7 +98,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "revive",
@@ -116,7 +116,7 @@
       "domain": "player-life",
       "subject": "revive transaction",
       "statement": "Each downed target generation may have at most one accepted revive transaction owner at a time. Multiple interaction events may request evaluation but cannot create independent completion timers.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -124,7 +124,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "revive",
@@ -141,7 +141,7 @@
       "domain": "player-life",
       "subject": "revive generation",
       "statement": "Revive work must capture target lifeGeneration, target participationGeneration, reviver connectionGeneration, arenaGeneration, and reviveGeneration. Any mismatch invalidates completion.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -149,7 +149,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "generation-token",
@@ -166,7 +166,7 @@
       "domain": "player-life",
       "subject": "death transition",
       "statement": "DEAD_CONFIRMED immediately invalidates all revive timers, reviver ownership, downed interaction prompts, and low-health recovery callbacks for that life generation.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -174,7 +174,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "death",
@@ -190,7 +190,7 @@
       "domain": "player-life",
       "subject": "disconnect during downed/revive",
       "statement": "Disconnect of target or reviver invalidates the current revive transaction. Reconnect creates a new connection session and must reconcile life state rather than resume an old timer blindly.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -198,7 +198,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "disconnect",
@@ -214,7 +214,7 @@
       "domain": "player-life",
       "subject": "respawn state reset",
       "statement": "Respawn must use an explicit reset/preserve matrix covering life state, health, gamemode, inventory, effects, input permissions, tags, scoreboard mirrors, pending teleports, revive ownership, and arena participation.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -222,7 +222,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "respawn",
@@ -240,7 +240,7 @@
       "domain": "player-life",
       "subject": "participant predicates",
       "statement": "DEAD_CONFIRMED, RESPAWNING, ELIMINATED, and stale/disconnected life generations must not satisfy active, ready, alive-team, objective, or revive-source predicates unless the game mode explicitly defines otherwise.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -248,7 +248,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "participant-set",
@@ -265,7 +265,7 @@
       "domain": "player-life",
       "subject": "health-change processing",
       "statement": "Do not implement revive/downed correction by directly changing health inside the same entityHealthChanged handler without a recursion guard/deferred transition. Use a guarded state transition and explicit verification.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -273,7 +273,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "health",
@@ -290,7 +290,7 @@
       "domain": "player-life",
       "subject": "revive completion",
       "statement": "Revive completion must be idempotent: one generation can transition DOWNED/BEING_REVIVED to REVIVED at most once, and duplicate completion callbacks must become no-ops.",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -298,7 +298,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "capabilityTags": [
         "idempotency",
@@ -317,7 +317,7 @@
       "subject": "DOWNED",
       "kind": "gates",
       "object": "revive-eligibility",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -325,7 +325,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ]
     },
     {
@@ -334,7 +334,7 @@
       "subject": "DEAD_CONFIRMED",
       "kind": "deactivates",
       "object": "revive-transaction",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -342,7 +342,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ]
     },
     {
@@ -351,7 +351,7 @@
       "subject": "RESPAWNING",
       "kind": "requires",
       "object": "respawn-reconciliation-matrix",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -359,7 +359,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ]
     },
     {
@@ -368,7 +368,7 @@
       "subject": "revive-completion-observed",
       "kind": "requires",
       "object": "valid-revive-transaction",
-      "classification": "project-policy",
+      "classification": "engineering-contract",
       "applicability": {
         "editions": [
           "bedrock",
@@ -376,7 +376,7 @@
         ]
       },
       "sourceIds": [
-        "mivubi-player-life-policy-v1"
+        "mivubi-player-life-contract-v1"
       ],
       "diagnosticSeverity": "critical",
       "causalConsequences": [
