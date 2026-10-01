@@ -20,6 +20,7 @@ export * from "./document/model.js";
 export * from "./document/project.js";
 export * from "./document/quality.js";
 export * from "./document/design.js";
+export * from "./document/layout.js";
 
 export * from "./v2.js";
 export * from "./create-v2.js";
