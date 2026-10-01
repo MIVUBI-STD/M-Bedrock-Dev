@@ -67,3 +67,12 @@ Handoff rule:
 - new reports must pass tester readiness and copy quality before being created in this workspace;
 - schema-valid legacy reports may remain for compatibility, but must not be treated as handoff-ready automatically;
 - normal human presentation follows `Bug → Issue → Bug Trigger (In-Game) → Solution`.
+
+
+Repair completion rule:
+
+- `fixed: true` is written only after verified repair completion;
+- generic report saves must not close an open bug;
+- completion requires current passing validation with evidence;
+- stale validation cannot be used to close a bug;
+- Git history remains the persisted change history; do not add a second repair-status log.
