@@ -19,7 +19,7 @@ import {
   executePlannedDiagnosisStep,
 } from "../../../diagnosis-pipeline/src/index.js";
 import {
-  createAuthoredIntentDiagnosisExecutor,
+  createContractEvidenceDiagnosisExecutor,
   createIntentGroundingDiagnosisExecutor,
 } from "../../src/diagnosis/diagnosis-intent-executors.js";
 import {
@@ -140,7 +140,7 @@ describe("intent diagnosis executors", () => {
             (item) => item.traits,
           ),
         ).not.toContain(
-          "authored-intent",
+          "contract-evidence",
         );
       } else {
         expect(result.reasons.join(" "))
@@ -154,7 +154,7 @@ describe("intent diagnosis executors", () => {
     }
   });
 
-  it("grounds authored intent from a configured custom source root", async () => {
+  it("grounds contract evidence from a configured custom source root", async () => {
     const root = await mkdtemp(
       join(tmpdir(), "m-bedrock-authored-custom-"),
     );
@@ -202,7 +202,7 @@ describe("intent diagnosis executors", () => {
 
       const authoredPlan =
         planMinimumSufficientAnalysis({
-          goal: "authored-intent",
+          goal: "contract-evidence",
           relevantTags: ["session"],
           context: "LOCAL_ARTIFACT",
           availableEvidence: [{
@@ -228,7 +228,7 @@ describe("intent diagnosis executors", () => {
             id: "intent:test",
             root,
             artifactId: "artifact:test",
-            authoredSourceRoots: ["map-source"],
+            contractSourceRoots: ["map-source"],
             files: [
               {
                 relativePath: "scripts/main.ts",
@@ -248,7 +248,7 @@ describe("intent diagnosis executors", () => {
           registry: {
             schemaVersion: 1,
             executors: [
-              createAuthoredIntentDiagnosisExecutor(),
+              createContractEvidenceDiagnosisExecutor(),
             ],
           },
         });
@@ -259,7 +259,7 @@ describe("intent diagnosis executors", () => {
         result.evidence.flatMap(
           (item) => item.traits,
         ),
-      ).toContain("authored-intent");
+      ).toContain("contract-evidence");
     } finally {
       await rm(root, {
         recursive: true,
@@ -268,7 +268,7 @@ describe("intent diagnosis executors", () => {
     }
   });
 
-  it("does not promote authored intent when no recognized authored source exists", async () => {
+  it("does not promote contract evidence when no recognized contract source exists", async () => {
     const root = await mkdtemp(
       join(tmpdir(), "m-bedrock-authored-"),
     );
@@ -298,7 +298,7 @@ describe("intent diagnosis executors", () => {
 
       const authoredPlan =
         planMinimumSufficientAnalysis({
-          goal: "authored-intent",
+          goal: "contract-evidence",
           relevantTags: ["session"],
           context: "LOCAL_ARTIFACT",
           availableEvidence: [{
@@ -340,7 +340,7 @@ describe("intent diagnosis executors", () => {
           registry: {
             schemaVersion: 1,
             executors: [
-              createAuthoredIntentDiagnosisExecutor(),
+              createContractEvidenceDiagnosisExecutor(),
             ],
           },
         });
@@ -349,7 +349,7 @@ describe("intent diagnosis executors", () => {
         "blocked",
       );
       expect(result.reasons.join(" "))
-        .toMatch(/No explicit authored intent source files/);
+        .toMatch(/No explicit contract evidence source files/);
     } finally {
       await rm(root, {
         recursive: true,
