@@ -2,6 +2,7 @@
   import {
     BUG_REPORT_V2_LABELS,
     bugReportV2Progress,
+    projectBugReportPreview,
     serializeBugReportV2,
     type BugReportParseIssue,
     type BugReportV2,
@@ -50,19 +51,17 @@
     : { fixed: 0, total: 0, allFixed: false };
 
   $: openSignal = report
-    ? {
-        open: report.bugs.filter((bug) => !bug.fixed).length,
-        blocker: report.bugs.filter(
-          (bug) => !bug.fixed && bug.severity === "blocker",
-        ).length,
-        major: report.bugs.filter(
-          (bug) => !bug.fixed && bug.severity === "major",
-        ).length,
-        minor: report.bugs.filter(
-          (bug) => !bug.fixed && bug.severity === "minor",
-        ).length,
-      }
-    : { open: 0, blocker: 0, major: 0, minor: 0 };
+    ? projectBugReportPreview(report, {
+        mode: "summary",
+      }).counts
+    : {
+        open: 0,
+        fixed: 0,
+        total: 0,
+        blocker: 0,
+        major: 0,
+        minor: 0,
+      };
 
   $: visibleBugs = report
     ? filterBugReportBugs(report.bugs, {
