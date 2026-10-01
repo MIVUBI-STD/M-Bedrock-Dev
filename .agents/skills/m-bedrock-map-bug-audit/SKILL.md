@@ -45,6 +45,35 @@ Optional deterministic validation: node scripts/validate-output.mjs audit.json
 
 Every candidate must end in one disposition: defect, designed-behavior, ambiguous-intent, insufficient-evidence, runtime-proof-required, or detection-gap.
 
+### ChatGPT report preview
+
+When presenting a confirmed Bug Report V2 to a user, do not dump canonical JSON by default.
+
+Use the canonical preview contract in:
+
+`../../../engine/packages/bug-report/PREVIEW.md`
+
+Default presentation is `standard` and open-bugs-only.
+
+Reader priority is fixed:
+
+```text
+Severity + ID + Title
+→ Issue
+→ Action, when supported
+→ Expected / Observed
+→ Reproduction
+→ technical context only when requested or required
+```
+
+Rules:
+
+- keep Issue and Action above technical explanation;
+- do not invent Action when Suggested Fix is absent;
+- hide fixed bugs unless requested;
+- never expose internal proof plumbing, semantic keys, evidence graph IDs, repair-unit IDs, cache state, or orchestration data in normal report preview;
+- use `full` only when the user asks for root-cause or implementation detail.
+
 ## Handoff
 
 - detection-gap → record handoff for m-bedrock-detection-development;
@@ -60,6 +89,7 @@ A handoff never executes the next lane automatically.
 - references/known-limits.md
 - references/generated-known-limits.md
 - ../../references/evidence-cost-ladder.md
+- ../../../engine/packages/bug-report/PREVIEW.md
 
 ## STOP
 
