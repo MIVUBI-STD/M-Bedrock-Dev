@@ -66,7 +66,7 @@ export interface SpatialAuthorityResolution {
 
 const provenance = projectPolicyProvenance(
   "behavior-spec:spatial-authority-v1",
-  "Spatial authority is authored/project policy. Region geometry is owned separately and this model never infers gameplay permission from voxel comparison roles.",
+  "Spatial authority is authored/project contract. Region geometry is owned separately and this model never infers gameplay permission from voxel comparison roles.",
 );
 
 export function spatialAuthorityBehaviorContractProvenance(): BehaviorClaimProvenance {
@@ -95,22 +95,22 @@ function specificity(
 }
 
 export function validateSpatialAuthorityBehaviorContract(
-  policy: SpatialAuthorityPolicy,
+  contract: SpatialAuthorityBehaviorContract,
 ): string[] {
   const errors: string[] = [];
-  if (policy.schemaVersion !== 1) {
+  if (contract.schemaVersion !== 1) {
     errors.push(
-      "Spatial authority policy schemaVersion must be 1.",
+      "Spatial Authority Behavior Contract schemaVersion must be 1.",
     );
   }
-  if (!policy.id.trim()) {
+  if (!contract.id.trim()) {
     errors.push(
-      "Spatial authority policy id must be non-empty.",
+      "Spatial Authority Behavior Contract id must be non-empty.",
     );
   }
 
   const ids = new Set<string>();
-  for (const rule of policy.rules) {
+  for (const rule of contract.rules) {
     if (!rule.id.trim()) {
       errors.push(
         "Spatial authority rule id must be non-empty.",
@@ -149,7 +149,7 @@ export function validateSpatialAuthorityBehaviorContract(
 }
 
 export function resolveSpatialAuthorityContract(
-  policy: SpatialAuthorityPolicy,
+  contract: SpatialAuthorityBehaviorContract,
   query: SpatialAuthorityQuery,
 ): SpatialAuthorityResolution {
   const validationErrors =
@@ -160,12 +160,12 @@ export function resolveSpatialAuthorityContract(
       status: "conflict",
       matchedRuleIds: [],
       reason:
-        "Spatial authority policy is invalid: " +
+        "Spatial Authority Behavior Contract is invalid: " +
         validationErrors.join(" "),
     };
   }
 
-  const candidates = policy.rules.filter(
+  const candidates = contract.rules.filter(
     (rule) =>
       rule.regionId === query.regionId &&
       (rule.actor === "*" ||

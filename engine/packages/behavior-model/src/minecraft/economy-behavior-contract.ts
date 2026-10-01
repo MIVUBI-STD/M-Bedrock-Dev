@@ -43,8 +43,8 @@ export interface EconomyBehaviorContract {
 export type EconomyPolicy = EconomyBehaviorContract;
 
 const provenance = projectPolicyProvenance(
-  "behavior-spec:economy-policy-v1",
-  "Reward source arbitration, pickup conversion, stale-drop cleanup, and inventory-full behavior are authored gameplay policy.",
+  "behavior-spec:economy-behavior-contract-v1",
+  "Reward source arbitration, pickup conversion, stale-drop cleanup, and inventory-full behavior are authored gameplay contract.",
 );
 
 export function economyBehaviorContractProvenance(): BehaviorClaimProvenance {
@@ -52,25 +52,24 @@ export function economyBehaviorContractProvenance(): BehaviorClaimProvenance {
 }
 
 export function validateEconomyBehaviorContract(
-  policy: EconomyPolicy,
+  contract: EconomyBehaviorContract,
 ): string[] {
   const errors: string[] = [];
 
-  if (policy.schemaVersion !== 1) {
+  if (contract.schemaVersion !== 1) {
     errors.push(
-      "Economy policy schemaVersion must be 1.",
+      "Economy Behavior Contract schemaVersion must be 1.",
     );
   }
-  if (!policy.id.trim()) {
+  if (!contract.id.trim()) {
     errors.push(
-      "Economy policy id must be non-empty.",
+      "Economy Behavior Contract id must be non-empty.",
     );
   }
 
   return errors;
 }
 
-export const validateEconomyBehaviorContract = validateEconomyBehaviorContract;
 
 /** @deprecated Use economyBehaviorContractProvenance. */
 export const economyPolicyProvenance = economyBehaviorContractProvenance;

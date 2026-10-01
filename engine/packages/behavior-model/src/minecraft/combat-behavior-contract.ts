@@ -39,8 +39,8 @@ export interface CombatDamageEligibilityResolution {
 }
 
 const provenance = projectPolicyProvenance(
-  "behavior-spec:combat-policy-v1",
-  "Combat eligibility and revive ownership are project-authored policy. Engine damage observations alone do not establish gameplay eligibility.",
+  "behavior-spec:combat-behavior-contract-v1",
+  "Combat eligibility and revive ownership are project-authored contract. Engine damage observations alone do not establish gameplay eligibility.",
 );
 
 export function combatBehaviorContractProvenance(): BehaviorClaimProvenance {
@@ -48,25 +48,25 @@ export function combatBehaviorContractProvenance(): BehaviorClaimProvenance {
 }
 
 export function validateCombatBehaviorContract(
-  policy: CombatPolicy,
+  contract: CombatBehaviorContract,
 ): string[] {
   const errors: string[] = [];
 
-  if (policy.schemaVersion !== 1) {
+  if (contract.schemaVersion !== 1) {
     errors.push(
-      "Combat policy schemaVersion must be 1.",
+      "Combat Behavior Contract schemaVersion must be 1.",
     );
   }
-  if (!policy.id.trim()) {
+  if (!contract.id.trim()) {
     errors.push(
-      "Combat policy id must be non-empty.",
+      "Combat Behavior Contract id must be non-empty.",
     );
   }
   return errors;
 }
 
 export function resolveCombatDamageEligibility(
-  policy: CombatPolicy,
+  contract: CombatBehaviorContract,
   query: CombatDamageEligibilityQuery,
 ): CombatDamageEligibilityResolution {
   const errors = validateCombatBehaviorContract(policy);
@@ -82,13 +82,13 @@ export function resolveCombatDamageEligibility(
     query.projectilePresent !== true
   ) {
     return {
-      status: policy.environmentalDamageAllowed
+      status: contract.environmentalDamageAllowed
         ? "allow"
         : "deny",
       reasons: [
-        policy.environmentalDamageAllowed
-          ? "Authored policy allows environmental/unattributed damage."
-          : "Authored policy denies environmental/unattributed damage.",
+        contract.environmentalDamageAllowed
+          ? "Authored behavior contract allows environmental/unattributed damage."
+          : "Authored behavior contract denies environmental/unattributed damage.",
       ],
     };
   }
@@ -106,7 +106,7 @@ export function resolveCombatDamageEligibility(
   }
 
   if (
-    policy.crossArenaDamageAllowed === false
+    contract.crossArenaDamageAllowed === false
   ) {
     if (query.sameArena === false) {
       return {
@@ -127,7 +127,7 @@ export function resolveCombatDamageEligibility(
   }
 
   if (
-    policy.friendlyFireAllowed === false
+    contract.friendlyFireAllowed === false
   ) {
     if (query.sameTeam === true) {
       return {
@@ -172,7 +172,7 @@ export function resolveCombatDamageEligibility(
   }
 
   if (
-    policy.projectileGenerationBound &&
+    contract.projectileGenerationBound &&
     query.projectilePresent === true
   ) {
     if (
@@ -207,24 +207,23 @@ export function resolveCombatDamageEligibility(
 }
 
 export function combatSecondaryEffectAllowed(
-  policy: CombatPolicy,
+  contract: CombatBehaviorContract,
   damageEligibility:
     CombatDamageEligibilityResolution,
 ): CombatDamageEligibilityResolution {
   if (
-    !policy.secondaryEffectsRequireDamageEligibility
+    !contract.secondaryEffectsRequireDamageEligibility
   ) {
     return {
       status: "allow",
       reasons: [
-        "Authored policy allows secondary effects independently from damage eligibility.",
+        "Authored behavior contract allows secondary effects independently from damage eligibility.",
       ],
     };
   }
   return damageEligibility;
 }
 
-export const validateCombatBehaviorContract = validateCombatBehaviorContract;
 
 /** @deprecated Use combatBehaviorContractProvenance. */
 export const combatPolicyProvenance = combatBehaviorContractProvenance;

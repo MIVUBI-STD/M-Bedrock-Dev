@@ -55,7 +55,7 @@ export interface InventoryItemPolicyResolution {
 }
 
 const provenance = projectPolicyProvenance(
-  "behavior-spec:inventory-item-policy-v1",
+  "behavior-spec:inventory-item-behavior-contract-v1",
   "Item ownership/drop/reset semantics are project-authored policy and must not be inferred from item typeId alone.",
 );
 
@@ -64,26 +64,26 @@ export function inventoryItemBehaviorContractProvenance(): BehaviorClaimProvenan
 }
 
 export function validateInventoryItemBehaviorContract(
-  policy: InventoryItemPolicy,
+  contract: InventoryItemBehaviorContract,
 ): string[] {
   const errors: string[] = [];
 
-  if (policy.schemaVersion !== 1) {
+  if (contract.schemaVersion !== 1) {
     errors.push(
-      "Inventory item policy schemaVersion must be 1.",
+      "Inventory Item Behavior Contract schemaVersion must be 1.",
     );
   }
-  if (!policy.id.trim()) {
+  if (!contract.id.trim()) {
     errors.push(
-      "Inventory item policy id must be non-empty.",
+      "Inventory Item Behavior Contract id must be non-empty.",
     );
   }
 
   const ids = new Set<string>();
-  for (const rule of policy.rules) {
+  for (const rule of contract.rules) {
     if (!rule.id.trim()) {
       errors.push(
-        "Inventory item policy rule id must be non-empty.",
+        "Inventory Item Behavior Contract rule id must be non-empty.",
       );
     }
     if (ids.has(rule.id)) {
@@ -97,7 +97,7 @@ export function validateInventoryItemBehaviorContract(
 
     if (!rule.itemClass.trim()) {
       errors.push(
-        "Inventory item policy rule " +
+        "Inventory Item Behavior Contract rule " +
           rule.id +
           " requires a non-empty itemClass.",
       );
@@ -110,7 +110,7 @@ export function validateInventoryItemBehaviorContract(
       );
     if (resetDuplicates.length > 0) {
       errors.push(
-        "Inventory item policy rule " +
+        "Inventory Item Behavior Contract rule " +
           rule.id +
           " contains duplicate reset transitions.",
       );
@@ -124,7 +124,7 @@ export function validateInventoryItemBehaviorContract(
       );
     if (restoreDuplicates.length > 0) {
       errors.push(
-        "Inventory item policy rule " +
+        "Inventory Item Behavior Contract rule " +
           rule.id +
           " contains duplicate restore transitions.",
       );
@@ -146,7 +146,7 @@ export function validateInventoryItemBehaviorContract(
 }
 
 export function resolveInventoryItemBehaviorContract(
-  policy: InventoryItemPolicy,
+  contract: InventoryItemBehaviorContract,
   query: InventoryItemPolicyQuery,
 ): InventoryItemPolicyResolution {
   const errors =
@@ -157,16 +157,16 @@ export function resolveInventoryItemBehaviorContract(
       status: "conflict",
       matchedRuleIds: [],
       reason:
-        "Inventory item policy is invalid: " +
+        "Inventory Item Behavior Contract is invalid: " +
         errors.join(" "),
     };
   }
 
-  const exact = policy.rules.filter(
+  const exact = contract.rules.filter(
     (rule) =>
       rule.itemClass === query.itemClass,
   );
-  const fallback = policy.rules.filter(
+  const fallback = contract.rules.filter(
     (rule) => rule.itemClass === "*",
   );
   const selected =
@@ -203,12 +203,11 @@ export function resolveInventoryItemBehaviorContract(
     matchedRuleIds: [resolvedRule.id],
     reason:
       exact.length > 0
-        ? "Resolved from exact item-class policy."
-        : "Resolved from fallback item-class policy.",
+        ? "Resolved from exact item-class contract."
+        : "Resolved from fallback item-class contract.",
   };
 }
 
-export const validateInventoryItemBehaviorContract = validateInventoryItemBehaviorContract;
 
 /** @deprecated Use inventoryItemBehaviorContractProvenance. */
 export const inventoryItemPolicyProvenance = inventoryItemBehaviorContractProvenance;
