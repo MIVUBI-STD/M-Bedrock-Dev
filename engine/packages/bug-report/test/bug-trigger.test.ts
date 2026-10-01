@@ -10,6 +10,7 @@ import {
 describe("Bug Trigger compiler", () => {
   it("compiles bounded gameplay facts into tester steps", () => {
     const result = compileBugTrigger({
+      gameplayBasis: "authored-gameplay",
       startingCondition:
         "Join the arena with 2 players",
       actions: [
@@ -39,10 +40,14 @@ describe("Bug Trigger compiler", () => {
       "intent:arena-restart",
       "runtime:restart-failed",
     ]);
+    expect(result.gameplayBasis).toBe(
+      "authored-gameplay",
+    );
   });
 
   it("does not compile without a visible failure", () => {
     const result = compileBugTrigger({
+      gameplayBasis: "authored-gameplay",
       startingCondition: "Join the arena",
       actions: ["Finish the match"],
       observableFailure: "",
@@ -58,6 +63,7 @@ describe("Bug Trigger compiler", () => {
 
   it("requires evidence for AI-authored trigger facts", () => {
     const result = compileBugTrigger({
+      gameplayBasis: "authored-gameplay",
       startingCondition: "Join the arena",
       observableFailure:
         "the match does not start",
@@ -73,6 +79,7 @@ describe("Bug Trigger compiler", () => {
 
   it("rejects trigger paths that exceed five steps", () => {
     const result = compileBugTrigger({
+      gameplayBasis: "authored-gameplay",
       startingCondition: "Join the arena",
       actions: [
         "Action one",
