@@ -7,6 +7,7 @@ import type {
 } from "./types.js";
 
 export const GAMEPLAY_BUG_CANDIDATE_KINDS = [
+  "contract-contradiction",
   "progression-dead-end",
   "objective-loss",
   "reset-leakage",
