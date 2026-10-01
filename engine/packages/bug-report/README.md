@@ -157,6 +157,16 @@ Per-bug `fixed` checkboxes exist only to prevent missed bugs and show report pro
 All persisted report content and canonical UI labels are English.
 
 
+## Golden tester report
+
+The canonical reference fixture is:
+
+```text
+fixtures/golden-tester-report-v2.json
+```
+
+It demonstrates one Blocker, Major, and Minor bug using the current tester-facing contract. Use it as a regression reference for wording and report shape; do not create a second Markdown report from it.
+
 ## Creation
 
 New reports must be created directly as V2 through `createBugReportV2()`. The creator defaults each bug to `fixed: false`, validates V2 semantics, enforces tester readiness through `report-readiness.ts`, and then enforces the wording contract in `COPY.md` before emission.
