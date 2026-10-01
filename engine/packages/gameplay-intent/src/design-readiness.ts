@@ -33,7 +33,7 @@ export function assessGameplayDesignReadiness(
       blockingUnknownIds: [],
       toleratedUnknownIds: [],
       reasons: [
-        "No authoritative current Game Design is available for this scoped gameplay decision.",
+        "The selected map artifact does not contain enough grounded gameplay-contract evidence for this scoped decision.",
       ],
     };
   }
@@ -77,7 +77,7 @@ export function assessGameplayDesignReadiness(
       blockingUnknownIds,
       toleratedUnknownIds,
       reasons: [
-        "Material Game Design unknowns can change bug-vs-feature classification for this scope.",
+        "Material gameplay-contract unknowns inside the selected map can change bug-vs-feature classification for this scope.",
       ],
     };
   }
