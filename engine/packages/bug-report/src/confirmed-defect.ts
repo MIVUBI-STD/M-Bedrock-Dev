@@ -157,7 +157,6 @@ export interface ConfirmedDefectIdentityInput {
   readonly subjectIds: readonly string[];
   readonly brokenInvariantIds: readonly string[];
   readonly primaryFailure: BugPrimaryFailure;
-  readonly causalIncidentId?: string;
 }
 
 function normalizedIdentityPart(
@@ -174,9 +173,6 @@ export function deriveConfirmedDefectSemanticKey(
   input: ConfirmedDefectIdentityInput,
 ): string {
   return [
-    input.causalIncidentId === undefined
-      ? undefined
-      : "incident=" + input.causalIncidentId.trim(),
     "subjects=" + normalizedIdentityPart(input.subjectIds),
     "invariants=" +
       normalizedIdentityPart(input.brokenInvariantIds),
