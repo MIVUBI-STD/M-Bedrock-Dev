@@ -51,6 +51,8 @@ function result(
       disposition === "confirmed-defect"
         ? ["inv:cleanup"]
         : [],
+    basisDesignRuleIds: [],
+    basisDesignEvidenceIds: [],
     evidenceIds: ["static:contradiction"],
     nextEvidenceNeed:
       disposition === "confirmed-defect"
@@ -82,6 +84,7 @@ describe("static report confirmation adapter", () => {
   it.each([
     "probable-defect",
     "designed-behavior",
+    "design-review",
     "engine-constraint",
     "compatibility-difference",
     "insufficient-evidence",
@@ -114,5 +117,28 @@ describe("static report confirmation adapter", () => {
       );
 
     expect(confirmation.confirmed).toBe(false);
+  });
+
+  it("confirms an authoritative approved Game Design rule contradiction", () => {
+    const confirmation =
+      confirmStaticIntentDefectForReport(
+        intent,
+        {
+          disposition: "confirmed-defect",
+          subjectIds: ["combat:team-damage"],
+          basisInvariantIds: [],
+          basisDesignRuleIds: ["friendly-fire"],
+          basisDesignEvidenceIds: [
+            "game-design:offense:rule:friendly-fire",
+          ],
+          evidenceIds: ["static:friendly-fire-path"],
+          nextEvidenceNeed: "none",
+          reasons: [
+            "Static behavior contradicts approved Game Design.",
+          ],
+        },
+      );
+
+    expect(confirmation.confirmed).toBe(true);
   });
 });

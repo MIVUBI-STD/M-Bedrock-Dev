@@ -75,4 +75,50 @@ describe("tester report confirmation adapter", () => {
 
     expect(result.confirmed).toBe(false);
   });
+
+  it("does not promote authored behavior that the intent gate classifies as designed", () => {
+    const result = confirmTesterDefectForReport({
+      expectedBehaviorAuthority: "authored-intent",
+      intentDiagnostic: {
+        disposition: "designed-behavior",
+        subjectIds: ["combat:team-damage"],
+        basisInvariantIds: [],
+        basisDesignRuleIds: ["friendly-fire"],
+        basisDesignEvidenceIds: ["game-design:offense:rule:friendly-fire"],
+        evidenceIds: ["runtime:friendly-fire"],
+        nextEvidenceNeed: "none",
+        reasons: ["An explicit exception applies."],
+      },
+      expectedStatement: "Friendly fire is disabled in normal play.",
+      expectedEvidenceIds: ["game-design:offense:rule:friendly-fire"],
+      observationEvidenceIds: ["runtime:friendly-fire"],
+      reproduced: true,
+      evidence: "Friendly fire occurred in developer mode.",
+    });
+
+    expect(result.confirmed).toBe(false);
+  });
+
+  it("allows authored tester mismatch only after canonical intent confirmation", () => {
+    const result = confirmTesterDefectForReport({
+      expectedBehaviorAuthority: "authored-intent",
+      intentDiagnostic: {
+        disposition: "confirmed-defect",
+        subjectIds: ["combat:team-damage"],
+        basisInvariantIds: [],
+        basisDesignRuleIds: ["friendly-fire"],
+        basisDesignEvidenceIds: ["game-design:offense:rule:friendly-fire"],
+        evidenceIds: ["runtime:friendly-fire", "tester:same-team-damage"],
+        nextEvidenceNeed: "none",
+        reasons: ["Observed behavior contradicts approved Game Design."],
+      },
+      expectedStatement: "Same-team damage is forbidden.",
+      expectedEvidenceIds: ["game-design:offense:rule:friendly-fire"],
+      observationEvidenceIds: ["runtime:friendly-fire"],
+      reproduced: true,
+      evidence: "Same-team damage is reproducible.",
+    });
+
+    expect(result.confirmed).toBe(true);
+  });
 });

@@ -1,3 +1,6 @@
+import type {
+  ResolvedGameDesignIntentRule,
+} from "../../game-design-spec/src/index.js";
 import {
   assessGameplayIntentGrounding,
   type GameplayIntentModel,
@@ -7,6 +10,7 @@ export type IntentDiagnosticDisposition =
   | "confirmed-defect"
   | "probable-defect"
   | "designed-behavior"
+  | "design-review"
   | "engine-constraint"
   | "compatibility-difference"
   | "insufficient-evidence"
@@ -22,8 +26,23 @@ export type IntentDiagnosticNextEvidenceNeed =
   | "runtime-proof"
   | "runtime-evidence-integrity";
 
+export type GameDesignObservationRelation =
+  | "supports-observed"
+  | "contradicts-observed"
+  | "unclear";
+
+export type IntentConcernKind =
+  | "implementation"
+  | "balance"
+  | "ux"
+  | "content"
+  | "compatibility";
+
 export interface IntentDiagnosticGateInput {
   intent: GameplayIntentModel;
+  resolvedGameDesignRule?: ResolvedGameDesignIntentRule;
+  gameDesignObservationRelation?: GameDesignObservationRelation;
+  concernKind?: IntentConcernKind;
   subjectIds: readonly string[];
   observationEvidenceIds: readonly string[];
   contradictionEvidenceIds?: readonly string[];
@@ -39,6 +58,8 @@ export interface IntentDiagnosticGateResult {
   disposition: IntentDiagnosticDisposition;
   subjectIds: readonly string[];
   basisInvariantIds: readonly string[];
+  basisDesignRuleIds: readonly string[];
+  basisDesignEvidenceIds: readonly string[];
   evidenceIds: readonly string[];
   nextEvidenceNeed: IntentDiagnosticNextEvidenceNeed;
   reasons: readonly string[];
@@ -47,6 +68,140 @@ export interface IntentDiagnosticGateResult {
 export function gateIntentDiagnostic(
   input: IntentDiagnosticGateInput,
 ): IntentDiagnosticGateResult {
+  const resolvedRule = input.resolvedGameDesignRule;
+  if (resolvedRule) {
+    const rule = resolvedRule.rule;
+    const designEvidenceIds = [
+      "game-design:" + resolvedRule.designId + ":rule:" + rule.id,
+      "game-design-source:" + resolvedRule.sourceReference,
+    ];
+
+    if (resolvedRule.exceptionId) {
+      return {
+        disposition: "designed-behavior",
+        subjectIds: [...input.subjectIds],
+        basisInvariantIds: [],
+        basisDesignRuleIds: [rule.id],
+        basisDesignEvidenceIds: designEvidenceIds,
+        evidenceIds: [
+          ...input.observationEvidenceIds,
+          ...designEvidenceIds,
+        ],
+        nextEvidenceNeed: "none",
+        reasons: [
+          "An explicit Game Design exception applies: " +
+            resolvedRule.exceptionId +
+            ".",
+        ],
+      };
+    }
+
+    if (
+      rule.outcome === "unspecified" ||
+      input.gameDesignObservationRelation === "unclear" ||
+      input.gameDesignObservationRelation === undefined
+    ) {
+      return {
+        disposition: "ambiguous-intent",
+        subjectIds: [...input.subjectIds],
+        basisInvariantIds: [],
+        basisDesignRuleIds: [rule.id],
+        basisDesignEvidenceIds: designEvidenceIds,
+        evidenceIds: [
+          ...input.observationEvidenceIds,
+          ...designEvidenceIds,
+        ],
+        nextEvidenceNeed: "intent-clarification",
+        reasons: [
+          "The applicable Game Design rule does not establish a decisive expected outcome for this observation.",
+        ],
+      };
+    }
+
+    if (input.gameDesignObservationRelation === "supports-observed") {
+      const reviewConcern =
+        input.concernKind === "balance" ||
+        input.concernKind === "ux";
+      return {
+        disposition: reviewConcern
+          ? "design-review"
+          : "designed-behavior",
+        subjectIds: [...input.subjectIds],
+        basisInvariantIds: [],
+        basisDesignRuleIds: [rule.id],
+        basisDesignEvidenceIds: designEvidenceIds,
+        evidenceIds: [
+          ...input.observationEvidenceIds,
+          ...designEvidenceIds,
+        ],
+        nextEvidenceNeed: "none",
+        reasons: [
+          reviewConcern
+            ? "Observed behavior matches approved Game Design; the concern belongs to design/UX review rather than implementation correctness."
+            : "Observed behavior matches the applicable Game Design rule.",
+        ],
+      };
+    }
+
+    const contradictionEvidence =
+      input.contradictionEvidenceIds ?? [];
+    if (
+      input.observationEvidenceIds.length > 0 &&
+      contradictionEvidence.length > 0 &&
+      (
+        resolvedRule.authority === "authoritative" ||
+        resolvedRule.authority === "strong"
+      )
+    ) {
+      if (
+        input.runtimeProofRequired === true &&
+        (input.runtimeProofEvidenceIds?.length ?? 0) === 0
+      ) {
+        return {
+          disposition: "runtime-proof-required",
+          subjectIds: [...input.subjectIds],
+          basisInvariantIds: [],
+          basisDesignRuleIds: [rule.id],
+          basisDesignEvidenceIds: designEvidenceIds,
+          evidenceIds: [
+            ...input.observationEvidenceIds,
+            ...designEvidenceIds,
+          ],
+          nextEvidenceNeed: "runtime-proof",
+          reasons: [
+            "Game Design contradiction is plausible, but this behavior requires runtime proof before defect confirmation.",
+          ],
+        };
+      }
+
+      return {
+        disposition:
+          resolvedRule.authority === "authoritative"
+            ? "confirmed-defect"
+            : "probable-defect",
+        subjectIds: [...input.subjectIds],
+        basisInvariantIds: [],
+        basisDesignRuleIds: [rule.id],
+        basisDesignEvidenceIds: designEvidenceIds,
+        evidenceIds: [
+          ...input.observationEvidenceIds,
+          ...contradictionEvidence,
+          ...(input.runtimeProofEvidenceIds ?? []),
+          ...designEvidenceIds,
+        ],
+        nextEvidenceNeed:
+          resolvedRule.authority === "authoritative"
+            ? "none"
+            : "authored-intent",
+        reasons: [
+          resolvedRule.authority === "authoritative"
+            ? "Observed evidence contradicts an authoritative approved Game Design rule."
+            : "Observed evidence contradicts approved reconstructed intent; authored/client authority is still preferred for final confirmation.",
+        ],
+      };
+    }
+  }
+
   const grounding = assessGameplayIntentGrounding(
     input.intent,
     input.subjectIds,
@@ -57,6 +212,8 @@ export function gateIntentDiagnostic(
       disposition: "insufficient-evidence",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [...input.observationEvidenceIds],
       nextEvidenceNeed: "intent-grounding",
       reasons: grounding.reasons,
@@ -68,6 +225,8 @@ export function gateIntentDiagnostic(
       disposition: "ambiguous-intent",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [...input.observationEvidenceIds],
       nextEvidenceNeed: "intent-clarification",
       reasons: grounding.reasons,
@@ -81,6 +240,8 @@ export function gateIntentDiagnostic(
       disposition: "compatibility-difference",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [
         ...input.observationEvidenceIds,
         ...(input.compatibilityDifferenceEvidenceIds ?? []),
@@ -97,6 +258,8 @@ export function gateIntentDiagnostic(
       disposition: "engine-constraint",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [
         ...input.observationEvidenceIds,
         ...(input.engineConstraintEvidenceIds ?? []),
@@ -113,6 +276,8 @@ export function gateIntentDiagnostic(
       disposition: "designed-behavior",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [
         ...input.observationEvidenceIds,
         ...(input.designMatchEvidenceIds ?? []),
@@ -132,6 +297,8 @@ export function gateIntentDiagnostic(
       disposition: "runtime-proof-required",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [...input.observationEvidenceIds],
       nextEvidenceNeed: "runtime-proof",
       reasons: [
@@ -149,6 +316,8 @@ export function gateIntentDiagnostic(
       disposition: "runtime-proof-required",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: [],
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [
         ...input.observationEvidenceIds,
         ...(input.runtimeProofEvidenceIds ?? []),
@@ -182,6 +351,8 @@ export function gateIntentDiagnostic(
       disposition: "confirmed-defect",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: authored.map((item) => item.id),
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [
         ...input.observationEvidenceIds,
         ...(input.contradictionEvidenceIds ?? []),
@@ -203,6 +374,8 @@ export function gateIntentDiagnostic(
       disposition: "probable-defect",
       subjectIds: [...input.subjectIds],
       basisInvariantIds: inferred.map((item) => item.id),
+      basisDesignRuleIds: [],
+      basisDesignEvidenceIds: [],
       evidenceIds: [
         ...input.observationEvidenceIds,
         ...(input.contradictionEvidenceIds ?? []),
@@ -219,6 +392,8 @@ export function gateIntentDiagnostic(
     disposition: "insufficient-evidence",
     subjectIds: [...input.subjectIds],
     basisInvariantIds: applicable.map((item) => item.id),
+    basisDesignRuleIds: [],
+    basisDesignEvidenceIds: [],
     evidenceIds: [
       ...input.observationEvidenceIds,
       ...(input.runtimeProofEvidenceIds ?? []),

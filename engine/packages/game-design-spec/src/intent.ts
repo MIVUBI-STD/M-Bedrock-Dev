@@ -14,6 +14,8 @@ export interface GameDesignIntentContext {
 }
 
 export interface ResolvedGameDesignIntentRule {
+  readonly designId: string;
+  readonly sourceReference: string;
   readonly rule: GameDesignIntentRule;
   readonly authority: IntentAuthorityStrength;
   readonly exceptionId?: string;
@@ -96,6 +98,8 @@ export function resolveGameDesignIntentRules(
           ),
       );
       return {
+        designId: design.id,
+        sourceReference: design.source.reference,
         rule,
         authority: intentAuthorityStrength(design),
         ...(exception === undefined

@@ -96,8 +96,3 @@ export type IntentAuthorityStrength =
   | "inferred"
   | "unknown";
 
-export type IntentAdjudicationDisposition =
-  | "working-as-designed"
-  | "design-ambiguous"
-  | "design-review"
-  | "suspected-defect";

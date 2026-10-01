@@ -98,4 +98,72 @@ describe("intent diagnostic gate", () => {
     ]);
   });
 
+
+  it("treats an explicit Game Design exception as designed behavior", () => {
+    const result = gateIntentDiagnostic({
+      intent: model("authored"),
+      subjectIds: ["combat:team-damage"],
+      observationEvidenceIds: ["runtime:friendly-fire"],
+      resolvedGameDesignRule: {
+        designId: "design:offense",
+        sourceReference: "design/game-design.json",
+        authority: "authoritative",
+        exceptionId: "developer-mode",
+        rule: {
+          id: "friendly-fire",
+          statement: "Same-team damage is forbidden.",
+          outcome: "forbidden",
+        },
+      },
+      gameDesignObservationRelation: "contradicts-observed",
+    });
+
+    expect(result.disposition).toBe("designed-behavior");
+    expect(result.basisDesignRuleIds).toEqual(["friendly-fire"]);
+  });
+
+  it("routes matching balance concerns to design review, not a bug", () => {
+    const result = gateIntentDiagnostic({
+      intent: model("authored"),
+      subjectIds: ["objective:flag"],
+      observationEvidenceIds: ["runtime:flag-survives"],
+      resolvedGameDesignRule: {
+        designId: "design:defense",
+        sourceReference: "design/game-design.json",
+        authority: "authoritative",
+        rule: {
+          id: "flag-health",
+          statement: "The flag has the authored durability profile.",
+          outcome: "allowed",
+        },
+      },
+      gameDesignObservationRelation: "supports-observed",
+      concernKind: "balance",
+    });
+
+    expect(result.disposition).toBe("design-review");
+  });
+
+  it("confirms contradiction against authoritative Game Design rule", () => {
+    const result = gateIntentDiagnostic({
+      intent: model("inferred"),
+      subjectIds: ["combat:team-damage"],
+      observationEvidenceIds: ["runtime:friendly-fire"],
+      contradictionEvidenceIds: ["tester:same-team-damage"],
+      resolvedGameDesignRule: {
+        designId: "design:offense",
+        sourceReference: "design/game-design.json",
+        authority: "authoritative",
+        rule: {
+          id: "friendly-fire",
+          statement: "Same-team damage is forbidden.",
+          outcome: "forbidden",
+        },
+      },
+      gameDesignObservationRelation: "contradicts-observed",
+    });
+
+    expect(result.disposition).toBe("confirmed-defect");
+    expect(result.basisDesignEvidenceIds.length).toBeGreaterThan(0);
+  });
 });

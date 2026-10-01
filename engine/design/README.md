@@ -35,9 +35,9 @@ The diagnosis boundary is:
 ```text
 observation
 → resolve applicable intent rule
-→ intent adjudication
-→ working-as-designed | design-ambiguous | design-review | suspected-defect
+→ canonical diagnostic-reasoning intent gate
+→ designed-behavior | ambiguous-intent | design-review | probable-defect | confirmed-defect
 → defect confirmation
 ```
 
-Only `suspected-defect` may proceed to defect confirmation. Implementation code is evidence of what exists, not authority for what the game is supposed to do.
+Only `confirmed-defect` may proceed directly to Bug Report confirmation. `probable-defect` remains a diagnosis candidate that needs stronger intent authority or evidence. Implementation code is evidence of what exists, not authority for what the game is supposed to do.

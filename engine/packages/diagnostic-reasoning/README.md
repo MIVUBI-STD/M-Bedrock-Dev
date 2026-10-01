@@ -42,3 +42,18 @@ Segments below the configured reviewed-sample threshold remain `insufficient-sam
 Simple evidence-comparison rules may be represented declaratively when their required predicates, any-of alternatives, and false-positive guards are explicit.
 
 Unknown required evidence yields `insufficient-evidence`; rules never guess missing predicates. Complex temporal, causal, or Minecraft-specific semantics remain in their canonical analyzers/reasoners.
+
+
+## Game Design oracle
+
+`intent-gate.ts` is the single owner for deciding whether an observation conflicts with intended gameplay.
+
+When an applicable approved Game Design `intentRule` is available, the gate evaluates it before inferred gameplay intent:
+
+- explicit exception or matching allowed behavior → `designed-behavior`;
+- matching behavior that raises balance/UX concerns → `design-review`;
+- unspecified/unclear expected behavior → `ambiguous-intent`;
+- contradiction against authoritative authored/client design with evidence → `confirmed-defect`;
+- contradiction against approved reconstruction → `probable-defect`.
+
+Implementation code is evidence of implementation, not authority for intended gameplay. Missing intent fails closed instead of inventing a defect.
