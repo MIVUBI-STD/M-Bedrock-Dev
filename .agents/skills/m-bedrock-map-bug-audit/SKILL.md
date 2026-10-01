@@ -54,24 +54,21 @@ Use the canonical report contracts:
 - `../../../engine/packages/bug-report/COPY.md` for wording quality;
 - `../../../engine/packages/bug-report/PREVIEW.md` for presentation.
 
-Default presentation is `standard` and open-bugs-only.
+Default presentation is `standard`, open-bugs-only, and **table-first**.
 
-Reader priority is fixed:
+Normal ChatGPT preview uses one compact table:
 
 ```text
-Severity + ID + Title
-→ Issue
-→ Action, when supported
-→ Expected / Observed
-→ Reproduction
-→ technical context only when requested or required
+Severity | Bug (ID + title) | Issue | Action
 ```
 
 Rules:
 
-- keep Issue and Action above technical explanation;
+- do not create one vertical section per bug by default;
+- keep one row per bug;
 - do not invent Action when Suggested Fix is absent;
 - hide fixed bugs unless requested;
+- do not show Expected / Observed / Reproduction / technical fields unless the user requests detail;
 - never expose internal proof plumbing, semantic keys, evidence graph IDs, repair-unit IDs, cache state, or orchestration data in normal report preview;
 - use `full` only when the user asks for root-cause or implementation detail.
 
