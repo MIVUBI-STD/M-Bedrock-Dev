@@ -22,14 +22,15 @@ existing map evidence
 
 ## Immediate non-CI steps
 
-1. Resolve artifact SHA-256 for calibration candidates that are actually available.
-2. Keep unavailable artifacts as `candidate`; do not fabricate identity.
-3. Create frozen expectations only from already grounded manual/design/runtime evidence.
-4. Add at least one known-good negative case before judging detector quality.
-5. Run current detector unchanged and record baseline precision/recall/specificity/FPR.
-6. Promote only reproduced, reusable failures into minimized regression fixtures.
-7. Bind capability-specific proof only when the new evidence genuinely proves that capability.
-8. Use Minecraft runtime validation only for claims whose proof ceiling requires it.
+1. Start with repeated-across-maps and runtime-sensitive regression candidates when the matching artifact becomes available.
+2. Resolve artifact SHA-256 only for candidates that are actually available.
+3. Keep unavailable artifacts as `candidate`; do not fabricate identity.
+4. Create frozen expectations only from already grounded manual/design/runtime evidence.
+5. Preserve known-good negative cases so false-positive quality is measurable.
+6. Run current detector unchanged and record baseline precision/recall/specificity/FPR.
+7. Promote only reproduced, reusable failures into minimized regression fixtures.
+8. Bind capability-specific proof only when the new evidence genuinely proves that capability.
+9. Use Minecraft runtime validation only for claims whose proof ceiling requires it.
 
 ## Current corpus
 
