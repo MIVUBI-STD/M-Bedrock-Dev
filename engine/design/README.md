@@ -24,6 +24,14 @@ Minecraft documentation, global engineering contracts, generic reliability rules
 Project-local design belongs at `workspace/active/<project-id>/design/game-design.json`.
 The typed contract is owned by `engine/packages/game-design-spec/`.
 
+## Version binding
+
+Game Design used for audit must be explicitly bound to the selected map/version.
+
+Do not reuse design rules from an older version, another map, historical QA, development source, or external documentation merely because the mechanic looks similar.
+
+If a newer client-requested version changes behavior, the selected current version is authoritative for the audit scope; older behavior remains history.
+
 ## Intent adjudication
 
 Authoritative approved Game Design is the oracle for deciding whether an observed gameplay behavior is intended.
