@@ -93,7 +93,7 @@ Missing decision or `needs-discussion` blocks publication. No approved bugs mean
 
 Validate against `../../schemas/map-audit-output.schema.json`.
 
-Normal preview: Blocker/Major only, player-facing Issue + Bug Trigger.
+Normal preview: Blocker/Major only, player-facing Issue + Bug Trigger. Keep the per-surface accounting internal unless the user asks for audit completeness/detail.
 
 ## Handoff
 
@@ -109,4 +109,4 @@ Normal preview: Blocker/Major only, player-facing Issue + Bug Trigger.
 
 ## STOP
 
-Stop when every in-scope candidate has a disposition and unresolved material rules remain explicit.
+Stop only when every discovered gameplay surface has one accounting record, every candidate has one disposition, and every blocked scope has a concise reason.
