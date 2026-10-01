@@ -77,14 +77,6 @@ if(!contentAnalysis.includes("capability-gap")){
   failures.push("Content Analysis must hand unsupported operational evidence back as capability-gap.");
 }
 
-if(failures.length){
-  console.error("Skill-lane verification violations:");
-  for(const failure of failures) console.error("- "+failure);
-  process.exit(1);
-}
-console.log("Skill-lane verification passed.");
-
-
 const registryPath=".agents/skill-registry.json";
 if(!existsSync(registryPath)){
   failures.push("Missing machine-readable skill registry: "+registryPath);
@@ -124,3 +116,11 @@ if(!existsSync(registryPath)){
     if(typeof lane.mutatesEngine!=="boolean" || typeof lane.mutatesTarget!=="boolean") failures.push("Work lane lacks mutation boundary: "+name);
   }
 }
+
+
+if(failures.length){
+  console.error("Skill-lane verification violations:");
+  for(const failure of failures) console.error("- "+failure);
+  process.exit(1);
+}
+console.log("Skill-lane verification passed.");
