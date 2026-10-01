@@ -38,6 +38,34 @@ Frontend labels must keep the same meaning as persisted V2 fields.
 
 Do not introduce alternate workflow terms such as Open, Closed, Done, Verified, Repair Status, Do Not Break, or Repair With when the persisted V2 field already has a canonical term.
 
+## Human / ChatGPT preview
+
+Bug Report V2 remains the only persisted source of truth.
+
+Human-readable and ChatGPT presentation uses the derived preview surface defined in `PREVIEW.md`:
+
+```text
+Bug Report V2
+→ projectBugReportPreview()
+→ renderBugReportPreviewMarkdown()
+→ human / ChatGPT
+```
+
+Default preview is open-bugs-only and uses this reading order:
+
+```text
+Severity + ID + Title
+Issue
+Action, when Suggested Fix exists
+Expected
+Observed
+Reproduction
+```
+
+Technical Analysis, Relevant Code, and Must Preserve are secondary detail and belong in full mode.
+
+Preview must never invent an Action, persist a second report format, or expose internal diagnostic plumbing.
+
 ## Repair ownership
 
 A report has one `repairBy` value. Individual bugs cannot have separate repair owners.
