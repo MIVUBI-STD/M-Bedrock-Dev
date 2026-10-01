@@ -15,15 +15,16 @@ Applies to persisted bug reports under `workspace/reports/`.
 
 Persist canonical JSON; present a projection.
 
-For new report wording, follow `engine/packages/bug-report/COPY.md`. For ChatGPT or human-readable previews, follow `engine/packages/bug-report/PREVIEW.md`.
+For AI Bug Trigger authoring, use the evidence-bound compiler in `engine/packages/bug-report/src/bug-trigger.ts`. New reports must pass `report-readiness.ts` and `COPY.md` / `copy-quality.ts`. For ChatGPT or human-readable previews, follow `engine/packages/bug-report/PREVIEW.md`.
 
 Default behavior:
 
 - standard preview;
 - open bugs only;
 - Blocker → Major → Minor → Bug ID;
-- show Issue before evidence;
-- show Action only when canonical Suggested Fix exists;
+- show Issue first;
+- show Bug Trigger (In-Game) directly after Issue;
+- show Solution only when canonical Suggested Fix exists;
 - omit empty sections;
 - keep internal diagnostics out of normal preview.
 
@@ -41,5 +42,5 @@ Do not persist preview Markdown as a second report artifact.
 
 Use `engine/packages/bug-report/` as the semantic owner of the report contract.
 
-- New reports use Bug Report V2 only. V1 exists solely for compatibility migration.
+- New reports use Bug Report V2 only and must be handoff-ready. V1 exists solely for compatibility migration.
 - Canonical bug origin is exactly `ai` or `tester`; do not introduce `both` / `ai+tester` in V2.
