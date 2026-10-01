@@ -7,7 +7,7 @@ import {
   telemetryRuntimeRouteObservations,
   telemetryRuntimeRouteReachabilityObservations,
   telemetryRuntimeStateObservations,
-} from "../src/telemetry-evidence.js";
+} from "../../src/diagnosis/telemetry-evidence.js";
 
 describe("telemetry evidence adapter", () => {
   it("maps state observations into typed runtime state", () => {

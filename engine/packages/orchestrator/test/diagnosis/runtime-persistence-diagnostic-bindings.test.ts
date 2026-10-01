@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
   RuntimeEvidenceRecord,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   createJournalCrashRecoveryExperiment,
   createReloadReconciliationExperiment,
@@ -13,13 +13,13 @@ import {
   runtimeExperimentDefinitionRevision,
   type RuntimeExperimentDefinition,
   type RuntimeExperimentTrial,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import {
   PERSISTENCE_DUPLICATE_APPLY_DIAGNOSTIC_BINDINGS,
   PERSISTENCE_TRANSIENT_RESTORE_DIAGNOSTIC_BINDINGS,
   reclassifyIntentDiagnosticFromRuntime,
   runtimeExperimentDiagnosticEvidence,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function authoredIntent(subjectId: string): GameplayIntentModel {
   return {

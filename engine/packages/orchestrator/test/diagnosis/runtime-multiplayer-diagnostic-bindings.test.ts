@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
   RuntimeEvidenceRecord,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   createArenaCapacityGuardExperiment,
   createFullCapacitySessionExperiment,
@@ -15,7 +15,7 @@ import {
   runtimeExperimentDefinitionRevision,
   type RuntimeExperimentDefinition,
   type RuntimeExperimentTrial,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import {
   MULTIPLAYER_CAPACITY_DIAGNOSTIC_BINDINGS,
   MULTIPLAYER_FULL_CAPACITY_DIAGNOSTIC_BINDINGS,
@@ -23,7 +23,7 @@ import {
   MULTIPLAYER_START_OWNERSHIP_DIAGNOSTIC_BINDINGS,
   reclassifyIntentDiagnosticFromRuntime,
   runtimeExperimentDiagnosticEvidence,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function authoredIntent(subjectId: string): GameplayIntentModel {
   return {

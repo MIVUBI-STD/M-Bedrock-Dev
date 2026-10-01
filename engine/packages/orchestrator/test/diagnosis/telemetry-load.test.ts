@@ -5,12 +5,12 @@ import { describe, expect, it } from "vitest";
 import {
   frameTelemetryBatch,
   frameTelemetryBatchSet,
-} from "../../telemetry/src/index.js";
+} from "../../../telemetry/src/index.js";
 import {
   loadTelemetryFile,
   parseTelemetryText,
   resolveTelemetryEventsForArtifact,
-} from "../src/telemetry-load.js";
+} from "../../src/diagnosis/telemetry-load.js";
 
 const batch = {
   schemaVersion: 1 as const,

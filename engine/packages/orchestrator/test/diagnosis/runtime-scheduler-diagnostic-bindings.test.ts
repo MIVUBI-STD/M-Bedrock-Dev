@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
   GameplayIntentModel,
-} from "../../gameplay-intent/src/index.js";
+} from "../../../gameplay-intent/src/index.js";
 import type {
   RuntimeEvidenceIntegrityReport,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   createSchedulerCancellationExperiment,
   createSchedulerCrossArenaIsolationExperiment,
@@ -12,13 +12,13 @@ import {
   runtimeExperimentDefinitionRevision,
   type RuntimeExperimentDefinition,
   type RuntimeExperimentTrial,
-} from "../../runtime-lab/src/index.js";
+} from "../../../runtime-lab/src/index.js";
 import {
   SCHEDULER_CANCELLATION_DIAGNOSTIC_BINDINGS,
   SCHEDULER_CROSS_ARENA_DIAGNOSTIC_BINDINGS,
   reclassifyIntentDiagnosticFromRuntime,
   runtimeExperimentDiagnosticEvidence,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 function authoredIntent(subjectId: string): GameplayIntentModel {
   return {
