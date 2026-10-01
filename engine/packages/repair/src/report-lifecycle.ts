@@ -88,11 +88,12 @@ function verifiedRuns(
     runs.some((run) =>
       !run.current ||
       !run.ok ||
+      !run.proofSufficient ||
       run.evidenceIds.length === 0
     )
   ) {
     throw new Error(
-      "Bug repair completion requires current passing validation with evidence.",
+      "Bug repair completion requires current passing validation with sufficient proof and evidence.",
     );
   }
 
