@@ -85,6 +85,8 @@ Rules:
 - keep one row per bug;
 - use `#1`, `#2`, ... for preview references and keep canonical Bug ID hidden unless detail/full mode is requested;
 - every tester-facing bug must include a concise `Bug Trigger (In-Game)` path written only as player actions, game states, locations, objects, UI interactions, and visible outcomes;
+- include required starting context when relevant: player count, location/arena, game phase, team/role, required item, prerequisite state;
+- the final trigger step must explicitly state the visible wrong result that proves the bug;
 - reproduction must never ask the tester to inspect scripts, functions, variables, source files, logs, or architecture;
 - if no tester-verifiable in-game path exists yet, keep the finding internal rather than presenting it as a ready bug;
 - do not invent Solution when Suggested Fix is absent;
