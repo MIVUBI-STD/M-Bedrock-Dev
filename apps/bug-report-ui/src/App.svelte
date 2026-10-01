@@ -49,6 +49,21 @@
     ? bugReportV2Progress(report)
     : { fixed: 0, total: 0, allFixed: false };
 
+  $: openSignal = report
+    ? {
+        open: report.bugs.filter((bug) => !bug.fixed).length,
+        blocker: report.bugs.filter(
+          (bug) => !bug.fixed && bug.severity === "blocker",
+        ).length,
+        major: report.bugs.filter(
+          (bug) => !bug.fixed && bug.severity === "major",
+        ).length,
+        minor: report.bugs.filter(
+          (bug) => !bug.fixed && bug.severity === "minor",
+        ).length,
+      }
+    : { open: 0, blocker: 0, major: 0, minor: 0 };
+
   $: visibleBugs = report
     ? filterBugReportBugs(report.bugs, {
         view,
@@ -433,8 +448,13 @@
       </div>
 
       <div class="summary">
-        <strong>{progress.fixed} / {progress.total}</strong>
-        <span>{progress.allFixed ? "All Fixed" : "Fixed"}</span>
+        <strong>{openSignal.open} Open</strong>
+        <span>
+          {openSignal.blocker} Blocker ·
+          {openSignal.major} Major ·
+          {openSignal.minor} Minor
+        </span>
+        <small>{progress.fixed} / {progress.total} Fixed</small>
       </div>
     </section>
 
@@ -492,14 +512,20 @@
 
             <div class="bug-title">
               <strong>{bug.id} · {bug.title}</strong>
-              <span>{bug.category} · Found By {bug.foundBy}</span>
+              <span class="bug-problem">{bug.problem}</span>
+              {#if bug.suggestedFix}
+                <span class="bug-action">
+                  <b>Action</b>
+                  {bug.suggestedFix}
+                </span>
+              {/if}
             </div>
 
             <span class="severity {bug.severity}">{bug.severity}</span>
           </summary>
 
           <div class="bug-body">
-            <section><h3>{BUG_REPORT_V2_LABELS.problem}</h3><p>{bug.problem}</p></section>
+            <div class="bug-meta">{bug.category} · Found By {bug.foundBy}</div>
             <div class="comparison">
               <section><h3>{BUG_REPORT_V2_LABELS.expected}</h3><p>{bug.expected}</p></section>
               <section><h3>{BUG_REPORT_V2_LABELS.observed}</h3><p>{bug.observed}</p></section>
@@ -508,7 +534,7 @@
               <section><h3>{BUG_REPORT_V2_LABELS.reproduction}</h3><ol>{#each bug.reproduction as item}<li>{item}</li>{/each}</ol></section>
             {/if}
             {#if bug.aiAnalysis}
-              <section><h3>{BUG_REPORT_V2_LABELS.aiAnalysis}</h3><p>{bug.aiAnalysis}</p></section>
+              <section><h3>Technical Analysis</h3><p>{bug.aiAnalysis}</p></section>
             {/if}
             {#if bug.relevantCode}
               <section>
@@ -517,9 +543,6 @@
                   <div class="code-row"><code>{item.file}</code><span>{item.reason}</span></div>
                 {/each}
               </section>
-            {/if}
-            {#if bug.suggestedFix}
-              <section><h3>{BUG_REPORT_V2_LABELS.suggestedFix}</h3><p>{bug.suggestedFix}</p></section>
             {/if}
             {#if bug.mustPreserve}
               <section><h3>{BUG_REPORT_V2_LABELS.mustPreserve}</h3><ul>{#each bug.mustPreserve as item}<li>{item}</li>{/each}</ul></section>
@@ -537,17 +560,17 @@
   :global(button),:global(input),:global(select){font:inherit}
   .shell{min-height:100vh}
   .topbar{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid #20252a;background:#101317}
-  .topbar>div:first-child{display:grid}.topbar span,.meta,.bug-title span{font-size:11px;color:#7f8994}.actions,.repair-owner,.views,.meta,.entry-actions{display:flex;gap:8px;align-items:center}
+  .topbar>div:first-child{display:grid}.topbar span,.meta{font-size:11px;color:#7f8994}.actions,.repair-owner,.views,.meta,.entry-actions{display:flex;gap:8px;align-items:center}
   button,.file-button{border:1px solid #303740;border-radius:7px;background:#15191e;color:#c3cad2;padding:8px 11px;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}.primary,.file-button,.active{background:#7d85ff;color:#090b0e;border-color:#8d94ff}.large{padding:10px 15px}
   .landing{max-width:780px;margin:auto;padding:76px 24px}.entry-card,.github-browser{padding:30px;border:1px solid #242a31;border-radius:14px;background:#101419}.eyebrow{font-size:10px;font-weight:750;letter-spacing:.13em;color:#818b96}.entry-card h1,.mapbar h1{margin:6px 0}.entry-card p{margin:0 0 22px;color:#98a1aa}.file-button input{display:none}
   .github-browser{margin-top:16px;padding:18px}.github-browser>header{display:flex;align-items:center;justify-content:space-between}.github-browser>header div{display:grid}.github-browser>header span{font-size:11px;color:#7f8994}.report-list{margin-top:12px;border-top:1px solid #242a31}.report-row{width:100%;display:flex;align-items:center;justify-content:space-between;border:0;border-bottom:1px solid #20262c;border-radius:0;background:transparent;padding:13px 4px;text-align:left}.report-row:hover{background:#14191e}.report-row div{display:grid}.report-row div span,.progress{font-size:11px;color:#7f8994}.report-signals{display:flex;align-items:center;gap:12px}.report-signals b{font-size:10px;text-transform:uppercase;color:#ff9da6}
   .inline-error{margin-top:14px;color:#efb1b5}.errors{margin-top:16px;border:1px solid #553037;border-radius:10px;padding:16px}.error-row{display:grid;grid-template-columns:220px 1fr;gap:12px;padding-top:8px}
   .sourcebar{display:flex;gap:9px;align-items:center;padding:8px 30px;border-bottom:1px solid #20252a;background:#0d1013;color:#7f8994;font-size:11px}.source-kind{color:#eef1f4;font-weight:700}
-  .mapbar{display:flex;align-items:flex-end;justify-content:space-between;padding:24px 30px;border-bottom:1px solid #20252a;background:#101317}.version-note{margin-top:8px;font-size:11px;color:#eec477}.summary{display:grid;text-align:right}.summary strong{font-size:22px}.summary span{font-size:10px;text-transform:uppercase;color:#7d8791}.meta{gap:14px}
+  .mapbar{display:flex;align-items:flex-end;justify-content:space-between;padding:24px 30px;border-bottom:1px solid #20252a;background:#101317}.version-note{margin-top:8px;font-size:11px;color:#eec477}.summary{display:grid;gap:2px;text-align:right}.summary strong{font-size:22px}.summary span{font-size:10px;text-transform:uppercase;color:#aab2bb}.summary small{font-size:10px;color:#68727c}.meta{gap:14px}
   .save-state{font-size:11px}.save-state.failed,.save-state.conflict{color:#efb1b5}.save-state.unsaved{color:#eec477}
   .controlbar{display:flex;align-items:center;gap:16px;padding:12px 30px;border-bottom:1px solid #20252a;background:#0f1215}.repair-owner>span{font-size:11px;color:#7f8994}.severity-filter{display:flex;align-items:center;gap:7px;font-size:11px;color:#7f8994}.severity-filter select{border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:7px 9px}.controlbar>input{margin-left:auto;min-width:240px;border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:8px 10px}
-  .workspace{max-width:1100px;padding:18px 30px 80px}.bug{border-bottom:1px solid #20262c}.bug.fixed{opacity:.55}.bug summary{list-style:none;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;padding:16px 4px;cursor:pointer}.bug summary::-webkit-details-marker{display:none}.check input{width:17px;height:17px}.bug-title{display:grid;gap:2px}
+  .workspace{max-width:1100px;padding:18px 30px 80px}.bug{border-bottom:1px solid #20262c}.bug.fixed{opacity:.55}.bug summary{list-style:none;display:grid;grid-template-columns:34px 1fr auto;align-items:start;gap:12px;padding:16px 4px;cursor:pointer}.bug summary::-webkit-details-marker{display:none}.check input{width:17px;height:17px}.bug-title{display:grid;gap:4px}.bug-title strong{line-height:1.35}.bug-problem{font-size:12px;color:#aeb6bf;line-height:1.45}.bug-action{font-size:11px;color:#c9d0d7;line-height:1.45}.bug-action b{margin-right:6px;color:#8f98ff;text-transform:uppercase;font-size:9px;letter-spacing:.08em}
   .severity{border-radius:999px;padding:3px 7px;font-size:10px;font-weight:750;text-transform:uppercase}.severity.blocker{background:#3b171c;color:#ff9da6}.severity.major{background:#382b16;color:#eec477}.severity.minor{background:#1d2931;color:#9dc5dc}
-  .bug-body{display:grid;gap:18px;padding:2px 46px 26px;color:#b8c0c8}.bug-body section{display:grid;gap:5px}.bug-body h3{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#79848e}.bug-body p,.bug-body ol,.bug-body ul{margin:0}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:24px}.code-row{display:grid;grid-template-columns:minmax(180px,.7fr) 1fr;gap:14px;padding:5px 0}.code-row code{color:#aeb5ff}.empty{padding:28px 0;color:#737d87}
+  .bug-body{display:grid;gap:18px;padding:2px 46px 26px;color:#b8c0c8}.bug-meta{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#69737d}.bug-body section{display:grid;gap:5px}.bug-body h3{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#79848e}.bug-body p,.bug-body ol,.bug-body ul{margin:0}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:24px}.code-row{display:grid;grid-template-columns:minmax(180px,.7fr) 1fr;gap:14px;padding:5px 0}.code-row code{color:#aeb5ff}.empty{padding:28px 0;color:#737d87}
   @media(max-width:760px){.topbar{padding:0 15px}.actions{gap:5px}.entry-actions{align-items:stretch;flex-direction:column}.mapbar{align-items:flex-start;flex-direction:column;padding:18px 16px}.sourcebar{padding:8px 16px}.summary{text-align:left}.controlbar{align-items:stretch;flex-direction:column;padding:12px 16px}.controlbar>input{margin:0;min-width:0}.workspace{padding:12px 16px 60px}.comparison{grid-template-columns:1fr}.bug-body{padding-left:4px}.code-row{grid-template-columns:1fr}}
 </style>
