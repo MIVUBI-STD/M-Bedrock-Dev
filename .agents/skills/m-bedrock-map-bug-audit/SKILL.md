@@ -81,8 +81,8 @@ Solution | supported change
 
 Rules:
 
-- do not create one vertical section per bug by default;
-- keep one row per bug;
+- keep one compact two-column block per bug;
+- do not split one bug across distant sections;
 - use `#1`, `#2`, ... for preview references and keep canonical Bug ID hidden unless detail/full mode is requested;
 - every tester-facing bug must include a concise `Bug Trigger (In-Game)` path written only as player actions, game states, locations, objects, UI interactions, and visible outcomes;
 - include required starting context when relevant: player count, location/arena, game phase, team/role, required item, prerequisite state;
