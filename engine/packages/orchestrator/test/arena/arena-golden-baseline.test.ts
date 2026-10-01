@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildArenaGoldenBaselineCandidate } from "../src/arena-golden-baseline.js";
+import { buildArenaGoldenBaselineCandidate } from "../../src/arena/arena-golden-baseline.js";
 
 describe("arena golden baseline candidate", () => {
   it("warns instead of accepting identity drift as a baseline", () => {

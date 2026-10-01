@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildArenaEngineeringProjection } from "../src/arena-engineering-projection.js";
+import { buildArenaEngineeringProjection } from "../../src/arena/arena-engineering-projection.js";
 
 describe("arena engineering projection", () => {
   it("keeps arena reporting compact and arena-scoped", () => {

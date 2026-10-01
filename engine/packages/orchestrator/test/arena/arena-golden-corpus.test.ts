@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   evaluateArenaGoldenAssertions,
   parseArenaGoldenManifest,
-} from "../src/arena-golden-corpus.js";
+} from "../../src/arena/arena-golden-corpus.js";
 
 describe("arena golden corpus", () => {
   it("validates focused arena assertions without snapshotting raw inspection output", () => {

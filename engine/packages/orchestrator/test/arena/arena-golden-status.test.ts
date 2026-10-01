@@ -5,7 +5,7 @@ import {
 } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { inspectArenaGoldenCorpusStatus } from "../src/arena-golden-status.js";
+import { inspectArenaGoldenCorpusStatus } from "../../src/arena/arena-golden-status.js";
 
 describe("arena golden corpus status", () => {
   it("preflights approvals and artifact paths without inspecting worlds", async () => {
