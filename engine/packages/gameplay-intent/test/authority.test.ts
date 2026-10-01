@@ -11,39 +11,50 @@ function claim(
   return {
     domain: "intended-gameplay",
     freshness: "current",
-    source: "approved-game-design",
+    source: "selected-artifact",
     scope: "capture-run/retry",
     ...partial,
   };
 }
 
 describe("gameplay authority resolution", () => {
-  it("prefers current explicit user decisions for intended behavior", () => {
+  it("uses the selected artifact as the only current intended-gameplay authority", () => {
     const result = resolveGameplayAuthority([
       claim({
-        id: "design",
-        value: "reset",
+        id: "selected",
+        value: "persist",
       }),
       claim({
-        id: "user",
-        source: "current-user-decision",
-        value: "persist",
+        id: "external-doc",
+        source: "approved-game-design",
+        value: "reset",
       }),
     ], "intended-gameplay", "capture-run/retry");
 
     expect(result.disposition).toBe("resolved");
     expect(result.value).toBe("persist");
-    expect(result.basisClaimIds).toEqual(["user"]);
+    expect(result.basisClaimIds).toEqual(["selected"]);
   });
 
-  it("keeps equally authoritative current conflicts ambiguous", () => {
+  it("does not promote external current documents into current gameplay intent", () => {
+    const result = resolveGameplayAuthority([
+      claim({
+        id: "external-doc",
+        source: "current-gameplay-documentation",
+        value: "reset",
+      }),
+    ], "intended-gameplay", "capture-run/retry");
+
+    expect(result.disposition).toBe("unknown");
+  });
+
+  it("keeps conflicts inside the selected artifact ambiguous", () => {
     const result = resolveGameplayAuthority([
       claim({ id: "a", value: "reset" }),
       claim({ id: "b", value: "persist" }),
     ], "intended-gameplay", "capture-run/retry");
 
     expect(result.disposition).toBe("ambiguous");
-    expect(result.basisClaimIds).toEqual(["a", "b"]);
   });
 
   it("never promotes historical evidence into current intent", () => {
@@ -72,7 +83,7 @@ describe("gameplay authority resolution", () => {
     expect(result.disposition).toBe("unknown");
   });
 
-  it("uses runtime as actual behavior authority without turning it into intent", () => {
+  it("uses runtime as actual behavior authority without redefining intent", () => {
     const claims: GameplayAuthorityClaim[] = [
       {
         id: "runtime",
@@ -82,57 +93,18 @@ describe("gameplay authority resolution", () => {
         scope: "defense/npc-route",
         value: "stalls",
       },
-      {
-        id: "source",
-        domain: "actual-behavior",
-        freshness: "current",
-        source: "current-source",
-        scope: "defense/npc-route",
-        value: "repaths",
-      },
     ];
 
-    const actual = resolveGameplayAuthority(
+    expect(resolveGameplayAuthority(
       claims,
       "actual-behavior",
       "defense/npc-route",
-    );
-    const intended = resolveGameplayAuthority(
+    ).value).toBe("stalls");
+
+    expect(resolveGameplayAuthority(
       claims,
       "intended-gameplay",
       "defense/npc-route",
-    );
-
-    expect(actual.value).toBe("stalls");
-    expect(intended.disposition).toBe("unknown");
-  });
-
-  it("prefers the explicitly selected release artifact", () => {
-    const claims: GameplayAuthorityClaim[] = [
-      {
-        id: "selected",
-        domain: "release-identity",
-        freshness: "current",
-        source: "selected-artifact",
-        scope: "challenge",
-        value: "1.1.1",
-      },
-      {
-        id: "manifest",
-        domain: "release-identity",
-        freshness: "current",
-        source: "current-manifest",
-        scope: "challenge",
-        value: "1.1.0",
-      },
-    ];
-
-    const result = resolveGameplayAuthority(
-      claims,
-      "release-identity",
-      "challenge",
-    );
-
-    expect(result.value).toBe("1.1.1");
+    ).disposition).toBe("unknown");
   });
 });
