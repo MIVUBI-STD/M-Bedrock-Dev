@@ -2,7 +2,88 @@
   "schemaVersion": 1,
   "id": "m-bedrock-calibration-corpus-v1",
   "lane": "calibration",
-  "cases": [],
+  "cases": [
+    {
+      "id": "marathon-test-of-tactics-l2",
+      "status": "candidate",
+      "sourceRef": "engine/fixtures/calibration/gameplay-understanding-samples.json#marathon-test-of-tactics-l2",
+      "artifactFile": "Marathon-Test-of-Tactics-v2.2.0.mcworld",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "blitzbuild",
+      "status": "candidate",
+      "sourceRef": "engine/fixtures/calibration/gameplay-understanding-samples.json#blitzbuild",
+      "artifactFile": "BlitzBuild-v1.0.2.mcworld",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "the-circuit",
+      "status": "candidate",
+      "sourceRef": "engine/fixtures/calibration/gameplay-understanding-samples.json#the-circuit",
+      "artifactFile": "The Circuit v1.0.2.mcworld",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "fall-of-the-pillager-l1",
+      "status": "candidate",
+      "sourceRef": "engine/fixtures/calibration/gameplay-understanding-samples.json#fall-of-the-pillager-l1",
+      "artifactFile": "Fall of the Pillager v1.1.0.mcworld",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "beach-bedwars",
+      "status": "candidate",
+      "sourceRef": "engine/fixtures/calibration/gameplay-understanding-samples.json#beach-bedwars",
+      "artifactFile": "Beach Bedwars v1.0.4.mcworld",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "five-nights-z-village-l1",
+      "status": "candidate",
+      "sourceRef": "engine/fixtures/calibration/gameplay-understanding-samples.json#five-nights-z-village-l1",
+      "artifactFile": "Five-Nights-at-Z-Village-v1.1.0.mcworld",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "orb-of-the-illusioner-l1",
+      "status": "candidate",
+      "sourceRef": "engine/fixtures/calibration/gameplay-understanding-samples.json#orb-of-the-illusioner-l1",
+      "artifactFile": "Orb of the Illusioner Level 1.mcworld",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "five-nights-defense-l2",
+      "status": "candidate",
+      "sourceRef": "engine/fixtures/calibration/gameplay-understanding-samples.json#five-nights-defense-l2",
+      "artifactFile": "Defense_Level_2_v1_2_0.mcworld",
+      "readiness": {
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    }
+  ],
   "policy": {
     "mayInformDetectorDevelopment": true,
     "blindEvaluationRequired": false,
