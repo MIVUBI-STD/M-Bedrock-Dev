@@ -23,9 +23,9 @@ The UI does not analyze maps or diagnose bugs. It presents confirmed bugs so a t
 - Severity and tester-facing text are searchable.
 - Expected, Observed, Technical Analysis, Relevant Code, and Must Preserve remain detail-on-demand.
 - Older or externally supplied canonical reports may be opened in compatibility mode.
-- Compatibility mode shows tester-readiness issues without mutating the report.
+- Compatibility mode shows tester-readiness and copy-quality issues without mutating the report.
 - Compatibility reports may be read and exported.
-- A file report can be created on GitHub only after tester-readiness issues are resolved.
+- A file report can be created on GitHub only after all handoff-quality issues are resolved.
 - A GitHub report is read/export oriented during the audit phase.
 - Canonical V2 fields remain unchanged for compatibility with later repair workflows.
 
