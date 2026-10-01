@@ -18,3 +18,10 @@ Use when a reproduced defect or intentional modification requires a source chang
 ## Fail closed
 
 Stop on stale fingerprint, ambiguous match, workspace escape, unresolved coordinate context, or uncertain semantic target.
+
+
+## Lane boundary
+
+This is an operational map/source repair skill. It changes the target artifact working copy after diagnosis.
+
+It does not improve M-Bedrock-Dev analyzers, Platform Knowledge, rules, or proof infrastructure. Engine capability work belongs to `m-bedrock-capability-development`.

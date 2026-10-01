@@ -1,5 +1,7 @@
 # M-Bedrock Content Analysis
 
+**Role:** DOMAIN SPECIALIST — read-only semantic analysis
+
 Use for manifests, functions, commands, references, semantic graph, diagnostics, and derived topology facts.
 
 ## Procedure
@@ -17,3 +19,13 @@ Use for manifests, functions, commands, references, semantic graph, diagnostics,
 ## Efficiency
 
 Prefer content hashes, selective parsing, and change-scoped invalidation over full rescans.
+
+
+## Lane boundary
+
+This skill does not decide whether the current job is Map Audit or Capability Development.
+
+- In **Map Bug Audit**, use existing analysis capability only. If required semantics are unsupported, emit `capability-gap` and return to the audit lane.
+- In **Capability Development**, this skill defines analyzer semantics/ownership, but development acceptance is owned by `m-bedrock-capability-development`.
+
+Never modify analyzer implementation merely because an operational audit encounters unsupported evidence.

@@ -20,3 +20,10 @@ Use when the decision concerns artifact identity, archive safety, extraction, wo
 - mutate original source;
 - let a ZIP library become semantic safety authority;
 - treat successful repackaging as Minecraft runtime proof.
+
+
+## Lane boundary
+
+During Map Bug Audit this skill inspects/normalizes artifacts only. Missing format support becomes a `capability-gap`.
+
+Engine adapter/archive development belongs to `m-bedrock-capability-development`; do not cross into it implicitly.

@@ -13,3 +13,10 @@ Use when behavior depends on Minecraft Bedrock version, Minecraft Education, man
 7. Do not broaden supported ranges without compatibility evidence.
 
 Compatibility analysis does not itself prove runtime behavior.
+
+
+## Lane boundary
+
+During Map Bug Audit, consume current compatibility/Platform Knowledge and report missing/stale capability as `capability-gap`; do not silently edit rules or knowledge.
+
+During Capability Development, compatibility data/rules may be changed only with version-scoped evidence and generalized acceptance.

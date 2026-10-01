@@ -1,17 +1,32 @@
 # Agent Skills
 
-M-Bedrock-Dev uses a bounded specialist set.
+M-Bedrock-Dev separates **work lanes** from **domain specialists**.
+
+## Work lanes
+
+```text
+m-bedrock-map-bug-audit
+m-bedrock-capability-development
+m-bedrock-capability-benchmark
+m-bedrock-repair-engineering
+```
+
+## Domain specialists
 
 ```text
 m-bedrock-artifact-engineering
 m-bedrock-content-analysis
-m-bedrock-repair-engineering
 m-bedrock-compatibility
-m-bedrock-development-brief
 ```
 
-Load exactly one primary specialist when its procedure materially helps. Add another only when semantic ownership changes.
+## Routing only
 
-Skills are not created for TypeScript, Node.js, JSON, CI, GitHub, or individual Bedrock file extensions alone.
+```text
+m-bedrock-cross-owner-routing
+```
+
+Select exactly one active work lane. Consult the smallest domain specialist only when the lane reaches that semantic owner.
+
+A `capability-gap` is a handoff boundary, not permission to start development inside an operational audit.
 
 Canonical routing is owned by `../docs/06-system/skill-routing.md`.

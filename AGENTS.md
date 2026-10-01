@@ -99,30 +99,36 @@ Proof required
 STOP condition
 ```
 
-Use `.agents/skills/m-bedrock-development-brief/SKILL.md` only when architecture, cross-owner ambiguity, or unresolved success criteria materially prevent a reliable standard contract.
+Use `.agents/skills/m-bedrock-cross-owner-routing/SKILL.md` only when architecture, cross-owner ambiguity, or unresolved success criteria materially prevent a reliable standard contract.
 
-## Specialist routing
+## Skill routing
 
-Select by the decision being made, not filename or programming language.
+Choose a **work lane first**:
 
 ```text
-artifact/container/workspace ingest and packaging
-→ m-bedrock-artifact-engineering
+find/classify bugs in a map
+→ m-bedrock-map-bug-audit
 
-Bedrock manifests/functions/commands/references/semantic graph
-→ m-bedrock-content-analysis
+improve reusable bug-finding capability
+→ m-bedrock-capability-development
 
-diagnostic-to-patch planning / transactions / coordinate repair
+measure capability/regression
+→ m-bedrock-capability-benchmark
+
+repair a proven defect in target source/artifact
 → m-bedrock-repair-engineering
-
-version/edition capability or Bedrock-vs-Education semantics
-→ m-bedrock-compatibility
-
-cross-owner ambiguous development
-→ m-bedrock-development-brief
 ```
 
-Do not preload all specialists. Load one primary specialist and switch only when semantic ownership changes.
+Then consult the smallest **domain specialist** when needed:
+
+```text
+artifact/container/workspace → m-bedrock-artifact-engineering
+source/semantic analysis     → m-bedrock-content-analysis
+version/edition/capability   → m-bedrock-compatibility
+ownership ambiguity          → m-bedrock-cross-owner-routing
+```
+
+Keep one lane active. A capability gap found during Map Audit is recorded and handed off; it does not implicitly switch the current task into development.
 
 ## Evidence-first mutation
 
