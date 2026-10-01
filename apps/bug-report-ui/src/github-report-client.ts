@@ -14,25 +14,6 @@ export class GitHubReportConflictError extends Error {
   }
 }
 
-export interface LoadedBugReportSnapshot {
-  readonly report: BugReportV2;
-  readonly revision: string;
-}
-
-export interface PublishedBugReportLinks {
-  readonly revision: string;
-  readonly googleDoc: {
-    readonly documentId: string;
-    readonly url: string;
-    readonly title: string;
-    readonly parentFolderId?: string;
-  };
-  readonly pdf: {
-    readonly fileName: string;
-    readonly url?: string;
-  };
-}
-
 export interface GitHubReportClientOptions {
   readonly baseUrl?: string;
   readonly fetchImpl?: typeof fetch;
@@ -107,9 +88,7 @@ export class GitHubReportClient
     ).reports;
   }
 
-  async loadReportSnapshot(
-    path: string,
-  ): Promise<LoadedBugReportSnapshot> {
+  async loadReport(path: string): Promise<BugReportV2> {
     const body = await this.#json(
       "/api/bug-report?path=" +
         encodeURIComponent(path),
@@ -117,11 +96,7 @@ export class GitHubReportClient
     if (
       typeof body !== "object" ||
       body === null ||
-      !("report" in body) ||
-      !("revision" in body) ||
-      typeof (
-        body as { revision?: unknown }
-      ).revision !== "string"
+      !("report" in body)
     ) {
       throw new Error(
         "GitHub report response is invalid.",
@@ -135,62 +110,7 @@ export class GitHubReportClient
         "GitHub report response is not valid V2.",
       );
     }
-    return {
-      report: parsed.report,
-      revision: (
-        body as { revision: string }
-      ).revision,
-    };
-  }
-
-  async loadReport(
-    path: string,
-  ): Promise<BugReportV2> {
-    return (
-      await this.loadReportSnapshot(path)
-    ).report;
-  }
-
-  async publishReport(
-    path: string,
-    expectedRevision: string,
-    options: {
-      readonly includeFixed?: boolean;
-    } = {},
-  ): Promise<PublishedBugReportLinks> {
-    const body = await this.#json(
-      "/api/bug-report/publish",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          path,
-          expectedRevision,
-          ...(options.includeFixed === undefined
-            ? {}
-            : {
-                includeFixed:
-                  options.includeFixed,
-              }),
-        }),
-      },
-    );
-
-    if (
-      typeof body !== "object" ||
-      body === null ||
-      !("revision" in body) ||
-      !("googleDoc" in body) ||
-      !("pdf" in body)
-    ) {
-      throw new Error(
-        "Bug report publication response is invalid.",
-      );
-    }
-
-    return body as PublishedBugReportLinks;
+    return parsed.report;
   }
 
   async createReport(
