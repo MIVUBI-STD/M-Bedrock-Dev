@@ -42,7 +42,8 @@
       ],
       "spec": ".agents/skills/m-bedrock-map-bug-audit/SPEC.md",
       "sources": ".agents/skills/m-bedrock-map-bug-audit/SOURCES.md",
-      "eval": ".agents/skills/m-bedrock-map-bug-audit/EVAL.md"
+      "eval": ".agents/skills/m-bedrock-map-bug-audit/EVAL.md",
+      "runtimeInstrumentation": ".agents/skills/m-bedrock-map-bug-audit/references/runtime-instrumentation.md"
     },
     "m-bedrock-detection-development": {
       "label": "Detection Development",
@@ -103,7 +104,12 @@
       ],
       "spec": ".agents/skills/m-bedrock-detection-benchmark/SPEC.md",
       "sources": ".agents/skills/m-bedrock-detection-benchmark/SOURCES.md",
-      "eval": ".agents/skills/m-bedrock-detection-benchmark/EVAL.md"
+      "eval": ".agents/skills/m-bedrock-detection-benchmark/EVAL.md",
+      "benchmarkTools": [
+        ".agents/skills/m-bedrock-detection-benchmark/scripts/score-benchmark.mjs",
+        ".agents/skills/m-bedrock-detection-benchmark/scripts/blind-compare.mjs",
+        ".agents/skills/m-bedrock-detection-benchmark/scripts/aggregate-runs.mjs"
+      ]
     },
     "m-bedrock-target-repair": {
       "label": "Target Repair",
@@ -161,8 +167,10 @@
       "mutatesTarget": false
     }
   },
-  "registryRevision": 3,
+  "registryRevision": 4,
   "evalManifest": ".agents/evals/manifest.json",
   "permissionProfiles": ".agents/permissions/lane-permissions.json",
-  "pathAccess": ".agents/permissions/path-access.json"
+  "pathAccess": ".agents/permissions/path-access.json",
+  "securityPolicy": ".agents/references/skill-supply-chain-security.md",
+  "securityScanner": "tooling/repository/skill-security-scan.mjs"
 }
