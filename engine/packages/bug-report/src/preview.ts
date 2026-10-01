@@ -179,20 +179,7 @@ export function renderBugReportPreviewMarkdown(
   preview.bugs.forEach((bug, index) => {
     out.push(
       `| #${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.title)} | ${tableCell(bug.issue)} | ${bug.action ? tableCell(bug.action) : "—"} |`,
-    );
-  });
-
-  out.push(
-    "",
-    "## How to Reproduce the Bug",
-    "",
-    "| No. | Steps |",
-    "|---:|---|",
-  );
-
-  preview.bugs.forEach((bug, index) => {
-    out.push(
-      `| #${index + 1} | ${tableCell(reproductionCell(bug.reproduction))} |`,
+      `|  |  | **How to Reproduce:** ${tableCell(reproductionCell(bug.reproduction))} |  |  |`,
     );
   });
 
