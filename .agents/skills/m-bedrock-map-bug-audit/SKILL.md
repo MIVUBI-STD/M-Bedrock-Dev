@@ -70,12 +70,13 @@ Before claiming `(Latest)`, verify the current Minecraft Education version from 
 
 Do not show Repair By, repair ownership, or Fixed progress during normal bug-finding preview.
 
-Normal ChatGPT preview uses one compact table:
+Normal ChatGPT preview uses one compact two-column table per bug:
 
 ```text
-No. | Severity | Bug | Issue | Solution
-#1  | ...      | ... | ...   | ...
-    |          | Bug Trigger (In-Game): ...
+#1 · BLOCKER | Bug title
+Issue | what is wrong + gameplay impact
+Bug Trigger (In-Game) | exact player actions + visible wrong result
+Solution | supported change
 ```
 
 Rules:
@@ -88,8 +89,8 @@ Rules:
 - if no tester-verifiable in-game path exists yet, keep the finding internal rather than presenting it as a ready bug;
 - do not invent Solution when Suggested Fix is absent;
 - hide fixed bugs unless requested;
-- put `How to Reproduce` immediately below the matching bug row inside the same table;
-- do not create a separate reproduction section or second table;
+- keep each bug in one two-column block;
+- place `Bug Trigger (In-Game)` directly below Issue and above Solution;
 - do not show Expected / Observed / technical fields unless the user requests detail;
 - never expose internal proof plumbing, semantic keys, evidence graph IDs, repair-unit IDs, cache state, or orchestration data in normal report preview;
 - use `full` only when the user asks for root-cause or implementation detail.
