@@ -39,18 +39,15 @@ export function confirmStaticIntentDefectForReport(
     intent,
     result.basisInvariantIds,
   );
-  const designEvidence =
-    result.basisDesignEvidenceIds ?? [];
   const expectedEvidence = [
     ...authoredEvidence,
-    ...designEvidence,
   ];
 
   if (expectedEvidence.length === 0) {
     return {
       confirmed: false,
       reasons: [
-        "Confirmed-defect disposition has no authored invariant or approved Game Design evidence and cannot be promoted as a static contract violation.",
+        "Confirmed-defect disposition has no selected-artifact Gameplay Contract evidence and cannot be promoted.",
       ],
     };
   }
@@ -78,7 +75,7 @@ export function confirmStaticIntentDefectForReport(
     evidence:
       "Static evidence " +
       contradictionEvidence.join(", ") +
-      " contradicts approved intent evidence " +
+      " contradicts selected-artifact contract evidence " +
       expectedEvidence.join(", ") +
       ".",
   });
