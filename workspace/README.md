@@ -53,6 +53,6 @@ Tracked root pointer:
 workspace/drive-root.json
 ```
 
-Per-project exact pointers, when useful, belong only in ignored local state under `workspace/active/<project-id>/state/`.
+Per-project exact map/current-world pointers, when useful, belong only in ignored local state under `workspace/active/<project-id>/state/`.
 
 M-Bedrock does not create Drive-side system folders or store internal engine state in Drive.
