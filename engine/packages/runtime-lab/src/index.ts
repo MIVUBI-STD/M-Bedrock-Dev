@@ -48,3 +48,5 @@ export * from "./live-client-lifecycle.js";
 export * from "./harness-capability-audit.js";
 
 
+
+export * from "./cross-version-differential-plan.js";

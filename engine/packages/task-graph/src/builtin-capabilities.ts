@@ -427,6 +427,17 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "runtime.cross-version-differential-plan",
+      owner: "packages/runtime-lab",
+      pathPrefixes: [
+        "packages/runtime-lab/src/cross-version-differential-plan.ts",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "runtime.record-replay-contract",
       owner: "packages/reliability",
       pathPrefixes: [
