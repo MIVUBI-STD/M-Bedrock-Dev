@@ -31,7 +31,8 @@
     "verify:skill-evals": "node tooling/repository/verify-skill-evals.mjs",
     "audit:skills": "node tooling/repository/skill-security-scan.mjs",
     "capability:truth": "tsx tooling/repository/generate-capability-truth.mjs",
-    "verify:capability-truth": "node tooling/repository/verify-capability-truth.mjs"
+    "verify:capability-truth": "node tooling/repository/verify-capability-truth.mjs",
+    "generate:known-limits": "node tooling/repository/generate-known-limits.mjs"
   },
   "dependencies": {
     "@8crafter/leveldb-zlib": "1.6.0",
