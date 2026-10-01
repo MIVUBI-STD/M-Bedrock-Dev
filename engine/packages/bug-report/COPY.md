@@ -88,7 +88,7 @@ Rules:
 
 Purpose: give a tester who does not read code a short, exact path to **trigger the bug in Minecraft and visibly confirm it**.
 
-For AI-found defects, these steps must come from the evidence-bound `BugTriggerDraft → compileBugTrigger()` path. Do not mechanically translate source-code statements into gameplay instructions.
+For AI-found defects, these steps must come from the evidence-bound `BugTriggerDraft → compileBugTrigger()` path. The draft must declare a gameplay basis supported by matching authored-gameplay or runtime-gameplay evidence. Do not mechanically translate source-code statements into gameplay instructions.
 
 Required structure:
 
