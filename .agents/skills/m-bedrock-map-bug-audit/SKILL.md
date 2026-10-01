@@ -58,6 +58,7 @@ A handoff never executes the next lane automatically.
 - references/finding-contract.md
 - references/manual-checks.md
 - references/known-limits.md
+- references/generated-known-limits.md
 - ../../references/evidence-cost-ladder.md
 
 ## STOP

@@ -2,22 +2,22 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "0b692cd016e810a9a68f7fddee2ee48a0df1c1a8",
+    "commit": "856e5b584d424ba3bfea109ec7527688e771f945",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "f1d0870e",
-    "proofInventoryFingerprint": "de97ed67"
+    "registryFingerprint": "aa84edb1",
+    "proofInventoryFingerprint": "9c6d6cfa"
   },
   "summary": {
-    "taskCapabilities": 46,
-    "ownerTested": 46,
+    "taskCapabilities": 49,
+    "ownerTested": 49,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
-    "analysisCapabilities": 29
+    "analysisCapabilities": 30
   },
   "taskCapabilities": [
     {
@@ -629,15 +629,40 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 50,
-      "testFiles": 23,
+      "sourceFiles": 52,
+      "testFiles": 24,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/bounded-explorer.test.ts",
-        "engine/packages/reliability-search/test/extended-mutations.test.ts",
-        "engine/packages/reliability-search/test/generation-aware.test.ts"
+        "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts",
+        "engine/packages/reliability-search/test/extended-mutations.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "reliability.coverage-quality",
+      "owner": "packages/reliability-search",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 52,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts",
+        "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
+        "engine/packages/reliability-search/test/bounded-explorer.test.ts",
+        "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts",
+        "engine/packages/reliability-search/test/extended-mutations.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
@@ -654,15 +679,15 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 50,
-      "testFiles": 23,
+      "sourceFiles": 52,
+      "testFiles": 24,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/bounded-explorer.test.ts",
-        "engine/packages/reliability-search/test/extended-mutations.test.ts",
-        "engine/packages/reliability-search/test/generation-aware.test.ts"
+        "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts",
+        "engine/packages/reliability-search/test/extended-mutations.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
@@ -679,15 +704,15 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 50,
-      "testFiles": 23,
+      "sourceFiles": 52,
+      "testFiles": 24,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts",
         "engine/packages/reliability-search/test/blindspot-tasks.test.ts",
         "engine/packages/reliability-search/test/bounded-explorer.test.ts",
-        "engine/packages/reliability-search/test/extended-mutations.test.ts",
-        "engine/packages/reliability-search/test/generation-aware.test.ts"
+        "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts",
+        "engine/packages/reliability-search/test/extended-mutations.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
@@ -727,8 +752,33 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": true,
-      "sourceFiles": 33,
-      "testFiles": 29,
+      "sourceFiles": 34,
+      "testFiles": 30,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/packages/runtime-lab/test/action-capability.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-action-registry.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-host.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "runtime.cross-version-differential-plan",
+      "owner": "packages/runtime-lab",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 34,
+      "testFiles": 30,
       "hasReadme": false,
       "proofPaths": [
         "engine/packages/runtime-lab/test/action-capability.test.ts",
@@ -750,8 +800,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": true,
-      "sourceFiles": 33,
-      "testFiles": 29,
+      "sourceFiles": 34,
+      "testFiles": 30,
       "hasReadme": false,
       "proofPaths": [
         "engine/packages/runtime-lab/test/action-capability.test.ts",
@@ -773,8 +823,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": true,
-      "sourceFiles": 33,
-      "testFiles": 29,
+      "sourceFiles": 34,
+      "testFiles": 30,
       "hasReadme": false,
       "proofPaths": [
         "engine/packages/runtime-lab/test/action-capability.test.ts",
@@ -923,8 +973,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -948,8 +998,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -973,8 +1023,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -998,8 +1048,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1023,8 +1073,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1048,8 +1098,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1073,8 +1123,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1098,8 +1148,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1123,8 +1173,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1148,8 +1198,33 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 30,
-      "testFiles": 26,
+      "sourceFiles": 31,
+      "testFiles": 27,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "source.scripts.source-map",
+      "owner": "analyzers/scripts",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 31,
+      "testFiles": 27,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1640,6 +1715,24 @@
         "reward",
         "state",
         "world-mutation"
+      ]
+    },
+    {
+      "id": "script-source-map-binding",
+      "evidenceLevel": "static",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "script",
+        "source-map",
+        "bundle",
+        "source-recovery"
       ]
     },
     {
