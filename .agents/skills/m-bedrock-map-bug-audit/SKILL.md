@@ -95,6 +95,43 @@ Validate against `../../schemas/map-audit-output.schema.json`.
 
 Normal preview: Blocker/Major only, player-facing Issue + Bug Trigger. Keep the per-surface accounting internal unless the user asks for audit completeness/detail.
 
+### Chat output contract
+
+Default user-facing audit output is intentionally minimal.
+
+Show **only confirmed Blocker/Major defects**. For each defect, output exactly:
+
+```text
+[Severity]
+
+Issue:
+<player-facing failure>
+
+Bug Trigger:
+<concise tester-verifiable trigger>
+```
+
+Do not expose by default:
+- checked/normal gameplay surfaces;
+- rejected candidates;
+- ambiguous-intent candidates;
+- insufficient-evidence candidates;
+- runtime-proof residue;
+- detection gaps;
+- metadata-only/non-gameplay defects;
+- coverage statistics;
+- internal proof bookkeeping;
+- candidate IDs;
+- analyzer reasoning or discovery notes.
+
+If no reportable Blocker/Major defect is confirmed, output only:
+
+```text
+No Blocker/Major bugs confirmed.
+```
+
+Expose internal audit detail only when the user explicitly asks for audit completeness, technical evidence, or debugging detail.
+
 ## Handoff
 
 - detection gap → `m-bedrock-detection-development`
