@@ -22,10 +22,7 @@ function reclassification(
       subjectIds: ["arena"],
       basisInvariantIds: ["inv"],
       evidenceIds: ["e"],
-      nextEvidenceNeed:
-        disposition === "probable-defect"
-          ? "authored-intent"
-          : "none",
+      nextEvidenceNeed: "none",
       reasons: [],
     },
     matchedPredicates: {
@@ -77,6 +74,10 @@ describe("reclassified repair entry gate", () => {
       reclassification("confirmed-defect"),
       repair("repair-eligible"),
       integrity,
+      {
+        approvedBug: true,
+        preservationContractReady: true,
+      },
     );
 
     expect(result.disposition).toBe("admit");
@@ -87,6 +88,10 @@ describe("reclassified repair entry gate", () => {
       reclassification("confirmed-defect"),
       repair("guarded-repair-eligible"),
       integrity,
+      {
+        approvedBug: true,
+        preservationContractReady: true,
+      },
     );
 
     expect(result.disposition).toBe(
@@ -94,16 +99,15 @@ describe("reclassified repair entry gate", () => {
     );
   });
 
-  it("keeps probable defects proposal-only", () => {
+  it("blocks confirmed defects before chat approval", () => {
     const result = decideReclassifiedRepairEntry(
-      reclassification("probable-defect"),
+      reclassification("confirmed-defect"),
       repair("repair-eligible"),
       integrity,
     );
 
-    expect(result.disposition).toBe(
-      "proposal-only",
-    );
+    expect(result.disposition).toBe("blocked");
+    expect(result.reasons.join(" ")).toMatch(/Approved Bug/);
   });
 
   it("blocks designed behavior from mutation", () => {
@@ -111,6 +115,10 @@ describe("reclassified repair entry gate", () => {
       reclassification("designed-behavior"),
       repair("repair-eligible"),
       integrity,
+      {
+        approvedBug: true,
+        preservationContractReady: true,
+      },
     );
 
     expect(result.disposition).toBe("blocked");
