@@ -163,6 +163,6 @@ describe("GitHubBugReportStore", () => {
         report(),
         "abc",
       ),
-    ).rejects.toThrow(/inside workspace/reports/);
+    ).rejects.toThrow("inside workspace/reports/");
   });
 });
