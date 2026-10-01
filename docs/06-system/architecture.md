@@ -40,13 +40,7 @@ observed
 intervention-supported
 ```
 
-Current Minecraft overlays are deliberately bound as:
-
-```text
-project-policy / designed
-```
-
-They are specifications to test, not claims that the engine has already been proven to behave that way.
+Designed Minecraft overlays are bound to explicit Map Game Design or authored Behavior Contracts. They are specifications to test, not claims that the engine has already been proven to behave that way.
 
 A provenance audit reports unbound claims rather than silently accepting them.
 

@@ -9,7 +9,7 @@ This document defines repository-wide canonical terminology.
 | Map Game Design | What a specific map/mode is supposed to do | `workspace/active/<project-id>/design/game-design.json` |
 | Design System | Schema, vocabulary, templates, compiler for Game Design | `engine/design/` |
 | Game Design Spec | Typed model/loader/compiler package | `engine/packages/game-design-spec/` |
-| Platform Knowledge | Descriptive Minecraft Bedrock/Education facts | `engine/knowledge/` |
+| Platform Knowledge | Descriptive Minecraft Bedrock/Education facts | `engine/knowledge/` + `engine/packages/knowledge/` |
 | Platform Rule | Executable/versioned capability decision | `engine/rules/` |
 | Behavior Contract | Target-specific authored runtime constraints | `engine/packages/behavior-model/` + inspection target |
 | Engineering Contract | Global MIVUBI implementation/validation constraints | `engine/contracts/engineering/` |
@@ -18,16 +18,37 @@ This document defines repository-wide canonical terminology.
 | Engineering Assessment | Canonical QA/engineering projection | orchestrator `engineeringAssessment` |
 | Runtime Evidence | What was observed in Minecraft/runtime | runtime/telemetry/probe layers |
 
+## Filesystem disambiguation
+
+Several domains intentionally have a data/source owner and a reusable typed package. When referring to them in prose, use the qualified term rather than the bare folder name.
+
+| Qualified term | Responsibility | Path |
+|---|---|---|
+| Platform Knowledge Catalog | versioned evidence-backed Minecraft facts/data | `engine/knowledge/` |
+| Platform Knowledge Package | claim loading, applicability, freshness, typed knowledge contracts | `engine/packages/knowledge/` |
+| Reliability Catalog/History | durable regression, update, capability, and campaign evidence | `engine/reliability/` |
+| Reliability Package | reusable reliability models, invariants, fingerprints, and retest contracts | `engine/packages/reliability/` |
+| Reliability Search Package | bounded search, interleavings, minimization, and detector-quality strategy | `engine/packages/reliability-search/` |
+| Diagnostics Analyzer | derives findings from supported analyzer facts | `engine/analyzers/diagnostics/` |
+| Diagnostics Contract Package | stable diagnostic contracts and identifiers | `engine/packages/diagnostics/` |
+| Gameplay Intent Analyzer | extracts intent signals from authored source evidence | `engine/analyzers/gameplay-intent/` |
+| Gameplay Intent Package | typed evidence-backed intent model and grounding rules | `engine/packages/gameplay-intent/` |
+| Runtime Harness | bounded Minecraft-facing proof harness content | `engine/runtime/` |
+| Runtime Lab Package | controlled experiment contracts, trials, qualification, and provenance | `engine/packages/runtime-lab/` |
+
+These paired owners are not aliases. One owns concrete data/extraction/harness material; the package owner owns reusable typed behavior or contracts.
+
 ## Forbidden ambiguous canonical names
 
 Do not introduce new canonical owners/files/types using:
+
 - `project-policy`;
 - generic `policy` for Behavior Contracts or Engineering Contracts;
 - `game-design` as an engine-global authority directory/package;
 - `gameplayWorld` as a new primary consumer model;
 - `player-experience`, `entity-systems`, `arena-gameplay`, or `world-runtime` as knowledge-domain folders.
 
-Legacy aliases may remain only when marked deprecated and must resolve to one canonical owner.
+Legacy aliases may remain only when explicitly marked deprecated and resolving to one canonical owner.
 
 ## Decision rule
 

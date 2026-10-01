@@ -26,14 +26,18 @@ They do not mutate working files and do not own package transport.
 - Prefer incremental/change-scoped analysis over global rescans.
 - Keep parser syntax ownership separate from diagnostics policy.
 
-## Domain owners
+## Analyzer classification authority
+
+`engine/analyzers/ownership.json` is the machine-readable authority for analyzer-group membership.
+
+Its current groups are:
 
 ```text
-discovery    → cheap file/path/content candidates
-manifest     → manifest normalization
-functions    → function source + function-level references
-commands     → command effects / coordinate syntax
-references   → semantic target resolution
-diagnostics  → findings derived from supported facts
-topology     → coordinate context / repeated spatial/state topology
+ingest
+authored-logic
+gameplay
+resolution
+diagnostics
 ```
+
+Do not duplicate the complete analyzer inventory here. Use the nearest analyzer package `README.md`/source entrypoint plus `docs/06-system/implementation-map.md` when exact ownership is needed.
