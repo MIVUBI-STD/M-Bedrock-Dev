@@ -1,4 +1,7 @@
 import type {
+  GameplayDesignReadinessResult,
+} from "../../gameplay-intent/src/index.js";
+import type {
   DiagnosticEvidenceObservation,
   DiagnosticEvidenceState,
 } from "./types.js";
@@ -27,6 +30,8 @@ export interface GameplayBugCandidateRule {
 
 export type GameplayBugCandidateEvidenceDisposition =
   | "candidate"
+  | "design-readiness-missing"
+  | "design-blocked"
   | "suppressed-by-counter-evidence"
   | "counter-evidence-unresolved"
   | "no-player-impact"
@@ -72,7 +77,41 @@ function evidenceId(
 export function evaluateGameplayBugCandidateEvidence(
   rule: GameplayBugCandidateRule,
   evidence: readonly DiagnosticEvidenceObservation[],
+  designReadiness?: GameplayDesignReadinessResult,
 ): GameplayBugCandidateEvidenceResult {
+  if (designReadiness === undefined) {
+    return {
+      ruleId: rule.id,
+      kind: rule.kind,
+      disposition: "design-readiness-missing",
+      supportingEvidenceIds: [],
+      playerImpactEvidenceIds: [],
+      counterEvidenceIds: [],
+      unresolvedCounterPredicates: [],
+      missingPredicates: [],
+      reasons: [
+        "Gameplay bug candidate discovery requires an explicit Game Design readiness result.",
+      ],
+    };
+  }
+
+  if (designReadiness.disposition === "blocked") {
+    return {
+      ruleId: rule.id,
+      kind: rule.kind,
+      disposition: "design-blocked",
+      supportingEvidenceIds: [],
+      playerImpactEvidenceIds: [],
+      counterEvidenceIds: [],
+      unresolvedCounterPredicates: [],
+      missingPredicates: [],
+      reasons: [
+        ...designReadiness.reasons,
+        "Do not search for gameplay defects in a scope whose material design intent is unresolved.",
+      ],
+    };
+  }
+
   const byPredicate = latestEvidence(evidence);
 
   const counterEvidenceIds: string[] = [];
