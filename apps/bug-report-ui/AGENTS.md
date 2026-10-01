@@ -14,9 +14,9 @@ The UI is a projection of canonical Bug Report V2, not a second report system.
 
 - Reuse shared bug-report projection helpers when a signal already exists there.
 - Do not duplicate severity counts, ordering rules, or preview semantics locally.
-- Keep Issue, Bug Trigger (In-Game), and supported Solution visible before secondary metadata.
+- Keep Issue, Bug Trigger (In-Game), and supported Solution visible before secondary metadata or technical detail.
 - Category and Found By are secondary.
-- Hide fixed bugs by default when open bugs exist.
+- Exclude fixed bugs from the primary audit surface.
 - Bug Trigger (In-Game) must be player-facing and code-free.
 - Omit empty sections.
 - Do not expose diagnostic internals.
