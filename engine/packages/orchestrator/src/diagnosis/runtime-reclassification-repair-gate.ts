@@ -9,8 +9,12 @@ import type {
 export type ReclassifiedRepairEntryDisposition =
   | "admit"
   | "guarded-admit"
-  | "proposal-only"
   | "blocked";
+
+export interface ReclassifiedRepairWorkflowAuthority {
+  readonly approvedBug: boolean;
+  readonly preservationContractReady: boolean;
+}
 
 export interface ReclassifiedRepairEntryDecision {
   disposition: ReclassifiedRepairEntryDisposition;
@@ -25,6 +29,7 @@ export function decideReclassifiedRepairEntry(
   reclassification: RuntimeIntentDiagnosticReclassification,
   diagnostic: DiagnosticRepairDecision,
   integrity?: RuntimeEvidenceIntegrityReport,
+  workflowAuthority?: ReclassifiedRepairWorkflowAuthority,
 ): ReclassifiedRepairEntryDecision {
   const base = {
     diagnosticDisposition:
@@ -32,17 +37,6 @@ export function decideReclassifiedRepairEntry(
     repairDisposition:
       diagnostic.disposition,
   } as const;
-
-  if (reclassification.disposition === "probable-defect") {
-    return {
-      ...base,
-      disposition: "proposal-only",
-      reasons: [
-        "Runtime evidence supports a probable defect, but intent is inferred rather than authored.",
-        "Mutation is withheld until the intent contract is strong enough for confirmation.",
-      ],
-    };
-  }
 
   if (
     reclassification.disposition !== "confirmed-defect"
@@ -103,6 +97,19 @@ export function decideReclassifiedRepairEntry(
       reasons: [
         "Runtime evidence is not temporally complete enough for automatic repair admission.",
         ...integrity.reasons,
+      ],
+    };
+  }
+
+  if (
+    workflowAuthority?.approvedBug !== true ||
+    workflowAuthority.preservationContractReady !== true
+  ) {
+    return {
+      ...base,
+      disposition: "blocked",
+      reasons: [
+        "Approved Bug and Repair Contract are required before repair entry.",
       ],
     };
   }
