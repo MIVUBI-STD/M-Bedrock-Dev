@@ -77,10 +77,10 @@ For one selected bug, use this order:
 ```text
 Severity + ID + Title
 Issue
+Bug Trigger (In-Game)
 Solution when supported
 Expected
 Observed
-Bug Trigger
 Technical Analysis
 Relevant Code
 Must Preserve
@@ -92,7 +92,7 @@ Omit empty fields.
 
 ### summary
 
-Use the same two-column bug blocks, but omit Solution when the user asks only for issue discovery.
+Use the same two-column bug blocks. Bug Trigger (In-Game) remains visible because tester verification is part of the bug-finding handoff. Solution may be omitted when the user asks only for issue discovery.
 
 ### standard — default
 
