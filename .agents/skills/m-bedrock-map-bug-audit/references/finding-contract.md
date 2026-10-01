@@ -2,7 +2,19 @@
 
 Used by **Map Bug Audit**.
 
-Every candidate must record:
+Before any candidate exists, record:
+
+```text
+Target identity / map version
+Game Design authority
+Gameplay Contract scope
+Design readiness: READY | PARTIAL | BLOCKED
+Material unknowns, if any
+```
+
+Only READY or scoped-safe PARTIAL may enter candidate discovery.
+
+Every candidate must then record:
 
 ```text
 Candidate ID / subject
@@ -22,7 +34,7 @@ Detection Gap or runtime residue, if any
 
 ## Required decision order
 
-Intent/design → player-visible consequence → tester-verifiable trigger → defect disposition → severity.
+Game Design → Gameplay Contract → design readiness → actual behavior contradiction → counter-evidence → player-visible consequence → tester-verifiable trigger → defect disposition → severity.
 
 Do not severity-score a candidate before the first three gates are resolved.
 
