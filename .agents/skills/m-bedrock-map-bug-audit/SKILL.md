@@ -75,6 +75,35 @@ Counter-evidence handling is fail-closed:
 
 A candidate must still pass intent, player-impact, and in-game-trigger gates before becoming tester-facing.
 
+## Chat approval boundary
+
+Normal map audit delivery stops for review before artifact generation.
+
+```text
+candidate discovery
+→ intent / counter-evidence / player-impact gates
+→ Proposed Bug Set
+→ chat discussion
+→ explicit approve / reject / needs-discussion
+→ Approved Bug Set
+→ canonical Bug Report V2
+→ HTML
+```
+
+Rules:
+
+- present Blocker/Major proposed bugs first;
+- Issue wording stays player-facing;
+- show contract violated, not internal proof plumbing;
+- optionally show Suppressed as Game Design and Needs Discussion when they materially help review;
+- a missing decision blocks publication;
+- needs-discussion blocks publication;
+- rejected bugs never enter Bug Report V2;
+- if no bugs are approved, do not create HTML;
+- do not regenerate HTML during discussion; publish once after approval.
+
+Use projectProposedBugSet(), applyProposedBugReview(), and buildBugReportFromApprovedBugSet() for the normal approval-gated route.
+
 ## Severity
 
 Severity is based on player consequence and recovery, not technical complexity.

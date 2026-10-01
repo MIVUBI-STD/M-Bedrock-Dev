@@ -76,3 +76,29 @@ Blocker → Major → Minor (when explicitly included) → Bug ID
 - HTML client output: `tooling/bug-report-documents/render.ts`.
 
 Preview never invents or repairs facts.
+
+## Proposed Bug Set review
+
+Before canonical Bug Report V2 or HTML exists, discuss the proposed set in chat.
+
+Use a compact review table:
+
+```text
+Proposed Bugs
+# | Severity | Player Issue | Contract Violated | Decision
+```
+
+Keep the review focused on player-visible Blocker/Major candidates. Do not show technical root-cause detail unless requested.
+
+When useful, show two short companion sections:
+
+- Suppressed as Game Design — candidates rejected because current intent explicitly permits the behavior.
+- Needs Discussion — only material intent or evidence ambiguity that blocks a responsible decision.
+
+Review decisions are explicit:
+
+- approve — enters the approved bug set;
+- reject — excluded, with concise reason;
+- needs-discussion — blocks publication until resolved.
+
+Do not generate canonical Bug Report V2 or HTML while any proposed bug has no decision or remains needs-discussion. If all proposed bugs are rejected, stop without generating a report artifact.

@@ -736,3 +736,25 @@ PostRepairClosureReceipt
 ```
 
 `verify-repair` differential inspection is not sufficient for this transition.
+
+## Chat review boundary
+
+Normal production flow is approval-gated:
+
+```text
+confirmed gameplay defects
+→ projectProposedBugSet()
+→ chat discussion
+→ approve / reject / needs-discussion
+→ applyProposedBugReview()
+→ ApprovedBugSet
+→ buildBugReportFromApprovedBugSet()
+→ canonical Bug Report V2
+→ HTML
+```
+
+Bug Report V2 is created only after review has no unresolved discussion items. Rejected items do not enter the canonical report. If no bugs are approved, no report artifact should be generated.
+
+The review set is derived and temporary. It is not another persistent bug database or report schema.
+
+The low-level direct confirmed-defect projection remains for internal compatibility only. Normal user-facing production must use the approved-set path.
