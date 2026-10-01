@@ -101,7 +101,8 @@ AI-discovered defects do not author canonical `reproduction[]` directly.
 The AI report route uses an evidence-bound `BugTriggerDraft`:
 
 ```text
-startingCondition
+gameplayBasis
++ startingCondition
 + player actions
 + observableFailure
 + evidenceIds
@@ -112,7 +113,11 @@ startingCondition
 Rules:
 
 - the compiler only formats facts supplied to it; it does not infer missing gameplay steps;
+- `gameplayBasis` is explicit: `authored-gameplay`, `runtime-gameplay`, or `tester-gameplay`;
+- static AI trigger authoring may use only `authored-gameplay`;
+- runtime AI trigger authoring may use `authored-gameplay` or `runtime-gameplay`;
 - `evidenceIds` must belong to the same confirmed-defect evidence universe;
+- at least one trigger evidence ID must support the declared gameplay basis: Expected/authored evidence for `authored-gameplay`, Observed/runtime evidence for `runtime-gameplay`;
 - if the gameplay start state, action path, or visible failure is not grounded, leave Bug Trigger unavailable;
 - an AI defect may remain confirmed internally while `nextEvidenceNeed = tester-reproduction`;
 - raw AI `reproduction[]` is not an accepted authoring path;
