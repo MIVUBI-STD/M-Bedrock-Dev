@@ -136,6 +136,12 @@ ownership ambiguity          → m-bedrock-cross-owner-routing
 
 Keep one lane active. A detection gap found during Map Audit is recorded and handed off; it does not implicitly switch the current task into development.
 
+## Permission preflight
+
+For any planned write, external-network action, dependency installation, or LOCAL/LIVE Minecraft interaction inside a work lane, evaluate the action against `.agents/permissions/evaluate-lane-permission.mjs` first.
+
+`allow` permits only that planned action. `ask` requires explicit approval/context escalation. `deny` is terminal for that action and cannot be bypassed by consulting another skill.
+
 ## Evidence-first mutation
 
 ```text

@@ -40,3 +40,17 @@ Canonical routing is owned by `../docs/06-system/skill-routing.md`.
 - `SKILL.md` owns the detailed procedure;
 - every skill folder must appear exactly once in the registry;
 - adding a skill without registry ownership is forbidden.
+
+
+## Permission preflight
+
+Before a work lane performs a write, network action, package/dependency action, or local/live runtime interaction, evaluate the planned action with:
+
+`.agents/permissions/evaluate-lane-permission.mjs`
+
+Decisions:
+- `allow` — action is inside the lane contract;
+- `ask` — explicit approval/runtime escalation is required;
+- `deny` — action violates the active lane and must not proceed.
+
+Domain-specialist consultation never expands the active lane's permission boundary.

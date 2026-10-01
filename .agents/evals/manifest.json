@@ -7,5 +7,7 @@
   "qualityModel": ".agents/references/detector-quality-metrics.md",
   "agentRunSchema": ".agents/schemas/agent-eval-runs.schema.json",
   "agentEvalScorer": "tooling/repository/score-agent-eval.mjs",
-  "note": "Model/provider execution is external; scorer consumes provider-neutral repeated run receipts."
+  "note": "Model/provider execution is external; scorer consumes provider-neutral repeated run receipts.",
+  "permissionCorpus": ".agents/evals/permission-cases.json",
+  "permissionEvaluator": ".agents/permissions/evaluate-lane-permission.mjs"
 }

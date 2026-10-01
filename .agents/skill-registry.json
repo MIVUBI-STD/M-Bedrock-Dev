@@ -167,12 +167,26 @@
       "mutatesTarget": false
     }
   },
-  "registryRevision": 5,
+  "registryRevision": 6,
   "evalManifest": ".agents/evals/manifest.json",
   "permissionProfiles": ".agents/permissions/lane-permissions.json",
   "pathAccess": ".agents/permissions/path-access.json",
   "securityPolicy": ".agents/references/skill-supply-chain-security.md",
   "securityScanner": "tooling/repository/skill-security-scan.mjs",
   "permissionEvaluator": ".agents/permissions/evaluate-lane-permission.mjs",
-  "permissionEvalCorpus": ".agents/evals/permission-cases.json"
+  "permissionEvalCorpus": ".agents/evals/permission-cases.json",
+  "permissionSemantics": {
+    "decisions": [
+      "allow",
+      "ask",
+      "deny"
+    ],
+    "preflightRequiredFor": [
+      "write",
+      "external-network",
+      "dependency-change",
+      "LOCAL_MINECRAFT",
+      "LIVE_MINECRAFT"
+    ]
+  }
 }

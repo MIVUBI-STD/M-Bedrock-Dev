@@ -157,8 +157,19 @@ if(!existsSync(registryPath)){
     }
   }
 
-  for(const field of ["permissionProfiles","pathAccess","securityPolicy","securityScanner","evalManifest"]){
+  for(const field of ["permissionProfiles","pathAccess","permissionEvaluator","permissionEvalCorpus","securityPolicy","securityScanner","evalManifest"]){
     if(typeof registry[field]!=="string" || !existsSync(registry[field])) failures.push("Skill registry "+field+" missing/not found.");
+  }
+
+  const evalManifest =
+    typeof registry.evalManifest === "string" &&
+    existsSync(registry.evalManifest)
+      ? JSON.parse(readFileSync(registry.evalManifest,"utf8"))
+      : undefined;
+  for(const field of ["agentRunSchema","agentEvalScorer"]){
+    if(typeof evalManifest?.[field]!=="string" || !existsSync(evalManifest[field])){
+      failures.push("Skill eval manifest "+field+" missing/not found.");
+    }
   }
 
   const benchmark=registry.workLanes?.["m-bedrock-detection-benchmark"];

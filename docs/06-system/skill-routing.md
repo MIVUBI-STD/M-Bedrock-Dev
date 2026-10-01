@@ -147,3 +147,23 @@ make bug finding smarter/more accurate
 ```
 
 Read `skill-contract.md` for the mandatory lane structure.
+
+
+## Permission preflight
+
+Work-lane routing and mutation authority are separate decisions.
+
+Before write/network/live execution:
+
+```text
+active lane
+→ planned action + resource/path
+→ lane permission preflight
+→ allow / ask / deny
+```
+
+- `allow`: continue within the active lane.
+- `ask`: obtain the required explicit approval or execution-context escalation.
+- `deny`: stop that action; do not switch lanes implicitly.
+
+A domain specialist cannot override a denied lane permission.
