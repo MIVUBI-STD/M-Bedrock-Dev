@@ -107,6 +107,39 @@ Once selected, the work lane remains active until its STOP or explicit handoff. 
 
 Generic Product Development has no detection-lane skill: use the normal development execution contract and canonical semantic owner unless the requested capability specifically improves bug detection/diagnosis/proof.
 
+## Design-first gameplay workflow
+
+Gameplay bug work is design-first. Do not begin bug discovery from suspicious implementation patterns.
+
+```text
+Target Identity
+→ Game Design
+→ Gameplay Contract
+→ Actual Behavior
+→ Gameplay Contradiction
+→ Bug Candidate
+→ Counter-Evidence / Player Impact / Trigger
+→ Proposed Bug Set
+→ Chat Approval
+→ Approved Bug
+→ Repair Contract
+→ Repair
+→ Verification against Game Design
+```
+
+Rules:
+
+- recover current approved map Game Design before gameplay bug discovery;
+- Gameplay Contract is the normalized working understanding of approved design, not a second authority;
+- derived understanding stays temporary unless the user explicitly approves it into map Game Design;
+- material design unknowns block bug classification for their scope;
+- implementation/source code proves actual behavior, never intended gameplay by itself;
+- no Approved Bug → no bug repair;
+- no preservation contract → no target mutation for bug repair;
+- repair verification proves both defect removal and preservation of approved gameplay.
+
+Intentional modification is separate from bug repair and may change Game Design first.
+
 ## Skill routing
 
 Choose a **work lane first**:
