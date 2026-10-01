@@ -10,159 +10,56 @@ description: >
 
 ## Purpose
 
-Use current stable capabilities to find and classify gameplay-relevant defects in a Minecraft Bedrock/Education map.
-
-This lane consumes analyzers, Platform Knowledge, Platform Rules, Map Game Design, Behavior Contracts, package/runtime evidence, and tester evidence. It does not improve those capabilities during the audit.
+Use current stable detection capability to classify map-specific gameplay candidates without changing the detector.
 
 ## Entry criteria
 
-Use this lane when the requested outcome is a map-specific answer such as:
-
-- find bugs;
-- retest a map;
-- explain a suspected gameplay issue;
-- classify Blocker/Major/Minor defects;
-- compare observed behavior with intended map behavior.
-
-A map/artifact may be incomplete. That does not justify switching to development.
+Use for bug finding, retest, suspected gameplay issues, or Blocker/Major/Minor classification on a target map.
 
 ## Allowed actions
 
-- inspect artifact identity and target profile;
-- reconstruct Map Game Design / Gameplay Intent;
-- run current static/native/runtime analyzers;
-- consult Platform Knowledge / Rules;
-- compare current Behavior Contracts;
+- inspect target identity/design/intent/evidence;
+- run existing analyzers and current Platform Knowledge / Rules;
+- compare Behavior Contracts;
 - classify findings and proof ceilings;
-- record manual checks and known limits;
-- emit a detection-gap handoff.
+- emit detection-gap or runtime/manual residue.
 
 ## Forbidden actions
 
-- modify parser/analyzer/knowledge/rule/proof capability;
-- add fixtures for a new detector while audit is active;
-- change expected behavior to make a finding disappear;
+- change detection capability;
 - mutate the original artifact;
-- treat unsupported analysis as a defect;
-- silently switch into Detection Development.
+- convert unsupported analysis into a defect;
+- silently switch to Detection Development.
 
-## Audit pipeline
+## Workflow
 
-```text
-Artifact identity / target profile
-→ Map Game Design + authored intent
-→ relevant static/source/native evidence
-→ Platform Knowledge / Rules
-→ Behavior Contract comparison
-→ package/runtime evidence when available
-→ defect classification
-→ report
-→ STOP
-```
+Expected behavior authority → cheapest sufficient evidence → actual behavior/effect → compare → disposition → severity if defect → residue/handoff.
 
-## Finding dispositions
-
-Every investigated candidate ends in exactly one disposition:
-
-- `defect`
-- `designed-behavior`
-- `ambiguous-intent`
-- `insufficient-evidence`
-- `runtime-proof-required`
-- `detection-gap`
-
-Do not convert `detection-gap` into a defect.
-
-## Defect severity
-
-Use Bug Report severity only for sufficiently grounded defects:
-
-- **Blocker** — blocks game/progression or makes intended gameplay impossible.
-- **Major** — materially disrupts gameplay or core flow.
-- **Minor** — limited disruption while viable intended flow remains.
-
-Detection-development priority is a separate concept.
+Use the evidence ladder in ../../references/evidence-cost-ladder.md; do not escalate evidence cost without need.
 
 ## Output contract
 
-For every in-scope candidate record:
+Validate structured output against ../../schemas/map-audit-output.schema.json.
 
-```text
-Candidate
-Disposition
-Expected behavior authority
-Observed/static evidence
-Platform fact/rule used
-Proof ceiling
-Bug severity (defect only)
-Uncertainty / residue
-Next owner (only when needed)
-```
+Optional deterministic validation: node scripts/validate-output.mjs audit.json
 
-## Capability-gap handoff
-
-When M-Bedrock-Dev cannot reliably inspect the claim, emit:
-
-```text
-Detection Gap
-- unsupported claim/evidence
-- seed artifact/reference
-- smallest reproduction
-- current proof ceiling
-- likely canonical owner
-- audit impact
-- manual fallback, if any
-```
-
-Then STOP that claim.
-
-A detection gap may start a separate `m-bedrock-detection-development` run later. It never changes the active lane automatically.
-
-## Manual checks and known limits
-
-Read only when relevant:
-
-- `references/manual-checks.md`
-- `references/known-limits.md`
-
-Manual checks are explicit higher-cost/human/runtime residues, not hidden analyzer behavior.
-
-## Domain specialist routing
-
-- artifact/container/world extraction → `m-bedrock-artifact-engineering`
-- source/commands/references/semantic derivation → `m-bedrock-content-analysis`
-- version/edition/Script API capability → `m-bedrock-compatibility`
-- proven target defect requiring mutation → hand off to `m-bedrock-repair-engineering`
-
-## Proof ceiling
-
-Use exactly:
-
-`STATIC VERIFIED / PACKAGE VERIFIED / LOCAL GAME VERIFIED / LIVE GAME VERIFIED / UNKNOWN`.
-
-Static/package evidence never becomes runtime proof by wording.
+Every candidate must end in one disposition: defect, designed-behavior, ambiguous-intent, insufficient-evidence, runtime-proof-required, or detection-gap.
 
 ## Handoff
 
-Audit may hand off to:
+- detection-gap → record handoff for m-bedrock-detection-development;
+- grounded target defect requiring mutation → m-bedrock-target-repair;
+- runtime-only residue → explicit manual/runtime validation.
 
-- Detection Development for `detection-gap`;
-- Target Repair for a reproduced defect;
-- runtime/manual validation for `runtime-proof-required`.
+A handoff never executes the next lane automatically.
 
-Do not perform the handed-off work inside this lane.
+## Reference routing
+
+- references/finding-contract.md
+- references/manual-checks.md
+- references/known-limits.md
+- ../../references/evidence-cost-ladder.md
 
 ## STOP
 
 Stop when every in-scope candidate has a disposition, proof ceiling, severity when applicable, and explicit residue/handoff.
-
-
-## Reference routing
-
-Load only when relevant:
-
-- `references/finding-contract.md` — candidate disposition and evidence fields;
-- `references/manual-checks.md` — explicit manual/live-runtime residues;
-- `references/known-limits.md` — current detector limits and fallback shape.
-
-Do not read all references by default.

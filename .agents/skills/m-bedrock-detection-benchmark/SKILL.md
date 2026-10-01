@@ -10,84 +10,49 @@ description: >
 
 ## Purpose
 
-Measure bug-detection correctness and coverage against frozen expectations.
-
-This lane does not modify production capability and does not deliver a production-map Bug Report.
+Measure detector correctness and proof coverage against frozen expectations without changing production capability.
 
 ## Entry criteria
 
-Use when there is a frozen fixture/corpus expectation or a Detection Capability Delta requiring verification.
+Use when a frozen fixture/corpus expectation exists or a Detection Capability Delta needs evaluation.
 
 ## Allowed actions
 
 - execute current detection capability;
-- compare expected and observed results;
-- measure false positives / false negatives;
-- measure semantic/proof coverage;
-- preserve known expected failures;
-- measure execution/context/token cost when useful.
+- compare expected vs observed;
+- classify FP/FN/semantic/proof mismatches;
+- measure precision/recall, evidence tier, cost, and regression state.
 
 ## Forbidden actions
 
-- modify production analyzer/rule/knowledge code;
-- modify the target map;
-- rewrite expectations to match current output;
-- treat benchmark findings as production Bug Report findings;
-- silently start Detection Development.
+- modify production detector code;
+- modify target maps;
+- rewrite expectations to fit output;
+- turn benchmark results into production Bug Report findings.
 
-## Benchmark pipeline
+## Workflow
 
-```text
-Frozen fixture/corpus expectation
-→ execute current capability
-→ compare
-→ classify mismatch
-→ coverage/regression summary
-→ development handoff if needed
-→ STOP
-```
-
-## Result classes
-
-- `pass`
-- `false-negative`
-- `false-positive`
-- `semantic-mismatch`
-- `evidence-insufficient`
-- `runtime-proof-required`
-- `fixture-invalid`
+Frozen expectation → current detector → compare → result class → quality metrics → bounded development handoff if needed.
 
 ## Output contract
 
-```text
-Benchmark Result
-Fixture/corpus identity
-Frozen expectation
-Observed result
-Result class
-Detection coverage
-Proof coverage
-Regression status
-Performance/context note (optional)
-Development handoff (optional)
-```
+Validate/score against ../../schemas/benchmark-result.schema.json.
+
+Run: node scripts/score-benchmark.mjs result.json
+
+Result classes: pass, false-negative, false-positive, semantic-mismatch, evidence-insufficient, runtime-proof-required, fixture-invalid.
 
 ## Handoff
 
-A reusable mismatch may hand off to `m-bedrock-detection-development`.
-
-Benchmark never automatically resumes Map Bug Audit.
-
-## STOP
-
-Stop after the frozen expectation has a result class and any reusable mismatch has a bounded handoff.
-
+Reusable mismatch → bounded handoff to m-bedrock-detection-development. Never auto-resume Map Bug Audit.
 
 ## Reference routing
 
-Load only when relevant:
+- references/benchmark-expectation.md
+- references/corpus-rules.md
+- ../../references/detector-quality-metrics.md
+- ../../references/evidence-cost-ladder.md
 
-- `references/benchmark-expectation.md` — frozen expectation format and mismatch interpretation;
-- `references/corpus-rules.md` — corpus validity, privacy, and regression stability.
+## STOP
 
-Benchmark references define evaluation only; they do not authorize production changes.
+Stop once the frozen expectation has a result class, quality metrics, and bounded handoff/residue.

@@ -10,51 +10,46 @@ description: >
 
 ## Purpose
 
-Change the target map/source working copy after an evidence-backed defect or explicit intentional modification.
-
-This lane repairs the target. It does not improve M-Bedrock-Dev detection capability.
+Mutate only the target working copy after an evidence-backed defect or explicit modification request.
 
 ## Entry criteria
 
-Require either:
-
-- reproduced / sufficiently grounded defect; or
-- explicit intentional modification request.
+Require grounded diagnosis or explicit intentional modification.
 
 ## Allowed actions
 
-- identify smallest target owner and affected scope;
-- create explicit patch transaction;
+- identify smallest target owner/scope;
+- create preconditioned patch transaction;
 - mutate working copy only;
-- enforce fingerprint/text/semantic preconditions;
 - preserve rollback state;
 - reparse/rebuild affected semantic branches;
-- rerun the diagnostic/check that justified repair.
+- rerun the check that justified the repair.
 
 ## Forbidden actions
 
-- mutate original source artifact;
-- improve analyzers/knowledge/rules/proof harness;
-- use repair as proof that diagnosis was correct;
-- widen scope into unrelated cleanup.
+- mutate original source;
+- improve detection capability;
+- use successful mutation as proof diagnosis was correct;
+- widen into unrelated cleanup.
+
+## Workflow
+
+Grounded defect/intent → smallest target owner → patch transaction → preconditions → atomic working-copy mutation → affected verification → runtime residue.
 
 ## Output contract
 
-```text
-Target Repair
-Defect/intent reference
-Target owner
-Patch transaction
-Preconditions
-Changed semantic surface
-Static/package verification
-Runtime residue
-```
+Validate against ../../schemas/target-repair-output.schema.json.
+
+Run: node scripts/validate-output.mjs repair.json
 
 ## Handoff
 
-Detection capability gaps go to `m-bedrock-detection-development` as a separate lane.
+Detection weakness discovered during repair → separate m-bedrock-detection-development handoff.
+
+## Reference routing
+
+Use repository repair semantics and ../../references/evidence-cost-ladder.md only as needed.
 
 ## STOP
 
-Stop on stale fingerprint, ambiguous match, workspace escape, unresolved coordinate context, uncertain semantic target, or after requested repair + matching verification is complete.
+Stop on stale fingerprint, ambiguous match, workspace escape, unresolved semantic target, or after requested repair + matching verification completes.
