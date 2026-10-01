@@ -60,7 +60,7 @@ Forbidden:
 
 `m-bedrock-target-repair`
 
-Use only after an evidence-backed defect or intentional modification requires target source/artifact mutation.
+Use only for an Approved Bug or an explicit intentional modification that requires target source/artifact mutation.
 
 ## Domain specialists
 
