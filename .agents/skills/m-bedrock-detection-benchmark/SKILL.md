@@ -51,6 +51,12 @@ Expectation schema: `../../schemas/benchmark-expectation.schema.json`
 
 Result schema: `../../schemas/benchmark-result.schema.json`
 
+Check corpus readiness:
+
+```text
+node scripts/corpus-status.mjs
+```
+
 Validate a frozen expectation:
 
 ```text
