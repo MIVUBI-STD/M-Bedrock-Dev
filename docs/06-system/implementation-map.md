@@ -35,7 +35,7 @@ Use this before broad repository search.
 | Canonical persisted bug-report current state | workspace/reports/*.json |
 | Bug-report ownership/storage boundary | docs/06-system/bug-report-ownership.md |
 | Client-facing bug-report document projection/design | engine/packages/bug-report/src/document/ + engine/packages/bug-report/DOCUMENT.md |
-| Word/PDF bug-report file rendering | tooling/bug-report-documents/ |
+| Self-contained HTML bug-report file rendering | tooling/bug-report-documents/ |
 | Repair preservation contracts, baselines, and verification receipts | engine/packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
 | Capability-specific proof binding registry | engine/reliability/catalogs/capability-proof-bindings.json |

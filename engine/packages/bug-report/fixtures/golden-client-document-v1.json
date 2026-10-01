@@ -2,7 +2,7 @@
   "schema": "m-bedrock-bug-report-client-document/v1",
   "documentType": "Bug Report",
   "title": "Golden Tester Map — Bug Report",
-  "subtitle": "Confirmed gameplay issues and testing summary",
+  "subtitle": "Player-visible gameplay issues requiring attention",
   "audience": "client",
   "map": {
     "name": "Golden Tester Map",
@@ -10,29 +10,24 @@
     "testedVersion": "1.26.32"
   },
   "summary": {
-    "visibleIssues": 3,
-    "openIssues": 3,
+    "visibleIssues": 2,
+    "openIssues": 2,
     "fixedIssues": 0,
     "blocker": 1,
     "major": 1,
-    "minor": 1,
-    "statement": "3 confirmed issues are included in this client report."
+    "minor": 0,
+    "statement": "2 gameplay-blocking or materially disruptive issues are included in this client report."
   },
   "severityLegend": [
     {
       "severity": "blocker",
       "label": "Blocker",
-      "meaning": "Prevents normal progression or makes the affected gameplay unusable."
+      "meaning": "Stops normal progression, prevents the objective, or leaves no normal in-game recovery."
     },
     {
       "severity": "major",
       "label": "Major",
-      "meaning": "Materially affects gameplay, state, fairness, or reliability."
-    },
-    {
-      "severity": "minor",
-      "label": "Minor",
-      "meaning": "Limited issue that does not prevent normal gameplay."
+      "meaning": "Materially breaks core gameplay, important player state, or fairness while play can still continue or recover."
     }
   ],
   "issueIndex": [
@@ -47,12 +42,6 @@
       "severity": "major",
       "status": "open",
       "title": "Match loadout drops when the player dies"
-    },
-    {
-      "number": 3,
-      "severity": "minor",
-      "status": "open",
-      "title": "Join feedback remains visible after leaving the pad"
     }
   ],
   "issues": [
@@ -88,25 +77,11 @@
       "observed": "Loadout items appear as world drops at the death location.",
       "expected": "Match-owned loadout items are restored through the intended respawn flow without becoming world drops.",
       "recommendedResolution": "Prevent match-owned loadout items from entering the world-drop path and restore them through the respawn flow."
-    },
-    {
-      "number": 3,
-      "severity": "minor",
-      "status": "open",
-      "title": "Join feedback remains visible after leaving the pad",
-      "issue": "The join prompt remains visible after the player leaves the join pad, creating misleading lobby feedback.",
-      "reproduction": [
-        "Walk onto the join pad until the join prompt appears.",
-        "Walk away from the join pad.",
-        "Confirm the join prompt remains visible outside the pad."
-      ],
-      "observed": "The prompt remains visible outside the join pad.",
-      "expected": "The join prompt disappears when the player leaves the join pad.",
-      "recommendedResolution": "Clear the join feedback state when the player leaves the join pad so the prompt disappears immediately."
     }
   ],
   "source": {
     "schema": "m-bedrock-bug-report/v2",
-    "issueScope": "open"
+    "issueScope": "open",
+    "severityScope": "blocker-major"
   }
 }

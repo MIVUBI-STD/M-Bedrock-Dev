@@ -1,3 +1,6 @@
+import {
+  shouldIncludeInDefaultBugReport,
+} from "./decision.js";
 import type {
   BugReportV2,
   BugReportV2Bug,
@@ -12,6 +15,7 @@ export type BugReportPreviewMode =
 export interface BugReportPreviewOptions {
   readonly mode?: BugReportPreviewMode;
   readonly includeFixed?: boolean;
+  readonly includeMinor?: boolean;
 }
 
 export interface BugReportPreviewCounts {
@@ -63,12 +67,20 @@ export function compareBugReportPreviewOrder(
   return left.id.localeCompare(right.id);
 }
 
-function counts(report: BugReportV2): BugReportPreviewCounts {
-  const open = report.bugs.filter((bug) => !bug.fixed);
+function counts(
+  report: BugReportV2,
+  includeMinor: boolean,
+): BugReportPreviewCounts {
+  const scoped = report.bugs.filter(
+    (bug) =>
+      includeMinor ||
+      shouldIncludeInDefaultBugReport(bug.severity),
+  );
+  const open = scoped.filter((bug) => !bug.fixed);
   return {
     open: open.length,
-    fixed: report.bugs.length - open.length,
-    total: report.bugs.length,
+    fixed: scoped.length - open.length,
+    total: scoped.length,
     blocker: open.filter((bug) => bug.severity === "blocker").length,
     major: open.filter((bug) => bug.severity === "major").length,
     minor: open.filter((bug) => bug.severity === "minor").length,
@@ -115,13 +127,20 @@ export function projectBugReportPreview(
 ): BugReportPreview {
   const mode = options.mode ?? "standard";
   const includeFixed = options.includeFixed ?? false;
+  const includeMinor = options.includeMinor ?? false;
 
   return {
     map: report.map,
     repairBy: report.repairBy,
-    counts: counts(report),
+    counts: counts(report, includeMinor),
     bugs: report.bugs
-      .filter((bug) => includeFixed || !bug.fixed)
+      .filter((bug) =>
+        (includeFixed || !bug.fixed) &&
+        (
+          includeMinor ||
+          shouldIncludeInDefaultBugReport(bug.severity)
+        )
+      )
       .slice()
       .sort(compareBugReportPreviewOrder)
       .map((bug) => projectBug(bug, mode)),
@@ -166,7 +185,10 @@ export function renderBugReportPreviewMarkdown(
   ];
 
   if (preview.bugs.length === 0) {
-    out.push("", "No open bugs.");
+    out.push(
+      "",
+      "No gameplay-blocking or materially disruptive open bugs.",
+    );
     return out.join("\n") + "\n";
   }
 

@@ -1,93 +1,88 @@
-# Bug Report Documents
+# Bug Report HTML
 
-This tooling produces client-facing Word and PDF bug reports without browser/Vite publication infrastructure.
+This tooling renders client-facing bug reports as a single self-contained HTML file.
 
 ## Flow
 
 ```text
 canonical Bug Report V2 JSON
+→ player-impact / severity filtering
 → engine client-document projection
-→ DOCX renderer
-→ Word-compatible .docx
-→ LibreOffice conversion
-→ matching PDF
+→ self-contained HTML
 ```
 
-DOCX is the single layout source. PDF is converted from that DOCX; there is no separate PDF content renderer.
+HTML is presentation only. Bug Report V2 JSON remains the source of truth.
+
+## Default behavior
+
+The default client report includes only:
+
+- Blocker;
+- Major;
+- open issues.
+
+Minor issues remain available in canonical data but are hidden from the default report because they do not materially affect core gameplay.
+
+Use `--include-minor` only when a broader QA view is explicitly needed.
 
 ## Usage
 
-Install the free/open-source document dependency once:
-
 ```bash
-python -m pip install -r tooling/bug-report-documents/requirements.txt
-```
-
-Generate Word + PDF:
-
-```bash
-npm run bug-report-doc -- \
+npm run bug-report-html -- \
   --input workspace/reports/<Map>-v<Version>-BugReport.json \
   --out output/
 ```
 
-Generate Word only:
+Include fixed issues:
 
 ```bash
-npm run bug-report-doc -- \
-  --input workspace/reports/<Map>-v<Version>-BugReport.json \
-  --out output/ \
-  --docx-only
-```
-
-Include fixed issues intentionally:
-
-```bash
-npm run bug-report-doc -- \
+npm run bug-report-html -- \
   --input workspace/reports/<Map>-v<Version>-BugReport.json \
   --out output/ \
   --include-fixed
 ```
 
+Include Minor issues intentionally:
+
+```bash
+npm run bug-report-html -- \
+  --input workspace/reports/<Map>-v<Version>-BugReport.json \
+  --out output/ \
+  --include-minor
+```
+
+`npm run bug-report-doc` remains as a compatibility alias but now produces the same HTML output.
+
 ## Dependencies
 
-- Node/tsx already used by the repository;
-- Python;
-- `python-docx` (free/open-source);
-- LibreOffice only when PDF export is requested.
+No Python, LibreOffice, browser server, Vite publication flow, paid API, SaaS renderer, database, or background process is required.
 
-No paid API, SaaS renderer, database, browser server, Google API, or background service is required.
+The generated HTML contains its CSS inline and can be opened directly in any modern browser. Browser Print can be used when a PDF snapshot is needed.
 
 ## Reader-first design
 
-The generated document follows `engine/packages/bug-report/DOCUMENT.md`:
+Each bug is one compact block:
 
-- compact map/test metrics at the top;
-- one short severity legend;
-- one two-column table per bug;
-- stable rows: Issue / How to Reproduce / Result / Resolution;
-- reproduction numbering restarts for every bug;
-- separate Issue Index only for 7+ issues;
-- no internal Bug ID / AI / code details in the client document.
+```text
+Severity + title
+Issue          → what the player experiences
+How to Trigger → in-game steps
+Result         → observed + expected
+Resolution     → only when supported
+```
 
-## Adaptive layout
-
-- 0 issues: no-open-issues message;
-- 1–3 issues: standard compact bug tables;
-- 4–6 issues: tighter bug tables;
-- 7+ issues: Issue Index + compact bug tables.
+Technical causes stay out of the client-facing Issue field.
 
 ## Output naming
 
 ```text
-<Map Name> v<Map Version> - Bug Report.docx
-<Map Name> v<Map Version> - Bug Report.pdf
+<Map Name> v<Map Version> - Bug Report.html
 ```
 
 ## Ownership
 
 - semantics: `engine/packages/bug-report/`;
-- client document model/design: `engine/packages/bug-report/src/document/` + `DOCUMENT.md`;
-- file rendering only: `tooling/bug-report-documents/`.
+- client projection/design: `engine/packages/bug-report/src/document/`;
+- HTML file rendering only: `tooling/bug-report-documents/render.ts`.
 
 The renderer must not invent, rewrite, or backfill bug facts.

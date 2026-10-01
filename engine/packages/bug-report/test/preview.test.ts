@@ -77,21 +77,32 @@ function report(): BugReportV2 {
 }
 
 describe("bug report preview", () => {
-  it("defaults to open bugs ordered by severity", () => {
+  it("defaults to open blocker/major bugs only", () => {
     const preview = projectBugReportPreview(report());
+
+    expect(preview.bugs.map((bug) => bug.id)).toEqual([
+      "BUG-001",
+    ]);
+    expect(preview.counts).toEqual({
+      open: 1,
+      fixed: 1,
+      total: 2,
+      blocker: 1,
+      major: 0,
+      minor: 0,
+    });
+  });
+
+  it("can intentionally include minor issues", () => {
+    const preview = projectBugReportPreview(report(), {
+      includeMinor: true,
+    });
 
     expect(preview.bugs.map((bug) => bug.id)).toEqual([
       "BUG-001",
       "BUG-002",
     ]);
-    expect(preview.counts).toEqual({
-      open: 2,
-      fixed: 1,
-      total: 3,
-      blocker: 1,
-      major: 0,
-      minor: 1,
-    });
+    expect(preview.counts.minor).toBe(1);
   });
 
   it("keeps solution grounded in Suggested Fix", () => {
@@ -102,7 +113,6 @@ describe("bug report preview", () => {
     expect(preview.bugs[0]?.solution).toBe(
       "Clear stale session ownership during cleanup.",
     );
-    expect(preview.bugs[1]?.solution).toBeUndefined();
     expect(preview.bugs[0]?.bugTrigger).toEqual([
       "Finish a match.",
       "Return to the lobby.",

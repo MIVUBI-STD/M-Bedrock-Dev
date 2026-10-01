@@ -136,7 +136,7 @@ This prevents technical diagnosis from being mechanically rewritten into invente
 
 ## Client document projection
 
-Client-facing Google Docs and PDF publication uses one format-neutral projection owned by `src/document/` and governed by `DOCUMENT.md`.
+Client-facing HTML publication uses one format-neutral projection owned by `src/document/` and governed by `DOCUMENT.md`.
 
 ```text
 Bug Report V2
@@ -144,12 +144,12 @@ Bug Report V2
 → reviewBugReportClientDocument()
 → publication adapter
 → Google Doc
-→ PDF export
+→ self-contained HTML renderer
 ```
 
 The client document intentionally excludes internal Bug ID, Found By, Repair By, AI Analysis, Relevant Code, evidence IDs, semantic keys, and repair plumbing. It presents Overview, Issue Summary, Severity Guide, and Issue Details using the reader-first order `Issue → How to Reproduce → Observed → Expected → Recommended Resolution`.
 
-Google Docs and PDF must consume the same projected document; they are not separate content authorities.
+HTML consumes the projected document and never becomes a separate content authority.
 
 ## Human / ChatGPT preview
 
