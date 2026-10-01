@@ -25,7 +25,7 @@ Selected Map Version
 → Gameplay Surface Inventory
 → Gameplay Contract
 → Actual Behavior
-→ Coverage Check
+→ Discovered-Surface Accounting
 → Contradiction
 → Counter-Evidence
 → Player Impact
