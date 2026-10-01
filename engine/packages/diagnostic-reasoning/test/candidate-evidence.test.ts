@@ -7,9 +7,11 @@ import {
 const readyContract = {
   schemaVersion: 1 as const,
   modelId: "test",
+  artifactId: "artifact:test",
+  evidenceScope: "selected-artifact-only" as const,
   subjectIds: ["objective:test"],
   invariantIds: ["inv:test"],
-  authorityEvidenceIds: ["design:test"],
+  authorityEvidenceIds: ["artifact:test:contract"],
   readiness: {
     disposition: "ready" as const,
     scopeSubjectIds: ["objective:test"],
@@ -31,7 +33,7 @@ const rule: GameplayBugCandidateRule = {
     "next-attempt-gameplay-changed",
   ],
   counterEvidencePredicates: [
-    "design-allows-persistence",
+    "contract-allows-persistence",
   ],
 };
 
@@ -65,7 +67,7 @@ describe("gameplay bug candidate evidence gate", () => {
         readiness: {
           disposition: "blocked",
           scopeSubjectIds: ["objective:test"],
-          blockingUnknownIds: ["unknown:design"],
+          blockingUnknownIds: ["unknown:contract"],
           toleratedUnknownIds: [],
           reasons: ["material contract unknown"],
         },
@@ -75,14 +77,14 @@ describe("gameplay bug candidate evidence gate", () => {
   });
 
 
-  it("suppresses a candidate when current design counter-evidence permits it", () => {
+  it("suppresses a candidate when current contract counter-evidence permits it", () => {
     const result = evaluateGameplayBugCandidateEvidence(
       rule,
       [
         { predicate: "retry-occurs", state: "present", evidenceId: "e:retry" },
         { predicate: "old-state-survives", state: "present", evidenceId: "e:state" },
         { predicate: "next-attempt-gameplay-changed", state: "present", evidenceId: "e:impact" },
-        { predicate: "design-allows-persistence", state: "present", evidenceId: "e:design" },
+        { predicate: "contract-allows-persistence", state: "present", evidenceId: "e:design" },
       ],
       readyContract,
     );
@@ -116,7 +118,7 @@ describe("gameplay bug candidate evidence gate", () => {
         { predicate: "retry-occurs", state: "present" },
         { predicate: "old-state-survives", state: "present" },
         { predicate: "next-attempt-gameplay-changed", state: "absent" },
-        { predicate: "design-allows-persistence", state: "absent" },
+        { predicate: "contract-allows-persistence", state: "absent" },
       ],
       readyContract,
     );
@@ -131,7 +133,7 @@ describe("gameplay bug candidate evidence gate", () => {
         { predicate: "retry-occurs", state: "present", evidenceId: "e:retry" },
         { predicate: "old-state-survives", state: "present", evidenceId: "e:state" },
         { predicate: "next-attempt-gameplay-changed", state: "present", evidenceId: "e:impact" },
-        { predicate: "design-allows-persistence", state: "absent" },
+        { predicate: "contract-allows-persistence", state: "absent" },
       ],
       readyContract,
     );
