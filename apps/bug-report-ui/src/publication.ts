@@ -8,6 +8,7 @@ import {
 export interface BugReportPublicationPayload {
   readonly googleDocTitle: string;
   readonly pdfFileName: string;
+  readonly destinationDriveUrl: string;
   readonly document: BugReportClientDocument;
 }
 
@@ -59,6 +60,7 @@ export function buildBugReportPublicationPayload(
   return {
     googleDocTitle: base,
     pdfFileName: base + ".pdf",
+    destinationDriveUrl: report.map.drive,
     document,
   };
 }
