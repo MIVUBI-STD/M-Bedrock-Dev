@@ -511,7 +511,7 @@ describe("runtime intent diagnostic reclassification", () => {
     ).toEqual([]);
   });
 
-  it("caps inferred intent contradictions at probable defect", () => {
+  it("keeps inferred intent contradictions ambiguous", () => {
     const result =
       reclassifyIntentDiagnosticFromRuntime({
         intent: intent("inferred"),
@@ -529,7 +529,7 @@ describe("runtime intent diagnostic reclassification", () => {
       });
 
     expect(result.disposition).toBe(
-      "probable-defect",
+      "ambiguous-intent",
     );
   });
 
