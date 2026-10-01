@@ -94,6 +94,7 @@ export type AiConfirmedDefectDraft = Omit<
   | "reproduction"
 > & {
   readonly expectedStatement: string;
+  readonly reproduction?: never;
 };
 
 export interface ReportCandidateRepairContext {
