@@ -2,18 +2,18 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "1e6a1b9d964c09a497a5080a0e708070bc480137",
+    "commit": "0b692cd016e810a9a68f7fddee2ee48a0df1c1a8",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "43402de2",
-    "proofInventoryFingerprint": "d558beb7"
+    "registryFingerprint": "f1d0870e",
+    "proofInventoryFingerprint": "de97ed67"
   },
   "summary": {
-    "taskCapabilities": 44,
-    "ownerTested": 44,
+    "taskCapabilities": 46,
+    "ownerTested": 46,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
@@ -782,6 +782,56 @@
         "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
         "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
         "engine/packages/runtime-lab/test/bedrock-host.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "runtime.record-replay-contract",
+      "owner": "packages/reliability",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 42,
+      "testFiles": 20,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/reliability/test/bedrock-runtime-emitter.test.ts",
+        "engine/packages/reliability/test/bedrock-state-adapter.test.ts",
+        "engine/packages/reliability/test/catalog-loader.test.ts",
+        "engine/packages/reliability/test/catalog-writer.test.ts",
+        "engine/packages/reliability/test/catalogs.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "runtime.semantic-convention",
+      "owner": "packages/project-model",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 44,
+      "testFiles": 12,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/packages/project-model/test/arena-region-contract.test.ts",
+        "engine/packages/project-model/test/decision-ledger-validate.test.ts",
+        "engine/packages/project-model/test/invariant-registry-validate.test.ts",
+        "engine/packages/project-model/test/runtime-evidence-continuity.test.ts",
+        "engine/packages/project-model/test/runtime-probe-binding.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
