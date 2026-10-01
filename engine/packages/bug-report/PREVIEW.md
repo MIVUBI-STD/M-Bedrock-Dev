@@ -22,7 +22,7 @@ The normal bug-finding preview MUST NOT show repair ownership or fixed-progress 
 | No. | Severity | Bug | Issue | Solution |
 |---:|---|---|---|---|
 | #1 | BLOCKER | Match cannot restart | ... | ... |
-|  |  | **How to Reproduce:** 1) ... → 2) ... → 3) ... |  |  |
+|  |  | **How to Reproduce (In-Game)** | 1) ... → 2) ... → 3) ... |  |
 
 Rules:
 
@@ -40,7 +40,7 @@ Rules:
 - canonical Bug ID stays internal in default preview and is shown only in detail/full mode;
 - `Issue` is canonical Problem and must answer **what is wrong + impact**;
 - `Solution` is canonical Suggested Fix and must answer **what should be changed**;
-- `How to Reproduce the Bug` is canonical Reproduction and must tell a tester exactly how to make the bug occur again in-game;
+- `How to Reproduce (In-Game)` is canonical Reproduction and must tell a tester exactly what to do in Minecraft and what wrong result to observe;
 - when Suggested Fix is absent, show `—`;
 - keep reproduction inside the same table as a second row immediately below its bug;
 - do not create a separate reproduction section or second table;
@@ -106,7 +106,7 @@ Compact main table with:
 - Issue
 - Solution
 
-Each bug is immediately followed by a second row labeled `How to Reproduce` containing its reproduction steps.
+Each bug is immediately followed by a second row labeled `How to Reproduce (In-Game)`. Put the label in the Bug column and the steps in the wider Issue column for easier reading.
 
 ### standard — default
 
@@ -139,14 +139,14 @@ Good:
 | No. | Severity | Bug | Issue | Solution |
 |---:|---|---|---|---|
 | #1 | BLOCKER | Match cannot restart | Arena keeps the previous session ownership after match end, so a new match cannot start. | Clear arena session ownership during cleanup so the arena becomes available again. |
-|  |  | **How to Reproduce:** 1) Finish a match → 2) Return to lobby → 3) Start the same arena again → 4) Confirm the new match does not start. |  |  |
+|  |  | **How to Reproduce (In-Game):** 1) Finish a match → 2) Return to lobby → 3) Start the same arena again → 4) Confirm the new match does not start. |  |  |
 
 Bad:
 
 | No. | Severity | Bug | Issue | Solution |
 |---:|---|---|---|---|
 | #1 | BLOCKER | Match issue | There may be an issue with cleanup. | Investigate and fix the issue. |
-|  |  | **How to Reproduce:** Check if the bug happens. |  |  |
+|  |  | **How to Reproduce (In-Game):** Check if the bug happens. |  |  |
 
 If the Issue or Solution requires Technical Analysis to understand its basic meaning, the copy is not ready for the default preview.
 
