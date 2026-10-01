@@ -193,7 +193,7 @@ It demonstrates one Blocker, Major, and Minor bug using the current tester-facin
 
 ## Creation
 
-New reports must be created directly as V2 through `createBugReportV2()`. The creator defaults each bug to `fixed: false`, validates V2 semantics, enforces tester readiness through `report-readiness.ts`, and then enforces the wording contract in `COPY.md` before emission.
+New reports must be created directly as V2 through `createBugReportV2()`. The creator always creates each bug with `fixed: false`; callers cannot set completion during creation. It validates V2 semantics, enforces tester readiness through `report-readiness.ts`, and then enforces the wording contract in `COPY.md` before emission.
 
 Do not generate V1 and convert it to V2 for new audits. V1 conversion exists only for old saved reports.
 
@@ -243,6 +243,40 @@ The reconciliation contract is conservative:
 - verified repair completion remains a separate workflow and is the only path that may change canonical completion state.
 
 This prevents detection variability from becoming destructive report mutation.
+
+## Verified completion and retest
+
+`fixed` is not a general editing field.
+
+Use `applyVerifiedBugRetest()` for completion/retest mutation.
+
+A passing retest may set `fixed: true` only when:
+
+- Bug ID exists in the canonical report;
+- map name, map version, and exact tested runtime version match;
+- explicit retest evidence IDs exist;
+- at least one required defect-fixing invariant is supplied;
+- each required invariant has a current passing validation run;
+- proof level is sufficient;
+- the proving run carries evidence;
+- when Must Preserve exists, explicit preservation invariant IDs and a passing preservation receipt prove those invariants.
+
+A failed retest with explicit evidence sets `fixed: false`, including reopening a previously fixed bug.
+
+Generic creation, import, refresh, preview, or reconciliation must not close a bug.
+
+```text
+generic save / refresh
+    ≠ completion
+
+verified passing retest
+    → fixed: true
+
+verified failing retest
+    → fixed: false
+```
+
+Completion evidence is not duplicated inside Bug Report V2; validation/preservation subsystems remain the evidence authorities and Git remains history.
 
 ## Output density
 
