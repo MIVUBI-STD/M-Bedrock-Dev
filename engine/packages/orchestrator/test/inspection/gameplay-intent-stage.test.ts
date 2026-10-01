@@ -115,6 +115,7 @@ describe("gameplay intent stage", () => {
   it("builds a validated parser-independent model from analyzer signals", () => {
     const model = buildGameplayIntentModel({
       id: "mtt-level-2",
+      artifactId: "art_test",
       parsedScripts: [{ parsed: parsed() }],
     });
 
@@ -155,7 +156,7 @@ describe("gameplay intent stage", () => {
         (invariant) =>
           invariant.id ===
             "inv:allowed-transitions:state:session-phase-active" &&
-          invariant.status === "inferred",
+          invariant.status === "authored",
       ),
     ).toBe(true);
 
@@ -190,7 +191,7 @@ describe("gameplay intent stage", () => {
         (invariant) =>
           invariant.id ===
           "inv:admissible-policy:outcome:decide-reconnect-cleanup" &&
-          invariant.status === "inferred",
+          invariant.status === "authored",
       ),
     ).toBe(true);
 
@@ -396,7 +397,7 @@ describe("gameplay intent stage", () => {
     ).toBe("authored");
   });
 
-  it("keeps the same policy invariant inferred when authored source input is absent", () => {
+  it("treats explicit policy declarations inside the selected artifact as authored contract evidence", () => {
     const model = buildGameplayIntentModel({
       id: "runtime-policy-invariant",
       parsedScripts: [{ parsed: parsed() }],
@@ -408,7 +409,7 @@ describe("gameplay intent stage", () => {
           invariant.id ===
           "inv:admissible-policy:outcome:decide-reconnect-cleanup",
       )?.status,
-    ).toBe("inferred");
+    ).toBe("authored");
   });
 
   it("merges duplicate semantic relations from runtime and authored sources", () => {
