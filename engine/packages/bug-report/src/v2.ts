@@ -1,4 +1,9 @@
-import type { BugFinderCategory, BugSeverity } from "./vocabulary.js";
+import {
+  BUG_FINDER_CATEGORIES,
+  BUG_SEVERITIES,
+  type BugFinderCategory,
+  type BugSeverity,
+} from "./vocabulary.js";
 import type { BugReportParseIssue } from "./parse.js";
 
 export const BUG_REPORT_V2_SCHEMA = "m-bedrock-bug-report/v2" as const;
@@ -33,8 +38,20 @@ export const BUG_REPORT_V2_LABELS = {
   mustPreserve: "Must Preserve",
 } as const;
 
-export type BugReportV2RepairBy = "chatgpt" | "developer";
-export type BugReportV2FoundBy = "ai" | "tester";
+export const BUG_REPORT_V2_REPAIR_BY_VALUES = [
+  "chatgpt",
+  "developer",
+] as const;
+
+export const BUG_REPORT_V2_FOUND_BY_VALUES = [
+  "ai",
+  "tester",
+] as const;
+
+export type BugReportV2RepairBy =
+  (typeof BUG_REPORT_V2_REPAIR_BY_VALUES)[number];
+export type BugReportV2FoundBy =
+  (typeof BUG_REPORT_V2_FOUND_BY_VALUES)[number];
 
 export interface BugReportV2Map {
   readonly name: string;
@@ -84,34 +101,17 @@ export type BugReportV2ParseResult =
       readonly issues: readonly BugReportParseIssue[];
     };
 
-const categories = new Set<BugFinderCategory>([
-  "game-flow",
-  "player-state",
-  "multiplayer-session",
-  "world-interaction",
-  "entity-behavior",
-  "combat",
-  "score-reward",
-  "ui-feedback",
-  "performance-stability",
-  "compatibility",
-]);
+const categories =
+  new Set<BugFinderCategory>(BUG_FINDER_CATEGORIES);
 
-const severities = new Set<BugSeverity>([
-  "blocker",
-  "major",
-  "minor",
-]);
+const severities =
+  new Set<BugSeverity>(BUG_SEVERITIES);
 
-const repairByValues = new Set<BugReportV2RepairBy>([
-  "chatgpt",
-  "developer",
-]);
+const repairByValues =
+  new Set<BugReportV2RepairBy>(BUG_REPORT_V2_REPAIR_BY_VALUES);
 
-const foundByValues = new Set<BugReportV2FoundBy>([
-  "ai",
-  "tester",
-]);
+const foundByValues =
+  new Set<BugReportV2FoundBy>(BUG_REPORT_V2_FOUND_BY_VALUES);
 
 function object(
   value: unknown,
