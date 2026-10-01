@@ -52,6 +52,7 @@ function storeStub() {
       revision: "created",
     })),
     saveReport: vi.fn(),
+    completeVerifiedRepair: vi.fn(async () => ({ revision: "verified" })),
   } as unknown as GitHubBugReportStore;
 }
 
@@ -112,4 +113,40 @@ describe("bug report handler", () => {
     );
     expect(store.createReport).not.toHaveBeenCalled();
   });
+  it("routes fixed completion through verified repair persistence", async () => {
+    const store = storeStub();
+    const response = await handleBugReportStoreRequest(
+      new Request("http://localhost/api/bug-report/fixed", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: "workspace/reports/golden.json",
+          bugId: "BUG-G-001",
+          validationRunIds: ["run:1"],
+          validationTrace: {
+            runs: [{
+              runId: "run:1",
+              scenarioId: "scenario:1",
+              scenarioRevision: "rev-1",
+              intentInvariantIds: ["intent:1"],
+              ok: true,
+              proofLevel: "LIVE GAME VERIFIED",
+              current: true,
+              staleReasons: [],
+              evidenceIds: ["evidence:1"],
+            }],
+            invariants: [],
+          },
+          expectedRevision: "abc",
+        }),
+      }),
+      store,
+    );
+
+    expect(response.status).toBe(200);
+    expect(store.completeVerifiedRepair).toHaveBeenCalledTimes(1);
+  });
+
 });
