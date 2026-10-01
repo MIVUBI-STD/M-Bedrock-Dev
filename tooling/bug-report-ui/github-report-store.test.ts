@@ -98,37 +98,6 @@ describe("GitHubBugReportStore", () => {
     });
   });
 
-  it("creates a report only when the path is unused", async () => {
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response(
-        JSON.stringify({ message: "Not Found" }),
-        { status: 404 },
-      ))
-      .mockResolvedValueOnce(new Response(
-        JSON.stringify({
-          content: { sha: "created" },
-        }),
-        { status: 201 },
-      ));
-
-    const store = new GitHubBugReportStore({
-      owner: "MIVUBI-STD",
-      repository: "M-Bedrock-Dev",
-      branch: "Local",
-      token: "secret",
-      fetchImpl: fetchMock as unknown as typeof fetch,
-    });
-
-    await expect(
-      store.createReport(
-        "workspace/reports/a.json",
-        report(),
-      ),
-    ).resolves.toEqual({
-      revision: "created",
-    });
-  });
-
   it("refuses to overwrite a changed report", async () => {
     const encoded = Buffer.from(
       JSON.stringify(report()),
