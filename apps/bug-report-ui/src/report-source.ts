@@ -13,9 +13,12 @@ export type ReportSource =
       readonly path: string;
     };
 
-export type GitHubReportSummary = BugReportSummary;
+export type ReportSummary = BugReportSummary;
 
-export interface GitHubReportStore {
+/** @deprecated Use ReportSummary. */
+export type GitHubReportSummary = ReportSummary;
+
+export interface ReportStore {
   listReports(): Promise<readonly BugReportSummary[]>;
   loadReport(path: string): Promise<BugReportV2>;
   createReport(
@@ -23,3 +26,6 @@ export interface GitHubReportStore {
     report: BugReportV2,
   ): Promise<void>;
 }
+
+/** @deprecated Use ReportStore. */
+export type GitHubReportStore = ReportStore;
