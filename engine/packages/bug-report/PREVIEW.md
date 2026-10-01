@@ -19,8 +19,8 @@ Blocker: <count> · Major: <count> · Minor: <count>
 
 The normal bug-finding preview MUST NOT show repair ownership or fixed-progress metadata. Those belong to a later repair workflow, not the audit preview.
 
-| No. | Severity | Bug | Issue | Action |
-|---:|---|---|---|---|
+| No. | Severity | Bug | Issue | Reproduce / Verify | Action |
+|---:|---|---|---|---|---|
 
 Rules:
 
@@ -37,9 +37,10 @@ Rules:
 - `Bug` contains only the short human-readable title;
 - canonical Bug ID stays internal in default preview and is shown only in detail/full mode;
 - `Issue` is canonical Problem and must answer **what is wrong + impact**;
+- `Reproduce / Verify` is canonical Reproduction and must tell a tester how to prove the bug in-game;
 - `Action` is canonical Suggested Fix and must answer **what should be changed**;
 - when Suggested Fix is absent, show `—`;
-- do not add Expected, Observed, Reproduction, Technical Analysis, Relevant Code, or Must Preserve to the default table;
+- do not add Expected, Observed, Technical Analysis, Relevant Code, or Must Preserve to the default table;
 - do not create one section per bug in default preview;
 - do not dump JSON.
 
@@ -99,6 +100,7 @@ Compact table with:
 - Severity
 - Bug
 - Issue
+- Reproduce / Verify
 - Action
 
 ### standard — default
@@ -125,19 +127,19 @@ Open bugs are the default scope. Fixed bugs appear only when explicitly requeste
 
 ## Reader test
 
-A reader should be able to cover the Issue and Action columns only and still understand the bug and the supported next action.
+A reader should be able to read Issue + Reproduce / Verify + Action and immediately understand what is wrong, how to prove it, and what supported change is needed.
 
 Good:
 
-| No. | Severity | Bug | Issue | Action |
-|---:|---|---|---|---|
-| #1 | BLOCKER | Match cannot restart | Arena keeps the previous session ownership after match end, so a new match cannot start. | Clear arena session ownership during cleanup so the arena becomes available again. |
+| No. | Severity | Bug | Issue | Reproduce / Verify | Action |
+|---:|---|---|---|---|---|
+| #1 | BLOCKER | Match cannot restart | Arena keeps the previous session ownership after match end, so a new match cannot start. | 1) Finish a match → 2) Return to lobby → 3) Start the same arena again → 4) Confirm the new match does not start. | Clear arena session ownership during cleanup so the arena becomes available again. |
 
 Bad:
 
-| No. | Severity | Bug | Issue | Action |
-|---:|---|---|---|---|
-| #1 | BLOCKER | Match issue | There may be an issue with cleanup. | Investigate and fix the issue. |
+| No. | Severity | Bug | Issue | Reproduce / Verify | Action |
+|---:|---|---|---|---|---|
+| #1 | BLOCKER | Match issue | There may be an issue with cleanup. | Check if the bug happens. | Investigate and fix the issue. |
 
 If the Issue or Action requires Technical Analysis to understand its basic meaning, the copy is not ready for the default preview.
 
