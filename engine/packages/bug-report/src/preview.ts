@@ -149,8 +149,11 @@ export function renderBugReportPreviewMarkdown(
   const out: string[] = [
     `# ${preview.map.name} — Bug Report`,
     "",
-    `Version ${preview.map.mapVersion} · Tested ${preview.map.testedVersion} · Repair: ${preview.repairBy}`,
-    `Open ${preview.counts.open} · Blocker ${preview.counts.blocker} · Major ${preview.counts.major} · Minor ${preview.counts.minor} · Fixed ${preview.counts.fixed}`,
+    `**Map Version:** ${preview.map.mapVersion}`,
+    "**Tested Version:** Latest Education",
+    "",
+    `**Open Issues:** ${preview.counts.open}`,
+    `Blocker: ${preview.counts.blocker} · Major: ${preview.counts.major} · Minor: ${preview.counts.minor}`,
   ];
 
   if (preview.bugs.length === 0) {
