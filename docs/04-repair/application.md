@@ -23,15 +23,21 @@ Low-level mutation primitives are internal implementation details of the repair 
 
 Do not import or expose `applyPatchTransaction()`, `rollbackAppliedFiles()`, or `atomicWriteText()` through the repair package public API.
 
-Production mutation must enter through the orchestrator authorized path:
+Production gameplay mutation must enter through the orchestrator authorized path:
 
 ```text
-repair admission
-→ proof bundle
+Approved Bug or approved intentional design change
+→ violated Gameplay Contract / Repair Contract
+→ repair admission
+→ preservation readiness
+→ proof bundle bound to workflow authority
 → authorizeRepairMutation()
 → applyAuthorizedRepair()
 → validation / rollback
+→ preservation verification
 → repair lifecycle
 ```
+
+For bug repair, a confirmed defect alone is not mutation authority. The bug must be explicitly approved and the Repair Contract must contain both Must Change and Must Preserve invariants.
 
 Direct primitive use is limited to implementation-internal code and focused unit tests.
