@@ -3,18 +3,18 @@ import {
   type DefectConfirmationDecision,
 } from "../../../bug-report/src/index.js";
 import {
-  independentGameplayIntentEvidenceIds,
+  selectedArtifactGameplayContractEvidenceIds,
   type GameplayIntentModel,
 } from "../../../gameplay-intent/src/index.js";
 import type {
   GameplayIntentRuntimeAssessment,
 } from "../gameplay-intent-runtime-stage.js";
 
-function authoredInvariantEvidence(
+function selectedArtifactInvariantEvidence(
   intent: GameplayIntentModel,
   invariantIds: readonly string[],
 ): readonly string[] {
-  return independentGameplayIntentEvidenceIds(
+  return selectedArtifactGameplayContractEvidenceIds(
     intent,
     invariantIds,
   );
@@ -35,12 +35,12 @@ export function confirmGameplayIntentRuntimeDefectForReport(
     };
   }
 
-  const authoredEvidence = authoredInvariantEvidence(
+  const selectedArtifactEvidence = selectedArtifactInvariantEvidence(
     intent,
     assessment.result.basisInvariantIds,
   );
 
-  if (authoredEvidence.length === 0) {
+  if (selectedArtifactEvidence.length === 0) {
     return {
       confirmed: false,
       reasons: [
@@ -66,7 +66,7 @@ export function confirmGameplayIntentRuntimeDefectForReport(
       "Runtime evidence " +
       runtimeEvidence.join(", ") +
       " contradicts selected-artifact contract evidence " +
-      authoredEvidence.join(", ") +
+      selectedArtifactEvidence.join(", ") +
       ".",
   });
 }
