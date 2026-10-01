@@ -1,7 +1,9 @@
-import { planRetest } from "../regression/retest-planner.js";
+import { planRetestWithKnowledge } from "../regression/retest-planner.js";
 import type {
   BlindspotCoverage,
+  FailurePattern,
   MapCompatibilityFingerprint,
+  MapKnowledgeRecord,
   MinecraftUpdateDelta,
   RegressionCase,
   RetestPlan,
@@ -10,6 +12,7 @@ import type {
 
 export interface PortfolioMapEntry {
   fingerprint: MapCompatibilityFingerprint;
+  knowledge?: MapKnowledgeRecord;
   labels?: readonly string[];
 }
 
@@ -44,6 +47,7 @@ export function planPortfolioRetest(
   delta: MinecraftUpdateDelta,
   regressions: readonly RegressionCase[] = [],
   coverage: readonly BlindspotCoverage[] = [],
+  failurePatterns: readonly FailurePattern[] = [],
 ): PortfolioRetestSummary {
   const groups: Record<RetestPriority, PortfolioRetestItem[]> = {
     P0: [],
@@ -55,11 +59,13 @@ export function planPortfolioRetest(
   let affectedMaps = 0;
 
   for (const entry of maps) {
-    const plan = planRetest(
+    const plan = planRetestWithKnowledge(
       entry.fingerprint,
       delta,
       regressions,
       coverage,
+      entry.knowledge,
+      failurePatterns,
     );
 
     const item: PortfolioRetestItem = {

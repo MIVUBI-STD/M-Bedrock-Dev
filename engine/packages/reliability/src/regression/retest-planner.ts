@@ -1,6 +1,8 @@
 import type {
   BlindspotCoverage,
+  FailurePattern,
   MapCompatibilityFingerprint,
+  MapKnowledgeRecord,
   MinecraftUpdateDelta,
   RegressionCase,
   ReliabilityDomain,
@@ -138,4 +140,89 @@ export function augmentRetestPlan(
     suggestedLanes: laneSet(reasons, affectedDomains),
     affectedDomains,
   };
+}
+
+
+export function planRetestWithKnowledge(
+  fingerprint: MapCompatibilityFingerprint,
+  delta: MinecraftUpdateDelta,
+  regressions: readonly RegressionCase[] = [],
+  coverage: readonly BlindspotCoverage[] = [],
+  mapKnowledge?: MapKnowledgeRecord,
+  failurePatterns: readonly FailurePattern[] = [],
+): RetestPlan {
+  if (mapKnowledge && mapKnowledge.mapId !== fingerprint.mapId) {
+    throw new Error(
+      "Map knowledge does not belong to the supplied fingerprint: " +
+        mapKnowledge.mapId +
+        " != " +
+        fingerprint.mapId,
+    );
+  }
+
+  const scopedRegressions = mapKnowledge
+    ? regressions.filter((item) =>
+        mapKnowledge.regressionIds.includes(item.id)
+      )
+    : regressions;
+
+  let plan = planRetest(
+    fingerprint,
+    delta,
+    scopedRegressions,
+    coverage,
+  );
+
+  if (!mapKnowledge || failurePatterns.length === 0) {
+    return plan;
+  }
+
+  const knownPatternIds = new Set(
+    mapKnowledge.failurePatternIds,
+  );
+  const updateCapabilities = new Set(
+    delta.entries.flatMap((entry) =>
+      entry.capabilityTags
+    ),
+  );
+  const updateDomains = new Set(
+    delta.entries.map((entry) => entry.domain),
+  );
+
+  const extraReasons: RetestReason[] = [];
+  const extraDomains = new Set<ReliabilityDomain>();
+
+  for (const pattern of failurePatterns) {
+    if (!knownPatternIds.has(pattern.id)) continue;
+
+    const capabilityOverlap =
+      pattern.capabilityTags.some((tag) =>
+        updateCapabilities.has(tag)
+      );
+    const domainOverlap =
+      updateDomains.has(pattern.domain);
+
+    if (!capabilityOverlap && !domainOverlap) continue;
+
+    extraDomains.add(pattern.domain);
+    extraReasons.push({
+      kind: "causal-regression",
+      detail:
+        "Known failure pattern " +
+        pattern.id +
+        " overlaps Minecraft " +
+        delta.toVersion +
+        ": " +
+        pattern.title,
+      weight: 4,
+    });
+  }
+
+  plan = augmentRetestPlan(
+    plan,
+    extraReasons,
+    [...extraDomains],
+  );
+
+  return plan;
 }
