@@ -6,7 +6,7 @@ Default ChatGPT presentation is **table-first**. The goal is minimum vertical sc
 
 ## Default compact preview
 
-Show a compact audit header followed by one compact table:
+Show a compact audit header:
 
 ```text
 Map Name — Bug Report
@@ -17,36 +17,28 @@ Open Issues: <count>
 Blocker: <count> · Major: <count> · Minor: <count>
 ```
 
-The normal bug-finding preview MUST NOT show repair ownership or fixed-progress metadata. Those belong to a later repair workflow, not the audit preview.
+Then render **one compact two-column table per bug**:
 
-| No. | Severity | Bug | Issue | Solution |
-|---:|---|---|---|---|
-| #1 | BLOCKER | Match cannot restart | ... | ... |
-|  |  | **Bug Trigger (In-Game)** | 1) ... → 2) ... → 3) ... |  |
+| #1 · BLOCKER | Match cannot restart |
+|---|---|
+| **Issue** | Arena keeps the previous session ownership after match end, so a new match cannot start. |
+| **Bug Trigger (In-Game)** | 1) Join the arena with 2 players → 2) Finish the match → 3) Return to lobby → 4) Start the same arena again → 5) Confirm the match does not start. |
+| **Solution** | Clear arena session ownership during cleanup so the arena becomes available again. |
 
 Rules:
 
 - default scope is newly found/open bugs only;
-- show `Open Issues` on its own line before the severity breakdown;
-- do not show `Repair By`, repair ownership, or `Fixed` progress in normal bug-finding preview;
-- always show the exact Minecraft Education version from canonical `testedVersion`;
-- format a verified-current audit as `Tested Version: Minecraft Education <version> (Latest)`;
-- never display `Latest` without an exact version number;
-- `Latest` is a freshness claim: use it only when the audit workflow has verified the official current Minecraft Education version at audit time;
-- if freshness cannot be verified, show `Tested Version: Minecraft Education <version>` without `(Latest)`;
-- order is Blocker → Major → Minor → Bug ID;
-- `No.` is a simple preview row number (`#1`, `#2`, ...);
-- `Bug` contains only the short human-readable title;
-- canonical Bug ID stays internal in default preview and is shown only in detail/full mode;
-- `Issue` is canonical Problem and must answer **what is wrong + impact**;
-- `Solution` is canonical Suggested Fix and must answer **what should be changed**;
-- `Bug Trigger (In-Game)` is canonical Bug Trigger and must tell a tester exactly what to do in Minecraft and what wrong result to observe;
+- order is Blocker → Major → Minor → canonical Bug ID;
+- preview number is simple and local: `#1`, `#2`, ...;
+- canonical Bug ID stays hidden in normal preview;
+- keep each bug in one local two-column table;
+- `Issue` must answer **what is wrong + gameplay impact**;
+- `Bug Trigger (In-Game)` must answer **exactly what the tester does in Minecraft + what wrong result to observe**;
+- `Solution` must answer **what should be changed to resolve the issue**;
 - when Suggested Fix is absent, show `—`;
-- keep reproduction inside the same table as a second row immediately below its bug;
-- do not create a separate reproduction section or second table;
-- do not add Expected, Observed, Technical Analysis, Relevant Code, or Must Preserve to the default table;
-- do not create one section per bug in default preview;
-- do not dump JSON.
+- do not show Category, Found By, Repair By, Fixed progress, Expected, Observed, Technical Analysis, Relevant Code, or Must Preserve in normal preview;
+- do not dump JSON;
+- do not use wide multi-column tables for the normal ChatGPT preview.
 
 ## Tested-version truth
 
@@ -99,18 +91,18 @@ Omit empty fields.
 
 ### summary
 
-Compact main table with:
-
-- Severity
-- Bug
-- Issue
-- Solution
-
-Each bug is immediately followed by a second row labeled `Bug Trigger (In-Game)`. Put the label in the Bug column and the steps in the wider Issue column for easier reading.
+Use the same two-column bug blocks, but omit Solution when the user asks only for issue discovery.
 
 ### standard — default
 
-Same compact table as summary.
+Use the full two-column bug block:
+
+```text
+# + Severity | Bug
+Issue | ...
+Bug Trigger (In-Game) | ...
+Solution | ...
+```
 
 The standard mode intentionally does not expand evidence fields. This keeps normal ChatGPT previews short and scannable.
 
@@ -132,38 +124,25 @@ Open bugs are the default scope. Fixed bugs appear only when explicitly requeste
 
 ## Reader test
 
-A reader should understand each bug in one local block without jumping to another section.
+A tester should understand one bug without reading code or jumping to another section.
 
-Good:
+A ready bug block must answer:
 
-| No. | Severity | Bug | Issue | Solution |
-|---:|---|---|---|---|
-| #1 | BLOCKER | Match cannot restart | Arena keeps the previous session ownership after match end, so a new match cannot start. | Clear arena session ownership during cleanup so the arena becomes available again. |
-|  |  | **Bug Trigger (In-Game):** 1) Finish a match → 2) Return to lobby → 3) Start the same arena again → 4) Confirm the new match does not start. |  |  |
+1. **Bug** — what failed?
+2. **Issue** — what is wrong in gameplay and what does it affect?
+3. **Bug Trigger (In-Game)** — exactly what should the tester do to make it happen?
+4. **Solution** — what change is supported to resolve it?
 
-Bad:
-
-| No. | Severity | Bug | Issue | Solution |
-|---:|---|---|---|---|
-| #1 | BLOCKER | Match issue | There may be an issue with cleanup. | Investigate and fix the issue. |
-|  |  | **Bug Trigger (In-Game):** Check if the bug happens. |  |  |
-
-If the Issue or Solution requires Technical Analysis to understand its basic meaning, the copy is not ready for the default preview.
+If Issue or Solution requires Technical Analysis to understand its basic meaning, or Bug Trigger requires source-code knowledge, the bug is not ready for the normal tester-facing preview.
 
 ## Table density
 
-Keep the table readable:
-
-- no Category column by default;
-- no Found By column by default;
-- no Status column when only open bugs are shown;
-- do not expose canonical Bug ID in the default table;
-- use a simple `No.` column for quick reference within the current preview;
-- no duplicated text between Bug, Issue, and Solution;
-- use `—` for unavailable Solution;
+- use two columns only;
+- keep labels short and fixed;
+- no empty filler columns;
+- no duplicate text between Bug, Issue, Trigger, and Solution;
+- use `—` only for unavailable Solution;
 - never infer or rewrite canonical facts.
-
-If a report is unusually large, still preserve one-row-per-bug rather than expanding cards.
 
 ## Wording dependency
 
