@@ -7,6 +7,10 @@ import {
   reviewBugReportReadiness,
 } from "../../engine/packages/bug-report/src/index.js";
 import {
+  publishBugReport,
+  type BugReportPublicationProvider,
+} from "../../apps/bug-report-ui/src/publication-provider.js";
+import {
   GitHubBugReportConflictError,
   type GitHubBugReportStore,
 } from "./github-report-store.js";
@@ -29,6 +33,8 @@ function json(
 export async function handleBugReportStoreRequest(
   request: Request,
   store: GitHubBugReportStore,
+  publicationProvider?:
+    BugReportPublicationProvider,
 ): Promise<Response> {
   const url = new URL(request.url);
 
@@ -140,6 +146,83 @@ export async function handleBugReportStoreRequest(
         },
         input.expectedRevision,
       ));
+    }
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/api/bug-report/publish"
+    ) {
+      if (!publicationProvider) {
+        return json(
+          {
+            error:
+              "Bug report publication provider is not configured.",
+          },
+          503,
+        );
+      }
+
+      const input = await request.json() as {
+        path?: unknown;
+        expectedRevision?: unknown;
+        includeFixed?: unknown;
+      };
+
+      if (
+        typeof input.path !== "string" ||
+        !input.path.trim()
+      ) {
+        return json({ error: "Missing path." }, 400);
+      }
+      if (
+        typeof input.expectedRevision !== "string" ||
+        !input.expectedRevision.trim()
+      ) {
+        return json(
+          { error: "Missing expectedRevision." },
+          400,
+        );
+      }
+      if (
+        input.includeFixed !== undefined &&
+        typeof input.includeFixed !== "boolean"
+      ) {
+        return json(
+          { error: "includeFixed must be boolean." },
+          400,
+        );
+      }
+
+      const loaded =
+        await store.loadReport(input.path);
+      if (
+        loaded.revision !==
+        input.expectedRevision
+      ) {
+        throw new GitHubBugReportConflictError(
+          "Bug report changed before publication.",
+        );
+      }
+
+      const published =
+        await publishBugReport(
+          loaded.report,
+          publicationProvider,
+          {
+            ...(input.includeFixed === undefined
+              ? {}
+              : {
+                  includeFixed:
+                    input.includeFixed,
+                }),
+          },
+        );
+
+      return json({
+        revision: loaded.revision,
+        googleDoc: published.googleDoc,
+        pdf: published.pdf,
+      });
     }
 
     if (
