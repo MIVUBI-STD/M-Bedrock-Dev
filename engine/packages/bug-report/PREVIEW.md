@@ -131,8 +131,18 @@ A ready bug block must answer:
 
 1. **Bug** — what failed?
 2. **Issue** — what is wrong in gameplay and what does it affect?
-3. **Bug Trigger (In-Game)** — exactly what should the tester do to make it happen?
+3. **Bug Trigger (In-Game)** — where/when does the tester start, what exact actions do they perform, and what wrong result proves the bug?
 4. **Solution** — what change is supported to resolve it?
+
+For Bug Trigger, the tester must not need to ask:
+
+- Where do I start?
+- How many players do I need?
+- Which phase, team, item, object, or UI do I use?
+- What exactly do I press / place / buy / break / enter?
+- How do I know the bug actually happened?
+
+Only include context that materially affects reproduction; do not pad steps with obvious navigation.
 
 If Issue or Solution requires Technical Analysis to understand its basic meaning, or Bug Trigger requires source-code knowledge, the bug is not ready for the normal tester-facing preview.
 
