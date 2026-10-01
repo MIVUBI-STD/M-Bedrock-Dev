@@ -9,7 +9,8 @@ export type BugReportCopyIssueCode =
   | "missing-reproduction"
   | "invalid-reproduction-length"
   | "code-centric-reproduction"
-  | "vague-reproduction";
+  | "vague-reproduction"
+  | "missing-observable-result";
 
 export interface BugReportCopyIssue {
   readonly code: BugReportCopyIssueCode;
@@ -62,6 +63,9 @@ const vagueReproductionPatterns = [
   /\bverify the logic\b/i,
   /\bsee if it happens\b/i,
 ] as const;
+
+const observableResultPattern =
+  /\b(confirm|observe|notice|verify)\b/i;
 
 const vagueActionPatterns = [
   /\bcheck (?:the|this)\b/i,
@@ -174,6 +178,21 @@ export function reviewBugReportCopy(
           });
         }
       });
+
+      const finalStep =
+        bug.reproduction[bug.reproduction.length - 1]!;
+      if (!observableResultPattern.test(finalStep)) {
+        issues.push({
+          code: "missing-observable-result",
+          path:
+            base +
+            ".reproduction[" +
+            (bug.reproduction.length - 1) +
+            "]",
+          message:
+            "The final Bug Trigger step must explicitly tell the tester what wrong result to confirm or observe in-game.",
+        });
+      }
     }
 
     if (bug.aiAnalysis) {
