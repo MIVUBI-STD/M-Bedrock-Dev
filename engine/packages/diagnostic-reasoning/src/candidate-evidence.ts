@@ -1,5 +1,5 @@
 import type {
-  GameplayDesignReadinessResult,
+  GameplayContract,
 } from "../../gameplay-intent/src/index.js";
 import type {
   DiagnosticEvidenceObservation,
@@ -22,6 +22,7 @@ export type GameplayBugCandidateKind =
 export interface GameplayBugCandidateRule {
   readonly id: string;
   readonly kind: GameplayBugCandidateKind;
+  readonly scopeSubjectIds?: readonly string[];
   readonly requiredPredicates: readonly string[];
   readonly anyOfPredicates?: readonly string[];
   readonly playerImpactPredicates: readonly string[];
@@ -77,9 +78,9 @@ function evidenceId(
 export function evaluateGameplayBugCandidateEvidence(
   rule: GameplayBugCandidateRule,
   evidence: readonly DiagnosticEvidenceObservation[],
-  designReadiness?: GameplayDesignReadinessResult,
+  gameplayContract?: GameplayContract,
 ): GameplayBugCandidateEvidenceResult {
-  if (designReadiness === undefined) {
+  if (gameplayContract === undefined) {
     return {
       ruleId: rule.id,
       kind: rule.kind,
@@ -95,7 +96,7 @@ export function evaluateGameplayBugCandidateEvidence(
     };
   }
 
-  if (designReadiness.disposition === "blocked") {
+  if (gameplayContract.readiness.disposition === "blocked") {
     return {
       ruleId: rule.id,
       kind: rule.kind,
@@ -106,8 +107,31 @@ export function evaluateGameplayBugCandidateEvidence(
       unresolvedCounterPredicates: [],
       missingPredicates: [],
       reasons: [
-        ...designReadiness.reasons,
+        ...gameplayContract.readiness.reasons,
         "Do not search for gameplay defects in a scope whose material design intent is unresolved.",
+      ],
+    };
+  }
+
+  const requiredScope =
+    rule.scopeSubjectIds ?? [];
+  if (
+    requiredScope.some(
+      (subjectId) =>
+        !gameplayContract.subjectIds.includes(subjectId),
+    )
+  ) {
+    return {
+      ruleId: rule.id,
+      kind: rule.kind,
+      disposition: "design-readiness-missing",
+      supportingEvidenceIds: [],
+      playerImpactEvidenceIds: [],
+      counterEvidenceIds: [],
+      unresolvedCounterPredicates: [],
+      missingPredicates: [],
+      reasons: [
+        "Gameplay Contract does not cover the candidate rule scope.",
       ],
     };
   }

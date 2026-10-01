@@ -4,12 +4,19 @@ import {
   type GameplayBugCandidateRule,
 } from "../src/index.js";
 
-const readyDesign = {
-  disposition: "ready" as const,
-  scopeSubjectIds: ["objective:test"],
-  blockingUnknownIds: [],
-  toleratedUnknownIds: [],
-  reasons: ["ready"],
+const readyContract = {
+  schemaVersion: 1 as const,
+  modelId: "test",
+  subjectIds: ["objective:test"],
+  invariantIds: ["inv:test"],
+  authorityEvidenceIds: ["design:test"],
+  readiness: {
+    disposition: "ready" as const,
+    scopeSubjectIds: ["objective:test"],
+    blockingUnknownIds: [],
+    toleratedUnknownIds: [],
+    reasons: ["ready"],
+  },
 };
 
 const rule: GameplayBugCandidateRule = {
@@ -41,11 +48,14 @@ describe("gameplay bug candidate evidence gate", () => {
       rule,
       [],
       {
-        disposition: "blocked",
-        scopeSubjectIds: ["objective:test"],
-        blockingUnknownIds: ["unknown:design"],
-        toleratedUnknownIds: [],
-        reasons: ["material design unknown"],
+        ...readyContract,
+        readiness: {
+          disposition: "blocked",
+          scopeSubjectIds: ["objective:test"],
+          blockingUnknownIds: ["unknown:design"],
+          toleratedUnknownIds: [],
+          reasons: ["material design unknown"],
+        },
       },
     );
     expect(result.disposition).toBe("design-blocked");
@@ -61,7 +71,7 @@ describe("gameplay bug candidate evidence gate", () => {
         { predicate: "next-attempt-gameplay-changed", state: "present", evidenceId: "e:impact" },
         { predicate: "design-allows-persistence", state: "present", evidenceId: "e:design" },
       ],
-      readyDesign,
+      readyContract,
     );
 
     expect(result.disposition).toBe(
@@ -78,7 +88,7 @@ describe("gameplay bug candidate evidence gate", () => {
         { predicate: "old-state-survives", state: "present" },
         { predicate: "next-attempt-gameplay-changed", state: "present" },
       ],
-      readyDesign,
+      readyContract,
     );
 
     expect(result.disposition).toBe(
@@ -95,7 +105,7 @@ describe("gameplay bug candidate evidence gate", () => {
         { predicate: "next-attempt-gameplay-changed", state: "absent" },
         { predicate: "design-allows-persistence", state: "absent" },
       ],
-      readyDesign,
+      readyContract,
     );
 
     expect(result.disposition).toBe("no-player-impact");
@@ -110,7 +120,7 @@ describe("gameplay bug candidate evidence gate", () => {
         { predicate: "next-attempt-gameplay-changed", state: "present", evidenceId: "e:impact" },
         { predicate: "design-allows-persistence", state: "absent" },
       ],
-      readyDesign,
+      readyContract,
     );
 
     expect(result.disposition).toBe("candidate");
