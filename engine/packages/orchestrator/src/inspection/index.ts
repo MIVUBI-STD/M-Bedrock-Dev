@@ -30,7 +30,7 @@ export * from "./gameplay-understanding-fingerprint.js";
 export * from "./gameplay-world-model.js";
 export * from "./inspect.js";
 export * from "./inspect-artifact.js";
-export * from "./inspect-authored-intent-source.js";
+export * from "./inspect-contract-source.js";
 export * from "./inventory-contract-analysis.js";
 export * from "./inventory-contract-load.js";
 export * from "./inventory-lifecycle-analysis.js";
