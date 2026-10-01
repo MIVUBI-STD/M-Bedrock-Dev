@@ -109,7 +109,7 @@ export function compileBugTrigger(
     steps: [
       terminal(startingCondition),
       ...actions.map(terminal),
-      "Confirm the wrong result: " +
+      "Confirm: " +
         terminal(observableFailure),
     ],
     evidenceIds,
