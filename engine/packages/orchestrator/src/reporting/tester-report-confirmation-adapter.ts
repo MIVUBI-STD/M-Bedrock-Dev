@@ -23,11 +23,11 @@ export function confirmTesterDefectForReport(
   const reasons: string[] = [];
 
   if (
-    input.expectedBehaviorAuthority === "authored-intent" &&
+    input.expectedBehaviorAuthority === "selected-artifact" &&
     input.intentDiagnostic?.disposition !== "confirmed-defect"
   ) {
     reasons.push(
-      "Authored-intent tester confirmation must pass the canonical intent diagnostic gate as confirmed-defect.",
+      "Selected-artifact tester confirmation must pass the canonical intent diagnostic gate as confirmed-defect.",
     );
   }
   if (!input.expectedStatement.trim()) {
