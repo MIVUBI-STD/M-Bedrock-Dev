@@ -22,14 +22,16 @@ The branch now contains:
 Current tracked corpus candidates:
 
 ```text
-calibration candidates   8
+calibration candidates   10
 regression candidates    19
 acceptance cases         0
 benchmark-ready cases    0
 stored map fingerprints  0
+positive evidence cases  19
+negative evidence cases  2
 ```
 
-The 8 calibration candidates are indexed from:
+The calibration candidates include 8 semantic-understanding map candidates plus 2 grounded known-good Gauntlet level cases. The semantic-understanding cases are indexed from:
 
 ```text
 engine/fixtures/calibration/gameplay-understanding-samples.json
