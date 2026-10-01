@@ -25,11 +25,25 @@ const model: GameplayIntentModel = {
 };
 
 describe("gameplay design readiness", () => {
+  it("blocks when authoritative Game Design is missing", () => {
+    const result = assessGameplayDesignReadiness(
+      model,
+      {
+        scopeSubjectIds: ["objective:flag"],
+      },
+    );
+
+    expect(result.disposition).toBe("blocked");
+    expect(result.reasons.join(" ")).toMatch(/authoritative current Game Design/i);
+  });
+
+
   it("blocks when a material unknown affects the audit scope", () => {
     const result = assessGameplayDesignReadiness(
       model,
       {
         scopeSubjectIds: ["objective:flag"],
+        authoritativeDesignAvailable: true,
         materialUnknownIds: ["unknown:retry"],
       },
     );
@@ -42,6 +56,7 @@ describe("gameplay design readiness", () => {
       model,
       {
         scopeSubjectIds: ["objective:flag"],
+        authoritativeDesignAvailable: true,
         nonMaterialUnknownIds: ["unknown:retry"],
       },
     );
@@ -54,6 +69,7 @@ describe("gameplay design readiness", () => {
       model,
       {
         scopeSubjectIds: ["objective:other"],
+        authoritativeDesignAvailable: true,
       },
     );
 
