@@ -4,61 +4,61 @@
     "platform": {
       "purpose": "Core platform, edition, compatibility, permission and API engineering contracts.",
       "files": [
-        "compatibility-policy.json",
-        "education-runtime-policy.json",
-        "permissions-policy.json",
-        "validation-policy.json"
+        "compatibility-contract.json",
+        "education-runtime-contract.json",
+        "permissions-contract.json",
+        "validation-contract.json"
       ]
     },
-    "world-runtime": {
-      "purpose": "World persistence, chunks, mutation, ordering and runtime-system engineering contracts.",
+    "world-engine": {
+      "purpose": "World-engine persistence, chunk, mutation, ordering, observability, and performance engineering contracts.",
       "files": [
-        "automation-policy.json",
-        "chunk-runtime-policy.json",
-        "command-context-policy.json",
-        "event-order-policy.json",
-        "observability-policy.json",
-        "performance-policy.json",
-        "persistence-policy.json",
-        "world-mutation-policy.json",
-        "world-state-policy.json"
+        "automation-contract.json",
+        "chunk-runtime-contract.json",
+        "command-context-contract.json",
+        "event-order-contract.json",
+        "observability-contract.json",
+        "performance-contract.json",
+        "persistence-contract.json",
+        "world-mutation-contract.json",
+        "world-state-contract.json"
       ]
     },
-    "player-experience": {
-      "purpose": "Player lifecycle, input, interaction, inventory and feedback behavior.",
+    "player-runtime": {
+      "purpose": "Player lifecycle, interaction, inventory, input, teleport, and feedback engineering contracts.",
       "files": [
-        "client-feedback-policy.json",
-        "input-gesture-policy.json",
-        "interaction-policy.json",
-        "interactive-blocks-policy.json",
-        "inventory-policy.json",
-        "player-life-policy.json",
-        "player-session-policy.json",
-        "teleport-policy.json"
+        "client-feedback-contract.json",
+        "input-gesture-contract.json",
+        "interaction-contract.json",
+        "interactive-blocks-contract.json",
+        "inventory-contract.json",
+        "player-life-contract.json",
+        "player-session-contract.json",
+        "teleport-contract.json"
       ]
     },
-    "entity-systems": {
-      "purpose": "Entity runtime, combat, effects, economy, mounts and NPC behavior.",
+    "entity-runtime": {
+      "purpose": "Entity lifecycle, combat, effects, economy, mounts, NPC, and physics engineering contracts.",
       "files": [
-        "combat-policy.json",
-        "effects-policy.json",
-        "entity-population-policy.json",
-        "entity-runtime-policy.json",
-        "loot-economy-policy.json",
-        "mounts-policy.json",
-        "npc-dialogue-policy.json",
-        "physics-policy.json"
+        "combat-contract.json",
+        "effects-contract.json",
+        "entity-population-contract.json",
+        "entity-runtime-contract.json",
+        "loot-economy-contract.json",
+        "mounts-contract.json",
+        "npc-dialogue-contract.json",
+        "physics-contract.json"
       ]
     },
-    "arena-gameplay": {
-      "purpose": "Arena lifecycle, round integrity, spatial/state authority and environment behavior.",
+    "gameplay-runtime": {
+      "purpose": "Arena, round, spatial/state authority, cinematic, and environment engineering contracts.",
       "files": [
-        "arena-cleanup-policy.json",
-        "cinematic-policy.json",
-        "environment-hazards-policy.json",
-        "round-integrity-policy.json",
-        "spatial-containment-policy.json",
-        "state-authority-policy.json"
+        "arena-cleanup-contract.json",
+        "cinematic-contract.json",
+        "environment-hazards-contract.json",
+        "round-integrity-contract.json",
+        "spatial-containment-contract.json",
+        "state-authority-contract.json"
       ]
     }
   }

@@ -3,6 +3,8 @@ export type KnowledgeAuthority =
   | "official-sample"
   | "community"
   | "observed"
+  | "engineering-contract"
+  /** @deprecated Historical compatibility only. */
   | "project-policy";
 
 export type KnowledgeConfidence =
@@ -106,6 +108,8 @@ export interface KnowledgeApplicability {
 export type KnowledgeClassification =
   | "engine-fact"
   | "derived-rule"
+  | "engineering-contract"
+  /** @deprecated Historical compatibility only. */
   | "project-policy"
   | "open-assumption";
 

@@ -17,9 +17,10 @@ for (const path of knowledgeFiles("engine/knowledge")) {
 }
 for (const name of readdirSync("engine/contracts/engineering/catalogs")) {
   if (!name.endsWith(".json")) continue;
+  if (name.endsWith("-policy.json")) failures.push("Engineering Contract catalog may not use legacy policy filename: "+name);
   const catalog=JSON.parse(readFileSync(join("engine/contracts/engineering/catalogs",name),"utf8"));
-  if (!(catalog.sources ?? []).some((source)=>source.authority==="project-policy")) failures.push("Engineering contract lacks project-policy provenance: "+name);
-  for (const item of [...(catalog.facts ?? []),...(catalog.relations ?? [])]) if (item.classification!=="project-policy") failures.push("Engineering contract item must be project-policy classified: "+name+"#"+item.id);
+  if (!(catalog.sources ?? []).some((source)=>source.authority==="engineering-contract")) failures.push("Engineering Contract lacks engineering-contract authority: "+name);
+  for (const item of [...(catalog.facts ?? []),...(catalog.relations ?? [])]) if (item.classification!=="engineering-contract") failures.push("Engineering Contract item must use engineering-contract classification: "+name+"#"+item.id);
 }
 if (failures.length) {
   console.error("Semantic authority separation violations:");

@@ -11,7 +11,7 @@ import type { KnowledgeCatalog, KnowledgeSource } from "./types.js";
 
 function validSourceUrl(source: KnowledgeSource): boolean {
   if (typeof source.url !== "string") return false;
-  if (source.authority === "project-policy") {
+  if (source.authority === "project-policy" || source.authority === "engineering-contract") {
     return source.url.startsWith("project://") || source.url.startsWith("https://");
   }
   return source.url.startsWith("https://");
@@ -109,9 +109,9 @@ export function validateKnowledgeCatalog(
     }
   }
 
-  const projectPolicySources = new Set(
+  const contractSources = new Set(
     sources
-      .filter((source) => source.authority === "project-policy")
+      .filter((source) => source.authority === "engineering-contract" || source.authority === "project-policy")
       .map((source) => source.id),
   );
 
@@ -165,11 +165,11 @@ export function validateKnowledgeCatalog(
     }
 
     if (
-      fact.classification === "project-policy" &&
-      !factSourceIds.some((sourceId) => projectPolicySources.has(sourceId))
+      (fact.classification === "project-policy" || fact.classification === "engineering-contract") &&
+      !factSourceIds.some((sourceId) => contractSources.has(sourceId))
     ) {
       errors.push(
-        `Project-policy knowledge fact requires project-policy provenance: ${fact.id}`,
+        `Contract-classified fact requires contract provenance: ${fact.id}`,
       );
     }
   }
@@ -378,11 +378,11 @@ export function validateKnowledgeCatalog(
       }
     }
     if (
-      relation.classification === "project-policy" &&
-      !relationSourceIds.some((sourceId) => projectPolicySources.has(sourceId))
+      (relation.classification === "project-policy" || relation.classification === "engineering-contract") &&
+      !relationSourceIds.some((sourceId) => contractSources.has(sourceId))
     ) {
       errors.push(
-        `Project-policy knowledge relation requires project-policy provenance: ${relation.id}`,
+        `Contract-classified relation requires contract provenance: ${relation.id}`,
       );
     }
   }

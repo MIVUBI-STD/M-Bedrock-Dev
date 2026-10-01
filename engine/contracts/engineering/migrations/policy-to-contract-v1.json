@@ -1,0 +1,288 @@
+{
+  "schemaVersion": 1,
+  "id": "engineering-contract-policy-naming-v1",
+  "status": "active",
+  "note": "Compatibility lineage for the canonical naming migration. Old names are historical aliases only and must not be used for new data.",
+  "aliases": [
+    {
+      "oldFile": "arena-cleanup-policy.json",
+      "newFile": "arena-cleanup-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "automation-policy.json",
+      "newFile": "automation-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "chunk-runtime-policy.json",
+      "newFile": "chunk-runtime-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "cinematic-policy.json",
+      "newFile": "cinematic-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "client-feedback-policy.json",
+      "newFile": "client-feedback-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "combat-policy.json",
+      "newFile": "combat-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "command-context-policy.json",
+      "newFile": "command-context-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "compatibility-policy.json",
+      "newFile": "compatibility-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "education-runtime-policy.json",
+      "newFile": "education-runtime-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "effects-policy.json",
+      "newFile": "effects-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "entity-population-policy.json",
+      "newFile": "entity-population-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "entity-runtime-policy.json",
+      "newFile": "entity-runtime-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "environment-hazards-policy.json",
+      "newFile": "environment-hazards-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "event-order-policy.json",
+      "newFile": "event-order-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "input-gesture-policy.json",
+      "newFile": "input-gesture-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "interaction-policy.json",
+      "newFile": "interaction-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "interactive-blocks-policy.json",
+      "newFile": "interactive-blocks-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "inventory-policy.json",
+      "newFile": "inventory-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "loot-economy-policy.json",
+      "newFile": "loot-economy-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "mounts-policy.json",
+      "newFile": "mounts-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "npc-dialogue-policy.json",
+      "newFile": "npc-dialogue-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "observability-policy.json",
+      "newFile": "observability-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "performance-policy.json",
+      "newFile": "performance-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "permissions-policy.json",
+      "newFile": "permissions-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "persistence-policy.json",
+      "newFile": "persistence-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "physics-policy.json",
+      "newFile": "physics-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "player-life-policy.json",
+      "newFile": "player-life-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "player-session-policy.json",
+      "newFile": "player-session-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "round-integrity-policy.json",
+      "newFile": "round-integrity-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "spatial-containment-policy.json",
+      "newFile": "spatial-containment-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "state-authority-policy.json",
+      "newFile": "state-authority-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "teleport-policy.json",
+      "newFile": "teleport-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "validation-policy.json",
+      "newFile": "validation-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "world-mutation-policy.json",
+      "newFile": "world-mutation-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    },
+    {
+      "oldFile": "world-state-policy.json",
+      "newFile": "world-state-contract.json",
+      "oldAuthority": "project-policy",
+      "newAuthority": "engineering-contract",
+      "oldClassification": "project-policy",
+      "newClassification": "engineering-contract"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ export const KNOWLEDGE_AUTHORITIES = [
   "official-sample",
   "community",
   "observed",
+  "engineering-contract",
   "project-policy",
 ] as const satisfies readonly KnowledgeAuthority[];
 
@@ -30,6 +31,7 @@ export const KNOWLEDGE_EDITIONS = [
 export const KNOWLEDGE_CLASSIFICATIONS = [
   "engine-fact",
   "derived-rule",
+  "engineering-contract",
   "project-policy",
   "open-assumption",
 ] as const satisfies readonly KnowledgeClassification[];
