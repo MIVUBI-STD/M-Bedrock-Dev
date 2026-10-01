@@ -13,12 +13,15 @@ import type {
   GameplayIntentRuntimeAssessment,
 } from "../../src/gameplay-intent-runtime-stage.js";
 import {
+  applyProposedBugReview,
   groupConfirmedDefects,
 } from "../../../bug-report/src/index.js";
 import {
   buildBugReportFromAuditCandidates,
   collectConfirmedDefects,
   describeAuditReportCandidate,
+  prepareBugReportReviewFromAuditCandidates,
+  type BuildBugReportFromAuditInput,
 } from "../../src/reporting/report-defect-collector.js";
 
 const intent: GameplayIntentModel = {
@@ -127,6 +130,36 @@ function defect(
   };
 }
 
+function buildApprovedReport(
+  input: Omit<BuildBugReportFromAuditInput, "approved">,
+) {
+  const prepared =
+    prepareBugReportReviewFromAuditCandidates({
+      map: input.map,
+      files: input.files,
+      candidates: input.candidates,
+      ...(input.groupResolutions === undefined
+        ? {}
+        : { groupResolutions: input.groupResolutions }),
+    });
+
+  const reviewed = applyProposedBugReview(
+    prepared.proposed,
+    prepared.proposed.items.map((item) => ({
+      semanticKey: item.semanticKey,
+      decision: "approve" as const,
+    })),
+  );
+  if (!reviewed.ok) {
+    throw new Error(reviewed.issues.join("; "));
+  }
+
+  return buildBugReportFromAuditCandidates({
+    ...input,
+    approved: reviewed.approved,
+  });
+}
+
 describe("report defect collector", () => {
   it("collects canonical defects from all three evidence routes", () => {
     const result = collectConfirmedDefects([
@@ -216,7 +249,7 @@ describe("report defect collector", () => {
     ).toBe("tester-reproduction");
 
     const report =
-      buildBugReportFromAuditCandidates({
+      buildApprovedReport({
         map: {
           name: "Beach Bedwars",
           mapVersion: "1.0.4",
@@ -242,7 +275,7 @@ describe("report defect collector", () => {
 
   it("compiles an evidence-bound AI Bug Trigger into the final report", () => {
     const result =
-      buildBugReportFromAuditCandidates({
+      buildApprovedReport({
         map: {
           name: "Beach Bedwars",
           mapVersion: "1.0.4",
@@ -362,7 +395,7 @@ describe("report defect collector", () => {
   });
 
   it("derives severity category and ids during final projection", () => {
-    const result = buildBugReportFromAuditCandidates({
+    const result = buildApprovedReport({
       map: {
         name: "Beach Bedwars",
         mapVersion: "1.0.4",
@@ -409,7 +442,7 @@ describe("report defect collector", () => {
   });
 
   it("keeps non-confirmed candidates out of the final report", () => {
-    const result = buildBugReportFromAuditCandidates({
+    const result = buildApprovedReport({
       map: {
         name: "Map",
         mapVersion: "1.0.0",
@@ -795,7 +828,7 @@ describe("report defect collector", () => {
   });
 
   it("blocks promotion when AI source evidence is not in the audited inventory", () => {
-    const result = buildBugReportFromAuditCandidates({
+    const result = buildApprovedReport({
       map: {
         name: "Map",
         mapVersion: "1.0.0",
@@ -1048,7 +1081,7 @@ describe("report defect collector", () => {
       preview.confirmed,
     )[0]!.key;
 
-    const result = buildBugReportFromAuditCandidates({
+    const result = buildApprovedReport({
       map: {
         name: "Beach Bedwars",
         mapVersion: "1.0.4",
@@ -1144,11 +1177,11 @@ describe("report defect collector", () => {
       }],
     };
 
-    const first = buildBugReportFromAuditCandidates({
+    const first = buildApprovedReport({
       ...input,
       candidates: makeCandidates(false),
     });
-    const second = buildBugReportFromAuditCandidates({
+    const second = buildApprovedReport({
       ...input,
       candidates: makeCandidates(true),
     });
