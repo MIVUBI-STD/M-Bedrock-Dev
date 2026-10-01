@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
-import { createPatchTransaction } from "../../repair/src/index.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
 import {
   selectRepairStrategy,
-} from "../src/repair-strategy-selection.js";
+} from "../../src/repair/repair-strategy-selection.js";
 import {
   createDecisionLedger,
-} from "../src/decision-ledger.js";
+} from "../../src/decision-ledger.js";
 import {
   recordRepairStrategySelection,
-} from "../src/decision-ledger-recording.js";
+} from "../../src/decision-ledger-recording.js";
 
 function source(relativePath: string) {
   return { artifactId: "art-1", relativePath };

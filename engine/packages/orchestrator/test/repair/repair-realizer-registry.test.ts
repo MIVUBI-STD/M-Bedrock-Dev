@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SemanticGraph } from "../../graph/src/index.js";
-import { createPatchTransaction } from "../../repair/src/index.js";
+import { SemanticGraph } from "../../../graph/src/index.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
 import {
   BUILTIN_REPAIR_REALIZERS,
   assessRepairRealizerCoverage,
@@ -9,7 +9,7 @@ import {
   deriveChangedSemanticNodeIds,
   repairRealizerRegistryRevision,
   type RepairStrategyEnumeration,
-} from "../src/index.js";
+} from "../../src/index.js";
 
 describe("repair realizer registry and graph binding", () => {
   it("derives changed semantic nodes from operation source refs", () => {

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { createPatchTransaction } from "../../repair/src/index.js";
+import { createPatchTransaction } from "../../../repair/src/index.js";
 import {
   BUILTIN_REPAIR_STRATEGY_PROVIDERS,
   repairStrategyProviderRegistryRevision,
   validateRepairStrategyProviderProposal,
   validateRepairStrategyProviderRegistry,
   type RepairStrategyProviderRegistry,
-} from "../src/repair-strategy-provider.js";
+} from "../../src/repair/repair-strategy-provider.js";
 
 function transaction() {
   return createPatchTransaction({
