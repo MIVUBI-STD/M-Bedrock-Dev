@@ -5,6 +5,8 @@ Applies to persisted bug reports under `workspace/reports/`.
 ## Authority
 
 - Only canonical Bug Report V2 JSON may be stored here.
+- This directory is the persisted current-state authority for bug reports. Drive exports, UI state, spreadsheets, PDFs, and legacy QA material are non-authoritative projections or inputs.
+- Record the current audited map version first. Do not backfill missing historical reports merely for completeness, and never invent old bug state.
 - One report represents one audited map/version set.
 - `map.mapVersion` and `map.drive` are mandatory; `map.drive` must be a Google Drive URL for the audited map artifact.
 - One report has one `Repair By` value for the whole bug list.
