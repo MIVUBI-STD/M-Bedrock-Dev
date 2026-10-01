@@ -27,6 +27,9 @@ interface ViteDevServerLike {
 interface VitePluginLike {
   readonly name: string;
   configureServer(server: ViteDevServerLike): void;
+  configurePreviewServer(
+    server: ViteDevServerLike,
+  ): void;
 }
 
 function env(
@@ -163,64 +166,69 @@ export function bugReportApiPlugin():
         })
       : undefined;
 
+  const mount = (
+    server: ViteDevServerLike,
+  ): void => {
+    server.middlewares.use(
+      (req, res, next) => {
+        const path =
+          new URL(
+            req.url ?? "/",
+            "http://localhost",
+          ).pathname;
+
+        if (
+          !path.startsWith(
+            "/api/bug-report",
+          )
+        ) {
+          next();
+          return;
+        }
+
+        if (!store) {
+          unavailable(
+            res,
+            "Bug report GitHub backend is not configured. Set M_BEDROCK_GITHUB_TOKEN.",
+          );
+          return;
+        }
+
+        void (async () => {
+          try {
+            const request =
+              await toFetchRequest(req);
+            const response =
+              await handleBugReportStoreRequest(
+                request,
+                store,
+                publicationProvider,
+              );
+            await writeFetchResponse(
+              response,
+              res,
+            );
+          } catch (error) {
+            res.statusCode = 500;
+            res.setHeader(
+              "Content-Type",
+              "application/json",
+            );
+            res.end(JSON.stringify({
+              error:
+                error instanceof Error
+                  ? error.message
+                  : String(error),
+            }));
+          }
+        })();
+      },
+    );
+  };
+
   return {
     name: "m-bedrock-bug-report-api",
-    configureServer(server) {
-      server.middlewares.use(
-        (req, res, next) => {
-          const path =
-            new URL(
-              req.url ?? "/",
-              "http://localhost",
-            ).pathname;
-
-          if (
-            !path.startsWith(
-              "/api/bug-report",
-            )
-          ) {
-            next();
-            return;
-          }
-
-          if (!store) {
-            unavailable(
-              res,
-              "Bug report GitHub backend is not configured. Set M_BEDROCK_GITHUB_TOKEN.",
-            );
-            return;
-          }
-
-          void (async () => {
-            try {
-              const request =
-                await toFetchRequest(req);
-              const response =
-                await handleBugReportStoreRequest(
-                  request,
-                  store,
-                  publicationProvider,
-                );
-              await writeFetchResponse(
-                response,
-                res,
-              );
-            } catch (error) {
-              res.statusCode = 500;
-              res.setHeader(
-                "Content-Type",
-                "application/json",
-              );
-              res.end(JSON.stringify({
-                error:
-                  error instanceof Error
-                    ? error.message
-                    : String(error),
-              }));
-            }
-          })();
-        },
-      );
-    },
+    configureServer: mount,
+    configurePreviewServer: mount,
   };
 }
