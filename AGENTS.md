@@ -134,7 +134,7 @@ version/edition/capability   → m-bedrock-compatibility
 ownership ambiguity          → m-bedrock-cross-owner-routing
 ```
 
-Keep one lane active. A capability gap found during Map Audit is recorded and handed off; it does not implicitly switch the current task into development.
+Keep one lane active. A detection gap found during Map Audit is recorded and handed off; it does not implicitly switch the current task into development.
 
 ## Evidence-first mutation
 

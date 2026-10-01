@@ -33,7 +33,7 @@ for(const phrase of [
   "Detection Development",
   "Detection Benchmark",
   "Domain specialists",
-  "capability-gap"
+  "detection-gap"
 ]){
   if(!routing.includes(phrase)) failures.push("Skill routing is missing canonical concept: "+phrase);
 }
@@ -73,8 +73,8 @@ const contentAnalysis=readFileSync(".agents/skills/m-bedrock-content-analysis/SK
 if(!contentAnalysis.includes("DOMAIN SPECIALIST")){
   failures.push("Content Analysis must remain a domain specialist, not a work lane.");
 }
-if(!contentAnalysis.includes("capability-gap")){
-  failures.push("Content Analysis must hand unsupported operational evidence back as capability-gap.");
+if(!contentAnalysis.includes("detection-gap")){
+  failures.push("Content Analysis must hand unsupported operational evidence back as detection-gap.");
 }
 
 const registryPath=".agents/skill-registry.json";

@@ -20,7 +20,7 @@ Allowed:
 - reconstruct design/intent;
 - run current analyzers;
 - classify findings;
-- identify capability gaps.
+- identify detection gaps.
 
 Forbidden:
 - improving analyzers/rules/knowledge during the audit;
@@ -87,7 +87,7 @@ user goal
 → continue lane
 ```
 
-A lane remains active across domain handoffs. Do not replace Map Audit with Detection Development automatically when a capability gap appears.
+A lane remains active across domain handoffs. Do not replace Map Audit with Detection Development automatically when a detection gap appears.
 
 ## Handoff contracts
 
@@ -96,7 +96,7 @@ A lane remains active across domain handoffs. Do not replace Map Audit with Dete
 Emit:
 
 ```text
-Capability Gap
+Detection Gap
 - unsupported claim/evidence
 - seed artifact/reference
 - current proof ceiling

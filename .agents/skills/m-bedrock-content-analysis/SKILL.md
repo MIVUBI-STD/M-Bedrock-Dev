@@ -23,9 +23,9 @@ Prefer content hashes, selective parsing, and change-scoped invalidation over fu
 
 ## Lane boundary
 
-This skill does not decide whether the current job is Map Audit or Capability Development.
+This skill does not decide whether the current job is Map Audit or Detection Development.
 
-- In **Map Bug Audit**, use existing analysis capability only. If required semantics are unsupported, emit `capability-gap` and return to the audit lane.
-- In **Capability Development**, this skill defines analyzer semantics/ownership, but development acceptance is owned by `m-bedrock-capability-development`.
+- In **Map Bug Audit**, use existing analysis capability only. If required semantics are unsupported, emit `detection-gap` and return to the audit lane.
+- In **Detection Development**, this skill defines analyzer semantics/ownership, but development acceptance is owned by `m-bedrock-detection-development`.
 
 Never modify analyzer implementation merely because an operational audit encounters unsupported evidence.

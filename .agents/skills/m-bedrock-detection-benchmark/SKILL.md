@@ -75,3 +75,13 @@ Benchmark never automatically resumes Map Bug Audit.
 ## STOP
 
 Stop after the frozen expectation has a result class and any reusable mismatch has a bounded handoff.
+
+
+## Reference routing
+
+Load only when relevant:
+
+- `references/benchmark-expectation.md` — frozen expectation format and mismatch interpretation;
+- `references/corpus-rules.md` — corpus validity, privacy, and regression stability.
+
+Benchmark references define evaluation only; they do not authorize production changes.

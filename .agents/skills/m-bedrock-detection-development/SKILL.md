@@ -12,7 +12,7 @@ This is not generic product development. A UI feature, packaging feature, refact
 
 Enter only from one of:
 
-- a Map Bug Audit `capability-gap`;
+- a Map Bug Audit `detection-gap`;
 - a known detector false negative;
 - a known detector false positive;
 - stale/missing Platform Knowledge or Platform Rule;
@@ -42,7 +42,7 @@ Enter only from one of:
 ## Development pipeline
 
 ```text
-Capability Gap / detector regression
+Detection Gap / detector regression
 → smallest reproduction
 → classify first missing capability
 → select canonical owner
@@ -109,3 +109,13 @@ Benchmark success does not automatically reopen the seed map audit.
 ## STOP
 
 Stop when generalized acceptance is implemented and the next required action belongs to benchmark, another owner, unavailable runtime proof, or unrelated cleanup.
+
+
+## Reference routing
+
+Load only when relevant:
+
+- `references/detection-gap-classification.md` — first-missing-owner classification;
+- `references/generalization-checks.md` — seed-map leakage and reusable acceptance review.
+
+Do not copy seed-map details into production logic merely because they appear in the handoff.

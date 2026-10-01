@@ -28,7 +28,7 @@ Target Repair
 
 ```text
 Map Bug Audit
-  capability-gap
+  detection-gap
     → handoff record
     → STOP claim
 

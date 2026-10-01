@@ -5,7 +5,8 @@
     "detectionDevelopment": "Improve reusable bug-detection/diagnosis/proof capability.",
     "detectionBenchmark": "Measure detection capability against frozen expectations.",
     "targetRepair": "Mutate target working copy after grounded diagnosis.",
-    "productDevelopment": "General repository/product development outside bug-detection improvement; uses normal development contract, not a detection lane."
+    "productDevelopment": "General repository/product development outside bug-detection improvement; uses normal development contract, not a detection lane.",
+    "detectionGap": "Explicit handoff when current stable bug-detection capability cannot support a claim; not a map defect."
   },
   "workLanes": {
     "m-bedrock-map-bug-audit": {
@@ -21,7 +22,7 @@
       "outputs": [
         "audit-candidate-dispositions",
         "bug-findings",
-        "capability-gap",
+        "detection-gap",
         "runtime-proof-residue"
       ],
       "handoffs": [

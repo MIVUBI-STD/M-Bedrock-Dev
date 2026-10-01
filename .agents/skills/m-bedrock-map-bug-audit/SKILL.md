@@ -29,7 +29,7 @@ A map/artifact may be incomplete. That does not justify switching to development
 - compare current Behavior Contracts;
 - classify findings and proof ceilings;
 - record manual checks and known limits;
-- emit a capability-gap handoff.
+- emit a detection-gap handoff.
 
 ## Forbidden actions
 
@@ -63,9 +63,9 @@ Every investigated candidate ends in exactly one disposition:
 - `ambiguous-intent`
 - `insufficient-evidence`
 - `runtime-proof-required`
-- `capability-gap`
+- `detection-gap`
 
-Do not convert `capability-gap` into a defect.
+Do not convert `detection-gap` into a defect.
 
 ## Defect severity
 
@@ -98,7 +98,7 @@ Next owner (only when needed)
 When M-Bedrock-Dev cannot reliably inspect the claim, emit:
 
 ```text
-Capability Gap
+Detection Gap
 - unsupported claim/evidence
 - seed artifact/reference
 - smallest reproduction
@@ -110,7 +110,7 @@ Capability Gap
 
 Then STOP that claim.
 
-A capability gap may start a separate `m-bedrock-detection-development` run later. It never changes the active lane automatically.
+A detection gap may start a separate `m-bedrock-detection-development` run later. It never changes the active lane automatically.
 
 ## Manual checks and known limits
 
@@ -140,7 +140,7 @@ Static/package evidence never becomes runtime proof by wording.
 
 Audit may hand off to:
 
-- Detection Development for `capability-gap`;
+- Detection Development for `detection-gap`;
 - Target Repair for a reproduced defect;
 - runtime/manual validation for `runtime-proof-required`.
 
@@ -149,3 +149,14 @@ Do not perform the handed-off work inside this lane.
 ## STOP
 
 Stop when every in-scope candidate has a disposition, proof ceiling, severity when applicable, and explicit residue/handoff.
+
+
+## Reference routing
+
+Load only when relevant:
+
+- `references/finding-contract.md` — candidate disposition and evidence fields;
+- `references/manual-checks.md` — explicit manual/live-runtime residues;
+- `references/known-limits.md` — current detector limits and fallback shape.
+
+Do not read all references by default.
