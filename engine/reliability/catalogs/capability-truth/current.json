@@ -2,22 +2,22 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "829f9e5f993fd6ea30f4b3d66c36f7b38025d4e4",
+    "commit": "1a4eb461b1744a33e65c1b990b07a98cbb547f1f",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "c7effb07",
-    "proofInventoryFingerprint": "3a8b672f"
+    "registryFingerprint": "fb405964",
+    "proofInventoryFingerprint": "a7ec1b0d"
   },
   "summary": {
-    "taskCapabilities": 36,
-    "ownerTested": 36,
+    "taskCapabilities": 38,
+    "ownerTested": 38,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
-    "analysisCapabilities": 27
+    "analysisCapabilities": 29
   },
   "taskCapabilities": [
     {
@@ -723,8 +723,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 28,
-      "testFiles": 24,
+      "sourceFiles": 30,
+      "testFiles": 26,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -748,8 +748,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 28,
-      "testFiles": 24,
+      "sourceFiles": 30,
+      "testFiles": 26,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -773,8 +773,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 28,
-      "testFiles": 24,
+      "sourceFiles": 30,
+      "testFiles": 26,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -798,8 +798,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 28,
-      "testFiles": 24,
+      "sourceFiles": 30,
+      "testFiles": 26,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -823,8 +823,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 28,
-      "testFiles": 24,
+      "sourceFiles": 30,
+      "testFiles": 26,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -848,8 +848,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 28,
-      "testFiles": 24,
+      "sourceFiles": 30,
+      "testFiles": 26,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -873,8 +873,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 28,
-      "testFiles": 24,
+      "sourceFiles": 30,
+      "testFiles": 26,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -898,8 +898,58 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 28,
-      "testFiles": 24,
+      "sourceFiles": 30,
+      "testFiles": 26,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "source.scripts.recovery",
+      "owner": "analyzers/scripts",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 30,
+      "testFiles": 26,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "source.scripts.semantic-flow",
+      "owner": "analyzers/scripts",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 30,
+      "testFiles": 26,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
@@ -1369,6 +1419,46 @@
         "identity",
         "state",
         "lineage"
+      ]
+    },
+    {
+      "id": "script-semantic-flow",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "script",
+        "dataflow",
+        "taint",
+        "identity",
+        "reward",
+        "state",
+        "world-mutation"
+      ]
+    },
+    {
+      "id": "script-source-recovery",
+      "evidenceLevel": "static",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "script",
+        "bundle",
+        "minified",
+        "source-map",
+        "source-recovery"
       ]
     },
     {
