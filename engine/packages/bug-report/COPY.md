@@ -82,15 +82,26 @@ Rules:
 - describe what actually happens;
 - must not duplicate Expected.
 
-### Reproduction
+### Reproduction / Verify
 
-Purpose: provide the shortest reliable path to the failure.
+Purpose: give the tester a short path to **prove the bug in-game**.
+
+Required structure:
+
+```text
+Setup / trigger → action → observable failure
+```
 
 Rules:
 
+- required for every new bug that enters the tester-facing report;
+- use 2–5 steps;
 - each step maximum 160 characters;
 - one action or state transition per step;
-- omit when no valid reproduction exists and the route does not require one.
+- the final step must state the visible failure/result the tester should observe;
+- write gameplay instructions, not code-analysis instructions;
+- do not use vague steps such as "test it", "check the bug", or "see if it happens";
+- if no tester-verifiable path exists yet, keep the finding internal instead of presenting it as a tester-ready bug.
 
 ### AI Analysis
 
