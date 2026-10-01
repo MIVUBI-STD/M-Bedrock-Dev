@@ -6,7 +6,7 @@ import type {
 } from "./promote-v2.js";
 
 export type ExpectedBehaviorAuthority =
-  | "authored-intent"
+  | "selected-artifact"
   | "explicit-requirement"
   | "runtime-contract";
 
