@@ -34,7 +34,6 @@ The UI does not analyze maps or diagnose bugs. It presents confirmed bugs so a t
 
 Presentation rules are owned by `engine/packages/bug-report/PREVIEW.md`. Wording quality is owned by `engine/packages/bug-report/COPY.md`.
 
-Client publication uses `buildBugReportPublicationPayload()` to project canonical V2 into the quality-gated client document defined by `engine/packages/bug-report/DOCUMENT.md`. `Publish Client Report` is available only for canonical GitHub reports with a loaded revision. Google Docs is the editable publication surface; PDF is exported from that same Google Doc so wording and layout do not drift. Server-side Google transport lives in `tooling/bug-report-ui/google-publication-provider.ts`; OAuth credentials never belong in the browser.
 
 Commands:
 
