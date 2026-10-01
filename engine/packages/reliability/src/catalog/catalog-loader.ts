@@ -17,26 +17,6 @@ import {
   validateUpdateDelta,
 } from "./catalogs.js";
 
-interface RegressionCatalogFile {
-  schemaVersion: number;
-  regressions: RegressionCase[];
-}
-
-interface FailurePatternCatalogFile {
-  schemaVersion: number;
-  patterns: FailurePattern[];
-}
-
-interface CoverageCatalogFile {
-  schemaVersion: number;
-  coverage: BlindspotCoverage[];
-}
-
-interface UpdateDeltaCatalogFile {
-  schemaVersion: number;
-  delta: MinecraftUpdateDelta;
-}
-
 async function readJson(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8")) as unknown;
 }
@@ -68,7 +48,6 @@ export async function loadRegressionCatalog(
   if (errors.length) throw new Error(errors.join("\n"));
   return regressions;
 }
-
 
 export async function loadFailurePatternCatalog(
   catalogRoot: string,
