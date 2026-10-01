@@ -65,10 +65,15 @@ export function reviewBugReportReadiness(
       });
     }
 
+    const hasTechnicalAnalysis =
+      typeof bug.aiAnalysis === "string" &&
+      bug.aiAnalysis.trim().length > 0;
+    const hasRelevantCode = hasItems(bug.relevantCode);
+
     if (
       bug.suggestedFix !== undefined &&
-      bug.aiAnalysis === undefined &&
-      !hasItems(bug.relevantCode)
+      !hasTechnicalAnalysis &&
+      !hasRelevantCode
     ) {
       issues.push({
         code: "solution-without-support",
