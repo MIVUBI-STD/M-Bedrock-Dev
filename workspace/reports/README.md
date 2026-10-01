@@ -7,10 +7,16 @@ Each new report represents one audited map/version set and must be tester-facing
 Canonical flow:
 
 ```text
-AUDIT → BUG REPORT → REPAIR
+AUDIT
+→ PROPOSED BUG SET
+→ CHAT REVIEW
+→ APPROVED BUG SET
+→ BUG REPORT V2
+→ HTML
+→ REPAIR
 ```
 
-Store only canonical Bug Report V2 JSON here. This directory is the persisted bug-state authority; UI state, Drive files, PDFs, spreadsheets, and external QA notes are not parallel authorities. Do not store raw analysis traces, caches, temporary evidence indexes, repair forms, verification records, or duplicate Markdown copies.
+Store only canonical Bug Report V2 JSON here. This directory is the persisted bug-state authority; UI state, derived HTML, Drive copies, spreadsheets, and external QA notes are not parallel authorities. Do not store raw analysis traces, caches, temporary evidence indexes, repair forms, verification records, or duplicate Markdown copies.
 
 
 Report policy is owned by `engine/packages/bug-report/`:
@@ -64,6 +70,10 @@ Compatibility note:
 
 Handoff rule:
 
+- normal user-facing creation requires an Approved Bug Set from explicit chat review;
+- every proposed Blocker/Major must be approve, reject, or resolved from needs-discussion before publication;
+- rejected items never enter canonical Bug Report V2;
+- if no bugs are approved, no report is created;
 - new reports must pass tester readiness and copy quality before being created in this workspace;
 - schema-valid legacy reports may remain for compatibility, but must not be treated as handoff-ready automatically;
 - normal human presentation follows `Bug → Issue → Bug Trigger (In-Game) → Solution`.

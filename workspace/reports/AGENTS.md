@@ -5,7 +5,7 @@ Applies to persisted bug reports under `workspace/reports/`.
 ## Authority
 
 - Only canonical Bug Report V2 JSON may be stored here.
-- This directory is the persisted current-state authority for bug reports. Drive exports, UI state, spreadsheets, PDFs, and legacy QA material are non-authoritative projections or inputs.
+- This directory is the persisted current-state authority for bug reports. Derived HTML, Drive copies, UI state, spreadsheets, and legacy QA material are non-authoritative projections or inputs.
 - Record the current audited map version first. Do not backfill missing historical reports merely for completeness, and never invent old bug state.
 - One report represents one audited map/version set.
 - `map.mapVersion` and `map.drive` are mandatory; `map.drive` must be a Google Drive URL for the audited map artifact.
@@ -24,7 +24,8 @@ Default behavior:
 
 - standard preview;
 - open bugs only;
-- Blocker → Major → Minor → Bug ID;
+- Blocker → Major only;
+- Minor appears only when explicitly requested;
 - show Issue first;
 - show Bug Trigger (In-Game) directly after Issue;
 - show Solution only when canonical Suggested Fix exists;
@@ -47,3 +48,15 @@ Use `engine/packages/bug-report/` as the semantic owner of the report contract.
 
 - New reports use Bug Report V2 only and must be handoff-ready. V1 exists solely for compatibility migration.
 - Canonical bug origin is exactly `ai` or `tester`; do not introduce `both` / `ai+tester` in V2.
+
+
+## Approval gate
+
+Normal user-facing report creation is discussion-first.
+
+- Proposed Bug Set is temporary derived review data.
+- Every proposed Blocker/Major requires an explicit chat decision.
+- `needs-discussion` or missing decisions block persistence/publication.
+- Rejected items never enter canonical Bug Report V2.
+- No approved bugs means no report file and no HTML.
+- The UI is not an approval authority and must not create a new canonical report from an arbitrary imported file.

@@ -5,7 +5,7 @@
 The current user-facing surface is intentionally limited to:
 
 ```text
-AUDIT → BUG REPORT
+APPROVED BUG REPORT → READ / INSPECT / EXPORT
 ```
 
 Repair state remains canonical data for compatibility, but is not part of the primary audit surface. The tracker begins at **BUG REPORT**. It must not expose internal audit pipelines, proof systems, caches, task graphs, or diagnostic orchestration.
@@ -51,16 +51,14 @@ Use when the report is supplied manually.
 Import JSON → Read / Inspect → Export
 ```
 
-A file report may also be explicitly created on GitHub.
-
-An imported file may later be explicitly saved to GitHub. A GitHub report may always be exported as JSON.
+Imported files are inspection/export inputs only. They are never promoted to canonical GitHub state by this UI. Canonical creation belongs to the approval-gated engine workflow.
 
 ## Workspace hierarchy
 
 The report workspace has four visual levels:
 
 1. **Identity** — map name, Map Version, and exact Minecraft Education Tested Version.
-2. **Signal** — Open Issues plus Blocker/Major/Minor counts.
+2. **Signal** — Open Issues plus Blocker/Major counts by default.
 3. **Bug block** — preview number, severity, title, Issue, Bug Trigger (In-Game), and Solution.
 4. **Bug detail** — Expected, Observed, Technical Analysis, Relevant Code, and Must Preserve.
 
@@ -71,8 +69,10 @@ A reader should understand the problem, in-game trigger, and supported solution 
 Default ordering is deterministic:
 
 ```text
-Blocker → Major → Minor → Bug ID
+Blocker → Major → Bug ID
 ```
+
+Minor is detail-on-demand only when explicitly requested.
 
 Primary audit view shows open bugs only.
 
@@ -138,7 +138,7 @@ When handoff-quality issues exist:
 - show a compact `Compatibility report — not handoff-ready` warning;
 - list the specific readiness and wording gaps;
 - keep read and Export JSON available;
-- disable creating the report on GitHub from the file-import path;
+- keep canonical GitHub creation unavailable from the file-import path;
 - do not mutate or silently rewrite legacy content;
 - do not hide missing Bug Trigger or technical-support requirements.
 
@@ -150,14 +150,13 @@ The UI always knows its current source, but source metadata is never written int
 
 ### File source
 
-Available actions:
+Available action:
 
 ```text
 Export JSON
-Save to GitHub
 ```
 
-`Save to GitHub` creates the imported report as a GitHub report. It is not a repair-state save and is available only when the report passes tester readiness.
+Canonical GitHub creation is intentionally unavailable from imported files because approval belongs to the discussion/review boundary, not the presentation UI.
 
 ### GitHub source
 
