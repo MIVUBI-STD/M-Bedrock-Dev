@@ -18,6 +18,7 @@ import {
 import {
   buildBugReportFromAuditCandidates,
   collectConfirmedDefects,
+  describeAuditReportCandidate,
 } from "../../src/reporting/report-defect-collector.js";
 
 const intent: GameplayIntentModel = {
@@ -194,6 +195,121 @@ describe("report defect collector", () => {
       .toContain("invariants=inv:cleanup");
     expect(result.confirmed[0]?.semanticKey)
       .not.toContain("caller-controlled");
+  });
+
+  it("keeps confirmed AI defects internal until Bug Trigger is available", () => {
+    const candidate = {
+      route: "static" as const,
+      intent,
+      result: staticResult,
+      defect: defect("ai-without-trigger", { ai: true }),
+    };
+
+    const collected =
+      collectConfirmedDefects([candidate]);
+
+    expect(collected.confirmed).toHaveLength(1);
+    expect(
+      describeAuditReportCandidate(candidate)
+        .nextEvidenceNeed,
+    ).toBe("tester-reproduction");
+
+    const report =
+      buildBugReportFromAuditCandidates({
+        map: {
+          name: "Beach Bedwars",
+          mapVersion: "1.0.4",
+          baseVersion: "1.26.20",
+          testedVersion: "1.26.32",
+        },
+        repairBy: "developer",
+        files: [{
+          relativePath: "scripts/session.ts",
+          size: 1,
+        }],
+        candidates: [candidate],
+      });
+
+    expect(report.promotion.ok).toBe(false);
+    if (report.promotion.ok) return;
+    expect(
+      report.promotion.issues.map(
+        (issue) => issue.code,
+      ),
+    ).toContain("missing-reproduction");
+  });
+
+  it("compiles an evidence-bound AI Bug Trigger into the final report", () => {
+    const result =
+      buildBugReportFromAuditCandidates({
+        map: {
+          name: "Beach Bedwars",
+          mapVersion: "1.0.4",
+          baseVersion: "1.26.20",
+          testedVersion: "1.26.32",
+        },
+        repairBy: "developer",
+        files: [{
+          relativePath: "scripts/session.ts",
+          size: 1,
+        }],
+        candidates: [{
+          route: "static",
+          intent,
+          result: staticResult,
+          bugTrigger: {
+            startingCondition:
+              "Finish a match and return to the lobby",
+            actions: [
+              "Start the same arena again",
+            ],
+            observableFailure:
+              "the new match does not start",
+            evidenceIds: [
+              "intent:evidence",
+              "static:cleanup",
+            ],
+          },
+          defect: defect("ai-ready", { ai: true }),
+        }],
+      });
+
+    expect(result.promotion.ok).toBe(true);
+    if (!result.promotion.ok) return;
+    expect(
+      result.promotion.report.bugs[0]?.reproduction,
+    ).toEqual([
+      "Finish a match and return to the lobby.",
+      "Start the same arena again.",
+      "Confirm the wrong result: the new match does not start.",
+    ]);
+  });
+
+  it("rejects AI Bug Trigger evidence from another defect", () => {
+    const result = collectConfirmedDefects([{
+      route: "static",
+      intent,
+      result: staticResult,
+      bugTrigger: {
+        startingCondition: "Finish a match",
+        observableFailure:
+          "the next match does not start",
+        evidenceIds: ["runtime:unrelated"],
+      },
+      defect: defect("ai-unrelated-trigger", {
+        ai: true,
+      }),
+    }]);
+
+    expect(result.confirmed).toHaveLength(0);
+    expect(result.rejected[0]).toEqual(
+      expect.objectContaining({
+        nextEvidenceNeed: "candidate-correction",
+      }),
+    );
+    expect(
+      result.rejected[0]?.reasons.join(" "),
+    ).toMatch(/Bug Trigger evidence/);
   });
 
   it("derives severity category and ids during final projection", () => {
