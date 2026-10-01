@@ -41,6 +41,8 @@ Use this before broad repository search.
 | Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
 | Game Design specification schema/loader/compiler | engine/packages/game-design-spec/ + engine/design/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
+| Knowledge source freshness/quarantine | engine/packages/knowledge/src/freshness.ts |
+| Declarative evidence-based diagnostic rules | engine/packages/diagnostic-reasoning/src/declarative-rules.ts |
 | Engineering/validation contracts | engine/contracts/engineering/ |
 | Education edition/feature profile | engine/packages/compatibility/education* |
 | Repair transactions/preconditions/application | engine/packages/repair/ |

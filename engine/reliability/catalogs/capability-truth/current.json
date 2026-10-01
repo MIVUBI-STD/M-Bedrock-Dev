@@ -2,18 +2,18 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "branch": "Local",
-    "commit": "fa229f8aa1fd9b266b9879fd7e8f7f14590934e0",
+    "commit": "1e6a1b9d964c09a497a5080a0e708070bc480137",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
       "engine/packages/analysis-planner/src/arena-capabilities.ts"
     ],
-    "registryFingerprint": "98a7b749",
-    "proofInventoryFingerprint": "086a221c"
+    "registryFingerprint": "43402de2",
+    "proofInventoryFingerprint": "d558beb7"
   },
   "summary": {
-    "taskCapabilities": 42,
-    "ownerTested": 42,
+    "taskCapabilities": 44,
+    "ownerTested": 44,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 3,
@@ -283,15 +283,40 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 12,
-      "testFiles": 8,
+      "sourceFiles": 13,
+      "testFiles": 9,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/diagnostic-reasoning/test/behavior-evidence.test.ts",
         "engine/packages/diagnostic-reasoning/test/calibration.test.ts",
         "engine/packages/diagnostic-reasoning/test/counterexample-explanation.test.ts",
-        "engine/packages/diagnostic-reasoning/test/diagnostic-reasoning.test.ts",
-        "engine/packages/diagnostic-reasoning/test/intent-gate.test.ts"
+        "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts",
+        "engine/packages/diagnostic-reasoning/test/diagnostic-reasoning.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "diagnosis.declarative-rules",
+      "owner": "packages/diagnostic-reasoning",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 13,
+      "testFiles": 9,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/diagnostic-reasoning/test/behavior-evidence.test.ts",
+        "engine/packages/diagnostic-reasoning/test/calibration.test.ts",
+        "engine/packages/diagnostic-reasoning/test/counterexample-explanation.test.ts",
+        "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts",
+        "engine/packages/diagnostic-reasoning/test/diagnostic-reasoning.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
@@ -513,6 +538,31 @@
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/dataflow/test/dataflow.test.ts"
+      ],
+      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+    },
+    {
+      "id": "knowledge.freshness",
+      "owner": "packages/knowledge",
+      "status": "owner-tested",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 17,
+      "testFiles": 8,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/packages/knowledge/test/entity-reasoning.test.ts",
+        "engine/packages/knowledge/test/evaluate.test.ts",
+        "engine/packages/knowledge/test/freshness.test.ts",
+        "engine/packages/knowledge/test/invariant-compiler.test.ts",
+        "engine/packages/knowledge/test/knowledge-v2.test.ts"
       ],
       "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
     },
