@@ -2,13 +2,13 @@
 
 ## Product surface
 
-The user-facing workflow is intentionally limited to:
+The current user-facing surface is intentionally limited to:
 
 ```text
-AUDIT → REPORT → FIX
+AUDIT → BUG REPORT
 ```
 
-The tracker begins at **REPORT**. It must not expose internal audit pipelines, proof systems, caches, task graphs, or diagnostic orchestration.
+Repair state remains canonical data for compatibility, but is not part of the primary audit surface. The tracker begins at **BUG REPORT**. It must not expose internal audit pipelines, proof systems, caches, task graphs, or diagnostic orchestration.
 
 ## Reader-first contract
 
@@ -40,7 +40,7 @@ Neither source changes the Bug Report V2 contract.
 Use when the report already exists in `bug-reports/`.
 
 ```text
-Report List → Open Report → Fix → Save
+Report List → Open Report → Read / Inspect → Export
 ```
 
 ### File
@@ -48,8 +48,10 @@ Report List → Open Report → Fix → Save
 Use when the report is supplied manually.
 
 ```text
-Import JSON → Fix → Export JSON
+Import JSON → Read / Inspect → Export
 ```
+
+A file report may also be explicitly created on GitHub.
 
 An imported file may later be explicitly saved to GitHub. A GitHub report may always be exported as JSON.
 
@@ -57,10 +59,10 @@ An imported file may later be explicitly saved to GitHub. A GitHub report may al
 
 The report workspace has four visual levels:
 
-1. **Identity** — map name and versions.
-2. **Signal** — open count and Blocker/Major/Minor counts.
-3. **Bug list** — severity, title, Issue, Bug Trigger (In-Game), and Solution.
-4. **Bug detail** — expected, observed, technical analysis, relevant code, must preserve.
+1. **Identity** — map name, Map Version, and exact Minecraft Education Tested Version.
+2. **Signal** — Open Issues plus Blocker/Major/Minor counts.
+3. **Bug block** — preview number, severity, title, Issue, Bug Trigger (In-Game), and Solution.
+4. **Bug detail** — Expected, Observed, Technical Analysis, Relevant Code, and Must Preserve.
 
 A reader should understand the problem and next supported action before opening bug detail.
 
@@ -72,15 +74,16 @@ Default ordering is deterministic:
 Blocker → Major → Minor → Bug ID
 ```
 
-Default view is `Not Fixed` when a report contains unfinished bugs; otherwise `All`.
+Primary audit view shows open bugs only.
 
-Available filters stay intentionally small:
+Available controls stay intentionally small:
 
-- All / Not Fixed / Fixed
 - Severity
 - Search
 
-Do not add category, Found By, owner, date, confidence, or workflow filters until real report volume proves they are needed.
+Search covers tester-facing content: Bug title, Issue, Bug Trigger (In-Game), Solution, and Severity.
+
+Do not add Fixed state, Category, Found By, owner, date, confidence, or workflow filters to the audit surface.
 
 ## Bug block
 
@@ -102,11 +105,12 @@ Expanded order is fixed:
 ```text
 Expected
 Observed
-Reproduction
 Technical Analysis
 Relevant Code
 Must Preserve
 ```
+
+Bug Trigger (In-Game) stays in the primary scan block rather than being repeated in detail.
 
 Problem/Issue, Bug Trigger (In-Game), and supported Solution belong in the scan layer, not buried in expanded detail.
 
@@ -121,56 +125,34 @@ UI-specific density rules:
 - Solution is shown only when Suggested Fix exists.
 - Bug Trigger (In-Game) is always visible for tester-ready bugs.
 - Technical detail is subordinate to the tester-facing bug block.
-- Fixed bugs are visually reduced and hidden by default when open bugs exist.
+- Fixed bugs are excluded from the current audit surface.
 
 ## Persistence
 
-The UI always knows its current source, but source is never written into Bug Report V2.
+The UI always knows its current source, but source metadata is never written into Bug Report V2.
 
 ### File source
 
-Primary persistence action:
+Available actions:
 
 ```text
 Export JSON
-```
-
-Optional secondary action:
-
-```text
 Save to GitHub
 ```
 
+`Save to GitHub` creates the imported report as a GitHub report. It is not a repair-state save.
+
 ### GitHub source
 
-Primary persistence action:
-
-```text
-Save
-```
-
-Secondary action:
+Available action:
 
 ```text
 Export JSON
 ```
 
+The audit surface does not edit repair ownership or Fixed state, so there is no dormant GitHub Save action.
+
 GitHub authentication must stay server-side or use an approved authenticated integration. Never place a long-lived GitHub token in browser code.
-
-## Save safety
-
-GitHub mode must show only compact persistence feedback:
-
-```text
-Saved
-Saving…
-Save failed
-Unsaved changes
-```
-
-These are UI persistence states, not bug workflow states and are never persisted in Bug Report V2.
-
-Leaving a dirty report must ask for confirmation.
 
 ## Keyboard and density
 
@@ -178,9 +160,8 @@ Desktop behavior should prioritize fast scanning:
 
 - `/` focuses search.
 - `Esc` clears search or closes the current expanded detail where practical.
-- Checkbox targets must remain large enough to click without opening the detail row.
 - Do not hide severity behind hover or menus.
-- Do not require a modal for routine Fixed changes.
+- Bug Trigger numbered steps must remain readable without horizontal scrolling.
 
 Keyboard support follows the same productivity principle used by mature issue trackers, but only shortcuts with repeated value should be added.
 
@@ -189,9 +170,9 @@ Keyboard support follows the same productivity principle used by mature issue tr
 - Dense, not cramped.
 - Dark neutral surface; severity is the strongest color signal.
 - Issue and Solution are stronger than metadata.
-- Fixed bugs remain available but visually reduced.
+- Open bugs only on the primary audit surface.
 - Blocker must scan before secondary metadata.
-- One primary action per persistence source.
+- One clear persistence action set per source.
 - No dashboard charts unless report volume later demonstrates a real need.
 
 ## Explicit non-goals
@@ -209,15 +190,7 @@ Do not add:
 - generic custom fields;
 - mandatory notes when checking Fixed.
 
-The tracker is a focused repair handoff tool, not a general project-management product.
-
-## GitHub conflict safety
-
-GitHub persistence uses optimistic concurrency. When a report is opened, its source revision is retained outside Bug Report V2. Save succeeds only if the GitHub report still has the same revision.
-
-If the remote report changed, the UI shows `Changed on GitHub` and must not overwrite the remote report. Local edits remain available for Export JSON. Reloading the GitHub version is explicit.
-
-Source revision is persistence metadata and must never be written into Bug Report V2.
+The tracker is a focused tester-facing bug handoff surface, not a general project-management product.
 
 ## Report list priority signal
 
