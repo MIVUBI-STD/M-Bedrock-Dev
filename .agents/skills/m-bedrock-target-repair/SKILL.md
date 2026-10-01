@@ -1,3 +1,9 @@
+---
+name: m-bedrock-target-repair
+description: >
+  Repair or intentionally modify a target map/source working copy after grounded diagnosis. Use for target mutation; not detector development.
+---
+
 # M-Bedrock Target Repair
 
 **Lane:** OPERATIONAL / TARGET REPAIR

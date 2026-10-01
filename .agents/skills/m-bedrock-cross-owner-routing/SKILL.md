@@ -1,3 +1,9 @@
+---
+name: m-bedrock-cross-owner-routing
+description: >
+  Resolve genuine ambiguity between work lanes or semantic owners, then hand off and stop. Do not use as an audit, development, benchmark, or repair lane.
+---
+
 # M-Bedrock Cross-Owner Routing
 
 Use only when ownership is genuinely ambiguous across lanes or semantic domains and a normal bounded contract cannot yet be trusted.

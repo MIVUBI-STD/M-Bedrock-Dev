@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock Detection Benchmark Result",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "expectationId",
+    "resultClass",
+    "metrics"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "expectationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resultClass": {
+      "enum": [
+        "pass",
+        "false-negative",
+        "false-positive",
+        "semantic-mismatch",
+        "evidence-insufficient",
+        "runtime-proof-required",
+        "fixture-invalid"
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "tp",
+        "fp",
+        "fn",
+        "unknown"
+      ],
+      "properties": {
+        "tp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "precision": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "recall": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

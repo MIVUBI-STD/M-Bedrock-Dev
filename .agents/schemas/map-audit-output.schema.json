@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock Map Audit Output",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "artifactId",
+    "candidates"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "artifactId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "disposition",
+          "proofCeiling"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "disposition": {
+            "enum": [
+              "defect",
+              "designed-behavior",
+              "ambiguous-intent",
+              "insufficient-evidence",
+              "runtime-proof-required",
+              "detection-gap"
+            ]
+          },
+          "proofCeiling": {
+            "enum": [
+              "STATIC VERIFIED",
+              "PACKAGE VERIFIED",
+              "LOCAL GAME VERIFIED",
+              "LIVE GAME VERIFIED",
+              "UNKNOWN"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "Blocker",
+              "Major",
+              "Minor"
+            ]
+          },
+          "expectedAuthority": {
+            "type": "string"
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nextOwner": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

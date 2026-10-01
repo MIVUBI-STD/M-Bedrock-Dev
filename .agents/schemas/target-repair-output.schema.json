@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock Target Repair Output",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "targetOwner",
+    "changedSemanticSurface",
+    "verification"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "targetOwner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changedSemanticSurface": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification": {
+      "type": "object"
+    },
+    "runtimeResidue": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

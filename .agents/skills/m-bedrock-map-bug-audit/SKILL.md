@@ -1,3 +1,9 @@
+---
+name: m-bedrock-map-bug-audit
+description: >
+  Audit a target Minecraft Bedrock/Education map for gameplay defects using existing stable detection capability. Use for bug finding, retest, and defect classification; not detector development.
+---
+
 # M-Bedrock Map Bug Audit
 
 **Lane:** OPERATIONAL / MAP USE

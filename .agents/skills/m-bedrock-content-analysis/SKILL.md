@@ -1,3 +1,9 @@
+---
+name: m-bedrock-content-analysis
+description: >
+  Analyze manifests, functions, commands, references, semantic graphs, diagnostics, and topology as a read-only domain specialist. Does not choose the active work lane.
+---
+
 # M-Bedrock Content Analysis
 
 **Role:** DOMAIN SPECIALIST — read-only semantic analysis

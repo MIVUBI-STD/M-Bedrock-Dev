@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "terminology": {
     "mapAudit": "Use stable detection capability on a target map.",
     "detectionDevelopment": "Improve reusable bug-detection/diagnosis/proof capability.",
@@ -28,6 +28,17 @@
       "handoffs": [
         "m-bedrock-detection-development",
         "m-bedrock-target-repair"
+      ],
+      "revision": 1,
+      "outputSchema": ".agents/schemas/map-audit-output.schema.json",
+      "deterministicEntrypoint": ".agents/skills/m-bedrock-map-bug-audit/scripts/validate-output.mjs",
+      "evidenceTiers": [
+        "E0",
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
       ]
     },
     "m-bedrock-detection-development": {
@@ -45,6 +56,17 @@
       ],
       "handoffs": [
         "m-bedrock-detection-benchmark"
+      ],
+      "revision": 1,
+      "outputSchema": ".agents/schemas/detection-delta.schema.json",
+      "deterministicEntrypoint": ".agents/skills/m-bedrock-detection-development/scripts/validate-delta.mjs",
+      "evidenceTiers": [
+        "E0",
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
       ]
     },
     "m-bedrock-detection-benchmark": {
@@ -61,6 +83,17 @@
       ],
       "handoffs": [
         "m-bedrock-detection-development"
+      ],
+      "revision": 1,
+      "outputSchema": ".agents/schemas/benchmark-result.schema.json",
+      "deterministicEntrypoint": ".agents/skills/m-bedrock-detection-benchmark/scripts/score-benchmark.mjs",
+      "evidenceTiers": [
+        "E0",
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
       ]
     },
     "m-bedrock-target-repair": {
@@ -79,6 +112,16 @@
       ],
       "handoffs": [
         "m-bedrock-detection-development"
+      ],
+      "revision": 1,
+      "outputSchema": ".agents/schemas/target-repair-output.schema.json",
+      "deterministicEntrypoint": ".agents/skills/m-bedrock-target-repair/scripts/validate-output.mjs",
+      "evidenceTiers": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
       ]
     }
   },
@@ -105,5 +148,6 @@
       "mutatesEngine": false,
       "mutatesTarget": false
     }
-  }
+  },
+  "registryRevision": 1
 }

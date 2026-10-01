@@ -1,3 +1,9 @@
+---
+name: m-bedrock-detection-benchmark
+description: >
+  Measure bug-detection correctness, coverage, and regression against frozen expectations. Use for detector evaluation; not production implementation changes or map auditing.
+---
+
 # M-Bedrock Detection Benchmark
 
 **Lane:** EVALUATION / DETECTION REGRESSION

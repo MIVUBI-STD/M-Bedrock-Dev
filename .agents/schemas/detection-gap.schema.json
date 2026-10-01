@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock Detection Gap",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "gapClass",
+    "unsupportedClaim",
+    "proofCeiling",
+    "likelyOwner"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "gapClass": {
+      "enum": [
+        "ingest-gap",
+        "parser-gap",
+        "semantic-gap",
+        "platform-knowledge-gap",
+        "platform-rule-gap",
+        "design-grounding-gap",
+        "behavior-contract-gap",
+        "diagnostic-gap",
+        "proof-gap",
+        "runtime-harness-gap",
+        "reporting-gap"
+      ]
+    },
+    "unsupportedClaim": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proofCeiling": {
+      "enum": [
+        "STATIC VERIFIED",
+        "PACKAGE VERIFIED",
+        "LOCAL GAME VERIFIED",
+        "LIVE GAME VERIFIED",
+        "UNKNOWN"
+      ]
+    },
+    "likelyOwner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "smallestReproduction": {
+      "type": "string"
+    },
+    "auditImpact": {
+      "type": "string"
+    },
+    "manualFallback": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

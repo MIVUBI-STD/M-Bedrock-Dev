@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M-Bedrock Detection Capability Delta",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "gapClass",
+    "canonicalOwner",
+    "acceptance",
+    "before",
+    "expectedAfter"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "gapClass": {
+      "type": "string",
+      "minLength": 1
+    },
+    "canonicalOwner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "acceptance": {
+      "type": "string",
+      "minLength": 1
+    },
+    "before": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expectedAfter": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fixture": {
+      "type": "string"
+    },
+    "proofCeiling": {
+      "type": "string"
+    },
+    "remainingResidue": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}
