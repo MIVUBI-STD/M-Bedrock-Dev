@@ -195,19 +195,18 @@ The promotion-only `status` is not persisted in Bug Report V2.
 
 ## Output density
 
-Developer-facing report text should answer the minimum useful questions:
+The normal tester-facing scan should answer only the minimum useful questions:
 
 ```text
-What is wrong?
-What should happen?
-What actually happens?
-How can I trigger it in-game?
-Where should I look?
-What does the AI analysis suggest?
-What must the repair preserve?
+What failed?
+What gameplay impact does it cause?
+How can I trigger and prove it in-game?
+What supported solution exists?
 ```
 
-Do not copy internal proof chains, diagnostic IDs, planner output, confidence scores, cache metadata, or orchestration details into the report.
+Expected, Observed, Technical Analysis, Relevant Code, and Must Preserve belong to Repair Detail and appear only on demand.
+
+Do not copy internal proof chains, diagnostic IDs, planner output, confidence scores, cache metadata, or orchestration details into tester-facing report copy.
 
 
 ## Defect confirmation
