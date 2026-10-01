@@ -140,7 +140,7 @@ interface presentation             → apps/*
 
 ## Current phase
 
-Repository foundation, domain-intelligence layers, repair routing, and domain-aware affected planning exist. The active lane is workflow-compression integration: developer-surface task planning, affected verification with conservative fallback, and explicit reusable-work identity.
+Repository foundation, domain-intelligence layers, repair routing, and domain-aware affected planning exist. The active lane is detection-decision hardening: gameplay-intent authority, counter-evidence, player-impact admission, severity discipline, chat approval, and derived HTML publication.
 
 Current continuation: `docs/07-operations/next-action.md`.
 Current proof state: `docs/07-operations/current-validation.md`.

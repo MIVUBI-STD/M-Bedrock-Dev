@@ -34,7 +34,7 @@ Gameplay Intent is not the canonical Game Design owner. Minecraft documentation 
 
 A downstream defect conclusion must not be stronger than the intent evidence that supports the expected behavior.
 
-Authored intent contradicted by observed evidence can support a confirmed defect classification. Inferred intent can support only a probable defect until stronger evidence is obtained. Unresolved intent ambiguity blocks defect classification.
+Authored intent can support a confirmed defect only when its gameplay authority is independent of the current implementation. Inferred intent and source-only authored intent remain ambiguous until stronger design authority exists. Unresolved intent ambiguity blocks defect classification.
 
 
 ## Authority resolution

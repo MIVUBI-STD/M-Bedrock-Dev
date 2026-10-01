@@ -22,7 +22,7 @@ Physical placement does not create ownership. A copy, preview, export, spreadshe
 | Human/application presentation | `apps/bug-report-ui/` projection only |
 | Revision history | Git history |
 | Map binary/source artifacts | Google Drive |
-| Published human-facing report | derived Drive PDF snapshot |
+| Published human-facing report | derived self-contained HTML snapshot |
 | Incoming/legacy QA material | import/reference only |
 
 ## Current-version-first policy
@@ -47,10 +47,13 @@ This is an efficiency and integrity rule: unknown history stays unknown.
 candidate evidence
 → confirmed defect
 → tester-readiness gate
+→ Proposed Bug Set
+→ chat review: approve / reject / needs-discussion
+→ Approved Bug Set
 → canonical Bug Report V2
 → repair / verification
 → canonical update
-→ derived presentation/export
+→ derived HTML presentation
 ```
 
 Only confirmed, current-version defects are promoted into canonical report state.
@@ -87,7 +90,7 @@ It must not:
 
 Drive stores map artifacts and optional published human-facing bug-report snapshots.
 
-A Drive PDF is:
+A published HTML snapshot is:
 - derived from canonical JSON;
 - a communication snapshot;
 - not editable canonical state;
@@ -137,13 +140,25 @@ Intermediate workflow labels such as "in progress", "ready for retest", or "reop
 ## Publication boundary
 
 ```text
-canonical JSON
+approved bug set
+→ canonical JSON
 → validated projection
-→ PDF/export
-→ Drive
+→ self-contained HTML
+→ optional publication
 ```
 
-Publication is one-way. Drive edits never flow back into canonical state.
+Publication is one-way. HTML edits never flow back into canonical state.
+
+## Review boundary
+
+Normal user-facing bug-report production is discussion-first.
+
+- Proposed Bug Set is derived and temporary, not another persisted database.
+- Every proposed Blocker/Major requires an explicit chat decision.
+- `needs-discussion` blocks publication.
+- Rejected items never enter Bug Report V2.
+- If no items are approved, stop without generating HTML.
+- HTML is generated once from the approved canonical report, not repeatedly during discussion.
 
 ## Non-goals
 

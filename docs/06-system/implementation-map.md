@@ -22,17 +22,18 @@ Use this before broad repository search.
 | Bundled/minified source-shape recovery + source-map discovery | engine/analyzers/scripts/src/recovery/source-recovery.ts |
 | Source-map generated→original binding | engine/analyzers/scripts/src/recovery/source-map-binding.ts |
 | Compact data-flow context slice for diagnosis/AI context | engine/packages/orchestrator/src/script-dataflow-context.ts |
-| Evidence-backed gameplay intent graph, authored invariants, unknowns, and intent grounding | engine/packages/gameplay-intent/ |
+| Evidence-backed gameplay intent graph, authored invariants, unknowns, intent grounding, and domain-specific authority resolution | engine/packages/gameplay-intent/ |
 | Canonical gameplay semantic projection | engine/packages/orchestrator/src/gameplay-semantic-model.ts |
 | Canonical map engineering/QA assessment projection | engine/packages/orchestrator/src/map-engineering-assessment.ts |
 | Legacy mixed gameplay/engineering compatibility projection | engine/packages/orchestrator/src/gameplay-world-model.ts |
 | Formal behavioral state/transition/temporal property kernel + Minecraft overlays | engine/packages/behavior-model/ |
 | Constraint-backed reachability, invariant proof, and counterexample traces | engine/packages/logic-solver/ |
 | Competing hypotheses, falsifiers, and diagnostic probe discrimination | engine/packages/diagnostic-reasoning/ |
-| Gameplay-critical candidate discovery + counter-evidence suppression | engine/packages/diagnostic-reasoning/src/candidate-discovery.ts |
+| Gameplay-critical candidate discovery + counter-evidence suppression | engine/packages/diagnostic-reasoning/src/candidate-evidence.ts |
 | Diagnostic contract/IDs | engine/packages/diagnostics/ |
 | Validation step/result contracts | engine/packages/validation/ |
 | Bug Report V2 semantics/lifecycle; V1 import compatibility only | engine/packages/bug-report/ + engine/schemas/bug-report/ |
+| Proposed Bug Set chat-review / approval boundary | engine/packages/bug-report/src/review.ts |
 | Canonical persisted bug-report current state | workspace/reports/*.json |
 | Bug-report ownership/storage boundary | docs/06-system/bug-report-ownership.md |
 | Client-facing bug-report document projection/design | engine/packages/bug-report/src/document/ + engine/packages/bug-report/DOCUMENT.md |
