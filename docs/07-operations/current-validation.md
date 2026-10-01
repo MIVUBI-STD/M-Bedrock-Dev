@@ -23,7 +23,7 @@ Current tracked corpus candidates:
 
 ```text
 calibration candidates   8
-regression candidates    3
+regression candidates    19
 acceptance cases         0
 benchmark-ready cases    0
 stored map fingerprints  0
@@ -35,7 +35,7 @@ The 8 calibration candidates are indexed from:
 engine/fixtures/calibration/gameplay-understanding-samples.json
 ```
 
-The 3 regression candidates are indexed from:
+The regression candidates are indexed from grounded historical/manual QA evidence in:
 
 ```text
 engine/reliability/catalogs/regressions.json
