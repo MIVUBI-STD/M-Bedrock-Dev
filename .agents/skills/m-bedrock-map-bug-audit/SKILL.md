@@ -1,7 +1,7 @@
 ---
 name: m-bedrock-map-bug-audit
 description: >
-  Audit one Minecraft Bedrock/Education map version for gameplay bugs using game-design-first analysis. Selected-version-only; no target repair.
+  Audit one Minecraft Bedrock/Education map version for gameplay bugs using game-design-first analysis and production report output.
 ---
 
 # M-Bedrock Map Bug Audit
@@ -29,9 +29,9 @@ Selected Map Version
 → Progression Rules
 → Multiplayer / Multi Arena Rules
 → Actual Behavior
-→ Contradiction
+→ Gameplay Contradiction
 → Bug Classification
-→ Production Bug Report
+→ Production Bug Report V2
 ```
 
 Required references:
@@ -40,6 +40,7 @@ Required references:
 - `references/gameplay-flow-contract.md`
 - `references/multi-arena-contract.md`
 - `references/bug-report-contract.md`
+- `../../schemas/map-audit-output-v2.schema.json`
 
 ## Gameplay Contract
 
@@ -53,7 +54,8 @@ The audit must establish:
 - reset rules;
 - preserve rules;
 - progression rules;
-- multiplayer rules.
+- multiplayer rules;
+- multi arena rules when applicable.
 
 If expected behavior cannot be grounded from the selected artifact, keep it unknown.
 
@@ -63,7 +65,7 @@ A confirmed defect requires:
 
 1. grounded contradiction inside the selected version;
 2. counter-evidence cleared;
-3. player-visible impact (`blocking`, `material`, or `limited`);
+3. player-visible impact;
 4. tester-verifiable world reproduction path.
 
 Severity:
@@ -72,9 +74,11 @@ Severity:
 - Major — core gameplay/state/fairness is materially wrong;
 - Minor — limited but real player-visible impact.
 
-## Output
+## Output Contract
 
-Generate production bug report structure:
+Primary output uses Map Audit Output V2 and Production Bug Report V2.
+
+Each issue must contain:
 
 ```text
 Bug ID
@@ -106,10 +110,11 @@ Do not expose implementation details as reproduction steps.
 ```text
 Detected Issue Set
 → confirmed | needs-validation | ambiguous
+→ Approved Bug Set
 → Bug Report V2
 ```
 
-Do not hide unresolved issues that may represent real defects. Do not publish normal/designed behavior as bugs.
+Do not publish normal/designed behavior as bugs.
 
 ## Forbidden
 
