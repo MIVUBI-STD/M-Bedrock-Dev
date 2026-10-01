@@ -6,22 +6,27 @@ It is expected to have higher fan-out than ordinary engine modules because it co
 
 ## Internal navigation
 
-The public surface is `src/index.ts`. Exports are grouped by responsibility rather than discovery order.
-
-Use these families when locating an orchestration module:
+The public surface is `src/index.ts`, but it now routes through family entrypoints instead of exporting hundreds of flat implementation modules directly.
 
 ```text
-inspection / semantic composition
-arena / multiplayer composition
-diagnosis / runtime evidence
-repair composition
-reliability / portfolio
-reporting
-repository workflow / control plane
-release / operational state
+src/
+├── core/index.ts
+├── inspection/index.ts
+├── arena/index.ts
+├── diagnosis/index.ts
+├── repair/index.ts
+├── reliability/index.ts
+├── reporting/index.ts
+├── workflow/index.ts
+├── release/index.ts
+└── index.ts
 ```
 
-File prefixes are navigation aids, not new semantic authorities. A module that starts owning reusable policy, persistent domain state, parsing, or mutation semantics must move to the corresponding canonical package/analyzer rather than growing a second owner inside orchestrator.
+These family barrels are the canonical navigation hierarchy for orchestrator.
+
+Implementation files remain temporarily flat beneath `src/` while CI/local verification is intentionally deferred. This avoids a mass import-path migration without proof. New orchestrator work should enter through the matching family and should not add another uncategorized root export.
+
+The next physical-move phase may relocate implementation files family-by-family once import verification is available; the family boundaries above should remain stable.
 
 ## Inspection pipeline
 
