@@ -14,6 +14,11 @@ export class GitHubReportConflictError extends Error {
   }
 }
 
+export interface LoadedBugReportSnapshot {
+  readonly report: BugReportV2;
+  readonly revision: string;
+}
+
 export interface PublishedBugReportLinks {
   readonly revision: string;
   readonly googleDoc: {
@@ -102,7 +107,9 @@ export class GitHubReportClient
     ).reports;
   }
 
-  async loadReport(path: string): Promise<BugReportV2> {
+  async loadReportSnapshot(
+    path: string,
+  ): Promise<LoadedBugReportSnapshot> {
     const body = await this.#json(
       "/api/bug-report?path=" +
         encodeURIComponent(path),
@@ -110,7 +117,11 @@ export class GitHubReportClient
     if (
       typeof body !== "object" ||
       body === null ||
-      !("report" in body)
+      !("report" in body) ||
+      !("revision" in body) ||
+      typeof (
+        body as { revision?: unknown }
+      ).revision !== "string"
     ) {
       throw new Error(
         "GitHub report response is invalid.",
@@ -124,7 +135,20 @@ export class GitHubReportClient
         "GitHub report response is not valid V2.",
       );
     }
-    return parsed.report;
+    return {
+      report: parsed.report,
+      revision: (
+        body as { revision: string }
+      ).revision,
+    };
+  }
+
+  async loadReport(
+    path: string,
+  ): Promise<BugReportV2> {
+    return (
+      await this.loadReportSnapshot(path)
+    ).report;
   }
 
   async publishReport(
