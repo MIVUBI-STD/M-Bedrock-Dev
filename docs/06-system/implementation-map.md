@@ -57,6 +57,9 @@ Use this before broad repository search.
 | Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
 | Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
 | Game Design specification schema/loader/compiler | engine/packages/game-design-spec/ + engine/design/ |
+| Design-readiness / scoped Gameplay Contract workflow | engine/design/ + engine/packages/gameplay-intent/ |
+| Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
+| Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
 | Knowledge source freshness/quarantine | engine/packages/knowledge/src/freshness.ts |
 | Declarative evidence-based diagnostic rules | engine/packages/diagnostic-reasoning/src/declarative-rules.ts |
