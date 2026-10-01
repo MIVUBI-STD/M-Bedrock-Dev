@@ -281,9 +281,6 @@ export function createIntentGroundingDiagnosisExecutor():
           parsedScripts:
             payload.sourceIndex
               .parsedScripts,
-          ...(payload.gameDesign === undefined
-            ? {}
-            : { gameDesign: payload.gameDesign }),
         });
 
       if (
@@ -315,9 +312,7 @@ export function createIntentGroundingDiagnosisExecutor():
           ],
         }],
         reasons: [
-          payload.gameDesign === undefined
-            ? "Gameplay intent was reconstructed from indexed implementation evidence. This does not establish Game Design authority."
-            : "Gameplay intent reconstruction includes the supplied current Game Design authority.",
+          "Gameplay intent was reconstructed only from the selected artifact source index.",
         ],
       };
     },
@@ -416,6 +411,7 @@ export function createAuthoredIntentDiagnosisExecutor():
           parsedScripts:
             payload.sourceIndex
               .parsedScripts,
+          referenceMode: "comparison",
           authoredScripts,
           ...(payload.gameDesign === undefined
             ? {}
@@ -448,9 +444,7 @@ export function createAuthoredIntentDiagnosisExecutor():
           ],
         }],
         reasons: [
-          payload.gameDesign === undefined
-            ? "Gameplay intent is supported by explicitly recognized authored implementation source evidence, but Game Design authority is still required before gameplay defect classification."
-            : "Gameplay intent includes authored implementation evidence and the supplied current Game Design authority.",
+          "Reference/comparison intent was reconstructed from configured authored/reference sources. It is not normal-audit authority.",
         ],
       };
     },
