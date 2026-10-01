@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   assertRuntimeProbeTranscriptArtifact,
   loadRuntimeProbeTranscript,
-} from "../src/runtime-probe-load.js";
+} from "../../src/diagnosis/runtime-probe-load.js";
 
 describe("runtime probe transcript loading", () => {
   it("loads and validates a trusted transcript", async () => {

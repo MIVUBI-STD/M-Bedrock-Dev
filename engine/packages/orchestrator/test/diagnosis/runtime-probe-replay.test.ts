@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { CausalIncident } from "../../project-model/src/index.js";
-import type { DiagnosticProbeDefinition } from "../../project-model/src/index.js";
+import type { CausalIncident } from "../../../project-model/src/index.js";
+import type { DiagnosticProbeDefinition } from "../../../project-model/src/index.js";
 import type {
   RuntimeProbeExchange,
   RuntimeProbeTranscript,
-} from "../../project-model/src/index.js";
-import { replayRuntimeProbeTranscript } from "../src/runtime-probe-replay.js";
+} from "../../../project-model/src/index.js";
+import { replayRuntimeProbeTranscript } from "../../src/diagnosis/runtime-probe-replay.js";
 
 function incident(): CausalIncident {
   return {

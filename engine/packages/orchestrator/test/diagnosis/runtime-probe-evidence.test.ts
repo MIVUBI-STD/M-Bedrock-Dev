@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runtimeProbeResponseEvidence } from "../src/runtime-probe-evidence.js";
+import { runtimeProbeResponseEvidence } from "../../src/diagnosis/runtime-probe-evidence.js";
 
 describe("runtime probe response evidence", () => {
   it("normalizes response evidence and summarizes states", () => {
