@@ -50,7 +50,11 @@ function defect(
       statement: "State remains.",
       evidenceIds: ["tester:cleanup"],
     },
-    reproduction: ["Complete a match and inspect state."],
+    reproduction: [
+      "Complete a match normally.",
+      "Return to the lobby.",
+      "Confirm the match-owned state remains after cleanup.",
+    ],
   };
 }
 
