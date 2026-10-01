@@ -27,6 +27,11 @@ describe("createBugReportV2", () => {
         problem: "Arena state is stale after reconnect.",
         expected: "The player rejoins the same arena cleanly.",
         observed: "The previous membership remains active.",
+        reproduction: [
+          "Join an arena and start a match.",
+          "Disconnect and reconnect.",
+          "Confirm the previous arena membership remains bound to the old session.",
+        ],
         aiAnalysis: "The reconnect path keeps stale arena membership.",
         suggestedFix: "Rebind arena membership to the new session.",
       }],
