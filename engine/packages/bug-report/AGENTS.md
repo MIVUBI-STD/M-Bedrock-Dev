@@ -8,6 +8,7 @@ Keep one source of truth per concern:
 
 - persisted V2 semantics: `src/v2.ts` and the V2 schema;
 - new-report wording: `COPY.md` and `src/copy-quality.ts`;
+- AI Bug Trigger authoring: `src/bug-trigger.ts`;
 - tester readiness: `src/report-readiness.ts`;
 - human / ChatGPT presentation: `PREVIEW.md` and `src/preview.ts`;
 - confirmation and promotion: the existing confirmation / promotion modules.
@@ -32,6 +33,7 @@ Do not create parallel report formats, duplicate Markdown reports, or competing 
 - Repair Detail owns Expected, Observed, Technical Analysis, Relevant Code, Must Preserve, and repair context.
 - Confirmed does not automatically mean tester-ready.
 - Never use technical analysis as a substitute for Bug Trigger (In-Game).
+- AI routes must use evidence-bound `BugTriggerDraft`; raw AI reproduction arrays are not a valid authoring path.
 
 ## Reader priority
 
