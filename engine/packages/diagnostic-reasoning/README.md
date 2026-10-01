@@ -72,6 +72,8 @@ Historical findings may guide where to inspect, but they do not prove a current 
 
 Candidate discovery is pre-report reasoning, not severity assignment and not bug publication.
 
+Candidate discovery requires a scoped Gameplay Contract produced after Game Design understanding. Missing, blocked, or mismatched contract scope fails closed before gameplay evidence patterns are evaluated.
+
 The reusable candidate families are intentionally small:
 
 - progression dead-end;
