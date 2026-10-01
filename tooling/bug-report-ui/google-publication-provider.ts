@@ -3,8 +3,9 @@ import type {
   PublishedGoogleDoc,
   PublishedPdf,
 } from "../../apps/bug-report-ui/src/publication-provider.js";
-import type {
-  BugReportClientDocument,
+import {
+  buildBugReportClientLayoutPlan,
+  type BugReportClientDocument,
 } from "../../engine/packages/bug-report/src/index.js";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
@@ -186,6 +187,9 @@ class TextPlanBuilder {
 
 function buildIntro(
   document: BugReportClientDocument,
+  options: {
+    readonly showIssueIndex: boolean;
+  },
 ): TextPlan {
   const b = new TextPlanBuilder();
 
@@ -216,25 +220,33 @@ function buildIntro(
       String(document.summary.minor),
     "metric",
   );
-  b.blank();
-  b.line("Issue Summary", "heading1");
+  if (options.showIssueIndex) {
+    b.blank();
+    b.line("Issue Summary", "heading1");
+  }
 
   return b.build();
 }
 
 function buildDetails(
   document: BugReportClientDocument,
+  options: {
+    readonly showSeverityGuide: boolean;
+    readonly compact: boolean;
+  },
 ): TextPlan {
   const b = new TextPlanBuilder();
 
-  b.blank();
-  b.line("Severity Guide", "heading1");
-  for (const item of document.severityLegend) {
-    b.line(
-      item.label.toUpperCase() +
-        " — " +
-        item.meaning,
-    );
+  if (options.showSeverityGuide) {
+    b.blank();
+    b.line("Severity Guide", "heading1");
+    for (const item of document.severityLegend) {
+      b.line(
+        item.label.toUpperCase() +
+          " — " +
+          item.meaning,
+      );
+    }
   }
 
   b.blank();
@@ -246,7 +258,9 @@ function buildDetails(
   }
 
   for (const issue of document.issues) {
-    b.blank();
+    if (!options.compact) {
+      b.blank();
+    }
     b.line(
       String(issue.number).padStart(2, "0") +
         " · " +
@@ -751,13 +765,23 @@ export class GoogleBugReportPublicationProvider
   ): Promise<void> {
     await this.#clearDocument(documentId);
 
-    const intro = buildIntro(document);
-    const tableRows = issueTableRows(document);
+    const layout =
+      buildBugReportClientLayoutPlan(
+        document,
+      );
+    const intro = buildIntro(
+      document,
+      {
+        showIssueIndex:
+          layout.showIssueIndex,
+      },
+    );
+    const tableRows =
+      issueTableRows(document);
     const introEnd = 1 + intro.text.length;
 
-    await this.#batchUpdate(
-      documentId,
-      [
+    const initialRequests:
+      Record<string, unknown>[] = [
         {
           updateDocumentStyle: {
             documentStyle: {
@@ -783,138 +807,189 @@ export class GoogleBugReportPublicationProvider
           },
         },
         ...requestsForTextPlan(intro, 1),
-        {
-          insertTable: {
-            rows: tableRows.length,
-            columns: tableRows[0]?.length ?? 3,
-            location: {
-              index: introEnd,
-            },
+      ];
+
+    if (layout.showIssueIndex) {
+      initialRequests.push({
+        insertTable: {
+          rows: tableRows.length,
+          columns:
+            tableRows[0]?.length ?? 3,
+          location: {
+            index: introEnd,
           },
-        },
-      ],
-    );
-
-    let current =
-      await this.#getDoc(documentId);
-    const table = firstTable(current);
-
-    await this.#batchUpdate(
-      documentId,
-      tableCellInsertions(
-        table,
-        tableRows,
-      ).map((entry) => ({
-        insertText: {
-          location: { index: entry.index },
-          text: entry.text,
-        },
-      })),
-    );
-
-    current = await this.#getDoc(documentId);
-    const styledTable = firstTable(current);
-    const tableStartIndex =
-      styledTable.startIndex;
-    const headerCells =
-      styledTable.table
-        ?.tableRows?.[0]
-        ?.tableCells ?? [];
-
-    const tableStyleRequests:
-      Record<string, unknown>[] = [];
-
-    if (typeof tableStartIndex === "number") {
-      tableStyleRequests.push({
-        updateTableCellStyle: {
-          tableRange: {
-            tableCellLocation: {
-              tableStartLocation: {
-                index: tableStartIndex,
-              },
-              rowIndex: 0,
-              columnIndex: 0,
-            },
-            rowSpan: 1,
-            columnSpan:
-              tableRows[0]?.length ?? 3,
-          },
-          tableCellStyle: {
-            backgroundColor: {
-              color: {
-                rgbColor: COLORS.navy,
-              },
-            },
-            paddingTop: {
-              magnitude: 6,
-              unit: "PT",
-            },
-            paddingBottom: {
-              magnitude: 6,
-              unit: "PT",
-            },
-            paddingLeft: {
-              magnitude: 6,
-              unit: "PT",
-            },
-            paddingRight: {
-              magnitude: 6,
-              unit: "PT",
-            },
-          },
-          fields:
-            "backgroundColor,paddingTop,paddingBottom,paddingLeft,paddingRight",
         },
       });
     }
 
-    for (const cell of headerCells) {
-      const start =
-        cell.content?.[0]?.startIndex;
-      const end =
-        cell.content?.at(-1)?.endIndex;
+    await this.#batchUpdate(
+      documentId,
+      initialRequests,
+    );
+
+    let current =
+      await this.#getDoc(documentId);
+
+    if (layout.showIssueIndex) {
+      const table = firstTable(current);
+
+      await this.#batchUpdate(
+        documentId,
+        tableCellInsertions(
+          table,
+          tableRows,
+        ).map((entry) => ({
+          insertText: {
+            location: {
+              index: entry.index,
+            },
+            text: entry.text,
+          },
+        })),
+      );
+
+      current =
+        await this.#getDoc(documentId);
+      const styledTable =
+        firstTable(current);
+      const tableStartIndex =
+        styledTable.startIndex;
+      const headerCells =
+        styledTable.table
+          ?.tableRows?.[0]
+          ?.tableCells ?? [];
+
+      const tableStyleRequests:
+        Record<string, unknown>[] = [];
+
       if (
-        typeof start === "number" &&
-        typeof end === "number" &&
-        end > start
+        typeof tableStartIndex ===
+        "number"
       ) {
         tableStyleRequests.push({
-          updateTextStyle: {
-            range: {
-              startIndex: start,
-              endIndex: end - 1,
+          updateTableCellStyle: {
+            tableRange: {
+              tableCellLocation: {
+                tableStartLocation: {
+                  index: tableStartIndex,
+                },
+                rowIndex: 0,
+                columnIndex: 0,
+              },
+              rowSpan: 1,
+              columnSpan:
+                tableRows[0]?.length ?? 3,
             },
-            textStyle: {
-              bold: true,
-              foregroundColor: {
+            tableCellStyle: {
+              backgroundColor: {
                 color: {
-                  rgbColor: COLORS.white,
+                  rgbColor: COLORS.navy,
                 },
               },
-              weightedFontFamily: {
-                fontFamily: "Aptos",
+              paddingTop: {
+                magnitude: 6,
+                unit: "PT",
               },
-              fontSize: {
-                magnitude: 9.5,
+              paddingBottom: {
+                magnitude: 6,
+                unit: "PT",
+              },
+              paddingLeft: {
+                magnitude: 6,
+                unit: "PT",
+              },
+              paddingRight: {
+                magnitude: 6,
                 unit: "PT",
               },
             },
             fields:
-              "bold,foregroundColor,weightedFontFamily,fontSize",
+              "backgroundColor,paddingTop,paddingBottom,paddingLeft,paddingRight",
           },
         });
       }
+
+      for (const cell of headerCells) {
+        const start =
+          cell.content?.[0]?.startIndex;
+        const end =
+          cell.content?.at(-1)?.endIndex;
+        if (
+          typeof start === "number" &&
+          typeof end === "number" &&
+          end > start
+        ) {
+          tableStyleRequests.push({
+            updateTextStyle: {
+              range: {
+                startIndex: start,
+                endIndex: end - 1,
+              },
+              textStyle: {
+                bold: true,
+                foregroundColor: {
+                  color: {
+                    rgbColor:
+                      COLORS.white,
+                  },
+                },
+                weightedFontFamily: {
+                  fontFamily: "Aptos",
+                },
+                fontSize: {
+                  magnitude: 9.5,
+                  unit: "PT",
+                },
+              },
+              fields:
+                "bold,foregroundColor,weightedFontFamily,fontSize",
+            },
+          });
+        }
+      }
+
+      await this.#batchUpdate(
+        documentId,
+        tableStyleRequests,
+      );
+      current =
+        await this.#getDoc(documentId);
     }
 
-    await this.#batchUpdate(
-      documentId,
-      tableStyleRequests,
+    let detailsIndex =
+      documentEndIndex(current);
+
+    if (
+      layout.pageBreakBeforeIssueDetails &&
+      document.issues.length > 0
+    ) {
+      await this.#batchUpdate(
+        documentId,
+        [{
+          insertPageBreak: {
+            location: {
+              index: detailsIndex,
+            },
+          },
+        }],
+      );
+      current =
+        await this.#getDoc(documentId);
+      detailsIndex =
+        documentEndIndex(current);
+    }
+
+    const details = buildDetails(
+      document,
+      {
+        showSeverityGuide:
+          layout.showSeverityGuide,
+        compact:
+          layout.issueDetailDensity ===
+          "compact",
+      },
     );
 
-    current = await this.#getDoc(documentId);
-    const details = buildDetails(document);
-    const detailsIndex =
-      documentEndIndex(current);
     await this.#batchUpdate(
       documentId,
       requestsForTextPlan(
