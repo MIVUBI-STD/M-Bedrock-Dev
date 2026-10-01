@@ -74,15 +74,36 @@ describe("bug report view behavior", () => {
       const visible = filterBugReportBugs(
         value.bugs,
         {
-          severity: "all",
+          severity: "reportable",
           query: "",
         },
       );
 
-      expect(visible).toHaveLength(count - 2);
+      const expected = value.bugs.filter(
+        (item) =>
+          !item.fixed &&
+          (item.severity === "blocker" || item.severity === "major"),
+      );
+      expect(visible.map((item) => item.id))
+        .toEqual(expected.map((item) => item.id));
       expect(visible.some((item) => item.fixed)).toBe(false);
     },
   );
+
+  it("can explicitly include Minor issues", () => {
+    const value = report(5);
+    const visible = filterBugReportBugs(
+      value.bugs,
+      {
+        severity: "all",
+        query: "",
+      },
+    );
+
+    expect(
+      visible.some((item) => item.severity === "minor"),
+    ).toBe(true);
+  });
 
   it("searches tester-facing trigger and solution copy", () => {
     const value = report(5);

@@ -4,6 +4,7 @@ import {
 } from "../../../engine/packages/bug-report/src/index.js";
 
 export type BugReportSeverityFilter =
+  | "reportable"
   | "all"
   | "blocker"
   | "major"
@@ -23,6 +24,10 @@ export function filterBugReportBugs(
 
     const severityMatch =
       options.severity === "all" ||
+      (
+        options.severity === "reportable" &&
+        (bug.severity === "blocker" || bug.severity === "major")
+      ) ||
       bug.severity === options.severity;
 
     if (!severityMatch) {

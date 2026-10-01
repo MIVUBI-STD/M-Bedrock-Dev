@@ -6,7 +6,6 @@ import {
 } from "vitest";
 import {
   GitHubReportClient,
-  GitHubReportConflictError,
 } from "../src/github-report-client.js";
 
 const report = {
@@ -75,46 +74,5 @@ describe("GitHubReportClient", () => {
     ).resolves.toEqual(report);
   });
 
-  it("creates a GitHub report from an imported file", async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify({
-        revision: "new",
-      }), { status: 200 }),
-    );
-    const client = new GitHubReportClient({
-      fetchImpl: fetchMock as unknown as typeof fetch,
-    });
 
-    await expect(
-      client.createReport(
-        "workspace/reports/a.json",
-        report,
-      ),
-    ).resolves.toBeUndefined();
-
-    const call = fetchMock.mock.calls[0] as unknown as [
-      unknown,
-      RequestInit,
-    ];
-    expect(call[1].method).toBe("POST");
-  });
-
-  it("maps create conflicts to a dedicated error", async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify({
-        code: "report-conflict",
-        error: "changed",
-      }), { status: 409 }),
-    );
-    const client = new GitHubReportClient({
-      fetchImpl: fetchMock as unknown as typeof fetch,
-    });
-
-    await expect(
-      client.createReport(
-        "workspace/reports/a.json",
-        report,
-      ),
-    ).rejects.toBeInstanceOf(GitHubReportConflictError);
-  });
 });

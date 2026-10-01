@@ -21,10 +21,6 @@ export type GitHubReportSummary = ReportSummary;
 export interface ReportStore {
   listReports(): Promise<readonly BugReportSummary[]>;
   loadReport(path: string): Promise<BugReportV2>;
-  createReport(
-    path: string,
-    report: BugReportV2,
-  ): Promise<void>;
 }
 
 /** @deprecated Use ReportStore. */

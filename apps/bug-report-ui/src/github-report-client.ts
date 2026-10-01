@@ -7,13 +7,6 @@ import type {
   ReportSummary,
 } from "./report-source.js";
 
-export class GitHubReportConflictError extends Error {
-  constructor() {
-    super("This GitHub report conflicts with the current remote report.");
-    this.name = "GitHubReportConflictError";
-  }
-}
-
 export interface GitHubReportClientOptions {
   readonly baseUrl?: string;
   readonly fetchImpl?: typeof fetch;
@@ -43,15 +36,6 @@ export class GitHubReportClient
     const body = await response.json() as unknown;
 
     if (!response.ok) {
-      if (
-        response.status === 409 &&
-        typeof body === "object" &&
-        body !== null &&
-        "code" in body &&
-        (body as { code?: unknown }).code === "report-conflict"
-      ) {
-        throw new GitHubReportConflictError();
-      }
       const error =
         typeof body === "object" &&
         body !== null &&
@@ -113,22 +97,4 @@ export class GitHubReportClient
     return parsed.report;
   }
 
-  async createReport(
-    path: string,
-    report: BugReportV2,
-  ): Promise<void> {
-    await this.#json(
-      "/api/bug-report",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          path,
-          report,
-        }),
-      },
-    );
-  }
 }

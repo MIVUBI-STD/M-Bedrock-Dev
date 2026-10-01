@@ -57,7 +57,7 @@ function storeStub() {
 }
 
 describe("bug report handler", () => {
-  it("creates a handoff-ready report through POST", async () => {
+  it("does not allow canonical report creation through the presentation API", async () => {
     const store = storeStub();
     const response = await handleBugReportStoreRequest(
       new Request("http://localhost/api/bug-report", {
@@ -73,47 +73,9 @@ describe("bug report handler", () => {
       store,
     );
 
-    expect(response.status).toBe(201);
-    expect(store.createReport).toHaveBeenCalledTimes(1);
-  });
-
-  it("rejects schema-valid reports that are not handoff-ready", async () => {
-    const store = storeStub();
-    const value = report();
-    const [bug] = value.bugs;
-    if (!bug) throw new Error("Fixture bug is missing.");
-    const {
-      reproduction: _reproduction,
-      ...withoutTrigger
-    } = bug;
-
-    const response = await handleBugReportStoreRequest(
-      new Request("http://localhost/api/bug-report", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          path: "workspace/reports/golden.json",
-          report: {
-            ...value,
-            bugs: [withoutTrigger],
-          },
-        }),
-      }),
-      store,
-    );
-
-    expect(response.status).toBe(400);
-    const body = await response.json() as {
-      error?: string;
-    };
-    expect(body.error).toBe(
-      "Bug Report V2 is not handoff-ready.",
-    );
+    expect(response.status).toBe(404);
     expect(store.createReport).not.toHaveBeenCalled();
   });
-
 
 
 
