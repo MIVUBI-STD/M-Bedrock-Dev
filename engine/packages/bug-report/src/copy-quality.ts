@@ -3,7 +3,9 @@ import type { BugReportV2Bug } from "./v2.js";
 export type BugReportCopyIssueCode =
   | "title-multiline"
   | "field-too-long"
-  | "duplicate-core-copy";
+  | "duplicate-core-copy"
+  | "vague-issue"
+  | "vague-action";
 
 export interface BugReportCopyIssue {
   readonly code: BugReportCopyIssueCode;
@@ -26,6 +28,24 @@ const limits = {
 function compact(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
+
+const vagueIssuePatterns = [
+  /\bthere (?:may|might|could) be\b/i,
+  /\bappears? to\b/i,
+  /\bseems? to\b/i,
+  /\bpossible issue\b/i,
+  /\bpotential issue\b/i,
+  /\bneeds? checking\b/i,
+] as const;
+
+const vagueActionPatterns = [
+  /\bcheck (?:the|this)\b/i,
+  /\binvestigate\b/i,
+  /\breview (?:the|this)\b/i,
+  /\blook into\b/i,
+  /\bfix (?:the|this) issue\b/i,
+  /\badjust as needed\b/i,
+] as const;
 
 function tooLong(
   issues: BugReportCopyIssue[],
@@ -60,6 +80,15 @@ export function reviewBugReportCopy(
 
     tooLong(issues, base + ".title", bug.title, limits.title);
     tooLong(issues, base + ".problem", bug.problem, limits.problem);
+
+    if (vagueIssuePatterns.some((pattern) => pattern.test(bug.problem))) {
+      issues.push({
+        code: "vague-issue",
+        path: base + ".problem",
+        message:
+          "Issue must state the affected feature, concrete failure, and gameplay impact without tentative investigation wording.",
+      });
+    }
     tooLong(issues, base + ".expected", bug.expected, limits.expected);
     tooLong(issues, base + ".observed", bug.observed, limits.observed);
 
@@ -88,6 +117,19 @@ export function reviewBugReportCopy(
         bug.suggestedFix,
         limits.suggestedFix,
       );
+
+      if (
+        vagueActionPatterns.some((pattern) =>
+          pattern.test(bug.suggestedFix!)
+        )
+      ) {
+        issues.push({
+          code: "vague-action",
+          path: base + ".suggestedFix",
+          message:
+            "Action must state a direct repair step and target instead of asking the reader to investigate or generally fix the issue.",
+        });
+      }
     }
 
     bug.relevantCode?.forEach((item, itemIndex) => {
