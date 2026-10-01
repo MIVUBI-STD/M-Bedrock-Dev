@@ -39,7 +39,7 @@ export interface GameplayAuditCoverageRecord {
 }
 
 export interface GameplayAuditCoverageResult {
-  readonly disposition: "complete" | "incomplete";
+  readonly disposition: "accounted" | "incomplete";
   readonly surfaces: readonly GameplayAuditSurface[];
   readonly records: readonly GameplayAuditCoverageRecord[];
   readonly missingSubjectIds: readonly string[];
@@ -121,7 +121,7 @@ export function evaluateGameplayAuditCoverage(
     unknownSubjectIds.length === 0 &&
     missingSubjectIds.length === 0 &&
     invalidBlocked.length === 0
-      ? "complete"
+      ? "accounted"
       : "incomplete";
 
   return {
@@ -160,9 +160,9 @@ export function evaluateGameplayAuditCoverage(
               invalidBlocked.join(", ") +
               ".",
           ]),
-      ...(disposition === "complete"
+      ...(disposition === "accounted"
         ? [
-            "Every discovered gameplay surface has an explicit audit disposition.",
+            "Every discovered gameplay surface has an explicit audit disposition. This does not prove that undiscovered mechanics do not exist.",
           ]
         : []),
     ],
