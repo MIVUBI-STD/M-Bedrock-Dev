@@ -175,7 +175,16 @@
         "Observe hostile entity targeting while the player remains knocked down"
       ],
       "expected": "Hostile entities stop targeting the player during the knocked-down state.",
-      "observed": "Hostile entities continue targeting and attacking the knocked-down player."
+      "observed": "Hostile entities continue targeting and attacking the knocked-down player.",
+      "alsoObservedIn": [
+        {
+          "report": "Defense - Level 2 - Version 2.10",
+          "date": "2026-09-22",
+          "issue": "BUG-006",
+          "targetEdition": "education",
+          "targetVersion": null
+        }
+      ]
     },
     {
       "id": "reg_fotp_l1_self_revive_shift",
@@ -210,7 +219,16 @@
         "Observe whether the player revives without teammate assistance"
       ],
       "expected": "A knocked player can only recover through the intended revive mechanic.",
-      "observed": "The player can recover without teammate assistance."
+      "observed": "The player can recover without teammate assistance.",
+      "alsoObservedIn": [
+        {
+          "report": "Defense - Level 2 - Version 2.10",
+          "date": "2026-09-22",
+          "issue": "BUG-007",
+          "targetEdition": "education",
+          "targetVersion": null
+        }
+      ]
     },
     {
       "id": "reg_fotp_l1_upgraded_item_droppable",
@@ -275,6 +293,435 @@
       ],
       "expected": "The shop uses a consistent visual hierarchy and presentation across menu states.",
       "observed": "The initial shop UI and the UI after Back to Menu use inconsistent presentation."
+    },
+    {
+      "id": "reg_defense_cutscene_reconnect_loadout_loss",
+      "title": "Defense reconnect during cutscene loses player loadout",
+      "domain": "persistence",
+      "discoveredBy": "manual",
+      "provenance": [
+        {
+          "source": "Manual QA Testing Report",
+          "report": "Five Night at Z Village - Level 1 (Defense) - QA",
+          "date": "2026-09-22",
+          "issue": "BUG-002",
+          "targetEdition": "education",
+          "targetVersion": null
+        },
+        {
+          "source": "Manual QA Testing Report",
+          "report": "Defense - Level 2 - Version 2.10",
+          "date": "2026-09-22",
+          "issue": "BUG-001",
+          "targetEdition": "education",
+          "targetVersion": null
+        }
+      ],
+      "invariantIds": [
+        "persistence.reconnect-loadout-continuity"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "reconnect",
+        "cutscene",
+        "inventory"
+      ],
+      "capabilityTags": [
+        "persistence",
+        "inventory",
+        "session-lifecycle"
+      ],
+      "reproduction": [
+        "Start a Defense match and enter the cutscene",
+        "Disconnect during the cutscene",
+        "Rejoin the session",
+        "Observe the restored gameplay state"
+      ],
+      "expected": "The reconnecting player returns to a valid gameplay state with the intended items and armor.",
+      "observed": "A player reconnecting during the cutscene can return without items or armor."
+    },
+    {
+      "id": "reg_defense_l1_lobby_final_countdown_revalidation",
+      "title": "Defense L1 final lobby countdown does not fully revalidate players",
+      "domain": "multiplayer",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Five Night at Z Village - Level 1 (Defense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-001",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "multiplayer.start-requires-current-membership"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "lobby",
+        "countdown",
+        "player-detection"
+      ],
+      "capabilityTags": [
+        "multiplayer",
+        "arena-lifecycle",
+        "spatial"
+      ],
+      "reproduction": [
+        "Enter the waiting area and begin the final start countdown",
+        "Move a required player out of the waiting area during the final seconds",
+        "Observe whether the match still starts"
+      ],
+      "expected": "The final countdown revalidates required players and cancels or pauses when start conditions are no longer met.",
+      "observed": "The game can still start after a player leaves the waiting area during the final seconds."
+    },
+    {
+      "id": "reg_defense_l1_enchant_purchase_no_effect",
+      "title": "Defense L1 enchant purchase deducts coins without applying the enchantment",
+      "domain": "economy",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Five Night at Z Village - Level 1 (Defense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-003",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "economy.purchase-effect-atomicity"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "shop",
+        "enchantment",
+        "currency"
+      ],
+      "capabilityTags": [
+        "economy",
+        "inventory",
+        "reward"
+      ],
+      "reproduction": [
+        "Open the enchantment shop with enough coins",
+        "Purchase an enchantment",
+        "Observe the coin balance and target item/equipment"
+      ],
+      "expected": "Coins are deducted only when the purchased enchantment is successfully applied.",
+      "observed": "Coins are consumed but the purchased enchantment effect is not applied."
+    },
+    {
+      "id": "reg_defense_l1_duplicate_armor_purchase",
+      "title": "Defense L1 already-owned Iron armor can be purchased repeatedly",
+      "domain": "economy",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Five Night at Z Village - Level 1 (Defense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-004",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "economy.purchase-state-idempotence"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "shop",
+        "armor",
+        "currency"
+      ],
+      "capabilityTags": [
+        "economy",
+        "inventory",
+        "progression"
+      ],
+      "reproduction": [
+        "Purchase or upgrade armor to Iron",
+        "Open the gear shop again",
+        "Attempt to purchase the same Iron armor tier"
+      ],
+      "expected": "An already-owned armor tier is marked unavailable and cannot consume coins again.",
+      "observed": "The same Iron armor upgrade can be repurchased and consumes coins without additional progression."
+    },
+    {
+      "id": "reg_defense_l1_zombie_path_barrier",
+      "title": "Defense L1 bridge barrier blocks zombie navigation",
+      "domain": "entities",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Five Night at Z Village - Level 1 (Defense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-005",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "entity.route-remains-traversable"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "entity-ai",
+        "navigation",
+        "bridge"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "navigation",
+        "spatial"
+      ],
+      "reproduction": [
+        "Reach the bridge-side zombie spawn sequence",
+        "Observe zombies moving from spawn toward the objective",
+        "Inspect whether the route remains traversable"
+      ],
+      "expected": "Spawned zombies can navigate toward the objective without being blocked by map barriers.",
+      "observed": "Zombies become compressed or trapped near the bridge barrier and can die before reaching the intended path."
+    },
+    {
+      "id": "reg_defense_l1_unloaded_spawn_chunk_auto_win",
+      "title": "Defense L1 unloaded spawn chunk can skip waves and produce an early win",
+      "domain": "chunks",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Five Night at Z Village - Level 1 (Defense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-006",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "chunk.spawn-requires-loaded-ticking-area",
+        "arena.victory-requires-completed-waves"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "chunk",
+        "spawn",
+        "wave",
+        "progression"
+      ],
+      "capabilityTags": [
+        "chunks",
+        "entity-spawn",
+        "arena-lifecycle"
+      ],
+      "reproduction": [
+        "Progress to Night 4 Wave 2",
+        "Allow the configured spawn sequence to execute",
+        "Observe spawn success, wave counters, subsequent night progression, and victory state"
+      ],
+      "expected": "Required spawn chunks are loaded before spawn execution, and failed spawns cannot silently advance waves or victory.",
+      "observed": "The spawn location can be outside a loaded/ticking chunk, no zombies spawn, later content may be skipped, and the match can reach a win before Night 5 starts."
+    },
+    {
+      "id": "reg_defense_l1_spawn_position_inconsistent",
+      "title": "Defense L1 bridge-side entity spawn position changes between runs",
+      "domain": "entities",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Five Night at Z Village - Level 1 (Defense) - QA",
+        "date": "2026-09-22",
+        "issue": "BUG-007",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "entity.spawn-position-determinism"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "spawn",
+        "chunk",
+        "bridge"
+      ],
+      "capabilityTags": [
+        "entity-spawn",
+        "chunks",
+        "spatial"
+      ],
+      "reproduction": [
+        "Run the affected bridge-side spawn sequence multiple times",
+        "Compare the spawn position between runs"
+      ],
+      "expected": "Entities spawn at the intended location consistently for the same wave/configuration.",
+      "observed": "Entities can spawn near the bridge in one run and much farther forward in another."
+    },
+    {
+      "id": "reg_defense_l2_keepinventory_disabled",
+      "title": "Defense L2 keepInventory gamerule conflicts with intended gameplay",
+      "domain": "inventory",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Defense - Level 2 - Version 2.10",
+        "date": "2026-09-22",
+        "issue": "BUG-002",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "inventory.death-state-retention-policy"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "gamerule",
+        "inventory",
+        "death"
+      ],
+      "capabilityTags": [
+        "inventory",
+        "gamerule"
+      ],
+      "reproduction": [
+        "Inspect the active gameplay death/inventory behavior",
+        "Trigger a player death under normal match conditions",
+        "Observe whether inventory retention matches the intended policy"
+      ],
+      "expected": "keepInventory is enabled for the intended gameplay behavior.",
+      "observed": "keepInventory is disabled."
+    },
+    {
+      "id": "reg_defense_l2_builditems_shop_missing",
+      "title": "Defense L2 Builds Shop does not expose configured BuildItems",
+      "domain": "economy",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Defense - Level 2 - Version 2.10",
+        "date": "2026-09-22",
+        "issue": "BUG-003",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "economy.configured-offer-reachability"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "shop",
+        "build-items",
+        "purchase"
+      ],
+      "capabilityTags": [
+        "economy",
+        "inventory",
+        "ui-state"
+      ],
+      "reproduction": [
+        "Open the shop",
+        "Select Builds Shop",
+        "Observe the available build-item offers"
+      ],
+      "expected": "Configured BuildItems are displayed and can be purchased.",
+      "observed": "The Builds Shop opens without the intended BuildItems list and only offers a return-to-category action."
+    },
+    {
+      "id": "reg_defense_l2_pillager_bridge_stuck",
+      "title": "Defense L2 Pillager can become stuck near the bridge and delay wave progression",
+      "domain": "entities",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Defense - Level 2 - Version 2.10",
+        "date": "2026-09-22",
+        "issue": "BUG-004",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "entity.route-remains-traversable",
+        "arena.wave-converges"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "entity-ai",
+        "navigation",
+        "wave"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "navigation",
+        "arena-lifecycle"
+      ],
+      "reproduction": [
+        "Progress to Night 3 Wave 6 or later",
+        "Observe Pillager navigation near the bridge-side building",
+        "Observe whether wave completion waits on a stuck entity"
+      ],
+      "expected": "Pillagers maintain a valid navigation route and wave completion does not require manual cleanup of stuck entities.",
+      "observed": "A Pillager can become stuck on the second floor near the bridge and delay the wave until manually killed or superseded."
+    },
+    {
+      "id": "reg_defense_l2_flag_damage_balance",
+      "title": "Defense L2 flag damage makes the loss condition practically unreachable",
+      "domain": "combat",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Defense - Level 2 - Version 2.10",
+        "date": "2026-09-22",
+        "issue": "BUG-005",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "combat.objective-loss-condition-reachability"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "objective",
+        "balance",
+        "flag"
+      ],
+      "capabilityTags": [
+        "combat",
+        "objective",
+        "economy"
+      ],
+      "reproduction": [
+        "Allow enemy entities to attack the flag continuously",
+        "Observe damage per hit, regeneration, and time required to destroy the flag"
+      ],
+      "expected": "Enemy damage and regeneration allow the flag-destruction loss condition to occur under sustained defense failure.",
+      "observed": "The flag takes only 1 damage per hit and regenerates, making destruction extremely unlikely during normal gameplay."
+    },
+    {
+      "id": "reg_defense_l2_time_weather_unlocked",
+      "title": "Defense L2 time and weather are not locked to the intended environment",
+      "domain": "environment",
+      "discoveredBy": "manual",
+      "provenance": {
+        "source": "Manual QA Testing Report",
+        "report": "Defense - Level 2 - Version 2.10",
+        "date": "2026-09-22",
+        "issue": "BUG-008",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "environment.match-weather-time-policy"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "gamerule",
+        "time",
+        "weather"
+      ],
+      "capabilityTags": [
+        "gamerule",
+        "environment"
+      ],
+      "reproduction": [
+        "Play through an active match for enough time to observe world time and weather changes",
+        "Observe whether daylight or rain occurs"
+      ],
+      "expected": "Time remains locked to night and weather remains clear during gameplay.",
+      "observed": "Time progresses and rain can occur during gameplay."
     }
   ]
 }
