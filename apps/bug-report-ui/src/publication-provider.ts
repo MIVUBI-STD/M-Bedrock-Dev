@@ -21,6 +21,7 @@ export interface PublishedPdf {
 export interface BugReportPublicationProvider {
   createGoogleDoc(input: {
     readonly title: string;
+    readonly destinationDriveUrl: string;
     readonly document: BugReportClientDocument;
   }): Promise<PublishedGoogleDoc>;
 
@@ -52,6 +53,8 @@ export async function publishBugReport(
   const googleDoc =
     await provider.createGoogleDoc({
       title: payload.googleDocTitle,
+      destinationDriveUrl:
+        payload.destinationDriveUrl,
       document: payload.document,
     });
 
