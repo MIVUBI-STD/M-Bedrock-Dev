@@ -55,19 +55,19 @@ Candidate families are tags for grouping/prioritization, not a whitelist of what
 
 ## Bug admission
 
-A reportable bug requires:
+A confirmed defect requires:
 
 1. grounded contradiction inside the selected version;
 2. counter-evidence cleared;
 3. player-visible impact (`blocking`, `material`, or `limited`);
 4. tester-verifiable in-game trigger.
 
-Technical anomaly, metadata drift, historical QA, or behavior from another version is not enough.
+Technical anomaly, metadata drift, historical QA, or behavior from another version is not enough for confirmed-defect status.
 
-Severity is assigned only after admission:
+Severity is assigned only after confirmation:
 - Blocker — required gameplay cannot normally start/continue/complete and normal recovery is unavailable;
 - Major — core gameplay/state/fairness is materially wrong but normal continuation/recovery remains;
-- Minor — limited but real player-visible impact; still reportable.
+- Minor — limited but real player-visible impact.
 
 ## Review
 
@@ -86,23 +86,23 @@ Missing decision or `needs-discussion` blocks publication. No approved bugs mean
 - mix evidence from different map versions;
 - use external/stale docs as current gameplay authority;
 - mutate target or detector;
-- severity-score non-defects;
+- assign Blocker/Major/Minor severity to unconfirmed candidates;
 - publish before chat approval.
 
 ## Output
 
 Validate against `../../schemas/map-audit-output.schema.json`.
 
-Normal preview: all confirmed defects (Blocker/Major/Minor), player-facing Issue + Bug Trigger. Keep the per-surface accounting internal unless the user asks for audit completeness/detail.
+Normal preview includes every detected issue worth tester attention, not only confirmed defects.
 
 ### Chat output contract
 
-Default user-facing audit output is intentionally minimal.
+Keep normal/healthy surfaces hidden. Show all detected issue candidates that could still represent a real defect.
 
-Show **all confirmed defects: Blocker, Major, and Minor**. For each defect, output exactly:
+For confirmed defects:
 
 ```text
-[Severity]
+[Blocker | Major | Minor] — Confirmed
 
 Issue:
 <player-facing failure>
@@ -111,26 +111,41 @@ Bug Trigger:
 <concise tester-verifiable trigger>
 ```
 
-Do not expose by default:
-- checked/normal gameplay surfaces;
-- rejected candidates;
-- ambiguous-intent candidates;
-- insufficient-evidence candidates;
-- runtime-proof residue;
-- detection gaps;
-- metadata-only/non-gameplay defects;
-- coverage statistics;
-- internal proof bookkeeping;
-- candidate IDs;
-- analyzer reasoning or discovery notes.
-
-If no confirmed defect is found, output only:
+For unresolved issue candidates:
 
 ```text
-No confirmed bugs found.
+[Needs Validation | Ambiguous | Detection Gap]
+
+Issue:
+<concise suspected player-facing failure or risk>
+
+Bug Trigger:
+<best available trigger/path>
+
+Reason:
+<one concise sentence explaining what remains unproven>
 ```
 
-Expose internal audit detail only when the user explicitly asks for audit completeness, technical evidence, or debugging detail.
+Do not hide an issue merely because it is not yet confirmed.
+
+Do not expose by default:
+- checked/normal gameplay surfaces;
+- designed-behavior candidates;
+- rejected candidates that have been disproven;
+- coverage statistics;
+- internal proof bookkeeping;
+- analyzer reasoning or discovery notes.
+
+Mapping for unresolved status:
+- `runtime-proof-required` or `insufficient-evidence` → `Needs Validation`;
+- `ambiguous-intent` → `Ambiguous`;
+- `detection-gap` → `Detection Gap`.
+
+If no confirmed or unresolved issue candidate remains, output only:
+
+```text
+No detected issues.
+```
 
 ## Handoff
 
