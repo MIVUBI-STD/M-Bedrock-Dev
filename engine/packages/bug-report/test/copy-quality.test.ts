@@ -1,0 +1,66 @@
+import { describe, expect, it } from "vitest";
+import {
+  BUG_REPORT_V2_SCHEMA,
+  reviewBugReportCopy,
+  type BugReportV2,
+} from "../src/index.js";
+
+function report(): BugReportV2 {
+  return {
+    schema: BUG_REPORT_V2_SCHEMA,
+    map: {
+      name: "Map",
+      mapVersion: "1.0.0",
+      drive: "https://drive.google.com/file/d/map/view",
+      baseVersion: "1.26.0",
+      testedVersion: "1.26.0",
+    },
+    repairBy: "developer",
+    bugs: [{
+      id: "BUG-001",
+      fixed: false,
+      severity: "major",
+      category: "game-flow",
+      foundBy: "tester",
+      title: "Gate remains closed after objective",
+      problem: "The closed gate blocks progression to the next area.",
+      expected: "The gate opens after the objective completes.",
+      observed: "The gate remains closed after completion.",
+      reproduction: [
+        "Complete the objective.",
+        "Walk to the gate.",
+      ],
+    }],
+  };
+}
+
+describe("bug report copy quality", () => {
+  it("accepts concise role-separated copy", () => {
+    expect(reviewBugReportCopy(report().bugs)).toEqual([]);
+  });
+
+  it("rejects duplicated core copy", () => {
+    const source = report();
+    const bug = source.bugs[0]!;
+    const issues = reviewBugReportCopy([{
+      ...bug,
+      observed: bug.expected,
+    }]);
+
+    expect(
+      issues.some((issue) => issue.code === "duplicate-core-copy"),
+    ).toBe(true);
+  });
+
+  it("rejects multiline titles", () => {
+    const source = report();
+    const issues = reviewBugReportCopy([{
+      ...source.bugs[0]!,
+      title: "Gate remains closed\nafter objective",
+    }]);
+
+    expect(
+      issues.some((issue) => issue.code === "title-multiline"),
+    ).toBe(true);
+  });
+});
