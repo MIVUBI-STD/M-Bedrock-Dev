@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runScriptMutationCampaign } from "../src/mutation-campaign.js";
+import { runScriptMutationCampaign } from "../../src/repair/mutation-campaign.js";
 
 describe("Script API mutation detection", () => {
   const source = [

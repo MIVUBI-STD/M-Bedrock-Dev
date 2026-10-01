@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { analyzeStructureAndChunkRuntime } from "../src/structure-runtime-analysis.js";
-import { derivePlacementProofs } from "../src/structure-proof-analysis.js";
+import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { analyzeStructureAndChunkRuntime } from "../../src/structure-runtime-analysis.js";
+import { derivePlacementProofs } from "../../src/structure-proof-analysis.js";
 import {
   analyzeMutationTransactionOrdering,
   mutationTransactionRuntimeEvidence,
-} from "../src/mutation-transaction-analysis.js";
-import { analyzeKnowledgeRuntime } from "../src/knowledge-runtime-analysis.js";
+} from "../../src/repair/mutation-transaction-analysis.js";
+import { analyzeKnowledgeRuntime } from "../../src/knowledge-runtime-analysis.js";
 
 const structure = {
   identifier: "demo:arena",

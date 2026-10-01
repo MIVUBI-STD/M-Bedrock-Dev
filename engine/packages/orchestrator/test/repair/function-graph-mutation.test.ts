@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   detectFunctionGraphMutation,
-} from "../src/function-graph-mutation.js";
-import { mutateFunctionReference } from "../../reliability-search/src/index.js";
+} from "../../src/repair/function-graph-mutation.js";
+import { mutateFunctionReference } from "../../../reliability-search/src/index.js";
 
 describe("multi-function graph mutation", () => {
   it("kills a redirected function edge using the real semantic graph", () => {
