@@ -2,11 +2,11 @@ import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { packageDirectoryDeterministically } from "../../archive/src/index.js";
+import { packageDirectoryDeterministically } from "../../../archive/src/index.js";
 import {
   directoryContentFingerprint,
   verifyStagedRepairPackage,
-} from "../src/repair-package-verification.js";
+} from "../../src/repair/repair-package-verification.js";
 
 describe("repair package verification", () => {
   it("verifies deterministic package round-trip content", async () => {

@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import type {
   InvariantRegistrySnapshot,
   RuntimeEvidenceRecord,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import type {
   RepairPreservationContract,
-} from "../../preservation/src/index.js";
+} from "../../../preservation/src/index.js";
 import {
   verifyRepairPreservation,
-} from "../src/repair-preservation-verification.js";
+} from "../../src/repair/repair-preservation-verification.js";
 
 const contract: RepairPreservationContract = {
   schemaVersion: 1,

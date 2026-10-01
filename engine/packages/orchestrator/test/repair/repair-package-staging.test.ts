@@ -4,8 +4,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   stageRepairPackage,
-} from "../src/repair-package-staging.js";
-import type { RepairLifecycleState } from "../src/repair-lifecycle.js";
+} from "../../src/repair/repair-package-staging.js";
+import type { RepairLifecycleState } from "../../src/repair-lifecycle.js";
 
 function lifecycle(
   stage: RepairLifecycleState["stage"] = "static-validated",
