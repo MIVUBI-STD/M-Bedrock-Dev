@@ -13,18 +13,18 @@ import {
 } from "vitest";
 import {
   planMinimumSufficientAnalysis,
-} from "../../analysis-planner/src/index.js";
+} from "../../../analysis-planner/src/index.js";
 import {
   DIAGNOSIS_ANALYSIS_CAPABILITY_REGISTRY,
   executePlannedDiagnosisStep,
-} from "../../diagnosis-pipeline/src/index.js";
+} from "../../../diagnosis-pipeline/src/index.js";
 import {
   createAuthoredIntentDiagnosisExecutor,
   createIntentGroundingDiagnosisExecutor,
-} from "../src/diagnosis-intent-executors.js";
+} from "../../src/diagnosis/diagnosis-intent-executors.js";
 import {
   createSourceIndexDiagnosisExecutor,
-} from "../src/diagnosis-source-index-executor.js";
+} from "../../src/diagnosis/diagnosis-source-index-executor.js";
 
 async function indexPack(
   root: string,

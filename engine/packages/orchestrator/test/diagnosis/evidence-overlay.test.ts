@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildKnowledgeEvidenceOverlay } from "../src/evidence-overlay.js";
+import { buildKnowledgeEvidenceOverlay } from "../../src/diagnosis/evidence-overlay.js";
 
 describe("knowledge evidence overlay", () => {
   it("translates runtime state observations into normalized mirror evidence", () => {

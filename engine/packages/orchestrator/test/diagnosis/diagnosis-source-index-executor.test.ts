@@ -13,14 +13,14 @@ import {
 } from "vitest";
 import {
   planMinimumSufficientAnalysis,
-} from "../../analysis-planner/src/index.js";
+} from "../../../analysis-planner/src/index.js";
 import {
   DIAGNOSIS_ANALYSIS_CAPABILITY_REGISTRY,
   executePlannedDiagnosisStep,
-} from "../../diagnosis-pipeline/src/index.js";
+} from "../../../diagnosis-pipeline/src/index.js";
 import {
   createSourceIndexDiagnosisExecutor,
-} from "../src/diagnosis-source-index-executor.js";
+} from "../../src/diagnosis/diagnosis-source-index-executor.js";
 
 function sourceIndexPlan() {
   return planMinimumSufficientAnalysis({

@@ -13,17 +13,17 @@ import {
 } from "vitest";
 import {
   planMinimumSufficientAnalysis,
-} from "../../analysis-planner/src/index.js";
+} from "../../../analysis-planner/src/index.js";
 import {
   DIAGNOSIS_ANALYSIS_CAPABILITY_REGISTRY,
   executePlannedDiagnosisStep,
-} from "../../diagnosis-pipeline/src/index.js";
+} from "../../../diagnosis-pipeline/src/index.js";
 import {
   createSemanticIrDiagnosisExecutor,
-} from "../src/diagnosis-semantic-ir-executor.js";
+} from "../../src/diagnosis/diagnosis-semantic-ir-executor.js";
 import {
   createSourceIndexDiagnosisExecutor,
-} from "../src/diagnosis-source-index-executor.js";
+} from "../../src/diagnosis/diagnosis-source-index-executor.js";
 
 describe("semantic-IR diagnosis executor", () => {
   it("reuses source-index output and promotes semantic-model evidence", async () => {

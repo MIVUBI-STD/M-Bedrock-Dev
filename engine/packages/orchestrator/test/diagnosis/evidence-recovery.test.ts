@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { RuntimeEvidenceIntegrityReport } from "../../project-model/src/index.js";
-import { planEvidenceRecovery } from "../src/evidence-recovery.js";
+import type { RuntimeEvidenceIntegrityReport } from "../../../project-model/src/index.js";
+import { planEvidenceRecovery } from "../../src/diagnosis/evidence-recovery.js";
 
 function integrity(
   overrides: Partial<RuntimeEvidenceIntegrityReport> = {},

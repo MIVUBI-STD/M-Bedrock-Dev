@@ -14,7 +14,7 @@ import {
 import {
   createBuiltinDiagnosisRuntime,
   runBuiltinDiagnosis,
-} from "../src/diagnosis-runtime.js";
+} from "../../src/diagnosis/diagnosis-runtime.js";
 
 describe("built-in diagnosis runtime", () => {
   it("runs source indexing then semantic IR without caller-managed intermediate payloads", async () => {
