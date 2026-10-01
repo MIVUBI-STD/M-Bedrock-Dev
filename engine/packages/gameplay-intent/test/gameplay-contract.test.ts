@@ -4,18 +4,19 @@ import {
   type GameplayIntentModel,
 } from "../src/index.js";
 
-function model(origin: "game-design-spec" | "source-code"): GameplayIntentModel {
+function model(
+  scope: "selected-artifact" | "external-reference",
+): GameplayIntentModel {
   return {
     schemaVersion: 1,
     id: "contract",
+    artifactId: "artifact:v1.1.1",
     evidence: [{
       id: "e:intent",
-      origin,
-      locator:
-        origin === "game-design-spec"
-          ? "design/game-design.json"
-          : "scripts/game.ts",
+      origin: "source-code",
+      locator: "behavior_packs/demo/scripts/game.js",
       summary: "Objective rule.",
+      scope,
     }],
     nodes: [{
       id: "objective:flag",
@@ -38,31 +39,37 @@ function model(origin: "game-design-spec" | "source-code"): GameplayIntentModel 
 }
 
 describe("scoped Gameplay Contract", () => {
-  it("is ready only when scoped rules have independent design authority", () => {
-    expect(buildGameplayContract(
-      model("game-design-spec"),
-      { subjectIds: ["objective:flag"] },
-    ).readiness.disposition).toBe("ready");
-
-    expect(buildGameplayContract(
-      model("source-code"),
-      { subjectIds: ["objective:flag"] },
-    ).readiness.disposition).toBe("blocked");
-  });
-
-  it("can bind an authoritative resolved Game Design rule outside invariant projection", () => {
+  it("is ready from grounded evidence inside the selected map artifact", () => {
     const contract = buildGameplayContract(
-      model("source-code"),
-      {
-        subjectIds: ["objective:flag"],
-        designRuleEvidenceIds: [
-          "game-design:flag:rule:reset",
-        ],
-      },
+      model("selected-artifact"),
+      { subjectIds: ["objective:flag"] },
     );
 
+    expect(contract.artifactId).toBe("artifact:v1.1.1");
+    expect(contract.evidenceScope).toBe("selected-artifact-only");
     expect(contract.readiness.disposition).toBe("ready");
-    expect(contract.authorityEvidenceIds)
-      .toContain("game-design:flag:rule:reset");
+  });
+
+  it("blocks external/reference evidence even when it describes the same mechanic", () => {
+    const contract = buildGameplayContract(
+      model("external-reference"),
+      { subjectIds: ["objective:flag"] },
+    );
+
+    expect(contract.readiness.disposition).toBe("blocked");
+    expect(contract.authorityEvidenceIds).toEqual([]);
+  });
+
+  it("blocks when the model is not bound to one selected artifact", () => {
+    const current = model("selected-artifact");
+    const contract = buildGameplayContract(
+      {
+        ...current,
+        artifactId: undefined,
+      },
+      { subjectIds: ["objective:flag"] },
+    );
+
+    expect(contract.readiness.disposition).toBe("blocked");
   });
 });
