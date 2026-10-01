@@ -71,12 +71,30 @@ export interface IntentDiagnosticGateResult {
 export function gateIntentDiagnostic(
   input: IntentDiagnosticGateInput,
 ): IntentDiagnosticGateResult {
+  const resolvedRule = input.resolvedGameDesignRule;
+  const scopedInvariantIds = input.intent.invariants
+    .filter((invariant) =>
+      invariant.subjectIds.some((subjectId) =>
+        input.subjectIds.includes(subjectId),
+      ),
+    )
+    .map((invariant) => invariant.id);
+  const independentIntentEvidence =
+    independentGameplayIntentEvidenceIds(
+      input.intent,
+      scopedInvariantIds,
+    );
+  const authoritativeDesignAvailable =
+    resolvedRule?.authority === "authoritative" ||
+    independentIntentEvidence.length > 0;
+
   const designReadiness =
     input.designReadiness ??
     assessGameplayDesignReadiness(
       input.intent,
       {
         scopeSubjectIds: input.subjectIds,
+        authoritativeDesignAvailable,
       },
     );
 
@@ -96,7 +114,6 @@ export function gateIntentDiagnostic(
     };
   }
 
-  const resolvedRule = input.resolvedGameDesignRule;
   if (resolvedRule) {
     const rule = resolvedRule.rule;
     const designEvidenceIds = [
