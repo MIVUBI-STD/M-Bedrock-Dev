@@ -1,7 +1,7 @@
 ---
 name: m-bedrock-map-bug-audit
 description: >
-  Audit one Minecraft Bedrock/Education map version for gameplay bugs using stable detection capability. Selected-version-only; no detector development or target repair.
+  Audit one Minecraft Bedrock/Education map version for gameplay bugs using game-design-first analysis. Selected-version-only; no target repair.
 ---
 
 # M-Bedrock Map Bug Audit
@@ -12,46 +12,50 @@ description: >
 
 Audit exactly one selected `.mcworld`.
 
-Default target = the single current `.mcworld` in that map root. If the user explicitly selects another version, that exact file is the target.
+That selected map version is the only current gameplay source of truth.
 
-That selected map version is the **only current gameplay source of truth**.
+Do not use older versions, Development/Source, old QA/Bug Reports, Technical Docs, changelogs, other maps, or external design documents to infer current mechanics unless comparison/history is explicitly requested.
 
-Do not use older versions, Development/Source, old QA/Bug Reports, Technical Docs, changelogs, other maps, or external design documents to infer current mechanics. They are archive/reference only unless comparison/history is explicitly requested.
+## Required audit order
 
-## Workflow
+Bug discovery cannot start before the selected world is reconstructed.
 
 ```text
 Selected Map Version
-→ Gameplay Surface Inventory
-→ Gameplay Contract
+→ Game Design Reconstruction
+→ Gameplay Flow Mapping
+→ State Transition Mapping
+→ Reset / Preserve Rules
+→ Progression Rules
+→ Multiplayer / Multi Arena Rules
 → Actual Behavior
-→ Discovered-Surface Accounting
 → Contradiction
-→ Counter-Evidence
-→ Player Impact
-→ Tester Trigger
-→ Proposed Bug Set
-→ Chat Approval
+→ Bug Classification
+→ Production Bug Report
 ```
 
-Expected Behavior and Actual Behavior must come from the same selected artifact.
+Required references:
 
-Before finishing the audit, every **discovered** gameplay surface must be explicitly marked `checked`, `blocked`, or `not-applicable`. Silent omission is not allowed. This accounting does not prove that undiscovered mechanics do not exist.
+- `references/game-design-contract.md`
+- `references/gameplay-flow-contract.md`
+- `references/multi-arena-contract.md`
+- `references/bug-report-contract.md`
 
-If the artifact cannot ground a material expected behavior, mark that scope `BLOCKED / ambiguous`; do not borrow intent from stale sources.
+## Gameplay Contract
 
-## Discovery rule
+The audit must establish:
 
-Primary discovery is generic:
+- objective;
+- win condition;
+- lose condition;
+- player journey;
+- state transitions;
+- reset rules;
+- preserve rules;
+- progression rules;
+- multiplayer rules.
 
-```text
-Gameplay Contract
-≠
-Actual Behavior
-→ contract contradiction
-```
-
-Candidate families are tags for grouping/prioritization, not a whitelist of what may be found. A bug must not be missed merely because it does not fit a named family.
+If expected behavior cannot be grounded from the selected artifact, keep it unknown.
 
 ## Bug admission
 
@@ -60,105 +64,76 @@ A confirmed defect requires:
 1. grounded contradiction inside the selected version;
 2. counter-evidence cleared;
 3. player-visible impact (`blocking`, `material`, or `limited`);
-4. tester-verifiable in-game trigger.
+4. tester-verifiable world reproduction path.
 
-Technical anomaly, metadata drift, historical QA, or behavior from another version is not enough for confirmed-defect status.
+Severity:
 
-Severity is assigned only after confirmation:
-- Blocker — required gameplay cannot normally start/continue/complete and normal recovery is unavailable;
-- Major — core gameplay/state/fairness is materially wrong but normal continuation/recovery remains;
+- Blocker — required gameplay cannot normally start/continue/complete and recovery is unavailable;
+- Major — core gameplay/state/fairness is materially wrong;
 - Minor — limited but real player-visible impact.
+
+## Output
+
+Generate production bug report structure:
+
+```text
+Bug ID
+Category
+Gameplay Flow
+Severity
+Status
+Issue
+Player Impact
+Reproduce Steps
+Expected Behavior
+Actual Behavior
+Evidence
+```
+
+Tester instructions use player language:
+
+- World
+- Player
+- Level
+- Wave
+- Arena
+- Enemy
+
+Do not expose implementation details as reproduction steps.
 
 ## Review
 
 ```text
-Proposed Bug Set
-→ approve | reject | needs-discussion
-→ Approved Bug Set
+Detected Issue Set
+→ confirmed | needs-validation | ambiguous
 → Bug Report V2
-→ HTML
 ```
 
-Missing decision or `needs-discussion` blocks publication. No approved bugs means no HTML.
+Do not hide unresolved issues that may represent real defects. Do not publish normal/designed behavior as bugs.
 
 ## Forbidden
 
+- start from suspicious code patterns alone;
 - mix evidence from different map versions;
-- use external/stale docs as current gameplay authority;
-- mutate target or detector;
-- assign Blocker/Major/Minor severity to unconfirmed candidates;
-- publish before chat approval.
-
-## Output
-
-Validate against `../../schemas/map-audit-output.schema.json`.
-
-Normal preview includes every detected issue worth tester attention, not only confirmed defects.
-
-### Chat output contract
-
-Keep normal/healthy surfaces hidden. Show all detected issue candidates that could still represent a real defect.
-
-For confirmed defects:
-
-```text
-[Blocker | Major | Minor] — Confirmed
-
-Issue:
-<player-facing failure>
-
-Bug Trigger:
-<concise tester-verifiable trigger>
-```
-
-For unresolved issue candidates:
-
-```text
-[Needs Validation | Ambiguous | Detection Gap]
-
-Issue:
-<concise suspected player-facing failure or risk>
-
-Bug Trigger:
-<best available trigger/path>
-
-Reason:
-<one concise sentence explaining what remains unproven>
-```
-
-Do not hide an issue merely because it is not yet confirmed.
-
-Do not expose by default:
-- checked/normal gameplay surfaces;
-- designed-behavior candidates;
-- rejected candidates that have been disproven;
-- coverage statistics;
-- internal proof bookkeeping;
-- analyzer reasoning or discovery notes.
-
-Mapping for unresolved status:
-- `runtime-proof-required` or `insufficient-evidence` → `Needs Validation`;
-- `ambiguous-intent` → `Ambiguous`;
-- `detection-gap` → `Detection Gap`.
-
-If no confirmed or unresolved issue candidate remains, output only:
-
-```text
-No detected issues.
-```
+- use stale docs as gameplay authority;
+- assign severity before defect admission;
+- mutate target world during audit.
 
 ## Handoff
 
 - detection gap → `m-bedrock-detection-development`
-- approved bug needing mutation → `m-bedrock-target-repair`
-- runtime-only residue → runtime/manual validation
-
-## Canonical references
-
-- `../../../docs/01-product/flow.md`
-- `../../../docs/06-system/drive-storage.md`
-- `references/finding-contract.md`
+- approved repair → `m-bedrock-target-repair`
 
 ## STOP
 
-Stop only when every discovered gameplay surface has one accounting record, every candidate has one disposition, and every blocked scope has a concise reason.
+Stop when:
+
+```text
+✓ Game Design mapped
+✓ Gameplay Flow mapped
+✓ State transitions reviewed
+✓ Reset/progression rules known
+✓ Multi Arena reviewed
+✓ Issues classified
+✓ Production report generated
+```
