@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { worldDbRuntimeEvidence } from "../src/world-db-runtime-evidence.js";
+import { worldDbRuntimeEvidence } from "../../src/inspection/world-db-runtime-evidence.js";
 
 describe("world-db runtime evidence", () => {
   it("keeps disk chunk evidence distinct from loaded-chunk runtime proof", () => {

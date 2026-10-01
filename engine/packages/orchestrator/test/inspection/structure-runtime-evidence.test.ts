@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { KnowledgeCatalog } from "../../knowledge/src/index.js";
-import { parseMcFunction } from "../../../analyzers/functions/src/index.js";
-import { analyzeStructureAndChunkRuntime } from "../src/structure-runtime-analysis.js";
-import { structureRuntimeEvidence } from "../src/structure-runtime-evidence.js";
-import { analyzeKnowledgeRuntime } from "../src/knowledge-runtime-analysis.js";
+import type { KnowledgeCatalog } from "../../../knowledge/src/index.js";
+import { parseMcFunction } from "../../../../analyzers/functions/src/index.js";
+import { analyzeStructureAndChunkRuntime } from "../../src/structure-runtime-analysis.js";
+import { structureRuntimeEvidence } from "../../src/inspection/structure-runtime-evidence.js";
+import { analyzeKnowledgeRuntime } from "../../src/knowledge-runtime-analysis.js";
 
 const catalog: KnowledgeCatalog = {
   schemaVersion: 1,

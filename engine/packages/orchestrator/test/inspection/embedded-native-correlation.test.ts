@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { correlateEmbeddedCommandsWithNativeChunks } from "../src/embedded-native-correlation.js";
+import { correlateEmbeddedCommandsWithNativeChunks } from "../../src/inspection/embedded-native-correlation.js";
 
 describe("embedded command native correlation", () => {
   it("annotates command placements with block-entity and tick evidence", () => {

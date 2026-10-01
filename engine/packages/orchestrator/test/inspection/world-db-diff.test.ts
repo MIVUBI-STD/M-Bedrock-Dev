@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { diffWorldDbNative } from "../src/world-db-diff.js";
-import type { WorldDbNativeSummary } from "../src/world-db-analysis.js";
+import { diffWorldDbNative } from "../../src/inspection/world-db-diff.js";
+import type { WorldDbNativeSummary } from "../../src/world-db-analysis.js";
 
 function summary(overrides: Partial<WorldDbNativeSummary> = {}): WorldDbNativeSummary {
   return {
