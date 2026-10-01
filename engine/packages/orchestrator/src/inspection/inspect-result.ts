@@ -527,8 +527,8 @@ export function buildInspectionResult(
         input.gameplayIntentRuntime.routeStallAssessments,
       designedBehavior:
         input.gameplayIntentRuntime.designedBehavior,
-      probableDefects:
-        input.gameplayIntentRuntime.probableDefects,
+      confirmedDefects:
+        input.gameplayIntentRuntime.confirmedDefects,
       ambiguousIntent:
         input.gameplayIntentRuntime.ambiguousIntent,
       insufficientEvidence:
