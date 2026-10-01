@@ -125,8 +125,8 @@ describe("bug report preview", () => {
     });
     const markdown = renderBugReportPreviewMarkdown(preview, "full");
 
-    expect(markdown).toContain("| Reproduce / Verify |");
-    expect(markdown).toContain("1) Finish a match.");
+    expect(markdown).toContain("**How to Reproduce:** 1) Finish a match.");
+    expect(markdown).not.toContain("## How to Reproduce the Bug");
 
     expect(markdown.indexOf("**Issue:**")).toBeLessThan(
       markdown.indexOf("**Expected:**"),
