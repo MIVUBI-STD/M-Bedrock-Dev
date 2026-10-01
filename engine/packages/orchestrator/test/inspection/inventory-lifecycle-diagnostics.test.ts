@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   inventoryLifecycleDiagnostics,
-} from "../src/inventory-lifecycle-diagnostics.js";
+} from "../../src/inspection/inventory-lifecycle-diagnostics.js";
 
 const lifecycle = {
   regions: 2,

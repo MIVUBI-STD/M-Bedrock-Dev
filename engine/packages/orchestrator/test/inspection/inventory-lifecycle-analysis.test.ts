@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzeInventoryLifecycle,
-} from "../src/inventory-lifecycle-analysis.js";
+} from "../../src/inspection/inventory-lifecycle-analysis.js";
 
 describe("inventory lifecycle analysis", () => {
   it("accepts inventory-only reset when the map has no equipment surface", () => {

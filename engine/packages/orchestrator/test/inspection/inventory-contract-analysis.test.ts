@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzeInventoryContract,
-} from "../src/inventory-contract-analysis.js";
+} from "../../src/inspection/inventory-contract-analysis.js";
 
 describe("inventory contract analysis", () => {
   it("binds deterministic item drop evidence to authored deny contract", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   parseInventoryItemBehaviorContract,
-} from "../src/inventory-contract-load.js";
+} from "../../src/inspection/inventory-contract-load.js";
 
 describe("inventory item contract parser", () => {
   it("parses explicit ownership, drop, reset, and restore rules", () => {

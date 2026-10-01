@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
 import {
   analyzeInventoryRestoreOwnership,
-} from "../src/inventory-restore-ownership-analysis.js";
+} from "../../src/inspection/inventory-restore-ownership-analysis.js";
 
 describe("inventory restore ownership analysis", () => {
   it("detects multiple callback owners granting the same item for one lifecycle event", () => {
