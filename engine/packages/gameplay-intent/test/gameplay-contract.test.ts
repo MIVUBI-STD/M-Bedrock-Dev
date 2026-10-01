@@ -62,11 +62,12 @@ describe("scoped Gameplay Contract", () => {
 
   it("blocks when the model is not bound to one selected artifact", () => {
     const current = model("selected-artifact");
+    const {
+      artifactId: _artifactId,
+      ...withoutArtifact
+    } = current;
     const contract = buildGameplayContract(
-      {
-        ...current,
-        artifactId: undefined,
-      },
+      withoutArtifact,
       { subjectIds: ["objective:flag"] },
     );
 
