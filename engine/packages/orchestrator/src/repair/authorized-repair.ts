@@ -24,9 +24,16 @@ import type { RepairProofBundle } from "../repair-proof-bundle.js";
 import { validateRepairProofBundle } from "../repair-proof-bundle.js";
 import { validatePatchTransaction } from "./repair-validation.js";
 import { semanticGraphFingerprint } from "../semantic-graph-fingerprint.js";
+import {
+  validateApprovedBugSet,
+} from "../../../bug-report/src/index.js";
+import type {
+  RepairWorkflowAuthority,
+} from "./repair-admission-pipeline.js";
 
 export interface AuthorizedRepairOptions {
   allowGuarded?: boolean;
+  repairAuthority?: RepairWorkflowAuthority;
   decisionBasis?: Omit<
     DecisionBasisRevision,
     "sourceFingerprint" | "graphFingerprint"
@@ -220,6 +227,88 @@ export function authorizeRepairMutation(
         "Repair proof bundle does not belong to this patch transaction.",
       ],
     };
+  }
+
+  if (
+    proof.admissionDisposition === "eligible" ||
+    proof.admissionDisposition === "guarded"
+  ) {
+    const authority = options.repairAuthority;
+    if (authority === undefined) {
+      return {
+        authorized: false,
+        reasons: [
+          "Final mutation authorization requires the same workflow authority used during repair admission.",
+        ],
+      };
+    }
+
+    if (
+      proof.workflowAuthorityKind !== authority.kind ||
+      proof.preservationContractId !==
+        authority.preservationContract.id
+    ) {
+      return {
+        authorized: false,
+        reasons: [
+          "Repair proof workflow authority does not match current authorization input.",
+        ],
+      };
+    }
+
+    const expectedMustChange = [
+      ...new Set(
+        authority.preservationContract
+          .mustChangeInvariantIds,
+      ),
+    ].sort();
+    const expectedMustPreserve = [
+      ...new Set(
+        authority.preservationContract
+          .mustPreserveInvariantIds,
+      ),
+    ].sort();
+    const proofMustChange = [
+      ...new Set(proof.mustChangeInvariantIds ?? []),
+    ].sort();
+    const proofMustPreserve = [
+      ...new Set(proof.mustPreserveInvariantIds ?? []),
+    ].sort();
+
+    if (
+      JSON.stringify(expectedMustChange) !==
+        JSON.stringify(proofMustChange) ||
+      JSON.stringify(expectedMustPreserve) !==
+        JSON.stringify(proofMustPreserve)
+    ) {
+      return {
+        authorized: false,
+        reasons: [
+          "Repair proof Must Change / Must Preserve invariants do not match the current Repair Contract.",
+        ],
+      };
+    }
+
+    if (authority.kind === "approved-bug") {
+      const approvalIssues =
+        validateApprovedBugSet(authority.approved);
+      if (
+        approvalIssues.length > 0 ||
+        proof.approvedBugSemanticKey !==
+          authority.bugSemanticKey ||
+        !authority.approved.approvedSemanticKeys.includes(
+          authority.bugSemanticKey,
+        )
+      ) {
+        return {
+          authorized: false,
+          reasons: [
+            "Final mutation authorization requires a valid matching Approved Bug Set.",
+            ...approvalIssues,
+          ],
+        };
+      }
+    }
   }
 
   if (
