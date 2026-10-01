@@ -85,13 +85,14 @@ Rules:
 - do not split one bug across distant sections;
 - use `#1`, `#2`, ... for preview references and keep canonical Bug ID hidden unless detail/full mode is requested;
 - every tester-facing bug must include a concise `Bug Trigger (In-Game)` path written only as player actions, game states, locations, objects, UI interactions, and visible outcomes;
+- for AI-found defects, author the trigger through evidence-bound `BugTriggerDraft` / `compileBugTrigger()`; do not write raw reproduction arrays from technical prose;
+- every AI trigger evidence ID must belong to the same confirmed-defect evidence universe;
 - include required starting context when relevant: player count, location/arena, game phase, team/role, required item, prerequisite state;
 - the final trigger step must explicitly state the visible wrong result that proves the bug;
 - reproduction must never ask the tester to inspect scripts, functions, variables, source files, logs, or architecture;
 - if no tester-verifiable in-game path exists yet, keep the finding internal rather than presenting it as a ready bug;
 - do not invent Solution when Suggested Fix is absent;
 - hide fixed bugs unless requested;
-- keep each bug in one two-column block;
 - place `Bug Trigger (In-Game)` directly below Issue and above Solution;
 - render every trigger step on a separate numbered line; do not use arrow-chained inline steps;
 - do not show Expected / Observed / technical fields unless the user requests detail;
