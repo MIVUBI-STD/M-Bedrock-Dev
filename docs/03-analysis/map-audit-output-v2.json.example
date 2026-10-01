@@ -1,0 +1,20 @@
+{
+  "world": {
+    "artifact": "selected-world-version",
+    "version": ""
+  },
+  "gameDesign": {
+    "objective": "",
+    "winCondition": "",
+    "loseCondition": "",
+    "resetRules": [],
+    "progressionRules": []
+  },
+  "gameplayFlow": [],
+  "stateTransitions": [],
+  "multiArena": {
+    "reviewed": false,
+    "notes": []
+  },
+  "bugs": []
+}
