@@ -9,7 +9,8 @@ export const BUG_REPORT_V2_SCHEMA = "m-bedrock-bug-report/v2" as const;
  * This is not the tester-facing presentation contract.
  * Reader-facing labels are owned by PREVIEW.md / preview.ts
  * (for example Problem → Issue, Reproduction → Bug Trigger
- * (In-Game), Suggested Fix → Solution).
+ * (In-Game), Suggested Fix → Solution, AI Analysis →
+ * Technical Analysis).
  */
 export const BUG_REPORT_V2_LABELS = {
   mapVersion: "Map Version",
