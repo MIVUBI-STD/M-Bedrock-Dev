@@ -39,50 +39,11 @@ export interface MapEngineeringWorkflowProjection {
   >;
   attention: {
     criticalDiagnostics: number;
-    mediumDiagnostics: number;
-    minorDiagnostics: number;
     unresolvedReferences: number;
     intentUnknowns: number;
-    repairProposals: number;
-    repairCandidatesUnsupported: number;
     evidenceRecoveryActions: number;
-    lifecycleUnresolved: number;
-    cleanupResourcesMissing: number;
-    spatialAuthorityUncovered: number;
-    spatialAuthorityConflicts: number;
-    spatialAuthorityUnknownRegions: number;
-    spatialAuthorityPolicyInvalid: number;
-    inventoryPartialResets: number;
-    inventoryCopyMutationRisks: number;
-    inventoryDeniedDrops: number;
-    inventoryUncoveredDrops: number;
-    inventoryUnresolvedEquipmentSlots: number;
-    inventoryMultipleRestoreOwners: number;
-    entityAiTargetedStackIncomplete: number;
-    entityAiNavigationEnvironmentIncompatible: number;
-    combatHurtOnlyTerminalRisk: number;
-    combatProjectileCleanupPolicyGap: number;
-    combatSecondaryEffectEligibilitySurfaces: number;
-    combatRevivePolicyContradictions: number;
-    combatReviveScopeGaps: number;
-    chunkLeaseAcquireWithoutRelease: number;
-    chunkLeaseReleaseUnreachable: number;
-    chunkCleanupOrderUnproven: number;
-    chunkDynamicLeaseKeys: number;
-    chunkCapacityUncheckedLeases: number;
-    chunkReadinessUnverifiedLeases: number;
-    chunkShutdownOnlyCleanupRisk: number;
-    chunkWorldLoadReconciliationMissing: number;
-    chunkUnguardedDeferredWork: number;
-    chunkResidencyObservabilityGaps: number;
-    economyDeathRewardOverlapPolicyConflicts: number;
-    economyDeathRewardOverlapUnresolved: number;
-    economyPickupCurrencyCoverageGaps: number;
-    economyIdempotencyCoverageGaps: number;
-    economyStaleDropCleanupGaps: number;
-    economyInventoryFullPolicyGaps: number;
-    economyPickupScopeValidationUnproven: number;
-    economyTerminalRewardCommitUnproven: number;
+    repairProposals: number;
+    repairUnsupported: number;
   };
   nextActions: readonly string[];
 }
@@ -237,14 +198,14 @@ function repairStage(
     id: "repair",
     status:
       planned > 0
-        ? "ready"
+        ? "partial"
         : localized > 0 &&
             localizationUnresolved === 0
           ? "partial"
           : "blocked",
     reasons: [
       String(planned) +
-        " deterministic repair proposal(s) are available.",
+        " deterministic repair proposal(s) are available; approval is still required.",
       String(localized) +
         " arena divergence source localization(s) are available.",
       String(localizationUnresolved) +
@@ -270,16 +231,16 @@ function validationStage(
   return {
     id: "validate",
     status:
-      stress?.status === "proposal" &&
+      stress?.status === "planned" &&
       repeated !== undefined &&
       recovery === 0
         ? "ready"
-        : stress?.status === "proposal" ||
+        : stress?.status === "planned" ||
             repeated !== undefined
           ? "partial"
           : "blocked",
     reasons: [
-      stress?.status === "proposal"
+      stress?.status === "planned"
         ? String(stress.matrix?.scenarios.length ?? 0) +
           " arena stress scenario(s) are planned."
         : "Arena stress scenario planning is unavailable.",
@@ -351,168 +312,20 @@ export function buildMapEngineeringWorkflow(
       source.diagnostics.filter(
         (item) => item.severity === "critical",
       ).length,
-    mediumDiagnostics:
-      source.diagnostics.filter(
-        (item) => item.severity === "medium",
-      ).length,
-    minorDiagnostics:
-      source.diagnostics.filter(
-        (item) => item.severity === "minor",
-      ).length,
     unresolvedReferences:
       source.unresolvedReferences,
     intentUnknowns:
       source.gameplaySemantic.intent.unknowns.length,
+    evidenceRecoveryActions:
+      source.evidenceRecovery.actions.length,
     repairProposals:
       source.repairCandidates.filter(
         (item) => item.status === "proposal",
       ).length,
-    repairCandidatesUnsupported:
+    repairUnsupported:
       source.repairCandidates.filter(
-        (item) =>
-          item.status === "unsupported",
+        (item) => item.status === "unsupported",
       ).length,
-    evidenceRecoveryActions:
-      source.evidenceRecovery.actions.length,
-    lifecycleUnresolved:
-      source.engineeringAssessment.arena.lifecycle.unresolved,
-    cleanupResourcesMissing:
-      source.engineeringAssessment.arena.cleanup
-        .resourceLedger?.missing ?? 0,
-    spatialAuthorityUncovered:
-      source.engineeringAssessment.spatial.authority
-        ?.uncovered ?? 0,
-    spatialAuthorityConflicts:
-      source.engineeringAssessment.spatial.authority
-        ?.conflicts ?? 0,
-    spatialAuthorityUnknownRegions:
-      source.engineeringAssessment.spatial.authority
-        ?.unknownRegions ?? 0,
-    spatialAuthorityPolicyInvalid:
-      source.engineeringAssessment.spatial.authority
-        ?.configured === true &&
-      source.engineeringAssessment.spatial.authority
-        ?.policyValid === false
-        ? 1
-        : 0,
-    inventoryPartialResets:
-      source.engineeringAssessment.inventory
-        ?.partialResets ?? 0,
-    inventoryCopyMutationRisks:
-      source.engineeringAssessment.inventory
-        ?.copyMutationRisks ?? 0,
-    inventoryDeniedDrops:
-      source.engineeringAssessment.inventory
-        ?.contract.deniedDrops ?? 0,
-    inventoryUncoveredDrops:
-      source.engineeringAssessment.inventory
-        ?.contract.uncoveredDrops ?? 0,
-    inventoryUnresolvedEquipmentSlots:
-      source.engineeringAssessment.inventory
-        ?.unresolvedEquipmentSlotEvidence ?? 0,
-    inventoryMultipleRestoreOwners:
-      source.engineeringAssessment.inventory
-        ?.restoreOwnership.multipleRestoreOwners ?? 0,
-    entityAiTargetedStackIncomplete:
-      source.engineeringAssessment.entities
-        ?.targetedStackIncomplete ?? 0,
-    entityAiNavigationEnvironmentIncompatible:
-      source.engineeringAssessment.entities
-        ?.navigationEnvironment.incompatible ?? 0,
-    combatHurtOnlyTerminalRisk:
-      source.engineeringAssessment.combat
-        ?.hurtOnlyTerminalRisk ?? 0,
-    combatProjectileCleanupPolicyGap:
-      source.engineeringAssessment.combat
-        ?.contract.projectileCleanupContractGap ?? 0,
-    combatSecondaryEffectEligibilitySurfaces:
-      source.engineeringAssessment.combat
-        ?.contract.secondaryEffectEligibilitySurfaces ?? 0,
-    combatRevivePolicyContradictions:
-      source.engineeringAssessment.combat
-        ?.contract.reviveContractContradictions ?? 0,
-    combatReviveScopeGaps:
-      (
-        source.engineeringAssessment.combat
-          ?.runtime.scopedLifeGenerationMissing ?? 0
-      ) +
-      (
-        source.engineeringAssessment.combat
-          ?.runtime.scopedArenaGenerationMissing ?? 0
-      ),
-    chunkLeaseAcquireWithoutRelease:
-      source.engineeringAssessment.chunks
-        ?.acquireWithoutRelease ?? 0,
-    chunkLeaseReleaseUnreachable:
-      source.engineeringAssessment.chunks
-        ?.releaseUnreachable ?? 0,
-    chunkCleanupOrderUnproven:
-      source.engineeringAssessment.chunks
-        ?.cleanupOrderUnproven ?? 0,
-    chunkDynamicLeaseKeys:
-      source.engineeringAssessment.chunks
-        ?.dynamicLeaseKeys ?? 0,
-    chunkCapacityUncheckedLeases:
-      source.engineeringAssessment.chunks
-        ?.capacityUncheckedLeases ?? 0,
-    chunkReadinessUnverifiedLeases:
-      source.engineeringAssessment.chunks
-        ?.readinessUnverifiedLeases ?? 0,
-    chunkShutdownOnlyCleanupRisk:
-      source.engineeringAssessment.chunks
-        ?.shutdownOnlyCleanupRisk ?? 0,
-    chunkWorldLoadReconciliationMissing:
-      (
-        source.engineeringAssessment.chunks
-          ?.tickingAreaAcquires ?? 0
-      ) > 0 &&
-      (
-        source.engineeringAssessment.chunks
-          ?.worldLoadReconciliationPaths ?? 0
-      ) === 0
-        ? 1
-        : 0,
-    chunkUnguardedDeferredWork:
-      source.engineeringAssessment.chunks
-        ?.unguardedDeferredChunkWork ?? 0,
-    chunkResidencyObservabilityGaps:
-      source.engineeringAssessment.chunks
-        ?.entityResidencyObservability === "complete"
-        ? 0
-        : source.engineeringAssessment.chunks
-              ?.entityResidencyObservability === "partial"
-          ? 1
-          : 2,
-    economyDeathRewardOverlapPolicyConflicts:
-      source.engineeringAssessment.economy
-        ?.contract.deathRewardOverlapContractConflicts ?? 0,
-    economyDeathRewardOverlapUnresolved:
-      source.engineeringAssessment.economy
-        ?.contract.deathRewardOverlapUnresolved ?? 0,
-    economyPickupCurrencyCoverageGaps:
-      (
-        source.engineeringAssessment.economy
-          ?.contract.pickupCurrencyConsumeCoverageGaps ?? 0
-      ) +
-      (
-        source.engineeringAssessment.economy
-          ?.contract.pickupCurrencyContractMismatch ?? 0
-      ),
-    economyIdempotencyCoverageGaps:
-      source.engineeringAssessment.economy
-        ?.contract.idempotencyCoverageGaps ?? 0,
-    economyStaleDropCleanupGaps:
-      source.engineeringAssessment.economy
-        ?.contract.staleDropCleanupCoverageGaps ?? 0,
-    economyInventoryFullPolicyGaps:
-      source.engineeringAssessment.economy
-        ?.contract.inventoryFullContractGaps ?? 0,
-    economyPickupScopeValidationUnproven:
-      source.engineeringAssessment.economy
-        ?.contract.pickupScopeValidationUnproven ?? 0,
-    economyTerminalRewardCommitUnproven:
-      source.engineeringAssessment.economy
-        ?.contract.terminalRewardResultCommitUnproven ?? 0,
   };
 
   const nextActions = stages
