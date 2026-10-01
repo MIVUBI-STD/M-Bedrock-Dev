@@ -50,3 +50,26 @@ Historical evidence is a regression/design-evolution hint only. It never becomes
 Authority is resolved per exact scope. A rule for retry does not silently apply to next-tier or new-session behavior. Equally authoritative current claims with different values remain ambiguous instead of being guessed.
 
 Current implementation can describe actual behavior, but source code alone does not independently prove intended gameplay.
+
+## Scoped Gameplay Contract
+
+`buildGameplayContract()` is the canonical bridge from approved design understanding into gameplay audit.
+
+The contract is:
+
+- scoped to the subjects currently being audited;
+- derived from the Gameplay Intent Model plus authoritative Game Design evidence;
+- explicit about design readiness;
+- temporary and rebuildable;
+- never a second persisted Game Design authority.
+
+Readiness is fail-closed:
+
+```text
+authoritative design missing → BLOCKED
+material scoped unknown       → BLOCKED
+non-material scoped unknown   → PARTIAL
+grounded material rules       → READY
+```
+
+Candidate discovery consumes a scoped Gameplay Contract. It must not accept a generic source-derived intent model as sufficient design authority.
