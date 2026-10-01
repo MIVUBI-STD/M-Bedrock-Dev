@@ -1,6 +1,4 @@
 import type { SourceRef } from "../../project-model/src/index.js";
-import { createPatchTransaction } from "./create.js";
-import type { PatchTransaction } from "./types.js";
 
 export interface RepairCoordinate {
   mode: "absolute" | "relative" | "local";
@@ -38,8 +36,25 @@ export interface TopologyRepairCandidate {
   rawCommand: string;
 }
 
+export interface TopologyRepairProposal {
+  readonly title: string;
+  readonly sourceFingerprint: string;
+  readonly operation: {
+    readonly kind: "replace-command";
+    readonly source: SourceRef;
+    readonly expected: string;
+    readonly replacement: string;
+  };
+  readonly validation: readonly {
+    readonly kind: "reparse" | "topology-compare" | "rerun-diagnostic";
+    readonly source: SourceRef;
+    readonly expectation?: string;
+    readonly code?: string;
+  }[];
+}
+
 export type TopologyRepairPlanResult =
-  | { status: "planned"; transaction: PatchTransaction }
+  | { status: "proposed"; proposal: TopologyRepairProposal }
   | { status: "unsupported"; reason: string };
 
 function absoluteValue(coordinate: RepairCoordinate): number | undefined {
@@ -107,17 +122,21 @@ export function planLinearTopologyRepair(
   }
 
   return {
-    status: "planned",
-    transaction: createPatchTransaction({
+    status: "proposed",
+    proposal: {
       title: "repair linear topology coordinate outlier",
       sourceFingerprint,
-      operations: [{ kind: "replace-command", source: effect.source, expected: rawCommand, replacement }],
-      preconditions: [{ kind: "source-fingerprint", expected: sourceFingerprint }],
+      operation: {
+        kind: "replace-command",
+        source: effect.source,
+        expected: rawCommand,
+        replacement,
+      },
       validation: [
         { kind: "reparse", source: effect.source },
         { kind: "topology-compare", source: effect.source, expectation: "outlier-absent" },
         { kind: "rerun-diagnostic", code: "TOPOLOGY_TRANSLATION_OUTLIER", source: effect.source, expectation: "absent" },
       ],
-    }),
+    },
   };
 }
