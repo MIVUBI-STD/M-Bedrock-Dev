@@ -4,6 +4,19 @@
 
 Use stable detection capability to find gameplay contradictions only after current Game Design for the audited scope is understood.
 
+## Version isolation
+
+The audit is closed to one map/version.
+
+```text
+explicit selected .mcworld
+or
+single current root .mcworld
+→ only gameplay artifact in scope
+```
+
+Older versions, raw source, previous QA, other maps, and external documents are archival inputs only and do not define current expected/actual gameplay.
+
 ## Required entry state
 
 ```text
