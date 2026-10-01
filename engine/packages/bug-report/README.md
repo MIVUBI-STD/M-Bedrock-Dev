@@ -20,10 +20,42 @@ The bug-report package keeps one authority per concern:
 |---|---|
 | Persisted data semantics | `v2.ts` + V2 schema |
 | New-report wording quality | `COPY.md` + `copy-quality.ts` |
+| Tester-ready report gate | `report-readiness.ts` |
 | Human / ChatGPT presentation | `PREVIEW.md` + `preview.ts` |
 | Confirmation / promotion semantics | this package's confirmation and promotion modules |
 
 Other UI, agent, and workspace documents reference these contracts. They must not redefine them.
+
+## Layer boundaries
+
+Keep report information in three conceptual layers even though Bug Report V2 remains one canonical persisted format.
+
+| Layer | Purpose | Typical data |
+|---|---|---|
+| Internal Detection | Establish whether a defect exists and why. Never shown in the normal tester preview. | diagnostics, evidence IDs, semantic keys, invariant IDs, classification signals, confirmation basis |
+| Tester-Facing Report | Let a tester understand and reproduce the gameplay failure without reading code. | Bug title, Issue, Severity, Bug Trigger (In-Game), supported Solution |
+| Repair Detail | Give implementation context only when requested or during repair work. | Expected, Observed, Technical Analysis, Relevant Code, Must Preserve, repair decision context |
+
+Rules:
+
+- A defect can be **confirmed internally** without yet being **tester-ready**.
+- Tester-ready promotion additionally requires the shared readiness gate in `report-readiness.ts`.
+- Bug Trigger is gameplay-only. Technical evidence never substitutes for an in-game trigger.
+- Solution is presentation of canonical `suggestedFix`; it is allowed only when repair support exists.
+- Repair Detail must not leak into the normal audit preview.
+- Internal Detection data must never be copied into report prose merely to make the report look more complete.
+
+The intended flow is:
+
+```text
+Internal Detection
+→ Confirmed Defect
+→ Tester Readiness
+→ Bug Report V2
+→ Tester Preview
+
+                     ↘ Repair Detail on demand
+```
 
 ## Canonical vocabulary
 
@@ -100,7 +132,7 @@ All persisted report content and canonical UI labels are English.
 
 ## Creation
 
-New reports must be created directly as V2 through `createBugReportV2()`. The creator defaults each bug to `fixed: false`, validates V2 semantics, and enforces the wording contract in `COPY.md` before emission.
+New reports must be created directly as V2 through `createBugReportV2()`. The creator defaults each bug to `fixed: false`, validates V2 semantics, enforces tester readiness through `report-readiness.ts`, and then enforces the wording contract in `COPY.md` before emission.
 
 Do not generate V1 and convert it to V2 for new audits. V1 conversion exists only for old saved reports.
 
@@ -116,6 +148,7 @@ New audit output follows:
 ```text
 internal analysis
 → confirmed defect
+→ tester-readiness gate
 → promoteConfirmedBugsToV2()
 → Bug Report V2
 ```
