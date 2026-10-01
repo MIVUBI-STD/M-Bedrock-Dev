@@ -280,7 +280,7 @@ export interface InspectDirectoryResult {
     routeAssessments: readonly GameplayIntentRouteRuntimeAssessment[];
     routeStallAssessments: readonly GameplayRouteStallRuntimeAssessment[];
     designedBehavior: number;
-    probableDefects: number;
+    confirmedDefects: number;
     ambiguousIntent: number;
     insufficientEvidence: number;
     runtimeStateObservations: number;
