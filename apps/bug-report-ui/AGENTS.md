@@ -2,7 +2,7 @@
 
 Applies to `apps/bug-report-ui/`.
 
-The UI is a projection of canonical Bug Report V2, not a second report system.
+The UI is a projection/client of canonical Bug Report V2, not a second report system. Canonical persisted state lives in `workspace/reports/` and its semantics live in `engine/packages/bug-report/`.
 
 ## Canonical references
 
@@ -21,6 +21,8 @@ The UI is a projection of canonical Bug Report V2, not a second report system.
 - Schema-valid compatibility reports may be read, but readiness or copy-quality gaps must be surfaced and must block GitHub handoff from file import.
 - Omit empty sections.
 - Do not expose diagnostic internals.
+- Do not persist independent bug status, history, or identity in UI-owned storage.
+- Do not treat imported legacy files as canonical; they remain review/migration input until promoted through the engine contract.
 - Do not add project-management surfaces such as boards, comments, assignment, approval, or activity feeds.
 
 If a UI requirement conflicts with canonical report semantics, preserve the canonical report and change only the projection.
