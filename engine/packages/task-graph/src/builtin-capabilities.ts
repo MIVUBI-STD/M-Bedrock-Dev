@@ -515,6 +515,17 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "diagnosis.calibration",
+      owner: "packages/diagnostic-reasoning",
+      pathPrefixes: [
+        "packages/diagnostic-reasoning/src/calibration.ts",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "repair.routing",
       owner: "packages/orchestrator",
       pathPrefixes: [
