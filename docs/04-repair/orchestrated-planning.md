@@ -1,40 +1,43 @@
 # Orchestrated Repair Planning
 
-Integrated inspection may expose repair candidates, but inspection never applies them.
+Integrated inspection may expose **repair proposals**, but inspection does not create a mutation-authorizing PatchTransaction.
 
 ## Output states
 
-Each candidate has one status:
+Each inspection repair item has one status:
 
-- planned — a complete PatchTransaction exists;
-- unsupported — diagnostic exists but the current repair engine cannot safely transform it;
-- unavailable — planning needs evidence not present in this inspection context, such as the artifact fingerprint.
+- proposal — a deterministic possible change has been derived for later review;
+- unsupported — the current repair engine cannot safely represent the transform;
+- unavailable — proposal derivation needs evidence not present in the current inspection context.
 
-## Fingerprint boundary
+A proposal is not an Approved Bug, Repair Contract, repair authorization, or mutation transaction.
 
-Artifact inspection has a source fingerprint and may emit complete transactions.
-
-Directory-only inspection has no artifact fingerprint by default, so it reports otherwise-repairable findings as unavailable rather than inventing a fingerprint.
-
-## Execute wrapper safety
-
-A spatial effect nested inside execute ... run is not currently auto-repaired.
-
-Replacing the whole source line with only the nested fill/setblock would discard execution context such as selectors, positioning, conditions, dimension, or rotation. Until command-level splicing preserves that wrapper exactly, nested spatial effects remain diagnostic-only.
-
-## Separation
+## Boundary
 
 ```text
 inspect / diagnose
-→ repair candidate
-→ PatchTransaction (when eligible)
+→ deterministic repair proposal
 → STOP
 
-explicit apply workflow
+chat-approved bug / approved design change
+→ Repair Contract
+  - Must Change
+  - Must Preserve
+→ create authorized PatchTransaction
 → verify current fingerprint
-→ verify exact command line
-→ mutate working copy
-→ validate
+→ apply to working copy
+→ validate defect removal
+→ validate gameplay preservation
 ```
 
-No inspect API implicitly mutates content.
+Inspection must never pre-authorize a gameplay repair merely because a source transform is mechanically obvious.
+
+## Fingerprint role
+
+A source fingerprint may make a proposal more precise, but it does not grant mutation authority.
+
+## Execute wrapper safety
+
+A spatial effect nested inside `execute ... run` remains unsupported when replacing the nested command would discard selectors, positioning, conditions, dimension, rotation, or other execution context.
+
+No inspect API implicitly mutates content or creates gameplay repair authority.
