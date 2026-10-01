@@ -66,4 +66,9 @@ Requires all of:
 
 All confirmed defects are shown by default: Blocker, Major, and Minor.
 
-Unknown intent, missing evidence, runtime-only residue, or detection gaps remain internal and never receive defect severity.
+Unresolved issue candidates that could still represent a real defect are also shown by default with an explicit non-severity status:
+- `runtime-proof-required` / `insufficient-evidence` → `Needs Validation`;
+- `ambiguous-intent` → `Ambiguous`;
+- `detection-gap` → `Detection Gap`.
+
+Unresolved candidates never receive Blocker/Major/Minor severity until they satisfy defect admission. Designed behavior, disproven candidates, and normal surfaces remain hidden.
