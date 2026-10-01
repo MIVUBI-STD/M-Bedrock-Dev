@@ -28,7 +28,6 @@ workspace/active/<project-id>/
 
 Nothing under `workspace/active/` or `workspace/saved/` is repository source authority.
 
-
 ## Map Game Design authority
 
 `workspace/active/<project-id>/design/game-design.json` is the canonical local Game Design for that map/project. Engine schemas and compilers validate/compile it, but engine-global knowledge or contracts must never replace it.
