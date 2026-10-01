@@ -62,22 +62,20 @@ No paid API, SaaS renderer, database, browser server, Google API, or background 
 
 The generated document follows `engine/packages/bug-report/DOCUMENT.md`:
 
-- Report overview first;
-- compact map/test metrics;
-- issue summary only when 2+ issues exist;
-- severity guide;
-- linear issue details;
-- numbered reproduction steps;
-- Observed before Expected;
-- Recommended Resolution only when supported;
+- compact map/test metrics at the top;
+- one short severity legend;
+- one two-column table per bug;
+- stable rows: Issue / How to Reproduce / Observed / Expected / Resolution;
+- reproduction numbering restarts for every bug;
+- separate Issue Index only for 7+ issues;
 - no internal Bug ID / AI / code details in the client document.
 
 ## Adaptive layout
 
-- 0-1 issue: no redundant issue-summary table;
-- 2-3 issues: summary table + natural flow;
-- 4+ issues: issue details begin on a new page;
-- 8+ issues: compact issue rhythm.
+- 0 issues: no-open-issues message;
+- 1–3 issues: standard compact bug tables;
+- 4–6 issues: tighter bug tables;
+- 7+ issues: Issue Index + compact bug tables.
 
 ## Output naming
 
