@@ -1,0 +1,1312 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": {
+    "branch": "Local",
+    "commit": "ed69d9cb8ac0f864d41fa88e988fabfc59852abf",
+    "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
+    "analysisRegistry": [
+      "engine/packages/analysis-planner/src/domain-capabilities.ts",
+      "engine/packages/analysis-planner/src/arena-capabilities.ts"
+    ]
+  },
+  "summary": {
+    "taskCapabilities": 34,
+    "sourceVerified": 34,
+    "implementedUnverified": 0,
+    "declaredOnly": 0,
+    "runtimeOnly": 3,
+    "analysisCapabilities": 27
+  },
+  "taskCapabilities": [
+    {
+      "id": "behavior.arena",
+      "owner": "packages/behavior-model",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 27,
+      "testFiles": 6,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
+        "engine/packages/behavior-model/test/safe-config.test.ts"
+      ]
+    },
+    {
+      "id": "behavior.chunks",
+      "owner": "packages/behavior-model",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 27,
+      "testFiles": 6,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
+        "engine/packages/behavior-model/test/safe-config.test.ts"
+      ]
+    },
+    {
+      "id": "behavior.combat",
+      "owner": "packages/behavior-model",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 27,
+      "testFiles": 6,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
+        "engine/packages/behavior-model/test/safe-config.test.ts"
+      ]
+    },
+    {
+      "id": "behavior.core",
+      "owner": "packages/behavior-model",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 27,
+      "testFiles": 6,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
+        "engine/packages/behavior-model/test/safe-config.test.ts"
+      ]
+    },
+    {
+      "id": "behavior.economy",
+      "owner": "packages/behavior-model",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 27,
+      "testFiles": 6,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
+        "engine/packages/behavior-model/test/safe-config.test.ts"
+      ]
+    },
+    {
+      "id": "behavior.entity-ai",
+      "owner": "packages/behavior-model",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 27,
+      "testFiles": 6,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
+        "engine/packages/behavior-model/test/safe-config.test.ts"
+      ]
+    },
+    {
+      "id": "behavior.inventory",
+      "owner": "packages/behavior-model",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 27,
+      "testFiles": 6,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
+        "engine/packages/behavior-model/test/safe-config.test.ts"
+      ]
+    },
+    {
+      "id": "behavior.spatial",
+      "owner": "packages/behavior-model",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 27,
+      "testFiles": 6,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
+        "engine/packages/behavior-model/test/safe-config.test.ts"
+      ]
+    },
+    {
+      "id": "context.compile",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "domain.arena-lifecycle",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "domain.chunks",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "domain.combat",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "domain.economy",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "domain.entity-ai",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "domain.inventory",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "domain.persistence",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "domain.spatial-authority",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "projection.workflow",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "projection.world-model",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "repair.routing",
+      "owner": "packages/orchestrator",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 269,
+      "testFiles": 254,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/packages/orchestrator/test/adaptive-runtime-probe.test.ts",
+        "engine/packages/orchestrator/test/area-loaded-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-actor-population-proof.test.ts",
+        "engine/packages/orchestrator/test/arena-audit.test.ts",
+        "engine/packages/orchestrator/test/arena-authored-source-index.test.ts"
+      ]
+    },
+    {
+      "id": "runtime.chunks",
+      "owner": "packages/runtime-lab",
+      "status": "source-verified",
+      "deterministic": false,
+      "cost": "very-expensive",
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": true,
+      "sourceFiles": 33,
+      "testFiles": 29,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/packages/runtime-lab/test/action-capability.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-action-registry.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-host.test.ts"
+      ]
+    },
+    {
+      "id": "runtime.entity-ai",
+      "owner": "packages/runtime-lab",
+      "status": "source-verified",
+      "deterministic": false,
+      "cost": "very-expensive",
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": true,
+      "sourceFiles": 33,
+      "testFiles": 29,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/packages/runtime-lab/test/action-capability.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-action-registry.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-host.test.ts"
+      ]
+    },
+    {
+      "id": "runtime.persistence",
+      "owner": "packages/runtime-lab",
+      "status": "source-verified",
+      "deterministic": false,
+      "cost": "expensive",
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": true,
+      "sourceFiles": 33,
+      "testFiles": 29,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/packages/runtime-lab/test/action-capability.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-action-registry.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-capabilities.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-harness-capability-parity.test.ts",
+        "engine/packages/runtime-lab/test/bedrock-host.test.ts"
+      ]
+    },
+    {
+      "id": "source.entities.ai",
+      "owner": "analyzers/entities",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 12,
+      "testFiles": 8,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/analyzers/entities/test/ai-stack.test.ts",
+        "engine/analyzers/entities/test/attack-sensor.test.ts",
+        "engine/analyzers/entities/test/entity.test.ts",
+        "engine/analyzers/entities/test/loot.test.ts",
+        "engine/analyzers/entities/test/navigation.test.ts"
+      ]
+    },
+    {
+      "id": "source.entities.core",
+      "owner": "analyzers/entities",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 12,
+      "testFiles": 8,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/analyzers/entities/test/ai-stack.test.ts",
+        "engine/analyzers/entities/test/attack-sensor.test.ts",
+        "engine/analyzers/entities/test/entity.test.ts",
+        "engine/analyzers/entities/test/loot.test.ts",
+        "engine/analyzers/entities/test/navigation.test.ts"
+      ]
+    },
+    {
+      "id": "source.entities.economy",
+      "owner": "analyzers/entities",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 12,
+      "testFiles": 8,
+      "hasReadme": false,
+      "proofPaths": [
+        "engine/analyzers/entities/test/ai-stack.test.ts",
+        "engine/analyzers/entities/test/attack-sensor.test.ts",
+        "engine/analyzers/entities/test/entity.test.ts",
+        "engine/analyzers/entities/test/loot.test.ts",
+        "engine/analyzers/entities/test/navigation.test.ts"
+      ]
+    },
+    {
+      "id": "source.scripts.arena",
+      "owner": "analyzers/scripts",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 28,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ]
+    },
+    {
+      "id": "source.scripts.chunks",
+      "owner": "analyzers/scripts",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 28,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ]
+    },
+    {
+      "id": "source.scripts.combat",
+      "owner": "analyzers/scripts",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 28,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ]
+    },
+    {
+      "id": "source.scripts.core",
+      "owner": "analyzers/scripts",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 28,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ]
+    },
+    {
+      "id": "source.scripts.dataflow",
+      "owner": "analyzers/scripts",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "moderate",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 28,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ]
+    },
+    {
+      "id": "source.scripts.economy",
+      "owner": "analyzers/scripts",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 28,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ]
+    },
+    {
+      "id": "source.scripts.inventory",
+      "owner": "analyzers/scripts",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 28,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ]
+    },
+    {
+      "id": "source.scripts.persistence",
+      "owner": "analyzers/scripts",
+      "status": "source-verified",
+      "deterministic": true,
+      "cost": "cheap",
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "runtimeOnly": false,
+      "sourceFiles": 28,
+      "testFiles": 24,
+      "hasReadme": true,
+      "proofPaths": [
+        "engine/analyzers/scripts/test/arena-authority-evidence.test.ts",
+        "engine/analyzers/scripts/test/arena-capacity-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/arena-start-ownership-repair-transform-hints.test.ts",
+        "engine/analyzers/scripts/test/chunk-lifecycle-evidence.test.ts",
+        "engine/analyzers/scripts/test/cleanup-resource-evidence.test.ts"
+      ]
+    }
+  ],
+  "analysisCapabilities": [
+    {
+      "id": "arena-actor-population-proof",
+      "evidenceLevel": "semantic",
+      "cost": "very-expensive",
+      "deterministic": true,
+      "contexts": [
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "entity",
+        "actor-db",
+        "world-db",
+        "runtime-state"
+      ]
+    },
+    {
+      "id": "arena-authored-entity-fidelity",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "entity",
+        "spawn",
+        "replica"
+      ]
+    },
+    {
+      "id": "arena-block-entity-proof",
+      "evidenceLevel": "semantic",
+      "cost": "expensive",
+      "deterministic": true,
+      "contexts": [
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "block-entity",
+        "world-db",
+        "replica"
+      ]
+    },
+    {
+      "id": "arena-concurrency-capacity",
+      "evidenceLevel": "semantic",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "capacity",
+        "multiplayer"
+      ]
+    },
+    {
+      "id": "arena-lifecycle-integrity",
+      "evidenceLevel": "semantic",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "lifecycle",
+        "cleanup",
+        "generation"
+      ]
+    },
+    {
+      "id": "arena-replica-fidelity",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "coordinates",
+        "topology",
+        "replica"
+      ]
+    },
+    {
+      "id": "arena-runtime-stress",
+      "evidenceLevel": "runtime",
+      "cost": "very-expensive",
+      "deterministic": false,
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "multiplayer",
+        "lifecycle",
+        "cleanup",
+        "stress"
+      ]
+    },
+    {
+      "id": "arena-spatial-fingerprint",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "terrain",
+        "world-db",
+        "replica",
+        "chunk"
+      ]
+    },
+    {
+      "id": "arena-structure-instance-fidelity",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "structure",
+        "replica",
+        "placement"
+      ]
+    },
+    {
+      "id": "arena-tick-state-proof",
+      "evidenceLevel": "semantic",
+      "cost": "expensive",
+      "deterministic": true,
+      "contexts": [
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "ticks",
+        "world-db",
+        "runtime-state",
+        "replica"
+      ]
+    },
+    {
+      "id": "arena-voxel-proof",
+      "evidenceLevel": "semantic",
+      "cost": "expensive",
+      "deterministic": true,
+      "contexts": [
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "arena",
+        "terrain",
+        "world-db",
+        "replica",
+        "voxel"
+      ]
+    },
+    {
+      "id": "chunk-lifecycle-integrity",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "chunk",
+        "readiness",
+        "ticking-area",
+        "residency",
+        "lifecycle"
+      ]
+    },
+    {
+      "id": "chunk-readiness-runtime",
+      "evidenceLevel": "runtime",
+      "cost": "very-expensive",
+      "deterministic": false,
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "chunk",
+        "readiness",
+        "loader",
+        "ticking-area",
+        "runtime"
+      ]
+    },
+    {
+      "id": "combat-lifecycle-policy",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "combat",
+        "damage",
+        "revive",
+        "death",
+        "projectile"
+      ]
+    },
+    {
+      "id": "combat-revive-runtime",
+      "evidenceLevel": "runtime",
+      "cost": "expensive",
+      "deterministic": false,
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "combat",
+        "revive",
+        "death",
+        "runtime"
+      ]
+    },
+    {
+      "id": "economy-reward-integrity",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "economy",
+        "reward",
+        "currency",
+        "loot",
+        "progression"
+      ]
+    },
+    {
+      "id": "entity-ai-navigation-readiness",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "entity",
+        "ai",
+        "navigation",
+        "pathfinding",
+        "route"
+      ]
+    },
+    {
+      "id": "entity-ai-navigation-runtime",
+      "evidenceLevel": "runtime",
+      "cost": "very-expensive",
+      "deterministic": false,
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "entity",
+        "ai",
+        "navigation",
+        "pathfinding",
+        "crowding",
+        "recovery"
+      ]
+    },
+    {
+      "id": "inventory-lifecycle-integrity",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "inventory",
+        "equipment",
+        "loadout",
+        "respawn",
+        "item"
+      ]
+    },
+    {
+      "id": "multiplayer-interleaving",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "multiplayer",
+        "race",
+        "interleaving",
+        "generation",
+        "arena"
+      ]
+    },
+    {
+      "id": "pack-identity-continuity",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "manifest",
+        "persistence",
+        "world-db"
+      ]
+    },
+    {
+      "id": "persistence-lifecycle-integrity",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "persistence",
+        "dynamic-property",
+        "recovery",
+        "state"
+      ]
+    },
+    {
+      "id": "persistence-recovery-runtime",
+      "evidenceLevel": "runtime",
+      "cost": "expensive",
+      "deterministic": false,
+      "contexts": [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "persistence",
+        "recovery",
+        "reload",
+        "runtime"
+      ]
+    },
+    {
+      "id": "release-identity-consistency",
+      "evidenceLevel": "static",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT"
+      ],
+      "tags": [
+        "manifest",
+        "release",
+        "version"
+      ]
+    },
+    {
+      "id": "safe-config-resolution",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT"
+      ],
+      "tags": [
+        "arena",
+        "configuration",
+        "coordinates",
+        "script"
+      ]
+    },
+    {
+      "id": "script-dataflow-lineage",
+      "evidenceLevel": "semantic",
+      "cost": "moderate",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "script",
+        "dataflow",
+        "taint",
+        "identity",
+        "state",
+        "lineage"
+      ]
+    },
+    {
+      "id": "spatial-authority-coverage",
+      "evidenceLevel": "semantic",
+      "cost": "cheap",
+      "deterministic": true,
+      "contexts": [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT"
+      ],
+      "tags": [
+        "spatial",
+        "authority",
+        "permission",
+        "region",
+        "build"
+      ]
+    }
+  ]
+}
