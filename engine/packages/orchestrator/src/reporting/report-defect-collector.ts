@@ -320,6 +320,28 @@ function classificationIssues(
     return classification.reasons;
   }
 
+  if (
+    candidate.route === "static" &&
+    compiled.gameplayBasis !== "authored-gameplay"
+  ) {
+    return {
+      issues: [
+        "Static AI Bug Trigger must be grounded in authored gameplay intent.",
+      ],
+    };
+  }
+
+  if (
+    candidate.route === "runtime" &&
+    compiled.gameplayBasis === "tester-gameplay"
+  ) {
+    return {
+      issues: [
+        "Runtime AI Bug Trigger cannot claim tester gameplay provenance.",
+      ],
+    };
+  }
+
   const universe = new Set(
     candidateEvidenceUniverse(candidate),
   );
