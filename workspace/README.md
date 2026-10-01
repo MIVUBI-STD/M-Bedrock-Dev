@@ -56,3 +56,11 @@ workspace/drive-root.json
 Per-project exact map/current-world pointers, when useful, belong only in ignored local state under `workspace/active/<project-id>/state/`.
 
 M-Bedrock does not create Drive-side system folders or store internal engine state in Drive.
+
+## Gameplay Contract persistence rule
+
+`design/game-design.json` is the only project-local persisted Game Design authority.
+
+Derived Gameplay Contract is not stored as a second authority by default. It is reconstructed for the current audit/repair scope from approved Game Design plus explicitly identified unknowns.
+
+If discussion changes intended gameplay, update and approve `design/game-design.json`; do not persist a competing derived contract.
