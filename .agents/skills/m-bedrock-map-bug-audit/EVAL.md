@@ -1,6 +1,8 @@
 # Eval Contract
 
 Evaluate whether Map Bug Audit:
+- recovers current Game Design and builds a scoped Gameplay Contract before bug discovery;
+- blocks affected scope when material design intent is unresolved;
 - triggers for bug finding/retest prompts;
 - does not trigger Detection Development merely because a detector limitation appears;
 - never mutates engine or target;
