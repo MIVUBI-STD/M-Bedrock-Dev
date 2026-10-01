@@ -58,7 +58,9 @@ describe("post repair verification", () => {
       });
 
     expect(result.status).toBe("pass");
-    expect(result.releaseReady).toBe(true);
+    expect(result.differentialPass).toBe(true);
+    expect(result.releaseReady).toBe(false);
+    expect(result.closureRequired).toBe(true);
   });
 
   it("fails when repair introduces a new major diagnostic", () => {
