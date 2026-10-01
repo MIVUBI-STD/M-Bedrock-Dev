@@ -2,6 +2,7 @@
   import {
     BUG_REPORT_V2_LABELS,
     projectBugReportPreview,
+    reviewBugReportCopy,
     reviewBugReportReadiness,
     serializeBugReportV2,
     type BugReportParseIssue,
@@ -29,6 +30,7 @@
   let source: ReportSource | undefined;
   let importIssues: readonly BugReportParseIssue[] = [];
   let readinessIssues = reviewBugReportReadiness([]);
+  let copyIssues = reviewBugReportCopy([]);
   let sourceFile = "";
   let query = "";
   let severity: "all" | "blocker" | "major" | "minor" = "all";
@@ -78,6 +80,7 @@
     saveState = "saved";
     importIssues = [];
     readinessIssues = reviewBugReportReadiness(next.bugs);
+    copyIssues = reviewBugReportCopy(next.bugs);
     githubBrowser = false;
     githubError = "";
     resetFilters(next);
@@ -91,6 +94,7 @@
       source = undefined;
       importIssues = result.issues;
       readinessIssues = reviewBugReportReadiness([]);
+      copyIssues = reviewBugReportCopy([]);
       return;
     }
     openDocument(result.report, {
@@ -176,7 +180,8 @@
     if (
       !report ||
       source?.kind !== "file" ||
-      readinessIssues.length > 0
+      readinessIssues.length > 0 ||
+      copyIssues.length > 0
     ) return;
     saveState = "saving";
     const path =
@@ -223,6 +228,7 @@
     source = undefined;
     importIssues = [];
     readinessIssues = reviewBugReportReadiness([]);
+    copyIssues = reviewBugReportCopy([]);
     sourceFile = "";
     query = "";
     severity = "all";
@@ -254,10 +260,17 @@
           <button
             class="secondary"
             on:click={saveToGitHub}
-            disabled={saveState === "saving" || readinessIssues.length > 0}
-            title={readinessIssues.length > 0
-              ? "Resolve tester-readiness issues before saving this report to GitHub."
-              : undefined}
+            disabled={
+              saveState === "saving" ||
+              readinessIssues.length > 0 ||
+              copyIssues.length > 0
+            }
+            title={
+              readinessIssues.length > 0 ||
+              copyIssues.length > 0
+                ? "Resolve report handoff issues before saving this report to GitHub."
+                : undefined
+            }
           >
             Save to GitHub
           </button>
@@ -340,15 +353,20 @@
       <span>{source?.kind === "github" ? source.path : source?.fileName}</span>
     </section>
 
-    {#if readinessIssues.length > 0}
+    {#if readinessIssues.length > 0 || copyIssues.length > 0}
       <section class="readiness-warning" aria-live="polite">
-        <strong>Compatibility report — not tester-ready</strong>
+        <strong>Compatibility report — not handoff-ready</strong>
         <span>
-          This report can be read and exported, but {readinessIssues.length}
-          tester-readiness issue{readinessIssues.length === 1 ? "" : "s"} must be resolved before handoff.
+          This report can be read and exported, but
+          {readinessIssues.length + copyIssues.length}
+          report-quality issue{readinessIssues.length + copyIssues.length === 1 ? "" : "s"}
+          must be resolved before handoff.
         </span>
         <ul>
           {#each readinessIssues as issue}
+            <li><code>{issue.path}</code> — {issue.message}</li>
+          {/each}
+          {#each copyIssues as issue}
             <li><code>{issue.path}</code> — {issue.message}</li>
           {/each}
         </ul>
