@@ -1,0 +1,112 @@
+{
+  "schema": "m-bedrock-bug-report-client-document/v1",
+  "documentType": "Bug Report",
+  "title": "Golden Tester Map — Bug Report",
+  "subtitle": "Confirmed gameplay issues and testing summary",
+  "audience": "client",
+  "map": {
+    "name": "Golden Tester Map",
+    "mapVersion": "1.0.0",
+    "testedVersion": "1.26.32"
+  },
+  "summary": {
+    "visibleIssues": 3,
+    "openIssues": 3,
+    "fixedIssues": 0,
+    "blocker": 1,
+    "major": 1,
+    "minor": 1,
+    "statement": "3 confirmed issues are included in this client report."
+  },
+  "severityLegend": [
+    {
+      "severity": "blocker",
+      "label": "Blocker",
+      "meaning": "Prevents normal progression or makes the affected gameplay unusable."
+    },
+    {
+      "severity": "major",
+      "label": "Major",
+      "meaning": "Materially affects gameplay, state, fairness, or reliability."
+    },
+    {
+      "severity": "minor",
+      "label": "Minor",
+      "meaning": "Limited issue that does not prevent normal gameplay."
+    }
+  ],
+  "issueIndex": [
+    {
+      "number": 1,
+      "severity": "blocker",
+      "status": "open",
+      "title": "Arena cannot start a second match"
+    },
+    {
+      "number": 2,
+      "severity": "major",
+      "status": "open",
+      "title": "Match loadout drops when the player dies"
+    },
+    {
+      "number": 3,
+      "severity": "minor",
+      "status": "open",
+      "title": "Join feedback remains visible after leaving the pad"
+    }
+  ],
+  "issues": [
+    {
+      "number": 1,
+      "severity": "blocker",
+      "status": "open",
+      "title": "Arena cannot start a second match",
+      "issue": "After one match ends, the same arena cannot start again, blocking the next round for players.",
+      "reproduction": [
+        "Join the arena with 2 players.",
+        "Finish the match normally.",
+        "Return both players to the lobby.",
+        "Start the same arena again.",
+        "Confirm the new match does not start."
+      ],
+      "observed": "The previous session remains active and the next match does not start.",
+      "expected": "The arena returns to an available state after match cleanup.",
+      "recommendedResolution": "Clear arena session ownership during match cleanup so the arena becomes available for the next round."
+    },
+    {
+      "number": 2,
+      "severity": "major",
+      "status": "open",
+      "title": "Match loadout drops when the player dies",
+      "issue": "Match-owned loadout items drop into the world on death, allowing equipment to be lost or collected by other players.",
+      "reproduction": [
+        "Start a match and receive the normal player loadout.",
+        "Let the player die during the active match.",
+        "Return to the death location after respawn.",
+        "Confirm the loadout items are present as world drops."
+      ],
+      "observed": "Loadout items appear as world drops at the death location.",
+      "expected": "Match-owned loadout items are restored through the intended respawn flow without becoming world drops.",
+      "recommendedResolution": "Prevent match-owned loadout items from entering the world-drop path and restore them through the respawn flow."
+    },
+    {
+      "number": 3,
+      "severity": "minor",
+      "status": "open",
+      "title": "Join feedback remains visible after leaving the pad",
+      "issue": "The join prompt remains visible after the player leaves the join pad, creating misleading lobby feedback.",
+      "reproduction": [
+        "Walk onto the join pad until the join prompt appears.",
+        "Walk away from the join pad.",
+        "Confirm the join prompt remains visible outside the pad."
+      ],
+      "observed": "The prompt remains visible outside the join pad.",
+      "expected": "The join prompt disappears when the player leaves the join pad.",
+      "recommendedResolution": "Clear the join feedback state when the player leaves the join pad so the prompt disappears immediately."
+    }
+  ],
+  "source": {
+    "schema": "m-bedrock-bug-report/v2",
+    "issueScope": "open"
+  }
+}
