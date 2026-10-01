@@ -1,6 +1,3 @@
-import type {
-  ResolvedGameDesignIntentRule,
-} from "../../game-design-spec/src/index.js";
 import {
   assessGameplayIntentGrounding,
   buildGameplayContract,
@@ -28,11 +25,6 @@ export type IntentDiagnosticNextEvidenceNeed =
   | "runtime-proof"
   | "runtime-evidence-integrity";
 
-export type GameDesignObservationRelation =
-  | "supports-observed"
-  | "contradicts-observed"
-  | "unclear";
-
 export type IntentConcernKind =
   | "implementation"
   | "balance"
@@ -42,9 +34,6 @@ export type IntentConcernKind =
 
 export interface IntentDiagnosticGateInput {
   intent: GameplayIntentModel;
-  resolvedGameDesignRule?: ResolvedGameDesignIntentRule;
-  gameDesignObservationRelation?: GameDesignObservationRelation;
-  concernKind?: IntentConcernKind;
   subjectIds: readonly string[];
   observationEvidenceIds: readonly string[];
   contradictionEvidenceIds?: readonly string[];
@@ -55,7 +44,6 @@ export interface IntentDiagnosticGateInput {
   runtimeProofEvidenceIds?: readonly string[];
   runtimeEvidenceIntegritySatisfied?: boolean;
   gameplayContract?: GameplayContract;
-  allowExternalReferenceMode?: boolean;
 }
 
 export interface IntentDiagnosticGateResult {
@@ -72,10 +60,6 @@ export interface IntentDiagnosticGateResult {
 export function gateIntentDiagnostic(
   input: IntentDiagnosticGateInput,
 ): IntentDiagnosticGateResult {
-  const resolvedRule =
-    input.allowExternalReferenceMode === true
-      ? input.resolvedGameDesignRule
-      : undefined;
   const gameplayContract =
     input.gameplayContract ??
     buildGameplayContract(
@@ -84,14 +68,6 @@ export function gateIntentDiagnostic(
         subjectIds: input.subjectIds,
       },
     );
-
-  if (
-    input.resolvedGameDesignRule !== undefined &&
-    input.allowExternalReferenceMode !== true
-  ) {
-    // Normal audit is closed to the selected artifact. External design
-    // material may be inspected only in an explicit comparison/history mode.
-  }
 
   if (
     gameplayContract.modelId !== input.intent.id ||
@@ -125,191 +101,9 @@ export function gateIntentDiagnostic(
       nextEvidenceNeed: "intent-clarification",
       reasons: [
         ...gameplayContract.readiness.reasons,
-        "Gameplay defect classification is blocked until material Game Design unknowns are resolved for this scope.",
+        "Gameplay defect classification is blocked until material unknowns are resolved inside the selected map version.",
       ],
     };
-  }
-
-  if (resolvedRule) {
-    const rule = resolvedRule.rule;
-    const designEvidenceIds = [
-      "game-design:" + resolvedRule.designId + ":rule:" + rule.id,
-      "game-design-source:" + resolvedRule.sourceReference,
-    ];
-
-    if (resolvedRule.exceptionId) {
-      return {
-        disposition: "designed-behavior",
-        subjectIds: [...input.subjectIds],
-        basisInvariantIds: [],
-        basisDesignRuleIds: [rule.id],
-        basisDesignEvidenceIds: designEvidenceIds,
-        evidenceIds: [
-          ...input.observationEvidenceIds,
-          ...designEvidenceIds,
-        ],
-        nextEvidenceNeed: "none",
-        reasons: [
-          "An explicit Game Design exception applies: " +
-            resolvedRule.exceptionId +
-            ".",
-        ],
-      };
-    }
-
-    if (
-      rule.outcome === "unspecified" ||
-      input.gameDesignObservationRelation === "unclear" ||
-      input.gameDesignObservationRelation === undefined
-    ) {
-      return {
-        disposition: "ambiguous-intent",
-        subjectIds: [...input.subjectIds],
-        basisInvariantIds: [],
-        basisDesignRuleIds: [rule.id],
-        basisDesignEvidenceIds: designEvidenceIds,
-        evidenceIds: [
-          ...input.observationEvidenceIds,
-          ...designEvidenceIds,
-        ],
-        nextEvidenceNeed: "intent-clarification",
-        reasons: [
-          "The applicable Game Design rule does not establish a decisive expected outcome for this observation.",
-        ],
-      };
-    }
-
-    if (input.gameDesignObservationRelation === "supports-observed") {
-      const reviewConcern =
-        input.concernKind === "balance" ||
-        input.concernKind === "ux";
-      return {
-        disposition: reviewConcern
-          ? "design-review"
-          : "designed-behavior",
-        subjectIds: [...input.subjectIds],
-        basisInvariantIds: [],
-        basisDesignRuleIds: [rule.id],
-        basisDesignEvidenceIds: designEvidenceIds,
-        evidenceIds: [
-          ...input.observationEvidenceIds,
-          ...designEvidenceIds,
-        ],
-        nextEvidenceNeed: "none",
-        reasons: [
-          reviewConcern
-            ? "Observed behavior matches approved Game Design; the concern belongs to design/UX review rather than implementation correctness."
-            : "Observed behavior matches the applicable Game Design rule.",
-        ],
-      };
-    }
-
-    const contradictionEvidence =
-      input.contradictionEvidenceIds ?? [];
-    if (
-      input.observationEvidenceIds.length > 0 &&
-      contradictionEvidence.length > 0 &&
-      resolvedRule.authority === "authoritative"
-    ) {
-      if (
-        input.runtimeProofRequired === true &&
-        (input.runtimeProofEvidenceIds?.length ?? 0) === 0
-      ) {
-        return {
-          disposition: "runtime-proof-required",
-          subjectIds: [...input.subjectIds],
-          basisInvariantIds: [],
-          basisDesignRuleIds: [rule.id],
-          basisDesignEvidenceIds: designEvidenceIds,
-          evidenceIds: [
-            ...input.observationEvidenceIds,
-            ...designEvidenceIds,
-          ],
-          nextEvidenceNeed: "runtime-proof",
-          reasons: [
-            "Game Design contradiction is plausible, but this behavior requires runtime proof before defect confirmation.",
-          ],
-        };
-      }
-
-      return {
-        disposition: "confirmed-defect",
-        subjectIds: [...input.subjectIds],
-        basisInvariantIds: [],
-        basisDesignRuleIds: [rule.id],
-        basisDesignEvidenceIds: designEvidenceIds,
-        evidenceIds: [
-          ...input.observationEvidenceIds,
-          ...contradictionEvidence,
-          ...(input.runtimeProofEvidenceIds ?? []),
-          ...designEvidenceIds,
-        ],
-        nextEvidenceNeed: "none",
-        reasons: [
-          "Observed evidence contradicts an authoritative approved Game Design rule.",
-        ],
-      };
-    }
-
-    if (input.gameDesignObservationRelation === "contradicts-observed") {
-      if (
-        resolvedRule.authority === "strong"
-      ) {
-        return {
-          disposition: "ambiguous-intent",
-          subjectIds: [...input.subjectIds],
-          basisInvariantIds: [],
-          basisDesignRuleIds: [rule.id],
-          basisDesignEvidenceIds: designEvidenceIds,
-          evidenceIds: [
-            ...input.observationEvidenceIds,
-            ...contradictionEvidence,
-            ...designEvidenceIds,
-          ],
-          nextEvidenceNeed: "authored-intent",
-          reasons: [
-            "Approved reconstruction is useful intent evidence but is not independent authored/client authority for confirming a gameplay defect.",
-          ],
-        };
-      }
-
-      if (
-        resolvedRule.authority === "unknown" ||
-        resolvedRule.authority === "inferred"
-      ) {
-        return {
-          disposition: "ambiguous-intent",
-          subjectIds: [...input.subjectIds],
-          basisInvariantIds: [],
-          basisDesignRuleIds: [rule.id],
-          basisDesignEvidenceIds: designEvidenceIds,
-          evidenceIds: [
-            ...input.observationEvidenceIds,
-            ...designEvidenceIds,
-          ],
-          nextEvidenceNeed: "intent-clarification",
-          reasons: [
-            "Applicable Game Design intent is not authoritative enough to classify the contradiction as a defect.",
-          ],
-        };
-      }
-
-      return {
-        disposition: "insufficient-evidence",
-        subjectIds: [...input.subjectIds],
-        basisInvariantIds: [],
-        basisDesignRuleIds: [rule.id],
-        basisDesignEvidenceIds: designEvidenceIds,
-        evidenceIds: [
-          ...input.observationEvidenceIds,
-          ...designEvidenceIds,
-        ],
-        nextEvidenceNeed: "contradiction-proof",
-        reasons: [
-          "Applicable Game Design rule exists, but contradiction evidence is not sufficient for defect classification.",
-        ],
-      };
-    }
   }
 
   const grounding = assessGameplayIntentGrounding(
@@ -394,7 +188,7 @@ export function gateIntentDiagnostic(
       ],
       nextEvidenceNeed: "none",
       reasons: [
-        "Observed behavior has direct evidence matching the authored or inferred design.",
+        "Observed behavior has direct evidence matching the selected-artifact Gameplay Contract.",
       ],
     };
   }
@@ -489,7 +283,7 @@ export function gateIntentDiagnostic(
       ],
       nextEvidenceNeed: "none",
       reasons: [
-        "Observed evidence contradicts authored intent grounded independently of the current implementation.",
+        "Observed evidence contradicts authored Gameplay Contract evidence from the selected artifact.",
       ],
     };
   }
@@ -519,8 +313,8 @@ export function gateIntentDiagnostic(
       nextEvidenceNeed: "authored-intent",
       reasons: [
         implementationOnlyAuthored.length > 0
-          ? "Current implementation evidence cannot independently establish intended gameplay; authored design authority is required before defect classification."
-          : "Observed evidence contradicts inferred intent, but inferred intent is not sufficient to classify a gameplay bug.",
+          ? "The selected artifact does not ground expected gameplay strongly enough for defect classification."
+          : "Observed evidence contradicts inferred behavior, but the selected artifact does not ground the expected behavior strongly enough to classify a gameplay bug.",
       ],
     };
   }
