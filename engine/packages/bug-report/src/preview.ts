@@ -138,6 +138,10 @@ function line(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function tableCell(value: string): string {
+  return line(value).replaceAll("|", "\\|");
+}
+
 export function renderBugReportPreviewMarkdown(
   preview: BugReportPreview,
   mode: BugReportPreviewMode = "standard",
@@ -154,7 +158,23 @@ export function renderBugReportPreviewMarkdown(
     return out.join("\n") + "\n";
   }
 
-  out.push("", "## Issues");
+  out.push(
+    "",
+    "| Severity | Bug | Issue | Action |",
+    "|---|---|---|---|",
+  );
+
+  for (const bug of preview.bugs) {
+    out.push(
+      `| ${severityLabel(bug.severity)} | ${tableCell(bug.id + " — " + bug.title)} | ${tableCell(bug.issue)} | ${bug.action ? tableCell(bug.action) : "—"} |`,
+    );
+  }
+
+  if (mode !== "full") {
+    return out.join("\n") + "\n";
+  }
+
+  out.push("", "## Details");
 
   for (const bug of preview.bugs) {
     out.push(
@@ -163,37 +183,32 @@ export function renderBugReportPreviewMarkdown(
       `**Issue:** ${line(bug.issue)}`,
     );
 
-    if (bug.action) {
-      out.push(`**Action:** ${line(bug.action)}`);
+    if (bug.action) out.push(`**Action:** ${line(bug.action)}`);
+    if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
+    if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
+
+    if (bug.reproduction?.length) {
+      out.push("**Reproduce:**");
+      bug.reproduction.forEach((step, index) => {
+        out.push(`${index + 1}. ${line(step)}`);
+      });
     }
 
-    if (mode !== "summary") {
-      if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
-      if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
+    if (bug.technicalAnalysis) {
+      out.push(`**Technical:** ${line(bug.technicalAnalysis)}`);
+    }
 
-      if (bug.reproduction?.length) {
-        out.push("**Reproduce:**");
-        bug.reproduction.forEach((step, index) => {
-          out.push(`${index + 1}. ${line(step)}`);
-        });
+    if (bug.relevantCode?.length) {
+      out.push("**Relevant Code:**");
+      for (const item of bug.relevantCode) {
+        out.push(`- \`${item.file}\` — ${line(item.reason)}`);
       }
     }
 
-    if (mode === "full") {
-      if (bug.technicalAnalysis) {
-        out.push(`**Technical:** ${line(bug.technicalAnalysis)}`);
-      }
-      if (bug.relevantCode?.length) {
-        out.push("**Relevant Code:**");
-        for (const item of bug.relevantCode) {
-          out.push(`- \`${item.file}\` — ${line(item.reason)}`);
-        }
-      }
-      if (bug.mustPreserve?.length) {
-        out.push("**Must Preserve:**");
-        for (const item of bug.mustPreserve) {
-          out.push(`- ${line(item)}`);
-        }
+    if (bug.mustPreserve?.length) {
+      out.push("**Must Preserve:**");
+      for (const item of bug.mustPreserve) {
+        out.push(`- ${line(item)}`);
       }
     }
   }
