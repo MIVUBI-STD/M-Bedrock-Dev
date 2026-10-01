@@ -108,13 +108,6 @@ export function selectedArtifactGameplayContractEvidenceIds(
   ].sort();
 }
 
-/**
- * Compatibility alias. Audit semantics are selected-artifact-only.
- */
-export const independentGameplayIntentEvidenceIds =
-  selectedArtifactGameplayContractEvidenceIds;
-
-
 const intendedRank: Readonly<
   Partial<Record<GameplayAuthoritySource, number>>
 > = {
