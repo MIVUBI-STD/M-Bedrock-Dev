@@ -2,8 +2,9 @@ import {
   confirmDefectForReport,
   type DefectConfirmationDecision,
 } from "../../../bug-report/src/index.js";
-import type {
-  GameplayIntentModel,
+import {
+  independentGameplayIntentEvidenceIds,
+  type GameplayIntentModel,
 } from "../../../gameplay-intent/src/index.js";
 import type {
   GameplayIntentRuntimeAssessment,
@@ -13,15 +14,11 @@ function authoredInvariantEvidence(
   intent: GameplayIntentModel,
   invariantIds: readonly string[],
 ): readonly string[] {
-  const ids = new Set(invariantIds);
-  return intent.invariants
-    .filter((invariant) =>
-      ids.has(invariant.id) &&
-      invariant.status === "authored"
-    )
-    .flatMap((invariant) => invariant.evidenceIds);
+  return independentGameplayIntentEvidenceIds(
+    intent,
+    invariantIds,
+  );
 }
-
 export function confirmGameplayIntentRuntimeDefectForReport(
   intent: GameplayIntentModel,
   assessment: GameplayIntentRuntimeAssessment,
