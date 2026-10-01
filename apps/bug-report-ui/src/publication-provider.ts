@@ -11,6 +11,7 @@ export interface PublishedGoogleDoc {
   readonly documentId: string;
   readonly url: string;
   readonly title: string;
+  readonly parentFolderId?: string;
 }
 
 export interface PublishedPdf {
@@ -28,6 +29,7 @@ export interface BugReportPublicationProvider {
   exportGoogleDocAsPdf(input: {
     readonly documentId: string;
     readonly fileName: string;
+    readonly destinationFolderId?: string;
   }): Promise<PublishedPdf>;
 }
 
@@ -68,6 +70,12 @@ export async function publishBugReport(
     await provider.exportGoogleDocAsPdf({
       documentId: googleDoc.documentId,
       fileName: payload.pdfFileName,
+      ...(googleDoc.parentFolderId === undefined
+        ? {}
+        : {
+            destinationFolderId:
+              googleDoc.parentFolderId,
+          }),
     });
 
   return {
