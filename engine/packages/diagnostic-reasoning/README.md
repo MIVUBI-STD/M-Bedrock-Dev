@@ -54,10 +54,16 @@ When an applicable approved Game Design `intentRule` is available, the gate eval
 - matching behavior that raises balance/UX concerns → `design-review`;
 - unspecified/unclear expected behavior → `ambiguous-intent`;
 - contradiction against authoritative authored/client design with evidence → `confirmed-defect`;
-- contradiction against approved reconstruction → `probable-defect`.
+- contradiction against approved reconstruction → `ambiguous-intent` until independent authoritative design exists.
 
 Implementation code is evidence of implementation, not authority for intended gameplay. Missing intent fails closed instead of inventing a defect.
 
+
+## Status boundary
+
+`confirmed-defect` is evidence state, not approval. It may enter Proposed Bug Set review, but cannot authorize publication or repair by itself.
+
+Internal diagnostic `repair-eligible` / `guarded-repair-eligible` statuses describe causal proof readiness only. Final mutation authority belongs to the approval + Repair Contract gates.
 
 ## Intent safety boundary
 
