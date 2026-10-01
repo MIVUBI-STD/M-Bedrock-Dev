@@ -101,7 +101,7 @@ if(!existsSync(registryPath)){
   failures.push("Missing machine-readable skill registry: "+registryPath);
 }else{
   const registry=JSON.parse(readFileSync(registryPath,"utf8"));
-  if(registry.schemaVersion!==1) failures.push("Skill registry schemaVersion must be 1.");
+  if(registry.schemaVersion!==2) failures.push("Skill registry schemaVersion must be 2.");
 
   const classified=new Map();
   for(const [kind,group] of [
