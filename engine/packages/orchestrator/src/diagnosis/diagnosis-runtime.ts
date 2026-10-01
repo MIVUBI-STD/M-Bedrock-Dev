@@ -17,7 +17,7 @@ import {
   type ProgressiveDiagnosisRunResult,
 } from "../../../diagnosis-pipeline/src/index.js";
 import {
-  createAuthoredIntentDiagnosisExecutor,
+  createContractEvidenceDiagnosisExecutor,
   createIntentGroundingDiagnosisExecutor,
 } from "./diagnosis-intent-executors.js";
 import {
@@ -76,7 +76,7 @@ export function createBuiltinDiagnosisRuntime(
       createSourceIndexDiagnosisExecutor(),
       createSemanticIrDiagnosisExecutor(),
       createIntentGroundingDiagnosisExecutor(),
-      createAuthoredIntentDiagnosisExecutor(),
+      createContractEvidenceDiagnosisExecutor(),
       createContradictionProofDiagnosisExecutor(),
     ],
   };
@@ -119,7 +119,7 @@ export function createBuiltinDiagnosisRuntime(
             ),
           };
 
-        case "diagnosis.authored-intent":
+        case "diagnosis.contract-evidence":
           return {
             id: intentModelId,
             root: artifact.root,
