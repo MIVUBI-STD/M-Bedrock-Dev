@@ -1,6 +1,8 @@
 <script lang="ts">
   import {
     BUG_REPORT_V2_LABELS,
+    BUG_REPORT_WORKSPACE_DIRECTORY,
+    buildBugReportWorkspacePath,
     projectBugReportPreview,
     reviewBugReportCopy,
     reviewBugReportReadiness,
@@ -182,9 +184,7 @@
       copyIssues.length > 0
     ) return;
     saveState = "saving";
-    const path =
-      "bug-reports/" +
-      buildBugReportDownloadName(report.map);
+    const path = buildBugReportWorkspacePath(report.map);
 
     try {
       await github.createReport(path, report);
@@ -302,7 +302,7 @@
           <header>
             <div>
               <strong>GitHub Reports</strong>
-              <span>bug-reports/</span>
+              <span>{BUG_REPORT_WORKSPACE_DIRECTORY}/</span>
             </div>
             <button class="secondary" on:click={() => (githubBrowser = false)}>Close</button>
           </header>
