@@ -19,7 +19,7 @@ Selected Map Version
 → Gameplay Surface Inventory
 → Gameplay Contract
 → Actual Behavior
-→ Coverage Check
+→ Discovered-Surface Accounting
 → Confirmed Defect
 → Proposed Bug Set
 → Chat Approval
@@ -48,6 +48,8 @@ Expected Behavior and Actual Behavior must come from the **same selected map ver
 If the artifact does not contain enough evidence to determine intended behavior for a mechanic, keep it `UNKNOWN / BLOCKED`. Do not read older versions or external documents to fill the gap.
 
 Historical material may be consulted only when the user explicitly asks for comparison/history. It never silently changes the current audit truth.
+
+Surface accounting is bounded: it proves that discovered mechanics were not silently skipped, not that every possible mechanic in the map was discovered.
 
 ## Repair rule
 
