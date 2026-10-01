@@ -65,7 +65,7 @@ The generated document follows `engine/packages/bug-report/DOCUMENT.md`:
 - compact map/test metrics at the top;
 - one short severity legend;
 - one two-column table per bug;
-- stable rows: Issue / How to Reproduce / Observed / Expected / Resolution;
+- stable rows: Issue / How to Reproduce / Result / Resolution;
 - reproduction numbering restarts for every bug;
 - separate Issue Index only for 7+ issues;
 - no internal Bug ID / AI / code details in the client document.
