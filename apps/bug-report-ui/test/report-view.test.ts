@@ -29,6 +29,11 @@ function bug(
     problem: "Problem " + String(index),
     expected: "Expected " + String(index),
     observed: "Observed " + String(index),
+    reproduction: [
+      "Enter arena " + String(index) + ".",
+      "Confirm the gameplay issue is visible.",
+    ],
+    suggestedFix: "Reset the affected gameplay state.",
   };
 }
 
@@ -86,6 +91,32 @@ describe("bug report view behavior", () => {
   it("shows all bugs when the report is fully fixed", () => {
     const value = report(5, [1, 2, 3, 4, 5]);
     expect(defaultBugReportView(value)).toBe("all");
+  });
+
+  it("searches tester-facing trigger and solution copy", () => {
+    const value = report(5);
+
+    const byTrigger = filterBugReportBugs(
+      value.bugs,
+      {
+        view: "not-fixed",
+        severity: "all",
+        query: "arena 3",
+      },
+    );
+    expect(byTrigger.map((item) => item.id)).toEqual([
+      "BUG-003",
+    ]);
+
+    const bySolution = filterBugReportBugs(
+      value.bugs,
+      {
+        view: "not-fixed",
+        severity: "all",
+        query: "reset the affected gameplay state",
+      },
+    );
+    expect(bySolution).toHaveLength(5);
   });
 
   it("combines state, severity, and search without changing report data", () => {
