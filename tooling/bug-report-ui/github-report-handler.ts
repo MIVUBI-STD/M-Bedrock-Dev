@@ -11,34 +11,6 @@ import {
   type GitHubBugReportStore,
 } from "./github-report-store.js";
 
-function validationTraceInput(value: unknown): value is import(
-  "../../engine/packages/validation/src/index.js"
-).ValidationTraceReport {
-  if (
-    typeof value !== "object" ||
-    value === null ||
-    !("runs" in value) ||
-    !Array.isArray((value as { runs?: unknown }).runs) ||
-    !("invariants" in value) ||
-    !Array.isArray((value as { invariants?: unknown }).invariants)
-  ) {
-    return false;
-  }
-
-  return (value as { runs: unknown[] }).runs.every((run) =>
-    typeof run === "object" &&
-    run !== null &&
-    typeof (run as { runId?: unknown }).runId === "string" &&
-    typeof (run as { ok?: unknown }).ok === "boolean" &&
-    typeof (run as { current?: unknown }).current === "boolean" &&
-    typeof (run as { proofSufficient?: unknown }).proofSufficient === "boolean" &&
-    Array.isArray((run as { evidenceIds?: unknown }).evidenceIds) &&
-    (run as { evidenceIds: unknown[] }).evidenceIds.every(
-      (item) => typeof item === "string",
-    )
-  );
-}
-
 function json(
   value: unknown,
   status = 200,
@@ -166,54 +138,6 @@ export async function handleBugReportStoreRequest(
             "../../engine/packages/preservation/src/index.js"
           ).PreservationVerificationReceipt,
         },
-        input.expectedRevision,
-      ));
-    }
-
-    if (
-      request.method === "PATCH" &&
-      url.pathname === "/api/bug-report/fixed"
-    ) {
-      const input = await request.json() as {
-        path?: unknown;
-        bugId?: unknown;
-        validationRunIds?: unknown;
-        preservationInvariantIds?: unknown;
-        validationTrace?: unknown;
-        expectedRevision?: unknown;
-      };
-      if (
-        typeof input.path !== "string" ||
-        !input.path.trim() ||
-        typeof input.bugId !== "string" ||
-        !input.bugId.trim() ||
-        !Array.isArray(input.validationRunIds) ||
-        input.validationRunIds.some((item) => typeof item !== "string") ||
-        (input.preservationInvariantIds !== undefined &&
-          (!Array.isArray(input.preservationInvariantIds) ||
-            input.preservationInvariantIds.some(
-              (item) => typeof item !== "string",
-            ))) ||
-        typeof input.expectedRevision !== "string" ||
-        !input.expectedRevision.trim() ||
-        !validationTraceInput(input.validationTrace)
-      ) {
-        return json({ error: "Invalid verified repair completion request." }, 400);
-      }
-
-      return json(await store.completeVerifiedRepair(
-        input.path,
-        {
-          bugId: input.bugId,
-          validationRunIds: input.validationRunIds as string[],
-          ...(input.preservationInvariantIds === undefined
-            ? {}
-            : {
-                preservationInvariantIds:
-                  input.preservationInvariantIds as string[],
-              }),
-        },
-        input.validationTrace,
         input.expectedRevision,
       ));
     }
