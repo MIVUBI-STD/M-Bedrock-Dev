@@ -89,7 +89,10 @@ Purpose: give a tester who does not read code a short, exact path to **trigger t
 Required structure:
 
 ```text
-Start state/location → player action → next player action → visible wrong result
+1. Starting condition — where / when / how many players / required item when relevant
+2. Player action
+3. Player action or state transition
+4. Observable failure — exactly what wrong result the tester must see
 ```
 
 Rules:
@@ -100,8 +103,12 @@ Rules:
 - describe only actions and states available in-game;
 - name the relevant place, phase, object, item, UI, player count, or trigger when needed;
 - use player-facing verbs such as Enter, Join, Walk, Interact, Press, Buy, Place, Break, Die, Respawn, Finish, Return, Start, Wait, or equivalent;
+- step 1 must establish enough starting context to begin without guessing when location, phase, player count, role, item, or prior state matters;
 - one action or state transition per step;
-- the final step must tell the tester exactly what wrong result should be visible;
+- avoid hidden setup: if the tester must first obtain an item, enter a phase, join a team, wait for a timer, or use multiple players, say so explicitly;
+- the final step must be an observable failure statement and tell the tester exactly what wrong result should be visible;
+- prefer a final form such as `Confirm <wrong visible result>` or `Observe <wrong visible result>`;
+- never end the trigger on an action alone; the last step is the proof condition;
 - do not reference source files, scripts, functions, methods, classes, variables, internal IDs, or architecture;
 - do not ask the tester to inspect code, logs, or implementation state;
 - do not use vague steps such as "test it", "check the bug", "verify the logic", or "see if it happens";
@@ -125,6 +132,15 @@ Bad:
 1. Check the session cleanup function.
 2. Verify the arena variable is still set.
 ```
+
+Also bad:
+
+```text
+1. Complete the objective.
+2. Walk to the gate.
+```
+
+The second example never tells the tester what failed. A valid final step would state: `Confirm the gate remains closed and progression is blocked.`
 
 ### AI Analysis
 
