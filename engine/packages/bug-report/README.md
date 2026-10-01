@@ -20,6 +20,7 @@ The bug-report package keeps one authority per concern:
 |---|---|
 | Persisted data semantics | `v2.ts` + V2 schema |
 | New-report wording quality | `COPY.md` + `copy-quality.ts` |
+| AI Bug Trigger authoring | `bug-trigger.ts` |
 | Tester-ready report gate | `report-readiness.ts` |
 | Human / ChatGPT presentation | `PREVIEW.md` + `preview.ts` |
 | Confirmation / promotion semantics | this package's confirmation and promotion modules |
@@ -82,6 +83,32 @@ Frontend labels must keep the same meaning as persisted V2 fields.
 | `mustPreserve` | Must Preserve | Behavior that the repair must not break. |
 
 Do not introduce alternate workflow terms such as Open, Closed, Done, Verified, Repair Status, Do Not Break, or Repair With when the persisted V2 field already has a canonical term.
+
+## AI Bug Trigger authoring
+
+AI-discovered defects do not author canonical `reproduction[]` directly.
+
+The AI report route uses an evidence-bound `BugTriggerDraft`:
+
+```text
+startingCondition
++ player actions
++ observableFailure
++ evidenceIds
+→ compileBugTrigger()
+→ canonical reproduction[]
+```
+
+Rules:
+
+- the compiler only formats facts supplied to it; it does not infer missing gameplay steps;
+- `evidenceIds` must belong to the same confirmed-defect evidence universe;
+- if the gameplay start state, action path, or visible failure is not grounded, leave Bug Trigger unavailable;
+- an AI defect may remain confirmed internally while `nextEvidenceNeed = tester-reproduction`;
+- raw AI `reproduction[]` is not an accepted authoring path;
+- tester-origin reproduction remains gameplay evidence supplied by the tester route.
+
+This prevents technical diagnosis from being mechanically rewritten into invented gameplay instructions.
 
 ## Human / ChatGPT preview
 
