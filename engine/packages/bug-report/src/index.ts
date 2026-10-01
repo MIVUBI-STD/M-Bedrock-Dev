@@ -11,6 +11,7 @@ export * from "./serialize.js";
 export * from "./preview.js";
 export * from "./copy-quality.js";
 export * from "./report-readiness.js";
+export * from "./bug-trigger.js";
 
 export * from "./v2.js";
 export * from "./create-v2.js";
