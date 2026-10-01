@@ -218,7 +218,7 @@ describe("GitHubBugReportStore", () => {
         current,
         "abc",
       ),
-    ).rejects.toThrow(/verified repair completion/);
+    ).rejects.toThrow(/closed repair completion/);
   });
 
 });
