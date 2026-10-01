@@ -61,9 +61,9 @@ Requires all of:
 
 - grounded contradiction;
 - cleared counter-evidence;
-- material player-visible impact;
+- player-visible impact (`blocking`, `material`, or `limited`);
 - tester-verifiable in-game trigger.
 
-Blocker/Major are shown by default. Minor stays hidden unless requested.
+All confirmed defects are shown by default: Blocker, Major, and Minor.
 
 Unknown intent, missing evidence, runtime-only residue, or detection gaps remain internal and never receive defect severity.
