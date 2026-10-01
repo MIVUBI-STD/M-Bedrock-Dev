@@ -1,44 +1,113 @@
-# Reliability Catalogs
+# Reliability Catalogs and Corpus
 
-Durable blindspot knowledge lives under `reliability/catalogs/`.
+Durable reliability evidence is rooted under `engine/reliability/`.
 
-## Regression catalog
+Canonical routing:
 
-Historical bugs are stored as minimized metadata rather than private world files.
+```text
+engine/reliability/README.md
+```
 
-Initial seeded regressions cover:
+## Catalogs
+
+Durable blindspot and reliability knowledge lives under:
+
+```text
+engine/reliability/catalogs/
+```
+
+### Regression catalog
+
+`catalogs/regressions.json` stores historical bug knowledge as minimized metadata rather than private world files.
+
+Initial seeded regressions cover cases such as:
 
 - Capture Run gate blocked by an unintended fill;
 - Loadout Trial entity failing to break a wall;
 - concurrent multi-arena cutscenes serializing across sessions.
 
-These entries are evidence for future retest selection. They are not claims that every map shares the same defect.
+These entries support future retest selection. They are not claims that every map shares the same defect.
 
-## Coverage catalog
+### Coverage and capability proof
 
-Coverage is intentionally conservative. Unknown and partial states are expected and useful.
+Coverage remains conservative. Unknown and partial states are useful.
 
-The catalog currently exposes major blindspots such as:
+Capability-specific proof binding lives in:
 
-- entity static/runtime behavior;
-- multiplayer generative/runtime behavior;
-- chunk runtime lifecycle;
-- cross-version differential execution.
+```text
+engine/reliability/catalogs/capability-proof-bindings.json
+```
 
-## Minecraft update catalogs
+Generated capability/proof state lives under:
+
+```text
+engine/reliability/catalogs/capability-truth/
+```
+
+### Minecraft update catalogs
 
 Update deltas are version-specific and must include source/confidence.
 
-No update JSON should be committed merely to create a green/complete-looking matrix. A missing version catalog is better than speculative update intelligence.
+Do not add speculative update JSON merely to make a matrix look complete.
 
-## Loader
+## Benchmark corpus
 
-Repository and runtime loaders validate:
+Frozen evaluation manifests live under:
 
-- schema version;
+```text
+engine/reliability/corpus/
+├── calibration.json
+├── acceptance.json
+└── regressions.json
+```
+
+The corpus is evaluation input, not historical knowledge.
+
+- calibration may inform detector development;
+- acceptance is blind/holdout evidence;
+- regression is the frozen benchmark manifest for reproduced failures.
+
+Minimized executable fixture content remains under:
+
+```text
+engine/fixtures/regressions/
+```
+
+## History
+
+Chronological execution/campaign evidence belongs in:
+
+```text
+engine/reliability/history/
+```
+
+History records what happened. It does not redefine expectations or gameplay semantics.
+
+## Naming boundary
+
+```text
+catalogs/regressions.json
+  = historical bug knowledge
+
+corpus/regressions.json
+  = frozen regression benchmark manifest
+
+fixtures/regressions/
+  = minimized reproducible input
+```
+
+Keep these roles separate and do not create another regression owner.
+
+## Validation
+
+Repository/runtime loaders should fail closed on:
+
+- invalid schema version;
 - duplicate durable IDs;
-- required regression behavior fields;
-- coverage key uniqueness;
-- update filename/version agreement.
+- missing artifact identity where scoring requires it;
+- stale or unfrozen expectations;
+- invalid regression behavior fields;
+- coverage key duplication;
+- update filename/version disagreement.
 
-Catalog-backed retest APIs then combine these durable records with live map inspection.
+Catalog-backed retest APIs may combine durable records with live map inspection, but static/package evidence must never be promoted into Minecraft runtime proof.
