@@ -18,8 +18,8 @@ import type {
 
 export const INTENT_GROUNDING_EXECUTOR_REVISION =
   "intent-grounding-executor:3";
-export const AUTHORED_INTENT_EXECUTOR_REVISION =
-  "authored-intent-executor:4";
+export const CONTRACT_EVIDENCE_EXECUTOR_REVISION =
+  "contract-evidence-executor:1";
 
 export interface IntentGroundingDiagnosisPayload {
   id: string;
@@ -27,7 +27,7 @@ export interface IntentGroundingDiagnosisPayload {
   artifactId?: string;
 }
 
-export interface AuthoredIntentDiagnosisPayload
+export interface ContractEvidenceDiagnosisPayload
   extends IntentGroundingDiagnosisPayload {
   root: string;
   artifactId: string;
@@ -115,9 +115,9 @@ function isFileInventoryEntry(
   );
 }
 
-function parseAuthoredPayload(
+function parseContractEvidencePayload(
   payload: unknown,
-): AuthoredIntentDiagnosisPayload | undefined {
+): ContractEvidenceDiagnosisPayload | undefined {
   const base = parseIntentPayload(payload);
   if (
     base === undefined ||
@@ -187,7 +187,7 @@ function intentEvidenceId(
       .digest("hex");
 }
 
-function authoredIntentPresent(
+function contractEvidencePresent(
   model: ReturnType<
     typeof buildGameplayIntentModel
   >,
@@ -304,31 +304,31 @@ export function createIntentGroundingDiagnosisExecutor():
   };
 }
 
-export function createAuthoredIntentDiagnosisExecutor():
+export function createContractEvidenceDiagnosisExecutor():
   DiagnosisCapabilityExecutor {
   return {
     executorId:
-      "diagnosis.authored-intent",
+      "diagnosis.contract-evidence",
     executorRevision:
-      AUTHORED_INTENT_EXECUTOR_REVISION,
+      CONTRACT_EVIDENCE_EXECUTOR_REVISION,
 
     async execute(
       request: DiagnosisExecutorRequest,
     ) {
       if (
         request.capabilityId !==
-        "diagnosis.authored-intent"
+        "diagnosis.contract-evidence"
       ) {
         return {
           status: "blocked",
           reasons: [
-            "Authored-intent executor received the wrong diagnosis capability id.",
+            "Contract-evidence executor received the wrong diagnosis capability id.",
           ],
         };
       }
 
       const payload =
-        parseAuthoredPayload(
+        parseContractEvidencePayload(
           request.payload,
         );
 
@@ -336,7 +336,7 @@ export function createAuthoredIntentDiagnosisExecutor():
         return {
           status: "blocked",
           reasons: [
-            "Authored-intent diagnosis payload must contain root, artifactId, file inventory, id, and source-index output.",
+            "Contract-evidence diagnosis payload must contain root, artifactId, file inventory, id, and source-index output.",
           ],
         };
       }
@@ -348,7 +348,7 @@ export function createAuthoredIntentDiagnosisExecutor():
           status: "blocked",
           output: payload.sourceIndex,
           reasons: [
-            "Authored intent grounding is blocked because source-index coverage is incomplete.",
+            "Contract evidence grounding is blocked because source-index coverage is incomplete.",
           ],
         };
       }
@@ -371,7 +371,7 @@ export function createAuthoredIntentDiagnosisExecutor():
         return {
           status: "blocked",
           reasons: [
-            "Authored intent source indexing failed.",
+            "Contract evidence source indexing failed.",
             error instanceof Error
               ? error.message
               : String(error),
@@ -383,7 +383,7 @@ export function createAuthoredIntentDiagnosisExecutor():
         return {
           status: "blocked",
           reasons: [
-            "No explicit authored intent source files were found in recognized or configured authored source roots.",
+            "No additional selected-artifact contract source files were found in recognized or configured source roots.",
           ],
         };
       }
@@ -399,7 +399,7 @@ export function createAuthoredIntentDiagnosisExecutor():
           authoredScripts,
         });
 
-      if (!authoredIntentPresent(output)) {
+      if (!contractEvidencePresent(output)) {
         return {
           status: "blocked",
           output,
@@ -415,17 +415,17 @@ export function createAuthoredIntentDiagnosisExecutor():
         evidence: [{
           level: "semantic",
           quality: "usable",
-          traits: ["authored-intent"],
+          traits: ["contract-evidence"],
           evidenceIds: [
             intentEvidenceId(
-              "authored-intent",
-              AUTHORED_INTENT_EXECUTOR_REVISION,
+              "contract-evidence",
+              CONTRACT_EVIDENCE_EXECUTOR_REVISION,
               output,
             ),
           ],
         }],
         reasons: [
-          "Gameplay intent was reconstructed from authored source files contained in the selected artifact.",
+          "Additional Gameplay Contract evidence was reconstructed from source files contained in the selected artifact.",
         ],
       };
     },
