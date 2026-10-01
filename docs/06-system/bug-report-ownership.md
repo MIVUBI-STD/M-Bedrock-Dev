@@ -56,7 +56,7 @@ candidate evidence
 → derived HTML presentation
 ```
 
-Only confirmed, current-version defects are promoted into canonical report state.
+Only explicitly approved, current-version defects enter canonical report state.
 
 ## Storage roles
 
@@ -77,14 +77,15 @@ The app is a client/projection of canonical Bug Report V2.
 It may:
 - load canonical reports;
 - present derived views;
-- submit writes through the engine-owned report contract;
-- import compatible external material for review.
+- export JSON;
+- inspect compatible external material as non-canonical input.
 
 It must not:
 - own a separate bug database;
 - keep independent bug status;
 - redefine severity, identity, readiness, or completion semantics;
-- treat local UI state as persisted authority.
+- treat local UI state or imported files as persisted authority;
+- create a new canonical report from imported material.
 
 ### Google Drive
 
