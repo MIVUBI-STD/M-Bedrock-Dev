@@ -43,10 +43,10 @@ Frontend labels must keep the same meaning as persisted V2 fields.
 | `problem` | Problem | What is wrong. |
 | `expected` | Expected | Intended behavior. |
 | `observed` | Observed | What actually happens. |
-| `reproduction` | Reproduction | Steps needed to reproduce the bug. |
+| `reproduction` | Bug Trigger (In-Game) | Tester-facing steps that trigger and visibly prove the bug. |
 | `aiAnalysis` | AI Analysis | AI technical interpretation; advisory. |
 | `relevantCode` | Relevant Code | Small set of source locations worth inspecting. |
-| `suggestedFix` | Suggested Fix | Advisory repair direction. |
+| `suggestedFix` | Solution | Advisory repair direction shown to the reader. |
 | `mustPreserve` | Must Preserve | Behavior that the repair must not break. |
 
 Do not introduce alternate workflow terms such as Open, Closed, Done, Verified, Repair Status, Do Not Break, or Repair With when the persisted V2 field already has a canonical term.
@@ -124,7 +124,7 @@ Only `confirmed-defect` inputs enter the final report.
 
 Promotion quality rules:
 
-- Tester-found confirmed defects require Reproduction.
+- Every tester-facing confirmed defect requires Bug Trigger (In-Game) steps; the canonical JSON field remains `reproduction`.
 - AI-found confirmed defects require AI Analysis and Relevant Code.
 - Relevant Code stays focused on at most three primary locations.
 - Suggested Fix is advisory and requires supporting analysis/code context.
