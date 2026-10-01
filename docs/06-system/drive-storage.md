@@ -187,16 +187,14 @@ For audit purposes:
 
 ```text
 Selected current .mcworld
-→ source of Actual Behavior
-
-Game Design explicitly bound to that same map/version
 → source of Expected Behavior
+→ source of Actual Behavior
 
 Everything else
 → archive only
 ```
 
-Do not cross-pollinate mechanics between maps or versions.
+Expected Behavior is reconstructed only from explicit gameplay signals inside that same artifact. If the artifact does not contain enough intent evidence, keep the mechanic unknown. Do not cross-pollinate mechanics between maps or versions.
 
 ## New-current-version procedure
 
