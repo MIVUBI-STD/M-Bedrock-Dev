@@ -30,7 +30,7 @@ Use this before broad repository search.
 | Compatibility engine/version/track contracts | engine/packages/compatibility/ |
 | Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
 | Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
-| Explicit Game Design specification schema/loader | engine/packages/game-design/ + engine/game-design/ |
+| Explicit Game Design specification schema/loader | engine/packages/game-design-spec/ + engine/game-design/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
 | Engineering/validation contracts | engine/contracts/engineering/ |
 | Education edition/feature profile | engine/packages/compatibility/education* |

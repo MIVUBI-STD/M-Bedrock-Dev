@@ -6,7 +6,7 @@ import {
 import type {
   ParsedScriptFile,
 } from "../../../analyzers/scripts/src/index.js";
-import type { GameDesignSpec } from "../../game-design/src/index.js";
+import type { GameDesignSpec } from "../../game-design-spec/src/index.js";
 import {
   validateGameplayIntentModel,
   type GameplayIntentEdge,

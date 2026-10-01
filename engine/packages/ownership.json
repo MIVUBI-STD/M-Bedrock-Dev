@@ -60,7 +60,7 @@
     "design-authority": {
       "purpose": "Typed Game Design specification contracts and validation.",
       "modules": [
-        "game-design"
+        "game-design-spec"
       ]
     }
   }
