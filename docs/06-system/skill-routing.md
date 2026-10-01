@@ -16,10 +16,11 @@ Do not use a domain skill to infer the work lane.
 Use to find/classify bugs in a map with current capabilities.
 
 Allowed:
-- inspect artifact;
-- reconstruct design/intent;
-- run current analyzers;
-- classify findings;
+- pin target identity;
+- load current approved Game Design;
+- build the scoped Gameplay Contract;
+- inspect Actual Behavior with current analyzers;
+- classify contradictions/findings;
 - identify detection gaps.
 
 Forbidden:
