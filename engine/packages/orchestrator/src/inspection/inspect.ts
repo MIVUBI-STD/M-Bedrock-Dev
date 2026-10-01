@@ -370,7 +370,7 @@ export async function inspectDirectory(
     sourceIndex,
     semanticIr,
     gameplayIntent,
-    contractSources:
+    contractSourceFiles:
       contractSources.length,
     gameplayIntentRuntime,
     runtimeEvidenceStage,
