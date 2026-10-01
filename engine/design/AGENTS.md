@@ -10,3 +10,11 @@
 - Missing or unspecified intent resolves to design ambiguity, not an invented expected behavior.
 - Balance/UX concerns that match approved intent route to design review, not Bug Report promotion.
 - Implementation behavior never becomes Game Design authority merely because it is consistent or repeated.
+
+## Workflow boundary
+
+- Design readiness is evaluated before gameplay bug discovery.
+- Material unknowns/conflicts block defect classification for the affected scope.
+- A derived Gameplay Contract is a working projection, not a second design source.
+- Persist a changed rule only through the canonical project-local Game Design after explicit approval.
+- Repair must consume the violated design rule and preservation requirements; repair code may not redefine design.
