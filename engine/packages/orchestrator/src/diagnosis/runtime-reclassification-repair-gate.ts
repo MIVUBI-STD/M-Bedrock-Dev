@@ -45,7 +45,7 @@ export function decideReclassifiedRepairEntry(
       ...base,
       disposition: "blocked",
       reasons: [
-        "Automatic mutation requires confirmed-defect classification.",
+        "Repair entry first requires confirmed-defect evidence.",
         "Current classification: " +
           reclassification.disposition +
           ".",
@@ -63,7 +63,7 @@ export function decideReclassifiedRepairEntry(
       disposition: "blocked",
       reasons: [
         "Confirmed defect is not sufficient by itself to authorize mutation.",
-        "Causal diagnostic decision has not reached a mutation-eligible state.",
+        "Causal diagnosis has not reached internal repair-candidate readiness.",
         ...diagnostic.reasons,
       ],
     };
@@ -122,7 +122,7 @@ export function decideReclassifiedRepairEntry(
       ...base,
       disposition: "guarded-admit",
       reasons: [
-        "Confirmed defect and runtime integrity permit only a guarded working-copy repair experiment.",
+        "Evidence is sufficient for guarded repair entry; Approved Bug and Repair Contract remain the mutation authority.",
         ...diagnostic.reasons,
       ],
     };
@@ -132,7 +132,7 @@ export function decideReclassifiedRepairEntry(
     ...base,
     disposition: "admit",
     reasons: [
-      "Confirmed defect, causal diagnostic authorization, and runtime evidence integrity permit entry into the repair admission pipeline.",
+      "Evidence is sufficient to enter repair admission; Approved Bug and Repair Contract remain the mutation authority.",
       ...diagnostic.reasons,
     ],
   };
