@@ -10,6 +10,8 @@ Keep one source of truth per concern:
 - new-report wording: `COPY.md` and `src/copy-quality.ts`;
 - AI Bug Trigger authoring: `src/bug-trigger.ts`;
 - tester readiness: `src/report-readiness.ts`;
+- compatibility migration to the current persisted format: `src/migrate.ts`;
+- shared report-list summary contract: `src/report-summary.ts`;
 - human / ChatGPT presentation: `PREVIEW.md` and `src/preview.ts`;
 - confirmation and promotion: the existing confirmation / promotion modules.
 
@@ -24,6 +26,7 @@ Do not create parallel report formats, duplicate Markdown reports, or competing 
 - Suggested Fix is the only source for preview Solution.
 - Internal diagnostic IDs, proof plumbing, semantic keys, repair-unit IDs, cache state, and orchestration data stay out of normal preview.
 - UI and agent skills should reference `COPY.md` / `PREVIEW.md` instead of redefining their rules.
+- Consumers must use the shared migration and summary contracts instead of implementing local copies.
 
 
 ## Layer boundary
