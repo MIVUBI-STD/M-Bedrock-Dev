@@ -49,9 +49,10 @@ Every candidate must end in one disposition: defect, designed-behavior, ambiguou
 
 When presenting a confirmed Bug Report V2 to a user, do not dump canonical JSON by default.
 
-Use the canonical preview contract in:
+Use the canonical report contracts:
 
-`../../../engine/packages/bug-report/PREVIEW.md`
+- `../../../engine/packages/bug-report/COPY.md` for wording quality;
+- `../../../engine/packages/bug-report/PREVIEW.md` for presentation.
 
 Default presentation is `standard` and open-bugs-only.
 
@@ -89,6 +90,7 @@ A handoff never executes the next lane automatically.
 - references/known-limits.md
 - references/generated-known-limits.md
 - ../../references/evidence-cost-ladder.md
+- ../../../engine/packages/bug-report/COPY.md
 - ../../../engine/packages/bug-report/PREVIEW.md
 
 ## STOP
