@@ -94,6 +94,45 @@ export async function handleBugReportStoreRequest(
     }
 
     if (
+      request.method === "PATCH" &&
+      url.pathname === "/api/bug-report/fixed"
+    ) {
+      const input = await request.json() as {
+        path?: unknown;
+        bugId?: unknown;
+        validationRunIds?: unknown;
+        validationTrace?: unknown;
+        expectedRevision?: unknown;
+      };
+      if (
+        typeof input.path !== "string" ||
+        !input.path.trim() ||
+        typeof input.bugId !== "string" ||
+        !input.bugId.trim() ||
+        !Array.isArray(input.validationRunIds) ||
+        input.validationRunIds.some((item) => typeof item !== "string") ||
+        typeof input.expectedRevision !== "string" ||
+        !input.expectedRevision.trim() ||
+        typeof input.validationTrace !== "object" ||
+        input.validationTrace === null
+      ) {
+        return json({ error: "Invalid verified repair completion request." }, 400);
+      }
+
+      return json(await store.completeVerifiedRepair(
+        input.path,
+        {
+          bugId: input.bugId,
+          validationRunIds: input.validationRunIds as string[],
+        },
+        input.validationTrace as import(
+          "../../engine/packages/validation/src/index.js"
+        ).ValidationTraceReport,
+        input.expectedRevision,
+      ));
+    }
+
+    if (
       request.method === "PUT" &&
       url.pathname === "/api/bug-report"
     ) {
