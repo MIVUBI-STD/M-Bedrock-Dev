@@ -14,7 +14,16 @@ Mutate only the target working copy after an evidence-backed defect or explicit 
 
 ## Entry criteria
 
-Require grounded diagnosis or explicit intentional modification.
+For **bug repair**, require:
+
+```text
+Approved Bug
++ violated Gameplay Contract
++ exact repair scope
++ preservation constraints
+```
+
+For **intentional modification**, require an explicit requested design change; update/approve Game Design before treating the new behavior as expected.
 
 ## Allowed actions
 
@@ -27,6 +36,9 @@ Require grounded diagnosis or explicit intentional modification.
 
 ## Forbidden actions
 
+- repair an unapproved bug;
+- mutate before preservation constraints are known;
+- change Game Design implicitly as a way to fix the defect;
 - mutate original source;
 - improve detection capability;
 - use successful mutation as proof diagnosis was correct;
@@ -34,7 +46,22 @@ Require grounded diagnosis or explicit intentional modification.
 
 ## Workflow
 
-Grounded defect/intent → smallest target owner → patch transaction → preconditions → atomic working-copy mutation → affected verification → runtime residue.
+```text
+Approved Bug
+→ re-read violated Gameplay Contract
+→ Repair Contract
+   ├─ Must Change
+   └─ Must Preserve
+→ smallest target owner
+→ patch transaction
+→ preconditions
+→ atomic working-copy mutation
+→ verify defect removed
+→ verify Game Design preserved
+→ runtime residue
+```
+
+A disappearance of the original symptom is not sufficient if the repair changes intended gameplay.
 
 ## Output contract
 
