@@ -11,6 +11,7 @@ Applies to persisted bug reports under `workspace/reports/`.
 - `map.mapVersion` and `map.drive` are mandatory; `map.drive` must be a Google Drive URL for the audited map artifact.
 - One report has one `Repair By` value for the whole bug list.
 - Per-bug `Fixed` is the only persisted repair-progress field.
+- New bugs always start `Fixed: false`. Only the engine-owned verified retest/completion path may set `Fixed: true`; generic saves/imports/reconciliation must not close bugs.
 - Git history is the revision history; do not duplicate revision logs in report JSON.
 
 ## Presentation
