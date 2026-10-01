@@ -82,14 +82,14 @@ Rules:
 - describe what actually happens;
 - must not duplicate Expected.
 
-### Reproduction — displayed as How to Reproduce the Bug
+### Reproduction — displayed as How to Reproduce (In-Game)
 
-Purpose: give the tester a short path to **prove the bug in-game**.
+Purpose: give a tester who does not read code a short, exact path to **make the bug happen in Minecraft and visibly confirm it**.
 
 Required structure:
 
 ```text
-Setup / trigger → action → observable failure
+Start state/location → player action → next player action → visible wrong result
 ```
 
 Rules:
@@ -97,11 +97,34 @@ Rules:
 - required for every new bug that enters the tester-facing report;
 - use 2–5 steps;
 - each step maximum 160 characters;
+- describe only actions and states available in-game;
+- name the relevant place, phase, object, item, UI, player count, or trigger when needed;
+- use player-facing verbs such as Enter, Join, Walk, Interact, Press, Buy, Place, Break, Die, Respawn, Finish, Return, Start, Wait, or equivalent;
 - one action or state transition per step;
-- the final step must state the visible failure/result the tester should observe;
-- write gameplay instructions, not code-analysis instructions;
-- do not use vague steps such as "test it", "check the bug", or "see if it happens";
-- if no tester-verifiable path exists yet, keep the finding internal instead of presenting it as a tester-ready bug.
+- the final step must tell the tester exactly what wrong result should be visible;
+- do not reference source files, scripts, functions, methods, classes, variables, internal IDs, or architecture;
+- do not ask the tester to inspect code, logs, or implementation state;
+- do not use vague steps such as "test it", "check the bug", "verify the logic", or "see if it happens";
+- if multiplayer is required, state the required player count;
+- if a specific game phase or location is required, state it explicitly;
+- if no tester-verifiable in-game path exists yet, keep the finding internal instead of presenting it as a tester-ready bug.
+
+Good:
+
+```text
+1. Join the arena with 2 players.
+2. Finish the match normally.
+3. Return both players to the lobby.
+4. Start the same arena again.
+5. Confirm the new match does not start.
+```
+
+Bad:
+
+```text
+1. Check the session cleanup function.
+2. Verify the arena variable is still set.
+```
 
 ### AI Analysis
 
