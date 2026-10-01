@@ -37,7 +37,6 @@ Use this before broad repository search.
 | Capability-specific proof binding registry | engine/reliability/catalogs/capability-proof-bindings.json |
 | Reliability evidence router / ownership boundary | engine/reliability/README.md |
 | Calibration / blind acceptance / regression benchmark manifests | engine/reliability/corpus/ |
-| Minimized regression fixture content | engine/fixtures/regressions/ |
 | Runtime session recording/replay contract + first divergence | engine/packages/reliability/src/runtime/runtime-session-replay.ts |
 | Reliability search/corpus/interleavings/minimization | engine/packages/reliability-search/ |
 | Cross-map behavioral pattern aggregation | engine/packages/reliability-search/src/corpus/behavioral-pattern-library.ts |
