@@ -11,7 +11,6 @@ import { buildArenaGoldenBaselineCandidate } from "../../../engine/packages/orch
 import { buildArenaRuntimeAdapterScaffold } from "../../../engine/packages/orchestrator/src/index.js";
 import { inspectArenaGoldenCorpusStatusFromFile } from "../../../engine/packages/orchestrator/src/index.js";
 import { loadKnowledgeDirectory } from "../../../engine/packages/knowledge/src/index.js";
-import { loadGameDesignSpec } from "../../../engine/packages/game-design-spec/src/index.js";
 import { aggregateScriptApiUsage } from "../../../engine/packages/orchestrator/src/index.js";
 import { parseCliTargetOptions } from "./target-options.js";
 import { loadTelemetryFile } from "../../../engine/packages/orchestrator/src/index.js";
@@ -32,7 +31,6 @@ async function main(): Promise<void> {
     positionals: args,
     target,
     telemetryPath,
-    gameDesignPath,
     arenaRegionContractsPath,
     probeTranscriptPath,
     probeBindingsPath,
@@ -83,9 +81,6 @@ async function main(): Promise<void> {
       );
   }
   const knowledge = await loadKnowledgeDirectory(resolve("engine/knowledge"));
-  if (gameDesignPath) {
-    target.gameDesign = await loadGameDesignSpec(resolve(gameDesignPath));
-  }
 
   if (command === "probe-plan" && input) {
     if (!probeBindingsPath) {
