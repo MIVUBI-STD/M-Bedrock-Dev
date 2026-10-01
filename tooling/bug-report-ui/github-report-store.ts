@@ -4,6 +4,7 @@ import {
   reviewBugReportCopy,
   reviewBugReportReadiness,
   serializeBugReportV2,
+  type BugReportSummary,
   type BugReportV2,
 } from "../../engine/packages/bug-report/src/index.js";
 
@@ -17,14 +18,7 @@ export interface GitHubBugReportStoreOptions {
   readonly fetchImpl?: typeof fetch;
 }
 
-export interface GitHubBugReportSummary {
-  readonly path: string;
-  readonly mapName: string;
-  readonly mapVersion: string;
-  readonly fixed: number;
-  readonly total: number;
-  readonly blockers: number;
-}
+export type GitHubBugReportSummary = BugReportSummary;
 
 export interface LoadedGitHubBugReport {
   readonly report: BugReportV2;
