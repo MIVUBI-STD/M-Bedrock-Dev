@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   deriveCrossFileCallEdges,
   parseScriptFile,
-} from "../../../analyzers/scripts/src/index.js";
-import { analyzeArenaLifecycleConvergence } from "../src/arena-lifecycle-analysis.js";
+} from "../../../../analyzers/scripts/src/index.js";
+import { analyzeArenaLifecycleConvergence } from "../../src/arena/arena-lifecycle-analysis.js";
 
 describe("arena lifecycle convergence", () => {
   it("proves release and generation invalidation through a cleanup helper", () => {
@@ -61,7 +61,7 @@ describe("arena lifecycle convergence", () => {
 
   it("proves lifecycle convergence across imported cleanup modules", () => {
     const mainText = [
-      'import { cleanupArena } from "./cleanup.js";',
+      'import { cleanupArena } from "../cleanup.js";',
       "function finishGame(arena, player) {",
       "  cleanupArena(arena, player);",
       "}",
@@ -129,7 +129,7 @@ describe("arena lifecycle convergence", () => {
 
   it("does not promote conditional cross-file cleanup to proven", () => {
     const mainText = [
-      'import { cleanupArena } from "./cleanup.js";',
+      'import { cleanupArena } from "../cleanup.js";',
       "function finishGame(arena, player, shouldCleanup) {",
       "  if (shouldCleanup) {",
       "    cleanupArena(arena, player);",

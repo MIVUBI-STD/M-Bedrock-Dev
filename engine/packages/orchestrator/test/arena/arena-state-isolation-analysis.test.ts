@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { analyzeArenaStateIsolation } from "../src/arena-state-isolation-analysis.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { analyzeArenaStateIsolation } from "../../src/arena/arena-state-isolation-analysis.js";
 
 describe("arena state isolation analysis", () => {
   it("marks world dynamic properties as requiring partition proof inside arena flow", () => {

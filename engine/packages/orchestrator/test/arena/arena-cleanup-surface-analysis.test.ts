@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptFile } from "../../../analyzers/scripts/src/index.js";
-import { analyzeArenaCleanupSurfaces } from "../src/arena-cleanup-surface-analysis.js";
+import { parseScriptFile } from "../../../../analyzers/scripts/src/index.js";
+import { analyzeArenaCleanupSurfaces } from "../../src/arena/arena-cleanup-surface-analysis.js";
 
 describe("arena cleanup surface analysis", () => {
   it("proves exact dynamic-property and membership cleanup reachable from terminal", () => {

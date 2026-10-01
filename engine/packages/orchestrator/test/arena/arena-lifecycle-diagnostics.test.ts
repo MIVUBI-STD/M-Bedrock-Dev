@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   arenaLifecycleDiagnostics,
-} from "../src/arena-lifecycle-diagnostics.js";
+} from "../../src/arena/arena-lifecycle-diagnostics.js";
 
 describe("arena lifecycle diagnostics", () => {
   it("uses medium severity when terminal convergence or cleanup is unresolved", () => {
