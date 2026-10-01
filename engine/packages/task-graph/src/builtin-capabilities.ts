@@ -438,6 +438,23 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "runtime.cross-version-differential-executor",
+      owner: "packages/runtime-lab",
+      pathPrefixes: [
+        "packages/runtime-lab/src/cross-version-differential-executor.ts",
+      ],
+      dependsOn: [
+        "runtime.cross-version-differential-plan",
+      ],
+      deterministic: false,
+      cacheable: false,
+      cost: "very-expensive",
+      contexts: [
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+    },
+    {
       id: "runtime.record-replay-contract",
       owner: "packages/reliability",
       pathPrefixes: [

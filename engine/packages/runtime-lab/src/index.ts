@@ -50,3 +50,5 @@ export * from "./harness-capability-audit.js";
 
 
 export * from "./cross-version-differential-plan.js";
+
+export * from "./cross-version-differential-executor.js";

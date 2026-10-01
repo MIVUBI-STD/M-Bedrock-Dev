@@ -41,6 +41,7 @@ Use this before broad repository search.
 | Empirical diagnostic calibration | engine/packages/diagnostic-reasoning/src/calibration.ts |
 | Controlled Minecraft experiment planning/qualification/provenance | engine/packages/runtime-lab/ + engine/runtime/lab/ |
 | Cross-version runtime differential planning/receipt | engine/packages/runtime-lab/src/cross-version-differential-plan.ts |
+| Cross-version runtime differential executor over RuntimeExperimentHost | engine/packages/runtime-lab/src/cross-version-differential-executor.ts |
 | Compatibility engine/version/track contracts | engine/packages/compatibility/ |
 | Exact target Minecraft runtime identity and inventory completeness | engine/packages/runtime-profile/ |
 | Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
