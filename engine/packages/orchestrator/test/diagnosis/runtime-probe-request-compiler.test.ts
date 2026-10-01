@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import type {
   DiagnosticProbeDefinition,
   DiagnosticProbePlan,
-} from "../../project-model/src/index.js";
-import type { RuntimeProbeBinding } from "../../project-model/src/index.js";
-import { compileRuntimeProbeRequests } from "../src/runtime-probe-request-compiler.js";
+} from "../../../project-model/src/index.js";
+import type { RuntimeProbeBinding } from "../../../project-model/src/index.js";
+import { compileRuntimeProbeRequests } from "../../src/diagnosis/runtime-probe-request-compiler.js";
 
 const probes: DiagnosticProbeDefinition[] = [{
   id: "chunk-readiness",
