@@ -1,51 +1,43 @@
 # Target Repair Specification
 
-## Intent
+## Entry
 
-Apply the smallest preconditioned mutation to a target working copy while preserving approved gameplay.
-
-## Bug-repair entry state
+Bug repair requires:
 
 ```text
 Approved Bug
-+ violated Gameplay Contract
++ violated selected-version Gameplay Contract
 + Repair Contract
   - Must Change
   - Must Preserve
 ```
 
-No Approved Bug means no bug-repair mutation.
+Intentional modification is separate and requires explicit user approval of the behavior change.
 
-Intentional modification is a separate path: change/approve Game Design first when expected gameplay itself changes.
+## Scope
 
-## In scope
-
-- repair-contract interpretation;
-- exact target ownership;
-- patch transaction;
-- rollback/preconditions;
-- affected semantic rebuild;
-- source/package verification;
+In scope:
+- exact repair owner;
+- bounded PatchTransaction;
+- stale-state protection / rollback;
+- defect verification;
 - preservation verification;
 - explicit runtime residue.
 
-## Out of scope
-
-- inventing intended gameplay;
-- silently changing Game Design;
-- mutating original artifacts;
+Out of scope:
+- inventing expected gameplay;
+- changing behavior outside the approved request;
+- mutating the original artifact;
 - detector development;
 - unrelated cleanup.
 
 ## Acceptance
 
-- exact target owner is known;
-- Must Change maps to the approved defect;
-- Must Preserve maps to current Game Design;
-- patch has stale-state protection;
+- Must Change maps to the Approved Bug;
+- Must Preserve maps to the selected-version Gameplay Contract;
+- patch scope is the smallest complete owner;
 - original artifact remains immutable;
-- defect verification is rerun;
-- preservation verification is rerun;
-- runtime proof is not overstated.
+- defect and preservation checks are rerun;
+- proof level is not overstated.
 
-A repair is incomplete if the symptom disappears but approved gameplay semantics regress.
+Symptom removal without gameplay preservation is not completion.
