@@ -5,7 +5,7 @@ export type BugReportCopyIssueCode =
   | "field-too-long"
   | "duplicate-core-copy"
   | "vague-issue"
-  | "vague-action"
+  | "vague-solution"
   | "missing-reproduction"
   | "invalid-reproduction-length"
   | "code-centric-reproduction"
@@ -67,7 +67,7 @@ const vagueReproductionPatterns = [
 const observableResultPattern =
   /\b(confirm|observe|notice|verify)\b/i;
 
-const vagueActionPatterns = [
+const vagueSolutionPatterns = [
   /\bcheck (?:the|this)\b/i,
   /\binvestigate\b/i,
   /\breview (?:the|this)\b/i,
@@ -213,12 +213,12 @@ export function reviewBugReportCopy(
       );
 
       if (
-        vagueActionPatterns.some((pattern) =>
+        vagueSolutionPatterns.some((pattern) =>
           pattern.test(bug.suggestedFix!)
         )
       ) {
         issues.push({
-          code: "vague-action",
+          code: "vague-solution",
           path: base + ".suggestedFix",
           message:
             "Solution must state a direct repair step and target instead of asking the reader to investigate or generally fix the issue.",
