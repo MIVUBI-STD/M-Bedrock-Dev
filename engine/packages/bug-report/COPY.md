@@ -82,9 +82,9 @@ Rules:
 - describe what actually happens;
 - must not duplicate Expected.
 
-### Reproduction — displayed as How to Reproduce (In-Game)
+### Reproduction — displayed as Bug Trigger (In-Game)
 
-Purpose: give a tester who does not read code a short, exact path to **make the bug happen in Minecraft and visibly confirm it**.
+Purpose: give a tester who does not read code a short, exact path to **trigger the bug in Minecraft and visibly confirm it**.
 
 Required structure:
 
