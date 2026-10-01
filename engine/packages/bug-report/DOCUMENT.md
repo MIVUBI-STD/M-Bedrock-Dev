@@ -271,9 +271,9 @@ Footer
 
 Do not create new component families unless a real report cannot be represented clearly with these.
 
-## Google Docs rules
+## Word / DOCX rules
 
-Google Docs is the editable client-facing document.
+DOCX is the editable client-facing document and the single layout source for file publication.
 
 Renderer requirements:
 
@@ -286,13 +286,13 @@ Renderer requirements:
 - keep headers/footers minimal;
 - do not simulate layout with spaces or repeated tabs.
 
-The Google Doc is a projection, not canonical bug state.
+The DOCX is a projection, not canonical bug state.
 
 ## PDF rules
 
-PDF is the published snapshot of the same document.
+PDF is the published snapshot of the same DOCX.
 
-Prefer export from the generated Google Doc so Docs and PDF do not drift.
+Export PDF from the generated DOCX so Word and PDF do not drift.
 
 Pagination requirements:
 
@@ -333,4 +333,4 @@ Do not add:
 - another report database;
 - duplicated technical appendices by default.
 
-The target is one clear client document model, one editable Google Doc projection, and one matching PDF snapshot.
+The target is one clear client document model, one editable DOCX/Word output, and one matching PDF snapshot.
