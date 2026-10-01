@@ -6,7 +6,14 @@ This document defines repository-wide canonical terminology.
 
 | Canonical term | Meaning | Canonical location |
 |---|---|---|
-| Map Game Design | What a specific map/mode is supposed to do | `workspace/active/<project-id>/design/game-design.json` |
+| Map Game Design | Approved intended gameplay for a specific map/mode | `workspace/active/<project-id>/design/game-design.json` |
+| Gameplay Contract | Scoped derived view of Map Game Design used by audit/repair; not persisted authority | `engine/packages/gameplay-intent/` |
+| Actual Behavior | What current source/artifact/runtime does | analyzers + behavior/runtime layers |
+| Confirmed Defect | Evidence-proven gameplay contradiction; not user approval | diagnostic/bug-report bridge |
+| Approved Bug | Confirmed defect explicitly approved in chat for report/repair flow | `engine/packages/bug-report/src/review.ts` |
+| Repair Candidate | Internal technically plausible repair direction; no mutation authority | orchestrator diagnosis/repair reasoning |
+| Repair Contract | Must Change + Must Preserve constraints for one authorized repair | preservation/orchestrator repair |
+| Authorized Repair | Approved Bug/design change + Repair Contract + current proof | orchestrator repair admission |
 | Design System | Schema, vocabulary, templates, compiler for Game Design | `engine/design/` |
 | Game Design Spec | Typed model/loader/compiler package | `engine/packages/game-design-spec/` |
 | Platform Knowledge | Descriptive Minecraft Bedrock/Education facts | `engine/knowledge/` + `engine/packages/knowledge/` |
