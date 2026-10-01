@@ -30,3 +30,20 @@ candidate
 ```
 
 A candidate without approved expectations or artifact identity is not benchmark evidence.
+
+
+## Readiness states
+
+```text
+candidate  known source exists, but scoring prerequisites are incomplete
+ready      artifact identity + frozen expectation are complete
+blocked    source/evidence is invalid or cannot currently be evaluated
+```
+
+A candidate must never be counted as benchmark proof.
+
+Check current readiness manually:
+
+```text
+node .agents/skills/m-bedrock-detection-benchmark/scripts/corpus-status.mjs
+```
