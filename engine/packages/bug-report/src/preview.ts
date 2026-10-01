@@ -147,8 +147,8 @@ function reproductionCell(
 ): string {
   if (!steps?.length) return "—";
   return steps
-    .map((step, index) => `${index + 1}) ${line(step)}`)
-    .join(" → ");
+    .map((step, index) => `${index + 1}. ${line(step)}`)
+    .join("<br>");
 }
 
 export function renderBugReportPreviewMarkdown(
