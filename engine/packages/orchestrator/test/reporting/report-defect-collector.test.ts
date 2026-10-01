@@ -931,7 +931,7 @@ describe("report defect collector", () => {
           defect: defect("a", {
             impactEvidenceIds: ["tester:observation"],
             primaryEvidenceIds: ["requirement:cleanup"],
-            reproduction: ["A"],
+            reproduction: ["Enter outcome A.", "Confirm outcome A remains incorrect."],
           }),
         },
         {
@@ -948,7 +948,7 @@ describe("report defect collector", () => {
           defect: defect("b", {
             impactEvidenceIds: ["tester:observation"],
             primaryEvidenceIds: ["requirement:cleanup"],
-            reproduction: ["B"],
+            reproduction: ["Enter outcome B.", "Confirm outcome B remains incorrect."],
           }),
         },
       ];
