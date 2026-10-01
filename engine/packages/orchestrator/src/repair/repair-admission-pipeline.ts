@@ -10,7 +10,14 @@ import {
   patchTransactionSemanticFingerprint,
   type PatchTransaction,
 } from "../../../repair/src/index.js";
-import type { PreservationReadinessResult } from "../../../preservation/src/index.js";
+import {
+  validateRepairPreservationContract,
+  type PreservationReadinessResult,
+  type RepairPreservationContract,
+} from "../../../preservation/src/index.js";
+import type {
+  ApprovedBugSet,
+} from "../../../bug-report/src/index.js";
 import {
   analyzeRepairCounterfactual,
 } from "../repair-counterfactual.js";
@@ -34,6 +41,79 @@ import type {
 } from "./repair-admission.js";
 import { semanticGraphFingerprint } from "../semantic-graph-fingerprint.js";
 
+export type RepairWorkflowAuthority =
+  | {
+      readonly kind: "approved-bug";
+      readonly approved: ApprovedBugSet;
+      readonly bugSemanticKey: string;
+      readonly preservationContract: RepairPreservationContract;
+    }
+  | {
+      readonly kind: "intentional-modification";
+      readonly designChangeApproved: true;
+      readonly preservationContract: RepairPreservationContract;
+    };
+
+function repairWorkflowAuthorityIssues(
+  transaction: PatchTransaction,
+  authority: RepairWorkflowAuthority | undefined,
+): readonly string[] {
+  if (authority === undefined) {
+    return [
+      "Mutation-authorizing repair requires explicit workflow authority: Approved Bug for bug repair or approved design change for intentional modification.",
+    ];
+  }
+
+  const errors = [
+    ...validateRepairPreservationContract(
+      authority.preservationContract,
+    ),
+  ];
+
+  if (
+    authority.preservationContract.transactionId !==
+    transaction.id
+  ) {
+    errors.push(
+      "Repair preservation contract belongs to another patch transaction.",
+    );
+  }
+
+  if (
+    authority.preservationContract.mustChangeInvariantIds.length === 0
+  ) {
+    errors.push(
+      "Repair Contract requires at least one Must Change invariant.",
+    );
+  }
+
+  if (
+    authority.preservationContract.mustPreserveInvariantIds.length === 0
+  ) {
+    errors.push(
+      "Repair Contract requires at least one Must Preserve invariant.",
+    );
+  }
+
+  if (authority.kind === "approved-bug") {
+    if (!authority.bugSemanticKey.trim()) {
+      errors.push(
+        "Bug repair requires an approved bug semantic key.",
+      );
+    } else if (
+      !authority.approved.approvedSemanticKeys.includes(
+        authority.bugSemanticKey,
+      )
+    ) {
+      errors.push(
+        "Bug repair semantic key is not present in the Approved Bug Set.",
+      );
+    }
+  }
+
+  return [...new Set(errors)];
+}
+
 export interface RepairAdmissionPipelineInput {
   graph: SemanticGraph;
   transaction: PatchTransaction;
@@ -46,6 +126,7 @@ export interface RepairAdmissionPipelineInput {
   >;
   blastRadiusPolicy?: RepairBlastRadiusPolicy;
   preservationReadiness?: PreservationReadinessResult;
+  repairAuthority?: RepairWorkflowAuthority;
   postTransformProofBinding?: {
     transactionId: string;
     transactionFingerprint: string;
@@ -90,6 +171,12 @@ export function evaluateRepairAdmissionPipeline(
     blastRadius,
   );
 
+  const workflowAuthorityIssues =
+    repairWorkflowAuthorityIssues(
+      input.transaction,
+      input.repairAuthority,
+    );
+
   const transactionFingerprint =
     patchTransactionSemanticFingerprint(
       input.transaction,
@@ -110,6 +197,21 @@ export function evaluateRepairAdmissionPipeline(
 
   const admission: RepairAdmissionDecision =
     (
+      (
+        rawAdmission.disposition === "eligible" ||
+        rawAdmission.disposition === "guarded"
+      ) &&
+      workflowAuthorityIssues.length > 0
+    )
+      ? {
+          transactionId: input.transaction.id,
+          disposition: "blocked",
+          reasons: [
+            "Repair workflow authority is incomplete.",
+            ...workflowAuthorityIssues,
+          ],
+        }
+      : (
       (
         rawAdmission.disposition === "eligible" ||
         rawAdmission.disposition === "guarded"
@@ -142,7 +244,7 @@ export function evaluateRepairAdmissionPipeline(
               "Mutation-authorizing repair admission requires post-transform proof bound to the exact patch transaction semantics.",
             ],
           }
-        : rawAdmission;
+        : rawAdmission);
 
   const runtimeExperimentContracts =
     runtimeVerificationExperimentContractsFromProvenance(
