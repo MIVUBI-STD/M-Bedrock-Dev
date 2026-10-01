@@ -1,5 +1,5 @@
 import { basename, resolve } from "node:path";
-import { compareArtifacts } from "../../../engine/packages/orchestrator/src/index.js";
+import { compareArtifacts } from "../../../engine/packages/orchestrator/src/index.js";\nimport { proveNoopPackageRoundtrip } from "../../../engine/packages/orchestrator/src/index.js";
 import { compareArtifactsForUpdate } from "../../../engine/packages/orchestrator/src/index.js";
 import { inspectArtifact } from "../../../engine/packages/orchestrator/src/index.js";
 import { buildEngineeringReviewProjection } from "../../../engine/packages/orchestrator/src/index.js";
@@ -76,6 +76,15 @@ async function main(): Promise<void> {
   const knowledge = await loadKnowledgeDirectory(resolve("engine/knowledge"));
   if (gameDesignPath) {
     target.gameDesign = await loadGameDesignSpec(resolve(gameDesignPath));
+  }
+
+  if (command === "package-roundtrip" && input) {
+    const proof = await proveNoopPackageRoundtrip(resolve(input));
+    console.log(JSON.stringify(proof, null, 2));
+    if (!proof.equivalent) {
+      process.exitCode = 1;
+    }
+    return;
   }
 
   if (command === "probe-plan" && input) {
@@ -584,7 +593,7 @@ async function main(): Promise<void> {
     "  npm run cli -- plan <changed-path> [changed-path ...]",
     "  npm run cli -- arena-corpus <manifest.json> [artifact-root] [--edition ...] [--version ...] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",\n    "  npm run cli -- package-roundtrip <path-to-mcworld-or-zip>",
     "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- arena-baseline <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--authored-source-root path] [--arena-region-contracts regions.json]",
     "  npm run cli -- arena-corpus-status <manifest.json> [artifact-root]",
