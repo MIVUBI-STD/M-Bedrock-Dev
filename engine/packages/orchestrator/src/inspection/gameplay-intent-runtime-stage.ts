@@ -103,7 +103,7 @@ export interface GameplayIntentRuntimeAnalysis {
   routeAssessments: readonly GameplayIntentRouteRuntimeAssessment[];
   routeStallAssessments: readonly GameplayRouteStallRuntimeAssessment[];
   designedBehavior: number;
-  probableDefects: number;
+  confirmedDefects: number;
   ambiguousIntent: number;
   insufficientEvidence: number;
   routeResolved: number;
@@ -923,9 +923,9 @@ export function analyzeGameplayIntentRuntime(
       (item) =>
         item.result.disposition === "designed-behavior",
     ).length,
-    probableDefects: assessments.filter(
+    confirmedDefects: assessments.filter(
       (item) =>
-        item.result.disposition === "probable-defect",
+        item.result.disposition === "confirmed-defect",
     ).length,
     ambiguousIntent: assessments.filter(
       (item) =>
