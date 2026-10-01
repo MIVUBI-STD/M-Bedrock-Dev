@@ -15,3 +15,23 @@ The application boundary enforces:
 The returned rollback metadata contains prior working-copy text for successfully changed files. Original source artifacts remain untouched.
 
 This is still source-level validation. It does not prove Minecraft runtime behavior.
+
+
+## Mutation boundary
+
+Low-level mutation primitives are internal implementation details of the repair package.
+
+Do not import or expose `applyPatchTransaction()`, `rollbackAppliedFiles()`, or `atomicWriteText()` through the repair package public API.
+
+Production mutation must enter through the orchestrator authorized path:
+
+```text
+repair admission
+→ proof bundle
+→ authorizeRepairMutation()
+→ applyAuthorizedRepair()
+→ validation / rollback
+→ repair lifecycle
+```
+
+Direct primitive use is limited to implementation-internal code and focused unit tests.
