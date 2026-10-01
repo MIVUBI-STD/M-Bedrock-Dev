@@ -37,6 +37,7 @@ Use this before broad repository search.
 | Cross-map behavioral pattern aggregation | engine/packages/reliability-search/src/behavioral-pattern-library.ts |
 | Metamorphic detector testing | engine/packages/reliability-search/src/metamorphic.ts |
 | Parser robustness campaigns | engine/packages/reliability-search/src/parser-robustness.ts |
+| Coverage-quality dashboard + generated known-limits | engine/packages/reliability-search/src/coverage-quality-dashboard.ts + generated-known-limits.ts |
 | Empirical diagnostic calibration | engine/packages/diagnostic-reasoning/src/calibration.ts |
 | Controlled Minecraft experiment planning/qualification/provenance | engine/packages/runtime-lab/ + engine/runtime/lab/ |
 | Compatibility engine/version/track contracts | engine/packages/compatibility/ |

@@ -50,3 +50,6 @@ export * from "./metamorphic.js";
 export * from "./parser-robustness.js";
 
 export * from "./behavioral-pattern-library.js";
+
+export * from "./coverage-quality-dashboard.js";
+export * from "./generated-known-limits.js";

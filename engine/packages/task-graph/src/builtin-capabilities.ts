@@ -527,6 +527,18 @@ export const BUILTIN_TASK_CAPABILITIES:
       contexts: ALL_STATIC_CONTEXTS,
     },
     {
+      id: "reliability.coverage-quality",
+      owner: "packages/reliability-search",
+      pathPrefixes: [
+        "packages/reliability-search/src/coverage-quality-dashboard.ts",
+        "packages/reliability-search/src/generated-known-limits.ts",
+      ],
+      deterministic: true,
+      cacheable: true,
+      cost: "cheap",
+      contexts: ALL_STATIC_CONTEXTS,
+    },
+    {
       id: "projection.world-model",
       owner: "packages/orchestrator",
       pathPrefixes: [
