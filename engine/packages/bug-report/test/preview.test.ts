@@ -125,7 +125,7 @@ describe("bug report preview", () => {
     });
     const markdown = renderBugReportPreviewMarkdown(preview, "full");
 
-    expect(markdown).toContain("| **Bug Trigger (In-Game)** | 1) Finish a match.");
+    expect(markdown).toContain("| **Bug Trigger (In-Game)** | 1. Finish a match.<br>2. Return to the lobby.");
     expect(markdown).toContain("| #1 · BLOCKER | Match cannot restart |");
 
     expect(markdown.indexOf("**Issue:**")).toBeLessThan(
