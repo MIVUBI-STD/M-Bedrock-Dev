@@ -4,12 +4,14 @@ This document is the single authority for wording quality in new Bug Report V2 c
 
 The goal is operational clarity, not prose completeness.
 
-A reader must be able to scan a bug and answer:
+A tester must be able to scan a bug and answer:
 
 1. What failed?
-2. What should happen?
-3. What happened instead?
-4. What supported action exists?
+2. What gameplay impact does it cause?
+3. How do I trigger and prove it in-game?
+4. What supported solution exists?
+
+Expected and Observed remain canonical evidence fields, but they are secondary to the tester-facing scan path.
 
 ## Canonical field roles
 
