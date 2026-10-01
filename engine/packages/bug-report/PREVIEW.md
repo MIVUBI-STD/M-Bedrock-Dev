@@ -2,7 +2,7 @@
 
 Canonical Bug Report V2 owns facts. Preview owns readability.
 
-Default ChatGPT presentation is **table-first**. The goal is minimum vertical scroll while preserving the repair signal.
+Default ChatGPT presentation is **table-first**. The goal is minimum vertical scroll while preserving the audit signal.
 
 ## Default compact preview
 
@@ -11,7 +11,7 @@ Show a compact audit header followed by one compact table:
 ```text
 Map Name — Bug Report
 Map Version: <map version>
-Tested Version: Latest Education
+Tested Version: Minecraft Education <exact tested version> (Latest)
 
 Open Issues: <count>
 Blocker: <count> · Major: <count> · Minor: <count>
@@ -27,7 +27,11 @@ Rules:
 - default scope is newly found/open bugs only;
 - show `Open Issues` on its own line before the severity breakdown;
 - do not show `Repair By`, repair ownership, or `Fixed` progress in normal bug-finding preview;
-- display `Tested Version: Latest Education` in the audit preview; the canonical exact tested version may remain stored internally;
+- always show the exact Minecraft Education version from canonical `testedVersion`;
+- format a verified-current audit as `Tested Version: Minecraft Education <version> (Latest)`;
+- never display `Latest` without an exact version number;
+- `Latest` is a freshness claim: use it only when the audit workflow has verified the official current Minecraft Education version at audit time;
+- if freshness cannot be verified, show `Tested Version: Minecraft Education <version>` without `(Latest)`;
 - order is Blocker → Major → Minor → Bug ID;
 - `No.` is a simple preview row number (`#1`, `#2`, ...);
 - `Bug` contains only the short human-readable title;
@@ -38,6 +42,19 @@ Rules:
 - do not add Expected, Observed, Reproduction, Technical Analysis, Relevant Code, or Must Preserve to the default table;
 - do not create one section per bug in default preview;
 - do not dump JSON.
+
+## Tested-version truth
+
+`testedVersion` is the exact Minecraft Education build used for the audit.
+
+For a new audit intended to run on the latest Education release:
+
+1. verify the current version from an official Minecraft Education source;
+2. run the audit on that exact build;
+3. store that exact number in `map.testedVersion`;
+4. show `(Latest)` only when steps 1–3 are true.
+
+Do not hardcode a version number or a floating `Latest Education` label in presentation code.
 
 ## Audit-phase boundary
 
@@ -108,7 +125,7 @@ Open bugs are the default scope. Fixed bugs appear only when explicitly requeste
 
 ## Reader test
 
-A reader should be able to cover the Issue and Action columns only and still understand the repair handoff.
+A reader should be able to cover the Issue and Action columns only and still understand the bug and the supported next action.
 
 Good:
 
