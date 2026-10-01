@@ -1,5 +1,6 @@
 import {
   buildBugReportFromConfirmedDefects,
+  compileBugTrigger,
   deriveConfirmedDefectSemanticKey,
   deriveRepairUnitIdsFromSourceEvidence,
   type ConfirmedDefect,
@@ -7,6 +8,7 @@ import {
   type PromoteConfirmedBugsResult,
   type BugReportV2Map,
   type BugReportV2RepairBy,
+  type BugTriggerDraft,
 } from "../../../bug-report/src/index.js";
 import type {
   IntentDiagnosticGateResult,
@@ -87,7 +89,9 @@ export type ConfirmedDefectDraft = Omit<
 
 export type AiConfirmedDefectDraft = Omit<
   ConfirmedDefectDraft,
-  "brokenInvariantIds" | "expectedStatement"
+  | "brokenInvariantIds"
+  | "expectedStatement"
+  | "reproduction"
 > & {
   readonly expectedStatement: string;
 };
@@ -100,6 +104,7 @@ export interface ReportCandidateRepairContext {
 
 export interface RuntimeReportCandidate {
   readonly route: "runtime";
+  readonly bugTrigger?: BugTriggerDraft;
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
   readonly runtimeExperimentClassification?: {
@@ -115,6 +120,7 @@ export interface RuntimeReportCandidate {
 
 export interface StaticReportCandidate {
   readonly route: "static";
+  readonly bugTrigger?: BugTriggerDraft;
   readonly intent: GameplayIntentModel;
   readonly result: IntentDiagnosticGateResult;
   readonly semanticIr?: SemanticIr;
@@ -532,10 +538,20 @@ function routeNextEvidenceNeed(
   candidate: AuditReportCandidate,
 ): ReportCandidateNextEvidenceNeed {
   if (candidate.route === "runtime") {
-    return candidate.assessment.result.nextEvidenceNeed;
+    if (candidate.assessment.result.nextEvidenceNeed !== "none") {
+      return candidate.assessment.result.nextEvidenceNeed;
+    }
+    return candidate.bugTrigger === undefined
+      ? "tester-reproduction"
+      : "none";
   }
   if (candidate.route === "static") {
-    return candidate.result.nextEvidenceNeed;
+    if (candidate.result.nextEvidenceNeed !== "none") {
+      return candidate.result.nextEvidenceNeed;
+    }
+    return candidate.bugTrigger === undefined
+      ? "tester-reproduction"
+      : "none";
   }
   if (
     !candidate.confirmation.expectedStatement.trim() ||
@@ -581,6 +597,47 @@ function rejectedCandidate(
   };
 }
 
+function aiBugTrigger(
+  candidate: RuntimeReportCandidate | StaticReportCandidate,
+): {
+  readonly steps?: readonly string[];
+  readonly issues: readonly string[];
+} {
+  if (candidate.bugTrigger === undefined) {
+    return { issues: [] };
+  }
+
+  const compiled = compileBugTrigger(candidate.bugTrigger);
+  if (!compiled.ok) {
+    return {
+      issues: compiled.issues.map(
+        (issue) => issue.message,
+      ),
+    };
+  }
+
+  const universe = new Set(
+    candidateEvidenceUniverse(candidate),
+  );
+  const unrelated = compiled.evidenceIds
+    .filter((id) => !universe.has(id));
+
+  if (unrelated.length > 0) {
+    return {
+      issues: [
+        "Bug Trigger evidence is not part of the confirmed defect evidence universe: " +
+          unrelated.join(", ") +
+          ".",
+      ],
+    };
+  }
+
+  return {
+    steps: compiled.steps,
+    issues: [],
+  };
+}
+
 function collectOne(
   candidate: AuditReportCandidate,
 ): {
@@ -618,6 +675,20 @@ function collectOne(
       rejected: rejectedCandidate(
         candidate,
         ownerIssues,
+        "candidate-correction",
+      ),
+    };
+  }
+
+  const trigger =
+    candidate.route === "tester"
+      ? { issues: [] as readonly string[] }
+      : aiBugTrigger(candidate);
+  if (trigger.issues.length > 0) {
+    return {
+      rejected: rejectedCandidate(
+        candidate,
+        trigger.issues,
         "candidate-correction",
       ),
     };
@@ -713,6 +784,10 @@ function collectOne(
         ? "tester"
         : "ai",
     confirmation: decision.confirmation,
+    ...(candidate.route === "tester" ||
+        trigger.steps === undefined
+      ? {}
+      : { reproduction: trigger.steps }),
   };
 
   return {
