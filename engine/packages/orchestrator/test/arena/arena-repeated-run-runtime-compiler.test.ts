@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { deriveArenaRepeatedRunValidationPlan } from "../src/arena-repeated-run-validation.js";
-import { compileArenaRepeatedRunRuntime } from "../src/arena-repeated-run-runtime-compiler.js";
+import { deriveArenaRepeatedRunValidationPlan } from "../../src/arena/arena-repeated-run-validation.js";
+import { compileArenaRepeatedRunRuntime } from "../../src/arena/arena-repeated-run-runtime-compiler.js";
 
 describe("arena repeated-run runtime compiler", () => {
   it("compiles all 1/2/5/20 stages when arena generations and capacity are explicit", () => {

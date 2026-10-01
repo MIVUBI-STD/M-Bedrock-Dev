@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compileArenaGlobalStateRuntime } from "../src/arena-global-state-runtime-compiler.js";
+import { compileArenaGlobalStateRuntime } from "../../src/arena/arena-global-state-runtime-compiler.js";
 
 describe("arena global state runtime compiler", () => {
   it("compiles a paired static lease into a two-arena race experiment", () => {

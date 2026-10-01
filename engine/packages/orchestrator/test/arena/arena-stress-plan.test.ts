@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveArenaStressPlan } from "../src/arena-stress-plan.js";
+import { deriveArenaStressPlan } from "../../src/arena/arena-stress-plan.js";
 
 describe("arena stress plan", () => {
   it("plans a 30-player nominal matrix for six five-player arenas", () => {

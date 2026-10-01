@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveArenaRepeatedRunValidationPlan } from "../src/arena-repeated-run-validation.js";
+import { deriveArenaRepeatedRunValidationPlan } from "../../src/arena/arena-repeated-run-validation.js";
 
 describe("arena repeated-run validation", () => {
   it("creates 1/2/5/20 single and all-arena stages", () => {

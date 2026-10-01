@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildMultiplayerStressMatrix } from "../../../packages/reliability/src/index.js";
-import { compileArenaStressRuntime } from "../src/arena-stress-runtime-compiler.js";
+import { buildMultiplayerStressMatrix } from "../../../../packages/reliability/src/index.js";
+import { compileArenaStressRuntime } from "../../src/arena/arena-stress-runtime-compiler.js";
 
 describe("arena stress runtime compiler", () => {
   it("compiles supported scenarios and leaves unsupported scenarios explicit", () => {
