@@ -74,6 +74,16 @@ def set_cell_shading(cell, fill: str) -> None:
     shd.set(qn("w:fill"), fill)
 
 
+def set_cell_width(cell, width_inches: float) -> None:
+    tc_pr = cell._tc.get_or_add_tcPr()
+    tc_w = tc_pr.find(qn("w:tcW"))
+    if tc_w is None:
+        tc_w = OxmlElement("w:tcW")
+        tc_pr.append(tc_w)
+    tc_w.set(qn("w:w"), str(int(width_inches * 1440)))
+    tc_w.set(qn("w:type"), "dxa")
+
+
 def set_cell_margins(cell, top=70, start=90, bottom=70, end=90) -> None:
     tc_pr = cell._tc.get_or_add_tcPr()
     tc_mar = tc_pr.first_child_found_in("w:tcMar")
@@ -247,11 +257,14 @@ def add_bug_table(doc: Document, issue: dict[str, Any], compact: bool) -> None:
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
 
+    table.columns[0].width = Inches(1.35)
+    table.columns[1].width = Inches(5.95)
+
     header = table.rows[0]
     left = header.cells[0]
     right = header.cells[1]
-    left.width = Inches(1.28)
-    right.width = Inches(5.8)
+    set_cell_width(left, 1.35)
+    set_cell_width(right, 5.95)
     set_cell_shading(left, NAVY)
     set_cell_shading(right, NAVY)
     set_cell_margins(left, 85, 95, 85, 95)
@@ -276,8 +289,7 @@ def add_bug_table(doc: Document, issue: dict[str, Any], compact: bool) -> None:
     rows: list[tuple[str, str | None]] = [
         ("Issue", issue["issue"]),
         ("How to Reproduce", None),
-        ("Observed", issue["observed"]),
-        ("Expected", issue["expected"]),
+        ("Result", None),
     ]
     if issue.get("recommendedResolution"):
         rows.append(("Resolution", issue["recommendedResolution"]))
@@ -287,8 +299,8 @@ def add_bug_table(doc: Document, issue: dict[str, Any], compact: bool) -> None:
         set_row_no_split(row)
         label_cell = row.cells[0]
         value_cell = row.cells[1]
-        label_cell.width = Inches(1.28)
-        value_cell.width = Inches(5.8)
+        set_cell_width(label_cell, 1.35)
+        set_cell_width(value_cell, 5.95)
         set_cell_shading(label_cell, SOFT)
         set_cell_margins(label_cell, 65, 85, 65, 85)
         set_cell_margins(value_cell, 65, 95, 65, 95)
@@ -308,6 +320,37 @@ def add_bug_table(doc: Document, issue: dict[str, Any], compact: bool) -> None:
                 value_cell,
                 list(issue["reproduction"]),
                 compact,
+            )
+        elif label == "Result":
+            p = value_cell.paragraphs[0]
+            p.paragraph_format.space_after = Pt(2)
+            add_run(
+                p,
+                "Observed: ",
+                bold=True,
+                size=8.8 if compact else 9.0,
+                color=NAVY,
+            )
+            add_run(
+                p,
+                issue["observed"],
+                size=8.9 if compact else 9.2,
+                color=INK,
+            )
+            p2 = value_cell.add_paragraph()
+            p2.paragraph_format.space_after = Pt(0)
+            add_run(
+                p2,
+                "Expected: ",
+                bold=True,
+                size=8.8 if compact else 9.0,
+                color=NAVY,
+            )
+            add_run(
+                p2,
+                issue["expected"],
+                size=8.9 if compact else 9.2,
+                color=INK,
             )
         else:
             add_run(
