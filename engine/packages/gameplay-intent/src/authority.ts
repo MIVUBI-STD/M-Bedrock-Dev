@@ -50,25 +50,30 @@ export interface GameplayAuthorityResolution {
   readonly reasons: readonly string[];
 }
 
-export const INDEPENDENT_GAMEPLAY_INTENT_EVIDENCE_ORIGINS =
+export const SELECTED_ARTIFACT_GAMEPLAY_CONTRACT_ORIGINS =
   [
-    "game-design-spec",
-    "project-policy",
-    "official-documentation",
+    "source-code",
+    "manifest",
+    "command",
+    "scoreboard",
+    "tag",
+    "dialogue",
+    "translation",
+    "structure",
   ] as const satisfies readonly GameplayIntentEvidenceOrigin[];
 
-const independentGameplayIntentEvidenceOrigins =
+const selectedArtifactGameplayContractOrigins =
   new Set<GameplayIntentEvidenceOrigin>(
-    INDEPENDENT_GAMEPLAY_INTENT_EVIDENCE_ORIGINS,
+    SELECTED_ARTIFACT_GAMEPLAY_CONTRACT_ORIGINS,
   );
 
-export function isIndependentGameplayIntentEvidenceOrigin(
+export function isSelectedArtifactGameplayContractOrigin(
   origin: GameplayIntentEvidenceOrigin,
 ): boolean {
-  return independentGameplayIntentEvidenceOrigins.has(origin);
+  return selectedArtifactGameplayContractOrigins.has(origin);
 }
 
-export function independentGameplayIntentEvidenceIds(
+export function selectedArtifactGameplayContractEvidenceIds(
   model: GameplayIntentModel,
   invariantIds: readonly string[],
 ): readonly string[] {
@@ -93,7 +98,8 @@ export function independentGameplayIntentEvidenceIds(
           const evidence = evidenceById.get(id);
           return (
             evidence !== undefined &&
-            isIndependentGameplayIntentEvidenceOrigin(
+            evidence.scope === "selected-artifact" &&
+            isSelectedArtifactGameplayContractOrigin(
               evidence.origin,
             )
           );
@@ -101,6 +107,13 @@ export function independentGameplayIntentEvidenceIds(
     ),
   ].sort();
 }
+
+/**
+ * Compatibility alias. Audit semantics are selected-artifact-only.
+ */
+export const independentGameplayIntentEvidenceIds =
+  selectedArtifactGameplayContractEvidenceIds;
+
 
 const intendedRank: Readonly<
   Partial<Record<GameplayAuthoritySource, number>>
