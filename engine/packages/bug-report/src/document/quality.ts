@@ -4,6 +4,7 @@ import type {
 
 export type BugReportClientDocumentQualityIssueCode =
   | "summary-count-mismatch"
+  | "summary-severity-mismatch"
   | "index-count-mismatch"
   | "index-detail-mismatch"
   | "missing-title"
@@ -40,6 +41,31 @@ export function reviewBugReportClientDocument(
       path: "summary.visibleIssues",
       message:
         "Visible issue count must match rendered issue detail count.",
+    });
+  }
+
+  const severityCounts = {
+    blocker: document.issues.filter(
+      (issue) => issue.severity === "blocker",
+    ).length,
+    major: document.issues.filter(
+      (issue) => issue.severity === "major",
+    ).length,
+    minor: document.issues.filter(
+      (issue) => issue.severity === "minor",
+    ).length,
+  };
+
+  if (
+    document.summary.blocker !== severityCounts.blocker ||
+    document.summary.major !== severityCounts.major ||
+    document.summary.minor !== severityCounts.minor
+  ) {
+    issues.push({
+      code: "summary-severity-mismatch",
+      path: "summary",
+      message:
+        "Severity summary must match the visible issue set.",
     });
   }
 
