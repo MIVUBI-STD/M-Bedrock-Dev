@@ -134,6 +134,7 @@ describe("confirmed bug promotion", () => {
         reproduction: [
           "Start the building phase.",
           "Use a water bucket on iron bars outside the active plot.",
+          "Confirm the outside-plot iron bars become waterlogged.",
         ],
         aiAnalysis: "Bucket handling bypasses the normal plot containment gate.",
         relevantCode: [{
