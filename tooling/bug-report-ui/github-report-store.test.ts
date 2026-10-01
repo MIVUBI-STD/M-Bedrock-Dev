@@ -45,7 +45,7 @@ describe("GitHubBugReportStore", () => {
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
-          path: "bug-reports/a.json",
+          path: "workspace/reports/a.json",
           sha: "abc",
           content: "",
           encoding: "base64",
@@ -69,7 +69,7 @@ describe("GitHubBugReportStore", () => {
 
     await expect(
       store.saveReport(
-        "bug-reports/a.json",
+        "workspace/reports/a.json",
         report(),
         "abc",
       ),
@@ -107,7 +107,7 @@ describe("GitHubBugReportStore", () => {
 
     await expect(
       store.createReport(
-        "bug-reports/a.json",
+        "workspace/reports/a.json",
         report(),
       ),
     ).resolves.toEqual({
@@ -120,7 +120,7 @@ describe("GitHubBugReportStore", () => {
       .mockResolvedValueOnce(new Response(
         JSON.stringify({
           type: "file",
-          path: "bug-reports/a.json",
+          path: "workspace/reports/a.json",
           sha: "newer",
           content: "",
           encoding: "base64",
@@ -138,7 +138,7 @@ describe("GitHubBugReportStore", () => {
 
     await expect(
       store.saveReport(
-        "bug-reports/a.json",
+        "workspace/reports/a.json",
         report(),
         "older",
       ),
@@ -163,6 +163,6 @@ describe("GitHubBugReportStore", () => {
         report(),
         "abc",
       ),
-    ).rejects.toThrow(/inside bug-reports/);
+    ).rejects.toThrow(/inside workspace/reports/);
   });
 });
