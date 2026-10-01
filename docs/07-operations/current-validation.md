@@ -1,121 +1,44 @@
 # Current Validation
 
-Snapshot date: 2026-10-01  
+Snapshot date: 2026-10-01
 Branch: `Local`
 
-This file is the current proof snapshot. It is not a chronological validation log.
+## Verified
 
-## Current repository state
-
-The branch now contains:
-
-- the established static/source reasoning stack;
-- explicit proof ceilings and runtime-required boundaries;
-- separated calibration / blind acceptance / regression corpus lanes;
-- frozen expectation contract with artifact SHA-256 identity;
-- TP/TN/FP/FN benchmark scoring with precision, recall, specificity, and false-positive rate;
-- no-op real-artifact package roundtrip proof;
-- canonical reliability routing under `engine/reliability/`.
-
-## Reliability corpus readiness
-
-Current tracked corpus candidates:
+Last retained integrated verification:
 
 ```text
-calibration candidates   10
-regression candidates    19
-acceptance cases         0
-benchmark-ready cases    0
-stored map fingerprints  0
-positive evidence cases  19
-negative evidence cases  2
+revision       5e02256869b4fc2107a1cbcf0ff85f0aac6745ac
+GitHub Verify  36431630205
+policy         pass
+source hygiene pass
+public API     pass
+typecheck      pass
+full tests     pass
 ```
 
-The calibration candidates include 8 semantic-understanding map candidates plus 2 grounded known-good Gauntlet level cases. The semantic-understanding cases are indexed from:
+Package roundtrip proof exists for transport preservation only. It does not prove gameplay correctness.
 
-```text
-engine/fixtures/calibration/gameplay-understanding-samples.json
-```
+## Current unverified changes
 
-The regression candidates are indexed from grounded historical/manual QA evidence in:
+Current `Local` includes additional source changes that have **not** been CI/local/runtime verified:
 
-```text
-engine/reliability/catalogs/regressions.json
-```
+- selected-map-version-only audit authority;
+- Gameplay Contract derived only from selected-artifact evidence;
+- external/reference sources isolated from normal audit;
+- discovered-surface accounting for audit coverage;
+- approval-gated Bug Report and repair workflow;
+- Must Change + Must Preserve repair authority;
+- proposal-only inspection repair planning.
 
-These are **candidates**, not benchmark proof. The stored map-fingerprint catalog currently contains no map entries, so no candidate may be promoted from cached identity. They remain unscored until required artifact identity and frozen expectations exist.
+## Known limits
 
-## Package proof state
+- gameplay-surface discovery may still miss mechanics the analyzers do not recognize;
+- discovered-surface accounting is not proof of whole-map completeness;
+- runtime-only behavior still needs Minecraft runtime proof;
+- real-map false-negative rate is not yet measured;
+- benchmark/calibration work remains deferred.
 
-The package validation model now has three explicit levels:
+## Rule
 
-```text
-Level A  synthetic deterministic transport proof
-Level B  real-artifact no-op roundtrip proof
-Level C  Minecraft runtime acceptance
-```
-
-`package-roundtrip` compares extracted path, file size, and SHA-256 content before and after deterministic packaging.
-
-This proves transport preservation only. It does not prove Minecraft loadability or gameplay correctness.
-
-## Current proof limits
-
-Still requiring stronger evidence:
-
-- real artifact fingerprints for current corpus candidates;
-- frozen positive and negative benchmark expectations;
-- blind acceptance/holdout cases;
-- measured detector TP/TN/FP/FN on real evidence;
-- minimized regression fixtures for historical bugs;
-- Minecraft runtime proof for chunk residency, entity AI, persistence/reconnect, and other runtime-only behavior;
-- end-to-end validation at the exact current head.
-
-## Integrated verification bookkeeping
-
-The last retained integrated verification point predates the current reliability/corpus consolidation:
-
-```text
-validated source revision  5e02256869b4fc2107a1cbcf0ff85f0aac6745ac
-GitHub Actions Verify       36431630205
-repository policy           pass
-source hygiene              pass
-public API audit            pass
-typecheck                   pass
-full test suite             pass
-```
-
-Current work intentionally does not run CI. Therefore the changes above are implementation/state updates, not upgraded CI proof.
-
-Historical validation remains recoverable from Git history. Longitudinal execution evidence belongs under `engine/reliability/history/`.
-
-
-## Corpus integrity guardrails
-
-The benchmark lane now provides manual non-CI checks for:
-
-```text
-validate-corpus.mjs      duplicate IDs, broken sourceRef, cross-lane contamination, false-ready state
-corpus-status.mjs        current candidate/ready/blocked readiness
-check-case-ready.mjs     fail-closed candidate promotion
-validate-expectation.mjs frozen expectation identity/provenance
-score-benchmark.mjs      TP/TN/FP/FN quality metrics
-```
-
-These checks improve evidence discipline but are not runtime proof.
-
-## Unvalidated single-source hardening
-
-Current `Local` source now also contains a single-source gameplay workflow pass:
-
-- one Selected Map Version is the only current gameplay evidence universe;
-- Gameplay Contract is derived only from evidence inside that artifact;
-- stale/external design material is excluded from normal audit authority;
-- candidate discovery fails closed without a matching ready/partial Gameplay Contract;
-- duplicate candidate-discovery ownership was removed;
-- inspection repair output is proposal-only;
-- runtime repair requires Approved Bug + Repair Contract;
-- final mutation authorization revalidates Approved Bug + Must Change + Must Preserve;
-- target-repair output requires approval and preservation fields.
-
-These changes have **not** been upgraded to CI/local/runtime proof in the current lane. The last retained integrated verification revision above remains the latest integrated test proof.
+Do not claim current-head CI/runtime proof until it is actually run. Historical proof remains in Git/reliability history.
