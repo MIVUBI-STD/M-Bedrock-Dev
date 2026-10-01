@@ -19,15 +19,15 @@ describe("CLI target options", () => {
     });
   });
 
-  it("parses repeated authored source roots into the target profile", () => {
+  it("parses repeated contract source roots into the target profile", () => {
     const parsed = parseCliTargetOptions([
       "map.mcworld",
-      "--authored-source-root", "map-source",
-      "--authored-source-root", "authoring/domain",
+      "--contract-source-root", "map-source",
+      "--contract-source-root", "authoring/domain",
     ]);
 
     expect(parsed.positionals).toEqual(["map.mcworld"]);
-    expect(parsed.target.authoredSourceRoots).toEqual([
+    expect(parsed.target.contractSourceRoots).toEqual([
       "map-source",
       "authoring/domain",
     ]);
