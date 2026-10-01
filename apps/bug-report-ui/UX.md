@@ -10,6 +10,19 @@ AUDIT → REPORT → FIX
 
 The tracker begins at **REPORT**. It must not expose internal audit pipelines, proof systems, caches, task graphs, or diagnostic orchestration.
 
+## Reader-first contract
+
+The first screen must answer, without opening technical detail:
+
+1. What is broken?
+2. How severe is it?
+3. What supported action should be taken?
+4. How many open issues remain?
+
+Canonical Bug Report V2 owns facts. Presentation owns density and ordering.
+
+The shared preview contract is `engine/packages/bug-report/PREVIEW.md`.
+
 ## Entry
 
 The landing view presents two equal report sources:
@@ -44,11 +57,11 @@ An imported file may later be explicitly saved to GitHub. A GitHub report may al
 The report workspace has four visual levels:
 
 1. **Identity** — map name and versions.
-2. **Progress** — fixed count and Repair By.
-3. **Bug list** — checkbox, severity, ID, title, secondary metadata.
-4. **Bug detail** — problem, expected, observed, reproduction, AI analysis, relevant code, suggested fix, must preserve.
+2. **Signal** — open count and Blocker/Major/Minor counts.
+3. **Bug list** — checkbox, severity, ID, title, short issue/action signal.
+4. **Bug detail** — expected, observed, reproduction, technical analysis, relevant code, must preserve.
 
-Users should understand the first three levels without opening bug detail.
+A reader should understand the problem and next supported action before opening bug detail.
 
 ## List behavior
 
@@ -70,12 +83,15 @@ Do not add category, Found By, owner, date, confidence, or workflow filters unti
 
 ## Bug row
 
-Collapsed rows show only:
+Collapsed rows prioritize the repair signal:
 
 ```text
-[checkbox]  BUG-ID · Title             Severity
-            Category · Found By
+[checkbox]  BLOCKER  BUG-ID · Short title
+            Issue summary
+            Action summary, when supported
 ```
+
+Category and Found By are secondary metadata and must not compete with Issue or Action.
 
 The checkbox is a progress guard. It is not a workflow status.
 
@@ -84,17 +100,27 @@ The checkbox is a progress guard. It is not a workflow status.
 Expanded order is fixed:
 
 ```text
-Problem
 Expected
 Observed
 Reproduction
-AI Analysis
+Technical Analysis
 Relevant Code
-Suggested Fix
 Must Preserve
 ```
 
-Fact precedes AI interpretation. This reduces anchoring on AI analysis.
+Problem/Issue and supported Action belong in the scan layer, not buried in expanded detail.
+
+Fact precedes technical interpretation. Empty sections are omitted.
+
+## Density rules
+
+- One bug describes one primary failure.
+- Title is short enough to scan in a list.
+- Issue states the concrete gameplay failure.
+- Action is shown only when Suggested Fix exists.
+- Do not repeat the same sentence across Issue, Expected, Observed, and Technical Analysis.
+- Technical detail is subordinate to repair signal.
+- Fixed bugs are visually reduced and hidden by default when open bugs exist.
 
 ## Persistence
 
@@ -161,7 +187,8 @@ Keyboard support follows the same productivity principle used by mature issue tr
 
 - Dense, not cramped.
 - Dark neutral surface; severity is the strongest color signal.
-- Fixed bugs remain visible but visually reduced.
+- Issue and Action are stronger than metadata.
+- Fixed bugs remain available but visually reduced.
 - Blocker must scan before secondary metadata.
 - One primary action per persistence source.
 - No dashboard charts unless report volume later demonstrates a real need.
@@ -182,7 +209,6 @@ Do not add:
 - mandatory notes when checking Fixed.
 
 The tracker is a focused repair handoff tool, not a general project-management product.
-
 
 ## GitHub conflict safety
 
