@@ -37,7 +37,7 @@ describe("GitHubReportClient", () => {
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({
         reports: [{
-          path: "bug-reports/a.json",
+          path: "workspace/reports/a.json",
           mapName: "A",
           mapVersion: "1.0.0",
           fixed: 1,
@@ -51,7 +51,7 @@ describe("GitHubReportClient", () => {
     });
 
     await expect(client.listReports()).resolves.toEqual([{
-      path: "bug-reports/a.json",
+      path: "workspace/reports/a.json",
       mapName: "A",
       mapVersion: "1.0.0",
       fixed: 1,
@@ -71,7 +71,7 @@ describe("GitHubReportClient", () => {
     });
 
     await expect(
-      client.loadReport("bug-reports/a.json"),
+      client.loadReport("workspace/reports/a.json"),
     ).resolves.toEqual(report);
   });
 
@@ -87,7 +87,7 @@ describe("GitHubReportClient", () => {
 
     await expect(
       client.createReport(
-        "bug-reports/a.json",
+        "workspace/reports/a.json",
         report,
       ),
     ).resolves.toBeUndefined();
@@ -112,7 +112,7 @@ describe("GitHubReportClient", () => {
 
     await expect(
       client.createReport(
-        "bug-reports/a.json",
+        "workspace/reports/a.json",
         report,
       ),
     ).rejects.toBeInstanceOf(GitHubReportConflictError);
