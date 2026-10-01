@@ -1,11 +1,14 @@
 import {
-  buildBugReportFromConfirmedDefects,
+  buildBugReportFromApprovedBugSet,
   compileBugTrigger,
+  projectProposedBugSet,
   deriveConfirmedDefectSemanticKey,
   deriveRepairUnitIdsFromSourceEvidence,
   type ConfirmedDefect,
   type ConfirmedDefectGroupResolution,
   type PromoteConfirmedBugsResult,
+  type ProposedBugSet,
+  type ApprovedBugSet,
   type BugReportV2Map,
   type BugReportV2RepairBy,
   type BugTriggerDraft,
@@ -913,10 +916,16 @@ export function collectConfirmedDefects(
 export interface BuildBugReportFromAuditInput {
   readonly map: BugReportV2Map;
   readonly repairBy: BugReportV2RepairBy;
+  readonly approved: ApprovedBugSet;
   readonly files: readonly FileInventoryEntry[];
   readonly candidates: readonly AuditReportCandidate[];
   readonly groupResolutions?:
     readonly ConfirmedDefectGroupResolution[];
+}
+
+export interface PrepareBugReportReviewFromAuditResult {
+  readonly collection: ConfirmedDefectCollection;
+  readonly proposed: ProposedBugSet;
 }
 
 export interface BuildBugReportFromAuditResult {
@@ -981,6 +990,25 @@ function sourceEvidenceIssues(
   return issues;
 }
 
+export function prepareBugReportReviewFromAuditCandidates(
+  input: Omit<
+    BuildBugReportFromAuditInput,
+    "repairBy" | "approved"
+  >,
+): PrepareBugReportReviewFromAuditResult {
+  const collection = collectConfirmedDefects(
+    input.candidates,
+  );
+
+  return {
+    collection,
+    proposed: projectProposedBugSet(
+      input.map,
+      collection.confirmed,
+    ),
+  };
+}
+
 export function buildBugReportFromAuditCandidates(
   input: BuildBugReportFromAuditInput,
 ): BuildBugReportFromAuditResult {
@@ -992,6 +1020,23 @@ export function buildBugReportFromAuditCandidates(
     input.files,
   );
 
+  if (
+    input.approved.map.name !== input.map.name ||
+    input.approved.map.mapVersion !== input.map.mapVersion
+  ) {
+    return {
+      collection,
+      promotion: {
+        ok: false,
+        issues: [{
+          code: "invalid-confirmed-defect",
+          message:
+            "Approved Bug Set does not match the audited map/version.",
+        }],
+      },
+    };
+  }
+
   return {
     collection,
     promotion:
@@ -1000,8 +1045,8 @@ export function buildBugReportFromAuditCandidates(
             ok: false,
             issues: sourceIssues,
           }
-        : buildBugReportFromConfirmedDefects({
-            map: input.map,
+        : buildBugReportFromApprovedBugSet({
+            approved: input.approved,
             repairBy: input.repairBy,
             defects: collection.confirmed,
             ...(input.groupResolutions === undefined
