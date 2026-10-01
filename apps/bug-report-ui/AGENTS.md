@@ -17,8 +17,9 @@ The UI is a projection/client of canonical Bug Report V2, not a second report sy
 - Keep Issue, Bug Trigger (In-Game), and supported Solution visible before secondary metadata or technical detail.
 - Category and Found By are secondary.
 - Exclude fixed bugs from the primary audit surface.
+- Default primary view is Blocker + Major; Minor is explicit detail-on-demand.
 - Bug Trigger (In-Game) must be player-facing and code-free.
-- Schema-valid compatibility reports may be read, but readiness or copy-quality gaps must be surfaced and must block GitHub handoff from file import.
+- Schema-valid compatibility reports may be read, but readiness or copy-quality gaps must be surfaced. Imported files remain read/export-only and never become canonical through the UI.
 - Omit empty sections.
 - Do not expose diagnostic internals.
 - Do not persist independent bug status, history, or identity in UI-owned storage.
