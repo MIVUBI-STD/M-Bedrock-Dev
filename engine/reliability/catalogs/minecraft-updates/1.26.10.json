@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "delta": {
+    "fromVersion": "1.26.0",
+    "toVersion": "1.26.10",
+    "entries": [
+      {
+        "id": "1.26.10-server-api-2.6.0",
+        "kind": "changed",
+        "domain": "scripts",
+        "capabilityTags": [
+          "script-module:@minecraft/server",
+          "script-stable"
+        ],
+        "affectedIdentifiers": [
+          "@minecraft/server@2.6.0"
+        ],
+        "summary": "Bedrock 1.26.10 releases @minecraft/server v2.6.0 to stable.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.10?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.10-ticking-area-api-stable",
+        "kind": "added",
+        "domain": "chunks",
+        "capabilityTags": [
+          "chunks",
+          "ticking-area",
+          "script-stable"
+        ],
+        "affectedIdentifiers": [
+          "TickingAreaManager",
+          "World.tickingAreaManager"
+        ],
+        "summary": "Ticking Area APIs move to stable in @minecraft/server v2.6.0, adding a supported runtime surface for managed ticking areas.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.10?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.10-fill-setblock-double-block-fix",
+        "kind": "behavior-changed",
+        "domain": "commands",
+        "capabilityTags": [
+          "command:fill",
+          "command:setblock",
+          "world-mutation"
+        ],
+        "affectedIdentifiers": [
+          "/fill",
+          "/setblock"
+        ],
+        "summary": "Bedrock 1.26.10 fixes /setblock and /fill placing partial double blocks, changing world-mutation behavior for affected content.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.10?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.10-tick-load-performance-fixes",
+        "kind": "behavior-changed",
+        "domain": "chunks",
+        "capabilityTags": [
+          "chunks",
+          "block-tick",
+          "performance"
+        ],
+        "affectedIdentifiers": [
+          "scheduled block ticks",
+          "chunk skylight"
+        ],
+        "summary": "The update includes server/chunk stability fixes for excessive scheduled block ticks and repeated skylight calculations.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.10?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      }
+    ]
+  }
+}

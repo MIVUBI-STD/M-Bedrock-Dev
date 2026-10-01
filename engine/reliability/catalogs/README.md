@@ -6,9 +6,11 @@ For overall routing, start at `engine/reliability/README.md`.
 
 ```text
 regressions.json
+failure-patterns.json
 coverage.json
 capability-proof-bindings.json
 capability-truth/
+map-knowledge/
 map-fingerprints/
 minecraft-updates/
 ```
@@ -16,10 +18,12 @@ minecraft-updates/
 ## Ownership
 
 - `regressions.json` stores minimized **historical failure knowledge**, never full private maps.
+- `failure-patterns.json` stores reusable failure abstractions backed by regression cases.
 - `coverage.json` exposes what test evidence exists and where blindspots remain.
 - `capability-proof-bindings.json` binds capabilities to explicit proof artifacts.
 - `capability-truth/` records generated capability/proof state.
-- `map-fingerprints/` stores stable map compatibility/reliability identity.
+- `map-knowledge/` stores durable evidence-backed map architecture/gameplay/risk knowledge.
+- `map-fingerprints/` stores exact inspection-derived compatibility/reliability identity.
 - `minecraft-updates/` stores curated semantic update deltas with source/confidence.
 
 ## Regression naming boundary

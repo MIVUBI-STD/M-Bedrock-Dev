@@ -13,3 +13,6 @@ Recommended filename:
 Do not reuse a stored fingerprint after the underlying .mcworld changes. Re-inspect and replace it.
 
 Stored fingerprints are optional cache/portfolio inputs, not a second source of map truth.
+
+
+Historical QA evidence does **not** belong here unless an exact inspected artifact fingerprint is known. Durable map knowledge derived from reports/regressions belongs in `../map-knowledge/`.

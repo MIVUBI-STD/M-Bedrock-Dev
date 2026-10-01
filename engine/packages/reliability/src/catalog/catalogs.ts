@@ -2,6 +2,7 @@ import type {
   BlindspotCoverage,
   FailurePattern,
   MapCompatibilityFingerprint,
+  MapKnowledgeRecord,
   MinecraftUpdateDelta,
   RegressionCase,
   ReliabilityDomain,
@@ -72,6 +73,53 @@ export function validateFailurePatternCatalog(
     }
   }
 
+  return errors;
+}
+
+export function validateMapKnowledgeRecord(
+  record: MapKnowledgeRecord,
+  regressions: readonly RegressionCase[] = [],
+  patterns: readonly FailurePattern[] = [],
+): string[] {
+  const errors: string[] = [];
+  const regressionIds = new Set(regressions.map((item) => item.id));
+  const patternIds = new Set(patterns.map((item) => item.id));
+
+  if (record.schemaVersion !== 1) errors.push("Map knowledge schemaVersion must be 1.");
+  if (!record.mapId?.trim()) errors.push("Map knowledge mapId is required.");
+  if (!record.label?.trim()) errors.push(`Map knowledge ${record.mapId} requires a label.`);
+  if (!["artifact-inspection", "historical-regression"].includes(record.evidenceBasis)) {
+    errors.push(`Map knowledge ${record.mapId} has invalid evidenceBasis.`);
+  }
+  for (const domain of record.domains ?? []) {
+    if (!DOMAINS.has(domain)) errors.push(`Invalid map knowledge domain: ${domain}`);
+  }
+  for (const [name, values] of [
+    ["editions", record.editions],
+    ["evidenceRefs", record.evidenceRefs],
+    ["architectureTags", record.architectureTags],
+    ["gameplayPatternTags", record.gameplayPatternTags],
+    ["capabilityTags", record.capabilityTags],
+    ["riskSurfaces", record.riskSurfaces],
+    ["invariantIds", record.invariantIds],
+    ["regressionIds", record.regressionIds],
+    ["failurePatternIds", record.failurePatternIds],
+  ] as const) {
+    if (!Array.isArray(values) || values.length === 0 ||
+        values.some((value) => typeof value !== "string" || !value.trim())) {
+      errors.push(`Map knowledge ${record.mapId} requires non-empty ${name}.`);
+    }
+  }
+  for (const id of record.regressionIds ?? []) {
+    if (regressions.length > 0 && !regressionIds.has(id)) {
+      errors.push(`Map knowledge ${record.mapId} references unknown regression: ${id}`);
+    }
+  }
+  for (const id of record.failurePatternIds ?? []) {
+    if (patterns.length > 0 && !patternIds.has(id)) {
+      errors.push(`Map knowledge ${record.mapId} references unknown failure pattern: ${id}`);
+    }
+  }
   return errors;
 }
 

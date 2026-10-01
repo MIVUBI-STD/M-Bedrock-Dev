@@ -17,6 +17,7 @@ export * from "./portfolio/portfolio-planner.js";
 export * from "./regression/regression-generators.js";
 export * from "./regression/regression-session-report.js";
 export * from "./regression/regressions.js";
+export * from "./regression/failure-patterns.js";
 export * from "./regression/retest-planner.js";
 export * from "./runtime/runtime-control-transport.js";
 export * from "./runtime/runtime-control-validate.js";

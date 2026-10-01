@@ -4,6 +4,7 @@ import type {
   BlindspotCoverage,
   FailurePattern,
   MapCompatibilityFingerprint,
+  MapKnowledgeRecord,
   MinecraftUpdateDelta,
   RegressionCase,
 } from "../core/types.js";
@@ -11,6 +12,7 @@ import {
   validateCoverageCatalog,
   validateFailurePatternCatalog,
   validateMapCompatibilityFingerprint,
+  validateMapKnowledgeRecord,
   validateRegressionCatalog,
   validateUpdateDelta,
 } from "./catalogs.js";
@@ -82,6 +84,29 @@ export async function loadFailurePatternCatalog(
   const errors = validateFailurePatternCatalog(patterns, regressions);
   if (errors.length) throw new Error(errors.join("\n"));
   return patterns;
+}
+
+export async function loadMapKnowledgeCatalog(
+  catalogRoot: string,
+  mapId: string,
+  regressions: readonly RegressionCase[] = [],
+  patterns: readonly FailurePattern[] = [],
+): Promise<MapKnowledgeRecord> {
+  if (!/^[A-Za-z0-9._-]+$/.test(mapId)) {
+    throw new Error("Unsafe map knowledge id.");
+  }
+  const root = record(await readJson(
+    join(catalogRoot, "map-knowledge", `${mapId}.json`),
+  ));
+  const map = root as unknown as MapKnowledgeRecord;
+  const errors = validateMapKnowledgeRecord(map, regressions, patterns);
+  if (errors.length) throw new Error(errors.join("\n"));
+  if (map.mapId !== mapId) {
+    throw new Error(
+      `Map knowledge filename/id mismatch: requested ${mapId}, mapId=${map.mapId}`,
+    );
+  }
+  return map;
 }
 
 export async function loadMapFingerprintCatalog(

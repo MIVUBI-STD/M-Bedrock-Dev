@@ -1,0 +1,340 @@
+{
+  "schemaVersion": 1,
+  "patterns": [
+    {
+      "id": "stale-membership-at-transition",
+      "title": "Stale membership snapshot at gameplay transition",
+      "domain": "multiplayer",
+      "summary": "A transition commits using an earlier player-membership snapshot instead of revalidating current eligibility immediately before start.",
+      "invariantIds": [
+        "multiplayer.start-requires-current-membership"
+      ],
+      "triggerTags": [
+        "countdown",
+        "lobby",
+        "player-detection",
+        "multiplayer"
+      ],
+      "capabilityTags": [
+        "multiplayer",
+        "arena-lifecycle",
+        "spatial"
+      ],
+      "supportingRegressionIds": [
+        "reg_defense_l1_lobby_final_countdown_revalidation"
+      ],
+      "detectionHints": [
+        "Look for countdown or queue state captured before the final transition.",
+        "Compare membership checks at countdown start versus transition commit.",
+        "Exercise leave/disconnect/switch-arena during the final transition window."
+      ],
+      "retestFocus": [
+        "Leave the join area during the last countdown seconds.",
+        "Disconnect and reconnect during setup.",
+        "Run concurrent arena starts with membership changes."
+      ]
+    },
+    {
+      "id": "cross-session-serialization",
+      "title": "Unintended cross-session serialization",
+      "domain": "multiplayer",
+      "summary": "Independent arena/session flows share global transition state or a single queue, causing one session to delay another.",
+      "invariantIds": [
+        "multiplayer.state-isolation"
+      ],
+      "triggerTags": [
+        "multiplayer",
+        "concurrency",
+        "cutscene"
+      ],
+      "capabilityTags": [
+        "gameplay-state",
+        "multiplayer-concurrency"
+      ],
+      "supportingRegressionIds": [
+        "reg_multi_arena_cutscene_queue"
+      ],
+      "detectionHints": [
+        "Search for singleton queue, global scoreboard, or shared cutscene state.",
+        "Start two arenas within the same short time window.",
+        "Verify each session can advance without waiting for unrelated sessions."
+      ],
+      "retestFocus": [
+        "Concurrent start in two arenas.",
+        "Disconnect one arena while another enters cutscene.",
+        "Repeat with maximum supported arena occupancy."
+      ]
+    },
+    {
+      "id": "reconnect-state-discontinuity",
+      "title": "Reconnect state discontinuity",
+      "domain": "persistence",
+      "summary": "A player reconnects into a valid session identity but required gameplay state such as loadout, inventory, role, or phase is not reconstructed consistently.",
+      "invariantIds": [
+        "persistence.reconnect-loadout-continuity"
+      ],
+      "triggerTags": [
+        "reconnect",
+        "cutscene",
+        "inventory",
+        "gameplay"
+      ],
+      "capabilityTags": [
+        "persistence",
+        "inventory",
+        "session-lifecycle"
+      ],
+      "supportingRegressionIds": [
+        "reg_defense_cutscene_reconnect_loadout_loss"
+      ],
+      "detectionHints": [
+        "Compare session assignment restoration with inventory/loadout restoration.",
+        "Test reconnect at every phase boundary, not only active gameplay.",
+        "Check whether restoration depends on transient entities or tags."
+      ],
+      "retestFocus": [
+        "Reconnect during cutscene.",
+        "Reconnect during setup and active phase.",
+        "Reconnect after death/knockdown when applicable."
+      ]
+    },
+    {
+      "id": "non-atomic-purchase-effect",
+      "title": "Non-atomic purchase and effect application",
+      "domain": "economy",
+      "summary": "Currency is committed before the purchased gameplay effect is confirmed, allowing payment without successful delivery.",
+      "invariantIds": [
+        "economy.purchase-effect-atomicity"
+      ],
+      "triggerTags": [
+        "shop",
+        "currency",
+        "enchantment",
+        "purchase"
+      ],
+      "capabilityTags": [
+        "economy",
+        "inventory",
+        "reward"
+      ],
+      "supportingRegressionIds": [
+        "reg_defense_l1_enchant_purchase_no_effect"
+      ],
+      "detectionHints": [
+        "Trace currency deduction and effect application as one transaction.",
+        "Force effect/application failure after eligibility succeeds.",
+        "Verify failed delivery cannot permanently consume currency."
+      ],
+      "retestFocus": [
+        "Purchase with exact required balance.",
+        "Repeat purchase under inventory/equipment edge conditions.",
+        "Interrupt or close UI during purchase."
+      ]
+    },
+    {
+      "id": "non-idempotent-progression-purchase",
+      "title": "Non-idempotent progression purchase",
+      "domain": "economy",
+      "summary": "A progression state that should be owned once remains purchasable, allowing repeated payment without new progression.",
+      "invariantIds": [
+        "economy.purchase-state-idempotence"
+      ],
+      "triggerTags": [
+        "shop",
+        "armor",
+        "currency",
+        "progression"
+      ],
+      "capabilityTags": [
+        "economy",
+        "inventory",
+        "progression"
+      ],
+      "supportingRegressionIds": [
+        "reg_defense_l1_duplicate_armor_purchase"
+      ],
+      "detectionHints": [
+        "Compare owned-state checks before rendering offers and before committing payment.",
+        "Reopen the shop after ownership changes.",
+        "Verify repeated interaction cannot consume currency for the same tier."
+      ],
+      "retestFocus": [
+        "Buy each tier then reopen the shop.",
+        "Reconnect after purchase and retry.",
+        "Attempt repeated activation if multiplayer UI allows it."
+      ]
+    },
+    {
+      "id": "entity-route-nonconvergence",
+      "title": "Entity route does not converge to objective",
+      "domain": "entities",
+      "summary": "An entity remains alive but cannot reach its required destination, causing wave or objective progression to stall or behave incorrectly.",
+      "invariantIds": [
+        "entity.route-remains-traversable",
+        "arena.wave-converges"
+      ],
+      "triggerTags": [
+        "entity-ai",
+        "navigation",
+        "bridge",
+        "wave"
+      ],
+      "capabilityTags": [
+        "entity-ai",
+        "navigation",
+        "arena-lifecycle",
+        "spatial"
+      ],
+      "supportingRegressionIds": [
+        "reg_defense_l1_zombie_path_barrier",
+        "reg_defense_l2_pillager_bridge_stuck"
+      ],
+      "detectionHints": [
+        "Observe path convergence rather than only successful spawn.",
+        "Check barriers, elevation changes, collision, and target reacquisition.",
+        "Treat a live unreachable entity as progression risk."
+      ],
+      "retestFocus": [
+        "Run affected wave repeatedly.",
+        "Test after Minecraft entity/navigation updates.",
+        "Observe route from spawn through every choke point."
+      ]
+    },
+    {
+      "id": "unloaded-area-action-advances-state",
+      "title": "Unloaded-area action advances gameplay state",
+      "domain": "chunks",
+      "summary": "Gameplay progression assumes a spawn or world action succeeded even though its target area was not loaded/ticking, allowing skipped content or premature completion.",
+      "invariantIds": [
+        "chunk.spawn-requires-loaded-ticking-area",
+        "arena.victory-requires-completed-waves"
+      ],
+      "triggerTags": [
+        "chunk",
+        "spawn",
+        "wave",
+        "progression"
+      ],
+      "capabilityTags": [
+        "chunks",
+        "entity-spawn",
+        "arena-lifecycle"
+      ],
+      "supportingRegressionIds": [
+        "reg_defense_l1_unloaded_spawn_chunk_auto_win"
+      ],
+      "detectionHints": [
+        "Separate action request from confirmed runtime outcome.",
+        "Check chunk/ticking readiness before spawn or structure-dependent actions.",
+        "Ensure counters advance only after outcome confirmation."
+      ],
+      "retestFocus": [
+        "Move all players away from spawn regions.",
+        "Exercise wave transitions immediately after teleport/cutscene.",
+        "Repeat after reconnect and server restart."
+      ]
+    },
+    {
+      "id": "spawn-position-nondeterminism",
+      "title": "Spawn position nondeterminism",
+      "domain": "entities",
+      "summary": "The same logical spawn sequence produces materially different positions across equivalent runs, risking pathing and progression divergence.",
+      "invariantIds": [
+        "entity.spawn-position-determinism"
+      ],
+      "triggerTags": [
+        "spawn",
+        "chunk",
+        "spatial"
+      ],
+      "capabilityTags": [
+        "entity-spawn",
+        "chunks",
+        "spatial"
+      ],
+      "supportingRegressionIds": [
+        "reg_defense_l1_spawn_position_inconsistent"
+      ],
+      "detectionHints": [
+        "Capture exact spawn coordinates across repeated equivalent runs.",
+        "Check relative execution origin and loaded-area state.",
+        "Compare command context and placement fallback behavior."
+      ],
+      "retestFocus": [
+        "Repeat the same spawn sequence many times.",
+        "Test after teleports and chunk reloads.",
+        "Compare local-hosted and dedicated-server execution when applicable."
+      ]
+    },
+    {
+      "id": "required-item-lifecycle-loss",
+      "title": "Required item lifecycle loss",
+      "domain": "inventory",
+      "summary": "A gameplay-critical or progression item can leave the player's valid state through durability, drop, cleanup, or restore behavior without an equivalent recovery path.",
+      "invariantIds": [
+        "inventory.required-item-continuity",
+        "inventory.progression-item-retention"
+      ],
+      "triggerTags": [
+        "inventory",
+        "durability",
+        "upgrade",
+        "gameplay"
+      ],
+      "capabilityTags": [
+        "inventory",
+        "item-lifecycle"
+      ],
+      "supportingRegressionIds": [
+        "reg_fotp_l1_weapon_durability_loss",
+        "reg_fotp_l1_upgraded_item_droppable"
+      ],
+      "detectionHints": [
+        "Model required items through break, drop, death, cleanup, reconnect, and upgrade transitions.",
+        "Verify every destructive item path has an intentional replacement/recovery rule.",
+        "Check upgraded variants separately from base items."
+      ],
+      "retestFocus": [
+        "Exhaust durability.",
+        "Attempt drop after every upgrade tier.",
+        "Death/reconnect with required item in each inventory slot."
+      ]
+    },
+    {
+      "id": "invalid-target-remains-eligible",
+      "title": "Invalid gameplay target remains eligible",
+      "domain": "combat",
+      "summary": "An actor that has transitioned into a state that should exclude it from targeting or assistance remains eligible because predicates are not re-evaluated against the new state.",
+      "invariantIds": [
+        "combat.knockdown-target-exclusion",
+        "combat.revive-requires-eligible-helper"
+      ],
+      "triggerTags": [
+        "combat",
+        "revive",
+        "entity-ai",
+        "input-timing"
+      ],
+      "capabilityTags": [
+        "combat",
+        "entity-ai",
+        "revive",
+        "input-gesture"
+      ],
+      "supportingRegressionIds": [
+        "reg_fotp_l1_knocked_player_targeted",
+        "reg_fotp_l1_self_revive_shift"
+      ],
+      "detectionHints": [
+        "Re-evaluate target/helper eligibility after state transitions.",
+        "Test held-input conditions that cross the transition boundary.",
+        "Separate actor identity from actor eligibility."
+      ],
+      "retestFocus": [
+        "Enter knockdown while hostile targets are already acquired.",
+        "Hold revive input before knockdown.",
+        "Test helper/no-helper boundaries with multiple players."
+      ]
+    }
+  ]
+}

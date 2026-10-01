@@ -120,6 +120,24 @@ export interface MapCompatibilityFingerprint {
   failurePatternIds?: readonly string[];
 }
 
+export interface MapKnowledgeRecord {
+  schemaVersion: 1;
+  mapId: string;
+  label: string;
+  mapVersion?: string;
+  editions: readonly string[];
+  evidenceBasis: "artifact-inspection" | "historical-regression";
+  evidenceRefs: readonly string[];
+  architectureTags: readonly string[];
+  gameplayPatternTags: readonly string[];
+  capabilityTags: readonly string[];
+  domains: readonly ReliabilityDomain[];
+  riskSurfaces: readonly string[];
+  invariantIds: readonly string[];
+  regressionIds: readonly string[];
+  failurePatternIds: readonly string[];
+}
+
 export type CoverageState = "covered" | "partial" | "unknown" | "not-applicable";
 
 export interface BlindspotCoverage {

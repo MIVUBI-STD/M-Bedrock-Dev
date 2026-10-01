@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "delta": {
+    "fromVersion": "1.26.20",
+    "toVersion": "1.26.30",
+    "entries": [
+      {
+        "id": "1.26.30-server-api-2.8.0",
+        "kind": "changed",
+        "domain": "scripts",
+        "capabilityTags": [
+          "script-module:@minecraft/server",
+          "script-stable"
+        ],
+        "affectedIdentifiers": [
+          "@minecraft/server@2.8.0"
+        ],
+        "summary": "Bedrock 1.26.30 releases @minecraft/server v2.8.0 to stable.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.30?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.30-server-ui-2.1.0",
+        "kind": "changed",
+        "domain": "ui",
+        "capabilityTags": [
+          "script-module:@minecraft/server-ui",
+          "ui-state",
+          "script-stable"
+        ],
+        "affectedIdentifiers": [
+          "@minecraft/server-ui@2.1.0",
+          "CustomForm",
+          "MessageBox"
+        ],
+        "summary": "Data-Driven UI MessageBox and CustomForm APIs move from beta to stable @minecraft/server-ui v2.1.0.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.30?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.30-entity-physics-components-stable",
+        "kind": "added",
+        "domain": "entities",
+        "capabilityTags": [
+          "entity-ai",
+          "physics",
+          "knockback"
+        ],
+        "affectedIdentifiers": [
+          "minecraft:apply_knockback_rules",
+          "minecraft:pushable_by_entity",
+          "minecraft:bounciness",
+          "minecraft:air_drag_modifier"
+        ],
+        "summary": "Several entity physics/pushing/knockback components graduate from experimental in 1.26.30.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.30?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.30-simulated-player-properties-fix",
+        "kind": "behavior-changed",
+        "domain": "multiplayer",
+        "capabilityTags": [
+          "simulated-player",
+          "player-state",
+          "testing"
+        ],
+        "affectedIdentifiers": [
+          "SimulatedPlayer",
+          "player.json"
+        ],
+        "summary": "The update fixes SimulatedPlayers not spawning with properties defined in player.json.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.30?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      },
+      {
+        "id": "1.26.30-dedicated-server-allowlist-default",
+        "kind": "behavior-changed",
+        "domain": "multiplayer",
+        "capabilityTags": [
+          "dedicated-server",
+          "allow-list",
+          "deployment"
+        ],
+        "affectedIdentifiers": [
+          "server.properties allow-list"
+        ],
+        "summary": "Dedicated servers enable the allow list by default and warn when it is enabled without entries.",
+        "source": "https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.26.30?view=minecraft-bedrock-stable",
+        "confidence": "documented"
+      }
+    ]
+  }
+}

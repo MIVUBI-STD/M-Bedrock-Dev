@@ -39,3 +39,8 @@ Allowed confidence:
 - `documented` — supported by authoritative release/update documentation;
 - `observed` — reproduced by differential/runtime evidence;
 - `inferred` — supported indirectly and explicitly not yet runtime-confirmed.
+
+
+## Scope
+
+This catalog is a curated semantic delta, not a mirror of the full changelog. Prefer entries that can change diagnosis, compatibility, repair safety, or retest priority for real maps. Keep engine version and Script API module version as separate compatibility axes.
