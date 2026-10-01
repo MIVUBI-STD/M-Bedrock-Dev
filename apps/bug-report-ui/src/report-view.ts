@@ -48,13 +48,10 @@ export function filterBugReportBugs(
     }
 
     return [
-      bug.id,
       bug.title,
       bug.problem,
-      bug.expected,
-      bug.observed,
-      bug.aiAnalysis ?? "",
-      bug.category,
+      ...(bug.reproduction ?? []),
+      bug.suggestedFix ?? "",
       bug.severity,
     ]
       .join(" ")
