@@ -34,6 +34,7 @@ export interface MapEngineeringWorkflowProjection {
     repairProposals: number;
     hiddenDefectRisks: number;
     engineeringAnalyses: number;
+    developerToolRisks: number;
   };
   nextActions: readonly string[];
 }
@@ -145,6 +146,8 @@ function releaseStage(
     source.diagnostics.some(
       (item) => item.severity === "critical",
     );
+  const exposedDevTool =
+    source.developerToolRelease.highRisk > 0;
   const closureOpen =
     source.gameplaySemantic.gameplayClosure.status === "OPEN";
 
@@ -154,7 +157,8 @@ function releaseStage(
       closureOpen ||
       releaseConflict ||
       packDrift ||
-      critical
+      critical ||
+      exposedDevTool
         ? "blocked"
         : source.releaseIdentity.status ===
             "consistent"
@@ -173,6 +177,10 @@ function releaseStage(
       critical
         ? "Critical diagnostics remain open."
         : "No critical diagnostic currently blocks release.",
+      exposedDevTool
+        ? String(source.developerToolRelease.highRisk) +
+          " high-risk developer interaction tool(s) remain enabled without a proven permission gate."
+        : "No high-risk unguarded developer interaction tool blocks release.",
     ],
   };
 }
@@ -214,6 +222,8 @@ export function buildMapEngineeringWorkflow(
         .silentDegradations,
     engineeringAnalyses:
       source.engineeringAnalyses.length,
+    developerToolRisks:
+      source.developerToolRelease.highRisk,
   };
 
   const nextActions = stages
