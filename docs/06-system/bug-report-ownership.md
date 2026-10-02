@@ -94,8 +94,11 @@ Drive stores map artifacts and optional published human-facing bug-report snapsh
 A published HTML snapshot is:
 - derived from canonical JSON;
 - a communication snapshot;
+- allowed to contain presentation-only tester/work checkboxes;
 - not editable canonical state;
 - never imported back as authoritative state.
+
+Checking a box in HTML/Markdown does not set `fixed: true`, approve a bug, or update canonical workflow state.
 
 Do not persist a second canonical JSON copy in Drive.
 
