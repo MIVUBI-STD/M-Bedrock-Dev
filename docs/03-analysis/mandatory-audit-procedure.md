@@ -22,6 +22,39 @@ TARGET and DISCOVERY are admission gates for block A. They are not parallel work
 
 Supporting documents such as Gameplay Model Closure, Blind Spots, and Cross-System Interaction provide specialist knowledge. They do not replace this procedure and they do not own a parallel checklist.
 
+## Flow-first execution rule
+
+The checkpoint owner remains TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT, but checks are executed and presented in player-flow order:
+
+```text
+ENTRY / JOIN
+→ READY / START
+→ SETUP
+→ ACTIVE GAMEPLAY
+→ PROGRESSION
+→ TERMINAL
+→ CLEANUP / REPLAY
+→ RECOVERY
+```
+
+Technical domains such as chunk simulation, combat, inventory, persistence, economy, entity AI, spatial authority, and multi-arena are attached to the gameplay stage where they affect the player. They must not become independent audit branches.
+
+For every material gameplay stage record:
+
+```text
+Entry condition
+Owner
+Required state/components
+Player action / system action
+Success condition
+Failure condition
+Next stage
+Cleanup / recovery
+Applicable technical checks
+```
+
+A map may merge or omit stages. Applicability is derived from the selected artifact, not forced from this template.
+
 ## Checkpoint contract
 
 Every checkpoint in this procedure is executable and must define:
