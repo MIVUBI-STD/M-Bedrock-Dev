@@ -10,9 +10,6 @@ import type {
   ArenaCapacityExtractionResult,
 } from "../arena-capacity-extraction.js";
 import type {
-  InspectTargetProfile,
-} from "../types.js";
-import type {
   GameplayWorldModel,
 } from "./gameplay-world-model.js";
 
@@ -28,7 +25,10 @@ function arenaCapacityAnalysis(
   world: GameplayWorldModel,
   capacity:
     ArenaCapacityExtractionResult | undefined,
-  target: InspectTargetProfile,
+  target: {
+    readonly edition?: string;
+    readonly version?: string;
+  },
 ): InspectionEngineeringAnalysis | undefined {
   const visible = world.arenas.count;
   const safe =
@@ -261,7 +261,10 @@ export function deriveInspectionEngineeringAnalyses(
     readonly world: GameplayWorldModel;
     readonly arenaCapacity?:
       ArenaCapacityExtractionResult;
-    readonly target: InspectTargetProfile;
+    readonly target: {
+      readonly edition?: string;
+      readonly version?: string;
+    };
   },
 ): readonly InspectionEngineeringAnalysis[] {
   const analyses: InspectionEngineeringAnalysis[] =
