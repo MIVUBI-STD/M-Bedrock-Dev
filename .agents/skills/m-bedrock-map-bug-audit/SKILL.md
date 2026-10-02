@@ -20,11 +20,13 @@ Do not use older versions, Development/Source, old QA/Bug Reports, Technical Doc
 
 Bug discovery cannot start before the selected world is reconstructed.
 
-The canonical base procedure is `../../../docs/03-analysis/mandatory-audit-procedure.md`. Its five blocks are mandatory:
+The canonical base procedure is `../../../docs/03-analysis/mandatory-audit-procedure.md`. Production audit is one linear sequence:
 
 ```text
-UNDERSTAND → MODEL → STRESS → PROVE → REPORT
+TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT
 ```
+
+A blocker pauses this same sequence; it never creates a second workflow.
 
 This skill routes the work; it must not duplicate or weaken those checkpoint closure rules.
 
