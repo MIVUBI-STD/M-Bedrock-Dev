@@ -479,6 +479,7 @@ export function analyzeHiddenGameplayDefects(
     readonly intent: GameplayIntentModel;
     readonly semanticIr: SemanticIr;
     readonly world: GameplayWorldModel;
+    readonly defectResolutions?: readonly GameplayDefectResolution[];
   },
 ): HiddenGameplayDefectAnalysis {
   const designIntentChallenges =
