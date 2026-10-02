@@ -45,6 +45,7 @@ Required references:
 - `../../../docs/03-analysis/gameplay-model-closure.md`
 - `../../../docs/03-analysis/gameplay-audit-blind-spots.md`
 - `../../../docs/03-analysis/cross-system-interaction-audit.md`
+- `../../../docs/03-analysis/hidden-gameplay-defect-analysis.md`
 - `../../../docs/03-analysis/audit-finalization-checklist.md`
 - `../../schemas/map-audit-output-v2.schema.json`
 
@@ -79,6 +80,10 @@ Default behavior is one comprehensive discovery pass before reporting.
 ```text
 Discover all gameplay surfaces
 → close/account the gameplay model
+→ challenge implementation-only design assumptions
+→ verify mechanic completeness and negative space
+→ prioritize temporal/cross-system risks
+→ check design-consistency anomalies
 → analyze contradictions across all understood surfaces
 → classify the complete issue set
 → report once
