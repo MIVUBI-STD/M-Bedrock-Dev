@@ -1,6 +1,8 @@
-import type {
-  SelectedMapAuditAdmission,
-  SelectedMapAuditStage,
+import {
+  SELECTED_MAP_AUDIT_STAGE_ORDER,
+  selectedMapAuditStageForCheckpoint,
+  type SelectedMapAuditAdmission,
+  type SelectedMapAuditStage,
 } from "./map-audit-admission.js";
 import type {
   MandatoryAuditProcedureReceipt,
@@ -27,26 +29,6 @@ export interface AuditExecutionTrace {
   readonly stages: readonly AuditExecutionStageReceipt[];
 }
 
-const ORDER: readonly SelectedMapAuditStage[] = [
-  "TARGET",
-  "DISCOVERY",
-  "UNDERSTAND",
-  "MODEL",
-  "STRESS",
-  "PROVE",
-  "REPORT",
-];
-
-function checkpointStage(id: string): SelectedMapAuditStage {
-  if (id === "A1") return "TARGET";
-  if (id === "A2") return "DISCOVERY";
-  if (id.startsWith("A")) return "UNDERSTAND";
-  if (id.startsWith("B")) return "MODEL";
-  if (id.startsWith("C")) return "STRESS";
-  if (id.startsWith("D")) return "PROVE";
-  return "REPORT";
-}
-
 export function deriveAuditExecutionTrace(input: {
   readonly admission: SelectedMapAuditAdmission;
   readonly procedure: MandatoryAuditProcedureReceipt;
@@ -59,16 +41,16 @@ export function deriveAuditExecutionTrace(input: {
   const evidenceCollectionComplete =
     discoveryCheckpoint?.status === "CLOSED";
   const firstIndex =
-    first === undefined ? Number.POSITIVE_INFINITY : ORDER.indexOf(first);
+    first === undefined ? Number.POSITIVE_INFINITY : SELECTED_MAP_AUDIT_STAGE_ORDER.indexOf(first);
 
-  const stages = ORDER.map((stage, index) => {
+  const stages = SELECTED_MAP_AUDIT_STAGE_ORDER.map((stage, index) => {
     const checkpointIds = input.procedure.checkpoints
-      .filter((item) => checkpointStage(item.id) === stage)
+      .filter((item) => selectedMapAuditStageForCheckpoint(item.id) === stage)
       .map((item) => item.id)
       .sort();
     const blockingCheckpointIds =
       input.procedure.blockingCheckpointIds
-        .filter((id) => checkpointStage(id) === stage)
+        .filter((id) => selectedMapAuditStageForCheckpoint(id) === stage)
         .sort();
 
     if (first === undefined) {
