@@ -28,6 +28,7 @@ import { buildGameplayBoundaryRegistry } from "./gameplay-boundary-registry.js";
 import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";
 import { deriveMultiplayerStateValidationPlan } from "./multiplayer-state-validation.js";
 import { analyzeDeveloperToolReleaseExposure } from "./developer-tool-release-analysis.js";
+import { buildGameplayReachabilityGraph } from "./gameplay-reachability-stage.js";
 import { deriveArenaAuthoredSpatialSources } from "../arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
@@ -353,9 +354,14 @@ export function buildInspectionResult(
     deriveMultiplayerStateValidationPlan(
       input.gameplayIntent,
     );
+  const gameplayReachability =
+    buildGameplayReachabilityGraph(
+      parsedScripts,
+    );
   const developerToolRelease =
     analyzeDeveloperToolReleaseExposure(
       parsedScripts,
+      gameplayReachability,
     );
 
   const reliability = deriveReliabilityFingerprint({
@@ -425,6 +431,7 @@ export function buildInspectionResult(
     engineeringAnalyses,
     multiplayerStateValidation,
     developerToolRelease,
+    gameplayReachability,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
