@@ -41,6 +41,7 @@ import { projectMapEngineeringAssessment } from "../map-engineering-assessment.j
 import { refreshHiddenGameplayDefectsForWorld } from "./hidden-gameplay-defect-analysis.js";
 import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";
 import { assessGameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";
+import { deriveGameplayAnalysisPriorities } from "./gameplay-analysis-priority.js";
 import { collectArtifactReleaseObservations } from "../release-identity-evidence.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
 
@@ -866,6 +867,12 @@ export async function inspectArtifact(
           finalArenaAnalysis.capacity,
         target: result.targetCompatibility,
       });
+    const finalAnalysisPriorities =
+      deriveGameplayAnalysisPriorities(
+        finalGameplayWorld,
+        result.capabilityExposure,
+      );
+
 
     return {
       artifactId,
@@ -884,6 +891,8 @@ export async function inspectArtifact(
         finalHiddenGameplayDefects,
       engineeringAnalyses:
         finalEngineeringAnalyses,
+      analysisPriorities:
+        finalAnalysisPriorities,
       arenaAnalysis: finalArenaAnalysis,
       worldDatabase: {
         ...result.worldDatabase,
