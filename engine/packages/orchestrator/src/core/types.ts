@@ -56,6 +56,7 @@ import type { HiddenGameplayDefectAnalysis } from "../hidden-gameplay-defect-ana
 import type { GameplayBoundaryRegistry } from "../gameplay-boundary-registry.js";
 import type { InspectionEngineeringAnalysis } from "../engineering-analysis-stage.js";
 import type { MultiplayerStateValidationPlan } from "../multiplayer-state-validation.js";
+import type { DeveloperToolReleaseAnalysis } from "../developer-tool-release-analysis.js";
 import type { ArenaStressPlan } from "../arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "../arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "../arena-authored-source-index.js";
@@ -141,6 +142,8 @@ export interface InspectDirectoryResult {
     readonly InspectionEngineeringAnalysis[];
   multiplayerStateValidation:
     MultiplayerStateValidationPlan;
+  developerToolRelease:
+    DeveloperToolReleaseAnalysis;
   structures: number;
   parsedStructures: number;
   entities: number;
