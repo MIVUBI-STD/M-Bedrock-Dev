@@ -34,6 +34,7 @@ Do not create parallel report formats, duplicate Markdown reports, or competing 
 - Internal Detection proves the defect and owns diagnostics/evidence.
 - Tester-Facing Report owns Bug, Issue, Severity, Bug Trigger (In-Game), and supported Solution.
 - Repair Detail owns Expected, Observed, Technical Analysis, Relevant Code, Must Preserve, and repair context.
+- Complex internal Engineering Analysis may be projected into Technical Analysis; it must not create a competing persisted report format.
 - Confirmed does not automatically mean tester-ready.
 - Never use technical analysis as a substitute for Bug Trigger (In-Game).
 - AI routes must use evidence-bound `BugTriggerDraft`; raw AI reproduction arrays are not a valid authoring path.
