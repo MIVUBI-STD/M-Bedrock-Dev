@@ -54,8 +54,11 @@ function projectIssue(
 ): BugReportClientIssue {
   return {
     number,
+    id: bug.id,
     severity: bug.severity,
     status: status(bug),
+    category: bug.category,
+    foundBy: bug.foundBy,
     title: bug.title,
     issue: bug.problem,
     reproduction: [...(bug.reproduction ?? [])],
@@ -67,6 +70,30 @@ function projectIssue(
           recommendedResolution:
             bug.suggestedFix,
         }),
+    ...(bug.aiAnalysis === undefined
+      ? {}
+      : {
+          technicalAnalysis:
+            bug.aiAnalysis,
+        }),
+    ...(bug.relevantCode === undefined
+      ? {}
+      : {
+          relevantCode:
+            bug.relevantCode,
+        }),
+    ...(bug.mustPreserve === undefined
+      ? {}
+      : {
+          mustPreserve:
+            bug.mustPreserve,
+        }),
+    workChecklist: [
+      "Reproduce issue",
+      "Apply or confirm fix",
+      "Retest expected behavior",
+      "Confirm no regression",
+    ],
   };
 }
 
@@ -168,8 +195,10 @@ export function projectBugReportClientDocument(
           ),
     issueIndex: issues.map((issue) => ({
       number: issue.number,
+      id: issue.id,
       severity: issue.severity,
       status: issue.status,
+      category: issue.category,
       title: issue.title,
     })),
     issues,
