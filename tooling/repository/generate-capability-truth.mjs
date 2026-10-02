@@ -158,9 +158,12 @@ const taskCapabilities=task.map((item)=>{
   };
 }).sort((a,b)=>a.id.localeCompare(b.id));
 
+const generatorPath="tooling/repository/generate-capability-truth.mjs";
 const output={
   schemaVersion:1,
   generatedFrom:{
+    generatorPath,
+    generatorFingerprint: contentFingerprint(readFileSync(generatorPath,"utf8")),
     taskRegistry,
     analysisRegistries,
     registryFingerprint: registryFingerprint([taskRegistry,...analysisRegistries]),
