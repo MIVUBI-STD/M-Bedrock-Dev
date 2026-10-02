@@ -921,16 +921,16 @@ export function collectConfirmedDefects(
   const confirmed: ConfirmedDefect[] = [];
   const rejected: RejectedReportCandidate[] = [];
 
-  const descriptors =
-    candidates.map(
-      describeAuditReportCandidate,
-    );
   const contradictionRegistry =
     buildContradictionRegistry(
-      descriptors.map((item) => ({
-        semanticKey: item.semanticKey,
-        route: item.route,
-        evidenceIds: item.evidenceIds,
+      candidates.map((candidate) => ({
+        semanticKey:
+          preclassificationCandidateKey(
+            candidate,
+          ),
+        route: candidate.route,
+        evidenceIds:
+          candidateEvidenceIds(candidate),
       })),
     );
   const duplicateIndexes = new Set(
