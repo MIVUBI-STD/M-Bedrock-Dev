@@ -40,6 +40,7 @@ Required references:
 - `references/gameplay-flow-contract.md`
 - `references/multi-arena-contract.md`
 - `references/bug-report-contract.md`
+- `../../../docs/03-analysis/gameplay-audit-blind-spots.md`
 - `../../schemas/map-audit-output-v2.schema.json`
 
 ## Gameplay Contract
@@ -55,7 +56,12 @@ The audit must establish:
 - preserve rules;
 - progression rules;
 - multiplayer rules;
-- multi arena rules when applicable.
+- multi arena rules when applicable;
+- capacity/concurrency rules when applicable;
+- recovery and softlock paths;
+- boundary scenarios;
+- player-facing feedback for material limitations;
+- persistence boundaries.
 
 If expected behavior cannot be grounded from the selected artifact, keep it unknown.
 
@@ -139,6 +145,8 @@ Stop when:
 ✓ State transitions reviewed
 ✓ Reset/progression rules known
 ✓ Multi Arena reviewed
+✓ Blind-spot surfaces reviewed
+✓ Capacity / recovery / boundary cases reviewed when applicable
 ✓ Issues classified
 ✓ Production report generated
 ```
