@@ -83,6 +83,16 @@ export function assessGameplayScenarioClosure(
     .map((scenario) => scenario.id)
     .sort();
 
+  const unprovenLeafScenarioIds = graph.scenarios
+    .filter(
+      (scenario) =>
+        scenario.composedScenarioIds.length === 0 &&
+        scenario.componentIds.length > 0 &&
+        scenario.causalLinkIds.length === 0,
+    )
+    .map((scenario) => scenario.id)
+    .sort();
+
   const reasons: string[] = [];
   if (graph.scenarios.length === 0) {
     reasons.push("No material gameplay scenarios were compiled.");
@@ -139,6 +149,13 @@ export function assessGameplayScenarioClosure(
       scenarioWithoutComponents.join(", ") + ".",
     );
   }
+  if (unprovenLeafScenarioIds.length > 0) {
+    reasons.push(
+      "Leaf gameplay scenarios contain selected-artifact components but no causal proof links; audit depth is suspiciously shallow: " +
+        unprovenLeafScenarioIds.join(", ") +
+        ".",
+    );
+  }
   if (runtimeBlockedCausalLinkIds.length > 0) {
     reasons.push(
       "Some causal links require irreducible Minecraft runtime proof.",
@@ -154,7 +171,8 @@ export function assessGameplayScenarioClosure(
     capabilityGapKnowledgeIds.length > 0 ||
     prerequisiteBlockedKnowledgeIds.length > 0 ||
     incompleteCompositionScenarioIds.length > 0 ||
-    scenarioWithoutComponents.length > 0
+    scenarioWithoutComponents.length > 0 ||
+    unprovenLeafScenarioIds.length > 0
       ? "OPEN" as const
       : runtimeBlockedCausalLinkIds.length > 0
         ? "PARTIAL" as const
@@ -177,6 +195,7 @@ export function assessGameplayScenarioClosure(
     capabilityGapKnowledgeIds,
     prerequisiteBlockedKnowledgeIds,
     incompleteCompositionScenarioIds,
+    unprovenLeafScenarioIds,
     reasons,
   };
 }
