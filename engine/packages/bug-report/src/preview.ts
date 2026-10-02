@@ -166,7 +166,9 @@ function bugTriggerCell(
 ): string {
   if (!steps?.length) return "—";
   return steps
-    .map((step) => "☐ " + line(step))
+    .map((step, index) =>
+      String(index + 1) + ". " + line(step)
+    )
     .join("<br>");
 }
 
@@ -233,10 +235,8 @@ export function renderBugReportPreviewMarkdown(
       `| #${index + 1} · ${severityLabel(bug.severity)} | ${tableCell(bug.title)} |`,
       "|---|---|",
       `| **Issue** | ${tableCell(bug.issue)} |`,
-      `| **Bug Trigger (In-Game)** | ${tableCell(bugTriggerCell(bug.bugTrigger))} |`,
-      `| **Result** | ${tableCell(resultCell(bug.observed, bug.expected))} |`,
-      `| **Solution** | ${bug.solution ? tableCell(bug.solution) : "—"} |`,
-      `| **Work Checklist** | ☐ Reproduce · ☐ Fix · ☐ Retest · ☐ Regression check |`,
+      `| **Severity** | ${severityLabel(bug.severity)} |`,
+      `| **Category** | ${tableCell(bug.category)} |`,
     );
   });
 
@@ -253,24 +253,21 @@ export function renderBugReportPreviewMarkdown(
       `**Issue:** ${line(bug.issue)}`,
     );
 
-    if (bug.bugTrigger?.length) {
-      out.push("**Bug Trigger (In-Game):**");
-      bug.bugTrigger.forEach((step) => {
-        out.push(`- [ ] ${line(step)}`);
-      });
+    if (bug.observed) {
+      out.push(
+        `**Observed:** ${line(bug.observed)}`,
+      );
     }
-
-    if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
-    if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
-    if (bug.solution) out.push(`**Solution:** ${line(bug.solution)}`);
-
-    out.push(
-      "**Work Checklist:**",
-      "- [ ] Reproduce issue",
-      "- [ ] Apply or confirm fix",
-      "- [ ] Retest expected behavior",
-      "- [ ] Confirm no regression",
-    );
+    if (bug.expected) {
+      out.push(
+        `**Expected:** ${line(bug.expected)}`,
+      );
+    }
+    if (bug.solution) {
+      out.push(
+        `**Solution:** ${line(bug.solution)}`,
+      );
+    }
 
     if (bug.technicalAnalysis) {
       out.push(
