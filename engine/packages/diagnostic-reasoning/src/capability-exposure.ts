@@ -1,0 +1,167 @@
+import type {
+  GameplayReachabilityPath,
+} from "./reachability-graph.js";
+
+export type CapabilityExposureStatus =
+  | "blocked"
+  | "guarded"
+  | "exposed"
+  | "potentially-exposed"
+  | "unknown";
+
+export interface CapabilityExposureInput {
+  readonly capabilityId: string;
+  readonly capabilityLabel: string;
+  readonly releaseEnabled:
+    | "enabled"
+    | "disabled"
+    | "unknown";
+  readonly authorization:
+    | "required-and-enforced"
+    | "required-but-missing"
+    | "not-required"
+    | "unknown";
+  readonly triggerPresent: boolean;
+  readonly prerequisitePaths?: readonly GameplayReachabilityPath[];
+  readonly playerImpact:
+    | "progression"
+    | "state"
+    | "fairness"
+    | "interaction"
+    | "debug-information"
+    | "cosmetic"
+    | "unknown";
+  readonly evidenceIds?: readonly string[];
+}
+
+export interface CapabilityExposureAssessment {
+  readonly capabilityId: string;
+  readonly capabilityLabel: string;
+  readonly status: CapabilityExposureStatus;
+  readonly prerequisiteReachability:
+    | "reachable"
+    | "unreachable"
+    | "unknown"
+    | "not-required";
+  readonly impact: CapabilityExposureInput["playerImpact"];
+  readonly reasons: readonly string[];
+  readonly evidenceIds: readonly string[];
+}
+
+export function assessCapabilityExposure(
+  input: CapabilityExposureInput,
+): CapabilityExposureAssessment {
+  const paths = input.prerequisitePaths ?? [];
+  const prerequisiteReachability =
+    paths.length === 0
+      ? "not-required" as const
+      : paths.some((path) => path.reachable)
+        ? "reachable" as const
+        : paths.every(
+            (path) =>
+              path.reachable === false &&
+              path.nodeIds.length > 0,
+          )
+          ? "unreachable" as const
+          : "unknown" as const;
+
+  const evidenceIds = [
+    ...new Set([
+      ...(input.evidenceIds ?? []),
+      ...paths.flatMap((path) => path.evidenceIds),
+    ]),
+  ].sort();
+
+  const reasons: string[] = [];
+
+  if (input.releaseEnabled === "disabled") {
+    reasons.push("Capability is disabled in the audited release artifact.");
+    return {
+      capabilityId: input.capabilityId,
+      capabilityLabel: input.capabilityLabel,
+      status: "blocked",
+      prerequisiteReachability,
+      impact: input.playerImpact,
+      reasons,
+      evidenceIds,
+    };
+  }
+
+  if (!input.triggerPresent) {
+    reasons.push("No player trigger path is present.");
+    return {
+      capabilityId: input.capabilityId,
+      capabilityLabel: input.capabilityLabel,
+      status: "blocked",
+      prerequisiteReachability,
+      impact: input.playerImpact,
+      reasons,
+      evidenceIds,
+    };
+  }
+
+  if (
+    input.authorization ===
+    "required-and-enforced"
+  ) {
+    reasons.push("Required authorization is enforced before the capability can execute.");
+    return {
+      capabilityId: input.capabilityId,
+      capabilityLabel: input.capabilityLabel,
+      status: "guarded",
+      prerequisiteReachability,
+      impact: input.playerImpact,
+      reasons,
+      evidenceIds,
+    };
+  }
+
+  if (
+    input.authorization ===
+      "required-but-missing" &&
+    (
+      prerequisiteReachability === "reachable" ||
+      prerequisiteReachability === "not-required"
+    ) &&
+    input.releaseEnabled === "enabled"
+  ) {
+    reasons.push("A player-triggerable capability is enabled without its required authorization gate.");
+    return {
+      capabilityId: input.capabilityId,
+      capabilityLabel: input.capabilityLabel,
+      status: "exposed",
+      prerequisiteReachability,
+      impact: input.playerImpact,
+      reasons,
+      evidenceIds,
+    };
+  }
+
+  if (
+    input.authorization ===
+      "required-but-missing" &&
+    input.releaseEnabled !== "disabled"
+  ) {
+    reasons.push("Authorization is missing, but prerequisite reachability is not yet proven.");
+    return {
+      capabilityId: input.capabilityId,
+      capabilityLabel: input.capabilityLabel,
+      status: "potentially-exposed",
+      prerequisiteReachability,
+      impact: input.playerImpact,
+      reasons,
+      evidenceIds,
+    };
+  }
+
+  reasons.push("Capability exposure cannot be fully resolved from current evidence.");
+  return {
+    capabilityId: input.capabilityId,
+    capabilityLabel: input.capabilityLabel,
+    status: "unknown",
+    prerequisiteReachability,
+    impact: input.playerImpact,
+    reasons,
+    evidenceIds,
+  };
+}
