@@ -66,6 +66,68 @@ describe("arena replica proof quality", () => {
     });
   });
 
+  it("retains native-only divergence when voxel proof is not executed", () => {
+    const result = deriveArenaReplicaProofQuality(
+      {
+        status: "full",
+        plannedBlocks: 100,
+        proofBlocks: 100,
+        excludedBlocks: 0,
+        coverageRatio: 1,
+        partitionTruncated: false,
+        regions: { planned: 1, proof: 1 },
+        roleBlocks: {
+          static: 100,
+          mutable: 0,
+          mixed: 0,
+          ignored: 0,
+          unknown: 0,
+        },
+      },
+      undefined,
+      {
+        status: "chunk-record-proof",
+        canonical: {
+          algorithm: "sha256",
+          hash: "canonical",
+          records: 100,
+          originChunkX: 0,
+          originChunkZ: 0,
+          components: [],
+        },
+        region: {
+          minChunkX: 0,
+          maxChunkX: 1,
+          minChunkZ: 0,
+          maxChunkZ: 1,
+        },
+        replicas: [{
+          arenaId: "arena-2",
+          status: "chunk-record-proof",
+          reason: "native mismatch",
+          matchesCanonical: false,
+          fingerprint: {
+            algorithm: "sha256",
+            hash: "replica",
+            records: 40,
+            originChunkX: 10,
+            originChunkZ: 0,
+            components: [],
+          },
+        }],
+      },
+    );
+
+    expect(result[0]).toMatchObject({
+      arenaId: "arena-2",
+      status: "diverged",
+      mismatchCount: 1,
+      nativeSpatial: {
+        matchesCanonical: false,
+      },
+    });
+  });
+
   it("never hides a divergence behind incomplete aggregate evidence", () => {
     const result = deriveArenaReplicaProofQuality(
       undefined,
