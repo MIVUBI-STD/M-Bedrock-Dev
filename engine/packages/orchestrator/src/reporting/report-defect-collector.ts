@@ -124,6 +124,7 @@ export interface ReportCandidateRepairContext {
 
 export interface RuntimeReportCandidate {
   readonly route: "runtime";
+  readonly scenarioCausalLinkId?: string;
   readonly bugTrigger?: BugTriggerDraft;
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
@@ -140,6 +141,7 @@ export interface RuntimeReportCandidate {
 
 export interface StaticReportCandidate {
   readonly route: "static";
+  readonly scenarioCausalLinkId?: string;
   readonly bugTrigger?: BugTriggerDraft;
   readonly intent: GameplayIntentModel;
   readonly result: IntentDiagnosticGateResult;
@@ -152,6 +154,7 @@ export interface StaticReportCandidate {
 
 export interface TesterReportCandidate {
   readonly route: "tester";
+  readonly scenarioCausalLinkId?: string;
   readonly subjectIds: readonly string[];
   readonly confirmation: TesterDefectConfirmationInput;
   readonly semanticIr?: SemanticIr;
@@ -852,6 +855,12 @@ function collectOne(
 
   const confirmed: ConfirmedDefect = {
     ...defectDraft,
+    ...(candidate.scenarioCausalLinkId === undefined
+      ? {}
+      : {
+          causalIncidentId:
+            candidate.scenarioCausalLinkId,
+        }),
     expected,
     observed,
     impact: classification.impact,
@@ -1087,6 +1096,68 @@ export function gameplayDefectResolutionPublicationIssues(
   }];
 }
 
+export function gameplayDefectCandidateCoverageIssues(
+  gate: GameplayDefectResolutionGate | undefined,
+  candidates: readonly AuditReportCandidate[],
+): readonly {
+  code: "invalid-confirmed-defect";
+  message: string;
+}[] {
+  if (gate === undefined) return [];
+
+  const issues: {
+    code: "invalid-confirmed-defect";
+    message: string;
+  }[] = [];
+  const ready = new Set(
+    gate.confirmedDefectReadyIds,
+  );
+  const candidateLinks = new Map<string, number>();
+
+  for (const candidate of candidates) {
+    const linkId = candidate.scenarioCausalLinkId;
+    if (linkId === undefined) continue;
+
+    candidateLinks.set(
+      linkId,
+      (candidateLinks.get(linkId) ?? 0) + 1,
+    );
+
+    if (!ready.has(linkId)) {
+      issues.push({
+        code: "invalid-confirmed-defect",
+        message:
+          "Report candidate references Gameplay Causal Link " +
+          linkId +
+          " but that link is not CONFIRMED_DEFECT_READY.",
+      });
+    }
+  }
+
+  for (const linkId of ready) {
+    const count = candidateLinks.get(linkId) ?? 0;
+    if (count === 0) {
+      issues.push({
+        code: "invalid-confirmed-defect",
+        message:
+          "CONFIRMED_DEFECT_READY Gameplay Causal Link has no report candidate: " +
+          linkId +
+          ". A resolved gameplay defect must not disappear before report review.",
+      });
+    } else if (count > 1) {
+      issues.push({
+        code: "invalid-confirmed-defect",
+        message:
+          "CONFIRMED_DEFECT_READY Gameplay Causal Link maps to multiple report candidates: " +
+          linkId +
+          ". Consolidate it before report review.",
+      });
+    }
+  }
+
+  return issues;
+}
+
 function lineAddressableSource(path: string): boolean {
   return /\.(?:ts|tsx|js|jsx|mcfunction)$/i.test(path);
 }
@@ -1197,6 +1268,10 @@ export function prepareBugReportReviewFromAuditCandidates(
     ...gameplayDefectResolutionPublicationIssues(
       input.gameplayDefectResolution,
     ),
+    ...gameplayDefectCandidateCoverageIssues(
+      input.gameplayDefectResolution,
+      input.candidates,
+    ),
   ];
 
   if (closureIssues.length > 0) {
@@ -1289,6 +1364,10 @@ export function buildBugReportFromAuditCandidates(
     ),
     ...gameplayDefectResolutionPublicationIssues(
       input.gameplayDefectResolution,
+    ),
+    ...gameplayDefectCandidateCoverageIssues(
+      input.gameplayDefectResolution,
+      input.candidates,
     ),
   ];
 
