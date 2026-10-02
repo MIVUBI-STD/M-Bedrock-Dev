@@ -40,6 +40,7 @@ import {
   deriveMandatoryAuditProcedureReceipt,
 } from "./inspection/mandatory-audit-procedure.js";
 import {
+  SELECTED_MAP_AUDIT_STAGE_ORDER,
   assessSelectedMapAuditAdmission,
   type SelectedMapAuditAdmission,
   type SelectedMapAuditStage,
@@ -112,6 +113,7 @@ export interface SelectedMapAuditRun {
   readonly auditRevision: string;
   readonly demandReconciliation: AuditDemandReconciliation;
   readonly executionTrace: AuditExecutionTrace;
+  readonly stageOrder: readonly SelectedMapAuditStage[];
   readonly status: "READY_FOR_REVIEW" | "BLOCKED";
   readonly admission: SelectedMapAuditAdmission;
   readonly currentStage: SelectedMapAuditStage | "COMPLETE";
@@ -369,6 +371,7 @@ export async function runSelectedMapAudit(
     auditRevision,
     demandReconciliation: reconciliation,
     admission,
+    stageOrder: SELECTED_MAP_AUDIT_STAGE_ORDER,
     modelTaskPackets,
     ...control,
   };
@@ -469,6 +472,7 @@ export function resolveSelectedMapAudit(
     demandReconciliation:
       input.audit.demandReconciliation,
     admission,
+    stageOrder: SELECTED_MAP_AUDIT_STAGE_ORDER,
     modelTaskPackets,
     ...control,
   };
