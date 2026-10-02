@@ -28,6 +28,14 @@ implementation detail
 → assumed design
 ```
 
+## Discovery independence rule
+
+Surface discovery and closure accounting must be independent operations.
+
+A surface is discovered from raw selected-artifact evidence. It is only considered accounted after the gameplay model provides an understood, blocked, unknown, or not-applicable disposition.
+
+Never construct the discovered-surface list from the already-accounted surface list. That would hide missing analysis by definition.
+
 ## Phase A — Surface inventory
 
 Before bug discovery, inventory all gameplay-relevant surfaces visible or consequential to the player.
