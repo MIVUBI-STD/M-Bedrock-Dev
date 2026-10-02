@@ -79,17 +79,21 @@ Default behavior is one comprehensive discovery pass before reporting.
 
 ```text
 Discover all gameplay surfaces
+→ close Discovery Closure
 → close/account the gameplay model
 → challenge implementation-only design assumptions
 → verify mechanic completeness and negative space
 → prioritize temporal/cross-system risks
 → check design-consistency anomalies
+→ prioritize proof depth by gameplay risk
 → detect silent degradation / fallback masking
 → trace prerequisite reachability and restricted capability exposure
 → generate relevant mixed-player and repeated-run verification
 → build root-cause / constraint / evidence-convergence analysis for complex findings
 → analyze contradictions across all understood surfaces
-→ classify the complete issue set
+→ apply early counter-evidence/confirmation
+→ deduplicate exact candidate work while retaining corroboration
+→ classify the complete surviving issue set
 → report once
 ```
 
