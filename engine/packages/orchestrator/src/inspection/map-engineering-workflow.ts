@@ -28,6 +28,8 @@ export interface MapEngineeringWorkflowProjection {
     criticalDiagnostics: number;
     unresolvedReferences: number;
     contractUnknowns: number;
+    gameplayDiscoveryClosure:
+      InspectArtifactResult["gameplayDiscoveryClosure"]["status"];
     gameplayClosure:
       InspectArtifactResult["gameplaySemantic"]["gameplayClosure"]["status"];
     evidenceRecoveryActions: number;
@@ -46,20 +48,27 @@ function understandingStage(
     source.unresolvedReferences;
   const contractUnknowns =
     source.gameplaySemantic.intent.unknowns.length;
+  const discovery =
+    source.gameplayDiscoveryClosure;
   const closure =
     source.gameplaySemantic.gameplayClosure;
 
   return {
     id: "understand",
     status:
+      discovery.status === "OPEN" ||
       closure.status === "OPEN"
         ? "blocked"
-        : closure.status === "PARTIAL" ||
+        : discovery.status === "PARTIAL" ||
+          closure.status === "PARTIAL" ||
           unresolved > 0 ||
           contractUnknowns > 0
           ? "partial"
           : "ready",
     reasons: [
+      "Gameplay Discovery Closure: " +
+        discovery.status +
+        ".",
       "Gameplay Model Closure: " +
         closure.status +
         ".",
@@ -149,12 +158,15 @@ function releaseStage(
   const exposedSensitiveCapability =
     source.capabilityExposure
       .releaseBlocking > 0;
+  const discoveryOpen =
+    source.gameplayDiscoveryClosure.status === "OPEN";
   const closureOpen =
     source.gameplaySemantic.gameplayClosure.status === "OPEN";
 
   return {
     id: "release",
     status:
+      discoveryOpen ||
       closureOpen ||
       releaseConflict ||
       packDrift ||
@@ -166,6 +178,9 @@ function releaseStage(
           ? "ready"
           : "partial",
     reasons: [
+      discoveryOpen
+        ? "Gameplay Discovery Closure is OPEN and blocks release readiness."
+        : "Gameplay Discovery Closure does not block release readiness.",
       closureOpen
         ? "Gameplay Model Closure is OPEN and blocks release readiness."
         : "Gameplay Model Closure does not block release readiness.",
@@ -207,6 +222,8 @@ export function buildMapEngineeringWorkflow(
       source.unresolvedReferences,
     contractUnknowns:
       source.gameplaySemantic.intent.unknowns.length,
+    gameplayDiscoveryClosure:
+      source.gameplayDiscoveryClosure.status,
     gameplayClosure:
       source.gameplaySemantic.gameplayClosure.status,
     evidenceRecoveryActions:
