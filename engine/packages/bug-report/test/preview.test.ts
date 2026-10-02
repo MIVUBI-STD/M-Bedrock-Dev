@@ -51,7 +51,14 @@ function report(): BugReportV2 {
           "Confirm the new match does not start.",
         ],
         suggestedFix: "Clear stale session ownership during cleanup.",
-        aiAnalysis: "Cleanup leaves stale session ownership.",
+        aiAnalysis: [
+          "Root Cause",
+          "Cleanup leaves stale session ownership.",
+          "",
+          "Verification",
+          "1. Finish one match.",
+          "2. Start the same arena again.",
+        ].join("\n"),
         relevantCode: [{
           file: "scripts/session.ts",
           reason: "Owns arena session cleanup.",
@@ -130,8 +137,8 @@ describe("bug report preview", () => {
     });
 
     expect(standard.bugs[0]?.technicalAnalysis).toBeUndefined();
-    expect(full.bugs[0]?.technicalAnalysis).toBe(
-      "Cleanup leaves stale session ownership.",
+    expect(full.bugs[0]?.technicalAnalysis).toContain(
+      "Root Cause",
     );
   });
 
@@ -141,11 +148,19 @@ describe("bug report preview", () => {
     });
     const markdown = renderBugReportPreviewMarkdown(preview, "full");
 
-    expect(markdown).toContain("| **Bug Trigger (In-Game)** | 1. Finish a match.<br>2. Return to the lobby.");
+    expect(markdown).toContain("| **Bug Trigger (In-Game)** | ☐ Finish a match.<br>☐ Return to the lobby.");
     expect(markdown).toContain("| #1 · BLOCKER | Match cannot restart |");
 
+    expect(markdown).toContain("| **Result** |");
+    expect(markdown).toContain("| **Work Checklist** |");
+    expect(markdown).not.toContain("Minecraft Education 1.26.32");
+    expect(markdown).toContain("- [ ] Finish a match.");
+    expect(markdown).toContain(
+      "**Technical Analysis:**\nRoot Cause\nCleanup leaves stale session ownership.",
+    );
+
     expect(markdown.indexOf("**Issue:**")).toBeLessThan(
-      markdown.indexOf("**Expected:**"),
+      markdown.indexOf("**Observed:**"),
     );
     expect(markdown.indexOf("**Expected:**")).toBeLessThan(
       markdown.indexOf("**Technical Analysis:**"),
