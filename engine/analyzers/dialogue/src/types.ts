@@ -19,7 +19,7 @@ export interface DialogueDisplayText {
 export interface ParsedDialogueScene {
   sceneTag: string;
   commands: DialogueSceneCommand[];
-  displayText: DialogueDisplayText[];
+  displayText?: DialogueDisplayText[];
 }
 
 export interface ParsedDialogueDocument {
