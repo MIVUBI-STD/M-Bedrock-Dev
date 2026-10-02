@@ -4,9 +4,20 @@
 
 Final review before a gameplay bug report is considered ready.
 
-## Core understanding
+## Gameplay closure
 
 - [ ] Selected world version is defined.
+- [ ] Gameplay Surface Inventory completed.
+- [ ] Every discovered gameplay surface is understood, blocked, unknown, or not-applicable.
+- [ ] No discovered surface is unaccounted.
+- [ ] Major state model includes happy, failure, retry, recovery, disconnect/reconnect, cleanup, and reuse exits.
+- [ ] Material boundaries/limits extracted.
+- [ ] Coexisting/high-risk cross-system relationships identified.
+- [ ] Gameplay Model Closure is CLOSED or PARTIAL.
+- [ ] OPEN closure blocks finalization.
+
+## Core understanding
+
 - [ ] Game Design Reconstruction completed.
 - [ ] Gameplay Flow mapped from entry to completion.
 - [ ] State transitions reviewed, including alternate and failure exits.
