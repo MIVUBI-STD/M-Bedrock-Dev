@@ -14,6 +14,16 @@ Final review before a gameplay bug report is considered ready.
 - [ ] Progression rules identified.
 - [ ] Multiplayer rules reviewed when applicable.
 - [ ] Multi Arena rules reviewed when applicable.
+- [ ] Capacity and concurrency limits reviewed when applicable.
+- [ ] Hidden limitations / player expectation mismatches reviewed.
+- [ ] Softlock paths reviewed.
+- [ ] Recovery paths reviewed.
+- [ ] Boundary scenarios reviewed.
+- [ ] Multiplayer scaling/authority reviewed when applicable.
+- [ ] Content-contract mechanics verified against actual behavior.
+- [ ] Player feedback/observability reviewed for material limitations.
+- [ ] Persistence save/reset/restore boundaries reviewed.
+- [ ] Gameplay-significant performance/platform constraints reviewed when applicable.
 
 ## Bug Quality
 
