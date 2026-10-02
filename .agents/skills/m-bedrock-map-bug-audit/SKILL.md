@@ -84,6 +84,7 @@ Discover all gameplay surfaces
 → verify mechanic completeness and negative space
 → prioritize temporal/cross-system risks
 → check design-consistency anomalies
+→ build root-cause / constraint / evidence-convergence analysis for complex findings
 → analyze contradictions across all understood surfaces
 → classify the complete issue set
 → report once
