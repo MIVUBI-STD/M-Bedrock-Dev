@@ -24,6 +24,7 @@ import { deriveGameplayWorldModel } from "../gameplay-world-model.js";
 import { projectGameplaySemanticModel } from "../gameplay-semantic-model.js";
 import { projectMapEngineeringAssessment } from "../map-engineering-assessment.js";
 import { analyzeHiddenGameplayDefects } from "./hidden-gameplay-defect-analysis.js";
+import { buildGameplayBoundaryRegistry } from "./gameplay-boundary-registry.js";
 import { deriveArenaAuthoredSpatialSources } from "../arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
@@ -260,6 +261,11 @@ export function buildInspectionResult(
     authoredSources,
   };
 
+  const gameplayBoundaries =
+    buildGameplayBoundaryRegistry(
+      scriptSafeConfig,
+    );
+
   const gameplayWorld = deriveGameplayWorldModel({
     artifactId: input.artifactId,
     intent: input.gameplayIntent,
@@ -305,6 +311,12 @@ export function buildInspectionResult(
         entityKnowledgeGaps,
       staticAnalysisLimits:
         entityStaticLimits,
+    },
+    boundaries: {
+      records:
+        gameplayBoundaries.records.length,
+      unresolvedNames:
+        gameplayBoundaries.unresolvedNames,
     },
   });
 
@@ -380,6 +392,7 @@ export function buildInspectionResult(
     gameplaySemantic,
     engineeringAssessment,
     hiddenGameplayDefects,
+    gameplayBoundaries,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
