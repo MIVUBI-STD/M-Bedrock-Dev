@@ -149,6 +149,8 @@ Every `CONTRADICTED` Gameplay Causal Link must enter Gameplay Defect Resolution 
 
 The temporary states `GAMEPLAY_TRANSLATION_REQUIRED` and `COUNTERPROOF_SEARCH_REQUIRED` block report publication. They are AI work queues, never tester-facing `Needs Validation`.
 
+When a contradicted causal link already has a scenario, scoped RIG provenance, purpose, reason, and evidence, the engine must auto-translate that context and advance directly to `COUNTERPROOF_SEARCH_REQUIRED`. Do not waste another manual translation pass. Automatic translation never confirms the bug by itself; blocking counter-proof still must be searched.
+
 Do not use `Needs Validation` as a generic outcome. Tester/runtime escalation is allowed only through `RUNTIME_PROOF_REQUIRED`, with a specific runtime reason and one narrow question. A broad validation checklist is forbidden.
 
 Gameplay Scenario Closure is:

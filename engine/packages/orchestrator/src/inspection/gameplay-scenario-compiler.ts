@@ -603,6 +603,7 @@ export function compileGameplayScenarioGraph(
       causalLinkIds,
       playerCounts,
       requiredKnowledgeIds: [],
+      composedScenarioIds: [],
     };
   });
 
@@ -639,10 +640,28 @@ export function compileGameplayScenarioGraph(
           ? playerCounts
           : [presetScenario.playerCount],
       requiredKnowledgeIds: [],
+      composedScenarioIds: [],
     });
   }
 
-  const knowledgeRequirements = scenarios.flatMap(
+  const concreteScenarioIds = scenarios
+    .filter((scenario) => scenario.label !== "full-journey")
+    .map((scenario) => scenario.id)
+    .sort();
+
+  const scenariosWithComposition = scenarios.map(
+    (scenario) =>
+      scenario.label === "full-journey"
+        ? {
+            ...scenario,
+            causalLinkIds: [],
+            composedScenarioIds:
+              concreteScenarioIds,
+          }
+        : scenario,
+  );
+
+  const knowledgeRequirements = scenariosWithComposition.flatMap(
     (scenario) =>
       buildGameplayKnowledgeRequirements(
         scenario.id,
@@ -659,7 +678,7 @@ export function compileGameplayScenarioGraph(
     string,
     readonly string[]
   >();
-  for (const scenario of scenarios) {
+  for (const scenario of scenariosWithComposition) {
     requirementsByScenario.set(
       scenario.id,
       knowledgeRequirements
@@ -667,7 +686,7 @@ export function compileGameplayScenarioGraph(
         .map((item) => item.id),
     );
   }
-  const scenariosWithKnowledge = scenarios.map(
+  const scenariosWithKnowledge = scenariosWithComposition.map(
     (scenario) => ({
       ...scenario,
       requiredKnowledgeIds:
@@ -736,6 +755,7 @@ export function compileGameplayScenarioGraph(
   const componentIds = new Set(components.map((component) => component.id));
   const causalLinks: GameplayCausalLink[] = [];
   for (const scenario of scenariosWithKnowledge) {
+    if (scenario.label === "full-journey") continue;
     const allowed = new Set(scenario.componentIds);
     for (const edge of input.intent.edges) {
       if (!allowed.has(edge.from) || !allowed.has(edge.to)) continue;

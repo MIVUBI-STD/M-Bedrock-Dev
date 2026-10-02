@@ -64,6 +64,20 @@ export function assessGameplayScenarioClosure(
       .map((receipt) => receipt.requirementId)
       .sort();
 
+  const scenarioIds = new Set(
+    graph.scenarios.map((scenario) => scenario.id),
+  );
+  const incompleteCompositionScenarioIds =
+    graph.scenarios
+      .filter(
+        (scenario) =>
+          scenario.composedScenarioIds.some(
+            (id) => !scenarioIds.has(id),
+          ),
+      )
+      .map((scenario) => scenario.id)
+      .sort();
+
   const scenarioWithoutComponents = graph.scenarios
     .filter((scenario) => scenario.componentIds.length === 0)
     .map((scenario) => scenario.id)
@@ -112,6 +126,13 @@ export function assessGameplayScenarioClosure(
         ".",
     );
   }
+  if (incompleteCompositionScenarioIds.length > 0) {
+    reasons.push(
+      "Composition scenarios reference missing child scenarios: " +
+        incompleteCompositionScenarioIds.join(", ") +
+        ".",
+    );
+  }
   if (scenarioWithoutComponents.length > 0) {
     reasons.push(
       "Scenario variants are present without concrete selected-artifact component bindings: " +
@@ -132,6 +153,7 @@ export function assessGameplayScenarioClosure(
     missingRequiredKnowledgeIds.length > 0 ||
     capabilityGapKnowledgeIds.length > 0 ||
     prerequisiteBlockedKnowledgeIds.length > 0 ||
+    incompleteCompositionScenarioIds.length > 0 ||
     scenarioWithoutComponents.length > 0
       ? "OPEN" as const
       : runtimeBlockedCausalLinkIds.length > 0
@@ -154,6 +176,7 @@ export function assessGameplayScenarioClosure(
     missingRequiredKnowledgeIds,
     capabilityGapKnowledgeIds,
     prerequisiteBlockedKnowledgeIds,
+    incompleteCompositionScenarioIds,
     reasons,
   };
 }

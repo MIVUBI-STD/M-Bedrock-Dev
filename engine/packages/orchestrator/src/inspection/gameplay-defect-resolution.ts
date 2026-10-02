@@ -155,6 +155,23 @@ export function assessGameplayDefectResolutionGate(
       return supplied;
     }
 
+    const scenario = graph.scenarios.find(
+      (item) => item.id === link.scenarioId,
+    );
+    const scope = [
+      ...new Set([
+        ...link.subjectIds,
+        ...link.componentIds,
+      ]),
+    ].sort();
+
+    const translationReady =
+      scenario !== undefined &&
+      link.purpose.trim().length > 0 &&
+      link.reason.trim().length > 0 &&
+      scope.length > 0 &&
+      link.evidenceIds.length > 0;
+
     return {
       causalLinkId: link.id,
       scenarioId: link.scenarioId,
@@ -167,7 +184,27 @@ export function assessGameplayDefectResolutionGate(
       subjectIds: [...link.subjectIds],
       componentIds: [...link.componentIds],
       evidenceIds: [...link.evidenceIds],
-      disposition: "GAMEPLAY_TRANSLATION_REQUIRED",
+      ...(translationReady
+        ? {
+            gameplayTrigger:
+              scenario.purpose,
+            gameplayConsequence:
+              "A required dependency for " +
+              scenario.label +
+              " is contradicted, so the scenario can produce an incorrect or blocked player-visible result.",
+            expectedOutcome:
+              link.purpose,
+            actualOutcome:
+              link.reason,
+            affectedScope:
+              scope.join(", "),
+            disposition:
+              "COUNTERPROOF_SEARCH_REQUIRED" as const,
+          }
+        : {
+            disposition:
+              "GAMEPLAY_TRANSLATION_REQUIRED" as const,
+          }),
     };
   });
 

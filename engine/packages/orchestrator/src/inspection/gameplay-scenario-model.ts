@@ -85,6 +85,7 @@ export interface GameplayScenario {
   readonly causalLinkIds: readonly string[];
   readonly playerCounts: readonly number[];
   readonly requiredKnowledgeIds: readonly string[];
+  readonly composedScenarioIds: readonly string[];
 }
 
 export interface GameplayScenarioGraph {
@@ -113,5 +114,6 @@ export interface GameplayScenarioClosure {
   readonly missingRequiredKnowledgeIds: readonly string[];
   readonly capabilityGapKnowledgeIds: readonly string[];
   readonly prerequisiteBlockedKnowledgeIds: readonly string[];
+  readonly incompleteCompositionScenarioIds: readonly string[];
   readonly reasons: readonly string[];
 }
