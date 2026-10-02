@@ -31,27 +31,32 @@ Record:
 - audit mode: selected-map-version-only
 - proof ceiling
 
-## Bug record
+## Canonical bug record
 
-Every reportable issue uses:
+Persisted Bug Report V2 stores:
 
 ```text
 Bug ID
+Fixed
+Severity
 Category
-Gameplay Flow
-Status
-Severity (Confirmed only)
-Issue
-Player Impact
-How To Reproduce
-Expected Behavior
-Actual Behavior
-Evidence
-Proof Ceiling
+Found By
+Title
+Issue / Problem
+Expected
+Observed
+Reproduction
+Technical Analysis, when available
+Relevant Code, when available
+Suggested Fix, when supported
+Must Preserve, when supported
 ```
 
-Confirmed bugs additionally require:
+Upstream audit-only fields such as Gameplay Flow, player-impact proof, counter-evidence state, proof ceiling, Needs Validation/Ambiguous/Detection Gap status, and coverage accounting remain in Map Audit Output / diagnostic state unless a proven product requirement adds them to the persisted report schema.
 
+Before a defect enters canonical Bug Report V2 it must already have:
+
+- approved confirmed-defect status;
 - cleared counter-evidence;
 - tester-ready reproduction;
 - Blocker, Major, or Minor severity.
