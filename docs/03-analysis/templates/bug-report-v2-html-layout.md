@@ -28,11 +28,13 @@ Needs Validation, Ambiguous, Detection Gaps, and full audit coverage remain upst
 
 ## Dashboard
 
-Use a compact table:
+Use the canonical client dashboard shape:
 
 ```text
-ID | Gameplay Flow | Severity | Status | Category
+# | Bug ID | Severity | Category | Issue
 ```
+
+Do not synthesize gameplay-flow or audit-status columns unless those fields are added to canonical Bug Report V2 later.
 
 ## Bug card
 
@@ -53,19 +55,13 @@ Each card contains canonical/presentation data that actually exists:
 
 Do not invent Gameplay Flow, proof ceiling, or audit-only status fields when they are not present in canonical Bug Report V2.
 
-## Coverage section
+## Audit coverage boundary
 
-Show every applicable audit surface as:
-
-- Checked
-- Blocked — include reason
-- Not Applicable — include reason
-
-Do not imply complete coverage when blocked or Detection Gap surfaces remain.
+Full audit coverage is owned upstream by Map Audit Output V2. Client HTML may state map/version/report scope, but it does not render a second coverage ledger.
 
 ## Reader rules
 
-- Organize issues by gameplay journey.
+- Use gameplay-journey ordering only when canonical flow metadata exists; otherwise use the deterministic severity/ID fallback from PREVIEW.md.
 - Keep reproduction steps in tester/player language.
 - Keep technical evidence separate.
 - Do not publish designed behavior as bugs.
