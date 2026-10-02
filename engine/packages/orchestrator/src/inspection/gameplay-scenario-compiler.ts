@@ -117,7 +117,8 @@ function runtimeComponents(
   if (
     world.chunks.tickingAreaAcquires > 0 ||
     world.chunks.tickingAreaReadinessStates > 0 ||
-    world.chunks.capacityUncheckedLeases > 0
+    world.chunks.capacityUncheckedLeases > 0 ||
+    world.entities.definitions > 0
   ) {
     output.push({
       id: "runtime:chunks",
@@ -236,6 +237,17 @@ function runtimeEdgeState(
       };
     }
     case "runtime:chunks":
+      if (
+        world.chunks.tickingAreaAcquires === 0 &&
+        world.chunks.tickingAreaReadinessStates === 0 &&
+        world.chunks.readinessProbes === 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "This gameplay scenario requires explicit chunk/simulation ownership, but the selected artifact exposes no ticking-area acquisition/readiness mechanism for the dependency.",
+        };
+      }
       if (
         world.chunks.acquireWithoutRelease > 0 ||
         world.chunks.releaseUnreachable > 0 ||

@@ -226,6 +226,16 @@ function semanticDomains(
   ) {
     add(domains, "entity-behavior");
   }
+  const hasActor = relatedNodes.some(
+    (item) =>
+      item.kind === "actor" || item.kind === "role",
+  );
+  const hasSpatialRegion = relatedNodes.some(
+    (item) => item.kind === "spatial-region",
+  );
+  if (hasActor && hasSpatialRegion) {
+    add(domains, "chunk-simulation");
+  }
   if (
     relatedNodes.some((item) =>
       item.kind === "spatial-region"
@@ -305,7 +315,8 @@ function applicable(
       return (
         world.chunks.tickingAreaAcquires > 0 ||
         world.chunks.tickingAreaReadinessStates > 0 ||
-        world.entities.definitions > 0
+        world.chunks.readinessProbes > 0 ||
+        world.chunks.entityResidencyObservability !== "absent"
       );
     case "entity-behavior":
       return world.entities.definitions > 0;
@@ -418,7 +429,11 @@ export function requiredKnowledgeDomainsForIntentScenario(
   world: GameplayWorldModel,
 ): readonly GameplayKnowledgeDomain[] {
   return [...semanticDomains(node, model, world)]
-    .filter((domain) => applicable(world, domain))
+    .filter(
+      (domain) =>
+        domain === "chunk-simulation" ||
+        applicable(world, domain),
+    )
     .sort();
 }
 
