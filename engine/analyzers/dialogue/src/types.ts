@@ -10,9 +10,16 @@ export interface DialogueSceneCommand {
   analysis: CommandAnalysis;
 }
 
+export interface DialogueDisplayText {
+  kind: "npc-name" | "body" | "button";
+  text: string;
+  buttonIndex?: number;
+}
+
 export interface ParsedDialogueScene {
   sceneTag: string;
   commands: DialogueSceneCommand[];
+  displayText: DialogueDisplayText[];
 }
 
 export interface ParsedDialogueDocument {
