@@ -16,11 +16,23 @@ export type GameplayAuditScenarioProofMode =
   | "static-first"
   | "runtime-only-if-irreducible";
 
+export type GameplayFlowStage =
+  | "FULL_JOURNEY"
+  | "ENTRY_JOIN"
+  | "READY_START"
+  | "SETUP"
+  | "ACTIVE_GAMEPLAY"
+  | "PROGRESSION"
+  | "TERMINAL"
+  | "CLEANUP_REPLAY"
+  | "RECOVERY";
+
 export interface GameplayAuditScenario {
   readonly id: string;
   readonly kind: GameplayAuditScenarioKind;
   readonly playerCount?: number;
   readonly concurrentArenas?: number;
+  readonly flowStage: GameplayFlowStage;
   readonly proofMode: GameplayAuditScenarioProofMode;
   readonly reason: string;
   readonly questions: readonly string[];
@@ -58,6 +70,7 @@ export function buildGameplayAuditScenarioPreset(
     scenario({
       id: "journey:full",
       kind: "full-journey",
+      flowStage: "FULL_JOURNEY",
       reason:
         "Every audit must trace one complete player journey through cleanup and replay.",
       questions: [
@@ -69,6 +82,7 @@ export function buildGameplayAuditScenarioPreset(
     scenario({
       id: "players:solo",
       kind: "solo",
+      flowStage: "ENTRY_JOIN",
       playerCount: 1,
       reason:
         "Solo play exposes hidden assumptions about party members, ownership, voting, wipe, rewards, and progression.",
@@ -80,6 +94,7 @@ export function buildGameplayAuditScenarioPreset(
     scenario({
       id: "terminal:collision",
       kind: "terminal-collision",
+      flowStage: "TERMINAL",
       reason:
         "Terminal events commonly race with timers, death, cleanup, rewards, or delayed work.",
       questions: [
@@ -101,6 +116,7 @@ export function buildGameplayAuditScenarioPreset(
       scenario({
         id: "players:two",
         kind: "two-player",
+        flowStage: "ENTRY_JOIN",
         playerCount: 2,
         reason:
           "Two-player play is the minimum useful mixed-player scenario for leave/death/ownership interactions.",
@@ -112,6 +128,7 @@ export function buildGameplayAuditScenarioPreset(
       scenario({
         id: "players:disconnect-reconnect",
         kind: "disconnect-reconnect",
+        flowStage: "RECOVERY",
         playerCount: 2,
         reason:
           "Reconnect must preserve or intentionally reset ownership without creating stale active/offline composite states.",
@@ -129,6 +146,7 @@ export function buildGameplayAuditScenarioPreset(
       scenario({
         id: "players:max",
         kind: "max-party",
+        flowStage: "ENTRY_JOIN",
         playerCount: maxParty,
         reason:
           "Maximum supported party size is a gameplay boundary and must preserve scaling, ownership, rewards, and progression.",
@@ -140,6 +158,7 @@ export function buildGameplayAuditScenarioPreset(
       scenario({
         id: "players:max-plus-one",
         kind: "party-capacity-plus-one",
+        flowStage: "READY_START",
         playerCount: maxParty + 1,
         reason:
           "Capacity+1 proves admission behavior instead of assuming a hard limit is valid because enforcement exists.",
@@ -171,6 +190,7 @@ export function buildGameplayAuditScenarioPreset(
       scenario({
         id: "arena:parallel",
         kind: "multi-arena-parallel",
+        flowStage: "READY_START",
         concurrentArenas:
           arenaCount === undefined
             ? 2
@@ -193,6 +213,7 @@ export function buildGameplayAuditScenarioPreset(
         scenario({
           id: "arena:capacity-plus-one",
           kind: "arena-capacity-plus-one",
+          flowStage: "READY_START",
           concurrentArenas: limit + 1,
           reason:
             "Visible arena capability exceeds implemented concurrency; queue/fallback existence alone cannot prove the reduction is intended.",
@@ -211,6 +232,7 @@ export function buildGameplayAuditScenarioPreset(
       scenario({
         id: "recovery:reload",
         kind: "reload-recovery",
+        flowStage: "RECOVERY",
         reason:
           "Persisted sessions must reconstruct every material transient state needed to resume or intentionally restart gameplay.",
         questions: [
@@ -226,6 +248,7 @@ export function buildGameplayAuditScenarioPreset(
       scenario({
         id: "temporal:deferred-owner",
         kind: "deferred-ownership",
+        flowStage: "RECOVERY",
         reason:
           "Deferred work can commit after its player/session/arena/phase owner has changed.",
         questions: [
@@ -242,6 +265,7 @@ export function buildGameplayAuditScenarioPreset(
       scenario({
         id: "lifecycle:second-run",
         kind: "repeated-run",
+        flowStage: "CLEANUP_REPLAY",
         reason:
           "A successful first run does not prove cleanup; the second run exposes leaked entities, timers, score, inventory, structures, objectives, and ownership.",
         questions: [
