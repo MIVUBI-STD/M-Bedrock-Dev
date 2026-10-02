@@ -86,5 +86,11 @@ describe("gameplay world model", () => {
       ]),
     );
     expect(result.state.broadWrites).toBe(1);
+    expect(result.gameplayClosure.status).toBe("OPEN");
+    expect(
+      result.gameplayClosure.surfaces.map(
+        (surface) => surface.id,
+      ),
+    ).toContain("runtime:arena-capacity");
   });
 });
