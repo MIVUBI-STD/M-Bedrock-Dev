@@ -82,10 +82,12 @@ Final review before a gameplay bug report is considered ready.
 
 ## Report output
 
-- [ ] Dashboard generated.
-- [ ] Confirmed Bugs separated from Needs Validation, Ambiguous, and Detection Gap.
-- [ ] Coverage recorded.
-- [ ] HTML follows Bug Report V2 layout.
+- [ ] Proposed Bug Set review resolved: approved / rejected / needs-discussion.
+- [ ] Needs Validation, Ambiguous, and Detection Gap remain in Map Audit Output / discussion and are not promoted as canonical bugs.
+- [ ] Canonical Bug Report V2 contains approved confirmed bugs only.
+- [ ] Coverage remains recorded in Map Audit Output.
+- [ ] Chat preview follows PREVIEW contract.
+- [ ] HTML follows Bug Report V2 client layout and uses presentation-only checklists.
 
 ## STOP
 
