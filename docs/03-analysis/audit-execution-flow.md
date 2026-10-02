@@ -78,7 +78,7 @@ Typical contradictions:
 - countdown continues after requirements disappear;
 - one arena's start serializes another arena;
 - old callback starts a reused arena;
-- queue/fallback silently reduces intended concurrency.
+- queue/fallback reduces player-visible concurrency below the arena capacity presented by the map; this remains a design/capacity issue even when the technical constraint is valid.
 
 ### SETUP
 
