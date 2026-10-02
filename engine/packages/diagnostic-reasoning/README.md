@@ -54,3 +54,10 @@ Diagnostic Reasoning owns:
 - `findDesignConsistencyAnomalies()` — peer/outlier inconsistencies that require intent challenge.
 
 These are candidate-generation and prioritization tools. An anomaly or absence is not automatically a confirmed defect; normal evidence, intent, counter-evidence, and player-impact gates still apply.
+
+
+## Engineering analysis
+
+`buildEngineeringAnalysis()` owns causal-chain synthesis, evidence convergence, quantitative constraints, repair alternatives, and verification scenarios for complex findings.
+
+`renderEngineeringAnalysis()` projects that structure into concise technical prose. It does not own Bug Report severity or approval.
