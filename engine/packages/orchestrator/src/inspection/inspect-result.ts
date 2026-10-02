@@ -23,6 +23,7 @@ import { analyzeInspectionCausality } from "./inspect-causality-stage.js";
 import { deriveGameplayWorldModel } from "../gameplay-world-model.js";
 import { projectGameplaySemanticModel } from "../gameplay-semantic-model.js";
 import { projectMapEngineeringAssessment } from "../map-engineering-assessment.js";
+import { analyzeHiddenGameplayDefects } from "./hidden-gameplay-defect-analysis.js";
 import { deriveArenaAuthoredSpatialSources } from "../arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
@@ -309,6 +310,12 @@ export function buildInspectionResult(
 
   const gameplaySemantic = projectGameplaySemanticModel(gameplayWorld);
   const engineeringAssessment = projectMapEngineeringAssessment(gameplayWorld);
+  const hiddenGameplayDefects =
+    analyzeHiddenGameplayDefects({
+      intent: input.gameplayIntent,
+      semanticIr: input.semanticIr,
+      world: gameplayWorld,
+    });
 
   const reliability = deriveReliabilityFingerprint({
     mapId: input.artifactId,
@@ -372,6 +379,7 @@ export function buildInspectionResult(
     gameplayWorld,
     gameplaySemantic,
     engineeringAssessment,
+    hiddenGameplayDefects,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
