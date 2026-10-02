@@ -747,6 +747,12 @@ export async function inspectArtifact(
           runtimeLogicLoads:
             result.structureRuntime
               .runtimeLogicLoads,
+          transitionResidueRisks:
+            result.gameplayWorld.structures
+              .transitionResidueRisks,
+          transitionResidueUnresolved:
+            result.gameplayWorld.structures
+              .transitionResidueUnresolved,
         },
         entities: {
           definitions: result.entities,
