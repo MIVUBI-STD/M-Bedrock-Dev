@@ -82,6 +82,26 @@ describe("gameplay model closure", () => {
     );
   });
 
+  it("keeps inferred material surfaces unresolved until grounded", () => {
+    const inferredModel: GameplayIntentModel = {
+      ...intent,
+      nodes: [
+        {
+          id: "resource:max-concurrent-arenas",
+          kind: "resource",
+          label: "Max Concurrent Arenas",
+          status: "inferred",
+          evidenceIds: [],
+        },
+      ],
+    };
+    const surfaces =
+      buildIntentClosureSurfaces(inferredModel);
+
+    expect(surfaces[0]?.status).toBe("unknown");
+    expect(surfaces[0]?.material).toBe(true);
+  });
+
   it("is CLOSED only when all discovered material surfaces are accounted", () => {
     const surfaces = buildIntentClosureSurfaces(intent);
     const result = assessGameplayModelClosure({
