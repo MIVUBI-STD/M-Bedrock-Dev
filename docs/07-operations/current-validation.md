@@ -2,8 +2,6 @@
 
 Snapshot date: 2026-10-02
 Branch: `Local`
-Current HEAD: `a8c8f46de9cf2a5abfe4e6fcbbc836c3b0d8b233`
-
 ## Historical integrated proof
 
 The last retained integrated verification remains:
@@ -18,11 +16,11 @@ typecheck      pass
 full tests     pass
 ```
 
-That historical run does **not** verify the current HEAD.
+That historical run does **not** verify the current source state.
 
 ## Current-head static implementation state
 
-Current `Local` now includes, but has not been CI/local/runtime verified in this work session:
+`Local` now includes, but has not been CI/local/runtime verified in this work session:
 
 - selected-map-version-only gameplay authority;
 - multi-source gameplay surface discovery from scripts/functions/entities/structures/dialogue/localized text;
@@ -43,7 +41,7 @@ Repository-level static review performed during this session confirmed the curre
 
 ## Known proof limits
 
-- current HEAD has not been typechecked or run through the full test suite in this work session;
+- current source state has not been typechecked or run through the full test suite in this work session;
 - runtime-only timing/race/network/Minecraft behavior still requires matching LOCAL_MINECRAFT or LIVE_MINECRAFT proof;
 - reachability coverage explicitly remains incomplete for acquisition sources whose adapters are not yet implemented, and therefore yields `unknown` rather than false `unreachable`;
 - real-map false-negative and false-positive rates have not yet been measured on the new first-pass workflow;
