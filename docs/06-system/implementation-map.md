@@ -79,7 +79,7 @@ Use this before broad repository search.
 | Audit snapshot revision / stale model-result + review/report rejection | engine/packages/orchestrator/src/map-audit-revision.ts + map-audit-pipeline.ts |
 | Audit-revision-bound semantic proof reuse | engine/packages/orchestrator/src/workflow/semantic-proof-cache.ts (audit-bound wrapper) |
 | Audit-revision-bound rejected-candidate reuse | engine/packages/orchestrator/src/reporting/report-candidate-reuse.ts (audit-bound wrapper) |
-| Preflight → final RIG knowledge-demand fixed point | engine/packages/orchestrator/src/map-audit-demand-reconciliation.ts + inspection/preflight-knowledge-demand.ts |
+| Bounded preflight → final RIG demand reconciliation (max 2 full artifact passes) | engine/packages/orchestrator/src/map-audit-demand-reconciliation.ts + map-audit-pipeline.ts |
 | Audit-authoritative Work Session projection + persistence mirror | engine/packages/orchestrator/src/workflow/map-audit-work-session.ts + engine/packages/project-model/src/session/work-session.ts |
 | Evidence collection vs ordered decision authorization | engine/packages/orchestrator/src/map-audit-execution-trace.ts |
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |

@@ -123,53 +123,70 @@ async function inspectSelectedMapToDemandFixedPoint(
   readonly inspection: InspectArtifactResult;
   readonly reconciliation: AuditDemandReconciliation;
 }> {
-  let requiredKnowledgeDomains =
-    [...new Set(
+  const initialRequiredDomains = [
+    ...new Set(
       input.target?.requiredKnowledgeDomains ?? [],
-    )].sort();
-  let lastMissingKey = "";
+    ),
+  ].sort();
 
-  for (let iteration = 0; iteration < 16; iteration += 1) {
-    const inspection = await inspectArtifact(
-      input.artifactPath,
-      {
-        ...(input.target ?? {}),
-        requiredKnowledgeDomains,
-      },
-      input.knowledgeCatalog,
-      input.telemetry ?? [],
-      input.runtimeProbeTranscript,
+  const firstInspection = await inspectArtifact(
+    input.artifactPath,
+    {
+      ...(input.target ?? {}),
+      requiredKnowledgeDomains: initialRequiredDomains,
+    },
+    input.knowledgeCatalog,
+    input.telemetry ?? [],
+    input.runtimeProbeTranscript,
+  );
+  const firstReconciliation =
+    reconcileSelectedMapAuditDemand(
+      firstInspection,
+      1,
     );
-    const reconciliation =
-      reconcileSelectedMapAuditDemand(inspection);
-    if (reconciliation.stable) {
-      return { inspection, reconciliation };
-    }
-
-    const next = [
-      ...new Set([
-        ...requiredKnowledgeDomains,
-        ...reconciliation.missingDomains,
-      ]),
-    ].sort();
-    const nextKey = next.join("|");
-    if (
-      nextKey === lastMissingKey ||
-      next.length === requiredKnowledgeDomains.length
-    ) {
-      throw new Error(
-        "RIG demand reconciliation stalled before reaching a fixed point: " +
-          reconciliation.missingDomains.join(", ") +
-          ".",
-      );
-    }
-    lastMissingKey = nextKey;
-    requiredKnowledgeDomains = next;
+  if (firstReconciliation.stable) {
+    return {
+      inspection: firstInspection,
+      reconciliation: firstReconciliation,
+    };
   }
 
-  throw new Error(
-    "RIG demand reconciliation exceeded the finite knowledge-domain convergence bound.",
+  const reconciledDomains = [
+    ...new Set([
+      ...initialRequiredDomains,
+      ...firstReconciliation.requiredDomains,
+    ]),
+  ].sort();
+
+  const secondInspection = await inspectArtifact(
+    input.artifactPath,
+    {
+      ...(input.target ?? {}),
+      requiredKnowledgeDomains: reconciledDomains,
+    },
+    input.knowledgeCatalog,
+    input.telemetry ?? [],
+    input.runtimeProbeTranscript,
   );
+  const secondReconciliation =
+    reconcileSelectedMapAuditDemand(
+      secondInspection,
+      2,
+    );
+
+  if (!secondReconciliation.stable) {
+    throw new Error(
+      "RIG knowledge demand did not converge after the bounded reconciliation pass. " +
+        "Refusing repeated full-artifact reinspection; unresolved domain(s): " +
+        secondReconciliation.missingDomains.join(", ") +
+        ".",
+    );
+  }
+
+  return {
+    inspection: secondInspection,
+    reconciliation: secondReconciliation,
+  };
 }
 
 /**

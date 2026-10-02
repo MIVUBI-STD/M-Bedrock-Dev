@@ -11,11 +11,18 @@ export interface AuditDemandReconciliation {
   readonly requiredDomains: readonly AnalysisKnowledgeDomain[];
   readonly missingDomains: readonly AnalysisKnowledgeDomain[];
   readonly stable: boolean;
+  readonly passCount: number;
 }
 
 export function reconcileSelectedMapAuditDemand(
   inspection: InspectArtifactResult,
+  passCount = 1,
 ): AuditDemandReconciliation {
+  if (!Number.isInteger(passCount) || passCount < 1) {
+    throw new Error(
+      "Audit demand reconciliation passCount must be a positive integer.",
+    );
+  }
   const analyzed = new Set(
     inspection.gameplayWorld.analysisDemand ?? [],
   );
@@ -34,5 +41,6 @@ export function reconcileSelectedMapAuditDemand(
     requiredDomains: [...required].sort(),
     missingDomains: missing,
     stable: missing.length === 0,
+    passCount,
   };
 }
