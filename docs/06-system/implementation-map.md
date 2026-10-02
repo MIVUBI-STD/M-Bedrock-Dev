@@ -22,13 +22,17 @@ Use this before broad repository search.
 | Bundled/minified source-shape recovery + source-map discovery | engine/analyzers/scripts/src/recovery/source-recovery.ts |
 | Source-map generated→original binding | engine/analyzers/scripts/src/recovery/source-map-binding.ts |
 | Compact data-flow context slice for diagnosis/AI context | engine/packages/orchestrator/src/inspection/script-dataflow-context.ts |
-| Evidence-backed gameplay intent graph, authored invariants, unknowns, intent grounding, and domain-specific authority resolution | engine/packages/gameplay-intent/ |
+| Evidence-backed gameplay intent graph, authored invariants, state/model closure, unknowns, intent grounding, and domain-specific authority resolution | engine/packages/gameplay-intent/ |
+| Canonical gameplay surface discovery + Discovery Closure | engine/packages/orchestrator/src/inspection/gameplay-surface-discovery.ts + gameplay-discovery-closure.ts |
 | Canonical gameplay semantic projection | engine/packages/orchestrator/src/inspection/gameplay-semantic-model.ts |
+| Risk-directed gameplay analysis priority | engine/packages/orchestrator/src/inspection/gameplay-analysis-priority.ts |
+| Reachability/capability orchestration | engine/packages/orchestrator/src/inspection/gameplay-reachability-stage.ts + capability-exposure-stage.ts |
+| Hidden gameplay defect orchestration | engine/packages/orchestrator/src/inspection/hidden-gameplay-defect-analysis.ts |
 | Canonical map engineering/QA assessment projection | engine/packages/orchestrator/src/inspection/map-engineering-assessment.ts |
-| Legacy mixed gameplay/engineering compatibility projection | engine/packages/orchestrator/src/inspection/gameplay-world-model.ts |
+| Gameplay world composition / closure integration | engine/packages/orchestrator/src/inspection/gameplay-world-model.ts |
 | Formal behavioral state/transition/temporal property kernel + Minecraft overlays | engine/packages/behavior-model/ |
 | Constraint-backed reachability, invariant proof, and counterexample traces | engine/packages/logic-solver/ |
-| Competing hypotheses, falsifiers, and diagnostic probe discrimination | engine/packages/diagnostic-reasoning/ |
+| Competing hypotheses, falsifiers, negative-space/temporal reasoning, reachability, capability exposure, contradiction registry, risk-directed proof depth, and diagnostic probe discrimination | engine/packages/diagnostic-reasoning/ |
 | Gameplay-critical candidate discovery + counter-evidence suppression | engine/packages/diagnostic-reasoning/src/candidate-evidence.ts |
 | Diagnostic contract/IDs | engine/packages/diagnostics/ |
 | Validation step/result contracts | engine/packages/validation/ |
@@ -36,7 +40,8 @@ Use this before broad repository search.
 | Proposed Bug Set chat-review / approval boundary | engine/packages/bug-report/src/review.ts |
 | Canonical persisted bug-report current state | workspace/reports/*.json |
 | Bug-report ownership/storage boundary | docs/06-system/bug-report-ownership.md |
-| Client-facing bug-report document projection/design | engine/packages/bug-report/src/document/ + engine/packages/bug-report/DOCUMENT.md |
+| Client-facing bug-report document projection/design/checklists | engine/packages/bug-report/src/document/ + engine/packages/bug-report/DOCUMENT.md |
+| Compact ChatGPT/Markdown bug-report preview | engine/packages/bug-report/src/preview.ts + engine/packages/bug-report/PREVIEW.md |
 | Self-contained HTML bug-report file rendering | tooling/bug-report-documents/ |
 | Repair preservation contracts, baselines, and verification receipts | engine/packages/preservation/ |
 | Reliability invariants/fingerprint/update delta/retest/runtime evidence | engine/packages/reliability/ |
