@@ -506,15 +506,72 @@
         },
         "unaccountedSurfaceIds": {
           "type": "array",
-          "maxItems": 0,
           "items": {
-            "type": "string"
-          }
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         },
         "notes": {
           "type": "string"
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": ["CLOSED", "PARTIAL"]
+              }
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "unaccountedSurfaceIds": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "OPEN"
+              }
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "anyOf": [
+              {
+                "properties": {
+                  "unaccountedSurfaceIds": {
+                    "minItems": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "stateModelComplete": {
+                    "const": false
+                  }
+                },
+                "required": ["stateModelComplete"]
+              },
+              {
+                "properties": {
+                  "boundariesExtracted": {
+                    "const": false
+                  }
+                },
+                "required": ["boundariesExtracted"]
+              }
+            ]
+          }
+        }
+      ],
       "additionalProperties": true
     }
   },
