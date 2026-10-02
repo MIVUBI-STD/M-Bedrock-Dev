@@ -33,6 +33,7 @@ Related contracts:
 - [Capacity and concurrency contract](./capacity-and-concurrency-contract.md)
 - [Capacity/concurrency audit checklist](./capacity-concurrency-audit-checklist.md)
 - [Gameplay audit blind-spot contract](./gameplay-audit-blind-spots.md)
+- [Cross-system interaction audit](./cross-system-interaction-audit.md)
 - [Audit finalization checklist](./audit-finalization-checklist.md)
 
 ## Core models and graphs
@@ -87,12 +88,13 @@ Related contracts:
 Runtime documents describe evidence requirements and domain reasoning. They are not live-game proof by themselves.
 
 - arena/session: [arena cleanup](./arena-cleanup-runtime.md), [round integrity](./round-integrity-runtime.md), [player session](./player-session-runtime.md)
-- player lifecycle: [player life](./player-life-runtime.md), [inventory](./inventory-runtime.md), [interaction](./interaction-runtime.md), [input gesture](./input-gesture-runtime.md)
+- player lifecycle: [player life](./player-life-runtime.md), [inventory](./inventory-runtime.md), [interaction](./interaction-runtime.md), [input gesture](./input-gesture-runtime.md), [effects](./effects-runtime.md), [permissions](./permissions-runtime.md)
 - entities/combat: [entity navigation](./entity-runtime-navigation.md), [entity population](./entity-population-runtime.md), [combat](./combat-runtime.md), [targeting knowledge](./targeting-knowledge.md)
 - world/chunks: [chunk loading](./chunk-runtime-loading.md), [world state](./world-state-runtime.md), [world mutation](./world-mutation-runtime.md), [spatial containment](./spatial-containment-runtime.md)
-- execution/order: [event ordering](./event-ordering-runtime.md), [automation](./automation-runtime.md), [persistence/recovery](./persistence-recovery-runtime.md)
+- execution/order: [event ordering](./event-ordering-runtime.md), [automation](./automation-runtime.md), [persistence/recovery](./persistence-recovery-runtime.md), [state authority](./state-authority-runtime.md), [performance](./performance-runtime.md)
 - environment: [physics](./physics-runtime.md), [environment hazards](./environment-hazards-runtime.md), [teleport](./teleport-runtime.md), [mounts](./mounts-runtime.md)
-- economy/content: [loot/economy](./loot-economy-runtime.md), [interactive blocks](./interactive-blocks-runtime.md), [NPC dialogue](./npc-dialogue-runtime.md)
+- economy/content: [loot/economy](./loot-economy-runtime.md), [interactive blocks](./interactive-blocks-runtime.md), [NPC dialogue](./npc-dialogue-runtime.md), [embedded structures](./embedded-structure-runtime.md)
+- presentation/control: [cinematic](./cinematic-runtime.md), [client feedback](./client-feedback-runtime.md)
 
 ## Observation and evidence contracts
 
