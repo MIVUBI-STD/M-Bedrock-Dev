@@ -165,7 +165,7 @@ async function main(): Promise<void> {
   if (command === "dev-probe-plan" && input) {
     if (!probeBindingsPath) {
       throw new Error(
-        "probe-plan requires --probe-bindings <bindings.json>",
+        "dev-probe-plan requires --probe-bindings <bindings.json>",
       );
     }
     if (
@@ -173,7 +173,7 @@ async function main(): Promise<void> {
       probeContext !== "LIVE_MINECRAFT"
     ) {
       throw new Error(
-        "probe-plan requires --probe-context LOCAL_MINECRAFT or LIVE_MINECRAFT",
+        "dev-probe-plan requires --probe-context LOCAL_MINECRAFT or LIVE_MINECRAFT",
       );
     }
 
@@ -204,7 +204,7 @@ async function main(): Promise<void> {
         availableContext: probeContext,
         bindings: bindings.bindings,
         artifactId: result.artifactId,
-        sessionId: "probe-plan:" + result.artifactId,
+        sessionId: "dev-probe-plan:" + result.artifactId,
       },
     );
 
@@ -223,12 +223,12 @@ async function main(): Promise<void> {
   if (command === "dev-probe-replay" && input) {
     if (!probeTranscriptPath) {
       throw new Error(
-        "probe-replay requires --probe-transcript <probes.json>",
+        "dev-probe-replay requires --probe-transcript <probes.json>",
       );
     }
     if (!probeContext) {
       throw new Error(
-        "probe-replay requires --probe-context",
+        "dev-probe-replay requires --probe-context",
       );
     }
 
@@ -649,12 +649,11 @@ async function main(): Promise<void> {
     command !== "dev-arena-audit" &&
     command !== "dev-workflow" &&
     command !== "verify-repair" &&
-    command !== "review-model" &&
     command !== "dev-probe-plan" &&
     command !== "dev-probe-replay"
   ) {
     throw new Error(
-      "Telemetry and runtime probe transcript inputs are only supported by production audit/review/workflow/probe commands and repair verification.",
+      "Telemetry and runtime probe transcript inputs are supported by audit, dev inspection/projection tools, and repair verification only.",
     );
   }
 
@@ -664,7 +663,7 @@ async function main(): Promise<void> {
     command !== "dev-probe-replay"
   ) {
     throw new Error(
-      "Probe binding/context options are only supported by probe-plan or probe-replay.",
+      "Probe binding/context options are only supported by dev-probe-plan or dev-probe-replay.",
     );
   }
 
