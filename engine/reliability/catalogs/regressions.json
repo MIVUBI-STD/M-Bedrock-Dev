@@ -535,6 +535,44 @@
       "observed": "Recovery rebuilds the scheduler from the next wave index without persisted pending-group/timing state; in-progress delayed groups are not restored and the first resumed future wave is launched immediately."
     },
     {
+      "id": "reg_defense_visible_arena_capacity_reduced",
+      "title": "Defense exposes six arenas but only two can run concurrently",
+      "domain": "multiplayer",
+      "discoveredBy": "static-audit",
+      "provenance": {
+        "source": "Selected artifact static audit",
+        "artifact": "Defense Challenge v1.1.1.mcworld",
+        "artifactSha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
+        "date": "2026-10-02",
+        "targetEdition": "education",
+        "targetVersion": null
+      },
+      "invariantIds": [
+        "arena.visible-capacity-matches-playable-capacity",
+        "arena.capacity-degradation-must-be-reported"
+      ],
+      "triggerTags": [
+        "gameplay",
+        "multi-arena",
+        "capacity",
+        "queue",
+        "design"
+      ],
+      "capabilityTags": [
+        "arena-lifecycle",
+        "multiplayer-concurrency",
+        "chunks"
+      ],
+      "reproduction": [
+        "Assign/start independent parties across the six available arenas",
+        "Run two arenas concurrently",
+        "Attempt to start a third arena while the first two remain active",
+        "Observe that the third session is queued instead of using one of the remaining visible arenas"
+      ],
+      "expected": "The player-visible six-arena design can support six independent arena sessions concurrently, or the map design exposes only the concurrency it can actually provide.",
+      "observed": "Six arenas are presented, but the implementation caps concurrent active arenas at two; additional sessions are queued. The queue and ticking-area platform constraint explain the limitation but do not remove the player-visible capacity mismatch."
+    },
+    {
       "id": "reg_fotp_l1_friendly_fire_enabled",
       "title": "Fall of the Pillager L1 allows teammate damage",
       "domain": "combat",
