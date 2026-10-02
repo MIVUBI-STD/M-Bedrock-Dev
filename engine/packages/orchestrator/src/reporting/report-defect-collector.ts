@@ -124,7 +124,9 @@ export interface ReportCandidateRepairContext {
 
 export interface RuntimeReportCandidate {
   readonly route: "runtime";
+  /** @deprecated Use scenarioCausalLinkIds. */
   readonly scenarioCausalLinkId?: string;
+  readonly scenarioCausalLinkIds?: readonly string[];
   readonly bugTrigger?: BugTriggerDraft;
   readonly intent: GameplayIntentModel;
   readonly assessment: GameplayIntentRuntimeAssessment;
@@ -141,7 +143,9 @@ export interface RuntimeReportCandidate {
 
 export interface StaticReportCandidate {
   readonly route: "static";
+  /** @deprecated Use scenarioCausalLinkIds. */
   readonly scenarioCausalLinkId?: string;
+  readonly scenarioCausalLinkIds?: readonly string[];
   readonly bugTrigger?: BugTriggerDraft;
   readonly intent: GameplayIntentModel;
   readonly result: IntentDiagnosticGateResult;
@@ -154,7 +158,9 @@ export interface StaticReportCandidate {
 
 export interface TesterReportCandidate {
   readonly route: "tester";
+  /** @deprecated Use scenarioCausalLinkIds. */
   readonly scenarioCausalLinkId?: string;
+  readonly scenarioCausalLinkIds?: readonly string[];
   readonly subjectIds: readonly string[];
   readonly confirmation: TesterDefectConfirmationInput;
   readonly semanticIr?: SemanticIr;
@@ -853,13 +859,28 @@ function collectOne(
     ...defectDraft
   } = candidate.defect;
 
+  const scenarioCausalLinkIds = [
+    ...new Set([
+      ...(candidate.scenarioCausalLinkIds ?? []),
+      ...(candidate.scenarioCausalLinkId === undefined
+        ? []
+        : [candidate.scenarioCausalLinkId]),
+    ]),
+  ].sort();
+
   const confirmed: ConfirmedDefect = {
     ...defectDraft,
-    ...(candidate.scenarioCausalLinkId === undefined
+    ...(scenarioCausalLinkIds.length === 0
       ? {}
       : {
-          causalIncidentId:
-            candidate.scenarioCausalLinkId,
+          causalIncidentIds:
+            scenarioCausalLinkIds,
+          ...(scenarioCausalLinkIds.length === 1
+            ? {
+                causalIncidentId:
+                  scenarioCausalLinkIds[0],
+              }
+            : {}),
         }),
     expected,
     observed,
@@ -1115,8 +1136,15 @@ export function gameplayDefectCandidateCoverageIssues(
   const candidateLinks = new Map<string, number>();
 
   for (const candidate of candidates) {
-    const linkId = candidate.scenarioCausalLinkId;
-    if (linkId === undefined) {
+    const linkIds = [
+      ...new Set([
+        ...(candidate.scenarioCausalLinkIds ?? []),
+        ...(candidate.scenarioCausalLinkId === undefined
+          ? []
+          : [candidate.scenarioCausalLinkId]),
+      ]),
+    ].sort();
+    if (linkIds.length === 0) {
       if (candidate.route !== "tester") {
         issues.push({
           code: "invalid-confirmed-defect",
@@ -1127,19 +1155,21 @@ export function gameplayDefectCandidateCoverageIssues(
       continue;
     }
 
-    candidateLinks.set(
-      linkId,
-      (candidateLinks.get(linkId) ?? 0) + 1,
-    );
+    for (const linkId of linkIds) {
+      candidateLinks.set(
+        linkId,
+        (candidateLinks.get(linkId) ?? 0) + 1,
+      );
 
-    if (!ready.has(linkId)) {
-      issues.push({
-        code: "invalid-confirmed-defect",
-        message:
-          "Report candidate references Gameplay Causal Link " +
-          linkId +
-          " but that link is not CONFIRMED_DEFECT_READY.",
-      });
+      if (!ready.has(linkId)) {
+        issues.push({
+          code: "invalid-confirmed-defect",
+          message:
+            "Report candidate references Gameplay Causal Link " +
+            linkId +
+            " but that link is not CONFIRMED_DEFECT_READY.",
+        });
+      }
     }
   }
 

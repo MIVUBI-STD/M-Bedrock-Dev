@@ -290,7 +290,7 @@ Gameplay Causal Links
 
 Do not publish normal/designed behavior, unresolved AI work, or runtime residue as bugs.
 
-Production AI report candidates must reference exactly one `CONFIRMED_DEFECT_READY` Gameplay Causal Link. Unbound static/runtime candidates are rejected. Tester-originated candidates may remain independent because their proof authority is direct tester reproduction.
+Production AI report candidates must reference one or more `CONFIRMED_DEFECT_READY` Gameplay Causal Links. Multiple causal links may consolidate into one report candidate when they share one semantic root cause. Every ready link must be covered exactly once across the candidate set; unbound static/runtime candidates are rejected. Tester-originated candidates may remain independent because their proof authority is direct tester reproduction.
 
 ## Forbidden
 

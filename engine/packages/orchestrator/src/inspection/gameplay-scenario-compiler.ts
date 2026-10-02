@@ -90,6 +90,44 @@ function stageForNode(
   return "Gameplay";
 }
 
+function presetAnchorIds(
+  kind: GameplayAuditScenarioPreset["scenarios"][number]["kind"],
+  intent: GameplayIntentModel,
+): readonly string[] {
+  const preferredKinds: readonly GameplayIntentNode["kind"][] =
+    kind === "multi-arena-parallel" ||
+    kind === "arena-capacity-plus-one"
+      ? ["policy", "lifecycle", "state"]
+      : kind === "disconnect-reconnect" ||
+        kind === "reload-recovery" ||
+        kind === "repeated-run"
+        ? ["lifecycle", "state", "outcome"]
+        : kind === "terminal-collision"
+          ? ["outcome", "lifecycle", "state"]
+          : kind === "deferred-ownership"
+            ? ["lifecycle", "state", "phase"]
+            : kind === "full-journey"
+              ? ["phase", "objective", "outcome"]
+              : ["state", "lifecycle", "policy"];
+
+  const authored = intent.nodes.filter(
+    (node) =>
+      preferredKinds.includes(node.kind) &&
+      node.status !== "hypothesis",
+  );
+
+  const ranked = authored.sort((a, b) => {
+    const kindRank = (node: GameplayIntentNode) =>
+      preferredKinds.indexOf(node.kind);
+    return (
+      kindRank(a) - kindRank(b) ||
+      a.id.localeCompare(b.id)
+    );
+  });
+
+  return ranked.slice(0, 3).map((node) => node.id);
+}
+
 function presetPlayerCounts(
   preset: GameplayAuditScenarioPreset,
 ): readonly number[] {
@@ -583,12 +621,17 @@ export function compileGameplayScenarioGraph(
     const componentIds = presetComponentIds(
       presetScenario.kind,
     );
+    const sourceSubjectIds =
+      presetAnchorIds(
+        presetScenario.kind,
+        input.intent,
+      );
     scenarios.push({
       id: scenarioId,
       label: presetScenario.kind,
       gameplayStage: "Boundary / Recovery / Variant",
       purpose: presetScenario.reason,
-      sourceSubjectIds: [],
+      sourceSubjectIds,
       componentIds,
       causalLinkIds: [],
       playerCounts:
@@ -599,36 +642,13 @@ export function compileGameplayScenarioGraph(
     });
   }
 
-  const composedDomains = new Set<
-    import("./gameplay-scenario-model.js").GameplayKnowledgeDomain
-  >();
-  for (const [scenarioId, domains] of
-    scenarioKnowledgeDomains) {
-    const scenario = scenarios.find(
-      (item) => item.id === scenarioId,
-    );
-    if (scenario?.label === "full-journey") {
-      continue;
-    }
-    for (const domain of domains) {
-      composedDomains.add(domain);
-    }
-  }
-  for (const scenario of scenarios) {
-    if (scenario.label !== "full-journey") {
-      continue;
-    }
-    scenarioKnowledgeDomains.set(
-      scenario.id,
-      [...composedDomains].sort(),
-    );
-  }
-
   const knowledgeRequirements = scenarios.flatMap(
     (scenario) =>
       buildGameplayKnowledgeRequirements(
         scenario.id,
-        scenarioKnowledgeDomains.get(scenario.id) ?? [],
+        scenario.label === "full-journey"
+          ? []
+          : scenarioKnowledgeDomains.get(scenario.id) ?? [],
         {
           subjectIds: scenario.sourceSubjectIds,
           componentIds: scenario.componentIds,
@@ -768,11 +788,8 @@ export function compileGameplayScenarioGraph(
       const scenario = scenarioById.get(scenarioId);
       if (!scenario) continue;
       const anchorId =
-        scenario.sourceSubjectIds[0] ??
-        scenario.componentIds.find(
-          (id) =>
-            !id.startsWith("runtime:") &&
-            componentIds.has(id),
+        scenario.sourceSubjectIds.find(
+          (id) => componentIds.has(id),
         );
       if (!anchorId || !componentIds.has(anchorId)) continue;
       const knowledgeDomain =

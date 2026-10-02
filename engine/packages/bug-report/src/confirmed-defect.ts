@@ -206,6 +206,7 @@ export interface ConfirmedDefect {
   readonly brokenInvariantIds: readonly string[];
   readonly repairUnitIds: readonly string[];
   readonly causalIncidentId?: string;
+  readonly causalIncidentIds?: readonly string[];
 }
 
 export function validateConfirmedDefect(
