@@ -452,27 +452,61 @@ export function buildGameplayKnowledgeReceipts(
   requirements: readonly GameplayKnowledgeRequirement[],
   world: GameplayWorldModel,
 ): readonly GameplayKnowledgeReceipt[] {
-  const ordered = [...requirements].sort(
-    (left, right) =>
-      left.dependsOnRequirementIds.length -
-        right.dependsOnRequirementIds.length ||
-      left.id.localeCompare(right.id),
+  const byId = new Map(
+    requirements.map((requirement) => [
+      requirement.id,
+      requirement,
+    ]),
   );
   const receipts = new Map<
     string,
     GameplayKnowledgeReceipt
   >();
+  const visiting = new Set<string>();
 
-  for (const requirement of ordered) {
-    const blockedDependencies =
-      requirement.dependsOnRequirementIds.filter(
-        (dependencyId) =>
-          receipts.get(dependencyId)?.status !==
-          "SATISFIED",
-      );
+  const resolve = (
+    requirement: GameplayKnowledgeRequirement,
+  ): GameplayKnowledgeReceipt => {
+    const existing = receipts.get(requirement.id);
+    if (existing) return existing;
+
+    if (visiting.has(requirement.id)) {
+      const cycleReceipt: GameplayKnowledgeReceipt = {
+        requirementId: requirement.id,
+        scenarioId: requirement.scenarioId,
+        domain: requirement.domain,
+        status: "BLOCKED_BY_PREREQUISITE",
+        evidenceIds: [],
+        capabilityIdsUsed: [],
+        reason:
+          "Required Inspection Graph contains a prerequisite cycle at " +
+          requirement.id +
+          ".",
+      };
+      receipts.set(requirement.id, cycleReceipt);
+      return cycleReceipt;
+    }
+
+    visiting.add(requirement.id);
+    const blockedDependencies: string[] = [];
+    for (const dependencyId of
+      requirement.dependsOnRequirementIds) {
+      const dependency = byId.get(dependencyId);
+      if (!dependency) {
+        blockedDependencies.push(
+          dependencyId + " (missing node)",
+        );
+        continue;
+      }
+      const receipt = resolve(dependency);
+      if (receipt.status !== "SATISFIED") {
+        blockedDependencies.push(dependencyId);
+      }
+    }
+    visiting.delete(requirement.id);
 
     if (blockedDependencies.length > 0) {
-      receipts.set(requirement.id, {
+      const receipt: GameplayKnowledgeReceipt = {
         requirementId: requirement.id,
         scenarioId: requirement.scenarioId,
         domain: requirement.domain,
@@ -481,39 +515,11 @@ export function buildGameplayKnowledgeReceipts(
         capabilityIdsUsed: [],
         reason:
           "Required prerequisite inspection node(s) are not satisfied: " +
-          blockedDependencies.join(", ") +
+          blockedDependencies.sort().join(", ") +
           ".",
-      });
-      continue;
-    }
-
-    const evidenceIds =
-      domainEvidence(world, requirement.domain);
-    if (requirement.capabilityIds.length === 0) {
-      receipts.set(requirement.id, {
-        requirementId: requirement.id,
-        scenarioId: requirement.scenarioId,
-        domain: requirement.domain,
-        status: "CAPABILITY_GAP",
-        evidenceIds,
-        capabilityIdsUsed: [],
-        reason:
-          "No analysis-planner capability is registered for this required gameplay knowledge domain.",
-      });
-      continue;
-    }
-    if (evidenceIds.length === 0) {
-      receipts.set(requirement.id, {
-        requirementId: requirement.id,
-        scenarioId: requirement.scenarioId,
-        domain: requirement.domain,
-        status: "MISSING_REQUIRED_KNOWLEDGE",
-        evidenceIds: [],
-        capabilityIdsUsed: [],
-        reason:
-          "A registered capability exists, but no execution receipt returned to the scenario for this required domain.",
-      });
-      continue;
+      };
+      receipts.set(requirement.id, receipt);
+      return receipt;
     }
 
     const capabilityIdsUsed =
@@ -525,7 +531,43 @@ export function buildGameplayKnowledgeReceipts(
           capabilityId,
         )
       );
-    receipts.set(requirement.id, {
+    const evidenceIds =
+      domainEvidence(world, requirement.domain);
+
+    if (requirement.capabilityIds.length === 0) {
+      const receipt: GameplayKnowledgeReceipt = {
+        requirementId: requirement.id,
+        scenarioId: requirement.scenarioId,
+        domain: requirement.domain,
+        status: "CAPABILITY_GAP",
+        evidenceIds,
+        capabilityIdsUsed: [],
+        reason:
+          "No analysis-planner capability is registered for this required gameplay knowledge domain.",
+      };
+      receipts.set(requirement.id, receipt);
+      return receipt;
+    }
+
+    if (
+      capabilityIdsUsed.length === 0 ||
+      evidenceIds.length === 0
+    ) {
+      const receipt: GameplayKnowledgeReceipt = {
+        requirementId: requirement.id,
+        scenarioId: requirement.scenarioId,
+        domain: requirement.domain,
+        status: "MISSING_REQUIRED_KNOWLEDGE",
+        evidenceIds: [],
+        capabilityIdsUsed: [],
+        reason:
+          "A registered capability exists, but no matching capability execution receipt returned to the scenario for this required domain.",
+      };
+      receipts.set(requirement.id, receipt);
+      return receipt;
+    }
+
+    const receipt: GameplayKnowledgeReceipt = {
       requirementId: requirement.id,
       scenarioId: requirement.scenarioId,
       domain: requirement.domain,
@@ -536,7 +578,13 @@ export function buildGameplayKnowledgeReceipts(
         "Required gameplay knowledge is present and tied to executed analysis capability receipt(s): " +
         capabilityIdsUsed.join(", ") +
         ".",
-    });
+    };
+    receipts.set(requirement.id, receipt);
+    return receipt;
+  };
+
+  for (const requirement of requirements) {
+    resolve(requirement);
   }
 
   return requirements.map(
