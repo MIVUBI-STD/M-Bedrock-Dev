@@ -165,6 +165,7 @@ export function analyzeDeveloperToolReleaseExposure(
         reachability === undefined
           ? {
               reachable: false,
+              resolution: "unknown" as const,
               targetId: "item:" + item,
               nodeIds: [],
               edgeKinds: [],
