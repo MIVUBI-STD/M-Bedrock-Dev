@@ -21,3 +21,4 @@ export * from "./engineering-analysis.js";
 export * from "./gameplay-degradation.js";
 export * from "./reachability-graph.js";
 export * from "./capability-exposure.js";
+export * from "./contradiction-registry.js";
