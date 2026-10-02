@@ -16,14 +16,19 @@ Older versions, Development/Source, old QA/Bug Reports, Technical Docs, changelo
 
 ```text
 Selected Map Version
-→ Gameplay Surface Inventory
-→ Gameplay Contract
+→ Multi-source Gameplay Surface Inventory
+→ Gameplay Discovery Closure
+→ Gameplay Contract + State / Boundary Reconstruction
+→ Gameplay Model Closure
+→ Risk-directed Analysis
 → Actual Behavior
-→ Discovered-Surface Accounting
+→ Contradiction + Early Counter-Evidence
+→ Exact-work Deduplication / Corroboration
 → Confirmed Defect
 → Proposed Bug Set
 → Chat Approval
 → Approved Bug
+→ Production Report
 → Repair Contract
 → Authorized Repair
 → Verify Defect + Preserve Gameplay
@@ -66,3 +71,56 @@ Approved Bug
 ```
 
 A repair is incomplete if the symptom disappears but intended gameplay in the selected version is damaged.
+
+## Usage scenarios
+
+### Audit only
+
+```text
+Selected .mcworld
+→ inspect
+→ Discovery Closure
+→ Gameplay Model Closure
+→ diagnose
+→ Proposed Bug Set
+→ STOP
+```
+
+Use when the goal is to find/classify issues only.
+
+### Audit + report
+
+```text
+Audit only
+→ review/approve proposed bugs
+→ Bug Report V2
+→ chat preview / HTML client report
+→ STOP
+```
+
+Do not publish a comprehensive report while Discovery Closure or Gameplay Model Closure is OPEN.
+
+### Approved repair
+
+```text
+Approved Bug
+→ Must Change + Must Preserve
+→ authorized repair
+→ targeted verification
+→ regression/preservation verification
+→ updated report state
+```
+
+Do not use repair reasoning to decide whether a candidate is a bug.
+
+### New map version
+
+Treat the new selected artifact as a new current gameplay truth. Rebuild discovery, intent, closure, and contradiction evidence. Prior results may inform calibration but do not become current gameplay authority.
+
+### Runtime-only validation
+
+Static/package analysis records the unresolved claim and exact verification scenario. Escalate only that residue to LOCAL_MINECRAFT/LIVE_MINECRAFT.
+
+### Detection Gap
+
+Record the unsupported surface as Detection Gap and hand it to Detection Development. Do not silently add map-specific production rules inside the active audit.
