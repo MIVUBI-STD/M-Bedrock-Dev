@@ -44,3 +44,13 @@ Counter-evidence is fail-closed:
 Internal `repair-eligible` / `guarded-repair-eligible` statuses mean causal repair readiness only. Final mutation authority remains Approved Bug/design change + Repair Contract.
 
 Severity remains owned by the bug-report decision layer.
+
+## Hidden-defect reasoning owners
+
+Diagnostic Reasoning owns:
+
+- `findNegativeSpace()` — missing producer/consumer/exit/reset/effect counterparts.
+- `prioritizeTemporalInteraction()` — risk-directed before/overlap/after analysis.
+- `findDesignConsistencyAnomalies()` — peer/outlier inconsistencies that require intent challenge.
+
+These are candidate-generation and prioritization tools. An anomaly or absence is not automatically a confirmed defect; normal evidence, intent, counter-evidence, and player-impact gates still apply.
