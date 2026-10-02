@@ -41,9 +41,24 @@ This keeps current work practical without a risky mass-delete while CI/local ver
 
 Canonical implementations live under the family directories above. Legacy flat source paths are compatibility re-export stubs only and must not receive new implementation logic.
 
+## Production selected-map audit boundary
+
+Production gameplay bug audit has one authority:
+
+```text
+runSelectedMapAudit({ artifactPath })
+→ ordered admission
+→ bounded model continuation when authorized
+→ canonical review/report continuation
+```
+
+`inspectArtifact()` and the inspection family are engineering primitives used by the canonical audit, reliability tooling, comparison, repair verification, and focused engine development. They are not alternate production audit entry points. User-facing CLI audit/review/workflow/probe commands must obtain their inspection snapshot from `runSelectedMapAudit()`.
+
+Repository verification enforces this boundary through `verify:audit-entrypoint`.
+
 ## Inspection pipeline
 
-`inspect.ts` is the public orchestration flow. Detailed work is delegated to bounded stages:
+`inspect.ts` is the internal inspection composition flow used underneath the canonical audit. Detailed work is delegated to bounded stages:
 
 ```text
 filesystem inventory
@@ -104,7 +119,8 @@ Orchestrator may compose analyzers and core packages. It must not:
 - duplicate compatibility, graph, repair, diagnostic, or knowledge semantics;
 - hide mutable global state;
 - create interface-specific behavior for CLI/MCP/UI;
-- treat static/package evidence as runtime proof.
+- treat static/package evidence as runtime proof;
+- expose a user-facing production path that bypasses `runSelectedMapAudit()`.
 
 `inspect.ts` should remain readable as a top-to-bottom composition flow. Detailed parsing, derivation, diagnostics, and result projection belong in the nearest bounded stage or their existing semantic owner.
 
