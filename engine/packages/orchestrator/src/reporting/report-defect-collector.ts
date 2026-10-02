@@ -1013,7 +1013,7 @@ function sourceEvidenceIssues(
   return issues;
 }
 
-export function prepareBugReportReviewFromAuditCandidates(
+export function prepareBugReportReviewFromAuditCandidatesCompatibility(
   input: Omit<
     BuildBugReportFromAuditInput,
     "repairBy" | "approved"
@@ -1031,6 +1031,49 @@ export function prepareBugReportReviewFromAuditCandidates(
       collection.confirmed,
     ),
   };
+}
+
+export type PrepareBugReportReviewFromClosedAuditInput =
+  Omit<
+    BuildBugReportFromClosedAuditInput,
+    "repairBy" | "approved"
+  >;
+
+export type PrepareBugReportReviewFromClosedAuditResult =
+  | PrepareBugReportReviewFromAuditResult
+  | {
+      readonly collection:
+        ConfirmedDefectCollection;
+      readonly proposed?: never;
+      readonly blocked: true;
+      readonly reasons: readonly string[];
+    };
+
+export function prepareBugReportReviewFromAuditCandidates(
+  input:
+    PrepareBugReportReviewFromClosedAuditInput,
+): PrepareBugReportReviewFromClosedAuditResult {
+  const closureIssues =
+    gameplayClosurePublicationIssues(
+      input.gameplayClosure,
+    );
+
+  if (closureIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ?? [],
+      ),
+      blocked: true,
+      reasons: closureIssues.map(
+        (issue) => issue.message,
+      ),
+    };
+  }
+
+  return prepareBugReportReviewFromAuditCandidatesCompatibility(
+    input,
+  );
 }
 
 /**
