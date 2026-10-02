@@ -11,9 +11,13 @@ export const BUG_REPORT_CLIENT_DOCUMENT_LABELS = {
   severityGuide: "Severity Guide",
   issueDetails: "Issue Details",
   issue: "Issue",
-  reproduction: "How to Reproduce",
+  reproduction: "Tester Checklist",
   observed: "Observed",
   expected: "Expected",
   recommendedResolution:
     "Recommended Resolution",
+  workChecklist: "Work Checklist",
+  technicalAnalysis: "Technical Analysis",
+  relevantCode: "Relevant Code",
+  mustPreserve: "Must Preserve",
 } as const;
