@@ -146,5 +146,19 @@ export function buildGameplayReachabilityGraph(
         a.to.localeCompare(b.to) ||
         a.kind.localeCompare(b.kind),
     ),
+    coverage: {
+      complete: false,
+      sources: [
+        "script-item-grants",
+        "script-world-drops",
+        "give-command",
+      ],
+      gaps: [
+        "container-contents",
+        "crafting-recipes",
+        "engine-loot-table-items",
+        "world-natural-acquisition",
+      ],
+    },
   };
 }
