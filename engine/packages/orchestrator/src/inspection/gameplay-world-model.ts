@@ -336,6 +336,20 @@ export interface GameplayWorldModel {
       unresolved: number;
     };
   };
+  analysisExecution: {
+    stateFlow: boolean;
+    arenaLifecycle: boolean;
+    multiplayerInterleaving: boolean;
+    chunkSimulation: boolean;
+    entityBehavior: boolean;
+    combatLifecycle: boolean;
+    inventoryState: boolean;
+    persistenceRecovery: boolean;
+    worldStructure: boolean;
+    economyReward: boolean;
+    spatialAuthority: boolean;
+    temporalOwnership: boolean;
+  };
   intent: {
     invariants: number;
     unknowns: readonly {
@@ -1429,6 +1443,31 @@ export function deriveGameplayWorldModel(
           source.routeNavigationEnvironment
             ?.unresolved ?? 0,
       },
+    },
+    analysisExecution: {
+      stateFlow: true,
+      arenaLifecycle:
+        source.arena.lifecycle !== undefined,
+      multiplayerInterleaving:
+        source.arena.lifecycle !== undefined ||
+        source.arena.stateIsolation !== undefined ||
+        source.arena.globalState !== undefined,
+      chunkSimulation:
+        source.chunkLifecycle !== undefined,
+      entityBehavior:
+        source.entityAiStack !== undefined &&
+        source.routeNavigationEnvironment !== undefined,
+      combatLifecycle:
+        source.combatLifecycle !== undefined,
+      inventoryState:
+        source.inventoryLifecycle !== undefined,
+      persistenceRecovery:
+        source.persistenceSource !== undefined,
+      worldStructure: true,
+      economyReward:
+        source.rewardSources !== undefined,
+      spatialAuthority: true,
+      temporalOwnership: true,
     },
     intent: {
       invariants: source.intent.invariants.length,

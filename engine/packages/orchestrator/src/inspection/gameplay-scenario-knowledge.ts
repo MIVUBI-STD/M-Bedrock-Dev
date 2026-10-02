@@ -1,6 +1,5 @@
 import {
   BUILTIN_ANALYSIS_CAPABILITIES,
-  analysisCapabilitiesFor,
   createAnalysisCapabilityRegistry,
   type AnalysisExecutionContext,
 } from "../../../analysis-planner/src/index.js";
@@ -25,115 +24,134 @@ const registry = createAnalysisCapabilityRegistry(
   BUILTIN_ANALYSIS_CAPABILITIES,
 );
 
-const DOMAIN_TAGS: Readonly<Record<
+const DOMAIN_CAPABILITY_IDS: Readonly<Record<
   GameplayKnowledgeDomain,
   readonly string[]
 >> = {
-  "state-flow": ["state", "dataflow"],
-  "arena-lifecycle": ["arena", "lifecycle"],
-  "multiplayer-interleaving": ["multiplayer", "interleaving"],
-  "chunk-simulation": ["chunk", "ticking-area"],
-  "entity-behavior": ["entity", "navigation"],
-  "combat-lifecycle": ["combat", "death"],
-  "inventory-state": ["inventory", "item"],
-  "persistence-recovery": ["persistence", "recovery"],
-  "world-structure": ["structure", "world-mutation"],
-  "economy-reward": ["economy", "reward"],
-  "spatial-authority": ["spatial", "region"],
-  "temporal-ownership": ["temporal", "deferred"],
+  "state-flow": [
+    "script-dataflow-lineage",
+    "script-semantic-flow",
+  ],
+  "arena-lifecycle": [
+    "arena-lifecycle-integrity",
+  ],
+  "multiplayer-interleaving": [
+    "multiplayer-interleaving",
+  ],
+  "chunk-simulation": [
+    "chunk-lifecycle-integrity",
+  ],
+  "entity-behavior": [
+    "entity-ai-navigation-readiness",
+  ],
+  "combat-lifecycle": [
+    "combat-lifecycle-contract",
+  ],
+  "inventory-state": [
+    "inventory-lifecycle-integrity",
+  ],
+  "persistence-recovery": [
+    "persistence-lifecycle-integrity",
+  ],
+  "world-structure": [
+    "structure-transition-integrity",
+  ],
+  "economy-reward": [
+    "economy-reward-integrity",
+  ],
+  "spatial-authority": [
+    "spatial-authority-coverage",
+  ],
+  "temporal-ownership": [
+    "temporal-ownership-integrity",
+  ],
 };
 
 function capabilityIdsForDomain(
   domain: GameplayKnowledgeDomain,
   context: AnalysisExecutionContext,
 ): readonly string[] {
-  return analysisCapabilitiesFor(
-    registry,
-    DOMAIN_TAGS[domain],
-    context,
-  )
-    .filter((capability) =>
-      capability.evidenceLevel !== "runtime" &&
-      capability.evidenceLevel !== "intervention"
-    )
-    .map((capability) => capability.id)
+  const byId = new Map(
+    registry.capabilities.map((capability) => [
+      capability.id,
+      capability,
+    ]),
+  );
+  return DOMAIN_CAPABILITY_IDS[domain]
+    .filter((id) => {
+      const capability = byId.get(id);
+      return (
+        capability !== undefined &&
+        capability.contexts.includes(context) &&
+        capability.evidenceLevel !== "runtime" &&
+        capability.evidenceLevel !== "intervention"
+      );
+    })
     .sort();
+}
+
+function domainExecuted(
+  world: GameplayWorldModel,
+  domain: GameplayKnowledgeDomain,
+): boolean {
+  switch (domain) {
+    case "state-flow":
+      return world.analysisExecution.stateFlow;
+    case "arena-lifecycle":
+      return world.analysisExecution.arenaLifecycle;
+    case "multiplayer-interleaving":
+      return world.analysisExecution.multiplayerInterleaving;
+    case "chunk-simulation":
+      return world.analysisExecution.chunkSimulation;
+    case "entity-behavior":
+      return world.analysisExecution.entityBehavior;
+    case "combat-lifecycle":
+      return world.analysisExecution.combatLifecycle;
+    case "inventory-state":
+      return world.analysisExecution.inventoryState;
+    case "persistence-recovery":
+      return world.analysisExecution.persistenceRecovery;
+    case "world-structure":
+      return world.analysisExecution.worldStructure;
+    case "economy-reward":
+      return world.analysisExecution.economyReward;
+    case "spatial-authority":
+      return world.analysisExecution.spatialAuthority;
+    case "temporal-ownership":
+      return world.analysisExecution.temporalOwnership;
+  }
 }
 
 function domainEvidence(
   world: GameplayWorldModel,
   domain: GameplayKnowledgeDomain,
 ): readonly string[] {
+  if (!domainExecuted(world, domain)) return [];
   switch (domain) {
     case "state-flow":
-      return world.state.semanticOperations > 0
-        ? ["world:state-flow"]
-        : [];
+      return ["analysis:state-flow"];
     case "arena-lifecycle":
-      return world.arenas.detected
-        ? ["world:arena-lifecycle"]
-        : [];
+      return ["analysis:arena-lifecycle"];
     case "multiplayer-interleaving":
-      return world.arenas.detected
-        ? ["world:multiplayer"]
-        : [];
+      return ["analysis:multiplayer-interleaving"];
     case "chunk-simulation":
-      return (
-        world.chunks.tickingAreaAcquires > 0 ||
-        world.chunks.tickingAreaReadinessStates > 0 ||
-        world.chunks.worldLoadObservers > 0 ||
-        world.chunks.entityResidencyObservability !== "absent"
-      )
-        ? ["world:chunk-simulation"]
-        : [];
+      return ["analysis:chunk-simulation"];
     case "entity-behavior":
-      return world.entities.definitions > 0
-        ? ["world:entity-behavior"]
-        : [];
+      return ["analysis:entity-behavior"];
     case "combat-lifecycle":
-      return (
-        world.combat.hurtHandlers > 0 ||
-        world.combat.deathHandlers > 0 ||
-        world.combat.damageApplications > 0
-      )
-        ? ["world:combat-lifecycle"]
-        : [];
+      return ["analysis:combat-lifecycle"];
     case "inventory-state":
-      return (
-        world.inventory.regions > 0 ||
-        world.inventory.grantRegions > 0 ||
-        world.inventory.dropRegions > 0
-      )
-        ? ["world:inventory-state"]
-        : [];
+      return ["analysis:inventory-state"];
     case "persistence-recovery":
-      return (world.persistence?.properties ?? 0) > 0
-        ? ["world:persistence-recovery"]
-        : [];
+      return ["analysis:persistence-recovery"];
     case "world-structure":
-      return (
-        world.structures.definitions > 0 ||
-        world.structures.loads > 0 ||
-        world.structures.runtimeLogicLoads > 0
-      )
-        ? ["world:world-structure"]
-        : [];
+      return ["analysis:world-structure"];
     case "economy-reward":
-      return world.economy.sourceKinds.length > 0
-        ? ["world:economy-reward"]
-        : [];
+      return ["analysis:economy-reward"];
     case "spatial-authority":
-      return (
-        world.spatial.resolvedScriptEffects > 0 ||
-        world.spatial.structurePlacements > 0 ||
-        world.spatial.authority.configured
-      )
-        ? ["world:spatial-authority"]
-        : [];
+      return ["analysis:spatial-authority"];
     case "temporal-ownership":
-      return world.state.semanticOperations > 0
-        ? ["world:temporal-ownership"]
-        : [];
+      return ["analysis:temporal-ownership"];
   }
 }
 
@@ -305,7 +323,7 @@ export function requiredKnowledgeDomainsForPreset(
 
   switch (kind) {
     case "full-journey":
-      for (const domain of Object.keys(DOMAIN_TAGS) as GameplayKnowledgeDomain[]) {
+      for (const domain of Object.keys(DOMAIN_CAPABILITY_IDS) as GameplayKnowledgeDomain[]) {
         if (domain !== "temporal-ownership") {
           addIfApplicable(domain);
         }

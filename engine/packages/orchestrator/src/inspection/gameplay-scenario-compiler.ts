@@ -608,7 +608,7 @@ export function compileGameplayScenarioGraph(
     string,
     readonly string[]
   >();
-  for (const scenario of scenariosWithKnowledge) {
+  for (const scenario of scenarios) {
     requirementsByScenario.set(
       scenario.id,
       knowledgeRequirements
@@ -684,7 +684,7 @@ export function compileGameplayScenarioGraph(
 
   const componentIds = new Set(components.map((component) => component.id));
   const causalLinks: GameplayCausalLink[] = [];
-  for (const scenario of scenarios) {
+  for (const scenario of scenariosWithKnowledge) {
     const allowed = new Set(scenario.componentIds);
     for (const edge of input.intent.edges) {
       if (!allowed.has(edge.from) || !allowed.has(edge.to)) continue;
