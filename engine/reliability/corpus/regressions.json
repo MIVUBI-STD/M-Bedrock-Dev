@@ -304,7 +304,7 @@
       "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_reload_wave_timeline_not_preserved",
       "readiness": {
         "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
+        "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
         "frozenExpectation": "missing"
       },
       "evidenceRole": "positive",
@@ -312,7 +312,8 @@
         "runtime-sensitive",
         "semantic-owner-present",
         "explicit-invariant"
-      ]
+      ],
+      "artifactFile": "Defense Challenge v1.1.1.mcworld"
     },
     {
       "id": "reg_defense_async_reset_lease_reuse_race",
@@ -320,7 +321,7 @@
       "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_async_reset_lease_reuse_race",
       "readiness": {
         "minimizedFixture": "missing",
-        "artifactFingerprint": "missing",
+        "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
         "frozenExpectation": "missing"
       },
       "evidenceRole": "positive",
@@ -328,7 +329,8 @@
         "runtime-sensitive",
         "semantic-owner-present",
         "explicit-invariant"
-      ]
+      ],
+      "artifactFile": "Defense Challenge v1.1.1.mcworld"
     }
   ],
   "policy": {
