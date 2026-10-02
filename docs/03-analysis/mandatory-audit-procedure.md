@@ -6,15 +6,19 @@ This is the canonical base procedure for every selected-map gameplay audit.
 
 It is not a tester checklist and it is not a second knowledge base. It defines the minimum complete work that must exist before an audit can claim closure.
 
-The operator-facing flow is:
+The production flow is linear and has one canonical order:
 
 ```text
-UNDERSTAND
+TARGET
+→ DISCOVERY
+→ UNDERSTAND
 → MODEL
 → STRESS
 → PROVE
 → REPORT
 ```
+
+TARGET and DISCOVERY are admission gates for block A. They are not parallel workflows. No later stage may authorize a decision while an earlier stage is blocked. Runtime evidence, review, HTML, and other projections are continuations or presentations of this same flow, never alternate audit paths.
 
 Supporting documents such as Gameplay Model Closure, Blind Spots, and Cross-System Interaction provide specialist knowledge. They do not replace this procedure and they do not own a parallel checklist.
 
