@@ -28,6 +28,13 @@ export interface ScriptArenaCountCandidate {
   source: SourceRef;
 }
 
+export interface ScriptArenaConcurrencyCandidate {
+  scriptId: string;
+  name: string;
+  value: number;
+  source: SourceRef;
+}
+
 export interface ScriptArenaLayoutCandidate {
   scriptId: string;
   name: string;
@@ -51,15 +58,21 @@ export interface ScriptSafeConfigAnalysis {
   resolvedBindings: readonly ResolvedScriptSafeConfigBinding[];
   failedBindings: readonly FailedScriptSafeConfigBinding[];
   arenaCountCandidates: readonly ScriptArenaCountCandidate[];
+  arenaConcurrencyCandidates:
+    readonly ScriptArenaConcurrencyCandidate[];
   arenaLayoutCandidates: readonly ScriptArenaLayoutCandidate[];
   resolvedArenaCount?: number;
+  resolvedArenaConcurrencyLimit?: number;
   resolvedArenaLayout?: ScriptArenaLayout;
   arenaCountConflict: boolean;
+  arenaConcurrencyConflict: boolean;
   arenaLayoutConflict: boolean;
 }
 
 const ARENA_COUNT_NAME =
-  /^(?:ARENA_COUNT|MAX_ARENAS|MAX_CONCURRENT_ARENAS|MAX_ACTIVE_ARENAS)$/;
+  /^(?:ARENA_COUNT|MAX_ARENAS)$/;
+const ARENA_CONCURRENCY_NAME =
+  /^(?:MAX_CONCURRENT_ARENAS|MAX_ACTIVE_ARENAS)$/;
 const ARENA_ABSOLUTE_LAYOUT_NAME =
   /^(?:ARENA_CENTERS|ARENA_ANCHORS|ARENA_POSITIONS)$/;
 const ARENA_OFFSET_LAYOUT_NAME =
@@ -122,6 +135,8 @@ export function analyzeScriptSafeConfig(
   const resolvedBindings: ResolvedScriptSafeConfigBinding[] = [];
   const failedBindings: FailedScriptSafeConfigBinding[] = [];
   const arenaCountCandidates: ScriptArenaCountCandidate[] = [];
+  const arenaConcurrencyCandidates:
+    ScriptArenaConcurrencyCandidate[] = [];
   const arenaLayoutCandidates: ScriptArenaLayoutCandidate[] = [];
   const scriptsById = new Map(
     scripts.map((script) => [script.identifier, script]),
@@ -628,6 +643,20 @@ export function analyzeScriptSafeConfig(
           });
         }
 
+        if (
+          ARENA_CONCURRENCY_NAME.test(binding.name) &&
+          typeof value === "number" &&
+          Number.isInteger(value) &&
+          value > 0
+        ) {
+          arenaConcurrencyCandidates.push({
+            scriptId: script.identifier,
+            name: binding.name,
+            value,
+            source: binding.source,
+          });
+        }
+
         const points = asVectorSeries(value);
         const layoutMode =
           ARENA_ABSOLUTE_LAYOUT_NAME.test(binding.name)
@@ -663,6 +692,21 @@ export function analyzeScriptSafeConfig(
       arenaCountCandidates.map((item) => item.value),
     ),
   ].sort((a, b) => a - b);
+
+  const distinctArenaConcurrencyLimits = [
+    ...new Set(
+      arenaConcurrencyCandidates.map(
+        (item) => item.value,
+      ),
+    ),
+  ].sort((a, b) => a - b);
+  const arenaConcurrencyConflict =
+    distinctArenaConcurrencyLimits.length > 1;
+  const resolvedArenaConcurrencyLimit =
+    arenaConcurrencyConflict ||
+    distinctArenaConcurrencyLimits.length === 0
+      ? undefined
+      : distinctArenaConcurrencyLimits[0];
 
   const distinctLayouts = [
     ...new Map(
@@ -746,6 +790,11 @@ export function analyzeScriptSafeConfig(
       a.scriptId.localeCompare(b.scriptId) ||
       a.name.localeCompare(b.name)
     ),
+    arenaConcurrencyCandidates:
+      arenaConcurrencyCandidates.sort((a, b) =>
+        a.scriptId.localeCompare(b.scriptId) ||
+        a.name.localeCompare(b.name)
+      ),
     arenaLayoutCandidates: arenaLayoutCandidates.sort((a, b) =>
       a.scriptId.localeCompare(b.scriptId) ||
       a.name.localeCompare(b.name)
@@ -753,10 +802,14 @@ export function analyzeScriptSafeConfig(
     ...(resolvedArenaCount === undefined
       ? {}
       : { resolvedArenaCount }),
+    ...(resolvedArenaConcurrencyLimit === undefined
+      ? {}
+      : { resolvedArenaConcurrencyLimit }),
     ...(resolvedArenaLayout === undefined
       ? {}
       : { resolvedArenaLayout }),
     arenaCountConflict,
+    arenaConcurrencyConflict,
     arenaLayoutConflict,
   };
 }
