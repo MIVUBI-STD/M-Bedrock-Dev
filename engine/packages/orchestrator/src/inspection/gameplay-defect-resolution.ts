@@ -78,9 +78,52 @@ function unique(values: readonly string[] | undefined): readonly string[] {
   )].sort();
 }
 
+function requiredCounterProofDimensions(
+  link: GameplayCausalLink,
+  scenario:
+    GameplayScenarioGraph["scenarios"][number] | undefined,
+): readonly CounterProofSearchDimension[] {
+  const required = new Set<CounterProofSearchDimension>([
+    "guard",
+    "scope",
+    "exclusion",
+  ]);
+  const components = new Set(link.componentIds);
+  const recoveryLike =
+    scenario !== undefined &&
+    /reconnect|reload|repeated|deferred|recovery|terminal/i.test(
+      scenario.label + " " + scenario.gameplayStage,
+    );
+  const ownershipSensitive =
+    [...components].some((id) =>
+      id === "runtime:arena" ||
+      id === "runtime:persistence" ||
+      id === "runtime:chunks" ||
+      id === "runtime:inventory"
+    ) ||
+    (scenario?.playerCounts.some((count) => count > 1) ?? false);
+  if (ownershipSensitive) {
+    required.add("owner");
+  }
+  if (
+    recoveryLike ||
+    [...components].some((id) =>
+      id === "runtime:arena" ||
+      id === "runtime:persistence" ||
+      id === "runtime:chunks"
+    )
+  ) {
+    required.add("generation");
+    required.add("cleanup");
+  }
+  return [...required].sort();
+}
+
 function validateResolution(
   link: GameplayCausalLink,
   resolution: GameplayDefectResolution,
+  scenario:
+    GameplayScenarioGraph["scenarios"][number] | undefined,
 ): readonly string[] {
   const issues: string[] = [];
 
@@ -116,10 +159,30 @@ function validateResolution(
             ": counter-proof search receipt has unsupported schema/policy.",
         );
       }
-      if (unique(search.searchedDimensions).length === 0) {
+      const searchedDimensions =
+        unique(search.searchedDimensions) as readonly CounterProofSearchDimension[];
+      if (searchedDimensions.length === 0) {
         issues.push(
           link.id +
-            ": counter-proof search must record at least one searched dimension.",
+            ": counter-proof search must record searched dimensions.",
+        );
+      }
+      const requiredDimensions =
+        requiredCounterProofDimensions(
+          link,
+          scenario,
+        );
+      const missingDimensions =
+        requiredDimensions.filter(
+          (dimension) =>
+            !searchedDimensions.includes(dimension),
+        );
+      if (missingDimensions.length > 0) {
+        issues.push(
+          link.id +
+            ": counter-proof search is incomplete; missing relevant dimensions: " +
+            missingDimensions.join(", ") +
+            ".",
         );
       }
       if (unique(search.scopeIds).length === 0) {
@@ -268,7 +331,16 @@ export function assessGameplayDefectResolutionGate(
   const resolutions: GameplayDefectResolution[] = contradicted.map((link) => {
     const supplied = byId.get(link.id);
     if (supplied) {
-      issues.push(...validateResolution(link, supplied));
+      const scenario = graph.scenarios.find(
+        (item) => item.id === link.scenarioId,
+      );
+      issues.push(
+        ...validateResolution(
+          link,
+          supplied,
+          scenario,
+        ),
+      );
       return supplied;
     }
 
