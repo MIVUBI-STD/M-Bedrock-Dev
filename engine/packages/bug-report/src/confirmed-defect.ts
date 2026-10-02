@@ -199,6 +199,7 @@ export interface ConfirmedDefect {
   readonly observed: ConfirmedDefectObservation;
   readonly reproduction?: readonly string[];
   readonly aiAnalysis?: string;
+  readonly engineeringAnalysis?: string;
   readonly sourceEvidence?: readonly ConfirmedDefectSourceEvidence[];
   readonly suggestedFix?: string;
   readonly mustPreserve?: readonly string[];
