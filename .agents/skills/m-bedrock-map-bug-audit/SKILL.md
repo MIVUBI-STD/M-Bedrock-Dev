@@ -243,13 +243,19 @@ Do not expose implementation details as reproduction steps.
 ## Review
 
 ```text
-Detected Issue Set
-→ confirmed | needs-validation | ambiguous | detection-gap
+Gameplay Causal Links
+→ Gameplay Defect Resolution
+→ CONFIRMED_DEFECT_READY only
+→ Confirmed Defect
+→ Proposed Bug Set
+→ chat review
 → Approved Bug Set
 → Bug Report V2
 ```
 
-Do not publish normal/designed behavior as bugs.
+`RUNTIME_PROOF_REQUIRED` and `DETECTION_GAP` remain explicit audit residue and do not enter the canonical bug report as confirmed bugs. `BLOCKING_COUNTERPROOF` is retained as rejection evidence. Temporary resolver states block review.
+
+Do not publish normal/designed behavior, unresolved AI work, or runtime residue as bugs.
 
 ## Forbidden
 
@@ -267,21 +273,24 @@ Do not publish normal/designed behavior as bugs.
 
 ## STOP
 
-Stop when:
+The audit may stop only when:
 
 ```text
-✓ Gameplay surface inventory complete/accounted
-✓ Gameplay Model Closure is CLOSED or PARTIAL
-✓ Game Design mapped
-✓ Gameplay Flow mapped
-✓ State transitions reviewed
-✓ Reset/progression rules known
-✓ Multi Arena reviewed
-✓ Blind-spot surfaces reviewed
-✓ Cross-system interactions reviewed
-✓ Capacity / recovery / boundary cases reviewed when applicable
-✓ Every applicable coverage surface accounted as checked / blocked / not-applicable
-✓ Unsupported surfaces recorded as Detection Gap
-✓ Issues classified
-✓ Production report generated
+✓ Selected Map Version remains the sole gameplay authority
+✓ Gameplay Discovery Closure is COMPLETE or justified PARTIAL
+✓ Gameplay Model Closure is CLOSED or justified PARTIAL
+✓ Gameplay Scenario Closure is CLOSED or justified PARTIAL
+✓ Every material Gameplay Scenario is accounted
+✓ Every Gameplay Scenario Component has a gameplay purpose
+✓ Every material Gameplay Causal Link is resolved
+✓ Every CONTRADICTED link has a final Gameplay Defect Resolution
+✓ GAMEPLAY_TRANSLATION_REQUIRED = 0
+✓ COUNTERPROOF_SEARCH_REQUIRED = 0
+✓ Confirmed defects are consolidated by gameplay/root cause
+✓ Runtime proof residue is narrow and explicitly justified
+✓ Detection gaps name the missing engine capability
+✓ Proposed Bug Set contains confirmed defects only
+✓ Production report is generated only after chat approval
 ```
+
+Do not use analyzer execution count, surface `checked` state, or a broad tester validation list as completion evidence.

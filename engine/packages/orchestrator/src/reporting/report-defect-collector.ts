@@ -34,6 +34,12 @@ import type {
   GameplayDiscoveryClosure,
 } from "../inspection/gameplay-discovery-closure.js";
 import type {
+  GameplayScenarioClosure,
+} from "../inspection/gameplay-scenario-model.js";
+import type {
+  GameplayDefectResolutionGate,
+} from "../inspection/gameplay-defect-resolution.js";
+import type {
   RuntimeExperimentDefinition,
 } from "../../../runtime-lab/src/index.js";
 import type {
@@ -997,6 +1003,14 @@ export interface BuildBugReportFromClosedAuditInput
     GameplayDiscoveryClosure;
   readonly gameplayClosure:
     GameplayModelClosureResult;
+  /**
+   * Optional for source compatibility, mandatory for production admission.
+   * Missing values block publication rather than silently bypassing the gate.
+   */
+  readonly gameplayScenarioClosure?:
+    GameplayScenarioClosure;
+  readonly gameplayDefectResolution?:
+    GameplayDefectResolutionGate;
 }
 
 export function gameplayDiscoveryPublicationIssues(
@@ -1026,6 +1040,50 @@ export function gameplayClosurePublicationIssues(
     code: "invalid-confirmed-defect",
     message:
       "Gameplay Model Closure is OPEN. Comprehensive Bug Report publication is blocked until discovered gameplay surfaces and the major state model are accounted for.",
+  }];
+}
+
+export function gameplayScenarioPublicationIssues(
+  closure: GameplayScenarioClosure | undefined,
+): readonly {
+  code: "invalid-confirmed-defect";
+  message: string;
+}[] {
+  if (closure === undefined) {
+    return [{
+      code: "invalid-confirmed-defect",
+      message:
+        "Gameplay Scenario Closure is missing. Production Bug Report publication cannot bypass scenario/causal analysis.",
+    }];
+  }
+  if (closure.status !== "OPEN") return [];
+
+  return [{
+    code: "invalid-confirmed-defect",
+    message:
+      "Gameplay Scenario Closure is OPEN. Publication is blocked until gameplay components have scenario purpose, material causal links are resolved, and orphan/missing links are cleared.",
+  }];
+}
+
+export function gameplayDefectResolutionPublicationIssues(
+  gate: GameplayDefectResolutionGate | undefined,
+): readonly {
+  code: "invalid-confirmed-defect";
+  message: string;
+}[] {
+  if (gate === undefined) {
+    return [{
+      code: "invalid-confirmed-defect",
+      message:
+        "Gameplay Defect Resolution is missing. Production Bug Report publication cannot bypass contradiction resolution.",
+    }];
+  }
+  if (gate.status !== "BLOCKED") return [];
+
+  return [{
+    code: "invalid-confirmed-defect",
+    message:
+      "Gameplay Defect Resolution is BLOCKED. Every CONTRADICTED Gameplay Causal Link must resolve to CONFIRMED_DEFECT_READY, BLOCKING_COUNTERPROOF, RUNTIME_PROOF_REQUIRED, or DETECTION_GAP before report review.",
   }];
 }
 
@@ -1133,6 +1191,12 @@ export function prepareBugReportReviewFromAuditCandidates(
     ...gameplayClosurePublicationIssues(
       input.gameplayClosure,
     ),
+    ...gameplayScenarioPublicationIssues(
+      input.gameplayScenarioClosure,
+    ),
+    ...gameplayDefectResolutionPublicationIssues(
+      input.gameplayDefectResolution,
+    ),
   ];
 
   if (closureIssues.length > 0) {
@@ -1156,7 +1220,7 @@ export function prepareBugReportReviewFromAuditCandidates(
 /**
  * Low-level compatibility route.
  * Production map audits must use buildBugReportFromAuditCandidates()
- * with Gameplay Model Closure.
+ * with Discovery, Gameplay Model, Gameplay Scenario, and Gameplay Defect Resolution gates.
  */
 export function buildBugReportFromAuditCandidatesCompatibility(
   input: BuildBugReportFromAuditInput,
@@ -1219,6 +1283,12 @@ export function buildBugReportFromAuditCandidates(
     ),
     ...gameplayClosurePublicationIssues(
       input.gameplayClosure,
+    ),
+    ...gameplayScenarioPublicationIssues(
+      input.gameplayScenarioClosure,
+    ),
+    ...gameplayDefectResolutionPublicationIssues(
+      input.gameplayDefectResolution,
     ),
   ];
 
