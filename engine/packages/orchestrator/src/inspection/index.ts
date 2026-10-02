@@ -22,6 +22,7 @@ export * from "./entity-navigation-runtime-classification.js";
 export * from "./gameplay-calibration-corpus.js";
 export * from "./gameplay-intent-runtime-stage.js";
 export * from "./gameplay-intent-stage.js";
+export * from "./gameplay-intent-surface-signals.js";
 export * from "./gameplay-route-candidate-analysis.js";
 export * from "./gameplay-route-corridor.js";
 export * from "./gameplay-route-runtime-plan.js";
