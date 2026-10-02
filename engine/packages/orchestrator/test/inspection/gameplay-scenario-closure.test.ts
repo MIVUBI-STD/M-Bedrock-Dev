@@ -57,6 +57,71 @@ describe("gameplay scenario closure", () => {
     ]);
   });
 
+  it("emits one narrow runtime proof request for a runtime-blocked causal link", () => {
+    const result = assessGameplayScenarioClosure({
+      ...baseGraph(),
+      scenarios: [{
+        id: "scenario:chunk",
+        label: "remote-wave",
+        gameplayStage: "ACTIVE_GAMEPLAY",
+        purpose: "Run a remote enemy wave.",
+        sourceSubjectIds: ["phase:wave"],
+        componentIds: [
+          "component:spawn",
+          "component:objective",
+        ],
+        causalLinkIds: ["link:chunk"],
+        playerCounts: [1],
+        requiredKnowledgeIds: [],
+        composedScenarioIds: [],
+      }],
+      components: [{
+        id: "component:spawn",
+        label: "Spawn",
+        kind: "mechanic",
+        technicalRole: "remote spawn",
+        gameplayPurpose: "Create the enemy.",
+        evidenceIds: ["evidence:spawn"],
+        usedByScenarioIds: ["scenario:chunk"],
+        orphan: false,
+      }, {
+        id: "component:objective",
+        label: "Objective",
+        kind: "objective",
+        technicalRole: "wave objective",
+        gameplayPurpose: "Receive enemy progression.",
+        evidenceIds: ["evidence:objective"],
+        usedByScenarioIds: ["scenario:chunk"],
+        orphan: false,
+      }],
+      causalLinks: [{
+        id: "link:chunk",
+        scenarioId: "scenario:chunk",
+        fromComponentId: "component:spawn",
+        toComponentId: "component:objective",
+        purpose:
+          "Remote enemy remains simulated until it reaches the objective",
+        evidenceIds: ["evidence:spawn"],
+        subjectIds: ["phase:wave"],
+        componentIds: [
+          "component:spawn",
+          "component:objective",
+        ],
+        status: "RUNTIME_BLOCKED",
+        reason:
+          "Static evidence cannot prove remote simulation residency.",
+      }],
+    });
+
+    expect(result.status).toBe("PARTIAL");
+    expect(result.runtimeProofRequests).toHaveLength(1);
+    expect(
+      result.runtimeProofRequests[0]?.narrowRuntimeQuestion,
+    ).toContain(
+      "Remote enemy remains simulated",
+    );
+  });
+
   it("does not treat a composition-only scenario as shallow", () => {
     const result = assessGameplayScenarioClosure({
       ...baseGraph(),
