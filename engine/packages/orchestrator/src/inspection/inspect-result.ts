@@ -31,6 +31,7 @@ import { analyzeDeveloperToolReleaseExposure } from "./developer-tool-release-an
 import { buildGameplayReachabilityGraph } from "./gameplay-reachability-stage.js";
 import { summarizeCapabilityExposure } from "./capability-exposure-stage.js";
 import { assessGameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";
+import { deriveGameplayAnalysisPriorities } from "./gameplay-analysis-priority.js";
 import { deriveArenaAuthoredSpatialSources } from "../arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
@@ -391,6 +392,11 @@ export function buildInspectionResult(
       developerTools:
         developerToolRelease,
     });
+  const analysisPriorities =
+    deriveGameplayAnalysisPriorities(
+      gameplayWorld,
+      capabilityExposure,
+    );
 
   const reliability = deriveReliabilityFingerprint({
     mapId: input.artifactId,
@@ -462,6 +468,7 @@ export function buildInspectionResult(
     developerToolRelease,
     gameplayReachability,
     capabilityExposure,
+    analysisPriorities,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
