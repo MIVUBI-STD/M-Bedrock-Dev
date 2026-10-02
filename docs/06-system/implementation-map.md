@@ -70,14 +70,14 @@ Use this before broad repository search.
 | Bounded model-facing audit task packets / next-action / evidence+RIG context projection | engine/packages/orchestrator/src/map-audit-model-task.ts |
 | Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |
 | Deterministic CONFIRMED_DEFECT_READY → AI defect projection | engine/packages/orchestrator/src/map-audit-defect-projection.ts |
-| Conservative deterministic AI root-cause grouping + candidate coverage enforcement | engine/packages/orchestrator/src/map-audit-root-cause.ts |
+| Deterministic pre-report AI candidate grouping + coverage enforcement | engine/packages/orchestrator/src/map-audit-candidate-grouping.ts |
+| Canonical confirmed-defect root-cause grouping | engine/packages/bug-report/src/grouping.ts (broken invariant + repair unit + primary failure) |
 | Bounded counter-proof search receipt / confirmed-defect admission | engine/packages/orchestrator/src/inspection/gameplay-defect-resolution.ts |
 | AI candidate Expected/Actual narrative binding to ready resolutions | engine/packages/orchestrator/src/reporting/report-defect-collector.ts |
 | Audit snapshot revision / stale model-result + review/report rejection | engine/packages/orchestrator/src/map-audit-revision.ts + map-audit-pipeline.ts |
 | Preflight → final RIG knowledge-demand fixed point | engine/packages/orchestrator/src/map-audit-demand-reconciliation.ts + inspection/preflight-knowledge-demand.ts |
 | Audit-authoritative Work Session projection | engine/packages/orchestrator/src/workflow/map-audit-work-session.ts + engine/packages/project-model/src/session/work-session.ts |
 | Evidence collection vs ordered decision authorization | engine/packages/orchestrator/src/map-audit-execution-trace.ts |
-| Map-audit → generic Work Session persistence mirror | engine/packages/orchestrator/src/workflow/map-audit-session-projection.ts |
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
 | Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |

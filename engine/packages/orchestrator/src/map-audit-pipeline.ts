@@ -69,10 +69,10 @@ import {
   type AuditExecutionTrace,
 } from "./map-audit-execution-trace.js";
 import {
-  auditRootCauseCandidateCoverageIssues,
-  groupReadyAuditDefectsByRootCause,
-  type ReadyAuditRootCauseGroup,
-} from "./map-audit-root-cause.js";
+  auditCandidateGroupCoverageIssues,
+  groupReadyAuditDefectsForCandidateCoverage,
+  type ReadyAuditCandidateGroup,
+} from "./map-audit-candidate-grouping.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -102,7 +102,7 @@ export interface SelectedMapAuditRun {
     | "PREPARE_REVIEW";
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
   readonly readyDefects: readonly ReadyAuditDefectProjection[];
-  readonly rootCauseGroups: readonly ReadyAuditRootCauseGroup[];
+  readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
 }
@@ -220,8 +220,8 @@ export async function runSelectedMapAudit(
         scenario.defectResolution,
       )
     : [];
-  const rootCauseGroups = proveAuthorized
-    ? groupReadyAuditDefectsByRootCause(
+  const candidateGroups = proveAuthorized
+    ? groupReadyAuditDefectsForCandidateCoverage(
         scenario.graph,
         readyDefects,
       )
@@ -257,7 +257,7 @@ export async function runSelectedMapAudit(
     allowedNextAction,
     modelTaskPackets,
     readyDefects,
-    rootCauseGroups,
+    candidateGroups,
     status:
       admission.status === "READY"
         ? "READY_FOR_REVIEW"
@@ -360,8 +360,8 @@ export function resolveSelectedMapAudit(
         scenario.defectResolution,
       )
     : [];
-  const rootCauseGroups = proveAuthorized
-    ? groupReadyAuditDefectsByRootCause(
+  const candidateGroups = proveAuthorized
+    ? groupReadyAuditDefectsForCandidateCoverage(
         scenario.graph,
         readyDefects,
       )
@@ -399,7 +399,7 @@ export function resolveSelectedMapAudit(
     allowedNextAction,
     modelTaskPackets,
     readyDefects,
-    rootCauseGroups,
+    candidateGroups,
     status:
       admission.status === "READY"
         ? "READY_FOR_REVIEW"
@@ -465,8 +465,8 @@ export function prepareSelectedMapAuditReview(
     };
   }
   const rootCauseIssues =
-    auditRootCauseCandidateCoverageIssues(
-      input.audit.rootCauseGroups,
+    auditCandidateGroupCoverageIssues(
+      input.audit.candidateGroups,
       input.candidates,
     );
   if (rootCauseIssues.length > 0) {
@@ -562,8 +562,8 @@ export function buildSelectedMapAuditReport(
     };
   }
   const rootCauseIssues =
-    auditRootCauseCandidateCoverageIssues(
-      input.audit.rootCauseGroups,
+    auditCandidateGroupCoverageIssues(
+      input.audit.candidateGroups,
       input.candidates,
     );
   if (rootCauseIssues.length > 0) {

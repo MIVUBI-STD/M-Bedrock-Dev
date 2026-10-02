@@ -6,8 +6,8 @@ import type {
   ReadyAuditDefectProjection,
 } from "./map-audit-defect-projection.js";
 
-export interface ReadyAuditRootCauseGroup {
-  readonly rootCauseKey: string;
+export interface ReadyAuditCandidateGroup {
+  readonly candidateGroupKey: string;
   readonly knowledgeDomain?: string;
   readonly technicalOwnerId: string;
   readonly causalLinkIds: readonly string[];
@@ -38,10 +38,10 @@ function intersection(
   );
 }
 
-export function groupReadyAuditDefectsByRootCause(
+export function groupReadyAuditDefectsForCandidateCoverage(
   graph: GameplayScenarioGraph,
   defects: readonly ReadyAuditDefectProjection[],
-): readonly ReadyAuditRootCauseGroup[] {
+): readonly ReadyAuditCandidateGroup[] {
   const buckets = new Map<string, ReadyAuditDefectProjection[]>();
 
   for (const defect of defects) {
@@ -86,7 +86,7 @@ export function groupReadyAuditDefectsByRootCause(
                 item.id === firstLink.knowledgeRequirementId,
             );
       return {
-        rootCauseKey: "root:" + key,
+        candidateGroupKey: "candidate-group:" + key,
         ...(requirement === undefined
           ? {}
           : { knowledgeDomain: requirement.domain }),
@@ -109,7 +109,7 @@ export function groupReadyAuditDefectsByRootCause(
       };
     })
     .sort((a, b) =>
-      a.rootCauseKey.localeCompare(b.rootCauseKey)
+      a.candidateGroupKey.localeCompare(b.candidateGroupKey)
     );
 }
 
@@ -143,8 +143,8 @@ function sameLinkSet(
   );
 }
 
-export function auditRootCauseCandidateCoverageIssues(
-  groups: readonly ReadyAuditRootCauseGroup[],
+export function auditCandidateGroupCoverageIssues(
+  groups: readonly ReadyAuditCandidateGroup[],
   candidates: readonly RootCauseCandidateLike[],
 ): readonly string[] {
   const issues: string[] = [];
@@ -160,29 +160,29 @@ export function auditRootCauseCandidateCoverageIssues(
     );
     if (matches.length !== 1) {
       issues.push(
-        "AI candidate causal links must match exactly one deterministic root-cause group: " +
+        "AI candidate causal links must match exactly one deterministic candidate group: " +
           links.join(", ") +
           ".",
       );
       continue;
     }
 
-    const key = matches[0]!.rootCauseKey;
+    const key = matches[0]!.candidateGroupKey;
     matched.set(key, (matched.get(key) ?? 0) + 1);
   }
 
   for (const group of groups) {
-    const count = matched.get(group.rootCauseKey) ?? 0;
+    const count = matched.get(group.candidateGroupKey) ?? 0;
     if (count === 0) {
       issues.push(
-        "Deterministic root-cause group has no AI report candidate: " +
-          group.rootCauseKey +
+        "Deterministic candidate group has no AI report candidate: " +
+          group.candidateGroupKey +
           ".",
       );
     } else if (count > 1) {
       issues.push(
-        "Deterministic root-cause group maps to multiple AI report candidates: " +
-          group.rootCauseKey +
+        "Deterministic candidate group maps to multiple AI report candidates: " +
+          group.candidateGroupKey +
           ".",
       );
     }
