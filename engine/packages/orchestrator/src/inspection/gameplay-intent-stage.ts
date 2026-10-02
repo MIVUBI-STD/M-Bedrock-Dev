@@ -25,6 +25,7 @@ export interface GameplayIntentStageInput {
   contractScripts?: readonly {
     parsed: ParsedScriptFile;
   }[];
+  supplementalSignals?: readonly GameplayIntentSignal[];
 }
 
 const STATUS_RANK: Readonly<Record<GameplayIntentStatus, number>> = {
@@ -44,18 +45,30 @@ export function buildGameplayIntentModel(
 ): GameplayIntentModel {
   const contractScripts =
     input.contractScripts ?? [];
-  const extracted = extractGameplayIntentSignals([
+  const extractedBase = extractGameplayIntentSignals([
     ...input.parsedScripts.map((item) => item.parsed),
     ...contractScripts.map(
       (item) => item.parsed,
     ),
   ]);
+  const supplementalSignals =
+    input.supplementalSignals ?? [];
+  const extracted = {
+    ...extractedBase,
+    signals: [
+      ...extractedBase.signals,
+      ...supplementalSignals,
+    ],
+  };
   const selectedArtifactSourcePaths = new Set([
     ...input.parsedScripts.map(
       (item) => item.parsed.source.relativePath,
     ),
     ...contractScripts.map(
       (item) => item.parsed.source.relativePath,
+    ),
+    ...supplementalSignals.map(
+      (signal) => signal.locator,
     ),
   ]);
 
@@ -317,7 +330,7 @@ export function buildGameplayIntentModel(
         ? [{
             id: "unknown:no-intent-signals",
             question:
-              "No gameplay-intent signal could be grounded from the available static script evidence.",
+              "No gameplay-intent signal could be grounded from the available selected-artifact evidence.",
             blockedSubjectIds: [] as readonly string[],
           }]
         : []),
