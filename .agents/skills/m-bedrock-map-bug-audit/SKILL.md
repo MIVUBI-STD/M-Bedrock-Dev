@@ -105,6 +105,25 @@ If expected behavior cannot be grounded from the selected artifact, keep it unkn
 
 Bug discovery starts only after Gameplay Model Closure is CLOSED. Gameplay Model Closure PARTIAL is not a runtime exception: it means material boundaries, blocked surfaces, or unknown gameplay semantics still exist and therefore blocks production continuation. Gameplay Scenario Closure is the only closure allowed to remain PARTIAL, and only because that state is reserved for irreducible Minecraft runtime proof.
 
+## Flow-first audit projection
+
+The model must reason in player-flow order, not analyzer/domain order:
+
+```text
+ENTRY / JOIN
+→ READY / START
+→ SETUP
+→ ACTIVE GAMEPLAY
+→ PROGRESSION
+→ TERMINAL
+→ CLEANUP / REPLAY
+→ RECOVERY
+```
+
+Each technical capability is invoked only inside the gameplay stage that requires it. Example: chunk/ticking analysis belongs to SETUP or ACTIVE GAMEPLAY when spawn/simulation depends on it; inventory belongs to SETUP, ACTIVE, TERMINAL, CLEANUP, or RECOVERY only where the selected game uses it. Do not output a detached domain checklist.
+
+The final issue order must follow this player-flow order. Recovery findings attach to the stage they return to or invalidate, while retaining RECOVERY as their scenario class.
+
 ## Gameplay scenario audit backbone
 
 The audit is scenario-driven. Surface discovery and technical analyzers provide evidence; they do not close gameplay by themselves.
