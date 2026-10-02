@@ -150,7 +150,6 @@ function checkpointPackets(
   procedure: MandatoryAuditProcedureReceipt,
   auditRevision: string,
   intent: GameplayIntentModel,
-  world: GameplayWorldModel,
 ): readonly AuditModelTaskPacket[] {
   return procedure.checkpoints
     .filter((checkpoint) =>
@@ -221,6 +220,7 @@ function provePackets(
   gate: GameplayDefectResolutionGate,
   auditRevision: string,
   intent: GameplayIntentModel,
+  world: GameplayWorldModel,
 ): readonly AuditModelTaskPacket[] {
   const ids = new Set([
     ...gate.gameplayTranslationRequiredIds,
