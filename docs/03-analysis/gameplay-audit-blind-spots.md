@@ -22,7 +22,8 @@ Check:
 Check:
 - whether the world communicates restrictions that materially affect play;
 - whether visible affordances imply behavior the runtime does not provide;
-- whether a technically correct limitation creates misleading player expectation.
+- whether a technically correct limitation creates misleading player expectation;
+- whether a technical/platform limit reduces a player-visible capability below what the map presents.
 
 ### 3. Softlock paths
 
@@ -77,7 +78,7 @@ Check both:
 - isolation correctness; and
 - whether the advertised/visible arena count matches playable concurrent capacity.
 
-Do not treat a queue as designed merely because queue code exists. Ground whether queueing is intended and whether players receive clear feedback.
+Do not treat a queue as counter-proof merely because queue code exists. If visible/advertised arena capacity exceeds actual concurrent playable capacity, record a gameplay/design capacity issue. Queue messaging, platform limits, or performance safeguards explain or mitigate the cause; they do not erase the mismatch.
 
 ### 8. Content contract
 
