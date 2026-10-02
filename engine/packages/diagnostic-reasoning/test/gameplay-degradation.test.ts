@@ -21,6 +21,25 @@ describe("gameplay degradation", () => {
     ).toBe(true);
   });
 
+  it("keeps reduced arena capacity as an issue even when gameplay remains available", () => {
+    const signals = detectGameplayDegradation({
+      subjectId: "runtime:arena-capacity",
+      primaryExpected: true,
+      primaryObserved: false,
+      fallbackObserved: true,
+      expectedCapacity: 6,
+      observedCapacity: 2,
+    });
+
+    expect(
+      signals.some(
+        (item) =>
+          item.kind === "capacity-reduced" &&
+          item.reason.includes("does not erase"),
+      ),
+    ).toBe(true);
+  });
+
   it("detects fallback masking a failed primary mechanic", () => {
     const signals = detectGameplayDegradation({
       subjectId: "special-enemy",
