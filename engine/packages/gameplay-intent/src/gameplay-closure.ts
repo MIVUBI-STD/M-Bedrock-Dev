@@ -58,8 +58,21 @@ export function buildIntentClosureSurfaces(
 
   return model.nodes.map((node) => {
     const unknownIds = unknownBySubject.get(node.id) ?? [];
+    const material =
+      node.kind === "game" ||
+      node.kind === "mechanic" ||
+      node.kind === "objective" ||
+      node.kind === "phase" ||
+      node.kind === "state" ||
+      node.kind === "lifecycle" ||
+      node.kind === "outcome" ||
+      node.kind === "resource" ||
+      node.kind === "spatial-region" ||
+      node.kind === "policy";
     const status: GameplaySurfaceClosureStatus =
-      unknownIds.length > 0 || node.status === "hypothesis"
+      unknownIds.length > 0 ||
+      node.status === "hypothesis" ||
+      (material && node.status === "inferred")
         ? "unknown"
         : "understood";
 
@@ -68,17 +81,7 @@ export function buildIntentClosureSurfaces(
       label: node.label,
       kind: node.kind,
       status,
-      material:
-        node.kind === "game" ||
-        node.kind === "mechanic" ||
-        node.kind === "objective" ||
-        node.kind === "phase" ||
-        node.kind === "state" ||
-        node.kind === "lifecycle" ||
-        node.kind === "outcome" ||
-        node.kind === "resource" ||
-        node.kind === "spatial-region" ||
-        node.kind === "policy",
+      material,
       ...(unknownIds.length === 0
         ? {}
         : {
