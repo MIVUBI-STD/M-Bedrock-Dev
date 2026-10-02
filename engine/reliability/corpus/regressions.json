@@ -331,6 +331,22 @@
         "explicit-invariant"
       ],
       "artifactFile": "Defense Challenge v1.1.1.mcworld"
+    },
+    {
+      "id": "reg_defense_visible_arena_capacity_reduced",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_visible_arena_capacity_reduced",
+      "artifactFile": "Defense Challenge v1.1.1.mcworld",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     }
   ],
   "policy": {
