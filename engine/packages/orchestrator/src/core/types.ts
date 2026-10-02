@@ -59,6 +59,7 @@ import type { MultiplayerStateValidationPlan } from "../multiplayer-state-valida
 import type { DeveloperToolReleaseAnalysis } from "../developer-tool-release-analysis.js";
 import type { GameplayReachabilityGraph } from "../../../diagnostic-reasoning/src/index.js";
 import type { CapabilityExposureSummary } from "../capability-exposure-stage.js";
+import type { GameplayDiscoveryClosure } from "../gameplay-discovery-closure.js";
 import type { ArenaStressPlan } from "../arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "../arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "../arena-authored-source-index.js";
@@ -136,6 +137,8 @@ export interface InspectDirectoryResult {
   releaseIdentity: ReleaseIdentityAnalysis;
   /** @deprecated Composite compatibility view. Prefer gameplaySemantic + engineeringAssessment. */
   gameplayWorld: GameplayWorldModel;
+  gameplayDiscoveryClosure:
+    GameplayDiscoveryClosure;
   gameplaySemantic: GameplaySemanticModel;
   engineeringAssessment: MapEngineeringAssessment;
   hiddenGameplayDefects: HiddenGameplayDefectAnalysis;
