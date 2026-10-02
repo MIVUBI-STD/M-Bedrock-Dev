@@ -28,6 +28,7 @@ export * from "./gameplay-route-corridor.js";
 export * from "./gameplay-route-runtime-plan.js";
 export * from "./gameplay-semantic-model.js";
 export * from "./gameplay-surface-discovery.js";
+export * from "./gameplay-boundary-registry.js";
 export * from "./gameplay-understanding-fingerprint.js";
 export * from "./gameplay-world-model.js";
 export * from "./hidden-gameplay-defect-analysis.js";
