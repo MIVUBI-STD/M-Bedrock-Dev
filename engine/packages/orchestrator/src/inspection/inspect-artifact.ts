@@ -40,6 +40,7 @@ import { projectGameplaySemanticModel } from "../gameplay-semantic-model.js";
 import { projectMapEngineeringAssessment } from "../map-engineering-assessment.js";
 import { refreshHiddenGameplayDefectsForWorld } from "./hidden-gameplay-defect-analysis.js";
 import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";
+import { assessGameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";
 import { collectArtifactReleaseObservations } from "../release-identity-evidence.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
 
@@ -830,6 +831,21 @@ export async function inspectArtifact(
         },
       });
 
+    const finalGameplayDiscoveryClosure =
+      assessGameplayDiscoveryClosure({
+        discoveredSurfaceIds:
+          finalGameplayWorld.surfaceDiscovery
+            .surfaceIds,
+        sourceCoverageComplete:
+          result.gameplayDiscoveryClosure
+            .sourceCoverageComplete,
+        sourceParseFailures:
+          result.gameplayDiscoveryClosure
+            .sourceParseFailures,
+        unresolvedReferences:
+          result.unresolvedReferences,
+      });
+
     const finalGameplaySemantic =
       projectGameplaySemanticModel(
         finalGameplayWorld,
@@ -859,6 +875,8 @@ export async function inspectArtifact(
       releaseIdentity:
         finalReleaseIdentity,
       gameplayWorld: finalGameplayWorld,
+      gameplayDiscoveryClosure:
+        finalGameplayDiscoveryClosure,
       gameplaySemantic: finalGameplaySemantic,
       engineeringAssessment:
         finalEngineeringAssessment,
