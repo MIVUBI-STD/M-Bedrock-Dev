@@ -896,6 +896,12 @@ export async function inspectArtifact(
         discoveredSurfaceIds:
           finalGameplayWorld.surfaceDiscovery
             .surfaceIds,
+        sourceRelevantFiles:
+          result.gameplayDiscoveryClosure
+            .sourceRelevantFiles,
+        sourceIndexedFiles:
+          result.gameplayDiscoveryClosure
+            .sourceIndexedFiles,
         sourceCoverageComplete:
           result.gameplayDiscoveryClosure
             .sourceCoverageComplete,
