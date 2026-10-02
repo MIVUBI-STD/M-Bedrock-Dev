@@ -33,6 +33,8 @@ Final review before a gameplay bug report is considered ready.
 - [ ] Simultaneous-start behavior reviewed when multiple arenas exist.
 - [ ] Cross-arena isolation reviewed.
 - [ ] Cleanup and second-run/reuse behavior reviewed.
+- [ ] Replica integrity/completeness reviewed for repeated arenas or repeated map regions.
+- [ ] Progressive proof result is explicit: native, voxel, block-entity, actor/tick, or blocked/incomplete.
 
 ## Blind-spot gates
 
@@ -50,6 +52,10 @@ Final review before a gameplay bug report is considered ready.
 - [ ] Entity lifecycle/disappearance semantics reviewed when applicable.
 - [ ] Inventory/economy/UI/cinematic/effects/permissions reviewed when used.
 - [ ] Gameplay-significant performance/platform constraints reviewed when applicable.
+- [ ] Prerequisite reachability reviewed for sensitive player-triggerable capabilities.
+- [ ] Sensitive capabilities have an explicit authorization/release disposition: blocked, guarded, exposed, potentially-exposed, or unknown.
+- [ ] Reachability coverage gaps are not treated as proof of unreachability.
+- [ ] Known regression examples were not converted into object/map-specific production rules.
 
 ## Coverage accounting
 
