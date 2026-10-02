@@ -639,7 +639,7 @@ async function main(): Promise<void> {
     command !== "probe-replay"
   ) {
     throw new Error(
-      "Telemetry and runtime probe transcript inputs are only supported by inspect, review, probe-plan, or probe-replay.",
+      "Telemetry and runtime probe transcript inputs are only supported by production audit/review/workflow/probe commands and repair verification.",
     );
   }
 
@@ -698,14 +698,15 @@ async function main(): Promise<void> {
     "  npm run cli -- arena-corpus <manifest.json> [artifact-root] [--edition ...] [--version ...] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",\n    "  npm run cli -- package-roundtrip <path-to-mcworld-or-zip>",
-    "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- package-roundtrip <path-to-mcworld-or-zip>",
+    "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- arena-baseline <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json]",
     "  npm run cli -- arena-corpus-status <manifest.json> [artifact-root]",
     "  npm run cli -- arena-adapter <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json]",
-    "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- verify-repair <before-mcworld> <after-mcworld> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
-    "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
     "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
