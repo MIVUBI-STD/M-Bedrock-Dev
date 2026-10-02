@@ -139,6 +139,43 @@ describe("gameplay intent stage", () => {
   });
 
 
+  it("merges selected-artifact surface signals from non-script sources", () => {
+    const model = buildGameplayIntentModel({
+      id: "multi-source",
+      artifactId: "art_test",
+      parsedScripts: [],
+      supplementalSignals: [{
+        id: "signal:spatial-region:arena-six:structure",
+        subjectKey: "spatial-region:arena-six",
+        nodeKind: "spatial-region",
+        label: "Arena Six",
+        status: "inferred",
+        evidenceOrigin: "structure",
+        locator: "structures/arena_six.mcstructure",
+        summary: "Physical arena surface.",
+      }],
+    });
+
+    expect(
+      model.nodes.find(
+        (node) =>
+          node.id ===
+          "spatial-region:arena-six",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        kind: "spatial-region",
+        status: "inferred",
+      }),
+    );
+    expect(
+      model.evidence.find(
+        (item) =>
+          item.origin === "structure",
+      )?.scope,
+    ).toBe("selected-artifact");
+  });
+
   it("builds a validated parser-independent model from analyzer signals", () => {
     const model = buildGameplayIntentModel({
       id: "mtt-level-2",
