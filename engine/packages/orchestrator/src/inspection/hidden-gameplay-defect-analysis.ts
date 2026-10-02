@@ -6,10 +6,12 @@ import {
   type MechanicCompletenessResult,
 } from "../../../gameplay-intent/src/index.js";
 import {
+  detectGameplayDegradation,
   findDesignConsistencyAnomalies,
   findNegativeSpace,
   prioritizeTemporalInteraction,
   type DesignConsistencyAnomaly,
+  type GameplayDegradationSignal,
   type NegativeSpaceSignal,
   type TemporalInteractionRisk,
 } from "../../../diagnostic-reasoning/src/index.js";
@@ -38,12 +40,15 @@ export interface HiddenGameplayDefectAnalysis {
     readonly TemporalInteractionRisk[];
   readonly designConsistency:
     readonly DesignConsistencyAnomaly[];
+  readonly degradations:
+    readonly GameplayDegradationSignal[];
   readonly attention: {
     readonly implementationOnlyIntent: number;
     readonly incompleteMechanics: number;
     readonly negativeSpaceSignals: number;
     readonly highTemporalRisks: number;
     readonly designAnomalies: number;
+    readonly silentDegradations: number;
   };
 }
 
@@ -375,6 +380,39 @@ function consistencyFromWorld(
   );
 }
 
+function degradationFromWorld(
+  world: GameplayWorldModel,
+): readonly GameplayDegradationSignal[] {
+  const output: GameplayDegradationSignal[] = [];
+
+  if (
+    world.arenas.count !== undefined &&
+    world.arenas.safeConcurrentArenas !==
+      undefined &&
+    world.arenas.safeConcurrentArenas !== null
+  ) {
+    output.push(
+      ...detectGameplayDegradation({
+        subjectId: "runtime:arena-capacity",
+        primaryExpected: true,
+        primaryObserved:
+          world.arenas.safeConcurrentArenas >=
+          world.arenas.count,
+        expectedCapacity:
+          world.arenas.count,
+        observedCapacity:
+          world.arenas.safeConcurrentArenas,
+        evidenceIds: [
+          "world:arena-count",
+          "capacity:safe-concurrency",
+        ],
+      }),
+    );
+  }
+
+  return output;
+}
+
 export function analyzeHiddenGameplayDefects(
   input: {
     readonly intent: GameplayIntentModel;
@@ -392,6 +430,8 @@ export function analyzeHiddenGameplayDefects(
     temporalRisksFromIr(input.semanticIr);
   const designConsistency =
     consistencyFromWorld(input.world);
+  const degradations =
+    degradationFromWorld(input.world);
 
   return {
     schemaVersion: 1,
@@ -400,6 +440,7 @@ export function analyzeHiddenGameplayDefects(
     negativeSpace,
     temporalRisks,
     designConsistency,
+    degradations,
     attention: {
       implementationOnlyIntent:
         designIntentChallenges.filter(
@@ -420,6 +461,8 @@ export function analyzeHiddenGameplayDefects(
         ).length,
       designAnomalies:
         designConsistency.length,
+      silentDegradations:
+        degradations.length,
     },
   };
 }
