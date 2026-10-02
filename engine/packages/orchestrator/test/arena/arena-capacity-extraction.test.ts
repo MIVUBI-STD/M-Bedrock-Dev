@@ -152,6 +152,61 @@ describe("arena concurrency capacity extraction", () => {
     expect(result.report?.safeConcurrentArenas).toBeNull();
   });
 
+  it("reports a shortfall when runtime admission caps six arenas at two", () => {
+    const offsets = Array.from(
+      { length: 5 },
+      (_, index) => ({
+        x: (index + 1) * 100,
+        y: 0,
+        z: 0,
+      }),
+    );
+
+    const result =
+      extractArenaConcurrencyCapacity({
+        discovery: {
+          canonical: {
+            arenaId: "arena-1",
+            anchor: { x: 0, y: 0, z: 0 },
+            items: [],
+          },
+          replicas: offsets.map(
+            (offset, index) => ({
+              arenaId:
+                "arena-" + String(index + 2),
+              anchor: offset,
+              items: [],
+            }),
+          ),
+          offsets,
+          supportByOffset: {},
+          confidence: "high",
+          evidenceCandidates: 6,
+        },
+        tickingAreas: [],
+        declaredConcurrentArenaLimit: 2,
+      });
+
+    expect(result.evidence).toMatchObject({
+      requestedConcurrentArenas: 6,
+      declaredConcurrentArenaLimit: 2,
+    });
+    expect(result.resources).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "runtime-arena-admission-cap",
+          perArena: 1,
+          total: 2,
+        }),
+      ]),
+    );
+    expect(result.report).toMatchObject({
+      requestedConcurrentArenas: 6,
+      safeConcurrentArenas: 2,
+      ok: false,
+    });
+  });
+
   it("reports a shortfall when proven command families exceed the 10-slot backend", () => {
     const offsets = Array.from({ length: 5 }, (_, index) => ({
       x: (index + 1) * 100,
