@@ -37,6 +37,7 @@ Related contracts:
 - [Capacity/concurrency audit checklist](./capacity-concurrency-audit-checklist.md)
 - [Gameplay audit blind-spot contract](./gameplay-audit-blind-spots.md)
 - [Cross-system interaction audit](./cross-system-interaction-audit.md)
+- [Hidden gameplay defect analysis — canonical ownership map](./hidden-gameplay-defect-analysis.md)
 - [Audit finalization checklist](./audit-finalization-checklist.md)
 
 ## Core models and graphs
