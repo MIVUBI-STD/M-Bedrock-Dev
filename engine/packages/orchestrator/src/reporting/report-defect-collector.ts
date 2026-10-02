@@ -1043,6 +1043,7 @@ export function buildBugReportFromAuditCandidatesCompatibility(
 ): BuildBugReportFromAuditResult {
   const collection = collectConfirmedDefects(
     input.candidates,
+    input.engineeringAnalyses ?? [],
   );
   const sourceIssues = sourceEvidenceIssues(
     collection.confirmed,
