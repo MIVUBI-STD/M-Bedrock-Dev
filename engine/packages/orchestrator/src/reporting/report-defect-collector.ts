@@ -1116,7 +1116,16 @@ export function gameplayDefectCandidateCoverageIssues(
 
   for (const candidate of candidates) {
     const linkId = candidate.scenarioCausalLinkId;
-    if (linkId === undefined) continue;
+    if (linkId === undefined) {
+      if (candidate.route !== "tester") {
+        issues.push({
+          code: "invalid-confirmed-defect",
+          message:
+            "AI report candidate is not bound to a CONFIRMED_DEFECT_READY Gameplay Causal Link. Production AI findings must originate from Scenario → RIG → Causal Link → Defect Resolution.",
+        });
+      }
+      continue;
+    }
 
     candidateLinks.set(
       linkId,
