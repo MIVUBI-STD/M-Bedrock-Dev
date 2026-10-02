@@ -37,6 +37,7 @@ export interface GameplayKnowledgeReceipt {
   readonly domain: GameplayKnowledgeDomain;
   readonly status: GameplayKnowledgeReceiptStatus;
   readonly evidenceIds: readonly string[];
+  readonly capabilityIdsUsed: readonly string[];
   readonly reason: string;
 }
 

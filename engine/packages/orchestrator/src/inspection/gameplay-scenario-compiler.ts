@@ -597,6 +597,31 @@ export function compileGameplayScenarioGraph(
     });
   }
 
+  const composedDomains = new Set<
+    import("./gameplay-scenario-model.js").GameplayKnowledgeDomain
+  >();
+  for (const [scenarioId, domains] of
+    scenarioKnowledgeDomains) {
+    const scenario = scenarios.find(
+      (item) => item.id === scenarioId,
+    );
+    if (scenario?.label === "full-journey") {
+      continue;
+    }
+    for (const domain of domains) {
+      composedDomains.add(domain);
+    }
+  }
+  for (const scenario of scenarios) {
+    if (scenario.label !== "full-journey") {
+      continue;
+    }
+    scenarioKnowledgeDomains.set(
+      scenario.id,
+      [...composedDomains].sort(),
+    );
+  }
+
   const knowledgeRequirements = scenarios.flatMap(
     (scenario) =>
       buildGameplayKnowledgeRequirements(

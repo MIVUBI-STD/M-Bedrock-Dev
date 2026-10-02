@@ -118,15 +118,28 @@ function capabilityIdsForDomain(
     .sort();
 }
 
-function domainExecuted(
+function executedCapabilityIdsForDomain(
   world: GameplayWorldModel,
   domain: GameplayKnowledgeDomain,
-): boolean {
+): readonly string[] {
   const executed = new Set(
     world.analysisExecution.executedCapabilityIds,
   );
   return DOMAIN_CAPABILITY_IDS[domain]
-    .some((capabilityId) => executed.has(capabilityId));
+    .filter((capabilityId) =>
+      executed.has(capabilityId)
+    )
+    .sort();
+}
+
+function domainExecuted(
+  world: GameplayWorldModel,
+  domain: GameplayKnowledgeDomain,
+): boolean {
+  return executedCapabilityIdsForDomain(
+    world,
+    domain,
+  ).length > 0;
 }
 
 function domainEvidence(
@@ -465,6 +478,7 @@ export function buildGameplayKnowledgeReceipts(
         domain: requirement.domain,
         status: "BLOCKED_BY_PREREQUISITE",
         evidenceIds: [],
+        capabilityIdsUsed: [],
         reason:
           "Required prerequisite inspection node(s) are not satisfied: " +
           blockedDependencies.join(", ") +
@@ -482,6 +496,7 @@ export function buildGameplayKnowledgeReceipts(
         domain: requirement.domain,
         status: "CAPABILITY_GAP",
         evidenceIds,
+        capabilityIdsUsed: [],
         reason:
           "No analysis-planner capability is registered for this required gameplay knowledge domain.",
       });
@@ -494,20 +509,33 @@ export function buildGameplayKnowledgeReceipts(
         domain: requirement.domain,
         status: "MISSING_REQUIRED_KNOWLEDGE",
         evidenceIds: [],
+        capabilityIdsUsed: [],
         reason:
           "A registered capability exists, but no execution receipt returned to the scenario for this required domain.",
       });
       continue;
     }
 
+    const capabilityIdsUsed =
+      executedCapabilityIdsForDomain(
+        world,
+        requirement.domain,
+      ).filter((capabilityId) =>
+        requirement.capabilityIds.includes(
+          capabilityId,
+        )
+      );
     receipts.set(requirement.id, {
       requirementId: requirement.id,
       scenarioId: requirement.scenarioId,
       domain: requirement.domain,
       status: "SATISFIED",
       evidenceIds,
+      capabilityIdsUsed,
       reason:
-        "Required gameplay knowledge is present and available to the scenario causal analysis.",
+        "Required gameplay knowledge is present and tied to executed analysis capability receipt(s): " +
+        capabilityIdsUsed.join(", ") +
+        ".",
     });
   }
 

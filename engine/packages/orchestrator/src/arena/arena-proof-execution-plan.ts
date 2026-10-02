@@ -38,6 +38,11 @@ export interface ArenaProofExecutionInput {
   randomTickRecords: number;
   actorRecords: number;
   authoredEntityProof?: ArenaEntityPopulationProof;
+  /**
+   * Progressive mode executes only RIG-requested proof layers.
+   * Full mode intentionally overrides this filter.
+   */
+  requiredLayers?: readonly ArenaProofLayer[];
 }
 
 function nativeFullyMatches(
@@ -61,25 +66,46 @@ export function planArenaProofExecution(
 ): ArenaProofExecutionPlan {
   const mode = input.mode ?? "progressive";
   const full = mode === "full";
+  const required = new Set(
+    input.requiredLayers ?? [
+      "native-spatial",
+      "voxel",
+      "block-entity",
+      "tick-state",
+      "actor-population",
+    ],
+  );
+  const requested = (layer: ArenaProofLayer) =>
+    full || required.has(layer);
   const nativeMatch = nativeFullyMatches(input);
   const decisions: ArenaProofExecutionDecision[] = [{
     layer: "native-spatial",
-    action: "execute",
+    action:
+      requested("native-spatial")
+        ? "execute"
+        : "skip",
     reason:
-      "Native chunk-record fingerprinting is the lowest-cost physical arena evidence layer.",
+      requested("native-spatial")
+        ? "RIG requests arena/spatial physical evidence; native chunk-record fingerprinting is the lowest-cost layer."
+        : "RIG does not require arena/spatial physical proof for the active gameplay scenarios.",
   }];
 
   decisions.push({
     layer: "voxel",
     action:
-      full ||
-      !nativeMatch ||
-      input.nativeSpatial?.status === "voxel-proof-required"
+      requested("voxel") &&
+      (
+        full ||
+        !nativeMatch ||
+        input.nativeSpatial?.status === "voxel-proof-required"
+      )
         ? "execute"
         : "skip",
     reason:
-      full
-        ? "Full arena proof mode explicitly requests decoded voxel comparison."
+      !requested("voxel")
+        ? "RIG does not require decoded voxel proof for the active gameplay scenarios."
+        : full
+          ? "Full arena proof mode explicitly requests decoded voxel comparison."
         : nativeMatch
           ? "Normalized chunk-record evidence is complete and equal for every replica; progressive mode stops before expensive voxel decode."
           : "Native evidence is unavailable, truncated, mismatched, or requires coordinate-level proof.",
@@ -88,15 +114,18 @@ export function planArenaProofExecution(
   decisions.push({
     layer: "block-entity",
     action:
+      !requested("block-entity") ||
       input.blockEntityRecords === 0
         ? "skip"
         : full || !nativeMatch
           ? "execute"
           : "skip",
     reason:
-      input.blockEntityRecords === 0
-        ? "World DB scan found no block-entity records."
-        : full
+      !requested("block-entity")
+        ? "RIG does not require block-entity proof for the active gameplay scenarios."
+        : input.blockEntityRecords === 0
+          ? "World DB scan found no block-entity records."
+          : full
           ? "Full arena proof mode explicitly requests block-entity NBT comparison."
           : nativeMatch
             ? "Complete equal raw chunk-record evidence already includes block-entity record hashes; targeted NBT decode is deferred."
@@ -106,14 +135,19 @@ export function planArenaProofExecution(
   decisions.push({
     layer: "tick-state",
     action:
-      full ||
-      input.pendingTickRecords > 0 ||
-      input.randomTickRecords > 0
+      requested("tick-state") &&
+      (
+        full ||
+        input.pendingTickRecords > 0 ||
+        input.randomTickRecords > 0
+      )
         ? "execute"
         : "skip",
     reason:
-      full
-        ? "Full arena proof mode includes queued tick-state comparison."
+      !requested("tick-state")
+        ? "RIG does not require tick-state proof for the active gameplay scenarios."
+        : full
+          ? "Full arena proof mode includes queued tick-state comparison."
         : input.pendingTickRecords > 0 ||
             input.randomTickRecords > 0
           ? "Pending/random tick records exist and are compared from already-scanned metadata."
@@ -123,6 +157,7 @@ export function planArenaProofExecution(
   decisions.push({
     layer: "actor-population",
     action:
+      !requested("actor-population") ||
       input.actorRecords === 0
         ? "skip"
         : full ||
@@ -130,9 +165,11 @@ export function planArenaProofExecution(
           ? "execute"
           : "skip",
     reason:
-      input.actorRecords === 0
-        ? "World DB scan found no Actor records."
-        : full
+      !requested("actor-population")
+        ? "RIG does not require Actor DB population proof for the active gameplay scenarios."
+        : input.actorRecords === 0
+          ? "World DB scan found no Actor records."
+          : full
           ? "Full arena proof mode explicitly requests runtime Actor population comparison."
           : input.authoredEntityProof?.status === "diverged"
             ? "Authored entity population already diverged, so Actor DB comparison is an evidence escalation."

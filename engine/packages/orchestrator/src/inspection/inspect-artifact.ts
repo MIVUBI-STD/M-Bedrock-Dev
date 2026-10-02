@@ -159,7 +159,43 @@ export async function inspectArtifact(
       result.arenaAnalysis.regionClassification ??
       scriptLayoutFallback?.regionClassification;
 
-    const baseProofVolumes =
+    const rigKnowledgeDomains = new Set(
+      result.hiddenGameplayDefects
+        .scenarioAudit.graph
+        .knowledgeRequirements
+        .map((requirement) => requirement.domain),
+    );
+    const rigRequiresArenaSpatial =
+      rigKnowledgeDomains.has("arena-lifecycle") ||
+      rigKnowledgeDomains.has("multiplayer-interleaving") ||
+      rigKnowledgeDomains.has("spatial-authority") ||
+      rigKnowledgeDomains.has("world-structure");
+    const rigRequiresStructureProof =
+      rigKnowledgeDomains.has("world-structure") ||
+      rigKnowledgeDomains.has("spatial-authority");
+    const rigRequiresChunkProof =
+      rigKnowledgeDomains.has("chunk-simulation");
+    const rigRequiresEntityProof =
+      rigKnowledgeDomains.has("entity-behavior");
+    const rigRequiredProofLayers = [
+      ...(rigRequiresArenaSpatial
+        ? ["native-spatial" as const]
+        : []),
+      ...(rigRequiresStructureProof
+        ? [
+            "voxel" as const,
+            "block-entity" as const,
+          ]
+        : []),
+      ...(rigRequiresChunkProof
+        ? ["tick-state" as const]
+        : []),
+      ...(rigRequiresEntityProof
+        ? ["actor-population" as const]
+        : []),
+    ];
+
+        const baseProofVolumes =
       effectiveRegionClassification === undefined
         ? effectiveRegionPlan?.volumes
         : [
@@ -188,7 +224,8 @@ export async function inspectArtifact(
     );
 
     const entityPopulationProof =
-      spatialLayout === undefined
+      spatialLayout === undefined ||
+      !rigRequiresEntityProof
         ? undefined
         : proveArenaEntityPopulation(
             spatialLayout,
@@ -199,7 +236,8 @@ export async function inspectArtifact(
     let tickStateProof;
 
     const structureInstanceProof =
-      spatialLayout === undefined
+      spatialLayout === undefined ||
+      !rigRequiresStructureProof
         ? undefined
         : proveArenaStructureInstances(
             spatialLayout,
@@ -229,7 +267,8 @@ export async function inspectArtifact(
           );
 
     const arenaNativeSpatial =
-      spatialLayout === undefined
+      spatialLayout === undefined ||
+      !rigRequiresArenaSpatial
         ? undefined
         : auditArenaNativeSpatialContent(
             spatialLayout,
@@ -267,6 +306,8 @@ export async function inspectArtifact(
               nativeWorldDb.actorRecords,
             authoredEntityProof:
               entityPopulationProof,
+            requiredLayers:
+              rigRequiredProofLayers,
           });
 
     if (
