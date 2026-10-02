@@ -84,6 +84,8 @@ Discover all gameplay surfaces
 → verify mechanic completeness and negative space
 → prioritize temporal/cross-system risks
 → check design-consistency anomalies
+→ detect silent degradation / fallback masking
+→ generate relevant mixed-player and repeated-run verification
 → build root-cause / constraint / evidence-convergence analysis for complex findings
 → analyze contradictions across all understood surfaces
 → classify the complete issue set
@@ -92,7 +94,7 @@ Discover all gameplay surfaces
 
 Do not publish an early partial bug list and rely on repeated rechecks to discover the rest. Recheck is for new artifacts, changed versions, blocked evidence becoming available, or explicit verification—not as the normal discovery strategy.
 
-If Gameplay Model Closure is OPEN, report the missing/unaccounted surfaces instead of pretending the bug list is complete.
+If Gameplay Model Closure is OPEN, report the missing/unaccounted surfaces instead of pretending the bug list is complete. Production review and final publication must remain closure-gated.
 
 ## Bug admission
 
