@@ -19,11 +19,33 @@ export type MandatoryAuditCheckpointStatus =
   | "OPEN"
   | "NOT_APPLICABLE";
 
+export type MandatoryAuditCheckpointReasonCode =
+  | "COMPLETE"
+  | "NOT_APPLICABLE_PROVEN"
+  | "RUNTIME_PROOF_REQUIRED"
+  | "DISCOVERY_INCOMPLETE"
+  | "SCOPE_INCOMPLETE"
+  | "OBLIGATION_INCOMPLETE"
+  | "KNOWLEDGE_GAP"
+  | "CAPABILITY_GAP"
+  | "PROCEDURE_BLOCKED";
+
+export interface MandatoryAuditObligation {
+  readonly id: string;
+  readonly required: boolean;
+  readonly satisfied: boolean;
+  readonly evidenceIds: readonly string[];
+  readonly reason: string;
+}
+
 export interface MandatoryAuditCheckpointReceipt {
   readonly id: string;
   readonly block: MandatoryAuditBlock;
   readonly label: string;
   readonly status: MandatoryAuditCheckpointStatus;
+  readonly reasonCode: MandatoryAuditCheckpointReasonCode;
+  readonly blocksPublication: boolean;
+  readonly obligations: readonly MandatoryAuditObligation[];
   readonly evidenceIds: readonly string[];
   readonly outputIds: readonly string[];
   readonly reason: string;
@@ -69,6 +91,7 @@ export interface MandatoryAuditProcedureReceipt {
   readonly stateRegistry: readonly MandatoryAuditStateRecord[];
   readonly ownershipRegistry: readonly MandatoryAuditOwnershipRecord[];
   readonly progressionContracts: readonly MandatoryAuditProgressionRecord[];
+  readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
 }
 
@@ -80,16 +103,75 @@ function receipt(
   reason: string,
   evidenceIds: readonly string[] = [],
   outputIds: readonly string[] = [],
+  options: {
+    readonly reasonCode?: MandatoryAuditCheckpointReasonCode;
+    readonly blocksPublication?: boolean;
+    readonly obligations?: readonly MandatoryAuditObligation[];
+  } = {},
 ): MandatoryAuditCheckpointReceipt {
+  const obligations = options.obligations ?? [];
+  const unsatisfiedRequired = obligations.some(
+    (item) => item.required && !item.satisfied,
+  );
+  const effectiveStatus =
+    status === "CLOSED" && unsatisfiedRequired
+      ? "PARTIAL"
+      : status;
   return {
     id,
     block,
     label,
-    status,
+    status: effectiveStatus,
+    reasonCode:
+      options.reasonCode ??
+      (effectiveStatus === "NOT_APPLICABLE"
+        ? "NOT_APPLICABLE_PROVEN"
+        : effectiveStatus === "CLOSED"
+          ? "COMPLETE"
+          : "OBLIGATION_INCOMPLETE"),
+    blocksPublication:
+      options.blocksPublication ??
+      (
+        effectiveStatus === "OPEN" ||
+        (
+          effectiveStatus === "PARTIAL" &&
+          (options.reasonCode ?? "OBLIGATION_INCOMPLETE") !==
+            "RUNTIME_PROOF_REQUIRED"
+        )
+      ),
+    obligations,
     reason,
     evidenceIds: [...new Set(evidenceIds)].sort(),
     outputIds: [...new Set(outputIds)].sort(),
   };
+}
+
+function obligation(
+  id: string,
+  required: boolean,
+  satisfied: boolean,
+  reason: string,
+  evidenceIds: readonly string[] = [],
+): MandatoryAuditObligation {
+  return {
+    id,
+    required,
+    satisfied,
+    reason,
+    evidenceIds: [...new Set(evidenceIds)].sort(),
+  };
+}
+
+function positiveNotApplicable(
+  discovery: GameplayDiscoveryClosure,
+  hasIntentSignal: boolean,
+  hasRuntimeSignal: boolean,
+): boolean {
+  return (
+    discovery.status === "COMPLETE" &&
+    !hasIntentSignal &&
+    !hasRuntimeSignal
+  );
 }
 
 function deriveStateRegistry(
@@ -239,7 +321,14 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "A3",
     "UNDERSTAND",
     "Player Journey Reconstruction",
-    fullJourney && fullJourney.composedScenarioIds.length > 0
+    fullJourney &&
+    fullJourney.composedScenarioIds.length > 0 &&
+    scenarioClosure.status !== "OPEN" &&
+    intent.nodes.some((node) =>
+      node.kind === "objective" ||
+      node.kind === "phase" ||
+      node.kind === "outcome"
+    )
       ? "CLOSED"
       : "OPEN",
     fullJourney && fullJourney.composedScenarioIds.length > 0
@@ -253,9 +342,15 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "A4",
     "UNDERSTAND",
     "State Registry",
-    stateRegistry.length === 0 ? "NOT_APPLICABLE" : "CLOSED",
     stateRegistry.length === 0
-      ? "No material Semantic IR state surfaces were discovered."
+      ? discovery.status === "COMPLETE"
+        ? "NOT_APPLICABLE"
+        : "OPEN"
+      : "CLOSED",
+    stateRegistry.length === 0
+      ? discovery.status === "COMPLETE"
+        ? "No material Semantic IR state surfaces were discovered after complete discovery."
+        : "State applicability cannot be closed while discovery is incomplete."
       : "Material state surfaces are projected with read/write/clear ownership evidence.",
     semanticIr.state.operations.map((item) => item.id),
     ["StateRegistry"],
@@ -315,13 +410,23 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "MODEL",
     "Actor / Entity Contract",
     world.entities.definitions === 0
-      ? "NOT_APPLICABLE"
+      ? positiveNotApplicable(
+          discovery,
+          intent.nodes.some((node) =>
+            node.kind === "actor" || node.kind === "role"
+          ),
+          false,
+        )
+        ? "NOT_APPLICABLE"
+        : "OPEN"
       : world.entities.staticAnalysisLimits > 0 ||
           world.entities.navigationEnvironment.unresolved > 0
         ? "PARTIAL"
         : "CLOSED",
     world.entities.definitions === 0
-      ? "No gameplay entity definitions were discovered."
+      ? discovery.status === "COMPLETE"
+        ? "No actor/role intent or entity definition remains after complete discovery."
+        : "Entity applicability is unresolved while discovery remains incomplete."
       : "Entity behavior/navigation evidence is accounted.",
     ["analysis:entity-behavior"],
     ["ActorEntityContract"],
@@ -409,12 +514,49 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "C1",
     "STRESS",
     "Combat Lifecycle",
-    combatApplicable ? "CLOSED" : "NOT_APPLICABLE",
     combatApplicable
-      ? "Combat lifecycle paths are analyzed; contradictions flow into PROVE."
-      : "No combat lifecycle surface was discovered.",
+      ? "CLOSED"
+      : positiveNotApplicable(
+          discovery,
+          intent.nodes.some((node) =>
+            /combat|damage|death|revive|downed/i.test(
+              node.id + " " + node.label,
+            )
+          ),
+          false,
+        )
+        ? "NOT_APPLICABLE"
+        : "OPEN",
+    combatApplicable
+      ? "Combat lifecycle obligations are evaluated; contradictions flow into PROVE."
+      : discovery.status === "COMPLETE"
+        ? "No combat intent or runtime combat surface remains after complete discovery."
+        : "Combat applicability is unresolved while discovery is incomplete.",
     ["analysis:combat-lifecycle"],
     ["CombatLifecycleContract"],
+    {
+      obligations: [
+        obligation(
+          "combat-capability-executed",
+          combatApplicable,
+          world.analysisExecution.executedCapabilityIds.includes(
+            "combat-lifecycle-contract",
+          ),
+          "Combat capability must execute when combat is applicable.",
+          ["analysis:combat-lifecycle"],
+        ),
+        obligation(
+          "combat-path-accounted",
+          combatApplicable,
+          world.combat.paths.length > 0 ||
+            world.combat.policy.reviveContractContradictions > 0,
+          "Applicable combat requires at least one scoped combat path or explicit contract contradiction.",
+          world.combat.paths.map((item) =>
+            item.scriptId + ":" + item.callbackRegion
+          ),
+        ),
+      ],
+    },
   ));
 
   const inventoryApplicable =
@@ -425,12 +567,48 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "C2",
     "STRESS",
     "Inventory Lifecycle",
-    inventoryApplicable ? "CLOSED" : "NOT_APPLICABLE",
     inventoryApplicable
-      ? "Inventory lifecycle and restore ownership are analyzed."
-      : "No inventory lifecycle surface was discovered.",
+      ? "CLOSED"
+      : positiveNotApplicable(
+          discovery,
+          intent.nodes.some((node) =>
+            /inventory|item|equipment|loadout/i.test(
+              node.id + " " + node.label,
+            )
+          ),
+          false,
+        )
+        ? "NOT_APPLICABLE"
+        : "OPEN",
+    inventoryApplicable
+      ? "Inventory lifecycle obligations are evaluated."
+      : discovery.status === "COMPLETE"
+        ? "No inventory intent or lifecycle surface remains after complete discovery."
+        : "Inventory applicability is unresolved while discovery is incomplete.",
     ["analysis:inventory-state"],
     ["InventoryLifecycleContract"],
+    {
+      obligations: [
+        obligation(
+          "inventory-capability-executed",
+          inventoryApplicable,
+          world.analysisExecution.executedCapabilityIds.includes(
+            "inventory-lifecycle-integrity",
+          ),
+          "Inventory capability must execute when inventory is applicable.",
+          ["analysis:inventory-state"],
+        ),
+        obligation(
+          "inventory-scoped-assessment",
+          inventoryApplicable,
+          world.inventory.assessments.length > 0,
+          "Applicable inventory must expose scoped lifecycle assessment.",
+          world.inventory.assessments.map((item) =>
+            item.scriptId + ":" + item.executionRegion
+          ),
+        ),
+      ],
+    },
   ));
 
   const economyApplicable = world.economy.sourceKinds.length > 0;
@@ -438,12 +616,50 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "C3",
     "STRESS",
     "Reward / Economy Contract",
-    economyApplicable ? "CLOSED" : "NOT_APPLICABLE",
     economyApplicable
-      ? "Reward source, delivery, consume, and idempotency paths are analyzed."
-      : "No reward/economy surface was discovered.",
+      ? "CLOSED"
+      : positiveNotApplicable(
+          discovery,
+          intent.nodes.some((node) =>
+            /reward|loot|coin|currency|score|shop/i.test(
+              node.id + " " + node.label,
+            )
+          ),
+          false,
+        )
+        ? "NOT_APPLICABLE"
+        : "OPEN",
+    economyApplicable
+      ? "Reward/economy obligations are evaluated."
+      : discovery.status === "COMPLETE"
+        ? "No reward/economy intent or source remains after complete discovery."
+        : "Reward/economy applicability is unresolved while discovery is incomplete.",
     ["analysis:economy-reward"],
     ["RewardEconomyContract"],
+    {
+      obligations: [
+        obligation(
+          "economy-capability-executed",
+          economyApplicable,
+          world.analysisExecution.executedCapabilityIds.includes(
+            "economy-reward-integrity",
+          ),
+          "Economy capability must execute when reward/economy is applicable.",
+          ["analysis:economy-reward"],
+        ),
+        obligation(
+          "economy-path-accounted",
+          economyApplicable,
+          world.economy.paths.length > 0 ||
+            world.economy.engineLootEntities > 0 ||
+            world.economy.functionLootCommands > 0,
+          "Applicable reward/economy requires a scoped reward path or explicit engine/function reward source.",
+          world.economy.paths.map((item) =>
+            item.scriptId + ":" + item.callbackRegion
+          ),
+        ),
+      ],
+    },
   ));
 
   const persistenceApplicable = (world.persistence?.properties ?? 0) > 0;
@@ -601,6 +817,17 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       (item) => item.counterProofEvidenceIds ?? [],
     ),
     ["GameplayDefectResolution"],
+    {
+      reasonCode:
+        defectResolution.runtimeProofRequiredIds.length > 0 &&
+        defectResolution.counterProofSearchRequiredIds.length === 0 &&
+        defectResolution.gameplayTranslationRequiredIds.length === 0
+          ? "RUNTIME_PROOF_REQUIRED"
+          : defectResolution.counterProofSearchRequiredIds.length > 0 ||
+              defectResolution.gameplayTranslationRequiredIds.length > 0
+            ? "PROCEDURE_BLOCKED"
+            : "COMPLETE",
+    },
   ));
 
   checkpoint.push(receipt(
@@ -657,6 +884,11 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         ],
   );
 
+  const blockingCheckpointIds = checkpoint
+    .filter((item) => item.blocksPublication)
+    .map((item) => item.id)
+    .sort();
+
   return {
     schemaVersion: 1,
     policy: "mandatory-gameplay-audit-procedure",
@@ -666,6 +898,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     stateRegistry,
     ownershipRegistry,
     progressionContracts,
+    blockingCheckpointIds,
     reasons,
   };
 }

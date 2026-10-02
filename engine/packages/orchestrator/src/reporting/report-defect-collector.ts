@@ -1061,11 +1061,18 @@ export function mandatoryAuditProcedurePublicationIssues(
         "Mandatory Audit Procedure receipt is missing. Production publication cannot bypass UNDERSTAND → MODEL → STRESS → PROVE → REPORT.",
     }];
   }
-  if (procedure.status !== "OPEN") return [];
+  if (
+    procedure.status !== "OPEN" &&
+    procedure.blockingCheckpointIds.length === 0
+  ) {
+    return [];
+  }
   return [{
     code: "invalid-confirmed-defect",
     message:
-      "Mandatory Audit Procedure is OPEN. " +
+      "Mandatory Audit Procedure has publication-blocking checkpoint(s): " +
+      procedure.blockingCheckpointIds.join(", ") +
+      ". " +
       procedure.reasons.join(" "),
   }];
 }

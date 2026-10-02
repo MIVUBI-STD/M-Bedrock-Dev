@@ -53,7 +53,8 @@ export type AnalysisKnowledgeDomain =
   | "world-structure"
   | "economy-reward"
   | "spatial-authority"
-  | "temporal-ownership";
+  | "temporal-ownership"
+  | "platform-constraints";
 
 export type AnalysisExecutionPhase =
   | "discovery-core"

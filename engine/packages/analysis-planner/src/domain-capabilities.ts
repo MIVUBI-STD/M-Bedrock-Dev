@@ -7,7 +7,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "semantic-ir-state-model",
     executionPhase: "discovery-core",
-      executionPhase: "discovery-core",
       knowledgeDomains: ["state-flow"],
       evidenceLevel: "semantic",
       cost: "cheap",
@@ -30,7 +29,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "script-spatial-integrity",
     executionPhase: "discovery-core",
-      executionPhase: "discovery-core",
       knowledgeDomains: ["spatial-authority"],
       evidenceLevel: "semantic",
       cost: "cheap",
@@ -54,7 +52,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "script-dataflow-lineage",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -79,7 +76,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "script-semantic-flow",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: ["script","dataflow","taint","identity","reward","state","world-mutation"],
@@ -91,7 +87,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "script-semantic-flow-witness",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: ["script","dataflow","taint","witness","identity","state","reward"],
@@ -103,7 +98,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "script-source-recovery",
     executionPhase: "discovery-core",
-      executionPhase: "discovery-core",
       evidenceLevel: "static",
       cost: "cheap",
       tags: ["script","bundle","minified","source-map","source-recovery"],
@@ -114,7 +108,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "script-source-map-binding",
     executionPhase: "discovery-core",
-      executionPhase: "discovery-core",
       evidenceLevel: "static",
       cost: "cheap",
       tags: ["script","source-map","bundle","source-recovery"],
@@ -126,7 +119,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "arena-lifecycle-integrity",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["arena-lifecycle"],
       evidenceLevel: "semantic",
       cost: "cheap",
@@ -151,7 +143,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "spatial-authority-coverage",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       evidenceLevel: "semantic",
       cost: "cheap",
       tags: [
@@ -175,7 +166,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "inventory-lifecycle-integrity",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["inventory-state"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -201,7 +191,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "entity-ai-navigation-readiness",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["entity-behavior"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -227,7 +216,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "combat-lifecycle-contract",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["combat-lifecycle"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -252,7 +240,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "chunk-lifecycle-integrity",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["chunk-simulation"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -278,7 +265,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "economy-reward-integrity",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["economy-reward"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -303,7 +289,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "persistence-lifecycle-integrity",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["persistence-recovery"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -327,7 +312,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "multiplayer-interleaving",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["multiplayer-interleaving"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -352,7 +336,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "structure-transition-integrity",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["world-structure"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -376,7 +359,6 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     {
       id: "temporal-ownership-integrity",
     executionPhase: "rig-directed",
-      executionPhase: "rig-directed",
       knowledgeDomains: ["temporal-ownership"],
       evidenceLevel: "semantic",
       cost: "moderate",
@@ -490,6 +472,32 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
       ],
       prerequisites: [
         "combat-lifecycle-contract",
+      ],
+    },
+    {
+      id: "platform-knowledge-applicability",
+      executionPhase: "rig-directed",
+      knowledgeDomains: ["platform-constraints"],
+      evidenceLevel: "semantic",
+      cost: "cheap",
+      tags: [
+        "platform",
+        "minecraft",
+        "education",
+        "compatibility",
+        "capability",
+        "limits",
+      ],
+      deterministic: true,
+      contexts: [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+      producesTraits: [
+        "contract-evidence",
+        "semantic-model",
       ],
     },
   ] as const;

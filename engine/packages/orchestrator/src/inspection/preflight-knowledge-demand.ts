@@ -33,6 +33,17 @@ export function derivePreflightKnowledgeDemand(
   const domains = new Set<AnalysisKnowledgeDomain>([
     "state-flow",
   ]);
+  // Platform knowledge is cheap enough to retain whenever a map exposes
+  // authored runtime-sensitive content. It prevents pruning from hiding
+  // Minecraft/Education capability constraints.
+  if (
+    input.entityCount > 0 ||
+    input.scripts.length > 0 ||
+    input.target.version !== undefined ||
+    input.target.edition !== undefined
+  ) {
+    domains.add("platform-constraints");
+  }
   const nodes = input.intent?.nodes ?? [];
   const edges = input.intent?.edges ?? [];
 

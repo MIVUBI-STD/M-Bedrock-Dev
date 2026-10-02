@@ -34,7 +34,7 @@ const DOMAIN_DEPENDENCIES: Readonly<Partial<Record<
     "state-flow",
     "arena-lifecycle",
   ],
-  "chunk-simulation": ["state-flow"],
+  "chunk-simulation": ["state-flow", "platform-constraints"],
   "entity-behavior": [
     "state-flow",
     "chunk-simulation",
@@ -52,6 +52,7 @@ const DOMAIN_DEPENDENCIES: Readonly<Partial<Record<
   ],
   "spatial-authority": ["state-flow"],
   "temporal-ownership": ["state-flow"],
+  "platform-constraints": ["state-flow"],
 };
 
 function capabilityIdsForDomain(
@@ -127,6 +128,8 @@ function domainEvidence(
       return ["analysis:spatial-authority"];
     case "temporal-ownership":
       return ["analysis:temporal-ownership"];
+    case "platform-constraints":
+      return ["analysis:platform-constraints"];
   }
 }
 
@@ -348,6 +351,8 @@ function applicable(
         world.spatial.structurePlacements > 0 ||
         world.spatial.authority.configured
       );
+    case "platform-constraints":
+      return world.platformKnowledge.profileResolved;
     case "state-flow":
     case "temporal-ownership":
       return true;
@@ -390,6 +395,7 @@ export function requiredKnowledgeDomainsForPreset(
     case "arena-capacity-plus-one":
       addIfApplicable("arena-lifecycle");
       addIfApplicable("multiplayer-interleaving");
+      addIfApplicable("platform-constraints");
       addIfApplicable("chunk-simulation");
       break;
     case "reload-recovery":
@@ -402,6 +408,7 @@ export function requiredKnowledgeDomainsForPreset(
       add(domains, "temporal-ownership");
       addIfApplicable("arena-lifecycle");
       addIfApplicable("persistence-recovery");
+      addIfApplicable("platform-constraints");
       addIfApplicable("chunk-simulation");
       break;
     case "terminal-collision":
@@ -428,10 +435,15 @@ export function requiredKnowledgeDomainsForIntentScenario(
   model: GameplayIntentModel,
   world: GameplayWorldModel,
 ): readonly GameplayKnowledgeDomain[] {
-  return [...semanticDomains(node, model, world)]
+  const domains = semanticDomains(node, model, world);
+  if (domains.has("chunk-simulation")) {
+    domains.add("platform-constraints");
+  }
+  return [...domains]
     .filter(
       (domain) =>
         domain === "chunk-simulation" ||
+        domain === "platform-constraints" ||
         applicable(world, domain),
     )
     .sort();

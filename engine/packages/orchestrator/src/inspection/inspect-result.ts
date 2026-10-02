@@ -328,6 +328,12 @@ export function buildInspectionResult(
     routeNavigationEnvironment,
     analysisDemand:
       preflightKnowledgeDemand,
+    platformKnowledge: {
+      profileResolved:
+        input.knowledgeRuntime.profileResolved,
+      profileSource:
+        input.knowledgeRuntime.profileSource,
+    },
     entities: {
       definitions: parsedEntities.length,
       knowledgePrerequisiteGaps:

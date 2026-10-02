@@ -402,6 +402,10 @@ export interface GameplayWorldModel {
     transitionResidueUnresolved: number;
   };
   analysisDemand?: readonly import("../../../analysis-planner/src/index.js").AnalysisKnowledgeDomain[];
+  platformKnowledge: {
+    profileResolved: boolean;
+    profileSource: "target" | "education-metadata" | "unresolved";
+  };
   entities: {
     definitions: number;
     knowledgePrerequisiteGaps: number;
@@ -1560,6 +1564,12 @@ export function deriveGameplayWorldModel(
         source.structures
           .transitionResidueUnresolved ?? 0,
     },
+    platformKnowledge: {
+      profileResolved:
+        source.platformKnowledge?.profileResolved ?? false,
+      profileSource:
+        source.platformKnowledge?.profileSource ?? "unresolved",
+    },
     entities: {
       ...source.entities,
       resolvedSpawnEvidence:
@@ -1619,6 +1629,11 @@ export function deriveGameplayWorldModel(
             "temporal-ownership",
           )
             ? ["temporal-ownership-integrity"]
+            : []
+        ),
+        ...(
+          source.platformKnowledge?.profileResolved
+            ? ["platform-knowledge-applicability"]
             : []
         ),
         ...(
