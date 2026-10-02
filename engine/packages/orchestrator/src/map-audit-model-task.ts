@@ -170,8 +170,8 @@ function provePackets(
                 "detection gap",
               ]
             : [
-                "blocking counter-proof with evidence",
-                "counter-proof search exhausted within supplied scope",
+                "blocking counter-proof with evidence + CounterProofSearchReceipt",
+                "counter-proof search exhausted within supplied scope + CounterProofSearchReceipt",
                 "runtime proof required",
                 "detection gap",
               ],
@@ -185,7 +185,7 @@ function provePackets(
         stopCondition:
           needsTranslation
             ? "Stop after one complete gameplay-causal translation or one explicit evidence gap."
-            : "Stop after deterministic blocking proof is found or all supplied owner/guard/generation/scope evidence for this causal link is exhausted.",
+            : "Stop only after returning a CounterProofSearchReceipt bound to this causal link scope. Exhaustion requires explicit searched dimensions, coverage evidence, exhaustiveWithinScope=true, and NO_BLOCKING_PROOF; a blocker requires BLOCKING_PROOF_FOUND.",
       };
     });
 }

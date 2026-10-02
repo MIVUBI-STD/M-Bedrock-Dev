@@ -11,6 +11,27 @@ export type GameplayDefectResolutionDisposition =
   | "GAMEPLAY_TRANSLATION_REQUIRED"
   | "COUNTERPROOF_SEARCH_REQUIRED";
 
+export type CounterProofSearchDimension =
+  | "owner"
+  | "guard"
+  | "generation"
+  | "scope"
+  | "cleanup"
+  | "exclusion";
+
+export interface CounterProofSearchReceipt {
+  readonly schemaVersion: 1;
+  readonly policy: "bounded-counterproof-search";
+  readonly searchedDimensions:
+    readonly CounterProofSearchDimension[];
+  readonly scopeIds: readonly string[];
+  readonly evidenceIds: readonly string[];
+  readonly exhaustiveWithinScope: boolean;
+  readonly conclusion:
+    | "NO_BLOCKING_PROOF"
+    | "BLOCKING_PROOF_FOUND";
+}
+
 export interface GameplayDefectResolution {
   readonly causalLinkId: string;
   readonly scenarioId?: string;
@@ -25,6 +46,7 @@ export interface GameplayDefectResolution {
   readonly actualOutcome?: string;
   readonly affectedScope?: string;
   readonly counterProofEvidenceIds?: readonly string[];
+  readonly counterProofSearch?: CounterProofSearchReceipt;
   readonly runtimeReason?: string;
   readonly narrowRuntimeQuestion?: string;
   readonly detectionGapReason?: string;
@@ -78,6 +100,53 @@ function validateResolution(
     if (!nonEmpty(resolution.affectedScope)) {
       issues.push(link.id + ": confirmed defect requires affectedScope.");
     }
+    const search = resolution.counterProofSearch;
+    if (search === undefined) {
+      issues.push(
+        link.id +
+          ": confirmed defect requires CounterProofSearchReceipt.",
+      );
+    } else {
+      if (
+        search.schemaVersion !== 1 ||
+        search.policy !== "bounded-counterproof-search"
+      ) {
+        issues.push(
+          link.id +
+            ": counter-proof search receipt has unsupported schema/policy.",
+        );
+      }
+      if (unique(search.searchedDimensions).length === 0) {
+        issues.push(
+          link.id +
+            ": counter-proof search must record at least one searched dimension.",
+        );
+      }
+      if (unique(search.scopeIds).length === 0) {
+        issues.push(
+          link.id +
+            ": counter-proof search must bind the searched gameplay/source scope.",
+        );
+      }
+      if (unique(search.evidenceIds).length === 0) {
+        issues.push(
+          link.id +
+            ": counter-proof search must include coverage evidence.",
+        );
+      }
+      if (!search.exhaustiveWithinScope) {
+        issues.push(
+          link.id +
+            ": confirmed defect requires counter-proof search exhaustion within the bounded scope.",
+        );
+      }
+      if (search.conclusion !== "NO_BLOCKING_PROOF") {
+        issues.push(
+          link.id +
+            ": confirmed defect requires NO_BLOCKING_PROOF conclusion.",
+        );
+      }
+    }
   }
 
   if (resolution.disposition === "BLOCKING_COUNTERPROOF") {
@@ -85,6 +154,16 @@ function validateResolution(
       issues.push(
         link.id +
           ": blocking counter-proof requires concrete counterProofEvidenceIds.",
+      );
+    }
+    if (
+      resolution.counterProofSearch !== undefined &&
+      resolution.counterProofSearch.conclusion !==
+        "BLOCKING_PROOF_FOUND"
+    ) {
+      issues.push(
+        link.id +
+          ": blocking counter-proof search receipt must conclude BLOCKING_PROOF_FOUND.",
       );
     }
   }
