@@ -14,6 +14,7 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 0,
         sourceCoverageComplete: false,
         sourceParseFailures: 1,
+        unsupportedRelevantSources: 0,
         unresolvedReferences: 0,
       });
 
@@ -31,6 +32,7 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 1,
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
+        unsupportedRelevantSources: 0,
         unresolvedReferences: 1,
       });
 
@@ -53,6 +55,7 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 1,
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
+        unsupportedRelevantSources: 0,
         unresolvedReferences: 0,
       });
 
@@ -60,6 +63,26 @@ describe("gameplay discovery closure", () => {
     expect(
       result.sourceInventoryBalanced,
     ).toBe(false);
+  });
+
+  it("opens when gameplay-sensitive sources have no semantic owner", () => {
+    const result =
+      assessGameplayDiscoveryClosure({
+        discoveredSurfaceIds: [
+          "runtime:state",
+        ],
+        sourceRelevantFiles: 2,
+        sourceIndexedFiles: 1,
+        sourceCoverageComplete: false,
+        sourceParseFailures: 0,
+        unsupportedRelevantSources: 1,
+        unresolvedReferences: 0,
+      });
+
+    expect(result.status).toBe("OPEN");
+    expect(
+      result.unsupportedRelevantSources,
+    ).toBe(1);
   });
 
   it("closes discovery when relevant sources are indexed and references resolve", () => {
@@ -72,6 +95,7 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 1,
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
+        unsupportedRelevantSources: 0,
         unresolvedReferences: 0,
       });
 
