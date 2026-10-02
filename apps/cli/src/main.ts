@@ -78,12 +78,12 @@ async function main(): Promise<void> {
     "audit",
   ]);
   const engineeringAuditTools = new Set([
-    "inspect",
-    "review",
-    "workflow",
-    "arena-audit",
-    "probe-plan",
-    "probe-replay",
+    "dev-inspect",
+    "dev-review",
+    "dev-workflow",
+    "dev-arena-audit",
+    "dev-probe-plan",
+    "dev-probe-replay",
   ]);
   const productionAuditCommand =
     command !== undefined &&
@@ -162,7 +162,7 @@ async function main(): Promise<void> {
   }
   const knowledge = await loadKnowledgeDirectory(resolve("engine/knowledge"));
 
-  if (command === "probe-plan" && input) {
+  if (command === "dev-probe-plan" && input) {
     if (!probeBindingsPath) {
       throw new Error(
         "probe-plan requires --probe-bindings <bindings.json>",
@@ -220,7 +220,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "probe-replay" && input) {
+  if (command === "dev-probe-replay" && input) {
     if (!probeTranscriptPath) {
       throw new Error(
         "probe-replay requires --probe-transcript <probes.json>",
@@ -515,7 +515,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "workflow" && input) {
+  if (command === "dev-workflow" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
       : undefined;
@@ -552,7 +552,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "arena-audit" && input) {
+  if (command === "dev-arena-audit" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
       : undefined;
@@ -589,7 +589,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "review" && input) {
+  if (command === "dev-review" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
       : undefined;
@@ -613,7 +613,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "inspect" && input) {
+  if (command === "dev-inspect" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
       : undefined;
@@ -644,14 +644,14 @@ async function main(): Promise<void> {
   if (
     (telemetryPath || probeTranscriptPath) &&
     command !== "audit" &&
-    command !== "inspect" &&
-    command !== "review" &&
-    command !== "arena-audit" &&
-    command !== "workflow" &&
+    command !== "dev-inspect" &&
+    command !== "dev-review" &&
+    command !== "dev-arena-audit" &&
+    command !== "dev-workflow" &&
     command !== "verify-repair" &&
     command !== "review-model" &&
-    command !== "probe-plan" &&
-    command !== "probe-replay"
+    command !== "dev-probe-plan" &&
+    command !== "dev-probe-replay"
   ) {
     throw new Error(
       "Telemetry and runtime probe transcript inputs are only supported by production audit/review/workflow/probe commands and repair verification.",
@@ -660,8 +660,8 @@ async function main(): Promise<void> {
 
   if (
     (probeBindingsPath || probeContext) &&
-    command !== "probe-plan" &&
-    command !== "probe-replay"
+    command !== "dev-probe-plan" &&
+    command !== "dev-probe-replay"
   ) {
     throw new Error(
       "Probe binding/context options are only supported by probe-plan or probe-replay.",
@@ -727,7 +727,7 @@ async function main(): Promise<void> {
     "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version> [--edition ...] [--experiment id]",
     "",
     "Engineering-only audit projections (require MBEDROCK_ENGINEERING_TOOLS=1):",
-    "  inspect | review | workflow | arena-audit | probe-plan | probe-replay",
+    "  dev-inspect | dev-review | dev-workflow | dev-arena-audit | dev-probe-plan | dev-probe-replay",
   ].join("\n"));
   process.exitCode = 2;
 }
