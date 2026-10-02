@@ -55,12 +55,14 @@ export function assessCapabilityExposure(
   const prerequisiteReachability =
     paths.length === 0
       ? "not-required" as const
-      : paths.some((path) => path.reachable)
+      : paths.some(
+          (path) =>
+            path.resolution === "reachable",
+        )
         ? "reachable" as const
         : paths.every(
             (path) =>
-              path.reachable === false &&
-              path.nodeIds.length > 0,
+              path.resolution === "unreachable",
           )
           ? "unreachable" as const
           : "unknown" as const;
