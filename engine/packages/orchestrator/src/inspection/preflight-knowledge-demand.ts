@@ -32,6 +32,7 @@ export function derivePreflightKnowledgeDemand(
 ): readonly AnalysisKnowledgeDomain[] {
   const domains = new Set<AnalysisKnowledgeDomain>([
     "state-flow",
+    ...(input.target.requiredKnowledgeDomains ?? []),
   ]);
   // Platform knowledge is cheap enough to retain whenever a map exposes
   // authored runtime-sensitive content. It prevents pruning from hiding

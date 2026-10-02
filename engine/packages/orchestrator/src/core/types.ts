@@ -3,6 +3,7 @@ import type { CombatBehaviorContract, CombatPolicy, EconomyBehaviorContract, Eco
 import type { EducationFeatureState } from "../../../compatibility/src/index.js";
 import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../../reliability/src/index.js";
+import type { AnalysisKnowledgeDomain } from "../../../analysis-planner/src/index.js";
 import type { InspectionRepairCandidate } from "../repair-planning.js";
 import type { ScriptApiUsageInventory } from "../script-api-usage.js";
 import type { ArenaRegionContract, RouteCorridorContract, RouteNavigationEnvironmentContract, FileInventoryEntry } from "../../../project-model/src/index.js";
@@ -93,6 +94,12 @@ export interface InspectTargetProfile {
   contractSourceRoots?: readonly string[];
   staticExecutionDimension?: string;
   releaseVersion?: string;
+  /**
+   * Internal/canonical demand reconciliation override. Production callers
+   * normally leave this empty; runSelectedMapAudit() grows it monotonically
+   * when final RIG requirements exceed preflight demand.
+   */
+  requiredKnowledgeDomains?: readonly AnalysisKnowledgeDomain[];
   arenaProofMode?: ArenaProofExecutionMode;
   inventoryItemContract?: InventoryItemBehaviorContract;
   combatContract?: CombatBehaviorContract;

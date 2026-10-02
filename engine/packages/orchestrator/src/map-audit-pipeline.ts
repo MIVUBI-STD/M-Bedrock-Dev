@@ -60,6 +60,10 @@ import {
 import {
   deriveSelectedMapAuditRevision,
 } from "./map-audit-revision.js";
+import {
+  reconcileSelectedMapAuditDemand,
+  type AuditDemandReconciliation,
+} from "./map-audit-demand-reconciliation.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -78,6 +82,7 @@ export interface SelectedMapAuditRun {
   readonly inspection: InspectArtifactResult;
   readonly identity: SelectedMapAuditIdentity;
   readonly auditRevision: string;
+  readonly demandReconciliation: AuditDemandReconciliation;
   readonly status: "READY_FOR_REVIEW" | "BLOCKED";
   readonly admission: SelectedMapAuditAdmission;
   readonly currentStage: SelectedMapAuditStage | "COMPLETE";
@@ -98,16 +103,70 @@ export interface SelectedMapAuditRun {
  * focused diagnostics, and compatibility, but must not be used as alternate
  * production audit entry points.
  */
+async function inspectSelectedMapToDemandFixedPoint(
+  input: SelectedMapAuditInput,
+): Promise<{
+  readonly inspection: InspectArtifactResult;
+  readonly reconciliation: AuditDemandReconciliation;
+}> {
+  let requiredKnowledgeDomains =
+    [...new Set(
+      input.target?.requiredKnowledgeDomains ?? [],
+    )].sort();
+  let lastMissingKey = "";
+
+  for (let iteration = 0; iteration < 16; iteration += 1) {
+    const inspection = await inspectArtifact(
+      input.artifactPath,
+      {
+        ...(input.target ?? {}),
+        requiredKnowledgeDomains,
+      },
+      input.knowledgeCatalog,
+      input.telemetry ?? [],
+      input.runtimeProbeTranscript,
+    );
+    const reconciliation =
+      reconcileSelectedMapAuditDemand(inspection);
+    if (reconciliation.stable) {
+      return { inspection, reconciliation };
+    }
+
+    const next = [
+      ...new Set([
+        ...requiredKnowledgeDomains,
+        ...reconciliation.missingDomains,
+      ]),
+    ].sort();
+    const nextKey = next.join("|");
+    if (
+      nextKey === lastMissingKey ||
+      next.length === requiredKnowledgeDomains.length
+    ) {
+      throw new Error(
+        "RIG demand reconciliation stalled before reaching a fixed point: " +
+          reconciliation.missingDomains.join(", ") +
+          ".",
+      );
+    }
+    lastMissingKey = nextKey;
+    requiredKnowledgeDomains = next;
+  }
+
+  throw new Error(
+    "RIG demand reconciliation exceeded the finite knowledge-domain convergence bound.",
+  );
+}
+
+/**
+ * Canonical and only supported starting point for a production selected-map audit.
+ * Demand is reconciled monotonically until final RIG requirements are covered.
+ */
 export async function runSelectedMapAudit(
   input: SelectedMapAuditInput,
 ): Promise<SelectedMapAuditRun> {
-  const inspection = await inspectArtifact(
-    input.artifactPath,
-    input.target ?? {},
-    input.knowledgeCatalog,
-    input.telemetry ?? [],
-    input.runtimeProbeTranscript,
-  );
+  const { inspection, reconciliation } =
+    await inspectSelectedMapToDemandFixedPoint(input);
 
   const identity =
     deriveSelectedMapAuditIdentity(inspection);
@@ -164,6 +223,7 @@ export async function runSelectedMapAudit(
     inspection,
     identity,
     auditRevision,
+    demandReconciliation: reconciliation,
     admission,
     currentStage,
     allowedNextAction,
@@ -176,11 +236,9 @@ export async function runSelectedMapAudit(
     blockingCheckpointIds: [
       ...procedure.blockingCheckpointIds,
     ],
-    reasons: [
-      ...admission.issues.map((issue) =>
-        "[" + issue.stage + "] " + issue.message
-      ),
-    ],
+    reasons: admission.issues.map((issue) =>
+      "[" + issue.stage + "] " + issue.message
+    ),
   };
 }
 
@@ -288,6 +346,8 @@ export function resolveSelectedMapAudit(
     inspection: updatedInspection,
     identity,
     auditRevision,
+    demandReconciliation:
+      input.audit.demandReconciliation,
     admission,
     currentStage,
     allowedNextAction,

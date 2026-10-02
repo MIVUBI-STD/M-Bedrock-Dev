@@ -72,6 +72,7 @@ Use this before broad repository search.
 | Deterministic CONFIRMED_DEFECT_READY → AI defect projection | engine/packages/orchestrator/src/map-audit-defect-projection.ts |
 | Bounded counter-proof search receipt / confirmed-defect admission | engine/packages/orchestrator/src/inspection/gameplay-defect-resolution.ts |
 | Audit snapshot revision / stale model-result rejection | engine/packages/orchestrator/src/map-audit-revision.ts |
+| Preflight → final RIG knowledge-demand fixed point | engine/packages/orchestrator/src/map-audit-demand-reconciliation.ts + inspection/preflight-knowledge-demand.ts |
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
 | Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
