@@ -54,6 +54,7 @@ import type { GameplaySemanticModel } from "../gameplay-semantic-model.js";
 import type { MapEngineeringAssessment } from "../map-engineering-assessment.js";
 import type { HiddenGameplayDefectAnalysis } from "../hidden-gameplay-defect-analysis.js";
 import type { GameplayBoundaryRegistry } from "../gameplay-boundary-registry.js";
+import type { InspectionEngineeringAnalysis } from "../engineering-analysis-stage.js";
 import type { ArenaStressPlan } from "../arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "../arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "../arena-authored-source-index.js";
@@ -135,6 +136,8 @@ export interface InspectDirectoryResult {
   engineeringAssessment: MapEngineeringAssessment;
   hiddenGameplayDefects: HiddenGameplayDefectAnalysis;
   gameplayBoundaries: GameplayBoundaryRegistry;
+  engineeringAnalyses:
+    readonly InspectionEngineeringAnalysis[];
   structures: number;
   parsedStructures: number;
   entities: number;
