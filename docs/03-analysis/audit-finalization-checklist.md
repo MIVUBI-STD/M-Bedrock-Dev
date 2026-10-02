@@ -19,8 +19,9 @@ This checklist is a publication review only. The executable checkpoint owner is 
 - [ ] Selected world version is defined.
 - [ ] Gameplay Surface Inventory completed.
 - [ ] Gameplay Discovery Closure is COMPLETE.
-- [ ] Relevant source inventory balances: relevant files = indexed files + explicit parse failures.
+- [ ] Relevant source inventory balances: relevant files = indexed files + explicit parse failures + unsupported gameplay-sensitive residue.
 - [ ] Relevant source parse/index failures are zero.
+- [ ] Unsupported gameplay-sensitive source residue is zero; otherwise it is an explicit Detection Gap and blocks Discovery Closure.
 - [ ] Discovery Closure OPEN or PARTIAL blocks production continuation.
 - [ ] Every discovered gameplay surface is understood, blocked, unknown, or not-applicable.
 - [ ] No discovered surface is unaccounted.
