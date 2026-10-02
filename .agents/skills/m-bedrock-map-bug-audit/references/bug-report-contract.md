@@ -1,32 +1,17 @@
 # Production Bug Report Contract
 
-## Every bug entry requires
+Canonical report semantics are owned by:
 
-```text
-Bug ID
-Category
-Gameplay Flow
-Severity
-Status
-Issue
-Player Impact
-Reproduce Steps
-Expected Behavior
-Actual Behavior
-Evidence
-```
+- `../../../../docs/03-analysis/gameplay-bug-report-v2.md`
+- `../../../../docs/03-analysis/map-audit-report-v2-schema.md`
+- `../../../schemas/map-audit-output-v2.schema.json`
 
-## Language Rule
+Canonical HTML rendering layout is:
 
-Tester-facing instructions use:
+- `../../../../docs/03-analysis/templates/bug-report-v2-html-layout.md`
 
-- World
-- Player
-- Level
-- Wave
-- Arena
-- Enemy
+## Skill rule
 
-Avoid exposing internal implementation terms as reproduction instructions.
+Do not redefine the report shape here. Follow the canonical files above so the skill, schema, documentation, and rendered report cannot drift.
 
-Technical evidence remains separate from player reproduction.
+Tester-facing reproduction remains player/world language. Technical implementation details belong in Evidence.
