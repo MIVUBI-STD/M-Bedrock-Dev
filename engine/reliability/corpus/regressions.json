@@ -297,6 +297,38 @@
       "priorityBasis": [
         "explicit-invariant"
       ]
+    },
+    {
+      "id": "reg_defense_reload_wave_timeline_not_preserved",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_reload_wave_timeline_not_preserved",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
+    },
+    {
+      "id": "reg_defense_async_reset_lease_reuse_race",
+      "status": "candidate",
+      "sourceRef": "engine/reliability/catalogs/regressions.json#reg_defense_async_reset_lease_reuse_race",
+      "readiness": {
+        "minimizedFixture": "missing",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      },
+      "evidenceRole": "positive",
+      "priorityBasis": [
+        "runtime-sensitive",
+        "semantic-owner-present",
+        "explicit-invariant"
+      ]
     }
   ],
   "policy": {
