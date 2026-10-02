@@ -63,6 +63,7 @@ describe("gameplay audit coverage", () => {
         subjectId: "objective:flag",
         status: "checked",
       }],
+      true,
     );
 
     expect(result.disposition).toBe("incomplete");
@@ -86,11 +87,32 @@ describe("gameplay audit coverage", () => {
           reason: "Expected retry behavior is not grounded in the selected artifact.",
         },
       ],
+      true,
     );
 
     expect(result.disposition).toBe("accounted");
-    expect(result.scope).toBe("discovered-surfaces-only");
-    expect(result.discoveryCompleteness).toBe("not-proven");
+    expect(result.scope).toBe("selected-artifact-discovery");
+    expect(result.discoveryCompleteness).toBe("complete");
+  });
+
+  it("cannot be accounted while discovery is incomplete", () => {
+    const result = evaluateGameplayAuditCoverage(
+      model,
+      [
+        {
+          subjectId: "objective:flag",
+          status: "checked",
+        },
+        {
+          subjectId: "lifecycle:retry",
+          status: "checked",
+        },
+      ],
+      false,
+    );
+
+    expect(result.disposition).toBe("incomplete");
+    expect(result.discoveryCompleteness).toBe("incomplete");
   });
 
   it("requires a reason for blocked coverage", () => {
@@ -106,6 +128,7 @@ describe("gameplay audit coverage", () => {
           status: "blocked",
         },
       ],
+      true,
     );
 
     expect(result.disposition).toBe("incomplete");
