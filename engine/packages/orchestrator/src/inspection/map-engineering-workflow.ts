@@ -32,6 +32,7 @@ export interface MapEngineeringWorkflowProjection {
       InspectArtifactResult["gameplaySemantic"]["gameplayClosure"]["status"];
     evidenceRecoveryActions: number;
     repairProposals: number;
+    hiddenDefectRisks: number;
   };
   nextActions: readonly string[];
 }
@@ -82,12 +83,19 @@ function diagnosisStage(
       .routeInstrumentationRequired +
     source.gameplayIntentRuntime
       .routeEvidenceBlocked;
+  const hidden =
+    source.hiddenGameplayDefects.attention;
+  const hiddenHighRisk =
+    hidden.implementationOnlyIntent +
+    hidden.highTemporalRisks +
+    hidden.designAnomalies;
 
   return {
     id: "diagnose",
     status:
       recovery > 0 ||
-      runtimeNeeds > 0
+      runtimeNeeds > 0 ||
+      hiddenHighRisk > 0
         ? "partial"
         : "ready",
     reasons: [
@@ -101,6 +109,18 @@ function diagnosisStage(
         ? String(runtimeNeeds) +
           " runtime evidence need(s) remain."
         : "No runtime evidence need is currently recorded.",
+      hidden.implementationOnlyIntent > 0
+        ? String(hidden.implementationOnlyIntent) +
+          " gameplay intent surface(s) are enforced by implementation without independent design proof."
+        : "No implementation-only intent surface requires challenge.",
+      hidden.highTemporalRisks > 0
+        ? String(hidden.highTemporalRisks) +
+          " high-risk temporal interaction(s) require review."
+        : "No high-risk temporal interaction is pending.",
+      hidden.designAnomalies > 0
+        ? String(hidden.designAnomalies) +
+          " design-consistency anomaly/anomalies require intent review."
+        : "No design-consistency anomaly is pending.",
     ],
   };
 }
@@ -177,6 +197,13 @@ export function buildMapEngineeringWorkflow(
       source.repairCandidates.filter(
         (item) => item.status === "proposal",
       ).length,
+    hiddenDefectRisks:
+      source.hiddenGameplayDefects.attention
+        .implementationOnlyIntent +
+      source.hiddenGameplayDefects.attention
+        .highTemporalRisks +
+      source.hiddenGameplayDefects.attention
+        .designAnomalies,
   };
 
   const nextActions = stages
