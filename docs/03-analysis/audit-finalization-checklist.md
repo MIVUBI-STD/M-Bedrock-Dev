@@ -32,6 +32,20 @@ This checklist is a publication review only. The executable checkpoint owner is 
 - [ ] Gameplay Model Closure OPEN or PARTIAL blocks production continuation.
 - [ ] Gameplay Scenario Closure is CLOSED or PARTIAL only for irreducible Minecraft runtime proof.
 
+## Flow-order review
+
+Review the audit in the same order the player experiences the game:
+
+- [ ] ENTRY / JOIN — entry, membership, assignment, queue/capacity, player-local/shared state.
+- [ ] READY / START — ready state, countdown, final revalidation, parallel start, cinematic/input ownership.
+- [ ] SETUP — loadout, structures, teleports, objectives, chunk/ticking readiness, previous-run residue.
+- [ ] ACTIVE GAMEPLAY — combat, entity AI/navigation, interactions, spatial authority, simulation, multiplayer isolation.
+- [ ] PROGRESSION — objectives, waves/levels, score/reward/shop, spawn accounting, transitions, meaningful boundaries.
+- [ ] TERMINAL — victory/defeat/death/timeout, terminal collisions, one-time result/reward ownership.
+- [ ] CLEANUP / REPLAY — reset, entities, state, inventory, world mutation, leases, delayed work, second-run equivalence.
+- [ ] RECOVERY — disconnect/reconnect/reload/retry/owner disappearance return to a valid normal-flow state.
+- [ ] Every technical finding is attached to a player-flow stage; no detached domain-only issue remains.
+
 ## Core understanding
 
 - [ ] Game Design Reconstruction completed.
