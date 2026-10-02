@@ -25,6 +25,27 @@ describe("script safe config analysis", () => {
     expect(result.arenaCountConflict).toBe(false);
   });
 
+  it("separates physical arena count from runtime concurrency cap", () => {
+    const result = analyzeScriptSafeConfig([
+      parsed(
+        "arena",
+        [
+          "const ARENA_COUNT = 6;",
+          "const MAX_CONCURRENT_ARENAS = 2;",
+        ].join("\n"),
+      ),
+    ]);
+
+    expect(result.resolvedArenaCount).toBe(6);
+    expect(
+      result.resolvedArenaConcurrencyLimit,
+    ).toBe(2);
+    expect(result.arenaCountConflict).toBe(false);
+    expect(
+      result.arenaConcurrencyConflict,
+    ).toBe(false);
+  });
+
   it("resolves named relative imports and aliases without executing modules", () => {
     const result = analyzeScriptSafeConfig([
       parsed(
