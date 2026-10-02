@@ -28,6 +28,8 @@ export interface MapEngineeringWorkflowProjection {
     criticalDiagnostics: number;
     unresolvedReferences: number;
     contractUnknowns: number;
+    gameplayClosure:
+      InspectArtifactResult["gameplaySemantic"]["gameplayClosure"]["status"];
     evidenceRecoveryActions: number;
     repairProposals: number;
   };
@@ -41,15 +43,23 @@ function understandingStage(
     source.unresolvedReferences;
   const contractUnknowns =
     source.gameplaySemantic.intent.unknowns.length;
+  const closure =
+    source.gameplaySemantic.gameplayClosure;
 
   return {
     id: "understand",
     status:
-      unresolved === 0 &&
-      contractUnknowns === 0
-        ? "ready"
-        : "partial",
+      closure.status === "OPEN"
+        ? "blocked"
+        : closure.status === "PARTIAL" ||
+          unresolved > 0 ||
+          contractUnknowns > 0
+          ? "partial"
+          : "ready",
     reasons: [
+      "Gameplay Model Closure: " +
+        closure.status +
+        ".",
       unresolved === 0
         ? "Selected-artifact semantic references are resolved."
         : String(unresolved) +
@@ -109,10 +119,13 @@ function releaseStage(
     source.diagnostics.some(
       (item) => item.severity === "critical",
     );
+  const closureOpen =
+    source.gameplaySemantic.gameplayClosure.status === "OPEN";
 
   return {
     id: "release",
     status:
+      closureOpen ||
       releaseConflict ||
       packDrift ||
       critical
@@ -122,6 +135,9 @@ function releaseStage(
           ? "ready"
           : "partial",
     reasons: [
+      closureOpen
+        ? "Gameplay Model Closure is OPEN and blocks release readiness."
+        : "Gameplay Model Closure does not block release readiness.",
       "Release identity: " +
         source.releaseIdentity.status +
         ".",
@@ -153,6 +169,8 @@ export function buildMapEngineeringWorkflow(
       source.unresolvedReferences,
     contractUnknowns:
       source.gameplaySemantic.intent.unknowns.length,
+    gameplayClosure:
+      source.gameplaySemantic.gameplayClosure.status,
     evidenceRecoveryActions:
       source.evidenceRecovery.actions.length,
     repairProposals:
