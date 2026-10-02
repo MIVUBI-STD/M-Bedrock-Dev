@@ -390,6 +390,10 @@ export function buildInspectionResult(
       discoveredSurfaceIds:
         gameplayWorld.surfaceDiscovery
           .surfaceIds,
+      sourceRelevantFiles:
+        input.sourceIndex.coverage.relevantFiles,
+      sourceIndexedFiles:
+        input.sourceIndex.coverage.indexedFiles,
       sourceCoverageComplete:
         input.sourceIndex.coverage.complete,
       sourceParseFailures:
