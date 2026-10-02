@@ -101,7 +101,7 @@ Before bug discovery, the audit must establish and account for the full gameplay
 
 If expected behavior cannot be grounded from the selected artifact, keep it unknown. Do not convert unknown into Designed Behavior.
 
-Bug discovery starts only after Gameplay Model Closure is CLOSED or PARTIAL. OPEN closure forbids comprehensive bug claims and finalization.
+Bug discovery starts only after Gameplay Model Closure is CLOSED. Gameplay Model Closure PARTIAL is not a runtime exception: it means material boundaries, blocked surfaces, or unknown gameplay semantics still exist and therefore blocks production continuation. Gameplay Scenario Closure is the only closure allowed to remain PARTIAL, and only because that state is reserved for irreducible Minecraft runtime proof.
 
 ## Gameplay scenario audit backbone
 
@@ -109,7 +109,7 @@ The audit is scenario-driven. Surface discovery and technical analyzers provide 
 
 Knowledge activation is also scenario-driven. Do not preload every analyzer and do not rely on names/keywords to decide applicability.
 
-Preflight is not allowed to prove non-applicability by silence. It must combine raw structured source evidence, selected-artifact semantic intent, configured behavior contracts, and platform/profile facts. When those sources disagree or Discovery Closure is incomplete, keep the checkpoint OPEN/PARTIAL instead of pruning the domain as absent.
+Preflight is not allowed to prove non-applicability by silence. It must combine raw structured source evidence, selected-artifact semantic intent, selected-artifact contracts, and platform/profile facts. Discovery Closure must retain and balance relevant/indexed/parse-failure source counts. Discovery OPEN or PARTIAL blocks production continuation; do not prune a domain as absent while selected-artifact references remain unresolved.
 
 Capabilities must declare one execution phase. `discovery-core` is reserved for the cheapest information required to discover/reconstruct gameplay; `rig-directed` capabilities should execute only when required by active RIG nodes or explicit higher-context proof. Do not move deep diagnostic work into discovery-core for convenience.
 
