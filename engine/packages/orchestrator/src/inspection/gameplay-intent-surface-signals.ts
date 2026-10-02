@@ -17,7 +17,7 @@ export interface GameplayIntentSurfaceSignalSource {
     };
   }[];
   readonly dialogues:
-    readonly ParsedDialogueDocument[];
+    readonly (ParsedDialogueDocument | undefined)[];
   readonly structures: readonly {
     readonly identifier: string;
     readonly node: {
@@ -59,6 +59,7 @@ export function deriveGameplayIntentSurfaceSignals(
   }
 
   for (const document of source.dialogues) {
+    if (!document) continue;
     for (const scene of document.scenes) {
       add(signals, {
         label: scene.sceneTag,
