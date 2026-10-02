@@ -40,6 +40,10 @@ import {
   scriptIdentifier,
   structureIdentifier,
 } from "./inspect-identifiers.js";
+import {
+  assessStructureTransitionResidue,
+  type StructureTransitionResidueAssessment,
+} from "./structure-transition-residue.js";
 
 export interface InspectionSourceParseFailure {
   relativePath: string;
@@ -86,6 +90,8 @@ export interface InspectionSourceIndex {
     embeddedCommands: ReturnType<
       typeof analyzeEmbeddedStructureCommands
     >;
+    transitionResidue:
+      StructureTransitionResidueAssessment;
     queuedTickPositions: number;
   }>;
   parsedStructures: number;
@@ -363,6 +369,10 @@ export async function indexInspectionSources(
           ? {}
           : { footprint }),
         embeddedCommands,
+        transitionResidue:
+          assessStructureTransitionResidue(
+            structure,
+          ),
         queuedTickPositions:
           runtimeContent.queuedTickPositions,
       });
