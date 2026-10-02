@@ -19,6 +19,7 @@ import type {
 } from "../../../diagnostic-reasoning/src/index.js";
 import type {
   GameplayIntentModel,
+  GameplayModelClosureResult,
 } from "../../../gameplay-intent/src/index.js";
 import type {
   GameplayIntentRuntimeAssessment,
@@ -890,6 +891,26 @@ export interface BuildBugReportFromAuditResult {
   readonly promotion: PromoteConfirmedBugsResult;
 }
 
+export interface BuildBugReportFromClosedAuditInput
+  extends BuildBugReportFromAuditInput {
+  readonly gameplayClosure: GameplayModelClosureResult;
+}
+
+export function gameplayClosurePublicationIssues(
+  closure: GameplayModelClosureResult,
+): readonly {
+  code: "invalid-confirmed-defect";
+  message: string;
+}[] {
+  if (closure.status !== "OPEN") return [];
+
+  return [{
+    code: "invalid-confirmed-defect",
+    message:
+      "Gameplay Model Closure is OPEN. Comprehensive Bug Report publication is blocked until discovered gameplay surfaces and the major state model are accounted for.",
+  }];
+}
+
 function lineAddressableSource(path: string): boolean {
   return /\.(?:ts|tsx|js|jsx|mcfunction)$/i.test(path);
 }
@@ -1014,4 +1035,28 @@ export function buildBugReportFromAuditCandidates(
                 }),
           }),
   };
+}
+
+
+export function buildBugReportFromClosedAuditCandidates(
+  input: BuildBugReportFromClosedAuditInput,
+): BuildBugReportFromAuditResult {
+  const closureIssues =
+    gameplayClosurePublicationIssues(
+      input.gameplayClosure,
+    );
+
+  if (closureIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+      ),
+      promotion: {
+        ok: false,
+        issues: closureIssues,
+      },
+    };
+  }
+
+  return buildBugReportFromAuditCandidates(input);
 }
