@@ -562,6 +562,7 @@ export function analyzeHiddenGameplayDefects(
       defectResolutionBlocked:
         defectResolution.status === "BLOCKED",
       runtimeProofResidue:
+        scenarioClosure.runtimeProofRequests.length +
         defectResolution.runtimeProofRequiredIds.length,
       missingRequiredKnowledge:
         scenarioClosure.missingRequiredKnowledgeIds.length,
@@ -661,6 +662,7 @@ export function refreshHiddenGameplayDefectsForWorld(
       defectResolutionBlocked:
         defectResolution.status === "BLOCKED",
       runtimeProofResidue:
+        scenarioClosure.runtimeProofRequests.length +
         defectResolution.runtimeProofRequiredIds.length,
       missingRequiredKnowledge:
         scenarioClosure.missingRequiredKnowledgeIds.length,
