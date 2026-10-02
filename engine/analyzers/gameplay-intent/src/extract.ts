@@ -438,6 +438,35 @@ function declaredMemberSignal(
   };
 }
 
+export interface GameplayIntentSurfaceSignalInput {
+  readonly label: string;
+  readonly locator: string;
+  readonly evidenceOrigin:
+    GameplayIntentSignal["evidenceOrigin"];
+  readonly status?: GameplayIntentSignal["status"];
+  readonly summary?: string;
+}
+
+export function extractGameplayIntentSurfaceSignal(
+  input: GameplayIntentSurfaceSignalInput,
+): GameplayIntentSignal | undefined {
+  const base = lexicalSignal(
+    input.locator,
+    input.label,
+  );
+  if (!base) return undefined;
+
+  return {
+    ...base,
+    status: input.status ?? "inferred",
+    evidenceOrigin: input.evidenceOrigin,
+    locator: input.locator,
+    summary:
+      input.summary ??
+      "Selected-artifact surface naming exposes a bounded gameplay-intent candidate; semantics require corroboration before it becomes intended-design authority.",
+  };
+}
+
 function lexicalSignal(
   sourcePath: string,
   symbol: string,
