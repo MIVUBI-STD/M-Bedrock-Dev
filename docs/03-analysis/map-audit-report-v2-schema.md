@@ -10,6 +10,7 @@ Defines the production audit model after Game Design First analysis.
 World Artifact
 → Evidence Scope
 → Gameplay Surface Inventory
+→ Gameplay Discovery Closure
 → Game Design Model
 → Gameplay Flow + State Closure
 → Boundary / Multi Arena / Capacity / Replica Model
@@ -103,3 +104,15 @@ When applicable, coverage includes:
 - repeated-run baseline/reset proof;
 - player-facing evidence;
 - quantitative/platform constraints.
+
+
+## Publication precondition
+
+Gameplay Discovery Closure is a production control gate and does not create a second persisted report authority.
+
+Before Map Audit Output V2 is treated as comprehensive:
+
+- Discovery Closure must not be `OPEN`;
+- Gameplay Model Closure must not be `OPEN`.
+
+If Discovery Closure is OPEN, report the source/index gap instead of serializing a comprehensive audit claim.
