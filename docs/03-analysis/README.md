@@ -30,6 +30,10 @@ Related contracts:
 - [Bug report v2 schema](./map-audit-report-v2-schema.md)
 - [Bug report HTML structure](./bug-report-v2-html-template.md)
 - [Multi arena audit contract](./multi-arena-audit-contract.md)
+- [Capacity and concurrency contract](./capacity-and-concurrency-contract.md)
+- [Capacity/concurrency audit checklist](./capacity-concurrency-audit-checklist.md)
+- [Gameplay audit blind-spot contract](./gameplay-audit-blind-spots.md)
+- [Audit finalization checklist](./audit-finalization-checklist.md)
 
 ## Core models and graphs
 
