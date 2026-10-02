@@ -166,8 +166,43 @@ function bugTriggerCell(
 ): string {
   if (!steps?.length) return "—";
   return steps
-    .map((step, index) => `${index + 1}. ${line(step)}`)
+    .map((step) => "☐ " + line(step))
     .join("<br>");
+}
+
+function resultCell(
+  observed: string | undefined,
+  expected: string | undefined,
+): string {
+  if (!observed && !expected) return "—";
+  return [
+    observed
+      ? "<strong>Observed:</strong> " + line(observed)
+      : undefined,
+    expected
+      ? "<strong>Expected:</strong> " + line(expected)
+      : undefined,
+  ]
+    .filter(
+      (value): value is string =>
+        value !== undefined,
+    )
+    .join("<br>");
+}
+
+function technicalLines(
+  value: string,
+): readonly string[] {
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trimEnd())
+    .filter((item, index, values) =>
+      item.length > 0 ||
+      (
+        index > 0 &&
+        index < values.length - 1
+      )
+    );
 }
 
 export function renderBugReportPreviewMarkdown(
@@ -178,7 +213,7 @@ export function renderBugReportPreviewMarkdown(
     `# ${preview.map.name} — Bug Report`,
     "",
     `**Map Version:** ${preview.map.mapVersion}`,
-    `**Tested Version:** Minecraft Education ${preview.map.testedVersion}`,
+    `**Tested Version:** ${preview.map.testedVersion}`,
     "",
     `**Open Issues:** ${preview.counts.open}`,
     `Blocker: ${preview.counts.blocker} · Major: ${preview.counts.major} · Minor: ${preview.counts.minor}`,
@@ -199,7 +234,9 @@ export function renderBugReportPreviewMarkdown(
       "|---|---|",
       `| **Issue** | ${tableCell(bug.issue)} |`,
       `| **Bug Trigger (In-Game)** | ${tableCell(bugTriggerCell(bug.bugTrigger))} |`,
+      `| **Result** | ${tableCell(resultCell(bug.observed, bug.expected))} |`,
       `| **Solution** | ${bug.solution ? tableCell(bug.solution) : "—"} |`,
+      `| **Work Checklist** | ☐ Reproduce · ☐ Fix · ☐ Retest · ☐ Regression check |`,
     );
   });
 
@@ -218,17 +255,31 @@ export function renderBugReportPreviewMarkdown(
 
     if (bug.bugTrigger?.length) {
       out.push("**Bug Trigger (In-Game):**");
-      bug.bugTrigger.forEach((step, index) => {
-        out.push(`${index + 1}. ${line(step)}`);
+      bug.bugTrigger.forEach((step) => {
+        out.push(`- [ ] ${line(step)}`);
       });
     }
 
-    if (bug.solution) out.push(`**Solution:** ${line(bug.solution)}`);
-    if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
     if (bug.observed) out.push(`**Observed:** ${line(bug.observed)}`);
+    if (bug.expected) out.push(`**Expected:** ${line(bug.expected)}`);
+    if (bug.solution) out.push(`**Solution:** ${line(bug.solution)}`);
+
+    out.push(
+      "**Work Checklist:**",
+      "- [ ] Reproduce issue",
+      "- [ ] Apply or confirm fix",
+      "- [ ] Retest expected behavior",
+      "- [ ] Confirm no regression",
+    );
 
     if (bug.technicalAnalysis) {
-      out.push(`**Technical Analysis:** ${line(bug.technicalAnalysis)}`);
+      out.push(
+        "",
+        "**Technical Analysis:**",
+        ...technicalLines(
+          bug.technicalAnalysis,
+        ),
+      );
     }
 
     if (bug.relevantCode?.length) {
