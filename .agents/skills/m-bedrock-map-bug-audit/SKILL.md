@@ -92,6 +92,20 @@ Scenario semantics
 
 The target is the **minimum complete knowledge set**: the smallest applicable set that can fully prove the scenario. A required domain with a registered capability but no returned evidence is `MISSING_REQUIRED_KNOWLEDGE` and blocks Scenario Closure. A genuinely absent capability is `CAPABILITY_GAP` and routes to Detection Development. These states must never be collapsed into generic `Needs Validation`.
 
+The Required Knowledge Set is the **Required Inspection Graph (RIG)**. RIG is not a second knowledge base or workflow engine; it is the fail-closed dependency graph over existing knowledge requirements.
+
+Each RIG node must declare:
+
+```text
+scenario
+→ required knowledge domain
+→ required capability
+→ prerequisite RIG nodes
+→ execution receipt
+```
+
+A downstream node cannot become satisfied while a prerequisite node is unresolved. `BLOCKED_BY_PREREQUISITE`, `MISSING_REQUIRED_KNOWLEDGE`, and `CAPABILITY_GAP` all keep Gameplay Scenario Closure OPEN. Do not create additional manager/router/service layers around RIG.
+
 The mandatory execution path is:
 
 ```text

@@ -67,6 +67,32 @@ const DOMAIN_CAPABILITY_IDS: Readonly<Record<
   ],
 };
 
+const DOMAIN_DEPENDENCIES: Readonly<Partial<Record<
+  GameplayKnowledgeDomain,
+  readonly GameplayKnowledgeDomain[]
+>>> = {
+  "arena-lifecycle": ["state-flow"],
+  "multiplayer-interleaving": [
+    "state-flow",
+    "arena-lifecycle",
+  ],
+  "chunk-simulation": ["state-flow"],
+  "entity-behavior": ["state-flow"],
+  "combat-lifecycle": [
+    "state-flow",
+    "entity-behavior",
+  ],
+  "inventory-state": ["state-flow"],
+  "persistence-recovery": ["state-flow"],
+  "world-structure": ["state-flow"],
+  "economy-reward": [
+    "state-flow",
+    "inventory-state",
+  ],
+  "spatial-authority": ["state-flow"],
+  "temporal-ownership": ["state-flow"],
+};
+
 function capabilityIdsForDomain(
   domain: GameplayKnowledgeDomain,
   context: AnalysisExecutionContext,
@@ -395,11 +421,25 @@ export function buildGameplayKnowledgeRequirements(
   domains: readonly GameplayKnowledgeDomain[],
   context: AnalysisExecutionContext = "REMOTE_GITHUB",
 ): readonly GameplayKnowledgeRequirement[] {
+  const domainSet = new Set(domains);
   return domains.map((domain) => {
     const capabilityIds = capabilityIdsForDomain(
       domain,
       context,
     );
+    const dependsOnRequirementIds =
+      (DOMAIN_DEPENDENCIES[domain] ?? [])
+        .filter((dependency) =>
+          domainSet.has(dependency)
+        )
+        .map(
+          (dependency) =>
+            "knowledge:" +
+            scenarioId +
+            ":" +
+            dependency,
+        )
+        .sort();
     return {
       id: "knowledge:" + scenarioId + ":" + domain,
       scenarioId,
@@ -409,6 +449,7 @@ export function buildGameplayKnowledgeRequirements(
         domain +
         " evidence to close its causal chain.",
       capabilityIds,
+      dependsOnRequirementIds,
     };
   });
 }
@@ -417,39 +458,79 @@ export function buildGameplayKnowledgeReceipts(
   requirements: readonly GameplayKnowledgeRequirement[],
   world: GameplayWorldModel,
 ): readonly GameplayKnowledgeReceipt[] {
-  return requirements.map((requirement) => {
+  const ordered = [...requirements].sort(
+    (left, right) =>
+      left.dependsOnRequirementIds.length -
+        right.dependsOnRequirementIds.length ||
+      left.id.localeCompare(right.id),
+  );
+  const receipts = new Map<
+    string,
+    GameplayKnowledgeReceipt
+  >();
+
+  for (const requirement of ordered) {
+    const blockedDependencies =
+      requirement.dependsOnRequirementIds.filter(
+        (dependencyId) =>
+          receipts.get(dependencyId)?.status !==
+          "SATISFIED",
+      );
+
+    if (blockedDependencies.length > 0) {
+      receipts.set(requirement.id, {
+        requirementId: requirement.id,
+        scenarioId: requirement.scenarioId,
+        domain: requirement.domain,
+        status: "BLOCKED_BY_PREREQUISITE",
+        evidenceIds: [],
+        reason:
+          "Required prerequisite inspection node(s) are not satisfied: " +
+          blockedDependencies.join(", ") +
+          ".",
+      });
+      continue;
+    }
+
     const evidenceIds =
       domainEvidence(world, requirement.domain);
     if (requirement.capabilityIds.length === 0) {
-      return {
+      receipts.set(requirement.id, {
         requirementId: requirement.id,
         scenarioId: requirement.scenarioId,
         domain: requirement.domain,
-        status: "CAPABILITY_GAP" as const,
+        status: "CAPABILITY_GAP",
         evidenceIds,
         reason:
           "No analysis-planner capability is registered for this required gameplay knowledge domain.",
-      };
+      });
+      continue;
     }
     if (evidenceIds.length === 0) {
-      return {
+      receipts.set(requirement.id, {
         requirementId: requirement.id,
         scenarioId: requirement.scenarioId,
         domain: requirement.domain,
-        status: "MISSING_REQUIRED_KNOWLEDGE" as const,
+        status: "MISSING_REQUIRED_KNOWLEDGE",
         evidenceIds: [],
         reason:
-          "A registered capability exists, but no selected-artifact evidence returned to the scenario for this required domain.",
-      };
+          "A registered capability exists, but no execution receipt returned to the scenario for this required domain.",
+      });
+      continue;
     }
-    return {
+
+    receipts.set(requirement.id, {
       requirementId: requirement.id,
       scenarioId: requirement.scenarioId,
       domain: requirement.domain,
-      status: "SATISFIED" as const,
+      status: "SATISFIED",
       evidenceIds,
       reason:
         "Required gameplay knowledge is present and available to the scenario causal analysis.",
-    };
-  });
+    });
+  }
+
+  return requirements.map(
+    (requirement) => receipts.get(requirement.id)!,
+  );
 }

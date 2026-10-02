@@ -748,5 +748,10 @@ export function compileGameplayScenarioGraph(
     causalLinks,
     knowledgeRequirements,
     knowledgeReceipts,
+    requiredInspectionGraph: {
+      policy: "required-inspection-graph",
+      nodes: knowledgeRequirements,
+      receipts: knowledgeReceipts,
+    },
   };
 }

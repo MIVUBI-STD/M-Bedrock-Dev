@@ -22,10 +22,12 @@ export interface GameplayKnowledgeRequirement {
   readonly domain: GameplayKnowledgeDomain;
   readonly reason: string;
   readonly capabilityIds: readonly string[];
+  readonly dependsOnRequirementIds: readonly string[];
 }
 
 export type GameplayKnowledgeReceiptStatus =
   | "SATISFIED"
+  | "BLOCKED_BY_PREREQUISITE"
   | "MISSING_REQUIRED_KNOWLEDGE"
   | "CAPABILITY_GAP";
 
@@ -36,6 +38,12 @@ export interface GameplayKnowledgeReceipt {
   readonly status: GameplayKnowledgeReceiptStatus;
   readonly evidenceIds: readonly string[];
   readonly reason: string;
+}
+
+export interface GameplayRequiredInspectionGraph {
+  readonly policy: "required-inspection-graph";
+  readonly nodes: readonly GameplayKnowledgeRequirement[];
+  readonly receipts: readonly GameplayKnowledgeReceipt[];
 }
 
 export type GameplayCausalLinkStatus =
@@ -88,6 +96,7 @@ export interface GameplayScenarioGraph {
   readonly causalLinks: readonly GameplayCausalLink[];
   readonly knowledgeRequirements: readonly GameplayKnowledgeRequirement[];
   readonly knowledgeReceipts: readonly GameplayKnowledgeReceipt[];
+  readonly requiredInspectionGraph: GameplayRequiredInspectionGraph;
 }
 
 export type GameplayScenarioClosureStatus =
@@ -104,5 +113,6 @@ export interface GameplayScenarioClosure {
   readonly detectionGapCausalLinkIds: readonly string[];
   readonly missingRequiredKnowledgeIds: readonly string[];
   readonly capabilityGapKnowledgeIds: readonly string[];
+  readonly prerequisiteBlockedKnowledgeIds: readonly string[];
   readonly reasons: readonly string[];
 }

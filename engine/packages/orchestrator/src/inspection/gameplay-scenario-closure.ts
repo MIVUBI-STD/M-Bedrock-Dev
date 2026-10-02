@@ -45,6 +45,16 @@ export function assessGameplayScenarioClosure(
       .map((receipt) => receipt.requirementId)
       .sort();
 
+  const prerequisiteBlockedKnowledgeIds =
+    graph.knowledgeReceipts
+      .filter(
+        (receipt) =>
+          receipt.status ===
+          "BLOCKED_BY_PREREQUISITE",
+      )
+      .map((receipt) => receipt.requirementId)
+      .sort();
+
   const capabilityGapKnowledgeIds =
     graph.knowledgeReceipts
       .filter(
@@ -88,6 +98,13 @@ export function assessGameplayScenarioClosure(
         ".",
     );
   }
+  if (prerequisiteBlockedKnowledgeIds.length > 0) {
+    reasons.push(
+      "Required inspection nodes are blocked by unsatisfied prerequisite nodes: " +
+        prerequisiteBlockedKnowledgeIds.join(", ") +
+        ".",
+    );
+  }
   if (capabilityGapKnowledgeIds.length > 0) {
     reasons.push(
       "Required gameplay knowledge has no registered analysis capability: " +
@@ -114,6 +131,7 @@ export function assessGameplayScenarioClosure(
     detectionGapCausalLinkIds.length > 0 ||
     missingRequiredKnowledgeIds.length > 0 ||
     capabilityGapKnowledgeIds.length > 0 ||
+    prerequisiteBlockedKnowledgeIds.length > 0 ||
     scenarioWithoutComponents.length > 0
       ? "OPEN" as const
       : runtimeBlockedCausalLinkIds.length > 0
@@ -135,6 +153,7 @@ export function assessGameplayScenarioClosure(
     detectionGapCausalLinkIds,
     missingRequiredKnowledgeIds,
     capabilityGapKnowledgeIds,
+    prerequisiteBlockedKnowledgeIds,
     reasons,
   };
 }
