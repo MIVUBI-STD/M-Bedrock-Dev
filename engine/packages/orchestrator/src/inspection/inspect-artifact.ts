@@ -38,6 +38,8 @@ import { arenaProofLayerEnabled, planArenaProofExecution } from "../arena-proof-
 import { deriveGameplayWorldModel } from "../gameplay-world-model.js";
 import { projectGameplaySemanticModel } from "../gameplay-semantic-model.js";
 import { projectMapEngineeringAssessment } from "../map-engineering-assessment.js";
+import { analyzeHiddenGameplayDefects } from "./hidden-gameplay-defect-analysis.js";
+import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";
 import { collectArtifactReleaseObservations } from "../release-identity-evidence.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
 
@@ -692,6 +694,14 @@ export async function inspectArtifact(
         intent: result.gameplayIntent.model,
         arena: finalArenaAnalysis,
         scriptSpatial: result.scriptSpatial,
+        ...(result.spatialAuthority === undefined
+          ? {}
+          : {
+              spatialAuthority:
+                result.spatialAuthority,
+            }),
+        persistenceSource:
+          result.persistenceSource,
         combatLifecycle:
           result.combatLifecycle,
         combatRuntime:
@@ -747,10 +757,51 @@ export async function inspectArtifact(
             result.entityKnowledge
               .staticAnalysisLimits,
         },
+        boundaries: {
+          records:
+            result.gameplayBoundaries
+              .records.length,
+          unresolvedNames:
+            result.gameplayBoundaries
+              .unresolvedNames,
+        },
       });
 
-    const finalGameplaySemantic = projectGameplaySemanticModel(finalGameplayWorld);
-    const finalEngineeringAssessment = projectMapEngineeringAssessment(finalGameplayWorld);
+    const finalGameplaySemantic =
+      projectGameplaySemanticModel(
+        finalGameplayWorld,
+      );
+    const finalEngineeringAssessment =
+      projectMapEngineeringAssessment(
+        finalGameplayWorld,
+      );
+    const finalHiddenGameplayDefects =
+      analyzeHiddenGameplayDefects({
+        intent: result.gameplayIntent.model,
+        semanticIr: {
+          schemaVersion: 1,
+          execution: {
+            regions: [],
+            edges: [],
+          },
+          state: {
+            surfaces: [],
+            operations: [],
+            authorityBindings: [],
+          },
+          temporal: {
+            relations: [],
+          },
+        },
+        world: finalGameplayWorld,
+      });
+    const finalEngineeringAnalyses =
+      deriveInspectionEngineeringAnalyses({
+        world: finalGameplayWorld,
+        arenaCapacity:
+          finalArenaAnalysis.capacity,
+        target: result.targetCompatibility,
+      });
 
     return {
       artifactId,
@@ -761,7 +812,12 @@ export async function inspectArtifact(
         finalReleaseIdentity,
       gameplayWorld: finalGameplayWorld,
       gameplaySemantic: finalGameplaySemantic,
-      engineeringAssessment: finalEngineeringAssessment,
+      engineeringAssessment:
+        finalEngineeringAssessment,
+      hiddenGameplayDefects:
+        finalHiddenGameplayDefects,
+      engineeringAnalyses:
+        finalEngineeringAnalyses,
       arenaAnalysis: finalArenaAnalysis,
       worldDatabase: {
         ...result.worldDatabase,
