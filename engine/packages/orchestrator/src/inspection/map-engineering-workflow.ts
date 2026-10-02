@@ -89,7 +89,8 @@ function diagnosisStage(
   const hiddenHighRisk =
     hidden.implementationOnlyIntent +
     hidden.highTemporalRisks +
-    hidden.designAnomalies;
+    hidden.designAnomalies +
+    hidden.silentDegradations;
 
   return {
     id: "diagnose",
@@ -122,6 +123,10 @@ function diagnosisStage(
         ? String(hidden.designAnomalies) +
           " design-consistency anomaly/anomalies require intent review."
         : "No design-consistency anomaly is pending.",
+      hidden.silentDegradations > 0
+        ? String(hidden.silentDegradations) +
+          " silent gameplay degradation signal(s) require review."
+        : "No silent gameplay degradation is pending.",
     ],
   };
 }
@@ -204,7 +209,9 @@ export function buildMapEngineeringWorkflow(
       source.hiddenGameplayDefects.attention
         .highTemporalRisks +
       source.hiddenGameplayDefects.attention
-        .designAnomalies,
+        .designAnomalies +
+      source.hiddenGameplayDefects.attention
+        .silentDegradations,
     engineeringAnalyses:
       source.engineeringAnalyses.length,
   };
