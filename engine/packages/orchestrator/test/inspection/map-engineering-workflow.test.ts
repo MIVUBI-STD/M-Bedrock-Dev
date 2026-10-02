@@ -11,6 +11,14 @@ function baseSource() {
       edition: "bedrock",
       educationFeatures: "unknown",
     },
+    gameplayDiscoveryClosure: {
+      status: "COMPLETE",
+      discoveredSurfaceIds: ["phase:lobby"],
+      sourceCoverageComplete: true,
+      sourceParseFailures: 0,
+      unresolvedReferences: 0,
+      reasons: [],
+    },
     gameplaySemantic: {
       gameplayClosure: {
         status: "CLOSED",
@@ -57,6 +65,7 @@ function baseSource() {
       releaseBlocking: 0,
       unresolved: 0,
     },
+    analysisPriorities: [],
     releaseIdentity: {
       status: "consistent",
       observations: [],
@@ -88,12 +97,14 @@ describe("map engineering workflow projection", () => {
       criticalDiagnostics: 0,
       unresolvedReferences: 0,
       contractUnknowns: 0,
+      gameplayDiscoveryClosure: "COMPLETE",
       gameplayClosure: "CLOSED",
       evidenceRecoveryActions: 0,
       repairProposals: 0,
       hiddenDefectRisks: 0,
       engineeringAnalyses: 0,
       capabilityExposureRisks: 0,
+      highRiskSurfaces: 0,
     });
   });
 
@@ -114,6 +125,32 @@ describe("map engineering workflow projection", () => {
     expect(
       workflow.attention.unresolvedReferences,
     ).toBe(2);
+  });
+
+  it("blocks understanding and release while discovery closure is OPEN", () => {
+    const source = {
+      ...baseSource(),
+      gameplayDiscoveryClosure: {
+        ...baseSource().gameplayDiscoveryClosure,
+        status: "OPEN",
+        sourceCoverageComplete: false,
+        sourceParseFailures: 1,
+      },
+    } as any;
+
+    const workflow =
+      buildMapEngineeringWorkflow(source);
+
+    expect(
+      workflow.stages.find(
+        (item) => item.id === "understand",
+      )?.status,
+    ).toBe("blocked");
+    expect(
+      workflow.stages.find(
+        (item) => item.id === "release",
+      )?.status,
+    ).toBe("blocked");
   });
 
   it("blocks understanding and release while gameplay closure is OPEN", () => {
