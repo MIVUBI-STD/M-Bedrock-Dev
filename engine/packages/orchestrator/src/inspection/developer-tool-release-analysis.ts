@@ -1,6 +1,10 @@
 import type {
   ParsedScriptFile,
 } from "../../../../analyzers/scripts/src/index.js";
+import {
+  assessCapabilityExposure,
+  type CapabilityExposureAssessment,
+} from "../../../diagnostic-reasoning/src/index.js";
 
 export interface DeveloperToolExposure {
   readonly scriptId: string;
@@ -25,6 +29,8 @@ export interface DeveloperToolExposure {
     | "high"
     | "medium"
     | "low";
+  readonly exposure:
+    CapabilityExposureAssessment;
 }
 
 export interface DeveloperToolReleaseAnalysis {
@@ -49,7 +55,7 @@ const DISABLED =
 const ENABLED =
   /(?:devSkipLevel|devRetryLevel|debugTool|debugStick|developerTools?)\s*[:=]\s*true\b/i;
 const ITEM_LITERAL =
-  /["'`](minecraft:)?(stick|blaze_rod|blaze rod|wooden_hoe|carrot_on_a_stick|warped_fungus_on_a_stick)["'`]/gi;
+  /["'`](minecraft:[a-z0-9_./-]+)["'`]/gi;
 
 function eventNames(
   script: ParsedScriptFile,
@@ -73,10 +79,9 @@ function itemLiterals(
 ): readonly string[] {
   const items = new Set<string>();
   for (const match of text.matchAll(ITEM_LITERAL)) {
-    const value = match[2]
-      ?.toLowerCase()
-      .replaceAll(" ", "_");
-    if (value) items.add("minecraft:" + value);
+    const value = match[1]
+      ?.toLowerCase();
+    if (value) items.add(value);
   }
   return [...items].sort();
 }
@@ -139,16 +144,47 @@ export function analyzeDeveloperToolReleaseExposure(
     );
     const triggerItems = itemLiterals(text);
 
+    const authorization =
+      permissionGuard === "present"
+        ? "required-and-enforced" as const
+        : permissionGuard === "absent"
+          ? "required-but-missing" as const
+          : "unknown" as const;
+    const impact =
+      kind === "level-skip" ||
+      kind === "level-retry"
+        ? "progression" as const
+        : kind === "debug-interaction"
+          ? "interaction" as const
+          : "state" as const;
+    const exposure =
+      assessCapabilityExposure({
+        capabilityId:
+          "developer-tool:" +
+          parsed.identifier +
+          ":" +
+          kind,
+        capabilityLabel:
+          parsed.identifier +
+          " " +
+          kind,
+        releaseEnabled,
+        authorization,
+        triggerPresent:
+          interactions.length > 0,
+        playerImpact: impact,
+        evidenceIds: [
+          parsed.source.relativePath,
+        ],
+      });
+
     const severityHint =
-      releaseEnabled === "enabled" &&
-      permissionGuard === "absent" &&
-      (
-        kind === "level-skip" ||
-        kind === "level-retry"
-      )
+      exposure.status === "exposed" &&
+      impact === "progression"
         ? "high" as const
-        : releaseEnabled === "enabled" &&
-          permissionGuard === "absent"
+        : exposure.status === "exposed" ||
+          exposure.status ===
+            "potentially-exposed"
           ? "medium" as const
           : "low" as const;
 
@@ -162,14 +198,10 @@ export function analyzeDeveloperToolReleaseExposure(
       releaseEnabled,
       evidence: [
         "interactive developer/debug semantics detected",
-        permissionGuard === "absent"
-          ? "no developer-permission guard detected in the owning script"
-          : "permission-related guard evidence detected",
-        releaseEnabled === "enabled"
-          ? "interaction subscription remains active in the release artifact"
-          : "release enablement is not proven",
+        ...exposure.reasons,
       ],
       severityHint,
+      exposure,
     });
   }
 
