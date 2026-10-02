@@ -105,12 +105,21 @@ export type GameplayScenarioClosureStatus =
   | "PARTIAL"
   | "OPEN";
 
+export interface GameplayRuntimeProofRequest {
+  readonly causalLinkId: string;
+  readonly scenarioId: string;
+  readonly runtimeReason: string;
+  readonly narrowRuntimeQuestion: string;
+  readonly evidenceIds: readonly string[];
+}
+
 export interface GameplayScenarioClosure {
   readonly status: GameplayScenarioClosureStatus;
   readonly orphanComponentIds: readonly string[];
   readonly missingPurposeComponentIds: readonly string[];
   readonly unresolvedCausalLinkIds: readonly string[];
   readonly runtimeBlockedCausalLinkIds: readonly string[];
+  readonly runtimeProofRequests: readonly GameplayRuntimeProofRequest[];
   readonly detectionGapCausalLinkIds: readonly string[];
   readonly missingRequiredKnowledgeIds: readonly string[];
   readonly capabilityGapKnowledgeIds: readonly string[];
