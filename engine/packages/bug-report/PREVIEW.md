@@ -29,8 +29,12 @@ Then render one compact two-column table per bug:
 | #1 · BLOCKER | Match cannot restart |
 |---|---|
 | **Issue** | Player-visible gameplay problem + impact. |
-| **Bug Trigger (In-Game)** | Exact tester actions and visible wrong result. |
+| **Bug Trigger (In-Game)** | ☐ Exact tester action 1<br>☐ Exact tester action 2 |
+| **Result** | Observed + Expected. |
 | **Solution** | Supported change, when available. |
+| **Work Checklist** | ☐ Reproduce · ☐ Fix · ☐ Retest · ☐ Regression check |
+
+Checklist marks are presentation-only working aids. They do not mutate canonical bug status.
 
 ## Issue rule
 
@@ -60,11 +64,15 @@ Use full mode only when root-cause or implementation detail is requested.
 
 ## Ordering
 
-Visible bugs are deterministic:
+When canonical gameplay-flow ordering metadata is available, use gameplay journey first and severity within that flow.
+
+When that metadata is absent, use the deterministic fallback:
 
 ```text
 Blocker → Major → Minor (when explicitly included) → Bug ID
 ```
+
+Do not infer gameplay order from category or title.
 
 ## Ownership
 
@@ -102,3 +110,20 @@ Review decisions are explicit:
 - needs-discussion — blocks publication until resolved.
 
 Do not generate canonical Bug Report V2 or HTML while any proposed bug has no decision or remains needs-discussion. If all proposed bugs are rejected, stop without generating a report artifact.
+
+
+## Full-detail formatting
+
+Full mode preserves Technical Analysis line breaks and headings. Do not collapse structured engineering analysis into one paragraph.
+
+Recommended reading order:
+
+```text
+Issue
+→ Tester Checklist
+→ Observed / Expected
+→ Solution
+→ Work Checklist
+→ Technical Analysis
+→ Relevant Code / Must Preserve
+```
