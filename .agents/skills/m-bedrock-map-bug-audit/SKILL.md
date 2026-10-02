@@ -79,6 +79,8 @@ The audit is scenario-driven. Surface discovery and technical analyzers provide 
 
 Knowledge activation is also scenario-driven. Do not preload every analyzer and do not rely on names/keywords to decide applicability.
 
+Capabilities must declare one execution phase. `discovery-core` is reserved for the cheapest information required to discover/reconstruct gameplay; `rig-directed` capabilities should execute only when required by active RIG nodes or explicit higher-context proof. Do not move deep diagnostic work into discovery-core for convenience.
+
 For every material Gameplay Scenario:
 
 ```text
@@ -202,6 +204,8 @@ scenario
 ```
 
 A plausible explanation is not counter-proof. Counter-evidence may suppress a candidate only when it demonstrates a reachable guard/owner that deterministically prevents the wrong state.
+
+Automatic counter-proof may only finalize when the same scenario contains selected-artifact `PROVEN` exclusion evidence whose scope overlaps the contradicted dependency. Other guards remain `COUNTERPROOF_SEARCH_REQUIRED`; keyword similarity or nearby healthy code is not blocking proof.
 
 ## Single-pass audit discipline
 

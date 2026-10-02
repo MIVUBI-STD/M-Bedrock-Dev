@@ -113,6 +113,44 @@ function validateResolution(
   return issues;
 }
 
+function overlapping(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  const set = new Set(left);
+  return right.some((item) => set.has(item));
+}
+
+function blockingCounterProofFor(
+  graph: GameplayScenarioGraph,
+  contradicted: GameplayCausalLink,
+): readonly string[] {
+  return graph.causalLinks
+    .filter(
+      (candidate) =>
+        candidate.scenarioId === contradicted.scenarioId &&
+        candidate.status === "PROVEN" &&
+        candidate.intentEdgeKind === "excludes" &&
+        (
+          overlapping(
+            candidate.subjectIds,
+            contradicted.subjectIds,
+          ) ||
+          overlapping(
+            candidate.componentIds,
+            contradicted.componentIds,
+          )
+        ),
+    )
+    .flatMap((candidate) => candidate.evidenceIds)
+    .filter(Boolean)
+    .filter(
+      (id, index, all) =>
+        all.indexOf(id) === index,
+    )
+    .sort();
+}
+
 export function assessGameplayDefectResolutionGate(
   graph: GameplayScenarioGraph,
   suppliedResolutions: readonly GameplayDefectResolution[] = [],
@@ -171,6 +209,11 @@ export function assessGameplayDefectResolutionGate(
       link.reason.trim().length > 0 &&
       scope.length > 0 &&
       link.evidenceIds.length > 0;
+    const blockingCounterProofEvidenceIds =
+      blockingCounterProofFor(
+        graph,
+        link,
+      );
 
     return {
       causalLinkId: link.id,
@@ -184,7 +227,14 @@ export function assessGameplayDefectResolutionGate(
       subjectIds: [...link.subjectIds],
       componentIds: [...link.componentIds],
       evidenceIds: [...link.evidenceIds],
-      ...(translationReady
+      ...(blockingCounterProofEvidenceIds.length > 0
+        ? {
+            counterProofEvidenceIds:
+              blockingCounterProofEvidenceIds,
+            disposition:
+              "BLOCKING_COUNTERPROOF" as const,
+          }
+        : translationReady
         ? {
             gameplayTrigger:
               scenario.purpose,

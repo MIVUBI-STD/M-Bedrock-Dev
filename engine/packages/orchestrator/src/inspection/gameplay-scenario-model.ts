@@ -71,6 +71,7 @@ export interface GameplayCausalLink {
   readonly subjectIds: readonly string[];
   readonly componentIds: readonly string[];
   readonly knowledgeRequirementId?: string;
+  readonly intentEdgeKind?: import("../../../gameplay-intent/src/index.js").GameplayIntentEdgeKind;
   readonly status: GameplayCausalLinkStatus;
   readonly reason: string;
 }

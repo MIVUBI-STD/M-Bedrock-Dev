@@ -50,6 +50,17 @@ export function validateAnalysisCapabilityRegistry(
     }
     ids.add(capability.id);
 
+    if (
+      capability.executionPhase !== "discovery-core" &&
+      capability.executionPhase !== "rig-directed"
+    ) {
+      errors.push(
+        "Analysis capability " +
+          capability.id +
+          " has invalid executionPhase.",
+      );
+    }
+
     if (capability.contexts.length === 0) {
       errors.push(
         "Analysis capability " +

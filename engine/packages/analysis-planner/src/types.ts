@@ -55,6 +55,10 @@ export type AnalysisKnowledgeDomain =
   | "spatial-authority"
   | "temporal-ownership";
 
+export type AnalysisExecutionPhase =
+  | "discovery-core"
+  | "rig-directed";
+
 export type AnalysisCostClass =
   | "cheap"
   | "moderate"
@@ -67,6 +71,7 @@ export interface AnalysisCapability {
   cost: AnalysisCostClass;
   tags: readonly string[];
   knowledgeDomains?: readonly AnalysisKnowledgeDomain[];
+  executionPhase: AnalysisExecutionPhase;
   deterministic: boolean;
   contexts: readonly AnalysisExecutionContext[];
   producesTraits?: readonly AnalysisEvidenceTrait[];

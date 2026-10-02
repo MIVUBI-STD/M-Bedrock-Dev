@@ -3,6 +3,7 @@ import type { AnalysisCapability } from "./types.js";
 export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   {
     id: "arena-concurrency-capacity",
+    executionPhase: "discovery-core",
     knowledgeDomains: ["arena-lifecycle", "multiplayer-interleaving"],
     evidenceLevel: "semantic",
     cost: "cheap",
@@ -18,6 +19,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "release-identity-consistency",
+    executionPhase: "discovery-core",
     evidenceLevel: "static",
     cost: "cheap",
     tags: ["manifest", "release", "version"],
@@ -27,6 +29,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "safe-config-resolution",
+    executionPhase: "discovery-core",
     evidenceLevel: "semantic",
     cost: "moderate",
     tags: ["arena", "configuration", "coordinates", "script"],
@@ -39,6 +42,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-replica-fidelity",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "moderate",
     tags: ["arena", "coordinates", "topology", "replica"],
@@ -53,6 +57,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-structure-instance-fidelity",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "moderate",
     tags: ["arena", "structure", "replica", "placement"],
@@ -67,6 +72,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-authored-entity-fidelity",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "moderate",
     tags: ["arena", "entity", "spawn", "replica"],
@@ -82,6 +88,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "pack-identity-continuity",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "moderate",
     tags: ["manifest", "persistence", "world-db"],
@@ -95,6 +102,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-spatial-fingerprint",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "moderate",
     tags: ["arena", "terrain", "world-db", "replica", "chunk"],
@@ -109,6 +117,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-voxel-proof",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "expensive",
     tags: ["arena", "terrain", "world-db", "replica", "voxel"],
@@ -123,6 +132,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-block-entity-proof",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "expensive",
     tags: ["arena", "block-entity", "world-db", "replica"],
@@ -137,6 +147,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-tick-state-proof",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "expensive",
     tags: ["arena", "ticks", "world-db", "runtime-state", "replica"],
@@ -151,6 +162,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-actor-population-proof",
+    executionPhase: "rig-directed",
     evidenceLevel: "semantic",
     cost: "very-expensive",
     tags: ["arena", "entity", "actor-db", "world-db", "runtime-state"],
@@ -165,6 +177,7 @@ export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   },
   {
     id: "arena-runtime-stress",
+    executionPhase: "rig-directed",
     evidenceLevel: "runtime",
     cost: "very-expensive",
     tags: ["arena", "multiplayer", "lifecycle", "cleanup", "stress"],

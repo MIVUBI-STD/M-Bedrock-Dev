@@ -1027,6 +1027,7 @@ export function compileGameplayScenarioGraph(
             edge.to,
           ]),
         ].sort(),
+        intentEdgeKind: edge.kind,
         status: edgeStatus(edge),
         reason:
           edgeStatus(edge) === "PROVEN"
