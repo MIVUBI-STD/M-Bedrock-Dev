@@ -36,21 +36,33 @@ export interface BugReportClientSeverityLegendItem {
 
 export interface BugReportClientIssueIndexItem {
   readonly number: number;
+  readonly id: string;
   readonly severity: BugSeverity;
   readonly status: BugReportClientIssueStatus;
+  readonly category: string;
   readonly title: string;
 }
 
 export interface BugReportClientIssue {
   readonly number: number;
+  readonly id: string;
   readonly severity: BugSeverity;
   readonly status: BugReportClientIssueStatus;
+  readonly category: string;
+  readonly foundBy: "ai" | "tester";
   readonly title: string;
   readonly issue: string;
   readonly reproduction: readonly string[];
   readonly observed: string;
   readonly expected: string;
   readonly recommendedResolution?: string;
+  readonly technicalAnalysis?: string;
+  readonly relevantCode?: readonly {
+    readonly file: string;
+    readonly reason: string;
+  }[];
+  readonly mustPreserve?: readonly string[];
+  readonly workChecklist: readonly string[];
 }
 
 export interface BugReportClientDocument {
