@@ -13,9 +13,10 @@ import {
   type BugReportV2RepairBy,
   type BugTriggerDraft,
 } from "../../../bug-report/src/index.js";
-import type {
-  IntentDiagnosticGateResult,
-  IntentDiagnosticNextEvidenceNeed,
+import {
+  renderEngineeringAnalysis,
+  type IntentDiagnosticGateResult,
+  type IntentDiagnosticNextEvidenceNeed,
 } from "../../../diagnostic-reasoning/src/index.js";
 import type {
   GameplayIntentModel,
@@ -24,6 +25,9 @@ import type {
 import type {
   GameplayIntentRuntimeAssessment,
 } from "../gameplay-intent-runtime-stage.js";
+import type {
+  InspectionEngineeringAnalysis,
+} from "../inspection/engineering-analysis-stage.js";
 import type {
   RuntimeExperimentDefinition,
 } from "../../../runtime-lab/src/index.js";
@@ -856,15 +860,54 @@ function collectOne(
   };
 }
 
+function applyEngineeringAnalysis(
+  defect: ConfirmedDefect,
+  analyses:
+    readonly InspectionEngineeringAnalysis[],
+): ConfirmedDefect {
+  const matching = analyses.find((item) =>
+    item.domain === "arena-capacity" &&
+    defect.primaryFailure ===
+      "session-concurrency"
+  );
+
+  if (!matching) return defect;
+
+  const rendered =
+    renderEngineeringAnalysis(
+      matching.analysis,
+    );
+
+  return {
+    ...defect,
+    engineeringAnalysis:
+      defect.engineeringAnalysis === undefined
+        ? rendered
+        : [
+            defect.engineeringAnalysis,
+            rendered,
+          ].join("\n\n"),
+  };
+}
+
 export function collectConfirmedDefects(
   candidates: readonly AuditReportCandidate[],
+  engineeringAnalyses:
+    readonly InspectionEngineeringAnalysis[] = [],
 ): ConfirmedDefectCollection {
   const confirmed: ConfirmedDefect[] = [];
   const rejected: RejectedReportCandidate[] = [];
 
   for (const candidate of candidates) {
     const result = collectOne(candidate);
-    if (result.confirmed) confirmed.push(result.confirmed);
+    if (result.confirmed) {
+      confirmed.push(
+        applyEngineeringAnalysis(
+          result.confirmed,
+          engineeringAnalyses,
+        ),
+      );
+    }
     if (result.rejected) rejected.push(result.rejected);
   }
 
@@ -877,6 +920,8 @@ export interface BuildBugReportFromAuditInput {
   readonly approved: ApprovedBugSet;
   readonly files: readonly FileInventoryEntry[];
   readonly candidates: readonly AuditReportCandidate[];
+  readonly engineeringAnalyses?:
+    readonly InspectionEngineeringAnalysis[];
   readonly groupResolutions?:
     readonly ConfirmedDefectGroupResolution[];
 }
@@ -976,6 +1021,7 @@ export function prepareBugReportReviewFromAuditCandidates(
 ): PrepareBugReportReviewFromAuditResult {
   const collection = collectConfirmedDefects(
     input.candidates,
+    input.engineeringAnalyses ?? [],
   );
 
   return {
@@ -1055,6 +1101,7 @@ export function buildBugReportFromAuditCandidates(
     return {
       collection: collectConfirmedDefects(
         input.candidates,
+        input.engineeringAnalyses ?? [],
       ),
       promotion: {
         ok: false,
