@@ -356,7 +356,13 @@ function runtimeEdgeState(
         return {
           status: "CONTRADICTED",
           reason:
-            "Arena analyzer reports reduced playable concurrency or cross-arena ownership/isolation evidence that contradicts the scenario dependency.",
+            reduced
+              ? "Selected-artifact arena capacity is player-visible at " +
+                String(world.arenas.count) +
+                " arena(s), but only " +
+                String(world.arenas.safeConcurrentArenas) +
+                " can run concurrently. Queue/fallback behavior and platform/resource limits explain or mitigate the implementation constraint but are not counter-proof for the gameplay/design capacity mismatch."
+              : "Cross-arena ownership/isolation evidence contradicts the scenario dependency.",
         };
       }
       if (
