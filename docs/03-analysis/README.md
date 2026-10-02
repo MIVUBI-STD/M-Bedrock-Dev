@@ -26,9 +26,9 @@ Related contracts:
 
 - [Audit routing](./map-audit-routing.md)
 - [Game design audit checklist](./game-design-audit-checklist.md)
-- [Gameplay bug report v2](./gameplay-bug-report-v2.md)
+- [Gameplay bug report v2 — canonical report contract](./gameplay-bug-report-v2.md)
+- [Bug report v2 HTML layout — canonical rendering template](./templates/bug-report-v2-html-layout.md)
 - [Bug report v2 schema](./map-audit-report-v2-schema.md)
-- [Bug report HTML structure](./bug-report-v2-html-template.md)
 - [Multi arena audit contract](./multi-arena-audit-contract.md)
 - [Capacity and concurrency contract](./capacity-and-concurrency-contract.md)
 - [Capacity/concurrency audit checklist](./capacity-concurrency-audit-checklist.md)
