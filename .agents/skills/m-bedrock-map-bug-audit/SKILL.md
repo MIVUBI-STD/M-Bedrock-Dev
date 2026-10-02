@@ -22,12 +22,14 @@ Bug discovery cannot start before the selected world is reconstructed.
 
 ```text
 Selected Map Version
+→ Gameplay Surface Inventory
 → Game Design Reconstruction
 → Gameplay Flow Mapping
 → State Transition Mapping
 → Reset / Preserve Rules
 → Progression Rules
 → Multiplayer / Multi Arena Rules
+→ Gameplay Model Closure
 → Actual Behavior
 → Gameplay Contradiction
 → Bug Classification
@@ -40,6 +42,7 @@ Required references:
 - `references/gameplay-flow-contract.md`
 - `references/multi-arena-contract.md`
 - `references/bug-report-contract.md`
+- `../../../docs/03-analysis/gameplay-model-closure.md`
 - `../../../docs/03-analysis/gameplay-audit-blind-spots.md`
 - `../../../docs/03-analysis/cross-system-interaction-audit.md`
 - `../../../docs/03-analysis/audit-finalization-checklist.md`
@@ -47,7 +50,7 @@ Required references:
 
 ## Gameplay Contract
 
-The audit must establish:
+Before bug discovery, the audit must establish and account for the full gameplay model:
 
 - objective;
 - win condition;
@@ -65,7 +68,9 @@ The audit must establish:
 - player-facing feedback for material limitations;
 - persistence boundaries.
 
-If expected behavior cannot be grounded from the selected artifact, keep it unknown.
+If expected behavior cannot be grounded from the selected artifact, keep it unknown. Do not convert unknown into Designed Behavior.
+
+Bug discovery starts only after Gameplay Model Closure is CLOSED or PARTIAL. OPEN closure forbids comprehensive bug claims and finalization.
 
 ## Bug admission
 
@@ -142,6 +147,8 @@ Do not publish normal/designed behavior as bugs.
 Stop when:
 
 ```text
+✓ Gameplay surface inventory complete/accounted
+✓ Gameplay Model Closure is CLOSED or PARTIAL
 ✓ Game Design mapped
 ✓ Gameplay Flow mapped
 ✓ State transitions reviewed
