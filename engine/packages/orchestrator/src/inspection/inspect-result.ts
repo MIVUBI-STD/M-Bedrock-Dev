@@ -306,13 +306,13 @@ export function buildInspectionResult(
       transitionResidueRisks:
         parsedStructureModels.filter(
           (item) =>
-            item.transitionResidue.status ===
+            item.transitionResidue?.status ===
             "residue-risk",
         ).length,
       transitionResidueUnresolved:
         parsedStructureModels.filter(
           (item) =>
-            item.transitionResidue.status ===
+            item.transitionResidue?.status ===
             "unresolved",
         ).length,
     },
