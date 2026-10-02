@@ -859,6 +859,7 @@ export async function inspectArtifact(
       refreshHiddenGameplayDefectsForWorld(
         result.hiddenGameplayDefects,
         finalGameplayWorld,
+        result.gameplayIntent.model,
       );
     const finalEngineeringAnalyses =
       deriveInspectionEngineeringAnalyses({

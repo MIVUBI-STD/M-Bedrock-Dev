@@ -122,7 +122,7 @@ export function assessGameplayScenarioClosure(
 
   if (status === "CLOSED") {
     reasons.push(
-      "Every compiled gameplay component has a gameplay purpose and scenario correlation, and every causal link is resolved.",
+      "Every compiled gameplay component has a gameplay purpose and scenario correlation, every required knowledge domain returned an execution receipt, and every causal link is resolved.",
     );
   }
 

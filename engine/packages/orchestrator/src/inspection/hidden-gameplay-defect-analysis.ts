@@ -573,6 +573,7 @@ export function analyzeHiddenGameplayDefects(
 export function refreshHiddenGameplayDefectsForWorld(
   existing: HiddenGameplayDefectAnalysis,
   world: GameplayWorldModel,
+  intent?: GameplayIntentModel,
 ): HiddenGameplayDefectAnalysis {
   const designConsistency =
     consistencyFromWorld(world);
@@ -600,25 +601,21 @@ export function refreshHiddenGameplayDefectsForWorld(
     });
 
   const scenarioGraph =
-    compileGameplayScenarioGraph({
-      intent: {
-        schemaVersion: 1,
-        id: "refresh-unavailable-intent",
-        evidence: [],
-        nodes: [],
-        edges: [],
-        invariants: [],
-        unknowns: [],
-      },
-      world,
-      preset: auditScenarioPreset,
-    });
+    intent === undefined
+      ? existing.scenarioAudit.graph
+      : compileGameplayScenarioGraph({
+          intent,
+          world,
+          preset: auditScenarioPreset,
+        });
   const scenarioClosure =
-    scenarioGraph.scenarios.length === 0
+    intent === undefined
       ? existing.scenarioAudit.closure
-      : assessGameplayScenarioClosure(scenarioGraph);
+      : assessGameplayScenarioClosure(
+          scenarioGraph,
+        );
   const defectResolution =
-    scenarioGraph.scenarios.length === 0
+    intent === undefined
       ? existing.scenarioAudit.defectResolution
       : assessGameplayDefectResolutionGate(
           scenarioGraph,
@@ -631,7 +628,7 @@ export function refreshHiddenGameplayDefectsForWorld(
     degradations,
     auditScenarioPreset,
     scenarioAudit:
-      scenarioGraph.scenarios.length === 0
+      intent === undefined
         ? existing.scenarioAudit
         : {
             graph: scenarioGraph,
@@ -647,11 +644,11 @@ export function refreshHiddenGameplayDefectsForWorld(
       mandatoryAuditScenarios:
         auditScenarioPreset.scenarios.length,
       orphanGameplayComponents:
-        scenarioGraph.scenarios.length === 0
+        intent === undefined
           ? existing.attention.orphanGameplayComponents
           : scenarioClosure.orphanComponentIds.length,
       unresolvedCausalLinks:
-        scenarioGraph.scenarios.length === 0
+        intent === undefined
           ? existing.attention.unresolvedCausalLinks
           : scenarioClosure.unresolvedCausalLinkIds.length,
       contradictedCausalLinks:
