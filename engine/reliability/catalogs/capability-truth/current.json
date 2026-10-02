@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "generatorPath": "tooling/repository/generate-capability-truth.mjs",
-    "generatorFingerprint": "e8fa2f37",
+    "generatorFingerprint": "d07b7df4",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
@@ -10,8 +10,8 @@
     ],
     "registryFingerprint": "ecfcbeb2",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
-    "proofRegistryFingerprint": "b197f257",
-    "proofInventoryFingerprint": "717f7301"
+    "proofRegistryFingerprint": "263994b8",
+    "proofInventoryFingerprint": "4d45825d"
   },
   "summary": {
     "taskCapabilities": 51,
@@ -19,8 +19,8 @@
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 4,
-    "proofBound": 44,
-    "proofUnbound": 7,
+    "proofBound": 51,
+    "proofUnbound": 0,
     "analysisCapabilities": 31
   },
   "taskCapabilities": [
@@ -38,19 +38,24 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 27,
-      "testFiles": 6,
+      "testFiles": 7,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/capability-contracts.test.ts",
         "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
-        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
-        "engine/packages/behavior-model/test/safe-config.test.ts"
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts"
       ],
       "proofBinding": {
-        "state": "unbound"
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/behavior-model/test/capability-contracts.test.ts"
+        ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "behavior.chunks",
@@ -66,19 +71,24 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 27,
-      "testFiles": 6,
+      "testFiles": 7,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/capability-contracts.test.ts",
         "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
-        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
-        "engine/packages/behavior-model/test/safe-config.test.ts"
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts"
       ],
       "proofBinding": {
-        "state": "unbound"
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/behavior-model/test/capability-contracts.test.ts"
+        ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "behavior.combat",
@@ -94,14 +104,14 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 27,
-      "testFiles": 6,
+      "testFiles": 7,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/capability-contracts.test.ts",
         "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
-        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
-        "engine/packages/behavior-model/test/safe-config.test.ts"
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts"
       ],
       "proofBinding": {
         "state": "bound",
@@ -111,7 +121,7 @@
           "engine/packages/behavior-model/test/combat-lifecycle.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "behavior.core",
@@ -127,14 +137,14 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 27,
-      "testFiles": 6,
+      "testFiles": 7,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/capability-contracts.test.ts",
         "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
-        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
-        "engine/packages/behavior-model/test/safe-config.test.ts"
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts"
       ],
       "proofBinding": {
         "state": "bound",
@@ -144,7 +154,7 @@
           "engine/packages/behavior-model/test/behavior-model.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "behavior.economy",
@@ -160,14 +170,14 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 27,
-      "testFiles": 6,
+      "testFiles": 7,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/capability-contracts.test.ts",
         "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
-        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
-        "engine/packages/behavior-model/test/safe-config.test.ts"
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts"
       ],
       "proofBinding": {
         "state": "bound",
@@ -177,7 +187,7 @@
           "engine/packages/behavior-model/test/reward-lifecycle.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "behavior.entity-ai",
@@ -193,19 +203,24 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 27,
-      "testFiles": 6,
+      "testFiles": 7,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/capability-contracts.test.ts",
         "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
-        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
-        "engine/packages/behavior-model/test/safe-config.test.ts"
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts"
       ],
       "proofBinding": {
-        "state": "unbound"
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/behavior-model/test/capability-contracts.test.ts"
+        ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "behavior.inventory",
@@ -221,19 +236,24 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 27,
-      "testFiles": 6,
+      "testFiles": 7,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/capability-contracts.test.ts",
         "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
-        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
-        "engine/packages/behavior-model/test/safe-config.test.ts"
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts"
       ],
       "proofBinding": {
-        "state": "unbound"
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/behavior-model/test/capability-contracts.test.ts"
+        ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "behavior.spatial",
@@ -249,19 +269,24 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 27,
-      "testFiles": 6,
+      "testFiles": 7,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/behavior-model/test/behavior-model.test.ts",
+        "engine/packages/behavior-model/test/capability-contracts.test.ts",
         "engine/packages/behavior-model/test/combat-lifecycle.test.ts",
         "engine/packages/behavior-model/test/reward-lifecycle.test.ts",
-        "engine/packages/behavior-model/test/runtime-overlay.test.ts",
-        "engine/packages/behavior-model/test/safe-config.test.ts"
+        "engine/packages/behavior-model/test/runtime-overlay.test.ts"
       ],
       "proofBinding": {
-        "state": "unbound"
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/behavior-model/test/capability-contracts.test.ts"
+        ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "context.compile",
@@ -277,7 +302,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -294,7 +319,7 @@
           "engine/packages/orchestrator/test/workflow/context-compiler.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "context.dataflow-slice",
@@ -310,7 +335,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -320,9 +345,14 @@
         "engine/packages/orchestrator/test/arena-start-ownership-guard-realizer.test.ts"
       ],
       "proofBinding": {
-        "state": "unbound"
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/packages/orchestrator/test/inspection/script-dataflow-context-capability.test.ts"
+        ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "diagnosis.calibration",
@@ -355,7 +385,7 @@
           "engine/packages/diagnostic-reasoning/test/calibration.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "diagnosis.declarative-rules",
@@ -388,7 +418,7 @@
           "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "domain.arena-lifecycle",
@@ -404,7 +434,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -421,7 +451,7 @@
           "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "domain.chunks",
@@ -437,7 +467,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -454,7 +484,7 @@
           "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "domain.combat",
@@ -470,7 +500,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -487,7 +517,7 @@
           "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "domain.economy",
@@ -503,7 +533,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -520,7 +550,7 @@
           "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "domain.entity-ai",
@@ -536,7 +566,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -553,7 +583,7 @@
           "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "domain.inventory",
@@ -569,7 +599,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -586,7 +616,7 @@
           "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "domain.persistence",
@@ -602,7 +632,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -619,7 +649,7 @@
           "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "domain.spatial-authority",
@@ -635,7 +665,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -652,7 +682,7 @@
           "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "foundation.dataflow",
@@ -681,7 +711,7 @@
           "engine/packages/dataflow/test/dataflow.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "knowledge.freshness",
@@ -714,7 +744,7 @@
           "engine/packages/knowledge/test/freshness.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "projection.workflow",
@@ -730,7 +760,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -747,7 +777,7 @@
           "engine/packages/orchestrator/test/inspection/map-engineering-workflow.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "projection.world-model",
@@ -763,7 +793,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -780,7 +810,7 @@
           "engine/packages/orchestrator/test/inspection/gameplay-world-model.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "reliability.behavior-patterns",
@@ -813,7 +843,7 @@
           "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "reliability.coverage-quality",
@@ -846,7 +876,7 @@
           "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "reliability.metamorphic",
@@ -879,7 +909,7 @@
           "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "reliability.parser-robustness",
@@ -912,7 +942,7 @@
           "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "repair.routing",
@@ -928,7 +958,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 264,
+      "testFiles": 266,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -945,7 +975,7 @@
           "engine/packages/orchestrator/test/repair/repair-strategy-selection.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "runtime.chunks",
@@ -976,7 +1006,7 @@
           "engine/packages/orchestrator/test/inspection/chunk-readiness-runtime-classification.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "runtime.cross-version-differential-executor",
@@ -1008,7 +1038,7 @@
         ],
         "note": "Binds fail-closed orchestration behavior only; live cross-version proof still requires LOCAL/LIVE Minecraft hosts."
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "runtime.cross-version-differential-plan",
@@ -1041,7 +1071,7 @@
           "engine/packages/runtime-lab/test/cross-version-differential-plan.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "runtime.entity-ai",
@@ -1072,7 +1102,7 @@
           "engine/packages/orchestrator/test/inspection/entity-navigation-runtime-classification.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "runtime.persistence",
@@ -1103,7 +1133,7 @@
           "engine/packages/orchestrator/test/diagnosis/runtime-persistence-diagnostic-bindings.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "runtime.record-replay-contract",
@@ -1136,7 +1166,7 @@
           "engine/packages/reliability/test/runtime-session-replay.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "runtime.semantic-convention",
@@ -1169,7 +1199,7 @@
           "engine/packages/project-model/test/runtime-semantic-convention.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.entities.ai",
@@ -1202,7 +1232,7 @@
           "engine/analyzers/entities/test/ai-stack.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.entities.core",
@@ -1235,7 +1265,7 @@
           "engine/analyzers/entities/test/entity.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.entities.economy",
@@ -1268,7 +1298,7 @@
           "engine/analyzers/entities/test/loot.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.arena",
@@ -1284,7 +1314,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1301,7 +1331,7 @@
           "engine/analyzers/scripts/test/domains/arena/arena-authority-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.chunks",
@@ -1317,7 +1347,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1334,7 +1364,7 @@
           "engine/analyzers/scripts/test/domains/chunk/chunk-lifecycle-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.combat",
@@ -1350,7 +1380,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1367,7 +1397,7 @@
           "engine/analyzers/scripts/test/domains/combat/combat-lifecycle-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.core",
@@ -1383,7 +1413,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1400,7 +1430,7 @@
           "engine/analyzers/scripts/test/parser/parse.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.dataflow",
@@ -1416,7 +1446,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1426,9 +1456,14 @@
         "engine/analyzers/scripts/test/domains/arena/arena-start-ownership-repair-transform-hints.test.ts"
       ],
       "proofBinding": {
-        "state": "unbound"
+        "state": "bound",
+        "kind": "unit-contract",
+        "executionContext": "REMOTE_GITHUB",
+        "paths": [
+          "engine/analyzers/scripts/test/flow/dataflow-capability.test.ts"
+        ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.economy",
@@ -1444,7 +1479,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1461,7 +1496,7 @@
           "engine/analyzers/scripts/test/domains/economy/economy-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.inventory",
@@ -1477,7 +1512,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1494,7 +1529,7 @@
           "engine/analyzers/scripts/test/domains/inventory/inventory-lifecycle-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.persistence",
@@ -1510,7 +1545,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1527,7 +1562,7 @@
           "engine/analyzers/scripts/test/domains/persistence/persistent-data-lifecycle.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.recovery",
@@ -1543,7 +1578,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1560,7 +1595,7 @@
           "engine/analyzers/scripts/test/source-recovery.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.semantic-flow",
@@ -1576,7 +1611,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1593,7 +1628,7 @@
           "engine/analyzers/scripts/test/semantic-flow-bindings.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.semantic-flow-witness",
@@ -1609,7 +1644,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1626,7 +1661,7 @@
           "engine/analyzers/scripts/test/semantic-flow-witness.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     },
     {
       "id": "source.scripts.source-map",
@@ -1642,7 +1677,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 33,
-      "testFiles": 28,
+      "testFiles": 29,
       "hasReadme": true,
       "proofPaths": [
         "engine/analyzers/scripts/test/config/safe-config-compiler.test.ts",
@@ -1659,7 +1694,7 @@
           "engine/analyzers/scripts/test/source-map-binding.test.ts"
         ]
       },
-      "proofSemantics": "Owner module contains tests; this is not capability-specific proof."
+      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
     }
   ],
   "analysisCapabilities": [
