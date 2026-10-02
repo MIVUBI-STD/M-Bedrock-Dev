@@ -5,6 +5,47 @@ import type {
 export const DOMAIN_ANALYSIS_CAPABILITIES:
   readonly AnalysisCapability[] = [
     {
+      id: "semantic-ir-state-model",
+      evidenceLevel: "semantic",
+      cost: "cheap",
+      tags: [
+        "state",
+        "semantic-ir",
+        "flow",
+      ],
+      deterministic: true,
+      contexts: [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+      producesTraits: [
+        "semantic-model",
+      ],
+    },
+    {
+      id: "script-spatial-integrity",
+      evidenceLevel: "semantic",
+      cost: "cheap",
+      tags: [
+        "spatial",
+        "world-mutation",
+        "region",
+        "script",
+      ],
+      deterministic: true,
+      contexts: [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+      producesTraits: [
+        "semantic-model",
+      ],
+    },
+    {
       id: "script-dataflow-lineage",
       evidenceLevel: "semantic",
       cost: "moderate",

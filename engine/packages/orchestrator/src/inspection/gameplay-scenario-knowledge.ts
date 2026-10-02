@@ -29,8 +29,7 @@ const DOMAIN_CAPABILITY_IDS: Readonly<Record<
   readonly string[]
 >> = {
   "state-flow": [
-    "script-dataflow-lineage",
-    "script-semantic-flow",
+    "semantic-ir-state-model",
   ],
   "arena-lifecycle": [
     "arena-lifecycle-integrity",
@@ -60,7 +59,7 @@ const DOMAIN_CAPABILITY_IDS: Readonly<Record<
     "economy-reward-integrity",
   ],
   "spatial-authority": [
-    "spatial-authority-coverage",
+    "script-spatial-integrity",
   ],
   "temporal-ownership": [
     "temporal-ownership-integrity",
@@ -123,32 +122,11 @@ function domainExecuted(
   world: GameplayWorldModel,
   domain: GameplayKnowledgeDomain,
 ): boolean {
-  switch (domain) {
-    case "state-flow":
-      return world.analysisExecution.stateFlow;
-    case "arena-lifecycle":
-      return world.analysisExecution.arenaLifecycle;
-    case "multiplayer-interleaving":
-      return world.analysisExecution.multiplayerInterleaving;
-    case "chunk-simulation":
-      return world.analysisExecution.chunkSimulation;
-    case "entity-behavior":
-      return world.analysisExecution.entityBehavior;
-    case "combat-lifecycle":
-      return world.analysisExecution.combatLifecycle;
-    case "inventory-state":
-      return world.analysisExecution.inventoryState;
-    case "persistence-recovery":
-      return world.analysisExecution.persistenceRecovery;
-    case "world-structure":
-      return world.analysisExecution.worldStructure;
-    case "economy-reward":
-      return world.analysisExecution.economyReward;
-    case "spatial-authority":
-      return world.analysisExecution.spatialAuthority;
-    case "temporal-ownership":
-      return world.analysisExecution.temporalOwnership;
-  }
+  const executed = new Set(
+    world.analysisExecution.executedCapabilityIds,
+  );
+  return DOMAIN_CAPABILITY_IDS[domain]
+    .some((capabilityId) => executed.has(capabilityId));
 }
 
 function domainEvidence(

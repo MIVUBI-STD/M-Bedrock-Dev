@@ -337,18 +337,7 @@ export interface GameplayWorldModel {
     };
   };
   analysisExecution: {
-    stateFlow: boolean;
-    arenaLifecycle: boolean;
-    multiplayerInterleaving: boolean;
-    chunkSimulation: boolean;
-    entityBehavior: boolean;
-    combatLifecycle: boolean;
-    inventoryState: boolean;
-    persistenceRecovery: boolean;
-    worldStructure: boolean;
-    economyReward: boolean;
-    spatialAuthority: boolean;
-    temporalOwnership: boolean;
+    readonly executedCapabilityIds: readonly string[];
   };
   intent: {
     invariants: number;
@@ -1445,29 +1434,42 @@ export function deriveGameplayWorldModel(
       },
     },
     analysisExecution: {
-      stateFlow: true,
-      arenaLifecycle:
-        source.arena.lifecycle !== undefined,
-      multiplayerInterleaving:
-        source.arena.lifecycle !== undefined ||
-        source.arena.stateIsolation !== undefined ||
-        source.arena.globalState !== undefined,
-      chunkSimulation:
-        source.chunkLifecycle !== undefined,
-      entityBehavior:
-        source.entityAiStack !== undefined &&
-        source.routeNavigationEnvironment !== undefined,
-      combatLifecycle:
-        source.combatLifecycle !== undefined,
-      inventoryState:
-        source.inventoryLifecycle !== undefined,
-      persistenceRecovery:
-        source.persistenceSource !== undefined,
-      worldStructure: true,
-      economyReward:
-        source.rewardSources !== undefined,
-      spatialAuthority: true,
-      temporalOwnership: true,
+      executedCapabilityIds: [
+        "semantic-ir-state-model",
+        "script-spatial-integrity",
+        "structure-transition-integrity",
+        "temporal-ownership-integrity",
+        ...(source.arena.lifecycle === undefined
+          ? []
+          : ["arena-lifecycle-integrity"]),
+        ...(
+          source.arena.stateIsolation === undefined &&
+          source.arena.globalState === undefined
+            ? []
+            : ["multiplayer-interleaving"]
+        ),
+        ...(source.chunkLifecycle === undefined
+          ? []
+          : ["chunk-lifecycle-integrity"]),
+        ...(
+          source.entityAiStack === undefined ||
+          source.routeNavigationEnvironment === undefined
+            ? []
+            : ["entity-ai-navigation-readiness"]
+        ),
+        ...(source.combatLifecycle === undefined
+          ? []
+          : ["combat-lifecycle-contract"]),
+        ...(source.inventoryLifecycle === undefined
+          ? []
+          : ["inventory-lifecycle-integrity"]),
+        ...(source.persistenceSource === undefined
+          ? []
+          : ["persistence-lifecycle-integrity"]),
+        ...(source.rewardSources === undefined
+          ? []
+          : ["economy-reward-integrity"]),
+      ].sort(),
     },
     intent: {
       invariants: source.intent.invariants.length,
