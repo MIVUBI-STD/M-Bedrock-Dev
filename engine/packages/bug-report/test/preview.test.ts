@@ -148,13 +148,13 @@ describe("bug report preview", () => {
     });
     const markdown = renderBugReportPreviewMarkdown(preview, "full");
 
-    expect(markdown).toContain("| **Bug Trigger (In-Game)** | ☐ Finish a match.<br>☐ Return to the lobby.");
+    expect(markdown).toContain("| # | Severity | Category | Issue |");
     expect(markdown).toContain("| #1 · BLOCKER | Match cannot restart |");
 
-    expect(markdown).toContain("| **Result** |");
-    expect(markdown).toContain("| **Work Checklist** |");
+    expect(markdown).not.toContain("Work Checklist");
+    expect(markdown).not.toContain("☐");
+    expect(markdown).not.toContain("- [ ]");
     expect(markdown).not.toContain("Minecraft Education 1.26.32");
-    expect(markdown).toContain("- [ ] Finish a match.");
     expect(markdown).toContain(
       "**Technical Analysis:**\nRoot Cause\nCleanup leaves stale session ownership.",
     );
