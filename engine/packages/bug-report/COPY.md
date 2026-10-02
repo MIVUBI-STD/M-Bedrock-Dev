@@ -146,16 +146,19 @@ Also bad:
 
 The second example never tells the tester what failed. A valid final step would state: `Confirm the gate remains closed and progression is blocked.`
 
-### AI Analysis
+### AI Analysis — displayed as Technical Analysis
 
-Purpose: concise technical interpretation.
+Purpose: preserve the evidence-backed technical explanation needed by engineering without burdening the tester-facing scan layer.
 
 Rules:
 
-- maximum 420 characters;
+- maximum 1800 normalized characters;
+- simple bugs should remain concise;
+- complex findings may use short structured sections such as Root Cause, Constraint, Evidence Convergence, Repair Direction, and Verification;
 - explain the technical basis, not the entire proof history;
-- do not repeat Problem;
-- internal evidence graph IDs and orchestration details are forbidden.
+- do not repeat Problem/Issue;
+- internal evidence graph IDs and orchestration details are forbidden;
+- multiline structure is allowed and should be preserved by full chat/HTML presentation.
 
 ### Suggested Fix — displayed as Solution
 
@@ -221,7 +224,7 @@ These limits apply to newly created reports. Compatibility imports remain readab
 | Expected | 180 chars |
 | Observed | 180 chars |
 | Reproduction step | 160 chars |
-| AI Analysis | 420 chars |
+| AI Analysis / Technical Analysis | 1800 chars |
 | Suggested Fix | 220 chars |
 | Relevant Code reason | 180 chars |
 | Must Preserve item | 160 chars |
