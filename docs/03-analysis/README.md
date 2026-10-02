@@ -10,12 +10,14 @@ For Minecraft world bug audits, start from the selected world version and build 
 
 ```text
 Selected World Version
+→ Gameplay Surface Inventory
 → Game Design Reconstruction
 → Gameplay Flow Mapping
 → State Transition Mapping
 → Reset / Preserve Rules
 → Progression Rules
 → Multiplayer / Multi Arena Rules
+→ Gameplay Model Closure
 → Actual Behavior
 → Gameplay Contradiction
 → Bug Classification
@@ -25,6 +27,7 @@ Selected World Version
 Related contracts:
 
 - [Audit routing](./map-audit-routing.md)
+- [Gameplay model closure — mandatory pre-bug gate](./gameplay-model-closure.md)
 - [Game design audit checklist](./game-design-audit-checklist.md)
 - [Gameplay bug report v2 — canonical report contract](./gameplay-bug-report-v2.md)
 - [Bug report v2 HTML layout — canonical rendering template](./templates/bug-report-v2-html-layout.md)
