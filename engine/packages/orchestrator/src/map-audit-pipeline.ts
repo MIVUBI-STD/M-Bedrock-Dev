@@ -368,6 +368,7 @@ export function resolveSelectedMapAudit(
 
 export interface PrepareSelectedMapAuditReviewInput {
   readonly audit: SelectedMapAuditRun;
+  readonly basedOnAuditRevision: string;
   readonly map: BugReportV2Map;
   readonly candidates: readonly AuditReportCandidate[];
   readonly engineeringAnalyses?: readonly InspectionEngineeringAnalysis[];
@@ -382,6 +383,22 @@ export function prepareSelectedMapAuditReview(
   input: PrepareSelectedMapAuditReviewInput,
 ): PrepareBugReportReviewFromClosedAuditResult {
   const inspection = input.audit.inspection;
+  if (
+    input.basedOnAuditRevision !==
+    input.audit.auditRevision
+  ) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ??
+          inspection.engineeringAnalyses,
+      ),
+      blocked: true,
+      reasons: [
+        "Review candidate set was produced from a stale auditRevision.",
+      ],
+    };
+  }
   const scenario =
     inspection.hiddenGameplayDefects.scenarioAudit;
   const identityIssues =
@@ -438,6 +455,26 @@ export function buildSelectedMapAuditReport(
   input: BuildSelectedMapAuditReportInput,
 ): BuildBugReportFromAuditResult {
   const inspection = input.audit.inspection;
+  if (
+    input.basedOnAuditRevision !==
+    input.audit.auditRevision
+  ) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ??
+          inspection.engineeringAnalyses,
+      ),
+      promotion: {
+        ok: false,
+        issues: [{
+          code: "invalid-confirmed-defect" as const,
+          message:
+            "Report build input was produced from a stale auditRevision.",
+        }],
+      },
+    };
+  }
   const scenario =
     inspection.hiddenGameplayDefects.scenarioAudit;
   const identityIssues =
