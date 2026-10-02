@@ -1266,10 +1266,22 @@ export function compileGameplayScenarioGraph(
     }
   }
 
+  const scenariosWithCausalLinks =
+    scenariosWithKnowledge.map((scenario) => ({
+      ...scenario,
+      causalLinkIds: causalLinks
+        .filter(
+          (link) =>
+            link.scenarioId === scenario.id,
+        )
+        .map((link) => link.id)
+        .sort(),
+    }));
+
   return {
     schemaVersion: 1,
     policy: "scenario-driven-causal-audit",
-    scenarios: scenariosWithKnowledge,
+    scenarios: scenariosWithCausalLinks,
     components,
     causalLinks,
     knowledgeRequirements,
