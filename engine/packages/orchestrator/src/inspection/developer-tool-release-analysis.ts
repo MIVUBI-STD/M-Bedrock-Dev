@@ -3,7 +3,9 @@ import type {
 } from "../../../../analyzers/scripts/src/index.js";
 import {
   assessCapabilityExposure,
+  findGameplayReachability,
   type CapabilityExposureAssessment,
+  type GameplayReachabilityGraph,
 } from "../../../diagnostic-reasoning/src/index.js";
 
 export interface DeveloperToolExposure {
@@ -102,6 +104,7 @@ export function analyzeDeveloperToolReleaseExposure(
     readonly parsed: ParsedScriptFile;
     readonly text?: string;
   }[],
+  reachability?: GameplayReachabilityGraph,
 ): DeveloperToolReleaseAnalysis {
   const exposures: DeveloperToolExposure[] = [];
 
@@ -157,6 +160,22 @@ export function analyzeDeveloperToolReleaseExposure(
         : kind === "debug-interaction"
           ? "interaction" as const
           : "state" as const;
+    const prerequisitePaths =
+      triggerItems.map((item) =>
+        reachability === undefined
+          ? {
+              reachable: false,
+              targetId: "item:" + item,
+              nodeIds: [],
+              edgeKinds: [],
+              evidenceIds: [],
+            }
+          : findGameplayReachability(
+              reachability,
+              "item:" + item,
+            )
+      );
+
     const exposure =
       assessCapabilityExposure({
         capabilityId:
@@ -172,6 +191,7 @@ export function analyzeDeveloperToolReleaseExposure(
         authorization,
         triggerPresent:
           interactions.length > 0,
+        prerequisitePaths,
         playerImpact: impact,
         evidenceIds: [
           parsed.source.relativePath,
