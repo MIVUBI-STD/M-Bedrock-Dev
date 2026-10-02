@@ -43,8 +43,9 @@ Expected ≠ Actual
 ## Acceptance
 
 - one artifact/version only;
+- relevant selected-artifact source inventory balances indexed files plus explicit parse failures;
 - every discovered gameplay surface has one coverage disposition;
-- no gameplay surface is silently skipped;
+- no discovered gameplay surface is silently skipped;
 - every candidate has one disposition;
 - only defects receive severity;
 - counter-evidence and player impact are settled;
