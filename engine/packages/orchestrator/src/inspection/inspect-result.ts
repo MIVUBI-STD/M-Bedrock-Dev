@@ -30,6 +30,7 @@ import { deriveMultiplayerStateValidationPlan } from "./multiplayer-state-valida
 import { analyzeDeveloperToolReleaseExposure } from "./developer-tool-release-analysis.js";
 import { buildGameplayReachabilityGraph } from "./gameplay-reachability-stage.js";
 import { summarizeCapabilityExposure } from "./capability-exposure-stage.js";
+import { assessGameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";
 import { deriveArenaAuthoredSpatialSources } from "../arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
@@ -337,6 +338,27 @@ export function buildInspectionResult(
     },
   });
 
+  const discoveryUnresolvedReferences =
+    graph.unresolvedEdges()
+      .filter(
+        (edge) =>
+          edge.type !==
+          "IMPORTS_MINECRAFT_MODULE",
+      ).length;
+  const gameplayDiscoveryClosure =
+    assessGameplayDiscoveryClosure({
+      discoveredSurfaceIds:
+        gameplayWorld.surfaceDiscovery
+          .surfaceIds,
+      sourceCoverageComplete:
+        input.sourceIndex.coverage.complete,
+      sourceParseFailures:
+        input.sourceIndex.coverage
+          .parseFailures.length,
+      unresolvedReferences:
+        discoveryUnresolvedReferences,
+    });
+
   const gameplaySemantic = projectGameplaySemanticModel(gameplayWorld);
   const engineeringAssessment = projectMapEngineeringAssessment(gameplayWorld);
   const hiddenGameplayDefects =
@@ -430,6 +452,7 @@ export function buildInspectionResult(
     economyPolicy,
     releaseIdentity: input.releaseIdentity,
     gameplayWorld,
+    gameplayDiscoveryClosure,
     gameplaySemantic,
     engineeringAssessment,
     hiddenGameplayDefects,
