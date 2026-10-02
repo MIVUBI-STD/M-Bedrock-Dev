@@ -1,6 +1,10 @@
-import type {
-  GameplayIntentModel,
-  GameplayIntentNodeKind,
+import {
+  assessGameplayModelClosure,
+  buildIntentClosureSurfaces,
+  type GameplayClosureSurface,
+  type GameplayIntentModel,
+  type GameplayIntentNodeKind,
+  type GameplayModelClosureResult,
 } from "../../../gameplay-intent/src/index.js";
 import type {
   ArenaCapacityExtractionResult,
@@ -85,6 +89,7 @@ export interface GameplayWorldModel {
   schemaVersion: 1;
   artifactId: string;
   subjects: readonly GameplayWorldSubjectSummary[];
+  gameplayClosure: GameplayModelClosureResult;
   arenas: {
     detected: boolean;
     count?: number;
@@ -415,10 +420,239 @@ export function deriveGameplayWorldModel(
         : source.arena.capacity?.evidence
             .requestedConcurrentArenas;
 
+  const runtimeSurfaces: GameplayClosureSurface[] = [];
+
+  const arenaDetected =
+    source.arena.autoDetected ||
+    arenaCount !== undefined;
+  if (arenaDetected) {
+    const requested =
+      source.arena.capacity?.evidence
+        .requestedConcurrentArenas;
+    const safe =
+      source.arena.capacity?.report
+        ?.safeConcurrentArenas;
+    const unresolvedCapacity =
+      source.arena.capacity === undefined ||
+      source.arena.capacity.evidence.arenaCountConflict ||
+      (
+        source.arena.capacity.evidence
+          .scriptTickingAreaManagerReferenced &&
+        !source.arena.capacity.evidence
+          .scriptTickingAreaCapacityResolved
+      );
+
+    runtimeSurfaces.push({
+      id: "runtime:arena-capacity",
+      label: "Arena capacity and concurrency",
+      kind: "runtime-domain",
+      status: unresolvedCapacity
+        ? "unknown"
+        : "understood",
+      material: true,
+      ...(unresolvedCapacity
+        ? {
+            reason:
+              "Arena capacity/concurrency has unresolved selected-artifact evidence.",
+          }
+        : {}),
+      boundaries: [
+        ...(arenaCount === undefined
+          ? []
+          : ["visibleArenaCount=" + arenaCount]),
+        ...(requested === undefined
+          ? []
+          : ["requestedConcurrentArenas=" + requested]),
+        ...(safe === undefined || safe === null
+          ? []
+          : ["safeConcurrentArenas=" + safe]),
+      ],
+    });
+  }
+
+  const persistenceApplicable =
+    (source.persistenceSource?.properties.length ?? 0) > 0;
+  if (persistenceApplicable) {
+    const unresolved =
+      (source.persistenceSource?.unknownScope ?? 0) > 0 ||
+      (source.persistenceSource?.unknownLifetime ?? 0) > 0;
+    runtimeSurfaces.push({
+      id: "runtime:persistence",
+      label: "Persistence and recovery",
+      kind: "runtime-domain",
+      status: unresolved ? "unknown" : "understood",
+      material: true,
+      ...(unresolved
+        ? { reason: "Persistence scope or lifetime remains unresolved." }
+        : {}),
+    });
+  }
+
+  const economyApplicable =
+    (source.rewardSources?.sourceKinds.length ?? 0) > 0;
+  if (economyApplicable) {
+    const unresolved =
+      (source.rewardSources?.unresolvedEngineLootTables ?? 0) > 0 ||
+      (source.rewardSources?.deathRewardSourceOverlapUnresolved ?? 0) > 0 ||
+      (source.economyPolicy?.deathRewardOverlapUnresolved ?? 0) > 0;
+    runtimeSurfaces.push({
+      id: "runtime:economy",
+      label: "Economy and rewards",
+      kind: "runtime-domain",
+      status: unresolved ? "unknown" : "understood",
+      material: true,
+      ...(unresolved
+        ? { reason: "Material reward/economy behavior remains unresolved." }
+        : {}),
+    });
+  }
+
+  const combatApplicable =
+    (source.combatLifecycle?.hurtHandlers ?? 0) > 0 ||
+    (source.combatLifecycle?.deathHandlers ?? 0) > 0 ||
+    (source.combatLifecycle?.damageApplications ?? 0) > 0;
+  if (combatApplicable) {
+    runtimeSurfaces.push({
+      id: "runtime:combat",
+      label: "Combat lifecycle",
+      kind: "runtime-domain",
+      status: "understood",
+      material: true,
+    });
+  }
+
+  const inventoryApplicable =
+    (source.inventoryLifecycle?.regions ?? 0) > 0 ||
+    (source.inventoryLifecycle?.grantRegions ?? 0) > 0 ||
+    (source.inventoryLifecycle?.resetCandidates ?? 0) > 0;
+  if (inventoryApplicable) {
+    const unresolved =
+      (source.inventoryLifecycle?.unresolvedEquipmentSlotEvidence ?? 0) > 0 ||
+      (source.inventoryRestoreOwnership?.unknownIdentityGrants ?? 0) > 0 ||
+      (source.inventoryPolicy?.unknownIdentityEvidence ?? 0) > 0 ||
+      (source.inventoryPolicy?.unknownDrops ?? 0) > 0;
+    runtimeSurfaces.push({
+      id: "runtime:inventory",
+      label: "Inventory and equipment",
+      kind: "runtime-domain",
+      status: unresolved ? "unknown" : "understood",
+      material: true,
+      ...(unresolved
+        ? { reason: "Inventory/equipment identity or restore behavior remains unresolved." }
+        : {}),
+    });
+  }
+
+  const spatialApplicable =
+    source.scriptSpatial.resolvedEffects.length > 0 ||
+    source.scriptSpatial.structurePlacements.length > 0 ||
+    source.scriptSpatial.failures.length > 0;
+  if (spatialApplicable) {
+    const unresolved =
+      source.scriptSpatial.failures.length > 0 ||
+      (source.spatialAuthority?.uncovered ?? 0) > 0 ||
+      (source.spatialAuthority?.conflicts ?? 0) > 0 ||
+      (source.spatialAuthority?.unknownRegions ?? 0) > 0;
+    runtimeSurfaces.push({
+      id: "runtime:spatial",
+      label: "Spatial authority and world placement",
+      kind: "runtime-domain",
+      status: unresolved ? "unknown" : "understood",
+      material: true,
+      ...(unresolved
+        ? { reason: "Spatial mutation/authority evidence remains unresolved." }
+        : {}),
+    });
+  }
+
+  if (source.structures.loads > 0 || source.structures.runtimeLogicLoads > 0) {
+    runtimeSurfaces.push({
+      id: "runtime:structures",
+      label: "Structure and world mutation",
+      kind: "runtime-domain",
+      status:
+        source.structures.unresolvedLoads > 0
+          ? "unknown"
+          : "understood",
+      material: true,
+      ...(source.structures.unresolvedLoads > 0
+        ? { reason: "One or more structure loads remain unresolved." }
+        : {}),
+    });
+  }
+
+  if (source.entities.definitions > 0) {
+    const unresolved =
+      source.entities.knowledgePrerequisiteGaps > 0 ||
+      source.entities.staticAnalysisLimits > 0 ||
+      (source.routeNavigationEnvironment?.unresolved ?? 0) > 0;
+    runtimeSurfaces.push({
+      id: "runtime:entities",
+      label: "Entity lifecycle and navigation",
+      kind: "runtime-domain",
+      status: unresolved ? "unknown" : "understood",
+      material: true,
+      ...(unresolved
+        ? { reason: "Entity lifecycle/navigation has unresolved analysis limits." }
+        : {}),
+    });
+  }
+
+  const intentSurfaces =
+    buildIntentClosureSurfaces(source.intent);
+  const closureSurfaces = [
+    ...intentSurfaces,
+    ...runtimeSurfaces,
+  ];
+
+  const stateLikeIds = new Set(
+    source.intent.nodes
+      .filter((node) =>
+        node.kind === "phase" ||
+        node.kind === "state" ||
+        node.kind === "lifecycle" ||
+        node.kind === "outcome"
+      )
+      .map((node) => node.id),
+  );
+  const stateTransitionEdges =
+    source.intent.edges.filter((edge) =>
+      edge.kind === "transitions-to" ||
+      edge.kind === "recovers-to" ||
+      edge.kind === "wins-by" ||
+      edge.kind === "loses-by"
+    );
+  const stateModelComplete =
+    stateLikeIds.size > 0 &&
+    stateTransitionEdges.length > 0 &&
+    !source.intent.unknowns.some((unknown) =>
+      unknown.blockedSubjectIds.some((id) =>
+        stateLikeIds.has(id)
+      )
+    );
+
+  const boundariesExtracted =
+    !arenaDetected ||
+    (
+      arenaCount !== undefined &&
+      source.arena.capacity?.evidence
+        .requestedConcurrentArenas !== undefined
+    );
+
+  const gameplayClosure =
+    assessGameplayModelClosure({
+      discoveredSurfaceIds:
+        closureSurfaces.map((surface) => surface.id),
+      surfaces: closureSurfaces,
+      stateModelComplete,
+      boundariesExtracted,
+    });
+
   return {
     schemaVersion: 1,
     artifactId: source.artifactId,
     subjects: summarizeSubjects(source.intent),
+    gameplayClosure,
     arenas: {
       detected:
         source.arena.autoDetected ||
