@@ -112,3 +112,81 @@ export function groupReadyAuditDefectsByRootCause(
       a.rootCauseKey.localeCompare(b.rootCauseKey)
     );
 }
+
+
+export interface RootCauseCandidateLike {
+  readonly route: "runtime" | "static" | "tester";
+  readonly scenarioCausalLinkId?: string;
+  readonly scenarioCausalLinkIds?: readonly string[];
+}
+
+function candidateLinkIds(
+  candidate: RootCauseCandidateLike,
+): readonly string[] {
+  return unique([
+    ...(candidate.scenarioCausalLinkIds ?? []),
+    ...(candidate.scenarioCausalLinkId === undefined
+      ? []
+      : [candidate.scenarioCausalLinkId]),
+  ]);
+}
+
+function sameLinkSet(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  const a = unique(left);
+  const b = unique(right);
+  return (
+    a.length === b.length &&
+    a.every((value, index) => value === b[index])
+  );
+}
+
+export function auditRootCauseCandidateCoverageIssues(
+  groups: readonly ReadyAuditRootCauseGroup[],
+  candidates: readonly RootCauseCandidateLike[],
+): readonly string[] {
+  const issues: string[] = [];
+  const matched = new Map<string, number>();
+
+  for (const candidate of candidates) {
+    if (candidate.route === "tester") continue;
+    const links = candidateLinkIds(candidate);
+    if (links.length === 0) continue;
+
+    const matches = groups.filter((group) =>
+      sameLinkSet(group.causalLinkIds, links)
+    );
+    if (matches.length !== 1) {
+      issues.push(
+        "AI candidate causal links must match exactly one deterministic root-cause group: " +
+          links.join(", ") +
+          ".",
+      );
+      continue;
+    }
+
+    const key = matches[0]!.rootCauseKey;
+    matched.set(key, (matched.get(key) ?? 0) + 1);
+  }
+
+  for (const group of groups) {
+    const count = matched.get(group.rootCauseKey) ?? 0;
+    if (count === 0) {
+      issues.push(
+        "Deterministic root-cause group has no AI report candidate: " +
+          group.rootCauseKey +
+          ".",
+      );
+    } else if (count > 1) {
+      issues.push(
+        "Deterministic root-cause group maps to multiple AI report candidates: " +
+          group.rootCauseKey +
+          ".",
+      );
+    }
+  }
+
+  return issues;
+}

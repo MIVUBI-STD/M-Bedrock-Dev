@@ -70,7 +70,7 @@ Use this before broad repository search.
 | Bounded model-facing audit task packets / next-action / evidence+RIG context projection | engine/packages/orchestrator/src/map-audit-model-task.ts |
 | Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |
 | Deterministic CONFIRMED_DEFECT_READY → AI defect projection | engine/packages/orchestrator/src/map-audit-defect-projection.ts |
-| Conservative deterministic AI root-cause grouping | engine/packages/orchestrator/src/map-audit-root-cause.ts |
+| Conservative deterministic AI root-cause grouping + candidate coverage enforcement | engine/packages/orchestrator/src/map-audit-root-cause.ts |
 | Bounded counter-proof search receipt / confirmed-defect admission | engine/packages/orchestrator/src/inspection/gameplay-defect-resolution.ts |
 | AI candidate Expected/Actual narrative binding to ready resolutions | engine/packages/orchestrator/src/reporting/report-defect-collector.ts |
 | Audit snapshot revision / stale model-result + review/report rejection | engine/packages/orchestrator/src/map-audit-revision.ts + map-audit-pipeline.ts |

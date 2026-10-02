@@ -69,6 +69,7 @@ import {
   type AuditExecutionTrace,
 } from "./map-audit-execution-trace.js";
 import {
+  auditRootCauseCandidateCoverageIssues,
   groupReadyAuditDefectsByRootCause,
   type ReadyAuditRootCauseGroup,
 } from "./map-audit-root-cause.js";
@@ -209,15 +210,22 @@ export async function runSelectedMapAudit(
     intent: inspection.gameplayIntent.model,
     auditRevision,
   });
-  const readyDefects = projectReadyAuditDefects(
-    scenario.graph,
-    scenario.defectResolution,
-  );
-  const rootCauseGroups =
-    groupReadyAuditDefectsByRootCause(
-      scenario.graph,
-      readyDefects,
-    );
+  const proveAuthorized =
+    admission.firstBlockingStage === undefined ||
+    admission.firstBlockingStage === "PROVE" ||
+    admission.firstBlockingStage === "REPORT";
+  const readyDefects = proveAuthorized
+    ? projectReadyAuditDefects(
+        scenario.graph,
+        scenario.defectResolution,
+      )
+    : [];
+  const rootCauseGroups = proveAuthorized
+    ? groupReadyAuditDefectsByRootCause(
+        scenario.graph,
+        readyDefects,
+      )
+    : [];
   const executionTrace = deriveAuditExecutionTrace({
     admission,
     procedure,
@@ -342,15 +350,22 @@ export function resolveSelectedMapAudit(
     intent: updatedInspection.gameplayIntent.model,
     auditRevision,
   });
-  const readyDefects = projectReadyAuditDefects(
-    scenario.graph,
-    scenario.defectResolution,
-  );
-  const rootCauseGroups =
-    groupReadyAuditDefectsByRootCause(
-      scenario.graph,
-      readyDefects,
-    );
+  const proveAuthorized =
+    admission.firstBlockingStage === undefined ||
+    admission.firstBlockingStage === "PROVE" ||
+    admission.firstBlockingStage === "REPORT";
+  const readyDefects = proveAuthorized
+    ? projectReadyAuditDefects(
+        scenario.graph,
+        scenario.defectResolution,
+      )
+    : [];
+  const rootCauseGroups = proveAuthorized
+    ? groupReadyAuditDefectsByRootCause(
+        scenario.graph,
+        readyDefects,
+      )
+    : [];
   const executionTrace = deriveAuditExecutionTrace({
     admission,
     procedure: mandatoryAuditProcedure,
@@ -449,6 +464,22 @@ export function prepareSelectedMapAuditReview(
       reasons: identityIssues,
     };
   }
+  const rootCauseIssues =
+    auditRootCauseCandidateCoverageIssues(
+      input.audit.rootCauseGroups,
+      input.candidates,
+    );
+  if (rootCauseIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ??
+          inspection.engineeringAnalyses,
+      ),
+      blocked: true,
+      reasons: rootCauseIssues,
+    };
+  }
 
   return prepareBugReportReviewFromAuditCandidates({
     map: input.map,
@@ -524,6 +555,27 @@ export function buildSelectedMapAuditReport(
       promotion: {
         ok: false,
         issues: identityIssues.map((message) => ({
+          code: "invalid-confirmed-defect" as const,
+          message,
+        })),
+      },
+    };
+  }
+  const rootCauseIssues =
+    auditRootCauseCandidateCoverageIssues(
+      input.audit.rootCauseGroups,
+      input.candidates,
+    );
+  if (rootCauseIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ??
+          inspection.engineeringAnalyses,
+      ),
+      promotion: {
+        ok: false,
+        issues: rootCauseIssues.map((message) => ({
           code: "invalid-confirmed-defect" as const,
           message,
         })),
