@@ -53,6 +53,10 @@ import {
   selectedMapReportIdentityIssues,
   type SelectedMapAuditIdentity,
 } from "./map-audit-identity.js";
+import {
+  projectReadyAuditDefects,
+  type ReadyAuditDefectProjection,
+} from "./map-audit-defect-projection.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -78,6 +82,7 @@ export interface SelectedMapAuditRun {
     | "RESOLVE_DEFECTS"
     | "PREPARE_REVIEW";
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
+  readonly readyDefects: readonly ReadyAuditDefectProjection[];
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
 }
@@ -123,6 +128,10 @@ export async function runSelectedMapAudit(
     defectResolution: scenario.defectResolution,
     intent: inspection.gameplayIntent.model,
   });
+  const readyDefects = projectReadyAuditDefects(
+    scenario.graph,
+    scenario.defectResolution,
+  );
   const currentStage =
     admission.firstBlockingStage ?? "COMPLETE";
   const allowedNextAction =
@@ -146,6 +155,7 @@ export async function runSelectedMapAudit(
     currentStage,
     allowedNextAction,
     modelTaskPackets,
+    readyDefects,
     status:
       admission.status === "READY"
         ? "READY_FOR_REVIEW"
@@ -223,6 +233,10 @@ export function resolveSelectedMapAudit(
     defectResolution: scenario.defectResolution,
     intent: updatedInspection.gameplayIntent.model,
   });
+  const readyDefects = projectReadyAuditDefects(
+    scenario.graph,
+    scenario.defectResolution,
+  );
   const currentStage =
     admission.firstBlockingStage ?? "COMPLETE";
   const allowedNextAction =
@@ -247,6 +261,7 @@ export function resolveSelectedMapAudit(
     currentStage,
     allowedNextAction,
     modelTaskPackets,
+    readyDefects,
     status:
       admission.status === "READY"
         ? "READY_FOR_REVIEW"
