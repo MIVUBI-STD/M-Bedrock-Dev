@@ -21,6 +21,7 @@ describe("gameplay surface discovery", () => {
       spatialEvidence: true,
       structureEvidence: true,
       entityEvidence: true,
+      boundaryEvidence: true,
     });
 
     expect(result.surfaceIds).toEqual(
@@ -37,6 +38,7 @@ describe("gameplay surface discovery", () => {
         "runtime:spatial",
         "runtime:structures",
         "runtime:entities",
+        "runtime:boundaries",
       ]),
     );
   });
