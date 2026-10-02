@@ -6,10 +6,12 @@
     "schemaVersion",
     "artifactId",
     "mapVersion",
+    "evidenceScope",
     "gameDesign",
     "gameplayFlow",
     "stateTransitions",
     "multiArena",
+    "coverage",
     "bugs"
   ],
   "properties": {
@@ -17,45 +19,242 @@
       "const": 2
     },
     "artifactId": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "mapVersion": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceScope": {
+      "type": "object",
+      "required": [
+        "mode",
+        "selectedArtifact",
+        "archiveSourcesUsed"
+      ],
+      "properties": {
+        "mode": {
+          "const": "selected-map-version-only"
+        },
+        "selectedArtifact": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archiveSourcesUsed": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
     },
     "gameDesign": {
       "type": "object",
-      "required": ["objective", "winCondition", "loseCondition", "resetRules"],
+      "required": [
+        "objective",
+        "winCondition",
+        "loseCondition",
+        "resetRules",
+        "preserveRules",
+        "progressionRules"
+      ],
       "properties": {
-        "objective": {"type": "string"},
-        "winCondition": {"type": "string"},
-        "loseCondition": {"type": "string"},
-        "resetRules": {"type": "array"},
-        "preserveRules": {"type": "array"},
-        "progressionRules": {"type": "array"}
-      }
+        "objective": {
+          "type": "string",
+          "minLength": 1
+        },
+        "winCondition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "loseCondition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resetRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preserveRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "progressionRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
     },
     "gameplayFlow": {
       "type": "array",
-      "items": {"type": "string"}
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "stateTransitions": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["from", "to"],
+        "required": [
+          "from",
+          "event",
+          "to"
+        ],
         "properties": {
-          "from": {"type": "string"},
-          "to": {"type": "string"}
-        }
+          "from": {
+            "type": "string",
+            "minLength": 1
+          },
+          "event": {
+            "type": "string",
+            "minLength": 1
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       }
     },
     "multiArena": {
       "type": "object",
-      "required": ["supported", "isolationRules"],
+      "required": [
+        "supported",
+        "visibleArenaCount",
+        "concurrentArenaLimit",
+        "queueBehavior",
+        "isolationRules"
+      ],
       "properties": {
-        "supported": {"type": "boolean"},
-        "isolationRules": {"type": "array"}
-      }
+        "supported": {
+          "type": "boolean"
+        },
+        "visibleArenaCount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "concurrentArenaLimit": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "queueBehavior": {
+          "type": "string"
+        },
+        "playerFeedback": {
+          "type": "string"
+        },
+        "isolationRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "disposition",
+        "records"
+      ],
+      "properties": {
+        "disposition": {
+          "const": "accounted"
+        },
+        "records": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "surface",
+              "status"
+            ],
+            "properties": {
+              "surface": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "enum": [
+                  "checked",
+                  "blocked",
+                  "not-applicable"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidenceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "status": {
+                      "const": "blocked"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "reason"
+                  ]
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "status": {
+                      "const": "not-applicable"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "reason"
+                  ]
+                }
+              }
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "bugs": {
       "type": "array",
@@ -69,21 +268,146 @@
           "issue",
           "reproduceSteps",
           "expected",
-          "actual"
+          "actual",
+          "proofCeiling"
         ],
         "properties": {
-          "id": {"type": "string"},
-          "status": {"enum":["Confirmed","Needs Validation","Ambiguous"]},
-          "category": {"type":"string"},
-          "gameplayFlow": {"type":"string"},
-          "severity": {"enum":["Blocker","Major","Minor"]},
-          "issue": {"type":"string"},
-          "reproduceSteps": {"type":"array"},
-          "expected": {"type":"string"},
-          "actual": {"type":"string"},
-          "evidence": {"type":"string"}
-        }
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "Confirmed",
+              "Needs Validation",
+              "Ambiguous",
+              "Detection Gap"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "gameplayFlow": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "enum": [
+              "Blocker",
+              "Major",
+              "Minor"
+            ]
+          },
+          "issue": {
+            "type": "string",
+            "minLength": 1
+          },
+          "playerImpact": {
+            "type": "string"
+          },
+          "reproduceSteps": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "expected": {
+            "type": "string",
+            "minLength": 1
+          },
+          "actual": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "proofCeiling": {
+            "enum": [
+              "STATIC VERIFIED",
+              "PACKAGE VERIFIED",
+              "LOCAL GAME VERIFIED",
+              "LIVE GAME VERIFIED",
+              "UNKNOWN"
+            ]
+          },
+          "counterEvidence": {
+            "enum": [
+              "cleared",
+              "present",
+              "unresolved"
+            ]
+          },
+          "testerTriggerReady": {
+            "type": "boolean"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "Confirmed"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "severity",
+                "playerImpact",
+                "counterEvidence",
+                "testerTriggerReady"
+              ],
+              "properties": {
+                "counterEvidence": {
+                  "const": "cleared"
+                },
+                "testerTriggerReady": {
+                  "const": true
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "Needs Validation",
+                    "Ambiguous",
+                    "Detection Gap"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "severity"
+                ]
+              }
+            }
+          }
+        ],
+        "additionalProperties": true
       }
     }
-  }
+  },
+  "additionalProperties": true
 }
