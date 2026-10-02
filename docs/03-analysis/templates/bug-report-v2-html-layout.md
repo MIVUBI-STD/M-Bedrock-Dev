@@ -63,3 +63,50 @@ Do not imply complete coverage when blocked or Detection Gap surfaces remain.
 - Keep technical evidence separate.
 - Do not publish designed behavior as bugs.
 - Use clear contrast and compact tables/cards suitable for QA handoff.
+
+
+## Presentation layers
+
+Render client HTML in three layers:
+
+```text
+1. Scan
+   severity + Bug ID + title + category
+
+2. Tester
+   issue + tester checklist + observed/expected + resolution + work checklist
+
+3. Engineering
+   technical analysis + relevant code + must-preserve
+```
+
+Engineering detail may be collapsible on screen but must remain printable.
+
+## Checklist rule
+
+Reproduction steps render as unchecked checkboxes so a tester can work through the issue directly.
+
+Each issue also gets a presentation-only work checklist:
+
+- ☐ Reproduce issue
+- ☐ Apply or confirm fix
+- ☐ Retest expected behavior
+- ☐ Confirm no regression
+
+These controls are not persisted bug state and must not imply completion until a user explicitly checks them.
+
+## Dashboard rule
+
+Show a compact issue dashboard for reports with three or more visible issues:
+
+```text
+# | Bug ID | Severity | Category | Issue
+```
+
+Do not invent Gameplay Flow when canonical flow metadata is absent.
+
+## Technical detail rule
+
+Do not flatten multiline Technical Analysis. Preserve headings, lists, constraints, and verification steps with whitespace-aware rendering.
+
+HTML must expose Bug ID and category on each card. Found-by may appear as compact metadata rather than a primary visual field.
