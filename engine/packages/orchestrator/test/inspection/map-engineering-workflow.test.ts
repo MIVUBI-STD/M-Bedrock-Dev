@@ -50,6 +50,13 @@ function baseSource() {
       unguardedEnabled: 0,
       highRisk: 0,
     },
+    capabilityExposure: {
+      exposures: [],
+      exposed: 0,
+      potentiallyExposed: 0,
+      releaseBlocking: 0,
+      unresolved: 0,
+    },
     releaseIdentity: {
       status: "consistent",
       observations: [],
@@ -86,7 +93,7 @@ describe("map engineering workflow projection", () => {
       repairProposals: 0,
       hiddenDefectRisks: 0,
       engineeringAnalyses: 0,
-      developerToolRisks: 0,
+      capabilityExposureRisks: 0,
     });
   });
 
@@ -161,23 +168,23 @@ describe("map engineering workflow projection", () => {
     ).toBe(1);
   });
 
-  it("blocks release while a high-risk developer tool is exposed", () => {
+  it("blocks release while a sensitive capability is exposed", () => {
     const source = {
       ...baseSource(),
-      developerToolRelease: {
+      capabilityExposure: {
         exposures: [{
-          scriptId: "dev-tools",
-          sourcePath: "scripts/dev-tools.js",
-          kind: "level-skip",
-          triggerItems: ["minecraft:stick"],
-          interactionEvents: ["itemUse"],
-          permissionGuard: "absent",
-          releaseEnabled: "enabled",
-          evidence: [],
-          severityHint: "high",
+          capabilityId: "capability:restricted-action",
+          capabilityLabel: "Restricted Action",
+          status: "exposed",
+          prerequisiteReachability: "reachable",
+          impact: "progression",
+          reasons: [],
+          evidenceIds: [],
         }],
-        unguardedEnabled: 1,
-        highRisk: 1,
+        exposed: 1,
+        potentiallyExposed: 0,
+        releaseBlocking: 1,
+        unresolved: 0,
       },
     } as any;
 
@@ -190,7 +197,7 @@ describe("map engineering workflow projection", () => {
       )?.status,
     ).toBe("blocked");
     expect(
-      workflow.attention.developerToolRisks,
+      workflow.attention.capabilityExposureRisks,
     ).toBe(1);
   });
 
