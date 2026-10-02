@@ -29,6 +29,7 @@ import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stag
 import { deriveMultiplayerStateValidationPlan } from "./multiplayer-state-validation.js";
 import { analyzeDeveloperToolReleaseExposure } from "./developer-tool-release-analysis.js";
 import { buildGameplayReachabilityGraph } from "./gameplay-reachability-stage.js";
+import { summarizeCapabilityExposure } from "./capability-exposure-stage.js";
 import { deriveArenaAuthoredSpatialSources } from "../arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
@@ -363,6 +364,11 @@ export function buildInspectionResult(
       parsedScripts,
       gameplayReachability,
     );
+  const capabilityExposure =
+    summarizeCapabilityExposure({
+      developerTools:
+        developerToolRelease,
+    });
 
   const reliability = deriveReliabilityFingerprint({
     mapId: input.artifactId,
@@ -432,6 +438,7 @@ export function buildInspectionResult(
     multiplayerStateValidation,
     developerToolRelease,
     gameplayReachability,
+    capabilityExposure,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
