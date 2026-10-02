@@ -14,7 +14,7 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 0,
         sourceCoverageComplete: false,
         sourceParseFailures: 1,
-        unsupportedRelevantSources: 0,
+        unsupportedRelevantSourcePaths: [],
         unresolvedReferences: 0,
       });
 
@@ -32,7 +32,7 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 1,
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
-        unsupportedRelevantSources: 0,
+        unsupportedRelevantSourcePaths: [],
         unresolvedReferences: 1,
       });
 
@@ -55,7 +55,7 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 1,
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
-        unsupportedRelevantSources: 0,
+        unsupportedRelevantSourcePaths: [],
         unresolvedReferences: 0,
       });
 
@@ -75,7 +75,9 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 1,
         sourceCoverageComplete: false,
         sourceParseFailures: 0,
-        unsupportedRelevantSources: 1,
+        unsupportedRelevantSourcePaths: [
+          "loot_tables/reward.json",
+        ],
         unresolvedReferences: 0,
       });
 
@@ -95,7 +97,7 @@ describe("gameplay discovery closure", () => {
         sourceIndexedFiles: 1,
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
-        unsupportedRelevantSources: 0,
+        unsupportedRelevantSourcePaths: [],
         unresolvedReferences: 0,
       });
 
