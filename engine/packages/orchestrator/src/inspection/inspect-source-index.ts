@@ -104,18 +104,20 @@ export interface InspectionSourceIndex {
   coverage: InspectionSourceCoverage;
 }
 
-const GAMEPLAY_SENSITIVE_JSON_DIRECTORIES = new Set([
+const GAMEPLAY_STRONG_JSON_DIRECTORIES = new Set([
+  "features",
+  "feature_rules",
+  "loot_tables",
+  "recipes",
+  "spawn_rules",
+  "trading",
+]);
+
+const BEHAVIOR_PACK_GAMEPLAY_JSON_DIRECTORIES = new Set([
   "animation_controllers",
   "animations",
   "blocks",
-  "features",
-  "feature_rules",
   "items",
-  "loot_tables",
-  "recipes",
-  "render_controllers",
-  "spawn_rules",
-  "trading",
 ]);
 
 function isGameplaySensitiveUnownedSource(
@@ -126,9 +128,24 @@ function isGameplaySensitiveUnownedSource(
   if (!normalized.endsWith(".json")) return false;
 
   const segments = normalized.split("/");
-  return segments.some((segment) =>
-    GAMEPLAY_SENSITIVE_JSON_DIRECTORIES.has(segment)
-  );
+  if (
+    segments.some((segment) =>
+      GAMEPLAY_STRONG_JSON_DIRECTORIES.has(segment)
+    )
+  ) {
+    return true;
+  }
+
+  const behaviorPackScoped =
+    segments.includes("behavior_packs") ||
+    segments.includes("behavior_pack");
+
+  return behaviorPackScoped &&
+    segments.some((segment) =>
+      BEHAVIOR_PACK_GAMEPLAY_JSON_DIRECTORIES.has(
+        segment,
+      )
+    );
 }
 
 export async function indexInspectionSources(
