@@ -1,3 +1,10 @@
+/**
+ * INTERNAL / ENGINE-DEVELOPMENT BARREL.
+ *
+ * Production selected-map audits must not enter through this module.
+ * Use ../map-audit-pipeline.ts. Direct inspection exports exist for focused
+ * engine development and diagnostics only.
+ */
 export * from "./chunk-lifecycle-analysis.js";
 export * from "./chunk-lifecycle-diagnostics.js";
 export * from "./chunk-readiness-runtime-classification.js";

@@ -82,3 +82,75 @@ export function planReportCandidateReuse(
     reusedRejected,
   };
 }
+
+
+export interface AuditBoundRejectedCandidate {
+  readonly auditRevision: string;
+  readonly rejected: RejectedReportCandidate;
+}
+
+export interface AuditBoundReportCandidateReusePlan {
+  readonly auditRevision: string;
+  readonly reevaluate: readonly AuditReportCandidate[];
+  readonly reusedRejected:
+    readonly AuditBoundRejectedCandidate[];
+}
+
+export function planAuditBoundReportCandidateReuse(
+  input: {
+    readonly auditRevision: string;
+    readonly candidates: readonly AuditReportCandidate[];
+    readonly previousRejected:
+      readonly AuditBoundRejectedCandidate[];
+  },
+): AuditBoundReportCandidateReusePlan {
+  if (!input.auditRevision.trim()) {
+    throw new Error(
+      "Audit-bound candidate reuse requires a non-empty auditRevision.",
+    );
+  }
+
+  const sameRevision = input.previousRejected
+    .filter(
+      (item) =>
+        item.auditRevision === input.auditRevision,
+    );
+  const plan = planReportCandidateReuse(
+    input.candidates,
+    sameRevision.map((item) => item.rejected),
+  );
+  const reusableKeys = new Set(
+    plan.reusedRejected.map(
+      (item) =>
+        item.route + "|" + item.semanticKey,
+    ),
+  );
+
+  return {
+    auditRevision: input.auditRevision,
+    reevaluate: plan.reevaluate,
+    reusedRejected: sameRevision
+      .filter((item) =>
+        reusableKeys.has(
+          item.rejected.route +
+            "|" +
+            item.rejected.semanticKey,
+        )
+      ),
+  };
+}
+
+export function bindRejectedCandidatesToAuditRevision(
+  auditRevision: string,
+  rejected: readonly RejectedReportCandidate[],
+): readonly AuditBoundRejectedCandidate[] {
+  if (!auditRevision.trim()) {
+    throw new Error(
+      "Rejected candidate binding requires a non-empty auditRevision.",
+    );
+  }
+  return rejected.map((item) => ({
+    auditRevision,
+    rejected: item,
+  }));
+}

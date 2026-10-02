@@ -542,3 +542,70 @@ export function assessSemanticProofReuse(
     ],
   };
 }
+
+
+export interface AuditBoundSemanticProofClaim {
+  readonly auditRevision: string;
+  readonly claim: SemanticProofClaim;
+}
+
+export function createAuditBoundSemanticProofClaim(
+  input: Omit<
+    Parameters<typeof createSemanticProofClaim>[0],
+    "claimRevision"
+  > & {
+    readonly auditRevision: string;
+  },
+): AuditBoundSemanticProofClaim {
+  if (!input.auditRevision.trim()) {
+    throw new Error(
+      "Audit-bound semantic proof requires a non-empty auditRevision.",
+    );
+  }
+  const {
+    auditRevision,
+    ...claimInput
+  } = input;
+  return {
+    auditRevision,
+    claim: createSemanticProofClaim({
+      ...claimInput,
+      claimRevision: auditRevision,
+    }),
+  };
+}
+
+export function assessAuditBoundSemanticProofReuse(
+  stored: AuditBoundSemanticProofClaim,
+  input: Omit<
+    Parameters<typeof assessSemanticProofReuse>[1],
+    "claimRevision"
+  > & {
+    readonly auditRevision: string;
+  },
+): SemanticProofReuseResult {
+  if (
+    !input.auditRevision.trim() ||
+    stored.auditRevision !== input.auditRevision
+  ) {
+    return {
+      status: "stale",
+      claimId: stored.claim.claimId,
+      reasons: [
+        "Semantic proof belongs to a different SelectedMapAuditRun auditRevision.",
+      ],
+    };
+  }
+
+  const {
+    auditRevision,
+    ...reuseInput
+  } = input;
+  return assessSemanticProofReuse(
+    stored.claim,
+    {
+      ...reuseInput,
+      claimRevision: auditRevision,
+    },
+  );
+}

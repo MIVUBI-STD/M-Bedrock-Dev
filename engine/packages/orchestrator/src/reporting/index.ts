@@ -1,3 +1,10 @@
+/**
+ * INTERNAL / ENGINE-DEVELOPMENT BARREL.
+ *
+ * Production selected-map audits must not enter through this module.
+ * Use ../map-audit-pipeline.ts so audit identity, revision, ordered gates,
+ * candidate coverage, and report admission cannot be bypassed.
+ */
 export * from "./report-candidate-reuse.js";
 export * from "./report-classification-producers.js";
 export * from "./report-confirmation-adapter.js";

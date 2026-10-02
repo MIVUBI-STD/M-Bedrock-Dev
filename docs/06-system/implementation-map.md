@@ -75,6 +75,8 @@ Use this before broad repository search.
 | Bounded counter-proof search receipt / confirmed-defect admission | engine/packages/orchestrator/src/inspection/gameplay-defect-resolution.ts |
 | AI candidate Expected/Actual narrative binding to ready resolutions | engine/packages/orchestrator/src/reporting/report-defect-collector.ts |
 | Audit snapshot revision / stale model-result + review/report rejection | engine/packages/orchestrator/src/map-audit-revision.ts + map-audit-pipeline.ts |
+| Audit-revision-bound semantic proof reuse | engine/packages/orchestrator/src/workflow/semantic-proof-cache.ts (audit-bound wrapper) |
+| Audit-revision-bound rejected-candidate reuse | engine/packages/orchestrator/src/reporting/report-candidate-reuse.ts (audit-bound wrapper) |
 | Preflight → final RIG knowledge-demand fixed point | engine/packages/orchestrator/src/map-audit-demand-reconciliation.ts + inspection/preflight-knowledge-demand.ts |
 | Audit-authoritative Work Session projection + persistence mirror | engine/packages/orchestrator/src/workflow/map-audit-work-session.ts + engine/packages/project-model/src/session/work-session.ts |
 | Evidence collection vs ordered decision authorization | engine/packages/orchestrator/src/map-audit-execution-trace.ts |
