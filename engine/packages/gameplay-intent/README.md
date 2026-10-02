@@ -63,3 +63,13 @@ Rules:
 - CLOSED permits comprehensive contradiction analysis.
 - Unknown never becomes Designed Behavior automatically.
 - Physical availability does not prove concurrent playability.
+
+
+## Hidden-defect intent owners
+
+Gameplay Intent owns two pre-classification checks:
+
+- `challengeDesignIntent()` — implementation cannot self-justify intended design.
+- `assessMechanicCompleteness()` — declared mechanics must close the Declared → Reachable → Triggered → Consumed → Effect → Player-visible chain.
+
+These functions establish intent/completeness state only. They do not assign Bug Report severity.
