@@ -127,16 +127,20 @@ Gameplay bug work is selected-version-first. Do not begin bug discovery from ext
 
 ```text
 Selected Map Version
-→ Gameplay Surface Inventory
-→ Gameplay Contract
+→ Multi-source Gameplay Surface Inventory
+→ Gameplay Discovery Closure
+→ Gameplay Contract + State / Boundary Reconstruction
+→ Gameplay Model Closure
+→ Risk-directed Analysis
 → Actual Behavior
-→ Discovered-Surface Accounting
 → Gameplay Contradiction
-→ Bug Candidate
-→ Counter-Evidence / Player Impact / Trigger
+→ Early Counter-Evidence / Confirmation
+→ Exact-work Deduplication + Corroboration
+→ Bug Candidate Classification
 → Proposed Bug Set
 → Chat Approval
 → Approved Bug
+→ Production Report
 → Repair Contract
 → Repair
 → Verification against Game Design
