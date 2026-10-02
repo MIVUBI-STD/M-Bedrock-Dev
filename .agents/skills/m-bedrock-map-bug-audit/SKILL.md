@@ -28,6 +28,8 @@ UNDERSTAND → MODEL → STRESS → PROVE → REPORT
 
 This skill routes the work; it must not duplicate or weaken those checkpoint closure rules.
 
+The production audit has one canonical entry: `runSelectedMapAudit()` in `map-audit-pipeline.ts`. Low-level inspection/analyzer/reporting functions are engine plumbing and must not be used as alternate production entry points. Review continues through `prepareSelectedMapAuditReview()`; final production report continues through `buildSelectedMapAuditReport()`. The original audit run is carried forward so source inventory, closures, RIG, procedure receipt, and defect-resolution gates cannot be reconstructed or omitted downstream.
+
 The engine-owned machine-readable receipt is `inspection/mandatory-audit-procedure.ts`. Production report publication must receive this receipt. OPEN checkpoints block publication. PARTIAL checkpoints block publication unless their reason is specifically `RUNTIME_PROOF_REQUIRED`; absence of a detected feature is not sufficient for `NOT_APPLICABLE` unless Discovery Closure is complete and positive non-applicability evidence is present. Do not create a parallel manual status table.
 
 ```text

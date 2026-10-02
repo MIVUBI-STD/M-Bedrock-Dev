@@ -455,6 +455,7 @@ export function buildInspectionResult(
 
   return {
     files: input.files.length,
+    fileInventory: [...input.files],
     packs: [...input.packs],
     functions: nodes.filter(
       (node) => node.kind === "function",

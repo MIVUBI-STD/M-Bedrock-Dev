@@ -5,7 +5,7 @@ import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
 import type { MapCompatibilityFingerprint } from "../../../reliability/src/index.js";
 import type { InspectionRepairCandidate } from "../repair-planning.js";
 import type { ScriptApiUsageInventory } from "../script-api-usage.js";
-import type { ArenaRegionContract, RouteCorridorContract, RouteNavigationEnvironmentContract } from "../../../project-model/src/index.js";
+import type { ArenaRegionContract, RouteCorridorContract, RouteNavigationEnvironmentContract, FileInventoryEntry } from "../../../project-model/src/index.js";
 import type { StateAuthorityContract } from "../../../project-model/src/index.js";
 import type { MutationDependentActionContract } from "../../../project-model/src/index.js";
 import type { CausalChain, CausalIncident } from "../../../project-model/src/index.js";
@@ -120,6 +120,11 @@ export interface InspectedPack {
 
 export interface InspectDirectoryResult {
   files: number;
+  /**
+   * Canonical selected-artifact file inventory retained for downstream
+   * evidence validation. Callers must not rebuild a second inventory.
+   */
+  fileInventory: readonly FileInventoryEntry[];
   packs: InspectedPack[];
   functions: number;
   scripts: number;

@@ -123,7 +123,9 @@ Expected and Actual Behavior must be derived from the same selected map/version.
 
 ## Single-source gameplay workflow
 
-Gameplay bug work is selected-version-first. Do not begin bug discovery from external documents or suspicious implementation patterns alone.
+Gameplay bug work is selected-version-first. Production map audit has exactly one starting API: `runSelectedMapAudit()`. Review/report must consume that returned audit run through the canonical continuation functions rather than rebuilding inventory, closure, or evidence context. Low-level analyzers and `inspectDirectory()` are internal/development plumbing, not alternate production entry points.
+
+Do not begin bug discovery from external documents or suspicious implementation patterns alone.
 
 ```text
 Selected Map Version
