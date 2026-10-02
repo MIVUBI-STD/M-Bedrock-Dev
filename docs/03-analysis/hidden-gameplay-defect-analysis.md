@@ -190,3 +190,37 @@ Alternatives should state what they solve and what still needs validation.
 ### Projection
 
 Engineering Analysis is internal structured reasoning. It is projected into the existing Bug Report V2 `Technical Analysis` field. It does not create another persisted report schema.
+
+
+## First-pass production integration
+
+The normal inspection path now treats the following as first-pass inputs/results rather than optional rechecks:
+
+- multi-source Gameplay Intent from scripts, functions, entities, structures, dialogue scene tags, dialogue copy/buttons, and localized `.lang` text;
+- physical arena count separated from runtime concurrency admission limits;
+- generic gameplay boundary registry for limits/counts/retries/levels/waves/timers/player capacities;
+- per-state closure instead of treating any transition graph as complete;
+- hidden-defect analysis automatically included in inspection output;
+- silent gameplay degradation, including reduced concurrency while the game still appears operational;
+- mixed-player validation scenarios derived only when relevant lifecycle surfaces exist;
+- structure transition residue risk from `structure_void`;
+- repeated-run cleanup/baseline validation plan exposed through the arena/gameplay assessment;
+- automatic engineering analysis for complex arena-capacity findings;
+- Gameplay Model Closure gating both proposed review and final production report publication.
+
+### Player-facing evidence rule
+
+Player-facing evidence is first-class discovery evidence, but inferred wording does not automatically become intended-design authority. It must be correlated with the specific gameplay surface before it can resolve a Design Intent Challenge.
+
+### Recheck rule
+
+Routine recheck is not the discovery mechanism.
+
+A second pass is justified only when:
+
+- the map artifact/version changed;
+- blocked runtime evidence became available;
+- a Detection Gap was implemented;
+- explicit verification of a proposed repair is requested.
+
+Otherwise the first audit must produce the consolidated surface inventory, gaps, candidate set, engineering analysis, and verification plan.
