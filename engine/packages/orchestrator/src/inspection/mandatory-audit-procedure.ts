@@ -75,6 +75,10 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       item.authorityContractIds.length === 0 &&
       item.staleRisk !== "bounded",
   );
+  const explicitOwnership = ownershipRegistry.filter(
+    (item) =>
+      item.authorityStatus === "explicit-contract",
+  );
   const unresolvedOwnership = ownershipRegistry.filter(
     (item) =>
       item.authorityStatus ===
@@ -117,8 +121,6 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     discovery.status === "OPEN"
       ? "OPEN"
       : discovery.status === "PARTIAL"
-        ? "PARTIAL"
-        : unresolvedOwnership.length > 0
         ? "PARTIAL"
         : "CLOSED",
     "Gameplay Discovery Closure is " + discovery.status + ".",
@@ -230,7 +232,9 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ? discovery.status === "COMPLETE"
         ? "NOT_APPLICABLE"
         : "OPEN"
-      : "CLOSED",
+      : unresolvedOwnership.length > 0
+        ? "PARTIAL"
+        : "CLOSED",
     !ownershipApplicable
       ? discovery.status === "COMPLETE"
         ? "No shared/session/deferred ownership surface remains after complete discovery."
@@ -247,12 +251,17 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       obligations: [
         obligation(
           "state-authority-accounted",
-          ownershipRegistry.length > 0,
-          ownershipRegistry.every(
-            (item) => item.authoritySurfaceId.trim().length > 0,
+          explicitOwnership.length > 0,
+          explicitOwnership.every(
+            (item) =>
+              (item.authoritySurfaceId?.trim().length ?? 0) > 0,
           ),
           "Explicit state authority bindings must identify a concrete authority surface.",
-          ownershipRegistry.map((item) => item.authorityContractId),
+          explicitOwnership.flatMap((item) =>
+            item.authorityContractId === undefined
+              ? []
+              : [item.authorityContractId]
+          ),
         ),
         obligation(
           "arena-ownership-accounted",
