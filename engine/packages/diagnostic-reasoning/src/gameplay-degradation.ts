@@ -61,11 +61,11 @@ export function detectGameplayDegradation(
       kind: "capacity-reduced",
       evidenceIds,
       reason:
-        "Gameplay remains available only at reduced capacity: " +
-        String(input.observedCapacity) +
-        " of " +
+        "Player-visible gameplay capacity is reduced from " +
         String(input.expectedCapacity) +
-        ".",
+        " to " +
+        String(input.observedCapacity) +
+        ". A queue, fallback, performance safeguard, or platform limit may explain or mitigate the reduction, but does not erase the gameplay/design capacity mismatch.",
     });
   }
 
