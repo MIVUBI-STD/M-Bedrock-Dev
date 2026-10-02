@@ -236,7 +236,13 @@ export function analyzeDeveloperToolReleaseExposure(
     highRisk:
       exposures.filter(
         (item) =>
-          item.severityHint === "high",
+          item.releaseEnabled === "enabled" &&
+          item.permissionGuard === "absent" &&
+          (
+            item.exposure.impact === "progression" ||
+            item.exposure.impact === "state" ||
+            item.exposure.impact === "fairness"
+          ),
       ).length,
   };
 }
