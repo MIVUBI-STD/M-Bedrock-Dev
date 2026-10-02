@@ -40,8 +40,8 @@ export interface GameplayAuditCoverageRecord {
 
 export interface GameplayAuditCoverageResult {
   readonly disposition: "accounted" | "incomplete";
-  readonly scope: "discovered-surfaces-only";
-  readonly discoveryCompleteness: "not-proven";
+  readonly scope: "selected-artifact-discovery";
+  readonly discoveryCompleteness: "complete" | "incomplete";
   readonly surfaces: readonly GameplayAuditSurface[];
   readonly records: readonly GameplayAuditCoverageRecord[];
   readonly missingSubjectIds: readonly string[];
@@ -77,6 +77,7 @@ export function buildGameplayAuditSurfaces(
 export function evaluateGameplayAuditCoverage(
   model: GameplayIntentModel,
   records: readonly GameplayAuditCoverageRecord[],
+  discoveryComplete = false,
 ): GameplayAuditCoverageResult {
   const surfaces = buildGameplayAuditSurfaces(model);
   const expected = new Set(
@@ -119,6 +120,7 @@ export function evaluateGameplayAuditCoverage(
     .sort();
 
   const disposition =
+    discoveryComplete &&
     duplicateSubjectIds.length === 0 &&
     unknownSubjectIds.length === 0 &&
     missingSubjectIds.length === 0 &&
@@ -128,8 +130,11 @@ export function evaluateGameplayAuditCoverage(
 
   return {
     disposition,
-    scope: "discovered-surfaces-only",
-    discoveryCompleteness: "not-proven",
+    scope: "selected-artifact-discovery",
+    discoveryCompleteness:
+      discoveryComplete
+        ? "complete"
+        : "incomplete",
     surfaces,
     records: [...records],
     missingSubjectIds,
@@ -164,9 +169,14 @@ export function evaluateGameplayAuditCoverage(
               invalidBlocked.join(", ") +
               ".",
           ]),
+      ...(!discoveryComplete
+        ? [
+            "Gameplay coverage cannot be accounted until selected-artifact Gameplay Discovery Closure is COMPLETE.",
+          ]
+        : []),
       ...(disposition === "accounted"
         ? [
-            "Every discovered gameplay surface has an explicit audit disposition. This does not prove that undiscovered mechanics do not exist.",
+            "Gameplay Discovery Closure is COMPLETE and every discovered gameplay surface has one explicit audit disposition.",
           ]
         : []),
     ],
