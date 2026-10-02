@@ -45,6 +45,11 @@ function baseSource() {
     },
     repairCandidates: [],
     engineeringAnalyses: [],
+    developerToolRelease: {
+      exposures: [],
+      unguardedEnabled: 0,
+      highRisk: 0,
+    },
     releaseIdentity: {
       status: "consistent",
       observations: [],
@@ -81,6 +86,7 @@ describe("map engineering workflow projection", () => {
       repairProposals: 0,
       hiddenDefectRisks: 0,
       engineeringAnalyses: 0,
+      developerToolRisks: 0,
     });
   });
 
@@ -152,6 +158,39 @@ describe("map engineering workflow projection", () => {
     ).toBe("partial");
     expect(
       workflow.attention.hiddenDefectRisks,
+    ).toBe(1);
+  });
+
+  it("blocks release while a high-risk developer tool is exposed", () => {
+    const source = {
+      ...baseSource(),
+      developerToolRelease: {
+        exposures: [{
+          scriptId: "dev-tools",
+          sourcePath: "scripts/dev-tools.js",
+          kind: "level-skip",
+          triggerItems: ["minecraft:stick"],
+          interactionEvents: ["itemUse"],
+          permissionGuard: "absent",
+          releaseEnabled: "enabled",
+          evidence: [],
+          severityHint: "high",
+        }],
+        unguardedEnabled: 1,
+        highRisk: 1,
+      },
+    } as any;
+
+    const workflow =
+      buildMapEngineeringWorkflow(source);
+
+    expect(
+      workflow.stages.find(
+        (item) => item.id === "release",
+      )?.status,
+    ).toBe("blocked");
+    expect(
+      workflow.attention.developerToolRisks,
     ).toBe(1);
   });
 
