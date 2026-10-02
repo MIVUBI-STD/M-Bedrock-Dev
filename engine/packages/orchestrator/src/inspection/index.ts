@@ -29,6 +29,7 @@ export * from "./gameplay-semantic-model.js";
 export * from "./gameplay-surface-discovery.js";
 export * from "./gameplay-understanding-fingerprint.js";
 export * from "./gameplay-world-model.js";
+export * from "./hidden-gameplay-defect-analysis.js";
 export * from "./inspect.js";
 export * from "./inspect-artifact.js";
 export * from "./inspect-contract-source.js";
