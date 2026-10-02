@@ -41,6 +41,9 @@ import { analyzePersistenceSource } from "../persistence-source-analysis.js";
 import { analyzeRewardSources } from "../reward-source-analysis.js";
 import { analyzeEconomyContract } from "../economy-contract-analysis.js";
 import { createDiagnostic } from "../../../diagnostics/src/index.js";
+import {
+  derivePreflightKnowledgeDemand,
+} from "./preflight-knowledge-demand.js";
 
 export interface InspectionRuntimeAnalysisInput {
   target: InspectTargetProfile;
@@ -155,6 +158,22 @@ export function analyzeInspectionRuntimeState(
 
   const parsedScriptModels =
     input.parsedScripts.map((item) => item.parsed);
+  const preflightKnowledgeDemand =
+    derivePreflightKnowledgeDemand({
+      intent: input.gameplayIntent,
+      scripts: parsedScriptModels,
+      entityCount: input.parsedEntities.length,
+      target: input.target,
+    });
+  const demanded = new Set(
+    preflightKnowledgeDemand,
+  );
+  const scriptsFor = (
+    domain: import("../../../analysis-planner/src/index.js").AnalysisKnowledgeDomain,
+  ) =>
+    demanded.has(domain)
+      ? parsedScriptModels
+      : [];
   const entityAiStack =
     input.entityAiStack;
   const routeNavigationEnvironment =
@@ -204,45 +223,51 @@ export function analyzeInspectionRuntimeState(
 
   const arenaLifecycle =
     analyzeArenaLifecycleConvergence(
-      parsedScriptModels,
-      crossFileCalls,
+      scriptsFor("arena-lifecycle"),
+      demanded.has("arena-lifecycle")
+        ? crossFileCalls
+        : [],
     );
   const arenaCleanupSurfaces =
     analyzeArenaCleanupSurfaces(
-      parsedScriptModels,
+      scriptsFor("arena-lifecycle"),
     );
   const inventoryLifecycle =
     analyzeInventoryLifecycle(
-      parsedScriptModels,
+      scriptsFor("inventory-state"),
     );
   const inventoryPolicy =
     analyzeInventoryContract(
-      parsedScriptModels,
+      scriptsFor("inventory-state"),
       input.target.inventoryItemContract ?? input.target.inventoryItemPolicy,
     );
   const inventoryRestoreOwnership =
     analyzeInventoryRestoreOwnership(
-      parsedScriptModels,
+      scriptsFor("inventory-state"),
     );
   const combatLifecycle =
     analyzeCombatLifecycle(
-      parsedScriptModels,
+      scriptsFor("combat-lifecycle"),
     );
   const chunkLifecycle =
     analyzeChunkLifecycle(
-      parsedScriptModels,
+      scriptsFor("chunk-simulation"),
     );
   const persistenceSource =
     analyzePersistenceSource(
-      parsedScriptModels,
+      scriptsFor("persistence-recovery"),
     );
   const rewardSources =
     analyzeRewardSources(
-      parsedScriptModels,
-      parsedFunctionModels,
-      input.parsedEntities.map(
-        (item) => item.parsed,
-      ),
+      scriptsFor("economy-reward"),
+      demanded.has("economy-reward")
+        ? parsedFunctionModels
+        : [],
+      demanded.has("economy-reward")
+        ? input.parsedEntities.map(
+            (item) => item.parsed,
+          )
+        : [],
     );
   const combatPolicy =
     analyzeCombatContract(
@@ -257,12 +282,14 @@ export function analyzeInspectionRuntimeState(
     );
   const arenaGlobalState =
     analyzeArenaGlobalState(
-      parsedFunctionModels,
-      parsedScriptModels,
+      demanded.has("multiplayer-interleaving")
+        ? parsedFunctionModels
+        : [],
+      scriptsFor("multiplayer-interleaving"),
     );
   const arenaStateIsolation =
     analyzeArenaStateIsolation(
-      parsedScriptModels,
+      scriptsFor("multiplayer-interleaving"),
       input.target.stateAuthorityContracts ?? [],
     );
 
@@ -440,6 +467,7 @@ export function analyzeInspectionRuntimeState(
   return {
     parsedFunctionModels,
     parsedStructureSummaries,
+    preflightKnowledgeDemand,
     entityAiStack,
     routeNavigationEnvironment,
     structureRuntime,
