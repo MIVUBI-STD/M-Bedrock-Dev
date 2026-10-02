@@ -153,7 +153,7 @@ export function resolveSpatialAuthorityContract(
   query: SpatialAuthorityQuery,
 ): SpatialAuthorityResolution {
   const validationErrors =
-    validateSpatialAuthorityBehaviorContract(policy);
+    validateSpatialAuthorityBehaviorContract(contract);
   if (validationErrors.length > 0) {
     return {
       query,
