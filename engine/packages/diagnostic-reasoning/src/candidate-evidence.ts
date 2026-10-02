@@ -27,7 +27,13 @@ export interface GameplayBugCandidateRule {
   readonly requiredPredicates: readonly string[];
   readonly anyOfPredicates?: readonly string[];
   readonly playerImpactPredicates: readonly string[];
+  /**
+   * Explanatory alternatives only. Presence never suppresses a candidate.
+   * Use blockingCounterEvidencePredicates only for proof that makes the
+   * wrong gameplay state unreachable.
+   */
   readonly counterEvidencePredicates?: readonly string[];
+  readonly blockingCounterEvidencePredicates?: readonly string[];
 }
 
 export type GameplayBugCandidateEvidenceDisposition =
@@ -142,7 +148,10 @@ export function evaluateGameplayBugCandidateEvidence(
   const counterEvidenceIds: string[] = [];
   const unresolvedCounterPredicates: string[] = [];
 
-  for (const predicate of rule.counterEvidencePredicates ?? []) {
+  for (
+    const predicate of
+      rule.blockingCounterEvidencePredicates ?? []
+  ) {
     const item = byPredicate.get(predicate);
     if (!item || item.state === "unknown") {
       unresolvedCounterPredicates.push(predicate);
@@ -165,7 +174,7 @@ export function evaluateGameplayBugCandidateEvidence(
         [...new Set(unresolvedCounterPredicates)].sort(),
       missingPredicates: [],
       reasons: [
-        "Counter-evidence explains or permits the observed behavior, so the candidate is suppressed.",
+        "Blocking counter-proof demonstrates that the wrong gameplay state is unreachable. Explanatory or plausible alternatives do not suppress candidates.",
       ],
     };
   }
@@ -319,7 +328,7 @@ export function evaluateGameplayBugCandidateEvidence(
     unresolvedCounterPredicates: [],
     missingPredicates: [],
     reasons: [
-      "Required behavior evidence and material player impact are present, and declared counter-evidence checks are clear.",
+      "Required behavior evidence and material player impact are present, and no blocking counter-proof makes the wrong gameplay state unreachable.",
     ],
   };
 }

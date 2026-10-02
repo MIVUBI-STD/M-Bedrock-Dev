@@ -9,7 +9,16 @@ export interface DeclarativeDiagnosticRule {
   allOf: readonly string[];
   anyOf?: readonly string[];
   noneOf?: readonly string[];
+  /**
+   * Advisory explanations that may deserve review but never suppress a
+   * matched diagnostic on their own.
+   */
   falsePositiveGuards?: readonly string[];
+  /**
+   * Proven guards whose execution makes the diagnosed wrong state
+   * unreachable. Only these and noneOf predicates may suppress.
+   */
+  blockingGuards?: readonly string[];
   requiredProofTier?: "STATIC" | "PACKAGE" | "LOCAL_GAME" | "LIVE_GAME";
 }
 
@@ -44,11 +53,15 @@ export function evaluateDeclarativeDiagnosticRule(
     if (item?.state === "present") support.add(item.evidenceId ?? "predicate:" + predicate);
   }
   const guardPredicates = [
-    ...(rule.noneOf ?? []).filter((p) => stateOf(byPredicate, p) === "present"),
-    ...(rule.falsePositiveGuards ?? []).filter((p) => stateOf(byPredicate, p) === "present"),
+    ...(rule.noneOf ?? []).filter(
+      (p) => stateOf(byPredicate, p) === "present",
+    ),
+    ...(rule.blockingGuards ?? []).filter(
+      (p) => stateOf(byPredicate, p) === "present",
+    ),
   ];
   if (guardPredicates.length > 0) {
-    return { ruleId: rule.id, disposition: "suppressed", supportingEvidenceIds: [...support].sort(), missingPredicates, guardPredicates: [...new Set(guardPredicates)].sort(), reason: "A declared false-positive/negative guard is present." };
+    return { ruleId: rule.id, disposition: "suppressed", supportingEvidenceIds: [...support].sort(), missingPredicates, guardPredicates: [...new Set(guardPredicates)].sort(), reason: "A proven blocking guard is present and makes the diagnosed wrong state unreachable; advisory false-positive explanations do not suppress." };
   }
   if (missingPredicates.length > 0) {
     return { ruleId: rule.id, disposition: "insufficient-evidence", supportingEvidenceIds: [...support].sort(), missingPredicates: [...missingPredicates].sort(), guardPredicates: [], reason: "One or more required predicates are unknown." };
