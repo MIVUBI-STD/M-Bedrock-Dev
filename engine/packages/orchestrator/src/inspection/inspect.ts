@@ -36,6 +36,7 @@ import { buildInspectionSemanticIr } from "../semantic-ir-stage.js";
 import { semanticIrDiagnostics } from "../semantic-ir-diagnostics.js";
 import { buildGameplayIntentModel } from "../gameplay-intent-stage.js";
 import { deriveGameplayIntentSurfaceSignals } from "./gameplay-intent-surface-signals.js";
+import { deriveGameplayResourceTextSignals } from "./gameplay-intent-resource-text.js";
 import { indexSelectedArtifactContractSources } from "./inspect-contract-source.js";
 import { analyzeGameplayIntentRuntime } from "../gameplay-intent-runtime-stage.js";
 import { analyzeEntityAiStacks } from "../entity-ai-stack-analysis.js";
@@ -126,8 +127,14 @@ export async function inspectDirectory(
     ...semanticIrDiagnostics(semanticIr),
   );
 
-  const gameplaySurfaceSignals =
-    deriveGameplayIntentSurfaceSignals({
+  const gameplayResourceText =
+    await deriveGameplayResourceTextSignals(
+      root,
+      files,
+    );
+
+  const gameplaySurfaceSignals = [
+    ...deriveGameplayIntentSurfaceSignals({
       functions: parsedFunctions.map(
         (item) => ({
           identifier:
@@ -142,7 +149,9 @@ export async function inspectDirectory(
         parsedStructureModels,
       entities:
         parsedEntities,
-    });
+    }),
+    ...gameplayResourceText.signals,
+  ];
 
   const gameplayIntent = buildGameplayIntentModel({
     id: "gameplay-intent:" + artifactId,
