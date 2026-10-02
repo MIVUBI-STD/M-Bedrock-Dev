@@ -5,7 +5,7 @@ export interface GameplaySurfaceDiscoveryInput {
   readonly arenaLifecycleEvidence: boolean;
   readonly arenaCleanupEvidence: boolean;
   readonly arenaIsolationEvidence: boolean;
-  readonly arenaReplicaEvidence: boolean;
+  readonly arenaReplicaEvidence?: boolean;
   readonly stateEvidence: boolean;
   readonly chunkEvidence: boolean;
   readonly persistenceEvidence: boolean;
@@ -15,7 +15,7 @@ export interface GameplaySurfaceDiscoveryInput {
   readonly spatialEvidence: boolean;
   readonly structureEvidence: boolean;
   readonly entityEvidence: boolean;
-  readonly boundaryEvidence: boolean;
+  readonly boundaryEvidence?: boolean;
 }
 
 export interface GameplaySurfaceDiscoveryResult {
