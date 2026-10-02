@@ -38,6 +38,9 @@ import type {
   ArenaRepeatedRunValidationPlan,
 } from "../arena-repeated-run-validation.js";
 import type {
+  ArenaReplicaProofQuality,
+} from "../arena-replica-proof-quality.js";
+import type {
   ScriptSpatialAnalysis,
 } from "../script-spatial-analysis.js";
 import type {
@@ -157,6 +160,13 @@ export interface GameplayWorldModel {
       skippedLayers: readonly string[];
     };
     proof?: ArenaProofConclusionReport["conclusion"];
+    replicaIntegrity: {
+      complete: number;
+      bounded: number;
+      diverged: number;
+      incomplete: number;
+      noProof: number;
+    };
   };
   spatial: {
     resolvedScriptEffects: number;
@@ -356,6 +366,8 @@ export interface GameplayWorldModelSource {
       ArenaRepeatedRunValidationPlan;
     proofExecution?: ArenaProofExecutionPlan;
     proofConclusion?: ArenaProofConclusionReport;
+    replicaProofQuality?:
+      readonly ArenaReplicaProofQuality[];
     entitySpawnEvidence?: readonly unknown[];
   };
   scriptSpatial: ScriptSpatialAnalysis;
@@ -545,6 +557,44 @@ export function deriveGameplayWorldModel(
       ...(unresolved
         ? { reason: "Arena cleanup/reuse coverage is incomplete." }
         : {}),
+    });
+  }
+
+  const replicaProof =
+    source.arena.replicaProofQuality ?? [];
+  if (replicaProof.length > 0) {
+    const incomplete = replicaProof.filter(
+      (item) =>
+        item.status === "incomplete-proof" ||
+        item.status === "budget-exceeded" ||
+        item.status === "no-proof",
+    ).length;
+    const diverged = replicaProof.filter(
+      (item) => item.status === "diverged",
+    ).length;
+
+    runtimeSurfaces.push({
+      id: "runtime:arena-replica-integrity",
+      label: "Arena replica integrity",
+      kind: "runtime-domain",
+      status:
+        incomplete > 0
+          ? "unknown"
+          : "understood",
+      material: true,
+      ...(incomplete > 0
+        ? {
+            reason:
+              String(incomplete) +
+              " arena replica proof(s) remain incomplete or unavailable.",
+          }
+        : {}),
+      boundaries: [
+        "replicaCount=" +
+          String(replicaProof.length),
+        "divergedReplicas=" +
+          String(diverged),
+      ],
     });
   }
 
@@ -1031,6 +1081,34 @@ export function deriveGameplayWorldModel(
             proof:
               source.arena.proofConclusion.conclusion,
           }),
+      replicaIntegrity: {
+        complete:
+          replicaProof.filter(
+            (item) =>
+              item.status === "complete-proof",
+          ).length,
+        bounded:
+          replicaProof.filter(
+            (item) =>
+              item.status === "bounded-proof",
+          ).length,
+        diverged:
+          replicaProof.filter(
+            (item) =>
+              item.status === "diverged",
+          ).length,
+        incomplete:
+          replicaProof.filter(
+            (item) =>
+              item.status === "incomplete-proof" ||
+              item.status === "budget-exceeded",
+          ).length,
+        noProof:
+          replicaProof.filter(
+            (item) =>
+              item.status === "no-proof",
+          ).length,
+      },
     },
     spatial: {
       resolvedScriptEffects:
