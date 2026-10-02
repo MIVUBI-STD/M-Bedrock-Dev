@@ -6,3 +6,5 @@ export * from "./authority.js";
 export * from "./design-readiness.js";
 export * from "./gameplay-contract.js";
 export * from "./gameplay-closure.js";
+export * from "./design-intent-challenge.js";
+export * from "./mechanic-completeness.js";
