@@ -18,7 +18,7 @@ The goal is to show problems that materially affect play, not every unusual impl
 ```text
 Map Name — Bug Report
 Map Version: <map version>
-Tested Version: Minecraft Education <exact tested version>
+Tested Version: <exact tested version>
 
 Open Issues: <count>
 Blocker: <count> · Major: <count>
