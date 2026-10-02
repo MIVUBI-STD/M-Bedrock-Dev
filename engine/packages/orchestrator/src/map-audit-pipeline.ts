@@ -119,6 +119,14 @@ export interface SelectedMapAuditRun {
     | "RESOLVE_BLOCKING_STAGE"
     | "RESOLVE_DEFECTS"
     | "PREPARE_REVIEW";
+  readonly continuation: {
+    readonly owner:
+      | "ENGINE_OR_EVIDENCE"
+      | "DEFECT_RESOLUTION"
+      | "REVIEW";
+    readonly requiresNewAuditRun: boolean;
+    readonly modelMayAuthorizeCompletion: boolean;
+  };
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
   readonly readyDefects: readonly ReadyAuditDefectProjection[];
   readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
@@ -290,6 +298,24 @@ export async function runSelectedMapAudit(
           )
         ? "RESOLVE_DEFECTS" as const
         : "RESOLVE_BLOCKING_STAGE" as const;
+  const continuation =
+    allowedNextAction === "PREPARE_REVIEW"
+      ? {
+          owner: "REVIEW" as const,
+          requiresNewAuditRun: false,
+          modelMayAuthorizeCompletion: false,
+        }
+      : allowedNextAction === "RESOLVE_DEFECTS"
+        ? {
+            owner: "DEFECT_RESOLUTION" as const,
+            requiresNewAuditRun: false,
+            modelMayAuthorizeCompletion: true,
+          }
+        : {
+            owner: "ENGINE_OR_EVIDENCE" as const,
+            requiresNewAuditRun: true,
+            modelMayAuthorizeCompletion: false,
+          };
   return {
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
@@ -301,6 +327,7 @@ export async function runSelectedMapAudit(
     admission,
     currentStage,
     allowedNextAction,
+    continuation,
     modelTaskPackets,
     readyDefects,
     candidateGroups,
@@ -430,6 +457,24 @@ export function resolveSelectedMapAudit(
           )
         ? "RESOLVE_DEFECTS" as const
         : "RESOLVE_BLOCKING_STAGE" as const;
+  const continuation =
+    allowedNextAction === "PREPARE_REVIEW"
+      ? {
+          owner: "REVIEW" as const,
+          requiresNewAuditRun: false,
+          modelMayAuthorizeCompletion: false,
+        }
+      : allowedNextAction === "RESOLVE_DEFECTS"
+        ? {
+            owner: "DEFECT_RESOLUTION" as const,
+            requiresNewAuditRun: false,
+            modelMayAuthorizeCompletion: true,
+          }
+        : {
+            owner: "ENGINE_OR_EVIDENCE" as const,
+            requiresNewAuditRun: true,
+            modelMayAuthorizeCompletion: false,
+          };
 
   return {
     schemaVersion: 1,
@@ -443,6 +488,7 @@ export function resolveSelectedMapAudit(
     admission,
     currentStage,
     allowedNextAction,
+    continuation,
     modelTaskPackets,
     readyDefects,
     candidateGroups,

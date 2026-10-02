@@ -70,6 +70,7 @@ Use this before broad repository search.
 | Ordered production audit admission / first blocking stage | engine/packages/orchestrator/src/map-audit-admission.ts |
 | Typed directional gameplay-scenario component traversal / semantic stop boundaries | engine/packages/orchestrator/src/inspection/gameplay-scenario-knowledge.ts |
 | Bounded model-facing audit task packets / next-action / evidence+RIG context projection | engine/packages/orchestrator/src/map-audit-model-task.ts |
+| Canonical continuation ownership / rerun-vs-resolve-vs-review contract | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRun.continuation) |
 | Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |
 | Production runtime-target boundary / reject caller map-design contracts | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRuntimeTarget) |
 | Deterministic CONFIRMED_DEFECT_READY → AI defect projection | engine/packages/orchestrator/src/map-audit-defect-projection.ts |

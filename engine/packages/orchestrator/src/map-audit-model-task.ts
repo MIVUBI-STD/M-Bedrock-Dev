@@ -188,7 +188,7 @@ function checkpointPackets(
         knowledgeContext: [],
         unresolvedObligationIds: unresolved,
         allowedOutputs: [
-          "grounded checkpoint conclusion",
+          "diagnostic explanation of the blocking obligation",
           "missing evidence request",
           "detection gap",
         ],
@@ -197,10 +197,12 @@ function checkpointPackets(
           "inspect unrelated gameplay systems",
           "infer intent from external/stale documents",
           "change audit stage",
+          "claim the checkpoint is closed",
+          "override deterministic obligation status",
           "infer the contents of unresolvedEvidenceIds",
         ],
         stopCondition:
-          "Stop when every required obligation for this checkpoint is either satisfied by selected-artifact evidence or explicitly classified as a blocking gap.",
+          "Stop after diagnosing the current blocker and identifying the smallest evidence/engine change required. Do not close the checkpoint from model narrative; closure requires a new canonical audit run over updated evidence/engine state.",
       };
     });
 }
