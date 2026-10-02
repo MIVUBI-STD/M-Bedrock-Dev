@@ -58,6 +58,7 @@ import type { InspectionEngineeringAnalysis } from "../engineering-analysis-stag
 import type { MultiplayerStateValidationPlan } from "../multiplayer-state-validation.js";
 import type { DeveloperToolReleaseAnalysis } from "../developer-tool-release-analysis.js";
 import type { GameplayReachabilityGraph } from "../../../diagnostic-reasoning/src/index.js";
+import type { CapabilityExposureSummary } from "../capability-exposure-stage.js";
 import type { ArenaStressPlan } from "../arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "../arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "../arena-authored-source-index.js";
@@ -147,6 +148,8 @@ export interface InspectDirectoryResult {
     DeveloperToolReleaseAnalysis;
   gameplayReachability:
     GameplayReachabilityGraph;
+  capabilityExposure:
+    CapabilityExposureSummary;
   structures: number;
   parsedStructures: number;
   entities: number;
