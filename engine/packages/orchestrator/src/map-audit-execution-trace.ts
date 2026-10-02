@@ -52,6 +52,12 @@ export function deriveAuditExecutionTrace(input: {
   readonly procedure: MandatoryAuditProcedureReceipt;
 }): AuditExecutionTrace {
   const first = input.admission.firstBlockingStage;
+  const discoveryCheckpoint =
+    input.procedure.checkpoints.find(
+      (item) => item.id === "A2",
+    );
+  const evidenceCollectionComplete =
+    discoveryCheckpoint?.status === "CLOSED";
   const firstIndex =
     first === undefined ? Number.POSITIVE_INFINITY : ORDER.indexOf(first);
 
@@ -110,7 +116,7 @@ export function deriveAuditExecutionTrace(input: {
 
   return {
     policy: "evidence-collection-vs-decision-authorization",
-    evidenceCollectionComplete: true,
+    evidenceCollectionComplete,
     ...(first === undefined ? {} : { firstBlockingStage: first }),
     stages,
   };
