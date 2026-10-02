@@ -25,7 +25,7 @@ const limits = {
   expected: 180,
   observed: 180,
   reproduction: 160,
-  aiAnalysis: 420,
+  aiAnalysis: 1800,
   suggestedFix: 220,
   relevantCodeReason: 180,
   mustPreserve: 160,
