@@ -45,6 +45,10 @@ import type {
 import {
   assessSelectedMapAuditAdmission,
 } from "../map-audit-admission.js";
+import {
+  selectedMapAuditAuthorityIssues,
+  type SelectedMapAuditAuthority,
+} from "../map-audit-authority.js";
 import type {
   RuntimeExperimentDefinition,
 } from "../../../runtime-lab/src/index.js";
@@ -1049,6 +1053,11 @@ export interface BuildBugReportFromClosedAuditInput
     GameplayDefectResolutionGate;
   readonly mandatoryAuditProcedure?:
     MandatoryAuditProcedureReceipt;
+  /**
+   * Canonical production authority. Missing authority blocks the closed-audit
+   * production routes; compatibility functions remain engine-development only.
+   */
+  readonly auditAuthority?: SelectedMapAuditAuthority;
 }
 
 export function mandatoryAuditProcedurePublicationIssues(
@@ -1451,6 +1460,18 @@ export function prepareBugReportReviewFromAuditCandidates(
   input:
     PrepareBugReportReviewFromClosedAuditInput,
 ): PrepareBugReportReviewFromClosedAuditResult {
+  const authorityIssues =
+    selectedMapAuditAuthorityIssues(input.auditAuthority);
+  if (authorityIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ?? [],
+      ),
+      blocked: true,
+      reasons: authorityIssues,
+    };
+  }
   const admission = assessSelectedMapAuditAdmission({
     mandatoryAuditProcedure:
       input.mandatoryAuditProcedure,
@@ -1558,6 +1579,23 @@ export function buildBugReportFromAuditCandidatesCompatibility(
 export function buildBugReportFromAuditCandidates(
   input: BuildBugReportFromClosedAuditInput,
 ): BuildBugReportFromAuditResult {
+  const authorityIssues =
+    selectedMapAuditAuthorityIssues(input.auditAuthority);
+  if (authorityIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ?? [],
+      ),
+      promotion: {
+        ok: false,
+        issues: authorityIssues.map((message) => ({
+          code: "invalid-confirmed-defect" as const,
+          message,
+        })),
+      },
+    };
+  }
   const admission = assessSelectedMapAuditAdmission({
     mandatoryAuditProcedure:
       input.mandatoryAuditProcedure,

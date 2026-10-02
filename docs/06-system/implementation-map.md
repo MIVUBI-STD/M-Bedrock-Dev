@@ -66,6 +66,7 @@ Use this before broad repository search.
 | Mandatory gameplay audit procedure / checkpoint semantics | docs/03-analysis/mandatory-audit-procedure.md |
 | Mandatory audit procedure machine-readable projection / closure | engine/packages/orchestrator/src/inspection/mandatory-audit-procedure.ts |
 | Production selected-map audit single entry + canonical continuations | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact proof → ordered audit → resolveSelectedMapAudit when needed → review → report) |
+| Opaque production reporting authority / raw collector bypass guard | engine/packages/orchestrator/src/map-audit-authority.ts + reporting/report-defect-collector.ts |
 | Ordered production audit admission / first blocking stage | engine/packages/orchestrator/src/map-audit-admission.ts |
 | Bounded model-facing audit task packets / next-action / evidence+RIG context projection | engine/packages/orchestrator/src/map-audit-model-task.ts |
 | Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |

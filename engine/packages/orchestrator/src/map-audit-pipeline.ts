@@ -69,6 +69,9 @@ import {
   type AuditExecutionTrace,
 } from "./map-audit-execution-trace.js";
 import {
+  issueSelectedMapAuditAuthority,
+} from "./map-audit-authority.js";
+import {
   auditCandidateGroupCoverageIssues,
   groupReadyAuditDefectsForCandidateCoverage,
   type ReadyAuditCandidateGroup,
@@ -481,8 +484,15 @@ export function prepareSelectedMapAuditReview(
     };
   }
 
+  const auditAuthority =
+    issueSelectedMapAuditAuthority({
+      auditRevision: input.audit.auditRevision,
+      artifactFingerprint:
+        input.audit.identity.artifactFingerprint,
+    });
   return prepareBugReportReviewFromAuditCandidates({
     map: input.map,
+    auditAuthority,
     files: inspection.fileInventory,
     candidates: input.candidates,
     engineeringAnalyses:
@@ -583,8 +593,15 @@ export function buildSelectedMapAuditReport(
     };
   }
 
+  const auditAuthority =
+    issueSelectedMapAuditAuthority({
+      auditRevision: input.audit.auditRevision,
+      artifactFingerprint:
+        input.audit.identity.artifactFingerprint,
+    });
   return buildBugReportFromAuditCandidates({
     map: input.map,
+    auditAuthority,
     repairBy: input.repairBy,
     approved: input.approved,
     files: inspection.fileInventory,
