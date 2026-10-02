@@ -303,6 +303,63 @@ export async function inspectArtifact(
       ...finalReleaseIdentity.findings,
     ];
 
+    if (
+      arenaNativeSpatial?.canonical !== undefined
+    ) {
+      const canonicalRecords =
+        arenaNativeSpatial.canonical.records;
+
+      for (
+        const replica of
+          arenaNativeSpatial.replicas
+      ) {
+        if (
+          replica.status !==
+            "chunk-record-proof" ||
+          replica.matchesCanonical !== false ||
+          replica.fingerprint === undefined
+        ) {
+          continue;
+        }
+
+        const replicaRecords =
+          replica.fingerprint.records;
+        const ratio =
+          canonicalRecords === 0
+            ? 1
+            : replicaRecords /
+              canonicalRecords;
+
+        artifactDiagnostics.push(
+          createDiagnostic({
+            code:
+              ratio < 0.75
+                ? "ARENA_NATIVE_CONTENT_DEFICIT"
+                : "ARENA_NATIVE_SPATIAL_DIVERGENCE",
+            severity:
+              ratio < 0.75
+                ? "critical"
+                : "medium",
+            message:
+              ratio < 0.75
+                ? `Arena ${replica.arenaId} contains substantially less native chunk content than the canonical arena.`
+                : `Arena ${replica.arenaId} differs from the canonical arena in normalized native chunk content.`,
+            data: {
+              arenaId: replica.arenaId,
+              canonicalRecords,
+              replicaRecords,
+              recordCoverageRatio: ratio,
+              canonicalHash:
+                arenaNativeSpatial.canonical
+                  .hash,
+              replicaHash:
+                replica.fingerprint.hash,
+            },
+          }),
+        );
+      }
+    }
+
     for (
       const replica of
         structureInstanceProof?.replicas ?? []
