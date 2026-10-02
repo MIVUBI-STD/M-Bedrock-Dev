@@ -216,11 +216,11 @@ export function buildGameplayAuditScenarioPreset(
           flowStage: "READY_START",
           concurrentArenas: limit + 1,
           reason:
-            "Visible arena capability exceeds implemented concurrency; queue/fallback existence alone cannot prove the reduction is intended.",
+            "Visible arena capability exceeds playable concurrency. This is a gameplay/design capacity degradation even when queue/fallback behavior or platform limits explain why the implementation cannot run every visible arena at once.",
           questions: [
-            "What independent selected-artifact evidence proves the lower concurrency limit is intended?",
-            "If none exists, which player-visible capability is silently unavailable?",
-            "Does the fallback merely keep the game operational while reducing designed capacity?",
+            "How many arenas are presented as available gameplay capacity versus how many can actually run concurrently?",
+            "What technical constraint causes the reduction?",
+            "How does queue/fallback mitigate the impact without erasing the capacity mismatch?",
           ],
         }),
       );
