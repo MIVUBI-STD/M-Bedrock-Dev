@@ -9,12 +9,12 @@ import ts from "typescript";
 const CLI_PATH = "apps/cli/src/main.ts";
 const PRODUCTION_COMMAND = "audit";
 const ENGINEERING_COMMANDS = new Set([
-  "inspect",
-  "review",
-  "workflow",
-  "arena-audit",
-  "probe-plan",
-  "probe-replay",
+  "dev-inspect",
+  "dev-review",
+  "dev-workflow",
+  "dev-arena-audit",
+  "dev-probe-plan",
+  "dev-probe-replay",
 ]);
 
 function filesUnder(root) {
