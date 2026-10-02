@@ -42,7 +42,9 @@ export interface SelectedMapAuditAdmissionIssue {
     | "MISSING_PROCEDURE"
     | "PROCEDURE_BLOCKED"
     | "DISCOVERY_OPEN"
+    | "DISCOVERY_PARTIAL"
     | "GAMEPLAY_MODEL_OPEN"
+    | "GAMEPLAY_MODEL_PARTIAL"
     | "SCENARIO_MISSING"
     | "SCENARIO_OPEN"
     | "DEFECT_RESOLUTION_MISSING"
@@ -112,6 +114,15 @@ export function assessSelectedMapAuditAdmission(
       message:
         "Gameplay Discovery Closure is OPEN; later audit stages cannot authorize production continuation.",
     });
+  } else if (
+    input.gameplayDiscoveryClosure.status === "PARTIAL"
+  ) {
+    issues.push({
+      stage: "DISCOVERY",
+      code: "DISCOVERY_PARTIAL",
+      message:
+        "Gameplay Discovery Closure is PARTIAL; unresolved selected-artifact references are not a runtime-only exception and must be resolved before production continuation.",
+    });
   }
 
   if (input.gameplayClosure.status === "OPEN") {
@@ -120,6 +131,13 @@ export function assessSelectedMapAuditAdmission(
       code: "GAMEPLAY_MODEL_OPEN",
       message:
         "Gameplay Model Closure is OPEN; gameplay understanding is incomplete.",
+    });
+  } else if (input.gameplayClosure.status === "PARTIAL") {
+    issues.push({
+      stage: "UNDERSTAND",
+      code: "GAMEPLAY_MODEL_PARTIAL",
+      message:
+        "Gameplay Model Closure is PARTIAL; unknown, blocked, or unextracted material gameplay semantics must be resolved before production continuation.",
     });
   }
 
