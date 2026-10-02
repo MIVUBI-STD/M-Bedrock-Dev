@@ -11,7 +11,7 @@
     "registryFingerprint": "ecfcbeb2",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
     "proofRegistryFingerprint": "263994b8",
-    "proofInventoryFingerprint": "4d45825d"
+    "proofInventoryFingerprint": "25d2d7be"
   },
   "summary": {
     "taskCapabilities": 51,
@@ -368,7 +368,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 25,
-      "testFiles": 17,
+      "testFiles": 18,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/diagnostic-reasoning/test/audit-coverage.test.ts",
@@ -401,7 +401,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 25,
-      "testFiles": 17,
+      "testFiles": 18,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/diagnostic-reasoning/test/audit-coverage.test.ts",
