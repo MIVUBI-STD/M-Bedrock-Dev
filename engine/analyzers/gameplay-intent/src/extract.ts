@@ -43,6 +43,9 @@ const KIND_TERMS: ReadonlyArray<{
       "score", "scoring", "coin", "currency", "resource", "resources", "ledger",
       "inventory", "palette", "health", "points", "kit", "scoreboard",
       "tick", "ticks", "time", "timer", "timers", "seconds",
+      "capacity", "capacities", "concurrent", "concurrency", "limit", "limits",
+      "maximum", "minimum", "max", "min", "slot", "slots", "quota",
+      "players", "party", "parties",
       "armor", "armors", "sword", "wool", "iron", "gold",
       "diamond", "emerald",
     ],
@@ -66,7 +69,8 @@ const KIND_TERMS: ReadonlyArray<{
     kind: "policy",
     terms: [
       "policy", "permission", "permissions", "rule", "rules",
-      "restriction", "guard",
+      "restriction", "guard", "admission", "queue", "queued",
+      "throttle", "throttling",
     ],
   },
   {
