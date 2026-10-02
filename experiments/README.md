@@ -11,3 +11,9 @@ Experimental material:
 - should be deleted or promoted deliberately once a decision is made.
 
 Git history is the archive for retired experiments.
+
+## Current studies
+
+- [Attack Challenge v1.1.1 pre-test audit — workflow and learning](attack-challenge-pretest-audit-2026-10-02/workflow-and-learning.md)
+- [Attack Challenge v1.1.1 pre-test audit — findings and coverage](attack-challenge-pretest-audit-2026-10-02/findings-and-coverage.md)
+- [Attack Challenge v1.1.1 pre-test audit — machine-readable dataset](attack-challenge-pretest-audit-2026-10-02/dataset.json)
