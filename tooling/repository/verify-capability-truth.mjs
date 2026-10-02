@@ -25,6 +25,21 @@ if(!existsSync(path)){
 }
 const data=JSON.parse(readFileSync(path,"utf8"));
 const errors=[];
+const generatorPath=data.generatedFrom?.generatorPath;
+if(typeof generatorPath!=="string" || !existsSync(generatorPath)){
+  errors.push("generatedFrom generatorPath is missing or invalid");
+}else{
+  const generatorFingerprint=
+    contentFingerprint(readFileSync(generatorPath,"utf8"));
+  if(
+    generatorFingerprint !==
+      data.generatedFrom?.generatorFingerprint
+  ){
+    errors.push(
+      "Capability Truth Index is stale; regenerate after generator contract changes.",
+    );
+  }
+}
 const proofRegistryPath=data.generatedFrom?.proofRegistry;
 if(typeof proofRegistryPath!=="string" || !existsSync(proofRegistryPath)){
   errors.push("generatedFrom proofRegistry path is missing or invalid");
