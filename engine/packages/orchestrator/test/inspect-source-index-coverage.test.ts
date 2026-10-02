@@ -131,6 +131,7 @@ describe("inspection source index coverage", () => {
         relevantFiles: 2,
         indexedFiles: 2,
         parseFailures: [],
+        unsupportedRelevantFiles: [],
         complete: true,
       });
       expect(
@@ -187,6 +188,51 @@ describe("inspection source index coverage", () => {
     }
   });
 
+  it("keeps unowned gameplay-sensitive JSON as explicit discovery residue", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-index-"),
+    );
+
+    try {
+      await mkdir(join(root, "loot_tables"), {
+        recursive: true,
+      });
+      await writeFile(
+        join(root, "loot_tables", "reward.json"),
+        JSON.stringify({ pools: [] }),
+        "utf8",
+      );
+
+      const result =
+        await indexInspectionSources(
+          root,
+          "artifact:test",
+          [{
+            relativePath:
+              "loot_tables/reward.json",
+            size: 16,
+            contentHash: "loot",
+          }],
+        );
+
+      expect(result.coverage).toMatchObject({
+        relevantFiles: 1,
+        indexedFiles: 0,
+        complete: false,
+      });
+      expect(
+        result.coverage.unsupportedRelevantFiles,
+      ).toEqual([
+        "loot_tables/reward.json",
+      ]);
+    } finally {
+      await rm(root, {
+        recursive: true,
+        force: true,
+      });
+    }
+  });
+
   it("reports complete coverage for fully indexed recognized sources", async () => {
     const root = await mkdtemp(
       join(tmpdir(), "m-bedrock-index-"),
@@ -218,6 +264,7 @@ describe("inspection source index coverage", () => {
         relevantFiles: 1,
         indexedFiles: 1,
         parseFailures: [],
+        unsupportedRelevantFiles: [],
         complete: true,
       });
     } finally {
