@@ -18,16 +18,18 @@ This checklist is a publication review only. The executable checkpoint owner is 
 
 - [ ] Selected world version is defined.
 - [ ] Gameplay Surface Inventory completed.
-- [ ] Gameplay Discovery Closure is COMPLETE or scoped-safe PARTIAL.
-- [ ] Relevant source parse/index failures are zero or explicitly blocked.
-- [ ] Discovery Closure OPEN blocks comprehensive review/publication.
+- [ ] Gameplay Discovery Closure is COMPLETE.
+- [ ] Relevant source inventory balances: relevant files = indexed files + explicit parse failures.
+- [ ] Relevant source parse/index failures are zero.
+- [ ] Discovery Closure OPEN or PARTIAL blocks production continuation.
 - [ ] Every discovered gameplay surface is understood, blocked, unknown, or not-applicable.
 - [ ] No discovered surface is unaccounted.
 - [ ] Major state model includes happy, failure, retry, recovery, disconnect/reconnect, cleanup, and reuse exits.
 - [ ] Material boundaries/limits extracted.
 - [ ] Coexisting/high-risk cross-system relationships identified.
-- [ ] Gameplay Model Closure is CLOSED or PARTIAL.
-- [ ] OPEN closure blocks finalization.
+- [ ] Gameplay Model Closure is CLOSED.
+- [ ] Gameplay Model Closure OPEN or PARTIAL blocks production continuation.
+- [ ] Gameplay Scenario Closure is CLOSED or PARTIAL only for irreducible Minecraft runtime proof.
 
 ## Core understanding
 
@@ -72,7 +74,7 @@ This checklist is a publication review only. The executable checkpoint owner is 
 
 ## Coverage accounting
 
-- [ ] Every applicable audit surface is recorded as checked, blocked, or not-applicable.
+- [ ] Every applicable audit surface has an explicit accounted, blocked, or not-applicable disposition; gameplay causal links use their canonical proof states rather than a generic checked state.
 - [ ] Blocked surfaces include a reason.
 - [ ] Not-applicable surfaces include a reason.
 - [ ] Unsupported/unparsed mechanics are recorded as Detection Gap.
