@@ -42,6 +42,31 @@ Effects × Respawn
 Effects × Cleanup
 ```
 
+## Mandatory crosscheck dimensions
+
+A contradiction is not considered fully reviewed by checking only one nearby guard. Search the dimensions that are materially relevant to the scenario:
+
+```text
+guard
+scope
+exclusion
+owner             when shared/multiplayer/resource-owned
+generation        when retry/reload/reconnect/reuse/deferred work exists
+cleanup           when terminal/replay/reuse/resource release exists
+```
+
+For each contradiction distinguish:
+
+```text
+Gameplay mismatch
+vs
+Technical explanation / constraint
+vs
+Actual counter-proof
+```
+
+A platform limit, queue, fallback, performance safeguard, or implementation constraint is an explanation/mitigation unless it proves the player-visible mismatch is not real. It must not be used as blocking counter-proof by itself.
+
 ## Review pattern
 
 For each relevant intersection ask:
