@@ -72,6 +72,22 @@ If expected behavior cannot be grounded from the selected artifact, keep it unkn
 
 Bug discovery starts only after Gameplay Model Closure is CLOSED or PARTIAL. OPEN closure forbids comprehensive bug claims and finalization.
 
+## Single-pass audit discipline
+
+Default behavior is one comprehensive discovery pass before reporting.
+
+```text
+Discover all gameplay surfaces
+→ close/account the gameplay model
+→ analyze contradictions across all understood surfaces
+→ classify the complete issue set
+→ report once
+```
+
+Do not publish an early partial bug list and rely on repeated rechecks to discover the rest. Recheck is for new artifacts, changed versions, blocked evidence becoming available, or explicit verification—not as the normal discovery strategy.
+
+If Gameplay Model Closure is OPEN, report the missing/unaccounted surfaces instead of pretending the bug list is complete.
+
 ## Bug admission
 
 A confirmed defect requires:
