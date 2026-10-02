@@ -5,262 +5,31 @@ import type { GameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";
 import type { GameplayBoundaryRegistry } from "./gameplay-boundary-registry.js";
 import type { MultiplayerStateValidationPlan } from "./multiplayer-state-validation.js";
 import type { HiddenGameplayDefectAnalysis } from "./hidden-gameplay-defect-analysis.js";
-
-export type MandatoryAuditBlock =
-  | "UNDERSTAND"
-  | "MODEL"
-  | "STRESS"
-  | "PROVE"
-  | "REPORT";
-
-export type MandatoryAuditCheckpointStatus =
-  | "CLOSED"
-  | "PARTIAL"
-  | "OPEN"
-  | "NOT_APPLICABLE";
-
-export type MandatoryAuditCheckpointReasonCode =
-  | "COMPLETE"
-  | "NOT_APPLICABLE_PROVEN"
-  | "RUNTIME_PROOF_REQUIRED"
-  | "DISCOVERY_INCOMPLETE"
-  | "SCOPE_INCOMPLETE"
-  | "OBLIGATION_INCOMPLETE"
-  | "KNOWLEDGE_GAP"
-  | "CAPABILITY_GAP"
-  | "PROCEDURE_BLOCKED";
-
-export interface MandatoryAuditObligation {
-  readonly id: string;
-  readonly required: boolean;
-  readonly satisfied: boolean;
-  readonly evidenceIds: readonly string[];
-  readonly reason: string;
-}
-
-export interface MandatoryAuditCheckpointReceipt {
-  readonly id: string;
-  readonly block: MandatoryAuditBlock;
-  readonly label: string;
-  readonly status: MandatoryAuditCheckpointStatus;
-  readonly reasonCode: MandatoryAuditCheckpointReasonCode;
-  readonly blocksPublication: boolean;
-  readonly obligations: readonly MandatoryAuditObligation[];
-  readonly evidenceIds: readonly string[];
-  readonly outputIds: readonly string[];
-  readonly reason: string;
-}
-
-export interface MandatoryAuditBlockClosure {
-  readonly block: MandatoryAuditBlock;
-  readonly status: Exclude<
-    MandatoryAuditCheckpointStatus,
-    "NOT_APPLICABLE"
-  >;
-  readonly checkpointIds: readonly string[];
-  readonly openCheckpointIds: readonly string[];
-  readonly partialCheckpointIds: readonly string[];
-}
-
-export interface MandatoryAuditStateRecord {
-  readonly surfaceId: string;
-  readonly readRegions: readonly string[];
-  readonly writeRegions: readonly string[];
-  readonly clearRegions: readonly string[];
-  readonly authorityContractIds: readonly string[];
-}
-
-export interface MandatoryAuditOwnershipRecord {
-  readonly authorityContractId: string;
-  readonly authoritySurfaceId: string;
-  readonly mirrorSurfaceIds: readonly string[];
-}
-
-export interface MandatoryAuditProgressionRecord {
-  readonly subjectId: string;
-  readonly kind: "objective" | "phase" | "outcome";
-  readonly inboundEdgeIds: readonly string[];
-  readonly outboundEdgeIds: readonly string[];
-}
-
-export interface MandatoryAuditProcedureReceipt {
-  readonly schemaVersion: 1;
-  readonly policy: "mandatory-gameplay-audit-procedure";
-  readonly checkpoints: readonly MandatoryAuditCheckpointReceipt[];
-  readonly blocks: readonly MandatoryAuditBlockClosure[];
-  readonly status: "CLOSED" | "PARTIAL" | "OPEN";
-  readonly stateRegistry: readonly MandatoryAuditStateRecord[];
-  readonly ownershipRegistry: readonly MandatoryAuditOwnershipRecord[];
-  readonly progressionContracts: readonly MandatoryAuditProgressionRecord[];
-  readonly blockingCheckpointIds: readonly string[];
-  readonly reasons: readonly string[];
-}
-
-function receipt(
-  id: string,
-  block: MandatoryAuditBlock,
-  label: string,
-  status: MandatoryAuditCheckpointStatus,
-  reason: string,
-  evidenceIds: readonly string[] = [],
-  outputIds: readonly string[] = [],
-  options: {
-    readonly reasonCode?: MandatoryAuditCheckpointReasonCode;
-    readonly blocksPublication?: boolean;
-    readonly obligations?: readonly MandatoryAuditObligation[];
-  } = {},
-): MandatoryAuditCheckpointReceipt {
-  const obligations = options.obligations ?? [];
-  const unsatisfiedRequired = obligations.some(
-    (item) => item.required && !item.satisfied,
-  );
-  const effectiveStatus =
-    status === "CLOSED" && unsatisfiedRequired
-      ? "PARTIAL"
-      : status;
-  return {
-    id,
-    block,
-    label,
-    status: effectiveStatus,
-    reasonCode:
-      options.reasonCode ??
-      (effectiveStatus === "NOT_APPLICABLE"
-        ? "NOT_APPLICABLE_PROVEN"
-        : effectiveStatus === "CLOSED"
-          ? "COMPLETE"
-          : "OBLIGATION_INCOMPLETE"),
-    blocksPublication:
-      options.blocksPublication ??
-      (
-        effectiveStatus === "OPEN" ||
-        (
-          effectiveStatus === "PARTIAL" &&
-          (options.reasonCode ?? "OBLIGATION_INCOMPLETE") !==
-            "RUNTIME_PROOF_REQUIRED"
-        )
-      ),
-    obligations,
-    reason,
-    evidenceIds: [...new Set(evidenceIds)].sort(),
-    outputIds: [...new Set(outputIds)].sort(),
-  };
-}
-
-function obligation(
-  id: string,
-  required: boolean,
-  satisfied: boolean,
-  reason: string,
-  evidenceIds: readonly string[] = [],
-): MandatoryAuditObligation {
-  return {
-    id,
-    required,
-    satisfied,
-    reason,
-    evidenceIds: [...new Set(evidenceIds)].sort(),
-  };
-}
-
-function positiveNotApplicable(
-  discovery: GameplayDiscoveryClosure,
-  hasIntentSignal: boolean,
-  hasRuntimeSignal: boolean,
-): boolean {
-  return (
-    discovery.status === "COMPLETE" &&
-    !hasIntentSignal &&
-    !hasRuntimeSignal
-  );
-}
-
-function deriveStateRegistry(
-  ir: SemanticIr,
-): readonly MandatoryAuditStateRecord[] {
-  return ir.state.surfaces.map((surface) => {
-    const operations = ir.state.operations.filter(
-      (operation) => operation.surfaceId === surface.id,
-    );
-    const regionsFor = (...kinds: string[]) =>
-      [...new Set(
-        operations
-          .filter((operation) =>
-            kinds.includes(operation.operation)
-          )
-          .map((operation) => operation.executionRegionId),
-      )].sort();
-    const authorityContractIds =
-      ir.state.authorityBindings
-        .filter((binding) =>
-          binding.authoritySurfaceId === surface.id ||
-          binding.mirrorSurfaceIds.includes(surface.id)
-        )
-        .map((binding) => binding.contract.id)
-        .sort();
-    return {
-      surfaceId: surface.id,
-      readRegions: regionsFor("read", "enumerate", "size"),
-      writeRegions: regionsFor("write"),
-      clearRegions: regionsFor("clear", "delete"),
-      authorityContractIds,
-    };
-  });
-}
-
-function deriveOwnershipRegistry(
-  ir: SemanticIr,
-): readonly MandatoryAuditOwnershipRecord[] {
-  return ir.state.authorityBindings.map((binding) => ({
-    authorityContractId: binding.contract.id,
-    authoritySurfaceId: binding.authoritySurfaceId,
-    mirrorSurfaceIds: [...binding.mirrorSurfaceIds].sort(),
-  }));
-}
-
-function deriveProgressionContracts(
-  intent: GameplayIntentModel,
-): readonly MandatoryAuditProgressionRecord[] {
-  return intent.nodes
-    .filter((node) =>
-      node.kind === "objective" ||
-      node.kind === "phase" ||
-      node.kind === "outcome"
-    )
-    .map((node) => ({
-      subjectId: node.id,
-      kind: node.kind as "objective" | "phase" | "outcome",
-      inboundEdgeIds: intent.edges
-        .filter((edge) => edge.to === node.id)
-        .map((edge) => edge.id)
-        .sort(),
-      outboundEdgeIds: intent.edges
-        .filter((edge) => edge.from === node.id)
-        .map((edge) => edge.id)
-        .sort(),
-    }));
-}
-
-function blockClosure(
-  block: MandatoryAuditBlock,
-  checkpoints: readonly MandatoryAuditCheckpointReceipt[],
-): MandatoryAuditBlockClosure {
-  const relevant = checkpoints.filter((item) => item.block === block);
-  const open = relevant.filter((item) => item.status === "OPEN");
-  const partial = relevant.filter((item) => item.status === "PARTIAL");
-  return {
-    block,
-    status:
-      open.length > 0
-        ? "OPEN"
-        : partial.length > 0
-          ? "PARTIAL"
-          : "CLOSED",
-    checkpointIds: relevant.map((item) => item.id),
-    openCheckpointIds: open.map((item) => item.id),
-    partialCheckpointIds: partial.map((item) => item.id),
-  };
-}
+import {
+  deriveMandatoryOwnershipRegistry,
+  deriveMandatoryProgressionContracts,
+  deriveMandatoryStateRegistry,
+  mandatoryAuditBlockClosure as blockClosure,
+  mandatoryAuditObligation as obligation,
+  mandatoryAuditReceipt as receipt,
+  positiveNotApplicable,
+} from "./mandatory-audit-support.js";
+export type {
+  MandatoryAuditBlock,
+  MandatoryAuditBlockClosure,
+  MandatoryAuditCheckpointReasonCode,
+  MandatoryAuditCheckpointReceipt,
+  MandatoryAuditCheckpointStatus,
+  MandatoryAuditObligation,
+  MandatoryAuditOwnershipRecord,
+  MandatoryAuditProcedureReceipt,
+  MandatoryAuditProgressionRecord,
+  MandatoryAuditStateRecord,
+} from "./mandatory-audit-support.js";
+import type {
+  MandatoryAuditCheckpointReceipt,
+  MandatoryAuditProcedureReceipt,
+} from "./mandatory-audit-support.js";
 
 export function deriveMandatoryAuditProcedureReceipt(input: {
   readonly artifactId: string;
@@ -285,9 +54,9 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   const graph = hidden.scenarioAudit.graph;
   const scenarioClosure = hidden.scenarioAudit.closure;
   const defectResolution = hidden.scenarioAudit.defectResolution;
-  const stateRegistry = deriveStateRegistry(semanticIr);
-  const ownershipRegistry = deriveOwnershipRegistry(semanticIr);
-  const progressionContracts = deriveProgressionContracts(intent);
+  const stateRegistry = deriveMandatoryStateRegistry(semanticIr);
+  const ownershipRegistry = deriveMandatoryOwnershipRegistry(semanticIr);
+  const progressionContracts = deriveMandatoryProgressionContracts(intent);
   const demanded = new Set(world.analysisDemand ?? []);
   const deferredRelations = semanticIr.temporal.relations.filter(
     (relation) =>
@@ -973,12 +742,20 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   const cleanupApplicable =
     world.arenas.cleanup.acquiredSurfaces > 0 ||
     world.arenas.cleanup.resourceLedger.resources > 0;
+  const cleanupDemand =
+    cleanupApplicable ||
+    world.arenas.detected ||
+    deferredRelations.length > 0 ||
+    inventoryApplicable ||
+    world.entities.definitions > 0 ||
+    world.structures.loads > 0 ||
+    world.chunks.tickingAreaAcquires > 0;
   checkpoint.push(receipt(
     "C7",
     "STRESS",
     "Cleanup Ledger",
     !cleanupApplicable
-      ? discovery.status === "COMPLETE"
+      ? discovery.status === "COMPLETE" && !cleanupDemand
         ? "NOT_APPLICABLE"
         : "OPEN"
       : world.arenas.cleanup.resourceLedger.missing > 0 ||
@@ -987,9 +764,9 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         : "CLOSED",
     cleanupApplicable
       ? "Cleanup resources and terminal coverage are accounted."
-      : discovery.status === "COMPLETE"
-        ? "No material acquired cleanup resource remains after complete discovery."
-        : "Cleanup applicability cannot close while discovery is incomplete.",
+      : discovery.status === "COMPLETE" && !cleanupDemand
+        ? "No material mutable resource requiring cleanup remains after complete discovery."
+        : "Cleanup obligations are expected from detected mutable gameplay resources but no complete cleanup ledger is available.",
     ["analysis:arena-lifecycle"],
     ["CleanupLedger"],
     {
@@ -1009,20 +786,27 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   const repeated = graph.scenarios.find(
     (scenario) => scenario.label === "repeated-run",
   );
+  const reuseDemand =
+    world.arenas.detected ||
+    intent.edges.some(
+      (edge) =>
+        edge.kind === "resets" ||
+        edge.kind === "recovers-to",
+    );
   checkpoint.push(receipt(
     "C8",
     "STRESS",
     "Second-Run Equivalence",
     repeated
       ? "CLOSED"
-      : discovery.status === "COMPLETE" && !world.arenas.detected
+      : discovery.status === "COMPLETE" && !reuseDemand
         ? "NOT_APPLICABLE"
         : "OPEN",
     repeated
       ? "Repeated-run scenario is compiled and checked through shared lifecycle dependencies."
-      : discovery.status === "COMPLETE" && !world.arenas.detected
-        ? "No replay/reuse surface is present after complete discovery."
-        : "Replay/reuse applicability is unresolved; detected arena/session lifecycle requires explicit repeated-run accounting.",
+      : discovery.status === "COMPLETE" && !reuseDemand
+        ? "No replay/reuse/reset/recovery surface is present after complete discovery."
+        : "Replay/reuse applicability is unresolved; detected reset/recovery or arena lifecycle requires explicit repeated-run accounting.",
     repeated ? [repeated.id] : [],
     ["SecondRunEquivalenceAssessment"],
     {
@@ -1052,6 +836,17 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     },
   ));
 
+  const crossSystemDemand =
+    [
+      demanded.has("arena-lifecycle"),
+      demanded.has("multiplayer-interleaving"),
+      demanded.has("combat-lifecycle"),
+      demanded.has("inventory-state"),
+      demanded.has("persistence-recovery"),
+      demanded.has("economy-reward"),
+      demanded.has("temporal-ownership"),
+    ].filter(Boolean).length >= 2;
+
   const crossSystemScenarios = graph.scenarios.filter(
     (scenario) =>
       [
@@ -1069,14 +864,14 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Cross-System Activation",
     crossSystemScenarios.length > 0
       ? "CLOSED"
-      : discovery.status === "COMPLETE"
+      : discovery.status === "COMPLETE" && !crossSystemDemand
         ? "NOT_APPLICABLE"
         : "OPEN",
     crossSystemScenarios.length > 0
       ? "Applicable cross-system scenario families are activated."
-      : discovery.status === "COMPLETE"
-        ? "No high-value cross-system intersection was activated after complete discovery."
-        : "Cross-system applicability cannot close while discovery is incomplete.",
+      : discovery.status === "COMPLETE" && !crossSystemDemand
+        ? "No high-value cross-system intersection is demanded after complete discovery."
+        : "Multiple gameplay domains coexist but no cross-system scenario was activated.",
     crossSystemScenarios.map((item) => item.id),
     ["ActivatedCrossSystemScenarioSet"],
   ));
