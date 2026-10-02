@@ -66,7 +66,7 @@ export async function deriveGameplayResourceTextSignals(
     const path =
       file.relativePath.replaceAll("\\", "/");
     if (
-      !//texts/[^/]+.lang$/i.test(
+      !/\/texts\/[^/]+\.lang$/i.test(
         "/" + path,
       )
     ) {
