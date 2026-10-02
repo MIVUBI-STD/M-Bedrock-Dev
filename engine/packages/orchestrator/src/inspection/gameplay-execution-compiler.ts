@@ -203,6 +203,223 @@ function runtimeComponents(
   return output;
 }
 
+function runtimeEdgeState(
+  componentId: string,
+  world: GameplayWorldModel,
+): Pick<GameplayExecutionEdge, "status" | "reason"> {
+  switch (componentId) {
+    case "runtime:arena": {
+      const reduced =
+        world.arenas.count !== undefined &&
+        world.arenas.safeConcurrentArenas !== undefined &&
+        world.arenas.safeConcurrentArenas !== null &&
+        world.arenas.safeConcurrentArenas < world.arenas.count;
+      const isolationGap =
+        world.arenas.isolation.sharedGlobal > 0 ||
+        world.arenas.globalState.unleasedArenaMutations > 0;
+      if (reduced || isolationGap) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Arena analyzer reports reduced playable concurrency or cross-arena ownership/isolation evidence that contradicts the scenario dependency.",
+        };
+      }
+      if (
+        world.arenas.isolation.unknown > 0 ||
+        world.arenas.globalState.unauditedArenaMutations > 0 ||
+        world.arenas.lifecycle.unresolved > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Arena lifecycle/isolation evidence remains unresolved.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason: "Arena ownership/capacity evidence has no unresolved contradiction for this dependency.",
+      };
+    }
+    case "runtime:chunks":
+      if (
+        world.chunks.acquireWithoutRelease > 0 ||
+        world.chunks.releaseUnreachable > 0 ||
+        world.chunks.capacityUncheckedLeases > 0 ||
+        world.chunks.unguardedDeferredChunkWork > 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Chunk/ticking analysis found lifecycle, capacity, or deferred-work gaps that can break simulation ownership.",
+        };
+      }
+      if (
+        world.chunks.readinessUnverifiedLeases > 0 ||
+        world.chunks.cleanupOrderUnproven > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Chunk readiness or cleanup ordering remains unproven.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason: "Chunk/ticking ownership is resolved for the mapped gameplay dependency.",
+      };
+    case "runtime:entities":
+      if (
+        world.entities.aiStack.targetedStackIncomplete > 0 ||
+        world.entities.aiStack.navigationWithoutMovement > 0 ||
+        world.entities.aiStack.targetedWithoutNavigation > 0 ||
+        world.entities.navigationEnvironment.incompatible > 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Entity AI/navigation analysis contains an incomplete or incompatible actor path required by gameplay.",
+        };
+      }
+      if (
+        world.entities.staticAnalysisLimits > 0 ||
+        world.entities.navigationEnvironment.unresolved > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Entity behavior/navigation still has unresolved evidence.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason: "Entity lifecycle/navigation evidence supports the mapped gameplay dependency.",
+      };
+    case "runtime:combat":
+      if (
+        world.combat.projectileCleanupGap > 0 ||
+        world.combat.hurtOnlyTerminalRisk > 0 ||
+        world.combat.policy.reviveContractContradictions > 0 ||
+        world.combat.policy.projectileCleanupContractGap > 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Combat lifecycle analysis found a player-state, terminal, revive, or projectile contradiction.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason: "Combat lifecycle evidence supports the mapped gameplay dependency.",
+      };
+    case "runtime:inventory":
+      if (
+        world.inventory.partialResets > 0 ||
+        world.inventory.copyMutationRisks > 0 ||
+        world.inventory.restoreOwnership.multipleRestoreOwners > 0 ||
+        world.inventory.policy.uncoveredItemClasses > 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Inventory/equipment analysis found reset, ownership, or item-policy gaps affecting player state.",
+        };
+      }
+      if (
+        world.inventory.unresolvedEquipmentSlotEvidence > 0 ||
+        world.inventory.restoreOwnership.unknownIdentityGrants > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Inventory identity/equipment evidence remains unresolved.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason: "Inventory lifecycle evidence supports the mapped gameplay dependency.",
+      };
+    case "runtime:persistence":
+      if (
+        (world.persistence?.appendWithoutClear ?? 0) > 0 ||
+        (world.persistence?.worldScopedAppendWithoutClear ?? 0) > 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Persistence analysis found state that can survive beyond its intended gameplay lifecycle.",
+        };
+      }
+      if (
+        (world.persistence?.unknownScope ?? 0) > 0 ||
+        (world.persistence?.unknownLifetime ?? 0) > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Persistence scope/lifetime remains unresolved.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason: "Persistence/recovery evidence supports the mapped gameplay dependency.",
+      };
+    case "runtime:structures":
+      if (
+        world.structures.unresolvedLoads > 0 ||
+        world.structures.transitionResidueRisks > 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "World/structure analysis found unresolved setup or transition-residue behavior.",
+        };
+      }
+      if (world.structures.transitionResidueUnresolved > 0) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Structure transition behavior remains unresolved.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason: "World/structure setup evidence supports the mapped gameplay dependency.",
+      };
+    case "runtime:economy":
+      if (
+        world.economy.deathRewardSourceOverlapCandidates > 0 ||
+        world.economy.pickupCurrencyWithoutConsumeCandidates > 0 ||
+        world.economy.rewardPathsWithoutIdempotency > 0 ||
+        world.economy.policy.terminalRewardResultCommitUnproven > 0
+      ) {
+        return {
+          status: "CONTRADICTED",
+          reason:
+            "Economy/reward analysis found duplicate, unconsumed, non-idempotent, or terminal-commit risk.",
+        };
+      }
+      if (
+        world.economy.unresolvedEngineLootTables > 0 ||
+        world.economy.deathRewardSourceOverlapUnresolved > 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Economy/reward evidence remains unresolved.",
+        };
+      }
+      return {
+        status: "PROVEN",
+        reason: "Economy/reward evidence supports the mapped gameplay dependency.",
+      };
+    default:
+      return {
+        status: "DETECTION_GAP",
+        reason: "No runtime-domain resolver is available for this gameplay dependency.",
+      };
+  }
+}
+
 function runtimeScenarioAffinity(
   componentId: string,
   scenario: GameplayExecutionScenario,
@@ -458,11 +675,10 @@ export function compileGameplayExecutionGraph(
         toComponentId: anchorId,
         purpose: component.gameplayPurpose,
         evidenceIds: [...component.evidenceIds],
-        status: component.evidenceIds.length > 0 ? "PROVEN" : "DETECTION_GAP",
-        reason:
-          component.evidenceIds.length > 0
-            ? "Runtime-domain evidence is mapped to a concrete gameplay scenario."
-            : "Runtime-domain component has no selected-artifact evidence for this scenario.",
+        ...runtimeEdgeState(
+          component.id,
+          input.world,
+        ),
       });
     }
   }
