@@ -43,3 +43,23 @@ Expected Behavior and Actual Behavior may come from different evidence types, bu
 Runtime observation proves what happened. It does not import intent from another version or external document.
 
 Historical/reference material is comparison input only when explicitly requested.
+
+## Gameplay Model Closure
+
+`assessGameplayModelClosure()` is the pre-bug completeness gate.
+
+It separates:
+
+```text
+CLOSED  = all discovered gameplay surfaces accounted and the major state model is complete
+PARTIAL = all surfaces accounted, but material boundaries or surfaces remain blocked/unknown
+OPEN    = unaccounted gameplay surfaces or incomplete major state model
+```
+
+Rules:
+
+- OPEN blocks comprehensive audit publication.
+- PARTIAL allows analysis only for understood surfaces; unresolved surfaces remain explicit.
+- CLOSED permits comprehensive contradiction analysis.
+- Unknown never becomes Designed Behavior automatically.
+- Physical availability does not prove concurrent playability.
