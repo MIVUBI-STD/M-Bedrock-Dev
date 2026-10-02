@@ -8,3 +8,4 @@ export * from "./gameplay-contract.js";
 export * from "./gameplay-closure.js";
 export * from "./design-intent-challenge.js";
 export * from "./mechanic-completeness.js";
+export * from "./state-closure.js";
