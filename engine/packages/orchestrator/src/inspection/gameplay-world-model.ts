@@ -212,6 +212,22 @@ export interface GameplayWorldModel {
     unguardedDeferredChunkWork: number;
     entityResidencyObservability:
       "complete" | "partial" | "absent";
+    leases: readonly {
+      scriptId: string;
+      leaseKey?: string;
+      acquireRegions: readonly string[];
+      releaseRegions: readonly string[];
+      capacityCheckRegions: readonly string[];
+      status:
+        | "paired"
+        | "acquire-without-release"
+        | "release-without-acquire"
+        | "release-unreachable"
+        | "cleanup-order-unproven"
+        | "dynamic-key"
+        | "capacity-unchecked"
+        | "readiness-unverified";
+    }[];
   };
   economy: {
     sourceKinds: readonly RewardSourceKind[];
@@ -1192,6 +1208,19 @@ export function deriveGameplayWorldModel(
         source.chunkLifecycle?.unguardedDeferredChunkWork ?? 0,
       entityResidencyObservability:
         source.chunkLifecycle?.entityResidencyObservability ?? "absent",
+      leases:
+        source.chunkLifecycle?.leases.map((lease) => ({
+          scriptId: lease.scriptId,
+          ...(lease.leaseKey === undefined
+            ? {}
+            : { leaseKey: lease.leaseKey }),
+          acquireRegions: [...lease.acquireRegions],
+          releaseRegions: [...lease.releaseRegions],
+          capacityCheckRegions: [
+            ...lease.capacityCheckRegions,
+          ],
+          status: lease.status,
+        })) ?? [],
     },
     economy: {
       sourceKinds:

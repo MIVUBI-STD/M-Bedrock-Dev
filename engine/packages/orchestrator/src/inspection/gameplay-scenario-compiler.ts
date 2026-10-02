@@ -237,9 +237,30 @@ function runtimeComponents(
   return output;
 }
 
+function normalizedLocator(value: string): string {
+  return value.replaceAll("\\", "/").toLowerCase();
+}
+
+function scriptMatchesScenarioScope(
+  scriptId: string,
+  sourceLocators: readonly string[],
+): boolean {
+  const script = normalizedLocator(scriptId);
+  return sourceLocators.some((locator) => {
+    const normalized = normalizedLocator(locator);
+    return (
+      normalized === script ||
+      normalized.endsWith("/" + script) ||
+      normalized.includes("/" + script + ".") ||
+      script.endsWith("/" + normalized)
+    );
+  });
+}
+
 function runtimeEdgeState(
   componentId: string,
   world: GameplayWorldModel,
+  sourceLocators: readonly string[] = [],
 ): Pick<GameplayCausalLink, "status" | "reason"> {
   switch (componentId) {
     case "runtime:arena": {
@@ -274,7 +295,7 @@ function runtimeEdgeState(
         reason: "Arena ownership/capacity evidence has no unresolved contradiction for this dependency.",
       };
     }
-    case "runtime:chunks":
+    case "runtime:chunks": {
       if (
         world.chunks.tickingAreaAcquires === 0 &&
         world.chunks.tickingAreaReadinessStates === 0 &&
@@ -286,32 +307,95 @@ function runtimeEdgeState(
             "This gameplay scenario requires explicit chunk/simulation ownership, but the selected artifact exposes no ticking-area acquisition/readiness mechanism for the dependency.",
         };
       }
-      if (
-        world.chunks.acquireWithoutRelease > 0 ||
-        world.chunks.releaseUnreachable > 0 ||
-        world.chunks.capacityUncheckedLeases > 0 ||
-        world.chunks.unguardedDeferredChunkWork > 0
-      ) {
+
+      const badStatuses = new Set([
+        "acquire-without-release",
+        "release-unreachable",
+        "capacity-unchecked",
+      ]);
+      const unresolvedStatuses = new Set([
+        "readiness-unverified",
+        "cleanup-order-unproven",
+        "dynamic-key",
+      ]);
+      const scopedLeases =
+        sourceLocators.length === 0
+          ? []
+          : world.chunks.leases.filter((lease) =>
+              scriptMatchesScenarioScope(
+                lease.scriptId,
+                sourceLocators,
+              )
+            );
+      const scopedBad = scopedLeases.filter((lease) =>
+        badStatuses.has(lease.status)
+      );
+      const scopedUnresolved = scopedLeases.filter((lease) =>
+        unresolvedStatuses.has(lease.status)
+      );
+
+      if (scopedBad.length > 0) {
         return {
           status: "CONTRADICTED",
           reason:
-            "Chunk/ticking analysis found lifecycle, capacity, or deferred-work gaps that can break simulation ownership.",
+            "Scoped chunk/ticking lease evidence for this scenario contains: " +
+            scopedBad
+              .map((lease) =>
+                lease.scriptId +
+                ":" +
+                (lease.leaseKey ?? "<dynamic>") +
+                "=" +
+                lease.status
+              )
+              .join(", ") +
+            ".",
         };
       }
-      if (
+
+      if (scopedUnresolved.length > 0) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Scoped chunk/ticking lease evidence for this scenario remains unresolved: " +
+            scopedUnresolved
+              .map((lease) =>
+                lease.scriptId +
+                ":" +
+                (lease.leaseKey ?? "<dynamic>") +
+                "=" +
+                lease.status
+              )
+              .join(", ") +
+            ".",
+        };
+      }
+
+      const aggregateProblem =
+        world.chunks.acquireWithoutRelease > 0 ||
+        world.chunks.releaseUnreachable > 0 ||
+        world.chunks.capacityUncheckedLeases > 0 ||
+        world.chunks.unguardedDeferredChunkWork > 0 ||
         world.chunks.readinessUnverifiedLeases > 0 ||
-        world.chunks.cleanupOrderUnproven > 0
+        world.chunks.cleanupOrderUnproven > 0;
+
+      if (
+        aggregateProblem &&
+        sourceLocators.length > 0 &&
+        scopedLeases.length === 0
       ) {
         return {
           status: "DETECTION_GAP",
           reason:
-            "Chunk readiness or cleanup ordering remains unproven.",
+            "Chunk/ticking problems exist elsewhere in the selected artifact, but none are source-correlated to this scenario. Do not contaminate this scenario with a domain-global contradiction.",
         };
       }
+
       return {
         status: "PROVEN",
-        reason: "Chunk/ticking ownership is resolved for the mapped gameplay dependency.",
+        reason:
+          "Chunk/ticking ownership has no scoped contradiction for the mapped gameplay dependency.",
       };
+    }
     case "runtime:entities":
       if (
         world.entities.aiStack.targetedStackIncomplete > 0 ||
@@ -829,6 +913,25 @@ export function compileGameplayScenarioGraph(
               (item) =>
                 item.requirementId === requirement.id,
             );
+      const sourceEvidenceIds = new Set(
+        [
+          ...(requirement?.subjectIds ?? []),
+          ...(requirement?.componentIds ?? []),
+        ].flatMap((id) => {
+          const node = input.intent.nodes.find(
+            (item) => item.id === id,
+          );
+          return node?.evidenceIds ?? [];
+        }),
+      );
+      const sourceLocators = input.intent.evidence
+        .filter(
+          (item) =>
+            sourceEvidenceIds.has(item.id) &&
+            item.scope === "selected-artifact",
+        )
+        .map((item) => item.locator)
+        .filter(Boolean);
 
       causalLinks.push({
         id: "edge:" + scenarioId + ":" + component.id,
@@ -863,6 +966,7 @@ export function compileGameplayScenarioGraph(
         ...runtimeEdgeState(
           component.id,
           input.world,
+          sourceLocators,
         ),
       });
     }

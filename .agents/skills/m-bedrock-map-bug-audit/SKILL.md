@@ -140,6 +140,8 @@ Every material scenario must account for its causal links. Valid Gameplay Causal
 
 Runtime-domain causal links must carry the originating RIG requirement, scenario scope, subject/component scope, and execution evidence. A domain-wide analyzer counter alone is not sufficient provenance for report admission.
 
+When an analyzer exposes scoped findings (for example script/region chunk leases), causal contradiction must prefer those scoped findings. Aggregate counters may prioritize follow-up, but they must not automatically contaminate unrelated scenarios.
+
 Every `CONTRADICTED` Gameplay Causal Link must enter Gameplay Defect Resolution before report review. The only allowed final dispositions are:
 
 - `CONFIRMED_DEFECT_READY` — gameplay trigger, consequence, expected outcome, actual outcome, and affected scope are complete;
