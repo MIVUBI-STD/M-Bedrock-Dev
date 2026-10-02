@@ -15,6 +15,8 @@ The goal is to show problems that materially affect play, not every unusual impl
 
 ## Default compact preview
 
+ChatGPT default preview is intentionally issue-only:
+
 ```text
 Map Name — Bug Report
 Map Version: <map version>
@@ -22,19 +24,13 @@ Tested Version: <exact tested version>
 
 Open Issues: <count>
 Blocker: <count> · Major: <count>
+
+# | Severity | Category | Issue
 ```
 
-Then render one compact two-column table per bug:
+Do not show tester checklists, work checklists, reproduction steps, solution, Expected/Observed, or Technical Analysis in the default chat preview.
 
-| #1 · BLOCKER | Match cannot restart |
-|---|---|
-| **Issue** | Player-visible gameplay problem + impact. |
-| **Bug Trigger (In-Game)** | ☐ Exact tester action 1<br>☐ Exact tester action 2 |
-| **Result** | Observed + Expected. |
-| **Solution** | Supported change, when available. |
-| **Work Checklist** | ☐ Reproduce · ☐ Fix · ☐ Retest · ☐ Regression check |
-
-Checklist marks are presentation-only working aids. They do not mutate canonical bug status.
+Those operational details belong in HTML or explicit full-detail mode.
 
 ## Issue rule
 
@@ -114,16 +110,8 @@ Do not generate canonical Bug Report V2 or HTML while any proposed bug has no de
 
 ## Full-detail formatting
 
-Full mode preserves Technical Analysis line breaks and headings. Do not collapse structured engineering analysis into one paragraph.
+Full mode is opt-in. It may show reproduction, Observed/Expected, Solution, Technical Analysis, Relevant Code, and Must Preserve when the user explicitly asks for detail.
 
-Recommended reading order:
+Chat full mode still does **not** use interactive checklist semantics. HTML owns checkable tester/work workflows.
 
-```text
-Issue
-→ Tester Checklist
-→ Observed / Expected
-→ Solution
-→ Work Checklist
-→ Technical Analysis
-→ Relevant Code / Must Preserve
-```
+Preserve Technical Analysis line breaks and headings; do not collapse structured engineering analysis into one paragraph.
