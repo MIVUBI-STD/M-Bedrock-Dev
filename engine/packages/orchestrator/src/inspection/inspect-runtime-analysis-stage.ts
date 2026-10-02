@@ -332,6 +332,12 @@ export function analyzeInspectionRuntimeState(
             declaredArenaCount:
               scriptSafeConfig.resolvedArenaCount,
           }),
+      ...(scriptSafeConfig.resolvedArenaConcurrencyLimit === undefined
+        ? {}
+        : {
+            declaredConcurrentArenaLimit:
+              scriptSafeConfig.resolvedArenaConcurrencyLimit,
+          }),
     });
   if (arenaCapacity.report) {
     diagnostics.push(
