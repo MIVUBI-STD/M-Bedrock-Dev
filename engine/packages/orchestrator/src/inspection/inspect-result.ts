@@ -26,6 +26,7 @@ import { projectMapEngineeringAssessment } from "../map-engineering-assessment.j
 import { analyzeHiddenGameplayDefects } from "./hidden-gameplay-defect-analysis.js";
 import { buildGameplayBoundaryRegistry } from "./gameplay-boundary-registry.js";
 import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";
+import { deriveMultiplayerStateValidationPlan } from "./multiplayer-state-validation.js";
 import { deriveArenaAuthoredSpatialSources } from "../arena-authored-source-index.js";
 
 type SourceIndex = Awaited<
@@ -347,6 +348,10 @@ export function buildInspectionResult(
       arenaCapacity,
       target: input.target,
     });
+  const multiplayerStateValidation =
+    deriveMultiplayerStateValidationPlan(
+      input.gameplayIntent,
+    );
 
   const reliability = deriveReliabilityFingerprint({
     mapId: input.artifactId,
@@ -413,6 +418,7 @@ export function buildInspectionResult(
     hiddenGameplayDefects,
     gameplayBoundaries,
     engineeringAnalyses,
+    multiplayerStateValidation,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
