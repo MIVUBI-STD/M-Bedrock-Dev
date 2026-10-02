@@ -145,3 +145,48 @@ No module may redefine another module's result as final bug severity.
 ## First-pass requirement
 
 These analyses are part of the consolidated first audit pass. They must not be deferred to a routine recheck merely because the happy path works.
+
+
+## Engineering Analysis Depth
+
+**Owner:** `engine/packages/diagnostic-reasoning/src/engineering-analysis.ts`
+
+Use structured engineering analysis only when the finding materially depends on multiple causes, platform/resource constraints, or multiple evidence channels.
+
+It owns:
+
+```text
+Symptom
+→ Immediate Cause
+→ Root Cause
+→ Gameplay Consequence
+→ Quantitative / Platform Constraints
+→ Evidence Convergence
+→ Repair Directions
+→ Verification Scenario
+```
+
+Do not make every bug verbose. Simple defects remain compact.
+
+### Evidence convergence
+
+Independent channels can include:
+
+- source;
+- player-visible world;
+- runtime;
+- tester;
+- player/classroom feedback;
+- platform constraints.
+
+Multi-source convergence strengthens explanation but does not replace intent or confirmation gates.
+
+### Constraint-aware repair
+
+A repair direction is invalid if it violates a known platform, geometry, capacity, compatibility, or gameplay-preservation constraint.
+
+Alternatives should state what they solve and what still needs validation.
+
+### Projection
+
+Engineering Analysis is internal structured reasoning. It is projected into the existing Bug Report V2 `Technical Analysis` field. It does not create another persisted report schema.
