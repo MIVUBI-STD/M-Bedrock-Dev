@@ -1368,6 +1368,8 @@ export function deriveGameplayWorldModel(
           ?.rewardPathsWithoutIdempotency ?? 0,
       dropCleanupSurfaces:
         source.rewardSources?.dropCleanupSurfaces ?? 0,
+      worldDropRewardPathsWithoutCleanup:
+        source.rewardSources?.worldDropRewardPathsWithoutCleanup ?? 0,
       policy: {
         configured:
           source.economyPolicy?.configured ?? false,
@@ -1399,6 +1401,20 @@ export function deriveGameplayWorldModel(
           source.economyPolicy
             ?.terminalRewardResultCommitUnproven ?? 0,
       },
+      paths:
+        source.rewardSources?.paths.map((item) => ({
+          scriptId: item.scriptId,
+          trigger: item.trigger,
+          callbackRegion: item.callbackRegion,
+          reachableRegions: [...item.reachableRegions],
+          inventoryGrants: item.inventoryGrants,
+          worldDrops: item.worldDrops,
+          lootCommands: item.lootCommands,
+          scoreCredits: item.scoreCredits,
+          scoreWrites: item.scoreWrites,
+          itemConsumes: item.itemConsumes,
+          idempotencyGuards: item.idempotencyGuards,
+        })) ?? [],
     },
     combat: {
       hurtHandlers:
@@ -1513,6 +1529,20 @@ export function deriveGameplayWorldModel(
           source.inventoryPolicy
             ?.unknownDrops ?? 0,
       },
+      assessments:
+        source.inventoryLifecycle?.assessments.map((item) => ({
+          scriptId: item.scriptId,
+          executionRegion: item.executionRegion,
+          status: item.status,
+          itemGrants: item.itemGrants,
+          itemDrops: item.itemDrops,
+        })) ?? [],
+      restoreConflicts:
+        source.inventoryRestoreOwnership?.conflicts.map((item) => ({
+          lifecycleEvent: item.lifecycleEvent,
+          itemIdentifier: item.itemIdentifier,
+          ownerCallbackRegions: [...item.ownerCallbackRegions],
+        })) ?? [],
     },
     state: {
       semanticSurfaces:
