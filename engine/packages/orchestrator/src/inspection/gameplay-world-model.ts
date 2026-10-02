@@ -35,6 +35,9 @@ import type {
   ArenaProofExecutionPlan,
 } from "../arena-proof-execution-plan.js";
 import type {
+  ArenaRepeatedRunValidationPlan,
+} from "../arena-repeated-run-validation.js";
+import type {
   ScriptSpatialAnalysis,
 } from "../script-spatial-analysis.js";
 import type {
@@ -142,6 +145,11 @@ export interface GameplayWorldModel {
       status: "planned" | "unavailable";
       totalNominalPlayers?: number;
       scenarios?: number;
+    };
+    repeatedRun?: {
+      runCounts: readonly number[];
+      stages: number;
+      compareSurfaces: readonly string[];
     };
     proofExecution?: {
       mode: ArenaProofExecutionPlan["mode"];
@@ -344,6 +352,8 @@ export interface GameplayWorldModelSource {
     stateIsolation?: ArenaStateIsolationAnalysis;
     globalState?: ArenaGlobalStateAnalysis;
     stressPlan?: ArenaStressPlan;
+    repeatedRunPlan?:
+      ArenaRepeatedRunValidationPlan;
     proofExecution?: ArenaProofExecutionPlan;
     proofConclusion?: ArenaProofConclusionReport;
     entitySpawnEvidence?: readonly unknown[];
@@ -977,6 +987,28 @@ export function deriveGameplayWorldModel(
           : {
               status: "unavailable",
             },
+      ...(source.arena.repeatedRunPlan === undefined
+        ? {}
+        : {
+            repeatedRun: {
+              runCounts: [
+                ...source.arena.repeatedRunPlan
+                  .runCounts,
+              ],
+              stages:
+                source.arena.repeatedRunPlan
+                  .stages.length,
+              compareSurfaces: [
+                ...new Set(
+                  source.arena.repeatedRunPlan
+                    .stages.flatMap(
+                      (stage) =>
+                        stage.compareSurfaces,
+                    ),
+                ),
+              ].sort(),
+            },
+          }),
       ...(source.arena.proofExecution === undefined
         ? {}
         : {
