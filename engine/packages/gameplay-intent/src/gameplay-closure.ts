@@ -75,7 +75,10 @@ export function buildIntentClosureSurfaces(
         node.kind === "phase" ||
         node.kind === "state" ||
         node.kind === "lifecycle" ||
-        node.kind === "outcome",
+        node.kind === "outcome" ||
+        node.kind === "resource" ||
+        node.kind === "spatial-region" ||
+        node.kind === "policy",
       ...(unknownIds.length === 0
         ? {}
         : {
