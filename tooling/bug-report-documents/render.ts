@@ -119,7 +119,7 @@ function technicalBlock(
   value: string,
 ): string {
   return (
-    '<details class="technical" open>' +
+    '<details class="technical">' +
     '<summary>Technical Analysis</summary>' +
     '<div class="technical-text">' +
     escapeHtml(value) +
@@ -550,6 +550,7 @@ th {
   .issue-card { break-inside:avoid-page; }
   .technical { display:block; }
   .technical summary { list-style:none; }
+  .technical > * { display:block !important; }
   input[type="checkbox"] {
     appearance:none;
     width:11px;
