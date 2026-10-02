@@ -78,6 +78,7 @@ export interface MandatoryAuditOwnershipRecord {
 
 export interface MandatoryAuditProgressionRecord {
   readonly subjectId: string;
+  readonly kind: "objective" | "phase" | "outcome";
   readonly inboundEdgeIds: readonly string[];
   readonly outboundEdgeIds: readonly string[];
 }
@@ -228,6 +229,7 @@ function deriveProgressionContracts(
     )
     .map((node) => ({
       subjectId: node.id,
+      kind: node.kind as "objective" | "phase" | "outcome",
       inboundEdgeIds: intent.edges
         .filter((edge) => edge.to === node.id)
         .map((edge) => edge.id)
@@ -286,6 +288,30 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   const stateRegistry = deriveStateRegistry(semanticIr);
   const ownershipRegistry = deriveOwnershipRegistry(semanticIr);
   const progressionContracts = deriveProgressionContracts(intent);
+  const demanded = new Set(world.analysisDemand ?? []);
+  const deferredRelations = semanticIr.temporal.relations.filter(
+    (relation) =>
+      relation.kind === "deferred" ||
+      relation.kind === "periodic",
+  );
+  const writableStates = stateRegistry.filter(
+    (item) => item.writeRegions.length > 0,
+  );
+  const unboundedWritableStates = writableStates.filter(
+    (item) =>
+      item.clearRegions.length === 0 &&
+      item.authorityContractIds.length === 0,
+  );
+  const progressionIncomplete = progressionContracts.filter(
+    (item) =>
+      item.kind === "objective"
+        ? item.inboundEdgeIds.length === 0 ||
+          item.outboundEdgeIds.length === 0
+        : item.kind === "outcome"
+          ? item.inboundEdgeIds.length === 0
+          : item.inboundEdgeIds.length === 0 &&
+            item.outboundEdgeIds.length === 0,
+  );
   const checkpoint: MandatoryAuditCheckpointReceipt[] = [];
 
   checkpoint.push(receipt(
@@ -381,24 +407,35 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ? discovery.status === "COMPLETE"
         ? "NOT_APPLICABLE"
         : "OPEN"
-      : "CLOSED",
+      : unboundedWritableStates.length > 0
+        ? "PARTIAL"
+        : "CLOSED",
     stateRegistry.length === 0
       ? discovery.status === "COMPLETE"
         ? "No material Semantic IR state surfaces were discovered after complete discovery."
         : "State applicability cannot be closed while discovery is incomplete."
-      : "Material state surfaces are projected with read/write/clear ownership evidence.",
+      : unboundedWritableStates.length > 0
+        ? "Writable state remains without clear/reset or explicit authority evidence."
+        : "Material state surfaces have bounded write/clear or authority evidence.",
     semanticIr.state.operations.map((item) => item.id),
     ["StateRegistry"],
+    {
+      obligations: [
+        obligation(
+          "state-writes-bounded",
+          writableStates.length > 0,
+          unboundedWritableStates.length === 0,
+          "Every writable material state must have clear/reset or explicit authority evidence.",
+          writableStates.map((item) => item.surfaceId),
+        ),
+      ],
+    },
   ));
 
   const ownershipApplicable =
     ownershipRegistry.length > 0 ||
     world.arenas.detected ||
-    semanticIr.temporal.relations.some(
-      (relation) =>
-        relation.kind === "deferred" ||
-        relation.kind === "periodic",
-    );
+    deferredRelations.length > 0;
   checkpoint.push(receipt(
     "A5",
     "UNDERSTAND",
@@ -407,18 +444,51 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ? discovery.status === "COMPLETE"
         ? "NOT_APPLICABLE"
         : "OPEN"
-      : ownershipRegistry.length > 0 || world.arenas.detected
-        ? "CLOSED"
-        : "PARTIAL",
+      : "CLOSED",
     !ownershipApplicable
       ? discovery.status === "COMPLETE"
         ? "No shared/session/deferred ownership surface remains after complete discovery."
         : "Ownership applicability cannot close while discovery is incomplete."
-      : ownershipRegistry.length > 0 || world.arenas.detected
-        ? "Ownership evidence is represented by authority bindings and/or arena lifecycle ownership."
-        : "Ownership-sensitive work exists but explicit authority bindings remain incomplete.",
+      : "Ownership obligations are evaluated from authority bindings, arena lifecycle/isolation, and deferred ownership.",
     ownershipRegistry.map((item) => item.authorityContractId),
     ["OwnershipRegistry"],
+    {
+      obligations: [
+        obligation(
+          "state-authority-accounted",
+          ownershipRegistry.length > 0,
+          ownershipRegistry.every(
+            (item) => item.authoritySurfaceId.trim().length > 0,
+          ),
+          "Explicit state authority bindings must identify a concrete authority surface.",
+          ownershipRegistry.map((item) => item.authorityContractId),
+        ),
+        obligation(
+          "arena-ownership-accounted",
+          world.arenas.detected,
+          !world.arenas.detected ||
+            (
+              world.analysisExecution.executedCapabilityIds.includes(
+                "arena-lifecycle-integrity",
+              ) &&
+              world.arenas.lifecycle.unresolved === 0 &&
+              world.arenas.isolation.unknown === 0
+            ),
+          "Detected arenas require lifecycle and isolation ownership to resolve.",
+          ["analysis:arena-lifecycle", "analysis:multiplayer-interleaving"],
+        ),
+        obligation(
+          "deferred-ownership-accounted",
+          deferredRelations.length > 0,
+          deferredRelations.length === 0 ||
+            world.analysisExecution.executedCapabilityIds.includes(
+              "temporal-ownership-integrity",
+            ),
+          "Deferred/periodic work requires temporal ownership analysis.",
+          deferredRelations.map((item) => item.id),
+        ),
+      ],
+    },
   ));
 
   checkpoint.push(receipt(
@@ -429,11 +499,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ? discovery.status === "COMPLETE"
         ? "NOT_APPLICABLE"
         : "OPEN"
-      : progressionContracts.every(
-          (item) =>
-            item.inboundEdgeIds.length > 0 ||
-            item.outboundEdgeIds.length > 0,
-        )
+      : progressionIncomplete.length === 0
         ? "CLOSED"
         : "PARTIAL",
     progressionContracts.length === 0
@@ -446,6 +512,20 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ...item.outboundEdgeIds,
     ]),
     ["ProgressionContracts"],
+    {
+      obligations: [
+        obligation(
+          "progression-chain-connected",
+          progressionContracts.length > 0,
+          progressionIncomplete.length === 0,
+          "Objectives require inbound and outbound progression links; outcomes require inbound proof; phases require at least one transition connection.",
+          progressionContracts.flatMap((item) => [
+            ...item.inboundEdgeIds,
+            ...item.outboundEdgeIds,
+          ]),
+        ),
+      ],
+    },
   ));
 
   checkpoint.push(receipt(
@@ -455,10 +535,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     world.entities.definitions === 0
       ? positiveNotApplicable(
           discovery,
-          intent.nodes.some((node) =>
-            node.kind === "actor" || node.kind === "role"
-          ),
-          false,
+          demanded.has("entity-behavior"),
+          world.entities.definitions > 0,
         )
         ? "NOT_APPLICABLE"
         : "OPEN"
@@ -648,7 +726,9 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "Boundary Registry",
     boundaries.records.length === 0 &&
       boundaries.unresolvedNames.length === 0
-      ? "NOT_APPLICABLE"
+      ? discovery.status === "COMPLETE"
+        ? "NOT_APPLICABLE"
+        : "OPEN"
       : boundaries.unresolvedNames.length > 0
         ? "PARTIAL"
         : "CLOSED",
@@ -672,12 +752,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ? "CLOSED"
       : positiveNotApplicable(
           discovery,
-          intent.nodes.some((node) =>
-            /combat|damage|death|revive|downed/i.test(
-              node.id + " " + node.label,
-            )
-          ),
-          false,
+          demanded.has("combat-lifecycle"),
+          combatApplicable,
         )
         ? "NOT_APPLICABLE"
         : "OPEN",
@@ -725,12 +801,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ? "CLOSED"
       : positiveNotApplicable(
           discovery,
-          intent.nodes.some((node) =>
-            /inventory|item|equipment|loadout/i.test(
-              node.id + " " + node.label,
-            )
-          ),
-          false,
+          demanded.has("inventory-state"),
+          inventoryApplicable,
         )
         ? "NOT_APPLICABLE"
         : "OPEN",
@@ -774,12 +846,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ? "CLOSED"
       : positiveNotApplicable(
           discovery,
-          intent.nodes.some((node) =>
-            /reward|loot|coin|currency|score|shop/i.test(
-              node.id + " " + node.label,
-            )
-          ),
-          false,
+          demanded.has("economy-reward"),
+          economyApplicable,
         )
         ? "NOT_APPLICABLE"
         : "OPEN",
@@ -826,7 +894,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         (world.persistence?.unknownLifetime ?? 0) > 0
         ? "PARTIAL"
         : "CLOSED"
-      : discovery.status === "COMPLETE"
+      : discovery.status === "COMPLETE" &&
+          !demanded.has("persistence-recovery")
         ? "NOT_APPLICABLE"
         : "OPEN",
     persistenceApplicable
@@ -838,18 +907,14 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     ["PersistenceMatrix"],
   ));
 
-  const deferredRelations = semanticIr.temporal.relations.filter(
-    (relation) =>
-      relation.kind === "deferred" ||
-      relation.kind === "periodic",
-  );
   checkpoint.push(receipt(
     "C5",
     "STRESS",
     "Deferred Work Registry",
     deferredRelations.length > 0
       ? "CLOSED"
-      : discovery.status === "COMPLETE"
+      : discovery.status === "COMPLETE" &&
+          !demanded.has("temporal-ownership")
         ? "NOT_APPLICABLE"
         : "OPEN",
     deferredRelations.length > 0
@@ -884,13 +949,16 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   const terminalScenario = graph.scenarios.find(
     (scenario) => scenario.label === "terminal-collision",
   );
+  const competingTerminalIntent =
+    intent.nodes.filter((node) => node.kind === "outcome").length > 1;
   checkpoint.push(receipt(
     "C6",
     "STRESS",
     "Terminal Ownership",
     terminalScenario
       ? "CLOSED"
-      : discovery.status === "COMPLETE"
+      : discovery.status === "COMPLETE" &&
+          !competingTerminalIntent
         ? "NOT_APPLICABLE"
         : "OPEN",
     terminalScenario
