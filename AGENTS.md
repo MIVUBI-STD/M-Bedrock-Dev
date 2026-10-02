@@ -282,4 +282,4 @@ For AI-origin production findings, Defect Resolution owns the factual Expected a
 
 ### Model packet evidence discipline
 
-Model-facing audit packets must carry bounded evidence descriptors and RIG knowledge context, not opaque ids alone. Any id listed in `unresolvedEvidenceIds` is a retrieval/blocking requirement; the model must not infer its contents.
+Model-facing audit packets must carry bounded evidence descriptors and RIG knowledge context, not opaque ids alone. For platform constraints, carry bounded applicable relation claims with status, rule, knowledge sources, and runtime evidence; a synthetic platform capability receipt alone is not factual proof. Any id listed in `unresolvedEvidenceIds` is a retrieval/blocking requirement; the model must not infer its contents.

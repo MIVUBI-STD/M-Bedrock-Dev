@@ -87,6 +87,7 @@ Use this before broad repository search.
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
 | Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
+| Applicable platform relation claims in audit/model context | inspection/knowledge-runtime-analysis.ts → gameplay-world-model.ts → map-audit-model-task.ts |
 | Knowledge source freshness/quarantine | engine/packages/knowledge/src/freshness.ts |
 | Declarative evidence-based diagnostic rules | engine/packages/diagnostic-reasoning/src/declarative-rules.ts |
 | Engineering/validation contracts | engine/contracts/engineering/ |

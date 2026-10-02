@@ -31,6 +31,24 @@ export interface InspectionKnowledgeProfileResolution {
   source: "target" | "education-metadata" | "unresolved";
 }
 
+export interface ApplicablePlatformKnowledgeClaim {
+  readonly relationId: string;
+  readonly domain: string;
+  readonly kind: string;
+  readonly subject: string;
+  readonly object: string;
+  readonly status: "satisfied" | "violation" | "unknown";
+  readonly message: string;
+  readonly knowledgeSourceIds: readonly string[];
+  readonly evidenceSourceIds: readonly string[];
+  readonly sources: readonly {
+    id: string;
+    title: string;
+    url: string;
+    authority: string;
+  }[];
+}
+
 export interface KnowledgeRuntimeAnalysis {
   enabled: boolean;
   profileResolved: boolean;
@@ -40,6 +58,7 @@ export interface KnowledgeRuntimeAnalysis {
   violations: number;
   evidenceGaps: number;
   validationCases: readonly ValidationCase[];
+  platformClaims: readonly ApplicablePlatformKnowledgeClaim[];
   diagnostics: readonly DiagnosticFinding[];
 }
 
@@ -96,6 +115,118 @@ export function resolveInspectionKnowledgeProfile(
   };
 }
 
+const PLATFORM_KNOWLEDGE_DOMAINS = new Set([
+  "chunks",
+  "script-api",
+  "compatibility",
+  "education-runtime",
+  "education",
+  "entity-runtime",
+  "multiplayer",
+  "event-ordering",
+  "world-state",
+  "world-mutation",
+  "persistence",
+]);
+
+function platformClaimsForSnapshot(
+  catalog: KnowledgeCatalog,
+  profile: EffectiveKnowledgeProfile,
+  snapshot: RuntimeEvidenceSnapshot,
+): ApplicablePlatformKnowledgeClaim[] {
+  const relationById = new Map(
+    (catalog.relations ?? []).map((relation) => [
+      relation.id,
+      relation,
+    ]),
+  );
+  const sourceById = new Map(
+    catalog.sources.map((source) => [
+      source.id,
+      source,
+    ]),
+  );
+  const claims = new Map<string, ApplicablePlatformKnowledgeClaim>();
+
+  for (const [, records] of groupRuntimeEvidenceByScope(snapshot)) {
+    const { map } = mergeRuntimeEvidenceRecords(records);
+    for (const assessment of assessKnowledgeRelations(
+      catalog,
+      profile,
+      map,
+    )) {
+      const relation = relationById.get(assessment.relationId);
+      if (
+        relation === undefined ||
+        !PLATFORM_KNOWLEDGE_DOMAINS.has(relation.domain) ||
+        relation.classification === "project-policy" ||
+        relation.classification === "open-assumption"
+      ) {
+        continue;
+      }
+
+      const sources = assessment.knowledgeSourceIds
+        .map((id) => sourceById.get(id))
+        .filter(
+          (source): source is NonNullable<typeof source> =>
+            source !== undefined &&
+            source.authority !== "project-policy",
+        )
+        .map((source) => ({
+          id: source.id,
+          title: source.title,
+          url: source.url,
+          authority: source.authority,
+        }))
+        .sort((a, b) => a.id.localeCompare(b.id));
+
+      if (
+        assessment.knowledgeSourceIds.length > 0 &&
+        sources.length === 0
+      ) {
+        continue;
+      }
+
+      const claim: ApplicablePlatformKnowledgeClaim = {
+        relationId: assessment.relationId,
+        domain: relation.domain,
+        kind: assessment.kind,
+        subject: assessment.subject,
+        object: assessment.object,
+        status: assessment.status,
+        message: assessment.message,
+        knowledgeSourceIds:
+          [...assessment.knowledgeSourceIds].sort(),
+        evidenceSourceIds:
+          [...assessment.evidenceSourceIds].sort(),
+        sources,
+      };
+      const key = [
+        claim.relationId,
+        claim.status,
+        claim.subject,
+        claim.object,
+        claim.evidenceSourceIds.join(","),
+      ].join("|");
+      claims.set(key, claim);
+    }
+  }
+
+  const statusRank = {
+    violation: 0,
+    unknown: 1,
+    satisfied: 2,
+  } as const;
+
+  return [...claims.values()]
+    .sort((a, b) =>
+      statusRank[a.status] - statusRank[b.status] ||
+      a.domain.localeCompare(b.domain) ||
+      a.relationId.localeCompare(b.relationId)
+    )
+    .slice(0, 32);
+}
+
 function validationCasesForSnapshot(
   catalog: KnowledgeCatalog,
   profile: EffectiveKnowledgeProfile,
@@ -139,6 +270,7 @@ export function analyzeKnowledgeRuntime(
       violations: 0,
       evidenceGaps: 0,
       validationCases: [],
+      platformClaims: [],
       diagnostics: [],
     };
   }
@@ -164,6 +296,7 @@ export function analyzeKnowledgeRuntime(
       violations: 0,
       evidenceGaps: 0,
       validationCases: [],
+      platformClaims: [],
       diagnostics: [],
     };
   }
@@ -179,6 +312,11 @@ export function analyzeKnowledgeRuntime(
     resolution.profile,
     snapshot,
   );
+  const platformClaims = platformClaimsForSnapshot(
+    catalog,
+    resolution.profile,
+    snapshot,
+  );
 
   return {
     enabled: true,
@@ -189,6 +327,7 @@ export function analyzeKnowledgeRuntime(
     violations: diagnostics.filter((item) => item.code === "KNOWLEDGE_RELATION_VIOLATION").length,
     evidenceGaps: diagnostics.filter((item) => item.code === "KNOWLEDGE_EVIDENCE_GAP").length,
     validationCases,
+    platformClaims,
     diagnostics,
   };
 }

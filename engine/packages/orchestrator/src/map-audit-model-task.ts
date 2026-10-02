@@ -2,6 +2,9 @@ import type {
   GameplayIntentModel,
 } from "../../gameplay-intent/src/index.js";
 import type {
+  GameplayWorldModel,
+} from "./inspection/gameplay-world-model.js";
+import type {
   MandatoryAuditProcedureReceipt,
 } from "./inspection/mandatory-audit-procedure.js";
 import type {
@@ -34,6 +37,7 @@ export interface AuditModelTaskKnowledgeContext {
   readonly status: string;
   readonly capabilityIds: readonly string[];
   readonly evidenceIds: readonly string[];
+  readonly platformClaims?: GameplayWorldModel["platformKnowledge"]["claims"];
 }
 
 export interface AuditModelTaskPacket {
@@ -115,6 +119,7 @@ function evidenceContext(
 function knowledgeContextFor(
   requirementIds: readonly string[],
   graph: GameplayScenarioGraph,
+  world: GameplayWorldModel,
 ): readonly AuditModelTaskKnowledgeContext[] {
   return unique(requirementIds).flatMap((requirementId) => {
     const requirement = graph.knowledgeRequirements.find(
@@ -133,6 +138,9 @@ function knowledgeContextFor(
           ? [...receipt.capabilityIdsUsed]
           : [...requirement.capabilityIds],
       evidenceIds: [...(receipt?.evidenceIds ?? [])],
+      ...(requirement.domain === "platform-constraints"
+        ? { platformClaims: world.platformKnowledge.claims }
+        : {}),
     }];
   });
 }
@@ -142,6 +150,7 @@ function checkpointPackets(
   procedure: MandatoryAuditProcedureReceipt,
   auditRevision: string,
   intent: GameplayIntentModel,
+  world: GameplayWorldModel,
 ): readonly AuditModelTaskPacket[] {
   return procedure.checkpoints
     .filter((checkpoint) =>
@@ -272,7 +281,7 @@ function provePackets(
         evidenceContext: evidence.context,
         unresolvedEvidenceIds: evidence.unresolved,
         knowledgeContext:
-          knowledgeContextFor(requirementIds, graph),
+          knowledgeContextFor(requirementIds, graph, world),
         unresolvedObligationIds: [],
         allowedOutputs:
           needsTranslation
@@ -309,6 +318,7 @@ export function deriveAuditModelTaskPackets(input: {
   readonly defectResolution: GameplayDefectResolutionGate;
   readonly intent: GameplayIntentModel;
   readonly auditRevision: string;
+  readonly world: GameplayWorldModel;
 }): readonly AuditModelTaskPacket[] {
   const stage = input.admission.firstBlockingStage;
   if (stage === undefined) return [];
@@ -319,6 +329,7 @@ export function deriveAuditModelTaskPackets(input: {
       input.defectResolution,
       input.auditRevision,
       input.intent,
+      input.world,
     );
     if (prove.length > 0) return prove;
   }

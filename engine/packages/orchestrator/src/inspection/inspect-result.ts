@@ -333,6 +333,8 @@ export function buildInspectionResult(
         input.knowledgeRuntime.profileResolved,
       profileSource:
         input.knowledgeRuntime.profileSource,
+      claims:
+        input.knowledgeRuntime.platformClaims,
     },
     entities: {
       definitions: parsedEntities.length,

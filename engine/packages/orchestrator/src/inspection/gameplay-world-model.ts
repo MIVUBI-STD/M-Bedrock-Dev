@@ -405,6 +405,23 @@ export interface GameplayWorldModel {
   platformKnowledge: {
     profileResolved: boolean;
     profileSource: "target" | "education-metadata" | "unresolved";
+    claims: readonly {
+      relationId: string;
+      domain: string;
+      kind: string;
+      subject: string;
+      object: string;
+      status: "satisfied" | "violation" | "unknown";
+      message: string;
+      knowledgeSourceIds: readonly string[];
+      evidenceSourceIds: readonly string[];
+      sources: readonly {
+        id: string;
+        title: string;
+        url: string;
+        authority: string;
+      }[];
+    }[];
   };
   entities: {
     definitions: number;
@@ -500,6 +517,7 @@ export interface GameplayWorldModelSource {
   platformKnowledge?: {
     profileResolved: boolean;
     profileSource: "target" | "education-metadata" | "unresolved";
+    claims?: GameplayWorldModel["platformKnowledge"]["claims"];
   };
   entities: {
     definitions: number;
@@ -1574,6 +1592,7 @@ export function deriveGameplayWorldModel(
         source.platformKnowledge?.profileResolved ?? false,
       profileSource:
         source.platformKnowledge?.profileSource ?? "unresolved",
+      claims: [...(source.platformKnowledge?.claims ?? [])],
     },
     entities: {
       ...source.entities,

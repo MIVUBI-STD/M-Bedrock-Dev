@@ -77,6 +77,7 @@ Additional binding rules:
 - production semantic-proof reuse and rejected-candidate reuse must use audit-bound wrappers and match the current `auditRevision`;
 - generic Work Session remains subordinate to `SelectedMapAuditRun`; its audit binding is a persistence/UI projection only;
 - eager evidence collection does not grant decision authority; `executionTrace` is authoritative for ordered stage authorization.
+- platform-constraint reasoning must use bounded applicable platform relation claims (rule/status/source/evidence) from the active runtime profile; `analysis:platform-constraints` alone is only an execution receipt, not proof of a specific Minecraft/Education rule.
 
 ## Gameplay Contract
 

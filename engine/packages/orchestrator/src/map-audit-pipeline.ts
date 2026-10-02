@@ -263,6 +263,7 @@ export async function runSelectedMapAudit(
     defectResolution: scenario.defectResolution,
     intent: inspection.gameplayIntent.model,
     auditRevision,
+    world: inspection.gameplayWorld,
   });
   const proveAuthorized =
     admission.firstBlockingStage === undefined ||
@@ -422,6 +423,7 @@ export function resolveSelectedMapAudit(
     defectResolution: scenario.defectResolution,
     intent: updatedInspection.gameplayIntent.model,
     auditRevision,
+    world: updatedInspection.gameplayWorld,
   });
   const proveAuthorized =
     admission.firstBlockingStage === undefined ||
