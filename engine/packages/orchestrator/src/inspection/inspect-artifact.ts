@@ -159,6 +159,9 @@ export async function inspectArtifact(
       result.arenaAnalysis.regionClassification ??
       scriptLayoutFallback?.regionClassification;
 
+    const fullArenaProofRequested =
+      target.arenaProofMode === "full";
+
     const rigKnowledgeDomains = new Set(
       result.hiddenGameplayDefects
         .scenarioAudit.graph
@@ -225,7 +228,8 @@ export async function inspectArtifact(
 
     const entityPopulationProof =
       spatialLayout === undefined ||
-      !rigRequiresEntityProof
+      (!fullArenaProofRequested &&
+        !rigRequiresEntityProof)
         ? undefined
         : proveArenaEntityPopulation(
             spatialLayout,
@@ -237,7 +241,8 @@ export async function inspectArtifact(
 
     const structureInstanceProof =
       spatialLayout === undefined ||
-      !rigRequiresStructureProof
+      (!fullArenaProofRequested &&
+        !rigRequiresStructureProof)
         ? undefined
         : proveArenaStructureInstances(
             spatialLayout,
@@ -268,7 +273,8 @@ export async function inspectArtifact(
 
     const arenaNativeSpatial =
       spatialLayout === undefined ||
-      !rigRequiresArenaSpatial
+      (!fullArenaProofRequested &&
+        !rigRequiresArenaSpatial)
         ? undefined
         : auditArenaNativeSpatialContent(
             spatialLayout,
