@@ -37,7 +37,8 @@
         "artifact": "Defense Challenge v1.1.1.mcworld",
         "date": "2026-10-02",
         "targetEdition": "education",
-        "targetVersion": null
+        "targetVersion": null,
+        "artifactSha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
       },
       "invariantIds": [
         "arena.reuse-requires-cleanup-complete",
@@ -504,7 +505,8 @@
         "artifact": "Defense Challenge v1.1.1.mcworld",
         "date": "2026-10-02",
         "targetEdition": "education",
-        "targetVersion": null
+        "targetVersion": null,
+        "artifactSha256": "edb6fa56834279210f85de15637c4a980b9e6e9eafce93bcde5fd1ade9c729ee"
       },
       "invariantIds": [
         "persistence.reload-preserves-active-wave-timeline",
