@@ -44,6 +44,7 @@ import { assessGameplayDiscoveryClosure } from "./gameplay-discovery-closure.js"
 import { deriveGameplayAnalysisPriorities } from "./gameplay-analysis-priority.js";
 import { collectArtifactReleaseObservations } from "../release-identity-evidence.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
+import { deriveMandatoryAuditProcedureReceipt } from "./mandatory-audit-procedure.js";
 
 export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
@@ -838,6 +839,10 @@ export async function inspectArtifact(
           result.entityAiStack,
         routeNavigationEnvironment:
           result.routeNavigationEnvironment,
+        analysisDemand:
+          result.gameplayWorld.analysisDemand,
+        platformKnowledge:
+          result.gameplayWorld.platformKnowledge,
         structures: {
           definitions: result.structures,
           loads:
@@ -922,7 +927,21 @@ export async function inspectArtifact(
         finalHiddenGameplayDefects
           .scenarioAudit.graph,
       );
-
+    const finalMandatoryAuditProcedure =
+      deriveMandatoryAuditProcedureReceipt({
+        artifactId,
+        discovery:
+          finalGameplayDiscoveryClosure,
+        world: finalGameplayWorld,
+        intent: result.gameplayIntent.model,
+        semanticIr: result.semanticIrModel,
+        boundaries:
+          result.gameplayBoundaries,
+        multiplayer:
+          result.multiplayerStateValidation,
+        hidden:
+          finalHiddenGameplayDefects,
+      });
 
     return {
       artifactId,
@@ -939,6 +958,8 @@ export async function inspectArtifact(
         finalEngineeringAssessment,
       hiddenGameplayDefects:
         finalHiddenGameplayDefects,
+      mandatoryAuditProcedure:
+        finalMandatoryAuditProcedure,
       engineeringAnalyses:
         finalEngineeringAnalyses,
       analysisPriorities:

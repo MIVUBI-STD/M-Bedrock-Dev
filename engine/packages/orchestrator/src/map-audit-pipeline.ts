@@ -2,8 +2,8 @@ import type {
   KnowledgeCatalog,
 } from "../../knowledge/src/index.js";
 import type {
-  RuntimeEvidenceRecord,
-  RuntimeProbeResponse,
+  RuntimeProbeTranscript,
+  TelemetryBatch,
   TelemetryEvent,
 } from "../../project-model/src/index.js";
 import type {
@@ -13,12 +13,12 @@ import type {
   ConfirmedDefectGroupResolution,
 } from "../../bug-report/src/index.js";
 import type {
-  InspectDirectoryResult,
   InspectTargetProfile,
 } from "./core/types.js";
 import {
-  inspectDirectory,
-} from "./inspection/inspect.js";
+  inspectArtifact,
+  type InspectArtifactResult,
+} from "./inspection/inspect-artifact.js";
 import {
   buildBugReportFromAuditCandidates,
   prepareBugReportReviewFromAuditCandidates,
@@ -31,22 +31,20 @@ import type {
 } from "./inspection/engineering-analysis-stage.js";
 
 export interface SelectedMapAuditInput {
-  readonly root: string;
-  readonly artifactId?: string;
+  /**
+   * Exact selected .mcworld artifact. Production audit authority starts here.
+   */
+  readonly artifactPath: string;
   readonly target?: InspectTargetProfile;
-  readonly sourceFingerprint?: string;
   readonly knowledgeCatalog?: KnowledgeCatalog;
-  readonly externalEvidence?: readonly RuntimeEvidenceRecord[];
-  readonly telemetryEvents?: readonly TelemetryEvent[];
-  readonly telemetryDroppedEvents?: number;
-  readonly runtimeProbeResponses?: readonly RuntimeProbeResponse[];
-  readonly runtimeProbeDroppedExchanges?: number;
+  readonly telemetry?: readonly TelemetryEvent[] | TelemetryBatch;
+  readonly runtimeProbeTranscript?: RuntimeProbeTranscript;
 }
 
 export interface SelectedMapAuditRun {
   readonly schemaVersion: 1;
   readonly policy: "selected-map-audit-single-entry";
-  readonly inspection: InspectDirectoryResult;
+  readonly inspection: InspectArtifactResult;
   readonly status: "READY_FOR_REVIEW" | "BLOCKED";
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
@@ -62,17 +60,12 @@ export interface SelectedMapAuditRun {
 export async function runSelectedMapAudit(
   input: SelectedMapAuditInput,
 ): Promise<SelectedMapAuditRun> {
-  const inspection = await inspectDirectory(
-    input.root,
-    input.artifactId ?? "art_working",
+  const inspection = await inspectArtifact(
+    input.artifactPath,
     input.target ?? {},
-    input.sourceFingerprint,
     input.knowledgeCatalog,
-    input.externalEvidence ?? [],
-    input.telemetryEvents ?? [],
-    input.telemetryDroppedEvents ?? 0,
-    input.runtimeProbeResponses ?? [],
-    input.runtimeProbeDroppedExchanges ?? 0,
+    input.telemetry ?? [],
+    input.runtimeProbeTranscript,
   );
 
   const procedure = inspection.mandatoryAuditProcedure;

@@ -1,10 +1,14 @@
 export * from "./map-audit-pipeline.js";
 export * from "./core/index.js";
-export * from "./inspection/index.js";
 export * from "./arena/index.js";
 export * from "./diagnosis/index.js";
 export * from "./repair/index.js";
 export * from "./reliability/index.js";
-export * from "./reporting/index.js";
 export * from "./workflow/index.js";
 export * from "./release/index.js";
+
+/**
+ * Inspection and reporting barrels are intentionally not re-exported here.
+ * Production selected-map audit must enter through map-audit-pipeline.
+ * Engine-development callers may import internal modules explicitly.
+ */

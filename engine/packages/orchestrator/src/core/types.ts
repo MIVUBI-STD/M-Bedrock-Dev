@@ -16,6 +16,7 @@ import type { RuntimeEvidenceIntegrityReport } from "../../../project-model/src/
 import type { DecisionBasisRevision } from "../../../project-model/src/index.js";
 import type { EvidenceRecoveryPlan } from "../evidence-recovery.js";
 import type { GameplayIntentModel } from "../../../gameplay-intent/src/index.js";
+import type { SemanticIr } from "../../../semantic-ir/src/index.js";
 import type { ArenaRegionClassification, ArenaRegionPartitionResult, ArenaRegionPlan, ArenaReplicaDiscovery, ArenaSpatialLayout, ResolvedEffect } from "../../../../analyzers/topology/src/index.js";
 import type { ArenaNativeSpatialAudit } from "../arena-native-extraction.js";
 import type { ArenaVoxelProof } from "../arena-voxel-proof.js";
@@ -164,6 +165,11 @@ export interface InspectDirectoryResult {
     readonly AuditRiskAssessment[];
   mandatoryAuditProcedure:
     MandatoryAuditProcedureReceipt;
+  /**
+   * Canonical Semantic IR snapshot for downstream artifact-level recomposition.
+   * Do not reconstruct a second IR from summaries.
+   */
+  semanticIrModel: SemanticIr;
   structures: number;
   parsedStructures: number;
   entities: number;

@@ -494,6 +494,7 @@ export function buildInspectionResult(
     capabilityExposure,
     analysisPriorities,
     mandatoryAuditProcedure,
+    semanticIrModel: input.semanticIr,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
