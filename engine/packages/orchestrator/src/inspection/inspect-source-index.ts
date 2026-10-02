@@ -59,6 +59,7 @@ export interface InspectionSourceCoverage {
   relevantFiles: number;
   indexedFiles: number;
   parseFailures: readonly InspectionSourceParseFailure[];
+  unsupportedRelevantFiles: readonly string[];
   complete: boolean;
 }
 
@@ -103,6 +104,33 @@ export interface InspectionSourceIndex {
   coverage: InspectionSourceCoverage;
 }
 
+const GAMEPLAY_SENSITIVE_JSON_DIRECTORIES = new Set([
+  "animation_controllers",
+  "animations",
+  "blocks",
+  "features",
+  "feature_rules",
+  "items",
+  "loot_tables",
+  "recipes",
+  "render_controllers",
+  "spawn_rules",
+  "trading",
+]);
+
+function isGameplaySensitiveUnownedSource(
+  relativePath: string,
+): boolean {
+  const normalized =
+    relativePath.replaceAll("\\", "/").toLowerCase();
+  if (!normalized.endsWith(".json")) return false;
+
+  const segments = normalized.split("/");
+  return segments.some((segment) =>
+    GAMEPLAY_SENSITIVE_JSON_DIRECTORIES.has(segment)
+  );
+}
+
 export async function indexInspectionSources(
   root: string,
   artifactId: string,
@@ -119,6 +147,7 @@ export async function indexInspectionSources(
     InspectionSourceIndex["parsedStructureModels"] = [];
   const diagnostics: DiagnosticFinding[] = [];
   const parseFailures: InspectionSourceParseFailure[] = [];
+  const unsupportedRelevantFiles: string[] = [];
   let relevantFiles = 0;
   let indexedFiles = 0;
   let parsedStructures = 0;
@@ -362,7 +391,19 @@ export async function indexInspectionSources(
 
     const structureId =
       structureIdentifier(file.relativePath);
-    if (!structureId) continue;
+    if (!structureId) {
+      if (
+        isGameplaySensitiveUnownedSource(
+          file.relativePath,
+        )
+      ) {
+        relevantFiles += 1;
+        unsupportedRelevantFiles.push(
+          file.relativePath,
+        );
+      }
+      continue;
+    }
 
     relevantFiles += 1;
 
@@ -509,8 +550,11 @@ export async function indexInspectionSources(
           a.relativePath.localeCompare(b.relativePath) ||
           a.kind.localeCompare(b.kind)
         ),
+      unsupportedRelevantFiles:
+        [...unsupportedRelevantFiles].sort(),
       complete:
         parseFailures.length === 0 &&
+        unsupportedRelevantFiles.length === 0 &&
         indexedFiles === relevantFiles,
     },
   };
