@@ -2,9 +2,19 @@
 
 ## Purpose
 
-Bug discovery must not begin until the selected world has a sufficiently closed gameplay model.
+Gameplay Model Closure is the **understanding gate** after Gameplay Discovery Closure.
 
-The goal is not to prove every runtime outcome before auditing. The goal is to ensure every gameplay-relevant surface is discovered, understood enough to reason about, or explicitly marked blocked/unknown.
+```text
+Gameplay Discovery Closure
+→ are relevant selected-artifact sources indexed and the surface inventory stable?
+
+Gameplay Model Closure
+→ are the discovered material surfaces understood enough to reason about?
+```
+
+Do not spend deep contradiction-analysis effort while Discovery Closure is OPEN.
+
+The goal is not to prove every runtime outcome before auditing. The goal is to ensure every discovered gameplay-relevant surface is understood enough to reason about, or explicitly marked blocked/unknown.
 
 ## Core principle
 
@@ -35,6 +45,17 @@ Surface discovery and closure accounting must be independent operations.
 A surface is discovered from raw selected-artifact evidence. It is only considered accounted after the gameplay model provides an understood, blocked, unknown, or not-applicable disposition.
 
 Never construct the discovered-surface list from the already-accounted surface list. That would hide missing analysis by definition.
+
+## Precondition — Gameplay Discovery Closure
+
+Before Phase A is treated as stable:
+
+- relevant selected-artifact sources must be indexed;
+- parser/index failures must be explicit;
+- unresolved references must remain visible;
+- Discovery Closure must be COMPLETE or scoped-safe PARTIAL.
+
+Discovery Closure OPEN blocks claims that the gameplay surface inventory is complete.
 
 ## Phase A — Surface inventory
 
