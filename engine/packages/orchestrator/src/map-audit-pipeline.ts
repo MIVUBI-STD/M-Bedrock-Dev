@@ -152,18 +152,15 @@ async function inspectSelectedMapToDemandFixedPoint(
   readonly inspection: InspectArtifactResult;
   readonly reconciliation: AuditDemandReconciliation;
 }> {
-  const initialRequiredDomains = [
-    ...new Set(
-      input.target?.requiredKnowledgeDomains ?? [],
-    ),
-  ].sort();
+  const initialRequiredDomains:
+    NonNullable<InspectTargetProfile["requiredKnowledgeDomains"]> = [];
 
   const firstInspection = await inspectArtifact(
     input.artifactPath,
-    {
-      ...(input.target ?? {}),
-      requiredKnowledgeDomains: initialRequiredDomains,
-    },
+    productionInspectTarget(
+      input.target,
+      initialRequiredDomains,
+    ),
     input.knowledgeCatalog,
     input.telemetry ?? [],
     input.runtimeProbeTranscript,
@@ -189,10 +186,10 @@ async function inspectSelectedMapToDemandFixedPoint(
 
   const secondInspection = await inspectArtifact(
     input.artifactPath,
-    {
-      ...(input.target ?? {}),
-      requiredKnowledgeDomains: reconciledDomains,
-    },
+    productionInspectTarget(
+      input.target,
+      reconciledDomains,
+    ),
     input.knowledgeCatalog,
     input.telemetry ?? [],
     input.runtimeProbeTranscript,
