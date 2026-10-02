@@ -114,4 +114,9 @@ Reachability gaps must be reported as unresolved evidence rather than converted 
 
 ## Publication gate
 
-Gameplay Model Closure `OPEN` blocks comprehensive proposed review and final production publication. A partial bug list must not be presented as the completed audit.
+Both preconditions apply:
+
+- Gameplay Discovery Closure `OPEN` blocks comprehensive proposed review and final publication because the surface inventory is not stable.
+- Gameplay Model Closure `OPEN` blocks comprehensive proposed review and final publication because discovered gameplay is not sufficiently understood.
+
+A partial bug list must not be presented as the completed audit.
