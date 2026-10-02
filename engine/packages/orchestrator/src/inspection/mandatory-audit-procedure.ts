@@ -491,7 +491,12 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       ? discovery.status === "COMPLETE"
         ? "Complete discovery supports a single/no-arena model."
         : "Multi-arena applicability cannot close while discovery is incomplete or arena count is unresolved."
-      : "Arena capacity and isolation obligations are accounted.",
+      : world.arenas.count !== undefined &&
+          world.arenas.safeConcurrentArenas !== undefined &&
+          world.arenas.safeConcurrentArenas !== null &&
+          world.arenas.safeConcurrentArenas < world.arenas.count
+        ? "Multi-arena model is understood, but player-visible arena capacity exceeds playable concurrent capacity. This mismatch is routed to PROVE as a gameplay/design contradiction; queue/fallback/platform limits do not erase it."
+        : "Arena capacity and isolation obligations are accounted.",
     ["analysis:arena-lifecycle", "analysis:multiplayer-interleaving"],
     ["MultiArenaContract"],
     {
