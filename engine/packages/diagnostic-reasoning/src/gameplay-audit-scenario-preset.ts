@@ -1,4 +1,4 @@
-export type GameplaySimulationScenarioKind =
+export type GameplayAuditScenarioKind =
   | "full-journey"
   | "solo"
   | "two-player"
@@ -12,21 +12,21 @@ export type GameplaySimulationScenarioKind =
   | "terminal-collision"
   | "repeated-run";
 
-export type GameplaySimulationProofMode =
+export type GameplayAuditScenarioProofMode =
   | "static-first"
   | "runtime-only-if-irreducible";
 
-export interface GameplaySimulationScenario {
+export interface GameplayAuditScenario {
   readonly id: string;
-  readonly kind: GameplaySimulationScenarioKind;
+  readonly kind: GameplayAuditScenarioKind;
   readonly playerCount?: number;
   readonly concurrentArenas?: number;
-  readonly proofMode: GameplaySimulationProofMode;
+  readonly proofMode: GameplayAuditScenarioProofMode;
   readonly reason: string;
   readonly questions: readonly string[];
 }
 
-export interface GameplaySimulationPresetInput {
+export interface GameplayAuditScenarioPresetInput {
   readonly maxPartySize?: number;
   readonly arenaCount?: number;
   readonly concurrentArenaLimit?: number | null;
@@ -36,25 +36,25 @@ export interface GameplaySimulationPresetInput {
   readonly hasRepeatedRunSurface?: boolean;
 }
 
-export interface GameplaySimulationPreset {
+export interface GameplayAuditScenarioPreset {
   readonly schemaVersion: 1;
-  readonly policy: "gameplay-flow-first";
-  readonly scenarios: readonly GameplaySimulationScenario[];
+  readonly policy: "selected-map-scenario-audit";
+  readonly scenarios: readonly GameplayAuditScenario[];
 }
 
 function scenario(
-  input: Omit<GameplaySimulationScenario, "proofMode">,
-): GameplaySimulationScenario {
+  input: Omit<GameplayAuditScenario, "proofMode">,
+): GameplayAuditScenario {
   return {
     ...input,
     proofMode: "static-first",
   };
 }
 
-export function buildGameplaySimulationPreset(
-  input: GameplaySimulationPresetInput,
-): GameplaySimulationPreset {
-  const scenarios: GameplaySimulationScenario[] = [
+export function buildGameplayAuditScenarioPreset(
+  input: GameplayAuditScenarioPresetInput,
+): GameplayAuditScenarioPreset {
+  const scenarios: GameplayAuditScenario[] = [
     scenario({
       id: "journey:full",
       kind: "full-journey",
@@ -255,7 +255,7 @@ export function buildGameplaySimulationPreset(
 
   return {
     schemaVersion: 1,
-    policy: "gameplay-flow-first",
+    policy: "selected-map-scenario-audit",
     scenarios,
   };
 }

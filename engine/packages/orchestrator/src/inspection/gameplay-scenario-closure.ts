@@ -1,11 +1,11 @@
 import type {
-  GameplayExecutionClosure,
-  GameplayExecutionGraph,
-} from "./gameplay-execution-model.js";
+  GameplayScenarioClosure,
+  GameplayScenarioGraph,
+} from "./gameplay-scenario-model.js";
 
-export function assessGameplayExecutionClosure(
-  graph: GameplayExecutionGraph,
-): GameplayExecutionClosure {
+export function assessGameplayScenarioClosure(
+  graph: GameplayScenarioGraph,
+): GameplayScenarioClosure {
   const orphanComponentIds = graph.components
     .filter((component) => component.orphan)
     .map((component) => component.id)

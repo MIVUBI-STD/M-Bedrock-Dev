@@ -6,14 +6,14 @@ import {
   type MechanicCompletenessResult,
 } from "../../../gameplay-intent/src/index.js";
 import {
-  buildGameplaySimulationPreset,
+  buildGameplayAuditScenarioPreset,
   detectGameplayDegradation,
   findDesignConsistencyAnomalies,
   findNegativeSpace,
   prioritizeTemporalInteraction,
   type DesignConsistencyAnomaly,
   type GameplayDegradationSignal,
-  type GameplaySimulationPreset,
+  type GameplayAuditScenarioPreset,
   type NegativeSpaceSignal,
   type TemporalInteractionRisk,
 } from "../../../diagnostic-reasoning/src/index.js";
@@ -24,15 +24,15 @@ import type {
   GameplayWorldModel,
 } from "./gameplay-world-model.js";
 import {
-  compileGameplayExecutionGraph,
-} from "./gameplay-execution-compiler.js";
+  compileGameplayScenarioGraph,
+} from "./gameplay-scenario-compiler.js";
 import {
-  assessGameplayExecutionClosure,
-} from "./gameplay-execution-closure.js";
+  assessGameplayScenarioClosure,
+} from "./gameplay-scenario-closure.js";
 import type {
-  GameplayExecutionClosure,
-  GameplayExecutionGraph,
-} from "./gameplay-execution-model.js";
+  GameplayScenarioClosure,
+  GameplayScenarioGraph,
+} from "./gameplay-scenario-model.js";
 
 export interface HiddenGameplayDefectAnalysis {
   readonly schemaVersion: 1;
@@ -54,10 +54,10 @@ export interface HiddenGameplayDefectAnalysis {
     readonly DesignConsistencyAnomaly[];
   readonly degradations:
     readonly GameplayDegradationSignal[];
-  readonly simulationPreset: GameplaySimulationPreset;
-  readonly gameplayExecution: {
-    readonly graph: GameplayExecutionGraph;
-    readonly closure: GameplayExecutionClosure;
+  readonly auditScenarioPreset: GameplayAuditScenarioPreset;
+  readonly gameplayScenarioAnalysis: {
+    readonly graph: GameplayScenarioGraph;
+    readonly closure: GameplayScenarioClosure;
   };
   readonly attention: {
     readonly implementationOnlyIntent: number;
@@ -66,7 +66,7 @@ export interface HiddenGameplayDefectAnalysis {
     readonly highTemporalRisks: number;
     readonly designAnomalies: number;
     readonly silentDegradations: number;
-    readonly mandatorySimulationScenarios: number;
+    readonly mandatoryAuditScenarios: number;
     readonly orphanGameplayComponents: number;
     readonly unresolvedCausalLinks: number;
   };
@@ -433,12 +433,12 @@ function degradationFromWorld(
   return output;
 }
 
-function simulationPresetFromModel(
+function auditScenarioPresetFromModel(
   input: {
     readonly semanticIr: SemanticIr;
     readonly world: GameplayWorldModel;
   },
-): GameplaySimulationPreset {
+): GameplayAuditScenarioPreset {
   const deferredWork =
     input.semanticIr.temporal.relations.some(
       (relation) =>
@@ -446,7 +446,7 @@ function simulationPresetFromModel(
         relation.guardEvidence === "unresolved",
     );
 
-  return buildGameplaySimulationPreset({
+  return buildGameplayAuditScenarioPreset({
     arenaCount: input.world.arenas.count,
     concurrentArenaLimit:
       input.world.arenas.safeConcurrentArenas ??
@@ -483,17 +483,17 @@ export function analyzeHiddenGameplayDefects(
     consistencyFromWorld(input.world);
   const degradations =
     degradationFromWorld(input.world);
-  const simulationPreset =
-    simulationPresetFromModel(input);
-  const executionGraph =
-    compileGameplayExecutionGraph({
+  const auditScenarioPreset =
+    auditScenarioPresetFromModel(input);
+  const scenarioGraph =
+    compileGameplayScenarioGraph({
       intent: input.intent,
       world: input.world,
-      preset: simulationPreset,
+      preset: auditScenarioPreset,
     });
-  const executionClosure =
-    assessGameplayExecutionClosure(
-      executionGraph,
+  const scenarioClosure =
+    assessGameplayScenarioClosure(
+      scenarioGraph,
     );
 
   return {
@@ -504,10 +504,10 @@ export function analyzeHiddenGameplayDefects(
     temporalRisks,
     designConsistency,
     degradations,
-    simulationPreset,
-    gameplayExecution: {
-      graph: executionGraph,
-      closure: executionClosure,
+    auditScenarioPreset,
+    gameplayScenarioAnalysis: {
+      graph: scenarioGraph,
+      closure: scenarioClosure,
     },
     attention: {
       implementationOnlyIntent:
@@ -531,12 +531,12 @@ export function analyzeHiddenGameplayDefects(
         designConsistency.length,
       silentDegradations:
         degradations.length,
-      mandatorySimulationScenarios:
-        simulationPreset.scenarios.length,
+      mandatoryAuditScenarios:
+        auditScenarioPreset.scenarios.length,
       orphanGameplayComponents:
-        executionClosure.orphanComponentIds.length,
+        scenarioClosure.orphanComponentIds.length,
       unresolvedCausalLinks:
-        executionClosure.unresolvedEdgeIds.length,
+        scenarioClosure.unresolvedEdgeIds.length,
     },
   };
 }
@@ -549,8 +549,8 @@ export function refreshHiddenGameplayDefectsForWorld(
     consistencyFromWorld(world);
   const degradations =
     degradationFromWorld(world);
-  const simulationPreset =
-    buildGameplaySimulationPreset({
+  const auditScenarioPreset =
+    buildGameplayAuditScenarioPreset({
       arenaCount: world.arenas.count,
       concurrentArenaLimit:
         world.arenas.safeConcurrentArenas ??
@@ -563,15 +563,15 @@ export function refreshHiddenGameplayDefectsForWorld(
       hasPersistence:
         world.persistence !== undefined,
       hasDeferredWork:
-        existing.simulationPreset.scenarios.some(
+        existing.auditScenarioPreset.scenarios.some(
           (scenario) => scenario.kind === "deferred-ownership",
         ),
       hasRepeatedRunSurface:
         world.arenas.detected,
     });
 
-  const executionGraph =
-    compileGameplayExecutionGraph({
+  const scenarioGraph =
+    compileGameplayScenarioGraph({
       intent: {
         schemaVersion: 1,
         id: "refresh-unavailable-intent",
@@ -582,24 +582,24 @@ export function refreshHiddenGameplayDefectsForWorld(
         unknowns: [],
       },
       world,
-      preset: simulationPreset,
+      preset: auditScenarioPreset,
     });
-  const executionClosure =
-    executionGraph.scenarios.length === 0
-      ? existing.gameplayExecution.closure
-      : assessGameplayExecutionClosure(executionGraph);
+  const scenarioClosure =
+    scenarioGraph.scenarios.length === 0
+      ? existing.gameplayScenarioAnalysis.closure
+      : assessGameplayScenarioClosure(scenarioGraph);
 
   return {
     ...existing,
     designConsistency,
     degradations,
-    simulationPreset,
-    gameplayExecution:
-      executionGraph.scenarios.length === 0
-        ? existing.gameplayExecution
+    auditScenarioPreset,
+    gameplayScenarioAnalysis:
+      scenarioGraph.scenarios.length === 0
+        ? existing.gameplayScenarioAnalysis
         : {
-            graph: executionGraph,
-            closure: executionClosure,
+            graph: scenarioGraph,
+            closure: scenarioClosure,
           },
     attention: {
       ...existing.attention,
@@ -607,16 +607,16 @@ export function refreshHiddenGameplayDefectsForWorld(
         designConsistency.length,
       silentDegradations:
         degradations.length,
-      mandatorySimulationScenarios:
-        simulationPreset.scenarios.length,
+      mandatoryAuditScenarios:
+        auditScenarioPreset.scenarios.length,
       orphanGameplayComponents:
-        executionGraph.scenarios.length === 0
+        scenarioGraph.scenarios.length === 0
           ? existing.attention.orphanGameplayComponents
-          : executionClosure.orphanComponentIds.length,
+          : scenarioClosure.orphanComponentIds.length,
       unresolvedCausalLinks:
-        executionGraph.scenarios.length === 0
+        scenarioGraph.scenarios.length === 0
           ? existing.attention.unresolvedCausalLinks
-          : executionClosure.unresolvedEdgeIds.length,
+          : scenarioClosure.unresolvedEdgeIds.length,
     },
   };
 }

@@ -73,7 +73,7 @@ If expected behavior cannot be grounded from the selected artifact, keep it unkn
 
 Bug discovery starts only after Gameplay Model Closure is CLOSED or PARTIAL. OPEN closure forbids comprehensive bug claims and finalization.
 
-## Gameplay execution backbone
+## Gameplay scenario audit backbone
 
 The audit is scenario-driven. Surface discovery and technical analyzers provide evidence; they do not close gameplay by themselves.
 
@@ -90,7 +90,7 @@ Selected Map
 → detect missing links and orphan components
 → analyze player-count/failure/recovery variants
 → translate technical contradictions into player-visible gameplay consequences
-→ Gameplay Execution Closure
+→ Gameplay Scenario Closure
 → Proposed Bug Set
 ```
 
@@ -107,7 +107,7 @@ What does the player experience?
 
 Every material scenario must account for its causal links. Valid causal-link states are `PROVEN`, `CONTRADICTED`, `RUNTIME_BLOCKED`, or `DETECTION_GAP`. There is no gameplay-level `checked` state.
 
-Gameplay Execution Closure is:
+Gameplay Scenario Closure is:
 
 - `CLOSED` only when components are correlated to scenarios and causal links are resolved;
 - `PARTIAL` only for irreducible Minecraft runtime proof;
@@ -115,7 +115,7 @@ Gameplay Execution Closure is:
 
 An OPEN execution closure forbids claims that the audit is complete.
 
-## Gameplay simulation preset
+## Gameplay audit scenario preset
 
 Before contradiction analysis, derive one reusable scenario preset from the selected map's own gameplay model. The preset is mandatory audit input, not a manual test matrix.
 
@@ -138,7 +138,7 @@ Add only relevant scenario families:
 - terminal collisions such as victory × timeout, defeat × respawn, or cleanup × pending work;
 - complete second run after cleanup.
 
-The engine-owned preset is `buildGameplaySimulationPreset()` in diagnostic reasoning and is surfaced by Hidden Gameplay Defect Analysis. Do not replace it with an exhaustive tester checklist.
+The engine-owned preset is `buildGameplayAuditScenarioPreset()` in diagnostic reasoning and is surfaced by Hidden Gameplay Defect Analysis. Do not replace it with an exhaustive tester checklist.
 
 Every scenario is static-first:
 

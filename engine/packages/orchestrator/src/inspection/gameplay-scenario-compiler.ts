@@ -4,17 +4,17 @@ import type {
   GameplayIntentNode,
 } from "../../../gameplay-intent/src/index.js";
 import type {
-  GameplaySimulationPreset,
+  GameplayAuditScenarioPreset,
 } from "../../../diagnostic-reasoning/src/index.js";
 import type {
   GameplayWorldModel,
 } from "./gameplay-world-model.js";
 import type {
-  GameplayExecutionComponent,
-  GameplayExecutionEdge,
-  GameplayExecutionGraph,
-  GameplayExecutionScenario,
-} from "./gameplay-execution-model.js";
+  GameplayScenarioComponent,
+  GameplayCausalLink,
+  GameplayScenarioGraph,
+  GameplayScenario,
+} from "./gameplay-scenario-model.js";
 
 const SCENARIO_NODE_KINDS = new Set([
   "mechanic",
@@ -79,7 +79,7 @@ function relatedNodeIds(
 
 function edgeStatus(
   edge: GameplayIntentEdge,
-): GameplayExecutionEdge["status"] {
+): GameplayCausalLink["status"] {
   if (edge.status === "hypothesis") return "DETECTION_GAP";
   if (edge.evidenceIds.length === 0) return "DETECTION_GAP";
   return "PROVEN";
@@ -96,7 +96,7 @@ function stageForNode(
 }
 
 function presetPlayerCounts(
-  preset: GameplaySimulationPreset,
+  preset: GameplayAuditScenarioPreset,
 ): readonly number[] {
   return [...new Set(
     preset.scenarios
@@ -107,8 +107,8 @@ function presetPlayerCounts(
 
 function runtimeComponents(
   world: GameplayWorldModel,
-): readonly Omit<GameplayExecutionComponent, "usedByScenarioIds" | "orphan">[] {
-  const output: Omit<GameplayExecutionComponent, "usedByScenarioIds" | "orphan">[] = [];
+): readonly Omit<GameplayScenarioComponent, "usedByScenarioIds" | "orphan">[] {
+  const output: Omit<GameplayScenarioComponent, "usedByScenarioIds" | "orphan">[] = [];
   if (world.arenas.detected) {
     output.push({
       id: "runtime:arena",
@@ -206,7 +206,7 @@ function runtimeComponents(
 function runtimeEdgeState(
   componentId: string,
   world: GameplayWorldModel,
-): Pick<GameplayExecutionEdge, "status" | "reason"> {
+): Pick<GameplayCausalLink, "status" | "reason"> {
   switch (componentId) {
     case "runtime:arena": {
       const reduced =
@@ -422,7 +422,7 @@ function runtimeEdgeState(
 
 function runtimeScenarioAffinity(
   componentId: string,
-  scenario: GameplayExecutionScenario,
+  scenario: GameplayScenario,
 ): boolean {
   const haystack = (
     scenario.label + " " +
@@ -457,13 +457,13 @@ function runtimeScenarioAffinity(
   return false;
 }
 
-export function compileGameplayExecutionGraph(
+export function compileGameplayScenarioGraph(
   input: {
     readonly intent: GameplayIntentModel;
     readonly world: GameplayWorldModel;
-    readonly preset: GameplaySimulationPreset;
+    readonly preset: GameplayAuditScenarioPreset;
   },
-): GameplayExecutionGraph {
+): GameplayScenarioGraph {
   const playerCounts = presetPlayerCounts(input.preset);
   const scenarioNodes = input.intent.nodes.filter(
     (node) => SCENARIO_NODE_KINDS.has(node.kind),
@@ -474,7 +474,7 @@ export function compileGameplayExecutionGraph(
   );
 
   function presetComponentIds(
-    kind: GameplaySimulationPreset["scenarios"][number]["kind"],
+    kind: GameplayAuditScenarioPreset["scenarios"][number]["kind"],
   ): readonly string[] {
     const selected = new Set<string>();
     const addRuntime = (...ids: string[]) => {
@@ -561,7 +561,7 @@ export function compileGameplayExecutionGraph(
     return [...selected].sort();
   }
 
-  const scenarios: GameplayExecutionScenario[] = scenarioNodes.map((node) => {
+  const scenarios: GameplayScenario[] = scenarioNodes.map((node) => {
     const componentIds = relatedNodeIds(input.intent, node.id);
     const causalEdgeIds = input.intent.edges
       .filter(
@@ -611,7 +611,7 @@ export function compileGameplayExecutionGraph(
     }
   }
 
-  const components: GameplayExecutionComponent[] = input.intent.nodes.map((node) => {
+  const components: GameplayScenarioComponent[] = input.intent.nodes.map((node) => {
     const usedBy = [...(scenarioIdsBySubject.get(node.id) ?? [])].sort();
     return {
       id: node.id,
@@ -637,7 +637,7 @@ export function compileGameplayExecutionGraph(
   }
 
   const componentIds = new Set(components.map((component) => component.id));
-  const edges: GameplayExecutionEdge[] = [];
+  const edges: GameplayCausalLink[] = [];
   for (const scenario of scenarios) {
     const allowed = new Set(scenario.componentIds);
     for (const edge of input.intent.edges) {
@@ -685,7 +685,7 @@ export function compileGameplayExecutionGraph(
 
   return {
     schemaVersion: 1,
-    policy: "scenario-driven-causal-execution",
+    policy: "scenario-driven-causal-audit",
     scenarios,
     components,
     edges,

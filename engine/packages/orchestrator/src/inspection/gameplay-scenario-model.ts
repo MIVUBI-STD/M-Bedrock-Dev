@@ -2,13 +2,13 @@ import type {
   GameplayIntentNodeKind,
 } from "../../../gameplay-intent/src/index.js";
 
-export type GameplayExecutionEdgeStatus =
+export type GameplayCausalLinkStatus =
   | "PROVEN"
   | "CONTRADICTED"
   | "RUNTIME_BLOCKED"
   | "DETECTION_GAP";
 
-export interface GameplayExecutionComponent {
+export interface GameplayScenarioComponent {
   readonly id: string;
   readonly label: string;
   readonly kind:
@@ -21,18 +21,18 @@ export interface GameplayExecutionComponent {
   readonly orphan: boolean;
 }
 
-export interface GameplayExecutionEdge {
+export interface GameplayCausalLink {
   readonly id: string;
   readonly scenarioId: string;
   readonly fromComponentId: string;
   readonly toComponentId: string;
   readonly purpose: string;
   readonly evidenceIds: readonly string[];
-  readonly status: GameplayExecutionEdgeStatus;
+  readonly status: GameplayCausalLinkStatus;
   readonly reason: string;
 }
 
-export interface GameplayExecutionScenario {
+export interface GameplayScenario {
   readonly id: string;
   readonly label: string;
   readonly gameplayStage: string;
@@ -43,21 +43,21 @@ export interface GameplayExecutionScenario {
   readonly playerCounts: readonly number[];
 }
 
-export interface GameplayExecutionGraph {
+export interface GameplayScenarioGraph {
   readonly schemaVersion: 1;
-  readonly policy: "scenario-driven-causal-execution";
-  readonly scenarios: readonly GameplayExecutionScenario[];
-  readonly components: readonly GameplayExecutionComponent[];
-  readonly edges: readonly GameplayExecutionEdge[];
+  readonly policy: "scenario-driven-causal-audit";
+  readonly scenarios: readonly GameplayScenario[];
+  readonly components: readonly GameplayScenarioComponent[];
+  readonly edges: readonly GameplayCausalLink[];
 }
 
-export type GameplayExecutionClosureStatus =
+export type GameplayScenarioClosureStatus =
   | "CLOSED"
   | "PARTIAL"
   | "OPEN";
 
-export interface GameplayExecutionClosure {
-  readonly status: GameplayExecutionClosureStatus;
+export interface GameplayScenarioClosure {
+  readonly status: GameplayScenarioClosureStatus;
   readonly orphanComponentIds: readonly string[];
   readonly missingPurposeComponentIds: readonly string[];
   readonly unresolvedEdgeIds: readonly string[];
