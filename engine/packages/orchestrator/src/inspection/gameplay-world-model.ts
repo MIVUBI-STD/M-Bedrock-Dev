@@ -381,8 +381,8 @@ export interface GameplayWorldModelSource {
     unresolvedLoads: number;
     placements: number;
     runtimeLogicLoads: number;
-    transitionResidueRisks: number;
-    transitionResidueUnresolved: number;
+    transitionResidueRisks?: number;
+    transitionResidueUnresolved?: number;
   };
   entityAiStack?: EntityAiStackAnalysis;
   routeNavigationEnvironment?: RouteNavigationEnvironmentAnalysis;
@@ -666,13 +666,13 @@ export function deriveGameplayWorldModel(
   if (
     source.structures.loads > 0 ||
     source.structures.runtimeLogicLoads > 0 ||
-    source.structures.transitionResidueRisks > 0 ||
-    source.structures.transitionResidueUnresolved > 0
+    (source.structures.transitionResidueRisks ?? 0) > 0 ||
+    (source.structures.transitionResidueUnresolved ?? 0) > 0
   ) {
     const unresolved =
       source.structures.unresolvedLoads > 0 ||
-      source.structures.transitionResidueRisks > 0 ||
-      source.structures.transitionResidueUnresolved > 0;
+      (source.structures.transitionResidueRisks ?? 0) > 0 ||
+      (source.structures.transitionResidueUnresolved ?? 0) > 0;
     runtimeSurfaces.push({
       id: "runtime:structures",
       label: "Structure and world mutation",
@@ -685,7 +685,7 @@ export function deriveGameplayWorldModel(
       ...(unresolved
         ? {
             reason:
-              source.structures.transitionResidueRisks > 0
+              (source.structures.transitionResidueRisks ?? 0) > 0
                 ? "Structure transitions contain residue-risk cells and require baseline/reset proof."
                 : "One or more structure loads or transition states remain unresolved.",
           }
@@ -1296,6 +1296,12 @@ export function deriveGameplayWorldModel(
     },
     structures: {
       ...source.structures,
+      transitionResidueRisks:
+        source.structures
+          .transitionResidueRisks ?? 0,
+      transitionResidueUnresolved:
+        source.structures
+          .transitionResidueUnresolved ?? 0,
     },
     entities: {
       ...source.entities,
