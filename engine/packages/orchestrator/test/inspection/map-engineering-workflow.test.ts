@@ -30,6 +30,15 @@ function baseSource() {
       routeInstrumentationRequired: 0,
       routeEvidenceBlocked: 0,
     },
+    hiddenGameplayDefects: {
+      attention: {
+        implementationOnlyIntent: 0,
+        incompleteMechanics: 0,
+        negativeSpaceSignals: 0,
+        highTemporalRisks: 0,
+        designAnomalies: 0,
+      },
+    },
     evidenceRecovery: {
       actions: [],
     },
@@ -68,6 +77,7 @@ describe("map engineering workflow projection", () => {
       gameplayClosure: "CLOSED",
       evidenceRecoveryActions: 0,
       repairProposals: 0,
+      hiddenDefectRisks: 0,
     });
   });
 
@@ -116,6 +126,30 @@ describe("map engineering workflow projection", () => {
         (item) => item.id === "release",
       )?.status,
     ).toBe("blocked");
+  });
+
+  it("keeps diagnosis partial while high-risk hidden defects remain", () => {
+    const source = {
+      ...baseSource(),
+      hiddenGameplayDefects: {
+        attention: {
+          ...baseSource().hiddenGameplayDefects.attention,
+          designAnomalies: 1,
+        },
+      },
+    } as any;
+
+    const workflow =
+      buildMapEngineeringWorkflow(source);
+
+    expect(
+      workflow.stages.find(
+        (item) => item.id === "diagnose",
+      )?.status,
+    ).toBe("partial");
+    expect(
+      workflow.attention.hiddenDefectRisks,
+    ).toBe(1);
   });
 
   it("keeps release blocked while critical diagnostics remain", () => {
