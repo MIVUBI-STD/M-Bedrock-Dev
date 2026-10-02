@@ -21,7 +21,7 @@ export function buildBugReportClientLayoutPlan(
   const count = document.issues.length;
 
   return {
-    showIssueIndex: count >= 7,
+    showIssueIndex: count >= 3,
     showSeverityLegend: count > 0,
     compactTables: count >= 4,
   };
