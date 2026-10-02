@@ -16,10 +16,32 @@ export function assessGameplayScenarioClosure(
     .map((component) => component.id)
     .sort();
 
-  const runtimeBlockedCausalLinkIds = graph.causalLinks
+  const runtimeBlockedCausalLinks = graph.causalLinks
     .filter((edge) => edge.status === "RUNTIME_BLOCKED")
-    .map((edge) => edge.id)
-    .sort();
+    .slice()
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const runtimeBlockedCausalLinkIds =
+    runtimeBlockedCausalLinks.map((edge) => edge.id);
+  const runtimeProofRequests =
+    runtimeBlockedCausalLinks.map((edge) => {
+      const scenario = graph.scenarios.find(
+        (item) => item.id === edge.scenarioId,
+      );
+      const scenarioLabel =
+        scenario?.label ?? edge.scenarioId;
+      return {
+        causalLinkId: edge.id,
+        scenarioId: edge.scenarioId,
+        runtimeReason: edge.reason,
+        narrowRuntimeQuestion:
+          "In scenario '" +
+          scenarioLabel +
+          "', does the runtime satisfy this required dependency: " +
+          edge.purpose +
+          "?",
+        evidenceIds: [...edge.evidenceIds],
+      };
+    });
 
   const detectionGapCausalLinkIds = graph.causalLinks
     .filter((edge) => edge.status === "DETECTION_GAP")
@@ -190,6 +212,7 @@ export function assessGameplayScenarioClosure(
     missingPurposeComponentIds,
     unresolvedCausalLinkIds,
     runtimeBlockedCausalLinkIds,
+    runtimeProofRequests,
     detectionGapCausalLinkIds,
     missingRequiredKnowledgeIds,
     capabilityGapKnowledgeIds,
