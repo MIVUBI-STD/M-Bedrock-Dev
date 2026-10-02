@@ -13,8 +13,11 @@ describe("NPC dialogue parser", () => {
       "minecraft:npc_dialogue": {
         scenes: [{
           scene_tag: "entry",
+          npc_name: "Arena Guide",
+          text: "Only two arenas are available right now.",
           on_open_commands: ["/playsound mob.villager.haggle @initiator"],
           buttons: [{
+            name: "Join Queue",
             commands: ["/dialogue open @s @initiator directions"],
           }],
         }, {
@@ -24,6 +27,21 @@ describe("NPC dialogue parser", () => {
       },
     }, source);
 
+    expect(parsed?.scenes[0]?.displayText).toEqual([
+      {
+        kind: "npc-name",
+        text: "Arena Guide",
+      },
+      {
+        kind: "body",
+        text: "Only two arenas are available right now.",
+      },
+      {
+        kind: "button",
+        text: "Join Queue",
+        buttonIndex: 0,
+      },
+    ]);
     expect(parsed?.scenes[0]?.commands).toEqual(expect.arrayContaining([
       expect.objectContaining({
         trigger: "open",
