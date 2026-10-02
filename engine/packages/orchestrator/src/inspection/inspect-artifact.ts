@@ -38,7 +38,7 @@ import { arenaProofLayerEnabled, planArenaProofExecution } from "../arena-proof-
 import { deriveGameplayWorldModel } from "../gameplay-world-model.js";
 import { projectGameplaySemanticModel } from "../gameplay-semantic-model.js";
 import { projectMapEngineeringAssessment } from "../map-engineering-assessment.js";
-import { analyzeHiddenGameplayDefects } from "./hidden-gameplay-defect-analysis.js";
+import { refreshHiddenGameplayDefectsForWorld } from "./hidden-gameplay-defect-analysis.js";
 import { deriveInspectionEngineeringAnalyses } from "./engineering-analysis-stage.js";
 import { collectArtifactReleaseObservations } from "../release-identity-evidence.js";
 import { analyzeReleaseIdentity } from "../release-identity-analysis.js";
@@ -776,25 +776,10 @@ export async function inspectArtifact(
         finalGameplayWorld,
       );
     const finalHiddenGameplayDefects =
-      analyzeHiddenGameplayDefects({
-        intent: result.gameplayIntent.model,
-        semanticIr: {
-          schemaVersion: 1,
-          execution: {
-            regions: [],
-            edges: [],
-          },
-          state: {
-            surfaces: [],
-            operations: [],
-            authorityBindings: [],
-          },
-          temporal: {
-            relations: [],
-          },
-        },
-        world: finalGameplayWorld,
-      });
+      refreshHiddenGameplayDefectsForWorld(
+        result.hiddenGameplayDefects,
+        finalGameplayWorld,
+      );
     const finalEngineeringAnalyses =
       deriveInspectionEngineeringAnalyses({
         world: finalGameplayWorld,
