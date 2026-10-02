@@ -59,6 +59,31 @@ export function assessGameplayStateClosure(
     ),
   );
 
+  const incomingCount = new Map<string, number>();
+  const outgoingCount = new Map<string, number>();
+  for (const edge of model.edges) {
+    incomingCount.set(
+      edge.to,
+      (incomingCount.get(edge.to) ?? 0) + 1,
+    );
+    outgoingCount.set(
+      edge.from,
+      (outgoingCount.get(edge.from) ?? 0) + 1,
+    );
+  }
+  const rootCandidates = stateNodes.filter(
+    (node) =>
+      (incomingCount.get(node.id) ?? 0) === 0 &&
+      (outgoingCount.get(node.id) ?? 0) > 0,
+  );
+  const rootIds = new Set(
+    rootCandidates.length === 1
+      ? [rootCandidates[0]!.id]
+      : [],
+  );
+  const terminalPattern =
+    /(?:victory|defeat|complete|completed|finish|finished|result|end|ended|cleanup|lobby-return|game-over)/i;
+
   const records =
     stateNodes.map((node) => {
       const incoming = model.edges.filter(
@@ -85,8 +110,15 @@ export function assessGameplayStateClosure(
           ),
       );
 
-      const hasEntry = incoming.length > 0;
-      const hasExit = outgoing.length > 0;
+      const hasEntry =
+        incoming.length > 0 ||
+        rootIds.has(node.id);
+      const hasExit =
+        outgoing.length > 0 ||
+        (
+          terminalPattern.test(node.id) ||
+          terminalPattern.test(node.label)
+        );
       const unknown =
         unknownSubjects.has(node.id) ||
         node.status === "hypothesis";
@@ -94,7 +126,7 @@ export function assessGameplayStateClosure(
 
       if (!hasEntry) {
         reasons.push(
-          "No grounded entry path is modeled for this gameplay state.",
+          "No grounded entry path is modeled for this gameplay state, and it is not the unique initial state.",
         );
       }
       if (!hasExit) {
