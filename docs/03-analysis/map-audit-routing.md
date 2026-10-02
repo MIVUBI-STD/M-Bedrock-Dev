@@ -6,13 +6,21 @@ Defines the mandatory reading and execution order before starting a Minecraft ma
 
 ## Production entrypoint
 
-All user-facing selected-map audit work starts from:
+All production selected-map bug analysis starts from exactly one operator command and one engine API:
 
 ```text
+audit <selected-map>
+        ↓
 runSelectedMapAudit({ artifactPath })
 ```
 
-CLI `audit`, `inspect`, `review`, `workflow`, `arena-audit`, and runtime-probe planning/replay obtain their selected-artifact inspection from that run. Low-level `inspectArtifact()` remains engineering plumbing for corpus work, comparison, and repair verification only.
+The canonical stage order is:
+
+```text
+TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT
+```
+
+`inspect`, `review`, `workflow`, `arena-audit`, and runtime-probe utilities are engineering-only projections/tools. They are not production entry points and require the explicit engineering-tools gate. Low-level `inspectArtifact()` remains internal plumbing for corpus work, comparison, repair verification, and bounded engine development only.
 
 Caller-supplied map-specific contracts or arena layouts are forbidden on the production path; the selected artifact remains the sole gameplay authority.
 
