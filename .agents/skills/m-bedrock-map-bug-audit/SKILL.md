@@ -73,6 +73,48 @@ If expected behavior cannot be grounded from the selected artifact, keep it unkn
 
 Bug discovery starts only after Gameplay Model Closure is CLOSED or PARTIAL. OPEN closure forbids comprehensive bug claims and finalization.
 
+## Gameplay execution backbone
+
+The audit is scenario-driven. Surface discovery and technical analyzers provide evidence; they do not close gameplay by themselves.
+
+The mandatory execution path is:
+
+```text
+Selected Map
+→ reconstruct player journey
+→ compile material gameplay scenarios
+→ map every technical/gameplay component to a gameplay purpose
+→ build causal dependency links
+→ route each link to existing analyzers
+→ resolve each link
+→ detect missing links and orphan components
+→ analyze player-count/failure/recovery variants
+→ translate technical contradictions into player-visible gameplay consequences
+→ Gameplay Execution Closure
+→ Proposed Bug Set
+```
+
+A component is not considered understood merely because it was parsed or counted. For every material component answer:
+
+```text
+What is its technical role?
+What gameplay purpose does it serve?
+Which scenario uses it?
+What dependency does it provide?
+What breaks if it fails?
+What does the player experience?
+```
+
+Every material scenario must account for its causal links. Valid causal-link states are `PROVEN`, `CONTRADICTED`, `RUNTIME_BLOCKED`, or `DETECTION_GAP`. There is no gameplay-level `checked` state.
+
+Gameplay Execution Closure is:
+
+- `CLOSED` only when components are correlated to scenarios and causal links are resolved;
+- `PARTIAL` only for irreducible Minecraft runtime proof;
+- `OPEN` when a component is orphaned, a gameplay purpose is missing, a causal link is unproven, or a scenario is not bound to selected-artifact components.
+
+An OPEN execution closure forbids claims that the audit is complete.
+
 ## Gameplay simulation preset
 
 Before contradiction analysis, derive one reusable scenario preset from the selected map's own gameplay model. The preset is mandatory audit input, not a manual test matrix.
