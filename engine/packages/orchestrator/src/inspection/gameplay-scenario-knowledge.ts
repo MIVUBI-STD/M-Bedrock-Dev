@@ -98,9 +98,53 @@ function domainExecuted(
   ).length > 0;
 }
 
+function platformClaimDomainsForScenario(
+  scenarioId: string,
+  requirements: readonly GameplayKnowledgeRequirement[],
+): ReadonlySet<string> {
+  const siblingDomains = new Set(
+    requirements
+      .filter((item) => item.scenarioId === scenarioId)
+      .map((item) => item.domain),
+  );
+  const domains = new Set<string>([
+    "compatibility",
+    "education-runtime",
+    "education",
+  ]);
+
+  if (siblingDomains.has("chunk-simulation")) {
+    domains.add("chunks");
+  }
+  if (
+    siblingDomains.has("arena-lifecycle") ||
+    siblingDomains.has("multiplayer-interleaving")
+  ) {
+    domains.add("multiplayer");
+    domains.add("world-state");
+  }
+  if (siblingDomains.has("entity-behavior")) {
+    domains.add("entity-runtime");
+  }
+  if (siblingDomains.has("temporal-ownership")) {
+    domains.add("event-ordering");
+    domains.add("script-api");
+  }
+  if (siblingDomains.has("persistence-recovery")) {
+    domains.add("persistence");
+  }
+  if (siblingDomains.has("world-structure")) {
+    domains.add("world-mutation");
+  }
+
+  return domains;
+}
+
 function domainEvidence(
   world: GameplayWorldModel,
   domain: GameplayKnowledgeDomain,
+  requirement?: GameplayKnowledgeRequirement,
+  requirements: readonly GameplayKnowledgeRequirement[] = [],
 ): readonly string[] {
   if (!domainExecuted(world, domain)) return [];
   switch (domain) {
@@ -128,8 +172,23 @@ function domainEvidence(
       return ["analysis:spatial-authority"];
     case "temporal-ownership":
       return ["analysis:temporal-ownership"];
-    case "platform-constraints":
-      return ["analysis:platform-constraints"];
+    case "platform-constraints": {
+      if (requirement === undefined) return [];
+      const relevantDomains =
+        platformClaimDomainsForScenario(
+          requirement.scenarioId,
+          requirements,
+        );
+      const decisiveClaims =
+        world.platformKnowledge.claims.filter(
+          (claim) =>
+            relevantDomains.has(claim.domain) &&
+            claim.status !== "unknown",
+        );
+      return decisiveClaims.length > 0
+        ? ["analysis:platform-constraints"]
+        : [];
+    }
   }
 }
 
@@ -668,7 +727,12 @@ export function buildGameplayKnowledgeReceipts(
         )
       );
     const evidenceIds =
-      domainEvidence(world, requirement.domain);
+      domainEvidence(
+        world,
+        requirement.domain,
+        requirement,
+        requirements,
+      );
 
     if (requirement.capabilityIds.length === 0) {
       const receipt: GameplayKnowledgeReceipt = {
@@ -701,7 +765,9 @@ export function buildGameplayKnowledgeReceipts(
         evidenceIds: [],
         capabilityIdsUsed: [],
         reason:
-          "A registered capability exists, but no matching capability execution receipt returned to the scenario for this required domain.",
+          requirement.domain === "platform-constraints"
+            ? "Platform capability/profile exists, but no decisive applicable platform relation claim is available for this scenario. A synthetic platform receipt alone cannot satisfy RIG."
+            : "A registered capability exists, but no matching capability execution receipt returned to the scenario for this required domain.",
       };
       receipts.set(requirement.id, receipt);
       return receipt;
@@ -717,9 +783,11 @@ export function buildGameplayKnowledgeReceipts(
       evidenceIds,
       capabilityIdsUsed,
       reason:
-        "Required gameplay knowledge is present and tied to executed analysis capability receipt(s): " +
-        capabilityIdsUsed.join(", ") +
-        ".",
+        requirement.domain === "platform-constraints"
+          ? "Required platform knowledge is backed by an executed capability and at least one decisive applicable platform relation claim for this scenario."
+          : "Required gameplay knowledge is present and tied to executed analysis capability receipt(s): " +
+            capabilityIdsUsed.join(", ") +
+            ".",
     };
     receipts.set(requirement.id, receipt);
     return receipt;
