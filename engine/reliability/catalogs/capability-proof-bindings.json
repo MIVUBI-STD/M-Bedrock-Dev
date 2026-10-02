@@ -3,6 +3,22 @@
   "semantics": "Bindings identify capability-specific regression/proof surfaces. They do not imply those artifacts were executed in the current session.",
   "bindings": [
     {
+      "capabilityId": "behavior.arena",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/behavior-model/test/capability-contracts.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "behavior.chunks",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/behavior-model/test/capability-contracts.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "behavior.combat",
       "kind": "unit-contract",
       "paths": [
@@ -27,10 +43,42 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
+      "capabilityId": "behavior.entity-ai",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/behavior-model/test/capability-contracts.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "behavior.inventory",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/behavior-model/test/capability-contracts.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "behavior.spatial",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/behavior-model/test/capability-contracts.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "context.compile",
       "kind": "unit-contract",
       "paths": [
         "engine/packages/orchestrator/test/workflow/context-compiler.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "context.dataflow-slice",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/script-dataflow-context-capability.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -296,6 +344,14 @@
       "kind": "unit-contract",
       "paths": [
         "engine/analyzers/scripts/test/parser/parse.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.dataflow",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/flow/dataflow-capability.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
