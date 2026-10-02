@@ -25,6 +25,11 @@ describe("generic gameplay exploitability reasoning", () => {
         label: "Tool B",
       },
     ],
+    coverage: {
+      complete: true,
+      sources: ["fixture"],
+      gaps: [],
+    },
     edges: [
       {
         from: "player:ordinary",
