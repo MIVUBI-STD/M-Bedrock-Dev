@@ -43,10 +43,19 @@ export interface GameplayReachabilityEdge {
 export interface GameplayReachabilityGraph {
   readonly nodes: readonly GameplayReachabilityNode[];
   readonly edges: readonly GameplayReachabilityEdge[];
+  readonly coverage?: {
+    readonly complete: boolean;
+    readonly sources: readonly string[];
+    readonly gaps: readonly string[];
+  };
 }
 
 export interface GameplayReachabilityPath {
   readonly reachable: boolean;
+  readonly resolution:
+    | "reachable"
+    | "unreachable"
+    | "unknown";
   readonly targetId: string;
   readonly originId?: string;
   readonly nodeIds: readonly string[];
@@ -65,6 +74,10 @@ export function findGameplayReachability(
   if (!nodes.has(targetId)) {
     return {
       reachable: false,
+      resolution:
+        graph.coverage?.complete === true
+          ? "unreachable"
+          : "unknown",
       targetId,
       nodeIds: [],
       edgeKinds: [],
@@ -112,6 +125,7 @@ export function findGameplayReachability(
 
       return {
         reachable: true,
+        resolution: "reachable",
         targetId,
         originId: current.nodes[0],
         nodeIds: current.nodes,
@@ -132,6 +146,10 @@ export function findGameplayReachability(
 
   return {
     reachable: false,
+    resolution:
+      graph.coverage?.complete === true
+        ? "unreachable"
+        : "unknown",
     targetId,
     nodeIds: [],
     edgeKinds: [],
