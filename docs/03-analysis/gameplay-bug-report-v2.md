@@ -91,3 +91,27 @@ Implementation details remain in Evidence, not reproduction steps.
 ## Ordering rule
 
 Findings are ordered by gameplay journey. Technical discovery order must not determine report order.
+
+
+## Complex finding depth
+
+Simple bugs remain concise.
+
+When a finding materially depends on shared resources, platform limits, replica divergence, prerequisite reachability, authorization, persistence, or cross-system timing, Technical Analysis should include the relevant subset of:
+
+```text
+Root Cause
+Design Contradiction
+Evidence Convergence
+Quantitative / Platform Constraints
+Prerequisite Reachability
+Authorization / Capability Exposure
+Repair Directions
+Verification Scenario
+```
+
+Reachability gaps must be reported as unresolved evidence rather than converted into claims that a prerequisite is unreachable.
+
+## Publication gate
+
+Gameplay Model Closure `OPEN` blocks comprehensive proposed review and final production publication. A partial bug list must not be presented as the completed audit.
