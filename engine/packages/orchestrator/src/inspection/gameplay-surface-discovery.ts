@@ -1,0 +1,84 @@
+export interface GameplaySurfaceDiscoveryInput {
+  readonly intentSubjectIds: readonly string[];
+  readonly arenaDetected: boolean;
+  readonly arenaCapacityEvidence: boolean;
+  readonly arenaLifecycleEvidence: boolean;
+  readonly arenaCleanupEvidence: boolean;
+  readonly arenaIsolationEvidence: boolean;
+  readonly stateEvidence: boolean;
+  readonly chunkEvidence: boolean;
+  readonly persistenceEvidence: boolean;
+  readonly economyEvidence: boolean;
+  readonly combatEvidence: boolean;
+  readonly inventoryEvidence: boolean;
+  readonly spatialEvidence: boolean;
+  readonly structureEvidence: boolean;
+  readonly entityEvidence: boolean;
+}
+
+export interface GameplaySurfaceDiscoveryResult {
+  readonly surfaceIds: readonly string[];
+  readonly runtimeSurfaceIds: readonly string[];
+}
+
+export function discoverGameplaySurfaces(
+  input: GameplaySurfaceDiscoveryInput,
+): GameplaySurfaceDiscoveryResult {
+  const runtime = new Set<string>();
+
+  if (input.arenaDetected) {
+    runtime.add("runtime:arena");
+  }
+  if (input.arenaCapacityEvidence) {
+    runtime.add("runtime:arena-capacity");
+  }
+  if (input.arenaLifecycleEvidence) {
+    runtime.add("runtime:arena-lifecycle");
+  }
+  if (input.arenaCleanupEvidence) {
+    runtime.add("runtime:arena-cleanup");
+  }
+  if (input.arenaIsolationEvidence) {
+    runtime.add("runtime:arena-isolation");
+  }
+  if (input.stateEvidence) {
+    runtime.add("runtime:state");
+  }
+  if (input.chunkEvidence) {
+    runtime.add("runtime:chunks");
+  }
+  if (input.persistenceEvidence) {
+    runtime.add("runtime:persistence");
+  }
+  if (input.economyEvidence) {
+    runtime.add("runtime:economy");
+  }
+  if (input.combatEvidence) {
+    runtime.add("runtime:combat");
+  }
+  if (input.inventoryEvidence) {
+    runtime.add("runtime:inventory");
+  }
+  if (input.spatialEvidence) {
+    runtime.add("runtime:spatial");
+  }
+  if (input.structureEvidence) {
+    runtime.add("runtime:structures");
+  }
+  if (input.entityEvidence) {
+    runtime.add("runtime:entities");
+  }
+
+  const runtimeSurfaceIds = [...runtime].sort();
+  const surfaceIds = [
+    ...new Set([
+      ...input.intentSubjectIds,
+      ...runtimeSurfaceIds,
+    ]),
+  ].sort();
+
+  return {
+    surfaceIds,
+    runtimeSurfaceIds,
+  };
+}
