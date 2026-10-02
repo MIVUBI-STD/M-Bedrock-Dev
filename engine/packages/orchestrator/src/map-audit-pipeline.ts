@@ -134,6 +134,97 @@ export interface SelectedMapAuditRun {
   readonly reasons: readonly string[];
 }
 
+function deriveSelectedMapAuditControl(input: {
+  readonly admission: SelectedMapAuditAdmission;
+  readonly procedure:
+    InspectArtifactResult["mandatoryAuditProcedure"];
+  readonly scenario:
+    InspectArtifactResult["hiddenGameplayDefects"]["scenarioAudit"];
+}): Pick<
+  SelectedMapAuditRun,
+  | "executionTrace"
+  | "currentStage"
+  | "allowedNextAction"
+  | "continuation"
+  | "readyDefects"
+  | "candidateGroups"
+  | "status"
+  | "blockingCheckpointIds"
+  | "reasons"
+> {
+  const proveAuthorized =
+    input.admission.firstBlockingStage === undefined ||
+    input.admission.firstBlockingStage === "PROVE" ||
+    input.admission.firstBlockingStage === "REPORT";
+  const readyDefects = proveAuthorized
+    ? projectReadyAuditDefects(
+        input.scenario.graph,
+        input.scenario.defectResolution,
+      )
+    : [];
+  const candidateGroups = proveAuthorized
+    ? groupReadyAuditDefectsForCandidateCoverage(
+        input.scenario.graph,
+        readyDefects,
+      )
+    : [];
+  const executionTrace = deriveAuditExecutionTrace({
+    admission: input.admission,
+    procedure: input.procedure,
+  });
+  const currentStage =
+    input.admission.firstBlockingStage ?? "COMPLETE";
+  const allowedNextAction =
+    input.admission.status === "READY"
+      ? "PREPARE_REVIEW" as const
+      : input.admission.firstBlockingStage === "PROVE" &&
+          (
+            input.scenario.defectResolution
+              .gameplayTranslationRequiredIds.length > 0 ||
+            input.scenario.defectResolution
+              .counterProofSearchRequiredIds.length > 0
+          )
+        ? "RESOLVE_DEFECTS" as const
+        : "RESOLVE_BLOCKING_STAGE" as const;
+  const continuation =
+    allowedNextAction === "PREPARE_REVIEW"
+      ? {
+          owner: "REVIEW" as const,
+          requiresNewAuditRun: false,
+          modelMayAuthorizeCompletion: false,
+        }
+      : allowedNextAction === "RESOLVE_DEFECTS"
+        ? {
+            owner: "DEFECT_RESOLUTION" as const,
+            requiresNewAuditRun: false,
+            modelMayAuthorizeCompletion: true,
+          }
+        : {
+            owner: "ENGINE_OR_EVIDENCE" as const,
+            requiresNewAuditRun: true,
+            modelMayAuthorizeCompletion: false,
+          };
+
+  return {
+    executionTrace,
+    currentStage,
+    allowedNextAction,
+    continuation,
+    readyDefects,
+    candidateGroups,
+    status:
+      input.admission.status === "READY"
+        ? "READY_FOR_REVIEW"
+        : "BLOCKED",
+    blockingCheckpointIds: [
+      ...input.procedure.blockingCheckpointIds,
+    ],
+    reasons: input.admission.issues.map((issue) =>
+      "[" + issue.stage + "] " + issue.message
+    ),
+  };
+}
+
 /**
  * Canonical and only supported starting point for a production selected-map audit.
  *
@@ -265,58 +356,11 @@ export async function runSelectedMapAudit(
     auditRevision,
     world: inspection.gameplayWorld,
   });
-  const proveAuthorized =
-    admission.firstBlockingStage === undefined ||
-    admission.firstBlockingStage === "PROVE" ||
-    admission.firstBlockingStage === "REPORT";
-  const readyDefects = proveAuthorized
-    ? projectReadyAuditDefects(
-        scenario.graph,
-        scenario.defectResolution,
-      )
-    : [];
-  const candidateGroups = proveAuthorized
-    ? groupReadyAuditDefectsForCandidateCoverage(
-        scenario.graph,
-        readyDefects,
-      )
-    : [];
-  const executionTrace = deriveAuditExecutionTrace({
+  const control = deriveSelectedMapAuditControl({
     admission,
     procedure,
+    scenario,
   });
-  const currentStage =
-    admission.firstBlockingStage ?? "COMPLETE";
-  const allowedNextAction =
-    admission.status === "READY"
-      ? "PREPARE_REVIEW" as const
-      : admission.firstBlockingStage === "PROVE" &&
-          (
-            scenario.defectResolution
-              .gameplayTranslationRequiredIds.length > 0 ||
-            scenario.defectResolution
-              .counterProofSearchRequiredIds.length > 0
-          )
-        ? "RESOLVE_DEFECTS" as const
-        : "RESOLVE_BLOCKING_STAGE" as const;
-  const continuation =
-    allowedNextAction === "PREPARE_REVIEW"
-      ? {
-          owner: "REVIEW" as const,
-          requiresNewAuditRun: false,
-          modelMayAuthorizeCompletion: false,
-        }
-      : allowedNextAction === "RESOLVE_DEFECTS"
-        ? {
-            owner: "DEFECT_RESOLUTION" as const,
-            requiresNewAuditRun: false,
-            modelMayAuthorizeCompletion: true,
-          }
-        : {
-            owner: "ENGINE_OR_EVIDENCE" as const,
-            requiresNewAuditRun: true,
-            modelMayAuthorizeCompletion: false,
-          };
   return {
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
@@ -324,24 +368,9 @@ export async function runSelectedMapAudit(
     identity,
     auditRevision,
     demandReconciliation: reconciliation,
-    executionTrace,
     admission,
-    currentStage,
-    allowedNextAction,
-    continuation,
     modelTaskPackets,
-    readyDefects,
-    candidateGroups,
-    status:
-      admission.status === "READY"
-        ? "READY_FOR_REVIEW"
-        : "BLOCKED",
-    blockingCheckpointIds: [
-      ...procedure.blockingCheckpointIds,
-    ],
-    reasons: admission.issues.map((issue) =>
-      "[" + issue.stage + "] " + issue.message
-    ),
+    ...control,
   };
 }
 
@@ -425,58 +454,11 @@ export function resolveSelectedMapAudit(
     auditRevision,
     world: updatedInspection.gameplayWorld,
   });
-  const proveAuthorized =
-    admission.firstBlockingStage === undefined ||
-    admission.firstBlockingStage === "PROVE" ||
-    admission.firstBlockingStage === "REPORT";
-  const readyDefects = proveAuthorized
-    ? projectReadyAuditDefects(
-        scenario.graph,
-        scenario.defectResolution,
-      )
-    : [];
-  const candidateGroups = proveAuthorized
-    ? groupReadyAuditDefectsForCandidateCoverage(
-        scenario.graph,
-        readyDefects,
-      )
-    : [];
-  const executionTrace = deriveAuditExecutionTrace({
+  const control = deriveSelectedMapAuditControl({
     admission,
     procedure: mandatoryAuditProcedure,
+    scenario,
   });
-  const currentStage =
-    admission.firstBlockingStage ?? "COMPLETE";
-  const allowedNextAction =
-    admission.status === "READY"
-      ? "PREPARE_REVIEW" as const
-      : admission.firstBlockingStage === "PROVE" &&
-          (
-            scenario.defectResolution
-              .gameplayTranslationRequiredIds.length > 0 ||
-            scenario.defectResolution
-              .counterProofSearchRequiredIds.length > 0
-          )
-        ? "RESOLVE_DEFECTS" as const
-        : "RESOLVE_BLOCKING_STAGE" as const;
-  const continuation =
-    allowedNextAction === "PREPARE_REVIEW"
-      ? {
-          owner: "REVIEW" as const,
-          requiresNewAuditRun: false,
-          modelMayAuthorizeCompletion: false,
-        }
-      : allowedNextAction === "RESOLVE_DEFECTS"
-        ? {
-            owner: "DEFECT_RESOLUTION" as const,
-            requiresNewAuditRun: false,
-            modelMayAuthorizeCompletion: true,
-          }
-        : {
-            owner: "ENGINE_OR_EVIDENCE" as const,
-            requiresNewAuditRun: true,
-            modelMayAuthorizeCompletion: false,
-          };
 
   return {
     schemaVersion: 1,
@@ -486,24 +468,9 @@ export function resolveSelectedMapAudit(
     auditRevision,
     demandReconciliation:
       input.audit.demandReconciliation,
-    executionTrace,
     admission,
-    currentStage,
-    allowedNextAction,
-    continuation,
     modelTaskPackets,
-    readyDefects,
-    candidateGroups,
-    status:
-      admission.status === "READY"
-        ? "READY_FOR_REVIEW"
-        : "BLOCKED",
-    blockingCheckpointIds: [
-      ...mandatoryAuditProcedure.blockingCheckpointIds,
-    ],
-    reasons: admission.issues.map((issue) =>
-      "[" + issue.stage + "] " + issue.message
-    ),
+    ...control,
   };
 }
 
