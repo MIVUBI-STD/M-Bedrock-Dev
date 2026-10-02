@@ -5,6 +5,7 @@ import {
 } from "../../../analysis-planner/src/index.js";
 import type {
   GameplayIntentEdge,
+  GameplayIntentEdgeKind,
   GameplayIntentModel,
   GameplayIntentNode,
 } from "../../../gameplay-intent/src/index.js";
@@ -136,6 +137,62 @@ function add(
   domains.add(domain);
 }
 
+const SCENARIO_TRAVERSAL_EDGE_KINDS =
+  new Set<GameplayIntentEdgeKind>([
+    "owns",
+    "participates-in",
+    "produces",
+    "consumes",
+    "transitions-to",
+    "valid-during",
+    "scoped-to",
+    "located-in",
+    "resets",
+    "persists",
+    "requires",
+    "recovers-to",
+    "wins-by",
+    "loses-by",
+  ]);
+
+export function gameplayScenarioNeighborhoodNodeIds(
+  model: GameplayIntentModel,
+  anchorId: string,
+  maxDepth = 3,
+): readonly string[] {
+  const visited = new Set<string>([anchorId]);
+  let frontier = [anchorId];
+
+  for (
+    let depth = 0;
+    depth < maxDepth && frontier.length > 0;
+    depth += 1
+  ) {
+    const next = new Set<string>();
+    for (const current of frontier) {
+      for (const edge of model.edges) {
+        if (
+          edge.status === "hypothesis" ||
+          !SCENARIO_TRAVERSAL_EDGE_KINDS.has(edge.kind)
+        ) {
+          continue;
+        }
+        if (edge.from === current && !visited.has(edge.to)) {
+          visited.add(edge.to);
+          next.add(edge.to);
+        }
+        if (edge.to === current && !visited.has(edge.from)) {
+          visited.add(edge.from);
+          next.add(edge.from);
+        }
+      }
+    }
+    frontier = [...next];
+  }
+
+  return [...visited].sort();
+}
+
 function semanticDomains(
   node: GameplayIntentNode,
   model: GameplayIntentModel,
@@ -145,15 +202,19 @@ function semanticDomains(
     "state-flow",
   ]);
 
-  const relatedIds = new Set([node.id]);
-  const relatedEdges: GameplayIntentEdge[] = [];
-  for (const edge of model.edges) {
-    if (edge.from === node.id || edge.to === node.id) {
-      relatedEdges.push(edge);
-      relatedIds.add(edge.from);
-      relatedIds.add(edge.to);
-    }
-  }
+  const relatedIds = new Set(
+    gameplayScenarioNeighborhoodNodeIds(
+      model,
+      node.id,
+    ),
+  );
+  const relatedEdges: GameplayIntentEdge[] =
+    model.edges.filter(
+      (edge) =>
+        edge.status !== "hypothesis" &&
+        relatedIds.has(edge.from) &&
+        relatedIds.has(edge.to),
+    );
   const relatedNodes = model.nodes.filter((item) =>
     relatedIds.has(item.id)
   );

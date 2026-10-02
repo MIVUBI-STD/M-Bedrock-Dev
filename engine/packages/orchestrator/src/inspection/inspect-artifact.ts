@@ -919,6 +919,8 @@ export async function inspectArtifact(
       deriveGameplayAnalysisPriorities(
         finalGameplayWorld,
         result.capabilityExposure,
+        finalHiddenGameplayDefects
+          .scenarioAudit.graph,
       );
 
 

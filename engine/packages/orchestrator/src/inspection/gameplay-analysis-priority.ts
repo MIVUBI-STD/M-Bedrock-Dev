@@ -7,6 +7,10 @@ import type {
   GameplayWorldModel,
 } from "./gameplay-world-model.js";
 import type {
+  GameplayKnowledgeDomain,
+  GameplayScenarioGraph,
+} from "./gameplay-scenario-model.js";
+import type {
   CapabilityExposureSummary,
 } from "./capability-exposure-stage.js";
 
@@ -87,10 +91,34 @@ function factorsForSurface(
   }
 }
 
+const SURFACE_KNOWLEDGE_DOMAIN:
+  Readonly<Partial<Record<string, GameplayKnowledgeDomain>>> = {
+    "runtime:arena": "arena-lifecycle",
+    "runtime:arena-capacity": "multiplayer-interleaving",
+    "runtime:arena-lifecycle": "arena-lifecycle",
+    "runtime:arena-cleanup": "arena-lifecycle",
+    "runtime:arena-isolation": "multiplayer-interleaving",
+    "runtime:state": "state-flow",
+    "runtime:chunks": "chunk-simulation",
+    "runtime:persistence": "persistence-recovery",
+    "runtime:economy": "economy-reward",
+    "runtime:combat": "combat-lifecycle",
+    "runtime:inventory": "inventory-state",
+    "runtime:spatial": "spatial-authority",
+    "runtime:structures": "world-structure",
+    "runtime:entities": "entity-behavior",
+  };
+
+export interface GameplayAnalysisPriority
+  extends AuditRiskAssessment {
+  readonly rigDemand: number;
+}
+
 export function deriveGameplayAnalysisPriorities(
   world: GameplayWorldModel,
   capabilities: CapabilityExposureSummary,
-): readonly AuditRiskAssessment[] {
+  scenarioGraph?: GameplayScenarioGraph,
+): readonly GameplayAnalysisPriority[] {
   const unknown = new Set(
     world.gameplayClosure.surfaces
       .filter(
@@ -101,9 +129,21 @@ export function deriveGameplayAnalysisPriorities(
       .map((surface) => surface.id),
   );
 
+  const demandByDomain = new Map<
+    GameplayKnowledgeDomain,
+    number
+  >();
+  for (const requirement of
+    scenarioGraph?.knowledgeRequirements ?? []) {
+    demandByDomain.set(
+      requirement.domain,
+      (demandByDomain.get(requirement.domain) ?? 0) + 1,
+    );
+  }
+
   return world.surfaceDiscovery.surfaceIds
-    .map((surfaceId) =>
-      assessAuditRisk({
+    .map((surfaceId) => {
+      const base = assessAuditRisk({
         surfaceId,
         factors:
           factorsForSurface(
@@ -112,10 +152,20 @@ export function deriveGameplayAnalysisPriorities(
             capabilities,
           ),
         unresolved: unknown.has(surfaceId),
-      }),
-    )
+      });
+      const domain =
+        SURFACE_KNOWLEDGE_DOMAIN[surfaceId];
+      return {
+        ...base,
+        rigDemand:
+          domain === undefined
+            ? 0
+            : demandByDomain.get(domain) ?? 0,
+      };
+    })
     .sort(
       (a, b) =>
+        b.rigDemand - a.rigDemand ||
         b.score - a.score ||
         a.surfaceId.localeCompare(
           b.surfaceId,

@@ -12,6 +12,7 @@ import type {
 import {
   buildGameplayKnowledgeReceipts,
   buildGameplayKnowledgeRequirements,
+  gameplayScenarioNeighborhoodNodeIds,
   requiredKnowledgeDomainsForIntentScenario,
   requiredKnowledgeDomainsForPreset,
 } from "./gameplay-scenario-knowledge.js";
@@ -69,18 +70,6 @@ function technicalRoleForNode(
   node: GameplayIntentNode,
 ): string {
   return node.kind + ": " + node.label;
-}
-
-function relatedNodeIds(
-  model: GameplayIntentModel,
-  anchorId: string,
-): readonly string[] {
-  const ids = new Set([anchorId]);
-  for (const edge of model.edges) {
-    if (edge.from === anchorId) ids.add(edge.to);
-    if (edge.to === anchorId) ids.add(edge.from);
-  }
-  return [...ids];
 }
 
 function edgeStatus(
@@ -541,7 +530,11 @@ export function compileGameplayScenarioGraph(
       scenarioId,
       requiredDomains,
     );
-    const componentIds = relatedNodeIds(input.intent, node.id);
+    const componentIds =
+      gameplayScenarioNeighborhoodNodeIds(
+        input.intent,
+        node.id,
+      );
     const causalLinkIds = input.intent.edges
       .filter(
         (edge) =>

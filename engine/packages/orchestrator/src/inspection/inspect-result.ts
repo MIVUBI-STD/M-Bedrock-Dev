@@ -396,6 +396,7 @@ export function buildInspectionResult(
     deriveGameplayAnalysisPriorities(
       gameplayWorld,
       capabilityExposure,
+      hiddenGameplayDefects.scenarioAudit.graph,
     );
 
   const reliability = deriveReliabilityFingerprint({
