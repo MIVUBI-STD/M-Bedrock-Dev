@@ -14,3 +14,6 @@ export * from "./calibration.js";
 export * from "./declarative-rules.js";
 export * from "./candidate-evidence.js";
 export * from "./audit-coverage.js";
+export * from "./negative-space.js";
+export * from "./temporal-risk.js";
+export * from "./design-consistency.js";
