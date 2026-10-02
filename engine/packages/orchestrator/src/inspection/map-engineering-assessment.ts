@@ -21,6 +21,8 @@ export interface MapEngineeringAssessment {
     isolation: GameplayWorldModel["arenas"]["isolation"];
     globalState: GameplayWorldModel["arenas"]["globalState"];
     stress: GameplayWorldModel["arenas"]["stress"];
+    repeatedRun?:
+      GameplayWorldModel["arenas"]["repeatedRun"];
     proofExecution?: GameplayWorldModel["arenas"]["proofExecution"];
     proof?: GameplayWorldModel["arenas"]["proof"];
   };
@@ -101,6 +103,12 @@ export function projectMapEngineeringAssessment(
       isolation: source.arenas.isolation,
       globalState: source.arenas.globalState,
       stress: source.arenas.stress,
+      ...(source.arenas.repeatedRun === undefined
+        ? {}
+        : {
+            repeatedRun:
+              source.arenas.repeatedRun,
+          }),
       ...(source.arenas.proofExecution === undefined ? {} : { proofExecution: source.arenas.proofExecution }),
       ...(source.arenas.proof === undefined ? {} : { proof: source.arenas.proof }),
     },
