@@ -140,16 +140,20 @@ function add(
   domains.add(domain);
 }
 
-const SCENARIO_TRAVERSAL_EDGE_KINDS =
+const SCENARIO_STRUCTURAL_EDGE_KINDS =
   new Set<GameplayIntentEdgeKind>([
     "owns",
     "participates-in",
-    "produces",
-    "consumes",
-    "transitions-to",
     "valid-during",
     "scoped-to",
     "located-in",
+  ]);
+
+const SCENARIO_FORWARD_EDGE_KINDS =
+  new Set<GameplayIntentEdgeKind>([
+    "produces",
+    "consumes",
+    "transitions-to",
     "resets",
     "persists",
     "requires",
@@ -158,39 +162,122 @@ const SCENARIO_TRAVERSAL_EDGE_KINDS =
     "loses-by",
   ]);
 
+const SCENARIO_REVERSE_CONTEXT_EDGE_KINDS =
+  new Set<GameplayIntentEdgeKind>([
+    "produces",
+    "transitions-to",
+    "recovers-to",
+    "wins-by",
+    "loses-by",
+  ]);
+
+const SCENARIO_STOP_NODE_KINDS =
+  new Set<GameplayIntentNode["kind"]>([
+    "phase",
+    "objective",
+    "outcome",
+    "policy",
+    "spatial-region",
+  ]);
+
+function scenarioTraversalNeighbor(
+  model: GameplayIntentModel,
+  edge: GameplayIntentEdge,
+  currentId: string,
+): string | undefined {
+  if (edge.status === "hypothesis") return undefined;
+
+  if (SCENARIO_STRUCTURAL_EDGE_KINDS.has(edge.kind)) {
+    if (edge.from === currentId) return edge.to;
+    if (edge.to === currentId) return edge.from;
+    return undefined;
+  }
+
+  if (SCENARIO_FORWARD_EDGE_KINDS.has(edge.kind)) {
+    if (edge.from === currentId) return edge.to;
+    if (edge.to !== currentId) return undefined;
+
+    const current = model.nodes.find(
+      (node) => node.id === currentId,
+    );
+    if (
+      current !== undefined &&
+      (
+        current.kind === "objective" ||
+        current.kind === "outcome" ||
+        current.kind === "phase"
+      ) &&
+      SCENARIO_REVERSE_CONTEXT_EDGE_KINDS.has(edge.kind)
+    ) {
+      return edge.from;
+    }
+  }
+
+  return undefined;
+}
+
+function scenarioTraversalCanExpand(
+  model: GameplayIntentModel,
+  nodeId: string,
+  anchorId: string,
+): boolean {
+  if (nodeId === anchorId) return true;
+  const node = model.nodes.find(
+    (item) => item.id === nodeId,
+  );
+  if (node === undefined) return false;
+  return !SCENARIO_STOP_NODE_KINDS.has(node.kind);
+}
+
+/**
+ * Derive the semantic component closure for one gameplay scenario.
+ *
+ * This is intentionally not an undirected N-hop neighborhood. Directional
+ * dependency edges follow authored flow, while structural ownership/scope
+ * edges may be traversed both ways. Shared phase/objective/outcome/policy/
+ * spatial nodes are included as context but stop traversal so they cannot
+ * bridge unrelated sibling mechanics into the same scenario.
+ */
 export function gameplayScenarioNeighborhoodNodeIds(
   model: GameplayIntentModel,
   anchorId: string,
-  maxDepth = 3,
 ): readonly string[] {
-  const visited = new Set<string>([anchorId]);
-  let frontier = [anchorId];
+  const known = new Set(
+    model.nodes.map((node) => node.id),
+  );
+  if (!known.has(anchorId)) return [];
 
-  for (
-    let depth = 0;
-    depth < maxDepth && frontier.length > 0;
-    depth += 1
-  ) {
-    const next = new Set<string>();
-    for (const current of frontier) {
-      for (const edge of model.edges) {
-        if (
-          edge.status === "hypothesis" ||
-          !SCENARIO_TRAVERSAL_EDGE_KINDS.has(edge.kind)
-        ) {
-          continue;
-        }
-        if (edge.from === current && !visited.has(edge.to)) {
-          visited.add(edge.to);
-          next.add(edge.to);
-        }
-        if (edge.to === current && !visited.has(edge.from)) {
-          visited.add(edge.from);
-          next.add(edge.from);
-        }
-      }
+  const visited = new Set<string>([anchorId]);
+  const queue = [anchorId];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (
+      !scenarioTraversalCanExpand(
+        model,
+        current,
+        anchorId,
+      )
+    ) {
+      continue;
     }
-    frontier = [...next];
+
+    for (const edge of model.edges) {
+      const neighbor = scenarioTraversalNeighbor(
+        model,
+        edge,
+        current,
+      );
+      if (
+        neighbor === undefined ||
+        !known.has(neighbor) ||
+        visited.has(neighbor)
+      ) {
+        continue;
+      }
+      visited.add(neighbor);
+      queue.push(neighbor);
+    }
   }
 
   return [...visited].sort();

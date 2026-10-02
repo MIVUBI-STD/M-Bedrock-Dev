@@ -219,6 +219,7 @@ Do not introduce fallbacks, compatibility layers, registries, caches, retries, o
 - Analyzers derive facts; they do not mutate source.
 - Compatibility is explicit/versioned, not scattered conditionals.
 - AI may route/explain/orchestrate; deterministic code owns repeatable mutation.
+- Scenario scope is deterministic: never substitute arbitrary N-hop/undirected graph expansion for typed dependency traversal and semantic stop boundaries.
 - Artifact graph, file inventory, normalized model, and semantic graph remain distinct.
 - Arena/multiplayer topology is derived, not a universal core primitive.
 - CLI, future MCP, and future desktop UI consume the same core engine.

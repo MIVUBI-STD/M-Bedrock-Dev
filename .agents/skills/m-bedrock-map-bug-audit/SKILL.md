@@ -155,6 +155,8 @@ What does the player experience?
 
 Every material scenario must account for its causal links. Valid Gameplay Causal Link states are `PROVEN`, `CONTRADICTED`, `RUNTIME_BLOCKED`, or `DETECTION_GAP`. There is no gameplay-level `checked` state.
 
+Scenario component scope must use typed directional traversal, not an arbitrary undirected depth. Dependency/transition edges follow authored direction; structural ownership/scope edges may traverse both ways; shared phase/objective/outcome/policy/spatial nodes are context boundaries and must not bridge unrelated sibling mechanics. Hypothesis edges never expand scenario scope.
+
 Runtime-domain causal links must carry the originating RIG requirement, scenario scope, subject/component scope, and execution evidence. A domain-wide analyzer counter alone is not sufficient provenance for report admission.
 
 When an analyzer exposes scoped findings (for example script/region chunk leases), causal contradiction must prefer those scoped findings. Aggregate counters may prioritize follow-up, but they must not automatically contaminate unrelated scenarios.
