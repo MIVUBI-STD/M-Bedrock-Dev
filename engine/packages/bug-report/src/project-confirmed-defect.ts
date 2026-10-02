@@ -102,9 +102,23 @@ export function projectConfirmedDefects(
     ...(defect.reproduction === undefined
       ? {}
       : { reproduction: defect.reproduction }),
-    ...(defect.aiAnalysis === undefined
-      ? {}
-      : { aiAnalysis: defect.aiAnalysis }),
+    ...(
+      defect.aiAnalysis === undefined &&
+      defect.engineeringAnalysis === undefined
+        ? {}
+        : {
+            aiAnalysis: [
+              defect.aiAnalysis,
+              defect.engineeringAnalysis,
+            ]
+              .filter(
+                (value): value is string =>
+                  typeof value === "string" &&
+                  value.trim().length > 0,
+              )
+              .join("\n\n"),
+          }
+    ),
     ...(defect.sourceEvidence === undefined
       ? {}
       : {
