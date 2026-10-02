@@ -64,6 +64,10 @@ import {
   reconcileSelectedMapAuditDemand,
   type AuditDemandReconciliation,
 } from "./map-audit-demand-reconciliation.js";
+import {
+  deriveAuditExecutionTrace,
+  type AuditExecutionTrace,
+} from "./map-audit-execution-trace.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -83,6 +87,7 @@ export interface SelectedMapAuditRun {
   readonly identity: SelectedMapAuditIdentity;
   readonly auditRevision: string;
   readonly demandReconciliation: AuditDemandReconciliation;
+  readonly executionTrace: AuditExecutionTrace;
   readonly status: "READY_FOR_REVIEW" | "BLOCKED";
   readonly admission: SelectedMapAuditAdmission;
   readonly currentStage: SelectedMapAuditStage | "COMPLETE";
@@ -203,6 +208,10 @@ export async function runSelectedMapAudit(
     scenario.graph,
     scenario.defectResolution,
   );
+  const executionTrace = deriveAuditExecutionTrace({
+    admission,
+    procedure,
+  });
   const currentStage =
     admission.firstBlockingStage ?? "COMPLETE";
   const allowedNextAction =
@@ -224,6 +233,7 @@ export async function runSelectedMapAudit(
     identity,
     auditRevision,
     demandReconciliation: reconciliation,
+    executionTrace,
     admission,
     currentStage,
     allowedNextAction,
@@ -325,6 +335,10 @@ export function resolveSelectedMapAudit(
     scenario.graph,
     scenario.defectResolution,
   );
+  const executionTrace = deriveAuditExecutionTrace({
+    admission,
+    procedure: mandatoryAuditProcedure,
+  });
   const currentStage =
     admission.firstBlockingStage ?? "COMPLETE";
   const allowedNextAction =
@@ -348,6 +362,7 @@ export function resolveSelectedMapAudit(
     auditRevision,
     demandReconciliation:
       input.audit.demandReconciliation,
+    executionTrace,
     admission,
     currentStage,
     allowedNextAction,
