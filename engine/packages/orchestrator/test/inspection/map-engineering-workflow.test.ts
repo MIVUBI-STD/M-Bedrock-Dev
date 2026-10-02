@@ -37,6 +37,7 @@ function baseSource() {
         negativeSpaceSignals: 0,
         highTemporalRisks: 0,
         designAnomalies: 0,
+        silentDegradations: 0,
       },
     },
     evidenceRecovery: {
