@@ -5,7 +5,7 @@ Evaluate whether Map Bug Audit:
 - derives Gameplay Contract only from that artifact;
 - does not borrow intent from stale/external sources;
 - accounts for every discovered gameplay surface;
-- proves the classified relevant-source inventory balances indexed files plus explicit parse failures;
+- proves the classified relevant-source inventory balances indexed files, explicit parse failures, and unsupported gameplay-sensitive residue;
 - does not confuse balanced classified-source inventory with proof that every possible unknown format has been recognized;
 - treats candidate families as tags, not a discovery whitelist;
 - never mutates engine or target;
