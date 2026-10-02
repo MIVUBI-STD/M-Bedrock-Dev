@@ -60,3 +60,30 @@ Runtime-domain contracts are loaded when their system is present in the selected
 - Sensitive capability exposure can block release even when prerequisite reachability is not yet fully proven; reachability distinguishes confirmed exposure from potential exposure.
 - Replica integrity uses progressive evidence: native chunk fingerprints first, then decoded voxel/block-entity proof when required.
 - Known issue examples are regression fixtures only. Routing must remain object- and map-agnostic.
+
+
+## Efficient first-pass execution
+
+Use this ordering to minimize wasted analysis:
+
+```text
+Cheap source/surface discovery
+→ Gameplay Discovery Closure
+→ Game Design / State / Boundary reconstruction
+→ Gameplay Model Closure
+→ Risk-directed proof priority
+→ Contradiction discovery
+→ Early intent/counter-evidence confirmation
+→ Exact-work deduplication
+→ Deep classification only for surviving candidates
+→ Engineering analysis only for complex confirmed findings
+→ Closure-gated report
+```
+
+Rules:
+
+- Discovery Closure `OPEN` blocks claims that the surface inventory is complete.
+- Low-risk surfaces still receive coverage accounting, but default to static proof depth.
+- Medium/high-risk surfaces receive targeted/deep proof escalation.
+- A candidate that fails confirmation must stop before expensive classification/trigger work.
+- Exact duplicate candidate work may be skipped, but corroborating evidence from another route or different evidence set must be retained.
