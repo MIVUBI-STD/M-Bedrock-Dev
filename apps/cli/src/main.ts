@@ -1,7 +1,13 @@
 import { basename, resolve } from "node:path";
-import { compareArtifacts } from "../../../engine/packages/orchestrator/src/index.js";\nimport { proveNoopPackageRoundtrip } from "../../../engine/packages/orchestrator/src/index.js";
+import { compareArtifacts } from "../../../engine/packages/orchestrator/src/index.js";
+import { proveNoopPackageRoundtrip } from "../../../engine/packages/orchestrator/src/index.js";
 import { compareArtifactsForUpdate } from "../../../engine/packages/orchestrator/src/index.js";
-import { inspectArtifact } from "../../../engine/packages/orchestrator/src/index.js";
+import {
+  runSelectedMapAudit,
+  type InspectTargetProfile,
+  type SelectedMapAuditRuntimeTarget,
+} from "../../../engine/packages/orchestrator/src/index.js";
+import { inspectArtifact } from "../../../engine/packages/orchestrator/src/inspection/inspect-artifact.js";
 import { buildEngineeringReviewProjection } from "../../../engine/packages/orchestrator/src/index.js";
 import { buildArenaEngineeringProjection } from "../../../engine/packages/orchestrator/src/index.js";
 import { buildMapEngineeringWorkflow } from "../../../engine/packages/orchestrator/src/index.js";
@@ -24,6 +30,37 @@ import {
   loadArenaRegionContractsFile,
   runArenaGoldenCorpusFromFile,
 } from "../../../engine/packages/orchestrator/src/index.js";
+
+function selectedMapAuditRuntimeTarget(
+  target: InspectTargetProfile,
+): SelectedMapAuditRuntimeTarget {
+  return {
+    ...(target.edition === undefined
+      ? {}
+      : { edition: target.edition }),
+    ...(target.version === undefined
+      ? {}
+      : { version: target.version }),
+    ...(target.educationFeatures === undefined
+      ? {}
+      : { educationFeatures: target.educationFeatures }),
+    ...(target.eduLevel === undefined
+      ? {}
+      : { eduLevel: target.eduLevel }),
+    ...(target.experiments === undefined
+      ? {}
+      : { experiments: target.experiments }),
+    ...(target.arenaProofMode === undefined
+      ? {}
+      : { arenaProofMode: target.arenaProofMode }),
+    ...(target.staticExecutionDimension === undefined
+      ? {}
+      : {
+          staticExecutionDimension:
+            target.staticExecutionDimension,
+        }),
+  };
+}
 
 async function main(): Promise<void> {
   const [, , command, ...rawArgs] = process.argv;
@@ -107,13 +144,16 @@ async function main(): Promise<void> {
       resolve(probeBindingsPath),
     );
 
-    const result = await inspectArtifact(
-      resolve(input),
-      target,
-      knowledge,
-      telemetry ?? [],
-      probeTranscript,
-    );
+    const audit = await runSelectedMapAudit({
+      artifactPath: resolve(input),
+      target: selectedMapAuditRuntimeTarget(target),
+      knowledgeCatalog: knowledge,
+      telemetry: telemetry ?? [],
+      ...(probeTranscript === undefined
+        ? {}
+        : { runtimeProbeTranscript: probeTranscript }),
+    });
+    const result = audit.inspection;
 
     const prepared = prepareRuntimeProbeBundle(
       result,
@@ -159,12 +199,13 @@ async function main(): Promise<void> {
       ? await loadRuntimeProbeBindings(resolve(probeBindingsPath))
       : undefined;
 
-    const baseline = await inspectArtifact(
-      resolve(input),
-      target,
-      knowledge,
-      telemetry ?? [],
-    );
+    const baselineAudit = await runSelectedMapAudit({
+      artifactPath: resolve(input),
+      target: selectedMapAuditRuntimeTarget(target),
+      knowledgeCatalog: knowledge,
+      telemetry: telemetry ?? [],
+    });
+    const baseline = baselineAudit.inspection;
     assertRuntimeProbeTranscriptArtifact(
       transcript,
       baseline.artifactId,
@@ -406,6 +447,31 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === "audit" && input) {
+    const telemetry = telemetryPath
+      ? await loadTelemetryFile(resolve(telemetryPath))
+      : undefined;
+    const probeTranscript = probeTranscriptPath
+      ? await loadRuntimeProbeTranscript(
+          resolve(probeTranscriptPath),
+        )
+      : undefined;
+    const audit = await runSelectedMapAudit({
+      artifactPath: resolve(input),
+      target: selectedMapAuditRuntimeTarget(target),
+      knowledgeCatalog: knowledge,
+      telemetry: telemetry ?? [],
+      ...(probeTranscript === undefined
+        ? {}
+        : { runtimeProbeTranscript: probeTranscript }),
+    });
+    console.log(JSON.stringify(audit, null, 2));
+    if (audit.status === "BLOCKED") {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (command === "workflow" && input) {
     const telemetry = telemetryPath
       ? await loadTelemetryFile(resolve(telemetryPath))
@@ -415,13 +481,16 @@ async function main(): Promise<void> {
           resolve(probeTranscriptPath),
         )
       : undefined;
-    const result = await inspectArtifact(
-      resolve(input),
-      target,
-      knowledge,
-      telemetry ?? [],
-      probeTranscript,
-    );
+    const audit = await runSelectedMapAudit({
+      artifactPath: resolve(input),
+      target: selectedMapAuditRuntimeTarget(target),
+      knowledgeCatalog: knowledge,
+      telemetry: telemetry ?? [],
+      ...(probeTranscript === undefined
+        ? {}
+        : { runtimeProbeTranscript: probeTranscript }),
+    });
+    const result = audit.inspection;
     const workflow =
       buildMapEngineeringWorkflow(result);
     console.log(
@@ -449,17 +518,20 @@ async function main(): Promise<void> {
           resolve(probeTranscriptPath),
         )
       : undefined;
-    const result = await inspectArtifact(
-      resolve(input),
-      {
+    const audit = await runSelectedMapAudit({
+      artifactPath: resolve(input),
+      target: selectedMapAuditRuntimeTarget({
         ...target,
         arenaProofMode:
           target.arenaProofMode ?? "full",
-      },
-      knowledge,
-      telemetry ?? [],
-      probeTranscript,
-    );
+      }),
+      knowledgeCatalog: knowledge,
+      telemetry: telemetry ?? [],
+      ...(probeTranscript === undefined
+        ? {}
+        : { runtimeProbeTranscript: probeTranscript }),
+    });
+    const result = audit.inspection;
     const projection =
       buildArenaEngineeringProjection(result);
     console.log(JSON.stringify(projection, null, 2));
@@ -481,15 +553,17 @@ async function main(): Promise<void> {
     const probeTranscript = probeTranscriptPath
       ? await loadRuntimeProbeTranscript(resolve(probeTranscriptPath))
       : undefined;
-    const result = await inspectArtifact(
-      resolve(input),
-      target,
-      knowledge,
-      telemetry ?? [],
-      probeTranscript,
-    );
+    const audit = await runSelectedMapAudit({
+      artifactPath: resolve(input),
+      target: selectedMapAuditRuntimeTarget(target),
+      knowledgeCatalog: knowledge,
+      telemetry: telemetry ?? [],
+      ...(probeTranscript === undefined
+        ? {}
+        : { runtimeProbeTranscript: probeTranscript }),
+    });
     console.log(JSON.stringify(
-      buildEngineeringReviewProjection(result),
+      buildEngineeringReviewProjection(audit.inspection),
       null,
       2,
     ));
@@ -503,16 +577,22 @@ async function main(): Promise<void> {
     const probeTranscript = probeTranscriptPath
       ? await loadRuntimeProbeTranscript(resolve(probeTranscriptPath))
       : undefined;
-    const result = await inspectArtifact(
-      resolve(input),
-      target,
-      knowledge,
-      telemetry ?? [],
-      probeTranscript,
-    );
-    console.log(JSON.stringify(result, null, 2));
+    const audit = await runSelectedMapAudit({
+      artifactPath: resolve(input),
+      target: selectedMapAuditRuntimeTarget(target),
+      knowledgeCatalog: knowledge,
+      telemetry: telemetry ?? [],
+      ...(probeTranscript === undefined
+        ? {}
+        : { runtimeProbeTranscript: probeTranscript }),
+    });
+    console.log(JSON.stringify(audit.inspection, null, 2));
 
-    if (result.diagnostics.some((finding) => finding.severity === "critical")) {
+    if (
+      audit.inspection.diagnostics.some(
+        (finding) => finding.severity === "critical",
+      )
+    ) {
       process.exitCode = 1;
     }
     return;
@@ -520,6 +600,7 @@ async function main(): Promise<void> {
 
   if (
     (telemetryPath || probeTranscriptPath) &&
+    command !== "audit" &&
     command !== "inspect" &&
     command !== "review" &&
     command !== "arena-audit" &&
@@ -588,6 +669,7 @@ async function main(): Promise<void> {
     "  npm run cli -- plan <changed-path> [changed-path ...]",
     "  npm run cli -- arena-corpus <manifest.json> [artifact-root] [--edition ...] [--version ...] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
+    "  npm run cli -- audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",\n    "  npm run cli -- package-roundtrip <path-to-mcworld-or-zip>",
     "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
     "  npm run cli -- arena-baseline <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json]",
