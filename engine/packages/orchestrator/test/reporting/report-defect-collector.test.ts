@@ -77,6 +77,17 @@ const staticResult: IntentDiagnosticGateResult = {
   reasons: ["Static implementation contradicts authored cleanup intent."],
 };
 
+const closedGameplayModel = {
+  status: "CLOSED" as const,
+  surfaces: [],
+  unaccountedSurfaceIds: [],
+  blockingSurfaceIds: [],
+  unknownSurfaceIds: [],
+  stateModelComplete: true,
+  boundariesExtracted: true,
+  reasons: [],
+};
+
 function defect(
   label: string,
   options: {
@@ -156,6 +167,8 @@ function buildApprovedReport(
 
   return buildBugReportFromAuditCandidates({
     ...input,
+    gameplayClosure:
+      closedGameplayModel,
     approved: reviewed.approved,
   });
 }
