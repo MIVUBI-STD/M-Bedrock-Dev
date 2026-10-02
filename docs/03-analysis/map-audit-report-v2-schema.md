@@ -9,14 +9,16 @@ Defines the production audit model after Game Design First analysis.
 ```text
 World Artifact
 → Evidence Scope
+→ Gameplay Surface Inventory
 → Game Design Model
-→ Gameplay Flow
-→ State Transitions
-→ Multi Arena / Capacity Model
+→ Gameplay Flow + State Closure
+→ Boundary / Multi Arena / Capacity / Replica Model
+→ Reachability + Capability Exposure
 → Blind-Spot + Cross-System Coverage
+→ Gameplay Model Closure
 → Bug Findings
 → Coverage Accounting
-→ Production Report
+→ Closure-gated Production Report
 ```
 
 ## Evidence scope
@@ -79,3 +81,25 @@ Confirmed bugs additionally require:
 - Needs Validation — plausible issue requiring additional proof.
 - Ambiguous — conflicting or insufficiently grounded gameplay intent.
 - Detection Gap — audit capability cannot safely evaluate the surface.
+
+
+## Gameplay Model Closure
+
+- `CLOSED` — discovered surfaces are accounted and material state/boundary understanding is complete.
+- `PARTIAL` — discovered surfaces are accounted, but explicitly identified material evidence remains blocked/unknown.
+- `OPEN` — one or more discovered surfaces are unaccounted, the major state model is incomplete, or material boundaries are not sufficiently extracted.
+
+`OPEN` may contain non-empty `unaccountedSurfaceIds` and blocks comprehensive production review/publication.
+
+## Advanced coverage
+
+When applicable, coverage includes:
+
+- replica integrity/completeness;
+- prerequisite reachability;
+- sensitive capability exposure/authorization;
+- negative-space and mechanic completeness;
+- temporal/cross-system risk;
+- repeated-run baseline/reset proof;
+- player-facing evidence;
+- quantitative/platform constraints.
