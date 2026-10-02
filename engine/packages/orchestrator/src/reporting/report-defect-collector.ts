@@ -40,6 +40,9 @@ import type {
   GameplayDefectResolutionGate,
 } from "../inspection/gameplay-defect-resolution.js";
 import type {
+  MandatoryAuditProcedureReceipt,
+} from "../inspection/mandatory-audit-procedure.js";
+import type {
   RuntimeExperimentDefinition,
 } from "../../../runtime-lab/src/index.js";
 import type {
@@ -1041,6 +1044,30 @@ export interface BuildBugReportFromClosedAuditInput
     GameplayScenarioClosure;
   readonly gameplayDefectResolution?:
     GameplayDefectResolutionGate;
+  readonly mandatoryAuditProcedure?:
+    MandatoryAuditProcedureReceipt;
+}
+
+export function mandatoryAuditProcedurePublicationIssues(
+  procedure: MandatoryAuditProcedureReceipt | undefined,
+): readonly {
+  code: "invalid-confirmed-defect";
+  message: string;
+}[] {
+  if (procedure === undefined) {
+    return [{
+      code: "invalid-confirmed-defect",
+      message:
+        "Mandatory Audit Procedure receipt is missing. Production publication cannot bypass UNDERSTAND → MODEL → STRESS → PROVE → REPORT.",
+    }];
+  }
+  if (procedure.status !== "OPEN") return [];
+  return [{
+    code: "invalid-confirmed-defect",
+    message:
+      "Mandatory Audit Procedure is OPEN. " +
+      procedure.reasons.join(" "),
+  }];
 }
 
 export function gameplayDiscoveryPublicationIssues(
@@ -1295,6 +1322,9 @@ export function prepareBugReportReviewFromAuditCandidates(
     PrepareBugReportReviewFromClosedAuditInput,
 ): PrepareBugReportReviewFromClosedAuditResult {
   const closureIssues = [
+    ...mandatoryAuditProcedurePublicationIssues(
+      input.mandatoryAuditProcedure,
+    ),
     ...gameplayDiscoveryPublicationIssues(
       input.gameplayDiscoveryClosure,
     ),
@@ -1392,6 +1422,9 @@ export function buildBugReportFromAuditCandidates(
   input: BuildBugReportFromClosedAuditInput,
 ): BuildBugReportFromAuditResult {
   const closureIssues = [
+    ...mandatoryAuditProcedurePublicationIssues(
+      input.mandatoryAuditProcedure,
+    ),
     ...gameplayDiscoveryPublicationIssues(
       input.gameplayDiscoveryClosure,
     ),

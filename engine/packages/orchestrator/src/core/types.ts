@@ -61,6 +61,7 @@ import type { GameplayReachabilityGraph } from "../../../diagnostic-reasoning/sr
 import type { CapabilityExposureSummary } from "../capability-exposure-stage.js";
 import type { AuditRiskAssessment } from "../../../diagnostic-reasoning/src/index.js";
 import type { GameplayDiscoveryClosure } from "../gameplay-discovery-closure.js";
+import type { MandatoryAuditProcedureReceipt } from "../mandatory-audit-procedure.js";
 import type { ArenaStressPlan } from "../arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "../arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "../arena-authored-source-index.js";
@@ -156,6 +157,8 @@ export interface InspectDirectoryResult {
     CapabilityExposureSummary;
   analysisPriorities:
     readonly AuditRiskAssessment[];
+  mandatoryAuditProcedure:
+    MandatoryAuditProcedureReceipt;
   structures: number;
   parsedStructures: number;
   entities: number;

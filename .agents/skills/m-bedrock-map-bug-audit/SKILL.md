@@ -28,6 +28,8 @@ UNDERSTAND → MODEL → STRESS → PROVE → REPORT
 
 This skill routes the work; it must not duplicate or weaken those checkpoint closure rules.
 
+The engine-owned machine-readable receipt is `inspection/mandatory-audit-procedure.ts`. Production report publication must receive this receipt; an OPEN procedure blocks publication. Do not create a parallel manual status table.
+
 ```text
 Selected Map Version
 → Gameplay Surface Inventory

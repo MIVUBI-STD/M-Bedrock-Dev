@@ -33,6 +33,7 @@ import { summarizeCapabilityExposure } from "./capability-exposure-stage.js";
 import { assessGameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";
 import { deriveGameplayAnalysisPriorities } from "./gameplay-analysis-priority.js";
 import { deriveArenaAuthoredSpatialSources } from "../arena-authored-source-index.js";
+import { deriveMandatoryAuditProcedureReceipt } from "./mandatory-audit-procedure.js";
 
 type SourceIndex = Awaited<
   ReturnType<typeof indexInspectionSources>
@@ -402,6 +403,18 @@ export function buildInspectionResult(
       hiddenGameplayDefects.scenarioAudit.graph,
     );
 
+  const mandatoryAuditProcedure =
+    deriveMandatoryAuditProcedureReceipt({
+      artifactId: input.artifactId,
+      discovery: gameplayDiscoveryClosure,
+      world: gameplayWorld,
+      intent: input.gameplayIntent,
+      semanticIr: input.semanticIr,
+      boundaries: gameplayBoundaries,
+      multiplayer: multiplayerStateValidation,
+      hidden: hiddenGameplayDefects,
+    });
+
   const reliability = deriveReliabilityFingerprint({
     mapId: input.artifactId,
     ...(input.sourceFingerprint
@@ -473,6 +486,7 @@ export function buildInspectionResult(
     gameplayReachability,
     capabilityExposure,
     analysisPriorities,
+    mandatoryAuditProcedure,
     structures: nodes.filter(
       (node) => node.kind === "structure",
     ).length,
