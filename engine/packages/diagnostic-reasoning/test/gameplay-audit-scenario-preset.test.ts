@@ -32,6 +32,17 @@ describe("gameplay audit scenario preset flow stages", () => {
     expect(byKind.get("multi-arena-parallel")).toBe(
       "READY_START",
     );
+    expect(byKind.get("arena-capacity-plus-one")).toBe(
+      "READY_START",
+    );
+    const capacityScenario = preset.scenarios.find(
+      (scenario) =>
+        scenario.kind === "arena-capacity-plus-one",
+    );
+    expect(capacityScenario?.concurrentArenas).toBe(3);
+    expect(capacityScenario?.reason).toMatch(
+      /gameplay\/design capacity degradation/i,
+    );
     expect(byKind.get("terminal-collision")).toBe(
       "TERMINAL",
     );
