@@ -10,10 +10,12 @@ A client or tester should understand, in this order:
 
 1. which map/version is being reviewed;
 2. how many gameplay-relevant issues are open;
-3. which issues are Blocker or Major;
+3. which issues need attention first;
 4. what the player experiences;
-5. how to trigger the problem in-game;
-6. what should happen instead.
+5. how to reproduce it using a checkable in-game path;
+6. what was observed versus expected;
+7. what work remains to fix/retest;
+8. technical/root-cause detail only when needed.
 
 ## Reportability boundary
 
@@ -75,15 +77,22 @@ Use for limited player-visible defects that do not materially affect core gamepl
 Map header
 Map Version | Tested Version | Open Issues | Severity
 
+Issue Dashboard (3+ visible issues)
+Bug ID | Severity | Category | Issue
+
 Bug 01
 Issue
-How to Trigger
+Tester Checklist
 Result (Observed + Expected)
 Resolution, when supported
+Work Checklist
+Technical Analysis / Relevant Code / Must Preserve, when available
 
 Bug 02
 ...
 ```
+
+Reproduction and work checkboxes are presentation-only aids. They are not canonical bug state.
 
 Each input report represents one map. One generated HTML therefore corresponds to one map and forms a natural printable page/report unit.
 
@@ -97,7 +106,8 @@ Each input report represents one map. One generated HTML therefore corresponds t
 - print-safe A4 CSS;
 - bug cards should avoid page breaks where practical;
 - severity must always be written as text;
-- implementation details remain hidden.
+- implementation details stay out of the primary Issue/Tester layer;
+- engineering details may appear in a separate collapsible/printable Technical Analysis layer when canonical data exists.
 
 ## Authority chain
 
@@ -120,7 +130,7 @@ Do not add:
 - Vite publication flow;
 - SaaS rendering;
 - decorative cover pages;
-- dashboards;
+- project-management dashboards or a second tracking system;
 - a second report schema.
 
 Browser Print may be used for an occasional PDF snapshot, but PDF is not a separately generated canonical report format.
