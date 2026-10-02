@@ -76,16 +76,31 @@ async function main(): Promise<void> {
   const [input, secondInput, thirdInput] = args;
   const productionAuditCommands = new Set([
     "audit",
-    "probe-plan",
-    "probe-replay",
+  ]);
+  const engineeringAuditTools = new Set([
+    "inspect",
+    "review",
     "workflow",
     "arena-audit",
-    "review",
-    "inspect",
+    "probe-plan",
+    "probe-replay",
   ]);
   const productionAuditCommand =
     command !== undefined &&
     productionAuditCommands.has(command);
+
+  if (
+    command !== undefined &&
+    engineeringAuditTools.has(command) &&
+    process.env.MBEDROCK_ENGINEERING_TOOLS !== "1"
+  ) {
+    throw new Error(
+      command +
+        " is an engineering-only diagnostic/projection command. " +
+        "Use 'audit <map.mcworld>' for production map bug analysis. " +
+        "Set MBEDROCK_ENGINEERING_TOOLS=1 only for bounded engine development.",
+    );
+  }
 
   if (
     productionAuditCommand &&
@@ -693,25 +708,26 @@ async function main(): Promise<void> {
 
   console.error([
     "Usage:",
+    "",
+    "Production map bug analysis (single entry):",
+    "  npm run cli -- audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
+    "",
+    "Repository / engineering utilities:",
     "  npm run cli -- affected <changed-path> [changed-path ...]",
     "  npm run cli -- plan <changed-path> [changed-path ...]",
+    "  npm run cli -- package-roundtrip <path-to-mcworld-or-zip>",
     "  npm run cli -- arena-corpus <manifest.json> [artifact-root] [--edition ...] [--version ...] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
     "  npm run cli -- corpus-calibrate <manifest.json> [artifact-root] [--edition ...] [--version ...] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
-    "  npm run cli -- audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- inspect <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--experiment id] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- package-roundtrip <path-to-mcworld-or-zip>",
-    "  npm run cli -- arena-audit <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- arena-baseline <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json]",
+    "  npm run cli -- arena-baseline <path-to-mcworld-or-zip> [--edition ...] [--version ...]",
     "  npm run cli -- arena-corpus-status <manifest.json> [artifact-root]",
-    "  npm run cli -- arena-adapter <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json]",
-    "  npm run cli -- workflow <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- verify-repair <before-mcworld> <after-mcworld> [--edition bedrock|education] [--version x.y.z] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
-    "  npm run cli -- review <path-to-mcworld-or-zip> [--edition bedrock|education] [--version x.y.z] [--arena-proof-mode progressive|full] [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- probe-plan <map.mcworld> --probe-bindings bindings.json --probe-context LIVE_MINECRAFT [--telemetry qa.json] [--probe-transcript probes.json]",
-    "  npm run cli -- probe-replay <map.mcworld> --probe-transcript probes.json --probe-context LIVE_MINECRAFT [--probe-bindings bindings.json] [--telemetry qa.json]",
-    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
-    "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...] [--contract-source-root path] [--arena-region-contracts regions.json] [--arena-proof-mode progressive|full]",
+    "  npm run cli -- arena-adapter <path-to-mcworld-or-zip> [--edition ...] [--version ...]",
+    "  npm run cli -- verify-repair <before-mcworld> <after-mcworld> [--edition ...] [--version ...]",
+    "  npm run cli -- script-usage <map1.mcworld> [map2.mcworld ...] [--edition ...] [--version ...]",
+    "  npm run cli -- compare <before-mcworld> <after-mcworld> [--edition ...] [--version ...]",
     "  npm run cli -- compare-update <before-mcworld> <after-mcworld> <target-version> [--edition ...] [--experiment id]",
+    "",
+    "Engineering-only audit projections (require MBEDROCK_ENGINEERING_TOOLS=1):",
+    "  inspect | review | workflow | arena-audit | probe-plan | probe-replay",
   ].join("\n"));
   process.exitCode = 2;
 }
