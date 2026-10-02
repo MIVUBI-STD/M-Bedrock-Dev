@@ -323,6 +323,33 @@ export function buildInspectionResult(
             item.transitionResidue?.status ===
             "unresolved",
         ).length,
+      loadCorrelations:
+        structureRuntime.correlations.map((item) => ({
+          functionId: item.load.functionId,
+          ...(item.load.line === undefined
+            ? {}
+            : { line: item.load.line }),
+          target: item.load.semantics.name,
+          status: item.status,
+          findings: [...item.findings],
+        })),
+      transitionResidue:
+        structureRuntime.structureTransitionResidue.map((item) => ({
+          functionId: item.functionId,
+          previousTarget: item.previousTarget,
+          nextTarget: item.nextTarget,
+          ...(item.previousLine === undefined
+            ? {}
+            : { previousLine: item.previousLine }),
+          ...(item.nextLine === undefined
+            ? {}
+            : { nextLine: item.nextLine }),
+          status: item.status,
+          preservedByVoid: item.preservedByVoid,
+          explicitlyCleared: item.explicitlyCleared,
+          replaced: item.replaced,
+          reasons: [...item.reasons],
+        })),
     },
     entityAiStack,
     routeNavigationEnvironment,

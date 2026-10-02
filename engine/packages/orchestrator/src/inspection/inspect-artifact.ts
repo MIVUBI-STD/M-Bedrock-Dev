@@ -865,6 +865,12 @@ export async function inspectArtifact(
           transitionResidueUnresolved:
             result.gameplayWorld.structures
               .transitionResidueUnresolved,
+          loadCorrelations:
+            result.gameplayWorld.structures
+              .loadCorrelations,
+          transitionResidue:
+            result.gameplayWorld.structures
+              .transitionResidue,
         },
         entities: {
           definitions: result.entities,

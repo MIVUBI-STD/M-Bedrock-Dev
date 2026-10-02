@@ -270,6 +270,26 @@ function scopedByScript<T extends { scriptId: string }>(
   );
 }
 
+function identifierMatchesScenarioScope(
+  identifier: string,
+  sourceLocators: readonly string[],
+): boolean {
+  if (sourceLocators.length === 0) return false;
+  const raw = normalizedLocator(identifier);
+  const tail = raw.split(":").at(-1) ?? raw;
+  return sourceLocators.some((locator) => {
+    const normalized = normalizedLocator(locator).split("#")[0]!;
+    const basename =
+      normalized.split("/").at(-1)?.replace(/\.[^.]+$/, "") ?? normalized;
+    return (
+      normalized.includes(raw) ||
+      basename === tail ||
+      normalized.endsWith("/" + tail) ||
+      normalized.includes("/" + tail + ".")
+    );
+  });
+}
+
 function aggregateCannotBeScoped(
   aggregateProblem: boolean,
   sourceLocators: readonly string[],
@@ -464,33 +484,96 @@ function runtimeEdgeState(
           "Chunk/ticking ownership has no scoped contradiction for the mapped gameplay dependency.",
       };
     }
-    case "runtime:entities":
-      if (
-        world.entities.aiStack.targetedStackIncomplete > 0 ||
-        world.entities.aiStack.navigationWithoutMovement > 0 ||
-        world.entities.aiStack.targetedWithoutNavigation > 0 ||
-        world.entities.navigationEnvironment.incompatible > 0
-      ) {
+    case "runtime:entities": {
+      const scopedAi = world.entities.aiStack.assessments.filter(
+        (item) =>
+          identifierMatchesScenarioScope(
+            item.entityKey,
+            sourceLocators,
+          ),
+      );
+      const scopedNavigation =
+        world.entities.navigationEnvironment.assessments.filter(
+          (item) =>
+            identifierMatchesScenarioScope(
+              item.entityKey,
+              sourceLocators,
+            ),
+        );
+      const badAi = scopedAi.filter(
+        (item) =>
+          item.status === "targeted-stack-incomplete" ||
+          (
+            item.missingSurfaces.includes("navigation") ||
+            item.missingSurfaces.includes("movement")
+          ),
+      );
+      const badNavigation = scopedNavigation.filter(
+        (item) => item.status === "incompatible",
+      );
+      if (badAi.length > 0 || badNavigation.length > 0) {
         return {
           status: "CONTRADICTED",
           reason:
-            "Entity AI/navigation analysis contains an incomplete or incompatible actor path required by gameplay.",
+            "Scenario-scoped entity AI/navigation evidence contains an incomplete or incompatible actor path.",
         };
       }
       if (
-        world.entities.staticAnalysisLimits > 0 ||
-        world.entities.navigationEnvironment.unresolved > 0
+        scopedNavigation.some(
+          (item) =>
+            item.status === "unresolved" ||
+            item.status === "state-dependent",
+        )
       ) {
         return {
           status: "DETECTION_GAP",
           reason:
-            "Entity behavior/navigation still has unresolved evidence.",
+            "Scenario-scoped entity navigation remains unresolved or state-dependent.",
+        };
+      }
+      const aggregateProblem =
+        world.entities.aiStack.targetedStackIncomplete > 0 ||
+        world.entities.aiStack.navigationWithoutMovement > 0 ||
+        world.entities.aiStack.targetedWithoutNavigation > 0 ||
+        world.entities.navigationEnvironment.incompatible > 0;
+      if (
+        aggregateProblem &&
+        sourceLocators.length > 0 &&
+        scopedAi.length === 0 &&
+        scopedNavigation.length === 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Entity AI/navigation problems exist in the selected artifact, but none can be correlated to this scenario's actor/source scope.",
+        };
+      }
+      if (
+        sourceLocators.length === 0 &&
+        aggregateProblem
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Entity AI/navigation contains aggregate problems, but this scenario has no actor/source locator strong enough for scoped contradiction.",
+        };
+      }
+      if (
+        world.entities.staticAnalysisLimits > 0 &&
+        scopedAi.length === 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Entity behavior has static-analysis limitations and no scoped actor proof for this scenario.",
         };
       }
       return {
         status: "PROVEN",
-        reason: "Entity lifecycle/navigation evidence supports the mapped gameplay dependency.",
+        reason:
+          "Entity lifecycle/navigation has no scoped contradiction for the mapped gameplay dependency.",
       };
+    }
     case "runtime:combat": {
       const scopedPaths = scopedByScript(
         world.combat.paths,
@@ -624,28 +707,77 @@ function runtimeEdgeState(
           "Persistence/recovery has no scoped contradiction for the mapped gameplay dependency.",
       };
     }
-    case "runtime:structures":
-      if (
-        world.structures.unresolvedLoads > 0 ||
-        world.structures.transitionResidueRisks > 0
-      ) {
+    case "runtime:structures": {
+      const scopedLoads =
+        world.structures.loadCorrelations.filter(
+          (item) =>
+            scriptMatchesScenarioScope(
+              item.functionId,
+              sourceLocators,
+            ),
+        );
+      const scopedTransitions =
+        world.structures.transitionResidue.filter(
+          (item) =>
+            scriptMatchesScenarioScope(
+              item.functionId,
+              sourceLocators,
+            ),
+        );
+      const missingLoads = scopedLoads.filter(
+        (item) =>
+          item.status === "missing" ||
+          item.status === "ambiguous",
+      );
+      if (missingLoads.length > 0) {
         return {
           status: "CONTRADICTED",
           reason:
-            "World/structure analysis found unresolved setup or transition-residue behavior.",
+            "Scenario-scoped structure load does not resolve to exactly one selected-artifact structure definition.",
         };
       }
-      if (world.structures.transitionResidueUnresolved > 0) {
+      if (
+        scopedTransitions.some(
+          (item) =>
+            item.status === "incomplete" ||
+            item.preservedByVoid > 0,
+        )
+      ) {
         return {
           status: "DETECTION_GAP",
           reason:
-            "Structure transition behavior remains unresolved.",
+            "Scenario-scoped structure transition has residue/incomplete evidence. This is not promoted to a defect without a grounded reset/replacement contract.",
+        };
+      }
+      const aggregateProblem =
+        world.structures.unresolvedLoads > 0 ||
+        world.structures.transitionResidueRisks > 0 ||
+        world.structures.transitionResidueUnresolved > 0;
+      if (
+        aggregateProblem &&
+        sourceLocators.length > 0 &&
+        scopedLoads.length === 0 &&
+        scopedTransitions.length === 0
+      ) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Structure problems exist elsewhere in the selected artifact, but none are source-correlated to this scenario.",
+        };
+      }
+      if (aggregateProblem && sourceLocators.length === 0) {
+        return {
+          status: "DETECTION_GAP",
+          reason:
+            "Structure analysis contains aggregate problems, but this scenario lacks source scope for a safe contradiction.",
         };
       }
       return {
         status: "PROVEN",
-        reason: "World/structure setup evidence supports the mapped gameplay dependency.",
+        reason:
+          "World/structure setup has no scoped contradiction for the mapped gameplay dependency.",
       };
+    }
     case "runtime:economy": {
       const scopedPaths = scopedByScript(
         world.economy.paths,

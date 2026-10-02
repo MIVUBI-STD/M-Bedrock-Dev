@@ -400,6 +400,25 @@ export interface GameplayWorldModel {
     runtimeLogicLoads: number;
     transitionResidueRisks: number;
     transitionResidueUnresolved: number;
+    loadCorrelations: readonly {
+      functionId: string;
+      line?: number;
+      target: string;
+      status: "resolved" | "missing" | "ambiguous";
+      findings: readonly string[];
+    }[];
+    transitionResidue: readonly {
+      functionId: string;
+      previousTarget: string;
+      nextTarget: string;
+      previousLine?: number;
+      nextLine?: number;
+      status: "analyzed" | "incomplete";
+      preservedByVoid: number;
+      explicitlyCleared: number;
+      replaced: number;
+      reasons: readonly string[];
+    }[];
   };
   analysisDemand?: readonly import("../../../analysis-planner/src/index.js").AnalysisKnowledgeDomain[];
   platformKnowledge: {
@@ -436,6 +455,16 @@ export interface GameplayWorldModel {
       navigationWithoutMovement: number;
       targetedWithoutNavigation: number;
       movementGoalWithoutNavigation: number;
+      assessments: readonly {
+        entityKey: string;
+        stateId: string;
+        status:
+          | "targeted-stack-complete"
+          | "targeted-stack-incomplete"
+          | "untargeted-navigation"
+          | "non-navigation";
+        missingSurfaces: readonly string[];
+      }[];
     };
     navigationEnvironment: {
       contracts: number;
@@ -443,6 +472,17 @@ export interface GameplayWorldModel {
       incompatible: number;
       stateDependent: number;
       unresolved: number;
+      assessments: readonly {
+        contractId: string;
+        routeId: string;
+        entityKey: string;
+        status:
+          | "compatible"
+          | "incompatible"
+          | "state-dependent"
+          | "unresolved";
+        reasons: readonly string[];
+      }[];
     };
   };
   analysisExecution: {
@@ -510,6 +550,8 @@ export interface GameplayWorldModelSource {
     runtimeLogicLoads: number;
     transitionResidueRisks?: number;
     transitionResidueUnresolved?: number;
+    loadCorrelations?: GameplayWorldModel["structures"]["loadCorrelations"];
+    transitionResidue?: GameplayWorldModel["structures"]["transitionResidue"];
   };
   entityAiStack?: EntityAiStackAnalysis;
   routeNavigationEnvironment?: RouteNavigationEnvironmentAnalysis;
@@ -1586,6 +1628,10 @@ export function deriveGameplayWorldModel(
       transitionResidueUnresolved:
         source.structures
           .transitionResidueUnresolved ?? 0,
+      loadCorrelations:
+        [...(source.structures.loadCorrelations ?? [])],
+      transitionResidue:
+        [...(source.structures.transitionResidue ?? [])],
     },
     platformKnowledge: {
       profileResolved:
@@ -1618,6 +1664,13 @@ export function deriveGameplayWorldModel(
         movementGoalWithoutNavigation:
           source.entityAiStack
             ?.movementGoalWithoutNavigation ?? 0,
+        assessments:
+          source.entityAiStack?.assessments.map((item) => ({
+            entityKey: item.entityKey,
+            stateId: item.stateId,
+            status: item.status,
+            missingSurfaces: [...item.missingSurfaces],
+          })) ?? [],
       },
       navigationEnvironment: {
         contracts:
@@ -1635,6 +1688,14 @@ export function deriveGameplayWorldModel(
         unresolved:
           source.routeNavigationEnvironment
             ?.unresolved ?? 0,
+        assessments:
+          source.routeNavigationEnvironment?.assessments.map((item) => ({
+            contractId: item.contractId,
+            routeId: item.routeId,
+            entityKey: item.entityKey,
+            status: item.status,
+            reasons: [...item.reasons],
+          })) ?? [],
       },
     },
     analysisExecution: {
