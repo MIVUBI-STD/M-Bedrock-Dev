@@ -10,18 +10,19 @@ For Minecraft world bug audits, start from the selected world version and build 
 
 ```text
 Selected World Version
-→ Gameplay Surface Inventory
+→ Multi-source Gameplay Surface Inventory
 → Game Design Reconstruction
-→ Gameplay Flow Mapping
-→ State Transition Mapping
-→ Reset / Preserve Rules
-→ Progression Rules
-→ Multiplayer / Multi Arena Rules
+→ Gameplay Flow + Per-State Closure
+→ Reset / Preserve / Progression Rules
+→ Boundary / Multi Arena / Replica Integrity
+→ Reachability + Capability Exposure
+→ Hidden-Defect / Cross-System Analysis
 → Gameplay Model Closure
 → Actual Behavior
 → Gameplay Contradiction
+→ Engineering Analysis when needed
 → Bug Classification
-→ Production Bug Report
+→ Closure-gated Production Bug Report
 ```
 
 Related contracts:
