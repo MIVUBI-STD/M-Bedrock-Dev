@@ -10,6 +10,7 @@ export interface GameplayDiscoveryClosureInput {
   readonly sourceIndexedFiles: number;
   readonly sourceCoverageComplete: boolean;
   readonly sourceParseFailures: number;
+  readonly unsupportedRelevantSources: number;
   readonly unresolvedReferences: number;
 }
 
@@ -26,6 +27,7 @@ export interface GameplayDiscoveryClosure {
   readonly sourceRelevantFiles: number;
   readonly sourceIndexedFiles: number;
   readonly sourceParseFailures: number;
+  readonly unsupportedRelevantSources: number;
   readonly sourceAccountedFiles: number;
   readonly sourceInventoryBalanced: boolean;
   readonly sourceCoverageComplete: boolean;
@@ -42,7 +44,8 @@ export function assessGameplayDiscoveryClosure(
   const reasons: string[] = [];
   const sourceAccountedFiles =
     input.sourceIndexedFiles +
-    input.sourceParseFailures;
+    input.sourceParseFailures +
+    input.unsupportedRelevantSources;
   const sourceInventoryBalanced =
     input.sourceRelevantFiles ===
       sourceAccountedFiles &&
@@ -76,6 +79,12 @@ export function assessGameplayDiscoveryClosure(
         " relevant source file(s) failed parsing/indexing.",
     );
   }
+  if (input.unsupportedRelevantSources > 0) {
+    reasons.push(
+      String(input.unsupportedRelevantSources) +
+        " gameplay-sensitive selected-artifact source file(s) have no semantic owner/parser and must remain a Detection Gap.",
+    );
+  }
   if (input.unresolvedReferences > 0) {
     reasons.push(
       String(input.unresolvedReferences) +
@@ -88,7 +97,8 @@ export function assessGameplayDiscoveryClosure(
       surfaceIds.length === 0 ||
       !sourceInventoryBalanced ||
       !input.sourceCoverageComplete ||
-      input.sourceParseFailures > 0
+      input.sourceParseFailures > 0 ||
+      input.unsupportedRelevantSources > 0
         ? "OPEN"
         : input.unresolvedReferences > 0
           ? "PARTIAL"
@@ -109,6 +119,8 @@ export function assessGameplayDiscoveryClosure(
       input.sourceIndexedFiles,
     sourceParseFailures:
       input.sourceParseFailures,
+    unsupportedRelevantSources:
+      input.unsupportedRelevantSources,
     sourceAccountedFiles,
     sourceInventoryBalanced,
     sourceCoverageComplete:
