@@ -59,6 +59,7 @@ import type { MultiplayerStateValidationPlan } from "../multiplayer-state-valida
 import type { DeveloperToolReleaseAnalysis } from "../developer-tool-release-analysis.js";
 import type { GameplayReachabilityGraph } from "../../../diagnostic-reasoning/src/index.js";
 import type { CapabilityExposureSummary } from "../capability-exposure-stage.js";
+import type { AuditRiskAssessment } from "../../../diagnostic-reasoning/src/index.js";
 import type { GameplayDiscoveryClosure } from "../gameplay-discovery-closure.js";
 import type { ArenaStressPlan } from "../arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "../arena-repeated-run-validation.js";
@@ -153,6 +154,8 @@ export interface InspectDirectoryResult {
     GameplayReachabilityGraph;
   capabilityExposure:
     CapabilityExposureSummary;
+  analysisPriorities:
+    readonly AuditRiskAssessment[];
   structures: number;
   parsedStructures: number;
   entities: number;
