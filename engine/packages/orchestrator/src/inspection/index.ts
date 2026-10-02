@@ -33,6 +33,7 @@ export * from "./gameplay-understanding-fingerprint.js";
 export * from "./gameplay-world-model.js";
 export * from "./hidden-gameplay-defect-analysis.js";
 export * from "./engineering-analysis-stage.js";
+export * from "./multiplayer-state-validation.js";
 export * from "./inspect.js";
 export * from "./inspect-artifact.js";
 export * from "./inspect-contract-source.js";
