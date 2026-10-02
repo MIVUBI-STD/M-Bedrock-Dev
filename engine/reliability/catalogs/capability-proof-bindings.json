@@ -3,6 +3,38 @@
   "semantics": "Bindings identify capability-specific regression/proof surfaces. They do not imply those artifacts were executed in the current session.",
   "bindings": [
     {
+      "capabilityId": "behavior.combat",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/behavior-model/test/combat-lifecycle.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "behavior.core",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/behavior-model/test/behavior-model.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "behavior.economy",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/behavior-model/test/reward-lifecycle.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "context.compile",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/workflow/context-compiler.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "diagnosis.calibration",
       "kind": "unit-contract",
       "paths": [
@@ -19,6 +51,70 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
+      "capabilityId": "domain.arena-lifecycle",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.chunks",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.combat",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.economy",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.entity-ai",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.inventory",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.persistence",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "domain.spatial-authority",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "foundation.dataflow",
       "kind": "unit-contract",
       "paths": [
@@ -31,6 +127,22 @@
       "kind": "unit-contract",
       "paths": [
         "engine/packages/knowledge/test/freshness.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "projection.workflow",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/map-engineering-workflow.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "projection.world-model",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/gameplay-world-model.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
@@ -67,6 +179,22 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
+      "capabilityId": "repair.routing",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/repair/repair-strategy-selection.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "runtime.chunks",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/chunk-readiness-runtime-classification.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "runtime.cross-version-differential-executor",
       "kind": "contract-only",
       "paths": [
@@ -84,6 +212,22 @@
       "executionContext": "REMOTE_GITHUB"
     },
     {
+      "capabilityId": "runtime.entity-ai",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/inspection/entity-navigation-runtime-classification.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "runtime.persistence",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/packages/orchestrator/test/diagnosis/runtime-persistence-diagnostic-bindings.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
       "capabilityId": "runtime.record-replay-contract",
       "kind": "unit-contract",
       "paths": [
@@ -96,6 +240,86 @@
       "kind": "unit-contract",
       "paths": [
         "engine/packages/project-model/test/runtime-semantic-convention.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.entities.ai",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/entities/test/ai-stack.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.entities.core",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/entities/test/entity.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.entities.economy",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/entities/test/loot.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.arena",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/domains/arena/arena-authority-evidence.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.chunks",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/domains/chunk/chunk-lifecycle-evidence.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.combat",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/domains/combat/combat-lifecycle-evidence.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.core",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/parser/parse.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.economy",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/domains/economy/economy-evidence.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.inventory",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/domains/inventory/inventory-lifecycle-evidence.test.ts"
+      ],
+      "executionContext": "REMOTE_GITHUB"
+    },
+    {
+      "capabilityId": "source.scripts.persistence",
+      "kind": "unit-contract",
+      "paths": [
+        "engine/analyzers/scripts/test/domains/persistence/persistent-data-lifecycle.test.ts"
       ],
       "executionContext": "REMOTE_GITHUB"
     },
