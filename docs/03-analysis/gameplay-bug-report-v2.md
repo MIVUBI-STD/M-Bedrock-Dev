@@ -8,18 +8,18 @@ This file owns report semantics. Rendering details belong in `templates/bug-repo
 
 ## Document order
 
+Canonical Bug Report V2 contains only approved confirmed bugs.
+
 ```text
 01 Overview
-02 Gameplay Flow
-03 Game Design Reference
-04 Bug Dashboard
-05 Confirmed Bugs
-06 Needs Validation
-07 Ambiguous
-08 Detection Gaps
-09 Reproduction Guide
-10 Audit Coverage
+02 Bug Dashboard
+03 Confirmed Bugs
+04 Tester / Reproduction Checklist
+05 Technical Detail when applicable
+06 Report Scope / Version
 ```
+
+Needs Validation, Ambiguous, and Detection Gap items belong to Map Audit Output V2 and Proposed Bug Set discussion. They must not be persisted into canonical Bug Report V2 or client HTML as confirmed bugs.
 
 ## Overview
 
@@ -56,24 +56,26 @@ Confirmed bugs additionally require:
 - tester-ready reproduction;
 - Blocker, Major, or Minor severity.
 
-## Status
+## Status boundary
 
-- Confirmed — contradiction proven from selected artifact.
-- Needs Validation — plausible issue needing additional proof.
-- Ambiguous — gameplay intent cannot be resolved safely from selected artifact.
-- Detection Gap — analyzer cannot safely evaluate the surface.
+Canonical Bug Report V2 contains approved confirmed defects only.
 
-Designed/normal behavior is not published as a bug.
+Before approval:
 
-## Audit coverage
+- Confirmed — contradiction proven from selected artifact and eligible for Proposed Bug Set review.
+- Needs Validation — remains in Map Audit Output / verification planning.
+- Ambiguous — remains in Map Audit Output / discussion.
+- Detection Gap — remains in Map Audit Output / Detection Development handoff.
 
-The report must expose coverage accounting. Each applicable surface is:
+Designed/normal behavior and unresolved findings are not published as canonical bugs.
 
-- checked;
-- blocked, with reason; or
-- not-applicable, with reason.
+## Audit coverage boundary
 
-A clean happy path does not make the report complete.
+Full coverage accounting belongs to Map Audit Output V2.
+
+Canonical Bug Report V2 may summarize report scope/version, but it must not become a second audit-coverage database.
+
+A comprehensive Bug Report may be published only after the upstream Discovery Closure and Gameplay Model Closure publication gates pass.
 
 ## Language rule
 
