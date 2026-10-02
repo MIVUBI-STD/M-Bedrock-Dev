@@ -154,7 +154,10 @@ const taskCapabilities=task.map((item)=>{
           paths:[...(proofBinding.paths ?? [])].sort(),
           ...(proofBinding.note?{note:proofBinding.note}:{})
         }
-      : {state:"unbound"}
+      : {state:"unbound"},
+    proofSemantics: proofBinding
+      ? "Capability-specific proof binding exists; this does not imply execution in the current session."
+      : "Owner module may contain tests, but no capability-specific proof binding exists."
   };
 }).sort((a,b)=>a.id.localeCompare(b.id));
 
