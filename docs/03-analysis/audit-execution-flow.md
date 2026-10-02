@@ -1,78 +1,333 @@
 # Audit Execution Flow
 
-The audit must understand and close the gameplay model before finding bugs.
+## Core rule
+
+Audit follows the player's game flow first. Technical domains are evidence providers inside that flow, not parallel checklists.
 
 ```text
-Selected World Version
-→ Gameplay Surface Inventory
-→ Game Design Reconstruction
-→ Gameplay Flow Mapping
-→ State Transition Mapping
-→ Reset / Preserve / Progression Rules
-→ Multiplayer / Multi Arena / Capacity Rules
-→ Boundary Extraction
-→ Coexistence / Cross-System Mapping
-→ Gameplay Model Closure
-→ Actual Behavior
-→ Gameplay Contradiction
-→ Bug Classification
-→ Coverage Accounting
-→ Bug Report V2
+Selected World
+→ ENTRY / JOIN
+→ READY / START
+→ SETUP
+→ ACTIVE GAMEPLAY
+→ PROGRESSION
+→ TERMINAL
+→ CLEANUP / REPLAY
+→ RECOVERY
+→ PROVE
+→ REPORT
 ```
 
-## Phase A — Understand
+A map may omit or merge stages, but every material stage that exists must be grounded from the selected artifact. Do not force a generic phase onto a game that does not contain it.
 
-Before bug discovery, record:
+## 1. Target and discovery
 
-- all discovered gameplay surfaces;
-- objective, win, lose;
-- gameplay phases and transitions;
-- alternate/failure/recovery exits;
-- reset/preserve/persistence rules;
-- progression;
-- enemy/content contracts;
-- multiplayer, multi-arena, capacity, queue;
-- meaningful numeric/discrete boundaries;
-- systems that can coexist or invalidate each other.
+Before entering the gameplay flow:
 
-Use `gameplay-model-closure.md` as the gate.
+- pin one selected artifact/version;
+- inventory gameplay-relevant sources;
+- close unsupported/parse/reference residue;
+- discover material gameplay surfaces;
+- reconstruct the player journey.
 
-## Closure rule
+Discovery must be COMPLETE before production continuation.
 
-- Gameplay Discovery Closure must be COMPLETE before production continuation.
-- Gameplay Model Closure must be CLOSED before production contradiction analysis.
-- Gameplay Model PARTIAL remains blocking; it means material gameplay semantics are still blocked/unknown/incomplete.
-- Gameplay Scenario Closure may be PARTIAL only for irreducible Minecraft runtime proof. Detection gaps, missing knowledge, orphan components, or missing gameplay purpose keep it OPEN.
+## 2. Flow-first audit
 
-## Phase B — Break the model
+### ENTRY / JOIN
 
-Compare expected gameplay contract against actual implementation and runtime-relevant behavior.
+Establish how a player enters a playable session.
 
-Review:
+Check only applicable systems:
 
-- contradictions;
-- cross-system interactions;
-- boundary failures;
-- race/simultaneous events;
-- recovery failures;
-- capacity mismatch;
-- persistence/reset mismatch;
-- content-contract breaks.
+- spawn/lobby entry;
+- join pads/triggers/forms;
+- party membership;
+- arena assignment;
+- player-local versus shared membership state;
+- queue/admission;
+- player capacity;
+- reconnect entering a valid session.
 
-## Phase C — Report
+Typical contradictions:
 
-Order issues by player journey, not technical discovery order:
+- player joins wrong arena;
+- offline/stale member remains counted;
+- join path bypasses required state;
+- visible capacity differs from actual admission;
+- cross-arena assignment occurs.
 
-1. Lobby / Join
-2. Arena Assignment
-3. Ready / Countdown
-4. Preparation
-5. Build / Shop
-6. Combat
-7. Wave Progression
-8. Death / Respawn
-9. Retry / Checkpoint
-10. Victory / Cleanup
-11. Reuse / Re-entry
+### READY / START
 
-Do not start from suspicious implementation details alone.
+Establish how a valid joined session becomes active.
+
+Check:
+
+- ready state;
+- countdown;
+- final membership revalidation;
+- owner/leader authority;
+- parallel arena starts;
+- cutscene/cinematic ownership;
+- input lock;
+- start capacity and capacity+1;
+- stale delayed start callbacks.
+
+Typical contradictions:
+
+- countdown continues after requirements disappear;
+- one arena's start serializes another arena;
+- old callback starts a reused arena;
+- queue/fallback silently reduces intended concurrency.
+
+### SETUP
+
+Establish everything that must be correct before gameplay begins.
+
+Check:
+
+- loadout/inventory/equipment;
+- structures/world reset;
+- teleports;
+- player mode/state;
+- objectives/score initialization;
+- entity preparation;
+- chunk/ticking-area acquisition;
+- readiness before remote work;
+- setup cleanup from previous run.
+
+Typical contradictions:
+
+- required item missing or duplicated;
+- structure residue blocks a route;
+- spawn logic starts before chunk readiness;
+- stale score/tag survives into a new run.
+
+### ACTIVE GAMEPLAY
+
+Follow what the player and actors actually do.
+
+Check applicable mechanics:
+
+- combat;
+- entity spawn/AI/target/navigation;
+- spatial restrictions;
+- interactions;
+- build/break/use-item permissions;
+- chunk/simulation residency;
+- projectiles/effects;
+- multiplayer authority/isolation;
+- arena-local versus world-global mutation.
+
+Typical contradictions:
+
+- actor cannot reach objective;
+- knocked player remains targetable;
+- player can act outside intended region;
+- remote entity stops simulating;
+- Arena A mutates Arena B.
+
+### PROGRESSION
+
+Trace every required transition forward.
+
+Use:
+
+```text
+Trigger
+→ Condition
+→ Tracker
+→ Mutation
+→ Completion
+→ Transition
+```
+
+Check:
+
+- wave/level/objective counters;
+- kills/collections/checkpoints;
+- rewards/score/currency;
+- shop/upgrade effects;
+- structure transitions;
+- spawn success versus progression accounting;
+- meaningful first/final/max boundaries.
+
+Typical contradictions:
+
+- failed spawn still advances wave;
+- objective reaches zero but transition does not fire;
+- purchase consumes currency without applying result;
+- transition occurs before requirements are complete.
+
+### TERMINAL
+
+Resolve all ways a run can finish or be interrupted.
+
+Check:
+
+- victory;
+- defeat;
+- all-dead;
+- timeout;
+- objective completion;
+- abort/admin stop;
+- death/respawn interaction;
+- one-time reward/result commit;
+- simultaneous terminal conditions.
+
+Required question:
+
+```text
+If two terminal conditions become true together,
+which owner wins and how are losing callbacks invalidated?
+```
+
+Typical contradictions:
+
+- victory and defeat both commit;
+- reward happens twice;
+- respawn occurs after terminal victory;
+- cleanup begins before result ownership is settled.
+
+### CLEANUP / REPLAY
+
+Prove the run really returns to a reusable baseline.
+
+Check:
+
+- entities/projectiles/effects;
+- inventory/loadout;
+- score/tags/properties;
+- ticking areas/leases;
+- world/structure mutation;
+- timers/callbacks;
+- arena ownership/generation;
+- reward/drop residue;
+- second-run equivalence.
+
+Required sequence:
+
+```text
+Run 1
+→ Terminal
+→ Cleanup
+→ Baseline
+→ Run 2
+```
+
+Typical contradictions:
+
+- old entity survives;
+- old callback mutates Run 2;
+- arena is reused before old ownership expires;
+- structure/state residue changes the second run.
+
+### RECOVERY
+
+Overlay recovery onto every stage where it can happen.
+
+Check only applicable transitions:
+
+- disconnect;
+- reconnect;
+- reload;
+- player leave;
+- owner disappearance;
+- failed spawn;
+- failed transition;
+- retry.
+
+Recovery is not a separate game. It returns to one of the normal flow stages or intentionally restarts the run.
+
+Typical contradictions:
+
+- reconnect restores only part of loadout/state;
+- reload preserves state but loses required timer/actor;
+- stale owner remains after disconnect;
+- retry duplicates reward/progression state.
+
+## 3. Cross-system checks
+
+Cross-system reasoning is attached to the flow stage where the systems meet.
+
+Examples:
+
+| Flow stage | Important intersections |
+| --- | --- |
+| ENTRY / JOIN | membership × arena assignment, queue × capacity |
+| READY / START | countdown × party change, cutscene × multi-arena |
+| SETUP | structure × teleport, loadout × reconnect, chunk × spawn |
+| ACTIVE GAMEPLAY | entity × chunk, combat × inventory, arena × global state |
+| PROGRESSION | spawn × wave counter, retry × reward, shop × inventory |
+| TERMINAL | death × objective, timeout × victory, reward × cleanup |
+| CLEANUP / REPLAY | cleanup × world mutation, callback × arena reuse |
+| RECOVERY | reconnect × death, reload × timer, reconnect × inventory |
+
+Do not brute-force every possible system pair.
+
+## 4. Static-first proof
+
+For every material flow stage:
+
+```text
+Gameplay purpose
+→ Required components
+→ Required knowledge/RIG
+→ Causal links
+→ Actual evidence
+→ Contradiction / Proven / Detection Gap / Runtime Blocked
+```
+
+If a leaf scenario has selected-artifact components but no causal proof links, Scenario Closure remains OPEN because audit depth is suspiciously shallow.
+
+## 5. Runtime residue
+
+Runtime testing is allowed only when static/source proof is irreducible.
+
+Output exactly one narrow question per blocked causal link.
+
+Example:
+
+```text
+Stage: ACTIVE_GAMEPLAY
+Scenario: remote wave
+Question:
+Does the spawned enemy remain simulated until it reaches the objective?
+```
+
+Do not emit a generic tester checklist.
+
+## 6. Final proof
+
+Only after the flow is fully accounted:
+
+- resolve contradiction;
+- search counter-proof;
+- translate player-visible consequence;
+- consolidate root cause;
+- admit confirmed defects;
+- generate report.
+
+## Closure rules
+
+- Discovery Closure must be COMPLETE.
+- Gameplay Model Closure must be CLOSED.
+- Scenario Closure OPEN blocks publication.
+- Scenario Closure PARTIAL is allowed only for irreducible runtime proof.
+- No flow stage may disappear merely because its technical implementation looks healthy.
+- No technical domain becomes a bug without a player-flow consequence.
+
+## Reporting order
+
+Report issues in player-flow order:
+
+1. Entry / Join
+2. Ready / Start
+3. Setup
+4. Active Gameplay
+5. Progression
+6. Terminal
+7. Cleanup / Replay
+8. Recovery
+
+This order is used for chat, HTML, DOCX, and tester reproduction presentation. Presentation never becomes audit authority.
