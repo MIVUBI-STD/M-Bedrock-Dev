@@ -303,6 +303,18 @@ export function buildInspectionResult(
         scriptSpatial.structurePlacements.length,
       runtimeLogicLoads:
         structureRuntime.runtimeLogicStructureLoads,
+      transitionResidueRisks:
+        parsedStructureModels.filter(
+          (item) =>
+            item.transitionResidue.status ===
+            "residue-risk",
+        ).length,
+      transitionResidueUnresolved:
+        parsedStructureModels.filter(
+          (item) =>
+            item.transitionResidue.status ===
+            "unresolved",
+        ).length,
     },
     entityAiStack,
     routeNavigationEnvironment,
