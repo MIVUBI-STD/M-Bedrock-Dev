@@ -1,5 +1,6 @@
 import {
   assessGameplayModelClosure,
+  assessGameplayStateClosure,
   buildIntentClosureSurfaces,
   type GameplayClosureSurface,
   type GameplayIntentModel,
@@ -93,6 +94,8 @@ export interface GameplayWorldModel {
   artifactId: string;
   subjects: readonly GameplayWorldSubjectSummary[];
   gameplayClosure: GameplayModelClosureResult;
+  stateClosure:
+    ReturnType<typeof assessGameplayStateClosure>;
   arenas: {
     detected: boolean;
     count?: number;
@@ -719,31 +722,12 @@ export function deriveGameplayWorldModel(
     ...runtimeSurfaces,
   ];
 
-  const stateLikeIds = new Set(
-    source.intent.nodes
-      .filter((node) =>
-        node.kind === "phase" ||
-        node.kind === "state" ||
-        node.kind === "lifecycle" ||
-        node.kind === "outcome"
-      )
-      .map((node) => node.id),
-  );
-  const stateTransitionEdges =
-    source.intent.edges.filter((edge) =>
-      edge.kind === "transitions-to" ||
-      edge.kind === "recovers-to" ||
-      edge.kind === "wins-by" ||
-      edge.kind === "loses-by"
+  const stateClosure =
+    assessGameplayStateClosure(
+      source.intent,
     );
   const stateModelComplete =
-    stateLikeIds.size > 0 &&
-    stateTransitionEdges.length > 0 &&
-    !source.intent.unknowns.some((unknown) =>
-      unknown.blockedSubjectIds.some((id) =>
-        stateLikeIds.has(id)
-      )
-    );
+    stateClosure.complete;
 
   const boundariesExtracted =
     !arenaDetected ||
@@ -795,6 +779,7 @@ export function deriveGameplayWorldModel(
     artifactId: source.artifactId,
     subjects: summarizeSubjects(source.intent),
     gameplayClosure,
+    stateClosure,
     arenas: {
       detected:
         source.arena.autoDetected ||
