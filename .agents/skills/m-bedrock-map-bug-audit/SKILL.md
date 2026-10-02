@@ -138,6 +138,8 @@ What does the player experience?
 
 Every material scenario must account for its causal links. Valid Gameplay Causal Link states are `PROVEN`, `CONTRADICTED`, `RUNTIME_BLOCKED`, or `DETECTION_GAP`. There is no gameplay-level `checked` state.
 
+Runtime-domain causal links must carry the originating RIG requirement, scenario scope, subject/component scope, and execution evidence. A domain-wide analyzer counter alone is not sufficient provenance for report admission.
+
 Every `CONTRADICTED` Gameplay Causal Link must enter Gameplay Defect Resolution before report review. The only allowed final dispositions are:
 
 - `CONFIRMED_DEFECT_READY` — gameplay trigger, consequence, expected outcome, actual outcome, and affected scope are complete;

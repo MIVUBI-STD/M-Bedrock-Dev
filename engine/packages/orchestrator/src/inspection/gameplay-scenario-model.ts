@@ -68,6 +68,9 @@ export interface GameplayCausalLink {
   readonly toComponentId: string;
   readonly purpose: string;
   readonly evidenceIds: readonly string[];
+  readonly subjectIds: readonly string[];
+  readonly componentIds: readonly string[];
+  readonly knowledgeRequirementId?: string;
   readonly status: GameplayCausalLinkStatus;
   readonly reason: string;
 }

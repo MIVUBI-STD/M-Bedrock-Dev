@@ -717,6 +717,19 @@ export function compileGameplayScenarioGraph(
           edge.description?.trim() ||
           "Prove that " + edge.from + " " + edge.kind + " " + edge.to + " in this gameplay scenario.",
         evidenceIds: [...edge.evidenceIds],
+        subjectIds: [
+          ...new Set([
+            ...scenario.sourceSubjectIds,
+            edge.from,
+            edge.to,
+          ]),
+        ].sort(),
+        componentIds: [
+          ...new Set([
+            edge.from,
+            edge.to,
+          ]),
+        ].sort(),
         status: edgeStatus(edge),
         reason:
           edgeStatus(edge) === "PROVEN"
@@ -725,6 +738,12 @@ export function compileGameplayScenarioGraph(
       });
     }
   }
+
+  const knowledgeReceipts =
+    buildGameplayKnowledgeReceipts(
+      knowledgeRequirements,
+      input.world,
+    );
 
   const scenarioById = new Map(
     scenariosWithKnowledge.map((scenario) => [
@@ -744,13 +763,54 @@ export function compileGameplayScenarioGraph(
             componentIds.has(id),
         );
       if (!anchorId || !componentIds.has(anchorId)) continue;
+      const knowledgeDomain =
+        runtimeDomainKnowledge[component.id];
+      const requirement =
+        knowledgeDomain === undefined
+          ? undefined
+          : knowledgeRequirements.find(
+              (item) =>
+                item.scenarioId === scenarioId &&
+                item.domain === knowledgeDomain,
+            );
+      const receipt =
+        requirement === undefined
+          ? undefined
+          : knowledgeReceipts.find(
+              (item) =>
+                item.requirementId === requirement.id,
+            );
+
       causalLinks.push({
         id: "edge:" + scenarioId + ":" + component.id,
         scenarioId,
         fromComponentId: component.id,
         toComponentId: anchorId,
         purpose: component.gameplayPurpose,
-        evidenceIds: [...component.evidenceIds],
+        evidenceIds:
+          receipt?.evidenceIds.length
+            ? [...receipt.evidenceIds]
+            : [...component.evidenceIds],
+        subjectIds:
+          requirement === undefined
+            ? [...scenario.sourceSubjectIds]
+            : [...requirement.subjectIds],
+        componentIds:
+          requirement === undefined
+            ? [component.id, anchorId].sort()
+            : [
+                ...new Set([
+                  ...requirement.componentIds,
+                  component.id,
+                  anchorId,
+                ]),
+              ].sort(),
+        ...(requirement === undefined
+          ? {}
+          : {
+              knowledgeRequirementId:
+                requirement.id,
+            }),
         ...runtimeEdgeState(
           component.id,
           input.world,
@@ -758,12 +818,6 @@ export function compileGameplayScenarioGraph(
       });
     }
   }
-
-  const knowledgeReceipts =
-    buildGameplayKnowledgeReceipts(
-      knowledgeRequirements,
-      input.world,
-    );
 
   return {
     schemaVersion: 1,

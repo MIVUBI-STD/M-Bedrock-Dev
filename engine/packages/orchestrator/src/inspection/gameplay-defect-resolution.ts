@@ -13,6 +13,11 @@ export type GameplayDefectResolutionDisposition =
 
 export interface GameplayDefectResolution {
   readonly causalLinkId: string;
+  readonly scenarioId?: string;
+  readonly knowledgeRequirementId?: string;
+  readonly subjectIds?: readonly string[];
+  readonly componentIds?: readonly string[];
+  readonly evidenceIds?: readonly string[];
   readonly disposition: GameplayDefectResolutionDisposition;
   readonly gameplayTrigger?: string;
   readonly gameplayConsequence?: string;
@@ -152,6 +157,16 @@ export function assessGameplayDefectResolutionGate(
 
     return {
       causalLinkId: link.id,
+      scenarioId: link.scenarioId,
+      ...(link.knowledgeRequirementId === undefined
+        ? {}
+        : {
+            knowledgeRequirementId:
+              link.knowledgeRequirementId,
+          }),
+      subjectIds: [...link.subjectIds],
+      componentIds: [...link.componentIds],
+      evidenceIds: [...link.evidenceIds],
       disposition: "GAMEPLAY_TRANSLATION_REQUIRED",
     };
   });
