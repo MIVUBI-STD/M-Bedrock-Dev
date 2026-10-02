@@ -14,6 +14,7 @@ export interface GameplaySurfaceDiscoveryInput {
   readonly spatialEvidence: boolean;
   readonly structureEvidence: boolean;
   readonly entityEvidence: boolean;
+  readonly boundaryEvidence: boolean;
 }
 
 export interface GameplaySurfaceDiscoveryResult {
@@ -67,6 +68,9 @@ export function discoverGameplaySurfaces(
   }
   if (input.entityEvidence) {
     runtime.add("runtime:entities");
+  }
+  if (input.boundaryEvidence) {
+    runtime.add("runtime:boundaries");
   }
 
   const runtimeSurfaceIds = [...runtime].sort();
