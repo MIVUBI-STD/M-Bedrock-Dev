@@ -18,3 +18,4 @@ export * from "./negative-space.js";
 export * from "./temporal-risk.js";
 export * from "./design-consistency.js";
 export * from "./engineering-analysis.js";
+export * from "./gameplay-degradation.js";
