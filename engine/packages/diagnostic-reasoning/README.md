@@ -61,3 +61,20 @@ These are candidate-generation and prioritization tools. An anomaly or absence i
 `buildEngineeringAnalysis()` owns causal-chain synthesis, evidence convergence, quantitative constraints, repair alternatives, and verification scenarios for complex findings.
 
 `renderEngineeringAnalysis()` projects that structure into concise technical prose. It does not own Bug Report severity or approval.
+
+
+## Reachability and capability exposure
+
+`findGameplayReachability()` owns generic prerequisite/acquisition path reasoning.
+
+`assessCapabilityExposure()` owns the decision whether a sensitive capability is blocked, guarded, exposed, potentially exposed, or unknown.
+
+These primitives are map- and object-agnostic. Domain adapters contribute nodes/edges or capability evidence; they must not encode known bug examples as production rules.
+
+Reachability coverage is explicit. Missing adapter coverage yields `unknown`, not a false claim that a prerequisite is unreachable.
+
+## Silent degradation
+
+`detectGameplayDegradation()` owns cases where gameplay continues but intended capability, quality, or capacity is reduced or replaced by fallback behavior.
+
+A degradation signal is still candidate reasoning; normal intent, evidence, counter-evidence, and player-impact gates remain authoritative.
