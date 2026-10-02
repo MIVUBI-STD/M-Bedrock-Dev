@@ -39,9 +39,10 @@ Use `gameplay-model-closure.md` as the gate.
 
 ## Closure rule
 
-- CLOSED: comprehensive contradiction analysis may begin.
-- PARTIAL: analyze understood surfaces, keep blocked/unknown surfaces explicit.
-- OPEN: do not claim comprehensive coverage and do not finalize.
+- Gameplay Discovery Closure must be COMPLETE before production continuation.
+- Gameplay Model Closure must be CLOSED before production contradiction analysis.
+- Gameplay Model PARTIAL remains blocking; it means material gameplay semantics are still blocked/unknown/incomplete.
+- Gameplay Scenario Closure may be PARTIAL only for irreducible Minecraft runtime proof. Detection gaps, missing knowledge, orphan components, or missing gameplay purpose keep it OPEN.
 
 ## Phase B — Break the model
 
