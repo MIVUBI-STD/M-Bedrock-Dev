@@ -29,6 +29,15 @@ import {
 import type {
   InspectionEngineeringAnalysis,
 } from "./inspection/engineering-analysis-stage.js";
+import type {
+  GameplayDefectResolution,
+} from "./inspection/gameplay-defect-resolution.js";
+import {
+  refreshHiddenGameplayDefectsForWorld,
+} from "./inspection/hidden-gameplay-defect-analysis.js";
+import {
+  deriveMandatoryAuditProcedureReceipt,
+} from "./inspection/mandatory-audit-procedure.js";
 import {
   assessSelectedMapAuditAdmission,
   type SelectedMapAuditAdmission,
@@ -104,6 +113,77 @@ export async function runSelectedMapAudit(
         "[" + issue.stage + "] " + issue.message
       ),
     ],
+  };
+}
+
+export interface ResolveSelectedMapAuditInput {
+  readonly audit: SelectedMapAuditRun;
+  readonly resolutions:
+    readonly GameplayDefectResolution[];
+}
+
+/**
+ * Canonical continuation for source-side defect resolution.
+ * It preserves the exact selected-artifact snapshot and recomputes only the
+ * resolution-dependent analysis, procedure closure, and ordered admission.
+ */
+export function resolveSelectedMapAudit(
+  input: ResolveSelectedMapAuditInput,
+): SelectedMapAuditRun {
+  const inspection = input.audit.inspection;
+  const hidden = refreshHiddenGameplayDefectsForWorld(
+    inspection.hiddenGameplayDefects,
+    inspection.gameplayWorld,
+    inspection.gameplayIntent.model,
+    input.resolutions,
+  );
+  const mandatoryAuditProcedure =
+    deriveMandatoryAuditProcedureReceipt({
+      artifactId: inspection.artifactId,
+      discovery:
+        inspection.gameplayDiscoveryClosure,
+      world: inspection.gameplayWorld,
+      intent: inspection.gameplayIntent.model,
+      semanticIr: inspection.semanticIrModel,
+      boundaries:
+        inspection.gameplayBoundaries,
+      multiplayer:
+        inspection.multiplayerStateValidation,
+      hidden,
+    });
+  const updatedInspection: InspectArtifactResult = {
+    ...inspection,
+    hiddenGameplayDefects: hidden,
+    mandatoryAuditProcedure,
+  };
+  const scenario = hidden.scenarioAudit;
+  const admission = assessSelectedMapAuditAdmission({
+    mandatoryAuditProcedure,
+    gameplayDiscoveryClosure:
+      updatedInspection.gameplayDiscoveryClosure,
+    gameplayClosure:
+      updatedInspection.gameplayWorld.gameplayClosure,
+    gameplayScenarioClosure:
+      scenario.closure,
+    gameplayDefectResolution:
+      scenario.defectResolution,
+  });
+
+  return {
+    schemaVersion: 1,
+    policy: "selected-map-audit-single-entry",
+    inspection: updatedInspection,
+    admission,
+    status:
+      admission.status === "READY"
+        ? "READY_FOR_REVIEW"
+        : "BLOCKED",
+    blockingCheckpointIds: [
+      ...mandatoryAuditProcedure.blockingCheckpointIds,
+    ],
+    reasons: admission.issues.map((issue) =>
+      "[" + issue.stage + "] " + issue.message
+    ),
   };
 }
 

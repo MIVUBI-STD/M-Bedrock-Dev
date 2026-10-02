@@ -65,7 +65,7 @@ Use this before broad repository search.
 | Selected-artifact Gameplay Contract / readiness | engine/packages/gameplay-intent/ |
 | Mandatory gameplay audit procedure / checkpoint semantics | docs/03-analysis/mandatory-audit-procedure.md |
 | Mandatory audit procedure machine-readable projection / closure | engine/packages/orchestrator/src/inspection/mandatory-audit-procedure.ts |
-| Production selected-map audit single entry + canonical review/report continuation | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact inspection/native proof → final procedure closure → review/report) |
+| Production selected-map audit single entry + canonical continuations | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact proof → ordered audit → resolveSelectedMapAudit when needed → review → report) |
 | Ordered production audit admission / first blocking stage | engine/packages/orchestrator/src/map-audit-admission.ts |
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
 | Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |

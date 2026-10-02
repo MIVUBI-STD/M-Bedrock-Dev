@@ -577,6 +577,7 @@ export function refreshHiddenGameplayDefectsForWorld(
   existing: HiddenGameplayDefectAnalysis,
   world: GameplayWorldModel,
   intent?: GameplayIntentModel,
+  defectResolutions?: readonly GameplayDefectResolution[],
 ): HiddenGameplayDefectAnalysis {
   const designConsistency =
     consistencyFromWorld(world);
@@ -622,7 +623,8 @@ export function refreshHiddenGameplayDefectsForWorld(
       ? existing.scenarioAudit.defectResolution
       : assessGameplayDefectResolutionGate(
           scenarioGraph,
-          existing.scenarioAudit.defectResolution.resolutions,
+          defectResolutions ??
+            existing.scenarioAudit.defectResolution.resolutions,
         );
 
   return {
