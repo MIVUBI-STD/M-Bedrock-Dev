@@ -107,6 +107,17 @@ What does the player experience?
 
 Every material scenario must account for its causal links. Valid Gameplay Causal Link states are `PROVEN`, `CONTRADICTED`, `RUNTIME_BLOCKED`, or `DETECTION_GAP`. There is no gameplay-level `checked` state.
 
+Every `CONTRADICTED` Gameplay Causal Link must enter Gameplay Defect Resolution before report review. The only allowed final dispositions are:
+
+- `CONFIRMED_DEFECT_READY` — gameplay trigger, consequence, expected outcome, actual outcome, and affected scope are complete;
+- `BLOCKING_COUNTERPROOF` — concrete evidence proves the wrong state is unreachable;
+- `RUNTIME_PROOF_REQUIRED` — source reasoning is exhausted and one narrow Minecraft-runtime question remains;
+- `DETECTION_GAP` — a named engine capability is genuinely missing.
+
+The temporary states `GAMEPLAY_TRANSLATION_REQUIRED` and `COUNTERPROOF_SEARCH_REQUIRED` block report publication. They are AI work queues, never tester-facing `Needs Validation`.
+
+Do not use `Needs Validation` as a generic outcome. Tester/runtime escalation is allowed only through `RUNTIME_PROOF_REQUIRED`, with a specific runtime reason and one narrow question. A broad validation checklist is forbidden.
+
 Gameplay Scenario Closure is:
 
 - `CLOSED` only when components are correlated to scenarios and causal links are resolved;

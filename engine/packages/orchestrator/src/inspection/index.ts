@@ -36,6 +36,7 @@ export * from "./gameplay-world-model.js";
 export * from "./gameplay-scenario-model.js";
 export * from "./gameplay-scenario-compiler.js";
 export * from "./gameplay-scenario-closure.js";
+export * from "./gameplay-defect-resolution.js";
 export * from "./hidden-gameplay-defect-analysis.js";
 export * from "./engineering-analysis-stage.js";
 export * from "./multiplayer-state-validation.js";

@@ -29,6 +29,11 @@ import {
 import {
   assessGameplayScenarioClosure,
 } from "./gameplay-scenario-closure.js";
+import {
+  assessGameplayDefectResolutionGate,
+  type GameplayDefectResolution,
+  type GameplayDefectResolutionGate,
+} from "./gameplay-defect-resolution.js";
 import type {
   GameplayScenarioClosure,
   GameplayScenarioGraph,
@@ -58,6 +63,7 @@ export interface HiddenGameplayDefectAnalysis {
   readonly scenarioAudit: {
     readonly graph: GameplayScenarioGraph;
     readonly closure: GameplayScenarioClosure;
+    readonly defectResolution: GameplayDefectResolutionGate;
   };
   readonly attention: {
     readonly implementationOnlyIntent: number;
@@ -69,6 +75,9 @@ export interface HiddenGameplayDefectAnalysis {
     readonly mandatoryAuditScenarios: number;
     readonly orphanGameplayComponents: number;
     readonly unresolvedCausalLinks: number;
+    readonly contradictedCausalLinks: number;
+    readonly defectResolutionBlocked: boolean;
+    readonly runtimeProofResidue: number;
   };
 }
 
@@ -437,6 +446,7 @@ function auditScenarioPresetFromModel(
   input: {
     readonly semanticIr: SemanticIr;
     readonly world: GameplayWorldModel;
+    readonly defectResolutions?: readonly GameplayDefectResolution[];
   },
 ): GameplayAuditScenarioPreset {
   const deferredWork =
@@ -495,6 +505,11 @@ export function analyzeHiddenGameplayDefects(
     assessGameplayScenarioClosure(
       scenarioGraph,
     );
+  const defectResolution =
+    assessGameplayDefectResolutionGate(
+      scenarioGraph,
+      input.defectResolutions ?? [],
+    );
 
   return {
     schemaVersion: 1,
@@ -508,6 +523,7 @@ export function analyzeHiddenGameplayDefects(
     scenarioAudit: {
       graph: scenarioGraph,
       closure: scenarioClosure,
+      defectResolution,
     },
     attention: {
       implementationOnlyIntent:
@@ -537,6 +553,12 @@ export function analyzeHiddenGameplayDefects(
         scenarioClosure.orphanComponentIds.length,
       unresolvedCausalLinks:
         scenarioClosure.unresolvedCausalLinkIds.length,
+      contradictedCausalLinks:
+        defectResolution.contradictedCausalLinkIds.length,
+      defectResolutionBlocked:
+        defectResolution.status === "BLOCKED",
+      runtimeProofResidue:
+        defectResolution.runtimeProofRequiredIds.length,
     },
   };
 }
@@ -588,6 +610,13 @@ export function refreshHiddenGameplayDefectsForWorld(
     scenarioGraph.scenarios.length === 0
       ? existing.scenarioAudit.closure
       : assessGameplayScenarioClosure(scenarioGraph);
+  const defectResolution =
+    scenarioGraph.scenarios.length === 0
+      ? existing.scenarioAudit.defectResolution
+      : assessGameplayDefectResolutionGate(
+          scenarioGraph,
+          existing.scenarioAudit.defectResolution.resolutions,
+        );
 
   return {
     ...existing,
@@ -600,6 +629,7 @@ export function refreshHiddenGameplayDefectsForWorld(
         : {
             graph: scenarioGraph,
             closure: scenarioClosure,
+            defectResolution,
           },
     attention: {
       ...existing.attention,
@@ -617,6 +647,12 @@ export function refreshHiddenGameplayDefectsForWorld(
         scenarioGraph.scenarios.length === 0
           ? existing.attention.unresolvedCausalLinks
           : scenarioClosure.unresolvedCausalLinkIds.length,
+      contradictedCausalLinks:
+        defectResolution.contradictedCausalLinkIds.length,
+      defectResolutionBlocked:
+        defectResolution.status === "BLOCKED",
+      runtimeProofResidue:
+        defectResolution.runtimeProofRequiredIds.length,
     },
   };
 }
