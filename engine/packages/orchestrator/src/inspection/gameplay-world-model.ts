@@ -290,6 +290,8 @@ export interface GameplayWorldModel {
     unresolvedLoads: number;
     placements: number;
     runtimeLogicLoads: number;
+    transitionResidueRisks: number;
+    transitionResidueUnresolved: number;
   };
   entities: {
     definitions: number;
@@ -369,6 +371,8 @@ export interface GameplayWorldModelSource {
     unresolvedLoads: number;
     placements: number;
     runtimeLogicLoads: number;
+    transitionResidueRisks: number;
+    transitionResidueUnresolved: number;
   };
   entityAiStack?: EntityAiStackAnalysis;
   routeNavigationEnvironment?: RouteNavigationEnvironmentAnalysis;
@@ -649,18 +653,32 @@ export function deriveGameplayWorldModel(
     });
   }
 
-  if (source.structures.loads > 0 || source.structures.runtimeLogicLoads > 0) {
+  if (
+    source.structures.loads > 0 ||
+    source.structures.runtimeLogicLoads > 0 ||
+    source.structures.transitionResidueRisks > 0 ||
+    source.structures.transitionResidueUnresolved > 0
+  ) {
+    const unresolved =
+      source.structures.unresolvedLoads > 0 ||
+      source.structures.transitionResidueRisks > 0 ||
+      source.structures.transitionResidueUnresolved > 0;
     runtimeSurfaces.push({
       id: "runtime:structures",
       label: "Structure and world mutation",
       kind: "runtime-domain",
       status:
-        source.structures.unresolvedLoads > 0
+        unresolved
           ? "unknown"
           : "understood",
       material: true,
-      ...(source.structures.unresolvedLoads > 0
-        ? { reason: "One or more structure loads remain unresolved." }
+      ...(unresolved
+        ? {
+            reason:
+              source.structures.transitionResidueRisks > 0
+                ? "Structure transitions contain residue-risk cells and require baseline/reset proof."
+                : "One or more structure loads or transition states remain unresolved.",
+          }
         : {}),
     });
   }
