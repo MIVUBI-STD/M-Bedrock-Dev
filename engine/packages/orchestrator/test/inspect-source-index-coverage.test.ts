@@ -188,7 +188,7 @@ describe("inspection source index coverage", () => {
     }
   });
 
-  it("keeps unowned gameplay-sensitive JSON as explicit discovery residue", async () => {
+  it("indexes owned gameplay JSON definitions", async () => {
     const root = await mkdtemp(
       join(tmpdir(), "m-bedrock-index-"),
     );
@@ -197,9 +197,102 @@ describe("inspection source index coverage", () => {
       await mkdir(join(root, "loot_tables"), {
         recursive: true,
       });
+      await mkdir(
+        join(root, "behavior_packs", "bp", "items"),
+        { recursive: true },
+      );
+      await mkdir(join(root, "recipes"), {
+        recursive: true,
+      });
       await writeFile(
         join(root, "loot_tables", "reward.json"),
         JSON.stringify({ pools: [] }),
+        "utf8",
+      );
+      await writeFile(
+        join(
+          root,
+          "behavior_packs",
+          "bp",
+          "items",
+          "ready.json",
+        ),
+        JSON.stringify({
+          format_version: "1.21.0",
+          "minecraft:item": {
+            description: {
+              identifier: "test:ready",
+            },
+          },
+        }),
+        "utf8",
+      );
+      await writeFile(
+        join(root, "recipes", "stick.json"),
+        JSON.stringify({
+          "minecraft:recipe_shaped": {
+            description: {
+              identifier: "test:stick",
+            },
+          },
+        }),
+        "utf8",
+      );
+
+      const files = [
+        "loot_tables/reward.json",
+        "behavior_packs/bp/items/ready.json",
+        "recipes/stick.json",
+      ].map((relativePath) => ({
+        relativePath,
+        size: 16,
+        contentHash: relativePath,
+      }));
+
+      const result =
+        await indexInspectionSources(
+          root,
+          "artifact:test",
+          files,
+        );
+
+      expect(result.coverage).toMatchObject({
+        relevantFiles: 3,
+        indexedFiles: 3,
+        complete: true,
+      });
+      expect(
+        result.nodes.map((node) => node.kind),
+      ).toEqual(
+        expect.arrayContaining([
+          "loot_table",
+          "item",
+          "recipe",
+        ]),
+      );
+      expect(
+        result.coverage.unsupportedRelevantFiles,
+      ).toEqual([]);
+    } finally {
+      await rm(root, {
+        recursive: true,
+        force: true,
+      });
+    }
+  });
+
+  it("keeps gameplay JSON without a semantic owner as explicit residue", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-index-"),
+    );
+
+    try {
+      await mkdir(join(root, "feature_rules"), {
+        recursive: true,
+      });
+      await writeFile(
+        join(root, "feature_rules", "ore.json"),
+        JSON.stringify({}),
         "utf8",
       );
 
@@ -209,9 +302,9 @@ describe("inspection source index coverage", () => {
           "artifact:test",
           [{
             relativePath:
-              "loot_tables/reward.json",
-            size: 16,
-            contentHash: "loot",
+              "feature_rules/ore.json",
+            size: 2,
+            contentHash: "feature",
           }],
         );
 
@@ -223,7 +316,7 @@ describe("inspection source index coverage", () => {
       expect(
         result.coverage.unsupportedRelevantFiles,
       ).toEqual([
-        "loot_tables/reward.json",
+        "feature_rules/ore.json",
       ]);
     } finally {
       await rm(root, {
