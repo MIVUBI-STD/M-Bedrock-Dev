@@ -189,6 +189,7 @@ export function buildInspectionResult(
     mutationTransactions,
     scriptMutationTransactions,
     scriptCommandTransactions,
+    preflightKnowledgeDemand,
   } = input.runtimeAnalysis;
 
   const {
@@ -324,6 +325,8 @@ export function buildInspectionResult(
     },
     entityAiStack,
     routeNavigationEnvironment,
+    analysisDemand:
+      preflightKnowledgeDemand,
     entities: {
       definitions: parsedEntities.length,
       knowledgePrerequisiteGaps:

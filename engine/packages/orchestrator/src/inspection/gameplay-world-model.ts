@@ -401,6 +401,7 @@ export interface GameplayWorldModel {
     transitionResidueRisks: number;
     transitionResidueUnresolved: number;
   };
+  analysisDemand?: readonly import("../../../analysis-planner/src/index.js").AnalysisKnowledgeDomain[];
   entities: {
     definitions: number;
     knowledgePrerequisiteGaps: number;
@@ -1578,36 +1579,74 @@ export function deriveGameplayWorldModel(
         "script-spatial-integrity",
         "structure-transition-integrity",
         "temporal-ownership-integrity",
-        ...(source.arena.lifecycle === undefined
-          ? []
-          : ["arena-lifecycle-integrity"]),
         ...(
-          source.arena.stateIsolation === undefined &&
-          source.arena.globalState === undefined
-            ? []
-            : ["multiplayer-interleaving"]
+          (source.analysisDemand ?? []).includes(
+            "arena-lifecycle",
+          ) &&
+          source.arena.lifecycle !== undefined
+            ? ["arena-lifecycle-integrity"]
+            : []
         ),
-        ...(source.chunkLifecycle === undefined
-          ? []
-          : ["chunk-lifecycle-integrity"]),
         ...(
-          source.entityAiStack === undefined ||
-          source.routeNavigationEnvironment === undefined
-            ? []
-            : ["entity-ai-navigation-readiness"]
+          (source.analysisDemand ?? []).includes(
+            "multiplayer-interleaving",
+          ) &&
+          (
+            source.arena.stateIsolation !== undefined ||
+            source.arena.globalState !== undefined
+          )
+            ? ["multiplayer-interleaving"]
+            : []
         ),
-        ...(source.combatLifecycle === undefined
-          ? []
-          : ["combat-lifecycle-contract"]),
-        ...(source.inventoryLifecycle === undefined
-          ? []
-          : ["inventory-lifecycle-integrity"]),
-        ...(source.persistenceSource === undefined
-          ? []
-          : ["persistence-lifecycle-integrity"]),
-        ...(source.rewardSources === undefined
-          ? []
-          : ["economy-reward-integrity"]),
+        ...(
+          (source.analysisDemand ?? []).includes(
+            "chunk-simulation",
+          ) &&
+          source.chunkLifecycle !== undefined
+            ? ["chunk-lifecycle-integrity"]
+            : []
+        ),
+        ...(
+          (source.analysisDemand ?? []).includes(
+            "entity-behavior",
+          ) &&
+          source.entityAiStack !== undefined &&
+          source.routeNavigationEnvironment !== undefined
+            ? ["entity-ai-navigation-readiness"]
+            : []
+        ),
+        ...(
+          (source.analysisDemand ?? []).includes(
+            "combat-lifecycle",
+          ) &&
+          source.combatLifecycle !== undefined
+            ? ["combat-lifecycle-contract"]
+            : []
+        ),
+        ...(
+          (source.analysisDemand ?? []).includes(
+            "inventory-state",
+          ) &&
+          source.inventoryLifecycle !== undefined
+            ? ["inventory-lifecycle-integrity"]
+            : []
+        ),
+        ...(
+          (source.analysisDemand ?? []).includes(
+            "persistence-recovery",
+          ) &&
+          source.persistenceSource !== undefined
+            ? ["persistence-lifecycle-integrity"]
+            : []
+        ),
+        ...(
+          (source.analysisDemand ?? []).includes(
+            "economy-reward",
+          ) &&
+          source.rewardSources !== undefined
+            ? ["economy-reward-integrity"]
+            : []
+        ),
       ].sort(),
     },
     intent: {
