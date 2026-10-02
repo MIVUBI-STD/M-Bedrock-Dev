@@ -251,6 +251,98 @@ export function compileGameplayExecutionGraph(
   const scenarioNodes = input.intent.nodes.filter(
     (node) => SCENARIO_NODE_KINDS.has(node.kind),
   );
+  const runtime = runtimeComponents(input.world);
+  const runtimeIds = new Set(
+    runtime.map((component) => component.id),
+  );
+
+  function presetComponentIds(
+    kind: GameplaySimulationPreset["scenarios"][number]["kind"],
+  ): readonly string[] {
+    const selected = new Set<string>();
+    const addRuntime = (...ids: string[]) => {
+      for (const id of ids) {
+        if (runtimeIds.has(id)) selected.add(id);
+      }
+    };
+    const addIntentKinds = (...kinds: GameplayIntentNode["kind"][]) => {
+      for (const node of input.intent.nodes) {
+        if (kinds.includes(node.kind)) selected.add(node.id);
+      }
+    };
+
+    switch (kind) {
+      case "full-journey":
+        addIntentKinds("phase", "mechanic", "objective", "lifecycle", "outcome");
+        addRuntime(
+          "runtime:arena",
+          "runtime:structures",
+          "runtime:entities",
+          "runtime:chunks",
+          "runtime:combat",
+          "runtime:inventory",
+          "runtime:persistence",
+          "runtime:economy",
+        );
+        break;
+      case "solo":
+      case "two-player":
+      case "max-party":
+      case "party-capacity-plus-one":
+      case "disconnect-reconnect":
+        addIntentKinds("lifecycle", "state", "policy", "outcome");
+        addRuntime(
+          "runtime:arena",
+          "runtime:combat",
+          "runtime:inventory",
+          "runtime:persistence",
+        );
+        break;
+      case "multi-arena-parallel":
+      case "arena-capacity-plus-one":
+        addIntentKinds("policy", "lifecycle", "state");
+        addRuntime("runtime:arena", "runtime:chunks");
+        break;
+      case "reload-recovery":
+        addIntentKinds("lifecycle", "state", "phase");
+        addRuntime(
+          "runtime:persistence",
+          "runtime:arena",
+          "runtime:inventory",
+          "runtime:combat",
+          "runtime:entities",
+        );
+        break;
+      case "deferred-ownership":
+        addIntentKinds("lifecycle", "state", "phase", "outcome");
+        addRuntime(
+          "runtime:arena",
+          "runtime:persistence",
+          "runtime:chunks",
+        );
+        break;
+      case "terminal-collision":
+        addIntentKinds("outcome", "lifecycle", "state", "phase");
+        addRuntime(
+          "runtime:combat",
+          "runtime:arena",
+          "runtime:economy",
+        );
+        break;
+      case "repeated-run":
+        addIntentKinds("lifecycle", "phase", "state", "outcome");
+        addRuntime(
+          "runtime:arena",
+          "runtime:structures",
+          "runtime:entities",
+          "runtime:inventory",
+          "runtime:economy",
+        );
+        break;
+    }
+
+    return [...selected].sort();
+  }
 
   const scenarios: GameplayExecutionScenario[] = scenarioNodes.map((node) => {
     const componentIds = relatedNodeIds(input.intent, node.id);
@@ -260,7 +352,7 @@ export function compileGameplayExecutionGraph(
           componentIds.includes(edge.from) &&
           componentIds.includes(edge.to),
       )
-      .map((edge) => "edge:" + node.id + ":" + edge.id);
+      .map((edge) => "edge:scenario:" + node.id + ":" + edge.id);
 
     return {
       id: "scenario:" + node.id,
@@ -275,13 +367,16 @@ export function compileGameplayExecutionGraph(
   });
 
   for (const presetScenario of input.preset.scenarios) {
+    const componentIds = presetComponentIds(
+      presetScenario.kind,
+    );
     scenarios.push({
       id: "preset:" + presetScenario.id,
       label: presetScenario.kind,
       gameplayStage: "Boundary / Recovery / Variant",
       purpose: presetScenario.reason,
       sourceSubjectIds: [],
-      componentIds: [],
+      componentIds,
       causalEdgeIds: [],
       playerCounts:
         presetScenario.playerCount === undefined
@@ -313,7 +408,6 @@ export function compileGameplayExecutionGraph(
     };
   });
 
-  const runtime = runtimeComponents(input.world);
   for (const component of runtime) {
     const usedBy = scenarios
       .filter((scenario) => runtimeScenarioAffinity(component.id, scenario))
