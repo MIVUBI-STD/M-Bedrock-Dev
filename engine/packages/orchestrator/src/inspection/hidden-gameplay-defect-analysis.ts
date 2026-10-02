@@ -466,3 +466,26 @@ export function analyzeHiddenGameplayDefects(
     },
   };
 }
+
+export function refreshHiddenGameplayDefectsForWorld(
+  existing: HiddenGameplayDefectAnalysis,
+  world: GameplayWorldModel,
+): HiddenGameplayDefectAnalysis {
+  const designConsistency =
+    consistencyFromWorld(world);
+  const degradations =
+    degradationFromWorld(world);
+
+  return {
+    ...existing,
+    designConsistency,
+    degradations,
+    attention: {
+      ...existing.attention,
+      designAnomalies:
+        designConsistency.length,
+      silentDegradations:
+        degradations.length,
+    },
+  };
+}
