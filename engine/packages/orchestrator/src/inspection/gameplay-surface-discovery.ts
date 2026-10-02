@@ -5,6 +5,7 @@ export interface GameplaySurfaceDiscoveryInput {
   readonly arenaLifecycleEvidence: boolean;
   readonly arenaCleanupEvidence: boolean;
   readonly arenaIsolationEvidence: boolean;
+  readonly arenaReplicaEvidence: boolean;
   readonly stateEvidence: boolean;
   readonly chunkEvidence: boolean;
   readonly persistenceEvidence: boolean;
@@ -41,6 +42,9 @@ export function discoverGameplaySurfaces(
   }
   if (input.arenaIsolationEvidence) {
     runtime.add("runtime:arena-isolation");
+  }
+  if (input.arenaReplicaEvidence) {
+    runtime.add("runtime:arena-replica-integrity");
   }
   if (input.stateEvidence) {
     runtime.add("runtime:state");
