@@ -63,6 +63,7 @@ Use this before broad repository search.
 | Runtime-profile → compatibility query adapter | engine/packages/compatibility/src/runtime-profile-adapter.ts |
 | Game Design specification schema/loader/compiler | engine/packages/game-design-spec/ + engine/design/ |
 | Selected-artifact Gameplay Contract / readiness | engine/packages/gameplay-intent/ |
+| Mandatory gameplay audit procedure / checkpoint semantics | docs/03-analysis/mandatory-audit-procedure.md |
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
 | Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |

@@ -4,6 +4,16 @@
 
 Final review before a gameplay bug report is considered ready.
 
+This checklist is a publication review only. The executable checkpoint owner is `mandatory-audit-procedure.md`; do not use this checklist as a substitute for running UNDERSTAND → MODEL → STRESS → PROVE → REPORT.
+
+## Mandatory procedure closure
+
+- [ ] UNDERSTAND block is closed.
+- [ ] MODEL block is closed for every applicable system.
+- [ ] STRESS block is closed for every applicable lifecycle/cross-system scenario.
+- [ ] PROVE block is closed: RIG, contradiction resolution, counter-proof, and root-cause consolidation are complete.
+- [ ] REPORT block admits only complete confirmed defects.
+
 ## Gameplay closure
 
 - [ ] Selected world version is defined.

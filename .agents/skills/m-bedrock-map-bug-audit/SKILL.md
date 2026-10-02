@@ -20,6 +20,14 @@ Do not use older versions, Development/Source, old QA/Bug Reports, Technical Doc
 
 Bug discovery cannot start before the selected world is reconstructed.
 
+The canonical base procedure is `../../../docs/03-analysis/mandatory-audit-procedure.md`. Its five blocks are mandatory:
+
+```text
+UNDERSTAND → MODEL → STRESS → PROVE → REPORT
+```
+
+This skill routes the work; it must not duplicate or weaken those checkpoint closure rules.
+
 ```text
 Selected Map Version
 → Gameplay Surface Inventory
@@ -38,6 +46,7 @@ Selected Map Version
 
 Required references:
 
+- `../../../docs/03-analysis/mandatory-audit-procedure.md`
 - `references/game-design-contract.md`
 - `references/gameplay-flow-contract.md`
 - `references/multi-arena-contract.md`
