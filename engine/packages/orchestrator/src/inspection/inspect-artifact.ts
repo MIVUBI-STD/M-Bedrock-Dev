@@ -198,7 +198,7 @@ export async function inspectArtifact(
         : []),
     ];
 
-        const baseProofVolumes =
+    const baseProofVolumes =
       effectiveRegionClassification === undefined
         ? effectiveRegionPlan?.volumes
         : [

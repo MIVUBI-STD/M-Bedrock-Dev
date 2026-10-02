@@ -311,6 +311,10 @@ The audit may stop only when:
 ✓ Gameplay Scenario Closure is CLOSED or justified PARTIAL
 ✓ Every material Gameplay Scenario is accounted
 ✓ Every Gameplay Scenario Component has a gameplay purpose
+✓ Every RIG node has a capability-backed execution receipt
+✓ MISSING_REQUIRED_KNOWLEDGE = 0
+✓ BLOCKED_BY_PREREQUISITE = 0
+✓ CAPABILITY_GAP = 0 or explicitly handed to Detection Development
 ✓ Every material Gameplay Causal Link is resolved
 ✓ Every CONTRADICTED link has a final Gameplay Defect Resolution
 ✓ GAMEPLAY_TRANSLATION_REQUIRED = 0
