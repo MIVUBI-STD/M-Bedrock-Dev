@@ -57,6 +57,9 @@ import {
   projectReadyAuditDefects,
   type ReadyAuditDefectProjection,
 } from "./map-audit-defect-projection.js";
+import {
+  deriveSelectedMapAuditRevision,
+} from "./map-audit-revision.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -74,6 +77,7 @@ export interface SelectedMapAuditRun {
   readonly policy: "selected-map-audit-single-entry";
   readonly inspection: InspectArtifactResult;
   readonly identity: SelectedMapAuditIdentity;
+  readonly auditRevision: string;
   readonly status: "READY_FOR_REVIEW" | "BLOCKED";
   readonly admission: SelectedMapAuditAdmission;
   readonly currentStage: SelectedMapAuditStage | "COMPLETE";
@@ -121,12 +125,20 @@ export async function runSelectedMapAudit(
     gameplayDefectResolution:
       scenario.defectResolution,
   });
+  const auditRevision = deriveSelectedMapAuditRevision({
+    identity,
+    admission,
+    procedure,
+    graph: scenario.graph,
+    defectResolution: scenario.defectResolution,
+  });
   const modelTaskPackets = deriveAuditModelTaskPackets({
     admission,
     procedure,
     graph: scenario.graph,
     defectResolution: scenario.defectResolution,
     intent: inspection.gameplayIntent.model,
+    auditRevision,
   });
   const readyDefects = projectReadyAuditDefects(
     scenario.graph,
@@ -151,6 +163,7 @@ export async function runSelectedMapAudit(
     policy: "selected-map-audit-single-entry",
     inspection,
     identity,
+    auditRevision,
     admission,
     currentStage,
     allowedNextAction,
@@ -173,6 +186,7 @@ export async function runSelectedMapAudit(
 
 export interface ResolveSelectedMapAuditInput {
   readonly audit: SelectedMapAuditRun;
+  readonly basedOnAuditRevision: string;
   readonly resolutions:
     readonly GameplayDefectResolution[];
 }
@@ -185,6 +199,14 @@ export interface ResolveSelectedMapAuditInput {
 export function resolveSelectedMapAudit(
   input: ResolveSelectedMapAuditInput,
 ): SelectedMapAuditRun {
+  if (
+    input.basedOnAuditRevision !==
+    input.audit.auditRevision
+  ) {
+    throw new Error(
+      "Refusing stale audit resolution: model/result revision does not match the current SelectedMapAuditRun.",
+    );
+  }
   const inspection = input.audit.inspection;
   const hidden = refreshHiddenGameplayDefectsForWorld(
     inspection.hiddenGameplayDefects,
@@ -226,12 +248,20 @@ export function resolveSelectedMapAudit(
       scenario.defectResolution,
   });
 
+  const auditRevision = deriveSelectedMapAuditRevision({
+    identity,
+    admission,
+    procedure: mandatoryAuditProcedure,
+    graph: scenario.graph,
+    defectResolution: scenario.defectResolution,
+  });
   const modelTaskPackets = deriveAuditModelTaskPackets({
     admission,
     procedure: mandatoryAuditProcedure,
     graph: scenario.graph,
     defectResolution: scenario.defectResolution,
     intent: updatedInspection.gameplayIntent.model,
+    auditRevision,
   });
   const readyDefects = projectReadyAuditDefects(
     scenario.graph,
@@ -257,6 +287,7 @@ export function resolveSelectedMapAudit(
     policy: "selected-map-audit-single-entry",
     inspection: updatedInspection,
     identity,
+    auditRevision,
     admission,
     currentStage,
     allowedNextAction,

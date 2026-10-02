@@ -24,6 +24,7 @@ export interface AuditModelTaskPacket {
   readonly schemaVersion: 1;
   readonly policy: "bounded-audit-model-task";
   readonly id: string;
+  readonly auditRevision: string;
   readonly kind: AuditModelTaskKind;
   readonly stage: SelectedMapAuditStage;
   readonly goal: string;
@@ -50,6 +51,7 @@ function unique(values: readonly string[]): string[] {
 function checkpointPackets(
   stage: SelectedMapAuditStage,
   procedure: MandatoryAuditProcedureReceipt,
+  auditRevision: string,
 ): readonly AuditModelTaskPacket[] {
   return procedure.checkpoints
     .filter((checkpoint) =>
@@ -72,6 +74,7 @@ function checkpointPackets(
         schemaVersion: 1 as const,
         policy: "bounded-audit-model-task" as const,
         id: "task:checkpoint:" + checkpoint.id,
+        auditRevision,
         kind: "CHECKPOINT_REASONING" as const,
         stage,
         goal:
@@ -109,6 +112,7 @@ function checkpointPackets(
 function provePackets(
   graph: GameplayScenarioGraph,
   gate: GameplayDefectResolutionGate,
+  auditRevision: string,
 ): readonly AuditModelTaskPacket[] {
   const ids = new Set([
     ...gate.gameplayTranslationRequiredIds,
@@ -135,6 +139,7 @@ function provePackets(
           "task:" +
           (needsTranslation ? "translate:" : "counterproof:") +
           link.id,
+        auditRevision,
         kind:
           needsTranslation
             ? "GAMEPLAY_TRANSLATION" as const
@@ -196,6 +201,7 @@ export function deriveAuditModelTaskPackets(input: {
   readonly graph: GameplayScenarioGraph;
   readonly defectResolution: GameplayDefectResolutionGate;
   readonly intent: GameplayIntentModel;
+  readonly auditRevision: string;
 }): readonly AuditModelTaskPacket[] {
   const stage = input.admission.firstBlockingStage;
   if (stage === undefined) return [];
@@ -204,9 +210,14 @@ export function deriveAuditModelTaskPackets(input: {
     const prove = provePackets(
       input.graph,
       input.defectResolution,
+      input.auditRevision,
     );
     if (prove.length > 0) return prove;
   }
 
-  return checkpointPackets(stage, input.procedure);
+  return checkpointPackets(
+    stage,
+    input.procedure,
+    input.auditRevision,
+  );
 }
