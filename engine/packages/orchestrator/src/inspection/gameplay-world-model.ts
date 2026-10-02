@@ -861,6 +861,8 @@ export function deriveGameplayWorldModel(
     arenaIsolationEvidence:
       source.arena.stateIsolation !== undefined ||
       source.arena.globalState !== undefined,
+    arenaReplicaEvidence:
+      replicaProof.length > 0,
     stateEvidence,
     chunkEvidence,
     persistenceEvidence: persistenceApplicable,
