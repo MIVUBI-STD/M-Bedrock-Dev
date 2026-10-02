@@ -6,6 +6,7 @@ import { analyzeCommand } from "../../commands/src/index.js";
 import type {
   DialogueCommandTrigger,
   DialogueSceneCommand,
+  DialogueDisplayText,
   ParsedDialogueDocument,
   ParsedDialogueScene,
 } from "./types.js";
@@ -14,6 +15,14 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
   return typeof value === "object" && value !== null && !Array.isArray(value)
     ? value as Record<string, unknown>
     : undefined;
+}
+
+function displayText(
+  value: unknown,
+): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
 }
 
 function normalizedCommand(value: unknown): string | undefined {
@@ -55,11 +64,36 @@ function parseScene(
     ...parseCommands(record.on_open_commands, "open", source),
     ...parseCommands(record.on_close_commands, "close", source),
   ];
+  const text: DialogueDisplayText[] = [];
+  const npcName = displayText(record.npc_name);
+  const body = displayText(record.text);
+  if (npcName) {
+    text.push({
+      kind: "npc-name",
+      text: npcName,
+    });
+  }
+  if (body) {
+    text.push({
+      kind: "body",
+      text: body,
+    });
+  }
 
   if (Array.isArray(record.buttons)) {
     record.buttons.forEach((buttonValue, buttonIndex) => {
       const button = asRecord(buttonValue);
       if (!button) return;
+      const buttonText =
+        displayText(button.name) ??
+        displayText(button.text);
+      if (buttonText) {
+        text.push({
+          kind: "button",
+          text: buttonText,
+          buttonIndex,
+        });
+      }
       commands.push(...parseCommands(
         button.commands,
         "button",
@@ -72,6 +106,7 @@ function parseScene(
   return {
     sceneTag: record.scene_tag.trim(),
     commands,
+    displayText: text,
   };
 }
 
