@@ -57,6 +57,7 @@ import type { GameplayBoundaryRegistry } from "../gameplay-boundary-registry.js"
 import type { InspectionEngineeringAnalysis } from "../engineering-analysis-stage.js";
 import type { MultiplayerStateValidationPlan } from "../multiplayer-state-validation.js";
 import type { DeveloperToolReleaseAnalysis } from "../developer-tool-release-analysis.js";
+import type { GameplayReachabilityGraph } from "../../../diagnostic-reasoning/src/index.js";
 import type { ArenaStressPlan } from "../arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "../arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "../arena-authored-source-index.js";
@@ -144,6 +145,8 @@ export interface InspectDirectoryResult {
     MultiplayerStateValidationPlan;
   developerToolRelease:
     DeveloperToolReleaseAnalysis;
+  gameplayReachability:
+    GameplayReachabilityGraph;
   structures: number;
   parsedStructures: number;
   entities: number;
