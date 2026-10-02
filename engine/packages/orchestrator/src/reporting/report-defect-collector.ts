@@ -610,6 +610,24 @@ function rejectedCandidate(
   };
 }
 
+function earlyRejectedCandidate(
+  candidate: AuditReportCandidate,
+  reasons: readonly string[],
+): RejectedReportCandidate {
+  return {
+    route: candidate.route,
+    semanticKey:
+      preclassificationCandidateKey(
+        candidate,
+      ),
+    evidenceIds:
+      candidateEvidenceIds(candidate),
+    nextEvidenceNeed:
+      routeNextEvidenceNeed(candidate),
+    reasons,
+  };
+}
+
 function aiBugTrigger(
   candidate: RuntimeReportCandidate | StaticReportCandidate,
 ): {
@@ -700,6 +718,31 @@ function collectOne(
   readonly confirmed?: ConfirmedDefect;
   readonly rejected?: RejectedReportCandidate;
 } {
+  const decision =
+    candidate.route === "runtime"
+      ? confirmGameplayIntentRuntimeDefectForReport(
+          candidate.intent,
+          candidate.assessment,
+        )
+      : candidate.route === "static"
+        ? confirmStaticIntentDefectForReport(
+            candidate.intent,
+            candidate.result,
+          )
+        : confirmTesterDefectForReport(
+            candidate.confirmation,
+          );
+
+  if (!decision.confirmed) {
+    return {
+      rejected:
+        earlyRejectedCandidate(
+          candidate,
+          decision.reasons,
+        ),
+    };
+  }
+
   const runtimeClassificationProblems =
     runtimeClassificationIssues(candidate);
   if (runtimeClassificationProblems.length > 0) {
@@ -764,30 +807,6 @@ function collectOne(
           "Suggested Fix requires a diagnostic repair decision.",
         ],
         "repair-decision",
-      ),
-    };
-  }
-
-  const decision =
-    candidate.route === "runtime"
-      ? confirmGameplayIntentRuntimeDefectForReport(
-          candidate.intent,
-          candidate.assessment,
-        )
-      : candidate.route === "static"
-        ? confirmStaticIntentDefectForReport(
-            candidate.intent,
-            candidate.result,
-          )
-        : confirmTesterDefectForReport(
-            candidate.confirmation,
-          );
-
-  if (!decision.confirmed) {
-    return {
-      rejected: rejectedCandidate(
-        candidate,
-        decision.reasons,
       ),
     };
   }
