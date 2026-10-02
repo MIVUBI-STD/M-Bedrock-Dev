@@ -41,7 +41,12 @@ import {
 import {
   assessSelectedMapAuditAdmission,
   type SelectedMapAuditAdmission,
+  type SelectedMapAuditStage,
 } from "./map-audit-admission.js";
+import {
+  deriveAuditModelTaskPackets,
+  type AuditModelTaskPacket,
+} from "./map-audit-model-task.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -60,6 +65,12 @@ export interface SelectedMapAuditRun {
   readonly inspection: InspectArtifactResult;
   readonly status: "READY_FOR_REVIEW" | "BLOCKED";
   readonly admission: SelectedMapAuditAdmission;
+  readonly currentStage: SelectedMapAuditStage | "COMPLETE";
+  readonly allowedNextAction:
+    | "RESOLVE_BLOCKING_STAGE"
+    | "RESOLVE_DEFECTS"
+    | "PREPARE_REVIEW";
+  readonly modelTaskPackets: readonly AuditModelTaskPacket[];
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
 }
@@ -96,11 +107,35 @@ export async function runSelectedMapAudit(
     gameplayDefectResolution:
       scenario.defectResolution,
   });
+  const modelTaskPackets = deriveAuditModelTaskPackets({
+    admission,
+    procedure,
+    graph: scenario.graph,
+    defectResolution: scenario.defectResolution,
+    intent: inspection.gameplayIntent.model,
+  });
+  const currentStage =
+    admission.firstBlockingStage ?? "COMPLETE";
+  const allowedNextAction =
+    admission.status === "READY"
+      ? "PREPARE_REVIEW" as const
+      : admission.firstBlockingStage === "PROVE" &&
+          (
+            scenario.defectResolution
+              .gameplayTranslationRequiredIds.length > 0 ||
+            scenario.defectResolution
+              .counterProofSearchRequiredIds.length > 0
+          )
+        ? "RESOLVE_DEFECTS" as const
+        : "RESOLVE_BLOCKING_STAGE" as const;
   return {
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
     inspection,
     admission,
+    currentStage,
+    allowedNextAction,
+    modelTaskPackets,
     status:
       admission.status === "READY"
         ? "READY_FOR_REVIEW"
@@ -169,11 +204,36 @@ export function resolveSelectedMapAudit(
       scenario.defectResolution,
   });
 
+  const modelTaskPackets = deriveAuditModelTaskPackets({
+    admission,
+    procedure: mandatoryAuditProcedure,
+    graph: scenario.graph,
+    defectResolution: scenario.defectResolution,
+    intent: updatedInspection.gameplayIntent.model,
+  });
+  const currentStage =
+    admission.firstBlockingStage ?? "COMPLETE";
+  const allowedNextAction =
+    admission.status === "READY"
+      ? "PREPARE_REVIEW" as const
+      : admission.firstBlockingStage === "PROVE" &&
+          (
+            scenario.defectResolution
+              .gameplayTranslationRequiredIds.length > 0 ||
+            scenario.defectResolution
+              .counterProofSearchRequiredIds.length > 0
+          )
+        ? "RESOLVE_DEFECTS" as const
+        : "RESOLVE_BLOCKING_STAGE" as const;
+
   return {
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
     inspection: updatedInspection,
     admission,
+    currentStage,
+    allowedNextAction,
+    modelTaskPackets,
     status:
       admission.status === "READY"
         ? "READY_FOR_REVIEW"
