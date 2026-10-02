@@ -12,7 +12,7 @@ Gameplay Model Closure
 → are the discovered material surfaces understood enough to reason about?
 ```
 
-Do not spend deep contradiction-analysis effort while Discovery Closure is OPEN.
+Do not spend deep contradiction-analysis effort while Discovery Closure is OPEN or PARTIAL.
 
 The goal is not to prove every runtime outcome before auditing. The goal is to ensure every discovered gameplay-relevant surface is understood enough to reason about, or explicitly marked blocked/unknown.
 
@@ -53,9 +53,11 @@ Before Phase A is treated as stable:
 - relevant selected-artifact sources must be indexed;
 - parser/index failures must be explicit;
 - unresolved references must remain visible;
-- Discovery Closure must be COMPLETE or scoped-safe PARTIAL.
+- Discovery Closure must be COMPLETE;
+- relevant-source inventory must balance indexed files plus explicit parse failures;
+- unresolved selected-artifact references must be zero.
 
-Discovery Closure OPEN blocks claims that the gameplay surface inventory is complete.
+Discovery Closure OPEN or PARTIAL blocks production continuation. Discovery PARTIAL is not a runtime exception.
 
 ## Phase A — Surface inventory
 
@@ -187,9 +189,11 @@ Gameplay model status is:
 
 ### Bug-discovery rule
 
-- CLOSED: normal bug discovery may begin.
-- PARTIAL: bug discovery may proceed only for understood surfaces; blocked/unknown surfaces remain explicit Detection Gaps or Ambiguous items.
-- OPEN: do not claim comprehensive bug coverage and do not finalize the audit.
+- CLOSED: production contradiction analysis may begin.
+- PARTIAL: production continuation is blocked because material gameplay semantics remain blocked, unknown, or incomplete. Resolve the model first.
+- OPEN: production continuation is blocked because discovery accounting or the player journey/state model is incomplete.
+
+Runtime-only residue belongs to Gameplay Scenario Closure, not Gameplay Model Closure.
 
 ## Anti-false-confidence rules
 
