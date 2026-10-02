@@ -59,7 +59,7 @@ audit <selected-map>
 
 Blocking does not fork the workflow. It stops authorization at the first unresolved stage and resumes the same `SelectedMapAuditRun` through its single allowed continuation.
 
-`inspectArtifact()` and the inspection family are engineering primitives used by the canonical audit, reliability tooling, comparison, repair verification, and focused engine development. They are not alternate production audit entry points. User-facing CLI audit/review/workflow/probe commands must obtain their inspection snapshot from `runSelectedMapAudit()`.
+`inspectArtifact()` and the inspection family are engineering primitives used by the canonical audit, reliability tooling, comparison, repair verification, and focused engine development. They are not alternate production audit entry points. The sole production CLI command is `audit`. Engineering-only `dev-*` projections may reuse the canonical audit snapshot but cannot authorize production decisions.
 
 Repository verification enforces this boundary through `verify:audit-entrypoint`.
 
