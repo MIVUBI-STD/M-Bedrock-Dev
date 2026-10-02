@@ -6,20 +6,25 @@ Canonical HTML rendering layout for the production report. Report semantics come
 
 ## Layout
 
+Client HTML is a projection of approved canonical Bug Report V2 only.
+
 ```text
 World Bug Report
 
-01 Overview
-02 Gameplay Flow
-03 Game Design Reference
-04 Bug Dashboard
-05 Confirmed Bugs
-06 Needs Validation
-07 Ambiguous
-08 Detection Gaps
-09 Reproduction Guide
-10 Audit Coverage
+01 Overview / Metrics
+02 Issue Dashboard when useful
+03 Severity Guide
+04 Confirmed Bug Cards
+   - Issue
+   - Tester Checklist
+   - Observed / Expected
+   - Resolution when supported
+   - Work Checklist
+   - Technical Detail when available
+05 Report Scope / Version
 ```
+
+Needs Validation, Ambiguous, Detection Gaps, and full audit coverage remain upstream in Map Audit Output / chat review and are not rendered as confirmed client bugs.
 
 ## Dashboard
 
@@ -31,20 +36,22 @@ ID | Gameplay Flow | Severity | Status | Category
 
 ## Bug card
 
-Each card contains:
+Each card contains canonical/presentation data that actually exists:
 
 - Bug ID
 - Category
-- Gameplay Flow
-- Severity when Confirmed
-- Status
+- Severity
+- Found By as compact metadata
 - Issue
-- Player Impact
-- How To Reproduce
-- Expected Behavior
-- Actual Behavior
-- Evidence
-- Proof Ceiling
+- Tester Checklist from Reproduction
+- Observed / Expected
+- Recommended Resolution when supported
+- Work Checklist (presentation-only)
+- Technical Analysis when available
+- Relevant Code when available
+- Must Preserve when available
+
+Do not invent Gameplay Flow, proof ceiling, or audit-only status fields when they are not present in canonical Bug Report V2.
 
 ## Coverage section
 
