@@ -91,6 +91,15 @@ export function derivePreflightKnowledgeDemand(
     hasAny(
       input.scripts,
       (script) => script.combatLifecycleEvidence,
+    ) ||
+    input.target.combatContract !== undefined ||
+    input.target.combatPolicy !== undefined ||
+    (
+      hasActor &&
+      nodes.some((node) =>
+        node.kind === "lifecycle" ||
+        node.kind === "outcome"
+      )
     )
   ) {
     domains.add("combat-lifecycle");
@@ -101,7 +110,9 @@ export function derivePreflightKnowledgeDemand(
       input.scripts,
       (script) => script.inventoryLifecycleEvidence,
     ) ||
-    hasResource
+    hasResource ||
+    input.target.inventoryItemContract !== undefined ||
+    input.target.inventoryItemPolicy !== undefined
   ) {
     domains.add("inventory-state");
   }
@@ -129,7 +140,9 @@ export function derivePreflightKnowledgeDemand(
       input.scripts,
       (script) => script.economyEvidence,
     ) ||
-    hasResource
+    hasResource ||
+    input.target.economyContract !== undefined ||
+    input.target.economyPolicy !== undefined
   ) {
     domains.add("economy-reward");
   }

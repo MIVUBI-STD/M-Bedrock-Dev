@@ -336,6 +336,41 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       : "No complete full-journey composition is available.",
     fullJourney?.composedScenarioIds ?? [],
     ["PlayerJourneyGraph"],
+    {
+      obligations: [
+        obligation(
+          "journey-composition",
+          true,
+          (fullJourney?.composedScenarioIds.length ?? 0) > 0,
+          "Full journey must compose concrete gameplay scenarios.",
+          fullJourney?.composedScenarioIds ?? [],
+        ),
+        obligation(
+          "journey-core-semantics",
+          true,
+          intent.nodes.some((node) => node.kind === "phase") &&
+            intent.nodes.some((node) =>
+              node.kind === "objective" ||
+              node.kind === "outcome"
+            ),
+          "Journey must contain grounded phase plus objective/outcome semantics.",
+          intent.nodes
+            .filter((node) =>
+              node.kind === "phase" ||
+              node.kind === "objective" ||
+              node.kind === "outcome"
+            )
+            .flatMap((node) => node.evidenceIds),
+        ),
+        obligation(
+          "journey-scenario-closure",
+          true,
+          scenarioClosure.status !== "OPEN",
+          "Journey cannot close while scenario closure is OPEN.",
+          graph.causalLinks.flatMap((item) => item.evidenceIds),
+        ),
+      ],
+    },
   ));
 
   checkpoint.push(receipt(
@@ -449,8 +484,37 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     !spatialApplicable
       ? "No material spatial/simulation dependency was discovered."
       : "Spatial and chunk/simulation ownership evidence is accounted.",
-    ["analysis:spatial-authority", "analysis:chunk-simulation"],
+    [
+      "analysis:spatial-authority",
+      "analysis:chunk-simulation",
+      "analysis:platform-constraints",
+    ],
     ["SpatialSimulationContract"],
+    {
+      obligations: [
+        obligation(
+          "platform-knowledge-resolved",
+          spatialApplicable,
+          world.platformKnowledge.profileResolved,
+          "Runtime-sensitive spatial/simulation reasoning requires resolved Minecraft/Education platform knowledge.",
+          world.platformKnowledge.profileResolved
+            ? ["analysis:platform-constraints"]
+            : [],
+        ),
+        obligation(
+          "chunk-knowledge-executed",
+          world.chunks.leases.length > 0 ||
+            graph.knowledgeRequirements.some(
+              (item) => item.domain === "chunk-simulation"
+            ),
+          world.analysisExecution.executedCapabilityIds.includes(
+            "chunk-lifecycle-integrity",
+          ),
+          "Required chunk/simulation knowledge must execute when the scenario depends on it.",
+          ["analysis:chunk-simulation"],
+        ),
+      ],
+    },
   ));
 
   checkpoint.push(receipt(
@@ -458,15 +522,45 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "MODEL",
     "Multiplayer Contract",
     !multiplayer.applicable
-      ? "NOT_APPLICABLE"
+      ? (
+          discovery.status === "COMPLETE" &&
+          !world.arenas.detected &&
+          !graph.scenarios.some((scenario) =>
+            scenario.playerCounts.some((count) => count > 1)
+          )
+        )
+        ? "NOT_APPLICABLE"
+        : "OPEN"
       : multiplayer.scenarios.length > 0
         ? "CLOSED"
         : "PARTIAL",
     !multiplayer.applicable
-      ? "No multiplayer/shared-player surface was detected."
+      ? discovery.status === "COMPLETE"
+        ? "No multiplayer signal remains after complete discovery and no multi-player scenario count is present."
+        : "Multiplayer applicability cannot close while discovery is incomplete."
       : "Applicable mixed-player scenarios are compiled.",
     multiplayer.scenarios.map((item) => item.id),
     ["MultiplayerContract"],
+    {
+      obligations: [
+        obligation(
+          "multiplayer-scenarios-compiled",
+          multiplayer.applicable,
+          multiplayer.scenarios.length > 0,
+          "Applicable multiplayer requires at least one mixed-player scenario.",
+          multiplayer.scenarios.map((item) => item.id),
+        ),
+        obligation(
+          "multiplayer-knowledge-executed",
+          multiplayer.applicable,
+          world.analysisExecution.executedCapabilityIds.includes(
+            "multiplayer-interleaving",
+          ) || !world.arenas.detected,
+          "Arena/shared multiplayer must execute interleaving/isolation analysis.",
+          ["analysis:multiplayer-interleaving"],
+        ),
+      ],
+    },
   ));
 
   const multiArena =
@@ -476,16 +570,64 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     "MODEL",
     "Multi-Arena Contract",
     !multiArena
-      ? "NOT_APPLICABLE"
+      ? (
+          discovery.status === "COMPLETE" &&
+          (
+            !world.arenas.detected ||
+            world.arenas.count === 1
+          )
+        )
+        ? "NOT_APPLICABLE"
+        : "OPEN"
       : world.arenas.safeConcurrentArenas == null ||
           world.arenas.isolation.unknown > 0
         ? "PARTIAL"
         : "CLOSED",
     !multiArena
-      ? "Multiple arenas were not discovered."
-      : "Arena capacity and isolation evidence is accounted.",
+      ? discovery.status === "COMPLETE"
+        ? "Complete discovery supports a single/no-arena model."
+        : "Multi-arena applicability cannot close while discovery is incomplete or arena count is unresolved."
+      : "Arena capacity and isolation obligations are accounted.",
     ["analysis:arena-lifecycle", "analysis:multiplayer-interleaving"],
     ["MultiArenaContract"],
+    {
+      obligations: [
+        obligation(
+          "arena-count-resolved",
+          multiArena,
+          world.arenas.count !== undefined,
+          "Multi-arena requires a resolved visible arena count.",
+          ["world:arena-count"],
+        ),
+        obligation(
+          "arena-concurrency-resolved",
+          multiArena,
+          world.arenas.safeConcurrentArenas !== undefined &&
+            world.arenas.safeConcurrentArenas !== null,
+          "Multi-arena requires resolved playable concurrent capacity.",
+          ["capacity:safe-concurrency"],
+        ),
+        obligation(
+          "arena-isolation-analyzed",
+          multiArena,
+          world.analysisExecution.executedCapabilityIds.includes(
+            "multiplayer-interleaving",
+          ) &&
+          world.arenas.isolation.unknown === 0,
+          "Multi-arena requires scoped isolation analysis with no unknown ownership.",
+          ["analysis:multiplayer-interleaving"],
+        ),
+        obligation(
+          "arena-lifecycle-analyzed",
+          multiArena,
+          world.analysisExecution.executedCapabilityIds.includes(
+            "arena-lifecycle-integrity",
+          ),
+          "Multi-arena requires lifecycle/cleanup analysis.",
+          ["analysis:arena-lifecycle"],
+        ),
+      ],
+    },
   ));
 
   checkpoint.push(receipt(
@@ -695,6 +837,26 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       : "No deferred/periodic gameplay work was discovered.",
     deferredRelations.map((item) => item.id),
     ["DeferredWorkRegistry"],
+    {
+      obligations: [
+        obligation(
+          "deferred-relations-enumerated",
+          deferredRelations.length > 0,
+          deferredRelations.length > 0,
+          "Deferred/periodic relations must be enumerated.",
+          deferredRelations.map((item) => item.id),
+        ),
+        obligation(
+          "deferred-ownership-analysis",
+          deferredRelations.length > 0,
+          world.analysisExecution.executedCapabilityIds.includes(
+            "temporal-ownership-integrity",
+          ),
+          "Deferred work requires temporal ownership analysis.",
+          ["analysis:temporal-ownership"],
+        ),
+      ],
+    },
   ));
 
   const terminalScenario = graph.scenarios.find(
@@ -732,6 +894,18 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       : "No material acquired cleanup resource was discovered.",
     ["analysis:arena-lifecycle"],
     ["CleanupLedger"],
+    {
+      obligations: [
+        obligation(
+          "cleanup-ledger-complete",
+          cleanupApplicable,
+          world.arenas.cleanup.resourceLedger.missing === 0 &&
+            world.arenas.cleanup.unresolved === 0,
+          "Every acquired cleanup resource must be accounted on applicable terminal paths.",
+          ["analysis:arena-lifecycle"],
+        ),
+      ],
+    },
   ));
 
   const repeated = graph.scenarios.find(
@@ -747,6 +921,31 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
       : "Replay/reuse scenario was not applicable.",
     repeated ? [repeated.id] : [],
     ["SecondRunEquivalenceAssessment"],
+    {
+      obligations: [
+        obligation(
+          "repeated-run-scenario",
+          repeated !== undefined,
+          repeated !== undefined,
+          "Replay/reuse requires a repeated-run scenario.",
+          repeated ? [repeated.id] : [],
+        ),
+        obligation(
+          "repeated-run-dependencies-resolved",
+          repeated !== undefined,
+          repeated === undefined ||
+            repeated.requiredKnowledgeIds.every((id) =>
+              graph.knowledgeReceipts.some(
+                (receipt) =>
+                  receipt.requirementId === id &&
+                  receipt.status === "SATISFIED"
+              )
+            ),
+          "Repeated-run scenario requires all applicable cleanup/state/world dependencies to return satisfied receipts.",
+          repeated?.requiredKnowledgeIds ?? [],
+        ),
+      ],
+    },
   ));
 
   const crossSystemScenarios = graph.scenarios.filter(

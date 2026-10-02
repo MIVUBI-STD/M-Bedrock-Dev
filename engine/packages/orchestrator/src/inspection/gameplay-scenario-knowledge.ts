@@ -395,7 +395,7 @@ export function requiredKnowledgeDomainsForPreset(
     case "arena-capacity-plus-one":
       addIfApplicable("arena-lifecycle");
       addIfApplicable("multiplayer-interleaving");
-      addIfApplicable("platform-constraints");
+      add(domains, "platform-constraints");
       addIfApplicable("chunk-simulation");
       break;
     case "reload-recovery":
@@ -408,7 +408,7 @@ export function requiredKnowledgeDomainsForPreset(
       add(domains, "temporal-ownership");
       addIfApplicable("arena-lifecycle");
       addIfApplicable("persistence-recovery");
-      addIfApplicable("platform-constraints");
+      add(domains, "platform-constraints");
       addIfApplicable("chunk-simulation");
       break;
     case "terminal-collision":
