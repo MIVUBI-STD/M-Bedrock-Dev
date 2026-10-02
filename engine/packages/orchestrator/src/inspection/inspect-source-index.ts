@@ -47,7 +47,11 @@ import {
 
 export interface InspectionSourceParseFailure {
   relativePath: string;
-  kind: "entity" | "structure";
+  kind:
+    | "entity"
+    | "structure"
+    | "dialogue"
+    | "translation";
   reason: string;
 }
 
@@ -207,6 +211,32 @@ export async function indexInspectionSources(
 
     const normalizedPath =
       "/" + file.relativePath.replaceAll("\\", "/");
+
+    const isTranslation =
+      /\/texts\/[^/]+\.lang$/i.test(
+        normalizedPath,
+      );
+    if (isTranslation) {
+      relevantFiles += 1;
+      try {
+        await readFile(
+          join(root, file.relativePath),
+          "utf8",
+        );
+        indexedFiles += 1;
+      } catch (error) {
+        parseFailures.push({
+          relativePath: file.relativePath,
+          kind: "translation",
+          reason:
+            error instanceof Error
+              ? error.message
+              : String(error),
+        });
+      }
+      continue;
+    }
+
     const isEntityJson =
       normalizedPath.includes("/entities/") &&
       normalizedPath.endsWith(".json");
@@ -270,7 +300,15 @@ export async function indexInspectionSources(
       continue;
     }
 
-    if (normalizedPath.endsWith(".json")) {
+    const isDialogueJson =
+      /\/(?:dialogue|dialogues)\/[^/]+\.json$/i.test(
+        normalizedPath,
+      );
+
+    if (
+      isDialogueJson ||
+      normalizedPath.endsWith(".json")
+    ) {
       try {
         const raw = JSON.parse(
           await readFile(
@@ -284,13 +322,40 @@ export async function indexInspectionSources(
         });
 
         if (dialogue) {
+          if (isDialogueJson) {
+            relevantFiles += 1;
+            indexedFiles += 1;
+          }
           parsedDialogueDocuments.push(dialogue);
           diagnostics.push(
             ...dialogueDocumentDiagnostics(dialogue),
           );
           continue;
         }
-      } catch {
+
+        if (isDialogueJson) {
+          relevantFiles += 1;
+          parseFailures.push({
+            relativePath: file.relativePath,
+            kind: "dialogue",
+            reason:
+              "Dialogue JSON does not contain a valid dialogue document.",
+          });
+          continue;
+        }
+      } catch (error) {
+        if (isDialogueJson) {
+          relevantFiles += 1;
+          parseFailures.push({
+            relativePath: file.relativePath,
+            kind: "dialogue",
+            reason:
+              error instanceof Error
+                ? error.message
+                : String(error),
+          });
+          continue;
+        }
         // Generic malformed JSON handling remains outside dialogue diagnostics.
       }
     }
