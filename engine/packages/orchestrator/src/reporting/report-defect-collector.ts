@@ -14,7 +14,9 @@ import {
   type BugTriggerDraft,
 } from "../../../bug-report/src/index.js";
 import {
+  buildContradictionRegistry,
   renderEngineeringAnalysis,
+  type ContradictionRegistry,
   type IntentDiagnosticGateResult,
   type IntentDiagnosticNextEvidenceNeed,
 } from "../../../diagnostic-reasoning/src/index.js";
@@ -173,6 +175,8 @@ export interface RejectedReportCandidate {
 export interface ConfirmedDefectCollection {
   readonly confirmed: readonly ConfirmedDefect[];
   readonly rejected: readonly RejectedReportCandidate[];
+  readonly contradictionRegistry?:
+    ContradictionRegistry;
 }
 
 export interface AuditReportCandidateDescriptor {
@@ -898,20 +902,49 @@ export function collectConfirmedDefects(
   const confirmed: ConfirmedDefect[] = [];
   const rejected: RejectedReportCandidate[] = [];
 
-  for (const candidate of candidates) {
-    const result = collectOne(candidate);
-    if (result.confirmed) {
-      confirmed.push(
-        applyEngineeringAnalysis(
-          result.confirmed,
-          engineeringAnalyses,
-        ),
-      );
-    }
-    if (result.rejected) rejected.push(result.rejected);
-  }
+  const descriptors =
+    candidates.map(
+      describeAuditReportCandidate,
+    );
+  const contradictionRegistry =
+    buildContradictionRegistry(
+      descriptors.map((item) => ({
+        semanticKey: item.semanticKey,
+        route: item.route,
+        evidenceIds: item.evidenceIds,
+      })),
+    );
+  const duplicateIndexes = new Set(
+    contradictionRegistry
+      .exactDuplicateIndexes,
+  );
 
-  return { confirmed, rejected };
+  candidates.forEach(
+    (candidate, index) => {
+      if (duplicateIndexes.has(index)) {
+        return;
+      }
+
+      const result = collectOne(candidate);
+      if (result.confirmed) {
+        confirmed.push(
+          applyEngineeringAnalysis(
+            result.confirmed,
+            engineeringAnalyses,
+          ),
+        );
+      }
+      if (result.rejected) {
+        rejected.push(result.rejected);
+      }
+    },
+  );
+
+  return {
+    confirmed,
+    rejected,
+    contradictionRegistry,
+  };
 }
 
 export interface BuildBugReportFromAuditInput {
