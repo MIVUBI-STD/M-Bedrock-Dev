@@ -71,6 +71,7 @@ Use this before broad repository search.
 | Typed directional gameplay-scenario component traversal / semantic stop boundaries | engine/packages/orchestrator/src/inspection/gameplay-scenario-knowledge.ts |
 | Bounded model-facing audit task packets / next-action / evidence+RIG context projection | engine/packages/orchestrator/src/map-audit-model-task.ts |
 | Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |
+| Production runtime-target boundary / reject caller map-design contracts | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRuntimeTarget) |
 | Deterministic CONFIRMED_DEFECT_READY → AI defect projection | engine/packages/orchestrator/src/map-audit-defect-projection.ts |
 | Deterministic pre-report AI candidate grouping + coverage enforcement | engine/packages/orchestrator/src/map-audit-candidate-grouping.ts |
 | Canonical confirmed-defect root-cause grouping | engine/packages/bug-report/src/grouping.ts (broken invariant + repair unit + primary failure) |

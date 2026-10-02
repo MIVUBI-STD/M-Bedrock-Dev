@@ -77,12 +77,28 @@ import {
   type ReadyAuditCandidateGroup,
 } from "./map-audit-candidate-grouping.js";
 
+export type SelectedMapAuditRuntimeTarget = Pick<
+  InspectTargetProfile,
+  | "edition"
+  | "version"
+  | "educationFeatures"
+  | "eduLevel"
+  | "experiments"
+  | "arenaProofMode"
+  | "staticExecutionDimension"
+>;
+
 export interface SelectedMapAuditInput {
   /**
    * Exact selected .mcworld artifact. Production audit authority starts here.
    */
   readonly artifactPath: string;
-  readonly target?: InspectTargetProfile;
+  /**
+   * Runtime/platform identity only. Map-specific behavior contracts, arena
+   * layouts, state authority, and expected-behavior policy cannot enter the
+   * production audit from caller-supplied target configuration.
+   */
+  readonly target?: SelectedMapAuditRuntimeTarget;
   readonly knowledgeCatalog?: KnowledgeCatalog;
   readonly telemetry?: readonly TelemetryEvent[] | TelemetryBatch;
   readonly runtimeProbeTranscript?: RuntimeProbeTranscript;
@@ -117,6 +133,19 @@ export interface SelectedMapAuditRun {
  * focused diagnostics, and compatibility, but must not be used as alternate
  * production audit entry points.
  */
+function productionInspectTarget(
+  target: SelectedMapAuditRuntimeTarget | undefined,
+  requiredKnowledgeDomains:
+    InspectTargetProfile["requiredKnowledgeDomains"],
+): InspectTargetProfile {
+  return {
+    ...(target ?? {}),
+    ...(requiredKnowledgeDomains === undefined
+      ? {}
+      : { requiredKnowledgeDomains }),
+  };
+}
+
 async function inspectSelectedMapToDemandFixedPoint(
   input: SelectedMapAuditInput,
 ): Promise<{
