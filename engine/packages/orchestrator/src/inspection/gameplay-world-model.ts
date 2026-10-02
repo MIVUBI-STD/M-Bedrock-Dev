@@ -496,6 +496,11 @@ export interface GameplayWorldModelSource {
   };
   entityAiStack?: EntityAiStackAnalysis;
   routeNavigationEnvironment?: RouteNavigationEnvironmentAnalysis;
+  analysisDemand?: readonly import("../../../analysis-planner/src/index.js").AnalysisKnowledgeDomain[];
+  platformKnowledge?: {
+    profileResolved: boolean;
+    profileSource: "target" | "education-metadata" | "unresolved";
+  };
   entities: {
     definitions: number;
     knowledgePrerequisiteGaps: number;
