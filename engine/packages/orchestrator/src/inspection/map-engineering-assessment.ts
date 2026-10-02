@@ -25,6 +25,8 @@ export interface MapEngineeringAssessment {
       GameplayWorldModel["arenas"]["repeatedRun"];
     proofExecution?: GameplayWorldModel["arenas"]["proofExecution"];
     proof?: GameplayWorldModel["arenas"]["proof"];
+    replicaIntegrity:
+      GameplayWorldModel["arenas"]["replicaIntegrity"];
   };
   spatial: {
     unresolvedScriptMutations: number;
@@ -111,6 +113,8 @@ export function projectMapEngineeringAssessment(
           }),
       ...(source.arenas.proofExecution === undefined ? {} : { proofExecution: source.arenas.proofExecution }),
       ...(source.arenas.proof === undefined ? {} : { proof: source.arenas.proof }),
+      replicaIntegrity:
+        source.arenas.replicaIntegrity,
     },
     spatial: {
       unresolvedScriptMutations: source.spatial.unresolvedScriptMutations,
