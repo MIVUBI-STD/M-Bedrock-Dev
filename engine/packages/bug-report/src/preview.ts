@@ -229,14 +229,15 @@ export function renderBugReportPreviewMarkdown(
     return out.join("\n") + "\n";
   }
 
+  out.push(
+    "",
+    "| # | Severity | Category | Issue |",
+    "|---:|---|---|---|",
+  );
+
   preview.bugs.forEach((bug, index) => {
     out.push(
-      "",
-      `| #${index + 1} · ${severityLabel(bug.severity)} | ${tableCell(bug.title)} |`,
-      "|---|---|",
-      `| **Issue** | ${tableCell(bug.issue)} |`,
-      `| **Severity** | ${severityLabel(bug.severity)} |`,
-      `| **Category** | ${tableCell(bug.category)} |`,
+      `| ${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.category)} | ${tableCell(bug.title + ": " + bug.issue)} |`,
     );
   });
 
