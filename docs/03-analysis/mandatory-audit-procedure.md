@@ -55,6 +55,19 @@ Applicable technical checks
 
 A map may merge or omit stages. Applicability is derived from the selected artifact, not forced from this template.
 
+## Crosscheck rule
+
+Every contradiction reaching PROVE must be challenged from all context-relevant dimensions before confirmation:
+
+- guard / eligibility;
+- scope;
+- exclusion;
+- ownership for shared or multiplayer resources;
+- generation/revision for deferred, retry, reconnect, reload, or reuse paths;
+- cleanup/release for terminal and replay paths.
+
+Technical root cause and player-visible consequence are recorded separately. A valid technical constraint may explain the root cause while the reduced/misleading gameplay capability remains a reportable issue.
+
 ## Checkpoint contract
 
 Every checkpoint in this procedure is executable and must define:
