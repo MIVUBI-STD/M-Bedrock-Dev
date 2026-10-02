@@ -257,6 +257,41 @@ function scriptMatchesScenarioScope(
   });
 }
 
+function scopedByScript<T extends { scriptId: string }>(
+  items: readonly T[],
+  sourceLocators: readonly string[],
+): readonly T[] {
+  if (sourceLocators.length === 0) return [];
+  return items.filter((item) =>
+    scriptMatchesScenarioScope(
+      item.scriptId,
+      sourceLocators,
+    )
+  );
+}
+
+function aggregateCannotBeScoped(
+  aggregateProblem: boolean,
+  sourceLocators: readonly string[],
+  scopedCount: number,
+  domain: string,
+): Pick<GameplayCausalLink, "status" | "reason"> | undefined {
+  if (
+    aggregateProblem &&
+    sourceLocators.length > 0 &&
+    scopedCount === 0
+  ) {
+    return {
+      status: "DETECTION_GAP",
+      reason:
+        domain +
+        " problems exist elsewhere in the selected artifact, but none are source-correlated to this scenario. Do not promote a domain-global contradiction into this scenario.",
+    };
+  }
+  return undefined;
+}
+
+
 function runtimeEdgeState(
   componentId: string,
   world: GameplayWorldModel,
@@ -269,9 +304,34 @@ function runtimeEdgeState(
         world.arenas.safeConcurrentArenas !== undefined &&
         world.arenas.safeConcurrentArenas !== null &&
         world.arenas.safeConcurrentArenas < world.arenas.count;
+      const scopedIsolation = scopedByScript(
+        world.arenas.isolation.observations,
+        sourceLocators,
+      );
+      const mutationById = new Map(
+        world.arenas.globalState.mutations.map((item) => [
+          item.id,
+          item,
+        ]),
+      );
+      const scopedGlobalAssessments =
+        world.arenas.globalState.assessments.filter((item) => {
+          const mutation = mutationById.get(item.mutationId);
+          return (
+            mutation !== undefined &&
+            scriptMatchesScenarioScope(
+              mutation.ownerId,
+              sourceLocators,
+            )
+          );
+        });
       const isolationGap =
-        world.arenas.isolation.sharedGlobal > 0 ||
-        world.arenas.globalState.unleasedArenaMutations > 0;
+        scopedIsolation.some(
+          (item) => item.status === "shared-global",
+        ) ||
+        scopedGlobalAssessments.some(
+          (item) => item.status === "unleased",
+        );
       if (reduced || isolationGap) {
         return {
           status: "CONTRADICTED",
@@ -280,8 +340,16 @@ function runtimeEdgeState(
         };
       }
       if (
-        world.arenas.isolation.unknown > 0 ||
-        world.arenas.globalState.unauditedArenaMutations > 0 ||
+        scopedIsolation.some(
+          (item) =>
+            item.status === "unknown" ||
+            item.status === "partition-proof-required",
+        ) ||
+        scopedGlobalAssessments.some(
+          (item) =>
+            item.status === "partial-lease-evidence" ||
+            !item.audited,
+        ) ||
         world.arenas.lifecycle.unresolved > 0
       ) {
         return {
@@ -423,36 +491,72 @@ function runtimeEdgeState(
         status: "PROVEN",
         reason: "Entity lifecycle/navigation evidence supports the mapped gameplay dependency.",
       };
-    case "runtime:combat":
+    case "runtime:combat": {
+      const scopedPaths = scopedByScript(
+        world.combat.paths,
+        sourceLocators,
+      );
+      const scopedProjectileGap = scopedPaths.some(
+        (item) =>
+          item.projectileSpawns > 0 &&
+          item.projectileRemovals === 0,
+      );
+      const scopedHurtOnly =
+        scopedPaths.some((item) => item.event === "hurt") &&
+        !scopedPaths.some((item) => item.event === "death");
       if (
-        world.combat.projectileCleanupGap > 0 ||
-        world.combat.hurtOnlyTerminalRisk > 0 ||
-        world.combat.policy.reviveContractContradictions > 0 ||
-        world.combat.policy.projectileCleanupContractGap > 0
+        scopedProjectileGap ||
+        scopedHurtOnly ||
+        world.combat.policy.reviveContractContradictions > 0
       ) {
         return {
           status: "CONTRADICTED",
           reason:
-            "Combat lifecycle analysis found a player-state, terminal, revive, or projectile contradiction.",
+            "Scoped combat path or authored combat contract contradicts the gameplay dependency.",
         };
       }
+      const contamination = aggregateCannotBeScoped(
+        world.combat.projectileCleanupGap > 0 ||
+        world.combat.hurtOnlyTerminalRisk > 0,
+        sourceLocators,
+        scopedPaths.length,
+        "Combat lifecycle",
+      );
+      if (contamination) return contamination;
       return {
         status: "PROVEN",
-        reason: "Combat lifecycle evidence supports the mapped gameplay dependency.",
+        reason:
+          "Combat lifecycle has no scoped contradiction for the mapped gameplay dependency.",
       };
-    case "runtime:inventory":
+    }
+    case "runtime:inventory": {
+      const scopedAssessments = scopedByScript(
+        world.inventory.assessments,
+        sourceLocators,
+      );
+      const bad = scopedAssessments.filter(
+        (item) =>
+          item.status === "partial-reset" ||
+          item.status === "copy-writeback-risk",
+      );
       if (
-        world.inventory.partialResets > 0 ||
-        world.inventory.copyMutationRisks > 0 ||
-        world.inventory.restoreOwnership.multipleRestoreOwners > 0 ||
-        world.inventory.policy.uncoveredItemClasses > 0
+        bad.length > 0 ||
+        world.inventory.restoreOwnership.multipleRestoreOwners > 0
       ) {
         return {
           status: "CONTRADICTED",
           reason:
-            "Inventory/equipment analysis found reset, ownership, or item-policy gaps affecting player state.",
+            "Scoped inventory lifecycle contains partial reset/copy-writeback risk or restore ownership conflict.",
         };
       }
+      const contamination = aggregateCannotBeScoped(
+        world.inventory.partialResets > 0 ||
+        world.inventory.copyMutationRisks > 0,
+        sourceLocators,
+        scopedAssessments.length,
+        "Inventory lifecycle",
+      );
+      if (contamination) return contamination;
       if (
         world.inventory.unresolvedEquipmentSlotEvidence > 0 ||
         world.inventory.restoreOwnership.unknownIdentityGrants > 0
@@ -465,33 +569,61 @@ function runtimeEdgeState(
       }
       return {
         status: "PROVEN",
-        reason: "Inventory lifecycle evidence supports the mapped gameplay dependency.",
+        reason:
+          "Inventory lifecycle has no scoped contradiction for the mapped gameplay dependency.",
       };
-    case "runtime:persistence":
-      if (
-        (world.persistence?.appendWithoutClear ?? 0) > 0 ||
-        (world.persistence?.worldScopedAppendWithoutClear ?? 0) > 0
-      ) {
+    }
+    case "runtime:persistence": {
+      const scopedProperties = scopedByScript(
+        world.persistence?.propertiesDetail ?? [],
+        sourceLocators,
+      );
+      const bad = scopedProperties.filter(
+        (item) =>
+          item.growth === "append-without-clear" &&
+          (
+            item.scope === "world" ||
+            item.lifetime === "world" ||
+            item.lifetime === "unknown"
+          ),
+      );
+      if (bad.length > 0) {
         return {
           status: "CONTRADICTED",
           reason:
-            "Persistence analysis found state that can survive beyond its intended gameplay lifecycle.",
+            "Scoped persistence property can outlive the intended gameplay lifecycle without a clear/reset path: " +
+            bad.map((item) =>
+              item.scriptId + ":" + item.propertyId
+            ).join(", ") +
+            ".",
         };
       }
+      const contamination = aggregateCannotBeScoped(
+        (world.persistence?.appendWithoutClear ?? 0) > 0,
+        sourceLocators,
+        scopedProperties.length,
+        "Persistence",
+      );
+      if (contamination) return contamination;
       if (
-        (world.persistence?.unknownScope ?? 0) > 0 ||
-        (world.persistence?.unknownLifetime ?? 0) > 0
+        scopedProperties.some(
+          (item) =>
+            item.scope === "unknown" ||
+            item.lifetime === "unknown",
+        )
       ) {
         return {
           status: "DETECTION_GAP",
           reason:
-            "Persistence scope/lifetime remains unresolved.",
+            "Scoped persistence scope/lifetime remains unresolved.",
         };
       }
       return {
         status: "PROVEN",
-        reason: "Persistence/recovery evidence supports the mapped gameplay dependency.",
+        reason:
+          "Persistence/recovery has no scoped contradiction for the mapped gameplay dependency.",
       };
+    }
     case "runtime:structures":
       if (
         world.structures.unresolvedLoads > 0 ||
@@ -514,19 +646,46 @@ function runtimeEdgeState(
         status: "PROVEN",
         reason: "World/structure setup evidence supports the mapped gameplay dependency.",
       };
-    case "runtime:economy":
+    case "runtime:economy": {
+      const scopedPaths = scopedByScript(
+        world.economy.paths,
+        sourceLocators,
+      );
+      const bad = scopedPaths.filter(
+        (item) =>
+          (
+            item.trigger === "pickup" &&
+            (item.scoreCredits > 0 || item.scoreWrites > 0) &&
+            item.itemConsumes === 0
+          ) ||
+          (
+            (item.inventoryGrants > 0 ||
+              item.worldDrops > 0 ||
+              item.lootCommands > 0 ||
+              item.scoreCredits > 0 ||
+              item.scoreWrites > 0) &&
+            item.idempotencyGuards === 0
+          ),
+      );
       if (
-        world.economy.deathRewardSourceOverlapCandidates > 0 ||
-        world.economy.pickupCurrencyWithoutConsumeCandidates > 0 ||
-        world.economy.rewardPathsWithoutIdempotency > 0 ||
-        world.economy.policy.terminalRewardResultCommitUnproven > 0
+        bad.length > 0 ||
+        world.economy.policy.deathRewardOverlapContractConflicts > 0 ||
+        world.economy.policy.pickupCurrencyContractMismatch > 0
       ) {
         return {
           status: "CONTRADICTED",
           reason:
-            "Economy/reward analysis found duplicate, unconsumed, non-idempotent, or terminal-commit risk.",
+            "Scoped reward path or authored economy contract contains duplicate/non-idempotent/unconsumed reward behavior.",
         };
       }
+      const contamination = aggregateCannotBeScoped(
+        world.economy.pickupCurrencyWithoutConsumeCandidates > 0 ||
+        world.economy.rewardPathsWithoutIdempotency > 0,
+        sourceLocators,
+        scopedPaths.length,
+        "Economy/reward",
+      );
+      if (contamination) return contamination;
       if (
         world.economy.unresolvedEngineLootTables > 0 ||
         world.economy.deathRewardSourceOverlapUnresolved > 0
@@ -539,8 +698,10 @@ function runtimeEdgeState(
       }
       return {
         status: "PROVEN",
-        reason: "Economy/reward evidence supports the mapped gameplay dependency.",
+        reason:
+          "Economy/reward has no scoped contradiction for the mapped gameplay dependency.",
       };
+    }
     default:
       return {
         status: "DETECTION_GAP",

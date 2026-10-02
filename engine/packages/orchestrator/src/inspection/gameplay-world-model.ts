@@ -140,12 +140,38 @@ export interface GameplayWorldModel {
       partitionProofRequired: number;
       sharedGlobal: number;
       unknown: number;
+      observations: readonly {
+        scriptId: string;
+        region: string;
+        key: string;
+        status:
+          | "isolated"
+          | "partition-proof-required"
+          | "shared-global"
+          | "unknown";
+      }[];
     };
     globalState: {
       arenaScopedMutations: number;
       pairedLeaseEvidence: number;
       unleasedArenaMutations: number;
       unauditedArenaMutations: number;
+      mutations: readonly {
+        id: string;
+        ownerId: string;
+        resource: string;
+        arenaScoped: boolean;
+      }[];
+      assessments: readonly {
+        mutationId: string;
+        resource: string;
+        status:
+          | "paired-lease-evidence"
+          | "partial-lease-evidence"
+          | "unleased"
+          | "unscoped";
+        audited: boolean;
+      }[];
     };
     stress: {
       status: "planned" | "unavailable";
@@ -191,6 +217,13 @@ export interface GameplayWorldModel {
     worldScopedAppendWithoutClear: number;
     unknownScope: number;
     unknownLifetime: number;
+    propertiesDetail: readonly {
+      scriptId: string;
+      propertyId: string;
+      growth: "append-without-clear" | "append-with-clear" | "no-append" | "unknown";
+      scope: "player" | "entity" | "arena" | "session" | "world" | "unknown";
+      lifetime: "round" | "match" | "player-session" | "world" | "unknown";
+    }[];
   };
   chunks: {
     worldLoadObservers: number;
@@ -263,6 +296,19 @@ export interface GameplayWorldModel {
       pickupScopeValidationUnproven: number;
       terminalRewardResultCommitUnproven: number;
     };
+    paths: readonly {
+      scriptId: string;
+      trigger: "death" | "pickup";
+      callbackRegion: string;
+      reachableRegions: readonly string[];
+      inventoryGrants: number;
+      worldDrops: number;
+      lootCommands: number;
+      scoreCredits: number;
+      scoreWrites: number;
+      itemConsumes: number;
+      idempotencyGuards: number;
+    }[];
   };
   combat: {
     hurtHandlers: number;
@@ -289,6 +335,15 @@ export interface GameplayWorldModel {
       scopedLifeGenerationMissing: number;
       scopedArenaGenerationMissing: number;
     };
+    paths: readonly {
+      scriptId: string;
+      event: "hurt" | "death";
+      callbackRegion: string;
+      reachableRegions: readonly string[];
+      projectileSpawns: number;
+      projectileRemovals: number;
+      damageApplications: number;
+    }[];
   };
   inventory: {
     regions: number;
@@ -315,6 +370,22 @@ export interface GameplayWorldModel {
       uncoveredDrops: number;
       unknownDrops: number;
     };
+    assessments: readonly {
+      scriptId: string;
+      executionRegion: string;
+      status:
+        | "complete-reset"
+        | "partial-reset"
+        | "copy-writeback-risk"
+        | "observed";
+      itemGrants: number;
+      itemDrops: number;
+    }[];
+    restoreConflicts: readonly {
+      lifecycleEvent: "player-spawn" | "player-join" | "entity-die";
+      itemIdentifier: string;
+      ownerCallbackRegions: readonly string[];
+    }[];
   };
   state: {
     semanticSurfaces: number;
@@ -1032,6 +1103,13 @@ export function deriveGameplayWorldModel(
             ?.sharedGlobal ?? 0,
         unknown:
           source.arena.stateIsolation?.unknown ?? 0,
+        observations:
+          source.arena.stateIsolation?.observations.map((item) => ({
+            scriptId: item.scriptId,
+            region: item.region,
+            key: item.key,
+            status: item.status,
+          })) ?? [],
       },
       globalState: {
         arenaScopedMutations:
@@ -1046,6 +1124,20 @@ export function deriveGameplayWorldModel(
         unauditedArenaMutations:
           source.arena.globalState
             ?.unauditedArenaMutations ?? 0,
+        mutations:
+          source.arena.globalState?.mutations.map((item) => ({
+            id: item.id,
+            ownerId: item.ownerId,
+            resource: item.resource,
+            arenaScoped: item.arenaScoped,
+          })) ?? [],
+        assessments:
+          source.arena.globalState?.assessments.map((item) => ({
+            mutationId: item.mutationId,
+            resource: item.resource,
+            status: item.status,
+            audited: item.audited,
+          })) ?? [],
       },
       stress:
         source.arena.stressPlan?.status === "planned" &&
@@ -1170,6 +1262,14 @@ export function deriveGameplayWorldModel(
         source.persistenceSource?.unknownScope ?? 0,
       unknownLifetime:
         source.persistenceSource?.unknownLifetime ?? 0,
+      propertiesDetail:
+        source.persistenceSource?.properties.map((item) => ({
+          scriptId: item.scriptId,
+          propertyId: item.propertyId,
+          growth: item.growth,
+          scope: item.scope,
+          lifetime: item.lifetime,
+        })) ?? [],
     },
     chunks: {
       worldLoadObservers:
@@ -1344,6 +1444,16 @@ export function deriveGameplayWorldModel(
         scopedArenaGenerationMissing:
           source.combatRuntime?.scopedArenaGenerationMissing ?? 0,
       },
+      paths:
+        source.combatLifecycle?.paths.map((item) => ({
+          scriptId: item.scriptId,
+          event: item.event,
+          callbackRegion: item.callbackRegion,
+          reachableRegions: [...item.reachableRegions],
+          projectileSpawns: item.projectileSpawns,
+          projectileRemovals: item.projectileRemovals,
+          damageApplications: item.damageApplications,
+        })) ?? [],
     },
     inventory: {
       regions:

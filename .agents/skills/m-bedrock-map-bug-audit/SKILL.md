@@ -142,6 +142,8 @@ Runtime-domain causal links must carry the originating RIG requirement, scenario
 
 When an analyzer exposes scoped findings (for example script/region chunk leases), causal contradiction must prefer those scoped findings. Aggregate counters may prioritize follow-up, but they must not automatically contaminate unrelated scenarios.
 
+This rule applies to arena isolation/global state, inventory lifecycle, combat paths, persistence properties, and reward/economy paths as their scoped analyzer detail becomes available. The World Model must preserve detail needed for correlation instead of collapsing it to counters only.
+
 Every `CONTRADICTED` Gameplay Causal Link must enter Gameplay Defect Resolution before report review. The only allowed final dispositions are:
 
 - `CONFIRMED_DEFECT_READY` — gameplay trigger, consequence, expected outcome, actual outcome, and affected scope are complete;
