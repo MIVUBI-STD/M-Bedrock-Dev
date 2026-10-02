@@ -52,6 +52,7 @@ import type { SpatialAuthorityCoverageReport, SpatialAuthorityCoverageRequiremen
 import type { GameplayWorldModel } from "../gameplay-world-model.js";
 import type { GameplaySemanticModel } from "../gameplay-semantic-model.js";
 import type { MapEngineeringAssessment } from "../map-engineering-assessment.js";
+import type { HiddenGameplayDefectAnalysis } from "../hidden-gameplay-defect-analysis.js";
 import type { ArenaStressPlan } from "../arena-stress-plan.js";
 import type { ArenaRepeatedRunValidationPlan } from "../arena-repeated-run-validation.js";
 import type { ArenaAuthoredSpatialSource } from "../arena-authored-source-index.js";
@@ -131,6 +132,7 @@ export interface InspectDirectoryResult {
   gameplayWorld: GameplayWorldModel;
   gameplaySemantic: GameplaySemanticModel;
   engineeringAssessment: MapEngineeringAssessment;
+  hiddenGameplayDefects: HiddenGameplayDefectAnalysis;
   structures: number;
   parsedStructures: number;
   entities: number;
