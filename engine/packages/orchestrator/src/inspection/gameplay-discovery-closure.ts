@@ -10,7 +10,7 @@ export interface GameplayDiscoveryClosureInput {
   readonly sourceIndexedFiles: number;
   readonly sourceCoverageComplete: boolean;
   readonly sourceParseFailures: number;
-  readonly unsupportedRelevantSources: number;
+  readonly unsupportedRelevantSourcePaths: readonly string[];
   readonly unresolvedReferences: number;
 }
 
@@ -28,6 +28,7 @@ export interface GameplayDiscoveryClosure {
   readonly sourceIndexedFiles: number;
   readonly sourceParseFailures: number;
   readonly unsupportedRelevantSources: number;
+  readonly unsupportedRelevantSourcePaths: readonly string[];
   readonly sourceAccountedFiles: number;
   readonly sourceInventoryBalanced: boolean;
   readonly sourceCoverageComplete: boolean;
@@ -42,10 +43,15 @@ export function assessGameplayDiscoveryClosure(
     ...new Set(input.discoveredSurfaceIds),
   ].sort();
   const reasons: string[] = [];
+  const unsupportedRelevantSourcePaths = [
+    ...new Set(input.unsupportedRelevantSourcePaths),
+  ].sort();
+  const unsupportedRelevantSources =
+    unsupportedRelevantSourcePaths.length;
   const sourceAccountedFiles =
     input.sourceIndexedFiles +
     input.sourceParseFailures +
-    input.unsupportedRelevantSources;
+    unsupportedRelevantSources;
   const sourceInventoryBalanced =
     input.sourceRelevantFiles ===
       sourceAccountedFiles &&
@@ -79,9 +85,9 @@ export function assessGameplayDiscoveryClosure(
         " relevant source file(s) failed parsing/indexing.",
     );
   }
-  if (input.unsupportedRelevantSources > 0) {
+  if (unsupportedRelevantSources > 0) {
     reasons.push(
-      String(input.unsupportedRelevantSources) +
+      String(unsupportedRelevantSources) +
         " gameplay-sensitive selected-artifact source file(s) have no semantic owner/parser and must remain a Detection Gap.",
     );
   }
@@ -98,7 +104,7 @@ export function assessGameplayDiscoveryClosure(
       !sourceInventoryBalanced ||
       !input.sourceCoverageComplete ||
       input.sourceParseFailures > 0 ||
-      input.unsupportedRelevantSources > 0
+      unsupportedRelevantSources > 0
         ? "OPEN"
         : input.unresolvedReferences > 0
           ? "PARTIAL"
@@ -119,8 +125,8 @@ export function assessGameplayDiscoveryClosure(
       input.sourceIndexedFiles,
     sourceParseFailures:
       input.sourceParseFailures,
-    unsupportedRelevantSources:
-      input.unsupportedRelevantSources,
+    unsupportedRelevantSources,
+    unsupportedRelevantSourcePaths,
     sourceAccountedFiles,
     sourceInventoryBalanced,
     sourceCoverageComplete:
