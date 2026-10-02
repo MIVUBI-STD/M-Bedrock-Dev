@@ -39,6 +39,7 @@ export * from "./multiplayer-state-validation.js";
 export * from "./developer-tool-release-analysis.js";
 export * from "./gameplay-reachability-stage.js";
 export * from "./capability-exposure-stage.js";
+export * from "./gameplay-analysis-priority.js";
 export * from "./inspect.js";
 export * from "./inspect-artifact.js";
 export * from "./inspect-contract-source.js";
