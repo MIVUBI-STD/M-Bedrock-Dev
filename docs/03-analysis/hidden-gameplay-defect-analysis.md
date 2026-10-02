@@ -224,3 +224,72 @@ A second pass is justified only when:
 - explicit verification of a proposed repair is requested.
 
 Otherwise the first audit must produce the consolidated surface inventory, gaps, candidate set, engineering analysis, and verification plan.
+
+
+## Reachability and Capability Exposure
+
+**Owners:**
+
+- `engine/packages/diagnostic-reasoning/src/reachability-graph.ts`
+- `engine/packages/diagnostic-reasoning/src/capability-exposure.ts`
+
+These are generic reasoning primitives. They must not contain map-specific object rules.
+
+The model is:
+
+```text
+Player-accessible origin
+→ acquisition / unlock / craft / grant / drop / interaction path
+→ prerequisite
+→ trigger
+→ capability
+→ authorization gate
+→ gameplay impact
+```
+
+A concrete object such as an item, container, button, entity, score, permission, or location is evidence plugged into the graph, not a dedicated detector.
+
+Domain adapters may contribute nodes/edges such as:
+
+- container → contains → resource;
+- resource → crafts → item;
+- entity → drops → item;
+- script → grants → item;
+- player → enters → location;
+- score/state → unlocks → interaction;
+- permission → authorizes → capability.
+
+The Capability Exposure layer decides whether a sensitive capability is blocked, guarded, exposed, potentially exposed, or unknown.
+
+### Example discipline
+
+Known bugs may be used as regression fixtures, but never as implementation rules.
+
+Do not create rules such as:
+
+```text
+if item == stick → dev bug
+if arena == 6 → incomplete
+```
+
+Instead encode:
+
+```text
+ordinary player can reach prerequisite
++
+restricted capability is triggerable
++
+required authorization is absent
++
+capability is enabled in release
+→ capability exposure
+```
+
+and:
+
+```text
+replica expected equivalent to canonical
++
+material content/proof coverage diverges
+→ replica completeness contradiction
+```
