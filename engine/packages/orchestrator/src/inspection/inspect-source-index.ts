@@ -90,7 +90,7 @@ export interface InspectionSourceIndex {
     embeddedCommands: ReturnType<
       typeof analyzeEmbeddedStructureCommands
     >;
-    transitionResidue:
+    transitionResidue?:
       StructureTransitionResidueAssessment;
     queuedTickPositions: number;
   }>;
