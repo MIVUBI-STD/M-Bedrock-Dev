@@ -3,9 +3,14 @@ import type {
 } from "./confirmed-defect.js";
 
 export interface BugGroupingAssessment {
-  readonly sameCausalDefect: boolean;
+  /**
+   * Causal-link ids describe manifestations, not the root-cause key.
+   * They are retained for traceability but do not have to be identical.
+   */
+  readonly relatedCausalLineage: boolean;
   readonly sameBrokenInvariant: boolean;
   readonly sameRepairUnit: boolean;
+  readonly samePrimaryFailure: boolean;
 }
 
 export type BugGroupingDecision = "merge" | "split";
@@ -14,14 +19,35 @@ export function decideBugGrouping(
   assessment: BugGroupingAssessment,
 ): BugGroupingDecision {
   return (
-    assessment.sameCausalDefect &&
     assessment.sameBrokenInvariant &&
-    assessment.sameRepairUnit
+    assessment.sameRepairUnit &&
+    assessment.samePrimaryFailure
   )
     ? "merge"
     : "split";
 }
 
+
+function causalIds(
+  defect: ConfirmedDefect,
+): readonly string[] {
+  return [
+    ...new Set([
+      ...(defect.causalIncidentIds ?? []),
+      ...(defect.causalIncidentId === undefined
+        ? []
+        : [defect.causalIncidentId]),
+    ]),
+  ].sort();
+}
+
+function overlaps(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  const set = new Set(left);
+  return right.some((item) => set.has(item));
+}
 
 function sameSet(
   left: readonly string[],
@@ -40,11 +66,13 @@ export function assessConfirmedDefectGrouping(
   left: ConfirmedDefect,
   right: ConfirmedDefect,
 ): BugGroupingAssessment {
+  const leftCausal = causalIds(left);
+  const rightCausal = causalIds(right);
   return {
-    sameCausalDefect:
-      left.causalIncidentId !== undefined &&
-      right.causalIncidentId !== undefined &&
-      left.causalIncidentId === right.causalIncidentId,
+    relatedCausalLineage:
+      leftCausal.length > 0 &&
+      rightCausal.length > 0 &&
+      overlaps(leftCausal, rightCausal),
     sameBrokenInvariant: sameSet(
       left.brokenInvariantIds,
       right.brokenInvariantIds,
@@ -53,6 +81,8 @@ export function assessConfirmedDefectGrouping(
       left.repairUnitIds,
       right.repairUnitIds,
     ),
+    samePrimaryFailure:
+      left.primaryFailure === right.primaryFailure,
   };
 }
 
@@ -68,12 +98,11 @@ export function groupConfirmedDefects(
 
   for (const defect of defects) {
     const key =
-      defect.causalIncidentId === undefined ||
       defect.brokenInvariantIds.length === 0 ||
       defect.repairUnitIds.length === 0
         ? "single:" + defect.semanticKey
         : [
-            "incident:" + defect.causalIncidentId,
+            "failure:" + defect.primaryFailure,
             "invariants:" +
               [...new Set(defect.brokenInvariantIds)].sort().join(","),
             "repair-units:" +

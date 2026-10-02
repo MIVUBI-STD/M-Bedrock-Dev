@@ -23,12 +23,35 @@ export interface WorkSessionReferences {
   validationScenarioIds: readonly string[];
 }
 
+export interface WorkSessionAuditBinding {
+  readonly authority: "selected-map-audit";
+  readonly auditRevision: string;
+  readonly currentStage:
+    | "TARGET"
+    | "DISCOVERY"
+    | "UNDERSTAND"
+    | "MODEL"
+    | "STRESS"
+    | "PROVE"
+    | "REPORT"
+    | "COMPLETE";
+  readonly allowedNextAction:
+    | "RESOLVE_BLOCKING_STAGE"
+    | "RESOLVE_DEFECTS"
+    | "PREPARE_REVIEW";
+}
+
 export interface WorkSessionCheckpoint {
   schemaVersion: 1;
   sessionId: string;
   goal: string;
   artifact: WorkSessionArtifactRef;
   stage: WorkSessionStage;
+  /**
+   * When present, selected-map audit is the stage authority. WorkSession.stage
+   * is only a coarse UI/storage projection and must not drive audit progression.
+   */
+  audit?: WorkSessionAuditBinding;
   revision: number;
   references: WorkSessionReferences;
   nextActions: readonly string[];
@@ -101,6 +124,7 @@ export function createWorkSessionCheckpoint(
     references?: Partial<WorkSessionReferences>;
     nextActions?: readonly string[];
     blockers?: readonly string[];
+    audit?: WorkSessionAuditBinding;
   },
 ): WorkSessionCheckpoint {
   if (!input.sessionId.trim()) {
@@ -130,6 +154,9 @@ export function createWorkSessionCheckpoint(
       ...input.artifact,
     },
     stage: "new",
+    ...(input.audit === undefined
+      ? {}
+      : { audit: input.audit }),
     revision: 1,
     references: {
       completedCapabilityIds:
@@ -178,6 +205,7 @@ export function advanceWorkSessionCheckpoint(
     stage: WorkSessionStage;
     artifactFingerprint?:
       string;
+    audit?: WorkSessionAuditBinding;
     completedCapabilityIds?:
       readonly string[];
     evidenceIds?:
@@ -196,6 +224,15 @@ export function advanceWorkSessionCheckpoint(
     ALLOWED_STAGE_TRANSITIONS[
       current.stage
     ];
+
+  if (
+    current.audit?.authority === "selected-map-audit" &&
+    update.audit === undefined
+  ) {
+    throw new Error(
+      "Selected-map audit-bound work sessions must be advanced through an audit projection; manual stage advancement is not authoritative.",
+    );
+  }
 
   if (
     update.stage !== current.stage &&
@@ -310,7 +347,9 @@ export function advanceWorkSessionCheckpoint(
     sameStrings(
       blockers,
       current.blockers,
-    );
+    ) &&
+    JSON.stringify(update.audit ?? current.audit ?? null) ===
+      JSON.stringify(current.audit ?? null);
 
   if (unchanged) {
     return current;
@@ -319,6 +358,11 @@ export function advanceWorkSessionCheckpoint(
   return {
     ...current,
     stage: update.stage,
+    ...(update.audit === undefined
+      ? current.audit === undefined
+        ? {}
+        : { audit: current.audit }
+      : { audit: update.audit }),
     revision:
       current.revision + 1,
     references,

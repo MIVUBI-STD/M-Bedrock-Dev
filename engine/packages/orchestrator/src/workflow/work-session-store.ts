@@ -119,6 +119,10 @@ export function parseWorkSessionCheckpoint(
     record.references as
       | Record<string, unknown>
       | undefined;
+  const audit =
+    record.audit as
+      | Record<string, unknown>
+      | undefined;
 
   if (
     !hasOnlyKeys(
@@ -129,6 +133,7 @@ export function parseWorkSessionCheckpoint(
         "goal",
         "artifact",
         "stage",
+        "audit",
         "revision",
         "references",
         "nextActions",
@@ -147,6 +152,40 @@ export function parseWorkSessionCheckpoint(
     !STAGES.includes(
       record.stage as
         WorkSessionStage,
+    ) ||
+    (
+      audit !== undefined &&
+      (
+        !hasOnlyKeys(
+          audit,
+          [
+            "authority",
+            "auditRevision",
+            "currentStage",
+            "allowedNextAction",
+          ],
+        ) ||
+        audit.authority !== "selected-map-audit" ||
+        typeof audit.auditRevision !== "string" ||
+        !audit.auditRevision.trim() ||
+        typeof audit.currentStage !== "string" ||
+        ![
+          "TARGET",
+          "DISCOVERY",
+          "UNDERSTAND",
+          "MODEL",
+          "STRESS",
+          "PROVE",
+          "REPORT",
+          "COMPLETE",
+        ].includes(audit.currentStage) ||
+        typeof audit.allowedNextAction !== "string" ||
+        ![
+          "RESOLVE_BLOCKING_STAGE",
+          "RESOLVE_DEFECTS",
+          "PREPARE_REVIEW",
+        ].includes(audit.allowedNextAction)
+      )
     ) ||
     !Number.isInteger(
       record.revision,
@@ -248,6 +287,30 @@ export function parseWorkSessionCheckpoint(
     stage:
       record.stage as
         WorkSessionStage,
+    ...(audit === undefined
+      ? {}
+      : {
+          audit: {
+            authority: "selected-map-audit" as const,
+            auditRevision:
+              audit.auditRevision as string,
+            currentStage:
+              audit.currentStage as
+                | "TARGET"
+                | "DISCOVERY"
+                | "UNDERSTAND"
+                | "MODEL"
+                | "STRESS"
+                | "PROVE"
+                | "REPORT"
+                | "COMPLETE",
+            allowedNextAction:
+              audit.allowedNextAction as
+                | "RESOLVE_BLOCKING_STAGE"
+                | "RESOLVE_DEFECTS"
+                | "PREPARE_REVIEW",
+          },
+        }),
     revision:
       record.revision as number,
     references: {
