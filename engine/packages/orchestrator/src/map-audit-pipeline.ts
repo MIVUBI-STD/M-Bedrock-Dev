@@ -29,6 +29,10 @@ import {
 import type {
   InspectionEngineeringAnalysis,
 } from "./inspection/engineering-analysis-stage.js";
+import {
+  assessSelectedMapAuditAdmission,
+  type SelectedMapAuditAdmission,
+} from "./map-audit-admission.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -46,6 +50,7 @@ export interface SelectedMapAuditRun {
   readonly policy: "selected-map-audit-single-entry";
   readonly inspection: InspectArtifactResult;
   readonly status: "READY_FOR_REVIEW" | "BLOCKED";
+  readonly admission: SelectedMapAuditAdmission;
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
 }
@@ -69,18 +74,36 @@ export async function runSelectedMapAudit(
   );
 
   const procedure = inspection.mandatoryAuditProcedure;
+  const scenario =
+    inspection.hiddenGameplayDefects.scenarioAudit;
+  const admission = assessSelectedMapAuditAdmission({
+    mandatoryAuditProcedure: procedure,
+    gameplayDiscoveryClosure:
+      inspection.gameplayDiscoveryClosure,
+    gameplayClosure:
+      inspection.gameplayWorld.gameplayClosure,
+    gameplayScenarioClosure:
+      scenario.closure,
+    gameplayDefectResolution:
+      scenario.defectResolution,
+  });
   return {
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
     inspection,
+    admission,
     status:
-      procedure.blockingCheckpointIds.length > 0
-        ? "BLOCKED"
-        : "READY_FOR_REVIEW",
+      admission.status === "READY"
+        ? "READY_FOR_REVIEW"
+        : "BLOCKED",
     blockingCheckpointIds: [
       ...procedure.blockingCheckpointIds,
     ],
-    reasons: [...procedure.reasons],
+    reasons: [
+      ...admission.issues.map((issue) =>
+        "[" + issue.stage + "] " + issue.message
+      ),
+    ],
   };
 }
 

@@ -42,6 +42,9 @@ import type {
 import type {
   MandatoryAuditProcedureReceipt,
 } from "../inspection/mandatory-audit-procedure.js";
+import {
+  assessSelectedMapAuditAdmission,
+} from "../map-audit-admission.js";
 import type {
   RuntimeExperimentDefinition,
 } from "../../../runtime-lab/src/index.js";
@@ -1332,22 +1335,25 @@ export function prepareBugReportReviewFromAuditCandidates(
   input:
     PrepareBugReportReviewFromClosedAuditInput,
 ): PrepareBugReportReviewFromClosedAuditResult {
-  const closureIssues = [
-    ...mandatoryAuditProcedurePublicationIssues(
+  const admission = assessSelectedMapAuditAdmission({
+    mandatoryAuditProcedure:
       input.mandatoryAuditProcedure,
-    ),
-    ...gameplayDiscoveryPublicationIssues(
+    gameplayDiscoveryClosure:
       input.gameplayDiscoveryClosure,
-    ),
-    ...gameplayClosurePublicationIssues(
+    gameplayClosure:
       input.gameplayClosure,
-    ),
-    ...gameplayScenarioPublicationIssues(
+    gameplayScenarioClosure:
       input.gameplayScenarioClosure,
-    ),
-    ...gameplayDefectResolutionPublicationIssues(
+    gameplayDefectResolution:
       input.gameplayDefectResolution,
-    ),
+  });
+  const closureIssues = [
+    ...admission.issues.map((issue) => ({
+      code: "invalid-confirmed-defect" as const,
+      message:
+        "[" + issue.stage + "] " +
+        issue.message,
+    })),
     ...gameplayDefectCandidateCoverageIssues(
       input.gameplayDefectResolution,
       input.candidates,
@@ -1432,22 +1438,25 @@ export function buildBugReportFromAuditCandidatesCompatibility(
 export function buildBugReportFromAuditCandidates(
   input: BuildBugReportFromClosedAuditInput,
 ): BuildBugReportFromAuditResult {
-  const closureIssues = [
-    ...mandatoryAuditProcedurePublicationIssues(
+  const admission = assessSelectedMapAuditAdmission({
+    mandatoryAuditProcedure:
       input.mandatoryAuditProcedure,
-    ),
-    ...gameplayDiscoveryPublicationIssues(
+    gameplayDiscoveryClosure:
       input.gameplayDiscoveryClosure,
-    ),
-    ...gameplayClosurePublicationIssues(
+    gameplayClosure:
       input.gameplayClosure,
-    ),
-    ...gameplayScenarioPublicationIssues(
+    gameplayScenarioClosure:
       input.gameplayScenarioClosure,
-    ),
-    ...gameplayDefectResolutionPublicationIssues(
+    gameplayDefectResolution:
       input.gameplayDefectResolution,
-    ),
+  });
+  const closureIssues = [
+    ...admission.issues.map((issue) => ({
+      code: "invalid-confirmed-defect" as const,
+      message:
+        "[" + issue.stage + "] " +
+        issue.message,
+    })),
     ...gameplayDefectCandidateCoverageIssues(
       input.gameplayDefectResolution,
       input.candidates,
