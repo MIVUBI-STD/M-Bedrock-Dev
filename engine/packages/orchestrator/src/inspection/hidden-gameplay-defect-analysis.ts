@@ -1,7 +1,6 @@
 import {
   assessMechanicCompleteness,
   challengeDesignIntent,
-  selectedArtifactPlayerFacingEvidence,
   type DesignIntentChallengeResult,
   type GameplayIntentModel,
   type MechanicCompletenessResult,
@@ -57,11 +56,6 @@ function evidenceForNode(
 function materialIntentChallenges(
   model: GameplayIntentModel,
 ) {
-  const playerFacing =
-    selectedArtifactPlayerFacingEvidence(
-      model.evidence,
-    );
-
   return model.nodes
     .filter((node) =>
       node.kind === "mechanic" ||
@@ -93,13 +87,27 @@ function materialIntentChallenges(
             item.origin !== "source-code"
           )
           .map((item) => item.id);
+      const playerFacingEvidenceIds =
+        evidence
+          .filter((item) =>
+            item.scope === "selected-artifact" &&
+            (
+              item.origin === "dialogue" ||
+              item.origin === "translation" ||
+              item.origin === "structure" ||
+              item.origin === "world-db" ||
+              item.origin === "scoreboard" ||
+              item.origin === "command"
+            )
+          )
+          .map((item) => item.id);
 
       return {
         subjectId: node.id,
         result: challengeDesignIntent({
           implementationEvidenceIds,
           independentDesignEvidenceIds,
-          playerFacingEvidenceIds: playerFacing,
+          playerFacingEvidenceIds,
           status: node.status,
         }),
       };
