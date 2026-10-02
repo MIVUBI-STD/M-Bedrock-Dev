@@ -24,6 +24,10 @@ export interface HiddenGameplayDefectAnalysis {
   readonly schemaVersion: 1;
   readonly designIntentChallenges: readonly {
     readonly subjectId: string;
+    readonly label: string;
+    readonly kind: GameplayIntentModel["nodes"][number]["kind"];
+    readonly status: GameplayIntentModel["nodes"][number]["status"];
+    readonly highRisk: boolean;
     readonly result: DesignIntentChallengeResult;
   }[];
   readonly mechanicCompleteness:
@@ -102,8 +106,23 @@ function materialIntentChallenges(
           )
           .map((item) => item.id);
 
+      const highRisk =
+        node.kind === "policy" ||
+        node.kind === "resource" ||
+        node.kind === "spatial-region" ||
+        (
+          node.kind === "mechanic" &&
+          /(?:limit|capacity|queue|max|min|fallback|throttle|admission|concurrent|slot)/i.test(
+            node.label,
+          )
+        );
+
       return {
         subjectId: node.id,
+        label: node.label,
+        kind: node.kind,
+        status: node.status,
+        highRisk,
         result: challengeDesignIntent({
           implementationEvidenceIds,
           independentDesignEvidenceIds,
@@ -385,6 +404,7 @@ export function analyzeHiddenGameplayDefects(
       implementationOnlyIntent:
         designIntentChallenges.filter(
           (item) =>
+            item.highRisk &&
             item.result.disposition ===
             "implementation-only",
         ).length,
