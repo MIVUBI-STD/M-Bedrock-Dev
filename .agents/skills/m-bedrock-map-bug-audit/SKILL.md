@@ -111,7 +111,7 @@ The audit is scenario-driven. Surface discovery and technical analyzers provide 
 
 Knowledge activation is also scenario-driven. Do not preload every analyzer and do not rely on names/keywords to decide applicability.
 
-Preflight is not allowed to prove non-applicability by silence. It must combine raw structured source evidence, selected-artifact semantic intent, selected-artifact contracts, and platform/profile facts. Discovery Closure must retain and balance relevant/indexed/parse-failure source counts. Discovery OPEN or PARTIAL blocks production continuation; do not prune a domain as absent while selected-artifact references remain unresolved.
+Preflight is not allowed to prove non-applicability by silence. It must combine raw structured source evidence, selected-artifact semantic intent, selected-artifact contracts, and platform/profile facts. Discovery Closure must retain and balance relevant/indexed/parse-failure/unsupported-residue source counts. Discovery OPEN or PARTIAL blocks production continuation; do not prune a domain as absent while selected-artifact references remain unresolved.
 
 Capabilities must declare one execution phase. `discovery-core` is reserved for the cheapest information required to discover/reconstruct gameplay; `rig-directed` capabilities should execute only when required by active RIG nodes or explicit higher-context proof. Do not move deep diagnostic work into discovery-core for convenience.
 
