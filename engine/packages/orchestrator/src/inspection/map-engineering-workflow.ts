@@ -37,6 +37,7 @@ export interface MapEngineeringWorkflowProjection {
     hiddenDefectRisks: number;
     engineeringAnalyses: number;
     capabilityExposureRisks: number;
+    highRiskSurfaces: number;
   };
   nextActions: readonly string[];
 }
@@ -246,6 +247,11 @@ export function buildMapEngineeringWorkflow(
     capabilityExposureRisks:
       source.capabilityExposure
         .releaseBlocking,
+    highRiskSurfaces:
+      source.analysisPriorities.filter(
+        (item) =>
+          item.priority === "high",
+      ).length,
   };
 
   const nextActions = stages
