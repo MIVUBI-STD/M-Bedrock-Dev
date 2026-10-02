@@ -5,8 +5,14 @@ import type {
 export interface MapEngineeringAssessment {
   schemaVersion: 1;
   artifactId: string;
+  gameplayClosure:
+    GameplayWorldModel["gameplayClosure"];
+  stateClosure:
+    GameplayWorldModel["stateClosure"];
   arena: {
     requestedConcurrentArenas?: number;
+    safeConcurrentArenas?: number | null;
+    declaredConcurrentArenaLimit?: number;
     perArenaPlayerCapacity?: number;
     declaredMaxConcurrentPlayers?: number;
     capacityOk?: boolean;
@@ -69,10 +75,20 @@ export function projectMapEngineeringAssessment(
   return {
     schemaVersion: 1,
     artifactId: source.artifactId,
+    gameplayClosure:
+      source.gameplayClosure,
+    stateClosure:
+      source.stateClosure,
     arena: {
       ...(source.arenas.requestedConcurrentArenas === undefined
         ? {}
         : { requestedConcurrentArenas: source.arenas.requestedConcurrentArenas }),
+      ...(source.arenas.safeConcurrentArenas === undefined
+        ? {}
+        : { safeConcurrentArenas: source.arenas.safeConcurrentArenas }),
+      ...(source.arenas.declaredConcurrentArenaLimit === undefined
+        ? {}
+        : { declaredConcurrentArenaLimit: source.arenas.declaredConcurrentArenaLimit }),
       ...(source.arenas.perArenaPlayerCapacity === undefined
         ? {}
         : { perArenaPlayerCapacity: source.arenas.perArenaPlayerCapacity }),
