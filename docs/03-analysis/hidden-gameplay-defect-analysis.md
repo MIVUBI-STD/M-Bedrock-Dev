@@ -293,3 +293,30 @@ replica expected equivalent to canonical
 material content/proof coverage diverges
 → replica completeness contradiction
 ```
+
+
+## Discovery Closure and proof budgeting
+
+Gameplay Discovery Closure is separate from Gameplay Model Closure:
+
+```text
+Discovery Closure
+= did we inventory/index the relevant selected-artifact surfaces?
+
+Gameplay Model Closure
+= do we understand the material discovered surfaces well enough?
+```
+
+Do not spend deep-proof budget while Discovery Closure is OPEN.
+
+Risk-directed proof depth uses `static | targeted | deep`. This changes proof escalation, not coverage obligations: every applicable surface remains accounted.
+
+## Contradiction consolidation
+
+Contradictions are keyed semantically before report projection.
+
+Exact duplicate work means the same candidate identity, route, and evidence set; it may be evaluated once.
+
+Different routes or evidence sets for the same semantic contradiction are corroboration and must remain available for grouping/confirmation.
+
+Confirmation and counter-evidence gates run before expensive classification wherever possible.
