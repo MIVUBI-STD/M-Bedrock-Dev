@@ -275,3 +275,8 @@ Completion is terminal. Do not automatically expand scope, add adjacent cleanup,
 ### Defect narrative immutability
 
 For AI-origin production findings, Defect Resolution owns the factual Expected and Actual/Observed core. Report candidates may improve title/problem/presentation and classification, but must not rewrite those facts. A candidate spanning multiple ready causal links with different Expected/Actual narratives must remain split until canonical ConfirmedDefect root-cause grouping resolves them.
+
+
+### Model packet evidence discipline
+
+Model-facing audit packets must carry bounded evidence descriptors and RIG knowledge context, not opaque ids alone. Any id listed in `unresolvedEvidenceIds` is a retrieval/blocking requirement; the model must not infer its contents.

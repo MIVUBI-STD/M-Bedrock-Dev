@@ -363,3 +363,8 @@ Do not use analyzer execution count, surface `checked` state, or a broad tester 
 ## Defect narrative binding
 
 After `CONFIRMED_DEFECT_READY`, AI candidates must preserve the exact `expectedOutcome` and `actualOutcome` from Defect Resolution. Presentation may be improved, but factual Expected/Actual cannot drift. Multiple ready links with different factual narratives cannot be collapsed into one candidate before ConfirmedDefect grouping.
+
+
+## Model packet completeness
+
+A bounded audit task packet includes resolved selected-artifact evidence descriptors, RIG knowledge receipt context, and `unresolvedEvidenceIds`. Treat unresolved evidence as missing context, never as permission to guess. Request/resolve only those ids before continuing the same packet.

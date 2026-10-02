@@ -20,6 +20,22 @@ export type AuditModelTaskKind =
   | "GAMEPLAY_TRANSLATION"
   | "COUNTERPROOF_SEARCH";
 
+export interface AuditModelTaskEvidenceContext {
+  readonly id: string;
+  readonly kind: "selected-artifact-evidence" | "analysis-receipt";
+  readonly origin?: string;
+  readonly locator?: string;
+  readonly summary?: string;
+}
+
+export interface AuditModelTaskKnowledgeContext {
+  readonly requirementId: string;
+  readonly domain: string;
+  readonly status: string;
+  readonly capabilityIds: readonly string[];
+  readonly evidenceIds: readonly string[];
+}
+
 export interface AuditModelTaskPacket {
   readonly schemaVersion: 1;
   readonly policy: "bounded-audit-model-task";
@@ -36,6 +52,9 @@ export interface AuditModelTaskPacket {
   readonly componentIds: readonly string[];
   readonly requiredKnowledgeIds: readonly string[];
   readonly evidenceIds: readonly string[];
+  readonly evidenceContext: readonly AuditModelTaskEvidenceContext[];
+  readonly unresolvedEvidenceIds: readonly string[];
+  readonly knowledgeContext: readonly AuditModelTaskKnowledgeContext[];
   readonly unresolvedObligationIds: readonly string[];
   readonly allowedOutputs: readonly string[];
   readonly forbiddenActions: readonly string[];
@@ -48,10 +67,81 @@ function unique(values: readonly string[]): string[] {
   )].sort();
 }
 
+function evidenceContext(
+  evidenceIds: readonly string[],
+  intent: GameplayIntentModel,
+): {
+  readonly context: readonly AuditModelTaskEvidenceContext[];
+  readonly unresolved: readonly string[];
+} {
+  const byId = new Map(
+    intent.evidence.map((item) => [item.id, item]),
+  );
+  const context: AuditModelTaskEvidenceContext[] = [];
+  const unresolved: string[] = [];
+
+  for (const id of unique(evidenceIds)) {
+    const evidence = byId.get(id);
+    if (evidence !== undefined) {
+      context.push({
+        id,
+        kind: "selected-artifact-evidence",
+        origin: evidence.origin,
+        locator: evidence.locator,
+        summary: evidence.summary,
+      });
+      continue;
+    }
+
+    if (id.startsWith("analysis:")) {
+      context.push({
+        id,
+        kind: "analysis-receipt",
+        summary:
+          "Capability execution receipt; resolve concrete scoped evidence from the matching RIG knowledge receipt before making a factual source claim.",
+      });
+      continue;
+    }
+
+    unresolved.push(id);
+  }
+
+  return {
+    context,
+    unresolved: unresolved.sort(),
+  };
+}
+
+function knowledgeContextFor(
+  requirementIds: readonly string[],
+  graph: GameplayScenarioGraph,
+): readonly AuditModelTaskKnowledgeContext[] {
+  return unique(requirementIds).flatMap((requirementId) => {
+    const requirement = graph.knowledgeRequirements.find(
+      (item) => item.id === requirementId,
+    );
+    if (requirement === undefined) return [];
+    const receipt = graph.knowledgeReceipts.find(
+      (item) => item.requirementId === requirementId,
+    );
+    return [{
+      requirementId,
+      domain: requirement.domain,
+      status: receipt?.status ?? "MISSING_RECEIPT",
+      capabilityIds:
+        receipt?.capabilityIdsUsed.length
+          ? [...receipt.capabilityIdsUsed]
+          : [...requirement.capabilityIds],
+      evidenceIds: [...(receipt?.evidenceIds ?? [])],
+    }];
+  });
+}
+
 function checkpointPackets(
   stage: SelectedMapAuditStage,
   procedure: MandatoryAuditProcedureReceipt,
   auditRevision: string,
+  intent: GameplayIntentModel,
 ): readonly AuditModelTaskPacket[] {
   return procedure.checkpoints
     .filter((checkpoint) =>
@@ -70,6 +160,11 @@ function checkpointPackets(
         .filter((item) => item.required && !item.satisfied)
         .map((item) => item.id)
         .sort();
+      const ids = unique([
+        ...checkpoint.evidenceIds,
+        ...checkpoint.obligations.flatMap((item) => item.evidenceIds),
+      ]);
+      const evidence = evidenceContext(ids, intent);
       return {
         schemaVersion: 1 as const,
         policy: "bounded-audit-model-task" as const,
@@ -87,10 +182,10 @@ function checkpointPackets(
         subjectIds: [],
         componentIds: [],
         requiredKnowledgeIds: [],
-        evidenceIds: unique([
-          ...checkpoint.evidenceIds,
-          ...checkpoint.obligations.flatMap((item) => item.evidenceIds),
-        ]),
+        evidenceIds: ids,
+        evidenceContext: evidence.context,
+        unresolvedEvidenceIds: evidence.unresolved,
+        knowledgeContext: [],
         unresolvedObligationIds: unresolved,
         allowedOutputs: [
           "grounded checkpoint conclusion",
@@ -102,6 +197,7 @@ function checkpointPackets(
           "inspect unrelated gameplay systems",
           "infer intent from external/stale documents",
           "change audit stage",
+          "infer the contents of unresolvedEvidenceIds",
         ],
         stopCondition:
           "Stop when every required obligation for this checkpoint is either satisfied by selected-artifact evidence or explicitly classified as a blocking gap.",
@@ -113,6 +209,7 @@ function provePackets(
   graph: GameplayScenarioGraph,
   gate: GameplayDefectResolutionGate,
   auditRevision: string,
+  intent: GameplayIntentModel,
 ): readonly AuditModelTaskPacket[] {
   const ids = new Set([
     ...gate.gameplayTranslationRequiredIds,
@@ -132,6 +229,17 @@ function provePackets(
           );
       const needsTranslation =
         gate.gameplayTranslationRequiredIds.includes(link.id);
+      const requirementIds =
+        requirement === undefined ? [] : [requirement.id];
+      const ids = unique([
+        ...link.evidenceIds,
+        ...(requirement === undefined ? [] : graph.knowledgeReceipts
+          .filter((receipt) =>
+            receipt.requirementId === requirement.id
+          )
+          .flatMap((receipt) => receipt.evidenceIds)),
+      ]);
+      const evidence = evidenceContext(ids, intent);
       return {
         schemaVersion: 1 as const,
         policy: "bounded-audit-model-task" as const,
@@ -157,16 +265,12 @@ function provePackets(
         causalLinkId: link.id,
         subjectIds: unique(link.subjectIds),
         componentIds: unique(link.componentIds),
-        requiredKnowledgeIds:
-          requirement === undefined ? [] : [requirement.id],
-        evidenceIds: unique([
-          ...link.evidenceIds,
-          ...(requirement === undefined ? [] : graph.knowledgeReceipts
-            .filter((receipt) =>
-              receipt.requirementId === requirement.id
-            )
-            .flatMap((receipt) => receipt.evidenceIds)),
-        ]),
+        requiredKnowledgeIds: requirementIds,
+        evidenceIds: ids,
+        evidenceContext: evidence.context,
+        unresolvedEvidenceIds: evidence.unresolved,
+        knowledgeContext:
+          knowledgeContextFor(requirementIds, graph),
         unresolvedObligationIds: [],
         allowedOutputs:
           needsTranslation
@@ -186,6 +290,7 @@ function provePackets(
           "use nearby healthy code as counter-proof",
           "create final report text",
           "change severity",
+          "infer the contents of unresolvedEvidenceIds",
         ],
         stopCondition:
           needsTranslation
@@ -211,6 +316,7 @@ export function deriveAuditModelTaskPackets(input: {
       input.graph,
       input.defectResolution,
       input.auditRevision,
+      input.intent,
     );
     if (prove.length > 0) return prove;
   }
@@ -219,5 +325,6 @@ export function deriveAuditModelTaskPackets(input: {
     stage,
     input.procedure,
     input.auditRevision,
+    input.intent,
   );
 }
