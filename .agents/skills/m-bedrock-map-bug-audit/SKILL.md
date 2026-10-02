@@ -85,6 +85,7 @@ Discover all gameplay surfaces
 → prioritize temporal/cross-system risks
 → check design-consistency anomalies
 → detect silent degradation / fallback masking
+→ trace prerequisite reachability and restricted capability exposure
 → generate relevant mixed-player and repeated-run verification
 → build root-cause / constraint / evidence-convergence analysis for complex findings
 → analyze contradictions across all understood surfaces
@@ -156,6 +157,7 @@ Do not publish normal/designed behavior as bugs.
 ## Forbidden
 
 - start from suspicious code patterns alone;
+- encode regression examples as map/object-specific production rules;
 - mix evidence from different map versions;
 - use stale docs as gameplay authority;
 - assign severity before defect admission;
