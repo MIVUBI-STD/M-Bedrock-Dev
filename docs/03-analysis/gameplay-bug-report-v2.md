@@ -4,7 +4,7 @@
 
 Canonical persisted bug-report contract for approved confirmed Minecraft map defects. It is a downstream communication/repair state, not the full audit model.
 
-This file owns report semantics. Rendering details belong in `templates/bug-report-v2-html-layout.md`. Machine validation belongs in `.agents/schemas/map-audit-output-v2.schema.json`.
+This file owns canonical Bug Report V2 semantics. Rendering details belong in `templates/bug-report-v2-html-layout.md`. Persisted Bug Report V2 validation belongs in `engine/schemas/bug-report/`. Map Audit Output validation remains separately owned by `.agents/schemas/map-audit-output-v2.schema.json`.
 
 ## Document order
 
