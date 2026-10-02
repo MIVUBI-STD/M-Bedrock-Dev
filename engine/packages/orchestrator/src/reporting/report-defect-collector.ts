@@ -987,7 +987,12 @@ export function prepareBugReportReviewFromAuditCandidates(
   };
 }
 
-export function buildBugReportFromAuditCandidates(
+/**
+ * Low-level compatibility route.
+ * Production map audits must use buildBugReportFromAuditCandidates()
+ * with Gameplay Model Closure.
+ */
+export function buildBugReportFromAuditCandidatesCompatibility(
   input: BuildBugReportFromAuditInput,
 ): BuildBugReportFromAuditResult {
   const collection = collectConfirmedDefects(
@@ -1038,7 +1043,7 @@ export function buildBugReportFromAuditCandidates(
 }
 
 
-export function buildBugReportFromClosedAuditCandidates(
+export function buildBugReportFromAuditCandidates(
   input: BuildBugReportFromClosedAuditInput,
 ): BuildBugReportFromAuditResult {
   const closureIssues =
@@ -1058,5 +1063,10 @@ export function buildBugReportFromClosedAuditCandidates(
     };
   }
 
-  return buildBugReportFromAuditCandidates(input);
+  return buildBugReportFromAuditCandidatesCompatibility(
+    input,
+  );
 }
+
+export const buildBugReportFromClosedAuditCandidates =
+  buildBugReportFromAuditCandidates;
