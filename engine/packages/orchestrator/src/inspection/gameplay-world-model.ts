@@ -85,6 +85,7 @@ import type {
 } from "../persistence-source-analysis.js";
 import {
   discoverGameplaySurfaces,
+  type GameplaySurfaceDiscoveryResult,
 } from "./gameplay-surface-discovery.js";
 
 export interface GameplayWorldSubjectSummary {
@@ -99,6 +100,8 @@ export interface GameplayWorldModel {
   schemaVersion: 1;
   artifactId: string;
   subjects: readonly GameplayWorldSubjectSummary[];
+  surfaceDiscovery:
+    GameplaySurfaceDiscoveryResult;
   gameplayClosure: GameplayModelClosureResult;
   stateClosure:
     ReturnType<typeof assessGameplayStateClosure>;
@@ -891,6 +894,7 @@ export function deriveGameplayWorldModel(
     schemaVersion: 1,
     artifactId: source.artifactId,
     subjects: summarizeSubjects(source.intent),
+    surfaceDiscovery: discovery,
     gameplayClosure,
     stateClosure,
     arenas: {
