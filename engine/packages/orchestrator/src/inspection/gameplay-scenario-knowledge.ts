@@ -537,6 +537,8 @@ export function buildGameplayKnowledgeReceipts(
       scenarioId: requirement.scenarioId,
       domain: requirement.domain,
       status: "SATISFIED",
+      subjectIds: [...requirement.subjectIds],
+      componentIds: [...requirement.componentIds],
       evidenceIds,
       capabilityIdsUsed,
       reason:
