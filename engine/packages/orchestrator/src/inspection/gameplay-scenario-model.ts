@@ -116,5 +116,10 @@ export interface GameplayScenarioClosure {
   readonly capabilityGapKnowledgeIds: readonly string[];
   readonly prerequisiteBlockedKnowledgeIds: readonly string[];
   readonly incompleteCompositionScenarioIds: readonly string[];
+  /**
+   * Leaf scenarios with selected-artifact components but no causal proof edge.
+   * These are treated as suspiciously shallow audit coverage.
+   */
+  readonly unprovenLeafScenarioIds: readonly string[];
   readonly reasons: readonly string[];
 }
