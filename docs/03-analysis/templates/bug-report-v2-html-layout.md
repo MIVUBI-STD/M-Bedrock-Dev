@@ -1,61 +1,65 @@
 # Bug Report V2 HTML Layout
 
-Canonical reader-first structure:
+## Role
+
+Canonical HTML rendering layout for the production report. Report semantics come from `../gameplay-bug-report-v2.md`; this file only defines reader-facing presentation.
+
+## Layout
 
 ```text
-Defense / Map Bug Report
+World Bug Report
 
 01 Overview
-- World
-- Version
-- Audit Scope
-
 02 Gameplay Flow
-Lobby
-→ Arena
-→ Preparation
-→ Combat
-→ Wave
-→ Retry
-→ Victory
-→ Cleanup
-
 03 Game Design Reference
-- Objective
-- Win/Lose Condition
-- Reset Rules
-- Preserve Rules
-- Progression Rules
-- Multiplayer Rules
-- Multi Arena Rules
-
 04 Bug Dashboard
-ID | Flow | Severity | Status
-
 05 Confirmed Bugs
+06 Needs Validation
+07 Ambiguous
+08 Detection Gaps
+09 Reproduction Guide
+10 Audit Coverage
+```
 
-Each bug:
+## Dashboard
+
+Use a compact table:
+
+```text
+ID | Gameplay Flow | Severity | Status | Category
+```
+
+## Bug card
+
+Each card contains:
+
 - Bug ID
 - Category
 - Gameplay Flow
-- Severity
+- Severity when Confirmed
 - Status
 - Issue
 - Player Impact
-- Reproduce Steps
+- How To Reproduce
 - Expected Behavior
 - Actual Behavior
 - Evidence
+- Proof Ceiling
 
-06 Needs Validation
+## Coverage section
 
-07 Reproduction Guide
+Show every applicable audit surface as:
 
-08 Audit Coverage
-```
+- Checked
+- Blocked — include reason
+- Not Applicable — include reason
 
-Rules:
+Do not imply complete coverage when blocked or Detection Gap surfaces remain.
+
+## Reader rules
+
 - Organize issues by gameplay journey.
-- Use tester language.
+- Keep reproduction steps in tester/player language.
 - Keep technical evidence separate.
-- Do not include normal behavior as bugs.
+- Do not publish designed behavior as bugs.
+- Use clear contrast and compact tables/cards suitable for QA handoff.
