@@ -3,7 +3,7 @@ import type {
   WorkSessionAuditBinding,
   WorkSessionCheckpoint,
   WorkSessionStage,
-} from "../../project-model/src/index.js";
+} from "../../../project-model/src/index.js";
 import {
   saveWorkSessionCheckpoint,
 } from "./work-session-store.js";
