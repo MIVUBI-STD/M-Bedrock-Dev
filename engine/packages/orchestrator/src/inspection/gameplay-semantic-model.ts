@@ -7,6 +7,7 @@ export interface GameplaySemanticModel {
   schemaVersion: 1;
   artifactId: string;
   subjects: readonly GameplayWorldSubjectSummary[];
+  gameplayClosure: GameplayWorldModel["gameplayClosure"];
   arenas: {
     detected: boolean;
     count?: number;
@@ -65,6 +66,7 @@ export function projectGameplaySemanticModel(
     schemaVersion: 1,
     artifactId: source.artifactId,
     subjects: source.subjects,
+    gameplayClosure: source.gameplayClosure,
     arenas: {
       detected: source.arenas.detected,
       ...(source.arenas.count === undefined ? {} : { count: source.arenas.count }),
