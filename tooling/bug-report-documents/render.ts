@@ -9,6 +9,7 @@ import {
 } from "node:path";
 import {
   parseBugReportV2Json,
+  buildBugReportClientLayoutPlan,
   projectBugReportClientDocument,
   reviewBugReportClientDocument,
 } from "../../engine/packages/bug-report/src/index.js";
@@ -98,30 +99,58 @@ function severityLabel(
   return "MINOR";
 }
 
-function reproductionList(
-  steps: readonly string[],
+function checklist(
+  items: readonly string[],
+  className = "checklist",
 ): string {
   return [
-    '<ol class="steps">',
-    ...steps.map(
-      (step) => "  <li>" + escapeHtml(step) + "</li>",
+    '<ul class="' + className + '">',
+    ...items.map(
+      (item) =>
+        '  <li><label><input type="checkbox"> <span>' +
+        escapeHtml(item) +
+        '</span></label></li>',
     ),
-    "</ol>",
+    "</ul>",
   ].join("\n");
 }
 
+function technicalBlock(
+  value: string,
+): string {
+  return (
+    '<details class="technical" open>' +
+    '<summary>Technical Analysis</summary>' +
+    '<div class="technical-text">' +
+    escapeHtml(value) +
+    "</div></details>"
+  );
+}
+
 function issueCard(issue: BugReportClientIssue): string {
+  const metadata =
+    '<div class="meta-line"><span>' +
+    escapeHtml(issue.id) +
+    '</span><span>' +
+    escapeHtml(issue.category) +
+    '</span><span>' +
+    escapeHtml(issue.foundBy.toUpperCase()) +
+    "</span></div>";
+
   const rows = [
     '<div class="row"><div class="label">Issue</div><div class="value">' +
       escapeHtml(issue.issue) +
       "</div></div>",
-    '<div class="row"><div class="label">How to Trigger</div><div class="value">' +
-      reproductionList(issue.reproduction) +
+    '<div class="row"><div class="label">Tester Checklist</div><div class="value">' +
+      checklist(issue.reproduction) +
       "</div></div>",
     '<div class="row"><div class="label">Result</div><div class="value"><strong>Observed:</strong> ' +
       escapeHtml(issue.observed) +
       '<br><strong>Expected:</strong> ' +
       escapeHtml(issue.expected) +
+      "</div></div>",
+    '<div class="row"><div class="label">Work Checklist</div><div class="value">' +
+      checklist(issue.workChecklist, "work-checklist") +
       "</div></div>",
   ];
 
@@ -130,6 +159,48 @@ function issueCard(issue: BugReportClientIssue): string {
       '<div class="row"><div class="label">Resolution</div><div class="value">' +
         escapeHtml(issue.recommendedResolution) +
         "</div></div>",
+    );
+  }
+
+  if (
+    issue.technicalAnalysis ||
+    issue.relevantCode?.length ||
+    issue.mustPreserve?.length
+  ) {
+    const technicalParts: string[] = [];
+    if (issue.technicalAnalysis) {
+      technicalParts.push(
+        technicalBlock(issue.technicalAnalysis),
+      );
+    }
+    if (issue.relevantCode?.length) {
+      technicalParts.push(
+        '<div class="technical-sub"><strong>Relevant Code</strong><ul>' +
+        issue.relevantCode.map(
+          (item) =>
+            '<li><code>' +
+            escapeHtml(item.file) +
+            '</code> — ' +
+            escapeHtml(item.reason) +
+            '</li>',
+        ).join("") +
+        '</ul></div>',
+      );
+    }
+    if (issue.mustPreserve?.length) {
+      technicalParts.push(
+        '<div class="technical-sub"><strong>Must Preserve</strong><ul>' +
+        issue.mustPreserve.map(
+          (item) =>
+            '<li>' + escapeHtml(item) + '</li>',
+        ).join("") +
+        '</ul></div>',
+      );
+    }
+    rows.push(
+      '<div class="technical-row">' +
+      technicalParts.join("") +
+      '</div>',
     );
   }
 
@@ -142,7 +213,11 @@ function issueCard(issue: BugReportClientIssue): string {
     '    <div class="severity">' +
       severityLabel(issue.severity) +
       "</div>",
-    '    <h2>' + escapeHtml(issue.title) + "</h2>",
+    '    <div class="issue-title"><h2>' +
+      escapeHtml(issue.title) +
+      "</h2>" +
+      metadata +
+      "</div>",
     "  </header>",
     '  <div class="issue-body">',
     ...rows.map((row) => "    " + row),
@@ -154,6 +229,8 @@ function issueCard(issue: BugReportClientIssue): string {
 function renderHtml(
   document: BugReportClientDocument,
 ): string {
+  const layout =
+    buildBugReportClientLayoutPlan(document);
   const severitySummary = [
     document.summary.blocker > 0
       ? document.summary.blocker + " Blocker"
@@ -170,6 +247,52 @@ function renderHtml(
     document.issues.length === 0
       ? '<section class="empty">No gameplay-blocking or materially disruptive open issues are recorded.</section>'
       : document.issues.map(issueCard).join("\n\n");
+
+  const issueIndex =
+    layout.showIssueIndex
+      ? [
+          '<section class="dashboard">',
+          '<h2>Issue Dashboard</h2>',
+          '<div class="table-wrap"><table>',
+          '<thead><tr><th>#</th><th>ID</th><th>Severity</th><th>Category</th><th>Issue</th></tr></thead>',
+          '<tbody>',
+          ...document.issueIndex.map(
+            (item) =>
+              '<tr><td>' +
+              String(item.number).padStart(2, "0") +
+              '</td><td><code>' +
+              escapeHtml(item.id) +
+              '</code></td><td>' +
+              severityLabel(item.severity) +
+              '</td><td>' +
+              escapeHtml(item.category) +
+              '</td><td>' +
+              escapeHtml(item.title) +
+              '</td></tr>',
+          ),
+          '</tbody></table></div>',
+          '</section>',
+        ].join("\n")
+      : "";
+
+  const severityLegend =
+    layout.showSeverityLegend
+      ? [
+          '<section class="legend">',
+          '<h2>Severity Guide</h2>',
+          '<div class="legend-grid">',
+          ...document.severityLegend.map(
+            (item) =>
+              '<div><strong>' +
+              escapeHtml(item.label) +
+              '</strong><span>' +
+              escapeHtml(item.meaning) +
+              '</span></div>',
+          ),
+          '</div>',
+          '</section>',
+        ].join("\n")
+      : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -279,11 +402,24 @@ body {
 }
 .severity-blocker .severity { color:var(--blocker); }
 .severity-major .severity { color:var(--major); }
+.issue-title {
+  padding:10px 14px 10px 0;
+}
 .issue-head h2 {
   margin:0;
-  padding:10px 14px 10px 0;
   font-size:16px;
   line-height:1.25;
+}
+.meta-line {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:5px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
 }
 .row {
   display:grid;
@@ -301,11 +437,90 @@ body {
 .value {
   padding:13px 16px;
 }
-.steps {
+.checklist,
+.work-checklist {
+  list-style:none;
   margin:0;
-  padding-left:22px;
+  padding:0;
 }
-.steps li + li { margin-top:5px; }
+.checklist li + li,
+.work-checklist li + li { margin-top:7px; }
+.checklist label,
+.work-checklist label {
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+}
+.checklist input,
+.work-checklist input { margin-top:3px; }
+.technical-row {
+  padding:14px 16px;
+  border-top:1px solid var(--line);
+  background:#fcfcfd;
+}
+.technical summary {
+  cursor:pointer;
+  color:var(--blue);
+  font-size:12px;
+  font-weight:800;
+}
+.technical-text {
+  margin-top:10px;
+  white-space:pre-wrap;
+  font:13px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.technical-sub {
+  margin-top:12px;
+  font-size:13px;
+}
+.technical-sub ul {
+  margin:6px 0 0;
+  padding-left:20px;
+}
+.dashboard,
+.legend {
+  padding:20px 24px;
+  border-bottom:1px solid var(--line);
+}
+.dashboard h2,
+.legend h2 {
+  margin:0 0 12px;
+  font-size:15px;
+}
+.table-wrap { overflow-x:auto; }
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+th, td {
+  padding:9px 10px;
+  border:1px solid var(--line);
+  text-align:left;
+  vertical-align:top;
+}
+th {
+  background:#f8fafc;
+  color:var(--blue);
+}
+.legend-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
+}
+.legend-grid div {
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#f8fafc;
+}
+.legend-grid strong,
+.legend-grid span { display:block; }
+.legend-grid span {
+  margin-top:4px;
+  color:var(--muted);
+  font-size:12px;
+}
 .empty {
   padding:30px;
   text-align:center;
@@ -333,6 +548,15 @@ body {
     box-shadow:none;
   }
   .issue-card { break-inside:avoid-page; }
+  .technical { display:block; }
+  .technical summary { list-style:none; }
+  input[type="checkbox"] {
+    appearance:none;
+    width:11px;
+    height:11px;
+    border:1px solid #555;
+    vertical-align:middle;
+  }
   @page { margin:12mm; size:A4; }
 }
 </style>
@@ -351,6 +575,8 @@ body {
     <div class="metric"><span>Severity</span><strong>${escapeHtml(severitySummary || "—")}</strong></div>
   </section>
   <section class="summary"><p>${escapeHtml(document.summary.statement)}</p></section>
+  ${issueIndex}
+  ${severityLegend}
   <section class="issues">
 ${cards}
   </section>
