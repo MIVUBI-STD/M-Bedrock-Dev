@@ -377,6 +377,10 @@ export interface GameplayWorldModelSource {
     knowledgePrerequisiteGaps: number;
     staticAnalysisLimits: number;
   };
+  boundaries?: {
+    records: number;
+    unresolvedNames: readonly string[];
+  };
 }
 
 const SUBJECT_KINDS: readonly GameplayIntentNodeKind[] = [
@@ -715,6 +719,29 @@ export function deriveGameplayWorldModel(
     });
   }
 
+  const boundaryEvidence =
+    (source.boundaries?.records ?? 0) > 0 ||
+    (source.boundaries?.unresolvedNames.length ?? 0) > 0;
+  if (boundaryEvidence) {
+    const unresolved =
+      (source.boundaries?.unresolvedNames.length ?? 0) > 0;
+    runtimeSurfaces.push({
+      id: "runtime:boundaries",
+      label: "Gameplay numeric and discrete boundaries",
+      kind: "runtime-domain",
+      status: unresolved ? "unknown" : "understood",
+      material: true,
+      ...(unresolved
+        ? {
+            reason:
+              "One or more gameplay boundary values could not be resolved: " +
+              (source.boundaries?.unresolvedNames.join(", ") ?? "unknown") +
+              ".",
+          }
+        : {}),
+    });
+  }
+
   const intentSurfaces =
     buildIntentClosureSurfaces(source.intent);
   const closureSurfaces = [
@@ -729,13 +756,18 @@ export function deriveGameplayWorldModel(
   const stateModelComplete =
     stateClosure.complete;
 
-  const boundariesExtracted =
+  const arenaBoundariesExtracted =
     !arenaDetected ||
     (
       arenaCount !== undefined &&
       source.arena.capacity?.evidence
         .requestedConcurrentArenas !== undefined
     );
+  const genericBoundariesExtracted =
+    (source.boundaries?.unresolvedNames.length ?? 0) === 0;
+  const boundariesExtracted =
+    arenaBoundariesExtracted &&
+    genericBoundariesExtracted;
 
   const discovery = discoverGameplaySurfaces({
     intentSubjectIds:
@@ -764,6 +796,7 @@ export function deriveGameplayWorldModel(
       source.structures.runtimeLogicLoads > 0,
     entityEvidence:
       source.entities.definitions > 0,
+    boundaryEvidence,
   });
 
   const gameplayClosure =
