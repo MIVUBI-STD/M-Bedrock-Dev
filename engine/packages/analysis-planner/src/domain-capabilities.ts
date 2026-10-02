@@ -267,6 +267,48 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
       ],
     },
     {
+      id: "structure-transition-integrity",
+      evidenceLevel: "semantic",
+      cost: "moderate",
+      tags: [
+        "structure",
+        "world-mutation",
+        "transition",
+      ],
+      deterministic: true,
+      contexts: [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+      producesTraits: [
+        "structural-proof",
+        "semantic-model",
+      ],
+    },
+    {
+      id: "temporal-ownership-integrity",
+      evidenceLevel: "semantic",
+      cost: "moderate",
+      tags: [
+        "temporal",
+        "deferred",
+        "ownership",
+        "state",
+      ],
+      deterministic: true,
+      contexts: [
+        "REMOTE_GITHUB",
+        "LOCAL_ARTIFACT",
+        "LOCAL_MINECRAFT",
+        "LIVE_MINECRAFT",
+      ],
+      producesTraits: [
+        "semantic-model",
+      ],
+    },
+    {
       id: "persistence-recovery-runtime",
       evidenceLevel: "runtime",
       cost: "expensive",

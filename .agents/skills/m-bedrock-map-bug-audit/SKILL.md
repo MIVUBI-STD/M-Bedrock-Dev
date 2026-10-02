@@ -77,6 +77,21 @@ Bug discovery starts only after Gameplay Model Closure is CLOSED or PARTIAL. OPE
 
 The audit is scenario-driven. Surface discovery and technical analyzers provide evidence; they do not close gameplay by themselves.
 
+Knowledge activation is also scenario-driven. Do not preload every analyzer and do not rely on names/keywords to decide applicability.
+
+For every material Gameplay Scenario:
+
+```text
+Scenario semantics
+→ Required Knowledge Set
+→ analysis-planner capability selection
+→ existing analyzer evidence
+→ Knowledge Receipt
+→ Causal Link resolution
+```
+
+The target is the **minimum complete knowledge set**: the smallest applicable set that can fully prove the scenario. A required domain with a registered capability but no returned evidence is `MISSING_REQUIRED_KNOWLEDGE` and blocks Scenario Closure. A genuinely absent capability is `CAPABILITY_GAP` and routes to Detection Development. These states must never be collapsed into generic `Needs Validation`.
+
 The mandatory execution path is:
 
 ```text

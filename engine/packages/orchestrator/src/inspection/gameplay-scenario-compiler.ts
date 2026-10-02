@@ -9,6 +9,12 @@ import type {
 import type {
   GameplayWorldModel,
 } from "./gameplay-world-model.js";
+import {
+  buildGameplayKnowledgeReceipts,
+  buildGameplayKnowledgeRequirements,
+  requiredKnowledgeDomainsForIntentScenario,
+  requiredKnowledgeDomainsForPreset,
+} from "./gameplay-scenario-knowledge.js";
 import type {
   GameplayScenarioComponent,
   GameplayCausalLink,
@@ -420,43 +426,6 @@ function runtimeEdgeState(
   }
 }
 
-function runtimeScenarioAffinity(
-  componentId: string,
-  scenario: GameplayScenario,
-): boolean {
-  const haystack = (
-    scenario.label + " " +
-    scenario.gameplayStage + " " +
-    scenario.purpose
-  ).toLowerCase();
-
-  if (componentId === "runtime:arena") {
-    return /arena|session|join|ready|cleanup|reuse|queue|capacity|player/.test(haystack);
-  }
-  if (componentId === "runtime:chunks") {
-    return /enemy|entity|wave|spawn|world|structure|objective|gameplay/.test(haystack);
-  }
-  if (componentId === "runtime:entities") {
-    return /enemy|entity|npc|wave|combat|objective|spawn/.test(haystack);
-  }
-  if (componentId === "runtime:combat") {
-    return /combat|enemy|death|revive|respawn|defeat|victory/.test(haystack);
-  }
-  if (componentId === "runtime:inventory") {
-    return /inventory|kit|item|shop|reward|death|respawn|retry|reconnect/.test(haystack);
-  }
-  if (componentId === "runtime:persistence") {
-    return /reload|reconnect|recovery|retry|state|lifecycle|cleanup/.test(haystack);
-  }
-  if (componentId === "runtime:structures") {
-    return /setup|world|structure|level|stage|transition|cleanup|gameplay/.test(haystack);
-  }
-  if (componentId === "runtime:economy") {
-    return /reward|score|currency|shop|victory|result|completion/.test(haystack);
-  }
-  return false;
-}
-
 export function compileGameplayScenarioGraph(
   input: {
     readonly intent: GameplayIntentModel;
@@ -561,7 +530,20 @@ export function compileGameplayScenarioGraph(
     return [...selected].sort();
   }
 
+  const scenarioKnowledgeDomains = new Map<string, readonly import("./gameplay-scenario-model.js").GameplayKnowledgeDomain[]>();
+
   const scenarios: GameplayScenario[] = scenarioNodes.map((node) => {
+    const scenarioId = "scenario:" + node.id;
+    const requiredDomains =
+      requiredKnowledgeDomainsForIntentScenario(
+        node,
+        input.intent,
+        input.world,
+      );
+    scenarioKnowledgeDomains.set(
+      scenarioId,
+      requiredDomains,
+    );
     const componentIds = relatedNodeIds(input.intent, node.id);
     const causalLinkIds = input.intent.edges
       .filter(
@@ -572,7 +554,7 @@ export function compileGameplayScenarioGraph(
       .map((edge) => "edge:scenario:" + node.id + ":" + edge.id);
 
     return {
-      id: "scenario:" + node.id,
+      id: scenarioId,
       label: node.label,
       gameplayStage: stageForNode(node),
       purpose: purposeForNode(node),
@@ -580,15 +562,27 @@ export function compileGameplayScenarioGraph(
       componentIds,
       causalLinkIds,
       playerCounts,
+      requiredKnowledgeIds: [],
     };
   });
 
   for (const presetScenario of input.preset.scenarios) {
+    const scenarioId =
+      "preset:" + presetScenario.id;
+    const requiredDomains =
+      requiredKnowledgeDomainsForPreset(
+        presetScenario.kind,
+        input.world,
+      );
+    scenarioKnowledgeDomains.set(
+      scenarioId,
+      requiredDomains,
+    );
     const componentIds = presetComponentIds(
       presetScenario.kind,
     );
     scenarios.push({
-      id: "preset:" + presetScenario.id,
+      id: scenarioId,
       label: presetScenario.kind,
       gameplayStage: "Boundary / Recovery / Variant",
       purpose: presetScenario.reason,
@@ -599,11 +593,39 @@ export function compileGameplayScenarioGraph(
         presetScenario.playerCount === undefined
           ? playerCounts
           : [presetScenario.playerCount],
+      requiredKnowledgeIds: [],
     });
   }
 
+  const knowledgeRequirements = scenarios.flatMap(
+    (scenario) =>
+      buildGameplayKnowledgeRequirements(
+        scenario.id,
+        scenarioKnowledgeDomains.get(scenario.id) ?? [],
+      ),
+  );
+  const requirementsByScenario = new Map<
+    string,
+    readonly string[]
+  >();
+  for (const scenario of scenariosWithKnowledge) {
+    requirementsByScenario.set(
+      scenario.id,
+      knowledgeRequirements
+        .filter((item) => item.scenarioId === scenario.id)
+        .map((item) => item.id),
+    );
+  }
+  const scenariosWithKnowledge = scenarios.map(
+    (scenario) => ({
+      ...scenario,
+      requiredKnowledgeIds:
+        requirementsByScenario.get(scenario.id) ?? [],
+    }),
+  );
+
   const scenarioIdsBySubject = new Map<string, Set<string>>();
-  for (const scenario of scenarios) {
+  for (const scenario of scenariosWithKnowledge) {
     for (const subjectId of scenario.componentIds) {
       const set = scenarioIdsBySubject.get(subjectId) ?? new Set<string>();
       set.add(scenario.id);
@@ -625,10 +647,34 @@ export function compileGameplayScenarioGraph(
     };
   });
 
+  const runtimeDomainKnowledge: Readonly<Record<
+    string,
+    import("./gameplay-scenario-model.js").GameplayKnowledgeDomain
+  >> = {
+    "runtime:arena": "arena-lifecycle",
+    "runtime:chunks": "chunk-simulation",
+    "runtime:entities": "entity-behavior",
+    "runtime:combat": "combat-lifecycle",
+    "runtime:inventory": "inventory-state",
+    "runtime:persistence": "persistence-recovery",
+    "runtime:structures": "world-structure",
+    "runtime:economy": "economy-reward",
+  };
+
   for (const component of runtime) {
-    const usedBy = scenarios
-      .filter((scenario) => runtimeScenarioAffinity(component.id, scenario))
-      .map((scenario) => scenario.id);
+    const requiredDomain =
+      runtimeDomainKnowledge[component.id];
+    const usedBy = requiredDomain === undefined
+      ? []
+      : scenariosWithKnowledge
+          .filter((scenario) => {
+            const domains =
+              scenarioKnowledgeDomains.get(
+                scenario.id,
+              ) ?? [];
+            return domains.includes(requiredDomain);
+          })
+          .map((scenario) => scenario.id);
     components.push({
       ...component,
       usedByScenarioIds: usedBy,
@@ -661,7 +707,12 @@ export function compileGameplayScenarioGraph(
     }
   }
 
-  const scenarioById = new Map(scenarios.map((scenario) => [scenario.id, scenario]));
+  const scenarioById = new Map(
+    scenariosWithKnowledge.map((scenario) => [
+      scenario.id,
+      scenario,
+    ]),
+  );
   for (const component of components.filter((item) => item.kind === "runtime-domain")) {
     for (const scenarioId of component.usedByScenarioIds) {
       const scenario = scenarioById.get(scenarioId);
@@ -683,11 +734,19 @@ export function compileGameplayScenarioGraph(
     }
   }
 
+  const knowledgeReceipts =
+    buildGameplayKnowledgeReceipts(
+      knowledgeRequirements,
+      input.world,
+    );
+
   return {
     schemaVersion: 1,
     policy: "scenario-driven-causal-audit",
-    scenarios,
+    scenarios: scenariosWithKnowledge,
     components,
     causalLinks,
+    knowledgeRequirements,
+    knowledgeReceipts,
   };
 }

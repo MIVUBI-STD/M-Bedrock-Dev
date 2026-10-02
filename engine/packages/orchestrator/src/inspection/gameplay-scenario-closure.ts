@@ -35,6 +35,25 @@ export function assessGameplayScenarioClosure(
     .map((edge) => edge.id)
     .sort();
 
+  const missingRequiredKnowledgeIds =
+    graph.knowledgeReceipts
+      .filter(
+        (receipt) =>
+          receipt.status ===
+          "MISSING_REQUIRED_KNOWLEDGE",
+      )
+      .map((receipt) => receipt.requirementId)
+      .sort();
+
+  const capabilityGapKnowledgeIds =
+    graph.knowledgeReceipts
+      .filter(
+        (receipt) =>
+          receipt.status === "CAPABILITY_GAP",
+      )
+      .map((receipt) => receipt.requirementId)
+      .sort();
+
   const scenarioWithoutComponents = graph.scenarios
     .filter((scenario) => scenario.componentIds.length === 0)
     .map((scenario) => scenario.id)
@@ -62,6 +81,20 @@ export function assessGameplayScenarioClosure(
       detectionGapCausalLinkIds.join(", ") + ".",
     );
   }
+  if (missingRequiredKnowledgeIds.length > 0) {
+    reasons.push(
+      "Required gameplay knowledge exists in the engine but did not return evidence to its scenario: " +
+        missingRequiredKnowledgeIds.join(", ") +
+        ".",
+    );
+  }
+  if (capabilityGapKnowledgeIds.length > 0) {
+    reasons.push(
+      "Required gameplay knowledge has no registered analysis capability: " +
+        capabilityGapKnowledgeIds.join(", ") +
+        ".",
+    );
+  }
   if (scenarioWithoutComponents.length > 0) {
     reasons.push(
       "Scenario variants are present without concrete selected-artifact component bindings: " +
@@ -79,6 +112,8 @@ export function assessGameplayScenarioClosure(
     orphanComponentIds.length > 0 ||
     missingPurposeComponentIds.length > 0 ||
     detectionGapCausalLinkIds.length > 0 ||
+    missingRequiredKnowledgeIds.length > 0 ||
+    capabilityGapKnowledgeIds.length > 0 ||
     scenarioWithoutComponents.length > 0
       ? "OPEN" as const
       : runtimeBlockedCausalLinkIds.length > 0
@@ -98,6 +133,8 @@ export function assessGameplayScenarioClosure(
     unresolvedCausalLinkIds,
     runtimeBlockedCausalLinkIds,
     detectionGapCausalLinkIds,
+    missingRequiredKnowledgeIds,
+    capabilityGapKnowledgeIds,
     reasons,
   };
 }

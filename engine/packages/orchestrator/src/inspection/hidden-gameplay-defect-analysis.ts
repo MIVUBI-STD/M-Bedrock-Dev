@@ -78,6 +78,8 @@ export interface HiddenGameplayDefectAnalysis {
     readonly contradictedCausalLinks: number;
     readonly defectResolutionBlocked: boolean;
     readonly runtimeProofResidue: number;
+    readonly missingRequiredKnowledge: number;
+    readonly knowledgeCapabilityGaps: number;
   };
 }
 
@@ -560,6 +562,10 @@ export function analyzeHiddenGameplayDefects(
         defectResolution.status === "BLOCKED",
       runtimeProofResidue:
         defectResolution.runtimeProofRequiredIds.length,
+      missingRequiredKnowledge:
+        scenarioClosure.missingRequiredKnowledgeIds.length,
+      knowledgeCapabilityGaps:
+        scenarioClosure.capabilityGapKnowledgeIds.length,
     },
   };
 }
@@ -654,6 +660,10 @@ export function refreshHiddenGameplayDefectsForWorld(
         defectResolution.status === "BLOCKED",
       runtimeProofResidue:
         defectResolution.runtimeProofRequiredIds.length,
+      missingRequiredKnowledge:
+        scenarioClosure.missingRequiredKnowledgeIds.length,
+      knowledgeCapabilityGaps:
+        scenarioClosure.capabilityGapKnowledgeIds.length,
     },
   };
 }
