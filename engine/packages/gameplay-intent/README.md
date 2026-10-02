@@ -73,3 +73,10 @@ Gameplay Intent owns two pre-classification checks:
 - `assessMechanicCompleteness()` — declared mechanics must close the Declared → Reachable → Triggered → Consumed → Effect → Player-visible chain.
 
 These functions establish intent/completeness state only. They do not assign Bug Report severity.
+
+
+## State closure
+
+`assessGameplayStateClosure()` owns per-state entry/exit completeness.
+
+It distinguishes valid unique initial states and grounded terminal states from unresolved states that can still hide softlocks. Gameplay Model Closure consumes this result; merely having a transition somewhere in the graph is not sufficient proof that the state model is complete.
