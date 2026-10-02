@@ -99,6 +99,8 @@ export interface GameplayWorldModel {
     basis?: "topology" | "script-config" | "reconciled";
     layoutStatus?: ArenaLayoutReconciliation["status"];
     requestedConcurrentArenas?: number;
+    safeConcurrentArenas?: number | null;
+    declaredConcurrentArenaLimit?: number;
     perArenaPlayerCapacity?: number;
     declaredMaxConcurrentPlayers?: number;
     capacityOk?: boolean;
@@ -819,6 +821,21 @@ export function deriveGameplayWorldModel(
             requestedConcurrentArenas:
               source.arena.capacity.evidence
                 .requestedConcurrentArenas,
+          }),
+      ...(source.arena.capacity?.report === undefined
+        ? {}
+        : {
+            safeConcurrentArenas:
+              source.arena.capacity.report
+                .safeConcurrentArenas,
+          }),
+      ...(source.arena.capacity?.evidence
+          .declaredConcurrentArenaLimit === undefined
+        ? {}
+        : {
+            declaredConcurrentArenaLimit:
+              source.arena.capacity.evidence
+                .declaredConcurrentArenaLimit,
           }),
       ...(source.arena.capacity?.evidence
           .perArenaPlayerCapacity === undefined
