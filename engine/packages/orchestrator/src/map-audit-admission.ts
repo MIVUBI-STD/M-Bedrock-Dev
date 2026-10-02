@@ -59,17 +59,18 @@ export interface SelectedMapAuditAdmission {
   readonly issues: readonly SelectedMapAuditAdmissionIssue[];
 }
 
-const ORDER: readonly SelectedMapAuditStage[] = [
-  "TARGET",
-  "DISCOVERY",
-  "UNDERSTAND",
-  "MODEL",
-  "STRESS",
-  "PROVE",
-  "REPORT",
-];
+export const SELECTED_MAP_AUDIT_STAGE_ORDER:
+  readonly SelectedMapAuditStage[] = [
+    "TARGET",
+    "DISCOVERY",
+    "UNDERSTAND",
+    "MODEL",
+    "STRESS",
+    "PROVE",
+    "REPORT",
+  ];
 
-function procedureStageFor(
+export function selectedMapAuditStageForCheckpoint(
   checkpointId: string,
 ): SelectedMapAuditStage {
   if (checkpointId === "A1") return "TARGET";
@@ -97,7 +98,7 @@ export function assessSelectedMapAuditAdmission(
   } else {
     for (const checkpointId of procedure.blockingCheckpointIds) {
       issues.push({
-        stage: procedureStageFor(checkpointId),
+        stage: selectedMapAuditStageForCheckpoint(checkpointId),
         code: "PROCEDURE_BLOCKED",
         message:
           "Mandatory Audit Procedure checkpoint " +
@@ -173,7 +174,7 @@ export function assessSelectedMapAuditAdmission(
     });
   }
 
-  const firstBlockingStage = ORDER.find((stage) =>
+  const firstBlockingStage = SELECTED_MAP_AUDIT_STAGE_ORDER.find((stage) =>
     issues.some((issue) => issue.stage === stage)
   );
 
