@@ -1607,8 +1607,20 @@ export function deriveGameplayWorldModel(
       executedCapabilityIds: [
         "semantic-ir-state-model",
         "script-spatial-integrity",
-        "structure-transition-integrity",
-        "temporal-ownership-integrity",
+        ...(
+          (source.analysisDemand ?? []).includes(
+            "world-structure",
+          )
+            ? ["structure-transition-integrity"]
+            : []
+        ),
+        ...(
+          (source.analysisDemand ?? []).includes(
+            "temporal-ownership",
+          )
+            ? ["temporal-ownership-integrity"]
+            : []
+        ),
         ...(
           (source.analysisDemand ?? []).includes(
             "arena-lifecycle",
