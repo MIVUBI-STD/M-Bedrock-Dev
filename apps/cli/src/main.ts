@@ -74,6 +74,31 @@ async function main(): Promise<void> {
     probeContext,
   } = parseCliTargetOptions(rawArgs);
   const [input, secondInput, thirdInput] = args;
+  const productionAuditCommands = new Set([
+    "audit",
+    "probe-plan",
+    "probe-replay",
+    "workflow",
+    "arena-audit",
+    "review",
+    "inspect",
+  ]);
+  const productionAuditCommand =
+    command !== undefined &&
+    productionAuditCommands.has(command);
+
+  if (
+    productionAuditCommand &&
+    (
+      (target.contractSourceRoots?.length ?? 0) > 0 ||
+      arenaRegionContractsPath !== undefined
+    )
+  ) {
+    throw new Error(
+      "Production selected-map audit accepts gameplay authority only from the selected artifact. " +
+        "External --contract-source-root and --arena-region-contracts inputs are engineering-only.",
+    );
+  }
 
   if (
     (command === "affected" ||
@@ -111,7 +136,10 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (arenaRegionContractsPath) {
+  if (
+    !productionAuditCommand &&
+    arenaRegionContractsPath
+  ) {
     target.arenaRegionContracts =
       await loadArenaRegionContractsFile(
         resolve(arenaRegionContractsPath),
