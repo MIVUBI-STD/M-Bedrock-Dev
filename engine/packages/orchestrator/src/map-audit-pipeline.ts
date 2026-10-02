@@ -21,6 +21,7 @@ import {
 } from "./inspection/inspect-artifact.js";
 import {
   buildBugReportFromAuditCandidates,
+  collectConfirmedDefects,
   prepareBugReportReviewFromAuditCandidates,
   type AuditReportCandidate,
   type BuildBugReportFromAuditResult,
@@ -47,6 +48,11 @@ import {
   deriveAuditModelTaskPackets,
   type AuditModelTaskPacket,
 } from "./map-audit-model-task.js";
+import {
+  deriveSelectedMapAuditIdentity,
+  selectedMapReportIdentityIssues,
+  type SelectedMapAuditIdentity,
+} from "./map-audit-identity.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -63,6 +69,7 @@ export interface SelectedMapAuditRun {
   readonly schemaVersion: 1;
   readonly policy: "selected-map-audit-single-entry";
   readonly inspection: InspectArtifactResult;
+  readonly identity: SelectedMapAuditIdentity;
   readonly status: "READY_FOR_REVIEW" | "BLOCKED";
   readonly admission: SelectedMapAuditAdmission;
   readonly currentStage: SelectedMapAuditStage | "COMPLETE";
@@ -93,6 +100,8 @@ export async function runSelectedMapAudit(
     input.runtimeProbeTranscript,
   );
 
+  const identity =
+    deriveSelectedMapAuditIdentity(inspection);
   const procedure = inspection.mandatoryAuditProcedure;
   const scenario =
     inspection.hiddenGameplayDefects.scenarioAudit;
@@ -132,6 +141,7 @@ export async function runSelectedMapAudit(
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
     inspection,
+    identity,
     admission,
     currentStage,
     allowedNextAction,
@@ -191,6 +201,8 @@ export function resolveSelectedMapAudit(
     hiddenGameplayDefects: hidden,
     mandatoryAuditProcedure,
   };
+  const identity =
+    deriveSelectedMapAuditIdentity(updatedInspection);
   const scenario = hidden.scenarioAudit;
   const admission = assessSelectedMapAuditAdmission({
     mandatoryAuditProcedure,
@@ -230,6 +242,7 @@ export function resolveSelectedMapAudit(
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
     inspection: updatedInspection,
+    identity,
     admission,
     currentStage,
     allowedNextAction,
@@ -265,6 +278,22 @@ export function prepareSelectedMapAuditReview(
   const inspection = input.audit.inspection;
   const scenario =
     inspection.hiddenGameplayDefects.scenarioAudit;
+  const identityIssues =
+    selectedMapReportIdentityIssues(
+      input.audit.identity,
+      input.map,
+    );
+  if (identityIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ??
+          inspection.engineeringAnalyses,
+      ),
+      blocked: true,
+      reasons: identityIssues,
+    };
+  }
 
   return prepareBugReportReviewFromAuditCandidates({
     map: input.map,
@@ -305,6 +334,27 @@ export function buildSelectedMapAuditReport(
   const inspection = input.audit.inspection;
   const scenario =
     inspection.hiddenGameplayDefects.scenarioAudit;
+  const identityIssues =
+    selectedMapReportIdentityIssues(
+      input.audit.identity,
+      input.map,
+    );
+  if (identityIssues.length > 0) {
+    return {
+      collection: collectConfirmedDefects(
+        input.candidates,
+        input.engineeringAnalyses ??
+          inspection.engineeringAnalyses,
+      ),
+      promotion: {
+        ok: false,
+        issues: identityIssues.map((message) => ({
+          code: "invalid-confirmed-defect" as const,
+          message,
+        })),
+      },
+    };
+  }
 
   return buildBugReportFromAuditCandidates({
     map: input.map,

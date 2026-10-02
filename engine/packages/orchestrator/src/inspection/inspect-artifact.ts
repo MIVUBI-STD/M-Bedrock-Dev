@@ -50,6 +50,7 @@ export interface InspectArtifactResult extends InspectDirectoryResult {
   artifactId: string;
   fingerprint: string;
   archiveEntries: number;
+  levelName?: string;
 }
 
 export async function inspectArtifact(
@@ -947,6 +948,9 @@ export async function inspectArtifact(
       artifactId,
       fingerprint,
       archiveEntries: inventory.entries.length,
+      ...(levelName === undefined || levelName.length === 0
+        ? {}
+        : { levelName }),
       ...result,
       releaseIdentity:
         finalReleaseIdentity,

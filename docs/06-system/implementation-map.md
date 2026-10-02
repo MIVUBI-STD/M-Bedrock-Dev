@@ -68,6 +68,7 @@ Use this before broad repository search.
 | Production selected-map audit single entry + canonical continuations | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact proof → ordered audit → resolveSelectedMapAudit when needed → review → report) |
 | Ordered production audit admission / first blocking stage | engine/packages/orchestrator/src/map-audit-admission.ts |
 | Bounded model-facing audit task packets / next-action projection | engine/packages/orchestrator/src/map-audit-model-task.ts |
+| Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |
 | Gameplay bug audit workflow | .agents/skills/m-bedrock-map-bug-audit/ |
 | Approved bug repair + preservation workflow | .agents/skills/m-bedrock-target-repair/ + docs/04-repair/ |
 | Versioned evidence-backed Minecraft platform knowledge and applicability | engine/packages/knowledge/ + engine/knowledge/ |
