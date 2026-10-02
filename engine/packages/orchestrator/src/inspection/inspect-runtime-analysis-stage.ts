@@ -260,6 +260,11 @@ export function analyzeInspectionRuntimeState(
       parsedFunctionModels,
       parsedScriptModels,
     );
+  const arenaStateIsolation =
+    analyzeArenaStateIsolation(
+      parsedScriptModels,
+      input.target.stateAuthorityContracts ?? [],
+    );
 
   for (const assessment of arenaGlobalState.assessments) {
     const mutation =
