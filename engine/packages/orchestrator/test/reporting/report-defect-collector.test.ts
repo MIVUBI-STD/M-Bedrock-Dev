@@ -77,6 +77,17 @@ const staticResult: IntentDiagnosticGateResult = {
   reasons: ["Static implementation contradicts authored cleanup intent."],
 };
 
+const completeDiscovery = {
+  status: "COMPLETE" as const,
+  discoveredSurfaceIds: [
+    "outcome:cleanup",
+  ],
+  sourceCoverageComplete: true,
+  sourceParseFailures: 0,
+  unresolvedReferences: 0,
+  reasons: [],
+};
+
 const closedGameplayModel = {
   status: "CLOSED" as const,
   surfaces: [],
@@ -149,6 +160,10 @@ function buildApprovedReport(
       map: input.map,
       files: input.files,
       candidates: input.candidates,
+      gameplayDiscoveryClosure:
+        completeDiscovery,
+      gameplayClosure:
+        closedGameplayModel,
       ...(input.groupResolutions === undefined
         ? {}
         : { groupResolutions: input.groupResolutions }),
@@ -167,6 +182,8 @@ function buildApprovedReport(
 
   return buildBugReportFromAuditCandidates({
     ...input,
+    gameplayDiscoveryClosure:
+      completeDiscovery,
     gameplayClosure:
       closedGameplayModel,
     approved: reviewed.approved,
