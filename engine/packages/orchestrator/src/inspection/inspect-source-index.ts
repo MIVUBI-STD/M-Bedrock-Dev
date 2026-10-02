@@ -32,7 +32,10 @@ import { analyzeCommandBlockChains } from "../../../../adapters/mcstructure/src/
 import { SemanticGraph } from "../../../graph/src/index.js";
 import type { SemanticNode } from "../../../graph/src/index.js";
 import type { DiagnosticFinding } from "../../../diagnostics/src/index.js";
-import type { FileInventoryEntry } from "../../../project-model/src/index.js";
+import type {
+  ComponentKind,
+  FileInventoryEntry,
+} from "../../../project-model/src/index.js";
 import { semanticNodeId } from "../../../project-model/src/index.js";
 import { analyzeEmbeddedStructureCommands } from "../embedded-structure-commands.js";
 import {
@@ -51,7 +54,14 @@ export interface InspectionSourceParseFailure {
     | "entity"
     | "structure"
     | "dialogue"
-    | "translation";
+    | "translation"
+    | "item"
+    | "loot_table"
+    | "recipe"
+    | "block"
+    | "spawn_rule"
+    | "animation"
+    | "animation_controller";
   reason: string;
 }
 
@@ -104,6 +114,57 @@ export interface InspectionSourceIndex {
   coverage: InspectionSourceCoverage;
 }
 
+const OWNED_GAMEPLAY_JSON_DIRECTORIES:
+  Readonly<Record<string, ComponentKind>> = {
+    animation_controllers: "animation_controller",
+    animations: "animation",
+    blocks: "block",
+    items: "item",
+    loot_tables: "loot_table",
+    recipes: "recipe",
+    spawn_rules: "spawn_rule",
+  };
+
+function ownedGameplayJsonKind(
+  relativePath: string,
+): ComponentKind | undefined {
+  const normalized =
+    relativePath.replaceAll("\\", "/").toLowerCase();
+  if (!normalized.endsWith(".json")) return undefined;
+
+  const segments = normalized.split("/");
+  const behaviorPackScoped =
+    segments.includes("behavior_packs") ||
+    segments.includes("behavior_pack");
+
+  for (const segment of segments) {
+    const kind =
+      OWNED_GAMEPLAY_JSON_DIRECTORIES[segment];
+    if (kind === undefined) continue;
+    if (
+      (
+        segment === "animation_controllers" ||
+        segment === "animations" ||
+        segment === "blocks" ||
+        segment === "items"
+      ) &&
+      !behaviorPackScoped
+    ) {
+      continue;
+    }
+    return kind;
+  }
+  return undefined;
+}
+
+function gameplayJsonIdentifier(
+  relativePath: string,
+): string {
+  return relativePath
+    .replaceAll("\\", "/")
+    .replace(/\.json$/i, "");
+}
+
 const GAMEPLAY_STRONG_JSON_DIRECTORIES = new Set([
   "features",
   "feature_rules",
@@ -128,6 +189,10 @@ function isGameplaySensitiveUnownedSource(
   if (!normalized.endsWith(".json")) return false;
 
   const segments = normalized.split("/");
+  if (ownedGameplayJsonKind(relativePath) !== undefined) {
+    return false;
+  }
+
   if (
     segments.some((segment) =>
       GAMEPLAY_STRONG_JSON_DIRECTORIES.has(segment)
@@ -404,6 +469,66 @@ export async function indexInspectionSources(
         }
         // Generic malformed JSON handling remains outside dialogue diagnostics.
       }
+    }
+
+    const ownedJsonKind =
+      ownedGameplayJsonKind(file.relativePath);
+    if (ownedJsonKind !== undefined) {
+      relevantFiles += 1;
+      try {
+        const raw = JSON.parse(
+          await readFile(
+            join(root, file.relativePath),
+            "utf8",
+          ),
+        ) as unknown;
+        const identifier =
+          gameplayJsonIdentifier(
+            file.relativePath,
+          );
+        const node: SemanticNode = {
+          id: semanticNodeId(
+            ownedJsonKind,
+            "project",
+            identifier,
+          ),
+          identity: {
+            kind: ownedJsonKind,
+            scope: "project",
+            identifier,
+          },
+          kind: ownedJsonKind,
+          identifier,
+          ...(file.contentHash === undefined
+            ? {}
+            : { contentHash: file.contentHash }),
+          source: {
+            artifactId,
+            relativePath: file.relativePath,
+          },
+          data: raw,
+        };
+        graph.addNode(node);
+        nodes.push(node);
+        indexedFiles += 1;
+      } catch (error) {
+        parseFailures.push({
+          relativePath: file.relativePath,
+          kind: ownedJsonKind as
+            | "item"
+            | "loot_table"
+            | "recipe"
+            | "block"
+            | "spawn_rule"
+            | "animation"
+            | "animation_controller",
+          reason:
+            error instanceof Error
+              ? error.message
+              : String(error),
+        });
+      }
+      continue;
     }
 
     const structureId =
