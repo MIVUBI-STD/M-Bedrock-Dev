@@ -86,6 +86,10 @@ export function validateAnalysisCapabilityRegistry(
         "evidence trait",
         capability.producesTraits ?? [],
       ],
+      [
+        "knowledge domain",
+        capability.knowledgeDomains ?? [],
+      ],
       ["context", capability.contexts],
     ] as const) {
       const repeated = duplicates(
@@ -191,6 +195,12 @@ export function createAnalysisCapabilityRegistry(
         ...item,
         tags: [...item.tags].sort(),
         contexts: [...item.contexts].sort(),
+        ...(item.knowledgeDomains === undefined
+          ? {}
+          : {
+              knowledgeDomains:
+                [...item.knowledgeDomains].sort(),
+            }),
         ...(item.producesTraits === undefined
           ? {}
           : {

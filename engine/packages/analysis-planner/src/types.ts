@@ -41,6 +41,20 @@ export type AnalysisExecutionContext =
   | "LOCAL_MINECRAFT"
   | "LIVE_MINECRAFT";
 
+export type AnalysisKnowledgeDomain =
+  | "state-flow"
+  | "arena-lifecycle"
+  | "multiplayer-interleaving"
+  | "chunk-simulation"
+  | "entity-behavior"
+  | "combat-lifecycle"
+  | "inventory-state"
+  | "persistence-recovery"
+  | "world-structure"
+  | "economy-reward"
+  | "spatial-authority"
+  | "temporal-ownership";
+
 export type AnalysisCostClass =
   | "cheap"
   | "moderate"
@@ -52,6 +66,7 @@ export interface AnalysisCapability {
   evidenceLevel: AnalysisEvidenceLevel;
   cost: AnalysisCostClass;
   tags: readonly string[];
+  knowledgeDomains?: readonly AnalysisKnowledgeDomain[];
   deterministic: boolean;
   contexts: readonly AnalysisExecutionContext[];
   producesTraits?: readonly AnalysisEvidenceTrait[];

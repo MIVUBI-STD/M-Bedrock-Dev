@@ -24,48 +24,6 @@ const registry = createAnalysisCapabilityRegistry(
   BUILTIN_ANALYSIS_CAPABILITIES,
 );
 
-const DOMAIN_CAPABILITY_IDS: Readonly<Record<
-  GameplayKnowledgeDomain,
-  readonly string[]
->> = {
-  "state-flow": [
-    "semantic-ir-state-model",
-  ],
-  "arena-lifecycle": [
-    "arena-lifecycle-integrity",
-  ],
-  "multiplayer-interleaving": [
-    "multiplayer-interleaving",
-  ],
-  "chunk-simulation": [
-    "chunk-lifecycle-integrity",
-  ],
-  "entity-behavior": [
-    "entity-ai-navigation-readiness",
-  ],
-  "combat-lifecycle": [
-    "combat-lifecycle-contract",
-  ],
-  "inventory-state": [
-    "inventory-lifecycle-integrity",
-  ],
-  "persistence-recovery": [
-    "persistence-lifecycle-integrity",
-  ],
-  "world-structure": [
-    "structure-transition-integrity",
-  ],
-  "economy-reward": [
-    "economy-reward-integrity",
-  ],
-  "spatial-authority": [
-    "script-spatial-integrity",
-  ],
-  "temporal-ownership": [
-    "temporal-ownership-integrity",
-  ],
-};
-
 const DOMAIN_DEPENDENCIES: Readonly<Partial<Record<
   GameplayKnowledgeDomain,
   readonly GameplayKnowledgeDomain[]
@@ -99,22 +57,15 @@ function capabilityIdsForDomain(
   domain: GameplayKnowledgeDomain,
   context: AnalysisExecutionContext,
 ): readonly string[] {
-  const byId = new Map(
-    registry.capabilities.map((capability) => [
-      capability.id,
-      capability,
-    ]),
-  );
-  return DOMAIN_CAPABILITY_IDS[domain]
-    .filter((id) => {
-      const capability = byId.get(id);
-      return (
-        capability !== undefined &&
-        capability.contexts.includes(context) &&
-        capability.evidenceLevel !== "runtime" &&
-        capability.evidenceLevel !== "intervention"
-      );
-    })
+  return registry.capabilities
+    .filter((capability) =>
+      capability.contexts.includes(context) &&
+      capability.evidenceLevel !== "runtime" &&
+      capability.evidenceLevel !== "intervention" &&
+      (capability.knowledgeDomains ?? [])
+        .includes(domain)
+    )
+    .map((capability) => capability.id)
     .sort();
 }
 
@@ -125,10 +76,13 @@ function executedCapabilityIdsForDomain(
   const executed = new Set(
     world.analysisExecution.executedCapabilityIds,
   );
-  return DOMAIN_CAPABILITY_IDS[domain]
-    .filter((capabilityId) =>
-      executed.has(capabilityId)
+  return registry.capabilities
+    .filter((capability) =>
+      (capability.knowledgeDomains ?? [])
+        .includes(domain) &&
+      executed.has(capability.id)
     )
+    .map((capability) => capability.id)
     .sort();
 }
 
@@ -343,11 +297,8 @@ export function requiredKnowledgeDomainsForPreset(
 
   switch (kind) {
     case "full-journey":
-      for (const domain of Object.keys(DOMAIN_CAPABILITY_IDS) as GameplayKnowledgeDomain[]) {
-        if (domain !== "temporal-ownership") {
-          addIfApplicable(domain);
-        }
-      }
+      // Full journey is a composition scenario. Its knowledge set is
+      // derived by the scenario compiler from the concrete child scenarios.
       break;
     case "solo":
     case "two-player":
@@ -413,6 +364,10 @@ export function requiredKnowledgeDomainsForIntentScenario(
 export function buildGameplayKnowledgeRequirements(
   scenarioId: string,
   domains: readonly GameplayKnowledgeDomain[],
+  scope: {
+    readonly subjectIds?: readonly string[];
+    readonly componentIds?: readonly string[];
+  } = {},
   context: AnalysisExecutionContext = "REMOTE_GITHUB",
 ): readonly GameplayKnowledgeRequirement[] {
   const domainSet = new Set(domains);
@@ -444,6 +399,8 @@ export function buildGameplayKnowledgeRequirements(
         " evidence to close its causal chain.",
       capabilityIds,
       dependsOnRequirementIds,
+      subjectIds: [...(scope.subjectIds ?? [])].sort(),
+      componentIds: [...(scope.componentIds ?? [])].sort(),
     };
   });
 }
@@ -476,6 +433,8 @@ export function buildGameplayKnowledgeReceipts(
         scenarioId: requirement.scenarioId,
         domain: requirement.domain,
         status: "BLOCKED_BY_PREREQUISITE",
+        subjectIds: [...requirement.subjectIds],
+        componentIds: [...requirement.componentIds],
         evidenceIds: [],
         capabilityIdsUsed: [],
         reason:
@@ -511,6 +470,8 @@ export function buildGameplayKnowledgeReceipts(
         scenarioId: requirement.scenarioId,
         domain: requirement.domain,
         status: "BLOCKED_BY_PREREQUISITE",
+        subjectIds: [...requirement.subjectIds],
+        componentIds: [...requirement.componentIds],
         evidenceIds: [],
         capabilityIdsUsed: [],
         reason:
@@ -540,6 +501,8 @@ export function buildGameplayKnowledgeReceipts(
         scenarioId: requirement.scenarioId,
         domain: requirement.domain,
         status: "CAPABILITY_GAP",
+        subjectIds: [...requirement.subjectIds],
+        componentIds: [...requirement.componentIds],
         evidenceIds,
         capabilityIdsUsed: [],
         reason:
@@ -558,6 +521,8 @@ export function buildGameplayKnowledgeReceipts(
         scenarioId: requirement.scenarioId,
         domain: requirement.domain,
         status: "MISSING_REQUIRED_KNOWLEDGE",
+        subjectIds: [...requirement.subjectIds],
+        componentIds: [...requirement.componentIds],
         evidenceIds: [],
         capabilityIdsUsed: [],
         reason:

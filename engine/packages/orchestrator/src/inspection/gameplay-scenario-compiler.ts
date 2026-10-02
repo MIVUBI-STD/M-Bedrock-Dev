@@ -459,16 +459,13 @@ export function compileGameplayScenarioGraph(
 
     switch (kind) {
       case "full-journey":
-        addIntentKinds("phase", "mechanic", "objective", "lifecycle", "outcome");
-        addRuntime(
-          "runtime:arena",
-          "runtime:structures",
-          "runtime:entities",
-          "runtime:chunks",
-          "runtime:combat",
-          "runtime:inventory",
-          "runtime:persistence",
-          "runtime:economy",
+        // Composition only: concrete child scenarios own runtime knowledge.
+        addIntentKinds(
+          "phase",
+          "mechanic",
+          "objective",
+          "lifecycle",
+          "outcome",
         );
         break;
       case "solo":
@@ -627,6 +624,10 @@ export function compileGameplayScenarioGraph(
       buildGameplayKnowledgeRequirements(
         scenario.id,
         scenarioKnowledgeDomains.get(scenario.id) ?? [],
+        {
+          subjectIds: scenario.sourceSubjectIds,
+          componentIds: scenario.componentIds,
+        },
       ),
   );
   const requirementsByScenario = new Map<
@@ -742,7 +743,13 @@ export function compileGameplayScenarioGraph(
     for (const scenarioId of component.usedByScenarioIds) {
       const scenario = scenarioById.get(scenarioId);
       if (!scenario) continue;
-      const anchorId = scenario.sourceSubjectIds[0];
+      const anchorId =
+        scenario.sourceSubjectIds[0] ??
+        scenario.componentIds.find(
+          (id) =>
+            !id.startsWith("runtime:") &&
+            componentIds.has(id),
+        );
       if (!anchorId || !componentIds.has(anchorId)) continue;
       causalLinks.push({
         id: "edge:" + scenarioId + ":" + component.id,

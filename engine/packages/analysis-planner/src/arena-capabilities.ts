@@ -3,6 +3,7 @@ import type { AnalysisCapability } from "./types.js";
 export const ARENA_ANALYSIS_CAPABILITIES: readonly AnalysisCapability[] = [
   {
     id: "arena-concurrency-capacity",
+    knowledgeDomains: ["arena-lifecycle", "multiplayer-interleaving"],
     evidenceLevel: "semantic",
     cost: "cheap",
     tags: ["arena", "capacity", "multiplayer"],

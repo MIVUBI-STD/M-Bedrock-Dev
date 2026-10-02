@@ -6,6 +6,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
   readonly AnalysisCapability[] = [
     {
       id: "semantic-ir-state-model",
+      knowledgeDomains: ["state-flow"],
       evidenceLevel: "semantic",
       cost: "cheap",
       tags: [
@@ -26,6 +27,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "script-spatial-integrity",
+      knowledgeDomains: ["spatial-authority"],
       evidenceLevel: "semantic",
       cost: "cheap",
       tags: [
@@ -109,6 +111,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "arena-lifecycle-integrity",
+      knowledgeDomains: ["arena-lifecycle"],
       evidenceLevel: "semantic",
       cost: "cheap",
       tags: [
@@ -153,6 +156,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "inventory-lifecycle-integrity",
+      knowledgeDomains: ["inventory-state"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -176,6 +180,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "entity-ai-navigation-readiness",
+      knowledgeDomains: ["entity-behavior"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -199,6 +204,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "combat-lifecycle-contract",
+      knowledgeDomains: ["combat-lifecycle"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -221,6 +227,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "chunk-lifecycle-integrity",
+      knowledgeDomains: ["chunk-simulation"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -244,6 +251,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "economy-reward-integrity",
+      knowledgeDomains: ["economy-reward"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -266,6 +274,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "persistence-lifecycle-integrity",
+      knowledgeDomains: ["persistence-recovery"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -287,6 +296,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "multiplayer-interleaving",
+      knowledgeDomains: ["multiplayer-interleaving"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -309,6 +319,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "structure-transition-integrity",
+      knowledgeDomains: ["world-structure"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [
@@ -330,6 +341,7 @@ export const DOMAIN_ANALYSIS_CAPABILITIES:
     },
     {
       id: "temporal-ownership-integrity",
+      knowledgeDomains: ["temporal-ownership"],
       evidenceLevel: "semantic",
       cost: "moderate",
       tags: [

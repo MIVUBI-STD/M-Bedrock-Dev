@@ -1,20 +1,11 @@
 import type {
   GameplayIntentNodeKind,
 } from "../../../gameplay-intent/src/index.js";
+import type {
+  AnalysisKnowledgeDomain,
+} from "../../../analysis-planner/src/index.js";
 
-export type GameplayKnowledgeDomain =
-  | "state-flow"
-  | "arena-lifecycle"
-  | "multiplayer-interleaving"
-  | "chunk-simulation"
-  | "entity-behavior"
-  | "combat-lifecycle"
-  | "inventory-state"
-  | "persistence-recovery"
-  | "world-structure"
-  | "economy-reward"
-  | "spatial-authority"
-  | "temporal-ownership";
+export type GameplayKnowledgeDomain = AnalysisKnowledgeDomain;
 
 export interface GameplayKnowledgeRequirement {
   readonly id: string;
@@ -23,6 +14,8 @@ export interface GameplayKnowledgeRequirement {
   readonly reason: string;
   readonly capabilityIds: readonly string[];
   readonly dependsOnRequirementIds: readonly string[];
+  readonly subjectIds: readonly string[];
+  readonly componentIds: readonly string[];
 }
 
 export type GameplayKnowledgeReceiptStatus =
@@ -38,6 +31,8 @@ export interface GameplayKnowledgeReceipt {
   readonly status: GameplayKnowledgeReceiptStatus;
   readonly evidenceIds: readonly string[];
   readonly capabilityIdsUsed: readonly string[];
+  readonly subjectIds: readonly string[];
+  readonly componentIds: readonly string[];
   readonly reason: string;
 }
 

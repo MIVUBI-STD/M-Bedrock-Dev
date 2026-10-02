@@ -94,6 +94,8 @@ The target is the **minimum complete knowledge set**: the smallest applicable se
 
 The Required Knowledge Set is the **Required Inspection Graph (RIG)**. RIG is not a second knowledge base or workflow engine; it is the fail-closed dependency graph over existing knowledge requirements.
 
+The analysis capability registry is the single owner of which knowledge domain a capability can satisfy. RIG must query that registry; it must not maintain a parallel hard-coded capability map. Every RIG node also carries the selected-artifact subject/component scope that caused the requirement, so later proof can stay bounded instead of becoming domain-global.
+
 Each RIG node must declare:
 
 ```text
