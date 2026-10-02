@@ -33,6 +33,7 @@ export interface MapEngineeringWorkflowProjection {
     evidenceRecoveryActions: number;
     repairProposals: number;
     hiddenDefectRisks: number;
+    engineeringAnalyses: number;
   };
   nextActions: readonly string[];
 }
@@ -204,6 +205,8 @@ export function buildMapEngineeringWorkflow(
         .highTemporalRisks +
       source.hiddenGameplayDefects.attention
         .designAnomalies,
+    engineeringAnalyses:
+      source.engineeringAnalyses.length,
   };
 
   const nextActions = stages
