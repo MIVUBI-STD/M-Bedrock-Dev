@@ -40,7 +40,52 @@ export function deriveArenaReplicaProofQuality(
   nativeSpatial: ArenaNativeSpatialAudit | undefined,
   blockEntities?: ArenaBlockEntityProof,
 ): ArenaReplicaProofQuality[] {
-  if (!voxel) return [];
+  if (!voxel) {
+    const plannedBlocks =
+      coverage?.plannedBlocks ?? 0;
+    const proofEligibleBlocks =
+      coverage?.proofBlocks ?? 0;
+    const excludedBlocks =
+      coverage?.excludedBlocks ?? 0;
+
+    return (nativeSpatial?.replicas ?? []).map(
+      (native) => ({
+        arenaId: native.arenaId,
+        status:
+          native.status === "chunk-record-proof" &&
+          native.matchesCanonical === false
+            ? "diverged"
+            : native.status === "chunk-record-proof" &&
+              native.matchesCanonical === true
+              ? "bounded-proof"
+              : "no-proof",
+        plannedBlocks,
+        proofEligibleBlocks,
+        comparedBlocks: 0,
+        unresolvedBlocks:
+          native.status === "chunk-record-proof"
+            ? 0
+            : proofEligibleBlocks,
+        excludedBlocks,
+        mismatchCount:
+          native.status === "chunk-record-proof" &&
+          native.matchesCanonical === false
+            ? 1
+            : 0,
+        eligibleCoverageRatio: 0,
+        effectiveArenaCoverageRatio: 0,
+        nativeSpatial: {
+          status: native.status,
+          ...(native.matchesCanonical === undefined
+            ? {}
+            : {
+                matchesCanonical:
+                  native.matchesCanonical,
+              }),
+        },
+      }),
+    );
+  }
 
   const plannedBlocks = coverage?.plannedBlocks ?? voxel.requiredBlocks;
   const proofEligibleBlocks = coverage?.proofBlocks ?? voxel.requiredBlocks;
