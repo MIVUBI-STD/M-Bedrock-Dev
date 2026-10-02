@@ -69,7 +69,7 @@ export function deriveGameplayIntentSurfaceSignals(
         summary:
           "A dialogue scene tag exposes a player-facing gameplay-surface candidate from the selected artifact.",
       });
-      for (const item of scene.displayText) {
+      for (const item of scene.displayText ?? []) {
         add(signals, {
           label: item.text,
           locator: document.source.relativePath,
