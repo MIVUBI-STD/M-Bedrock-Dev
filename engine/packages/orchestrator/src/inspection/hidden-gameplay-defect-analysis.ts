@@ -331,18 +331,15 @@ function consistencyFromWorld(
     }),
   );
 
+  const safeConcurrent =
+    world.arenas.safeConcurrentArenas;
   if (
-    world.arenas.requestedConcurrentArenas !==
-      undefined &&
-    world.arenas.requestedConcurrentArenas <
-      world.arenas.count
+    safeConcurrent !== undefined &&
+    safeConcurrent !== null &&
+    safeConcurrent < world.arenas.count
   ) {
-    const unavailable =
-      world.arenas.count -
-      world.arenas.requestedConcurrentArenas;
     for (
-      let index =
-        world.arenas.requestedConcurrentArenas;
+      let index = safeConcurrent;
       index < world.arenas.count;
       index += 1
     ) {
@@ -352,7 +349,6 @@ function consistencyFromWorld(
         value: false,
       };
     }
-    void unavailable;
   }
 
   return findDesignConsistencyAnomalies(
