@@ -43,6 +43,7 @@ function baseSource() {
       actions: [],
     },
     repairCandidates: [],
+    engineeringAnalyses: [],
     releaseIdentity: {
       status: "consistent",
       observations: [],
@@ -78,6 +79,7 @@ describe("map engineering workflow projection", () => {
       evidenceRecoveryActions: 0,
       repairProposals: 0,
       hiddenDefectRisks: 0,
+      engineeringAnalyses: 0,
     });
   });
 
