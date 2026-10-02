@@ -6,6 +6,8 @@ export type GameplayDiscoveryClosureStatus =
 export interface GameplayDiscoveryClosureInput {
   readonly discoveredSurfaceIds:
     readonly string[];
+  readonly sourceRelevantFiles: number;
+  readonly sourceIndexedFiles: number;
   readonly sourceCoverageComplete: boolean;
   readonly sourceParseFailures: number;
   readonly unresolvedReferences: number;
@@ -16,8 +18,17 @@ export interface GameplayDiscoveryClosure {
     GameplayDiscoveryClosureStatus;
   readonly discoveredSurfaceIds:
     readonly string[];
-  readonly sourceCoverageComplete: boolean;
+  /**
+   * Raw selected-artifact files classified as gameplay-relevant by source
+   * discovery. This count is retained so later admission/review can prove that
+   * discovery did not silently collapse to only successfully parsed files.
+   */
+  readonly sourceRelevantFiles: number;
+  readonly sourceIndexedFiles: number;
   readonly sourceParseFailures: number;
+  readonly sourceAccountedFiles: number;
+  readonly sourceInventoryBalanced: boolean;
+  readonly sourceCoverageComplete: boolean;
   readonly unresolvedReferences: number;
   readonly reasons: readonly string[];
 }
@@ -29,10 +40,29 @@ export function assessGameplayDiscoveryClosure(
     ...new Set(input.discoveredSurfaceIds),
   ].sort();
   const reasons: string[] = [];
+  const sourceAccountedFiles =
+    input.sourceIndexedFiles +
+    input.sourceParseFailures;
+  const sourceInventoryBalanced =
+    input.sourceRelevantFiles ===
+      sourceAccountedFiles &&
+    input.sourceIndexedFiles <=
+      input.sourceRelevantFiles;
 
   if (surfaceIds.length === 0) {
     reasons.push(
       "No gameplay surface was discovered from the selected artifact.",
+    );
+  }
+  if (!sourceInventoryBalanced) {
+    reasons.push(
+      "Relevant selected-artifact source inventory is not fully accounted: " +
+        String(input.sourceRelevantFiles) +
+        " relevant, " +
+        String(input.sourceIndexedFiles) +
+        " indexed, " +
+        String(input.sourceParseFailures) +
+        " parse failure(s).",
     );
   }
   if (!input.sourceCoverageComplete) {
@@ -56,6 +86,7 @@ export function assessGameplayDiscoveryClosure(
   const status:
     GameplayDiscoveryClosureStatus =
       surfaceIds.length === 0 ||
+      !sourceInventoryBalanced ||
       !input.sourceCoverageComplete ||
       input.sourceParseFailures > 0
         ? "OPEN"
@@ -65,17 +96,23 @@ export function assessGameplayDiscoveryClosure(
 
   if (status === "COMPLETE") {
     reasons.push(
-      "Relevant selected-artifact sources are indexed and at least one gameplay surface is discovered.",
+      "Relevant selected-artifact source inventory is balanced, all relevant sources are indexed, and at least one gameplay surface is discovered.",
     );
   }
 
   return {
     status,
     discoveredSurfaceIds: surfaceIds,
-    sourceCoverageComplete:
-      input.sourceCoverageComplete,
+    sourceRelevantFiles:
+      input.sourceRelevantFiles,
+    sourceIndexedFiles:
+      input.sourceIndexedFiles,
     sourceParseFailures:
       input.sourceParseFailures,
+    sourceAccountedFiles,
+    sourceInventoryBalanced,
+    sourceCoverageComplete:
+      input.sourceCoverageComplete,
     unresolvedReferences:
       input.unresolvedReferences,
     reasons,
