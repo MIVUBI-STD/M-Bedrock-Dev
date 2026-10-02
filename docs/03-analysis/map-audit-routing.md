@@ -20,7 +20,7 @@ The canonical stage order is:
 TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT
 ```
 
-`inspect`, `review`, `workflow`, `arena-audit`, and runtime-probe utilities are engineering-only projections/tools. They are not production entry points and require the explicit engineering-tools gate. Low-level `inspectArtifact()` remains internal plumbing for corpus work, comparison, repair verification, and bounded engine development only.
+`dev-inspect`, `dev-review`, `dev-workflow`, `dev-arena-audit`, and `dev-probe-*` utilities are engineering-only projections/tools. They are not production entry points and require the explicit engineering-tools gate. Low-level `inspectArtifact()` remains internal plumbing for corpus work, comparison, repair verification, and bounded engine development only.
 
 Caller-supplied map-specific contracts or arena layouts are forbidden on the production path; the selected artifact remains the sole gameplay authority.
 
