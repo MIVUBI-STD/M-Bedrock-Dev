@@ -25,12 +25,14 @@ export interface ArenaCapacityExtractionInput {
   tickingAreas: readonly ArenaCommandTickingAreaRecord[];
   scripts?: readonly ParsedScriptFile[];
   declaredArenaCount?: number;
+  declaredConcurrentArenaLimit?: number;
 }
 
 export interface ArenaCapacityExtractionEvidence {
   requestedConcurrentArenas?: number;
   discoveredArenaCount?: number;
   declaredArenaCount?: number;
+  declaredConcurrentArenaLimit?: number;
   arenaCountConflict: boolean;
   commandTickingAreaAdds: number;
   completeCommandTickingAreaFamilies: number;
@@ -180,6 +182,36 @@ export function extractArenaConcurrencyCapacity(
   });
 
   const resources: ArenaCapacityResource[] = [];
+
+  if (
+    input.declaredConcurrentArenaLimit !== undefined
+  ) {
+    if (
+      !Number.isInteger(
+        input.declaredConcurrentArenaLimit,
+      ) ||
+      input.declaredConcurrentArenaLimit < 1
+    ) {
+      reasons.push(
+        "Declared concurrent arena limit is invalid and cannot be used as capacity evidence.",
+      );
+    } else {
+      resources.push({
+        id: "runtime-arena-admission-cap",
+        backend: "fixed-pool",
+        perArena: 1,
+        total:
+          input.declaredConcurrentArenaLimit,
+      });
+      reasons.push(
+        "Runtime admission explicitly caps active arenas at " +
+          String(
+            input.declaredConcurrentArenaLimit,
+          ) +
+          ".",
+      );
+    }
+  }
   const numericPlayerCapacities = [
     ...new Set(
       (input.scripts ?? []).flatMap((script) =>
@@ -372,6 +404,12 @@ export function extractArenaConcurrencyCapacity(
       ...(declaredArenaCount === undefined
         ? {}
         : { declaredArenaCount }),
+      ...(input.declaredConcurrentArenaLimit === undefined
+        ? {}
+        : {
+            declaredConcurrentArenaLimit:
+              input.declaredConcurrentArenaLimit,
+          }),
       arenaCountConflict,
       commandTickingAreaAdds: addRecords.length,
       completeCommandTickingAreaFamilies:
