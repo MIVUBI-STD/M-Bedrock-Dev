@@ -31,6 +31,9 @@ import type {
   InspectionEngineeringAnalysis,
 } from "../inspection/engineering-analysis-stage.js";
 import type {
+  GameplayDiscoveryClosure,
+} from "../inspection/gameplay-discovery-closure.js";
+import type {
   RuntimeExperimentDefinition,
 } from "../../../runtime-lab/src/index.js";
 import type {
@@ -990,7 +993,25 @@ export interface BuildBugReportFromAuditResult {
 
 export interface BuildBugReportFromClosedAuditInput
   extends BuildBugReportFromAuditInput {
-  readonly gameplayClosure: GameplayModelClosureResult;
+  readonly gameplayDiscoveryClosure:
+    GameplayDiscoveryClosure;
+  readonly gameplayClosure:
+    GameplayModelClosureResult;
+}
+
+export function gameplayDiscoveryPublicationIssues(
+  closure: GameplayDiscoveryClosure,
+): readonly {
+  code: "invalid-confirmed-defect";
+  message: string;
+}[] {
+  if (closure.status !== "OPEN") return [];
+
+  return [{
+    code: "invalid-confirmed-defect",
+    message:
+      "Gameplay Discovery Closure is OPEN. Comprehensive Bug Report publication is blocked until relevant selected-artifact sources are indexed and the gameplay surface inventory is stable.",
+  }];
 }
 
 export function gameplayClosurePublicationIssues(
@@ -1105,10 +1126,14 @@ export function prepareBugReportReviewFromAuditCandidates(
   input:
     PrepareBugReportReviewFromClosedAuditInput,
 ): PrepareBugReportReviewFromClosedAuditResult {
-  const closureIssues =
-    gameplayClosurePublicationIssues(
+  const closureIssues = [
+    ...gameplayDiscoveryPublicationIssues(
+      input.gameplayDiscoveryClosure,
+    ),
+    ...gameplayClosurePublicationIssues(
       input.gameplayClosure,
-    );
+    ),
+  ];
 
   if (closureIssues.length > 0) {
     return {
@@ -1188,10 +1213,14 @@ export function buildBugReportFromAuditCandidatesCompatibility(
 export function buildBugReportFromAuditCandidates(
   input: BuildBugReportFromClosedAuditInput,
 ): BuildBugReportFromAuditResult {
-  const closureIssues =
-    gameplayClosurePublicationIssues(
+  const closureIssues = [
+    ...gameplayDiscoveryPublicationIssues(
+      input.gameplayDiscoveryClosure,
+    ),
+    ...gameplayClosurePublicationIssues(
       input.gameplayClosure,
-    );
+    ),
+  ];
 
   if (closureIssues.length > 0) {
     return {
