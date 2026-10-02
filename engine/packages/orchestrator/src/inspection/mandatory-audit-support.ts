@@ -60,6 +60,33 @@ export interface MandatoryAuditBlockClosure {
 
 export interface MandatoryAuditStateRecord {
   readonly surfaceId: string;
+  readonly surfaceKind: string;
+  readonly key: string;
+  readonly declaredScope:
+    | "player"
+    | "entity"
+    | "arena"
+    | "round"
+    | "world"
+    | "unknown";
+  readonly persistenceScope:
+    | "player"
+    | "entity"
+    | "arena"
+    | "session"
+    | "world"
+    | "unknown";
+  readonly lifetime:
+    | "round"
+    | "match"
+    | "player-session"
+    | "world"
+    | "unknown";
+  readonly persistent: boolean;
+  readonly staleRisk:
+    | "bounded"
+    | "possible"
+    | "unknown";
   readonly readRegions: readonly string[];
   readonly writeRegions: readonly string[];
   readonly clearRegions: readonly string[];
@@ -67,9 +94,24 @@ export interface MandatoryAuditStateRecord {
 }
 
 export interface MandatoryAuditOwnershipRecord {
-  readonly authorityContractId: string;
-  readonly authoritySurfaceId: string;
+  readonly stateSurfaceId: string;
+  readonly authorityStatus:
+    | "explicit-contract"
+    | "single-writer-observed"
+    | "multi-writer-unresolved"
+    | "no-writer";
+  readonly authorityContractId?: string;
+  readonly authoritySurfaceId?: string;
   readonly mirrorSurfaceIds: readonly string[];
+  readonly declaredScope:
+    | "player"
+    | "entity"
+    | "arena"
+    | "round"
+    | "world"
+    | "unknown";
+  readonly purpose?: string;
+  readonly observedWriterRegionIds: readonly string[];
 }
 
 export interface MandatoryAuditProgressionRecord {
@@ -77,6 +119,12 @@ export interface MandatoryAuditProgressionRecord {
   readonly kind: "objective" | "phase" | "outcome";
   readonly inboundEdgeIds: readonly string[];
   readonly outboundEdgeIds: readonly string[];
+  readonly entryEdgeIds: readonly string[];
+  readonly dependencyEdgeIds: readonly string[];
+  readonly stateResourceSubjectIds: readonly string[];
+  readonly effectEdgeIds: readonly string[];
+  readonly transitionEdgeIds: readonly string[];
+  readonly terminalEdgeIds: readonly string[];
 }
 
 export interface MandatoryAuditProcedureReceipt {
@@ -171,9 +219,36 @@ export function positiveNotApplicable(
   );
 }
 
+export interface MandatoryAuditPersistenceProjection {
+  readonly propertyId: string;
+  readonly growth: string;
+  readonly scope:
+    | "player"
+    | "entity"
+    | "arena"
+    | "session"
+    | "world"
+    | "unknown";
+  readonly lifetime:
+    | "round"
+    | "match"
+    | "player-session"
+    | "world"
+    | "unknown";
+}
+
 export function deriveMandatoryStateRegistry(
   ir: SemanticIr,
+  persistence:
+    readonly MandatoryAuditPersistenceProjection[] = [],
 ): readonly MandatoryAuditStateRecord[] {
+  const persistenceByKey = new Map(
+    persistence.map((item) => [
+      item.propertyId,
+      item,
+    ]),
+  );
+
   return ir.state.surfaces.map((surface) => {
     const operations = ir.state.operations.filter(
       (operation) => operation.surfaceId === surface.id,
@@ -186,19 +261,64 @@ export function deriveMandatoryStateRegistry(
           )
           .map((operation) => operation.executionRegionId),
       )].sort();
+    const bindings = ir.state.authorityBindings
+      .filter((binding) =>
+        binding.authoritySurfaceId === surface.id ||
+        binding.mirrorSurfaceIds.includes(surface.id)
+      );
     const authorityContractIds =
-      ir.state.authorityBindings
-        .filter((binding) =>
-          binding.authoritySurfaceId === surface.id ||
-          binding.mirrorSurfaceIds.includes(surface.id)
-        )
-        .map((binding) => binding.contract.id)
-        .sort();
+      bindings.map((binding) => binding.contract.id).sort();
+    const declaredScopes = [
+      ...new Set(
+        bindings
+          .map((binding) => binding.contract.scope)
+          .filter(
+            (value): value is NonNullable<typeof value> =>
+              value !== undefined,
+          ),
+      ),
+    ];
+    const persisted =
+      surface.ref.kind === "dynamic-property"
+        ? persistenceByKey.get(surface.ref.key)
+        : undefined;
+    const writes = regionsFor("write");
+    const clears = regionsFor("clear", "delete");
+    const persistent =
+      surface.ref.kind === "dynamic-property" ||
+      persisted !== undefined;
+    const staleRisk =
+      writes.length === 0
+        ? "bounded" as const
+        : clears.length > 0
+          ? "bounded" as const
+          : persistent &&
+              (
+                persisted === undefined ||
+                persisted.scope === "world" ||
+                persisted.lifetime === "world" ||
+                persisted.growth === "append-without-clear"
+              )
+            ? "possible" as const
+            : "unknown" as const;
+
     return {
       surfaceId: surface.id,
+      surfaceKind: surface.ref.kind,
+      key: surface.ref.key,
+      declaredScope:
+        declaredScopes.length === 1
+          ? declaredScopes[0]!
+          : "unknown",
+      persistenceScope:
+        persisted?.scope ?? "unknown",
+      lifetime:
+        persisted?.lifetime ?? "unknown",
+      persistent,
+      staleRisk,
       readRegions: regionsFor("read", "enumerate", "size"),
-      writeRegions: regionsFor("write"),
-      clearRegions: regionsFor("clear", "delete"),
+      writeRegions: writes,
+      clearRegions: clears,
       authorityContractIds,
     };
   });
@@ -207,11 +327,50 @@ export function deriveMandatoryStateRegistry(
 export function deriveMandatoryOwnershipRegistry(
   ir: SemanticIr,
 ): readonly MandatoryAuditOwnershipRecord[] {
-  return ir.state.authorityBindings.map((binding) => ({
-    authorityContractId: binding.contract.id,
-    authoritySurfaceId: binding.authoritySurfaceId,
-    mirrorSurfaceIds: [...binding.mirrorSurfaceIds].sort(),
-  }));
+  return ir.state.surfaces.map((surface) => {
+    const binding = ir.state.authorityBindings.find(
+      (item) =>
+        item.authoritySurfaceId === surface.id ||
+        item.mirrorSurfaceIds.includes(surface.id),
+    );
+    const writers = [
+      ...new Set(
+        ir.state.operations
+          .filter(
+            (operation) =>
+              operation.surfaceId === surface.id &&
+              operation.operation === "write",
+          )
+          .map((operation) => operation.executionRegionId),
+      ),
+    ].sort();
+
+    return {
+      stateSurfaceId: surface.id,
+      authorityStatus:
+        binding !== undefined
+          ? "explicit-contract"
+          : writers.length === 0
+            ? "no-writer"
+            : writers.length === 1
+              ? "single-writer-observed"
+              : "multi-writer-unresolved",
+      ...(binding === undefined
+        ? {}
+        : {
+            authorityContractId: binding.contract.id,
+            authoritySurfaceId: binding.authoritySurfaceId,
+            purpose: binding.contract.purpose,
+          }),
+      mirrorSurfaceIds:
+        binding === undefined
+          ? []
+          : [...binding.mirrorSurfaceIds].sort(),
+      declaredScope:
+        binding?.contract.scope ?? "unknown",
+      observedWriterRegionIds: writers,
+    };
+  });
 }
 
 export function deriveMandatoryProgressionContracts(
@@ -223,18 +382,99 @@ export function deriveMandatoryProgressionContracts(
       node.kind === "phase" ||
       node.kind === "outcome"
     )
-    .map((node) => ({
-      subjectId: node.id,
-      kind: node.kind as "objective" | "phase" | "outcome",
-      inboundEdgeIds: intent.edges
-        .filter((edge) => edge.to === node.id)
-        .map((edge) => edge.id)
-        .sort(),
-      outboundEdgeIds: intent.edges
-        .filter((edge) => edge.from === node.id)
-        .map((edge) => edge.id)
-        .sort(),
-    }));
+    .map((node) => {
+      const inbound = intent.edges.filter(
+        (edge) =>
+          edge.to === node.id &&
+          edge.status !== "hypothesis",
+      );
+      const outbound = intent.edges.filter(
+        (edge) =>
+          edge.from === node.id &&
+          edge.status !== "hypothesis",
+      );
+      const incident = [...inbound, ...outbound];
+      const stateResourceSubjectIds = [
+        ...new Set(
+          incident.flatMap((edge) => {
+            const otherId =
+              edge.from === node.id
+                ? edge.to
+                : edge.from;
+            const other = intent.nodes.find(
+              (item) => item.id === otherId,
+            );
+            return other !== undefined &&
+              (
+                other.kind === "state" ||
+                other.kind === "resource"
+              )
+              ? [other.id]
+              : [];
+          }),
+        ),
+      ].sort();
+
+      return {
+        subjectId: node.id,
+        kind:
+          node.kind as
+            | "objective"
+            | "phase"
+            | "outcome",
+        inboundEdgeIds:
+          inbound.map((edge) => edge.id).sort(),
+        outboundEdgeIds:
+          outbound.map((edge) => edge.id).sort(),
+        entryEdgeIds:
+          inbound
+            .filter((edge) =>
+              edge.kind === "produces" ||
+              edge.kind === "transitions-to" ||
+              edge.kind === "recovers-to" ||
+              edge.kind === "participates-in"
+            )
+            .map((edge) => edge.id)
+            .sort(),
+        dependencyEdgeIds:
+          incident
+            .filter((edge) =>
+              edge.kind === "requires" ||
+              edge.kind === "valid-during" ||
+              edge.kind === "scoped-to" ||
+              edge.kind === "owns"
+            )
+            .map((edge) => edge.id)
+            .sort(),
+        stateResourceSubjectIds,
+        effectEdgeIds:
+          outbound
+            .filter((edge) =>
+              edge.kind === "produces" ||
+              edge.kind === "consumes" ||
+              edge.kind === "resets" ||
+              edge.kind === "persists"
+            )
+            .map((edge) => edge.id)
+            .sort(),
+        transitionEdgeIds:
+          outbound
+            .filter((edge) =>
+              edge.kind === "transitions-to" ||
+              edge.kind === "recovers-to"
+            )
+            .map((edge) => edge.id)
+            .sort(),
+        terminalEdgeIds:
+          incident
+            .filter((edge) =>
+              edge.kind === "wins-by" ||
+              edge.kind === "loses-by"
+            )
+            .map((edge) => edge.id)
+            .sort(),
+      };
+    });
 }
 
 export function mandatoryAuditBlockClosure(

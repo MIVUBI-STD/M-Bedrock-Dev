@@ -54,7 +54,10 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   const graph = hidden.scenarioAudit.graph;
   const scenarioClosure = hidden.scenarioAudit.closure;
   const defectResolution = hidden.scenarioAudit.defectResolution;
-  const stateRegistry = deriveMandatoryStateRegistry(semanticIr);
+  const stateRegistry = deriveMandatoryStateRegistry(
+    semanticIr,
+    world.persistence?.propertiesDetail ?? [],
+  );
   const ownershipRegistry = deriveMandatoryOwnershipRegistry(semanticIr);
   const progressionContracts = deriveMandatoryProgressionContracts(intent);
   const demanded = new Set(world.analysisDemand ?? []);
@@ -69,16 +72,28 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   const unboundedWritableStates = writableStates.filter(
     (item) =>
       item.clearRegions.length === 0 &&
-      item.authorityContractIds.length === 0,
+      item.authorityContractIds.length === 0 &&
+      item.staleRisk !== "bounded",
+  );
+  const unresolvedOwnership = ownershipRegistry.filter(
+    (item) =>
+      item.authorityStatus ===
+      "multi-writer-unresolved",
   );
   const progressionIncomplete = progressionContracts.filter(
     (item) =>
       item.kind === "objective"
         ? item.inboundEdgeIds.length === 0 ||
-          item.outboundEdgeIds.length === 0
+          (
+            item.effectEdgeIds.length === 0 &&
+            item.transitionEdgeIds.length === 0 &&
+            item.terminalEdgeIds.length === 0
+          )
         : item.kind === "outcome"
-          ? item.inboundEdgeIds.length === 0
+          ? item.inboundEdgeIds.length === 0 &&
+            item.terminalEdgeIds.length === 0
           : item.inboundEdgeIds.length === 0 &&
+            item.transitionEdgeIds.length === 0 &&
             item.outboundEdgeIds.length === 0,
   );
   const checkpoint: MandatoryAuditCheckpointReceipt[] = [];
@@ -102,6 +117,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     discovery.status === "OPEN"
       ? "OPEN"
       : discovery.status === "PARTIAL"
+        ? "PARTIAL"
+        : unresolvedOwnership.length > 0
         ? "PARTIAL"
         : "CLOSED",
     "Gameplay Discovery Closure is " + discovery.status + ".",
@@ -219,7 +236,12 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         ? "No shared/session/deferred ownership surface remains after complete discovery."
         : "Ownership applicability cannot close while discovery is incomplete."
       : "Ownership obligations are evaluated from authority bindings, arena lifecycle/isolation, and deferred ownership.",
-    ownershipRegistry.map((item) => item.authorityContractId),
+    ownershipRegistry.flatMap((item) => [
+      ...(item.authorityContractId === undefined
+        ? []
+        : [item.authorityContractId]),
+      ...item.observedWriterRegionIds,
+    ]),
     ["OwnershipRegistry"],
     {
       obligations: [
@@ -245,6 +267,18 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
             ),
           "Detected arenas require lifecycle and isolation ownership to resolve.",
           ["analysis:arena-lifecycle", "analysis:multiplayer-interleaving"],
+        ),
+        obligation(
+          "state-multi-writer-authority-resolved",
+          ownershipRegistry.some(
+            (item) =>
+              item.observedWriterRegionIds.length > 1,
+          ),
+          unresolvedOwnership.length === 0,
+          "State surfaces with multiple writer regions require explicit authority binding or remain unresolved.",
+          unresolvedOwnership.flatMap(
+            (item) => item.observedWriterRegionIds,
+          ),
         ),
         obligation(
           "deferred-ownership-accounted",
@@ -279,6 +313,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     progressionContracts.flatMap((item) => [
       ...item.inboundEdgeIds,
       ...item.outboundEdgeIds,
+      ...item.dependencyEdgeIds,
+      ...item.stateResourceSubjectIds,
     ]),
     ["ProgressionContracts"],
     {
