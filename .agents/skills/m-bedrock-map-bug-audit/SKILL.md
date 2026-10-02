@@ -84,7 +84,7 @@ Selected Map
 → reconstruct player journey
 → compile material gameplay scenarios
 → map every technical/gameplay component to a gameplay purpose
-→ build causal dependency links
+→ build Gameplay Causal Links
 → route each link to existing analyzers
 → resolve each link
 → detect missing links and orphan components
@@ -105,7 +105,7 @@ What breaks if it fails?
 What does the player experience?
 ```
 
-Every material scenario must account for its causal links. Valid causal-link states are `PROVEN`, `CONTRADICTED`, `RUNTIME_BLOCKED`, or `DETECTION_GAP`. There is no gameplay-level `checked` state.
+Every material scenario must account for its causal links. Valid Gameplay Causal Link states are `PROVEN`, `CONTRADICTED`, `RUNTIME_BLOCKED`, or `DETECTION_GAP`. There is no gameplay-level `checked` state.
 
 Gameplay Scenario Closure is:
 
@@ -113,7 +113,7 @@ Gameplay Scenario Closure is:
 - `PARTIAL` only for irreducible Minecraft runtime proof;
 - `OPEN` when a component is orphaned, a gameplay purpose is missing, a causal link is unproven, or a scenario is not bound to selected-artifact components.
 
-An OPEN execution closure forbids claims that the audit is complete.
+An OPEN Gameplay Scenario Closure forbids claims that the audit is complete.
 
 ## Gameplay audit scenario preset
 

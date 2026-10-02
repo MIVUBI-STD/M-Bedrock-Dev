@@ -39,7 +39,7 @@ export interface GameplayScenario {
   readonly purpose: string;
   readonly sourceSubjectIds: readonly string[];
   readonly componentIds: readonly string[];
-  readonly causalEdgeIds: readonly string[];
+  readonly causalLinkIds: readonly string[];
   readonly playerCounts: readonly number[];
 }
 
@@ -48,7 +48,7 @@ export interface GameplayScenarioGraph {
   readonly policy: "scenario-driven-causal-audit";
   readonly scenarios: readonly GameplayScenario[];
   readonly components: readonly GameplayScenarioComponent[];
-  readonly edges: readonly GameplayCausalLink[];
+  readonly causalLinks: readonly GameplayCausalLink[];
 }
 
 export type GameplayScenarioClosureStatus =
@@ -60,8 +60,8 @@ export interface GameplayScenarioClosure {
   readonly status: GameplayScenarioClosureStatus;
   readonly orphanComponentIds: readonly string[];
   readonly missingPurposeComponentIds: readonly string[];
-  readonly unresolvedEdgeIds: readonly string[];
-  readonly runtimeBlockedEdgeIds: readonly string[];
-  readonly detectionGapEdgeIds: readonly string[];
+  readonly unresolvedCausalLinkIds: readonly string[];
+  readonly runtimeBlockedCausalLinkIds: readonly string[];
+  readonly detectionGapCausalLinkIds: readonly string[];
   readonly reasons: readonly string[];
 }

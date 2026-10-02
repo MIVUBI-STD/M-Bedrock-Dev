@@ -55,7 +55,7 @@ export interface HiddenGameplayDefectAnalysis {
   readonly degradations:
     readonly GameplayDegradationSignal[];
   readonly auditScenarioPreset: GameplayAuditScenarioPreset;
-  readonly gameplayScenarioAnalysis: {
+  readonly scenarioAudit: {
     readonly graph: GameplayScenarioGraph;
     readonly closure: GameplayScenarioClosure;
   };
@@ -505,7 +505,7 @@ export function analyzeHiddenGameplayDefects(
     designConsistency,
     degradations,
     auditScenarioPreset,
-    gameplayScenarioAnalysis: {
+    scenarioAudit: {
       graph: scenarioGraph,
       closure: scenarioClosure,
     },
@@ -536,7 +536,7 @@ export function analyzeHiddenGameplayDefects(
       orphanGameplayComponents:
         scenarioClosure.orphanComponentIds.length,
       unresolvedCausalLinks:
-        scenarioClosure.unresolvedEdgeIds.length,
+        scenarioClosure.unresolvedCausalLinkIds.length,
     },
   };
 }
@@ -586,7 +586,7 @@ export function refreshHiddenGameplayDefectsForWorld(
     });
   const scenarioClosure =
     scenarioGraph.scenarios.length === 0
-      ? existing.gameplayScenarioAnalysis.closure
+      ? existing.scenarioAudit.closure
       : assessGameplayScenarioClosure(scenarioGraph);
 
   return {
@@ -594,9 +594,9 @@ export function refreshHiddenGameplayDefectsForWorld(
     designConsistency,
     degradations,
     auditScenarioPreset,
-    gameplayScenarioAnalysis:
+    scenarioAudit:
       scenarioGraph.scenarios.length === 0
-        ? existing.gameplayScenarioAnalysis
+        ? existing.scenarioAudit
         : {
             graph: scenarioGraph,
             closure: scenarioClosure,
@@ -616,7 +616,7 @@ export function refreshHiddenGameplayDefectsForWorld(
       unresolvedCausalLinks:
         scenarioGraph.scenarios.length === 0
           ? existing.attention.unresolvedCausalLinks
-          : scenarioClosure.unresolvedEdgeIds.length,
+          : scenarioClosure.unresolvedCausalLinkIds.length,
     },
   };
 }

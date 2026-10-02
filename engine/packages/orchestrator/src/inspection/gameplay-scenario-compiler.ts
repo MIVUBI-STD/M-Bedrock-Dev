@@ -563,7 +563,7 @@ export function compileGameplayScenarioGraph(
 
   const scenarios: GameplayScenario[] = scenarioNodes.map((node) => {
     const componentIds = relatedNodeIds(input.intent, node.id);
-    const causalEdgeIds = input.intent.edges
+    const causalLinkIds = input.intent.edges
       .filter(
         (edge) =>
           componentIds.includes(edge.from) &&
@@ -578,7 +578,7 @@ export function compileGameplayScenarioGraph(
       purpose: purposeForNode(node),
       sourceSubjectIds: [node.id],
       componentIds,
-      causalEdgeIds,
+      causalLinkIds,
       playerCounts,
     };
   });
@@ -594,7 +594,7 @@ export function compileGameplayScenarioGraph(
       purpose: presetScenario.reason,
       sourceSubjectIds: [],
       componentIds,
-      causalEdgeIds: [],
+      causalLinkIds: [],
       playerCounts:
         presetScenario.playerCount === undefined
           ? playerCounts
@@ -637,13 +637,13 @@ export function compileGameplayScenarioGraph(
   }
 
   const componentIds = new Set(components.map((component) => component.id));
-  const edges: GameplayCausalLink[] = [];
+  const causalLinks: GameplayCausalLink[] = [];
   for (const scenario of scenarios) {
     const allowed = new Set(scenario.componentIds);
     for (const edge of input.intent.edges) {
       if (!allowed.has(edge.from) || !allowed.has(edge.to)) continue;
       if (!componentIds.has(edge.from) || !componentIds.has(edge.to)) continue;
-      edges.push({
+      causalLinks.push({
         id: "edge:" + scenario.id + ":" + edge.id,
         scenarioId: scenario.id,
         fromComponentId: edge.from,
@@ -668,7 +668,7 @@ export function compileGameplayScenarioGraph(
       if (!scenario) continue;
       const anchorId = scenario.sourceSubjectIds[0];
       if (!anchorId || !componentIds.has(anchorId)) continue;
-      edges.push({
+      causalLinks.push({
         id: "edge:" + scenarioId + ":" + component.id,
         scenarioId,
         fromComponentId: component.id,
@@ -688,6 +688,6 @@ export function compileGameplayScenarioGraph(
     policy: "scenario-driven-causal-audit",
     scenarios,
     components,
-    edges,
+    causalLinks,
   };
 }

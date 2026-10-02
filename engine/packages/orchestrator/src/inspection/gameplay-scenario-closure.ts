@@ -16,17 +16,17 @@ export function assessGameplayScenarioClosure(
     .map((component) => component.id)
     .sort();
 
-  const runtimeBlockedEdgeIds = graph.edges
+  const runtimeBlockedCausalLinkIds = graph.causalLinks
     .filter((edge) => edge.status === "RUNTIME_BLOCKED")
     .map((edge) => edge.id)
     .sort();
 
-  const detectionGapEdgeIds = graph.edges
+  const detectionGapCausalLinkIds = graph.causalLinks
     .filter((edge) => edge.status === "DETECTION_GAP")
     .map((edge) => edge.id)
     .sort();
 
-  const unresolvedEdgeIds = graph.edges
+  const unresolvedCausalLinkIds = graph.causalLinks
     .filter(
       (edge) =>
         edge.status === "RUNTIME_BLOCKED" ||
@@ -56,10 +56,10 @@ export function assessGameplayScenarioClosure(
       missingPurposeComponentIds.join(", ") + ".",
     );
   }
-  if (detectionGapEdgeIds.length > 0) {
+  if (detectionGapCausalLinkIds.length > 0) {
     reasons.push(
       "Causal gameplay links remain unproven and require detection work: " +
-      detectionGapEdgeIds.join(", ") + ".",
+      detectionGapCausalLinkIds.join(", ") + ".",
     );
   }
   if (scenarioWithoutComponents.length > 0) {
@@ -68,7 +68,7 @@ export function assessGameplayScenarioClosure(
       scenarioWithoutComponents.join(", ") + ".",
     );
   }
-  if (runtimeBlockedEdgeIds.length > 0) {
+  if (runtimeBlockedCausalLinkIds.length > 0) {
     reasons.push(
       "Some causal links require irreducible Minecraft runtime proof.",
     );
@@ -78,10 +78,10 @@ export function assessGameplayScenarioClosure(
     graph.scenarios.length === 0 ||
     orphanComponentIds.length > 0 ||
     missingPurposeComponentIds.length > 0 ||
-    detectionGapEdgeIds.length > 0 ||
+    detectionGapCausalLinkIds.length > 0 ||
     scenarioWithoutComponents.length > 0
       ? "OPEN" as const
-      : runtimeBlockedEdgeIds.length > 0
+      : runtimeBlockedCausalLinkIds.length > 0
         ? "PARTIAL" as const
         : "CLOSED" as const;
 
@@ -95,9 +95,9 @@ export function assessGameplayScenarioClosure(
     status,
     orphanComponentIds,
     missingPurposeComponentIds,
-    unresolvedEdgeIds,
-    runtimeBlockedEdgeIds,
-    detectionGapEdgeIds,
+    unresolvedCausalLinkIds,
+    runtimeBlockedCausalLinkIds,
+    detectionGapCausalLinkIds,
     reasons,
   };
 }
