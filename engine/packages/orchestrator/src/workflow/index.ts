@@ -16,3 +16,4 @@ export * from "./zero-waste-benchmark.js";
 export * from "./zero-waste-execution-receipt.js";
 export * from "./zero-waste-execution-summary.js";
 export * from "./zero-waste-workflow.js";
+export * from "./map-audit-session-projection.js";
