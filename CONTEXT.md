@@ -140,7 +140,7 @@ interface presentation             → apps/*
 
 ## Current phase
 
-Repository foundation, domain-intelligence layers, repair routing, and domain-aware affected planning exist. The active lane is design-first workflow hardening: authoritative Game Design → scoped Gameplay Contract → candidate discovery → chat-approved bug → preservation-bound repair.
+Repository foundation, domain-intelligence layers, repair routing, first-pass gameplay discovery/closure, risk-directed diagnosis, reachability/capability exposure, contradiction consolidation, and production bug-report presentation are implemented. The active operational lane is real-map usage and calibration against selected current map artifacts; new framework work should be driven only by proven Detection Gaps or repeated production bottlenecks.
 
 Current continuation: `docs/07-operations/next-action.md`.
 Current proof state: `docs/07-operations/current-validation.md`.
