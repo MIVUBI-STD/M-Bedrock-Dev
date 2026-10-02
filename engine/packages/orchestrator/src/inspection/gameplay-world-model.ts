@@ -76,6 +76,9 @@ import type {
 import type {
   PersistenceSourceAnalysis,
 } from "../persistence-source-analysis.js";
+import {
+  discoverGameplaySurfaces,
+} from "./gameplay-surface-discovery.js";
 
 export interface GameplayWorldSubjectSummary {
   kind: GameplayIntentNodeKind;
@@ -426,6 +429,18 @@ export function deriveGameplayWorldModel(
     source.arena.autoDetected ||
     arenaCount !== undefined;
   if (arenaDetected) {
+    runtimeSurfaces.push({
+      id: "runtime:arena",
+      label: "Arena system",
+      kind: "runtime-domain",
+      status: "understood",
+      material: true,
+      boundaries:
+        arenaCount === undefined
+          ? []
+          : ["visibleArenaCount=" + arenaCount],
+    });
+
     const requested =
       source.arena.capacity?.evidence
         .requestedConcurrentArenas;
@@ -435,6 +450,14 @@ export function deriveGameplayWorldModel(
     const unresolvedCapacity =
       source.arena.capacity === undefined ||
       source.arena.capacity.evidence.arenaCountConflict ||
+      (
+        arenaCount !== undefined &&
+        arenaCount > 1 &&
+        (
+          source.arena.capacity.report === undefined ||
+          source.arena.capacity.report.safeConcurrentArenas === null
+        )
+      ) ||
       (
         source.arena.capacity.evidence
           .scriptTickingAreaManagerReferenced &&
@@ -467,6 +490,58 @@ export function deriveGameplayWorldModel(
           ? []
           : ["safeConcurrentArenas=" + safe]),
       ],
+    });
+  }
+
+  if (source.arena.lifecycle !== undefined) {
+    runtimeSurfaces.push({
+      id: "runtime:arena-lifecycle",
+      label: "Arena lifecycle",
+      kind: "runtime-domain",
+      status:
+        source.arena.lifecycle.unresolved > 0
+          ? "unknown"
+          : "understood",
+      material: true,
+      ...(source.arena.lifecycle.unresolved > 0
+        ? { reason: "Arena lifecycle has unresolved terminal/transition evidence." }
+        : {}),
+    });
+  }
+
+  if (source.arena.cleanupSurfaces !== undefined) {
+    const unresolved =
+      source.arena.cleanupSurfaces.unresolved > 0 ||
+      (source.arena.cleanupSurfaces.ledger?.missing ?? 0) > 0;
+    runtimeSurfaces.push({
+      id: "runtime:arena-cleanup",
+      label: "Arena cleanup and reuse",
+      kind: "runtime-domain",
+      status: unresolved ? "unknown" : "understood",
+      material: true,
+      ...(unresolved
+        ? { reason: "Arena cleanup/reuse coverage is incomplete." }
+        : {}),
+    });
+  }
+
+  if (source.arena.stateIsolation !== undefined) {
+    runtimeSurfaces.push({
+      id: "runtime:arena-isolation",
+      label: "Arena state isolation",
+      kind: "runtime-domain",
+      status:
+        source.arena.stateIsolation.unknown > 0 ||
+        source.arena.stateIsolation.partitionProofRequired > 0
+          ? "unknown"
+          : "understood",
+      material: true,
+      ...(
+        source.arena.stateIsolation.unknown > 0 ||
+        source.arena.stateIsolation.partitionProofRequired > 0
+          ? { reason: "Arena isolation still requires unresolved partition proof." }
+          : {}
+      ),
     });
   }
 
@@ -598,6 +673,43 @@ export function deriveGameplayWorldModel(
     });
   }
 
+  const stateEvidence =
+    source.semanticIr.stateSurfaces > 0 ||
+    source.semanticIr.stateOperations > 0;
+  if (stateEvidence) {
+    runtimeSurfaces.push({
+      id: "runtime:state",
+      label: "Gameplay state authority",
+      kind: "runtime-domain",
+      status: "understood",
+      material: true,
+    });
+  }
+
+  const chunkEvidence =
+    source.chunkLifecycle !== undefined &&
+    (
+      source.chunkLifecycle.worldLoadObservers > 0 ||
+      source.chunkLifecycle.entityLoadObservers > 0 ||
+      source.chunkLifecycle.tickingAreaAcquires > 0 ||
+      source.chunkLifecycle.readinessProbes > 0
+    );
+  if (chunkEvidence) {
+    runtimeSurfaces.push({
+      id: "runtime:chunks",
+      label: "Chunk and residency lifecycle",
+      kind: "runtime-domain",
+      status:
+        source.chunkLifecycle?.entityResidencyObservability === "absent"
+          ? "unknown"
+          : "understood",
+      material: true,
+      ...(source.chunkLifecycle?.entityResidencyObservability === "absent"
+        ? { reason: "Chunk/entity residency is gameplay-relevant but observability is absent." }
+        : {}),
+    });
+  }
+
   const intentSurfaces =
     buildIntentClosureSurfaces(source.intent);
   const closureSurfaces = [
@@ -639,10 +751,38 @@ export function deriveGameplayWorldModel(
         .requestedConcurrentArenas !== undefined
     );
 
+  const discovery = discoverGameplaySurfaces({
+    intentSubjectIds:
+      source.intent.nodes.map((node) => node.id),
+    arenaDetected,
+    arenaCapacityEvidence:
+      source.arena.capacity !== undefined ||
+      arenaCount !== undefined,
+    arenaLifecycleEvidence:
+      source.arena.lifecycle !== undefined,
+    arenaCleanupEvidence:
+      source.arena.cleanupSurfaces !== undefined,
+    arenaIsolationEvidence:
+      source.arena.stateIsolation !== undefined ||
+      source.arena.globalState !== undefined,
+    stateEvidence,
+    chunkEvidence,
+    persistenceEvidence: persistenceApplicable,
+    economyEvidence: economyApplicable,
+    combatEvidence: combatApplicable,
+    inventoryEvidence: inventoryApplicable,
+    spatialEvidence: spatialApplicable,
+    structureEvidence:
+      source.structures.definitions > 0 ||
+      source.structures.loads > 0 ||
+      source.structures.runtimeLogicLoads > 0,
+    entityEvidence:
+      source.entities.definitions > 0,
+  });
+
   const gameplayClosure =
     assessGameplayModelClosure({
-      discoveredSurfaceIds:
-        closureSurfaces.map((surface) => surface.id),
+      discoveredSurfaceIds: discovery.surfaceIds,
       surfaces: closureSurfaces,
       stateModelComplete,
       boundariesExtracted,
