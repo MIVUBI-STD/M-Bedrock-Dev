@@ -358,3 +358,8 @@ The audit may stop only when:
 ```
 
 Do not use analyzer execution count, surface `checked` state, or a broad tester validation list as completion evidence.
+
+
+## Defect narrative binding
+
+After `CONFIRMED_DEFECT_READY`, AI candidates must preserve the exact `expectedOutcome` and `actualOutcome` from Defect Resolution. Presentation may be improved, but factual Expected/Actual cannot drift. Multiple ready links with different factual narratives cannot be collapsed into one candidate before ConfirmedDefect grouping.

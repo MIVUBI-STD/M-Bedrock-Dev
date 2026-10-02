@@ -270,3 +270,8 @@ Do not create duplicate roadmaps, state systems, architecture summaries, or proo
 ## STOP
 
 Completion is terminal. Do not automatically expand scope, add adjacent cleanup, create proof-of-proof, or resume deferred local/runtime work after the requested outcome is satisfied.
+
+
+### Defect narrative immutability
+
+For AI-origin production findings, Defect Resolution owns the factual Expected and Actual/Observed core. Report candidates may improve title/problem/presentation and classification, but must not rewrite those facts. A candidate spanning multiple ready causal links with different Expected/Actual narratives must remain split until canonical ConfirmedDefect root-cause grouping resolves them.

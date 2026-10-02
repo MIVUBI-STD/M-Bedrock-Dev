@@ -1154,6 +1154,122 @@ export function gameplayDefectResolutionPublicationIssues(
   }];
 }
 
+export function gameplayDefectCandidateNarrativeIssues(
+  gate: GameplayDefectResolutionGate | undefined,
+  candidates: readonly AuditReportCandidate[],
+): readonly {
+  code: "invalid-confirmed-defect";
+  message: string;
+}[] {
+  if (gate === undefined) return [];
+
+  const byLink = new Map(
+    gate.resolutions.map((resolution) => [
+      resolution.causalLinkId,
+      resolution,
+    ]),
+  );
+  const issues: {
+    code: "invalid-confirmed-defect";
+    message: string;
+  }[] = [];
+
+  for (const candidate of candidates) {
+    if (candidate.route === "tester") continue;
+
+    const linkIds = [
+      ...new Set([
+        ...(candidate.scenarioCausalLinkIds ?? []),
+        ...(candidate.scenarioCausalLinkId === undefined
+          ? []
+          : [candidate.scenarioCausalLinkId]),
+      ]),
+    ].sort();
+    if (linkIds.length === 0) continue;
+
+    const resolutions = linkIds
+      .map((id) => byLink.get(id))
+      .filter(
+        (item): item is NonNullable<typeof item> =>
+          item !== undefined &&
+          item.disposition === "CONFIRMED_DEFECT_READY",
+      );
+
+    if (resolutions.length !== linkIds.length) {
+      continue;
+    }
+
+    const expected = [
+      ...new Set(
+        resolutions
+          .map((item) => item.expectedOutcome?.trim())
+          .filter(
+            (value): value is string =>
+              typeof value === "string" &&
+              value.length > 0,
+          ),
+      ),
+    ];
+    const actual = [
+      ...new Set(
+        resolutions
+          .map((item) => item.actualOutcome?.trim())
+          .filter(
+            (value): value is string =>
+              typeof value === "string" &&
+              value.length > 0,
+          ),
+      ),
+    ];
+
+    if (
+      expected.length === 1 &&
+      candidate.defect.expectedStatement.trim() !==
+        expected[0]
+    ) {
+      issues.push({
+        code: "invalid-confirmed-defect",
+        message:
+          "AI report candidate changed Expected behavior after Defect Resolution. " +
+          "Expected must remain exactly bound to the CONFIRMED_DEFECT_READY resolution for causal link(s): " +
+          linkIds.join(", ") +
+          ".",
+      });
+    }
+
+    if (
+      actual.length === 1 &&
+      candidate.defect.observedStatement.trim() !==
+        actual[0]
+    ) {
+      issues.push({
+        code: "invalid-confirmed-defect",
+        message:
+          "AI report candidate changed Actual/Observed behavior after Defect Resolution. " +
+          "Observed must remain exactly bound to the CONFIRMED_DEFECT_READY resolution for causal link(s): " +
+          linkIds.join(", ") +
+          ".",
+      });
+    }
+
+    if (
+      linkIds.length > 1 &&
+      (expected.length > 1 || actual.length > 1)
+    ) {
+      issues.push({
+        code: "invalid-confirmed-defect",
+        message:
+          "One AI report candidate combines ready causal links with different Expected/Actual narratives. " +
+          "Keep them split until ConfirmedDefect root-cause grouping resolves them canonically: " +
+          linkIds.join(", ") +
+          ".",
+      });
+    }
+  }
+
+  return issues;
+}
+
 export function gameplayDefectCandidateCoverageIssues(
   gate: GameplayDefectResolutionGate | undefined,
   candidates: readonly AuditReportCandidate[],
@@ -1358,6 +1474,10 @@ export function prepareBugReportReviewFromAuditCandidates(
       input.gameplayDefectResolution,
       input.candidates,
     ),
+    ...gameplayDefectCandidateNarrativeIssues(
+      input.gameplayDefectResolution,
+      input.candidates,
+    ),
   ];
 
   if (closureIssues.length > 0) {
@@ -1458,6 +1578,10 @@ export function buildBugReportFromAuditCandidates(
         issue.message,
     })),
     ...gameplayDefectCandidateCoverageIssues(
+      input.gameplayDefectResolution,
+      input.candidates,
+    ),
+    ...gameplayDefectCandidateNarrativeIssues(
       input.gameplayDefectResolution,
       input.candidates,
     ),

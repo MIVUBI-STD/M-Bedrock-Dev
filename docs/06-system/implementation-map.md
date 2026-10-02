@@ -72,6 +72,7 @@ Use this before broad repository search.
 | Deterministic CONFIRMED_DEFECT_READY → AI defect projection | engine/packages/orchestrator/src/map-audit-defect-projection.ts |
 | Conservative deterministic AI root-cause grouping | engine/packages/orchestrator/src/map-audit-root-cause.ts |
 | Bounded counter-proof search receipt / confirmed-defect admission | engine/packages/orchestrator/src/inspection/gameplay-defect-resolution.ts |
+| AI candidate Expected/Actual narrative binding to ready resolutions | engine/packages/orchestrator/src/reporting/report-defect-collector.ts |
 | Audit snapshot revision / stale model-result + review/report rejection | engine/packages/orchestrator/src/map-audit-revision.ts + map-audit-pipeline.ts |
 | Preflight → final RIG knowledge-demand fixed point | engine/packages/orchestrator/src/map-audit-demand-reconciliation.ts + inspection/preflight-knowledge-demand.ts |
 | Audit-authoritative Work Session projection | engine/packages/orchestrator/src/workflow/map-audit-work-session.ts + engine/packages/project-model/src/session/work-session.ts |
