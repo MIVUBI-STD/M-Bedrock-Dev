@@ -77,7 +77,10 @@ const DOMAIN_DEPENDENCIES: Readonly<Partial<Record<
     "arena-lifecycle",
   ],
   "chunk-simulation": ["state-flow"],
-  "entity-behavior": ["state-flow"],
+  "entity-behavior": [
+    "state-flow",
+    "chunk-simulation",
+  ],
   "combat-lifecycle": [
     "state-flow",
     "entity-behavior",

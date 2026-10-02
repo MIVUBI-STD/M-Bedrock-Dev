@@ -80,6 +80,7 @@ export interface HiddenGameplayDefectAnalysis {
     readonly runtimeProofResidue: number;
     readonly missingRequiredKnowledge: number;
     readonly knowledgeCapabilityGaps: number;
+    readonly prerequisiteBlockedKnowledge: number;
   };
 }
 
@@ -566,6 +567,8 @@ export function analyzeHiddenGameplayDefects(
         scenarioClosure.missingRequiredKnowledgeIds.length,
       knowledgeCapabilityGaps:
         scenarioClosure.capabilityGapKnowledgeIds.length,
+      prerequisiteBlockedKnowledge:
+        scenarioClosure.prerequisiteBlockedKnowledgeIds.length,
     },
   };
 }
@@ -661,6 +664,8 @@ export function refreshHiddenGameplayDefectsForWorld(
         scenarioClosure.missingRequiredKnowledgeIds.length,
       knowledgeCapabilityGaps:
         scenarioClosure.capabilityGapKnowledgeIds.length,
+      prerequisiteBlockedKnowledge:
+        scenarioClosure.prerequisiteBlockedKnowledgeIds.length,
     },
   };
 }
