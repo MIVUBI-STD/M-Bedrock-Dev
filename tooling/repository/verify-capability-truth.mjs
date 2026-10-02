@@ -101,6 +101,7 @@ for(const item of data.taskCapabilities??[]){
   if(!["declared-only","implementation-present","owner-tested"].includes(item.status)) errors.push("invalid capability status: "+item.id);
   if(typeof item.owner!=="string"||!item.owner.trim()) errors.push("missing owner: "+item.id);
   if(!item.proofBinding || !["bound","unbound"].includes(item.proofBinding.state)) errors.push("invalid proofBinding state: "+item.id);
+  if(item.proofBinding?.state!=="bound") errors.push("production task capability lacks capability-specific proof binding: "+item.id);
   if(item.proofBinding?.state==="bound"){
     if(!Array.isArray(item.proofBinding.paths)||item.proofBinding.paths.length===0) errors.push("bound capability requires proof paths: "+item.id);
   }
