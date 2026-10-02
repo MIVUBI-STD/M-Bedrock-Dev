@@ -8,6 +8,9 @@ Final review before a gameplay bug report is considered ready.
 
 - [ ] Selected world version is defined.
 - [ ] Gameplay Surface Inventory completed.
+- [ ] Gameplay Discovery Closure is COMPLETE or scoped-safe PARTIAL.
+- [ ] Relevant source parse/index failures are zero or explicitly blocked.
+- [ ] Discovery Closure OPEN blocks comprehensive review/publication.
 - [ ] Every discovered gameplay surface is understood, blocked, unknown, or not-applicable.
 - [ ] No discovered surface is unaccounted.
 - [ ] Major state model includes happy, failure, retry, recovery, disconnect/reconnect, cleanup, and reuse exits.
