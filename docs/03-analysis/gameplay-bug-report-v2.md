@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Canonical production-facing bug report contract for Minecraft map audits. Reports follow player gameplay flow, not implementation discovery order.
+Canonical persisted bug-report contract for approved confirmed Minecraft map defects. It is a downstream communication/repair state, not the full audit model.
 
 This file owns report semantics. Rendering details belong in `templates/bug-report-v2-html-layout.md`. Machine validation belongs in `.agents/schemas/map-audit-output-v2.schema.json`.
 
@@ -23,13 +23,16 @@ Needs Validation, Ambiguous, and Detection Gap items belong to Map Audit Output 
 
 ## Overview
 
-Record:
+Persisted report map metadata records:
 
-- World
-- Version
-- selected artifact
-- audit mode: selected-map-version-only
-- proof ceiling
+- Map Name
+- Map Version
+- Map Drive
+- Base Version
+- Tested Version
+- Repair By
+
+Selected-artifact scope, proof ceiling, unresolved findings, and coverage remain upstream audit evidence unless explicitly added to the persisted Bug Report V2 schema.
 
 ## Canonical bug record
 
@@ -97,7 +100,17 @@ Implementation details remain in Evidence, not reproduction steps.
 
 ## Ordering rule
 
-Findings are ordered by gameplay journey. Technical discovery order must not determine report order.
+Technical discovery order must never determine presentation order.
+
+When canonical gameplay-flow ordering metadata exists, use gameplay journey first.
+
+Until Bug Report V2 persists such metadata, use the deterministic fallback:
+
+```text
+Blocker → Major → Minor → Bug ID
+```
+
+Do not infer flow order from category, title, or implementation location.
 
 
 ## Complex finding depth
