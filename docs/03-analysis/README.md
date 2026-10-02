@@ -11,6 +11,7 @@ For Minecraft world bug audits, start from the selected world version and build 
 ```text
 Selected World Version
 → Multi-source Gameplay Surface Inventory
+→ Gameplay Discovery Closure
 → Game Design Reconstruction
 → Gameplay Flow + Per-State Closure
 → Reset / Preserve / Progression Rules
