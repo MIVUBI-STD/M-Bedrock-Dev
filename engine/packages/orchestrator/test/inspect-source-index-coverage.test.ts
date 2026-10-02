@@ -233,6 +233,51 @@ describe("inspection source index coverage", () => {
     }
   });
 
+  it("does not classify resource-pack client item JSON as gameplay residue", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "m-bedrock-index-"),
+    );
+
+    try {
+      await mkdir(
+        join(root, "resource_packs", "visual", "items"),
+        { recursive: true },
+      );
+      await writeFile(
+        join(
+          root,
+          "resource_packs",
+          "visual",
+          "items",
+          "client.json",
+        ),
+        JSON.stringify({}),
+        "utf8",
+      );
+
+      const result =
+        await indexInspectionSources(
+          root,
+          "artifact:test",
+          [{
+            relativePath:
+              "resource_packs/visual/items/client.json",
+            size: 2,
+            contentHash: "client-item",
+          }],
+        );
+
+      expect(
+        result.coverage.unsupportedRelevantFiles,
+      ).toEqual([]);
+    } finally {
+      await rm(root, {
+        recursive: true,
+        force: true,
+      });
+    }
+  });
+
   it("reports complete coverage for fully indexed recognized sources", async () => {
     const root = await mkdtemp(
       join(tmpdir(), "m-bedrock-index-"),
