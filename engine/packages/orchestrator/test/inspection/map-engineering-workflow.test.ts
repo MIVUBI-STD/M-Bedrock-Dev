@@ -12,6 +12,16 @@ function baseSource() {
       educationFeatures: "unknown",
     },
     gameplaySemantic: {
+      gameplayClosure: {
+        status: "CLOSED",
+        surfaces: [],
+        unaccountedSurfaceIds: [],
+        blockingSurfaceIds: [],
+        unknownSurfaceIds: [],
+        stateModelComplete: true,
+        boundariesExtracted: true,
+        reasons: [],
+      },
       intent: {
         unknowns: [],
       },
@@ -55,6 +65,7 @@ describe("map engineering workflow projection", () => {
       criticalDiagnostics: 0,
       unresolvedReferences: 0,
       contractUnknowns: 0,
+      gameplayClosure: "CLOSED",
       evidenceRecoveryActions: 0,
       repairProposals: 0,
     });
@@ -77,6 +88,34 @@ describe("map engineering workflow projection", () => {
     expect(
       workflow.attention.unresolvedReferences,
     ).toBe(2);
+  });
+
+  it("blocks understanding and release while gameplay closure is OPEN", () => {
+    const source = {
+      ...baseSource(),
+      gameplaySemantic: {
+        ...baseSource().gameplaySemantic,
+        gameplayClosure: {
+          ...baseSource().gameplaySemantic.gameplayClosure,
+          status: "OPEN",
+          unaccountedSurfaceIds: ["runtime:arena-capacity"],
+          stateModelComplete: false,
+        },
+      },
+    } as any;
+
+    const workflow = buildMapEngineeringWorkflow(source);
+
+    expect(
+      workflow.stages.find(
+        (item) => item.id === "understand",
+      )?.status,
+    ).toBe("blocked");
+    expect(
+      workflow.stages.find(
+        (item) => item.id === "release",
+      )?.status,
+    ).toBe("blocked");
   });
 
   it("keeps release blocked while critical diagnostics remain", () => {
