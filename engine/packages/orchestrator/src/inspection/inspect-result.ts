@@ -399,6 +399,9 @@ export function buildInspectionResult(
       sourceParseFailures:
         input.sourceIndex.coverage
           .parseFailures.length,
+      unsupportedRelevantSources:
+        input.sourceIndex.coverage
+          .unsupportedRelevantFiles.length,
       unresolvedReferences:
         discoveryUnresolvedReferences,
     });
