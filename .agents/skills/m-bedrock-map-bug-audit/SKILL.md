@@ -41,6 +41,8 @@ Required references:
 - `references/multi-arena-contract.md`
 - `references/bug-report-contract.md`
 - `../../../docs/03-analysis/gameplay-audit-blind-spots.md`
+- `../../../docs/03-analysis/cross-system-interaction-audit.md`
+- `../../../docs/03-analysis/audit-finalization-checklist.md`
 - `../../schemas/map-audit-output-v2.schema.json`
 
 ## Gameplay Contract
@@ -115,7 +117,7 @@ Do not expose implementation details as reproduction steps.
 
 ```text
 Detected Issue Set
-→ confirmed | needs-validation | ambiguous
+→ confirmed | needs-validation | ambiguous | detection-gap
 → Approved Bug Set
 → Bug Report V2
 ```
@@ -146,7 +148,10 @@ Stop when:
 ✓ Reset/progression rules known
 ✓ Multi Arena reviewed
 ✓ Blind-spot surfaces reviewed
+✓ Cross-system interactions reviewed
 ✓ Capacity / recovery / boundary cases reviewed when applicable
+✓ Every applicable coverage surface accounted as checked / blocked / not-applicable
+✓ Unsupported surfaces recorded as Detection Gap
 ✓ Issues classified
 ✓ Production report generated
 ```
