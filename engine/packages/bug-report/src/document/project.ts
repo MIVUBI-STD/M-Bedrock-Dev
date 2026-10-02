@@ -60,8 +60,18 @@ function projectIssue(
     category: bug.category,
     foundBy: bug.foundBy,
     title: bug.title,
-    issue: bug.problem,
-    reproduction: [...(bug.reproduction ?? [])],
+    issue: [
+      bug.problem,
+      ...(bug.reproduction?.length
+        ? [
+            "How it happens: " +
+              bug.reproduction.join(" → "),
+          ]
+        : []),
+    ].join(" "),
+    reproduction: [
+      bug.id + " — " + bug.title,
+    ],
     observed: bug.observed,
     expected: bug.expected,
     ...(bug.suggestedFix === undefined
@@ -88,12 +98,7 @@ function projectIssue(
           mustPreserve:
             bug.mustPreserve,
         }),
-    workChecklist: [
-      "Reproduce issue",
-      "Apply or confirm fix",
-      "Retest expected behavior",
-      "Confirm no regression",
-    ],
+    workChecklist: [],
   };
 }
 

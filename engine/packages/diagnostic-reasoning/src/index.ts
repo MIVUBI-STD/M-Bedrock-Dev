@@ -19,6 +19,7 @@ export * from "./temporal-risk.js";
 export * from "./design-consistency.js";
 export * from "./engineering-analysis.js";
 export * from "./gameplay-degradation.js";
+export * from "./gameplay-simulation-preset.js";
 export * from "./reachability-graph.js";
 export * from "./capability-exposure.js";
 export * from "./contradiction-registry.js";

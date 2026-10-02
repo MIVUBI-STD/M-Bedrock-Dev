@@ -73,6 +73,44 @@ If expected behavior cannot be grounded from the selected artifact, keep it unkn
 
 Bug discovery starts only after Gameplay Model Closure is CLOSED or PARTIAL. OPEN closure forbids comprehensive bug claims and finalization.
 
+## Gameplay simulation preset
+
+Before contradiction analysis, derive one reusable scenario preset from the selected map's own gameplay model. The preset is mandatory audit input, not a manual test matrix.
+
+Always model the full journey:
+
+```text
+Entry → Join → Start → Preparation → Gameplay → Objective
+→ Success/Failure → Transition → Final Result → Cleanup → Replay
+```
+
+Add only relevant scenario families:
+
+- solo, two-player, maximum-party, and maximum+1 admission boundaries;
+- simultaneous player actions and one-player-leaves-while-others-continue;
+- multi-arena parallel start, capacity+1, isolation, cleanup, and reuse;
+- disconnect/reconnect at materially different gameplay states;
+- reload/recovery where persisted gameplay exists;
+- deferred callbacks that can outlive player/session/arena ownership;
+- first/final/max boundaries for levels, waves, retries, objectives, or timers;
+- terminal collisions such as victory × timeout, defeat × respawn, or cleanup × pending work;
+- complete second run after cleanup.
+
+The engine-owned preset is `buildGameplaySimulationPreset()` in diagnostic reasoning and is surfaced by Hidden Gameplay Defect Analysis. Do not replace it with an exhaustive tester checklist.
+
+Every scenario is static-first:
+
+```text
+scenario
+→ dependency chain
+→ owner/state transition
+→ contradiction or counter-proof
+→ player-visible result
+→ runtime confirmation only if Minecraft simulation is irreducible
+```
+
+A plausible explanation is not counter-proof. Counter-evidence may suppress a candidate only when it demonstrates a reachable guard/owner that deterministically prevents the wrong state.
+
 ## Single-pass audit discipline
 
 Default behavior is one comprehensive discovery pass before reporting.
@@ -144,6 +182,8 @@ Tester instructions use player language:
 - Wave
 - Arena
 - Enemy
+
+Reproduction is explanatory evidence, not a checkbox procedure. In HTML, one issue equals one checklist item. Setup/reproduction steps remain readable scenario detail and must not become individual checkboxes.
 
 Do not expose implementation details as reproduction steps.
 

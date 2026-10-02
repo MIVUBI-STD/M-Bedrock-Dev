@@ -6,12 +6,14 @@ import {
   type MechanicCompletenessResult,
 } from "../../../gameplay-intent/src/index.js";
 import {
+  buildGameplaySimulationPreset,
   detectGameplayDegradation,
   findDesignConsistencyAnomalies,
   findNegativeSpace,
   prioritizeTemporalInteraction,
   type DesignConsistencyAnomaly,
   type GameplayDegradationSignal,
+  type GameplaySimulationPreset,
   type NegativeSpaceSignal,
   type TemporalInteractionRisk,
 } from "../../../diagnostic-reasoning/src/index.js";
@@ -42,6 +44,7 @@ export interface HiddenGameplayDefectAnalysis {
     readonly DesignConsistencyAnomaly[];
   readonly degradations:
     readonly GameplayDegradationSignal[];
+  readonly simulationPreset: GameplaySimulationPreset;
   readonly attention: {
     readonly implementationOnlyIntent: number;
     readonly incompleteMechanics: number;
@@ -49,6 +52,7 @@ export interface HiddenGameplayDefectAnalysis {
     readonly highTemporalRisks: number;
     readonly designAnomalies: number;
     readonly silentDegradations: number;
+    readonly mandatorySimulationScenarios: number;
   };
 }
 
@@ -413,6 +417,37 @@ function degradationFromWorld(
   return output;
 }
 
+function simulationPresetFromModel(
+  input: {
+    readonly semanticIr: SemanticIr;
+    readonly world: GameplayWorldModel;
+  },
+): GameplaySimulationPreset {
+  const deferredWork =
+    input.semanticIr.temporal.relations.some(
+      (relation) =>
+        relation.kind === "deferred" ||
+        relation.guardEvidence === "unresolved",
+    );
+
+  return buildGameplaySimulationPreset({
+    arenaCount: input.world.arenas.count,
+    concurrentArenaLimit:
+      input.world.arenas.safeConcurrentArenas ??
+      input.world.arenas.declaredConcurrentArenaLimit,
+    maxPartySize:
+      input.world.arenas.perArenaPlayerCapacity,
+    hasMultiArena:
+      input.world.arenas.detected &&
+      (input.world.arenas.count ?? 0) > 1,
+    hasPersistence:
+      input.world.persistence !== undefined,
+    hasDeferredWork: deferredWork,
+    hasRepeatedRunSurface:
+      input.world.arenas.detected,
+  });
+}
+
 export function analyzeHiddenGameplayDefects(
   input: {
     readonly intent: GameplayIntentModel;
@@ -432,6 +467,8 @@ export function analyzeHiddenGameplayDefects(
     consistencyFromWorld(input.world);
   const degradations =
     degradationFromWorld(input.world);
+  const simulationPreset =
+    simulationPresetFromModel(input);
 
   return {
     schemaVersion: 1,
@@ -441,6 +478,7 @@ export function analyzeHiddenGameplayDefects(
     temporalRisks,
     designConsistency,
     degradations,
+    simulationPreset,
     attention: {
       implementationOnlyIntent:
         designIntentChallenges.filter(
@@ -463,6 +501,8 @@ export function analyzeHiddenGameplayDefects(
         designConsistency.length,
       silentDegradations:
         degradations.length,
+      mandatorySimulationScenarios:
+        simulationPreset.scenarios.length,
     },
   };
 }
@@ -475,17 +515,40 @@ export function refreshHiddenGameplayDefectsForWorld(
     consistencyFromWorld(world);
   const degradations =
     degradationFromWorld(world);
+  const simulationPreset =
+    buildGameplaySimulationPreset({
+      arenaCount: world.arenas.count,
+      concurrentArenaLimit:
+        world.arenas.safeConcurrentArenas ??
+        world.arenas.declaredConcurrentArenaLimit,
+      maxPartySize:
+        world.arenas.perArenaPlayerCapacity,
+      hasMultiArena:
+        world.arenas.detected &&
+        (world.arenas.count ?? 0) > 1,
+      hasPersistence:
+        world.persistence !== undefined,
+      hasDeferredWork:
+        existing.simulationPreset.scenarios.some(
+          (scenario) => scenario.kind === "deferred-ownership",
+        ),
+      hasRepeatedRunSurface:
+        world.arenas.detected,
+    });
 
   return {
     ...existing,
     designConsistency,
     degradations,
+    simulationPreset,
     attention: {
       ...existing.attention,
       designAnomalies:
         designConsistency.length,
       silentDegradations:
         degradations.length,
+      mandatorySimulationScenarios:
+        simulationPreset.scenarios.length,
     },
   };
 }
