@@ -1,7 +1,8 @@
 # Current Validation
 
-Snapshot date: 2026-10-02
+Snapshot date: 2026-10-02  
 Branch: `Local`
+
 ## Historical integrated proof
 
 The last retained integrated verification remains:
@@ -20,48 +21,95 @@ That historical run does **not** verify the current source state.
 
 ## Current-head static implementation state
 
-`Local` now includes, but has not been CI/local/runtime verified in this work session:
+Current `Local` now has one production map-audit entry and one ordered authority path:
 
-- selected-map-version-only gameplay authority;
-- multi-source gameplay surface discovery from scripts/functions/entities/structures/dialogue/localized text;
-- Gameplay Discovery Closure;
-- Gameplay Model Closure + per-state closure + boundary registry;
-- hidden-defect reasoning, negative space, temporal risk, silent degradation, and design-consistency checks;
-- generic reachability and sensitive capability exposure reasoning;
-- arena capacity/concurrency and replica-integrity proof escalation;
-- risk-directed proof-depth prioritization;
-- contradiction registry, exact-work deduplication, and early confirmation/counter-evidence gate;
-- engineering analysis for complex confirmed findings;
-- closure-gated Proposed Bug review and Bug Report V2 publication;
-- compact ChatGPT/Markdown preview with tester/work checklists;
-- client HTML dashboard, checklists, technical detail, and print-aware presentation;
-- updated audit routing, usage scenarios, finalization checklist, and implementation ownership map.
+```text
+audit <selected-map>
+→ runSelectedMapAudit()
+→ TARGET
+→ DISCOVERY
+→ UNDERSTAND
+→ MODEL
+→ STRESS
+→ PROVE
+→ REPORT
+```
 
-Repository-level static review performed during this session confirmed the current source wiring and JSON schema parseability for the touched audit/report paths. This is not a substitute for TypeScript execution, test execution, CI, package proof, or Minecraft runtime proof.
+Current static/source-level hardening includes:
+
+- sole production CLI entry `audit`; audit projections are namespaced `dev-*` and explicitly gated;
+- repository verification that blocks app-level imports of internal inspection/reporting plumbing;
+- one canonical stage order shared by admission, execution trace, and `SelectedMapAuditRun`;
+- selected-artifact-only gameplay authority;
+- Discovery Closure with relevant/indexed/parse-failure/unsupported-source accounting;
+- explicit gameplay-sensitive unsupported-source residue with concrete file paths;
+- Gameplay Model Closure fail-closed on OPEN/PARTIAL;
+- Scenario Closure fail-closed for missing knowledge, capability gaps, orphan components, shallow leaf scenarios, and detection gaps;
+- automatic narrow runtime-proof requests for `RUNTIME_BLOCKED` causal links;
+- compiler reconciliation of generated causal links back into scenario receipts;
+- cross-system preset scenarios for terminal collisions, reconnect/reload, multi-arena, deferred ownership, and repeated-run behavior;
+- bounded RIG demand reconciliation;
+- counter-proof-gated confirmed defect admission;
+- capability-specific proof bindings for all 51 registered production task capabilities;
+- Capability Truth freshness bound to the generator contract, registries, proof registry, and proof inventory;
+- repository verification now fails when a production task capability lacks a specific proof binding.
+
+During this work session one source defect was also found and fixed while adding capability proof:
+
+```text
+behavior.spatial
+resolveSpatialAuthorityContract()
+validated an undefined identifier (policy)
+instead of the supplied contract.
+```
+
+This was corrected before the capability was marked proof-bound.
+
+## Current Capability Truth
+
+Current generated truth:
+
+```text
+task capabilities  51
+owner-tested       51
+proof-bound        51
+proof-unbound      0
+analysis caps      31
+```
+
+A proof binding means a capability-specific regression/contract surface exists. It does not claim that the test was executed in this work session.
 
 ## Known proof limits
 
 - current source state has not been typechecked or run through the full test suite in this work session;
-- runtime-only timing/race/network/Minecraft behavior still requires matching LOCAL_MINECRAFT or LIVE_MINECRAFT proof;
-- reachability coverage explicitly remains incomplete for acquisition sources whose adapters are not yet implemented, and therefore yields `unknown` rather than false `unreachable`;
-- real-map false-negative and false-positive rates have not yet been measured on the new first-pass workflow;
-- report HTML has been statically inspected but not browser/render regression-tested in this work session.
+- CI has not been run for these latest changes;
+- LOCAL_MINECRAFT/LIVE_MINECRAFT behavior remains unproven where runtime semantics are irreducible;
+- real-map false-negative/false-positive rates are not yet measured for the hardened single-flow audit;
+- benchmark corpus cases remain `candidate` until the exact artifact/minimized fixture SHA-256 and frozen machine expectation requirements are satisfied;
+- no benchmark case is promoted to `ready` merely from a map name or historical bug description.
 
 ## Next proof target
 
-Run one real selected map through the full audit path and record:
+Run one exact selected map artifact through the sole production command:
 
-- Discovery Closure;
+```text
+audit <selected-map>
+```
+
+Record:
+
+- selected-artifact identity/fingerprint;
+- Discovery Closure and unsupported-source residue;
 - Gameplay Model Closure;
-- first-pass issue set;
-- suppressed/counter-evidence candidates;
-- Detection Gaps;
-- proof-depth distribution;
-- chat/HTML report usability;
-- targeted runtime residue.
+- Scenario Closure and shallow-scenario residue;
+- RIG receipts;
+- first-pass confirmed/suppressed issue set;
+- runtime-proof requests;
+- known-issue capture versus frozen regression expectations;
+- false positives / false negatives where independent expectations exist.
 
-Only then decide whether another reusable detector, adapter, proof layer, or workflow optimization is justified.
+Do not expand the architecture before this evidence exists.
 
 ## Rule
 
-Do not claim current-head CI/runtime proof until it is actually run. Historical proof remains historical. Static source inspection must remain labeled as static verification.
+Do not claim current-head CI/runtime proof until it is actually run. Historical proof remains historical. Static source inspection and proof bindings must remain labeled as static verification.
