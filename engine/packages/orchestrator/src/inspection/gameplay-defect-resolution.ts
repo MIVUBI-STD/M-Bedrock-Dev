@@ -450,9 +450,15 @@ export function assessGameplayDefectResolutionGate(
     const link = contradicted.find(
       (candidate) => candidate.id === resolution.causalLinkId,
     );
-    return link
-      ? validateResolution(link, resolution).length > 0
-      : true;
+    if (!link) return true;
+    const scenario = graph.scenarios.find(
+      (item) => item.id === link.scenarioId,
+    );
+    return validateResolution(
+      link,
+      resolution,
+      scenario,
+    ).length > 0;
   });
 
   const status =
