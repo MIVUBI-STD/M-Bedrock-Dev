@@ -908,6 +908,9 @@ export async function inspectArtifact(
         sourceParseFailures:
           result.gameplayDiscoveryClosure
             .sourceParseFailures,
+        unsupportedRelevantSources:
+          result.gameplayDiscoveryClosure
+            .unsupportedRelevantSources,
         unresolvedReferences:
           result.unresolvedReferences,
       });
