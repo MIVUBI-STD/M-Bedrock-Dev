@@ -1007,7 +1007,7 @@ export function compileGameplayScenarioGraph(
     scenarios.push({
       id: scenarioId,
       label: presetScenario.kind,
-      gameplayStage: "Boundary / Recovery / Variant",
+      gameplayStage: presetScenario.flowStage,
       purpose: presetScenario.reason,
       sourceSubjectIds,
       componentIds,
