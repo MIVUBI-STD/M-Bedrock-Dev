@@ -62,11 +62,17 @@ export function groupReadyAuditDefectsForCandidateCoverage(
             (item) => item.id === link.knowledgeRequirementId,
           );
     const technicalOwnerId = link.fromComponentId;
-    const evidenceSignature = hash(defect.evidenceIds);
+    // Evidence sets differ across scenarios even when one technical cause is
+    // responsible. Candidate grouping must follow the deterministic technical
+    // contradiction, not incidental evidence identity.
+    const technicalCauseSignature = hash([
+      link.reason,
+      link.intentEdgeKind ?? "runtime-domain",
+    ]);
     const key = [
       requirement?.domain ?? "intent",
       technicalOwnerId,
-      evidenceSignature,
+      technicalCauseSignature,
     ].join("|");
     const list = buckets.get(key) ?? [];
     list.push(defect);
