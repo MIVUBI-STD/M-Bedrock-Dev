@@ -68,6 +68,10 @@ import {
   deriveAuditExecutionTrace,
   type AuditExecutionTrace,
 } from "./map-audit-execution-trace.js";
+import {
+  groupReadyAuditDefectsByRootCause,
+  type ReadyAuditRootCauseGroup,
+} from "./map-audit-root-cause.js";
 
 export interface SelectedMapAuditInput {
   /**
@@ -97,6 +101,7 @@ export interface SelectedMapAuditRun {
     | "PREPARE_REVIEW";
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
   readonly readyDefects: readonly ReadyAuditDefectProjection[];
+  readonly rootCauseGroups: readonly ReadyAuditRootCauseGroup[];
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
 }
@@ -208,6 +213,11 @@ export async function runSelectedMapAudit(
     scenario.graph,
     scenario.defectResolution,
   );
+  const rootCauseGroups =
+    groupReadyAuditDefectsByRootCause(
+      scenario.graph,
+      readyDefects,
+    );
   const executionTrace = deriveAuditExecutionTrace({
     admission,
     procedure,
@@ -239,6 +249,7 @@ export async function runSelectedMapAudit(
     allowedNextAction,
     modelTaskPackets,
     readyDefects,
+    rootCauseGroups,
     status:
       admission.status === "READY"
         ? "READY_FOR_REVIEW"
@@ -335,6 +346,11 @@ export function resolveSelectedMapAudit(
     scenario.graph,
     scenario.defectResolution,
   );
+  const rootCauseGroups =
+    groupReadyAuditDefectsByRootCause(
+      scenario.graph,
+      readyDefects,
+    );
   const executionTrace = deriveAuditExecutionTrace({
     admission,
     procedure: mandatoryAuditProcedure,
@@ -368,6 +384,7 @@ export function resolveSelectedMapAudit(
     allowedNextAction,
     modelTaskPackets,
     readyDefects,
+    rootCauseGroups,
     status:
       admission.status === "READY"
         ? "READY_FOR_REVIEW"
