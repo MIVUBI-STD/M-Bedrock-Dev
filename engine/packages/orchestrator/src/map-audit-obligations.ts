@@ -30,7 +30,9 @@ export type AuditObligationSource =
   | "shared-resource"
   | "compound-boundary"
   | "accumulation-growth"
-  | "replica-divergence";
+  | "replica-divergence"
+  | "runtime-proof"
+  | "detection-gap";
 
 export interface AuditObligation {
   readonly id: string;
@@ -70,6 +72,55 @@ function graphObligations(
   graph: GameplayScenarioGraph,
 ): AuditObligation[] {
   const items: AuditObligation[] = [];
+
+  for (const link of graph.causalLinks) {
+    if (
+      link.status !== "RUNTIME_BLOCKED" &&
+      link.status !== "DETECTION_GAP"
+    ) {
+      continue;
+    }
+    const scenario = graph.scenarios.find(
+      (item) => item.id === link.scenarioId,
+    );
+    items.push(normalize({
+      id: link.id,
+      source:
+        link.status === "RUNTIME_BLOCKED"
+          ? "runtime-proof"
+          : "detection-gap",
+      stage:
+        link.status === "RUNTIME_BLOCKED"
+          ? "PROVE"
+          : "UNDERSTAND",
+      title:
+        link.status === "RUNTIME_BLOCKED"
+          ? "Resolve runtime-dependent gameplay evidence"
+          : "Resolve gameplay detection gap",
+      reason: link.reason,
+      missingProof:
+        link.status === "RUNTIME_BLOCKED"
+          ? "One narrow deciding runtime observation for the unresolved gameplay dependency."
+          : "Selected-artifact semantic evidence sufficient to understand and causally classify the gameplay dependency.",
+      validationTest:
+        link.status === "RUNTIME_BLOCKED"
+          ? "Run only the narrow unresolved runtime dependency for scenario '" +
+            (scenario?.label ?? link.scenarioId) +
+            "'. Promote to a finding only if the observation proves a wrong player-visible outcome."
+          : "Resolve the semantic owner and gameplay effect for this dependency, then rerun causal contradiction analysis before issue classification.",
+      validationGroupKey:
+        (scenario?.id ?? link.scenarioId) +
+        ":" +
+        (
+          link.status === "RUNTIME_BLOCKED"
+            ? "runtime-proof"
+            : "detection-gap"
+        ),
+      subjectIds: link.subjectIds,
+      componentIds: link.componentIds,
+      evidenceIds: link.evidenceIds,
+    }));
+  }
 
   for (const receipt of graph.knowledgeReceipts) {
     if (receipt.status === "SATISFIED") continue;
