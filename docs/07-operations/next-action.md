@@ -36,6 +36,21 @@ Evaluate the complete flow once and record:
 - runtime-proof questions;
 - false negatives / false positives against independent expectations.
 
+## Review versus proof improvement
+
+`PREPARE_REVIEW` means the Map Audit Report is complete enough to review honestly. It does not mean all findings are PROVEN.
+
+When review-ready output still contains NEED_VALIDATION:
+
+```text
+Map Audit Report
+→ may be reviewed now
+→ optional bounded proof-improvement tasks may still promote findings
+→ unresolved findings remain visible if proof cannot be obtained
+```
+
+A blocking PROVE checkpoint is different: it requires `RESOLVE_DEFECTS` before review readiness.
+
 ## Hard rules
 
 - one artifact = one current gameplay authority;
