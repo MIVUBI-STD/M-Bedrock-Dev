@@ -16,7 +16,7 @@ This checklist is a publication review only. The executable checkpoint owner is 
 - [ ] MODEL block is closed for every applicable system.
 - [ ] STRESS block is closed for every applicable lifecycle/cross-system scenario.
 - [ ] PROVE block is closed: RIG, contradiction resolution, counter-proof, and root-cause consolidation are complete.
-- [ ] REPORT block admits only complete confirmed defects.
+- [ ] REPORT block preserves every material finding as PROVEN or NEED_VALIDATION; approved Bug Report V2 promotion remains limited to approved PROVEN BUG items.
 
 ## Gameplay closure
 
@@ -143,7 +143,8 @@ Review the audit in the same order the player experiences the game:
 
 - [ ] Proposed Bug Set review resolved: approved / rejected / needs-discussion.
 - [ ] Every material finding is visible as either PROVEN or NEED_VALIDATION; unresolved runtime, ambiguous-intent, insufficient-evidence, and Detection Gap reasons are carried inside NEED_VALIDATION with an exact targeted test.
-- [ ] Canonical Bug Report V2 contains approved confirmed bugs only.
+- [ ] Map Audit Report contains every material PROVEN and NEED_VALIDATION finding.
+- [ ] Canonical Bug Report V2 contains approved PROVEN BUG items only.
 - [ ] Coverage remains recorded in Map Audit Output.
 - [ ] Chat preview follows PREVIEW contract.
 - [ ] HTML follows Bug Report V2 client layout and uses presentation-only checklists.
