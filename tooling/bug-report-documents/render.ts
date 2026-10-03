@@ -232,32 +232,26 @@ function orderedSteps(
 }
 
 function issueCard(issue: BugReportClientIssue): string {
-  const metadata =
-    '<div class="meta-line"><span>' +
-    escapeHtml(issue.id) +
-    '</span><span>' +
-    escapeHtml(issue.category) +
-    "</span></div>";
-
-  const rows = [
+  const detailRows = [
     '<div class="row"><div class="label">Issue</div><div class="value">' +
       escapeHtml(issue.issue) +
       "</div></div>",
     '<div class="row"><div class="label">How to Reproduce</div><div class="value">' +
       orderedSteps(issue.reproduction) +
       "</div></div>",
-    '<div class="row"><div class="label">Result</div><div class="value"><strong>Observed:</strong> ' +
+    '<div class="row"><div class="label">Observed</div><div class="value">' +
       escapeHtml(issue.observed) +
-      '<br><strong>Expected:</strong> ' +
+      "</div></div>",
+    '<div class="row"><div class="label">Expected</div><div class="value">' +
       escapeHtml(issue.expected) +
       "</div></div>",
   ];
 
   if (issue.recommendedResolution) {
-    rows.push(
-      '<div class="technical-row"><details class="technical"><summary>Resolution</summary><div class="technical-text">' +
+    detailRows.push(
+      '<div class="row"><div class="label">Resolution</div><div class="value">' +
         escapeHtml(issue.recommendedResolution) +
-        "</div></details></div>",
+        "</div></div>",
     );
   }
 
@@ -271,7 +265,7 @@ function issueCard(issue: BugReportClientIssue): string {
       technicalParts.push(
         '<div class="technical-text">' +
           escapeHtml(issue.technicalAnalysis) +
-          '</div>',
+          "</div>",
       );
     }
     if (issue.relevantCode?.length) {
@@ -281,11 +275,11 @@ function issueCard(issue: BugReportClientIssue): string {
           (item) =>
             '<li><code>' +
             escapeHtml(item.file) +
-            '</code> — ' +
+            "</code> — " +
             escapeHtml(item.reason) +
-            '</li>',
+            "</li>",
         ).join("") +
-        '</ul></div>',
+        "</ul></div>",
       );
     }
     if (issue.mustPreserve?.length) {
@@ -293,36 +287,47 @@ function issueCard(issue: BugReportClientIssue): string {
         '<div class="technical-sub"><strong>Must Preserve</strong><ul>' +
         issue.mustPreserve.map(
           (item) =>
-            '<li>' + escapeHtml(item) + '</li>',
+            "<li>" + escapeHtml(item) + "</li>",
         ).join("") +
-        '</ul></div>',
+        "</ul></div>",
       );
     }
-    rows.push(
+    detailRows.push(
       '<div class="technical-row"><details class="technical"><summary>Technical Detail</summary>' +
       technicalParts.join("") +
-      '</details></div>',
+      "</details></div>",
     );
   }
 
   return [
-    '<article class="issue-card severity-' + issue.severity + '">',
-    '  <header class="issue-head">',
-    '    <div class="issue-number">' +
+    '<article class="bug-row severity-' + issue.severity + '">',
+    '  <div class="bug-check"><label><input type="checkbox" aria-label="Verified fixed: ' +
+      escapeHtml(issue.title) +
+      '"><span>Fixed</span></label></div>',
+    '  <details class="bug-details">',
+    '    <summary>',
+    '      <div class="bug-summary-number">' +
       String(issue.number).padStart(2, "0") +
       "</div>",
-    '    <div class="severity">' +
+    '      <div class="severity">' +
       severityLabel(issue.severity) +
       "</div>",
-    '    <div class="issue-title"><h2>' +
+    '      <div class="bug-summary-main">',
+    '        <strong>' +
       escapeHtml(issue.title) +
-      "</h2>" +
-      metadata +
-      "</div>",
-    "  </header>",
-    '  <div class="issue-body">',
-    ...rows.map((row) => "    " + row),
-    "  </div>",
+      "</strong>",
+    '        <span class="bug-summary-meta">' +
+      escapeHtml(issue.category) +
+      " · " +
+      escapeHtml(issue.id) +
+      "</span>",
+    "      </div>",
+    '      <span class="details-label"><span class="when-closed">See details</span><span class="when-open">Hide details</span></span>',
+    "    </summary>",
+    '    <div class="bug-detail-body">',
+    ...detailRows.map((row) => "      " + row),
+    "    </div>",
+    "  </details>",
     "</article>",
   ].join("\n");
 }
@@ -552,34 +557,7 @@ function renderHtml(
       ? '<section class="empty">No gameplay-blocking or materially disruptive open issues are recorded.</section>'
       : document.issues.map(issueCard).join("\n\n");
 
-  const issueIndex =
-    layout.showIssueIndex
-      ? [
-          '<section class="dashboard">',
-          '<h2>Tester Checklist</h2>',
-          '<div class="table-wrap"><table>',
-          '<thead><tr><th>Fixed</th><th>#</th><th>Severity</th><th>Category</th><th>Bug</th></tr></thead>',
-          '<tbody>',
-          ...document.issueIndex.map(
-            (item) =>
-              '<tr><td class="fixed-cell"><input type="checkbox" aria-label="Verified fixed: ' +
-              escapeHtml(item.title) +
-              '"></td><td>' +
-              String(item.number).padStart(2, "0") +
-              '</td><td>' +
-              severityLabel(item.severity) +
-              '</td><td>' +
-              escapeHtml(item.category) +
-              '</td><td><strong>' +
-              escapeHtml(item.title) +
-              '</strong><div class="table-id">' +
-              escapeHtml(item.id) +
-              '</div></td></tr>',
-          ),
-          '</tbody></table></div>',
-          '</section>',
-        ].join("\n")
-      : "";
+  const issueIndex = "";
 
   const severityLegend =
     layout.showSeverityLegend
@@ -683,8 +661,58 @@ body {
 }
 .summary p { margin:0; }
 .issues {
-  padding:24px;
+  padding:18px 24px 28px;
 }
+.bug-row {
+  display:grid;
+  grid-template-columns:78px minmax(0,1fr);
+  margin:0 0 10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  background:#fff;
+  break-inside:avoid;
+}
+.bug-check {
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:16px 10px;
+  border-right:1px solid var(--line);
+  background:#f8fafc;
+}
+.bug-check label {
+  display:grid;
+  justify-items:center;
+  gap:5px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.bug-check input { width:18px; height:18px; }
+.bug-details > summary {
+  list-style:none;
+  display:grid;
+  grid-template-columns:40px 86px minmax(0,1fr) max-content;
+  align-items:center;
+  min-height:64px;
+  padding:0 14px 0 0;
+  cursor:pointer;
+  background:#fff;
+}
+.bug-details > summary::-webkit-details-marker { display:none; }
+.bug-summary-number { padding:0 12px; color:var(--muted); font-size:12px; font-weight:800; }
+.bug-summary-main { display:grid; gap:3px; padding:10px 12px 10px 0; }
+.bug-summary-main strong { font-size:14px; line-height:1.3; }
+.bug-summary-meta { color:var(--muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.details-label { color:var(--blue); font-size:11px; font-weight:800; white-space:nowrap; }
+.when-open { display:none; }
+.bug-details[open] .when-closed { display:none; }
+.bug-details[open] .when-open { display:inline; }
+.bug-details[open] > summary { background:#f8fafc; border-bottom:1px solid var(--line); }
+.bug-detail-body { background:#fff; }
 .issue-card {
   margin:0 0 20px;
   border:1px solid var(--line);
@@ -828,6 +856,10 @@ th {
   .label { padding-bottom:6px; }
   .value { padding-top:7px; }
   .issue-head { grid-template-columns:42px 82px 1fr; }
+  .bug-row { grid-template-columns:62px minmax(0,1fr); }
+  .bug-details > summary { grid-template-columns:32px 74px minmax(0,1fr); padding-right:10px; }
+  .details-label { grid-column:3; margin:0 0 10px; }
+  .bug-summary-main { padding-right:0; }
 }
 @media print {
   body { background:#fff; }
