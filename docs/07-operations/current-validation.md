@@ -124,6 +124,24 @@ These controls reduce silent false negatives but do not constitute a measured fa
 - legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
 - repository verifier checks single entry, issue lanes, semantic-gap fail-closed behavior, report lanes, and legacy deprecation.
 
+### Proof saturation / sufficient-proof stop rule
+
+PROVEN projection now requires a minimum-sufficient-proof saturation assessment. Universal saturation checks:
+
+- one concrete grounded gameplay scenario;
+- grounded contradiction;
+- explicit gameplay trigger and player-visible consequence;
+- bound Expected and Actual outcomes;
+- explicit affected scope;
+- evidence bound to the finding;
+- exhaustive bounded counter-proof search with `NO_BLOCKING_PROOF`.
+
+Each failure family also carries a domain-specific saturation checklist. Examples include completion accounting for progression, ownership/isolation for multi-arena, identity/scope/idempotency for inventory, generation validation for deferred work, and residency/platform ownership for chunk simulation.
+
+If universal saturation is incomplete, a `CONFIRMED_DEFECT_READY` resolution is not projected as PROVEN. The honesty gate then prevents `READY_FOR_REVIEW`.
+
+Once universal and applicable family criteria are grounded, proof navigation instructs the model to stop searching and not request runtime manifestation merely for reassurance. Remaining search must target only unsatisfied criteria.
+
 ### Historical failure search pressure
 
 Generic lessons from prior detection failures are now promoted as search-priority hints, not correctness rules.
