@@ -39,7 +39,7 @@ const graph: GameplayScenarioGraph = {
 };
 
 const issue: ReadyAuditIssueProjection = {
-  reportIssueType: "BUG",
+  issueType: "BUG",
   failureDomain:
     "progression-wave-objective",
   contributingDomains: [
@@ -77,7 +77,7 @@ describe("map audit candidate grouping", () => {
       );
 
     expect(group).toMatchObject({
-      reportIssueType: "BUG",
+      issueType: "BUG",
       gameplayFlows: ["PROGRESSION"],
       failureDomains: [
         "progression-wave-objective",
