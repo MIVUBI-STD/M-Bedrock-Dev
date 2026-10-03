@@ -88,6 +88,64 @@ describe("map audit proof navigation", () => {
     );
   });
 
+  it("moves historically relevant knowledge earlier without moving runtime forward", () => {
+    const world = {
+      entities: {
+        definitions: 5,
+      },
+      chunks: {
+        tickingAreaAcquires: 0,
+        capacityUncheckedLeases: 0,
+        readinessUnverifiedLeases: 0,
+        entityRemoveObservers: 1,
+      },
+      arenas: {
+        detected: false,
+        isolation: {
+          sharedGlobal: 0,
+        },
+        globalState: {
+          unleasedArenaMutations: 0,
+        },
+        cleanup: {
+          resourceLedger: {
+            missing: 0,
+          },
+        },
+      },
+      inventory: {
+        restoreOwnership: {
+          multipleRestoreOwners: 0,
+        },
+        restoreConflicts: [],
+        partialResets: 0,
+      },
+      structures: {
+        transitionResidueRisks: 0,
+        transitionResidueUnresolved: 0,
+      },
+      combat: {
+        deathHandlers: 1,
+      },
+      spatial: {
+        authority: {
+          conflicts: 0,
+        },
+      },
+    } as unknown as GameplayWorldModel;
+
+    const result = buildAuditProofNavigation(
+      finding("progression-wave-objective"),
+      world,
+    );
+
+    expect(result.historyPressure).toBeGreaterThan(0);
+    expect(result.historicalSearchHints.length).toBeGreaterThan(0);
+    expect(result.route.at(-1)?.evidencePreference).toBe(
+      "runtime",
+    );
+  });
+
   it("does not label unevidenced expected/actual narrative as proven claims", () => {
     const item = {
       ...finding("inventory-economy"),
