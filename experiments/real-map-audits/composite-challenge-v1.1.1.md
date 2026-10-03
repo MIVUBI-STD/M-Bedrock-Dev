@@ -26,6 +26,36 @@ Player-visible consequence: gameplay becomes dependent on player-loaded chunks; 
 
 Repair direction: keep one arena simulation-residency owner and create/release the selected arena's declared regions as part of arena lifecycle, or replace this unused contract with another proven residency mechanism.
 
+## Proven finding 2
+
+### BUG — Disconnect during preload can bypass the fresh-session inventory wipe
+
+Severity: Major
+
+Composite performs its full inventory clear only against `getArenaOnlinePlayers(arenaId)` during preload. A player who disconnects before that callback and reconnects after it has run is not cleared. The `preloading` reconnect path only restores gameplay state/teleports the player.
+
+When preparation starts, `KitManager.applyArenaLoadouts()` runs with `clearAllSlots: false`, so the missed full reset is not replayed. The kit manager's chest-slot mapping addresses only a bounded managed-slot surface, while `clearAllInventoryForLoadout()` is the only path that explicitly wipes the full inventory.
+
+Source evidence:
+- `chunk-2GRFUQFH.js:13939+` — preload calls `clearArenaPlayerItems(arenaId)`.
+- `chunk-2GRFUQFH.js:14006+` — full clear only iterates currently online arena players.
+- `chunk-2GRFUQFH.js:13182+` — reconnect during `preloading` configures/teleports but does not clear inventory.
+- `chunk-2GRFUQFH.js:14771+` — preparation loadout refresh uses `clearAllSlots: false`.
+- `chunk-2GRFUQFH.js:2255+` — managed chest-slot mapping is not equivalent to a full 36-slot inventory wipe.
+- `chunk-2GRFUQFH.js:3812+` — `clearAllInventoryForLoadout()` is the explicit full-slot cleanup path.
+
+Reproduction:
+1. Put a recognizable non-session item in an inventory slot not replaced by the active kit.
+2. Join/start an arena.
+3. Disconnect before the preload inventory-clear callback.
+4. Reconnect after that callback while the session is still `preloading`.
+5. Let preparation/buy phase start.
+6. Observe the stale item surviving into the new session.
+
+Player-visible consequence: stale/unintended inventory can cross the fresh-session boundary and affect balance, economy, or reproducibility.
+
+Repair direction: make the fresh-session inventory reset a per-player session invariant and reconcile it on reconnect before preparation/gameplay continuation.
+
 ## Next action
 
-Continue selected-artifact analysis for additional independently proven Composite defects before approval/promotion.
+Continue one final current-source pass for independently proven Composite defects, then close this map for the real-test batch before moving to the next current Drive artifact.
