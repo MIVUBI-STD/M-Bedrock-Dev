@@ -916,8 +916,8 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
     ${proven.length > 0 ? proven.map(auditFindingCard).join("\n") : "<p>No proven findings.</p>"}
   </section>
   <section class="section">
-    <h2>NEED VALIDATION / UNPROVEN</h2>
-    ${needValidation.length > 0 ? needValidation.map(auditFindingCard).join("\n") : "<p>No unresolved material findings.</p>"}
+    <h2>NEED VALIDATION Findings</h2>
+    ${needValidation.length > 0 ? needValidation.map(auditFindingCard).join("\n") : "<p>No confirmation-ready unresolved findings.</p>"}
   </section>
   ${auditValidationPlan(audit)}
 </main>
