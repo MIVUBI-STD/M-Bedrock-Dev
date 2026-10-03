@@ -2,9 +2,10 @@
   "schemaVersion": 1,
   "groups": {
     "continuity": {
-      "purpose": "Ignored per-project working continuity. Lifecycle status belongs in project state, not folder names.",
+      "purpose": "Per-project working continuity plus one tracked compact project registry. Detailed execution state remains inside project state.",
       "entries": [
-        "projects"
+        "projects",
+        "project-registry.json"
       ]
     },
     "handoff": {
