@@ -10,6 +10,8 @@ import {
   type GameplayReportIssueType,
   type GameplayIssueFailureDomain,
   type GameplayIssueFlowStage,
+  type NegativeSpaceSignal,
+  type TemporalInteractionRisk,
 } from "../../diagnostic-reasoning/src/index.js";
 
 export type AuditIssueStatus =
@@ -658,6 +660,134 @@ export function projectAllNeedValidationAuditIssues(
     }
   }
   return sortIssues([...byId.values()]);
+}
+
+export function projectSignalNeedValidationAuditIssues(
+  negativeSpace: readonly NegativeSpaceSignal[],
+  temporalRisks: readonly TemporalInteractionRisk[],
+): readonly NeedValidationAuditIssueProjection[] {
+  const negative = negativeSpace.map((signal) => {
+    const flow: GameplayIssueFlowStage =
+      signal.kind === "reset-without-baseline"
+        ? "CLEANUP_REPLAY"
+        : signal.kind === "entry-without-exit"
+          ? "PROGRESSION"
+          : "ACTIVE_GAMEPLAY";
+    const failureDomain: GameplayIssueFailureDomain =
+      signal.kind === "reset-without-baseline"
+        ? "persistence-recovery"
+        : "state-ownership";
+
+    return {
+      status: "NEED_VALIDATION" as const,
+      issueType: "BUG" as const,
+      failureDomain,
+      contributingDomains: [failureDomain],
+      gameplayFlow: flow,
+      informationMismatch: false,
+      playerFacingEvidenceIds: [],
+      causalLinkId: signal.id,
+      scenarioId: "signal:" + signal.subjectId,
+      gameplayStage: flow,
+      scenarioLabel: signal.kind,
+      gameplayTrigger:
+        "Exercise gameplay that reads, writes, enters, exits, or resets " +
+        signal.subjectId +
+        ".",
+      gameplayConsequence:
+        "A missing lifecycle counterpart can leave gameplay state incomplete, stale, or permanently blocked.",
+      expectedOutcome:
+        "Every material lifecycle/state operation has the required consuming, exit, reset, or effect path.",
+      actualOutcome: signal.reason,
+      affectedScope: signal.subjectId,
+      subjectIds: [signal.subjectId],
+      componentIds: [],
+      evidenceIds: [...signal.evidenceIds],
+      validationReason:
+        "Negative-space analysis found a materially asymmetric gameplay lifecycle, but the player-visible consequence still needs direct causal confirmation.",
+      missingProof:
+        "A scenario-scoped proof that the missing counterpart is truly required and reachable for player-visible gameplay.",
+      validationTest:
+        "Trigger the gameplay path for " +
+        signal.subjectId +
+        " and verify the missing counterpart implied by " +
+        signal.kind +
+        ". Fail if state cannot progress, reset, or return to baseline as required.",
+      validationGroupKey:
+        "negative-space:" +
+        signal.subjectId,
+    } satisfies NeedValidationAuditIssueProjection;
+  });
+
+  const temporal = temporalRisks
+    .filter((risk) => risk.priority === "high")
+    .map((risk) => ({
+      status: "NEED_VALIDATION" as const,
+      issueType: "BUG" as const,
+      failureDomain: "temporal-async" as const,
+      contributingDomains: [
+        "temporal-async" as const,
+      ],
+      gameplayFlow: "RECOVERY" as const,
+      informationMismatch: false,
+      playerFacingEvidenceIds: [],
+      causalLinkId:
+        "temporal-risk:" +
+        risk.leftSystem +
+        ":" +
+        risk.rightSystem,
+      scenarioId:
+        "temporal:" +
+        risk.leftSystem +
+        ":" +
+        risk.rightSystem,
+      gameplayStage: "RECOVERY",
+      scenarioLabel: "temporal-interaction",
+      gameplayTrigger:
+        "Exercise " +
+        risk.leftSystem +
+        " and " +
+        risk.rightSystem +
+        " across before/overlap/after timing windows.",
+      gameplayConsequence:
+        "A delayed or shared mutation may commit after ownership, phase, player, or arena state has changed.",
+      expectedOutcome:
+        "Temporal work is cancelled or revalidated before it can mutate stale gameplay state.",
+      actualOutcome:
+        "High-risk timing factors are present: " +
+        risk.factors.join(", ") +
+        ".",
+      affectedScope:
+        risk.leftSystem +
+        " ↔ " +
+        risk.rightSystem,
+      subjectIds: [
+        risk.leftSystem,
+        risk.rightSystem,
+      ].sort(),
+      componentIds: [],
+      evidenceIds: [],
+      validationReason:
+        "Temporal analysis found a high-risk interaction whose exact commit ordering is not yet causally proven.",
+      missingProof:
+        "Whether stale or overlapping work can actually commit after the relevant ownership/state transition.",
+      validationTest:
+        "Run " +
+        risk.leftSystem +
+        " and " +
+        risk.rightSystem +
+        " in before, overlap, and after timing windows; fail if old work mutates the new/terminal state.",
+      validationGroupKey:
+        "temporal:" +
+        [risk.leftSystem, risk.rightSystem]
+          .sort()
+          .join(":"),
+    } satisfies NeedValidationAuditIssueProjection));
+
+  return sortIssues([
+    ...negative,
+    ...temporal,
+  ]);
 }
 
 export function projectAllAuditIssues(
