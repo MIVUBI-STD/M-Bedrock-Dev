@@ -9,10 +9,10 @@ Use this before broad repository search.
 | ZIP/archive safety, inventory, package transport | engine/packages/archive/ |
 | Workspace/session/file inventory + telemetry data contracts | engine/packages/project-model/ |
 | Canonical per-project working path | engine/packages/project-model/src/project/workspace.ts → `workspace/projects/<project-id>/` |
-| Tracked compact project registry / lifecycle state | engine/packages/project-model/src/project/project-lifecycle.ts + `workspace/project-registry.json` |
+| Tracked compact project registry / publication proof pointers | engine/packages/project-model/src/project/project-lifecycle.ts + `workspace/project-registry.json` |
 | Project registry persistence / monotonic revision gate | engine/packages/orchestrator/src/workflow/project-registry-store.ts |
 | Work Session checkpoint persistence | engine/packages/orchestrator/src/workflow/work-session-store.ts → `workspace/projects/<project-id>/state/work-session.json` |
-| Project approval readiness / immutable snapshot / Drive receipt semantics | engine/packages/orchestrator/src/workflow/project-lifecycle.ts |
+| Derived approval readiness / immutable snapshot / derived publication completion | engine/packages/orchestrator/src/workflow/project-lifecycle.ts |
 | Canonical project approval + publication persistence workflow | engine/packages/orchestrator/src/workflow/project-publication-workflow.ts |
 | Selected-map audit → Work Session + project registry continuity | engine/packages/orchestrator/src/workflow/map-audit-work-session.ts |
 | Approved Bug Report → historical regression projection | engine/packages/orchestrator/src/workflow/project-history-sync.ts |
@@ -20,7 +20,7 @@ Use this before broad repository search.
 | Approved snapshot → Drive publish plan | engine/packages/orchestrator/src/workflow/project-drive-publish-plan.ts |
 | Approved Drive plan → adapter execution / fingerprint verification | engine/packages/orchestrator/src/workflow/project-drive-publish-executor.ts |
 | Canonical current Bug Report V2 state | `workspace/reports/*.json` only; project workspace uses `evidence/` and `output/`, never a second report store |
-| Drive storage root + exact map/current-world pointers | engine/packages/project-model/src/project/drive-binding.ts + workspace/drive-root.json |
+| Drive global root + single per-project destination binding | engine/packages/project-model/src/project/drive-binding.ts + `workspace/drive-root.json` (global root) + ProjectRecord.publication.drive (project binding) |
 | Runtime semantic attribute convention | engine/packages/project-model/src/runtime/runtime-semantic-convention.ts |
 | Runtime telemetry emission helpers / sinks / instrumentation guards | engine/packages/telemetry/ |
 | Semantic dependency graph/invalidation | engine/packages/graph/ |
