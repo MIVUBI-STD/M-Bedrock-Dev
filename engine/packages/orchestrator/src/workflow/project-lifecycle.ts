@@ -264,7 +264,7 @@ function canonicalDeliverables(
       "|" +
       item.kind +
       "|" +
-      item.path;
+      item.fingerprint;
     if (seen.has(key)) {
       throw new Error(
         "Project approval contains duplicate deliverable: " +
@@ -723,6 +723,14 @@ export function drivePublicationIsComplete(
   snapshot: ProjectApprovalSnapshot,
   receipt: ProjectDrivePublishReceipt,
 ): boolean {
+  if (
+    receipt.projectId !== snapshot.projectId ||
+    receipt.snapshotFingerprint !==
+      snapshot.snapshotFingerprint
+  ) {
+    return false;
+  }
+
   const expected = new Set(
     snapshot.deliverables.map(
       (item) =>
