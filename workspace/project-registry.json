@@ -210,6 +210,36 @@
           }
         }
       }
+    },
+    {
+      "schemaVersion": 1,
+      "projectId": "the-gauntlet",
+      "projectName": "The Gauntlet",
+      "taskClass": "DIAGNOSE",
+      "revision": 1,
+      "artifact": {
+        "artifactId": "drive:1rFpeCtfpsv6D0g9S4HvZ8T_JmOeTzgwC",
+        "artifactFingerprint": "sha256:68d062f8cee3167baa808e18e1b537d4961570dbfaac9305286dca6748619f7f",
+        "version": "1.0.1"
+      },
+      "work": {},
+      "knowledge": {},
+      "publication": {
+        "drive": {
+          "schemaVersion": 1,
+          "projectId": "the-gauntlet",
+          "mapFolder": {
+            "folderId": "1m7BYH2uCoayAJOzKfTpySJbyyX9cc7NM",
+            "label": "Minigame - The Gauntlet"
+          },
+          "currentWorld": {
+            "fileId": "1rFpeCtfpsv6D0g9S4HvZ8T_JmOeTzgwC",
+            "fileName": "The Gauntlet v1.0.1.mcworld",
+            "artifactFingerprint": "sha256:68d062f8cee3167baa808e18e1b537d4961570dbfaac9305286dca6748619f7f",
+            "version": "1.0.1"
+          }
+        }
+      }
     }
   ]
 }
