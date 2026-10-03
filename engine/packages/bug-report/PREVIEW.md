@@ -28,7 +28,7 @@ Blocker: <count> · Major: <count>
 # | Severity | Category | Issue
 ```
 
-Do not show tester checklists, work checklists, reproduction steps, solution, Expected/Observed, or Technical Analysis in the default chat preview.
+Do not show Fixed checkboxes, How to Reproduce steps, solution, Expected/Observed, or Technical Analysis in the default chat preview.
 
 Those operational details belong in HTML or explicit full-detail mode.
 
@@ -112,6 +112,6 @@ Do not generate canonical Bug Report V2 or HTML while any proposed bug has no de
 
 Full mode is opt-in. It may show reproduction, Observed/Expected, Solution, Technical Analysis, Relevant Code, and Must Preserve when the user explicitly asks for detail.
 
-Chat full mode still does **not** use interactive checklist semantics. HTML owns checkable tester/work workflows.
+Chat full mode still does **not** use interactive checklist semantics. HTML owns the per-bug Fixed checkbox used during retest.
 
 Preserve Technical Analysis line breaks and headings; do not collapse structured engineering analysis into one paragraph.
