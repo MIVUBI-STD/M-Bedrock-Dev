@@ -55,7 +55,14 @@ const COMPONENT_DOMAIN_HINTS:
     readonly string[],
     GameplayIssueFailureDomain,
   ][] = [
-    [["runtime:arena", "runtime:arena-capacity", "runtime:arena-lifecycle", "runtime:arena-isolation"], "arena-multi-arena"],
+    [[
+      "runtime:arena",
+      "runtime:arena-capacity",
+      "runtime:arena-lifecycle",
+      "runtime:arena-isolation",
+      "runtime:arena-cleanup",
+      "runtime:arena-replica-integrity",
+    ], "arena-multi-arena"],
     [["runtime:inventory", "runtime:economy"], "inventory-economy"],
     [["runtime:chunks"], "chunk-simulation"],
     [["runtime:entities", "runtime:combat"], "entity-ai-combat"],
