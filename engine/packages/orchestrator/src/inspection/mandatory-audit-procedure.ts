@@ -507,6 +507,9 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
 
   const multiArena =
     world.arenas.detected && (world.arenas.count ?? 0) > 1;
+  const replicaProofIncomplete =
+    world.arenas.replicaIntegrity.incomplete > 0 ||
+    world.arenas.replicaIntegrity.noProof > 0;
   checkpoint.push(receipt(
     "B4",
     "MODEL",
@@ -522,7 +525,8 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
         ? "NOT_APPLICABLE"
         : "OPEN"
       : world.arenas.safeConcurrentArenas == null ||
-          world.arenas.isolation.unknown > 0
+          world.arenas.isolation.unknown > 0 ||
+          replicaProofIncomplete
         ? "PARTIAL"
         : "CLOSED",
     !multiArena
@@ -572,6 +576,18 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
           ),
           "Multi-arena requires lifecycle/cleanup analysis.",
           ["analysis:arena-lifecycle"],
+        ),
+        obligation(
+          "arena-world-db-replica-proof",
+          multiArena,
+          !replicaProofIncomplete &&
+            (
+              world.arenas.replicaIntegrity.complete > 0 ||
+              world.arenas.replicaIntegrity.bounded > 0 ||
+              world.arenas.replicaIntegrity.diverged > 0
+            ),
+          "Multi-arena full-map audit requires normalized world/topology replica proof. Divergence may continue to PROVE, but incomplete/no-proof replicas cannot close MODEL.",
+          ["analysis:arena-replica-integrity"],
         ),
       ],
     },
