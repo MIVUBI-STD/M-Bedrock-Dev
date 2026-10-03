@@ -25,6 +25,9 @@ import type {
 import type {
   AuditObligation,
 } from "./map-audit-obligations.js";
+import type {
+  AuditUserIntentEnvelope,
+} from "./map-audit-user-intent.js";
 
 export interface MapAuditOutputV2Finding {
   readonly id: string;
@@ -84,6 +87,7 @@ export interface MapAuditOutputV2 {
   readonly artifactId: string;
   readonly mapVersion: string;
   readonly control: MapAuditOutputControl;
+  readonly userIntent?: AuditUserIntentEnvelope;
   readonly evidenceScope: {
     readonly mode: "selected-map-version-only";
     readonly selectedArtifact: string;
@@ -330,6 +334,7 @@ export function projectMapAuditOutputV2(input: {
   readonly validationTests:
     readonly AuditValidationTestGroup[];
   readonly honesty: AuditHonestyAssessment;
+  readonly userIntent?: AuditUserIntentEnvelope;
   readonly control: MapAuditOutputControl;
   readonly fullMapReplica?: FullMapReplicaReceipt;
 }): MapAuditOutputV2 {
@@ -440,6 +445,9 @@ export function projectMapAuditOutputV2(input: {
     schemaVersion: 2,
     artifactId: input.identity.artifactId,
     control: input.control,
+    ...(input.userIntent === undefined
+      ? {}
+      : { userIntent: input.userIntent }),
     mapVersion:
       input.identity.releaseVersion ??
       "UNRESOLVED",
