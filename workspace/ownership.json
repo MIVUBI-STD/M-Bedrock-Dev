@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "groups": {
-    "projects": {
-      "purpose": "Ignored project working continuity. Project lifecycle status belongs in project state, not folder names.",
+    "continuity": {
+      "purpose": "Ignored per-project working continuity. Lifecycle status belongs in project state, not folder names.",
       "entries": [
         "projects"
       ]
