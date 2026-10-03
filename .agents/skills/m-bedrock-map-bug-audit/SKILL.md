@@ -294,7 +294,7 @@ Every `CONTRADICTED` Gameplay Causal Link must enter Gameplay Defect Resolution 
 - `RUNTIME_PROOF_REQUIRED` — source reasoning is exhausted and one narrow Minecraft-runtime question remains;
 - `DETECTION_GAP` — a named engine capability is genuinely missing.
 
-The temporary states `GAMEPLAY_TRANSLATION_REQUIRED` and `COUNTERPROOF_SEARCH_REQUIRED` block report publication. They are AI work queues, never tester-facing `Needs Validation`.
+The temporary state `GAMEPLAY_TRANSLATION_REQUIRED` may block report publication only when a contradicted causal link cannot yet be translated into a complete player-facing defect contract. Source-proven contradictions with complete translation must run bounded counter-proof search automatically and resolve to `CONFIRMED_DEFECT_READY` or `BLOCKING_COUNTERPROOF`; do not park them in `COUNTERPROOF_SEARCH_REQUIRED` or tester-facing `Needs Validation`.
 
 When a contradicted causal link already has a scenario, scoped RIG provenance, purpose, reason, and evidence, the engine must auto-translate that context and advance directly to `COUNTERPROOF_SEARCH_REQUIRED`. Do not waste another manual translation pass. Automatic translation never confirms the bug by itself; blocking counter-proof still must be searched.
 
