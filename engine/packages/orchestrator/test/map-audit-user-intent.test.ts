@@ -33,7 +33,7 @@ function envelope(): AuditUserIntentEnvelope {
         "prefer bounded static-first proof over broad trial-and-error",
     }, {
       kind: "SYMPTOM_REPORT",
-      raw: "wave suka stuck",
+      raw: "kadang wave gak lanjut",
       normalized:
         "possible progression stall during wave completion",
     }],
