@@ -1,5 +1,7 @@
 # Mandatory Gameplay Audit Procedure
 
+> Operator navigation starts at `master-selected-map-audit-workflow.md`. This document remains the executable checkpoint contract and does not define a competing operator flow.
+
 ## Purpose
 
 This is the canonical base procedure for every selected-map gameplay audit.
