@@ -716,8 +716,6 @@ export function analyzeHiddenGameplayDefects(
     sharedResourceOwnership,
     compoundBoundaries,
     accumulationGrowth,
-    compoundBoundaries,
-    accumulationGrowth,
     designConsistency,
     degradations,
     capabilityDelivery,
@@ -753,10 +751,6 @@ export function analyzeHiddenGameplayDefects(
         sharedResourceOwnership.records.filter(
           (item) => item.highOrderInteraction,
         ).length,
-      compoundBoundarySignals:
-        compoundBoundaries.length,
-      accumulationGrowthSignals:
-        accumulationGrowth.length,
       compoundBoundarySignals:
         compoundBoundaries.length,
       accumulationGrowthSignals:
@@ -874,6 +868,8 @@ export function refreshHiddenGameplayDefectsForWorld(
 
   return {
     ...existing,
+    compoundBoundaries,
+    accumulationGrowth,
     designConsistency,
     degradations,
     capabilityDelivery,
@@ -888,6 +884,10 @@ export function refreshHiddenGameplayDefectsForWorld(
           },
     attention: {
       ...existing.attention,
+      compoundBoundarySignals:
+        compoundBoundaries.length,
+      accumulationGrowthSignals:
+        accumulationGrowth.length,
       designAnomalies:
         designConsistency.length,
       silentDegradations:
