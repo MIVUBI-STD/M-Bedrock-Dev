@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import {
+  normalizeDriveProjectBinding,
   normalizeProjectDeliverable,
   projectLifecycleStatus,
   PROJECT_DELIVERABLE_KINDS,
@@ -202,13 +203,25 @@ export function assessProjectApprovalReadiness(input: {
     missing.push(
       "Drive project binding",
     );
-  } else if (
-    project.publication.drive.projectId !==
-      project.projectId
-  ) {
-    missing.push(
-      "Drive project binding for this projectId",
-    );
+  } else {
+    try {
+      const drive =
+        normalizeDriveProjectBinding(
+          project.publication.drive,
+        );
+      if (
+        drive.projectId !==
+          project.projectId
+      ) {
+        missing.push(
+          "Drive project binding for this projectId",
+        );
+      }
+    } catch {
+      missing.push(
+        "valid Drive project binding",
+      );
+    }
   }
   if (input.deliverables.length === 0) {
     missing.push("approved deliverables");
@@ -366,6 +379,15 @@ export function validateProjectApprovalSnapshot(
     snapshot === null ||
     typeof snapshot !== "object" ||
     snapshot.schemaVersion !== 1 ||
+    !snapshot.projectId?.trim() ||
+    !Number.isInteger(
+      snapshot.projectRevision,
+    ) ||
+    snapshot.projectRevision < 1 ||
+    !snapshot.artifactFingerprint
+      ?.trim() ||
+    !snapshot.snapshotFingerprint
+      ?.trim() ||
     !Array.isArray(snapshot.deliverables)
   ) {
     return [
@@ -660,6 +682,11 @@ export function validateDrivePublishReceipt(
     receipt === null ||
     typeof receipt !== "object" ||
     receipt.schemaVersion !== 1 ||
+    !receipt.projectId?.trim() ||
+    !receipt.snapshotFingerprint
+      ?.trim() ||
+    !receipt.receiptFingerprint
+      ?.trim() ||
     !Array.isArray(receipt.files)
   ) {
     return [
