@@ -2,6 +2,26 @@
 
 Multi Arena is a core gameplay system. Audit both **isolation** and **capacity**.
 
+## Full-map baseline and delta rule
+
+Before capacity/isolation proof, build one normalized replica model from world DB/topology and source/config evidence:
+
+```text
+Detect replicas
+→ Normalize offsets
+→ Baseline arena
+→ World/topology comparison
+→ Source/config reconciliation
+→ Replica proof quality
+→ Material delta set
+```
+
+Do not repeat a full audit six times for six equivalent arenas. Reuse baseline proof only for replicas whose proof is complete/bounded and whose differences are classified as non-material/expected.
+
+A diverged replica is not automatically a bug. It becomes a causal candidate only when the delta affects gameplay structure, ownership, route, objective, simulation, cleanup, or another player-visible dependency.
+
+An incomplete/no-proof replica cannot inherit baseline safety.
+
 ## Required audit order
 
 ```text
