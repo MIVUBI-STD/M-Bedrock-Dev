@@ -865,6 +865,48 @@ export interface BuildSelectedMapAuditReportResult
   readonly fullMapReplica?: FullMapReplicaReceipt;
 }
 
+function completeSelectedMapAuditFindingProjection(
+  audit: SelectedMapAuditRun,
+): Pick<
+  BuildSelectedMapAuditReportResult,
+  | "findings"
+  | "proven"
+  | "needValidation"
+  | "designMismatches"
+  | "validationTests"
+  | "fullMapReplica"
+> {
+  const all = [
+    ...audit.issueLanes.BUG,
+    ...audit.issueLanes.DESIGN_MISMATCH,
+  ];
+  return {
+    findings: {
+      BUG: audit.issueLanes.BUG,
+      DESIGN_MISMATCH:
+        audit.issueLanes.DESIGN_MISMATCH,
+    },
+    proven: all.filter(
+      (item): item is ReadyAuditIssueProjection =>
+        item.status === "PROVEN",
+    ),
+    needValidation: all.filter(
+      (item): item is NeedValidationAuditIssueProjection =>
+        item.status === "NEED_VALIDATION",
+    ),
+    designMismatches:
+      audit.issueLanes.DESIGN_MISMATCH,
+    validationTests:
+      audit.validationTests,
+    ...(audit.fullMapReplica === undefined
+      ? {}
+      : {
+          fullMapReplica:
+            audit.fullMapReplica,
+        }),
+  };
+}
+
 /**
  * Canonical production-report continuation. It cannot be called without the
  * original SelectedMapAuditRun and therefore cannot bypass procedure closure.
@@ -878,23 +920,9 @@ export function buildSelectedMapAuditReport(
     input.audit.auditRevision
   ) {
     return {
-      designMismatches:
-        input.audit.issueLanes.DESIGN_MISMATCH,
-      needValidation: [
-        ...input.audit.issueLanes.BUG,
-        ...input.audit.issueLanes.DESIGN_MISMATCH,
-      ].filter(
-        (item): item is NeedValidationAuditIssueProjection =>
-          item.status === "NEED_VALIDATION",
+      ...completeSelectedMapAuditFindingProjection(
+        input.audit,
       ),
-      validationTests:
-        input.audit.validationTests,
-      ...(input.audit.fullMapReplica === undefined
-        ? {}
-        : {
-            fullMapReplica:
-              input.audit.fullMapReplica,
-          }),
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -919,23 +947,9 @@ export function buildSelectedMapAuditReport(
     );
   if (identityIssues.length > 0) {
     return {
-      designMismatches:
-        input.audit.issueLanes.DESIGN_MISMATCH,
-      needValidation: [
-        ...input.audit.issueLanes.BUG,
-        ...input.audit.issueLanes.DESIGN_MISMATCH,
-      ].filter(
-        (item): item is NeedValidationAuditIssueProjection =>
-          item.status === "NEED_VALIDATION",
+      ...completeSelectedMapAuditFindingProjection(
+        input.audit,
       ),
-      validationTests:
-        input.audit.validationTests,
-      ...(input.audit.fullMapReplica === undefined
-        ? {}
-        : {
-            fullMapReplica:
-              input.audit.fullMapReplica,
-          }),
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -962,23 +976,9 @@ export function buildSelectedMapAuditReport(
   ];
   if (rootCauseIssues.length > 0) {
     return {
-      designMismatches:
-        input.audit.issueLanes.DESIGN_MISMATCH,
-      needValidation: [
-        ...input.audit.issueLanes.BUG,
-        ...input.audit.issueLanes.DESIGN_MISMATCH,
-      ].filter(
-        (item): item is NeedValidationAuditIssueProjection =>
-          item.status === "NEED_VALIDATION",
+      ...completeSelectedMapAuditFindingProjection(
+        input.audit,
       ),
-      validationTests:
-        input.audit.validationTests,
-      ...(input.audit.fullMapReplica === undefined
-        ? {}
-        : {
-            fullMapReplica:
-              input.audit.fullMapReplica,
-          }),
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -1028,22 +1028,8 @@ export function buildSelectedMapAuditReport(
 
   return {
     ...bugReport,
-    designMismatches:
-      input.audit.issueLanes.DESIGN_MISMATCH,
-    needValidation: [
-      ...input.audit.issueLanes.BUG,
-      ...input.audit.issueLanes.DESIGN_MISMATCH,
-    ].filter(
-      (item): item is NeedValidationAuditIssueProjection =>
-        item.status === "NEED_VALIDATION",
+    ...completeSelectedMapAuditFindingProjection(
+      input.audit,
     ),
-    validationTests:
-      input.audit.validationTests,
-    ...(input.audit.fullMapReplica === undefined
-      ? {}
-      : {
-          fullMapReplica:
-            input.audit.fullMapReplica,
-        }),
   };
 }
