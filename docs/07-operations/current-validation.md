@@ -1,30 +1,18 @@
 # Current Validation
 
-Snapshot date: 2026-10-02  
+Snapshot date: 2026-10-03  
 Branch: `Local`
 
 ## Historical integrated proof
 
-The last retained integrated verification remains:
+The last retained integrated verification remains historical and does **not** verify the current head.
+
+## Current source-level architecture
+
+Selected-map production audit now has one operator door and one ordered authority chain:
 
 ```text
-revision       5e02256869b4fc2107a1cbcf0ff85f0aac6745ac
-GitHub Verify  36431630205
-policy         pass
-source hygiene pass
-public API     pass
-typecheck      pass
-full tests     pass
-```
-
-That historical run does **not** verify the current source state.
-
-## Current-head static implementation state
-
-Current `Local` now has one production map-audit entry and one ordered authority path:
-
-```text
-audit <selected-map>
+audit <selected.mcworld>
 → runSelectedMapAudit()
 → TARGET
 → DISCOVERY
@@ -33,83 +21,89 @@ audit <selected-map>
 → STRESS
 → PROVE
 → REPORT
+→ issueLanes.BUG
+   issueLanes.DESIGN_MISMATCH
 ```
 
-Current static/source-level hardening includes:
+### Single-flow ownership
 
-- sole production CLI entry `audit`; audit projections are namespaced `dev-*` and explicitly gated;
-- repository verification that blocks app-level imports of internal inspection/reporting plumbing;
-- one canonical stage order shared by admission, execution trace, and `SelectedMapAuditRun`;
-- selected-artifact-only gameplay authority;
-- Discovery Closure with relevant/indexed/parse-failure/unsupported-source accounting;
-- explicit gameplay-sensitive unsupported-source residue with concrete file paths;
-- Gameplay Model Closure fail-closed on OPEN/PARTIAL;
-- Scenario Closure fail-closed for missing knowledge, capability gaps, orphan components, shallow leaf scenarios, and detection gaps;
-- automatic narrow runtime-proof requests for `RUNTIME_BLOCKED` causal links;
-- compiler reconciliation of generated causal links back into scenario receipts;
-- cross-system preset scenarios for terminal collisions, reconnect/reload, multi-arena, deferred ownership, and repeated-run behavior;
-- bounded RIG demand reconciliation;
-- counter-proof-gated confirmed defect admission;
-- capability-specific proof bindings for all 51 registered production task capabilities;
-- Capability Truth freshness bound to the generator contract, registries, proof registry, and proof inventory;
-- repository verification now fails when a production task capability lacks a specific proof binding.
+- `map-audit-pipeline.ts` owns production entry and continuation.
+- `mandatory-audit-procedure.ts` owns executable checkpoints.
+- `map-audit-admission.ts` owns first blocking stage and continuation authorization.
+- Scenario/RIG/analyzers provide evidence only.
+- Specialist docs are supporting contracts, not alternate workflows.
+- Work Session/UI/HTML/JSON are projections only.
 
-During this work session one source defect was also found and fixed while adding capability proof:
+### Fail-closed hardening now present
 
-```text
-behavior.spatial
-resolveSpatialAuthorityContract()
-validated an undefined identifier (policy)
-instead of the supplied contract.
-```
-
-This was corrected before the capability was marked proof-bound.
+- one production CLI command: `audit`;
+- engineering audit commands remain `dev-*` and gated;
+- relevant-source accounting distinguishes:
+  - indexed,
+  - parse failure,
+  - unsupported,
+  - **indexed but semantically not understood**;
+- structurally indexed gameplay JSON without domain semantics now remains a Detection Gap;
+- Gameplay Model Closure blocks on unsupported high-risk surfaces;
+- explicit unsupported high-risk surfaces currently include:
+  - teleport lifecycle,
+  - UI/form reachability,
+  - environment/gamerule contract,
+  - gameplay-significant async command transactions;
+- player-flow reasoning remains:
+  `ENTRY/JOIN → READY/START → SETUP → ACTIVE → PROGRESSION → TERMINAL → CLEANUP/REPLAY → RECOVERY`;
+- cross-system checkpoint requires all materially demanded scenario families, not merely one arbitrary cross-system scenario;
+- counter-proof search is context-aware across guard/scope/exclusion and, when applicable, owner/generation/cleanup;
+- capability delivery compares presented/design capability against actual playable capability;
+- report type is explicit:
+  - `BUG`
+  - `DESIGN_MISMATCH`;
+- design mismatch causal links are prevented from entering Bug Report V2 promotion;
+- final selected-map report continuation carries the Design Mismatch lane from the same audit revision;
+- legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
+- repository verifier checks single entry, issue lanes, semantic-gap fail-closed behavior, report lanes, and legacy deprecation.
 
 ## Current Capability Truth
 
-Current generated truth:
+Latest source-level catalog remains expected to contain:
 
 ```text
 task capabilities  51
-owner-tested       51
 proof-bound        51
 proof-unbound      0
 analysis caps      31
 ```
 
-A proof binding means a capability-specific regression/contract surface exists. It does not claim that the test was executed in this work session.
+Proof-bound means a capability-specific proof contract exists. It does not mean tests were executed in this work session.
 
 ## Known proof limits
 
-- current source state has not been typechecked or run through the full test suite in this work session;
-- CI has not been run for these latest changes;
-- LOCAL_MINECRAFT/LIVE_MINECRAFT behavior remains unproven where runtime semantics are irreducible;
-- real-map false-negative/false-positive rates are not yet measured for the hardened single-flow audit;
-- benchmark corpus cases remain `candidate` until the exact artifact/minimized fixture SHA-256 and frozen machine expectation requirements are satisfied;
-- no benchmark case is promoted to `ready` merely from a map name or historical bug description.
+- latest source changes have not been typechecked locally;
+- latest source changes have not run through the full test suite;
+- CI has not been run for this latest consolidation;
+- LOCAL_MINECRAFT/LIVE_MINECRAFT remains required only for irreducible runtime residue;
+- false-negative / false-positive rates still need real-map benchmark measurement;
+- semantic Detection Gaps are intentionally allowed to block audit rather than produce false PASS.
 
 ## Next proof target
 
-Run one exact selected map artifact through the sole production command:
+Run one exact selected artifact through:
 
 ```text
-audit <selected-map>
+audit <selected.mcworld>
 ```
 
-Record:
+Measure:
 
-- selected-artifact identity/fingerprint;
-- Discovery Closure and unsupported-source residue;
-- Gameplay Model Closure;
-- Scenario Closure and shallow-scenario residue;
-- RIG receipts;
-- first-pass confirmed/suppressed issue set;
-- runtime-proof requests;
-- known-issue capture versus frozen regression expectations;
-- false positives / false negatives where independent expectations exist.
-
-Do not expand the architecture before this evidence exists.
+- stage at first block;
+- semantic understanding gaps;
+- required cross-system scenario activation;
+- confirmed BUG lane;
+- confirmed DESIGN_MISMATCH lane;
+- runtime-only residue;
+- known-issue capture;
+- false negatives / false positives against independently frozen expectations.
 
 ## Rule
 
-Do not claim current-head CI/runtime proof until it is actually run. Historical proof remains historical. Static source inspection and proof bindings must remain labeled as static verification.
+Do not expand architecture unless real-map evidence exposes a repeated generic gap. Prefer extending an existing semantic owner or leaving an explicit Detection Gap.
