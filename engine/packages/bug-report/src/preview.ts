@@ -5,7 +5,7 @@ import type {
   BugReportV2,
   BugReportV2Bug,
 } from "./v2.js";
-import type { BugSeverity } from "./vocabulary.js";
+import {\n  bugFinderCategoryLabel,\n  type BugSeverity,\n} from "./vocabulary.js";
 
 export type BugReportPreviewMode =
   | "summary"
@@ -237,7 +237,7 @@ export function renderBugReportPreviewMarkdown(
 
   preview.bugs.forEach((bug, index) => {
     out.push(
-      `| ${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bug.category)} | ${tableCell(bug.title + ": " + bug.issue)} |`,
+      `| ${index + 1} | ${severityLabel(bug.severity)} | ${tableCell(bugFinderCategoryLabel(bug.category))} | ${tableCell(bug.title + ": " + bug.issue)} |`,
     );
   });
 
