@@ -75,6 +75,20 @@ Use:
 
 Do not use `copy`, `clone`, `same arena`, or `different arena` as canonical machine terms.
 
+## Reporting hierarchy
+
+Use:
+
+```text
+completeAuditFindings
+→ all material PROVEN + NEED_VALIDATION findings
+
+approvedBugReportV2
+→ approved PROVEN BUG items only
+```
+
+Do not use "Bug Report" to imply unresolved material findings may be omitted from the human-facing audit report.
+
 ## Rule
 
 A new name requires replacing an existing canonical term, not coexisting with it.
