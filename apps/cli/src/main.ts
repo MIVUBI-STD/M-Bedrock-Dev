@@ -514,8 +514,17 @@ async function main(): Promise<void> {
         ? {}
         : { runtimeProbeTranscript: probeTranscript }),
     });
-    console.log(JSON.stringify(audit, null, 2));
-    if (audit.status === "BLOCKED") {
+    console.log(
+      JSON.stringify(
+        audit.mapAuditReport,
+        null,
+        2,
+      ),
+    );
+    if (
+      audit.mapAuditReport.control.status ===
+      "BLOCKED"
+    ) {
       process.exitCode = 1;
     }
     return;
