@@ -1,13 +1,6 @@
 {
   "schemaVersion": 1,
   "groups": {
-    "local": {
-      "purpose": "Ignored local artifact continuity.",
-      "entries": [
-        "active",
-        "saved"
-      ]
-    },
     "handoff": {
       "purpose": "Tracked canonical audit/report handoff.",
       "entries": [
@@ -18,6 +11,13 @@
       "purpose": "Tracked pointer to the user-managed Drive map/source storage root.",
       "entries": [
         "drive-root.json"
+      ]
+    },
+    "projects": {
+      "purpose": "Ignored project working and saved continuity.",
+      "entries": [
+        "active",
+        "saved"
       ]
     }
   }
