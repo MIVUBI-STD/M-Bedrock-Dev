@@ -87,6 +87,8 @@ export interface AuditModelTaskPacket {
     readonly matchedBecause: readonly string[];
   }[];
   readonly historyPressure?: number;
+  readonly saturationCriteria?: readonly string[];
+  readonly saturationStopRule?: string;
   readonly allowedOutputs: readonly string[];
   readonly forbiddenActions: readonly string[];
   readonly stopCondition: string;
@@ -429,6 +431,11 @@ export function deriveAuditModelTaskPackets(input: {
             ),
           historyPressure:
             navigation.historyPressure,
+          saturationCriteria: [
+            ...navigation.saturationCriteria,
+          ],
+          saturationStopRule:
+            navigation.saturationStopRule,
           allowedOutputs: [
             "new selected-artifact proof",
             "cross-domain corroboration",
@@ -448,7 +455,7 @@ export function deriveAuditModelTaskPackets(input: {
             "use historical/stale map behavior as current gameplay authority",
           ],
           stopCondition:
-            "Stop when the finding becomes PROVEN, is disproved by blocking counter-proof, or all applicable non-runtime navigation steps are explicitly exhausted and exactly one runtime observation remains.",
+            "Stop immediately when universal minimum proof and every applicable family saturation criterion are grounded with counter-proof cleared. Otherwise continue only on unsatisfied criteria. Request exactly one runtime observation only after all applicable non-runtime criteria/routes are exhausted.",
         };
       });
 
