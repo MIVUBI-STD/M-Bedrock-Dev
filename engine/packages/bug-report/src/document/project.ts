@@ -83,7 +83,6 @@ function projectIssue(
     severity: bug.severity,
     status: status(bug),
     category: bugFinderCategoryLabel(bug.category),
-    foundBy: bug.foundBy,
     title: bug.title,
     issue: bug.problem,
     reproduction: [...(bug.reproduction ?? [])],
