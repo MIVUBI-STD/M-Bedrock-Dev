@@ -11,7 +11,11 @@ Canonical owners remain:
 
 ## Current Drive batch
 
-22 current selected artifacts were source-audited individually.
+### Artifact integrity
+
+All 22 selected files used in this reconciliation were fetched from the current Drive IDs in `workspace/project-registry.json`; their SHA-256 values matched the registry fingerprints. Filename/version-label mismatches are therefore treated as metadata issues rather than evidence that a different artifact was audited.
+
+22 current selected artifacts were source-audited individually and reconciled against the current Drive-bound artifact identity.
 
 | Target | Artifact version | Reconciled source result | Evidence |
 |---|---:|---|---|
@@ -77,6 +81,18 @@ Examples of historical/suspicious behavior that was **not** blindly promoted:
 - Orb L2 temporary debug picker without a proven ordinary-player trigger path;
 - Aftershock scanner/dev surfaces without a proven ordinary-player capability path;
 - BlitzBuild script-event diagnostics, which are not ordinary-player reachable because `/scriptevent` requires operator-level Game Directors permission and cheats.
+
+## Batch source-audit finalization
+
+Source-side reconciliation for the current 22-artifact Drive batch is complete.
+
+- **12 source-proven BUGs**: 4 Blocker + 8 Major.
+- **1 source-proven DESIGN_MISMATCH**: 1 Minor.
+- Remaining zero-finding maps retain only narrow runtime-sensitive residue where native simulation/timing cannot be decided safely from source, or symptom-triggered checks that should not be run speculatively.
+- No broad manual-testing matrix is required by this batch.
+- Runtime was **not executed** in this source-audit pass.
+- Findings remain non-canonical until human review/approval promotes them into `workspace/reports/*.json`.
+
 
 ## Approval boundary
 
