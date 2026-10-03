@@ -107,8 +107,21 @@ describe("Map Audit Output V2 projection", () => {
         issueTypes: ["BUG"],
         gameplayFlows: ["PROGRESSION"],
         test: "Run the objective once and observe completion.",
+        assertions: [{
+          findingId: "link:unresolved",
+          test: "Run the objective once and observe completion.",
+        }],
         missingProof: ["One exact runtime observation."],
       }],
+      control: {
+        status: "READY_FOR_REVIEW",
+        currentStage: "COMPLETE",
+        allowedNextAction: "PREPARE_REVIEW",
+        continuationOwner: "REVIEW",
+        requiresNewAuditRun: false,
+        blockingCheckpointIds: [],
+        reasons: [],
+      },
       honesty: {
         policy: "no-hidden-material-finding",
         status: "PASS",
@@ -127,5 +140,11 @@ describe("Map Audit Output V2 projection", () => {
       .toEqual(["PROVEN", "NEED_VALIDATION"]);
     expect(report.bugs[1]?.missingProof)
       .toBe("One exact runtime observation.");
+    expect(report.control.allowedNextAction)
+      .toBe("PREPARE_REVIEW");
+    expect(report.coverage.disposition)
+      .toBe("accounted");
+    expect(report.gameDesign.objectiveGrounding)
+      .toBe("authored");
   });
 });
