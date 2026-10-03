@@ -36,6 +36,23 @@ A dedicated schema-contract regression test now verifies that Map Audit Output V
 
 `BuildSelectedMapAuditReportResult` also preserves `fullMapReplica`, so baseline/delta evidence cannot disappear between the canonical audit run and final report handoff.
 
+### Replica divergence classification boundary
+
+Replica comparison intentionally separates raw world/topology difference from gameplay significance.
+
+Current flow:
+
+```text
+world/topology proof
+→ EQUIVALENT
+  or DIVERGENCE_REQUIRES_CLASSIFICATION
+  or INCOMPLETE_PROOF
+→ semantic/causal classification
+→ only grounded gameplay consequence continues as an issue
+```
+
+Region-role proof already excludes authored mutable/ignored areas from normal voxel proof where those roles are grounded. Mixed/unknown differences are not automatically called material; they remain classification residue.
+
 ### Full-map receipt integration
 
 `SelectedMapAuditRun` now exposes `fullMapReplica` when per-replica world/topology proof exists.
@@ -245,11 +262,11 @@ PROVEN projection now requires a minimum-sufficient-proof saturation assessment.
 
 Each failure family also carries `familyProofCriteria[]` as domain-specific proof guidance. Examples include completion accounting for progression, ownership/isolation for multi-arena, identity/scope/idempotency for inventory, generation validation for deferred work, and residency/platform ownership for chunk simulation.
 
-The deterministic PROVEN projection gate currently enforces the universal saturation checks above. Family-specific criteria guide proof navigation and stop decisions, but are not yet a separate machine-evaluated saturation receipt.
+The deterministic PROVEN projection gate now enforces both universal saturation and an explicit `FamilyProofReceipt`. Each required family criterion must be satisfied and bound to concrete evidence before the finding may project as PROVEN.
 
 If universal saturation is incomplete, a `CONFIRMED_DEFECT_READY` resolution is not projected as PROVEN. The honesty gate then prevents `READY_FOR_REVIEW`.
 
-Proof navigation should stop when the universal gate is satisfied and applicable family proof questions are grounded. Benchmarking must verify that this guidance is sufficient and does not permit false PROVEN decisions.
+Proof navigation should stop only when universal and family-specific proof are both saturated. Unsaturated confirmation-ready findings remain visible as NEED_VALIDATION and are tracked by the honesty gate.
 
 ### Historical failure search pressure
 
@@ -355,6 +372,15 @@ All of these signals are included in the honesty/non-suppression gate, so they c
 - LOCAL_MINECRAFT/LIVE_MINECRAFT remains required only for irreducible runtime residue;
 - false-negative / false-positive rates still need real-map benchmark measurement;
 - semantic Detection Gaps are intentionally allowed to block audit rather than produce false PASS.
+
+### Negative precision calibration
+
+Calibration now includes explicit negative/known-safe candidates for:
+
+- an exact-target exclusion guard that legitimately blocks a defect;
+- a repaired topology translation that matches the expected replica offset.
+
+They remain non-scorable candidates until artifact fingerprint/frozen expectation requirements are satisfied. This improves precision coverage without fabricating readiness.
 
 ### Benchmark contract alignment
 
