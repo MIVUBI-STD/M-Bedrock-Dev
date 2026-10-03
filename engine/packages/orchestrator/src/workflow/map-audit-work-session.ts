@@ -288,7 +288,7 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
           projectId: input.projectId,
           projectName:
             input.projectName,
-          taskClass: "AUDIT",
+          taskClass: "DIAGNOSE",
           artifact,
           work,
           ...(input.driveFolderId ===
