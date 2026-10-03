@@ -74,6 +74,14 @@ function resolution(
       schemaVersion: 1 as const,
       policy: "bounded-counterproof-search" as const,
       searchedDimensions,
+      dimensionReceipts: searchedDimensions.map((dimension) => ({
+        dimension,
+        scopeIds: ["runtime:arena", "policy:arena-capacity"],
+        evidenceIds: [
+          "world:arena-count",
+          "capacity:safe-concurrency",
+        ],
+      })),
       scopeIds: ["runtime:arena", "policy:arena-capacity"],
       evidenceIds: [
         "world:arena-count",
@@ -86,21 +94,21 @@ function resolution(
 }
 
 describe("gameplay defect resolution crosscheck depth", () => {
-  it("auto-confirms a source-proven contradiction after bounded graph counter-proof search", () => {
+  it("keeps ownership-sensitive contradiction in targeted counterproof continuation after safe automatic search", () => {
     const result = assessGameplayDefectResolutionGate(graph);
 
-    expect(result.status).toBe(
-      "READY_FOR_PROPOSED_BUG_SET",
-    );
-    expect(result.confirmedDefectReadyIds).toEqual([
-      "link:arena-capacity",
-    ]);
+    expect(result.status).toBe("BLOCKED");
+    expect(result.confirmedDefectReadyIds).toEqual([]);
     expect(
       result.counterProofSearchRequiredIds,
-    ).toEqual([]);
+    ).toEqual(["link:arena-capacity"]);
     expect(
-      result.resolutions[0]?.counterProofSearch?.conclusion,
-    ).toBe("NO_BLOCKING_PROOF");
+      result.resolutions[0]?.counterProofSearch?.searchedDimensions,
+    ).toEqual([
+      "exclusion",
+      "guard",
+      "scope",
+    ]);
   });
 
   it("rejects shallow one-dimension counter-proof search for ownership-sensitive defects", () => {
@@ -142,7 +150,7 @@ describe("gameplay defect resolution crosscheck depth", () => {
       );
 
     expect(result.blockingCounterProofIds).toEqual([]);
-    expect(result.confirmedDefectReadyIds).toEqual([
+    expect(result.counterProofSearchRequiredIds).toEqual([
       "link:arena-capacity",
     ]);
   });
