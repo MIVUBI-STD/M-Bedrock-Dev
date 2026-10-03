@@ -34,6 +34,34 @@ const falsePositiveRate =
     ? null
     : metrics.fp / (metrics.fp + metrics.tn);
 
+const auditQuality = data.auditQuality ?? undefined;
+const totalVisibleFindings =
+  auditQuality === undefined
+    ? undefined
+    : (
+        auditQuality.totalVisibleFindings ??
+        auditQuality.proven +
+          auditQuality.needValidation
+      );
+const provenRate =
+  auditQuality === undefined ||
+  totalVisibleFindings === 0
+    ? null
+    : auditQuality.proven /
+      totalVisibleFindings;
+const needValidationRate =
+  auditQuality === undefined ||
+  totalVisibleFindings === 0
+    ? null
+    : auditQuality.needValidation /
+      totalVisibleFindings;
+const runtimeResidueRate =
+  auditQuality === undefined ||
+  totalVisibleFindings === 0
+    ? null
+    : auditQuality.runtimeResidue /
+      totalVisibleFindings;
+
 const output = {
   ...data,
   metrics: {
@@ -43,6 +71,17 @@ const output = {
     specificity,
     falsePositiveRate,
   },
+  ...(auditQuality === undefined
+    ? {}
+    : {
+        auditQuality: {
+          ...auditQuality,
+          totalVisibleFindings,
+          provenRate,
+          needValidationRate,
+          runtimeResidueRate,
+        },
+      }),
 };
 
 process.stdout.write(JSON.stringify(output, null, 2) + "\n");
