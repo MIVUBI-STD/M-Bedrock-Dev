@@ -130,9 +130,11 @@ export interface SelectedMapAuditRun {
     readonly modelMayAuthorizeCompletion: boolean;
   };
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
-  readonly readyIssues: readonly ReadyAuditIssueProjection[];
-  readonly readyBugs: readonly ReadyAuditIssueProjection[];
-  readonly readyDesignMismatches: readonly ReadyAuditIssueProjection[];
+  readonly issueLanes: {
+    readonly BUG: readonly ReadyAuditIssueProjection[];
+    readonly DESIGN_MISMATCH:
+      readonly ReadyAuditIssueProjection[];
+  };
   readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
@@ -152,9 +154,7 @@ function deriveSelectedMapAuditControl(input: {
   | "currentStage"
   | "allowedNextAction"
   | "continuation"
-  | "readyIssues"
-  | "readyBugs"
-  | "readyDesignMismatches"
+  | "issueLanes"
   | "candidateGroups"
   | "status"
   | "blockingCheckpointIds"
@@ -164,24 +164,26 @@ function deriveSelectedMapAuditControl(input: {
     input.admission.firstBlockingStage === undefined ||
     input.admission.firstBlockingStage === "PROVE" ||
     input.admission.firstBlockingStage === "REPORT";
-  const readyIssues = proveAuthorized
+  const allReadyIssues = proveAuthorized
     ? projectReadyAuditIssues(
         input.scenario.graph,
         input.scenario.defectResolution,
         input.capabilityDelivery,
       )
     : [];
-  const readyBugs = readyIssues.filter(
-    (item) => item.reportIssueType === "BUG",
-  );
-  const readyDesignMismatches = readyIssues.filter(
-    (item) =>
-      item.reportIssueType === "DESIGN_MISMATCH",
-  );
+  const issueLanes = {
+    BUG: allReadyIssues.filter(
+      (item) => item.reportIssueType === "BUG",
+    ),
+    DESIGN_MISMATCH: allReadyIssues.filter(
+      (item) =>
+        item.reportIssueType === "DESIGN_MISMATCH",
+    ),
+  } as const;
   const candidateGroups = proveAuthorized
     ? groupReadyAuditIssuesForCandidateCoverage(
         input.scenario.graph,
-        readyIssues,
+        allReadyIssues,
       )
     : [];
   const executionTrace = deriveAuditExecutionTrace({
@@ -226,9 +228,7 @@ function deriveSelectedMapAuditControl(input: {
     currentStage,
     allowedNextAction,
     continuation,
-    readyIssues,
-    readyBugs,
-    readyDesignMismatches,
+    issueLanes,
     candidateGroups,
     status:
       input.admission.status === "READY"
