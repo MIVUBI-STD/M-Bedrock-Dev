@@ -1,14 +1,20 @@
 # Bug Report Ownership
 
-M-Bedrock uses one canonical bug-report authority with multiple consumers and projections.
+M-Bedrock separates **audit truth** from the **approved bug ledger**. They are different scopes, not competing authorities.
 
 ## Core rule
 
 ```text
-one bug domain
-→ one canonical persisted state
+SelectedMapAuditRun / Map Audit Report
+→ complete material finding truth
+   (PROVEN + NEED_VALIDATION, BUG + DESIGN_MISMATCH)
+
+approved PROVEN BUG subset
+→ canonical Bug Report V2 persisted state
 → multiple read/export surfaces
 ```
+
+There is one authority per scope. Bug Report V2 must never be treated as proof that unresolved audit findings do not exist.
 
 Physical placement does not create ownership. A copy, preview, export, spreadsheet, PDF, or external QA note is not authoritative merely because it contains bug information.
 
@@ -16,7 +22,8 @@ Physical placement does not create ownership. A copy, preview, export, spreadshe
 
 | Concern | Canonical owner |
 |---|---|
-| Bug-report semantics and lifecycle | `engine/packages/bug-report/` |
+| Complete selected-map audit finding truth | `SelectedMapAuditRun` / Map Audit Report projection |
+| Approved bug semantics and lifecycle | `engine/packages/bug-report/` |
 | Persisted schema | `engine/schemas/bug-report/v2.schema.json` |
 | Current canonical bug-report state | `workspace/reports/*.json` |
 | Human/application presentation | `apps/bug-report-ui/` projection only |
@@ -44,11 +51,14 @@ This is an efficiency and integrity rule: unknown history stays unknown.
 ## Canonical lifecycle
 
 ```text
-candidate evidence
-→ confirmed defect
-→ tester-readiness gate
-→ Proposed Bug Set
-→ chat review: approve / reject / needs-discussion
+selected-map audit
+→ Map Audit Report
+   ├─ PROVEN BUG
+   ├─ PROVEN DESIGN_MISMATCH
+   ├─ NEED_VALIDATION BUG
+   └─ NEED_VALIDATION DESIGN_MISMATCH
+→ approved PROVEN BUG subset
+→ Proposed Bug Set / review
 → Approved Bug Set
 → canonical Bug Report V2
 → repair / verification
