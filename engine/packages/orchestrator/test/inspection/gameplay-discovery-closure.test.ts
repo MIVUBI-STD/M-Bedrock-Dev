@@ -15,6 +15,7 @@ describe("gameplay discovery closure", () => {
         sourceCoverageComplete: false,
         sourceParseFailures: 1,
         unsupportedRelevantSourcePaths: [],
+        semanticUnderstandingGapPaths: [],
         unresolvedReferences: 0,
       });
 
@@ -33,6 +34,7 @@ describe("gameplay discovery closure", () => {
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
         unsupportedRelevantSourcePaths: [],
+        semanticUnderstandingGapPaths: [],
         unresolvedReferences: 1,
       });
 
@@ -56,6 +58,7 @@ describe("gameplay discovery closure", () => {
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
         unsupportedRelevantSourcePaths: [],
+        semanticUnderstandingGapPaths: [],
         unresolvedReferences: 0,
       });
 
@@ -76,6 +79,30 @@ describe("gameplay discovery closure", () => {
         sourceCoverageComplete: false,
         sourceParseFailures: 0,
         unsupportedRelevantSourcePaths: [
+          "feature_rules/ore.json",
+        ],
+        semanticUnderstandingGapPaths: [],
+        unresolvedReferences: 0,
+      });
+
+    expect(result.status).toBe("OPEN");
+    expect(
+      result.unsupportedRelevantSources,
+    ).toBe(1);
+  });
+
+  it("opens when gameplay sources are indexed but not semantically understood", () => {
+    const result =
+      assessGameplayDiscoveryClosure({
+        discoveredSurfaceIds: [
+          "runtime:state",
+        ],
+        sourceRelevantFiles: 1,
+        sourceIndexedFiles: 1,
+        sourceCoverageComplete: true,
+        sourceParseFailures: 0,
+        unsupportedRelevantSourcePaths: [],
+        semanticUnderstandingGapPaths: [
           "loot_tables/reward.json",
         ],
         unresolvedReferences: 0,
@@ -83,7 +110,7 @@ describe("gameplay discovery closure", () => {
 
     expect(result.status).toBe("OPEN");
     expect(
-      result.unsupportedRelevantSources,
+      result.semanticUnderstandingGaps,
     ).toBe(1);
   });
 
@@ -98,6 +125,7 @@ describe("gameplay discovery closure", () => {
         sourceCoverageComplete: true,
         sourceParseFailures: 0,
         unsupportedRelevantSourcePaths: [],
+        semanticUnderstandingGapPaths: [],
         unresolvedReferences: 0,
       });
 
