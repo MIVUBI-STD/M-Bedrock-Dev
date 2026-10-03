@@ -184,17 +184,8 @@ function syntheticNeedValidationFromKnowledge(
   capabilityDelivery:
     readonly GameplayCapabilityDeliveryAssessment[],
 ): readonly NeedValidationAuditIssueProjection[] {
-  const causalKnowledgeIds = new Set(
-    graph.causalLinks
-      .map((link) => link.knowledgeRequirementId)
-      .filter((id): id is string => id !== undefined),
-  );
-
   return graph.knowledgeReceipts.flatMap((receipt) => {
-    if (
-      receipt.status === "SATISFIED" ||
-      causalKnowledgeIds.has(receipt.requirementId)
-    ) {
+    if (receipt.status === "SATISFIED") {
       return [];
     }
 
