@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines the **Complete Bug Report / Map Audit Report** used by humans after selected-map analysis. This is the honest report surface and must preserve every material finding, whether `PROVEN` or `NEED_VALIDATION`.
+Defines the **Map Audit Report** used by humans after selected-map analysis. This is the honest report surface and must preserve every material finding, whether `PROVEN` or `NEED_VALIDATION`.
 
 The report engine must first try to resolve NEED_VALIDATION toward PROVEN using the bounded proof route. If deciding proof remains unavailable, the finding stays visible as NEED_VALIDATION; it must never be dropped merely because it is not yet proven.
 
@@ -240,7 +240,7 @@ baselineReusableForAllReplicas
 
 ## Human-facing report completeness
 
-The Complete Bug Report must render all material findings:
+The Map Audit Report must render all material findings:
 
 ```text
 PROVEN BUG
