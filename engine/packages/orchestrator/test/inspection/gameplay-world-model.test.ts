@@ -79,6 +79,7 @@ describe("gameplay world model", () => {
         uiForm: true,
         environment: true,
         asyncCommandTransaction: true,
+        dynamicCommand: true,
       },
     });
 
@@ -106,6 +107,7 @@ describe("gameplay world model", () => {
         "runtime:ui-form",
         "runtime:environment",
         "runtime:async-command-transaction",
+        "runtime:dynamic-command",
       ]),
     );
   });
