@@ -129,7 +129,7 @@ Review the audit in the same order the player experiences the game:
 ## Report output
 
 - [ ] Proposed Bug Set review resolved: approved / rejected / needs-discussion.
-- [ ] Needs Validation, Ambiguous, and Detection Gap remain in Map Audit Output / discussion and are not promoted as canonical bugs.
+- [ ] Unresolved runtime, ambiguous-intent, insufficient-evidence, and Detection Gap work remains outside BUG/DESIGN_MISMATCH issue lanes and is represented only by exact targeted proof/test obligations until resolved.
 - [ ] Canonical Bug Report V2 contains approved confirmed bugs only.
 - [ ] Coverage remains recorded in Map Audit Output.
 - [ ] Chat preview follows PREVIEW contract.
