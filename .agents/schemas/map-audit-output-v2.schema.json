@@ -267,6 +267,7 @@
           "status",
           "gameplayFlow",
           "failureDomain",
+          "informationMismatch",
           "issue",
           "reproduceSteps",
           "expected",
@@ -383,6 +384,17 @@
           },
           "issueType": {
             "const": "BUG"
+          },
+          "informationMismatch": {
+            "type": "boolean"
+          },
+          "playerFacingEvidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
           }
         },
         "allOf": [
@@ -435,6 +447,23 @@
                   "severity"
                 ]
               }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "informationMismatch": {
+                  "const": true
+                }
+              },
+              "required": [
+                "informationMismatch"
+              ]
+            },
+            "then": {
+              "required": [
+                "playerFacingEvidenceIds"
+              ]
             }
           }
         ],
@@ -626,6 +655,7 @@
           "status",
           "gameplayFlow",
           "failureDomain",
+          "informationMismatch",
           "issue",
           "reproduceSteps",
           "expected",
@@ -754,6 +784,17 @@
           },
           "issueType": {
             "const": "DESIGN_MISMATCH"
+          },
+          "informationMismatch": {
+            "type": "boolean"
+          },
+          "playerFacingEvidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
           }
         },
         "allOf": [
@@ -806,6 +847,23 @@
                   "severity"
                 ]
               }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "informationMismatch": {
+                  "const": true
+                }
+              },
+              "required": [
+                "informationMismatch"
+              ]
+            },
+            "then": {
+              "required": [
+                "playerFacingEvidenceIds"
+              ]
             }
           }
         ],
