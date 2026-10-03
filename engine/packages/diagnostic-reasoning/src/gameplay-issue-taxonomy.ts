@@ -84,6 +84,40 @@ export function collectGameplayIssueDomains(input: {
   const domains = new Set<GameplayIssueFailureDomain>();
 
   if (
+    /ui|feedback|form|dialogue|message|indicator|display|hud/i.test(
+      input.scenarioLabel,
+    )
+  ) {
+    return {
+      failureDomain: "ui-feedback-information",
+      contributingDomains: [
+        ...new Set([
+          "ui-feedback-information" as const,
+          ...collectGameplayIssueDomains(input),
+        ]),
+      ].sort(),
+      gameplayFlow,
+    };
+  }
+
+  if (
+    /async|deferred|timer|timeout|delay|callback/i.test(
+      input.scenarioLabel,
+    )
+  ) {
+    return {
+      failureDomain: "temporal-async",
+      contributingDomains: [
+        ...new Set([
+          "temporal-async" as const,
+          ...collectGameplayIssueDomains(input),
+        ]),
+      ].sort(),
+      gameplayFlow,
+    };
+  }
+
+  if (
     input.knowledgeDomain !== undefined &&
     DOMAIN_BY_KNOWLEDGE[input.knowledgeDomain]
   ) {
