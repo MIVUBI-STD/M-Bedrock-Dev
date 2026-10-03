@@ -354,7 +354,7 @@ Model task packets can now use `PROOF_NAVIGATION` to resolve a specific NEED_VAL
 
 The selected-map audit now computes an explicit `no-hidden-material-finding` assessment. It independently derives the material unresolved residue set from the scenario graph, RIG knowledge receipts, Gameplay Model Closure, negative-space signals, temporal risks, and defect-resolution state, then compares that set against visible NEED_VALIDATION findings.
 
-It also verifies that every `CONFIRMED_DEFECT_READY` causal link is visible as PROVEN.
+It verifies that every saturation-complete `CONFIRMED_DEFECT_READY` causal link is visible as PROVEN, while confirmation-ready links with incomplete universal/family proof remain visible as NEED_VALIDATION.
 
 Any mismatch is an honesty violation and forces the audit to remain `BLOCKED`; it cannot become `READY_FOR_REVIEW` merely because other closure gates passed.
 
