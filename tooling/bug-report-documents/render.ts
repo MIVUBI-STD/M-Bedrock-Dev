@@ -25,6 +25,61 @@ interface Args {
   readonly includeMinor: boolean;
 }
 
+interface MapAuditHtmlFinding {
+  readonly id: string;
+  readonly status: "PROVEN" | "NEED_VALIDATION";
+  readonly issueType: "BUG" | "DESIGN_MISMATCH";
+  readonly failureDomain: string;
+  readonly gameplayFlow: string;
+  readonly severity?: "Blocker" | "Major" | "Minor";
+  readonly issue: string;
+  readonly playerImpact?: string;
+  readonly reproduceSteps: readonly string[];
+  readonly expected: string;
+  readonly actual: string;
+  readonly proofCeiling: string;
+  readonly evidenceIds?: readonly string[];
+  readonly validationReason?: string;
+  readonly missingProof?: string;
+  readonly validationTest?: string;
+}
+
+interface MapAuditHtmlInput {
+  readonly schemaVersion: 2;
+  readonly artifactId: string;
+  readonly mapVersion: string;
+  readonly evidenceScope: {
+    readonly selectedArtifact: string;
+  };
+  readonly bugs: readonly MapAuditHtmlFinding[];
+  readonly designMismatches: readonly MapAuditHtmlFinding[];
+  readonly validationTests?: readonly {
+    readonly key: string;
+    readonly findingIds: readonly string[];
+    readonly test: string;
+  }[];
+}
+
+function isMapAuditHtmlInput(
+  value: unknown,
+): value is MapAuditHtmlInput {
+  if (
+    value === null ||
+    typeof value !== "object"
+  ) {
+    return false;
+  }
+  const record =
+    value as Record<string, unknown>;
+  return (
+    record.schemaVersion === 2 &&
+    typeof record.artifactId === "string" &&
+    typeof record.mapVersion === "string" &&
+    Array.isArray(record.bugs) &&
+    Array.isArray(record.designMismatches)
+  );
+}
+
 function parseArgs(argv: readonly string[]): Args {
   let input = "";
   let outDir = "";
@@ -224,6 +279,170 @@ function issueCard(issue: BugReportClientIssue): string {
     "  </div>",
     "</article>",
   ].join("\n");
+}
+
+function auditStatusLabel(
+  finding: MapAuditHtmlFinding,
+): string {
+  return finding.status === "PROVEN"
+    ? "PROVEN"
+    : "NEED VALIDATION";
+}
+
+function auditFindingCard(
+  finding: MapAuditHtmlFinding,
+): string {
+  const severity =
+    finding.status === "PROVEN"
+      ? finding.severity ?? "—"
+      : "UNPROVEN";
+  const validationRows =
+    finding.status === "NEED_VALIDATION"
+      ? [
+          '<div class="row"><div class="label">Why Unproven</div><div class="value">' +
+            escapeHtml(
+              finding.validationReason ??
+                "Deciding proof remains unresolved.",
+            ) +
+            "</div></div>",
+          '<div class="row"><div class="label">Missing Proof</div><div class="value">' +
+            escapeHtml(
+              finding.missingProof ??
+                "Exact deciding proof is not yet available.",
+            ) +
+            "</div></div>",
+          '<div class="row"><div class="label">Validation Test</div><div class="value">' +
+            escapeHtml(
+              finding.validationTest ??
+                "Resolve the stated proof obligation before promotion.",
+            ) +
+            "</div></div>",
+        ]
+      : [];
+
+  return [
+    '<article class="issue-card audit-status-' +
+      finding.status.toLowerCase().replace("_", "-") +
+      '">',
+    '  <header class="issue-head">',
+    '    <div class="issue-number">•</div>',
+    '    <div class="severity">' +
+      escapeHtml(auditStatusLabel(finding)) +
+      "</div>",
+    '    <div class="issue-title"><h2>' +
+      escapeHtml(finding.issue) +
+      "</h2>",
+    '      <div class="meta-line"><span>' +
+      escapeHtml(finding.id) +
+      "</span><span>" +
+      escapeHtml(finding.issueType) +
+      "</span><span>" +
+      escapeHtml(finding.failureDomain) +
+      "</span><span>" +
+      escapeHtml(finding.gameplayFlow) +
+      "</span><span>" +
+      escapeHtml(severity) +
+      "</span></div>",
+    "    </div>",
+    "  </header>",
+    '  <div class="issue-body">',
+    '<div class="row"><div class="label">Expected</div><div class="value">' +
+      escapeHtml(finding.expected) +
+      "</div></div>",
+    '<div class="row"><div class="label">Actual</div><div class="value">' +
+      escapeHtml(finding.actual) +
+      "</div></div>",
+    ...(finding.playerImpact
+      ? [
+          '<div class="row"><div class="label">Player Impact</div><div class="value">' +
+            escapeHtml(finding.playerImpact) +
+            "</div></div>",
+        ]
+      : []),
+    '<div class="row"><div class="label">Reproduce / Check</div><div class="value">' +
+      checklist(finding.reproduceSteps) +
+      "</div></div>",
+    ...validationRows,
+    '<div class="row"><div class="label">Proof Ceiling</div><div class="value">' +
+      escapeHtml(finding.proofCeiling) +
+      "</div></div>",
+    ...(finding.evidenceIds?.length
+      ? [
+          '<div class="row"><div class="label">Evidence</div><div class="value">' +
+            escapeHtml(finding.evidenceIds.join(", ")) +
+            "</div></div>",
+        ]
+      : []),
+    "  </div>",
+    "</article>",
+  ].join("\n");
+}
+
+function renderCompleteMapAuditHtml(
+  audit: MapAuditHtmlInput,
+): string {
+  const findings = [
+    ...audit.bugs,
+    ...audit.designMismatches,
+  ];
+  const proven =
+    findings.filter(
+      (item) => item.status === "PROVEN",
+    );
+  const needValidation =
+    findings.filter(
+      (item) =>
+        item.status === "NEED_VALIDATION",
+    );
+  const artifactLabel =
+    audit.evidenceScope?.selectedArtifact ||
+    audit.artifactId;
+
+  const baseCss = `
+body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sans-serif}
+.report{width:min(1060px,calc(100% - 28px));margin:24px auto;background:#fff;border:1px solid #d9dee8;border-radius:14px;overflow:hidden}
+.hero{padding:28px 32px;background:#172b4d;color:#fff}.hero h1{margin:0 0 6px}.hero p{margin:0;opacity:.8}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #d9dee8}
+.metric{padding:16px 20px;border-right:1px solid #d9dee8}.metric:last-child{border-right:0}.metric span{display:block;color:#667085;font-size:11px;font-weight:700;text-transform:uppercase}.metric strong{font-size:18px}
+.section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}
+.issue-card{margin:0 0 18px;border:1px solid #d9dee8;border-radius:10px;overflow:hidden}.issue-head{display:grid;grid-template-columns:36px 130px 1fr;align-items:center;background:#f8fafc;border-bottom:1px solid #d9dee8}.issue-number,.severity{padding:10px 12px;font-size:12px;font-weight:800}.issue-title{padding:10px 14px 10px 0}.issue-title h2{margin:0;font-size:16px}.meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;color:#667085;font-size:10px;font-weight:700;text-transform:uppercase}
+.audit-status-proven .severity{color:#166534}.audit-status-need-validation .severity{color:#9a6700}
+.row{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #d9dee8}.label{padding:13px 15px;background:#f8fafc;color:#3157a4;font-size:12px;font-weight:800}.value{padding:13px 16px}.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}
+@media(max-width:700px){.report{width:100%;margin:0;border-radius:0}.metrics{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+@media print{body{background:#fff}.report{width:100%;margin:0;border:0}.issue-card{break-inside:avoid-page}}
+`;
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHtml(artifactLabel)} — Complete Bug Report</title>
+<style>${baseCss}</style>
+</head>
+<body>
+<main class="report">
+  <section class="hero">
+    <h1>${escapeHtml(artifactLabel)} — Complete Bug Report</h1>
+    <p>Map version ${escapeHtml(audit.mapVersion)} · selected-artifact audit</p>
+  </section>
+  <section class="metrics">
+    <div class="metric"><span>Total Findings</span><strong>${findings.length}</strong></div>
+    <div class="metric"><span>Proven</span><strong>${proven.length}</strong></div>
+    <div class="metric"><span>Need Validation</span><strong>${needValidation.length}</strong></div>
+  </section>
+  <section class="section">
+    <div class="note"><strong>Honesty rule:</strong> NEED VALIDATION means the issue is materially relevant but not yet fully proven. It remains visible until deciding proof confirms or disproves it. No final severity is assigned while unproven.</div>
+    <h2>PROVEN</h2>
+    ${proven.length > 0 ? proven.map(auditFindingCard).join("\n") : "<p>No proven findings.</p>"}
+  </section>
+  <section class="section">
+    <h2>NEED VALIDATION / UNPROVEN</h2>
+    ${needValidation.length > 0 ? needValidation.map(auditFindingCard).join("\n") : "<p>No unresolved material findings.</p>"}
+  </section>
+</main>
+</body>
+</html>`;
 }
 
 function renderHtml(
@@ -590,10 +809,32 @@ ${cards}
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const source = await readFile(args.input, "utf8");
+  const raw = JSON.parse(source) as unknown;
+
+  if (isMapAuditHtmlInput(raw)) {
+    const label =
+      raw.evidenceScope?.selectedArtifact ||
+      raw.artifactId;
+    const stem =
+      safeSegment(label) +
+      " v" +
+      safeSegment(raw.mapVersion) +
+      " - Complete Bug Report";
+    await mkdir(args.outDir, { recursive: true });
+    const output = join(args.outDir, stem + ".html");
+    await writeFile(
+      output,
+      renderCompleteMapAuditHtml(raw),
+      "utf8",
+    );
+    process.stdout.write(output + "\n");
+    return;
+  }
+
   const parsed = parseBugReportV2Json(source);
   if (!parsed.ok) {
     throw new Error(
-      "Input is not valid Bug Report V2: " +
+      "Input is neither Map Audit Output V2 nor valid Approved Bug Report V2: " +
         parsed.issues
           .map((issue) =>
             issue.path + ": " + issue.message
