@@ -196,6 +196,19 @@ export interface GameplayWorldModel {
       incomplete: number;
       noProof: number;
     };
+    replicaProof: readonly {
+      arenaId: string;
+      status:
+        | "complete-proof"
+        | "bounded-proof"
+        | "diverged"
+        | "incomplete-proof"
+        | "budget-exceeded"
+        | "no-proof";
+      mismatchCount: number;
+      unresolvedBlocks: number;
+      evidenceIds: readonly string[];
+    }[];
   };
   spatial: {
     resolvedScriptEffects: number;
@@ -1375,6 +1388,17 @@ export function deriveGameplayWorldModel(
               item.status === "no-proof",
           ).length,
       },
+      replicaProof:
+        replicaProof.map((item) => ({
+          arenaId: item.arenaId,
+          status: item.status,
+          mismatchCount: item.mismatchCount,
+          unresolvedBlocks: item.unresolvedBlocks,
+          evidenceIds: [
+            "arena-replica-proof:" +
+              item.arenaId,
+          ],
+        })),
     },
     spatial: {
       resolvedScriptEffects:
