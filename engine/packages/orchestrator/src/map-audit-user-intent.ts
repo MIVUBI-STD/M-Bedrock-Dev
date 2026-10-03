@@ -101,6 +101,36 @@ function unique(
   )].sort((a, b) => a.localeCompare(b));
 }
 
+export function createFallbackAuditUserIntent(
+  rawPrompt: string,
+): AuditUserIntentEnvelope {
+  const raw = clean(rawPrompt);
+
+  if (!raw) {
+    throw new Error(
+      "Raw user prompt must be non-empty.",
+    );
+  }
+
+  return {
+    schemaVersion: 1,
+    policy:
+      "user-input-is-search-guidance-not-gameplay-authority",
+    fragments: [{
+      id: "prompt:1",
+      raw,
+    }],
+    items: [],
+    unmappedFragmentIds: ["prompt:1"],
+    priorityDomains: [],
+    priorityPlayerFlows: [],
+    ambiguities: [
+      "The raw prompt was preserved but has not yet been safely translated into bounded audit guidance.",
+    ],
+    blockingAmbiguities: [],
+  };
+}
+
 export function normalizeAuditUserIntent(
   input: AuditUserIntentEnvelope,
 ): AuditUserIntentEnvelope {
