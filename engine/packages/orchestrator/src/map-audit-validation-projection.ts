@@ -11,6 +11,9 @@ import {
   type GameplayIssueFlowStage,
 } from "../../diagnostic-reasoning/src/index.js";
 import {
+  assessReadyResolutionSaturation,
+} from "./map-audit-proof-saturation.js";
+import {
   issueTypeFor,
   projectionContext,
   projectReadyAuditIssues,
@@ -30,7 +33,37 @@ export function projectNeedValidationAuditIssues(
     gate.blockingCounterProofIds,
   );
   const proven = new Set(
-    gate.confirmedDefectReadyIds,
+    gate.resolutions
+      .filter((resolution) =>
+        gate.confirmedDefectReadyIds.includes(
+          resolution.causalLinkId,
+        ) &&
+        assessReadyResolutionSaturation(
+          graph,
+          resolution,
+        ).saturated
+      )
+      .map((resolution) =>
+        resolution.causalLinkId
+      ),
+  );
+  const unsaturatedConfirmed = new Map(
+    gate.resolutions
+      .filter((resolution) =>
+        gate.confirmedDefectReadyIds.includes(
+          resolution.causalLinkId,
+        )
+      )
+      .map((resolution) => [
+        resolution.causalLinkId,
+        assessReadyResolutionSaturation(
+          graph,
+          resolution,
+        ),
+      ])
+      .filter(([, assessment]) =>
+        !assessment.saturated
+      ),
   );
   const translationRequired = new Set(
     gate.gameplayTranslationRequiredIds,
@@ -66,6 +99,10 @@ export function projectNeedValidationAuditIssues(
         detectionResolutionRequired.has(link.id);
       const needsCounterProofResolution =
         counterProofResolutionRequired.has(link.id);
+      const saturationAssessment =
+        unsaturatedConfirmed.get(link.id);
+      const needsFamilyProof =
+        saturationAssessment !== undefined;
 
       if (
         !isRuntime &&
@@ -73,7 +110,8 @@ export function projectNeedValidationAuditIssues(
         !needsTranslation &&
         !needsRuntimeResolution &&
         !needsDetectionResolution &&
-        !needsCounterProofResolution
+        !needsCounterProofResolution &&
+        !needsFamilyProof
       ) {
         return [];
       }
@@ -99,7 +137,9 @@ export function projectNeedValidationAuditIssues(
         (item) => item.causalLinkId === link.id,
       );
       const validationReason =
-        needsTranslation
+        needsFamilyProof
+          ? "The contradiction is otherwise confirmation-ready, but minimum family-specific proof is not yet fully evidenced."
+          : needsTranslation
           ? "A source contradiction exists, but the player-facing defect contract is not complete enough for final confirmation."
           : needsCounterProofResolution
             ? "A material contradiction exists, but bounded counter-proof search is not yet complete."
@@ -112,7 +152,14 @@ export function projectNeedValidationAuditIssues(
                 : "Material proof remains unresolved.";
 
       const missingProof =
-        needsTranslation
+        needsFamilyProof
+          ? "Family proof criteria: " +
+            saturationAssessment!.missingFamilyCriteriaIds.join(", ") +
+            (saturationAssessment!.missingUniversalCriteriaIds.length > 0
+              ? "; universal criteria: " +
+                saturationAssessment!.missingUniversalCriteriaIds.join(", ")
+              : "")
+          : needsTranslation
           ? "Complete gameplay trigger, expected/actual behavior, player consequence, and affected scope."
           : needsCounterProofResolution
             ? "Bounded search proving whether any reachable guard/owner/scope/generation/cleanup/exclusion prevents the wrong state."
@@ -121,7 +168,13 @@ export function projectNeedValidationAuditIssues(
               : "Evidence that resolves the unsupported or semantically unknown dependency.";
 
       const validationTest =
-        suppliedResolution?.narrowRuntimeQuestion ??
+        needsFamilyProof
+          ? "Resolve only the missing family proof criteria for '" +
+            scenario.label +
+            "': " +
+            saturationAssessment!.missingFamilyCriteriaIds.join(", ") +
+            ". Bind each satisfied criterion to concrete selected-artifact evidence before promotion."
+          : suppliedResolution?.narrowRuntimeQuestion ??
         (
           "Exercise scenario '" +
           scenario.label +
