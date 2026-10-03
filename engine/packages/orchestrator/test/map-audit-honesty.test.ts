@@ -126,6 +126,8 @@ describe("map audit honesty gate", () => {
       temporalRisks: [],
       discoveryChallenges: [],
       sharedResourceSignals: [],
+      compoundBoundaries: [],
+      accumulationGrowth: [],
       visibleIssues: [visibleRuntimeFinding()],
     });
 
@@ -144,6 +146,8 @@ describe("map audit honesty gate", () => {
       temporalRisks: [],
       discoveryChallenges: [],
       sharedResourceSignals: [],
+      compoundBoundaries: [],
+      accumulationGrowth: [],
       visibleIssues: [],
     });
 
