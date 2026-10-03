@@ -143,6 +143,40 @@ Primary domains are owned by `gameplay-issue-taxonomy.ts`. Do not invent map-spe
 
 Severity remains downstream review state and requires grounded player impact. Do not infer severity from scenario name, domain, or diagnostic code alone.
 
+## Canonical issue taxonomy
+
+Every reportable issue must carry:
+
+```text
+issueType
+gameplayFlow
+failureDomain
+contributingDomains
+severity when confirmed for report
+```
+
+Primary failure domains:
+
+```text
+arena-multi-arena
+inventory-economy
+progression-wave-objective
+chunk-simulation
+player-lifecycle
+entity-ai-combat
+world-structure-mutation
+ui-feedback-information
+state-ownership
+temporal-async
+boundary-capacity
+persistence-recovery
+platform-performance
+```
+
+Use one primary `failureDomain` for reader clarity. Preserve all materially involved cross-system domains in `contributingDomains`. Example: a wave that cannot finish because remote mobs stop simulating is primarily `progression-wave-objective`, with `chunk-simulation` and `entity-ai-combat` as contributing domains.
+
+Do not infer severity from the domain name. Severity is based on proven player/game impact.
+
 ## Report issue types
 
 Every confirmed reportable issue must be assigned exactly one report issue type:
