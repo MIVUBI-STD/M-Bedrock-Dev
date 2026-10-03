@@ -160,10 +160,11 @@ Evidence
 Proof Ceiling
 ```
 
-PROVEN bugs additionally require:
-- Blocker / Major / Minor severity;
+PROVEN findings require:
 - cleared counter-evidence;
 - tester-ready reproduction.
+
+Blocker / Major / Minor severity is included only after impact classification is grounded. Severity becomes mandatory when a PROVEN BUG is promoted into approved Bug Report V2; the Map Audit Report must not invent severity merely to satisfy presentation.
 
 ## DESIGN_MISMATCH record
 
@@ -255,6 +256,7 @@ Rules:
 - keep unresolved findings visible when proof is still missing;
 - show `validationReason`, `missingProof`, and `validationTest` for NEED_VALIDATION;
 - do not assign final Blocker/Major/Minor severity to NEED_VALIDATION;
+- do not invent severity for PROVEN findings before grounded impact classification;
 - do not convert NEED_VALIDATION into PROVEN merely to make the report look complete;
 - do not omit a material finding from the human-facing report because it is not eligible for the approved bug ledger.
 
