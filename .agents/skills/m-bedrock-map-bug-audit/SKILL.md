@@ -87,6 +87,7 @@ Required references:
 - `references/gameplay-flow-contract.md`
 - `references/multi-arena-contract.md`
 - `references/bug-report-contract.md`
+- `references/user-input-translation-cases.md`
 - `../../../docs/03-analysis/gameplay-model-closure.md`
 - `../../../docs/03-analysis/gameplay-audit-blind-spots.md`
 - `../../../docs/03-analysis/cross-system-interaction-audit.md`
