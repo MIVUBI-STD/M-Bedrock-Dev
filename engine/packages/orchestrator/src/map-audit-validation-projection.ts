@@ -384,6 +384,161 @@ function syntheticNeedValidationFromShallowScenarios(
   });
 }
 
+function syntheticNeedValidationFromGraphStructure(
+  graph: GameplayScenarioGraph,
+): readonly NeedValidationAuditIssueProjection[] {
+  const findings: NeedValidationAuditIssueProjection[] = [];
+
+  for (const component of graph.components) {
+    if (!component.orphan && component.gameplayPurpose.trim()) {
+      continue;
+    }
+    const reason =
+      component.orphan
+        ? "Gameplay/technical component is not correlated to any material scenario."
+        : "Gameplay/technical component has no grounded gameplay purpose.";
+    findings.push({
+      status: "NEED_VALIDATION",
+      issueType: "BUG",
+      failureDomain: "state-ownership",
+      contributingDomains: ["state-ownership"],
+      gameplayFlow: "ACTIVE_GAMEPLAY",
+      informationMismatch: false,
+      playerFacingEvidenceIds: [],
+      causalLinkId:
+        (component.orphan
+          ? "orphan-component:"
+          : "missing-purpose:") +
+        component.id,
+      scenarioId:
+        "structure:" + component.id,
+      gameplayStage: "ACTIVE_GAMEPLAY",
+      scenarioLabel:
+        component.orphan
+          ? "orphan-component"
+          : "missing-gameplay-purpose",
+      gameplayTrigger:
+        "Locate and exercise gameplay that depends on " +
+        component.label +
+        ".",
+      gameplayConsequence:
+        "The audit cannot prove how this component participates in gameplay, so a defect could remain outside scenario reasoning.",
+      expectedOutcome:
+        "Every material component has a gameplay purpose and at least one scenario correlation.",
+      actualOutcome: reason,
+      affectedScope: component.id,
+      subjectIds: [component.id],
+      componentIds: [component.id],
+      evidenceIds: [...component.evidenceIds],
+      validationReason: reason,
+      missingProof:
+        "A concrete gameplay purpose and scenario dependency for " +
+        component.label +
+        ".",
+      validationTest:
+        "Trace " +
+        component.label +
+        " from a player/system trigger through its observable gameplay effect and confirm which scenario owns it.",
+      validationGroupKey:
+        "component-coverage:" + component.id,
+    });
+  }
+
+  const scenarioIds = new Set(
+    graph.scenarios.map((scenario) => scenario.id),
+  );
+  for (const scenario of graph.scenarios) {
+    const missingChildren =
+      scenario.composedScenarioIds.filter(
+        (id) => !scenarioIds.has(id),
+      );
+    if (missingChildren.length > 0) {
+      findings.push({
+        status: "NEED_VALIDATION",
+        issueType: "BUG",
+        failureDomain: "progression-wave-objective",
+        contributingDomains: [
+          "progression-wave-objective",
+        ],
+        gameplayFlow: "PROGRESSION",
+        informationMismatch: false,
+        playerFacingEvidenceIds: [],
+        causalLinkId:
+          "incomplete-composition:" + scenario.id,
+        scenarioId: scenario.id,
+        gameplayStage: scenario.gameplayStage,
+        scenarioLabel: scenario.label,
+        gameplayTrigger: scenario.purpose,
+        gameplayConsequence:
+          "The composed gameplay journey references missing child scenarios, so required flow can be omitted from proof.",
+        expectedOutcome:
+          "Every composed scenario references concrete existing child scenarios.",
+        actualOutcome:
+          "Missing child scenario(s): " +
+          missingChildren.sort().join(", "),
+        affectedScope: scenario.id,
+        subjectIds: [...scenario.sourceSubjectIds],
+        componentIds: [...scenario.componentIds],
+        evidenceIds: [],
+        validationReason:
+          "Scenario composition is incomplete.",
+        missingProof:
+          "Concrete child scenario coverage for: " +
+          missingChildren.sort().join(", "),
+        validationTest:
+          "Trace the composed gameplay flow for '" +
+          scenario.label +
+          "' and explicitly account for each missing child path.",
+        validationGroupKey:
+          "scenario-composition:" + scenario.id,
+      });
+    }
+
+    if (
+      scenario.composedScenarioIds.length === 0 &&
+      scenario.componentIds.length === 0
+    ) {
+      findings.push({
+        status: "NEED_VALIDATION",
+        issueType: "BUG",
+        failureDomain: "state-ownership",
+        contributingDomains: ["state-ownership"],
+        gameplayFlow: "ACTIVE_GAMEPLAY",
+        informationMismatch: false,
+        playerFacingEvidenceIds: [],
+        causalLinkId:
+          "scenario-without-components:" + scenario.id,
+        scenarioId: scenario.id,
+        gameplayStage: scenario.gameplayStage,
+        scenarioLabel: scenario.label,
+        gameplayTrigger: scenario.purpose,
+        gameplayConsequence:
+          "A gameplay scenario exists without concrete selected-artifact components, so its behavior cannot be grounded.",
+        expectedOutcome:
+          "Every material leaf scenario is bound to concrete selected-artifact components.",
+        actualOutcome:
+          "No concrete component binding exists.",
+        affectedScope: scenario.id,
+        subjectIds: [...scenario.sourceSubjectIds],
+        componentIds: [],
+        evidenceIds: [],
+        validationReason:
+          "Scenario lacks concrete component binding.",
+        missingProof:
+          "Selected-artifact component(s) that implement the scenario.",
+        validationTest:
+          "Trace scenario '" +
+          scenario.label +
+          "' to the scripts/functions/entities/state that actually implement it.",
+        validationGroupKey:
+          "scenario-components:" + scenario.id,
+      });
+    }
+  }
+
+  return sortIssues(findings);
+}
+
 export function projectAllNeedValidationAuditIssues(
   graph: GameplayScenarioGraph,
   gate: GameplayDefectResolutionGate,
@@ -403,6 +558,9 @@ export function projectAllNeedValidationAuditIssues(
     ...syntheticNeedValidationFromShallowScenarios(
       graph,
       capabilityDelivery,
+    ),
+    ...syntheticNeedValidationFromGraphStructure(
+      graph,
     ),
   ];
 
