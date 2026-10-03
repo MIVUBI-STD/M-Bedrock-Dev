@@ -84,7 +84,7 @@ function approvedProject() {
 }
 
 describe("project publication lifecycle", () => {
-  it("derives readiness without persisting another lifecycle state", () => {
+  it("derives publication readiness without persisting another lifecycle state", () => {
     const project = projectWithReport();
     const readiness =
       assessProjectApprovalReadiness({
