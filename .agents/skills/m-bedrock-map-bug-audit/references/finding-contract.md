@@ -64,16 +64,13 @@ Requires all of:
 - player-visible impact (`blocking`, `material`, or `limited`);
 - tester-verifiable in-game trigger.
 
-All confirmed defects are shown by default: Blocker, Major, and Minor.
+Every material finding shown to the operator uses exactly one public status:
 
-Production BUG / DESIGN_MISMATCH output is confirmation-only. Do not emit `Needs Validation`, `Ambiguous`, or `Detection Gap` as pseudo-issues.
+- `PROVEN` — contradiction is sufficiently proven and blocking counter-proof is cleared. BUG vs DESIGN_MISMATCH remains in `issueType`. PROVEN findings receive final severity.
+- `NEED_VALIDATION` — the finding remains materially plausible but final proof is still missing. It stays visible and must include `validationReason`, `missingProof`, and one exact `validationTest`. It must not receive final severity.
 
-Unresolved work is routed internally as an exact targeted test obligation:
-- `runtime-proof-required` → one narrow runtime falsification test;
-- `insufficient-evidence` → test only the missing predicate/dependency;
-- `ambiguous-intent` → keep outside the issue report until selected-artifact evidence resolves expected behavior;
-- `detection-gap` → one narrow tester action tied to the unresolved causal dependency.
+Internal causes such as `runtime-proof-required`, `insufficient-evidence`, `ambiguous-intent`, and `detection-gap` are reasons behind NEED_VALIDATION, not additional public status categories.
 
-A source-proven contradiction with a complete gameplay translation is automatically challenged by bounded counter-proof search. It must resolve to either `CONFIRMED_DEFECT_READY` or `BLOCKING_COUNTERPROOF`; it must not be parked in a generic validation state.
+A source-proven contradiction with a complete gameplay translation is automatically challenged by bounded counter-proof search. It should become PROVEN whenever the selected-artifact evidence is sufficient; only irreducible missing proof remains NEED_VALIDATION.
 
-Designed behavior, disproven candidates, and normal surfaces remain hidden.
+Designed behavior, disproved candidates, and proven-normal surfaces remain hidden from the finding list but stay in the audit trace.
