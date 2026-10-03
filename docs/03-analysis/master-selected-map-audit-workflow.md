@@ -88,6 +88,65 @@ It does **not** establish gameplay truth, Expected/Actual behavior, issue type, 
 
 ---
 
+# PRE-AUDIT — confirm the plan before work starts
+
+This is a communication gate, **not** an audit stage and not a second state machine.
+
+Before `audit <selected.mcworld>` starts:
+
+```text
+raw user request
+→ preserve/translate prompt
+→ build Pre-Audit Plan
+→ show plan in chat
+→ user confirms/corrects
+→ bind AuditUserIntentConfirmation
+→ start TARGET
+```
+
+For normal pre-testing work, the user is **not expected to know any bugs or symptoms yet**.
+
+The confirmation must focus on what the system will do:
+
+- exact target/map/version when known;
+- comprehensive selected-map gameplay audit objective;
+- full player journey coverage;
+- progression/completion/terminal/softlock checks;
+- state ownership/reset/cleanup/replay/recovery checks;
+- applicable multiplayer/multi-arena checks;
+- applicable inventory/loadout/economy checks;
+- applicable entity/combat/navigation/chunk-simulation checks;
+- applicable persistence/reconnect/reload checks;
+- world/structure/spatial mutation checks;
+- capacity/boundary/edge-case checks;
+- UI/player-facing capability mismatch checks;
+- cross-system interaction and counter-proof;
+- static/source-first proof strategy;
+- runtime only for irreducible behavior;
+- expected report/output structure.
+
+User-provided symptoms, suspicions, or special focus are optional additions to this plan.
+
+One explicit confirmation is sufficient. If the plan/interpretation materially changes afterward, regenerate it and confirm again. The old confirmation becomes stale automatically.
+
+The confirmation proves only:
+
+```text
+"this is the work the user wants"
+```
+
+It never proves:
+
+```text
+gameplay truth
+Expected / Actual behavior
+BUG / DESIGN_MISMATCH
+severity
+PROVEN status
+```
+
+---
+
 # 0. One-door entry
 
 ~~~
