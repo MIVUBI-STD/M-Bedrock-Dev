@@ -4,7 +4,7 @@ import type {
 } from "./inspection/gameplay-scenario-model.js";
 import type {
   ReadyAuditIssueProjection,
-} from "./map-audit-defect-projection.js";
+} from "./map-audit-issue-projection.js";
 
 export interface ReadyAuditCandidateGroup {
   readonly reportIssueType:
