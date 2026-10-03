@@ -385,11 +385,14 @@ function auditFindingCard(
     "    </div>",
     "  </header>",
     '  <div class="issue-body">',
-    '<div class="row"><div class="label">Expected</div><div class="value">' +
-      escapeHtml(finding.expected) +
+    '<div class="row"><div class="label">Reproduce / Check</div><div class="value">' +
+      checklist(finding.reproduceSteps) +
       "</div></div>",
     '<div class="row"><div class="label">Actual</div><div class="value">' +
       escapeHtml(finding.actual) +
+      "</div></div>",
+    '<div class="row"><div class="label">Expected</div><div class="value">' +
+      escapeHtml(finding.expected) +
       "</div></div>",
     ...(finding.playerImpact
       ? [
@@ -398,9 +401,6 @@ function auditFindingCard(
             "</div></div>",
         ]
       : []),
-    '<div class="row"><div class="label">Reproduce / Check</div><div class="value">' +
-      checklist(finding.reproduceSteps) +
-      "</div></div>",
     ...validationRows,
     '<div class="technical-row"><details class="technical"><summary>Audit Detail</summary><div class="technical-text">' +
       escapeHtml(
