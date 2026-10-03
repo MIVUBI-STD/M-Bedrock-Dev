@@ -14,14 +14,11 @@ function record(): any {
     revision: 1,
     artifact: {
       artifactId: "map:defense-v2",
-      artifactFingerprint: "sha256:map",
+      artifactFingerprint:
+        "sha256:map",
     },
     work: {},
-    knowledge: {
-      historicalRegressionIds: [],
-      failurePatternIds: [],
-      mapKnowledgeIds: [],
-    },
+    knowledge: {},
     publication: {},
   };
 }
@@ -31,7 +28,7 @@ describe("project lifecycle contracts", () => {
     expect(() =>
       normalizeProjectRecord({
         ...record(),
-        status: "done",
+        status: "ready-for-approval",
       })
     ).toThrow(
       "Unsupported project lifecycle status.",
