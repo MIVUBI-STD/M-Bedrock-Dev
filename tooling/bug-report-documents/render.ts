@@ -63,6 +63,10 @@ interface MapAuditHtmlFinding {
       readonly applicableBecause: readonly string[];
       readonly decisionRule: string;
     }[];
+    readonly historicalSearchHints: readonly {
+      readonly question: string;
+    }[];
+    readonly familyProofCriteria: readonly string[];
     readonly runtimeLastResort: boolean;
   };
 }
@@ -452,6 +456,22 @@ function auditFindingCard(
                       ']</span></li>',
                   ).join("") +
                   '</ol></div>' +
+                  (finding.proofNavigation.familyProofCriteria.length > 0
+                    ? '<div class="technical-sub"><strong>Family Proof Criteria</strong><ul>' +
+                      finding.proofNavigation.familyProofCriteria.map(
+                        (item) =>
+                          '<li>' + escapeHtml(item) + '</li>',
+                      ).join("") +
+                      '</ul></div>'
+                    : '') +
+                  (finding.proofNavigation.historicalSearchHints.length > 0
+                    ? '<div class="technical-sub"><strong>Historical Search Hints</strong><ul>' +
+                      finding.proofNavigation.historicalSearchHints.map(
+                        (item) =>
+                          '<li>' + escapeHtml(item.question) + '</li>',
+                      ).join("") +
+                      '</ul></div>'
+                    : '') +
                   (finding.proofNavigation.evidenceSubstitutions.length > 0
                     ? '<div class="technical-sub"><strong>Evidence Substitution</strong><ul>' +
                       finding.proofNavigation.evidenceSubstitutions.map(
