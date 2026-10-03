@@ -261,6 +261,8 @@ function deriveSelectedMapAuditControl(input: {
   const auditObligations =
     deriveAuditObligations({
       graph: input.scenario.graph,
+      defectResolution:
+        input.scenario.defectResolution,
       gameplayClosure: input.gameplayClosure,
       negativeSpace:
         stageAuthorized("STRESS")
