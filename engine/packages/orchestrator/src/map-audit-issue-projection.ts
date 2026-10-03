@@ -7,10 +7,15 @@ import type {
 import type {
   GameplayCapabilityDeliveryAssessment,
   GameplayReportIssueType,
+  GameplayIssueFailureDomain,
+  GameplayIssueFlowStage,
+  classifyGameplayIssue,
 } from "../../diagnostic-reasoning/src/index.js";
 
 export interface ReadyAuditIssueProjection {
   readonly reportIssueType: GameplayReportIssueType;
+  readonly failureDomain: GameplayIssueFailureDomain;
+  readonly gameplayFlow: GameplayIssueFlowStage;
   readonly causalLinkId: string;
   readonly scenarioId: string;
   readonly gameplayStage: string;
@@ -102,6 +107,25 @@ export function projectReadyAuditIssues(
         ...link.componentIds,
         ...(resolution.componentIds ?? []),
       ])].sort();
+      const knowledgeDomain =
+        link.knowledgeRequirementId === undefined
+          ? undefined
+          : graph.knowledgeRequirements.find(
+              (item) =>
+                item.id ===
+                link.knowledgeRequirementId,
+            )?.domain;
+      const classification =
+        classifyGameplayIssue({
+          gameplayStage:
+            scenario.gameplayStage,
+          scenarioLabel:
+            scenario.label,
+          componentIds,
+          ...(knowledgeDomain === undefined
+            ? {}
+            : { knowledgeDomain }),
+        });
       return {
         reportIssueType: reportIssueTypeFor(
           scenario.label,
@@ -109,6 +133,10 @@ export function projectReadyAuditIssues(
           componentIds,
           capabilityDelivery,
         ),
+        failureDomain:
+          classification.failureDomain,
+        gameplayFlow:
+          classification.gameplayFlow,
         causalLinkId: resolution.causalLinkId,
         scenarioId: scenario.id,
         gameplayStage: scenario.gameplayStage,
