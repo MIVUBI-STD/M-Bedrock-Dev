@@ -213,6 +213,7 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["hiddenGameplayDefects"]["compoundBoundaries"];
   readonly accumulationGrowth:
     InspectArtifactResult["hiddenGameplayDefects"]["accumulationGrowth"];
+  readonly userIntent?: AuditUserIntentEnvelope;
 }): Pick<
   SelectedMapAuditRun,
   | "executionTrace"
@@ -276,7 +277,7 @@ function deriveSelectedMapAuditControl(input: {
         input.scenario.defectResolution,
       gameplayWorld:
         input.gameplayWorld,
-      userIntent,
+      userIntent: input.userIntent,
       gameplayClosure: input.gameplayClosure,
       negativeSpace:
         stageAuthorized("STRESS")
@@ -591,6 +592,7 @@ function assembleSelectedMapAuditRun(
       hidden.compoundBoundaries,
     accumulationGrowth:
       hidden.accumulationGrowth,
+    userIntent,
   });
   const needValidationFindings = [
     ...control.issueLanes.BUG,
