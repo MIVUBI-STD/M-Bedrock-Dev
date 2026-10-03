@@ -4,23 +4,95 @@
 
 This is the operator-facing master sequence for one complete selected-map audit.
 
-It does not replace executable owners. Authority remains:
+It does not replace executable owners. Communication preflight happens before production audit authority:
 
 ~~~
-runSelectedMapAudit()
+raw user request
+→ normalized AuditUserIntentEnvelope
+→ Pre-Audit Plan shown in chat
+→ explicit user confirmation
+→ AuditUserIntentConfirmationReceipt
+→ runSelectedMapAudit()
 → mandatory-audit-procedure.ts
 → map-audit-admission.ts
 → scenario / proof owners
 ~~~
 
+The Pre-Audit Plan is a communication gate only. It is not an audit stage, gameplay authority, proof source, or second workflow.
+
 Use this document to know what happens next, what must exist before moving on, and where specialist evidence feeds the same canonical flow.
+
+---
+
+# PRE-AUDIT — confirm what will be checked
+
+## Goal
+
+Before any production audit work starts, confirm the planned audit scope and working method with the user.
+
+This workflow is designed for **pre-testing**. The user is not expected to know existing bugs or symptoms.
+
+## Required confirmation
+
+Build one compact Pre-Audit Plan from the user's request. It must state:
+
+~~~
+Target / selected map hint
+Audit objective
+Planned gameplay/system checks
+Proof strategy
+User-requested focus / constraints
+Expected output
+Optional symptoms / suspicions if supplied
+Ambiguities / unmapped input if relevant
+~~~
+
+The default planned checks cover, when applicable:
+
+- exact selected map/version identity;
+- complete player journey;
+- gameplay-surface discovery and semantic ownership;
+- progression / wave / objective completion;
+- terminal transitions and softlocks;
+- state ownership, reset, cleanup, replay, and stale/deferred state;
+- multiplayer / multi-arena assignment, concurrency, isolation, cleanup, and reuse;
+- inventory / loadout / economy lifecycle;
+- entity / combat / navigation;
+- chunk / simulation residency and ownership;
+- persistence / disconnect / reconnect / reload / recovery;
+- world / structure / spatial mutation;
+- boundaries / capacity / edge conditions;
+- UI / feedback / presented capability versus actual playable capability;
+- cross-system interaction and blocking counter-proof.
+
+## Confirmation rule
+
+~~~
+Pre-Audit Plan
+→ user confirms / corrects
+→ confirmation receipt bound to normalized intent fingerprint
+→ only then production audit may start
+~~~
+
+If the plan changes materially after confirmation, the previous receipt is stale and confirmation must be repeated once for the revised plan.
+
+Do not ask the user to invent symptoms. Absence of known symptoms is normal.
+
+## Boundary
+
+The confirmation establishes only:
+
+> “Yes, this is what I want you to check and how I want you to work.”
+
+It does **not** establish gameplay truth, Expected/Actual behavior, issue type, severity, or proof status.
 
 ---
 
 # 0. One-door entry
 
 ~~~
-audit <selected.mcworld>
+confirmed Pre-Audit Plan
+→ audit <selected.mcworld>
 ~~~
 
 Only one selected artifact/version is authoritative.
@@ -705,8 +777,11 @@ A clean happy path is never sufficient.
 
 # Operator summary
 
-1. Select exact map
-2. Discover everything
+1. Translate the user request without inventing symptoms
+2. Show the Pre-Audit Plan: what will be checked, proof strategy, and output
+3. Obtain one explicit confirmation
+4. Select/lock the exact map
+5. Discover everything
 3. Challenge what discovery missed
 4. Reconstruct player journey
 5. Build state / ownership / progression model
