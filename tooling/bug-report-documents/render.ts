@@ -36,7 +36,9 @@ interface MapAuditHtmlFinding {
   readonly reproduceSteps: readonly string[];
   readonly expected: string;
   readonly actual: string;
-  readonly proofCeiling: string;
+  readonly proofCeiling:
+    | "PROVEN"
+    | "NEEDS_DECIDING_PROOF";
   readonly evidenceIds?: readonly string[];
   readonly validationReason?: string;
   readonly missingProof?: string;
