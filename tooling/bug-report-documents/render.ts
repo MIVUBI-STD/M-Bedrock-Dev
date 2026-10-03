@@ -899,7 +899,7 @@ th {
     <div class="metric"><span>Map Version</span><strong>${escapeHtml(document.map.mapVersion)}</strong></div>
     <div class="metric"><span>Tested Version</span><strong>${escapeHtml(document.map.testedVersion)}</strong></div>
     <div class="metric"><span>Open Issues</span><strong>${document.summary.openIssues}</strong></div>
-    <div class="metric"><span>Fixed Issues</span><strong>${document.summary.fixedIssues}</strong></div>
+    <div class="metric"><span>Fixed Recorded</span><strong>${document.summary.fixedIssues}</strong></div>
   </section>
   <section class="summary">
     <p>${escapeHtml(document.summary.statement)}</p>
