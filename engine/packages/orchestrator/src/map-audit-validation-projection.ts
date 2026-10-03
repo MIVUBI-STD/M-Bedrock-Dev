@@ -68,12 +68,6 @@ export function projectNeedValidationAuditIssues(
   const translationRequired = new Set(
     gate.gameplayTranslationRequiredIds,
   );
-  const runtimeResolutionRequired = new Set(
-    gate.runtimeProofRequiredIds,
-  );
-  const detectionResolutionRequired = new Set(
-    gate.detectionGapIds,
-  );
   const counterProofResolutionRequired = new Set(
     gate.counterProofSearchRequiredIds,
   );
@@ -87,31 +81,32 @@ export function projectNeedValidationAuditIssues(
         return [];
       }
 
-      const isRuntime =
-        link.status === "RUNTIME_BLOCKED";
-      const isGap =
-        link.status === "DETECTION_GAP";
       const needsTranslation =
         translationRequired.has(link.id);
-      const needsRuntimeResolution =
-        runtimeResolutionRequired.has(link.id);
-      const needsDetectionResolution =
-        detectionResolutionRequired.has(link.id);
       const needsCounterProofResolution =
         counterProofResolutionRequired.has(link.id);
       const saturationAssessment =
         unsaturatedConfirmed.get(link.id);
       const needsFamilyProof =
         saturationAssessment !== undefined;
+      const contradicted =
+        link.status === "CONTRADICTED";
+
+      // RUNTIME_BLOCKED and DETECTION_GAP are audit obligations, not issues.
+      // A NEED_VALIDATION finding requires an actual contradicted dependency
+      // or a confirmation-ready resolution that is still missing proof.
+      if (
+        !contradicted &&
+        !needsFamilyProof
+      ) {
+        return [];
+      }
 
       if (
-        !isRuntime &&
-        !isGap &&
         !needsTranslation &&
-        !needsRuntimeResolution &&
-        !needsDetectionResolution &&
         !needsCounterProofResolution &&
-        !needsFamilyProof
+        !needsFamilyProof &&
+        !contradicted
       ) {
         return [];
       }
@@ -143,13 +138,9 @@ export function projectNeedValidationAuditIssues(
           ? "A source contradiction exists, but the player-facing defect contract is not complete enough for final confirmation."
           : needsCounterProofResolution
             ? "A material contradiction exists, but bounded counter-proof search is not yet complete."
-            : needsRuntimeResolution || isRuntime
-              ? suppliedResolution?.runtimeReason ??
-                "The dependency cannot be decided safely from static/package evidence and requires one runtime observation."
-              : needsDetectionResolution || isGap
-                ? suppliedResolution?.detectionGapReason ??
-                  "The selected artifact exposes an unresolved semantic/detection gap for this gameplay dependency."
-                : "Material proof remains unresolved.";
+            : suppliedResolution?.runtimeReason ??
+              suppliedResolution?.detectionGapReason ??
+              "Material contradiction remains unresolved.";
 
       const missingProof =
         needsFamilyProof
@@ -163,9 +154,7 @@ export function projectNeedValidationAuditIssues(
           ? "Complete gameplay trigger, expected/actual behavior, player consequence, and affected scope."
           : needsCounterProofResolution
             ? "Bounded search proving whether any reachable guard/owner/scope/generation/cleanup/exclusion prevents the wrong state."
-            : needsRuntimeResolution || isRuntime
-              ? "Observed runtime outcome for the unresolved dependency."
-              : "Evidence that resolves the unsupported or semantically unknown dependency.";
+            : "Deciding evidence that closes the remaining contradiction proof.";
 
       const validationTest =
         needsFamilyProof
