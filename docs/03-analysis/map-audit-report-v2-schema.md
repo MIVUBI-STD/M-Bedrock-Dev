@@ -52,7 +52,7 @@ Every applicable audit surface is recorded as:
 - blocked, with reason; or
 - not-applicable, with reason.
 
-Unsupported or unparsed mechanics are reported as Detection Gap.
+Unsupported or unparsed mechanics remain internal detection-gap reasons and must project publicly as NEED_VALIDATION with exact missing proof and one narrow validation test.
 
 ## Canonical issue taxonomy
 
@@ -176,6 +176,54 @@ Presented Capability
 Playable Capability
 ```
 
+## Canonical unresolved-proof fields
+
+Every public NEED_VALIDATION finding uses the same names:
+
+```text
+validationReason
+missingProof
+validationTest
+validationGroupKey
+proofNavigation
+```
+
+`proofNavigation` may expose:
+
+```text
+proofGoal
+provenClaims[]
+missingClaims[]
+route[]
+evidenceSubstitutions[]
+historicalSearchHints[]
+historyPressure
+saturationCriteria[]
+saturationStopRule
+runtimeLastResort
+```
+
+These are proof-navigation fields, not additional public statuses.
+
+Map-level audit output also carries:
+
+```text
+validationTests[]
+honesty
+fullMapReplica
+```
+
+`fullMapReplica` uses only:
+
+```text
+replicaBaseline
+replicaResults[]
+replicaStatus
+materialDeltaIds[]
+incompleteReplicaIds[]
+canReuseBaselineProof
+```
+
 ## Status
 
 Every material finding uses exactly one of two public statuses:
@@ -185,7 +233,7 @@ Every material finding uses exactly one of two public statuses:
 
 BUG versus DESIGN_MISMATCH remains an independent `issueType`; status does not replace issue type.
 
-Internal states such as runtime proof required, Detection Gap, insufficient evidence, or ambiguous intent are mapped into the NEED_VALIDATION reason rather than exposed as extra public categories.
+Internal states such as RUNTIME_PROOF_REQUIRED, DETECTION_GAP, COUNTERPROOF_SEARCH_REQUIRED, GAMEPLAY_TRANSLATION_REQUIRED, insufficient evidence, or ambiguous intent are mapped into NEED_VALIDATION fields and never exposed as additional public statuses.
 
 
 ## Gameplay Model Closure
