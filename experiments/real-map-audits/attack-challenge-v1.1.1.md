@@ -120,6 +120,83 @@ The fresh-session inventory reset is an online-player batch action rather than a
 
 Keep one inventory lifecycle owner. Track/reconcile the fresh-session reset per player and enforce it on reconnect before preload/buy-phase continuation. Do not add a second inventory manager.
 
+## Proven finding 2
+
+### BUG — Reconnect during combat respawn countdown bypasses the death delay
+
+Severity: Major  
+Proof: source-proven  
+Domain: player-state / multiplayer-session / respawn
+
+#### Issue
+
+Attack keeps combat-death respawn ownership in CombatTracker.pendingRespawns. On reconnect, CombatTracker restores the player to spectator/countdown state, but GameManager independently performs active-session reconnect recovery five ticks later without checking the pending respawn owner.
+
+#### Expected
+
+A reconnecting player with an active pending respawn must remain in spectator/death state until the existing respawn timer finishes.
+
+#### Observed source behavior
+
+CombatTracker detects the pending respawn and restores spectator/countdown state:
+
+~~~text
+chunk-Y6V6JTGX.js:4936+
+_findPendingRespawn(player.id)
+→ _sendPlayerToSpectator(...)
+→ show remaining countdown
+~~~
+
+The pending respawn remains owned by CombatTracker:
+
+~~~text
+chunk-Y6V6JTGX.js:4998+
+pendingRespawns.set(playerId, ...)
+~~~
+
+GameManager also handles the same initial-spawn reconnect:
+
+~~~text
+chunk-Y6V6JTGX.js:5666+
+initialSpawn
+→ handlePlayerReconnection(...)
+~~~
+
+For a locked player in an active session it later restores gameplay without consulting pending-respawn state:
+
+~~~text
+chunk-Y6V6JTGX.js:5692+
+active session
+→ runTimeout(..., 5)
+→ survival mode
+→ applyPlayerLoadout(...)
+→ teleport to gameplay spawn
+~~~
+
+CombatTracker is initialized before GameManager, so its correct spectator restoration can be overwritten by the later GameManager recovery path.
+
+#### Reproduction path
+
+1. Start an Attack match.
+2. Die and enter the respawn countdown.
+3. Disconnect before the countdown expires.
+4. Reconnect while pendingRespawns still contains the player.
+5. CombatTracker restores spectator/countdown state.
+6. About five ticks later GameManager restores survival/loadout/gameplay spawn.
+7. Observe the player returning before the original death delay expires.
+
+#### Player-visible consequence
+
+The intended combat death/respawn penalty can be bypassed by reconnecting.
+
+#### Root cause
+
+Reconnect state has two writers. CombatTracker owns the pending death lifecycle, but GameManager reconnect recovery does not defer to that owner.
+
+#### Repair direction
+
+Before active-session reconnect recovery, have GameManager consult the existing CombatTracker pending-respawn state. If a respawn is pending, leave recovery to CombatTracker until it resolves. Do not create a second respawn state owner.
+
 ## Checked but not admitted as bugs
 
 ### Arena ticking areas
@@ -136,4 +213,4 @@ Attack has an explicit lease queue/messenger and `MAX_CONCURRENT_ARENAS` resourc
 
 ## Next action
 
-Attack v1.1.1 source pass is closed for this batch with one independently source-proven finding. Keep it as non-canonical audit evidence until explicit approval.
+Attack v1.1.1 source pass is closed for this batch with two independently source-proven Major findings. Keep it as non-canonical audit evidence until explicit approval.
