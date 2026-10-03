@@ -13,6 +13,31 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — pre-real-test source readiness
+
+Current `Local` head has completed the source-level finalization pass for project/workspace publication flow.
+
+Source-verified:
+
+- lifecycle/readiness/publication completion are derived from canonical proof artifacts rather than persisted duplicate status fields;
+- Work Session owns detailed execution state; Project Registry stores only continuity/publication pointers;
+- Drive destinations have one owner through `DriveProjectBinding`;
+- approval snapshots and Drive receipts reject unsupported/legacy fields;
+- snapshot/receipt identity fields are required and validated;
+- project approval readiness validates the full Drive binding fail-closed;
+- nested Drive folder refs reject unknown fields;
+- historical issue ingestion occurs only after explicit approval;
+- Project Registry is written last as the durable commit marker;
+- material project changes clear approval/publication proof pointers;
+- source regression fixtures and canonical docs have been aligned with the proof-derived model.
+
+No further architecture/refactor work is recommended before the first real scenario.
+
+Readiness classification: **SOURCE-READY CANDIDATE / READY FOR FIRST REAL TEST**.
+
+Execution proof remains outstanding: `npm run verify:ready` has not been run on this head because this pass used remote GitHub source review only. Do not interpret this section as a passing local typecheck/test/build/runtime result.
+
+
 ## 2026-10-03 — one-source project state finalization
 
 This section supersedes earlier project-lifecycle implementation notes below.
