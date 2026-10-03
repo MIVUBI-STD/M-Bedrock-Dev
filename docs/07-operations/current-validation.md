@@ -374,6 +374,18 @@ The resolver must attempt to promote NEED_VALIDATION through bounded proof navig
 
 `BuildSelectedMapAuditReportResult` now exposes one centralized complete finding projection (`findings`, `proven`, `needValidation`) on every success/failure return path. The HTML renderer accepts Map Audit Output V2 and renders both PROVEN and NEED_VALIDATION sections. Approved Bug Report V2 remains a downstream PROVEN BUG ledger only.
 
+### Complete finding visibility
+
+The human-facing selected-map report now preserves the full material finding set from the audit revision:
+
+- all `PROVEN` findings;
+- all `NEED_VALIDATION` findings;
+- both `BUG` and `DESIGN_MISMATCH` issue types.
+
+The engine still attempts to promote NEED_VALIDATION findings through proof navigation. If sufficient proof cannot be obtained, the finding remains explicitly unresolved rather than being removed.
+
+Persisted Bug Report V2 remains a narrower approved-bug ledger containing approved PROVEN BUG items only.
+
 ### Final report handoff integrity
 
 The canonical report handoff now preserves unresolved material work explicitly:
