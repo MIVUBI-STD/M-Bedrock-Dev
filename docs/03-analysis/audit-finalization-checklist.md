@@ -10,7 +10,9 @@ This checklist is a publication review only. The executable checkpoint owner is 
 
 ## Mandatory procedure closure
 
-- [ ] UNDERSTAND block is closed.
+- [ ] TARGET stage is closed.
+- [ ] DISCOVERY stage is closed.
+- [ ] UNDERSTAND block is closed, including A7 Gameplay Model Closure.
 - [ ] MODEL block is closed for every applicable system.
 - [ ] STRESS block is closed for every applicable lifecycle/cross-system scenario.
 - [ ] PROVE block is closed: RIG, contradiction resolution, counter-proof, and root-cause consolidation are complete.
@@ -131,7 +133,8 @@ Review the audit in the same order the player experiences the game:
 ## Honesty / non-suppression
 
 - [ ] Every material unresolved residue has a visible NEED_VALIDATION finding.
-- [ ] Every CONFIRMED_DEFECT_READY causal link has a visible PROVEN finding.
+- [ ] Every saturation-complete CONFIRMED_DEFECT_READY causal link has a visible PROVEN finding.
+- [ ] Every confirmation-ready causal link that still lacks universal/family proof remains visible as NEED_VALIDATION.
 - [ ] Unknown/blocked material surfaces, unaccounted surfaces, incomplete state/boundary closure, unresolved knowledge receipts, runtime/detection gaps, orphan components, shallow scenarios, negative-space signals, and high temporal risks are crosschecked against visible findings.
 - [ ] The audit honesty gate reports PASS; any missing visible residue blocks READY_FOR_REVIEW.
 - [ ] Only concrete blocking counter-proof may remove a material candidate from the visible finding set.
