@@ -58,8 +58,10 @@ Use:
 
 - `replicaBaseline` — canonical arena/region baseline.
 - `replicaResults[]` — per-replica comparison result.
-- `replicaStatus` — `EQUIVALENT | EXPECTED_VARIANT | MATERIAL_DIVERGENCE | INCOMPLETE_PROOF`.
+- `replicaId` — stable identifier for one compared replica.
+- `replicaStatus` — `EQUIVALENT | MATERIAL_DIVERGENCE | INCOMPLETE_PROOF`.
 - `materialDeltaIds[]` — only deltas that must continue to STRESS/PROVE.
+- `baselineReusableForAllReplicas` — true only when every replica has sufficient proof and no material delta remains.
 
 Do not use `copy`, `clone`, `same arena`, or `different arena` as canonical machine terms.
 
