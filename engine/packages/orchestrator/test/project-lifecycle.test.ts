@@ -7,7 +7,6 @@ import {
   createDrivePublishReceipt,
   createProjectApprovalSnapshot,
   createProjectRecord,
-  prepareProjectForApproval,
   updateProjectRecord,
 } from "../src/workflow/index.js";
 
@@ -28,29 +27,64 @@ function baseProject() {
       currentStage: "COMPLETE",
       nextAction: "PREPARE_REVIEW",
     },
-    driveFolderId: "drive-folder-1",
+    drive: {
+      schemaVersion: 1,
+      projectId: "defense-v2",
+      mapFolder: {
+        folderId: "drive-folder-1",
+      },
+    },
   });
 }
 
 const deliverables = [{
   kind: "map-audit-report" as const,
-  path: "workspace/projects/defense-v2/output/audit.html",
+  path:
+    "workspace/projects/defense-v2/output/audit.html",
   fingerprint: "sha256:audit",
+  destinationRole:
+    "project-root" as const,
 }, {
   kind: "bug-report" as const,
-  path: "workspace/reports/Defense-v2.0.0-BugReport.json",
+  path:
+    "workspace/reports/Defense-v2.0.0-BugReport.json",
   fingerprint: "sha256:report",
+  destinationRole:
+    "project-root" as const,
 }];
 
+function projectWithReport() {
+  return updateProjectRecord(
+    baseProject(),
+    {
+      bugReportPath:
+        "workspace/reports/Defense-v2.0.0-BugReport.json",
+    },
+  );
+}
+
+function approvedProject() {
+  const project = projectWithReport();
+  const snapshot =
+    createProjectApprovalSnapshot({
+      project,
+      deliverables,
+      requireAuditComplete: true,
+      requireBugReport: true,
+    });
+  return {
+    project:
+      approveProject(
+        project,
+        snapshot,
+      ),
+    snapshot,
+  };
+}
+
 describe("project publication lifecycle", () => {
-  it("gates approval on complete project evidence", () => {
-    const project = updateProjectRecord(
-      baseProject(),
-      {
-        bugReportPath:
-          "workspace/reports/Defense-v2.0.0-BugReport.json",
-      },
-    );
+  it("derives readiness without persisting another status", () => {
+    const project = projectWithReport();
     const readiness =
       assessProjectApprovalReadiness({
         project,
@@ -61,27 +95,12 @@ describe("project publication lifecycle", () => {
 
     expect(readiness.ready).toBe(true);
     expect(readiness.missing).toEqual([]);
+    expect(project.status).toBe("working");
   });
 
   it("invalidates approval when material project work changes", () => {
-    const prepared =
-      prepareProjectForApproval({
-        project:
-          updateProjectRecord(baseProject(), {
-            bugReportPath:
-              "workspace/reports/Defense-v2.0.0-BugReport.json",
-          }),
-        deliverables,
-        requireAuditComplete: true,
-        requireBugReport: true,
-      }).project;
-    const snapshot =
-      createProjectApprovalSnapshot({
-        project: prepared,
-        deliverables,
-      });
     const approved =
-      approveProject(prepared, snapshot);
+      approvedProject().project;
 
     const changed =
       updateProjectRecord(approved, {
@@ -100,26 +119,18 @@ describe("project publication lifecycle", () => {
   });
 
   it("rejects a forged approval snapshot fingerprint", () => {
-    const prepared =
-      prepareProjectForApproval({
-        project:
-          updateProjectRecord(baseProject(), {
-            bugReportPath:
-              "workspace/reports/Defense-v2.0.0-BugReport.json",
-          }),
+    const project = projectWithReport();
+    const snapshot =
+      createProjectApprovalSnapshot({
+        project,
         deliverables,
         requireAuditComplete: true,
         requireBugReport: true,
-      }).project;
-    const snapshot =
-      createProjectApprovalSnapshot({
-        project: prepared,
-        deliverables,
       });
 
     expect(() =>
       approveProject(
-        prepared,
+        project,
         {
           ...snapshot,
           snapshotFingerprint:
@@ -131,31 +142,20 @@ describe("project publication lifecycle", () => {
     );
   });
 
-  it("requires approved snapshot before Drive publication", () => {
-    const project = updateProjectRecord(
-      baseProject(),
-      {
-        bugReportPath:
-          "workspace/reports/Defense-v2.0.0-BugReport.json",
-      },
-    );
+  it("requires approved state before Drive publication", () => {
+    const project = projectWithReport();
+    const snapshot =
+      createProjectApprovalSnapshot({
+        project,
+        deliverables,
+        requireAuditComplete: true,
+        requireBugReport: true,
+      });
 
     expect(() =>
       buildProjectDrivePublishPlan({
         project,
-        snapshot: {
-          schemaVersion: 1,
-          projectId: project.projectId,
-          projectRevision: project.revision,
-          artifactFingerprint:
-            project.artifact.artifactFingerprint,
-          bugReportPath:
-            project.knowledge.bugReportPath,
-          deliverables,
-          historicalRegressionIds: [],
-          snapshotFingerprint:
-            "sha256:snapshot",
-        },
+        snapshot,
       })
     ).toThrow(
       "Drive publish plan requires project status approved.",
@@ -163,41 +163,32 @@ describe("project publication lifecycle", () => {
   });
 
   it("does not mark a partial Drive upload as published", () => {
-    const prepared =
-      prepareProjectForApproval({
-        project:
-          updateProjectRecord(baseProject(), {
-            bugReportPath:
-              "workspace/reports/Defense-v2.0.0-BugReport.json",
-          }),
-        deliverables,
-        requireAuditComplete: true,
-        requireBugReport: true,
-      }).project;
-    const snapshot =
-      createProjectApprovalSnapshot({
-        project: prepared,
-        deliverables,
-      });
-    const approved =
-      approveProject(prepared, snapshot);
+    const {
+      project,
+      snapshot,
+    } = approvedProject();
 
     const receipt =
       createDrivePublishReceipt({
-        project: approved,
+        project,
         snapshot,
         files: [{
           kind: "bug-report",
+          destinationRole:
+            "project-root",
           fileId: "drive-report",
-          fileName: "Defense - Bug Report.pdf",
-          fingerprint: "sha256:report",
+          fileName:
+            "Defense - Bug Report.pdf",
+          fingerprint:
+            "sha256:report",
         }],
       });
 
-    expect(receipt.status).toBe("PARTIAL");
+    expect(receipt.status)
+      .toBe("PARTIAL");
     expect(() =>
       applyDrivePublishReceipt(
-        approved,
+        project,
         receipt,
       )
     ).toThrow(
@@ -205,47 +196,42 @@ describe("project publication lifecycle", () => {
     );
   });
 
-  it("marks complete approved deliverables as drive-published", () => {
-    const prepared =
-      prepareProjectForApproval({
-        project:
-          updateProjectRecord(baseProject(), {
-            bugReportPath:
-              "workspace/reports/Defense-v2.0.0-BugReport.json",
-          }),
-        deliverables,
-        requireAuditComplete: true,
-        requireBugReport: true,
-      }).project;
-    const snapshot =
-      createProjectApprovalSnapshot({
-        project: prepared,
-        deliverables,
-      });
-    const approved =
-      approveProject(prepared, snapshot);
+  it("marks the exact approved deliverables as drive-published", () => {
+    const {
+      project,
+      snapshot,
+    } = approvedProject();
 
     const receipt =
       createDrivePublishReceipt({
-        project: approved,
+        project,
         snapshot,
         files: [{
           kind: "bug-report",
+          destinationRole:
+            "project-root",
           fileId: "drive-report",
-          fileName: "Defense - Bug Report.pdf",
-          fingerprint: "sha256:report",
+          fileName:
+            "Defense - Bug Report.pdf",
+          fingerprint:
+            "sha256:report",
         }, {
           kind: "map-audit-report",
+          destinationRole:
+            "project-root",
           fileId: "drive-audit",
-          fileName: "Defense - Map Audit.html",
-          fingerprint: "sha256:audit",
+          fileName:
+            "Defense - Map Audit.html",
+          fingerprint:
+            "sha256:audit",
         }],
       });
 
-    expect(receipt.status).toBe("COMPLETE");
+    expect(receipt.status)
+      .toBe("COMPLETE");
     expect(
       applyDrivePublishReceipt(
-        approved,
+        project,
         receipt,
       ).status,
     ).toBe("drive-published");
