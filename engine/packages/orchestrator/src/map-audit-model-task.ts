@@ -20,6 +20,11 @@ import type {
 import type {
   AuditObligation,
 } from "./map-audit-obligations.js";
+import {
+  auditUserIntentAuthorityNote,
+  deriveAuditUserIntentSearchPressure,
+  type AuditUserIntentEnvelope,
+} from "./map-audit-user-intent.js";
 
 export type AuditModelTaskKind =
   | "CHECKPOINT_REASONING"
@@ -65,6 +70,19 @@ export interface AuditModelTaskPacket {
   readonly unresolvedEvidenceIds: readonly string[];
   readonly knowledgeContext: readonly AuditModelTaskKnowledgeContext[];
   readonly unresolvedObligationIds: readonly string[];
+  readonly userSearchContext?: {
+    readonly authorityNote: string;
+    readonly priorityDomains:
+      readonly string[];
+    readonly priorityPlayerFlows:
+      readonly string[];
+    readonly symptomHints:
+      readonly string[];
+    readonly suspicionHints:
+      readonly string[];
+    readonly testConstraints:
+      readonly string[];
+  };
   readonly proofGoal?: string;
   readonly provenClaims?: readonly string[];
   readonly missingClaims?: readonly string[];
@@ -411,7 +429,42 @@ export function deriveAuditModelTaskPackets(input: {
   readonly world: GameplayWorldModel;
   readonly needValidationFindings?: readonly import("./map-audit-issue-projection.js").NeedValidationAuditIssueProjection[];
   readonly auditObligations?: readonly AuditObligation[];
+  readonly userIntent?: AuditUserIntentEnvelope;
 }): readonly AuditModelTaskPacket[] {
+  const userPressure =
+    deriveAuditUserIntentSearchPressure(
+      input.userIntent,
+    );
+  const userSearchContext =
+    input.userIntent === undefined
+      ? undefined
+      : {
+          authorityNote:
+            auditUserIntentAuthorityNote(),
+          priorityDomains:
+            Object.keys(userPressure.domains)
+              .filter(
+                (key) =>
+                  (userPressure.domains as Record<string, number | undefined>)[key] !==
+                  undefined,
+              )
+              .sort(),
+          priorityPlayerFlows:
+            Object.keys(userPressure.playerFlows)
+              .filter(
+                (key) =>
+                  (userPressure.playerFlows as Record<string, number | undefined>)[key] !==
+                  undefined,
+              )
+              .sort(),
+          symptomHints:
+            [...userPressure.symptomHints],
+          suspicionHints:
+            [...userPressure.suspicionHints],
+          testConstraints:
+            [...userPressure.testConstraints],
+        };
+
   const navigationPackets =
     (input.needValidationFindings ?? [])
       .filter((finding) =>
@@ -529,38 +582,53 @@ export function deriveAuditModelTaskPackets(input: {
     );
 
   const stage = input.admission.firstBlockingStage;
-  if (stage === undefined) {
-    return [
-      ...navigationPackets,
-      ...auditObligationPackets,
-    ];
-  }
+  const packets =
+    stage === undefined
+      ? [
+          ...navigationPackets,
+          ...auditObligationPackets,
+        ]
+      : stage === "PROVE"
+        ? (() => {
+            const prove = provePackets(
+              input.graph,
+              input.defectResolution,
+              input.auditRevision,
+              input.intent,
+              input.world,
+            );
+            return prove.length > 0
+              ? [
+                  ...prove,
+                  ...navigationPackets,
+                  ...auditObligationPackets,
+                ]
+              : [
+                  ...checkpointPackets(
+                    stage,
+                    input.procedure,
+                    input.auditRevision,
+                    input.intent,
+                  ),
+                  ...navigationPackets,
+                  ...auditObligationPackets,
+                ];
+          })()
+        : [
+            ...checkpointPackets(
+              stage,
+              input.procedure,
+              input.auditRevision,
+              input.intent,
+            ),
+            ...navigationPackets,
+            ...auditObligationPackets,
+          ];
 
-  if (stage === "PROVE") {
-    const prove = provePackets(
-      input.graph,
-      input.defectResolution,
-      input.auditRevision,
-      input.intent,
-      input.world,
-    );
-    if (prove.length > 0) {
-      return [
-        ...prove,
-        ...navigationPackets,
-        ...auditObligationPackets,
-      ];
-    }
-  }
-
-  return [
-    ...checkpointPackets(
-      stage,
-      input.procedure,
-      input.auditRevision,
-      input.intent,
-    ),
-    ...navigationPackets,
-    ...auditObligationPackets,
-  ];
+  return packets.map((packet) => ({
+    ...packet,
+    ...(userSearchContext === undefined
+      ? {}
+      : { userSearchContext }),
+  }));
 }
