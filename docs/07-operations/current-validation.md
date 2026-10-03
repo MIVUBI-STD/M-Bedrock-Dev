@@ -358,6 +358,22 @@ It verifies that every saturation-complete `CONFIRMED_DEFECT_READY` causal link 
 
 Any mismatch is an honesty violation and forces the audit to remain `BLOCKED`; it cannot become `READY_FOR_REVIEW` merely because other closure gates passed.
 
+### Complete Bug Report honesty
+
+The human-facing report is now the complete Map Audit report, not the approved bug ledger alone.
+
+```text
+Map Audit findings
+├─ PROVEN BUG
+├─ PROVEN DESIGN_MISMATCH
+├─ NEED_VALIDATION BUG
+└─ NEED_VALIDATION DESIGN_MISMATCH
+```
+
+The resolver must attempt to promote NEED_VALIDATION through bounded proof navigation first. If deciding proof remains unavailable, the finding stays visible as NEED_VALIDATION with `validationReason`, `missingProof`, and `validationTest`; it is not silently dropped and receives no final severity.
+
+`BuildSelectedMapAuditReportResult` now exposes one centralized complete finding projection (`findings`, `proven`, `needValidation`) on every success/failure return path. The HTML renderer accepts Map Audit Output V2 and renders both PROVEN and NEED_VALIDATION sections. Approved Bug Report V2 remains a downstream PROVEN BUG ledger only.
+
 ### Final report handoff integrity
 
 The canonical report handoff now preserves unresolved material work explicitly:
