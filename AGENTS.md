@@ -146,13 +146,16 @@ First:
 
 ```text
 normalize user intent
-→ show one compact interpretation summary in chat
-→ user explicitly confirms/corrects
+→ build one compact Pre-Audit Plan
+→ show what will be done / what will be checked / proof strategy / output
+→ user explicitly confirms/corrects scope
 → create AuditUserIntentConfirmation
 → runSelectedMapAudit()
 ```
 
-The receipt is bound to the normalized intent fingerprint. Any material change to the interpretation invalidates the previous confirmation.
+For pre-testing audits, absence of known symptoms is expected and must not trigger a symptom interview. The confirmation is about planned audit scope and working method.
+
+The receipt is bound to the normalized intent fingerprint. Any material change to the plan/interpretation invalidates the previous confirmation.
 
 This checkpoint confirms communication accuracy only. It does not confirm gameplay truth, Expected/Actual behavior, or issue classification.
 
