@@ -1135,6 +1135,26 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
           "Every degraded/missing player-visible capability must map to a CONTRADICTED causal link; technical explanation alone cannot close it.",
           capabilityFailureRoutedIds,
         ),
+        obligation(
+          "runtime-residue-has-targeted-tests",
+          scenarioClosure.runtimeBlockedCausalLinkIds.length > 0,
+          scenarioClosure.runtimeProofRequests.length ===
+            scenarioClosure.runtimeBlockedCausalLinkIds.length,
+          "Every runtime-blocked gameplay dependency must emit one narrow runtime proof request; unresolved runtime residue may never remain a status-only note.",
+          scenarioClosure.runtimeProofRequests.map(
+            (item) => item.causalLinkId,
+          ),
+        ),
+        obligation(
+          "detection-gaps-have-targeted-tests",
+          scenarioClosure.detectionGapCausalLinkIds.length > 0,
+          scenarioClosure.detectionGapTestRequests.length ===
+            scenarioClosure.detectionGapCausalLinkIds.length,
+          "Every detection gap must emit one targeted tester obligation so unsupported semantics cannot silently remove a required gameplay test.",
+          scenarioClosure.detectionGapTestRequests.map(
+            (item) => item.causalLinkId,
+          ),
+        ),
       ],
     },
   ));
