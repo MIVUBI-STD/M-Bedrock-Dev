@@ -95,9 +95,10 @@ interface MapAuditHtmlInput {
     readonly loseCondition: string;
   };
   readonly multiArena?: {
-    readonly supported: boolean;
+    readonly detected: boolean;
     readonly visibleArenaCount: number | null;
-    readonly concurrentArenaLimit: number | null;
+    readonly declaredConcurrentArenaLimit: number | null;
+    readonly safeConcurrentArenaLimit: number | null;
     readonly queueBehavior: string;
     readonly isolationRules: readonly string[];
   };
@@ -685,19 +686,25 @@ function auditContextSummary(
   if (arenas) {
     rows.push(
       '<div class="row"><div class="label">Multi-Arena</div><div class="value">' +
-        '<strong>Supported:</strong> ' +
-        escapeHtml(String(arenas.supported)) +
+        '<strong>Detected:</strong> ' +
+        escapeHtml(String(arenas.detected)) +
         '<br><strong>Visible Arenas:</strong> ' +
         escapeHtml(
           arenas.visibleArenaCount === null
             ? "Unresolved"
             : String(arenas.visibleArenaCount),
         ) +
-        '<br><strong>Safe Concurrent:</strong> ' +
+        '<br><strong>Declared Concurrent:</strong> ' +
         escapeHtml(
-          arenas.concurrentArenaLimit === null
+          arenas.declaredConcurrentArenaLimit === null
             ? "Unresolved"
-            : String(arenas.concurrentArenaLimit),
+            : String(arenas.declaredConcurrentArenaLimit),
+        ) +
+        '<br><strong>Proven Safe Concurrent:</strong> ' +
+        escapeHtml(
+          arenas.safeConcurrentArenaLimit === null
+            ? "Not proven"
+            : String(arenas.safeConcurrentArenaLimit),
         ) +
         '</div></div>',
     );
