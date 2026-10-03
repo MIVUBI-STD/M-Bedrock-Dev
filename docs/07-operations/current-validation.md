@@ -34,17 +34,16 @@ audit <selected.mcworld>
 - Specialist docs are supporting contracts, not alternate workflows.
 - Work Session/UI/HTML/JSON are projections only.
 
-### Validation-parking removal
+### Two-status finding model
 
-The production issue path no longer treats generic validation states as findings:
+The operator-facing finding surface now uses exactly two statuses:
 
-- source-proven contradictions with complete gameplay translation run an automatic bounded counter-proof search;
-- if blocking proof exists, the candidate is rejected as `BLOCKING_COUNTERPROOF`;
-- otherwise it becomes `CONFIRMED_DEFECT_READY` directly;
-- `Needs Validation`, `Ambiguous`, and `Detection Gap` are not production BUG/DESIGN_MISMATCH statuses;
-- unresolved runtime/detection work remains an exact targeted test obligation until resolved.
+- `PROVEN` — sufficiently proven finding with cleared blocking counter-proof;
+- `NEED_VALIDATION` — materially plausible finding with one explicit missing-proof obligation and one narrow validation test.
 
-This keeps uncertainty explicit without flooding the tester-facing issue list with non-issues.
+Source-proven contradictions still run automatic bounded counter-proof search first so the engine maximizes PROVEN findings. Runtime proof, Detection Gap, insufficient evidence, and ambiguous intent remain internal reasons behind NEED_VALIDATION rather than separate public categories.
+
+Disproved and proven-normal candidates remain in audit trace only. This keeps uncertainty visible without mixing many status vocabularies.
 
 ### False-negative control hardening
 
