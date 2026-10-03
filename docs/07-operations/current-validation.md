@@ -128,6 +128,19 @@ TARGET
 
 This is a navigation/ordering layer only. Executable closure remains owned by `mandatory-audit-procedure.ts` and `map-audit-admission.ts`; specialist documents cannot become alternate workflows.
 
+### Gate consolidation
+
+Closure decisions now have one executable owner:
+
+```text
+discovery / gameplay model / scenario / defect-resolution evidence
+→ Mandatory Audit Procedure checkpoints
+→ map-audit-admission orders checkpoints and selects first blocker
+```
+
+`map-audit-admission.ts` no longer re-evaluates Discovery Closure, Gameplay Model Closure, Scenario Closure, or Defect Resolution in parallel. Gameplay Model Closure is represented explicitly by checkpoint `A7`.
+
+This removes duplicate gate logic while preserving fail-closed behavior.
 ### Single-flow ownership
 
 - `map-audit-pipeline.ts` owns production entry and continuation.
