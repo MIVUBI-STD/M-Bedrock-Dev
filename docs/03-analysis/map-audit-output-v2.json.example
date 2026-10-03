@@ -1,21 +1,129 @@
 {
-  "world": {
-    "artifact": "selected-world-version",
-    "version": ""
+  "schemaVersion": 2,
+  "artifactId": "artifact:example",
+  "mapVersion": "1.0.0",
+  "evidenceScope": {
+    "mode": "selected-map-version-only",
+    "selectedArtifact": "Example Map v1.0.0.mcworld",
+    "archiveSourcesUsed": false
   },
   "gameDesign": {
-    "objective": "",
-    "winCondition": "",
-    "loseCondition": "",
+    "objective": "Complete the example objective.",
+    "winCondition": "Complete all required progression.",
+    "loseCondition": "Reach the grounded loss condition.",
     "resetRules": [],
+    "preserveRules": [],
     "progressionRules": []
   },
-  "gameplayFlow": [],
+  "gameplayFlow": [
+    "ENTRY_JOIN",
+    "READY_START",
+    "SETUP",
+    "ACTIVE_GAMEPLAY",
+    "PROGRESSION",
+    "TERMINAL",
+    "CLEANUP_REPLAY",
+    "RECOVERY"
+  ],
   "stateTransitions": [],
   "multiArena": {
-    "reviewed": false,
-    "notes": []
+    "supported": false,
+    "visibleArenaCount": null,
+    "concurrentArenaLimit": null,
+    "queueBehavior": "not-applicable",
+    "isolationRules": []
   },
-  "bugs": [],
-  "designMismatches": []
+  "coverage": {
+    "disposition": "accounted",
+    "records": [
+      {
+        "surface": "example",
+        "status": "checked",
+        "evidenceIds": ["e:example"]
+      }
+    ]
+  },
+  "gameplayClosure": {
+    "status": "CLOSED",
+    "surfaceInventory": [
+      {
+        "id": "example",
+        "label": "Example surface",
+        "status": "understood"
+      }
+    ],
+    "stateModelComplete": true,
+    "boundariesExtracted": true,
+    "unaccountedSurfaceIds": []
+  },
+  "bugs": [
+    {
+      "id": "BUG-001",
+      "status": "PROVEN",
+      "gameplayFlow": "PROGRESSION",
+      "failureDomain": "progression-wave-objective",
+      "informationMismatch": false,
+      "issue": "Example proven gameplay defect",
+      "playerImpact": "Required progression cannot complete.",
+      "reproduceSteps": ["Trigger the affected progression path."],
+      "expected": "Progression completes.",
+      "actual": "Progression blocks.",
+      "proofCeiling": "STATIC VERIFIED",
+      "issueType": "BUG",
+      "contributingDomains": ["progression-wave-objective"],
+      "severity": "Blocker",
+      "counterEvidence": "cleared",
+      "testerTriggerReady": true
+    },
+    {
+      "id": "NV-001",
+      "status": "NEED_VALIDATION",
+      "gameplayFlow": "ACTIVE_GAMEPLAY",
+      "failureDomain": "entity-ai-combat",
+      "informationMismatch": false,
+      "issue": "Example unresolved material finding",
+      "reproduceSteps": ["Exercise the exact unresolved entity behavior."],
+      "expected": "Entity behavior matches the grounded gameplay dependency.",
+      "actual": "Static evidence cannot decide the native behavior.",
+      "proofCeiling": "UNKNOWN",
+      "issueType": "BUG",
+      "contributingDomains": ["entity-ai-combat"],
+      "validationReason": "Native runtime behavior remains irreducible from selected-artifact evidence.",
+      "missingProof": "Observed behavior for the exact unresolved entity interaction.",
+      "validationTest": "Run only the affected interaction and record whether the dependency holds.",
+      "validationGroupKey": "example:entity-ai-combat",
+      "proofNavigation": {
+        "recipeId": "proof:entity-combat-lifecycle",
+        "proofGoal": "Resolve the exact entity behavior.",
+        "provenClaims": [],
+        "missingClaims": ["Observed native behavior."],
+        "route": [],
+        "evidenceSubstitutions": [],
+        "historicalSearchHints": [],
+        "historyPressure": 0,
+        "familyProofCriteria": [],
+        "proofStopRule": "Stop when deciding proof is complete.",
+        "runtimeLastResort": true
+      }
+    }
+  ],
+  "designMismatches": [],
+  "validationTests": [
+    {
+      "key": "example:entity-ai-combat",
+      "findingIds": ["NV-001"],
+      "test": "Run only the affected interaction and record whether the dependency holds."
+    }
+  ],
+  "honesty": {
+    "policy": "no-hidden-material-finding",
+    "status": "PASS",
+    "expectedVisibleResidueIds": ["NV-001"],
+    "visibleNeedValidationIds": ["NV-001"],
+    "expectedProvenIds": ["BUG-001"],
+    "visibleProvenIds": ["BUG-001"],
+    "missingVisibleResidueIds": [],
+    "missingProvenProjectionIds": [],
+    "reasons": ["All tracked material findings remain visible."]
+  }
 }
