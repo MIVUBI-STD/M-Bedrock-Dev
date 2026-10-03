@@ -101,6 +101,24 @@ describe("Map Audit Output V2 projection", () => {
         BUG: [proven, unresolved],
         DESIGN_MISMATCH: [],
       },
+      userIntent: {
+        schemaVersion: 1,
+        policy:
+          "user-input-is-search-guidance-not-gameplay-authority",
+        items: [{
+          kind: "SYMPTOM_REPORT",
+          raw: "wave suka stuck",
+          normalized:
+            "possible progression stall",
+        }],
+        priorityDomains: [
+          "progression-wave-objective",
+        ],
+        priorityPlayerFlows: [
+          "PROGRESSION",
+        ],
+        ambiguities: [],
+      },
       validationTests: [{
         key: "scenario:1:runtime",
         findingIds: ["link:unresolved"],
@@ -147,5 +165,11 @@ describe("Map Audit Output V2 projection", () => {
       .toBe("accounted");
     expect(report.gameDesign.objectiveGrounding)
       .toBe("authored");
+    expect(report.userIntent?.items[0]?.kind)
+      .toBe("SYMPTOM_REPORT");
+    expect(report.userIntent?.policy)
+      .toBe(
+        "user-input-is-search-guidance-not-gameplay-authority",
+      );
   });
 });
