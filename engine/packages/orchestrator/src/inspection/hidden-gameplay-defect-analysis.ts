@@ -50,6 +50,10 @@ import {
   type SharedResourceOwnershipSignal,
 } from "./shared-resource-ownership.js";
 import {
+  challengeGameplayStress,
+  type GameplayStressChallengeSignal,
+} from "./gameplay-stress-challenger.js";
+import {
   analyzeAccumulationGrowth,
   analyzeCompoundBoundaries,
   type AccumulationGrowthSignal,
