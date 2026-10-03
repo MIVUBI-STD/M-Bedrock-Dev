@@ -129,7 +129,7 @@ const taskCapabilities=task.map((item)=>{
   const status=stats.sourceFiles===0
     ?"declared-only"
     :stats.testFiles>0
-      ?"owner-tested"
+      ?"owner-has-tests"
       :"implementation-present";
   const runtimeOnly=item.contexts.length>0 &&
     item.contexts.every((x)=>x==="LOCAL_MINECRAFT"||x==="LIVE_MINECRAFT");
@@ -156,8 +156,8 @@ const taskCapabilities=task.map((item)=>{
         }
       : {state:"unbound"},
     proofSemantics: proofBinding
-      ? "Capability-specific proof binding exists; this does not imply execution in the current session."
-      : "Owner module may contain tests, but no capability-specific proof binding exists."
+      ? "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
+      : "Owner module may contain tests, but no capability-specific proof binding exists and no current-session execution is implied."
   };
 }).sort((a,b)=>a.id.localeCompare(b.id));
 
@@ -176,7 +176,7 @@ const output={
   },
   summary:{
     taskCapabilities:taskCapabilities.length,
-    ownerTested:taskCapabilities.filter((x)=>x.status==="owner-tested").length,
+    ownerHasTests:taskCapabilities.filter((x)=>x.status==="owner-has-tests").length,
     implementationPresent:taskCapabilities.filter((x)=>x.status==="implementation-present").length,
     declaredOnly:taskCapabilities.filter((x)=>x.status==="declared-only").length,
     runtimeOnly:taskCapabilities.filter((x)=>x.runtimeOnly).length,
