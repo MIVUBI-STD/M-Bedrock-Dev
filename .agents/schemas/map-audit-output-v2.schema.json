@@ -1625,7 +1625,9 @@
         "priorityDomains",
         "priorityPlayerFlows",
         "ambiguities",
-        "blockingAmbiguities"
+        "blockingAmbiguities",
+        "fragments",
+        "unmappedFragmentIds"
       ],
       "properties": {
         "schemaVersion": {
@@ -1641,7 +1643,8 @@
             "required": [
               "kind",
               "raw",
-              "normalized"
+              "normalized",
+              "sourceFragmentIds"
             ],
             "properties": {
               "kind": {
@@ -1665,6 +1668,14 @@
               "normalized": {
                 "type": "string",
                 "minLength": 1
+              },
+              "sourceFragmentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
               }
             },
             "additionalProperties": false
@@ -1724,6 +1735,35 @@
           "uniqueItems": true,
           "maxItems": 0,
           "description": "Production Map Audit Output may only exist after blocking user-input ambiguity is resolved."
+        },
+        "fragments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "raw"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "raw": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "unmappedFragmentIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         }
       },
       "additionalProperties": false
@@ -1767,7 +1807,8 @@
               "detection-gap",
               "gameplay-translation",
               "counterproof-search",
-              "user-reported-symptom"
+              "user-reported-symptom",
+              "user-input-unmapped"
             ]
           },
           "stage": {
