@@ -22,6 +22,9 @@ import type {
 import type {
   FullMapReplicaReceipt,
 } from "./arena/full-map-replica-receipt.js";
+import type {
+  AuditObligation,
+} from "./map-audit-obligations.js";
 
 export interface MapAuditOutputV2Finding {
   readonly id: string;
@@ -157,6 +160,8 @@ export interface MapAuditOutputV2 {
   readonly bugs: readonly MapAuditOutputV2Finding[];
   readonly designMismatches:
     readonly MapAuditOutputV2Finding[];
+  readonly auditObligations:
+    readonly AuditObligation[];
   readonly validationTests:
     readonly AuditValidationTestGroup[];
   readonly honesty: AuditHonestyAssessment;
@@ -320,6 +325,8 @@ export function projectMapAuditOutputV2(input: {
     readonly DESIGN_MISMATCH:
       readonly AuditIssueProjection[];
   };
+  readonly auditObligations:
+    readonly AuditObligation[];
   readonly validationTests:
     readonly AuditValidationTestGroup[];
   readonly honesty: AuditHonestyAssessment;
@@ -517,6 +524,8 @@ export function projectMapAuditOutputV2(input: {
       input.issueLanes.DESIGN_MISMATCH.map(
         projectFinding,
       ),
+    auditObligations:
+      [...input.auditObligations],
     validationTests:
       [...input.validationTests],
     honesty: input.honesty,
