@@ -164,6 +164,41 @@ Issue Type
 
 Cross-system participation does not create extra findings. One root cause remains one issue with one primary domain and optional contributing domains.
 
+## Full-map replica flow
+
+When repeated arenas/regions exist, full-map inspection must not audit each arena as an unrelated map. The canonical MODEL subflow is:
+
+```text
+world DB / topology
++ source/config layout
+→ detect repeated arena regions
+→ normalize each arena to relative coordinates
+→ select canonical baseline
+→ compare world/topology fingerprints
+→ compare block-entity/native records when available
+→ classify replica proof
+→ reconcile world DB versus source/config
+→ classify delta
+→ escalate only material/unresolved delta to STRESS/PROVE
+```
+
+Replica classification semantics:
+
+```text
+equivalent / expected variant
+→ reuse baseline proof
+
+material divergence
+→ continue to causal PROVE
+
+incomplete / no proof
+→ MODEL remains PARTIAL
+```
+
+A physical arena count is not proof of equivalent gameplay. Source/config equivalence is also not enough when world DB/topology differs. Full-map closure requires both replica integrity and runtime/source ownership reasoning.
+
+Do not generate one duplicated bug per arena when the same root cause affects all equivalent replicas. Conversely, do not generalize one arena's proof to all replicas when a material delta exists.
+
 ## Crosscheck rule
 
 Every contradiction reaching PROVE must be challenged from all context-relevant dimensions before confirmation:
