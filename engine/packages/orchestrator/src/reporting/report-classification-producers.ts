@@ -16,12 +16,6 @@ const FAILURE_BY_DIAGNOSTIC_CODE:
   > = {
     ARENA_CONCURRENCY_CAPACITY_SHORTFALL:
       "session-concurrency",
-    ARENA_REPLICA_DIVERGENCE:
-      "world-mutation",
-    ARENA_SPATIAL_FINGERPRINT_DIVERGENCE:
-      "world-mutation",
-    ARENA_VOXEL_DIVERGENCE:
-      "world-mutation",
     TOPOLOGY_TRANSLATION_OUTLIER:
       "world-mutation",
     ENTITY_SENSOR_EVENT_UNDEFINED:
