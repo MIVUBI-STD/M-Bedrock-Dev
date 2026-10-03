@@ -225,6 +225,19 @@ analysis caps      31
 
 Proof-bound means a capability-specific proof contract exists. It does not mean tests were executed in this work session.
 
+### Remaining blind-spot hardening now present
+
+The latest source also closes several previously high-risk false-negative paths:
+
+- **Discovery Challenger** — raw Semantic IR state operations, unresolved execution edges, unowned execution regions, and deferred/periodic relations with no semantic/scenario owner surface as NEED_VALIDATION instead of silently disappearing before modeling.
+- **Reverse shared-resource ownership** — each state surface is indexed to all readers, writers, clearers, and deferred writers; multi-writer, missing-authority, stale-generation, and three-or-more-region convergence produce explicit proof pressure.
+- **Higher-order interaction** — shared-resource convergence is used to select interleavings, avoiding an exhaustive Cartesian product across unrelated systems.
+- **Exact-target counter-proof** — an exclusion/guard only blocks a defect when it applies to the contradicted dependency/commit target; nearby or merely overlapping healthy guards no longer suppress a candidate.
+- **Compound boundaries** — interacting arena/player and arena/simulation capacity dimensions are challenged explicitly rather than relying only on one-dimensional N-1/N/N+1 checks.
+- **Accumulation/growth** — append-without-clear persistence, ticking acquire/release imbalance, and world-drop reward paths without cleanup are challenged as repeated-run growth risks without requiring many live runs first.
+
+All of these signals are included in the honesty/non-suppression gate, so they cannot remain internal attention counters while the audit claims READY_FOR_REVIEW.
+
 ## Known proof limits
 
 - latest source changes have not been typechecked locally;
