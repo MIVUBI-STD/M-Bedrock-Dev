@@ -322,6 +322,109 @@ The Speed Potion path consumes coins before `runCommandAsync("give @s potion 1 1
 
 This is **not admitted as a current gameplay bug** because the selected command is valid in current Bedrock semantics and this source pass has not established a normal selected-artifact trigger that makes that command fail. Keep it as transaction-hardening / failure-path validation only.
 
+## Proven finding 2
+
+### BUG — Disconnect during preload can bypass the full inventory wipe and carry stale items into the new match
+
+Severity: Major  
+Proof: source-proven  
+Domain: player-state / inventory / reconnect lifecycle
+
+#### Issue
+
+The initial preload intentionally clears every online arena player's entire inventory. A player who disconnects before that wipe and reconnects after it has already run is not included in the clear. The reconnect handler for `preloading` only restores gameplay state/teleport and does not perform the missed full inventory clear. When buy phase starts, the loadout refresh runs with `clearAllSlots: false`, so inventory outside the managed loadout slots survives into the new match.
+
+#### Expected
+
+Every player entering a fresh Defense session must pass the same full inventory-reset boundary regardless of disconnect/reconnect timing.
+
+#### Observed source behavior
+
+1. Preload performs the full inventory wipe only for players currently online in the arena:
+
+```text
+behavior_packs/BP/scripts/chunks/ctf-defense-MJPEJYBR.js:11752-11756
+teleportArenaPlayers(...)
+clearArenaPlayerItems(arenaId)
+```
+
+```text
+behavior_packs/BP/scripts/chunks/ctf-defense-MJPEJYBR.js:11828-11840
+clearArenaPlayerItems()
+→ getArenaOnlinePlayers(arenaId)
+→ clearPlayerItems(...)
+→ runCommandAsync("clear @s")
+```
+
+2. Reconnect during `preloading` does not replay the missed inventory wipe and does not apply a full-clear loadout:
+
+```text
+behavior_packs/BP/scripts/chunks/ctf-defense-MJPEJYBR.js:10608-10619
+if session.status === "preloading"
+→ configure gameplay state
+→ teleport
+→ no clear @s
+→ no clearAllInventoryForLoadout()
+```
+
+3. When buy phase starts, the arena loadout refresh explicitly uses `clearAllSlots: false`:
+
+```text
+behavior_packs/BP/scripts/chunks/ctf-defense-MJPEJYBR.js:12617-12624
+recoverArenaPlayersToGameplaySpawns(...)
+KitManager.applyArenaLoadouts(... {
+  clearAllSlots: false,
+  preservePersistentShopItems: true
+})
+```
+
+4. With `clearAllSlots: false`, `applyPlayerLoadout()` only clears managed loadout slots:
+
+```text
+behavior_packs/BP/scripts/chunks/ctf-defense-MJPEJYBR.js:1881-1908
+if clearAllSlots
+  clearAllInventoryForLoadout()
+else
+  clearManagedLoadoutSlots(...)
+```
+
+5. Managed chest-slot mapping can only address inventory slots 0–9 (plus explicit equipment slots), leaving normal inventory slots 10–35 outside the loadout cleanup surface:
+
+```text
+behavior_packs/BP/scripts/chunks/ctf-defense-MJPEJYBR.js:1697-1707
+equipment chest slots: 0,1,2,3,10
+9..17 → inventory 0..8
+18..26 → inventory 1..9
+other chest slots remain chestSlot
+```
+
+Therefore stale/non-session items held in inventory slots 10–35 can survive the missed preload wipe and remain after buy-phase loadout application.
+
+#### Reproduction path
+
+1. Join a valid party/arena and place a recognizable item in inventory slot 10–35.
+2. Start the match countdown.
+3. Disconnect before the preload callback reaches `clearArenaPlayerItems()`.
+4. Reconnect after that wipe has already executed while the session is still `preloading`.
+5. The reconnect handler teleports the player back but does not clear inventory.
+6. Allow preload to finish and enter buy phase.
+7. The loadout refresh runs with `clearAllSlots: false`.
+8. Observe the old item still present in slot 10–35.
+
+#### Player-visible consequence
+
+Players can carry stale or unintended items across the fresh-session inventory reset boundary. Depending on the item, this can affect progression, economy, combat balance, or test reproducibility.
+
+#### Root cause
+
+Inventory reset is applied to the set of players online at one preload tick instead of being represented as a per-player session invariant. Reconnect during `preloading` does not reconcile whether that player has completed the new-session inventory reset.
+
+#### Repair direction
+
+Keep one reset owner. Record/reset the per-player new-session inventory boundary and reconcile it on reconnect before teleport/loadout continuation, or run the same full inventory reset for reconnecting preload players before they can enter buy phase.
+
+Do not add a second inventory lifecycle manager.
+
 ## Checked but not admitted as bugs
 
 ### Six configured arenas vs two concurrent ticking leases
