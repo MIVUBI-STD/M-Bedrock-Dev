@@ -13,6 +13,23 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — project lifecycle implementation final hardening
+
+Source-verified on `Local`:
+
+- Project registry/work-session updates are no-op stable and monotonic; unchanged audit state does not create revision churn.
+- Persisted project records, approval snapshots, and Drive receipts fail closed on malformed or forged state.
+- Approval snapshots are immutable per fingerprint and retained under `state/approvals/`.
+- Drive publication receipts are retained per approved snapshot under `state/publications/` and may advance only monotonically from PARTIAL to COMPLETE.
+- Generic approval cannot bypass historical issue sync for diagnosis/audit projects with canonical Bug Report state.
+- Historical regression projection is owned by orchestrator; reliability-search remains independent of Bug Report and repair packages.
+- Added integration-neutral `ProjectDriveUploadAdapter` and executor. Core verifies returned Drive file identity/fingerprint before receipt creation.
+- Canonical execute-and-persist publication flow can now run end-to-end once a concrete Google Drive adapter/provider is supplied.
+- Added regression tests for project lifecycle, historical issue projection/catalog merge, registry validation, and Drive executor verification.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. No local typecheck/full verifier or real Google Drive upload was executed in this pass.
+
+
 ## 2026-10-03 — project registry, approval, issue history, and Drive publication
 
 Source-verified on `Local`:
