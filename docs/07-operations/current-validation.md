@@ -13,6 +13,21 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — false-positive issue suppression
+
+Source-verified on `Local`:
+
+- Audit/model/proof gaps no longer enter `BUG | DESIGN_MISMATCH` merely to remain visible.
+- `auditObligations[]` is the canonical non-finding lane for knowledge gaps, shallow/unbound scenarios, closure gaps, discovery challenges, shared-resource risks, compound boundaries, accumulation risks, unclassified replica divergence, runtime-proof residue, detection gaps, gameplay-translation work, and incomplete counter-proof search.
+- `NEED_VALIDATION` findings are now restricted to `CONFIRMED_DEFECT_READY` resolutions whose gameplay translation and blocking counter-proof are already established but minimum proof saturation is still incomplete.
+- `PROVEN` remains reserved for saturation-complete confirmation-ready defects.
+- The honesty/visibility gate accepts tracked residue only when it is visible as either a causal finding or an Audit Obligation; it no longer forces gaps to masquerade as bugs.
+- Map Audit HTML displays Audit Obligations in a separate section explicitly marked as non-bug work and excludes them from finding counts.
+- Legacy signal/blindspot issue projectors are compatibility shims that emit no issues; production ownership is `deriveAuditObligations()`.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and real-map benchmark are still required.
+
+
 ## 2026-10-03 — honesty / false-claim hardening
 
 Source-verified on `Local`:
@@ -272,14 +287,14 @@ Disproved and proven-normal candidates remain in audit trace only. This keeps un
 
 The current source also pushes more material signals toward resolution before they can disappear:
 
-- unresolved Required Inspection Graph knowledge receipts now surface as NEED_VALIDATION findings instead of living only inside closure metadata;
-- leaf scenarios with components but no causal proof edge surface as NEED_VALIDATION;
-- negative-space lifecycle signals and high temporal interaction risks surface as NEED_VALIDATION rather than remaining attention counters only;
+- unresolved Required Inspection Graph knowledge receipts surface as Audit Obligations instead of being mislabeled as gameplay issues;
+- leaf scenarios with components but no causal proof edge surface as Audit Obligations until causal gameplay proof exists;
+- negative-space lifecycle signals and high temporal interaction risks surface as Audit Obligations rather than being promoted to BUG findings without causal proof;
 - partially grounded candidate patterns are retained for targeted proof; only all-unknown low-signal patterns stay as raw evidence work;
 - unknown counter-proof never suppresses a material candidate; only concrete blocking counter-proof may do so;
-- NEED_VALIDATION findings carry stable validation grouping keys and are consolidated into the minimum practical validation test set.
+- confirmation-ready NEED_VALIDATION findings carry stable validation grouping keys; unresolved non-finding residue carries its own obligation resolution action.
 
-The intended optimization target is therefore: maximize PROVEN, keep every material unresolved signal visible, and minimize tester actions through consolidated high-information tests.
+The intended optimization target is therefore: maximize real PROVEN findings, keep every material unresolved signal visible, and never inflate issue counts by converting audit gaps into BUG/DESIGN_MISMATCH.
 
 ### False-negative control hardening
 
@@ -287,8 +302,8 @@ The current source now also enforces:
 
 - gameplay criticality is separate from technical complexity, so simple but progression/terminal-critical surfaces cannot be downgraded to shallow proof solely because they have few risk factors;
 - multi-arena stress uses selected-map concurrency boundaries instead of assuming that a two-arena pass generalizes to the maximum;
-- every `RUNTIME_BLOCKED` causal link emits one narrow runtime proof request;
-- every `DETECTION_GAP` causal link emits one targeted tester obligation;
+- every `RUNTIME_BLOCKED` causal link emits one narrow runtime Audit Obligation;
+- every `DETECTION_GAP` causal link emits one semantic/detection Audit Obligation and is not treated as a gameplay issue by default;
 - coverage presence is explicitly distinct from coverage adequacy;
 - publication may fail closed while investigation continues collecting unrelated high-confidence findings; an early blocker must not silently erase later required tests;
 - inverse/negative-space lifecycle pairs are mandatory challenge targets (acquire/release, spawn/account, grant/reset, schedule/cancel-or-revalidate, and equivalent pairs).
@@ -354,7 +369,7 @@ The highest-risk remaining false-negative classes now have explicit canonical ow
 - raw Semantic IR evidence without semantic/scenario ownership → `gameplay-discovery-challenger.ts`;
 - multiple/deferred writers and higher-order shared-resource convergence → `shared-resource-ownership.ts`;
 - compound multi-dimensional limits and repeated-run growth/producer-cleanup imbalance → `gameplay-compound-growth-analysis.ts`;
-- all of those signals project through `map-audit-validation-blindspots.ts` as NEED_VALIDATION and are independently required by the honesty gate;
+- those signals are consolidated by `map-audit-obligations.ts` as non-finding obligations and are independently required by the visibility/honesty gate;
 - blocking counter-proof now requires exact contradicted commit target/dependency relevance, not loose same-scenario/component overlap.
 
 These controls reduce the chance that an issue never enters the finding set at all. They remain proof-pressure signals, not automatic bug confirmation.
@@ -459,9 +474,9 @@ Model task packets can now use `PROOF_NAVIGATION` to resolve a specific NEED_VAL
 
 ### Honesty / non-suppression gate
 
-The selected-map audit now computes an explicit `no-hidden-material-finding` assessment. It independently derives the material unresolved residue set from the scenario graph, RIG knowledge receipts, Gameplay Model Closure, negative-space signals, temporal risks, and defect-resolution state, then compares that set against visible NEED_VALIDATION findings.
+The selected-map audit now computes an explicit `no-hidden-material-finding` assessment. It independently derives the material unresolved residue set from the scenario graph, RIG knowledge receipts, Gameplay Model Closure, negative-space signals, temporal risks, and defect-resolution state, then compares that set against the union of causal NEED_VALIDATION findings and visible Audit Obligations.
 
-It verifies that every saturation-complete `CONFIRMED_DEFECT_READY` causal link is visible as PROVEN, while confirmation-ready links with incomplete universal/family proof remain visible as NEED_VALIDATION.
+It verifies that every saturation-complete `CONFIRMED_DEFECT_READY` causal link is visible as PROVEN, while confirmation-ready links with incomplete universal/family proof remain visible as NEED_VALIDATION and non-finding gaps remain Audit Obligations.
 
 Any mismatch is an honesty violation and forces the audit to remain `BLOCKED`; it cannot become `READY_FOR_REVIEW` merely because other closure gates passed.
 
