@@ -736,6 +736,20 @@ function userIntentSummary(
   const constraints = intent.items.filter(
     (item) => item.kind === "TEST_CONSTRAINT",
   );
+  const expectations = intent.items.filter(
+    (item) => item.kind === "EXPECTATION_CLAIM",
+  );
+  const designClaims = intent.items.filter(
+    (item) => item.kind === "DESIGN_CLAIM",
+  );
+  const historical = intent.items.filter(
+    (item) => item.kind === "HISTORICAL_REFERENCE",
+  );
+  const scope = intent.items.filter(
+    (item) =>
+      item.kind === "SCOPE_REQUEST" ||
+      item.kind === "EXCLUSION_REQUEST",
+  );
 
   const list = (
     items: readonly { readonly normalized: string }[],
@@ -770,6 +784,18 @@ function userIntentSummary(
         intent.priorityPlayerFlows.join(", ") || "—",
       ) +
       '</div></div>',
+    '<div class="row"><div class="label">Expectation Claims</div><div class="value"><ul>' +
+      list(expectations) +
+      '</ul></div></div>',
+    '<div class="row"><div class="label">Design Claims</div><div class="value"><ul>' +
+      list(designClaims) +
+      '</ul></div></div>',
+    '<div class="row"><div class="label">Historical Hints</div><div class="value"><ul>' +
+      list(historical) +
+      '</ul></div></div>',
+    '<div class="row"><div class="label">Scope Guidance</div><div class="value"><ul>' +
+      list(scope) +
+      '</ul></div></div>',
     '<div class="row"><div class="label">Test Constraints</div><div class="value"><ul>' +
       list(constraints) +
       '</ul></div></div>',
