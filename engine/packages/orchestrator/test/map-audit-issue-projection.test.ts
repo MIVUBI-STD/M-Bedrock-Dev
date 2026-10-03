@@ -167,6 +167,9 @@ describe("map audit issue projection", () => {
       ),
     ).toMatchObject({
       failureDomain: "arena-multi-arena",
+      contributingDomains: [
+        "arena-multi-arena",
+      ],
       gameplayFlow: "READY_START",
     });
 
@@ -195,6 +198,10 @@ describe("map audit issue projection", () => {
     ).toMatchObject({
       failureDomain:
         "progression-wave-objective",
+      contributingDomains: [
+        "entity-ai-combat",
+        "progression-wave-objective",
+      ],
       gameplayFlow: "PROGRESSION",
     });
   });
