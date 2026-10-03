@@ -72,6 +72,9 @@ import {
   type AuditValidationTestGroup,
 } from "./map-audit-validation-plan.js";
 import {
+  projectBlindSpotNeedValidationIssues,
+} from "./map-audit-validation-blindspots.js";
+import {
   buildAuditProofNavigation,
 } from "./map-audit-proof-navigation.js";
 import {
@@ -178,6 +181,10 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["gameplayWorld"]["gameplayClosure"];
   readonly gameplayWorld:
     InspectArtifactResult["gameplayWorld"];
+  readonly discoveryChallenges:
+    InspectArtifactResult["hiddenGameplayDefects"]["discoveryChallenges"];
+  readonly sharedResourceSignals:
+    InspectArtifactResult["hiddenGameplayDefects"]["sharedResourceOwnership"]["signals"];
 }): Pick<
   SelectedMapAuditRun,
   | "executionTrace"
@@ -218,10 +225,18 @@ function deriveSelectedMapAuditControl(input: {
     projectClosureNeedValidationAuditIssues(
       input.gameplayClosure,
     );
+  const blindSpotValidationIssues =
+    projectBlindSpotNeedValidationIssues({
+      discoveryChallenges:
+        input.discoveryChallenges,
+      sharedResourceSignals:
+        input.sharedResourceSignals,
+    });
   const navigatedNeedValidationIssues = [
     ...needValidationIssues,
     ...signalValidationIssues,
     ...closureValidationIssues,
+    ...blindSpotValidationIssues,
   ].map((item) => ({
     ...item,
     proofNavigation:
@@ -243,6 +258,10 @@ function deriveSelectedMapAuditControl(input: {
     gameplayClosure: input.gameplayClosure,
     negativeSpace: input.negativeSpace,
     temporalRisks: input.temporalRisks,
+    discoveryChallenges:
+      input.discoveryChallenges,
+    sharedResourceSignals:
+      input.sharedResourceSignals,
     visibleIssues: allVisibleIssues,
   });
   const issueLanes = {
@@ -470,6 +489,12 @@ export async function runSelectedMapAudit(
       inspection.gameplayWorld.gameplayClosure,
     gameplayWorld:
       inspection.gameplayWorld,
+    discoveryChallenges:
+      inspection.hiddenGameplayDefects
+        .discoveryChallenges,
+    sharedResourceSignals:
+      inspection.hiddenGameplayDefects
+        .sharedResourceOwnership.signals,
   });
   const needValidationFindings = [
     ...control.issueLanes.BUG,
@@ -587,6 +612,10 @@ export function resolveSelectedMapAudit(
       updatedInspection.gameplayWorld.gameplayClosure,
     gameplayWorld:
       updatedInspection.gameplayWorld,
+    discoveryChallenges:
+      hidden.discoveryChallenges,
+    sharedResourceSignals:
+      hidden.sharedResourceOwnership.signals,
   });
   const needValidationFindings = [
     ...control.issueLanes.BUG,
