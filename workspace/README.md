@@ -1,6 +1,6 @@
 # Workspace
 
-Workspace separates local artifact continuity from tracked audit handoff.
+Workspace separates project working continuity from tracked audit handoff.
 
 ```text
 workspace/
@@ -11,7 +11,7 @@ workspace/
 └─ ownership.json
 ```
 
-Canonical local project shape:
+Canonical active project shape:
 
 ```text
 workspace/active/<project-id>/
@@ -19,7 +19,7 @@ workspace/active/<project-id>/
 ├─ design/     map-scoped Game Design authority (`game-design.json`)
 ├─ working/    transaction mutation target
 ├─ output/     packaged outputs
-├─ reports/    local diagnostics/evidence
+├─ reports/    project diagnostics/evidence
 ├─ patches/    explicit patch transactions/history
 └─ state/      rebuildable derived indexes/cache
 ```
@@ -52,7 +52,7 @@ Tracked root pointer:
 workspace/drive-root.json
 ```
 
-Per-project exact map/current-world pointers, when useful, belong only in ignored local state under `workspace/active/<project-id>/state/`.
+Per-project exact map/current-world pointers, when useful, belong only in ignored project state under `workspace/active/<project-id>/state/`.
 
 M-Bedrock does not create Drive-side system folders or store internal engine state in Drive.
 
