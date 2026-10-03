@@ -1,44 +1,67 @@
 # Workspace
 
-Workspace separates project working continuity from tracked audit handoff.
+Workspace has three responsibilities only:
 
 ```text
 workspace/
-├─ active/<project-id>/   ignored active project state
-├─ saved/                 ignored user-selected continuity
-├─ reports/               tracked canonical Bug Report V2 state
-├─ drive-root.json
-└─ ownership.json
+├─ projects/<project-id>/  ignored working continuity for each project
+├─ reports/                tracked canonical Bug Report V2 state
+├─ drive-root.json         tracked Google Drive root binding
+└─ ownership.json          workspace ownership contract
 ```
 
-Canonical active project shape:
+There is no `local/`, `active/`, or `saved/` lifecycle tree.
+
+Project lifecycle status belongs in project state/metadata. A project does not move folders merely because it becomes approved, saved, resumed, or published.
+
+## Project workspace
+
+Canonical project shape:
 
 ```text
-workspace/active/<project-id>/
-├─ source/     immutable extracted/source representation
-├─ design/     map-scoped Game Design authority (`game-design.json`)
-├─ working/    transaction mutation target
-├─ output/     packaged outputs
-├─ reports/    project diagnostics/evidence
+workspace/projects/<project-id>/
+├─ source/     immutable project input/extracted source representation
+├─ design/     map-scoped authoring/reference material
+├─ working/    mutable working copy / transaction target
+├─ output/     generated packages and non-canonical deliverables
+├─ evidence/   project-scoped diagnostics/evidence, not report authority
 ├─ patches/    explicit patch transactions/history
-└─ state/      rebuildable derived indexes/cache
+└─ state/      project/session/audit continuity metadata
 ```
 
-`workspace/reports/` stores only repository-tracked canonical Bug Report V2 current state for audited map versions. It is the persisted bug-report authority; current-version recording takes priority and missing historical reports are not backfilled for completeness. Private artifacts, extracted maps, caches, local verification output, and working state remain ignored.
+### Ownership
 
-Nothing under `workspace/active/` or `workspace/saved/` is repository source authority.
+- `source/` = what the project started from.
+- `design/` = map-scoped authoring/reference material.
+- `working/` = current mutable work.
+- `output/` = generated deliverables.
+- `evidence/` = diagnostic evidence supporting work; never canonical bug state.
+- `patches/` = explicit mutation history.
+- `state/` = resumable project/work-session state.
+
+Do not create project-local `reports/`. Canonical current bug-report state has exactly one owner:
+
+```text
+workspace/reports/
+```
+
+This avoids two report stores with competing authority.
+
+## Canonical report state
+
+`workspace/reports/` stores only repository-tracked canonical Bug Report V2 current state for audited map versions.
+
+It is the persisted bug-report authority. Generated HTML/PDF or project diagnostics belong in project `output/` or `evidence/` and are derived/non-canonical.
 
 ## Audit authority
 
-For gameplay audit, the selected current `.mcworld` is the sole current source of truth.
+For gameplay audit, the selected current `.mcworld` is the sole current gameplay source of truth.
 
-`workspace/active/<project-id>/design/game-design.json`, when present, is authoring/reference material. It does not override the selected map artifact during audit.
+`workspace/projects/<project-id>/design/game-design.json`, when present, is authoring/reference material. It does not override the selected map artifact during audit.
 
+## Google Drive
 
-
-## Drive storage
-
-Google Drive is user-managed storage for map binaries and source-development files.
+Google Drive is the approved human-facing storage for map binaries, source-development files, and approved derived deliverables.
 
 Canonical guidance:
 
@@ -52,9 +75,32 @@ Tracked root pointer:
 workspace/drive-root.json
 ```
 
-Per-project exact map/current-world pointers, when useful, belong only in ignored project state under `workspace/active/<project-id>/state/`.
+Per-project exact Drive folder/current-world pointers belong in project state under:
 
-M-Bedrock does not create Drive-side system folders or store internal engine state in Drive.
+```text
+workspace/projects/<project-id>/state/
+```
+
+Internal Work Session, caches, audit control state, or engine metadata are not copied to Drive.
+
+## Continuity rule
+
+A project always keeps one identity:
+
+```text
+workspace/projects/<project-id>/
+```
+
+Its lifecycle changes in state metadata instead of changing directory:
+
+```text
+working
+→ ready-for-approval
+→ approved
+→ drive-published
+```
+
+Detailed execution progress remains owned by Work Session / selected-map audit state. Project publication lifecycle must not duplicate those stage machines.
 
 ## Gameplay Contract rule
 
