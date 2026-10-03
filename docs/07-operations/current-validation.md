@@ -13,6 +13,35 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — project registry, approval, issue history, and Drive publication
+
+Source-verified on `Local`:
+
+- Workspace now uses one canonical project path: `workspace/projects/<project-id>/`; status is metadata rather than folder movement.
+- Added tracked `workspace/project-registry.json` as the compact answer to what projects exist, what artifact/version they use, current lifecycle status, Work Session/audit references, issue-knowledge refs, Drive binding, and approval/publication fingerprints.
+- Detailed execution remains in Work Session; the registry is a compact coordination projection and not a second audit state machine.
+- Project lifecycle has exactly four publication states: `working → ready-for-approval → approved → drive-published`.
+- Material work after approval invalidates approval and returns the project to `working`.
+- Approval readiness is deterministic and checks session/revision, optional audit completion, canonical Bug Report reference when required, Drive binding, deliverable fingerprints, and blockers.
+- Project approval snapshots are SHA-256 bound to project revision, artifact/audit identity, canonical Bug Report ref, historical regression refs, and approved deliverables.
+- Approval snapshots are immutable and persisted per fingerprint under project state.
+- Drive publication can only be planned from the currently approved snapshot. Extra/unapproved files are rejected by the canonical receipt path.
+- PARTIAL Drive receipts are persisted but cannot mark a project published; receipt state may advance monotonically to COMPLETE.
+- COMPLETE receipt is required for `drive-published`.
+- Selected-map audit continuity now saves both detailed Work Session state and compact tracked project registry state, and resumes from persisted session/registry data.
+- Work Session and Project Registry revisions are monotonic; unchanged audit state does not create revision noise.
+- Canonical Bug Report V2 remains current-version bug authority.
+- Approved current Bug Report issues are projected by orchestrator into the existing reliability regression catalog for durable searchable history.
+- Reliability historical storage remains dependency-neutral and preserves legacy records rather than forcing speculative migration/backfill.
+- Stable historical ID semantic conflicts fail closed.
+- Project records retain only historical regression/failure-pattern/map-knowledge references; they do not copy issue narratives.
+- Reusable failure patterns are not auto-created from every issue; repeated/evidence-backed abstraction remains a separate reliability decision.
+- Drive stays human-facing approved storage and does not receive project registry, Work Session, Audit Obligations, semantic graphs, caches, or other control-plane state.
+- Added regression tests for lifecycle readiness, approval invalidation, forged snapshots, partial/complete Drive publication, historical projection/merge conflicts, and project registry validation.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and real Drive publication execution have not been run.
+
+
 ## 2026-10-03 — canonical Pre-Audit Plan workflow
 
 Source-verified on `Local`:
