@@ -66,9 +66,14 @@ Requires all of:
 
 All confirmed defects are shown by default: Blocker, Major, and Minor.
 
-Unresolved issue candidates that could still represent a real defect are also shown by default with an explicit non-severity status:
-- `runtime-proof-required` / `insufficient-evidence` → `Needs Validation`;
-- `ambiguous-intent` → `Ambiguous`;
-- `detection-gap` → `Detection Gap`.
+Production BUG / DESIGN_MISMATCH output is confirmation-only. Do not emit `Needs Validation`, `Ambiguous`, or `Detection Gap` as pseudo-issues.
 
-Unresolved candidates never receive Blocker/Major/Minor severity until they satisfy defect admission. Designed behavior, disproven candidates, and normal surfaces remain hidden.
+Unresolved work is routed internally as an exact targeted test obligation:
+- `runtime-proof-required` → one narrow runtime falsification test;
+- `insufficient-evidence` → test only the missing predicate/dependency;
+- `ambiguous-intent` → keep outside the issue report until selected-artifact evidence resolves expected behavior;
+- `detection-gap` → one narrow tester action tied to the unresolved causal dependency.
+
+A source-proven contradiction with a complete gameplay translation is automatically challenged by bounded counter-proof search. It must resolve to either `CONFIRMED_DEFECT_READY` or `BLOCKING_COUNTERPROOF`; it must not be parked in a generic validation state.
+
+Designed behavior, disproven candidates, and normal surfaces remain hidden.
