@@ -142,7 +142,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
 
   checkpoint.push(receipt(
     "A1",
-    "UNDERSTAND",
+    "TARGET",
     "Selected Artifact Integrity",
     artifactId.trim() ? "CLOSED" : "OPEN",
     artifactId.trim()
@@ -154,7 +154,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
 
   checkpoint.push(receipt(
     "A2",
-    "UNDERSTAND",
+    "DISCOVERY",
     "Gameplay Surface Discovery",
     discovery.status === "OPEN"
       ? "OPEN"
@@ -1246,7 +1246,7 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   ));
 
   const blocks = (
-    ["UNDERSTAND", "MODEL", "STRESS", "PROVE", "REPORT"] as const
+    ["TARGET", "DISCOVERY", "UNDERSTAND", "MODEL", "STRESS", "PROVE", "REPORT"] as const
   ).map((block) => blockClosure(block, checkpoint));
 
   const status =
