@@ -86,6 +86,23 @@ function resolution(
 }
 
 describe("gameplay defect resolution crosscheck depth", () => {
+  it("auto-confirms a source-proven contradiction after bounded graph counter-proof search", () => {
+    const result = assessGameplayDefectResolutionGate(graph);
+
+    expect(result.status).toBe(
+      "READY_FOR_PROPOSED_BUG_SET",
+    );
+    expect(result.confirmedDefectReadyIds).toEqual([
+      "link:arena-capacity",
+    ]);
+    expect(
+      result.counterProofSearchRequiredIds,
+    ).toEqual([]);
+    expect(
+      result.resolutions[0]?.counterProofSearch?.conclusion,
+    ).toBe("NO_BLOCKING_PROOF");
+  });
+
   it("rejects shallow one-dimension counter-proof search for ownership-sensitive defects", () => {
     const result = assessGameplayDefectResolutionGate(
       graph,
