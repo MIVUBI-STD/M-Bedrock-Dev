@@ -46,10 +46,10 @@ Unresolved evidence must remain actionable:
 
 ```text
 RUNTIME_BLOCKED
-→ exactly one narrow runtime proof request
+→ exactly one narrow Audit Obligation / runtime proof request
 
 DETECTION_GAP
-→ exactly one targeted tester obligation
+→ exactly one Audit Obligation for missing semantic/detection proof
 ```
 
 The publication gate may stop final closure, but investigation may continue collecting high-confidence evidence from later surfaces. An earlier blocker must never make unrelated required tests disappear.
@@ -121,7 +121,9 @@ A map may merge or omit stages. Applicability is derived from the selected artif
 
 ## Issue taxonomy rule
 
-Confirmed findings must be classified through one taxonomy before REPORT:
+Only causal gameplay findings may be classified as issues. Discovery gaps, model gaps, unresolved runtime dependencies, incomplete counter-proof, negative-space risks, temporal risks, and unclassified replica divergence remain `Audit Obligation` until they establish a player-visible causal contradiction.
+
+Confirmed / confirmation-ready gameplay findings must be classified through one taxonomy before REPORT:
 
 ```text
 issueType
