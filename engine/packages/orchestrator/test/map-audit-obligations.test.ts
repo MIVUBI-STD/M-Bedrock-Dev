@@ -93,6 +93,17 @@ describe("audit obligations versus gameplay findings", () => {
       deriveAuditObligations({
         graph,
         defectResolution: gate,
+        gameplayWorld: {
+          surfaceDiscovery: {
+            surfaceIds: ["runtime:entities"],
+          },
+          arenas: {
+            detected: false,
+          },
+          platformKnowledge: {
+            claims: [],
+          },
+        } as any,
         gameplayClosure: closed,
         negativeSpace: [],
         temporalRisks: [],
