@@ -1,9 +1,10 @@
 export interface ProjectWorkspaceLayout {
   root: string;
   source: string;
+  design: string;
   working: string;
   output: string;
-  reports: string;
+  evidence: string;
   patches: string;
   state: string;
 }
@@ -17,9 +18,10 @@ export function projectWorkspaceLayout(
   return {
     root,
     source: `${root}/source`,
+    design: `${root}/design`,
     working: `${root}/working`,
     output: `${root}/output`,
-    reports: `${root}/reports`,
+    evidence: `${root}/evidence`,
     patches: `${root}/patches`,
     state: `${root}/state`,
   };
