@@ -109,6 +109,7 @@ export interface GameplayWorldModel {
     detected: boolean;
     count?: number;
     basis?: "topology" | "script-config" | "reconciled";
+    replicaBaselineId?: string;
     layoutStatus?: ArenaLayoutReconciliation["status"];
     requestedConcurrentArenas?: number;
     safeConcurrentArenas?: number | null;
@@ -518,6 +519,9 @@ export interface GameplayWorldModelSource {
     autoDetected: boolean;
     spatialLayout?: {
       basis: "topology" | "script-config" | "reconciled";
+      canonical?: {
+        arenaId: string;
+      };
       replicas: readonly unknown[];
     };
     discovery?: {
