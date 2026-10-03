@@ -80,6 +80,59 @@ function isMapAuditHtmlInput(
   );
 }
 
+function mapAuditHtmlInputIssues(
+  audit: MapAuditHtmlInput,
+): readonly string[] {
+  const issues: string[] = [];
+  const findings = [
+    ...audit.bugs,
+    ...audit.designMismatches,
+  ];
+
+  for (const finding of findings) {
+    if (
+      !finding.id?.trim() ||
+      !finding.issue?.trim() ||
+      !finding.expected?.trim() ||
+      !finding.actual?.trim() ||
+      !finding.failureDomain?.trim() ||
+      !finding.gameplayFlow?.trim()
+    ) {
+      issues.push(
+        "Map Audit finding is missing required reader-facing fields: " +
+          (finding.id || "<missing-id>") +
+          ".",
+      );
+    }
+    if (
+      finding.status === "PROVEN" &&
+      finding.severity === undefined
+    ) {
+      issues.push(
+        "PROVEN finding requires final severity: " +
+          finding.id +
+          ".",
+      );
+    }
+    if (
+      finding.status === "NEED_VALIDATION" &&
+      (
+        !finding.validationReason?.trim() ||
+        !finding.missingProof?.trim() ||
+        !finding.validationTest?.trim()
+      )
+    ) {
+      issues.push(
+        "NEED_VALIDATION finding requires validationReason, missingProof, and validationTest: " +
+          finding.id +
+          ".",
+      );
+    }
+  }
+
+  return issues;
+}
+
 function parseArgs(argv: readonly string[]): Args {
   let input = "";
   let outDir = "";
@@ -417,13 +470,13 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(artifactLabel)} — Complete Bug Report</title>
+<title>${escapeHtml(artifactLabel)} — Map Audit Report</title>
 <style>${baseCss}</style>
 </head>
 <body>
 <main class="report">
   <section class="hero">
-    <h1>${escapeHtml(artifactLabel)} — Complete Bug Report</h1>
+    <h1>${escapeHtml(artifactLabel)} — Map Audit Report</h1>
     <p>Map version ${escapeHtml(audit.mapVersion)} · selected-artifact audit</p>
   </section>
   <section class="metrics">
@@ -812,6 +865,14 @@ async function main(): Promise<void> {
   const raw = JSON.parse(source) as unknown;
 
   if (isMapAuditHtmlInput(raw)) {
+    const auditIssues =
+      mapAuditHtmlInputIssues(raw);
+    if (auditIssues.length > 0) {
+      throw new Error(
+        "Map Audit Output V2 is not render-ready: " +
+          auditIssues.join("; "),
+      );
+    }
     const label =
       raw.evidenceScope?.selectedArtifact ||
       raw.artifactId;
@@ -819,7 +880,7 @@ async function main(): Promise<void> {
       safeSegment(label) +
       " v" +
       safeSegment(raw.mapVersion) +
-      " - Complete Bug Report";
+      " - Map Audit Report";
     await mkdir(args.outDir, { recursive: true });
     const output = join(args.outDir, stem + ".html");
     await writeFile(
