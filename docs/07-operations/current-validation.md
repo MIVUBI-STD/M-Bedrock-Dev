@@ -124,6 +124,28 @@ These controls reduce silent false negatives but do not constitute a measured fa
 - legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
 - repository verifier checks single entry, issue lanes, semantic-gap fail-closed behavior, report lanes, and legacy deprecation.
 
+### Historical failure search pressure
+
+Generic lessons from prior detection failures are now promoted as search-priority hints, not correctness rules.
+
+Current reusable families include:
+
+- simulation resource declared/required but not realized through acquire/readiness/release;
+- arena-local lifecycle using global/unleased selectors or mutations;
+- deferred work committing after ownership/session generation changes;
+- multiple recovery owners restoring the same player/session state;
+- incomplete recovery snapshots for transient state;
+- progression accounting holes where required work escapes completion tracking;
+- cleanup/reuse baseline leakage into the next run.
+
+Hints activate only when current selected-artifact facts match the family. They can:
+
+- increase early surface search priority through `historyPressure`;
+- move relevant non-runtime knowledge domains earlier in proof navigation;
+- add targeted historical search questions to model task packets.
+
+They cannot create a defect, lower proof requirements, override counter-proof, or use old map behavior as current gameplay authority. Runtime remains last in the route.
+
 ### Conditional knowledge and evidence substitution
 
 Knowledge demand is now conditional on coexisting selected-artifact systems rather than only a static domain prerequisite table. Examples:
