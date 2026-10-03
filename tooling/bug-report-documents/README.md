@@ -1,29 +1,31 @@
 # Bug Report HTML
 
-This tooling renders client-facing bug reports as a single self-contained HTML file.
+This tooling renders one self-contained HTML file from either:
+
+- **Map Audit Output V2** → Complete Bug Report, showing every material `PROVEN` and `NEED_VALIDATION` finding across BUG and DESIGN_MISMATCH;
+- **Approved Bug Report V2** → approved PROVEN BUG ledger view.
 
 ## Flow
 
 ```text
-canonical Bug Report V2 JSON
-→ player-impact / severity filtering
-→ engine client-document projection
+Map Audit Output V2
+→ Complete Bug Report
+→ PROVEN + NEED_VALIDATION remain visible
+
+or
+
+Approved Bug Report V2 JSON
+→ approved-bug client projection
 → self-contained HTML
 ```
 
-HTML is presentation only. Bug Report V2 JSON remains the source of truth.
+HTML is presentation only. It must not invent, promote, hide, or backfill audit facts.
 
 ## Default behavior
 
-The default client report includes only:
+For **Map Audit Output V2**, all material findings are shown. NEED_VALIDATION findings are labeled **NEED VALIDATION / UNPROVEN**, include the exact missing proof and validation test, and never receive a final severity.
 
-- Blocker;
-- Major;
-- open issues.
-
-Minor issues remain available in canonical data but are hidden from the default report because they do not materially affect core gameplay.
-
-Use `--include-minor` only when a broader QA view is explicitly needed.
+For **Approved Bug Report V2**, the existing approved-ledger filters remain: open Blocker/Major by default; `--include-minor` and `--include-fixed` broaden only that approved-ledger view.
 
 ## Usage
 
@@ -85,4 +87,4 @@ Technical causes stay out of the client-facing Issue field.
 - client projection/design: `engine/packages/bug-report/src/document/`;
 - HTML file rendering only: `tooling/bug-report-documents/render.ts`.
 
-The renderer must not invent, rewrite, or backfill bug facts.
+The renderer must not invent, rewrite, promote, suppress, or backfill finding facts.
