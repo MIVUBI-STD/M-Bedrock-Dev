@@ -5,7 +5,8 @@ export type ProjectLifecycleStatus =
   | "drive-published";
 
 export type ProjectTaskClass =
-  | "AUDIT"
+  | "INSPECT"
+  | "DIAGNOSE"
   | "REPAIR"
   | "MODIFY"
   | "DEVELOP"
@@ -107,7 +108,8 @@ const PROJECT_STATUSES =
 
 const PROJECT_TASK_CLASSES =
   new Set<ProjectTaskClass>([
-    "AUDIT",
+    "INSPECT",
+    "DIAGNOSE",
     "REPAIR",
     "MODIFY",
     "DEVELOP",
