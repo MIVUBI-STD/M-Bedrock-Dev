@@ -481,8 +481,7 @@ export function resolveSelectedMapAudit(
     procedure: mandatoryAuditProcedure,
     scenario,
     capabilityDelivery:
-      inspection.hiddenGameplayDefects
-        .capabilityDelivery,
+      hidden.capabilityDelivery,
   });
 
   return {
