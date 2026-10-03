@@ -141,6 +141,26 @@ Separate platform risk from map bugs, but audit when version/API behavior can vi
 
 Do not classify compatibility concern as a gameplay defect without selected-version evidence.
 
+## Gameplay capability delivery
+
+Every player-visible or authored capability must be crosschecked as:
+
+```text
+Designed / Presented Capability
+→ Implementation Evidence
+→ Actual Playable Capability
+→ Technical Constraint / Root Cause
+→ Player-visible Consequence
+```
+
+Classify failures as:
+
+- `DESIGN_FAILURE` — the game design exposes a capability the selected artifact cannot actually deliver at the presented level;
+- `DESIGN_IMPLEMENTATION_MISMATCH` — a player-visible designed capability has no matching implementation;
+- `IMPLEMENTATION_FAILURE` — implementation exists, but the gameplay delivery chain is incomplete.
+
+A technical constraint can explain a `DESIGN_FAILURE`; it does not convert it to NOT BUG.
+
 ## Completion rule
 
 Each applicable surface must be recorded internally as:
