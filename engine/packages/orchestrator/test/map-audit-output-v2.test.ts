@@ -127,6 +127,7 @@ describe("Map Audit Output V2 projection", () => {
         status: "PASS",
         expectedVisibleResidueIds: ["link:unresolved"],
         visibleNeedValidationIds: ["link:unresolved"],
+        visibleObligationIds: [],
         expectedProvenIds: ["link:proven"],
         visibleProvenIds: ["link:proven"],
         missingVisibleResidueIds: [],
