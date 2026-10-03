@@ -17,12 +17,16 @@ import type {
   SelectedMapAuditAdmission,
   SelectedMapAuditStage,
 } from "./map-audit-admission.js";
+import type {
+  AuditObligation,
+} from "./map-audit-obligations.js";
 
 export type AuditModelTaskKind =
   | "CHECKPOINT_REASONING"
   | "GAMEPLAY_TRANSLATION"
   | "COUNTERPROOF_SEARCH"
-  | "PROOF_NAVIGATION";
+  | "PROOF_NAVIGATION"
+  | "AUDIT_OBLIGATION";
 
 export interface AuditModelTaskEvidenceContext {
   readonly id: string;
@@ -244,6 +248,63 @@ function checkpointPackets(
     });
 }
 
+function obligationPackets(
+  obligations: readonly AuditObligation[],
+  auditRevision: string,
+  intent: GameplayIntentModel,
+): readonly AuditModelTaskPacket[] {
+  return obligations.map((obligation) => {
+    const evidence =
+      evidenceContext(
+        obligation.evidenceIds,
+        intent,
+      );
+
+    return {
+      schemaVersion: 1 as const,
+      policy: "bounded-audit-model-task" as const,
+      id:
+        "task:audit-obligation:" +
+        obligation.id,
+      auditRevision,
+      kind: "AUDIT_OBLIGATION" as const,
+      stage: obligation.stage,
+      goal: obligation.title,
+      decisionNeeded: obligation.reason,
+      subjectIds: [...obligation.subjectIds],
+      componentIds: [...obligation.componentIds],
+      requiredKnowledgeIds: [],
+      evidenceIds: [...obligation.evidenceIds],
+      evidenceContext: evidence.context,
+      unresolvedEvidenceIds:
+        evidence.unresolved,
+      knowledgeContext: [],
+      unresolvedObligationIds: [
+        obligation.id,
+      ],
+      missingClaims: [
+        obligation.missingProof,
+      ],
+      allowedOutputs: [
+        "selected-artifact evidence that resolves the obligation",
+        "evidence-backed not-applicable or normal-behavior disposition",
+        "new causal dependency/contradiction evidence for a fresh canonical audit run",
+        "exact remaining missing-proof statement",
+      ],
+      forbiddenActions: [
+        "classify BUG or DESIGN_MISMATCH without a player-visible causal contradiction",
+        "assign severity",
+        "invent expected behavior",
+        "treat risk presence as defect proof",
+        "use stale or external map behavior as current gameplay authority",
+        "claim the obligation is closed from model narrative alone",
+      ],
+      stopCondition:
+        "Stop when the obligation is either evidence-backed normal/not-applicable, causally grounded for a fresh audit run, or reduced to one exact missing-proof requirement. Do not promote it directly to a report issue from model narrative.",
+    };
+  });
+}
+
 function provePackets(
   graph: GameplayScenarioGraph,
   gate: GameplayDefectResolutionGate,
@@ -349,6 +410,7 @@ export function deriveAuditModelTaskPackets(input: {
   readonly auditRevision: string;
   readonly world: GameplayWorldModel;
   readonly needValidationFindings?: readonly import("./map-audit-issue-projection.js").NeedValidationAuditIssueProjection[];
+  readonly auditObligations?: readonly AuditObligation[];
 }): readonly AuditModelTaskPacket[] {
   const navigationPackets =
     (input.needValidationFindings ?? [])
@@ -459,9 +521,19 @@ export function deriveAuditModelTaskPackets(input: {
         };
       });
 
+  const auditObligationPackets =
+    obligationPackets(
+      input.auditObligations ?? [],
+      input.auditRevision,
+      input.intent,
+    );
+
   const stage = input.admission.firstBlockingStage;
   if (stage === undefined) {
-    return navigationPackets;
+    return [
+      ...navigationPackets,
+      ...auditObligationPackets,
+    ];
   }
 
   if (stage === "PROVE") {
@@ -476,6 +548,7 @@ export function deriveAuditModelTaskPackets(input: {
       return [
         ...prove,
         ...navigationPackets,
+        ...auditObligationPackets,
       ];
     }
   }
@@ -488,5 +561,6 @@ export function deriveAuditModelTaskPackets(input: {
       input.intent,
     ),
     ...navigationPackets,
+    ...auditObligationPackets,
   ];
 }
