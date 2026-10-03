@@ -25,6 +25,17 @@ audit <selected.mcworld>
    issueLanes.DESIGN_MISMATCH
 ```
 
+### Output contract regression guard
+
+A dedicated schema-contract regression test now verifies that Map Audit Output V2 retains:
+
+- the two public statuses only;
+- NEED_VALIDATION fields `validationReason`, `missingProof`, `validationTest`, `validationGroupKey`, and `proofNavigation`;
+- map-level `honesty` and `validationTests`;
+- canonical full-map replica status names.
+
+`BuildSelectedMapAuditReportResult` also preserves `fullMapReplica`, so baseline/delta evidence cannot disappear between the canonical audit run and final report handoff.
+
 ### Full-map receipt integration
 
 `SelectedMapAuditRun` now exposes `fullMapReplica` when per-replica world/topology proof exists.
