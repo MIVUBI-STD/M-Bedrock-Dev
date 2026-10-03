@@ -3,6 +3,8 @@ import type { GameplayIntentModel } from "../../../gameplay-intent/src/index.js"
 import type { GameplayDiscoveryClosure } from "./gameplay-discovery-closure.js";
 
 export type MandatoryAuditBlock =
+  | "TARGET"
+  | "DISCOVERY"
   | "UNDERSTAND"
   | "MODEL"
   | "STRESS"
