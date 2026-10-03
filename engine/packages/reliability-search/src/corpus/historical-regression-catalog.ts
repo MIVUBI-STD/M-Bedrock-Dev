@@ -27,10 +27,16 @@ export interface HistoricalRegressionRecord {
   readonly observed: string;
 }
 
+export interface HistoricalRegressionCatalogEntry {
+  readonly id: string;
+  readonly title?: string;
+  readonly [key: string]: unknown;
+}
+
 export interface HistoricalRegressionCatalog {
   readonly schemaVersion: 1;
   readonly regressions:
-    readonly HistoricalRegressionRecord[];
+    readonly HistoricalRegressionCatalogEntry[];
 }
 
 const DOMAIN_BY_CATEGORY:
@@ -147,19 +153,54 @@ export function projectApprovedBugReportToHistoricalRegressions(
 }
 
 function sameMeaning(
-  left: HistoricalRegressionRecord,
+  left: HistoricalRegressionCatalogEntry,
   right: HistoricalRegressionRecord,
 ): boolean {
-  return (
-    left.id === right.id &&
-    left.provenance.map === right.provenance.map &&
-    left.provenance.mapVersion ===
-      right.provenance.mapVersion &&
-    left.provenance.bugId ===
-      right.provenance.bugId &&
-    left.expected === right.expected &&
-    left.observed === right.observed
-  );
+  const expected =
+    typeof left.expected === "string"
+      ? left.expected
+      : undefined;
+  const observed =
+    typeof left.observed === "string"
+      ? left.observed
+      : undefined;
+  const provenance =
+    left.provenance !== null &&
+    typeof left.provenance === "object" &&
+    !Array.isArray(left.provenance)
+      ? left.provenance as Record<string, unknown>
+      : undefined;
+
+  if (
+    expected !== undefined &&
+    expected !== right.expected
+  ) {
+    return false;
+  }
+  if (
+    observed !== undefined &&
+    observed !== right.observed
+  ) {
+    return false;
+  }
+  if (
+    provenance !== undefined &&
+    provenance.source ===
+      "Canonical Bug Report V2"
+  ) {
+    return (
+      provenance.map ===
+        right.provenance.map &&
+      provenance.mapVersion ===
+        right.provenance.mapVersion &&
+      provenance.bugId ===
+        right.provenance.bugId
+    );
+  }
+
+  // Legacy catalog entries may not carry the new provenance fields.
+  // Preserve them when the stable id/known Expected/Observed do not conflict.
+  return true;
 }
 
 export function mergeHistoricalRegressionCatalog(
@@ -173,11 +214,12 @@ export function mergeHistoricalRegressionCatalog(
     );
   }
 
-  const byId = new Map(
-    catalog.regressions.map(
-      (item) => [item.id, item] as const,
-    ),
-  );
+  const byId =
+    new Map<string, HistoricalRegressionCatalogEntry>(
+      catalog.regressions.map(
+        (item) => [item.id, item] as const,
+      ),
+    );
 
   for (const item of incoming) {
     const previous = byId.get(item.id);
