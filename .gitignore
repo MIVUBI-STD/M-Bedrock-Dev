@@ -5,11 +5,9 @@ coverage/
 .cache/
 *.log
 
-# Local artifact workspaces
-workspace/active/*
-workspace/saved/*
-!workspace/active/.gitkeep
-!workspace/saved/.gitkeep
+# Project working continuity
+workspace/projects/*
+!workspace/projects/.gitkeep
 
 # Extracted / packaged Bedrock content
 *.mcworld
