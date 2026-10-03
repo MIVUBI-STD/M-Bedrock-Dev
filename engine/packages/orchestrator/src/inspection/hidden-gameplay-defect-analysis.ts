@@ -458,6 +458,9 @@ function capabilityDeliveryFromModel(
           "world:arena-count",
           "capacity:safe-concurrency",
         ],
+        playerFacingEvidenceIds: [
+          "world:arena-count",
+        ],
       }),
     );
   }
@@ -520,6 +523,21 @@ function capabilityDeliveryFromModel(
           completeness.complete,
         evidenceIds:
           completeness.evidenceIds,
+        playerFacingEvidenceIds:
+          evidence
+            .filter(
+              (item) =>
+                item.scope === "selected-artifact" &&
+                (
+                  item.origin === "dialogue" ||
+                  item.origin === "translation" ||
+                  item.origin === "structure" ||
+                  item.origin === "world-db" ||
+                  item.origin === "scoreboard" ||
+                  item.origin === "command"
+                ),
+            )
+            .map((item) => item.id),
       }),
     );
   }
