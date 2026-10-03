@@ -610,6 +610,11 @@ honesty = VIOLATION
 
 # 9. REPORT — one clean final projection
 
+## Review-readiness rule
+
+`READY_FOR_REVIEW` means the finding set is complete and honest, not that every finding is PROVEN. NEED_VALIDATION may remain when its exact missing proof and validation action are preserved. Additional proof-navigation tasks after review readiness are optional promotion work, not a second audit lane.
+
+
 ## Issue lanes
 - BUG
 - DESIGN_MISMATCH
