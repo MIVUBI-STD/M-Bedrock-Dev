@@ -25,6 +25,16 @@ One concept must have one public name across source, schema, docs, report, and t
 
 Internal resolver states such as RUNTIME_PROOF_REQUIRED, DETECTION_GAP, COUNTERPROOF_SEARCH_REQUIRED, and GAMEPLAY_TRANSLATION_REQUIRED may exist internally, but they must project to NEED_VALIDATION rather than becoming additional public statuses.
 
+## Report naming
+
+Use these names consistently:
+
+- `Complete Bug Report` / `Map Audit Report` — human-facing complete finding set; includes PROVEN and NEED_VALIDATION across BUG and DESIGN_MISMATCH.
+- `Approved Bug Report V2` — downstream approved PROVEN BUG ledger only.
+- `evidenceRoute` — conceptual name for static/runtime/tester evidence origin. It is not an audit workflow lane.
+
+Never call static/runtime/tester separate audit routes.
+
 ## Canonical flow names
 
 Use these stage names exactly:
