@@ -1,5 +1,6 @@
 import {
   assessAuditRisk,
+  type AuditGameplayCriticality,
   type AuditRiskAssessment,
   type AuditRiskFactor,
 } from "../../../diagnostic-reasoning/src/index.js";
@@ -91,6 +92,33 @@ function factorsForSurface(
   }
 }
 
+function criticalityForSurface(
+  surfaceId: string,
+): AuditGameplayCriticality {
+  switch (surfaceId) {
+    case "runtime:arena-capacity":
+    case "runtime:arena-lifecycle":
+    case "runtime:arena-cleanup":
+    case "runtime:arena-isolation":
+    case "runtime:state":
+    case "runtime:chunks":
+    case "runtime:combat":
+    case "runtime:inventory":
+    case "runtime:entities":
+      return "high";
+    case "runtime:persistence":
+      return "high";
+    case "runtime:economy":
+    case "runtime:spatial":
+    case "runtime:structures":
+    case "runtime:boundaries":
+    case "runtime:arena-replica-integrity":
+      return "medium";
+    default:
+      return "low";
+  }
+}
+
 const SURFACE_KNOWLEDGE_DOMAIN:
   Readonly<Partial<Record<string, GameplayKnowledgeDomain>>> = {
     "runtime:arena": "arena-lifecycle",
@@ -152,6 +180,7 @@ export function deriveGameplayAnalysisPriorities(
             capabilities,
           ),
         unresolved: unknown.has(surfaceId),
+        criticality: criticalityForSurface(surfaceId),
       });
       const domain =
         SURFACE_KNOWLEDGE_DOMAIN[surfaceId];
