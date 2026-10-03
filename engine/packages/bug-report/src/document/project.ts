@@ -60,7 +60,7 @@ export function deriveBugReportWorkChecklist(
     bug.suggestedFix?.trim()
       ? "Apply the approved Resolution."
       : "Implement the smallest fix that removes the observed defect while preserving the expected gameplay contract.",
-    "Retest using every Tester Checklist step and confirm the observed wrong result no longer occurs.",
+    "Retest using every How to Reproduce step and confirm the observed wrong result no longer occurs.",
     "Confirm the Expected result is reached on the same trigger path.",
   );
 
