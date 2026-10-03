@@ -34,6 +34,18 @@ audit <selected.mcworld>
 - Specialist docs are supporting contracts, not alternate workflows.
 - Work Session/UI/HTML/JSON are projections only.
 
+### Validation-parking removal
+
+The production issue path no longer treats generic validation states as findings:
+
+- source-proven contradictions with complete gameplay translation run an automatic bounded counter-proof search;
+- if blocking proof exists, the candidate is rejected as `BLOCKING_COUNTERPROOF`;
+- otherwise it becomes `CONFIRMED_DEFECT_READY` directly;
+- `Needs Validation`, `Ambiguous`, and `Detection Gap` are not production BUG/DESIGN_MISMATCH statuses;
+- unresolved runtime/detection work remains an exact targeted test obligation until resolved.
+
+This keeps uncertainty explicit without flooding the tester-facing issue list with non-issues.
+
 ### False-negative control hardening
 
 The current source now also enforces:
