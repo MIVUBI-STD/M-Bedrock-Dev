@@ -243,11 +243,13 @@ PROVEN projection now requires a minimum-sufficient-proof saturation assessment.
 - evidence bound to the finding;
 - exhaustive bounded counter-proof search with `NO_BLOCKING_PROOF`.
 
-Each failure family also carries a domain-specific saturation checklist. Examples include completion accounting for progression, ownership/isolation for multi-arena, identity/scope/idempotency for inventory, generation validation for deferred work, and residency/platform ownership for chunk simulation.
+Each failure family also carries `familyProofCriteria[]` as domain-specific proof guidance. Examples include completion accounting for progression, ownership/isolation for multi-arena, identity/scope/idempotency for inventory, generation validation for deferred work, and residency/platform ownership for chunk simulation.
+
+The deterministic PROVEN projection gate currently enforces the universal saturation checks above. Family-specific criteria guide proof navigation and stop decisions, but are not yet a separate machine-evaluated saturation receipt.
 
 If universal saturation is incomplete, a `CONFIRMED_DEFECT_READY` resolution is not projected as PROVEN. The honesty gate then prevents `READY_FOR_REVIEW`.
 
-Once universal and applicable family criteria are grounded, proof navigation instructs the model to stop searching and not request runtime manifestation merely for reassurance. Remaining search must target only unsatisfied criteria.
+Proof navigation should stop when the universal gate is satisfied and applicable family proof questions are grounded. Benchmarking must verify that this guidance is sufficient and does not permit false PROVEN decisions.
 
 ### Historical failure search pressure
 
