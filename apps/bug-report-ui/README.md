@@ -10,6 +10,12 @@ APPROVED BUG REPORT → READ / INSPECT / EXPORT
 
 The UI does not analyze maps or diagnose bugs. It presents confirmed bugs so a tester can understand what failed, reproduce the issue in-game, and see the supported solution without reading source code.
 
+## Scope boundary
+
+This UI presents **Bug Report V2**, the approved PROVEN BUG ledger. It is not the complete Map Audit Report.
+
+A Map Audit Report may still contain PROVEN DESIGN_MISMATCH and NEED_VALIDATION findings that are intentionally absent from this UI. Their absence here must not be interpreted as proof that the audit has no unresolved material findings.
+
 ## Current behavior
 
 - V2 is the current report format.
