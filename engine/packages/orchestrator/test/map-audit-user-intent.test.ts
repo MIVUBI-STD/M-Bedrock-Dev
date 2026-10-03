@@ -4,6 +4,7 @@ import {
 } from "../src/map-audit-obligations.js";
 import {
   auditUserIntentAuthorityNote,
+  deriveAuditUserIntentKnowledgeDemand,
   deriveAuditUserIntentSearchPressure,
   normalizeAuditUserIntent,
   validateAuditUserIntent,
@@ -66,6 +67,20 @@ describe("map audit user intent", () => {
       .toEqual(["PROGRESSION"]);
     expect(normalized.ambiguities).toEqual([
       "Root cause is not yet known.",
+    ]);
+  });
+
+  it("maps user priority into additive existing knowledge demand", () => {
+    const demand =
+      deriveAuditUserIntentKnowledgeDemand(
+        envelope(),
+      );
+
+    expect(demand).toEqual([
+      "chunk-simulation",
+      "entity-behavior",
+      "platform-constraints",
+      "state-flow",
     ]);
   });
 
