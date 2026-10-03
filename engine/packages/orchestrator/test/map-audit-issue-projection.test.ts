@@ -137,6 +137,40 @@ const gate: GameplayDefectResolutionGate = {
           "exclusion",
           "owner",
         ],
+        dimensionReceipts: [
+          {
+            dimension: "guard",
+            scopeIds: ["runtime:arena", "policy:arena"],
+            evidenceIds: [
+              "world:arena-count",
+              "capacity:safe-concurrency",
+            ],
+          },
+          {
+            dimension: "scope",
+            scopeIds: ["runtime:arena", "policy:arena"],
+            evidenceIds: [
+              "world:arena-count",
+              "capacity:safe-concurrency",
+            ],
+          },
+          {
+            dimension: "exclusion",
+            scopeIds: ["runtime:arena", "policy:arena"],
+            evidenceIds: [
+              "world:arena-count",
+              "capacity:safe-concurrency",
+            ],
+          },
+          {
+            dimension: "owner",
+            scopeIds: ["runtime:arena", "policy:arena"],
+            evidenceIds: [
+              "world:arena-count",
+              "capacity:safe-concurrency",
+            ],
+          }
+        ],
         scopeIds: [
           "runtime:arena",
           "policy:arena",
@@ -187,6 +221,32 @@ const gate: GameplayDefectResolutionGate = {
           "guard",
           "scope",
           "exclusion",
+        ],
+        dimensionReceipts: [
+          {
+            dimension: "guard",
+            scopeIds: ["runtime:arena", "policy:arena"],
+            evidenceIds: [
+              "world:arena-count",
+              "capacity:safe-concurrency",
+            ],
+          },
+          {
+            dimension: "scope",
+            scopeIds: ["runtime:arena", "policy:arena"],
+            evidenceIds: [
+              "world:arena-count",
+              "capacity:safe-concurrency",
+            ],
+          },
+          {
+            dimension: "exclusion",
+            scopeIds: ["runtime:arena", "policy:arena"],
+            evidenceIds: [
+              "world:arena-count",
+              "capacity:safe-concurrency",
+            ],
+          }
         ],
         scopeIds: [
           "runtime:entities",
