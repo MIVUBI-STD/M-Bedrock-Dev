@@ -30,6 +30,8 @@ export type GameplayIssueFlowStage =
 
 export interface GameplayIssueClassification {
   readonly failureDomain: GameplayIssueFailureDomain;
+  readonly contributingDomains:
+    readonly GameplayIssueFailureDomain[];
   readonly gameplayFlow: GameplayIssueFlowStage;
 }
 
@@ -75,6 +77,34 @@ const COMPONENT_DOMAIN_HINTS:
     [["runtime:environment"], "platform-performance"],
     [["runtime:async-command-transaction", "runtime:dynamic-command"], "temporal-async"],
   ];
+
+export function collectGameplayIssueDomains(input: {
+  readonly componentIds: readonly string[];
+  readonly knowledgeDomain?: string;
+}): readonly GameplayIssueFailureDomain[] {
+  const domains = new Set<GameplayIssueFailureDomain>();
+
+  if (
+    input.knowledgeDomain !== undefined &&
+    DOMAIN_BY_KNOWLEDGE[input.knowledgeDomain]
+  ) {
+    domains.add(
+      DOMAIN_BY_KNOWLEDGE[input.knowledgeDomain]!,
+    );
+  }
+
+  for (const [ids, domain] of COMPONENT_DOMAIN_HINTS) {
+    if (
+      input.componentIds.some(
+        (id) => ids.includes(id),
+      )
+    ) {
+      domains.add(domain);
+    }
+  }
+
+  return [...domains].sort();
+}
 
 function flowStage(
   value: string,
@@ -133,6 +163,12 @@ export function classifyGameplayIssue(input: {
   ) {
     return {
       failureDomain: "progression-wave-objective",
+      contributingDomains: [
+        ...new Set([
+          "progression-wave-objective" as const,
+          ...collectGameplayIssueDomains(input),
+        ]),
+      ].sort(),
       gameplayFlow,
     };
   }
@@ -151,6 +187,18 @@ export function classifyGameplayIssue(input: {
         )
           ? "arena-multi-arena"
           : "boundary-capacity",
+      contributingDomains: [
+        ...new Set([
+          input.componentIds.some(
+            (id) =>
+              id.includes("arena") ||
+              id === "runtime:arena-capacity",
+          )
+            ? "arena-multi-arena" as const
+            : "boundary-capacity" as const,
+          ...collectGameplayIssueDomains(input),
+        ]),
+      ].sort(),
       gameplayFlow,
     };
   }
@@ -162,6 +210,8 @@ export function classifyGameplayIssue(input: {
     return {
       failureDomain:
         DOMAIN_BY_KNOWLEDGE[input.knowledgeDomain]!,
+      contributingDomains:
+        collectGameplayIssueDomains(input),
       gameplayFlow,
     };
   }
@@ -174,6 +224,8 @@ export function classifyGameplayIssue(input: {
     ) {
       return {
         failureDomain: domain,
+        contributingDomains:
+          collectGameplayIssueDomains(input),
         gameplayFlow,
       };
     }
@@ -186,12 +238,24 @@ export function classifyGameplayIssue(input: {
   ) {
     return {
       failureDomain: "player-lifecycle",
+      contributingDomains: [
+        ...new Set([
+          "player-lifecycle" as const,
+          ...collectGameplayIssueDomains(input),
+        ]),
+      ].sort(),
       gameplayFlow,
     };
   }
 
   return {
     failureDomain: "state-ownership",
+    contributingDomains: [
+      ...new Set([
+        "state-ownership" as const,
+        ...collectGameplayIssueDomains(input),
+      ]),
+    ].sort(),
     gameplayFlow,
   };
 }
