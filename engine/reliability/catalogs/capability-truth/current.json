@@ -11,7 +11,7 @@
     "registryFingerprint": "ecfcbeb2",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
     "proofRegistryFingerprint": "263994b8",
-    "proofInventoryFingerprint": "7004981b"
+    "proofInventoryFingerprint": "d2be026b"
   },
   "summary": {
     "taskCapabilities": 51,
@@ -302,7 +302,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -335,7 +335,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -434,7 +434,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -467,7 +467,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -500,7 +500,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -533,7 +533,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -566,7 +566,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -599,7 +599,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -632,7 +632,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -665,7 +665,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -760,7 +760,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -793,7 +793,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
@@ -958,7 +958,7 @@
       ],
       "runtimeOnly": false,
       "sourceFiles": 581,
-      "testFiles": 267,
+      "testFiles": 268,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/orchestrator/test/arena-capacity-guard-realizer.test.ts",
