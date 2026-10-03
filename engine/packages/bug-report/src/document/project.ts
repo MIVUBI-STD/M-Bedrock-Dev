@@ -184,12 +184,10 @@ export function projectBugReportClientDocument(
   return {
     schema:
       BUG_REPORT_CLIENT_DOCUMENT_SCHEMA,
-    documentType: "Bug Report",
     title:
       report.map.name + " — Bug Report",
     subtitle:
       "Player-visible gameplay issues requiring attention",
-    audience: "client",
     map: {
       name: report.map.name,
       mapVersion: report.map.mapVersion,
@@ -212,14 +210,5 @@ export function projectBugReportClientDocument(
             (entry) => entry.severity !== "minor",
           ),
     issues,
-    source: {
-      schema: report.schema,
-      issueScope:
-        includeFixed ? "all" : "open",
-      severityScope:
-        includeMinor
-          ? "all"
-          : "blocker-major",
-    },
   };
 }
