@@ -118,6 +118,59 @@ const gate: GameplayDefectResolutionGate = {
 };
 
 describe("map audit issue projection", () => {
+  it("projects unresolved material dependencies as NEED_VALIDATION instead of hiding them", async () => {
+    const module = await import(
+      "../src/map-audit-issue-projection.js"
+    );
+    const unresolvedGraph: GameplayScenarioGraph = {
+      ...graph,
+      causalLinks: [{
+        id: "link:runtime-gap",
+        scenarioId: "scenario:progression",
+        fromComponentId: "runtime:entities",
+        toComponentId: "objective:wave",
+        purpose: "Remote enemy remains simulated until wave completion.",
+        evidenceIds: ["source:wave"],
+        subjectIds: ["objective:wave"],
+        componentIds: ["runtime:entities"],
+        status: "RUNTIME_BLOCKED",
+        reason: "Static evidence cannot prove Minecraft runtime residency.",
+      }],
+    };
+    const unresolvedGate: GameplayDefectResolutionGate = {
+      status: "READY_FOR_PROPOSED_BUG_SET",
+      contradictedCausalLinkIds: [],
+      resolutions: [],
+      confirmedDefectReadyIds: [],
+      blockingCounterProofIds: [],
+      runtimeProofRequiredIds: [],
+      detectionGapIds: [],
+      gameplayTranslationRequiredIds: [],
+      counterProofSearchRequiredIds: [],
+      issues: [],
+    };
+
+    const result =
+      module.projectNeedValidationAuditIssues(
+        unresolvedGraph,
+        unresolvedGate,
+      );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      status: "NEED_VALIDATION",
+      failureDomain:
+        "progression-wave-objective",
+      gameplayFlow: "PROGRESSION",
+    });
+    expect(result[0]?.validationReason).toMatch(
+      /runtime observation/i,
+    );
+    expect(result[0]?.validationTest).toContain(
+      "Remote enemy remains simulated",
+    );
+  });
+
   it("separates design mismatch from implementation bug in one projection", () => {
     const result = projectReadyAuditIssues(
       graph,
