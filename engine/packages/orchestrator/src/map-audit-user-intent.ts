@@ -69,6 +69,11 @@ export interface AuditUserIntentSearchPressure {
   >;
   readonly symptomHints: readonly string[];
   readonly suspicionHints: readonly string[];
+  readonly expectationHints: readonly string[];
+  readonly designHints: readonly string[];
+  readonly historicalHints: readonly string[];
+  readonly scopeHints: readonly string[];
+  readonly exclusionHints: readonly string[];
   readonly testConstraints: readonly string[];
 }
 
@@ -225,6 +230,11 @@ export function deriveAuditUserIntentSearchPressure(
       playerFlows: {},
       symptomHints: [],
       suspicionHints: [],
+      expectationHints: [],
+      designHints: [],
+      historicalHints: [],
+      scopeHints: [],
+      exclusionHints: [],
       testConstraints: [],
     };
   }
@@ -243,22 +253,32 @@ export function deriveAuditUserIntentSearchPressure(
     bump(playerFlows, flow, 2);
   }
 
-  const symptomHints = normalized.items
-    .filter((item) => item.kind === "SYMPTOM_REPORT")
-    .map((item) => item.normalized);
-  const suspicionHints = normalized.items
-    .filter((item) => item.kind === "SUSPICION")
-    .map((item) => item.normalized);
-  const testConstraints = normalized.items
-    .filter((item) => item.kind === "TEST_CONSTRAINT")
-    .map((item) => item.normalized);
+  const hints = (
+    kind: AuditUserInputClass,
+  ): string[] =>
+    normalized.items
+      .filter((item) => item.kind === kind)
+      .map((item) => item.normalized);
 
   return {
     domains,
     playerFlows,
-    symptomHints: unique(symptomHints),
-    suspicionHints: unique(suspicionHints),
-    testConstraints: unique(testConstraints),
+    symptomHints:
+      unique(hints("SYMPTOM_REPORT")),
+    suspicionHints:
+      unique(hints("SUSPICION")),
+    expectationHints:
+      unique(hints("EXPECTATION_CLAIM")),
+    designHints:
+      unique(hints("DESIGN_CLAIM")),
+    historicalHints:
+      unique(hints("HISTORICAL_REFERENCE")),
+    scopeHints:
+      unique(hints("SCOPE_REQUEST")),
+    exclusionHints:
+      unique(hints("EXCLUSION_REQUEST")),
+    testConstraints:
+      unique(hints("TEST_CONSTRAINT")),
   };
 }
 
