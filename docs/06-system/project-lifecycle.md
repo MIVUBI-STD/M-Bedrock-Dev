@@ -2,26 +2,26 @@
 
 ## Purpose
 
-This document defines how M-Bedrock records active work, approval, durable issue history, and Google Drive publication without duplicating authority.
+This document defines one-source project continuity, approval, durable issue history, and Google Drive publication.
 
 ## Authority map
 
 | Concern | Canonical owner |
 |---|---|
-| What projects currently exist / what is being worked on | `workspace/project-registry.json` |
-| Detailed execution progress | project Work Session in `workspace/projects/<project-id>/state/work-session.json` |
-| Current approved bug state for one map version | `workspace/reports/*.json` (Bug Report V2) |
+| Project identity / artifact binding / Work Session reference / current Bug Report reference / Drive binding / publication proof pointers | `workspace/project-registry.json` |
+| Detailed execution progress | `workspace/projects/<project-id>/state/work-session.json` |
+| Current-version bug truth | `workspace/reports/*.json` |
 | Historical approved issue incidents | `engine/reliability/catalogs/regressions.json` |
-| Reusable repeated failure abstractions | `engine/reliability/catalogs/failure-patterns.json` |
-| Per-map durable engineering profile | `engine/reliability/catalogs/map-knowledge/` |
-| Working files/evidence | `workspace/projects/<project-id>/` |
-| Human-facing approved map/source/deliverables | bound Google Drive project folder |
+| Reusable cross-incident failure abstractions | `engine/reliability/catalogs/failure-patterns.json` |
+| Per-map engineering profile | `engine/reliability/catalogs/map-knowledge/` |
+| Working files / evidence | `workspace/projects/<project-id>/` |
+| Approved human-facing deliverables | bound Google Drive folders |
 
-No other issue/project database should be added.
+No second project database, issue database, approval status field, or Drive-folder-id copy should be added.
 
 ## Project workspace
 
-A project always keeps one path:
+A project keeps one path:
 
 ```text
 workspace/projects/<project-id>/
@@ -37,205 +37,253 @@ workspace/projects/<project-id>/
    └─ publications/<snapshot-fingerprint>.json
 ```
 
-Status is metadata, not a folder name.
+Folder location never represents lifecycle state.
 
 ## Tracked Project Registry
 
-`workspace/project-registry.json` is intentionally compact and Git tracked.
+`workspace/project-registry.json` is compact and Git tracked.
 
-It records only durable coordination data:
+It stores only durable coordination pointers:
 
 - project identity/name;
-- task class;
-- lifecycle status;
+- canonical repository task class;
 - project revision;
 - current artifact identity/fingerprint/version;
-- Work Session/audit references;
-- canonical Bug Report path;
-- historical regression/failure-pattern/map-knowledge references;
-- Drive project-folder binding;
-- current approval/publish fingerprints.
+- Work Session ID/revision;
+- canonical current Bug Report path when applicable;
+- one `DriveProjectBinding`;
+- current approval snapshot fingerprint, when approved;
+- current Drive publication receipt fingerprint, when fully published.
 
-It does not store:
-- extracted worlds;
-- large evidence;
-- semantic graphs;
-- model task packets;
-- caches;
-- binary deliverables.
+It does **not** store:
 
-Those remain in the ignored per-project workspace.
+- audit stage / next action (owned by Work Session / SelectedMapAuditRun);
+- lifecycle status;
+- approval readiness;
+- historical regression IDs;
+- failure-pattern IDs;
+- map-knowledge IDs;
+- issue narratives;
+- evidence / semantic graphs / model packets;
+- file inventories or binaries.
 
-## Lifecycle
+## Derived lifecycle view
 
-Only four project publication statuses exist:
+Lifecycle state is not persisted.
+
+It is derived from publication proof pointers:
 
 ```text
-working
-→ ready-for-approval
+no approval fingerprint
+→ working
+
+approval snapshot fingerprint
 → approved
+
+approval snapshot fingerprint
++ complete Drive receipt fingerprint
 → drive-published
 ```
 
-Material work after approval returns the project to:
+`ready-for-approval` is also not persisted. It is a computed result of `assessProjectApprovalReadiness()`.
+
+This removes stale combinations such as:
 
 ```text
-approved / drive-published
-→ working
+status = approved
+approvalSnapshotFingerprint = missing
 ```
-
-Do not add duplicate project-management statuses.
-
-Detailed audit stages remain owned by SelectedMapAuditRun / Work Session and must not be copied into another state machine.
 
 ## Audit continuity
 
-Selected-map audit progress is projected into two places:
+Selected-map audit state has one detailed owner:
 
 ```text
 SelectedMapAuditRun
-├─ detailed mirror → project state/work-session.json
-└─ compact summary → workspace/project-registry.json
+→ Work Session
 ```
 
-The registry records only the current audit revision/stage/next action. It does not become audit-stage authority.
+The project registry stores only the Work Session ID/revision as a pointer. It does not copy audit stage, next action, findings, or evidence.
 
 ## Approval readiness
 
-A project may enter `ready-for-approval` only through the deterministic completeness gate.
+Approval readiness is calculated on demand from current owners.
 
-For audit publication, required inputs normally include:
+Typical requirements:
 
-- exact artifact identity/fingerprint;
-- valid Work Session and revision;
-- completed audit when required;
-- canonical Bug Report V2 reference when a bug report is required;
-- exact Drive project-folder binding;
-- complete deliverable paths/fingerprints;
+- project is currently derived as `working`;
+- Work Session ID/revision exists;
+- canonical Bug Report reference exists when required;
+- one canonical `DriveProjectBinding` exists;
+- every deliverable has a path, fingerprint, semantic Drive destination role;
 - no supplied blocking reason.
 
-The completeness gate returns exact missing requirements. Do not mark readiness from model narrative.
+For audit approval, `approveAuditProjectAndPersist()` additionally requires the canonical `SelectedMapAuditRun` at `COMPLETE` and exact artifact fingerprint match.
+
+No readiness field or intermediate lifecycle status is written.
 
 ## Approval snapshot
 
-Approval freezes exactly one project revision:
+After explicit user approval, freeze the current project revision:
 
 ```text
-ready-for-approval
+project revision
 + artifact fingerprint
-+ audit revision
++ audit revision when applicable
 + canonical Bug Report reference
-+ historical regression references
-+ deliverable fingerprints
-→ immutable ProjectApprovalSnapshot
-→ snapshot fingerprint
++ canonical deliverable list/fingerprints/destination roles
+→ ProjectApprovalSnapshot
+→ snapshotFingerprint
 ```
 
-The snapshot is persisted under:
+Snapshot path:
 
 ```text
 state/approvals/<snapshot-fingerprint>.json
 ```
 
-Any material artifact/work/report change invalidates the current approval and returns the project to `working`.
+The snapshot is immutable.
 
-## Durable issue history
+Project Registry is updated with `approvalSnapshotFingerprint` only after required durable approval work succeeds.
 
-Bug Report V2 remains current-version issue authority.
+Any material project change clears publication proof pointers and the derived lifecycle returns to `working`.
 
-After approval readiness and before the project approval snapshot is frozen:
+## Historical issue knowledge
+
+Current-version bug truth remains only in Bug Report V2.
+
+For an audit project:
 
 ```text
-canonical Bug Report V2
-→ historical regression projection
-→ merge engine/reliability/catalogs/regressions.json
-→ attach regression IDs to project record
-→ freeze ProjectApprovalSnapshot
+working project
+→ readiness derived
+→ user approves
+→ immutable approval snapshot created/saved
+→ in-memory project derives approved
+→ canonical Bug Report projected to regressions.json
+→ Project Registry commit written last
 ```
 
-Historical records include stable incident ID, map/version, Bug ID, artifact fingerprint, Expected, Observed, reproduction when present, category-derived search tags, and provenance to the canonical Bug Report.
+The reliability regression catalog itself owns historical linkage through provenance:
 
-Historical data is search pressure, not proof that another/current map contains the same defect.
+- projectId;
+- report path;
+- map/version;
+- Bug ID;
+- artifact fingerprint.
 
-Legacy historical records are preserved. New projection must not rewrite or backfill unknown history.
+Project Registry does not copy historical regression IDs.
+
+Historical knowledge is search pressure only. A future/current selected artifact must prove its own defect.
 
 ## Failure patterns and map knowledge
 
-Do not automatically promote every regression into a reusable failure pattern.
+Do not promote every historical incident automatically.
 
-`failure-patterns.json` is for evidence-backed repeated abstractions, typically after corroboration across multiple incidents/maps.
+`failure-patterns.json` is for corroborated reusable abstractions.
+`map-knowledge/` is for durable per-map engineering knowledge.
 
-`map-knowledge/` may reference regression IDs to record historically fragile systems without copying bug narratives.
+Neither is copied into Project Registry.
 
-Project records store only IDs/references to these knowledge owners.
+## Single Drive binding
+
+Project Drive destinations have one owner:
+
+```text
+ProjectRecord.publication.drive
+→ DriveProjectBinding
+```
+
+`workspace/drive-root.json` owns only the global root.
+
+Do not store project folder IDs separately in state or lifecycle fields.
+
+`DriveProjectBinding` may contain:
+
+- project root/map folder;
+- Development/Source folder;
+- Development/Versions folder;
+- Technical Docs folder;
+- current-world reference when known.
+
+## Deliverable destination roles
+
+Approved deliverables use semantic roles:
+
+```text
+project-root
+development-source
+development-version
+technical-docs
+```
+
+The Drive publish planner resolves the role through the single `DriveProjectBinding`.
+
+Deliverables never carry a second persistent destination folder ID.
 
 ## Drive publication
 
-Drive publication is one-way from an approved snapshot.
-
 ```text
-approved ProjectApprovalSnapshot
+approved snapshot
 → ProjectDrivePublishPlan
+→ destination role resolved from DriveProjectBinding
 → ProjectDriveUploadAdapter
-→ upload approved deliverables only
-→ executor verifies returned file IDs/fingerprints
+→ uploaded file ID + fingerprint verification
 → ProjectDrivePublishReceipt
 ```
 
-Files outside the approved snapshot are rejected by the canonical plan/receipt path.
+Receipt completion is not stored as a separate PARTIAL/COMPLETE status.
 
-A PARTIAL receipt is persisted but does not change project status.
-
-Only a COMPLETE receipt may transition:
+It is derived:
 
 ```text
-approved
-→ drive-published
+snapshot.deliverables
+vs
+receipt.files
+→ complete / incomplete
 ```
 
-Receipts are stored per snapshot:
+Receipt path:
 
 ```text
 state/publications/<snapshot-fingerprint>.json
 ```
 
-PARTIAL → COMPLETE is monotonic. A completed receipt cannot be replaced with conflicting content.
+An incomplete receipt may be extended monotonically with additional verified files.
 
-## Google Drive role
+Only a complete receipt is allowed to write `drivePublishReceiptFingerprint` into Project Registry.
 
-Drive stores approved human-facing/project files only.
+The registry write is the final durable commit marker.
 
-Internal project registry, Work Session, Audit Obligations, semantic graphs, engine cache, and other control-plane state are not mirrored to Drive.
+## Commit-last rule
 
-The exact project Drive folder is bound before approval. The configured global Drive root remains `workspace/drive-root.json`.
+For multi-owner publication operations:
 
-## Search/reuse rule
+1. validate all current inputs;
+2. derive snapshot/plan/knowledge;
+3. write immutable/detail proof artifacts;
+4. write derived historical knowledge when applicable;
+5. write Project Registry **last**.
 
-When auditing a future map/version:
-
-```text
-current selected artifact
-+ historical regression / failure-pattern / map-knowledge search pressure
-→ targeted analysis
-→ current selected-artifact proof
-```
-
-History may prioritize questions and analyzers. It must never directly create a current BUG / DESIGN_MISMATCH.
+This avoids introducing a transaction manager while preserving a clear committed/not-committed boundary.
 
 ## Canonical workflow
 
 ```text
 create/resume project
-→ Work Session + project registry update
-→ perform work/audit
-→ canonical current Bug Report when applicable
-→ completeness gate
-→ ready-for-approval
-→ durable historical issue sync
+→ Work Session persisted
+→ compact Project Registry pointer update
+→ work/audit
+→ current Bug Report V2 when applicable
+→ derive readiness
+→ show approval candidate
+→ explicit user approval
 → immutable approval snapshot
-→ approved
+→ historical issue ingestion (audit only)
+→ registry approval fingerprint commit
 → Drive publish plan
-→ upload/verify approved files
-→ COMPLETE Drive receipt
-→ drive-published
+→ verified uploads / receipt
+→ registry publication fingerprint commit when complete
 ```
+
+Every durable fact has one owner. Other layers store only pointers or derived views.
