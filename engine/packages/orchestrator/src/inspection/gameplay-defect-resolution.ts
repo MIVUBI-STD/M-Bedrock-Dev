@@ -509,6 +509,18 @@ export function assessGameplayDefectResolutionGate(
         link,
         scenario,
       );
+    const requiredDimensions =
+      requiredCounterProofDimensions(
+        link,
+        scenario,
+      );
+    const missingAutomaticDimensions =
+      requiredDimensions.filter(
+        (dimension) =>
+          !automaticSearch.searchedDimensions.includes(
+            dimension,
+          ),
+      );
 
     return {
       causalLinkId: link.id,
@@ -532,24 +544,43 @@ export function assessGameplayDefectResolutionGate(
               "BLOCKING_COUNTERPROOF" as const,
           }
         : translationReady
-        ? {
-            gameplayTrigger:
-              scenario.purpose,
-            gameplayConsequence:
-              "A required dependency for " +
-              scenario.label +
-              " is contradicted, so the scenario can produce an incorrect or blocked player-visible result.",
-            expectedOutcome:
-              link.purpose,
-            actualOutcome:
-              link.reason,
-            affectedScope:
-              scope.join(", "),
-            counterProofSearch:
-              automaticSearch,
-            disposition:
-              "CONFIRMED_DEFECT_READY" as const,
-          }
+        ? missingAutomaticDimensions.length > 0
+          ? {
+              gameplayTrigger:
+                scenario.purpose,
+              gameplayConsequence:
+                "A required dependency for " +
+                scenario.label +
+                " is contradicted, but sensitive counter-proof dimensions remain unresolved.",
+              expectedOutcome:
+                link.purpose,
+              actualOutcome:
+                link.reason,
+              affectedScope:
+                scope.join(", "),
+              counterProofSearch:
+                automaticSearch,
+              disposition:
+                "COUNTERPROOF_SEARCH_REQUIRED" as const,
+            }
+          : {
+              gameplayTrigger:
+                scenario.purpose,
+              gameplayConsequence:
+                "A required dependency for " +
+                scenario.label +
+                " is contradicted, so the scenario can produce an incorrect or blocked player-visible result.",
+              expectedOutcome:
+                link.purpose,
+              actualOutcome:
+                link.reason,
+              affectedScope:
+                scope.join(", "),
+              counterProofSearch:
+                automaticSearch,
+              disposition:
+                "CONFIRMED_DEFECT_READY" as const,
+            }
         : {
             disposition:
               "GAMEPLAY_TRANSLATION_REQUIRED" as const,
