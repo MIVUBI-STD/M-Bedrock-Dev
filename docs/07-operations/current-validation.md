@@ -124,6 +124,17 @@ These controls reduce silent false negatives but do not constitute a measured fa
 - legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
 - repository verifier checks single entry, issue lanes, semantic-gap fail-closed behavior, report lanes, and legacy deprecation.
 
+### Final report handoff integrity
+
+The canonical report handoff now preserves unresolved material work explicitly:
+
+- approved Bug Report V2 still promotes PROVEN BUG items only;
+- Map Audit report result carries all DESIGN_MISMATCH findings with their PROVEN / NEED_VALIDATION status;
+- all NEED_VALIDATION findings across BUG and DESIGN_MISMATCH are exposed in one explicit `needValidation` collection;
+- consolidated `validationTests` are carried with the report result so unresolved findings cannot disappear during handoff.
+
+The audit run remains the authority; these are projections of the same revision, not a second workflow.
+
 ## Current Capability Truth
 
 Latest source-level catalog remains expected to contain:
