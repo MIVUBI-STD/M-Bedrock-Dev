@@ -439,15 +439,21 @@ Examples:
 # 6. PROVE — maximize PROVEN before asking a tester
 
 ## Goal
-Turn every material candidate into exactly:
-- PROVEN
-- NEED_VALIDATION
+Separate unresolved audit work from actual gameplay findings.
 
-No other public status.
+```text
+raw risk / detection gap / model gap / runtime unknown
+→ Audit Obligation
+→ causal gameplay translation + counter-proof
+→ NEED_VALIDATION finding when confirmation-ready but proof saturation is incomplete
+→ PROVEN when minimum sufficient proof is saturated
+```
+
+`Audit Obligation` is not an issue status and does not enter BUG / DESIGN_MISMATCH lanes.
 
 ## 6.1 Proof navigation
 
-Every NEED_VALIDATION receives:
+Every confirmation-ready NEED_VALIDATION finding receives:
 - proofGoal
 - provenClaims[]
 - missingClaims[]
@@ -580,11 +586,12 @@ Never produce a broad manual-testing matrix as a substitute for diagnosis.
 
 Before review, independently cross-check all material residue.
 
-The visible issue set must contain:
+The visible audit output must contain:
 
 ~~~
-every confirmed defect → PROVEN
-every material unresolved residue → NEED_VALIDATION
+every confirmed saturated defect → PROVEN finding
+every confirmation-ready unsaturated defect → NEED_VALIDATION finding
+every unresolved risk / gap / unclassified residue → Audit Obligation
 ~~~
 
 Cross-check includes:
@@ -599,7 +606,7 @@ Cross-check includes:
 - higher-order interactions;
 - incomplete replica proof.
 
-Any missing visible finding:
+Any tracked material residue missing from both findings and Audit Obligations:
 
 ~~~
 honesty = VIOLATION
@@ -631,9 +638,12 @@ Do not expose raw `SelectedMapAuditRun`, Work Session state, analyzer receipts, 
 - BUG
 - DESIGN_MISMATCH
 
-Each visible finding is only:
+Each gameplay finding is only:
 - PROVEN
 - NEED_VALIDATION
+
+Separate non-finding work:
+- `auditObligations[]` — unresolved audit/model/proof work with no justified BUG / DESIGN_MISMATCH classification yet.
 
 ## PROVEN requires
 - sufficient proof saturation;
@@ -672,7 +682,7 @@ HTML:
 Approved Bug Report V2:
 - PROVEN BUG items only.
 
-Design Mismatches and NEED_VALIDATION remain visible in Map Audit output/report handoff.
+Design Mismatches and confirmation-ready NEED_VALIDATION findings remain visible in Map Audit output/report handoff. Audit Obligations remain visible separately and never enter Approved Bug Report V2.
 
 ---
 
@@ -685,7 +695,7 @@ A selected-map audit is complete only when:
 - MODEL closed
 - full-map replica proof complete/bounded or divergence explicitly carried
 - STRESS applicable families accounted
-- PROVE accounted: every material finding is PROVEN or explicitly NEED_VALIDATION with exact missing proof
+- PROVE accounted: every causal finding is PROVEN or confirmation-ready NEED_VALIDATION, while unresolved non-finding residue remains explicit in Audit Obligations
 - honesty PASS
 - REPORT handoff preserves all visible unresolved work
 
@@ -710,7 +720,7 @@ A clean happy path is never sufficient.
 13. Stop at proof saturation
 14. Use runtime only for irreducible residue
 15. Run honesty gate
-16. Publish BUG / DESIGN_MISMATCH with PROVEN / NEED_VALIDATION
+16. Publish causal BUG / DESIGN_MISMATCH findings with PROVEN / NEED_VALIDATION, plus separate Audit Obligations for unresolved non-finding work
 
 ---
 
