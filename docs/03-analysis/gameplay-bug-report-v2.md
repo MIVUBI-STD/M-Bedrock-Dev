@@ -1,8 +1,10 @@
-# Gameplay Bug Report V2
+# Approved Gameplay Bug Report V2
 
 ## Purpose
 
-Canonical persisted BUG report contract for approved confirmed Minecraft map implementation/runtime defects. It is a downstream communication/repair state, not the full audit model.
+Canonical persisted **approved BUG ledger** for confirmed Minecraft map implementation/runtime defects. It is a downstream repair/approval state, not the complete human-facing audit report.
+
+The human-facing Complete Bug Report is the Map Audit Report and must show all material `PROVEN` and `NEED_VALIDATION` findings. This approved ledger intentionally stores only approved PROVEN BUG items so unresolved findings are not mistaken for confirmed defects.
 
 This file owns canonical Bug Report V2 semantics. Rendering details belong in `templates/bug-report-v2-html-layout.md`. Persisted Bug Report V2 validation belongs in `engine/schemas/bug-report/`. Map Audit Output validation remains separately owned by `.agents/schemas/map-audit-output-v2.schema.json`.
 
@@ -37,7 +39,7 @@ Canonical Bug Report V2 contains only approved confirmed bugs.
 06 Report Scope / Version
 ```
 
-Map Audit Output V2 exposes unresolved material findings only as `NEED_VALIDATION`. Internal reasons such as runtime proof required, ambiguous intent, insufficient evidence, or Detection Gap are carried inside that status. They must not be promoted into canonical approved Bug Report V2 until they become `PROVEN`.
+The Complete Bug Report / Map Audit Output V2 exposes unresolved material findings as `NEED_VALIDATION` and keeps them visible until they are proven or disproved. Internal reasons such as runtime proof required, ambiguous intent, insufficient evidence, or Detection Gap are carried inside that status. They must not be promoted into canonical approved Bug Report V2 until they become `PROVEN`.
 
 ## Overview
 
