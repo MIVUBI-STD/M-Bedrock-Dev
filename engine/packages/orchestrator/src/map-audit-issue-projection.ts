@@ -13,7 +13,7 @@ import {
 } from "../../diagnostic-reasoning/src/index.js";
 
 export interface ReadyAuditIssueProjection {
-  readonly reportIssueType: GameplayReportIssueType;
+  readonly issueType: GameplayReportIssueType;
   readonly failureDomain: GameplayIssueFailureDomain;
   readonly contributingDomains:
     readonly GameplayIssueFailureDomain[];
@@ -61,7 +61,7 @@ function relatedCapabilityDelivery(
   );
 }
 
-function reportIssueTypeFor(
+function issueTypeFor(
   scenarioLabel: string,
   subjectIds: readonly string[],
   componentIds: readonly string[],
@@ -77,7 +77,7 @@ function reportIssueTypeFor(
 
   return related.some(
     (item) =>
-      item.reportIssueType ===
+      item.issueType ===
       "DESIGN_MISMATCH",
   )
     ? "DESIGN_MISMATCH"
@@ -180,7 +180,7 @@ export function projectReadyAuditIssues(
             : { knowledgeDomain }),
         });
       return {
-        reportIssueType: reportIssueTypeFor(
+        issueType: issueTypeFor(
           scenario.label,
           subjectIds,
           componentIds,
