@@ -845,10 +845,21 @@ export interface BuildSelectedMapAuditReportInput
 
 export interface BuildSelectedMapAuditReportResult
   extends BuildBugReportFromAuditResult {
-  readonly designMismatches:
-    readonly AuditIssueProjection[];
+  /**
+   * Complete human-facing audit finding set. This is the honest report surface:
+   * no material PROVEN or NEED_VALIDATION finding may disappear here.
+   */
+  readonly findings: {
+    readonly BUG: readonly AuditIssueProjection[];
+    readonly DESIGN_MISMATCH:
+      readonly AuditIssueProjection[];
+  };
+  readonly proven:
+    readonly ReadyAuditIssueProjection[];
   readonly needValidation:
     readonly NeedValidationAuditIssueProjection[];
+  readonly designMismatches:
+    readonly AuditIssueProjection[];
   readonly validationTests:
     readonly AuditValidationTestGroup[];
   readonly fullMapReplica?: FullMapReplicaReceipt;
