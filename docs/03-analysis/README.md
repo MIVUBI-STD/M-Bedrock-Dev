@@ -72,6 +72,10 @@ Use this order:
 2. [Mandatory Gameplay Audit Procedure](./mandatory-audit-procedure.md) — executable checkpoint closure.
 3. Load specialist contracts only when the master flow activates them.
 
+## Naming contract
+
+- [Map Audit Naming Contract](./map-audit-naming-contract.md) — canonical public field/status names shared by source, schema, docs, and report.
+
 ## Supporting audit contracts
 
 Load only when the canonical procedure activates the concern:
