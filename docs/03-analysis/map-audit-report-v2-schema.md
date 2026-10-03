@@ -113,7 +113,7 @@ Do not infer severity merely because an issue belongs to multi-arena, inventory,
 
 ## Issue type split
 
-Map Audit Output V2 has two distinct confirmed-issue lanes:
+Map Audit Output V2 has two distinct issue-type lanes. Each lane may contain PROVEN or NEED_VALIDATION findings; unresolved material findings must remain visible until resolved or disproved.
 
 ### BUG
 
@@ -160,7 +160,7 @@ Evidence
 Proof Ceiling
 ```
 
-Confirmed bugs additionally require:
+PROVEN bugs additionally require:
 - Blocker / Major / Minor severity;
 - cleared counter-evidence;
 - tester-ready reproduction.
