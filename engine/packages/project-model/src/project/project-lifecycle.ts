@@ -129,6 +129,16 @@ const DESTINATION_ROLES =
     "technical-docs",
   ]);
 
+function hasOnlyKeys(
+  value: Record<string, unknown>,
+  allowed: readonly string[],
+): boolean {
+  const keys = new Set(allowed);
+  return Object.keys(value).every(
+    (key) => keys.has(key),
+  );
+}
+
 function clean(value: string): string {
   return value.trim();
 }
@@ -165,6 +175,28 @@ export function normalizeProjectRecord(
   ) {
     throw new Error(
       "Project record must be an object.",
+    );
+  }
+  const record =
+    input as unknown as Record<string, unknown>;
+  if (
+    !hasOnlyKeys(
+      record,
+      [
+        "schemaVersion",
+        "projectId",
+        "projectName",
+        "taskClass",
+        "revision",
+        "artifact",
+        "work",
+        "knowledge",
+        "publication",
+      ],
+    )
+  ) {
+    throw new Error(
+      "Project record contains unsupported or legacy fields.",
     );
   }
   if (input.schemaVersion !== 1) {
