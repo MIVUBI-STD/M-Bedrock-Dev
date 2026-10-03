@@ -82,6 +82,113 @@ export interface InspectionResultInput {
   diagnostics: readonly DiagnosticFinding[];
 }
 
+function normalizedCommand(
+  value: string,
+): string {
+  return value
+    .trim()
+    .replace(/^\//, "")
+    .toLowerCase();
+}
+
+function commandStartsWithAny(
+  command: string,
+  prefixes: readonly string[],
+): boolean {
+  const normalized = normalizedCommand(command);
+  return prefixes.some(
+    (prefix) =>
+      normalized === prefix ||
+      normalized.startsWith(prefix + " "),
+  );
+}
+
+function deriveUnsupportedSurfaceSignals(
+  parsedScripts: InspectionResultInput["sourceIndex"]["parsedScripts"],
+) {
+  const scripts = parsedScripts.map(
+    (item) => item.parsed,
+  );
+  const commands = scripts.flatMap(
+    (script) => script.commandLiterals,
+  );
+  const teleport =
+    commands.some((item) =>
+      commandStartsWithAny(
+        item.command,
+        ["tp", "teleport"],
+      )
+    ) ||
+    scripts.some((script) =>
+      script.methodCalls.some(
+        (call) =>
+          call.method === "teleport",
+      )
+    );
+  const uiForm =
+    scripts.some((script) =>
+      script.imports.some(
+        (item) =>
+          item.module ===
+          "@minecraft/server-ui",
+      ) ||
+      script.moduleMemberAccesses.some(
+        (item) =>
+          item.module ===
+          "@minecraft/server-ui",
+      )
+    );
+  const environment = commands.some((item) =>
+    commandStartsWithAny(
+      item.command,
+      [
+        "gamerule",
+        "time",
+        "weather",
+        "difficulty",
+        "gamemode",
+      ],
+    )
+  );
+  const mutatingAsyncPrefixes = [
+    "give",
+    "clear",
+    "scoreboard",
+    "tp",
+    "teleport",
+    "structure",
+    "fill",
+    "setblock",
+    "clone",
+    "summon",
+    "event",
+    "tag",
+    "gamerule",
+    "time",
+    "weather",
+    "difficulty",
+    "gamemode",
+    "tickingarea",
+  ];
+  const asyncCommandTransaction =
+    commands.some(
+      (item) =>
+        item.mechanism ===
+          "runCommandAsync" &&
+        commandStartsWithAny(
+          item.command,
+          mutatingAsyncPrefixes,
+        ),
+    );
+
+  return {
+    teleport,
+    uiForm,
+    environment,
+    asyncCommandTransaction,
+  };
+}
+
 function countObservedOutcomes(
   causalChains: CausalityStage["causalChains"],
 ): number {
@@ -275,6 +382,11 @@ export function buildInspectionResult(
       scriptSafeConfig,
     );
 
+  const unsupportedSurfaceSignals =
+    deriveUnsupportedSurfaceSignals(
+      parsedScripts,
+    );
+
   const gameplayWorld = deriveGameplayWorldModel({
     artifactId: input.artifactId,
     intent: input.gameplayIntent,
@@ -376,6 +488,7 @@ export function buildInspectionResult(
       unresolvedNames:
         gameplayBoundaries.unresolvedNames,
     },
+    unsupportedSurfaceSignals,
   });
 
   const discoveryUnresolvedReferences =
