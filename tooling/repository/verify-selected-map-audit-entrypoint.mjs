@@ -220,6 +220,9 @@ requireText(PIPELINE_PATH, [
 
 requireText(ISSUE_PROJECTION_PATH, [
   "reportIssueType",
+  "failureDomain",
+  "contributingDomains",
+  "informationMismatch",
   "DESIGN_MISMATCH",
   "BUG",
 ]);
@@ -250,6 +253,24 @@ if (!reportSchema.properties?.bugs) {
       " must define the BUG report lane as properties.bugs.",
   );
 }
+for (const lane of ["bugs", "designMismatches"]) {
+  const item = reportSchema.properties?.[lane]?.items;
+  const required = item?.required ?? [];
+  for (const field of [
+    "failureDomain",
+    "contributingDomains",
+    "informationMismatch",
+  ]) {
+    if (!required.includes(field)) {
+      issues.push(
+        REPORT_SCHEMA_PATH +
+          " " + lane +
+          " lane must require " + field + ".",
+      );
+    }
+  }
+}
+
 if (!reportSchema.properties?.designMismatches) {
   issues.push(
     REPORT_SCHEMA_PATH +
