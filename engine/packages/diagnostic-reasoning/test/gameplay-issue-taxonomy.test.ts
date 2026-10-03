@@ -103,6 +103,58 @@ describe("gameplay issue taxonomy", () => {
     });
   });
 
+  it("keeps misleading arena feedback in the UI domain while preserving arena contribution", () => {
+    expect(
+      classifyGameplayIssue({
+        gameplayStage: "READY_START",
+        scenarioLabel: "arena-availability-feedback",
+        componentIds: ["runtime:arena"],
+        knowledgeDomain:
+          "multiplayer-interleaving",
+      }),
+    ).toEqual({
+      failureDomain:
+        "ui-feedback-information",
+      contributingDomains: [
+        "arena-multi-arena",
+        "ui-feedback-information",
+      ],
+      gameplayFlow: "READY_START",
+    });
+  });
+
+  it("routes delayed callback ownership to temporal async", () => {
+    expect(
+      classifyGameplayIssue({
+        gameplayStage: "RECOVERY",
+        scenarioLabel: "deferred-callback-recovery",
+        componentIds: [
+          "runtime:persistence",
+          "runtime:async-command-transaction",
+        ],
+        knowledgeDomain:
+          "temporal-ownership",
+      }),
+    ).toEqual({
+      failureDomain: "temporal-async",
+      contributingDomains: [
+        "persistence-recovery",
+        "temporal-async",
+      ],
+      gameplayFlow: "RECOVERY",
+    });
+  });
+
+  it("rejects full-journey composition as a report flow", () => {
+    expect(() =>
+      classifyGameplayIssue({
+        gameplayStage: "FULL_JOURNEY",
+        scenarioLabel: "full-journey",
+        componentIds: ["runtime:state"],
+      })
+    ).toThrow(/composition scenario/i);
+  });
+
   it("keeps the domain vocabulary bounded", () => {
     expect(new Set(
       GAMEPLAY_ISSUE_FAILURE_DOMAINS,
