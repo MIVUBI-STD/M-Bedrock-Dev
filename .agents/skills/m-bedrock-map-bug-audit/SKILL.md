@@ -16,6 +16,40 @@ That selected map version is the only current gameplay source of truth.
 
 Do not use older versions, Development/Source, old QA/Bug Reports, Technical Docs, changelogs, other maps, or external design documents to infer current mechanics unless comparison/history is explicitly requested.
 
+## User prompt intake
+
+Before starting the selected-map audit, translate the user's wording through `../../../docs/03-analysis/user-input-translation-contract.md`.
+
+The user prompt is **search guidance, not gameplay authority**.
+
+Classify material statements into target hints, symptoms, suspicions, expectation/design claims, scope priorities, test constraints, output preferences, historical hints, and ambiguities.
+
+Rules:
+
+- preserve the user's symptom even when their suspected root cause may be wrong;
+- expand vague symptoms into a bounded set of relevant failure families;
+- use user focus to raise search priority, never to suppress other material selected-artifact surfaces;
+- never convert user wording directly into Expected Behavior, BUG, DESIGN_MISMATCH, severity, or PROVEN;
+- when several cheap interpretations are plausible, retain them and let selected-artifact evidence resolve them;
+- ask only when ambiguity blocks exact target identity or materially changes the requested outcome.
+
+Examples:
+
+```text
+"wave suka stuck"
+→ prioritize progression accounting + entity lifecycle + chunk/residency + terminal transition
+
+"inventory suka hilang/duplicate"
+→ prioritize grant/consume + reset + restore ownership + reconnect/recovery + idempotency
+
+"multi arena error"
+→ prioritize capacity + assignment + isolation + parallel start + cleanup/reuse
+
+"jangan test semuanya"
+→ static-first bounded proof strategy
+NOT → skip discovered material gameplay
+```
+
 ## Required audit order
 
 Bug discovery cannot start before the selected world is reconstructed.
