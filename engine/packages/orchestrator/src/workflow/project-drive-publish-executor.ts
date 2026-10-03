@@ -74,6 +74,8 @@ export async function executeProjectDrivePublishPlan(
 
       files.push({
         kind: item.kind,
+        destinationRole:
+          item.destinationRole,
         fileId: uploaded.fileId.trim(),
         fileName: uploaded.fileName.trim(),
         fingerprint:
