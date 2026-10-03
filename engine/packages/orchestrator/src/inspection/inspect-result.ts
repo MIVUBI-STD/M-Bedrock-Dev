@@ -180,12 +180,27 @@ function deriveUnsupportedSurfaceSignals(
           mutatingAsyncPrefixes,
         ),
     );
+  const dynamicCommand =
+    scripts.some((script) =>
+      script.methodCalls.some(
+        (call) =>
+          (
+            call.method === "runCommand" ||
+            call.method === "runCommandAsync"
+          ) &&
+          (
+            call.hasSpreadArgument ||
+            call.argumentKinds[0] !== "string"
+          ),
+      )
+    );
 
   return {
     teleport,
     uiForm,
     environment,
     asyncCommandTransaction,
+    dynamicCommand,
   };
 }
 
