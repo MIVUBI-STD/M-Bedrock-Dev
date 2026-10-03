@@ -70,6 +70,12 @@ export interface InspectionSourceCoverage {
   indexedFiles: number;
   parseFailures: readonly InspectionSourceParseFailure[];
   unsupportedRelevantFiles: readonly string[];
+  /**
+   * Gameplay-sensitive sources that are structurally indexed but still lack
+   * domain semantics. Indexed/source-accounted is not equivalent to
+   * semantically understood.
+   */
+  semanticUnderstandingGaps: readonly string[];
   complete: boolean;
 }
 
@@ -230,6 +236,7 @@ export async function indexInspectionSources(
   const diagnostics: DiagnosticFinding[] = [];
   const parseFailures: InspectionSourceParseFailure[] = [];
   const unsupportedRelevantFiles: string[] = [];
+  const semanticUnderstandingGaps: string[] = [];
   let relevantFiles = 0;
   let indexedFiles = 0;
   let parsedStructures = 0;
@@ -511,6 +518,12 @@ export async function indexInspectionSources(
         graph.addNode(node);
         nodes.push(node);
         indexedFiles += 1;
+        // Raw JSON ownership closes source accounting only. Until a
+        // domain-specific semantic parser/analysis consumes this definition,
+        // gameplay meaning remains an explicit Detection Gap.
+        semanticUnderstandingGaps.push(
+          file.relativePath,
+        );
       } catch (error) {
         parseFailures.push({
           relativePath: file.relativePath,
@@ -694,6 +707,8 @@ export async function indexInspectionSources(
         ),
       unsupportedRelevantFiles:
         [...unsupportedRelevantFiles].sort(),
+      semanticUnderstandingGaps:
+        [...semanticUnderstandingGaps].sort(),
       complete:
         parseFailures.length === 0 &&
         unsupportedRelevantFiles.length === 0 &&
