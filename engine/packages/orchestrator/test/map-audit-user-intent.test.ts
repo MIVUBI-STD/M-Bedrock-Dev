@@ -108,6 +108,32 @@ describe("map audit user intent", () => {
     ).toBe(2);
   });
 
+  it("rejects malformed envelope shape without crashing", () => {
+    const malformed: any = {
+      schemaVersion: 1,
+      policy:
+        "user-input-is-search-guidance-not-gameplay-authority",
+      items: "not-an-array",
+      priorityDomains: null,
+      priorityPlayerFlows: {},
+      ambiguities: 42,
+      blockingAmbiguities: false,
+    };
+
+    const issues =
+      validateAuditUserIntent(malformed);
+
+    expect(issues).toContain(
+      "User audit intent items must be an array.",
+    );
+    expect(issues).toContain(
+      "User audit intent priorityDomains must be an array.",
+    );
+    expect(issues).toContain(
+      "User audit intent priorityPlayerFlows must be an array.",
+    );
+  });
+
   it("rejects unsupported runtime values instead of trusting loose JSON", () => {
     const invalid: any = {
       ...envelope(),
