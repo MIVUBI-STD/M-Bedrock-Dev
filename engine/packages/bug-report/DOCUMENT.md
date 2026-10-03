@@ -77,21 +77,20 @@ Use for limited player-visible defects that do not materially affect core gamepl
 Map header
 Map Version | Tested Version | Open Issues | Severity
 
-Issue Dashboard (3+ visible issues)
-Bug ID | Severity | Category | Issue
+Tester Checklist
+Fixed | # | Severity | Category | Bug
 
 Bug 01
 Issue
 How to Reproduce
 Result (Observed + Expected)
-Tester Checklist — Verified Fixed
 Resolution / Technical Detail, when available
 
 Bug 02
 ...
 ```
 
-The tester checkbox is a presentation-only retest aid. It indicates whether the visible bug has been verified fixed in that HTML copy; it does not mutate canonical bug state. Reproduction steps are instructional text, not checklist state.
+The top Tester Checklist is the retest surface: one bug equals one checkbox. Checking a bug means the tester has verified that bug as fixed in that HTML copy. It does not mutate canonical bug state. Reproduction steps remain instructional text and are never checkbox state.
 
 Each input report represents one map. One generated HTML therefore corresponds to one map and forms a natural printable page/report unit.
 
