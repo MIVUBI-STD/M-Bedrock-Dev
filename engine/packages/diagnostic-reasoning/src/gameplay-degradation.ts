@@ -24,6 +24,7 @@ export interface GameplayCapabilityDeliveryInput {
   readonly playableCapacity?: number;
   readonly technicalConstraintReasons?: readonly string[];
   readonly evidenceIds?: readonly string[];
+  readonly playerFacingEvidenceIds?: readonly string[];
 }
 
 export interface GameplayCapabilityDeliveryAssessment {
@@ -36,6 +37,8 @@ export interface GameplayCapabilityDeliveryAssessment {
   readonly playableCapacity?: number;
   readonly technicalConstraintReasons: readonly string[];
   readonly evidenceIds: readonly string[];
+  readonly playerFacingEvidenceIds: readonly string[];
+  readonly informationMismatch: boolean;
   readonly reason: string;
 }
 
@@ -47,6 +50,11 @@ export function assessGameplayCapabilityDelivery(
   ].sort();
   const technicalConstraintReasons = [
     ...new Set(input.technicalConstraintReasons ?? []),
+  ].sort();
+  const playerFacingEvidenceIds = [
+    ...new Set(
+      input.playerFacingEvidenceIds ?? [],
+    ),
   ].sort();
 
   if (
@@ -69,6 +77,9 @@ export function assessGameplayCapabilityDelivery(
           input.playableCapacity,
         technicalConstraintReasons,
         evidenceIds,
+        playerFacingEvidenceIds,
+        informationMismatch:
+          playerFacingEvidenceIds.length > 0,
         reason:
           "The game presents capacity " +
           String(input.expectedCapacity) +
@@ -87,6 +98,8 @@ export function assessGameplayCapabilityDelivery(
         input.playableCapacity,
       technicalConstraintReasons,
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch: false,
       reason:
         "Playable capacity meets the capability presented by the game.",
     };
@@ -106,6 +119,9 @@ export function assessGameplayCapabilityDelivery(
       reportIssueType: "DESIGN_MISMATCH",
       technicalConstraintReasons,
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch:
+        playerFacingEvidenceIds.length > 0,
       reason:
         "A player-visible designed capability has no implementation evidence.",
     };
@@ -125,6 +141,9 @@ export function assessGameplayCapabilityDelivery(
       reportIssueType: "BUG",
       technicalConstraintReasons,
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch:
+        playerFacingEvidenceIds.length > 0,
       reason:
         "The designed capability is implemented but its required gameplay chain is incomplete.",
     };
@@ -141,6 +160,8 @@ export function assessGameplayCapabilityDelivery(
       status: "DELIVERED",
       technicalConstraintReasons,
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch: false,
       reason:
         "The player-visible capability has a complete gameplay delivery chain.",
     };
@@ -201,6 +222,8 @@ export function detectGameplayDegradation(
       subjectId: input.subjectId,
       kind: "fallback-masks-primary-failure",
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch: false,
       reason:
         "Fallback behavior keeps gameplay running while the intended primary mechanic is not observed.",
     });
@@ -219,6 +242,8 @@ export function detectGameplayDegradation(
       subjectId: input.subjectId,
       kind: "capacity-reduced",
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch: false,
       reason:
         "Player-visible gameplay capacity is reduced from " +
         String(input.expectedCapacity) +
@@ -240,6 +265,8 @@ export function detectGameplayDegradation(
       subjectId: input.subjectId,
       kind: "feature-disabled",
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch: false,
       reason:
         "A declared gameplay feature is not observed and no valid fallback is present.",
     });
