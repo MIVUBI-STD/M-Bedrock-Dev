@@ -80,14 +80,7 @@ export function deriveSelectedMapAuditRevision(input: {
         capabilityIdsUsed: item.capabilityIdsUsed,
       })),
     },
-    defectResolution: input.defectResolution.resolutions.map((item) => ({
-      causalLinkId: item.causalLinkId,
-      disposition: item.disposition,
-      evidenceIds: item.evidenceIds ?? [],
-      counterProofEvidenceIds:
-        item.counterProofEvidenceIds ?? [],
-      counterProofSearch: item.counterProofSearch ?? null,
-    })),
+    defectResolution: input.defectResolution.resolutions,
   };
 
   return createHash("sha256")
