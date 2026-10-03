@@ -959,44 +959,146 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
     },
   ));
 
-  const crossSystemDemand =
-    [
-      demanded.has("arena-lifecycle"),
-      demanded.has("multiplayer-interleaving"),
-      demanded.has("combat-lifecycle"),
-      demanded.has("inventory-state"),
-      demanded.has("persistence-recovery"),
-      demanded.has("economy-reward"),
-      demanded.has("temporal-ownership"),
-    ].filter(Boolean).length >= 2;
+  const requiredCrossSystemScenarioLabels =
+    new Set<string>();
+
+  const hasArena =
+    demanded.has("arena-lifecycle") ||
+    world.arenas.detected;
+  const hasMultiplayer =
+    demanded.has("multiplayer-interleaving") ||
+    multiplayer.applicable;
+  const hasCombat =
+    demanded.has("combat-lifecycle");
+  const hasInventory =
+    demanded.has("inventory-state");
+  const hasPersistence =
+    demanded.has("persistence-recovery") ||
+    (world.persistence?.properties ?? 0) > 0;
+  const hasEconomy =
+    demanded.has("economy-reward");
+  const hasTemporal =
+    demanded.has("temporal-ownership") ||
+    deferredRelations.length > 0;
+  const hasMutableRunState =
+    hasArena ||
+    hasInventory ||
+    hasPersistence ||
+    hasEconomy ||
+    world.entities.definitions > 0 ||
+    world.structures.loads > 0 ||
+    world.chunks.tickingAreaAcquires > 0;
+
+  if (hasArena && hasMultiplayer) {
+    requiredCrossSystemScenarioLabels.add(
+      "multi-arena-parallel",
+    );
+  }
+  if (
+    hasPersistence &&
+    (
+      hasInventory ||
+      hasCombat ||
+      hasArena
+    )
+  ) {
+    requiredCrossSystemScenarioLabels.add(
+      "disconnect-reconnect",
+    );
+    requiredCrossSystemScenarioLabels.add(
+      "reload-recovery",
+    );
+  }
+  if (hasTemporal) {
+    requiredCrossSystemScenarioLabels.add(
+      "deferred-ownership",
+    );
+  }
+  if (
+    hasCombat &&
+    (
+      hasEconomy ||
+      hasArena ||
+      hasTemporal
+    )
+  ) {
+    requiredCrossSystemScenarioLabels.add(
+      "terminal-collision",
+    );
+  }
+  if (hasMutableRunState) {
+    requiredCrossSystemScenarioLabels.add(
+      "repeated-run",
+    );
+  }
+  if (
+    world.arenas.count !== undefined &&
+    world.arenas.safeConcurrentArenas !== undefined &&
+    world.arenas.safeConcurrentArenas !== null &&
+    world.arenas.safeConcurrentArenas <
+      world.arenas.count
+  ) {
+    requiredCrossSystemScenarioLabels.add(
+      "arena-capacity-plus-one",
+    );
+  }
 
   const crossSystemScenarios = graph.scenarios.filter(
     (scenario) =>
-      [
-        "disconnect-reconnect",
-        "reload-recovery",
-        "deferred-ownership",
-        "terminal-collision",
-        "multi-arena-parallel",
-        "repeated-run",
-      ].includes(scenario.label),
+      requiredCrossSystemScenarioLabels.has(
+        scenario.label,
+      ),
   );
+  const activatedCrossSystemLabels =
+    new Set(
+      crossSystemScenarios.map(
+        (scenario) => scenario.label,
+      ),
+    );
+  const missingCrossSystemLabels = [
+    ...requiredCrossSystemScenarioLabels,
+  ]
+    .filter(
+      (label) =>
+        !activatedCrossSystemLabels.has(label),
+    )
+    .sort();
+
   checkpoint.push(receipt(
     "C9",
     "STRESS",
     "Cross-System Activation",
-    crossSystemScenarios.length > 0
-      ? "CLOSED"
-      : discovery.status === "COMPLETE" && !crossSystemDemand
-        ? "NOT_APPLICABLE"
-        : "OPEN",
-    crossSystemScenarios.length > 0
-      ? "Applicable cross-system scenario families are activated."
-      : discovery.status === "COMPLETE" && !crossSystemDemand
-        ? "No high-value cross-system intersection is demanded after complete discovery."
-        : "Multiple gameplay domains coexist but no cross-system scenario was activated.",
+    missingCrossSystemLabels.length === 0
+      ? requiredCrossSystemScenarioLabels.size > 0
+        ? "CLOSED"
+        : discovery.status === "COMPLETE"
+          ? "NOT_APPLICABLE"
+          : "OPEN"
+      : "OPEN",
+    missingCrossSystemLabels.length > 0
+      ? "Required cross-system scenario families are missing: " +
+        missingCrossSystemLabels.join(", ") +
+        "."
+      : requiredCrossSystemScenarioLabels.size > 0
+        ? "Every high-value cross-system scenario family demanded by the selected artifact is activated."
+        : discovery.status === "COMPLETE"
+          ? "No high-value cross-system intersection is demanded after complete discovery."
+          : "Cross-system applicability cannot close while discovery is incomplete.",
     crossSystemScenarios.map((item) => item.id),
     ["ActivatedCrossSystemScenarioSet"],
+    {
+      obligations: [
+        obligation(
+          "required-cross-system-scenarios-activated",
+          requiredCrossSystemScenarioLabels.size > 0,
+          missingCrossSystemLabels.length === 0,
+          "Every materially demanded cross-system intersection must activate its scenario family; one unrelated cross-system scenario cannot satisfy the whole checkpoint.",
+          crossSystemScenarios.map(
+            (item) => item.id,
+          ),
+        ),
+      ],
+    },
   ));
 
   checkpoint.push(receipt(
