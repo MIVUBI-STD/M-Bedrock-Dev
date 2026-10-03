@@ -54,6 +54,27 @@ Examples:
 NOT → skip discovered material gameplay
 ```
 
+## Mandatory chat confirmation
+
+After translating the user's prompt and before calling `runSelectedMapAudit()`, present a concise interpretation summary in chat and obtain explicit confirmation.
+
+Show:
+- exact target/map hint if present;
+- reported symptoms;
+- suspected causes as suspicions, not facts;
+- expectation/design claims separately;
+- priority gameplay/domain focus;
+- test/proof constraints;
+- ambiguities and unmapped input.
+
+Then state that the canonical audit will still inspect other material gameplay surfaces discovered in the selected artifact and that none of the user's suspicions will be treated as a bug without evidence.
+
+Only after an explicit confirm such as `ya`, `setuju`, `benar`, or equivalent may the caller create `AuditUserIntentConfirmation` for the current normalized intent and start the production audit.
+
+If the user corrects or materially changes the interpretation, rebuild the intent and ask for confirmation again. A prior confirmation receipt is stale by design.
+
+Do not ask multiple rounds when one compact confirmation is sufficient.
+
 ## Required audit order
 
 Bug discovery cannot start before the selected world is reconstructed.
