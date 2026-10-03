@@ -21,7 +21,8 @@ import type {
 export type AuditModelTaskKind =
   | "CHECKPOINT_REASONING"
   | "GAMEPLAY_TRANSLATION"
-  | "COUNTERPROOF_SEARCH";
+  | "COUNTERPROOF_SEARCH"
+  | "PROOF_NAVIGATION";
 
 export interface AuditModelTaskEvidenceContext {
   readonly id: string;
@@ -60,6 +61,16 @@ export interface AuditModelTaskPacket {
   readonly unresolvedEvidenceIds: readonly string[];
   readonly knowledgeContext: readonly AuditModelTaskKnowledgeContext[];
   readonly unresolvedObligationIds: readonly string[];
+  readonly proofGoal?: string;
+  readonly provenClaims?: readonly string[];
+  readonly missingClaims?: readonly string[];
+  readonly navigationRoute?: readonly {
+    readonly order: number;
+    readonly knowledgeDomain: string;
+    readonly question: string;
+    readonly purpose: string;
+    readonly evidencePreference: string;
+  }[];
   readonly allowedOutputs: readonly string[];
   readonly forbiddenActions: readonly string[];
   readonly stopCondition: string;
@@ -319,9 +330,92 @@ export function deriveAuditModelTaskPackets(input: {
   readonly intent: GameplayIntentModel;
   readonly auditRevision: string;
   readonly world: GameplayWorldModel;
+  readonly needValidationFindings?: readonly import("./map-audit-issue-projection.js").NeedValidationAuditIssueProjection[];
 }): readonly AuditModelTaskPacket[] {
+  const navigationPackets =
+    (input.needValidationFindings ?? [])
+      .filter((finding) =>
+        finding.proofNavigation !== undefined
+      )
+      .map((finding) => {
+        const navigation =
+          finding.proofNavigation!;
+        const evidence =
+          evidenceContext(
+            finding.evidenceIds,
+            input.intent,
+          );
+        return {
+          schemaVersion: 1 as const,
+          policy: "bounded-audit-model-task" as const,
+          id:
+            "task:proof-navigation:" +
+            finding.causalLinkId,
+          auditRevision: input.auditRevision,
+          kind: "PROOF_NAVIGATION" as const,
+          stage: "PROVE" as const,
+          goal:
+            "Resolve NEED_VALIDATION finding " +
+            finding.causalLinkId +
+            " toward PROVEN using the cheapest sufficient proof route before runtime.",
+          decisionNeeded:
+            finding.validationReason,
+          scenarioId: finding.scenarioId,
+          causalLinkId: finding.causalLinkId,
+          subjectIds: [...finding.subjectIds],
+          componentIds: [...finding.componentIds],
+          requiredKnowledgeIds:
+            finding.knowledgeRequirementId === undefined
+              ? []
+              : [finding.knowledgeRequirementId],
+          evidenceIds: [...finding.evidenceIds],
+          evidenceContext: evidence.context,
+          unresolvedEvidenceIds:
+            evidence.unresolved,
+          knowledgeContext:
+            finding.knowledgeRequirementId === undefined
+              ? []
+              : knowledgeContextFor(
+                  [finding.knowledgeRequirementId],
+                  input.graph,
+                  input.world,
+                ),
+          unresolvedObligationIds: [],
+          proofGoal: navigation.proofGoal,
+          provenClaims: [
+            ...navigation.provenClaims,
+          ],
+          missingClaims: [
+            ...navigation.missingClaims,
+          ],
+          navigationRoute: [
+            ...navigation.route,
+          ],
+          allowedOutputs: [
+            "new selected-artifact proof",
+            "cross-domain corroboration",
+            "blocking counter-proof",
+            "formal contradiction proof",
+            "PROVEN-ready causal resolution",
+            "narrow runtime proof request only after earlier routes are exhausted",
+          ],
+          forbiddenActions: [
+            "skip directly to runtime while an earlier navigation route remains applicable",
+            "invent evidence",
+            "infer unresolved evidence contents",
+            "change severity",
+            "inspect unrelated scenarios",
+            "use historical/stale map behavior as current gameplay authority",
+          ],
+          stopCondition:
+            "Stop when the finding becomes PROVEN, is disproved by blocking counter-proof, or all applicable non-runtime navigation steps are explicitly exhausted and exactly one runtime observation remains.",
+        };
+      });
+
   const stage = input.admission.firstBlockingStage;
-  if (stage === undefined) return [];
+  if (stage === undefined) {
+    return navigationPackets;
+  }
 
   if (stage === "PROVE") {
     const prove = provePackets(
@@ -331,13 +425,21 @@ export function deriveAuditModelTaskPackets(input: {
       input.intent,
       input.world,
     );
-    if (prove.length > 0) return prove;
+    if (prove.length > 0) {
+      return [
+        ...prove,
+        ...navigationPackets,
+      ];
+    }
   }
 
-  return checkpointPackets(
-    stage,
-    input.procedure,
-    input.auditRevision,
-    input.intent,
-  );
+  return [
+    ...checkpointPackets(
+      stage,
+      input.procedure,
+      input.auditRevision,
+      input.intent,
+    ),
+    ...navigationPackets,
+  ];
 }
