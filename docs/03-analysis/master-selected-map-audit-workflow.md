@@ -271,7 +271,7 @@ Canonical full-map naming:
 - `replicaResults[]`
 - `replicaId`
 - `replicaStatus`
-- `materialDeltaIds[]`
+- `replicaDivergenceIds[]`
 - `baselineReusableForAllReplicas`
 
 Replica result:
