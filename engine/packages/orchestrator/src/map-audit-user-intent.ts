@@ -1,6 +1,7 @@
-import type {
-  GameplayIssueFailureDomain,
-  GameplayIssueFlowStage,
+import {
+  GAMEPLAY_ISSUE_FAILURE_DOMAINS,
+  type GameplayIssueFailureDomain,
+  type GameplayIssueFlowStage,
 } from "../../diagnostic-reasoning/src/index.js";
 
 export type AuditUserInputClass =
@@ -14,6 +15,35 @@ export type AuditUserInputClass =
   | "OUTPUT_REQUEST"
   | "HISTORICAL_REFERENCE"
   | "EXCLUSION_REQUEST";
+
+const USER_INPUT_CLASSES = new Set<AuditUserInputClass>([
+  "TARGET_HINT",
+  "SYMPTOM_REPORT",
+  "SUSPICION",
+  "EXPECTATION_CLAIM",
+  "DESIGN_CLAIM",
+  "TEST_CONSTRAINT",
+  "SCOPE_REQUEST",
+  "OUTPUT_REQUEST",
+  "HISTORICAL_REFERENCE",
+  "EXCLUSION_REQUEST",
+]);
+
+const PLAYER_FLOWS = new Set<GameplayIssueFlowStage>([
+  "ENTRY_JOIN",
+  "READY_START",
+  "SETUP",
+  "ACTIVE_GAMEPLAY",
+  "PROGRESSION",
+  "TERMINAL",
+  "CLEANUP_REPLAY",
+  "RECOVERY",
+]);
+
+const FAILURE_DOMAINS =
+  new Set<GameplayIssueFailureDomain>(
+    GAMEPLAY_ISSUE_FAILURE_DOMAINS,
+  );
 
 export interface AuditUserIntentItem {
   readonly kind: AuditUserInputClass;
@@ -106,6 +136,15 @@ export function validateAuditUserIntent(
   }
 
   for (const [index, item] of input.items.entries()) {
+    if (!USER_INPUT_CLASSES.has(item.kind)) {
+      issues.push(
+        "User audit intent item " +
+        index +
+        " has unsupported kind: " +
+        String(item.kind) +
+        ".",
+      );
+    }
     if (!clean(item.raw)) {
       issues.push(
         "User audit intent item " +
@@ -120,6 +159,36 @@ export function validateAuditUserIntent(
         " has empty normalized text.",
       );
     }
+  }
+
+  for (const domain of input.priorityDomains) {
+    if (!FAILURE_DOMAINS.has(domain)) {
+      issues.push(
+        "User audit intent has unsupported priority domain: " +
+        String(domain) +
+        ".",
+      );
+    }
+  }
+
+  for (const flow of input.priorityPlayerFlows) {
+    if (!PLAYER_FLOWS.has(flow)) {
+      issues.push(
+        "User audit intent has unsupported priority player flow: " +
+        String(flow) +
+        ".",
+      );
+    }
+  }
+
+  if (
+    input.ambiguities.some(
+      (item) => !clean(item),
+    )
+  ) {
+    issues.push(
+      "User audit intent ambiguities must contain only non-empty text.",
+    );
   }
 
   return issues;
