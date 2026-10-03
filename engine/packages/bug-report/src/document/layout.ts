@@ -3,26 +3,18 @@ import type {
 } from "./model.js";
 
 export interface BugReportClientLayoutPlan {
-  readonly showIssueIndex: boolean;
   readonly showSeverityLegend: boolean;
-  readonly compactTables: boolean;
 }
 
 /**
- * Reader-facing layout decisions for Word/PDF.
- *
- * Default HTML uses one compact expandable row per bug.
- * Retest state belongs directly to each bug row, so a separate issue index is
- * intentionally not rendered.
+ * Reader-facing layout decisions for the self-contained HTML report.
+ * Each bug owns its own compact expandable row; no parallel index/table lane.
  */
 export function buildBugReportClientLayoutPlan(
   document: BugReportClientDocument,
 ): BugReportClientLayoutPlan {
-  const count = document.issues.length;
-
   return {
-    showIssueIndex: false,
-    showSeverityLegend: count > 0,
-    compactTables: count >= 4,
+    showSeverityLegend:
+      document.issues.length > 0,
   };
 }
