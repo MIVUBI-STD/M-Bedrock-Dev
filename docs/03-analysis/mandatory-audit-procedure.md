@@ -55,6 +55,38 @@ Applicable technical checks
 
 A map may merge or omit stages. Applicability is derived from the selected artifact, not forced from this template.
 
+## Issue taxonomy rule
+
+Confirmed findings must be classified through one taxonomy before REPORT:
+
+```text
+issueType
++ gameplayFlow
++ failureDomain
++ contributingDomains
++ severity at confirmed-report classification
+```
+
+Failure domain describes the primary gameplay failure surface, not necessarily every technical subsystem involved. Cross-system involvement is preserved in `contributingDomains`.
+
+Examples:
+
+```text
+wave cannot complete because remote mobs stop simulating
+primary: progression-wave-objective
+contributing: chunk-simulation, entity-ai-combat
+
+6 arenas presented but only 2 can run
+primary: arena-multi-arena
+issueType: DESIGN_MISMATCH
+
+purchase removes coins but grant fails
+primary: inventory-economy
+issueType: BUG
+```
+
+Severity is impact-derived later; domain must never preselect severity.
+
 ## Crosscheck rule
 
 Every contradiction reaching PROVE must be challenged from all context-relevant dimensions before confirmation:
