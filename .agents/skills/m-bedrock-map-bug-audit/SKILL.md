@@ -125,33 +125,16 @@ If expected behavior cannot be grounded from the selected artifact, keep it unkn
 
 Bug discovery starts only after Gameplay Model Closure is CLOSED. Gameplay Model Closure PARTIAL is not a runtime exception: it means material boundaries, blocked surfaces, or unknown gameplay semantics still exist and therefore blocks production continuation. Gameplay Scenario Closure is the only closure allowed to remain PARTIAL, and only because that state is reserved for irreducible Minecraft runtime proof.
 
-## Issue taxonomy
-
-Every confirmed causal issue projected by the engine must carry:
-
-```text
-reportIssueType
-gameplayFlow
-failureDomain
-contributingDomains[]
-informationMismatch
-```
-
-Use one primary failure domain and zero or more contributing domains. Do not duplicate one root cause merely because multiple systems participate.
-
-Primary domains are owned by `gameplay-issue-taxonomy.ts`. Do not invent map-specific category names.
-
-Severity remains downstream review state and requires grounded player impact. Do not infer severity from scenario name, domain, or diagnostic code alone.
-
 ## Canonical issue taxonomy
 
-Every reportable issue must carry:
+Every confirmed causal issue projected by the engine must carry:
 
 ```text
 issueType
 gameplayFlow
 failureDomain
-contributingDomains
+contributingDomains[]
+informationMismatch
 severity when confirmed for report
 ```
 
@@ -173,9 +156,31 @@ persistence-recovery
 platform-performance
 ```
 
-Use one primary `failureDomain` for reader clarity. Preserve all materially involved cross-system domains in `contributingDomains`. Example: a wave that cannot finish because remote mobs stop simulating is primarily `progression-wave-objective`, with `chunk-simulation` and `entity-ai-combat` as contributing domains.
+Use one primary `failureDomain` for reader clarity. Preserve materially involved cross-system domains in `contributingDomains`.
 
-Do not infer severity from the domain name. Severity is based on proven player/game impact.
+Examples:
+
+```text
+Wave cannot finish because remote mobs stop simulating
+→ failureDomain: progression-wave-objective
+→ contributingDomains:
+  chunk-simulation
+  entity-ai-combat
+
+Arena UI says available while the session is actually full
+→ failureDomain: ui-feedback-information
+→ contributingDomains:
+  arena-multi-arena
+  ui-feedback-information
+
+Six arenas are presented but only two can run concurrently
+→ issueType: DESIGN_MISMATCH
+→ failureDomain: arena-multi-arena
+```
+
+`informationMismatch` is true only when grounded player-facing information contradicts actual playable/runtime behavior. UI presence alone is not enough.
+
+Do not infer severity from scenario name or failure domain. Severity is based on grounded player/game impact.
 
 ## Report issue types
 
