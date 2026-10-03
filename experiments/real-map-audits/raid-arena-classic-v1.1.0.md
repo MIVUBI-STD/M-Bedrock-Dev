@@ -1,54 +1,46 @@
 # Real Map Audit — Raid Arena Classic v1.1.0
 
-Status: real-map source audit complete for this pass  
+Status: selected-artifact source audit evidence  
 Authority: selected current Drive artifact only  
-Historical regression ingestion: none  
 Runtime execution: not performed
 
 ## Target
 
+- Drive folder: `PvP - Raid Arena Classic`
 - Drive file: `Raid Arena Classic v1.1.0.mcworld`
 - Drive file ID: `1kkqaqb9FQIkAzorCNzVe8vyHgoFoHJWu`
 - Artifact SHA-256: `c212fb9e7b401ab081b14a062cc24a9d0e03b95202641cf53020a48e216d1ac3`
-- BP/RP version: `1.1.0`
+- BP/RP manifest version: `1.1.0`
+- min engine version: `1.21.130`
 
-## Proven findings
+## Current source-proven findings
 
-**0 source-proven gameplay defects admitted in this pass.**
+None admitted in this bounded source pass.
 
-## Checks completed
+## High-risk areas checked
 
-### Match / arena ownership
+### Match inventory/kit start
+A persistent `match_cleanup_pending` marker is written before the first match mutation. Kit equip clears inventory/equipment before applying the selected kit. Partial start failure therefore retains a durable cleanup obligation.
 
-Match records are arena scoped. Finish state, winners, deaths, respawn timers, kit state, and statistics are attached to the current match rather than one global match authority.
+### Match end / cleanup retry
+Failed player cleanup leaves the marker in place. New arena admission rejects players with pending cleanup, and the periodic online path retries cleanup until success.
 
-### Death / respawn / leave
+### Death / respawn
+Non-initial spawn during an active session enters the explicit respawn flow. Spectator transition clears inventory and respawn timing is tracked in the live match state.
 
-Death creates a bounded respawn state. Player leave removes the participant from active respawn handling and marks the participant as left. Match terminal logic reevaluates after participant changes.
+### Arena ownership
+Players already owned by one arena are not admitted into another. Busy/full pads reject/push non-members back toward the lobby.
 
-No current source path was found that restores an eliminated/left participant into an unrelated active match.
+### Finish/reset
+Arena enters finishing before results settle. Player cleanup proof is independent from arena-state reset, so a failed participant cleanup cannot silently become a clean next-session state.
 
-### Inventory and equipment cleanup
+## Runtime obligations
 
-The selected artifact keeps a persistent cleanup marker for post-match inventory/equipment cleanup. Failed cleanup can be retried for an online player after the match ends; successful cleanup clears the marker.
-
-This avoids relying on one transient disconnect/death callback for inventory reset.
-
-### Kit ownership
-
-Kit templates are validated from authored template sources before application. Current player kit changes during respawn are constrained to the match/respawn surface.
-
-### Developer operations
-
-Statistics reset, kit testing/export, and developer controls require explicit developer access. No normal-player developer skip/reset route was admitted.
-
-## Audit obligations — not bugs
-
-- Runtime-only combat/event ordering remains outside static proof.
-- If real testing shows cleanup residue after disconnect/rejoin, inspect the persisted cleanup marker path first.
+- death/respawn plus simultaneous leave/disconnect;
+- cleanup retry after disconnect during result presentation;
+- kit durability refresh for all four kits;
+- four-arena cross-session entity/score isolation.
 
 ## Result
 
-Raid Arena Classic v1.1.0: **0 source-proven gameplay findings**.
-
-Do not create historical regression entries from this pass.
+Raid Arena Classic v1.1.0 is recorded as **0 current source-proven gameplay findings** in this pass.
