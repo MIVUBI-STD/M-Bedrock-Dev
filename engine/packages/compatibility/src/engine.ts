@@ -64,13 +64,16 @@ export function evaluateCapability(
       supported: true,
       track: rule.track,
       ruleId: rule.id,
-      reason: rule.note ?? "Capability is supported by the matching rule.",
+      reason:
+        rule.note ??
+        "A registered compatibility rule supports this capability for the query. This is rule-level compatibility, not runtime verification.",
     };
   }
 
   return {
-    supported: false,
+    supported: "unknown",
     track: "unknown",
-    reason: "No matching edition/version capability rule applies.",
+    reason:
+      "No matching edition/version capability rule is registered. Absence of a rule is not proof that the capability is unsupported.",
   };
 }
