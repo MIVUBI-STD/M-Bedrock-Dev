@@ -78,6 +78,15 @@ export interface AuditModelTaskPacket {
     readonly applicableBecause: readonly string[];
     readonly decisionRule: string;
   }[];
+  readonly historicalSearchHints?: readonly {
+    readonly id: string;
+    readonly family: string;
+    readonly priority: "high" | "medium";
+    readonly knowledgeDomains: readonly string[];
+    readonly searchQuestions: readonly string[];
+    readonly matchedBecause: readonly string[];
+  }[];
+  readonly historyPressure?: number;
   readonly allowedOutputs: readonly string[];
   readonly forbiddenActions: readonly string[];
   readonly stopCondition: string;
@@ -401,9 +410,29 @@ export function deriveAuditModelTaskPackets(input: {
           evidenceSubstitutions: [
             ...navigation.evidenceSubstitutions,
           ],
+          historicalSearchHints:
+            navigation.historicalSearchHints.map(
+              (hint) => ({
+                id: hint.id,
+                family: hint.family,
+                priority: hint.priority,
+                knowledgeDomains: [
+                  ...hint.knowledgeDomains,
+                ],
+                searchQuestions: [
+                  ...hint.searchQuestions,
+                ],
+                matchedBecause: [
+                  ...hint.matchedBecause,
+                ],
+              }),
+            ),
+          historyPressure:
+            navigation.historyPressure,
           allowedOutputs: [
             "new selected-artifact proof",
             "cross-domain corroboration",
+            "historically informed targeted search",
             "blocking counter-proof",
             "formal contradiction proof",
             "evidence substitution that removes runtime need",
