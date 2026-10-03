@@ -4,7 +4,7 @@ export interface CapabilityTruthLike {
   taskCapabilities: readonly {
     id: string;
     owner: string;
-    status: "declared-only" | "implementation-present" | "owner-tested";
+    status: "declared-only" | "implementation-present" | "owner-has-tests";
     runtimeOnly: boolean;
     proofBinding?: { state: "bound" | "unbound"; kind?: string; paths?: readonly string[] };
   }[];
@@ -50,18 +50,18 @@ export function buildCoverageQualityDashboard(input: CoverageQualityInput): Cove
       key: capability.id,
       category: "capability",
       status:
-        capability.status === "owner-tested" && proofBound
+        capability.status === "owner-has-tests" && proofBound
           ? "partial"
           : capability.status === "implementation-present"
             ? "weak"
             : "insufficient-data",
       reasons: [
-        capability.status === "owner-tested" && proofBound
-          ? "Owner has tests and capability has an explicit proof binding; execution is not implied."
-          : capability.status === "owner-tested"
-            ? "Owner has tests but capability-specific regression proof is unbound."
+        capability.status === "owner-has-tests" && proofBound
+          ? "Owner contains tests and the capability has an explicit proof binding; current-session execution or pass status is not implied."
+          : capability.status === "owner-has-tests"
+            ? "Owner contains tests but capability-specific regression proof is unbound; no current-session execution is implied."
             : capability.status === "implementation-present"
-              ? "Implementation exists without owner-level test presence."
+              ? "Implementation exists without detected owner-level test presence."
               : "Capability is declared without detected implementation.",
       ],
     });
