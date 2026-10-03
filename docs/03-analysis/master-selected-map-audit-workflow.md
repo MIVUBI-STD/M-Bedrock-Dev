@@ -661,12 +661,13 @@ Chat:
 - concise issue list only.
 
 HTML:
-- tester checklist;
-- reproduce;
-- expected;
-- bug proven when;
-- reproduced / not reproduced / blocked;
-- evidence/note.
+- one compact row per finding/bug;
+- `See details` / collapse behavior;
+- `How to Reproduce`;
+- `Observed`;
+- `Expected`;
+- per-bug `Fixed` checkbox only on Approved Bug Report HTML;
+- proof guidance / evidence context only when relevant and preferably collapsed.
 
 Approved Bug Report V2:
 - PROVEN BUG items only.
