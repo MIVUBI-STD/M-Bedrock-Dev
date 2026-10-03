@@ -18,9 +18,11 @@ CLI: audit <selected.mcworld>
 → REPORT
 ```
 
-**Canonical procedure:** [Mandatory Gameplay Audit Procedure](./mandatory-audit-procedure.md)
+**Operator master flow:** [Master Selected-Map Audit Workflow](./master-selected-map-audit-workflow.md)
 
-All other gameplay-audit documents in this directory are supporting contracts loaded by that procedure. They must not be interpreted as alternate workflows, alternate closure authorities, or alternate report routes.
+**Executable checkpoint contract:** [Mandatory Gameplay Audit Procedure](./mandatory-audit-procedure.md)
+
+The master workflow defines the complete human/AI work order. The Mandatory Gameplay Audit Procedure remains the executable checkpoint authority. All other gameplay-audit documents in this directory are supporting contracts loaded by that flow. They must not be interpreted as alternate workflows, alternate closure authorities, or alternate report routes.
 
 ### Authority hierarchy
 
@@ -61,6 +63,14 @@ ENTRY / JOIN
 ```
 
 Technical domains attach to those stages; they are not separate audit branches.
+
+## Canonical navigation
+
+Use this order:
+
+1. [Master Selected-Map Audit Workflow](./master-selected-map-audit-workflow.md) — end-to-end work order.
+2. [Mandatory Gameplay Audit Procedure](./mandatory-audit-procedure.md) — executable checkpoint closure.
+3. Load specialist contracts only when the master flow activates them.
 
 ## Supporting audit contracts
 
