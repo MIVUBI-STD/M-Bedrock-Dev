@@ -129,6 +129,193 @@ Use one of these equivalent ownership fixes:
 
 Do not fix this by adding another global state owner. Reset completion/reuse and lease ownership should remain within the existing arena/session + ticking-area lifecycle.
 
+## Additional proven findings
+
+### BUG — Reconnect during combat respawn countdown bypasses the death delay
+
+Severity: Major  
+Proof: source-proven  
+Domain: player-state / multiplayer-session / respawn
+
+#### Issue
+
+A player who disconnects while a combat respawn is pending remains in the locked party. On reconnect, CombatTracker correctly detects the pending respawn and returns the player to spectator state, but GameManager's independent reconnect handler runs five ticks later and restores survival mode, loadout, and gameplay spawn without checking the pending respawn state.
+
+#### Expected
+
+A reconnecting player with an active pending respawn must remain in spectator/death state until the existing respawn timer expires.
+
+#### Observed source behavior
+
+CombatTracker is initialized before GameManager, so both subscribe to player spawn events:
+
+```text
+ctf-defense-MJPEJYBR.js:15292-15299
+CombatTracker.init()
+...
+GameManager.init()
+```
+
+CombatTracker detects pending respawn and keeps the reconnecting player in spectator:
+
+```text
+ctf-defense-MJPEJYBR.js:2866-2879
+_findPendingRespawn(player.id)
+→ _sendPlayerToSpectator(...)
+→ show remaining respawn countdown
+→ return
+```
+
+The pending respawn timer stays alive while the player is offline and is not cleared by GameManager's player-leave handler:
+
+```text
+ctf-defense-MJPEJYBR.js:2940-3004
+pendingRespawns.set(playerId, ...)
+timer remains until its scheduled end
+```
+
+```text
+ctf-defense-MJPEJYBR.js:10622-10635
+handlePlayerLeave()
+→ clears warning/location/vote bookkeeping only
+```
+
+GameManager separately handles the same reconnect and, five ticks later, restores active gameplay without checking `CombatTracker.hasPendingRespawn` / pending state:
+
+```text
+ctf-defense-MJPEJYBR.js:10540-10620
+locked party member + active session
+→ runTimeout(..., 5)
+→ survival mode
+→ applyPlayerLoadout(...)
+→ teleport to gameplay spawn
+```
+
+#### Reproduction path
+
+1. Enter an active Defense match.
+2. Die and enter the configured respawn countdown.
+3. Disconnect before the countdown expires.
+4. Reconnect while the pending respawn timer still exists.
+5. CombatTracker initially restores spectator/countdown state.
+6. About five ticks later GameManager restores survival/loadout/gameplay spawn.
+7. Player resumes gameplay before the original death delay has elapsed.
+
+#### Player-visible consequence
+
+Players can bypass the intended combat death penalty by reconnecting during the respawn countdown.
+
+#### Root cause
+
+Respawn ownership is split between CombatTracker pending-respawn state and GameManager reconnect recovery. The reconnect path does not defer to the existing pending-respawn owner.
+
+#### Repair direction
+
+Before active-session reconnect recovery, ask CombatTracker whether the player has a pending respawn. If yes, leave recovery to CombatTracker and do not independently restore survival/loadout/teleport.
+
+---
+
+### BUG — Failed delayed wave spawns can be treated as cleared before spawn retries finish
+
+Severity: Blocker  
+Proof: source-proven  
+Domain: game-flow / entity-behavior / chunks
+
+#### Issue
+
+For delayed spawn groups, the scheduler decrements its pending-group count immediately after the first spawn attempt, then calls hostile-clearance reconciliation using the **requested** entity count. If all entities fail the first attempt because their spawn chunk is not ready, EntityLoader schedules retries, but there are still zero live tagged hostiles. Reconciliation can therefore fire "all hostiles killed" before the retry queue has spawned anything.
+
+#### Current-artifact applicability
+
+Defense Level 15, Wave 3 contains a real delayed group:
+
+```text
+chunk-WL4PNCET.js:1792-1805
+east/west late-game entities use delaySeconds: 10
+```
+
+So this is not a dead generic branch.
+
+#### Expected
+
+A wave cannot be considered cleared while configured entity spawns are still pending retry.
+
+#### Observed source behavior
+
+Spawn failure schedules retries and still returns the full requested count:
+
+```text
+ctf-defense-MJPEJYBR.js:254-289
+spawnLevelEntities(...)
+→ failed entities added to retrying
+→ scheduleSpawnRetries(...)
+→ return { requested: entities.length, spawned, retrying }
+```
+
+The retry chain may continue for up to 150 attempts:
+
+```text
+ctf-defense-MJPEJYBR.js:406-447
+scheduleSpawnRetries(...)
+```
+
+For a delayed group, WaveScheduler performs only the initial attempt, then immediately removes the group from `pendingSpawnGroups`, sets CombatTracker with `result.requested`, and reconciles live hostiles:
+
+```text
+ctf-defense-MJPEJYBR.js:3835-3852
+_spawnGroup(...)
+pendingSpawnGroups--
+prepareForNextWave(arenaId, result.requested)
+reconcileHostileClearance(...)
+```
+
+CombatTracker interprets zero live tagged hostiles as cleared whenever `spawnedThisWave > 0`:
+
+```text
+ctf-defense-MJPEJYBR.js:3090-3103
+if spawnedThisWave > 0
+and dimension.getEntities(tags...).length === 0
+→ _allHostilesKilledCallback(arenaId)
+```
+
+WaveScheduler's completion gate only knows about scheduled delayed-group timers, not EntityLoader's retry queue:
+
+```text
+ctf-defense-MJPEJYBR.js:3663-3681
+pendingSpawnGroups === 0
++ allWavesLaunched
+→ mark wave cleared
+→ cleanup
+→ level complete
+```
+
+#### Reproduction path
+
+1. Reach Level 15 Wave 3.
+2. Allow the 10-second delayed east/west group to fire while its target spawn chunk/location is not ready.
+3. Initial spawn attempt returns `spawned = 0`, `retrying > 0`, `requested > 0`.
+4. Scheduler decrements the delayed pending-group count.
+5. Reconciliation sees zero live hostiles and fires all-hostiles-killed.
+6. The wave/level can advance while EntityLoader retries are still pending.
+
+#### Player-visible consequence
+
+Configured enemies may be skipped and late-game progression can advance prematurely, including early level completion/victory depending on which delayed group fails.
+
+#### Root cause
+
+There are two asynchronous spawn states with separate ownership:
+
+- WaveScheduler tracks delayed group timers.
+- EntityLoader tracks retrying entity configs.
+
+Wave completion only waits for the first owner.
+
+#### Repair direction
+
+Expose retry-pending count/generation from EntityLoader to WaveScheduler/CombatTracker, or make a spawn group remain pending until every requested entity is either successfully spawned or explicitly resolved as a terminal spawn failure. Do not infer clearance from live-entity count while retries are outstanding.
+
+
 ## Checked but not admitted as bugs
 
 ### Six configured arenas vs two concurrent ticking leases
