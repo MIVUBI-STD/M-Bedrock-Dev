@@ -5,7 +5,10 @@ import type {
   BugReportV2,
   BugReportV2Bug,
 } from "./v2.js";
-import {\n  bugFinderCategoryLabel,\n  type BugSeverity,\n} from "./vocabulary.js";
+import {
+  bugFinderCategoryLabel,
+  type BugSeverity,
+} from "./vocabulary.js";
 
 export type BugReportPreviewMode =
   | "summary"
@@ -159,37 +162,6 @@ function line(value: string): string {
 
 function tableCell(value: string): string {
   return line(value).replaceAll("|", "\\|");
-}
-
-function bugTriggerCell(
-  steps: readonly string[] | undefined,
-): string {
-  if (!steps?.length) return "—";
-  return steps
-    .map((step, index) =>
-      String(index + 1) + ". " + line(step)
-    )
-    .join("<br>");
-}
-
-function resultCell(
-  observed: string | undefined,
-  expected: string | undefined,
-): string {
-  if (!observed && !expected) return "—";
-  return [
-    observed
-      ? "<strong>Observed:</strong> " + line(observed)
-      : undefined,
-    expected
-      ? "<strong>Expected:</strong> " + line(expected)
-      : undefined,
-  ]
-    .filter(
-      (value): value is string =>
-        value !== undefined,
-    )
-    .join("<br>");
 }
 
 function technicalLines(
