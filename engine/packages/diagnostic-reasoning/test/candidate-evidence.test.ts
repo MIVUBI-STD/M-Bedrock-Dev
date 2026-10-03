@@ -95,7 +95,7 @@ describe("gameplay bug candidate evidence gate", () => {
     expect(result.counterEvidenceIds).toEqual(["e:design"]);
   });
 
-  it("fails closed while a declared counter-evidence check is unresolved", () => {
+  it("retains a material candidate while a counter-evidence check is unresolved", () => {
     const result = evaluateGameplayBugCandidateEvidence(
       rule,
       [
@@ -106,9 +106,28 @@ describe("gameplay bug candidate evidence gate", () => {
       readyContract,
     );
 
-    expect(result.disposition).toBe(
-      "counter-evidence-unresolved",
+    expect(result.disposition).toBe("candidate");
+    expect(result.unresolvedCounterPredicates).toEqual([
+      "contract-allows-persistence",
+    ]);
+  });
+
+  it("retains a core defect pattern when player impact is still unknown", () => {
+    const result = evaluateGameplayBugCandidateEvidence(
+      rule,
+      [
+        { predicate: "retry-occurs", state: "present", evidenceId: "e:retry" },
+        { predicate: "old-state-survives", state: "present", evidenceId: "e:state" },
+        { predicate: "next-attempt-gameplay-changed", state: "unknown" },
+        { predicate: "contract-allows-persistence", state: "absent" },
+      ],
+      readyContract,
     );
+
+    expect(result.disposition).toBe("candidate");
+    expect(result.missingPredicates).toEqual([
+      "next-attempt-gameplay-changed",
+    ]);
   });
 
   it("does not report technical patterns without player-visible impact", () => {
