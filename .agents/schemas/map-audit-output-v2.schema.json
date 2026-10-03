@@ -1453,7 +1453,7 @@
         "replicaResults",
         "materialDeltaIds",
         "incompleteReplicaIds",
-        "canReuseBaselineProof"
+        "baselineReusableForAllReplicas"
       ],
       "properties": {
         "policy": {
@@ -1468,17 +1468,13 @@
           "items": {
             "type": "object",
             "required": [
-              "arenaId",
+              "replicaId",
               "replicaStatus",
               "materialDeltaIds",
               "evidenceIds",
               "reason"
             ],
             "properties": {
-              "arenaId": {
-                "type": "string",
-                "minLength": 1
-              },
               "replicaStatus": {
                 "enum": [
                   "EQUIVALENT",
@@ -1506,6 +1502,10 @@
               "reason": {
                 "type": "string",
                 "minLength": 1
+              },
+              "replicaId": {
+                "type": "string",
+                "minLength": 1
               }
             },
             "additionalProperties": false
@@ -1527,7 +1527,7 @@
             "minLength": 1
           }
         },
-        "canReuseBaselineProof": {
+        "baselineReusableForAllReplicas": {
           "type": "boolean"
         }
       },
