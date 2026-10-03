@@ -8,7 +8,19 @@ This is the canonical base procedure for every selected-map gameplay audit.
 
 It is not a tester checklist and it is not a second knowledge base. It defines the minimum complete work that must exist before an audit can claim closure.
 
-The production flow is linear and has one canonical order:
+Before this production flow starts, user-initiated pre-testing audits require one communication preflight:
+
+```text
+user request
+→ normalized prompt intake
+→ Pre-Audit Plan
+→ explicit chat confirmation
+→ confirmation receipt
+```
+
+This preflight confirms **what will be checked and how the audit will work**. It is not a gameplay checkpoint and does not alter stage authority.
+
+The production flow itself remains linear and has one canonical order:
 
 ```text
 TARGET
