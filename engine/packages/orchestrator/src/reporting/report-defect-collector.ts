@@ -223,6 +223,9 @@ export interface ConfirmedDefectCollection {
 }
 
 export interface AuditReportCandidateDescriptor {
+  /** Canonical name. This is evidence provenance, never an audit workflow lane. */
+  readonly evidenceRoute: AuditReportEvidenceRoute;
+  /** @deprecated Compatibility alias for evidenceRoute. */
   readonly route: AuditReportCandidate["route"];
   readonly semanticKey: string;
   readonly evidenceIds: readonly string[];
@@ -628,6 +631,7 @@ export function describeAuditReportCandidate(
   candidate: AuditReportCandidate,
 ): AuditReportCandidateDescriptor {
   return {
+    evidenceRoute: candidate.route,
     route: candidate.route,
     semanticKey: candidateSemanticKey(candidate),
     evidenceIds: candidateEvidenceIds(candidate),
