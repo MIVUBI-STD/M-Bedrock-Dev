@@ -5,6 +5,7 @@ export * from "./project/project.js";
 export * from "./session/session.js";
 export * from "./project/source-ref.js";
 export * from "./project/workspace.js";
+export * from "./project/project-lifecycle.js";
 export * from "./project/drive-binding.js";
 
 export * from "./runtime/runtime-evidence.js";
