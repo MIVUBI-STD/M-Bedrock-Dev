@@ -401,6 +401,12 @@ The resolver must attempt to promote NEED_VALIDATION through bounded proof navig
 
 `BuildSelectedMapAuditReportResult` now exposes one centralized complete finding projection (`findings`, `proven`, `needValidation`) on every success/failure return path. The HTML renderer accepts Map Audit Output V2 and renders both PROVEN and NEED_VALIDATION sections. Approved Bug Report V2 remains a downstream PROVEN BUG ledger only.
 
+### PROVE / REPORT checkpoint cleanup
+
+`D2 Contradiction Admission` now treats Scenario Closure PARTIAL as non-blocking only when it represents irreducible runtime proof residue. OPEN remains blocking.
+
+`E1` is now the **Map Audit Report Contract**, not a Proposed Bug Set / confirmed-defects-only gate. It preserves the complete finding surface; approved Bug Report V2 promotion remains downstream.
+
 ### READY_FOR_REVIEW semantics
 
 `READY_FOR_REVIEW` means the audit finding set is complete enough for human review:
