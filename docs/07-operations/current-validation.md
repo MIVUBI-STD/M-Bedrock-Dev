@@ -368,7 +368,7 @@ Static, runtime, and tester report candidates are now explicitly treated as evid
 
 The existing internal `route` property remains for compatibility, but its semantic meaning is `evidenceRoute`. No production entry, checkpoint authority, or report authority branches on it.
 
-### Complete Bug Report honesty
+### Map Audit Report honesty
 
 The human-facing report is now the complete Map Audit report, not the approved bug ledger alone.
 
@@ -384,32 +384,17 @@ The resolver must attempt to promote NEED_VALIDATION through bounded proof navig
 
 `BuildSelectedMapAuditReportResult` now exposes one centralized complete finding projection (`findings`, `proven`, `needValidation`) on every success/failure return path. The HTML renderer accepts Map Audit Output V2 and renders both PROVEN and NEED_VALIDATION sections. Approved Bug Report V2 remains a downstream PROVEN BUG ledger only.
 
-### Complete finding visibility
+### READY_FOR_REVIEW semantics
 
-The human-facing selected-map report now preserves the full material finding set from the audit revision:
+`READY_FOR_REVIEW` means the audit finding set is complete enough for human review:
 
-- all `PROVEN` findings;
-- all `NEED_VALIDATION` findings;
-- both `BUG` and `DESIGN_MISMATCH` issue types.
+- every tracked material finding is visible;
+- honesty is PASS;
+- mandatory checkpoint admission is READY.
 
-The engine still attempts to promote NEED_VALIDATION findings through proof navigation. If sufficient proof cannot be obtained, the finding remains explicitly unresolved rather than being removed.
+It does **not** mean every finding is PROVEN.
 
-Persisted Bug Report V2 remains a narrower approved-bug ledger containing approved PROVEN BUG items only.
-
-### Complete human-facing report honesty
-
-The selected-map report surface now preserves the complete material finding set:
-
-```text
-findings.BUG[]
-findings.DESIGN_MISMATCH[]
-proven[]
-needValidation[]
-```
-
-The engine must continue attempting to resolve NEED_VALIDATION through proof navigation. If sufficient proof is obtained, the finding is promoted to PROVEN. If proof remains unavailable, the report keeps the finding visible as NEED_VALIDATION with its exact missing proof and validation test.
-
-Persisted Bug Report V2 is intentionally narrower and remains the approved PROVEN BUG ledger only.
+A `NEED_VALIDATION` finding may remain in a review-ready Map Audit Report when the unresolved proof is explicitly identified and preserved. Per-finding proof completeness is expressed only by `PROVEN` versus `NEED_VALIDATION`, not by creating another audit-run status.
 
 ### Final report handoff integrity
 
