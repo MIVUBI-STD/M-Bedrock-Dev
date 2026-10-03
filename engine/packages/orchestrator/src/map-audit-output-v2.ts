@@ -44,7 +44,6 @@ export interface MapAuditOutputV2Finding {
   readonly counterEvidence:
     | "cleared"
     | "unresolved";
-  readonly testerTriggerReady: boolean;
   readonly validationReason?: string;
   readonly missingProof?: string;
   readonly validationTest?: string;
@@ -284,8 +283,6 @@ function projectFinding(
       finding.status === "PROVEN"
         ? "cleared" as const
         : "unresolved" as const,
-    testerTriggerReady:
-      finding.status === "PROVEN",
   };
 
   if (finding.status === "PROVEN") {
