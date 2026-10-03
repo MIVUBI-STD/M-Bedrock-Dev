@@ -37,7 +37,7 @@ Canonical Bug Report V2 contains only approved confirmed bugs.
 06 Report Scope / Version
 ```
 
-Needs Validation, Ambiguous, and Detection Gap items belong to Map Audit Output V2 and Proposed Bug Set discussion. They must not be persisted into canonical Bug Report V2 or client HTML as confirmed bugs.
+Map Audit Output V2 exposes unresolved material findings only as `NEED_VALIDATION`. Internal reasons such as runtime proof required, ambiguous intent, insufficient evidence, or Detection Gap are carried inside that status. They must not be promoted into canonical approved Bug Report V2 until they become `PROVEN`.
 
 ## Overview
 
@@ -73,7 +73,7 @@ Suggested Fix, when supported
 Must Preserve, when supported
 ```
 
-Upstream audit-only fields such as Gameplay Flow, player-impact proof, counter-evidence state, proof ceiling, Needs Validation/Ambiguous/Detection Gap status, and coverage accounting remain in Map Audit Output / diagnostic state unless a proven product requirement adds them to the persisted report schema.
+Upstream audit-only fields such as Gameplay Flow, player-impact proof, counter-evidence state, proof ceiling, `PROVEN` / `NEED_VALIDATION` status, validation obligations, and coverage accounting remain in Map Audit Output / diagnostic state unless a proven product requirement adds them to the persisted approved-report schema.
 
 Before a defect enters canonical Bug Report V2 it must already have:
 
@@ -84,16 +84,14 @@ Before a defect enters canonical Bug Report V2 it must already have:
 
 ## Status boundary
 
-Canonical Bug Report V2 contains approved confirmed defects only.
+Map Audit exposes exactly two public statuses:
 
-Before approval:
+- `PROVEN` — sufficiently proven finding, eligible for severity and approval.
+- `NEED_VALIDATION` — materially plausible finding with an exact missing-proof obligation and targeted validation test.
 
-- Confirmed — contradiction proven from selected artifact and eligible for Proposed Bug Set review.
-- Needs Validation — remains in Map Audit Output / verification planning.
-- Ambiguous — remains in Map Audit Output / discussion.
-- Detection Gap — remains in Map Audit Output / Detection Development handoff.
+Canonical approved Bug Report V2 persists only approved `PROVEN` BUG items. NEED_VALIDATION remains visible in Map Audit / tester validation output until it is promoted to PROVEN or disproved. Internal uncertainty reasons never create additional public status categories.
 
-Designed/normal behavior and unresolved findings are not published as canonical bugs.
+Designed/normal behavior and disproved findings are not published as bugs.
 
 ## Audit coverage boundary
 
