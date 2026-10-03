@@ -562,8 +562,9 @@ function renderHtml(
   const severityLegend =
     layout.showSeverityLegend
       ? [
-          '<section class="legend">',
-          '<h2>Severity Guide</h2>',
+          '<section class="legend compact-legend">',
+          '<details>',
+          '<summary>Severity Guide</summary>',
           '<div class="legend-grid">',
           ...document.severityLegend.map(
             (item) =>
@@ -574,6 +575,7 @@ function renderHtml(
               '</span></div>',
           ),
           '</div>',
+          '</details>',
           '</section>',
         ].join("\n")
       : "";
@@ -659,7 +661,7 @@ body {
   border-bottom:1px solid var(--line);
   background:var(--soft);
 }
-.summary p { margin:0; }
+.summary p { margin:0; }.retest-note{margin-top:8px!important;color:var(--muted);font-size:12px;line-height:1.5}
 .issues {
   padding:18px 24px 28px;
 }
@@ -806,6 +808,7 @@ body {
   margin:0 0 12px;
   font-size:15px;
 }
+.compact-legend details>summary{cursor:pointer;color:var(--blue);font-size:12px;font-weight:800}.compact-legend .legend-grid{margin-top:12px}
 .table-wrap { overflow-x:auto; }
 table {
   width:100%;
@@ -870,7 +873,10 @@ th {
     border-radius:0;
     box-shadow:none;
   }
-  .issue-card { break-inside:avoid-page; }
+  .issue-card,
+  .bug-row { break-inside:avoid-page; }
+  .bug-details > .bug-detail-body { display:block !important; }
+  .bug-details > summary .details-label { display:none !important; }
   .technical { display:block; }
   .technical summary { list-style:none; }
   .technical > * { display:block !important; }
@@ -898,7 +904,10 @@ th {
     <div class="metric"><span>Open Issues</span><strong>${document.summary.openIssues}</strong></div>
     <div class="metric"><span>Severity</span><strong>${escapeHtml(severitySummary || "—")}</strong></div>
   </section>
-  <section class="summary"><p>${escapeHtml(document.summary.statement)}</p></section>
+  <section class="summary">
+    <p>${escapeHtml(document.summary.statement)}</p>
+    <p class="retest-note"><strong>Retest:</strong> open a bug, follow How to Reproduce, compare Observed vs Expected, then check Fixed only when the wrong behavior no longer occurs and the Expected result is confirmed.</p>
+  </section>
   ${issueIndex}
   ${severityLegend}
   <section class="issues">
