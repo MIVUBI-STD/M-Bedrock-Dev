@@ -3,6 +3,36 @@
   "projects": [
     {
       "schemaVersion": 1,
+      "projectId": "attack-challenge",
+      "projectName": "Attack Challenge",
+      "taskClass": "DIAGNOSE",
+      "revision": 1,
+      "artifact": {
+        "artifactId": "drive:14JStk_EK0XlAyBTdPLyUE2lCKyk9BKpX",
+        "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba",
+        "version": "1.1.1"
+      },
+      "work": {},
+      "knowledge": {},
+      "publication": {
+        "drive": {
+          "schemaVersion": 1,
+          "projectId": "attack-challenge",
+          "mapFolder": {
+            "folderId": "1TtEPMhOyWV3PvDI9BBJ0h3-D0rNh799j",
+            "label": "Challenge - Attack Map"
+          },
+          "currentWorld": {
+            "fileId": "14JStk_EK0XlAyBTdPLyUE2lCKyk9BKpX",
+            "fileName": "Attack Challenge v1.1.1.mcworld",
+            "artifactFingerprint": "sha256:95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba",
+            "version": "1.1.1"
+          }
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
       "projectId": "composite-challenge",
       "projectName": "Composite Challenge",
       "taskClass": "DIAGNOSE",
