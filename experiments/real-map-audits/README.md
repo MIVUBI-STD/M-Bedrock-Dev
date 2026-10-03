@@ -27,7 +27,7 @@ All 22 selected files used in this reconciliation were fetched from the current 
 | The Circuit | Drive 1.0.2 / pack 1.0.1 | 0 PROVEN | `the-circuit-v1.0.2.md` |
 | Dark Crystal | 1.0.0 | 0 PROVEN | `dark-crystal-v1.0.0.md` |
 | Manhunt | 1.0.0 | 0 PROVEN | `manhunt-v1.0.0.md` |
-| Five Nights at Z Village L1 | 1.1.0 | 0 PROVEN | `five-nights-z-village-l1-v1.1.0.md` |
+| Five Nights at Z Village L1 | 1.1.0 | **1 PROVEN Major BUG** | `five-nights-z-village-l1-v1.1.0.md` |
 | Five Nights at Z Village L2 | internal 1.2.2 | 0 PROVEN | `five-nights-z-village-l2-v1.2.2.md` |
 | Fall of the Pillager L1 | 1.1.0 | 0 PROVEN | `fall-of-the-pillager-l1-v1.1.0.md` |
 | Fall of the Pillager L2 | 2.2.2 | 0 PROVEN | `fall-of-the-pillager-l2-v2.2.2.md` |
@@ -44,7 +44,7 @@ All 22 selected files used in this reconciliation were fetched from the current 
 
 ## Proven findings requiring review
 
-The reconciled selected-artifact batch currently contains **12 source-proven BUGs** plus **1 source-proven DESIGN_MISMATCH**:
+The reconciled selected-artifact batch currently contains **13 source-proven BUGs** plus **1 source-proven DESIGN_MISMATCH**:
 
 - **Defense Challenge v1.1.1** — 4 BUGs:
   - Blocker — arena reset can release the ticking-area lease of a newly started run;
@@ -58,6 +58,8 @@ The reconciled selected-artifact batch currently contains **12 source-proven BUG
   - Blocker — arena-specific ticking areas are declared but never created;
   - Major — disconnect during preload can bypass the fresh-session inventory wipe;
   - Blocker — arena becomes reusable while asynchronous world reset is still running.
+- **Five Nights at Z Village L1 v1.1.0** — 1 Major BUG:
+  - reconnect during cinematic can preserve stale coin currency into a fresh session.
 - **The Gauntlet v1.0.1** — 1 Major BUG:
   - required-party progression gates can ignore disconnected members because shared all-player predicates filter the locked roster down to currently present players.
 - **Orb of the Illusioner L2 v1.1.0** — 2 Major BUGs:
@@ -86,7 +88,7 @@ Examples of historical/suspicious behavior that was **not** blindly promoted:
 
 Source-side reconciliation for the current 22-artifact Drive batch is complete.
 
-- **12 source-proven BUGs**: 4 Blocker + 8 Major.
+- **13 source-proven BUGs**: 4 Blocker + 9 Major.
 - **1 source-proven DESIGN_MISMATCH**: 1 Minor.
 - Remaining zero-finding maps retain only narrow runtime-sensitive residue where native simulation/timing cannot be decided safely from source, or symptom-triggered checks that should not be run speculatively.
 - No broad manual-testing matrix is required by this batch.
