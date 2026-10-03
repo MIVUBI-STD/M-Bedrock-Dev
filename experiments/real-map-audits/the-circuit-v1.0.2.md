@@ -58,7 +58,7 @@ Therefore the static empty `arena.tickingAreas` field is **not** sufficient evid
 
 Circuit persists player→arena assignment and per-arena gameplay state including stage, remaining ticks, phase, attempts, kills/deaths, kit-trial state, and round timing.
 
-Locked/assigned players retain party membership on disconnect so the exact arena/gameplay state can be reconstructed.
+The lobby party itself is deliberately kept unlocked for independent arena admission, so an offline player may be removed from party membership. The reconnect path does not depend on that party membership: SessionStartService restores from the persisted run/assignment, while each round service restores its detailed gameplay state.
 
 No reconnect-reset defect was admitted from this source pass.
 
@@ -66,4 +66,9 @@ No reconnect-reset defect was admitted from this source pass.
 
 The Circuit v1.0.2: **0 source-proven gameplay findings** in this pass.
 
-This result is intentionally retained because it validates an important engine behavior: a suspicious static configuration must not be promoted when another current-artifact owner supplies the missing runtime capability.
+This result is intentionally retained because it validates an important engine behavior: a suspicious static configuration must not be promoted when another current-artifact owner supplies the missing capability.
+
+Additional current-artifact checks in this pass:
+- the historical Capture Run shared-gate blocker is not reproduced because CaptureRun.prepare() explicitly reopens the shared gate before the run;
+- Loadout Trial entities are registered with the shared path-obstruction service, so the older “entities cannot break route obstruction” symptom is not copied into this version;
+- developer skip commands require persisted developer permission and are not exposed as a normal player progression path.
