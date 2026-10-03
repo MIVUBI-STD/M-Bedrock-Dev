@@ -911,6 +911,8 @@ export interface BuildSelectedMapAuditReportResult
     readonly NeedValidationAuditIssueProjection[];
   readonly designMismatches:
     readonly AuditIssueProjection[];
+  readonly auditObligations:
+    readonly AuditObligation[];
   readonly validationTests:
     readonly AuditValidationTestGroup[];
   readonly fullMapReplica?: FullMapReplicaReceipt;
@@ -924,6 +926,7 @@ function completeSelectedMapAuditFindingProjection(
   | "proven"
   | "needValidation"
   | "designMismatches"
+  | "auditObligations"
   | "validationTests"
   | "fullMapReplica"
 > {
@@ -947,6 +950,8 @@ function completeSelectedMapAuditFindingProjection(
     ),
     designMismatches:
       audit.issueLanes.DESIGN_MISMATCH,
+    auditObligations:
+      audit.auditObligations,
     validationTests:
       audit.validationTests,
     ...(audit.fullMapReplica === undefined
