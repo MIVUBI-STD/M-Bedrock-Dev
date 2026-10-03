@@ -13,6 +13,19 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — single production audit output
+
+Source-verified on `Local`:
+
+- `audit <selected.mcworld>` remains the only production selected-map audit entry.
+- `SelectedMapAuditRun` remains internal authority and is no longer emitted by the production CLI.
+- The production CLI emits exactly one operator-facing `Map Audit Output V2`.
+- The HTML renderer accepts canonical `Map Audit Output V2` directly and no longer accepts a raw `SelectedMapAuditRun` wrapper as a parallel input path.
+- Approved Bug Report V2 remains a downstream approved-PROVEN-BUG ledger, not a competing audit output.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck, repository verification, and tests are still required.
+
+
 ## 2026-10-03 — report timing integration
 
 Source-verified on `Local`:
