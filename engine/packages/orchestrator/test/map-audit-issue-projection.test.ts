@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
+  projectSignalNeedValidationAuditIssues,
 } from "../src/map-audit-issue-projection.js";
 import type {
   GameplayScenarioGraph,
@@ -238,6 +239,45 @@ describe("map audit issue projection", () => {
     expect(result[0]?.missingProof).toMatch(
       /chunk-simulation/i,
     );
+  });
+
+  it("surfaces negative-space and high temporal signals instead of leaving them as hidden attention counts", () => {
+    const result =
+      projectSignalNeedValidationAuditIssues(
+        [{
+          id: "negative-space:entry-without-exit:state:round",
+          kind: "entry-without-exit",
+          subjectId: "state:round",
+          evidenceIds: ["state:enter"],
+          reason:
+            "Gameplay state is reachable but has no grounded exit.",
+        }],
+        [{
+          leftSystem: "callback:reward",
+          rightSystem: "arena:cleanup",
+          factors: [
+            "async",
+            "cleanup",
+          ],
+          priority: "high",
+          windows: [
+            "before",
+            "overlap",
+            "after",
+          ],
+        }],
+      );
+
+    expect(result).toHaveLength(2);
+    expect(result.every(
+      (item) => item.status === "NEED_VALIDATION",
+    )).toBe(true);
+    expect(result.map(
+      (item) => item.failureDomain,
+    )).toContain("state-ownership");
+    expect(result.map(
+      (item) => item.failureDomain,
+    )).toContain("temporal-async");
   });
 
   it("separates design mismatch from implementation bug in one projection", () => {
