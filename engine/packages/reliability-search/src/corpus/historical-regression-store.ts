@@ -1,11 +1,10 @@
 import {
   mkdir,
   readFile,
+  rename,
+  writeFile,
 } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import {
-  atomicWriteText,
-} from "../../../repair/src/index.js";
 import {
   mergeHistoricalRegressionCatalog,
   type HistoricalRegressionCatalog,
@@ -14,6 +13,23 @@ import {
 
 export const HISTORICAL_REGRESSION_CATALOG_PATH =
   "engine/reliability/catalogs/regressions.json" as const;
+
+async function atomicWriteJson(
+  path: string,
+  value: unknown,
+): Promise<void> {
+  await mkdir(dirname(path), {
+    recursive: true,
+  });
+  const temporary =
+    path + ".tmp";
+  await writeFile(
+    temporary,
+    JSON.stringify(value, null, 2) + "\n",
+    "utf8",
+  );
+  await rename(temporary, path);
+}
 
 export async function loadHistoricalRegressionCatalog(
   repositoryRoot: string,
@@ -54,12 +70,9 @@ export async function mergeAndSaveHistoricalRegressions(
     repositoryRoot,
     HISTORICAL_REGRESSION_CATALOG_PATH,
   );
-  await mkdir(dirname(path), {
-    recursive: true,
-  });
-  await atomicWriteText(
+  await atomicWriteJson(
     path,
-    JSON.stringify(merged, null, 2) + "\n",
+    merged,
   );
   return merged;
 }
