@@ -191,6 +191,26 @@ Ask the user only when ambiguity blocks target identity or changes the requested
 
 Do not ask merely because terminology is informal.
 
+## Analysis-demand rule
+
+Normalized priority domains may seed the first inspection pass with additional existing knowledge domains.
+
+This is **additive only**:
+
+```text
+user priority demand
++
+artifact/RIG discovered demand
+→ union
+→ canonical analysis
+```
+
+User input may cause relevant analyzers to run earlier. It may never remove RIG/artifact demand, mark another domain not applicable, authorize stage closure, or prove an issue.
+
+The mapping must reuse the existing analysis-planner knowledge domains. Do not create a second prompt-specific analyzer registry.
+
+The prompt-derived demand also does not enter gameplay `auditRevision`; changing search priority does not change selected-artifact truth. Any new evidence produced by additional analysis is what may change later audit state.
+
 ## Detection rule
 
 User input may increase search pressure but may never create a reportable issue.
