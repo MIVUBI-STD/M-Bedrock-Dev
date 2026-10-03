@@ -32,6 +32,7 @@ Evaluate the complete flow once and record:
 - counter-proof residue;
 - `issueLanes.BUG`;
 - `issueLanes.DESIGN_MISMATCH`;
+- correctness of `gameplayFlow`, primary `failureDomain`, and `contributingDomains[]`;
 - runtime-proof questions;
 - false negatives / false positives against independent expectations.
 
