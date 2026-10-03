@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import {
   normalizeProjectDeliverable,
   projectLifecycleStatus,
+  PROJECT_DELIVERABLE_KINDS,
+  PROJECT_DRIVE_DESTINATION_ROLES,
 } from "../../../project-model/src/index.js";
 import type {
   DriveProjectBinding,
@@ -465,6 +467,81 @@ export function approveProject(
   };
 }
 
+function canonicalDrivePublishedFiles(
+  files:
+    readonly ProjectDrivePublishReceipt[
+      "files"
+    ][number][],
+): ProjectDrivePublishReceipt[
+  "files"
+][number][] {
+  const kinds =
+    new Set<string>(
+      PROJECT_DELIVERABLE_KINDS,
+    );
+  const roles =
+    new Set<string>(
+      PROJECT_DRIVE_DESTINATION_ROLES,
+    );
+  const seen = new Set<string>();
+
+  const normalized =
+    files.map((item) => {
+      if (
+        item === null ||
+        typeof item !== "object" ||
+        !kinds.has(item.kind) ||
+        !roles.has(
+          item.destinationRole,
+        ) ||
+        !item.fileId.trim() ||
+        !item.fileName.trim() ||
+        !item.fingerprint.trim()
+      ) {
+        throw new Error(
+          "Drive published file is structurally invalid.",
+        );
+      }
+
+      const value = {
+        kind: item.kind,
+        destinationRole:
+          item.destinationRole,
+        fileId: item.fileId.trim(),
+        fileName:
+          item.fileName.trim(),
+        fingerprint:
+          item.fingerprint.trim(),
+      };
+      const key =
+        value.destinationRole +
+        "|" +
+        value.kind +
+        "|" +
+        value.fingerprint;
+      if (seen.has(key)) {
+        throw new Error(
+          "Drive publication contains duplicate approved file identity: " +
+            key,
+        );
+      }
+      seen.add(key);
+      return value;
+    });
+
+  return normalized.sort(
+    (a, b) =>
+      a.destinationRole.localeCompare(
+        b.destinationRole,
+      ) ||
+      a.kind.localeCompare(b.kind) ||
+      a.fingerprint.localeCompare(
+        b.fingerprint,
+      ) ||
+      a.fileId.localeCompare(b.fileId),
+  );
+}
+
 export function createDrivePublishReceipt(
   input: {
     readonly project: ProjectRecord;
@@ -517,8 +594,12 @@ export function createDrivePublishReceipt(
       ],
     ),
   );
+  const files =
+    canonicalDrivePublishedFiles(
+      input.files,
+    );
   const publishedKeys = new Set(
-    input.files.map(
+    files.map(
       (item) =>
         item.kind +
         "|" +
@@ -546,18 +627,7 @@ export function createDrivePublishReceipt(
     snapshotFingerprint:
       input.snapshot
         .snapshotFingerprint,
-    files: [...input.files]
-      .map((item) => ({
-        ...item,
-      }))
-      .sort(
-        (a, b) =>
-          a.destinationRole.localeCompare(
-            b.destinationRole,
-          ) ||
-          a.kind.localeCompare(b.kind) ||
-          a.fileId.localeCompare(b.fileId),
-      ),
+    files,
   };
 
   return {
@@ -581,13 +651,31 @@ export function validateDrivePublishReceipt(
     ];
   }
 
+  let files:
+    ProjectDrivePublishReceipt[
+      "files"
+    ][number][];
+  try {
+    files =
+      canonicalDrivePublishedFiles(
+        receipt.files,
+      );
+  } catch (error) {
+    return [
+      error instanceof Error
+        ? error.message
+        : "Drive published files are invalid.",
+    ];
+  }
+
   const payload = {
     schemaVersion:
       receipt.schemaVersion,
-    projectId: receipt.projectId,
+    projectId:
+      receipt.projectId.trim(),
     snapshotFingerprint:
-      receipt.snapshotFingerprint,
-    files: [...receipt.files],
+      receipt.snapshotFingerprint.trim(),
+    files,
   };
 
   return receipt.receiptFingerprint ===
