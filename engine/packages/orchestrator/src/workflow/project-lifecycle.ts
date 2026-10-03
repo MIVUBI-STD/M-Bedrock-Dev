@@ -211,10 +211,18 @@ export function assessProjectApprovalReadiness(input: {
   };
 }
 
-export function markProjectReadyForApproval(
-  current: ProjectRecord,
-  readiness: ProjectApprovalReadiness,
-): ProjectRecord {
+export function prepareProjectForApproval(input: {
+  readonly project: ProjectRecord;
+  readonly deliverables: readonly ProjectDeliverableRef[];
+  readonly blockingReasons?: readonly string[];
+  readonly requireBugReport?: boolean;
+  readonly requireAuditComplete?: boolean;
+}): {
+  readonly project: ProjectRecord;
+  readonly readiness: ProjectApprovalReadiness;
+} {
+  const readiness =
+    assessProjectApprovalReadiness(input);
   if (!readiness.ready) {
     throw new Error(
       "Project is not ready for approval: " +
@@ -222,9 +230,13 @@ export function markProjectReadyForApproval(
     );
   }
   return {
-    ...current,
-    status: "ready-for-approval",
-    revision: current.revision + 1,
+    project: {
+      ...input.project,
+      status: "ready-for-approval",
+      revision:
+        input.project.revision + 1,
+    },
+    readiness,
   };
 }
 
@@ -278,10 +290,54 @@ export function createProjectApprovalSnapshot(input: {
   };
 }
 
+export function validateProjectApprovalSnapshot(
+  snapshot: ProjectApprovalSnapshot,
+): readonly string[] {
+  const issues: string[] = [];
+  const payload: Omit<
+    ProjectApprovalSnapshot,
+    "snapshotFingerprint"
+  > = {
+    schemaVersion: snapshot.schemaVersion,
+    projectId: snapshot.projectId,
+    projectRevision: snapshot.projectRevision,
+    artifactFingerprint:
+      snapshot.artifactFingerprint,
+    ...(snapshot.auditRevision === undefined
+      ? {}
+      : { auditRevision: snapshot.auditRevision }),
+    ...(snapshot.bugReportPath === undefined
+      ? {}
+      : { bugReportPath: snapshot.bugReportPath }),
+    deliverables: [...snapshot.deliverables],
+    historicalRegressionIds: [
+      ...snapshot.historicalRegressionIds,
+    ],
+  };
+  if (
+    snapshot.snapshotFingerprint !==
+    hash(payload)
+  ) {
+    issues.push(
+      "Project approval snapshot fingerprint is invalid.",
+    );
+  }
+  return issues;
+}
+
 export function approveProject(
   current: ProjectRecord,
   snapshot: ProjectApprovalSnapshot,
 ): ProjectRecord {
+  const snapshotIssues =
+    validateProjectApprovalSnapshot(
+      snapshot,
+    );
+  if (snapshotIssues.length > 0) {
+    throw new Error(
+      snapshotIssues.join("; "),
+    );
+  }
   if (
     snapshot.projectId !== current.projectId ||
     snapshot.projectRevision !== current.revision ||
@@ -339,6 +395,15 @@ export function createDrivePublishReceipt(input: {
         item.kind + "|" + item.fingerprint,
     ),
   );
+  const unexpected = [
+    ...publishedKeys,
+  ].filter((key) => !expected.has(key));
+  if (unexpected.length > 0) {
+    throw new Error(
+      "Drive publication includes file(s) outside the approved snapshot: " +
+        unexpected.sort().join(", "),
+    );
+  }
   const status =
     [...expected.keys()].every((key) =>
       publishedKeys.has(key)
@@ -366,10 +431,36 @@ export function createDrivePublishReceipt(input: {
   };
 }
 
+export function validateDrivePublishReceipt(
+  receipt: ProjectDrivePublishReceipt,
+): readonly string[] {
+  const payload = {
+    schemaVersion: receipt.schemaVersion,
+    projectId: receipt.projectId,
+    snapshotFingerprint:
+      receipt.snapshotFingerprint,
+    status: receipt.status,
+    files: [...receipt.files],
+  };
+  return receipt.receiptFingerprint ===
+    hash(payload)
+    ? []
+    : [
+        "Drive publish receipt fingerprint is invalid.",
+      ];
+}
+
 export function applyDrivePublishReceipt(
   current: ProjectRecord,
   receipt: ProjectDrivePublishReceipt,
 ): ProjectRecord {
+  const receiptIssues =
+    validateDrivePublishReceipt(receipt);
+  if (receiptIssues.length > 0) {
+    throw new Error(
+      receiptIssues.join("; "),
+    );
+  }
   if (
     current.status !== "approved" ||
     receipt.projectId !== current.projectId ||
