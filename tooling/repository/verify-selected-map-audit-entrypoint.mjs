@@ -97,6 +97,12 @@ const ISSUE_PROJECTION_PATH =
   "engine/packages/orchestrator/src/map-audit-issue-projection.ts";
 const PROCEDURE_DOC_PATH =
   "docs/03-analysis/mandatory-audit-procedure.md";
+const ADMISSION_PATH =
+  "engine/packages/orchestrator/src/map-audit-admission.ts";
+const PROCEDURE_SUPPORT_PATH =
+  "engine/packages/orchestrator/src/inspection/mandatory-audit-support.ts";
+const ROUTING_DOC_PATH =
+  "docs/03-analysis/map-audit-routing.md";
 
 function requireText(path, fragments) {
   const source = readFileSync(path, "utf8");
@@ -104,6 +110,18 @@ function requireText(path, fragments) {
     if (!source.includes(fragment)) {
       issues.push(
         path + " is missing canonical single-flow contract fragment: " +
+          fragment,
+      );
+    }
+  }
+}
+
+function forbidText(path, fragments) {
+  const source = readFileSync(path, "utf8");
+  for (const fragment of fragments) {
+    if (source.includes(fragment)) {
+      issues.push(
+        path + " contains forbidden duplicate/legacy flow authority fragment: " +
           fragment,
       );
     }
@@ -231,6 +249,29 @@ requireText(DISCOVERY_PATH, [
   "semanticUnderstandingGaps",
   "semanticUnderstandingGapPaths",
   "Source-accounted is not semantically understood",
+]);
+
+
+requireText(PROCEDURE_SUPPORT_PATH, [
+  '| "TARGET"',
+  '| "DISCOVERY"',
+  '| "UNDERSTAND"',
+  '| "MODEL"',
+  '| "STRESS"',
+  '| "PROVE"',
+  '| "REPORT"',
+]);
+
+requireText(ROUTING_DOC_PATH, [
+  "This file is a router only. It does not define a second audit workflow.",
+  "Master Selected-Map Audit Workflow",
+]);
+
+forbidText(ADMISSION_PATH, [
+  "gameplayDiscoveryClosure",
+  "gameplayClosure",
+  "gameplayScenarioClosure",
+  "gameplayDefectResolution",
 ]);
 
 requireText(PROCEDURE_DOC_PATH, [
