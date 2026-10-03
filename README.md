@@ -31,6 +31,8 @@ Production gameplay audit has one operator entry and one ordered authority chain
 ```text
 raw user prompt
 → AuditUserIntentEnvelope (search guidance only)
+→ chat interpretation confirmation
+→ AuditUserIntentConfirmation
 → audit <selected.mcworld>
 → runSelectedMapAudit()
 → TARGET
