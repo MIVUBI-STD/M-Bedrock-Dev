@@ -19,11 +19,19 @@ export type CounterProofSearchDimension =
   | "cleanup"
   | "exclusion";
 
+export interface CounterProofDimensionReceipt {
+  readonly dimension: CounterProofSearchDimension;
+  readonly scopeIds: readonly string[];
+  readonly evidenceIds: readonly string[];
+}
+
 export interface CounterProofSearchReceipt {
   readonly schemaVersion: 1;
   readonly policy: "bounded-counterproof-search";
   readonly searchedDimensions:
     readonly CounterProofSearchDimension[];
+  readonly dimensionReceipts:
+    readonly CounterProofDimensionReceipt[];
   readonly scopeIds: readonly string[];
   readonly evidenceIds: readonly string[];
   readonly exhaustiveWithinScope: boolean;
@@ -181,6 +189,25 @@ function validateResolution(
             ": counter-proof search must record searched dimensions.",
         );
       }
+      const dimensionReceipts =
+        search.dimensionReceipts ?? [];
+      for (const dimension of searchedDimensions) {
+        const receipt = dimensionReceipts.find(
+          (item) => item.dimension === dimension,
+        );
+        if (
+          receipt === undefined ||
+          unique(receipt.scopeIds).length === 0 ||
+          unique(receipt.evidenceIds).length === 0
+        ) {
+          issues.push(
+            link.id +
+              ": counter-proof dimension '" +
+              dimension +
+              "' requires explicit scope/evidence receipt.",
+          );
+        }
+      }
       const requiredDimensions =
         requiredCounterProofDimensions(
           link,
@@ -288,6 +315,13 @@ function automaticCounterProofSearch(
       contradicted,
       scenario,
     );
+  const automaticallySearchable =
+    requiredDimensions.filter(
+      (dimension) =>
+        dimension === "guard" ||
+        dimension === "scope" ||
+        dimension === "exclusion",
+    );
   const scopeIds = [
     ...new Set([
       ...contradicted.subjectIds,
@@ -322,7 +356,13 @@ function automaticCounterProofSearch(
   return {
     schemaVersion: 1,
     policy: "bounded-counterproof-search",
-    searchedDimensions: requiredDimensions,
+    searchedDimensions: automaticallySearchable,
+    dimensionReceipts:
+      automaticallySearchable.map((dimension) => ({
+        dimension,
+        scopeIds,
+        evidenceIds,
+      })),
     scopeIds,
     evidenceIds,
     // This receipt is exhaustive only within the already-closed selected-
