@@ -129,7 +129,7 @@ export interface MapAuditOutputV2 {
     readonly records: readonly {
       readonly surface: string;
       readonly status:
-        | "checked"
+        | "understood"
         | "blocked"
         | "not-applicable";
       readonly reason?: string;
@@ -420,7 +420,7 @@ export function projectMapAuditOutputV2(input: {
       surface: surface.id,
       status:
         surface.status === "understood"
-          ? "checked" as const
+          ? "understood" as const
           : surface.status === "not-applicable"
             ? "not-applicable" as const
             : "blocked" as const,
