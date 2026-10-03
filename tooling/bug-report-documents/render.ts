@@ -41,6 +41,30 @@ interface MapAuditHtmlFinding {
   readonly validationReason?: string;
   readonly missingProof?: string;
   readonly validationTest?: string;
+  readonly proofNavigation?: {
+    readonly proofGoal: string;
+    readonly provenClaims: readonly string[];
+    readonly missingClaims: readonly string[];
+    readonly route: readonly {
+      readonly order: number;
+      readonly knowledgeDomain: string;
+      readonly question: string;
+      readonly purpose: string;
+      readonly evidencePreference:
+        | "selected-artifact"
+        | "cross-domain"
+        | "formal"
+        | "runtime";
+    }[];
+    readonly evidenceSubstitutions: readonly {
+      readonly id: string;
+      readonly replaces: string;
+      readonly requiredEvidence: readonly string[];
+      readonly applicableBecause: readonly string[];
+      readonly decisionRule: string;
+    }[];
+    readonly runtimeLastResort: boolean;
+  };
 }
 
 interface MapAuditHtmlInput {
@@ -372,6 +396,49 @@ function auditFindingCard(
                 "Exact deciding proof is not yet available.",
             ) +
             "</div></div>",
+          ...(finding.proofNavigation
+            ? [
+                '<div class="technical-row"><details class="technical proof-guide"><summary>Proof Guidance</summary>' +
+                  '<div class="proof-goal"><strong>Goal</strong><p>' +
+                  escapeHtml(finding.proofNavigation.proofGoal) +
+                  '</p></div>' +
+                  (finding.proofNavigation.missingClaims.length > 0
+                    ? '<div class="technical-sub"><strong>Missing Claims</strong><ul>' +
+                      finding.proofNavigation.missingClaims.map(
+                        (item) => '<li>' + escapeHtml(item) + '</li>',
+                      ).join("") +
+                      '</ul></div>'
+                    : '') +
+                  '<div class="technical-sub"><strong>Proof Route</strong><ol>' +
+                  finding.proofNavigation.route.map(
+                    (step) =>
+                      '<li><strong>' +
+                      escapeHtml(step.knowledgeDomain) +
+                      '</strong> — ' +
+                      escapeHtml(step.question) +
+                      ' <span class="proof-pref">[' +
+                      escapeHtml(step.evidencePreference) +
+                      ']</span></li>',
+                  ).join("") +
+                  '</ol></div>' +
+                  (finding.proofNavigation.evidenceSubstitutions.length > 0
+                    ? '<div class="technical-sub"><strong>Evidence Substitution</strong><ul>' +
+                      finding.proofNavigation.evidenceSubstitutions.map(
+                        (item) =>
+                          '<li>' +
+                          escapeHtml(item.replaces) +
+                          ' → ' +
+                          escapeHtml(item.decisionRule) +
+                          '</li>',
+                      ).join("") +
+                      '</ul></div>'
+                    : '') +
+                  (finding.proofNavigation.runtimeLastResort
+                    ? '<div class="proof-note">Runtime is last resort after applicable static, cross-domain, or formal proof routes are exhausted.</div>'
+                    : '') +
+                  '</details></div>',
+              ]
+            : []),
         ]
       : [];
 
@@ -558,7 +625,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
 .section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}.control-summary{border-bottom:1px solid #d9dee8;background:#fbfcfe}.control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.control-grid div{padding:12px 14px;border:1px solid #d9dee8;border-radius:8px;background:#fff}.control-grid span{display:block;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.control-grid strong{display:block;margin-top:3px;font-size:13px}
 .issue-card{margin:0 0 18px;border:1px solid #d9dee8;border-radius:10px;overflow:hidden}.issue-head{display:grid;grid-template-columns:36px 130px 1fr;align-items:center;background:#f8fafc;border-bottom:1px solid #d9dee8}.issue-number,.severity{padding:10px 12px;font-size:12px;font-weight:800}.issue-title{padding:10px 14px 10px 0}.issue-title h2{margin:0;font-size:16px}.meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;color:#667085;font-size:10px;font-weight:700;text-transform:uppercase}
 .audit-status-proven .severity{color:#166534}.audit-status-need-validation .severity{color:#9a6700}
-.row{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #d9dee8}.label{padding:13px 15px;background:#f8fafc;color:#3157a4;font-size:12px;font-weight:800}.value{padding:13px 16px}.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.technical-row{padding:12px 16px;background:#fcfcfd;border-top:1px solid #d9dee8}.technical summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.technical-text{margin-top:9px;white-space:pre-wrap;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#667085}
+.row{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #d9dee8}.label{padding:13px 15px;background:#f8fafc;color:#3157a4;font-size:12px;font-weight:800}.value{padding:13px 16px}.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.technical-row{padding:12px 16px;background:#fcfcfd;border-top:1px solid #d9dee8}.technical summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.technical-text{margin-top:9px;white-space:pre-wrap;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#667085}.proof-goal p{margin:5px 0 0}.proof-guide ol,.proof-guide ul{margin:6px 0 0;padding-left:20px}.proof-pref{color:#667085;font-size:11px}.proof-note{margin-top:12px;padding:9px 11px;background:#fff8e6;border-radius:6px;color:#765d16;font-size:12px}
 @media(max-width:700px){.report{width:100%;margin:0;border-radius:0}.metrics{grid-template-columns:1fr}.control-grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}}
 @media print{body{background:#fff}.report{width:100%;margin:0;border:0}.issue-card{break-inside:avoid-page}.technical{display:block}.technical summary{list-style:none}.technical>*{display:block!important}input[type="checkbox"]{appearance:none;width:11px;height:11px;border:1px solid #555;vertical-align:middle}}
 `;
