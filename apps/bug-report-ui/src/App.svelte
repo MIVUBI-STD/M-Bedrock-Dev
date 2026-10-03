@@ -3,6 +3,7 @@
     BUG_REPORT_V2_LABELS,
     BUG_REPORT_WORKSPACE_DIRECTORY,
     bugFinderCategoryLabel,
+    deriveBugReportWorkChecklist,
     projectBugReportPreview,
     reviewBugReportCopy,
     reviewBugReportReadiness,
@@ -207,8 +208,8 @@
 <div class="shell">
   <header class="topbar">
     <div>
-      <strong>M-Bedrock Bug Tracker</strong>
-      <span>Approved Bug Report</span>
+      <strong>M-Bedrock Bug Report</strong>
+      <span>Approved Report Viewer</span>
     </div>
 
     {#if report}
@@ -385,6 +386,14 @@
             {#if bug.suggestedFix}
               <section><h3>Resolution</h3><p>{bug.suggestedFix}</p></section>
             {/if}
+            <section>
+              <h3>Work Checklist</h3>
+              <ul>
+                {#each deriveBugReportWorkChecklist(bug) as item}
+                  <li>{item}</li>
+                {/each}
+              </ul>
+            </section>
             {#if bug.aiAnalysis}
               <section><h3>Technical Analysis</h3><p>{bug.aiAnalysis}</p></section>
             {/if}
