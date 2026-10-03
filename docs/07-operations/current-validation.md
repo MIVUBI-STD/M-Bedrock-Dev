@@ -13,6 +13,29 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — honesty / false-claim hardening
+
+Source-verified on `Local`:
+
+- Map Audit coverage no longer reports `accounted` unless gameplay closure, state model, boundaries, and unaccounted-surface checks are actually complete.
+- Coverage records use `understood`, not `checked`, when semantic understanding exists without test proof.
+- Multi-arena output separates detected arenas, declared concurrency, and proven-safe concurrency.
+- Game-design headline fields expose authored / inferred / unresolved grounding.
+- The finding visibility gate no longer implies overall audit infallibility.
+- Unsubstantiated `testerTriggerReady` was removed.
+- Generic arena detection no longer automatically closes arena topology understanding when arena count/topology is unresolved.
+- Partial chunk/entity residency observability remains unresolved instead of being treated as understood.
+- Broad state writes prevent the generic state-model surface from claiming full understanding.
+- Compatibility absence-of-rule now yields `unknown`, not unsupported.
+- Bounded replica proof is `BOUNDED_EQUIVALENCE`, not full `EQUIVALENT`, and cannot authorize global baseline reuse.
+- Verified validation proof levels require evidence; local/live game verification also requires target runtime profile binding.
+- Runtime profile captures require provenance evidence.
+- Capability Truth now says `owner-has-tests` rather than `owner-tested`; proof bindings do not imply current-session execution.
+- Generated known limits explicitly defer current execution truth to this file.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These changes reduce overclaim in source semantics but have not yet been validated by local typecheck, full verifier, or real-map execution.
+
+
 ## 2026-10-03 — single production audit output
 
 Source-verified on `Local`:
