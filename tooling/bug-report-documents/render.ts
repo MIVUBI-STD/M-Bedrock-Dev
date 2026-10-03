@@ -86,6 +86,19 @@ interface MapAuditHtmlInput {
     readonly blockingCheckpointIds: readonly string[];
     readonly reasons: readonly string[];
   };
+  readonly userIntent?: {
+    readonly schemaVersion: 1;
+    readonly policy:
+      "user-input-is-search-guidance-not-gameplay-authority";
+    readonly items: readonly {
+      readonly kind: string;
+      readonly raw: string;
+      readonly normalized: string;
+    }[];
+    readonly priorityDomains: readonly string[];
+    readonly priorityPlayerFlows: readonly string[];
+    readonly ambiguities: readonly string[];
+  };
   readonly evidenceScope: {
     readonly selectedArtifact: string;
   };
@@ -708,6 +721,75 @@ function auditControlSummary(
   ].join("\n");
 }
 
+function userIntentSummary(
+  audit: MapAuditHtmlInput,
+): string {
+  const intent = audit.userIntent;
+  if (!intent) return "";
+
+  const symptoms = intent.items.filter(
+    (item) => item.kind === "SYMPTOM_REPORT",
+  );
+  const suspicions = intent.items.filter(
+    (item) => item.kind === "SUSPICION",
+  );
+  const constraints = intent.items.filter(
+    (item) => item.kind === "TEST_CONSTRAINT",
+  );
+
+  const list = (
+    items: readonly { readonly normalized: string }[],
+  ): string =>
+    items.length === 0
+      ? "—"
+      : items.map(
+          (item) =>
+            "<li>" +
+            escapeHtml(item.normalized) +
+            "</li>",
+        ).join("");
+
+  return [
+    '<section class="section user-intent">',
+    '<details>',
+    '<summary>User Input Interpretation — Guidance Only</summary>',
+    '<div class="note"><strong>Authority:</strong> User wording only raises search priority. It does not prove Expected/Actual behavior, BUG/DESIGN_MISMATCH, severity, safety, or absence.</div>',
+    '<div class="row"><div class="label">Symptoms</div><div class="value"><ul>' +
+      list(symptoms) +
+      '</ul></div></div>',
+    '<div class="row"><div class="label">Suspicions</div><div class="value"><ul>' +
+      list(suspicions) +
+      '</ul></div></div>',
+    '<div class="row"><div class="label">Priority Domains</div><div class="value">' +
+      escapeHtml(
+        intent.priorityDomains.join(", ") || "—",
+      ) +
+      '</div></div>',
+    '<div class="row"><div class="label">Priority Player Flow</div><div class="value">' +
+      escapeHtml(
+        intent.priorityPlayerFlows.join(", ") || "—",
+      ) +
+      '</div></div>',
+    '<div class="row"><div class="label">Test Constraints</div><div class="value"><ul>' +
+      list(constraints) +
+      '</ul></div></div>',
+    ...(intent.ambiguities.length === 0
+      ? []
+      : [
+          '<div class="row"><div class="label">Ambiguities</div><div class="value"><ul>' +
+          intent.ambiguities.map(
+            (item) =>
+              '<li>' +
+              escapeHtml(item) +
+              '</li>',
+          ).join("") +
+          '</ul></div></div>',
+        ]),
+    '</details>',
+    '</section>',
+  ].join("\n");
+}
+
 function auditContextSummary(
   audit: MapAuditHtmlInput,
 ): string {
@@ -879,7 +961,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
 .hero{padding:28px 32px;background:#172b4d;color:#fff}.hero h1{margin:0 0 6px}.hero p{margin:0;opacity:.8}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #d9dee8}
 .metric{padding:16px 20px;border-right:1px solid #d9dee8}.metric:last-child{border-right:0}.metric span{display:block;color:#667085;font-size:11px;font-weight:700;text-transform:uppercase}.metric strong{font-size:18px}
-.section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}.control-summary{border-bottom:1px solid #d9dee8;background:#fbfcfe}.control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.control-grid div{padding:12px 14px;border:1px solid #d9dee8;border-radius:8px;background:#fff}.control-grid span{display:block;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.control-grid strong{display:block;margin-top:3px;font-size:13px}.audit-context{padding-top:16px;padding-bottom:16px;border-bottom:1px solid #d9dee8}.audit-context>details>summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.audit-context-body{margin-top:12px;border:1px solid #d9dee8;border-radius:8px;overflow:hidden}.grounding{color:#667085;font-size:11px;text-transform:uppercase}.obligations{border-top:1px solid #d9dee8;background:#fbfcfe}.obligation-card{margin:0 0 10px;border:1px solid #d9dee8;border-radius:8px;background:#fff;overflow:hidden}.obligation-card>details>summary{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;cursor:pointer}.obligation-card>details>summary span{color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.obligation-body{border-top:1px solid #d9dee8}
+.section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}.control-summary{border-bottom:1px solid #d9dee8;background:#fbfcfe}.control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.control-grid div{padding:12px 14px;border:1px solid #d9dee8;border-radius:8px;background:#fff}.control-grid span{display:block;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.control-grid strong{display:block;margin-top:3px;font-size:13px}.user-intent{padding-top:16px;padding-bottom:16px;border-bottom:1px solid #d9dee8;background:#fdfefe}.user-intent>details>summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.user-intent ul{margin:0;padding-left:18px}.audit-context{padding-top:16px;padding-bottom:16px;border-bottom:1px solid #d9dee8}.audit-context>details>summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.audit-context-body{margin-top:12px;border:1px solid #d9dee8;border-radius:8px;overflow:hidden}.grounding{color:#667085;font-size:11px;text-transform:uppercase}.obligations{border-top:1px solid #d9dee8;background:#fbfcfe}.obligation-card{margin:0 0 10px;border:1px solid #d9dee8;border-radius:8px;background:#fff;overflow:hidden}.obligation-card>details>summary{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;cursor:pointer}.obligation-card>details>summary span{color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.obligation-body{border-top:1px solid #d9dee8}
 .issue-card{margin:0 0 18px;border:1px solid #d9dee8;border-radius:10px;overflow:hidden}.issue-head{display:grid;grid-template-columns:36px 130px 1fr;align-items:center;background:#f8fafc;border-bottom:1px solid #d9dee8}.issue-number,.severity{padding:10px 12px;font-size:12px;font-weight:800}.issue-title{padding:10px 14px 10px 0}.issue-title h2{margin:0;font-size:16px}.meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;color:#667085;font-size:10px;font-weight:700;text-transform:uppercase}
 .audit-status-proven .severity{color:#166534}.audit-status-need-validation .severity{color:#9a6700}
 .row{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #d9dee8}.label{padding:13px 15px;background:#f8fafc;color:#3157a4;font-size:12px;font-weight:800}.value{padding:13px 16px}.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.technical-row{padding:12px 16px;background:#fcfcfd;border-top:1px solid #d9dee8}.technical summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.technical-text{margin-top:9px;white-space:pre-wrap;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#667085}.proof-goal p{margin:5px 0 0}.proof-guide ol,.proof-guide ul{margin:6px 0 0;padding-left:20px}.proof-pref{color:#667085;font-size:11px}.proof-note{margin-top:12px;padding:9px 11px;background:#fff8e6;border-radius:6px;color:#765d16;font-size:12px}
@@ -908,6 +990,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
     <div class="metric"><span>Audit Obligations</span><strong>${(audit.auditObligations ?? []).length}</strong></div>
   </section>
   ${auditControlSummary(audit)}
+  ${userIntentSummary(audit)}
   ${auditContextSummary(audit)}
   ${auditObligationsSection(audit)}
   <section class="section">
