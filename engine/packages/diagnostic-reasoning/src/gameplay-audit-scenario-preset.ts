@@ -194,12 +194,13 @@ export function buildGameplayAuditScenarioPreset(
         concurrentArenas:
           arenaCount === undefined
             ? 2
-            : Math.min(2, arenaCount),
+            : arenaCount,
         reason:
-          "Parallel sessions expose global selectors, shared resources, stale cleanup, and cross-arena ownership leaks.",
+          "Parallel sessions expose global selectors, shared resources, stale cleanup, cross-arena ownership leaks, and capacity failures that may appear only near the selected map's maximum arena count.",
         questions: [
           "Can an event in Arena A mutate players, entities, blocks, score, audio, messages, objectives, or cleanup in Arena B?",
-          "Can both sessions start and progress independently?",
+          "Can sessions start and progress independently at 2 arenas and at the selected map's maximum arena count?",
+          "If a safe concurrency limit is known, is behavior explicitly checked at limit and limit + 1 rather than assuming a two-arena pass generalizes?",
         ],
       }),
     );
