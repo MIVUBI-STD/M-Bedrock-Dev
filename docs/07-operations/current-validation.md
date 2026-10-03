@@ -1,3 +1,16 @@
+## 2026-10-03 — HTML report zero-waste cleanup
+
+Source-verified on `Local`:
+
+- Approved Bug Report HTML now uses one compact expandable row per bug.
+- One bug owns one `Fixed` checkbox; reproduction steps are plain instructional text.
+- `issueIndex`, `showIssueIndex`, `compactTables`, the duplicate `bug-report-doc` script, and the stale `document/design.ts` presentation contract were removed.
+- Client HTML projection no longer carries unused `foundBy` provenance.
+- Explicitly included fixed bugs now render their checkbox as checked from canonical Bug Report V2 status.
+- The active report chain remains `Bug Report V2 → client projection → quality review → HTML renderer`; no second report state store was added.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not yet been typechecked, built, or exercised through the full repository verifier in a local checkout. Do not claim package/runtime validation from this pass.
+
 # Current Validation
 
 Snapshot date: 2026-10-03  
