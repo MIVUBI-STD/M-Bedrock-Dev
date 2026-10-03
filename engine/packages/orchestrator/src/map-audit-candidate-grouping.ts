@@ -3,7 +3,7 @@ import type {
   GameplayScenarioGraph,
 } from "./inspection/gameplay-scenario-model.js";
 import type {
-  ReadyAuditDefectProjection,
+  ReadyAuditIssueProjection,
 } from "./map-audit-defect-projection.js";
 
 export interface ReadyAuditCandidateGroup {
@@ -38,11 +38,11 @@ function intersection(
   );
 }
 
-export function groupReadyAuditDefectsForCandidateCoverage(
+export function groupReadyAuditIssuesForCandidateCoverage(
   graph: GameplayScenarioGraph,
-  defects: readonly ReadyAuditDefectProjection[],
+  defects: readonly ReadyAuditIssueProjection[],
 ): readonly ReadyAuditCandidateGroup[] {
-  const buckets = new Map<string, ReadyAuditDefectProjection[]>();
+  const buckets = new Map<string, ReadyAuditIssueProjection[]>();
 
   for (const defect of defects) {
     const link = graph.causalLinks.find(
