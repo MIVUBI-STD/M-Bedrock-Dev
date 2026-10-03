@@ -33,6 +33,7 @@ export interface AuditHonestyAssessment {
   readonly status: "PASS" | "VIOLATION";
   readonly expectedVisibleResidueIds: readonly string[];
   readonly visibleNeedValidationIds: readonly string[];
+  readonly visibleObligationIds: readonly string[];
   readonly expectedProvenIds: readonly string[];
   readonly visibleProvenIds: readonly string[];
   readonly missingVisibleResidueIds: readonly string[];
@@ -193,6 +194,7 @@ export function assessAuditHonesty(input: {
     readonly AccumulationGrowthSignal[];
   readonly replicaDivergenceIds?: readonly string[];
   readonly visibleIssues: readonly AuditIssueProjection[];
+  readonly visibleObligationIds?: readonly string[];
 }): AuditHonestyAssessment {
   const expectedVisibleResidueIds = [
     ...new Set([
@@ -288,13 +290,23 @@ export function assessAuditHonesty(input: {
   const visibleNeedSet = new Set(
     visibleNeedValidationIds,
   );
+  const visibleObligationIds = [
+    ...new Set(
+      input.visibleObligationIds ?? [],
+    ),
+  ].sort();
+  const visibleObligationSet = new Set(
+    visibleObligationIds,
+  );
   const visibleProvenSet = new Set(
     visibleProvenIds,
   );
 
   const missingVisibleResidueIds =
     expectedVisibleResidueIds.filter(
-      (id) => !visibleNeedSet.has(id),
+      (id) =>
+        !visibleNeedSet.has(id) &&
+        !visibleObligationSet.has(id),
     );
   const missingProvenProjectionIds =
     expectedProvenIds.filter(
@@ -304,7 +316,7 @@ export function assessAuditHonesty(input: {
   const reasons: string[] = [];
   if (missingVisibleResidueIds.length > 0) {
     reasons.push(
-      "Material unresolved residue is hidden from NEED_VALIDATION: " +
+      "Material unresolved residue is hidden from findings and audit obligations: " +
         missingVisibleResidueIds.join(", ") +
         ".",
     );
@@ -318,7 +330,7 @@ export function assessAuditHonesty(input: {
   }
   if (reasons.length === 0) {
     reasons.push(
-      "Every tracked material unresolved residue is visible as NEED_VALIDATION and every confirmed-defect-ready causal link is visible as PROVEN.",
+      "Every tracked material unresolved residue is visible as a causal NEED_VALIDATION finding or an Audit Obligation, and every confirmed-defect-ready causal link is visible as PROVEN.",
     );
   }
 
@@ -332,6 +344,7 @@ export function assessAuditHonesty(input: {
         : "VIOLATION",
     expectedVisibleResidueIds,
     visibleNeedValidationIds,
+    visibleObligationIds,
     expectedProvenIds,
     visibleProvenIds,
     missingVisibleResidueIds,
