@@ -373,6 +373,26 @@ export function validateProjectApprovalSnapshot(
     ];
   }
 
+  const snapshotKeys = new Set([
+    "schemaVersion",
+    "projectId",
+    "projectRevision",
+    "artifactFingerprint",
+    "auditRevision",
+    "bugReportPath",
+    "deliverables",
+    "snapshotFingerprint",
+  ]);
+  if (
+    !Object.keys(
+      snapshot as unknown as Record<string, unknown>,
+    ).every((key) => snapshotKeys.has(key))
+  ) {
+    return [
+      "Project approval snapshot contains unsupported or legacy fields.",
+    ];
+  }
+
   let deliverables:
     ProjectDeliverableRef[];
   try {
@@ -644,6 +664,23 @@ export function validateDrivePublishReceipt(
   ) {
     return [
       "Drive publish receipt is structurally invalid.",
+    ];
+  }
+
+  const receiptKeys = new Set([
+    "schemaVersion",
+    "projectId",
+    "snapshotFingerprint",
+    "files",
+    "receiptFingerprint",
+  ]);
+  if (
+    !Object.keys(
+      receipt as unknown as Record<string, unknown>,
+    ).every((key) => receiptKeys.has(key))
+  ) {
+    return [
+      "Drive publish receipt contains unsupported or legacy fields.",
     ];
   }
 
