@@ -40,6 +40,15 @@ import type {
   GameplayScenarioClosure,
   GameplayScenarioGraph,
 } from "./gameplay-scenario-model.js";
+import {
+  challengeGameplayDiscovery,
+  type GameplayDiscoveryChallengeSignal,
+} from "./gameplay-discovery-challenger.js";
+import {
+  analyzeSharedResourceOwnership,
+  type SharedResourceOwnershipRecord,
+  type SharedResourceOwnershipSignal,
+} from "./shared-resource-ownership.js";
 
 export interface HiddenGameplayDefectAnalysis {
   readonly schemaVersion: 1;
@@ -57,6 +66,14 @@ export interface HiddenGameplayDefectAnalysis {
     readonly NegativeSpaceSignal[];
   readonly temporalRisks:
     readonly TemporalInteractionRisk[];
+  readonly discoveryChallenges:
+    readonly GameplayDiscoveryChallengeSignal[];
+  readonly sharedResourceOwnership: {
+    readonly records:
+      readonly SharedResourceOwnershipRecord[];
+    readonly signals:
+      readonly SharedResourceOwnershipSignal[];
+  };
   readonly designConsistency:
     readonly DesignConsistencyAnomaly[];
   readonly degradations:
@@ -74,6 +91,9 @@ export interface HiddenGameplayDefectAnalysis {
     readonly incompleteMechanics: number;
     readonly negativeSpaceSignals: number;
     readonly highTemporalRisks: number;
+    readonly discoveryChallengeSignals: number;
+    readonly sharedResourceSignals: number;
+    readonly higherOrderSharedResources: number;
     readonly designAnomalies: number;
     readonly silentDegradations: number;
     readonly designFailures: number;
@@ -646,6 +666,16 @@ export function analyzeHiddenGameplayDefects(
       world: input.world,
       preset: auditScenarioPreset,
     });
+  const discoveryChallenges =
+    challengeGameplayDiscovery({
+      semanticIr: input.semanticIr,
+      intent: input.intent,
+      graph: scenarioGraph,
+    });
+  const sharedResourceOwnership =
+    analyzeSharedResourceOwnership(
+      input.semanticIr,
+    );
   const scenarioClosure =
     assessGameplayScenarioClosure(
       scenarioGraph,
@@ -662,6 +692,8 @@ export function analyzeHiddenGameplayDefects(
     mechanicCompleteness,
     negativeSpace,
     temporalRisks,
+    discoveryChallenges,
+    sharedResourceOwnership,
     designConsistency,
     degradations,
     capabilityDelivery,
@@ -688,6 +720,14 @@ export function analyzeHiddenGameplayDefects(
       highTemporalRisks:
         temporalRisks.filter(
           (item) => item.priority === "high",
+        ).length,
+      discoveryChallengeSignals:
+        discoveryChallenges.length,
+      sharedResourceSignals:
+        sharedResourceOwnership.signals.length,
+      higherOrderSharedResources:
+        sharedResourceOwnership.records.filter(
+          (item) => item.highOrderInteraction,
         ).length,
       designAnomalies:
         designConsistency.length,
