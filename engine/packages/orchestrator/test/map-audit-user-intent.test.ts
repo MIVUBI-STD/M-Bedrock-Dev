@@ -1,0 +1,122 @@
+import { describe, expect, it } from "vitest";
+import {
+  auditUserIntentAuthorityNote,
+  deriveAuditUserIntentSearchPressure,
+  normalizeAuditUserIntent,
+  validateAuditUserIntent,
+  type AuditUserIntentEnvelope,
+} from "../src/map-audit-user-intent.js";
+
+function envelope(): AuditUserIntentEnvelope {
+  return {
+    schemaVersion: 1,
+    policy:
+      "user-input-is-search-guidance-not-gameplay-authority",
+    items: [{
+      kind: "SYMPTOM_REPORT",
+      raw: " wave   suka stuck ",
+      normalized:
+        "possible progression stall during wave completion",
+    }, {
+      kind: "SUSPICION",
+      raw: " kayak ticking area ",
+      normalized:
+        "suspected chunk/residency mechanism",
+    }, {
+      kind: "TEST_CONSTRAINT",
+      raw: "jangan test semuanya",
+      normalized:
+        "prefer bounded static-first proof over broad trial-and-error",
+    }, {
+      kind: "SYMPTOM_REPORT",
+      raw: "wave suka stuck",
+      normalized:
+        "possible progression stall during wave completion",
+    }],
+    priorityDomains: [
+      "progression-wave-objective",
+      "chunk-simulation",
+      "progression-wave-objective",
+    ],
+    priorityPlayerFlows: [
+      "PROGRESSION",
+      "PROGRESSION",
+    ],
+    ambiguities: [
+      "Root cause is not yet known.",
+      " Root cause is not yet known. ",
+    ],
+  };
+}
+
+describe("map audit user intent", () => {
+  it("normalizes and deduplicates hint-only prompt intake", () => {
+    const normalized =
+      normalizeAuditUserIntent(envelope());
+
+    expect(normalized.items).toHaveLength(3);
+    expect(normalized.priorityDomains).toEqual([
+      "chunk-simulation",
+      "progression-wave-objective",
+    ]);
+    expect(normalized.priorityPlayerFlows)
+      .toEqual(["PROGRESSION"]);
+    expect(normalized.ambiguities).toEqual([
+      "Root cause is not yet known.",
+    ]);
+  });
+
+  it("keeps symptom and suspicion search pressure separate", () => {
+    const pressure =
+      deriveAuditUserIntentSearchPressure(
+        envelope(),
+      );
+
+    expect(pressure.symptomHints).toEqual([
+      "possible progression stall during wave completion",
+    ]);
+    expect(pressure.suspicionHints).toEqual([
+      "suspected chunk/residency mechanism",
+    ]);
+    expect(pressure.domains["chunk-simulation"])
+      .toBe(2);
+    expect(
+      pressure.domains[
+        "progression-wave-objective"
+      ],
+    ).toBe(2);
+  });
+
+  it("rejects unsupported runtime values instead of trusting loose JSON", () => {
+    const invalid: any = {
+      ...envelope(),
+      priorityDomains: ["made-up-domain"],
+      priorityPlayerFlows: ["EVERYWHERE"],
+      items: [{
+        kind: "BUG_CONFIRMED",
+        raw: "x",
+        normalized: "x",
+      }],
+    };
+
+    const issues =
+      validateAuditUserIntent(invalid);
+
+    expect(issues.some((item) =>
+      item.includes("unsupported kind")
+    )).toBe(true);
+    expect(issues.some((item) =>
+      item.includes("unsupported priority domain")
+    )).toBe(true);
+    expect(issues.some((item) =>
+      item.includes("unsupported priority player flow")
+    )).toBe(true);
+  });
+
+  it("states explicitly that prompt input cannot become proof", () => {
+    expect(auditUserIntentAuthorityNote())
+      .toContain("cannot establish Expected/Actual behavior");
+    expect(auditUserIntentAuthorityNote())
+      .toContain("issue type");
+  });
+});
