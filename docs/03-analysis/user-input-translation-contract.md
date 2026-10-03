@@ -155,24 +155,56 @@ static/source proof first
 
 They must not mean suppress unresolved material evidence.
 
-## Required translated envelope
+## Fragment-accounting invariant
 
-The model-facing intake representation should contain:
+Every material part of the raw user prompt must be preserved.
+
+Canonical intake:
 
 ```text
-targetHints[]
-symptoms[]
-suspicions[]
-expectationClaims[]
-designClaims[]
+raw prompt
+→ material fragments[]
+→ each fragment must be exactly one of:
+   a) referenced by one or more translated intent items
+   b) listed in unmappedFragmentIds[]
+```
+
+A material fragment may map to multiple intent classes when needed, for example one sentence may contain both a symptom and a suspected cause.
+
+An unmapped fragment is not an error by itself. It means the wording was preserved but cannot yet be translated safely. It must become a non-bug Audit Obligation so later reasoning can resolve it without guessing.
+
+Forbidden:
+
+```text
+raw fragment
+→ silently ignored
+
+raw fragment
+→ guessed meaning
+→ BUG
+```
+
+If structured translation is unavailable entirely, `rawUserPrompt` must be wrapped by `createFallbackAuditUserIntent()` and preserved as an unmapped fragment. Production audit may continue unless the unresolved wording creates a blocking target/product ambiguity.
+
+## Required translated envelope
+
+The executable intake representation contains:
+
+```text
+fragments[]
+items[]
+  kind
+  raw
+  normalized
+  sourceFragmentIds[]
+unmappedFragmentIds[]
 priorityDomains[]
 priorityPlayerFlows[]
-testConstraints[]
-outputPreferences[]
-historicalHints[]
 ambiguities[]
 blockingAmbiguities[]
 ```
+
+The semantic classes inside `items[]` cover target hints, symptoms, suspicions, expectation/design claims, test constraints, scope/output requests, historical references, and exclusions.
 
 Every symptom/suspicion/claim should retain the user's original meaning and a normalized interpretation.
 
