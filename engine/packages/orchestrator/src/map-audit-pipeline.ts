@@ -267,13 +267,12 @@ function deriveSelectedMapAuditControl(input: {
     navigatedNeedValidationIssues,
   );
   const fullMapReplica =
-    input.gameplayWorld.arenas.replicaProof.length === 0
+    input.gameplayWorld.arenas.replicaProof.length === 0 ||
+    input.gameplayWorld.arenas.replicaBaselineId === undefined
       ? undefined
       : buildFullMapReplicaReceipt({
           replicaBaseline:
-            input.gameplayWorld.arenas
-              .replicaBaselineId ??
-            "replica:baseline-unresolved",
+            input.gameplayWorld.arenas.replicaBaselineId,
           replicas:
             input.gameplayWorld.arenas.replicaProof.map(
               (item) => ({
