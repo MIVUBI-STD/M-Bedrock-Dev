@@ -13,13 +13,13 @@ Canonical owners remain:
 
 22 current selected artifacts were source-audited individually.
 
-| Target | Artifact version | First-pass result | Evidence |
+| Target | Artifact version | Reconciled source result | Evidence |
 |---|---:|---|---|
-| Defense Challenge | 1.1.1 | **1 PROVEN Blocker BUG** | `defense-challenge-v1.1.1.md` |
-| Attack Challenge | 1.1.1 | **1 PROVEN Major BUG** | `attack-challenge-v1.1.1.md` |
+| Defense Challenge | 1.1.1 | **4 PROVEN BUGS — 2 Blocker, 2 Major** | `defense-challenge-v1.1.1.md` |
+| Attack Challenge | 1.1.1 | **2 PROVEN Major BUGS** | `attack-challenge-v1.1.1.md` |
 | Build & Decode | 1.1.0 | **1 PROVEN Minor DESIGN_MISMATCH** | `build-and-decode-v1.1.0.md` |
 | The Gauntlet | 1.0.1 | **1 PROVEN Major BUG** | `the-gauntlet-v1.0.1.md` |
-| Composite Challenge | 1.1.1 | 0 PROVEN | `composite-challenge-v1.1.1.md` |
+| Composite Challenge | 1.1.1 | **3 PROVEN BUGS — 2 Blocker, 1 Major** | `composite-challenge-v1.1.1.md` |
 | The Circuit | Drive 1.0.2 / pack 1.0.1 | 0 PROVEN | `the-circuit-v1.0.2.md` |
 | Dark Crystal | 1.0.0 | 0 PROVEN | `dark-crystal-v1.0.0.md` |
 | Manhunt | 1.0.0 | 0 PROVEN | `manhunt-v1.0.0.md` |
@@ -28,7 +28,7 @@ Canonical owners remain:
 | Fall of the Pillager L1 | 1.1.0 | 0 PROVEN | `fall-of-the-pillager-l1-v1.1.0.md` |
 | Fall of the Pillager L2 | 2.2.2 | 0 PROVEN | `fall-of-the-pillager-l2-v2.2.2.md` |
 | Orb of the Illusioner L1 | 1.2.1 | 0 PROVEN | `orb-illusioner-l1-v1.2.1.md` |
-| Orb of the Illusioner L2 | internal 1.1.0 | 0 PROVEN | `orb-illusioner-l2-v1.1.0.md` |
+| Orb of the Illusioner L2 | internal 1.1.0 | **2 PROVEN Major BUGS** | `orb-illusioner-l2-v1.1.0.md` |
 | Beach Bedwars | 1.1.0 | 0 PROVEN | `beach-bedwars-v1.1.0.md` |
 | Raid Arena Classic | 1.1.0 | 0 PROVEN | `raid-arena-classic-v1.1.0.md` |
 | Marathon Test of Tactics L2 | 2.2.0 | 0 PROVEN | `marathon-test-of-tactics-l2-v2.2.0.md` |
@@ -40,29 +40,29 @@ Canonical owners remain:
 
 ## Proven findings requiring review
 
-### Defense Challenge v1.1.1 — Blocker
+The reconciled selected-artifact batch currently contains **12 source-proven BUGs** plus **1 source-proven DESIGN_MISMATCH**:
 
-**Arena reset can release the ticking-area lease of a newly started run.**
+- **Defense Challenge v1.1.1** — 4 BUGs:
+  - Blocker — arena reset can release the ticking-area lease of a newly started run;
+  - Major — reconnect during combat respawn countdown bypasses the death delay;
+  - Blocker — failed delayed wave spawns can be treated as cleared before spawn retries finish;
+  - Major — disconnect during preload can bypass the fresh-session inventory wipe.
+- **Attack Challenge v1.1.1** — 2 Major BUGs:
+  - disconnect during preload can bypass the fresh-session full inventory wipe;
+  - reconnect during combat respawn countdown can bypass the death delay.
+- **Composite Challenge v1.1.1** — 3 BUGs:
+  - Blocker — arena-specific ticking areas are declared but never created;
+  - Major — disconnect during preload can bypass the fresh-session inventory wipe;
+  - Blocker — arena becomes reusable while asynchronous world reset is still running.
+- **The Gauntlet v1.0.1** — 1 Major BUG:
+  - required-party progression gates can ignore disconnected members because shared all-player predicates filter the locked roster down to currently present players.
+- **Orb of the Illusioner L2 v1.1.0** — 2 Major BUGs:
+  - weapon/armor upgrades consume coins and then fail on an undefined `material` identifier;
+  - active-game reload recovery aborts the arena because barricade validation references undefined `selectedBarricades`.
+- **Build & Decode v1.1.0** — 1 Minor DESIGN_MISMATCH:
+  - temporary coordinate-picker dev tooling is reachable by a normal Creative builder holding a stick.
 
-Async reset exposes the arena as idle/reusable before reset completion. A new run can reuse the existing arena-only lease; old reset completion then releases that lease underneath the new run.
-
-### Attack Challenge v1.1.1 — Major
-
-**Reconnect during combat respawn countdown bypasses the death delay.**
-
-CombatTracker restores pending-respawn spectator state, but GameManager independently restores active gameplay shortly afterwards.
-
-### Build & Decode v1.1.0 — Minor DESIGN_MISMATCH
-
-**Temporary coordinate-picker dev tool is enabled in production for non-admin players.**
-
-A normal Creative builder can obtain a stick and trigger the imported non-admin debug-stick coordinate picker.
-
-### The Gauntlet v1.0.1 — Major
-
-**Level 9 can complete while a required party member is disconnected.**
-
-The authored all-player finish condition filters offline players before evaluating the completion predicate.
+These are selected-artifact source findings. Runtime-only obligations remain separate and do not reduce or inflate this count.
 
 ## Important clean-pass behavior
 
@@ -71,13 +71,12 @@ A zero-finding pass is retained intentionally when current selected-artifact pro
 Examples of historical/suspicious behavior that was **not** blindly promoted:
 
 - Defense concurrency cap when explicit queue ownership exists;
-- Composite async reset when selected reset workload fits inside the authored reuse cooldown;
 - Circuit empty static ticking list when PathwayLoader dynamically owns ticking areas;
 - FNAZ historical shop/keepInventory/spawn/path issues where current source contains explicit fixes;
 - FOTP historical friendly-hit/sword/revive/targeting issues where current source contains explicit fixes;
 - Orb L2 temporary debug picker without a proven ordinary-player trigger path;
 - Aftershock scanner/dev surfaces without a proven ordinary-player capability path;
-- BlitzBuild diagnostic script-event surface without proven ordinary-player command reachability.
+- BlitzBuild script-event diagnostics, which are not ordinary-player reachable because `/scriptevent` requires operator-level Game Directors permission and cheats.
 
 ## Approval boundary
 
