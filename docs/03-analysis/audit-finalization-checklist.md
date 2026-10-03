@@ -32,6 +32,15 @@ This checklist is a publication review only. The executable checkpoint owner is 
 - [ ] Gameplay Model Closure OPEN or PARTIAL blocks production continuation.
 - [ ] Gameplay Scenario Closure is CLOSED or PARTIAL only for irreducible Minecraft runtime proof.
 
+## Report type separation
+
+- [ ] Every confirmed issue is classified as exactly one of `BUG` or `DESIGN_MISMATCH`.
+- [ ] `BUG`: design/intent is grounded; implementation/runtime violates it.
+- [ ] `DESIGN_MISMATCH`: presented/authored capability differs from actual playable/deliverable capability.
+- [ ] No root cause is duplicated across both sections.
+- [ ] Technical/platform constraints are recorded as cause/constraint evidence, not used to erase a DESIGN_MISMATCH.
+- [ ] Chat/HTML/client presentation shows separate **Bugs** and **Design Mismatches** sections.
+
 ## Flow-order review
 
 Review the audit in the same order the player experiences the game:
