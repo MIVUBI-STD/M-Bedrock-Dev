@@ -235,6 +235,17 @@ function deriveSelectedMapAuditControl(input: {
     projectClosureNeedValidationAuditIssues(
       input.gameplayClosure,
     );
+  const replicaDivergenceIds =
+    input.gameplayWorld.arenas.replicaProof
+      .filter((item) =>
+        item.status === "diverged" ||
+        item.mismatchCount > 0
+      )
+      .map((item) =>
+        "replica-delta:" + item.arenaId
+      )
+      .sort();
+
   const blindSpotValidationIssues =
     projectBlindSpotNeedValidationIssues({
       discoveryChallenges:
@@ -245,6 +256,7 @@ function deriveSelectedMapAuditControl(input: {
         input.compoundBoundaries,
       accumulationGrowth:
         input.accumulationGrowth,
+      replicaDivergenceIds,
     });
   const navigatedNeedValidationIssues = [
     ...needValidationIssues,
@@ -299,6 +311,7 @@ function deriveSelectedMapAuditControl(input: {
       input.compoundBoundaries,
     accumulationGrowth:
       input.accumulationGrowth,
+    replicaDivergenceIds,
     visibleIssues: allVisibleIssues,
   });
   const issueLanes = {
