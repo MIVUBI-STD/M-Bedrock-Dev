@@ -1,4 +1,8 @@
 import { createHash } from "node:crypto";
+import {
+  normalizeProjectDeliverable,
+  projectLifecycleStatus,
+} from "../../../project-model/src/index.js";
 import type {
   DriveProjectBinding,
   ProjectApprovalSnapshot,
@@ -6,8 +10,6 @@ import type {
   ProjectDrivePublishReceipt,
   ProjectLifecycleStatus,
   ProjectRecord,
-  normalizeProjectDeliverable,
-  projectLifecycleStatus,
 } from "../../../project-model/src/index.js";
 
 export interface ProjectApprovalReadiness {
