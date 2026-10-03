@@ -137,6 +137,10 @@ function platformClaimDomainsForScenario(
     domains.add("world-mutation");
   }
 
+  expandConditionalKnowledgeDomains(
+    domains,
+    world,
+  );
   return domains;
 }
 
@@ -452,6 +456,103 @@ function semanticDomains(
   return domains;
 }
 
+function expandConditionalKnowledgeDomains(
+  domains: Set<GameplayKnowledgeDomain>,
+  world: GameplayWorldModel,
+): void {
+  const hasInventory =
+    world.inventory.regions > 0 ||
+    world.inventory.grantRegions > 0 ||
+    world.inventory.dropRegions > 0;
+  const hasEconomy =
+    world.economy.sourceKinds.length > 0;
+  const hasPersistence =
+    (world.persistence?.properties ?? 0) > 0;
+  const hasArena =
+    world.arenas.detected;
+  const hasChunk =
+    world.chunks.tickingAreaAcquires > 0 ||
+    world.chunks.tickingAreaReadinessStates > 0 ||
+    world.chunks.readinessProbes > 0 ||
+    world.chunks.entityResidencyObservability !== "absent";
+  const hasEntity =
+    world.entities.definitions > 0;
+  const hasCombat =
+    world.combat.hurtHandlers > 0 ||
+    world.combat.deathHandlers > 0 ||
+    world.combat.damageApplications > 0;
+
+  // Conditional dependencies are activated only by coexistence of relevant
+  // selected-artifact surfaces. They are proof pressure, not assumptions that
+  // a defect exists.
+  if (domains.has("inventory-state")) {
+    if (hasPersistence) {
+      domains.add("persistence-recovery");
+    }
+    if (hasEconomy) {
+      domains.add("economy-reward");
+    }
+    if (hasArena) {
+      domains.add("arena-lifecycle");
+    }
+  }
+
+  if (domains.has("economy-reward")) {
+    if (hasInventory) {
+      domains.add("inventory-state");
+    }
+    if (hasPersistence) {
+      domains.add("persistence-recovery");
+    }
+    domains.add("temporal-ownership");
+  }
+
+  if (domains.has("arena-lifecycle")) {
+    domains.add("multiplayer-interleaving");
+    if (hasChunk) {
+      domains.add("chunk-simulation");
+    }
+  }
+
+  if (domains.has("chunk-simulation")) {
+    domains.add("platform-constraints");
+    if (hasEntity) {
+      domains.add("entity-behavior");
+    }
+  }
+
+  if (domains.has("entity-behavior")) {
+    if (hasChunk) {
+      domains.add("chunk-simulation");
+    }
+    if (hasCombat) {
+      domains.add("combat-lifecycle");
+    }
+  }
+
+  if (domains.has("persistence-recovery")) {
+    domains.add("temporal-ownership");
+    if (hasArena) {
+      domains.add("arena-lifecycle");
+    }
+    if (hasInventory) {
+      domains.add("inventory-state");
+    }
+  }
+
+  if (domains.has("combat-lifecycle")) {
+    if (hasEntity) {
+      domains.add("entity-behavior");
+    }
+    domains.add("temporal-ownership");
+  }
+
+  if (domains.has("world-structure")) {
+    domains.add("spatial-authority");
+    domains.add("temporal-ownership");
+  }
+}
+
 function applicable(
   world: GameplayWorldModel,
   domain: GameplayKnowledgeDomain,
@@ -573,6 +674,10 @@ export function requiredKnowledgeDomainsForPreset(
       break;
   }
 
+  expandConditionalKnowledgeDomains(
+    domains,
+    world,
+  );
   return [...domains].sort();
 }
 
