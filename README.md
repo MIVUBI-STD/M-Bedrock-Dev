@@ -38,11 +38,12 @@ audit <selected.mcworld>
 → STRESS
 → PROVE
 → REPORT
-→ issueLanes.BUG
-   issueLanes.DESIGN_MISMATCH
+→ Map Audit Output V2
 ```
 
 Low-level analyzers, specialist audit documents, Work Session projections, and Bug Report tooling are subordinate. They may provide evidence or presentation, but they cannot authorize stage completion independently.
+
+Production output rule: `SelectedMapAuditRun` is internal control-plane authority. The operator-facing output of `audit` is exactly one `Map Audit Output V2`, which carries control state, audit context, complete finding lanes, proof guidance, validation plan, honesty, and replica context.
 
 Operator work order: `docs/03-analysis/master-selected-map-audit-workflow.md`.
 
