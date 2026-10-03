@@ -84,6 +84,19 @@ function reportIssueTypeFor(
     : "BUG";
 }
 
+const GAMEPLAY_FLOW_ORDER: Readonly<
+  Record<GameplayIssueFlowStage, number>
+> = {
+  ENTRY_JOIN: 0,
+  READY_START: 1,
+  SETUP: 2,
+  ACTIVE_GAMEPLAY: 3,
+  PROGRESSION: 4,
+  TERMINAL: 5,
+  CLEANUP_REPLAY: 6,
+  RECOVERY: 7,
+};
+
 function nonEmpty(value: string | undefined): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -205,6 +218,13 @@ export function projectReadyAuditIssues(
       };
     })
     .sort((a, b) =>
-      a.causalLinkId.localeCompare(b.causalLinkId)
+      GAMEPLAY_FLOW_ORDER[a.gameplayFlow] -
+        GAMEPLAY_FLOW_ORDER[b.gameplayFlow] ||
+      a.failureDomain.localeCompare(
+        b.failureDomain,
+      ) ||
+      a.causalLinkId.localeCompare(
+        b.causalLinkId,
+      )
     );
 }
