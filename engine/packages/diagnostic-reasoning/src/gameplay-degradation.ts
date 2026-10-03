@@ -98,8 +98,6 @@ export function assessGameplayCapabilityDelivery(
         input.playableCapacity,
       technicalConstraintReasons,
       evidenceIds,
-      playerFacingEvidenceIds,
-      informationMismatch: false,
       reason:
         "Playable capacity meets the capability presented by the game.",
     };
@@ -160,8 +158,6 @@ export function assessGameplayCapabilityDelivery(
       status: "DELIVERED",
       technicalConstraintReasons,
       evidenceIds,
-      playerFacingEvidenceIds,
-      informationMismatch: false,
       reason:
         "The player-visible capability has a complete gameplay delivery chain.",
     };
@@ -173,6 +169,8 @@ export function assessGameplayCapabilityDelivery(
     status: "UNPROVEN",
     technicalConstraintReasons,
     evidenceIds,
+    playerFacingEvidenceIds,
+    informationMismatch: false,
     reason:
       "Capability delivery cannot be classified without enough grounded player-visible design and implementation evidence.",
   };
@@ -222,8 +220,6 @@ export function detectGameplayDegradation(
       subjectId: input.subjectId,
       kind: "fallback-masks-primary-failure",
       evidenceIds,
-      playerFacingEvidenceIds,
-      informationMismatch: false,
       reason:
         "Fallback behavior keeps gameplay running while the intended primary mechanic is not observed.",
     });
@@ -242,8 +238,6 @@ export function detectGameplayDegradation(
       subjectId: input.subjectId,
       kind: "capacity-reduced",
       evidenceIds,
-      playerFacingEvidenceIds,
-      informationMismatch: false,
       reason:
         "Player-visible gameplay capacity is reduced from " +
         String(input.expectedCapacity) +
@@ -265,8 +259,6 @@ export function detectGameplayDegradation(
       subjectId: input.subjectId,
       kind: "feature-disabled",
       evidenceIds,
-      playerFacingEvidenceIds,
-      informationMismatch: false,
       reason:
         "A declared gameplay feature is not observed and no valid fallback is present.",
     });
