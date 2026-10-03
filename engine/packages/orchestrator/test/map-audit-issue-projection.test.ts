@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
 } from "../src/map-audit-issue-projection.js";
 import type {
@@ -168,6 +169,74 @@ describe("map audit issue projection", () => {
     );
     expect(result[0]?.validationTest).toContain(
       "Remote enemy remains simulated",
+    );
+  });
+
+  it("surfaces missing required knowledge as NEED_VALIDATION instead of hiding it in closure", () => {
+    const knowledgeGraph: GameplayScenarioGraph = {
+      ...graph,
+      causalLinks: [],
+      knowledgeRequirements: [{
+        id: "knowledge:scenario:progression:chunk-simulation",
+        scenarioId: "scenario:progression",
+        domain: "chunk-simulation",
+        reason:
+          "Wave progression requires chunk-simulation evidence.",
+        capabilityIds: ["chunk-lifecycle-integrity"],
+        dependsOnRequirementIds: [],
+        subjectIds: ["objective:wave"],
+        componentIds: ["runtime:entities"],
+      }],
+      knowledgeReceipts: [{
+        requirementId:
+          "knowledge:scenario:progression:chunk-simulation",
+        scenarioId: "scenario:progression",
+        domain: "chunk-simulation",
+        status: "MISSING_REQUIRED_KNOWLEDGE",
+        evidenceIds: [],
+        capabilityIdsUsed: [
+          "chunk-lifecycle-integrity",
+        ],
+        subjectIds: ["objective:wave"],
+        componentIds: ["runtime:entities"],
+        reason:
+          "Chunk analysis executed but returned no decisive scenario-scoped evidence.",
+      }],
+      requiredInspectionGraph: {
+        policy: "required-inspection-graph",
+        nodes: [],
+        receipts: [],
+      },
+    };
+    const emptyGate: GameplayDefectResolutionGate = {
+      status: "READY_FOR_PROPOSED_BUG_SET",
+      contradictedCausalLinkIds: [],
+      resolutions: [],
+      confirmedDefectReadyIds: [],
+      blockingCounterProofIds: [],
+      runtimeProofRequiredIds: [],
+      detectionGapIds: [],
+      gameplayTranslationRequiredIds: [],
+      counterProofSearchRequiredIds: [],
+      issues: [],
+    };
+
+    const result =
+      projectAllNeedValidationAuditIssues(
+        knowledgeGraph,
+        emptyGate,
+      );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      status: "NEED_VALIDATION",
+      knowledgeRequirementId:
+        "knowledge:scenario:progression:chunk-simulation",
+      validationGroupKey:
+        "scenario:progression:chunk-simulation",
+    });
+    expect(result[0]?.missingProof).toMatch(
+      /chunk-simulation/i,
     );
   });
 
