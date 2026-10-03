@@ -53,3 +53,5 @@ export * from "./corpus/behavioral-pattern-library.js";
 
 export * from "./coverage/coverage-quality-dashboard.js";
 export * from "./coverage/generated-known-limits.js";
+export * from "./corpus/historical-regression-catalog.js";
+export * from "./corpus/historical-regression-store.js";
