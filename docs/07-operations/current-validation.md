@@ -362,6 +362,12 @@ It verifies that every saturation-complete `CONFIRMED_DEFECT_READY` causal link 
 
 Any mismatch is an honesty violation and forces the audit to remain `BLOCKED`; it cannot become `READY_FOR_REVIEW` merely because other closure gates passed.
 
+### Evidence-route consolidation
+
+Static, runtime, and tester report candidates are now explicitly treated as evidence origins inside the single PROVE/REPORT flow. They are not independent audit routes.
+
+The existing internal `route` property remains for compatibility, but its semantic meaning is `evidenceRoute`. No production entry, checkpoint authority, or report authority branches on it.
+
 ### Complete Bug Report honesty
 
 The human-facing report is now the complete Map Audit report, not the approved bug ledger alone.
