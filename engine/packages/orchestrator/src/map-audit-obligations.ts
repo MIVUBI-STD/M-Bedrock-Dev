@@ -12,6 +12,12 @@ import type {
   GameplayDefectResolutionGate,
 } from "./inspection/gameplay-defect-resolution.js";
 import type {
+  GameplayWorldModel,
+} from "./inspection/gameplay-world-model.js";
+import type {
+  AuditUserIntentEnvelope,
+} from "./map-audit-user-intent.js";
+import type {
   GameplayDiscoveryChallengeSignal,
 } from "./inspection/gameplay-discovery-challenger.js";
 import type {
@@ -37,7 +43,8 @@ export type AuditObligationSource =
   | "runtime-proof"
   | "detection-gap"
   | "gameplay-translation"
-  | "counterproof-search";
+  | "counterproof-search"
+  | "user-reported-symptom";
 
 export interface AuditObligation {
   readonly id: string;
@@ -441,6 +448,169 @@ function resolutionObligations(
   return items;
 }
 
+function userIntentCoverageObligations(
+  userIntent: AuditUserIntentEnvelope | undefined,
+  world: GameplayWorldModel,
+  graph: GameplayScenarioGraph,
+): AuditObligation[] {
+  if (userIntent === undefined) return [];
+
+  const symptoms = userIntent.items.filter(
+    (item) => item.kind === "SYMPTOM_REPORT",
+  );
+  if (symptoms.length === 0) return [];
+
+  const surfaces = new Set(
+    world.surfaceDiscovery.surfaceIds,
+  );
+  const scenarios = graph.scenarios;
+
+  const covered = (
+    domain:
+      AuditUserIntentEnvelope["priorityDomains"][number],
+  ): boolean => {
+    switch (domain) {
+      case "arena-multi-arena":
+        return (
+          world.arenas.detected ||
+          [...surfaces].some((id) =>
+            id.startsWith("runtime:arena")
+          )
+        );
+      case "inventory-economy":
+        return (
+          surfaces.has("runtime:inventory") ||
+          surfaces.has("runtime:economy")
+        );
+      case "progression-wave-objective":
+        return scenarios.some((scenario) =>
+          scenario.gameplayStage === "PROGRESSION" ||
+          /wave|objective|level|progress/i.test(
+            scenario.label,
+          )
+        );
+      case "chunk-simulation":
+        return surfaces.has("runtime:chunks");
+      case "player-lifecycle":
+        return (
+          surfaces.has("runtime:teleport") ||
+          scenarios.some((scenario) =>
+            scenario.gameplayStage === "ENTRY_JOIN" ||
+            scenario.gameplayStage === "RECOVERY" ||
+            /join|leave|death|respawn|reconnect|recovery/i.test(
+              scenario.label,
+            )
+          )
+        );
+      case "entity-ai-combat":
+        return (
+          surfaces.has("runtime:entities") ||
+          surfaces.has("runtime:combat")
+        );
+      case "world-structure-mutation":
+        return (
+          surfaces.has("runtime:structures") ||
+          surfaces.has("runtime:spatial")
+        );
+      case "ui-feedback-information":
+        return (
+          surfaces.has("runtime:ui-form") ||
+          scenarios.some((scenario) =>
+            /ui|form|dialogue|message|indicator|display|hud/i.test(
+              scenario.label,
+            )
+          )
+        );
+      case "state-ownership":
+        return surfaces.has("runtime:state");
+      case "temporal-async":
+        return (
+          surfaces.has(
+            "runtime:async-command-transaction",
+          ) ||
+          surfaces.has("runtime:dynamic-command") ||
+          scenarios.some((scenario) =>
+            /async|deferred|timer|delay|callback|timeout/i.test(
+              scenario.label,
+            )
+          )
+        );
+      case "boundary-capacity":
+        return (
+          surfaces.has("runtime:boundaries") ||
+          surfaces.has("runtime:arena-capacity")
+        );
+      case "persistence-recovery":
+        return surfaces.has("runtime:persistence");
+      case "platform-performance":
+        return (
+          surfaces.has("runtime:environment") ||
+          world.platformKnowledge.claims.length > 0
+        );
+    }
+  };
+
+  const uncoveredDomains =
+    userIntent.priorityDomains.filter(
+      (domain) => !covered(domain),
+    );
+
+  const items: AuditObligation[] =
+    uncoveredDomains.map((domain) =>
+      normalize({
+        id:
+          "user-symptom-uncovered-domain:" +
+          domain,
+        source: "user-reported-symptom",
+        stage: "DISCOVERY",
+        title:
+          "Reconcile user-reported symptom with " +
+          domain,
+        reason:
+          "The user reported a potentially material symptom and raised " +
+          domain +
+          " as a search priority, but the selected-artifact audit has not yet discovered a sufficient matching gameplay surface/scenario. The user report is not proof that the domain exists or is broken.",
+        missingProof:
+          "Selected-artifact evidence that either identifies the implementing gameplay surface/scenario or proves this interpretation is not applicable to the selected map/version.",
+        validationTest:
+          "Re-check discovery/semantic ownership for " +
+          domain +
+          " using the selected artifact. If no matching gameplay mechanism exists, retain an evidence-backed not-applicable explanation rather than inventing a bug.",
+        validationGroupKey:
+          "user-input:" + domain,
+        subjectIds: [],
+        componentIds: [],
+        evidenceIds: [],
+      })
+    );
+
+  if (
+    userIntent.priorityDomains.length === 0 &&
+    userIntent.priorityPlayerFlows.length === 0
+  ) {
+    items.push(normalize({
+      id: "user-symptom-unmapped",
+      source: "user-reported-symptom",
+      stage: "DISCOVERY",
+      title:
+        "Map user-reported symptom to selected-artifact gameplay",
+      reason:
+        "The user reported one or more symptoms, but the translated intake has no bounded priority domain or player-flow mapping yet.",
+      missingProof:
+        "A bounded selected-artifact gameplay/domain interpretation for the reported symptom.",
+      validationTest:
+        "Map the reported symptom to all cheap plausible selected-artifact gameplay mechanisms, preserve alternatives when ambiguous, and do not classify an issue until evidence resolves the interpretation.",
+      validationGroupKey:
+        "user-input:unmapped-symptom",
+      subjectIds: [],
+      componentIds: [],
+      evidenceIds: [],
+    }));
+  }
+
+  return items;
+}
+
 function closureObligations(
   closure: GameplayModelClosureResult,
 ): AuditObligation[] {
@@ -547,6 +717,8 @@ function closureObligations(
 export function deriveAuditObligations(input: {
   readonly graph: GameplayScenarioGraph;
   readonly defectResolution: GameplayDefectResolutionGate;
+  readonly gameplayWorld: GameplayWorldModel;
+  readonly userIntent?: AuditUserIntentEnvelope;
   readonly gameplayClosure: GameplayModelClosureResult;
   readonly negativeSpace: readonly NegativeSpaceSignal[];
   readonly temporalRisks: readonly TemporalInteractionRisk[];
@@ -566,6 +738,11 @@ export function deriveAuditObligations(input: {
     ...resolutionObligations(
       input.graph,
       input.defectResolution,
+    ),
+    ...userIntentCoverageObligations(
+      input.userIntent,
+      input.gameplayWorld,
+      input.graph,
     ),
   ];
 
