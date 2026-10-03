@@ -173,11 +173,11 @@ function deriveSelectedMapAuditControl(input: {
     : [];
   const issueLanes = {
     BUG: allReadyIssues.filter(
-      (item) => item.reportIssueType === "BUG",
+      (item) => item.issueType === "BUG",
     ),
     DESIGN_MISMATCH: allReadyIssues.filter(
       (item) =>
-        item.reportIssueType === "DESIGN_MISMATCH",
+        item.issueType === "DESIGN_MISMATCH",
     ),
   } as const;
   const candidateGroups = proveAuthorized
