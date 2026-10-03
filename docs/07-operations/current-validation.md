@@ -50,6 +50,7 @@ audit <selected.mcworld>
   - UI/form reachability,
   - environment/gamerule contract,
   - gameplay-significant async command transactions;
+  - dynamically constructed `runCommand/runCommandAsync` effects that literal command analysis cannot exhaustively resolve;
 - player-flow reasoning remains:
   `ENTRY/JOIN → READY/START → SETUP → ACTIVE → PROGRESSION → TERMINAL → CLEANUP/REPLAY → RECOVERY`;
 - cross-system checkpoint requires all materially demanded scenario families, not merely one arbitrary cross-system scenario;
