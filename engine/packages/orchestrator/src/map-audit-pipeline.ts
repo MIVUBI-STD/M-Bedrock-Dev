@@ -55,8 +55,8 @@ import {
   type SelectedMapAuditIdentity,
 } from "./map-audit-identity.js";
 import {
-  projectReadyAuditDefects,
-  type ReadyAuditDefectProjection,
+  projectReadyAuditIssues,
+  type ReadyAuditIssueProjection,
 } from "./map-audit-defect-projection.js";
 import {
   deriveSelectedMapAuditRevision,
@@ -74,7 +74,7 @@ import {
 } from "./map-audit-authority.js";
 import {
   auditCandidateGroupCoverageIssues,
-  groupReadyAuditDefectsForCandidateCoverage,
+  groupReadyAuditIssuesForCandidateCoverage,
   type ReadyAuditCandidateGroup,
 } from "./map-audit-candidate-grouping.js";
 
@@ -130,7 +130,9 @@ export interface SelectedMapAuditRun {
     readonly modelMayAuthorizeCompletion: boolean;
   };
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
-  readonly readyDefects: readonly ReadyAuditDefectProjection[];
+  readonly readyIssues: readonly ReadyAuditIssueProjection[];
+  readonly readyBugs: readonly ReadyAuditIssueProjection[];
+  readonly readyDesignMismatches: readonly ReadyAuditIssueProjection[];
   readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
@@ -142,13 +144,17 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["mandatoryAuditProcedure"];
   readonly scenario:
     InspectArtifactResult["hiddenGameplayDefects"]["scenarioAudit"];
+  readonly capabilityDelivery:
+    InspectArtifactResult["hiddenGameplayDefects"]["capabilityDelivery"];
 }): Pick<
   SelectedMapAuditRun,
   | "executionTrace"
   | "currentStage"
   | "allowedNextAction"
   | "continuation"
-  | "readyDefects"
+  | "readyIssues"
+  | "readyBugs"
+  | "readyDesignMismatches"
   | "candidateGroups"
   | "status"
   | "blockingCheckpointIds"
@@ -158,16 +164,24 @@ function deriveSelectedMapAuditControl(input: {
     input.admission.firstBlockingStage === undefined ||
     input.admission.firstBlockingStage === "PROVE" ||
     input.admission.firstBlockingStage === "REPORT";
-  const readyDefects = proveAuthorized
-    ? projectReadyAuditDefects(
+  const readyIssues = proveAuthorized
+    ? projectReadyAuditIssues(
         input.scenario.graph,
         input.scenario.defectResolution,
+        input.capabilityDelivery,
       )
     : [];
+  const readyBugs = readyIssues.filter(
+    (item) => item.reportIssueType === "BUG",
+  );
+  const readyDesignMismatches = readyIssues.filter(
+    (item) =>
+      item.reportIssueType === "DESIGN_MISMATCH",
+  );
   const candidateGroups = proveAuthorized
-    ? groupReadyAuditDefectsForCandidateCoverage(
+    ? groupReadyAuditIssuesForCandidateCoverage(
         input.scenario.graph,
-        readyDefects,
+        readyIssues,
       )
     : [];
   const executionTrace = deriveAuditExecutionTrace({
@@ -212,7 +226,9 @@ function deriveSelectedMapAuditControl(input: {
     currentStage,
     allowedNextAction,
     continuation,
-    readyDefects,
+    readyIssues,
+    readyBugs,
+    readyDesignMismatches,
     candidateGroups,
     status:
       input.admission.status === "READY"
@@ -362,6 +378,9 @@ export async function runSelectedMapAudit(
     admission,
     procedure,
     scenario,
+    capabilityDelivery:
+      inspection.hiddenGameplayDefects
+        .capabilityDelivery,
   });
   return {
     schemaVersion: 1,
@@ -461,6 +480,9 @@ export function resolveSelectedMapAudit(
     admission,
     procedure: mandatoryAuditProcedure,
     scenario,
+    capabilityDelivery:
+      inspection.hiddenGameplayDefects
+        .capabilityDelivery,
   });
 
   return {
