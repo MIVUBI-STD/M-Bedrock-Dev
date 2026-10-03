@@ -65,6 +65,23 @@ describe("gameplay issue taxonomy", () => {
     });
   });
 
+  it("classifies ticking-area and residency failures as chunk simulation", () => {
+    expect(
+      classifyGameplayIssue({
+        gameplayStage: "SETUP",
+        scenarioLabel: "spawn-readiness",
+        componentIds: ["runtime:chunks"],
+        knowledgeDomain: "chunk-simulation",
+      }),
+    ).toEqual({
+      failureDomain: "chunk-simulation",
+      contributingDomains: [
+        "chunk-simulation",
+      ],
+      gameplayFlow: "SETUP",
+    });
+  });
+
   it("classifies player-facing UI information separately", () => {
     expect(
       classifyGameplayIssue({
