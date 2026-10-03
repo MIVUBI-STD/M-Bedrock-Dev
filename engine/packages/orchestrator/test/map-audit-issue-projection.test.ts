@@ -3,6 +3,7 @@ import {
   projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
   projectSignalNeedValidationAuditIssues,
+  groupNeedValidationTests,
 } from "../src/map-audit-issue-projection.js";
 import type {
   GameplayScenarioGraph,
@@ -278,6 +279,38 @@ describe("map audit issue projection", () => {
     expect(result.map(
       (item) => item.failureDomain,
     )).toContain("temporal-async");
+  });
+
+  it("consolidates multiple unresolved findings into one validation test group", () => {
+    const findings =
+      projectSignalNeedValidationAuditIssues(
+        [{
+          id: "negative-space:producer-without-consumer:state:round",
+          kind: "producer-without-consumer",
+          subjectId: "state:round",
+          evidenceIds: ["state:write"],
+          reason:
+            "State/event is produced but no consuming gameplay path is present.",
+        }, {
+          id: "negative-space:entry-without-exit:state:round",
+          kind: "entry-without-exit",
+          subjectId: "state:round",
+          evidenceIds: ["state:enter"],
+          reason:
+            "Gameplay state is reachable but has no grounded exit.",
+        }],
+        [],
+      );
+
+    const groups = groupNeedValidationTests(
+      findings,
+    );
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.findingIds).toHaveLength(2);
+    expect(groups[0]?.key).toBe(
+      "negative-space:state:round",
+    );
   });
 
   it("separates design mismatch from implementation bug in one projection", () => {
