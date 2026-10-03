@@ -162,6 +162,14 @@ This removes duplicate gate logic while preserving fail-closed behavior.
 
 Static, runtime, and tester inputs are evidence provenance only. The canonical term is `evidenceRoute`; the legacy field `route` remains only as a compatibility alias inside report-candidate plumbing. These values must never be interpreted as alternate audit workflows.
 
+### CLI lane cleanup
+
+Production selected-map audit still has exactly one command: `audit`.
+
+Arena baseline/corpus/adapter, corpus calibration, script-usage, and all `dev-*` diagnostic commands are now consistently gated by `MBEDROCK_ENGINEERING_TOOLS=1`. They remain bounded engineering/reliability tools and cannot be mistaken for alternate production audit entrypoints.
+
+Distinct non-audit product operations such as compare, package roundtrip, repository task planning, and repair verification remain separate workflows by design.
+
 ### Single-flow ownership
 
 - `map-audit-pipeline.ts` owns production entry and continuation.
