@@ -50,7 +50,6 @@ export interface ProjectRecord {
   readonly projectId: string;
   readonly projectName: string;
   readonly taskClass: ProjectTaskClass;
-  readonly status: ProjectLifecycleStatus;
   readonly revision: number;
   readonly artifact: ProjectArtifactBinding;
   readonly work: ProjectWorkReference;
@@ -102,7 +101,6 @@ export interface ProjectDrivePublishReceipt {
   readonly schemaVersion: 1;
   readonly projectId: string;
   readonly snapshotFingerprint: string;
-  readonly status: "PARTIAL" | "COMPLETE";
   readonly files: readonly DrivePublishedFile[];
   readonly receiptFingerprint: string;
 }
@@ -111,13 +109,6 @@ export interface ProjectRegistry {
   readonly schemaVersion: 1;
   readonly projects: readonly ProjectRecord[];
 }
-
-const PROJECT_STATUSES =
-  new Set<ProjectLifecycleStatus>([
-    "working",
-    "approved",
-    "drive-published",
-  ]);
 
 const PROJECT_TASK_CLASSES =
   new Set<ProjectTaskClass>([
@@ -195,11 +186,6 @@ export function normalizeProjectRecord(
       "Project record artifact/work/knowledge/publication must be objects.",
     );
   }
-  if (!PROJECT_STATUSES.has(input.status)) {
-    throw new Error(
-      "Unsupported project lifecycle status.",
-    );
-  }
   if (!PROJECT_TASK_CLASSES.has(input.taskClass)) {
     throw new Error(
       "Unsupported project task class.",
@@ -237,24 +223,13 @@ export function normalizeProjectRecord(
     );
   }
   if (
-    (
-      input.status === "approved" ||
-      input.status === "drive-published"
-    ) &&
+    input.publication
+      .drivePublishReceiptFingerprint?.trim() &&
     !input.publication
       .approvalSnapshotFingerprint?.trim()
   ) {
     throw new Error(
-      "Approved project state requires approvalSnapshotFingerprint.",
-    );
-  }
-  if (
-    input.status === "drive-published" &&
-    !input.publication
-      .drivePublishReceiptFingerprint?.trim()
-  ) {
-    throw new Error(
-      "drive-published project state requires drivePublishReceiptFingerprint.",
+      "Drive publication proof requires approvalSnapshotFingerprint.",
     );
   }
 
@@ -263,7 +238,6 @@ export function normalizeProjectRecord(
     projectId: clean(input.projectId),
     projectName: clean(input.projectName),
     taskClass: input.taskClass,
-    status: input.status,
     revision: input.revision,
     artifact: {
       artifactId:
@@ -355,6 +329,26 @@ export function normalizeProjectRecord(
         : {}),
     },
   };
+}
+
+export function projectLifecycleStatus(
+  project: ProjectRecord,
+): ProjectLifecycleStatus {
+  if (
+    project.publication
+      .drivePublishReceiptFingerprint
+      ?.trim()
+  ) {
+    return "drive-published";
+  }
+  if (
+    project.publication
+      .approvalSnapshotFingerprint
+      ?.trim()
+  ) {
+    return "approved";
+  }
+  return "working";
 }
 
 export function normalizeProjectRegistry(
