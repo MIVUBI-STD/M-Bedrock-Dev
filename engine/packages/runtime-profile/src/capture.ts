@@ -38,6 +38,15 @@ export function captureMinecraftRuntimeProfile(
   options: RuntimeProfileCaptureOptions = {},
 ): CapturedMinecraftRuntimeProfile {
   const errors = validateMinecraftRuntimeProfile(profile);
+  const evidence = options.evidence ?? [];
+  if (
+    evidence.length === 0 ||
+    evidence.some((item) => !item.id.trim())
+  ) {
+    errors.push(
+      "Runtime profile capture requires at least one non-empty provenance evidence reference.",
+    );
+  }
   if (errors.length > 0) {
     throw new Error(
       "Invalid Minecraft runtime profile capture: " +
@@ -49,7 +58,7 @@ export function captureMinecraftRuntimeProfile(
     schemaVersion: 1,
     profile,
     fingerprint: runtimeProfileFingerprint(profile),
-    evidence: options.evidence ?? [],
+    evidence,
     ...(options.capturedAt !== undefined
       ? { capturedAt: options.capturedAt }
       : {}),
