@@ -101,6 +101,12 @@ function nonEmpty(value: string | undefined): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+export function proofSaturationFamilyCriteria(
+  domain: GameplayIssueFailureDomain,
+): readonly string[] {
+  return [...FAMILY_CRITERIA[domain]];
+}
+
 export function assessReadyResolutionSaturation(
   graph: GameplayScenarioGraph,
   resolution: GameplayDefectResolution,
