@@ -316,7 +316,7 @@ Each failure family also carries `familyProofCriteria[]` as domain-specific proo
 
 The deterministic PROVEN projection gate now enforces both universal saturation and an explicit `FamilyProofReceipt`. Each required family criterion must be satisfied and bound to concrete evidence before the finding may project as PROVEN.
 
-If universal saturation is incomplete, a `CONFIRMED_DEFECT_READY` resolution is not projected as PROVEN. The honesty gate then prevents `READY_FOR_REVIEW`.
+If universal or family saturation is incomplete, a `CONFIRMED_DEFECT_READY` resolution is not projected as PROVEN. It remains visible as NEED_VALIDATION. Review readiness is allowed only when the unresolved proof is explicitly preserved and the honesty gate passes; per-finding proof completeness remains expressed by PROVEN versus NEED_VALIDATION.
 
 Proof navigation should stop only when universal and family-specific proof are both saturated. Unsaturated confirmation-ready findings remain visible as NEED_VALIDATION and are tracked by the honesty gate.
 
