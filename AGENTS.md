@@ -138,6 +138,24 @@ A user-reported symptom, suspicion, expectation, design claim, historical exampl
 
 If a material user-reported symptom cannot be reconciled with discovered selected-artifact gameplay, retain it as an `Audit Obligation`. Do not silently drop it and do not force it into an issue lane.
 
+## Prompt confirmation checkpoint
+
+When a selected-map audit is initiated from user wording, do not start production analysis immediately after interpretation.
+
+First:
+
+```text
+normalize user intent
+→ show one compact interpretation summary in chat
+→ user explicitly confirms/corrects
+→ create AuditUserIntentConfirmation
+→ runSelectedMapAudit()
+```
+
+The receipt is bound to the normalized intent fingerprint. Any material change to the interpretation invalidates the previous confirmation.
+
+This checkpoint confirms communication accuracy only. It does not confirm gameplay truth, Expected/Actual behavior, or issue classification.
+
 ## Single linear production audit
 
 There is one operator entry and one ordered production flow:
