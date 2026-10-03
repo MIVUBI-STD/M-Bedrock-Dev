@@ -173,7 +173,7 @@ describe("project publication lifecycle", () => {
         snapshot,
       })
     ).toThrow(
-      "Drive publish plan requires project status approved.",
+      "Drive publish plan requires derived lifecycle state approved.",
     );
   });
 
