@@ -1,3 +1,6 @@
+import {
+  projectLifecycleStatus,
+} from "../../../project-model/src/index.js";
 import type {
   DriveProjectBinding,
   ProjectApprovalSnapshot,
@@ -86,7 +89,9 @@ export function buildProjectDrivePublishPlan(
     );
   }
   if (
-    input.project.status !== "approved"
+    projectLifecycleStatus(
+      input.project,
+    ) !== "approved"
   ) {
     throw new Error(
       "Drive publish plan requires project status approved.",
