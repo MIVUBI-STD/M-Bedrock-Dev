@@ -34,6 +34,9 @@ export async function approveAndPersistProject(input: {
   readonly workspace: ProjectWorkspaceLayout;
   readonly project: ProjectRecord;
   readonly deliverables: readonly ProjectDeliverableRef[];
+  readonly blockingReasons?: readonly string[];
+  readonly requireBugReport?: boolean;
+  readonly requireAuditComplete?: boolean;
 }): Promise<{
   readonly project: ProjectRecord;
   readonly snapshot:
@@ -52,6 +55,12 @@ export async function approveAndPersistProject(input: {
     createProjectApprovalSnapshot({
       project: input.project,
       deliverables: input.deliverables,
+      blockingReasons:
+        input.blockingReasons,
+      requireBugReport:
+        input.requireBugReport,
+      requireAuditComplete:
+        input.requireAuditComplete,
     });
   const approved =
     approveProject(
