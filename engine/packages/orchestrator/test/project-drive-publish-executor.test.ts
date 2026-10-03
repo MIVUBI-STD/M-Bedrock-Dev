@@ -12,10 +12,10 @@ describe("project Drive publish executor", () => {
           projectId: "defense-v2",
           snapshotFingerprint:
             "sha256:snapshot",
-          destinationFolderId:
-            "drive-folder",
           items: [{
             kind: "bug-report",
+            destinationRole:
+              "project-root",
             sourcePath:
               "workspace/reports/report.json",
             fingerprint:
@@ -48,10 +48,10 @@ describe("project Drive publish executor", () => {
           projectId: "defense-v2",
           snapshotFingerprint:
             "sha256:snapshot",
-          destinationFolderId:
-            "drive-folder",
           items: [{
             kind: "map-audit-report",
+            destinationRole:
+              "project-root",
             sourcePath:
               "workspace/projects/defense-v2/output/audit.html",
             fingerprint:
@@ -73,6 +73,8 @@ describe("project Drive publish executor", () => {
     expect(result.failed).toEqual([]);
     expect(result.files).toEqual([{
       kind: "map-audit-report",
+      destinationRole:
+        "project-root",
       fileId: "file-audit",
       fileName: "audit.html",
       fingerprint: "sha256:audit",
