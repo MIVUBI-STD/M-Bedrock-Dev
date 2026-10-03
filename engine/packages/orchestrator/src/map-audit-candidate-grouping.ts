@@ -15,6 +15,12 @@ export interface ReadyAuditCandidateGroup {
   readonly causalLinkIds: readonly string[];
   readonly scenarioIds: readonly string[];
   readonly evidenceIds: readonly string[];
+  readonly gameplayFlows:
+    readonly ReadyAuditIssueProjection["gameplayFlow"][];
+  readonly failureDomains:
+    readonly ReadyAuditIssueProjection["failureDomain"][];
+  readonly contributingDomains:
+    readonly ReadyAuditIssueProjection["failureDomain"][];
   readonly sharedSubjectIds: readonly string[];
   readonly sharedComponentIds: readonly string[];
 }
@@ -111,6 +117,17 @@ export function groupReadyAuditIssuesForCandidateCoverage(
         evidenceIds: unique(
           items.flatMap((item) => item.evidenceIds),
         ),
+        gameplayFlows: unique(
+          items.map((item) => item.gameplayFlow),
+        ) as ReadyAuditIssueProjection["gameplayFlow"][],
+        failureDomains: unique(
+          items.map((item) => item.failureDomain),
+        ) as ReadyAuditIssueProjection["failureDomain"][],
+        contributingDomains: unique(
+          items.flatMap(
+            (item) => item.contributingDomains,
+          ),
+        ) as ReadyAuditIssueProjection["failureDomain"][],
         sharedSubjectIds: intersection(
           items.map((item) => item.subjectIds),
         ),
