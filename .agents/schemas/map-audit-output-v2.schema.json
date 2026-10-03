@@ -446,8 +446,8 @@
               "evidenceSubstitutions",
               "historicalSearchHints",
               "historyPressure",
-              "saturationCriteria",
-              "saturationStopRule",
+              "familyProofCriteria",
+              "proofStopRule",
               "runtimeLastResort"
             ],
             "properties": {
@@ -611,19 +611,19 @@
                 "type": "number",
                 "minimum": 0
               },
-              "saturationCriteria": {
+              "runtimeLastResort": {
+                "const": true
+              },
+              "familyProofCriteria": {
                 "type": "array",
                 "items": {
                   "type": "string",
                   "minLength": 1
                 }
               },
-              "saturationStopRule": {
+              "proofStopRule": {
                 "type": "string",
                 "minLength": 1
-              },
-              "runtimeLastResort": {
-                "const": true
               }
             },
             "additionalProperties": true
@@ -1079,8 +1079,8 @@
               "evidenceSubstitutions",
               "historicalSearchHints",
               "historyPressure",
-              "saturationCriteria",
-              "saturationStopRule",
+              "familyProofCriteria",
+              "proofStopRule",
               "runtimeLastResort"
             ],
             "properties": {
@@ -1244,19 +1244,19 @@
                 "type": "number",
                 "minimum": 0
               },
-              "saturationCriteria": {
+              "runtimeLastResort": {
+                "const": true
+              },
+              "familyProofCriteria": {
                 "type": "array",
                 "items": {
                   "type": "string",
                   "minLength": 1
                 }
               },
-              "saturationStopRule": {
+              "proofStopRule": {
                 "type": "string",
                 "minLength": 1
-              },
-              "runtimeLastResort": {
-                "const": true
               }
             },
             "additionalProperties": true
