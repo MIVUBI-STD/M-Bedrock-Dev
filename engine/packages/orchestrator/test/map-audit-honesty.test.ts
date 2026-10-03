@@ -137,6 +137,74 @@ describe("map audit honesty gate", () => {
     ).toEqual([]);
   });
 
+  it("treats unsaturated confirmed resolution as visible residue, not PROVEN debt", () => {
+    const contradictedGraph: GameplayScenarioGraph = {
+      ...graph,
+      causalLinks: [{
+        ...graph.causalLinks[0]!,
+        status: "CONTRADICTED",
+        reason: "Wave accounting can advance incorrectly.",
+      }],
+    };
+    const unsaturatedGate: GameplayDefectResolutionGate = {
+      ...gate,
+      contradictedCausalLinkIds: ["link:wave"],
+      confirmedDefectReadyIds: ["link:wave"],
+      resolutions: [{
+        causalLinkId: "link:wave",
+        scenarioId: "scenario:wave",
+        disposition: "CONFIRMED_DEFECT_READY",
+        gameplayTrigger: "Complete the wave.",
+        gameplayConsequence: "Wave progression may be wrong.",
+        expectedOutcome:
+          "Enemy remains accounted until completion.",
+        actualOutcome:
+          "Wave accounting can advance incorrectly.",
+        affectedScope: "objective:wave",
+        evidenceIds: ["e:entity"],
+        counterProofSearch: {
+          schemaVersion: 1,
+          policy: "bounded-counterproof-search",
+          searchedDimensions: [
+            "guard",
+            "scope",
+            "exclusion",
+          ],
+          scopeIds: ["objective:wave"],
+          evidenceIds: ["e:entity"],
+          exhaustiveWithinScope: true,
+          conclusion: "NO_BLOCKING_PROOF",
+        },
+      }],
+    };
+    const visible = {
+      ...visibleRuntimeFinding(),
+      validationReason:
+        "Family-specific proof remains incomplete.",
+      missingProof:
+        "Family proof criteria remain unresolved.",
+    };
+
+    const result = assessAuditHonesty({
+      graph: contradictedGraph,
+      gate: unsaturatedGate,
+      gameplayClosure: closure,
+      negativeSpace: [],
+      temporalRisks: [],
+      discoveryChallenges: [],
+      sharedResourceSignals: [],
+      compoundBoundaries: [],
+      accumulationGrowth: [],
+      visibleIssues: [visible],
+    });
+
+    expect(result.status).toBe("PASS");
+    expect(result.expectedProvenIds).toEqual([]);
+    expect(result.expectedVisibleResidueIds).toContain(
+      "link:wave",
+    );
+  });
+
   it("blocks review when a material unresolved residue is hidden", () => {
     const result = assessAuditHonesty({
       graph,
