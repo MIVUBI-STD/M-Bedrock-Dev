@@ -29,6 +29,7 @@ Physical placement does not create ownership. A copy, preview, export, spreadshe
 | Human-facing published report | derived self-contained HTML snapshot |
 | Optional application viewer | `apps/bug-report-ui/` projection only |
 | Revision history | Git history |
+| Approved historical issue incidents | `engine/reliability/catalogs/regressions.json` (derived/search knowledge, not current bug authority) |
 | Map binary/source artifacts | Google Drive |
 | Incoming/legacy QA material | import/reference only |
 
@@ -150,6 +151,22 @@ Absence from a later scan is not proof that a bug never existed or is fixed.
 `fixed: true` is canonical only after the orchestrator closes a repair through `completeBugReportFromClosedRepair()` with matching repair and preservation proof. New report creation always starts bugs open, and generic reconciliation preserves existing completion state without creating a new completion decision.
 
 Intermediate workflow labels such as "in progress", "ready for retest", or "reopened" are not persisted unless a proven product need later justifies a schema change.
+
+## Historical knowledge boundary
+
+Canonical current-version Bug Report V2 may feed durable issue history after project readiness:
+
+```text
+approved/current Bug Report V2
+→ orchestrator historical projection
+→ reliability regression catalog
+```
+
+The regression catalog is not another live bug database. It exists so future audits can ask what failed before, on which map/version, and which systems deserve earlier scrutiny.
+
+A later/current audit must still prove every issue from its selected artifact.
+
+Project registry stores only regression IDs/references; it does not copy the regression narrative.
 
 ## Publication boundary
 
