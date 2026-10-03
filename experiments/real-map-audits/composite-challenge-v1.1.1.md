@@ -1,8 +1,8 @@
 # Real Map Audit — Composite Challenge v1.1.1
 
-Status: source-proven real-map audit evidence  
+Status: real-map source audit complete for this pass  
 Authority: selected current Drive artifact only  
-Historical regression ingestion: not yet approved  
+Historical regression ingestion: none  
 Runtime execution: not performed
 
 ## Target
@@ -14,108 +14,148 @@ Runtime execution: not performed
 - Behavior Pack manifest version: `1.1.1`
 - Behavior Pack min engine version: `1.21.130`
 
-## Proven finding
+## Proven findings
 
-### BUG — Arena can restart while asynchronous block reset is still mutating the same arena
+**No source-proven gameplay defect is admitted in this pass.**
 
-Severity: Blocker  
-Proof: source-proven  
-Domain: game-flow / multiplayer-session / world-interaction
+This result is intentional. Composite embeds Attack/Defense systems, but issues from those maps were not copied into Composite unless the Composite-managed current path reproduced the same causal chain.
 
-#### Issue
+## False-positive removed — asynchronous reset vs arena reuse
 
-Composite starts the arena block reset asynchronously and does not await or gate on its completion. The session is then persisted as `idle`, while the reset continues chunk-by-chunk over later ticks. Start validation checks only party membership/readiness and therefore allows a fresh run to begin while the previous reset is still modifying the arena.
+A previous source pass treated Composite reset/reuse as a Blocker because `resetPlacedBlocks()` launches an async reset and the session becomes idle immediately.
 
-#### Expected
+That conclusion is not supported after calculating the selected artifact's actual reset workload.
 
-An arena must remain unavailable for a new match until its previous block reset completes, or start admission must explicitly fail while `ResetMapService` reports that arena as resetting.
+### Current reset workload
 
-#### Observed source behavior
-
-1. Reset is asynchronous and multi-tick:
+`resetConfig.area` is:
 
 ```text
-behavior_packs/BP/scripts/chunks/chunk-2GRFUQFH.js:7881-7921
-resetMap(...)
-→ generateChunks(...)
-→ processChunksOverTime(...)
+x: -66 .. 82
+y: -60 .. -27
+z: -203 .. -41
+chunkSize: 32
+chunksPerTick: 5
+```
+
+This produces:
+
+```text
+X chunks = 5
+Y chunks = 2
+Z chunks = 6
+total    = 60 chunks
+```
+
+At 5 chunks per tick, the configured reset is scheduled over approximately:
+
+```text
+60 / 5 = 12 ticks
+```
+
+Relevant source:
+
+```text
+chunk-2GRFUQFH.js:7827-7835
+reset bounds / chunkSize / chunksPerTick
 ```
 
 ```text
-behavior_packs/BP/scripts/chunks/chunk-2GRFUQFH.js:7951+
-process only chunksPerTick
-→ continue across later ticks
+chunk-2GRFUQFH.js:7923-7949
+generateChunks(...)
 ```
-
-2. Normal game end fires reset without awaiting it, then immediately exposes the arena as idle:
 
 ```text
-behavior_packs/BP/scripts/chunks/chunk-2GRFUQFH.js:15369-15380
-resetArenaPlacedBlocks(arenaId, reason)
-...
-saveSession(... status: "idle")
+chunk-2GRFUQFH.js:7951-7985
+processChunksOverTime(...)
+→ at most 5 chunks each tick
 ```
 
-3. Admin reset has the same ordering:
+Composite does expose the session as reusable before the reset Promise is awaited:
 
 ```text
-behavior_packs/BP/scripts/chunks/chunk-2GRFUQFH.js:15994-16032
-resetArenaPlacedBlocks(...)
-...
-saveSession(... status: "idle")
-
-resetArenaPlacedBlocks(...)
-→ void ResetMapService.resetMap(...)
+chunk-2GRFUQFH.js:28300-28305
+resetPlacedBlocks(...)
+CompositeSessionService.reset(...)
+recentCompositeResetUntilByArena = now + AUTO_START_RESET_COOLDOWN_TICKS
 ```
 
-4. `validateStart()` checks party size/readiness only. It does not check `ResetMapService.resetStateByArena` / reset-in-progress state:
+However the same selected artifact applies a **5-second / 100-tick auto-start reset cooldown** before reuse. With the configured 60-chunk reset, source does not establish an overlap.
+
+Therefore the old reset-overlap finding is removed rather than retained as a speculative bug.
+
+## Checked current Composite paths
+
+### Composite reload/recovery
+
+Composite has a dedicated recovery owner:
 
 ```text
-behavior_packs/BP/scripts/chunks/chunk-2GRFUQFH.js:13756-13782
+CompositeRecoveryService
+→ recover countdown / preload / prepare / gameplay / level-complete
+→ restore Attack snapshot
+→ restore Defense snapshot
+→ restore timed-wave snapshot
 ```
 
-5. `startGame()` accepts the now-idle arena immediately after that validation and enters countdown:
+Relevant source:
 
 ```text
-behavior_packs/BP/scripts/chunks/chunk-2GRFUQFH.js:13784-13812
+chunk-2GRFUQFH.js:25811-26060
 ```
 
-#### Reproduction path
+Active gameplay recovery restores both module snapshots and resumes timed waves only after preload/recovery completes. No current source contradiction was established.
 
-1. Run a Composite arena normally.
-2. End the match or invoke the game reset path.
-3. Immediately ready a valid party for the same arena before the map reset finishes.
-4. Start/auto-start the same arena.
-5. The new countdown/session begins while `ResetMapService.processChunksOverTime()` is still clearing/recovering blocks in that arena.
-6. Observe fresh player-built or gameplay-relevant blocks being removed/recovered by the previous run's reset.
+### Respawn/reconnect ownership
 
-#### Player-visible consequence
+Composite has explicit spectator recovery that checks pending respawn end ticks from both CombatTracker implementations before recovering a player from the spectator area:
 
-The new run can begin on a map that is still being mutated by stale cleanup. Fresh placements or world state can disappear during countdown/buy/gameplay, producing corrupted setup/progression and an unreliable arena baseline.
+```text
+chunk-2GRFUQFH.js:29093-29105
+hasActivePendingRespawn(...)
+shouldRecoverStuckSpectator(...)
+```
 
-#### Root cause
+```text
+chunk-2GRFUQFH.js:29171-29191
+get pending respawn end tick from Defense + Attack trackers
+→ do not recover while pending respawn is active
+```
 
-Arena reuse is controlled by persisted session status, while map reset ownership lives separately in `ResetMapService`. The reset is fire-and-forget and start admission does not reconcile those two owners.
+The reconnect exploit proven in standalone Defense/Attack was therefore not automatically copied into the Composite-managed runtime.
 
-#### Repair direction
+### Delayed spawn retry
 
-Do not add another global manager. Use one of:
+The WaveScheduler supports `delaySeconds`, but the selected Composite level configuration does not currently define delayed spawn entries. The generic branch is not sufficient evidence of a current gameplay defect.
 
-- await reset completion before writing/exposing the reusable idle state; or
-- make `validateStart()`/start admission reject an arena while `ResetMapService` reports reset-in-progress.
+## Audit obligations — not bugs
 
-The preferred invariant is: **arena reusable ⇒ previous world reset complete**.
+### Terminal event ordering
 
-## Checked but not admitted as bugs
+Composite treats:
 
-### Ticking areas
+```text
+ATTACK_FLAG_DELIVERED
+→ level complete
 
-Composite's setup layer creates lobby/permission ticking areas only; it does not use Defense's per-arena ticking lease manager. The Defense lease-release bug was therefore not copied into Composite.
+DEFENSE_FLAG_BREACHED / team wipe
+→ level fail
+```
 
-### Historical/source documents
+If opposing terminal events occur effectively together, outcome ordering depends on event delivery. The selected source does not define a separate simultaneous-terminal precedence rule.
 
-Drive changelog/guide/Technical Docs were not used as current gameplay authority.
+This remains a narrow runtime validation obligation, not a source-proven bug.
 
-## Next action
+### Entity spawn retries
 
-Composite v1.1.1 source pass has one independently source-proven blocker pending approval. Do not ingest it into the historical regression catalog until the approval boundary is crossed.
+EntityLoader can retry failed spawns for a long bounded period. Current Composite configuration does not establish the same delayed-group causal chain proven in standalone Defense. Keep retry behavior under targeted validation rather than promoting it from historical similarity.
+
+## Result
+
+Composite Challenge v1.1.1 currently has:
+
+- **0 source-proven gameplay bugs**
+- **2 narrow validation obligations**
+- **1 previous false-positive finding removed after bounded current-artifact proof**
+
+Do not create historical regression entries for this map from this pass.
