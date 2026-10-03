@@ -103,9 +103,10 @@ export interface MapAuditOutputV2 {
     readonly notes?: string;
   }[];
   readonly multiArena: {
-    readonly supported: boolean;
+    readonly detected: boolean;
     readonly visibleArenaCount: number | null;
-    readonly concurrentArenaLimit: number | null;
+    readonly declaredConcurrentArenaLimit: number | null;
+    readonly safeConcurrentArenaLimit: number | null;
     readonly queueBehavior: string;
     readonly isolationRules: readonly string[];
   };
@@ -414,12 +415,14 @@ export function projectMapAuditOutputV2(input: {
     gameplayFlow: PLAYER_FLOW,
     stateTransitions,
     multiArena: {
-      supported: world.arenas.detected,
+      detected: world.arenas.detected,
       visibleArenaCount:
         world.arenas.count ?? null,
-      concurrentArenaLimit:
-        world.arenas.safeConcurrentArenas ??
+      declaredConcurrentArenaLimit:
         world.arenas.declaredConcurrentArenaLimit ??
+        null,
+      safeConcurrentArenaLimit:
+        world.arenas.safeConcurrentArenas ??
         null,
       queueBehavior:
         world.arenas.detected
