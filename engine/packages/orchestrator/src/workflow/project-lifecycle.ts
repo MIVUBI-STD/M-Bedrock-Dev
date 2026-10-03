@@ -75,19 +75,70 @@ export function updateProjectRecord(
 ): ProjectRecord {
   const artifact =
     update.artifact ?? current.artifact;
+  const work = {
+    ...(update.work ?? current.work),
+  };
 
   const materiallyChanged =
     artifact.artifactFingerprint !==
       current.artifact.artifactFingerprint ||
-    JSON.stringify(update.work ?? current.work) !==
+    JSON.stringify(work) !==
       JSON.stringify(current.work) ||
     (
       update.bugReportPath !== undefined &&
-      update.bugReportPath !==
-        current.knowledge.bugReportPath
+      update.bugReportPath.trim() !==
+        (current.knowledge.bugReportPath ?? "")
     );
 
-  return {
+  const knowledge = {
+    ...(update.bugReportPath?.trim()
+      ? { bugReportPath: update.bugReportPath.trim() }
+      : current.knowledge.bugReportPath === undefined
+        ? {}
+        : { bugReportPath: current.knowledge.bugReportPath }),
+    historicalRegressionIds: unique(
+      update.historicalRegressionIds ??
+        current.knowledge.historicalRegressionIds,
+    ),
+    failurePatternIds: unique(
+      update.failurePatternIds ??
+        current.knowledge.failurePatternIds,
+    ),
+    mapKnowledgeIds: unique(
+      update.mapKnowledgeIds ??
+        current.knowledge.mapKnowledgeIds,
+    ),
+  };
+
+  const publication = {
+    ...(update.driveFolderId?.trim()
+      ? { driveFolderId: update.driveFolderId.trim() }
+      : current.publication.driveFolderId === undefined
+        ? {}
+        : { driveFolderId: current.publication.driveFolderId }),
+    ...(materiallyChanged
+      ? {}
+      : {
+          ...(current.publication
+            .approvalSnapshotFingerprint === undefined
+            ? {}
+            : {
+                approvalSnapshotFingerprint:
+                  current.publication
+                    .approvalSnapshotFingerprint,
+              }),
+          ...(current.publication
+            .drivePublishReceiptFingerprint === undefined
+            ? {}
+            : {
+                drivePublishReceiptFingerprint:
+                  current.publication
+                    .drivePublishReceiptFingerprint,
+              }),
+        }),
+  };
+
+  const candidate: ProjectRecord = {
     ...current,
     status:
       materiallyChanged &&
@@ -97,60 +148,24 @@ export function updateProjectRecord(
       )
         ? "working"
         : current.status,
-    revision: current.revision + 1,
     artifact,
-    work: {
-      ...(update.work ?? current.work),
-    },
-    knowledge: {
-      ...(update.bugReportPath?.trim()
-        ? { bugReportPath: update.bugReportPath.trim() }
-        : current.knowledge.bugReportPath === undefined
-          ? {}
-          : { bugReportPath: current.knowledge.bugReportPath }),
-      historicalRegressionIds: unique(
-        update.historicalRegressionIds ??
-          current.knowledge.historicalRegressionIds,
-      ),
-      failurePatternIds: unique(
-        update.failurePatternIds ??
-          current.knowledge.failurePatternIds,
-      ),
-      mapKnowledgeIds: unique(
-        update.mapKnowledgeIds ??
-          current.knowledge.mapKnowledgeIds,
-      ),
-    },
-    publication: {
-      ...(update.driveFolderId?.trim()
-        ? { driveFolderId: update.driveFolderId.trim() }
-        : current.publication.driveFolderId === undefined
-          ? {}
-          : { driveFolderId: current.publication.driveFolderId }),
-      ...(materiallyChanged
-        ? {}
-        : {
-            ...(current.publication
-              .approvalSnapshotFingerprint === undefined
-              ? {}
-              : {
-                  approvalSnapshotFingerprint:
-                    current.publication
-                      .approvalSnapshotFingerprint,
-                }),
-            ...(current.publication
-              .drivePublishReceiptFingerprint === undefined
-              ? {}
-              : {
-                  drivePublishReceiptFingerprint:
-                    current.publication
-                      .drivePublishReceiptFingerprint,
-                }),
-          }),
-    },
+    work,
+    knowledge,
+    publication,
+  };
+
+  if (
+    JSON.stringify(candidate) ===
+    JSON.stringify(current)
+  ) {
+    return current;
+  }
+
+  return {
+    ...candidate,
+    revision: current.revision + 1,
   };
 }
-
 export function assessProjectApprovalReadiness(input: {
   readonly project: ProjectRecord;
   readonly deliverables: readonly ProjectDeliverableRef[];
