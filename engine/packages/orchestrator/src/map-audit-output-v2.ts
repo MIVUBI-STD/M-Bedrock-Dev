@@ -160,7 +160,7 @@ export interface MapAuditOutputV2 {
   readonly bugs: readonly MapAuditOutputV2Finding[];
   readonly designMismatches:
     readonly MapAuditOutputV2Finding[];
-  readonly auditObligations:
+  readonly auditObligations?:
     readonly AuditObligation[];
   readonly validationTests:
     readonly AuditValidationTestGroup[];
@@ -525,7 +525,7 @@ export function projectMapAuditOutputV2(input: {
         projectFinding,
       ),
     auditObligations:
-      [...input.auditObligations],
+      [...(input.auditObligations ?? [])],
     validationTests:
       [...input.validationTests],
     honesty: input.honesty,
