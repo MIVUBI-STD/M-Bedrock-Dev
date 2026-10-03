@@ -2,6 +2,9 @@ import type {
   ProjectApprovalSnapshot,
   ProjectRecord,
 } from "../../../project-model/src/index.js";
+import {
+  validateProjectApprovalSnapshot,
+} from "./project-lifecycle.js";
 
 export interface ProjectDrivePublishPlanItem {
   readonly kind:
@@ -24,6 +27,16 @@ export function buildProjectDrivePublishPlan(input: {
   readonly project: ProjectRecord;
   readonly snapshot: ProjectApprovalSnapshot;
 }): ProjectDrivePublishPlan {
+  const snapshotIssues =
+    validateProjectApprovalSnapshot(
+      input.snapshot,
+    );
+  if (snapshotIssues.length > 0) {
+    throw new Error(
+      snapshotIssues.join("; "),
+    );
+  }
+
   if (input.project.status !== "approved") {
     throw new Error(
       "Drive publish plan requires project status approved.",
