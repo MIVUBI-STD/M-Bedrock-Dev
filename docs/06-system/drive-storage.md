@@ -242,35 +242,47 @@ Development/
 
 ## Project publication gate
 
-M-Bedrock publishes project files to Drive only from an approved ProjectApprovalSnapshot.
-
-Canonical flow:
+M-Bedrock publishes only from an approved immutable snapshot.
 
 ```text
 working project
-→ completeness gate
-→ ready-for-approval
-→ historical issue sync when applicable
-→ immutable ProjectApprovalSnapshot
-→ approved
+→ derive approval readiness
+→ explicit user approval
+→ ProjectApprovalSnapshot
+→ approval fingerprint committed
 → ProjectDrivePublishPlan
-→ upload approved deliverables only
-→ fingerprint/file-id verification
+→ destination roles resolved from one DriveProjectBinding
+→ verified upload results
 → ProjectDrivePublishReceipt
-→ drive-published
+→ derive publication completeness
+→ publication fingerprint committed when complete
 ```
+
+There is no persisted `ready-for-approval`, `PARTIAL`, or `COMPLETE` lifecycle/status field.
 
 Rules:
 
-1. Working/project-internal files are not uploaded merely because they exist.
-2. The Drive plan contains only deliverables frozen into the approved snapshot.
-3. An unapproved extra file is rejected by the canonical publish path.
-4. PARTIAL publication is recorded but must not mark the project as drive-published.
-5. Only a COMPLETE receipt with matching snapshot fingerprint may close publication.
-6. A material artifact/report/deliverable change invalidates approval and requires a new approval snapshot before another publication.
-7. Work Session, project registry, semantic evidence, Audit Obligations, caches, and engine control-plane state remain outside Drive.
+1. Approval readiness is computed from current owners and is never stored.
+2. Project Drive folder identity exists only in `DriveProjectBinding`.
+3. Approved deliverables carry semantic destination roles, not persistent folder-id copies.
+4. The publish planner resolves each role through the binding.
+5. Working/internal files are never uploaded merely because they exist.
+6. Files outside the approval snapshot are rejected.
+7. Publication completeness is derived by comparing approved deliverables with verified receipt files.
+8. Only a complete receipt allows the registry to store a publication receipt fingerprint.
+9. Material project changes clear approval/publication proof pointers.
+10. Work Session, registry internals, Audit Obligations, semantic graphs, caches, and engine state remain outside Drive.
 
-Drive is therefore approved human-facing storage, not the engine/project-state database.
+Semantic destination roles:
+
+```text
+project-root
+development-source
+development-version
+technical-docs
+```
+
+Drive remains approved human-facing storage, not a second project-state database.
 
 ## Drive root
 
