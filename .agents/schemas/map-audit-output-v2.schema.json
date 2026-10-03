@@ -14,7 +14,9 @@
     "multiArena",
     "coverage",
     "bugs",
-    "designMismatches"
+    "designMismatches",
+    "honesty",
+    "validationTests"
   ],
   "properties": {
     "schemaVersion": {
@@ -428,6 +430,203 @@
           "validationTest": {
             "type": "string",
             "minLength": 1
+          },
+          "validationGroupKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "proofNavigation": {
+            "type": "object",
+            "required": [
+              "recipeId",
+              "proofGoal",
+              "provenClaims",
+              "missingClaims",
+              "route",
+              "evidenceSubstitutions",
+              "historicalSearchHints",
+              "historyPressure",
+              "saturationCriteria",
+              "saturationStopRule",
+              "runtimeLastResort"
+            ],
+            "properties": {
+              "recipeId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "proofGoal": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenClaims": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "missingClaims": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "route": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "order",
+                    "knowledgeDomain",
+                    "question",
+                    "purpose",
+                    "evidencePreference"
+                  ],
+                  "properties": {
+                    "order": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "knowledgeDomain": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "question": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "purpose": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "evidencePreference": {
+                      "enum": [
+                        "selected-artifact",
+                        "cross-domain",
+                        "formal",
+                        "runtime"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "evidenceSubstitutions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "replaces",
+                    "requiredEvidence",
+                    "applicableBecause",
+                    "decisionRule"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "replaces": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "requiredEvidence": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "applicableBecause": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "decisionRule": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "historicalSearchHints": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "family",
+                    "priority",
+                    "knowledgeDomains",
+                    "searchQuestions",
+                    "matchedBecause"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "family": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "priority": {
+                      "enum": [
+                        "high",
+                        "medium"
+                      ]
+                    },
+                    "knowledgeDomains": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "searchQuestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "matchedBecause": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "historyPressure": {
+                "type": "number",
+                "minimum": 0
+              },
+              "saturationCriteria": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "saturationStopRule": {
+                "type": "string",
+                "minLength": 1
+              },
+              "runtimeLastResort": {
+                "const": true
+              }
+            },
+            "additionalProperties": true
           }
         },
         "allOf": [
@@ -474,7 +673,9 @@
               "required": [
                 "validationReason",
                 "missingProof",
-                "validationTest"
+                "validationTest",
+                "validationGroupKey",
+                "proofNavigation"
               ],
               "not": {
                 "required": [
@@ -862,6 +1063,203 @@
           "validationTest": {
             "type": "string",
             "minLength": 1
+          },
+          "validationGroupKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "proofNavigation": {
+            "type": "object",
+            "required": [
+              "recipeId",
+              "proofGoal",
+              "provenClaims",
+              "missingClaims",
+              "route",
+              "evidenceSubstitutions",
+              "historicalSearchHints",
+              "historyPressure",
+              "saturationCriteria",
+              "saturationStopRule",
+              "runtimeLastResort"
+            ],
+            "properties": {
+              "recipeId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "proofGoal": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenClaims": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "missingClaims": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "route": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "order",
+                    "knowledgeDomain",
+                    "question",
+                    "purpose",
+                    "evidencePreference"
+                  ],
+                  "properties": {
+                    "order": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "knowledgeDomain": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "question": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "purpose": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "evidencePreference": {
+                      "enum": [
+                        "selected-artifact",
+                        "cross-domain",
+                        "formal",
+                        "runtime"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "evidenceSubstitutions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "replaces",
+                    "requiredEvidence",
+                    "applicableBecause",
+                    "decisionRule"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "replaces": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "requiredEvidence": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "applicableBecause": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "decisionRule": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "historicalSearchHints": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "family",
+                    "priority",
+                    "knowledgeDomains",
+                    "searchQuestions",
+                    "matchedBecause"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "family": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "priority": {
+                      "enum": [
+                        "high",
+                        "medium"
+                      ]
+                    },
+                    "knowledgeDomains": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "searchQuestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "matchedBecause": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "historyPressure": {
+                "type": "number",
+                "minimum": 0
+              },
+              "saturationCriteria": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "saturationStopRule": {
+                "type": "string",
+                "minLength": 1
+              },
+              "runtimeLastResort": {
+                "const": true
+              }
+            },
+            "additionalProperties": true
           }
         },
         "allOf": [
@@ -908,7 +1306,9 @@
               "required": [
                 "validationReason",
                 "missingProof",
-                "validationTest"
+                "validationTest",
+                "validationGroupKey",
+                "proofNavigation"
               ],
               "not": {
                 "required": [
@@ -937,6 +1337,113 @@
         ],
         "additionalProperties": true
       }
+    },
+    "validationTests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "key",
+          "findingIds",
+          "test"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "findingIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "test": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "honesty": {
+      "type": "object",
+      "required": [
+        "policy",
+        "status",
+        "expectedVisibleResidueIds",
+        "visibleNeedValidationIds",
+        "expectedProvenIds",
+        "visibleProvenIds",
+        "missingVisibleResidueIds",
+        "missingProvenProjectionIds",
+        "reasons"
+      ],
+      "properties": {
+        "policy": {
+          "const": "no-hidden-material-finding"
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "VIOLATION"
+          ]
+        },
+        "expectedVisibleResidueIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "visibleNeedValidationIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expectedProvenIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "visibleProvenIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "missingVisibleResidueIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "missingProvenProjectionIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true
