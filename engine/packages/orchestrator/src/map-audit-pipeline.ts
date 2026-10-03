@@ -156,6 +156,11 @@ export interface SelectedMapAuditRun {
     readonly requiresNewAuditRun: boolean;
     readonly modelMayAuthorizeCompletion: boolean;
   };
+  /**
+   * Bounded proof-improvement tasks. When allowedNextAction is PREPARE_REVIEW,
+   * these packets are optional attempts to promote NEED_VALIDATION; they are
+   * not a second blocking workflow.
+   */
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
   readonly issueLanes: {
     readonly BUG: readonly AuditIssueProjection[];
