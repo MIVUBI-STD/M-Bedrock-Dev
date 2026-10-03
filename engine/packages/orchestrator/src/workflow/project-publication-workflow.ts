@@ -60,6 +60,15 @@ export async function approveAndPersistProject(input: {
   readonly snapshot:
     ReturnType<typeof createProjectApprovalSnapshot>;
 }> {
+  if (
+    input.project.taskClass === "AUDIT" &&
+    input.project.knowledge.bugReportPath !== undefined
+  ) {
+    throw new Error(
+      "Audit project with canonical Bug Report must use approveAuditProjectAndPersist() so historical issue sync cannot be skipped.",
+    );
+  }
+
   const snapshot =
     createProjectApprovalSnapshot({
       project: input.project,
