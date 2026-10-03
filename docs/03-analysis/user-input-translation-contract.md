@@ -214,18 +214,22 @@ Do not invent missing detail.
 
 After translation and before production audit, present one compact confirmation summary in chat.
 
-The confirmation must clearly separate:
+For the default pre-testing workflow, the confirmation is a **Pre-Audit Plan**, not a symptom interview.
+
+It must clearly state:
 
 ```text
 Target / version
-Reported symptoms
-Suspected causes
-Expectation / design claims
-Priority scope
-Test constraints
-Ambiguities
-Unmapped input
+Audit objective
+What will be checked
+Proof / testing strategy
+User-requested focus or constraints
+Expected output
+Optional reported symptoms / suspected causes
+Ambiguities / unmapped input
 ```
+
+Reported symptoms and suspected causes are optional. Their absence is normal because this workflow is intended to discover defects before manual testing.
 
 Use plain language. Do not expose internal taxonomy unless it improves clarity.
 
@@ -249,20 +253,42 @@ If the user confirms while some input remains unmapped, the unmapped fragments c
 
 Do not require multiple approval rounds. One confirmation checkpoint is enough unless the interpretation changes afterward.
 
-Recommended chat shape:
+Recommended chat shape for pre-testing:
 
 ```text
-Saya pahami:
-- Target: ...
-- Gejala yang dilaporkan: ...
-- Dugaan penyebab: ...
-- Fokus pengecekan: ...
-- Cara kerja: static-first, runtime hanya bila perlu
-- Belum jelas: ...
+Sebelum saya mulai, ini yang akan saya lakukan:
 
-Saya akan tetap mengecek gameplay material lain yang ditemukan map dan tidak akan menganggap dugaan di atas sebagai bug tanpa bukti.
+Target:
+- <map/version>
 
-Apakah interpretasi ini sudah benar?
+Audit yang akan dilakukan:
+- memetakan full gameplay flow
+- mencari seluruh material gameplay system
+- memeriksa progression/completion/terminal state
+- memeriksa state ownership, reset, cleanup, replay, recovery
+- memeriksa multiplayer/multi-arena bila ada
+- memeriksa inventory/economy bila ada
+- memeriksa entity/pathing/chunk simulation bila ada
+- memeriksa persistence/reconnect bila ada
+- memeriksa boundaries/capacity dan world/spatial mutation
+- membandingkan UI/player-facing promise dengan actual capability
+
+Cara pembuktian:
+- source/static first
+- bounded causal proof
+- counter-proof sebelum issue dipromosikan
+- runtime hanya jika benar-benar irreducible
+- risk/unknown tidak otomatis dianggap bug
+
+Output:
+- PROVEN findings
+- NEED_VALIDATION hanya untuk defect yang sudah confirmation-ready
+- Audit Obligations untuk gap/risk yang belum layak disebut issue
+
+Fokus tambahan dari Anda:
+- <jika ada>
+
+Apakah scope dan cara kerja ini sudah sesuai?
 ```
 
 ## Target-hint reconciliation
