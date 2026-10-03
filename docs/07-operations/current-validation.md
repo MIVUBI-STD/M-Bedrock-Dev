@@ -355,6 +355,30 @@ All of these signals are included in the honesty/non-suppression gate, so they c
 - false-negative / false-positive rates still need real-map benchmark measurement;
 - semantic Detection Gaps are intentionally allowed to block audit rather than produce false PASS.
 
+### Benchmark contract alignment
+
+The existing detection benchmark framework is now aligned with the current map-audit public model rather than creating a second benchmark system.
+
+Benchmark expectations may freeze:
+
+- `issueType = BUG | DESIGN_MISMATCH`;
+- `publicStatus = PROVEN | NEED_VALIDATION`;
+- whether unresolved validation is explicitly allowed at the configured evidence ceiling.
+
+Benchmark results may measure:
+
+- TP / TN / FP / FN;
+- `provenRate`;
+- `needValidationRate`;
+- `runtimeResidueRate`;
+- validation-test count;
+- honesty PASS/VIOLATION;
+- full-map replica equivalence/divergence/incomplete-proof counts.
+
+A NEED_VALIDATION result is not automatically a false negative. It becomes a proof-quality failure when frozen expectations require PROVEN and sufficient evidence was available.
+
+Real-map regression cases remain non-ready when required identity/version/frozen-expectation fields are missing. Readiness must not be fabricated to obtain a score.
+
 ## Next proof target
 
 Run one exact selected artifact through:
