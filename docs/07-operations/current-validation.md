@@ -13,6 +13,23 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — user prompt intake hardening
+
+Source-verified on `Local`:
+
+- Added canonical `user-input-translation-contract.md`.
+- Added typed `AuditUserIntentEnvelope` with runtime validation and normalization.
+- User prompt classes now separate symptoms, suspicions, expectation/design claims, scope priorities, constraints, historical references, and ambiguities.
+- `SelectedMapAuditInput.userIntent` is hint-only and is preserved in the audit snapshot/output without entering gameplay authority or `auditRevision`.
+- Model task packets receive normalized user search context with an explicit authority note forbidding prompt text from establishing Expected/Actual behavior, issue type, severity, proof status, safety, or absence.
+- User-reported symptoms that are not explained by discovered selected-artifact surfaces/scenarios remain visible as `Audit Obligation` rather than disappearing or being promoted to a bug.
+- Map Audit HTML shows the interpreted user input in a collapsed guidance-only section.
+- Map Audit Output V2 schema was synchronized with the live control, honesty, audit-obligation, user-intent, grounding, coverage, arena-capacity, proof-ceiling, and bounded-replica contracts.
+- Regression coverage guards prompt normalization, deduplication, runtime enum validation, symptom/suspicion separation, and non-authoritative semantics.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and real-map prompt benchmark remain required.
+
+
 ## 2026-10-03 — causal issue admission hardening
 
 Source-verified on `Local`:
