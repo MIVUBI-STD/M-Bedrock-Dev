@@ -58,6 +58,7 @@ import {
   projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
   projectSignalNeedValidationAuditIssues,
+  projectClosureNeedValidationAuditIssues,
   groupNeedValidationTests,
   type AuditIssueProjection,
   type AuditValidationTestGroup,
@@ -158,6 +159,8 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["hiddenGameplayDefects"]["negativeSpace"];
   readonly temporalRisks:
     InspectArtifactResult["hiddenGameplayDefects"]["temporalRisks"];
+  readonly gameplayClosure:
+    InspectArtifactResult["gameplayWorld"]["gameplayClosure"];
 }): Pick<
   SelectedMapAuditRun,
   | "executionTrace"
@@ -193,14 +196,20 @@ function deriveSelectedMapAuditControl(input: {
       input.negativeSpace,
       input.temporalRisks,
     );
+  const closureValidationIssues =
+    projectClosureNeedValidationAuditIssues(
+      input.gameplayClosure,
+    );
   const allVisibleIssues: readonly AuditIssueProjection[] = [
     ...provenIssues,
     ...needValidationIssues,
     ...signalValidationIssues,
+    ...closureValidationIssues,
   ];
   const validationTests = groupNeedValidationTests([
     ...needValidationIssues,
     ...signalValidationIssues,
+    ...closureValidationIssues,
   ]);
   const issueLanes = {
     BUG: allVisibleIssues.filter(
@@ -422,6 +431,8 @@ export async function runSelectedMapAudit(
     temporalRisks:
       inspection.hiddenGameplayDefects
         .temporalRisks,
+    gameplayClosure:
+      inspection.gameplayWorld.gameplayClosure,
   });
   return {
     schemaVersion: 1,
@@ -527,6 +538,8 @@ export function resolveSelectedMapAudit(
       hidden.negativeSpace,
     temporalRisks:
       hidden.temporalRisks,
+    gameplayClosure:
+      updatedInspection.gameplayWorld.gameplayClosure,
   });
 
   return {
