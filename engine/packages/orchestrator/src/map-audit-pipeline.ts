@@ -96,6 +96,10 @@ import {
   type AuditHonestyAssessment,
 } from "./map-audit-honesty.js";
 import {
+  buildFullMapReplicaReceipt,
+  type FullMapReplicaReceipt,
+} from "./arena/full-map-replica-receipt.js";
+import {
   auditCandidateGroupCoverageIssues,
   groupReadyAuditIssuesForCandidateCoverage,
   type ReadyAuditCandidateGroup,
@@ -160,6 +164,7 @@ export interface SelectedMapAuditRun {
   };
   readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
   readonly validationTests: readonly AuditValidationTestGroup[];
+  readonly fullMapReplica?: FullMapReplicaReceipt;
   readonly honesty: AuditHonestyAssessment;
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
@@ -198,6 +203,7 @@ function deriveSelectedMapAuditControl(input: {
   | "issueLanes"
   | "candidateGroups"
   | "validationTests"
+  | "fullMapReplica"
   | "honesty"
   | "status"
   | "blockingCheckpointIds"
@@ -260,6 +266,23 @@ function deriveSelectedMapAuditControl(input: {
   const validationTests = groupNeedValidationTests(
     navigatedNeedValidationIssues,
   );
+  const fullMapReplica =
+    input.gameplayWorld.arenas.replicaProof.length === 0
+      ? undefined
+      : buildFullMapReplicaReceipt({
+          replicaBaseline: "arena:canonical",
+          replicas:
+            input.gameplayWorld.arenas.replicaProof.map(
+              (item) => ({
+                arenaId: item.arenaId,
+                proofStatus: item.status,
+                mismatchCount:
+                  item.mismatchCount,
+                evidenceIds:
+                  item.evidenceIds,
+              }),
+            ),
+        });
   const honesty = assessAuditHonesty({
     graph: input.scenario.graph,
     gate: input.scenario.defectResolution,
@@ -339,6 +362,9 @@ function deriveSelectedMapAuditControl(input: {
     issueLanes,
     candidateGroups,
     validationTests,
+    ...(fullMapReplica === undefined
+      ? {}
+      : { fullMapReplica }),
     honesty,
     status:
       input.admission.status === "READY" &&
