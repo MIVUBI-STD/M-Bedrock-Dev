@@ -87,8 +87,8 @@ export interface AuditModelTaskPacket {
     readonly matchedBecause: readonly string[];
   }[];
   readonly historyPressure?: number;
-  readonly saturationCriteria?: readonly string[];
-  readonly saturationStopRule?: string;
+  readonly familyProofCriteria?: readonly string[];
+  readonly proofStopRule?: string;
   readonly allowedOutputs: readonly string[];
   readonly forbiddenActions: readonly string[];
   readonly stopCondition: string;
@@ -431,11 +431,11 @@ export function deriveAuditModelTaskPackets(input: {
             ),
           historyPressure:
             navigation.historyPressure,
-          saturationCriteria: [
-            ...navigation.saturationCriteria,
+          familyProofCriteria: [
+            ...navigation.familyProofCriteria,
           ],
-          saturationStopRule:
-            navigation.saturationStopRule,
+          proofStopRule:
+            navigation.proofStopRule,
           allowedOutputs: [
             "new selected-artifact proof",
             "cross-domain corroboration",
