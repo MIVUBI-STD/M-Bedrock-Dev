@@ -1,9 +1,11 @@
 import type {
+  BugFinderCategory,
   BugReportV2,
 } from "../../../bug-report/src/index.js";
 import {
+  historicalRegressionId,
   mergeAndSaveHistoricalRegressions,
-  projectApprovedBugReportToHistoricalRegressions,
+  type HistoricalRegressionRecord,
 } from "../../../reliability-search/src/index.js";
 import type {
   ProjectRecord,
@@ -14,6 +16,94 @@ import {
 import {
   upsertProjectRecord,
 } from "./project-registry-store.js";
+
+const DOMAIN_BY_CATEGORY:
+  Readonly<Record<BugFinderCategory, string>> = {
+    "game-flow": "gameplay",
+    "player-state": "state",
+    "multiplayer-session": "multiplayer",
+    "world-interaction": "world",
+    "entity-behavior": "entities",
+    "combat": "combat",
+    "score-reward": "economy",
+    "ui-feedback": "ui",
+    "performance-stability": "stability",
+    "compatibility": "compatibility",
+  };
+
+const CAPABILITIES_BY_CATEGORY:
+  Readonly<Record<BugFinderCategory, readonly string[]>> = {
+    "game-flow": ["gameplay-state", "progression"],
+    "player-state": ["state", "persistence"],
+    "multiplayer-session": ["multiplayer", "arena-lifecycle"],
+    "world-interaction": ["world-mutation", "spatial"],
+    "entity-behavior": ["entity-ai", "navigation"],
+    "combat": ["combat", "entity-ai"],
+    "score-reward": ["economy", "reward"],
+    "ui-feedback": ["ui-state", "gameplay-state"],
+    "performance-stability": ["runtime-stability", "chunks"],
+    "compatibility": ["compatibility", "platform"],
+  };
+
+function unique(values: readonly string[]): string[] {
+  return [...new Set(
+    values
+      .map((value) => value.trim())
+      .filter(Boolean),
+  )].sort();
+}
+
+export function projectApprovedBugReportToHistoricalRegressions(
+  input: {
+    readonly report: BugReportV2;
+    readonly reportPath: string;
+    readonly artifactFingerprint: string;
+  },
+): readonly HistoricalRegressionRecord[] {
+  return input.report.bugs.map((bug) => ({
+    id: historicalRegressionId({
+      mapName: input.report.map.name,
+      mapVersion: input.report.map.mapVersion,
+      bugId: bug.id,
+    }),
+    title: bug.title,
+    domain:
+      DOMAIN_BY_CATEGORY[bug.category],
+    discoveredBy:
+      bug.foundBy === "tester"
+        ? "approved-tester"
+        : "approved-ai",
+    provenance: {
+      source: "Canonical Bug Report V2",
+      reportPath: input.reportPath,
+      map: input.report.map.name,
+      mapVersion:
+        input.report.map.mapVersion,
+      bugId: bug.id,
+      artifactFingerprint:
+        input.artifactFingerprint,
+    },
+    triggerTags: unique([
+      "gameplay",
+      bug.category,
+      bug.severity,
+    ]),
+    capabilityTags: [
+      ...CAPABILITIES_BY_CATEGORY[
+        bug.category
+      ],
+    ],
+    ...(bug.reproduction?.length
+      ? {
+          reproduction: [
+            ...bug.reproduction,
+          ],
+        }
+      : {}),
+    expected: bug.expected,
+    observed: bug.observed,
+  }));
+}
 
 export async function syncApprovedProjectIssueHistory(input: {
   readonly repositoryRoot: string;
