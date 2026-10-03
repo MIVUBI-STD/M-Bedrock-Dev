@@ -31,13 +31,17 @@ describe("gameplay issue taxonomy", () => {
       classifyGameplayIssue({
         gameplayStage: "PROGRESSION",
         scenarioLabel: "wave-progression",
-        componentIds: ["runtime:entities"],
+        componentIds: [
+          "runtime:entities",
+          "runtime:chunks",
+        ],
         knowledgeDomain: "entity-behavior",
       }),
     ).toEqual({
       failureDomain:
         "progression-wave-objective",
       contributingDomains: [
+        "chunk-simulation",
         "entity-ai-combat",
         "progression-wave-objective",
       ],
