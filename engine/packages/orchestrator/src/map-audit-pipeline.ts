@@ -499,6 +499,42 @@ export function resolveSelectedMapAudit(
   };
 }
 
+function designMismatchCandidateIssues(
+  audit: SelectedMapAuditRun,
+  candidates: readonly AuditReportCandidate[],
+): readonly string[] {
+  const designMismatchLinks = new Set(
+    audit.issueLanes.DESIGN_MISMATCH.map(
+      (item) => item.causalLinkId,
+    ),
+  );
+  const issues: string[] = [];
+
+  for (const candidate of candidates) {
+    if (candidate.route === "tester") continue;
+    const linkIds = [
+      ...new Set([
+        ...(candidate.scenarioCausalLinkIds ?? []),
+        ...(candidate.scenarioCausalLinkId === undefined
+          ? []
+          : [candidate.scenarioCausalLinkId]),
+      ]),
+    ];
+    const wrongLane = linkIds.filter(
+      (id) => designMismatchLinks.has(id),
+    );
+    if (wrongLane.length > 0) {
+      issues.push(
+        "DESIGN_MISMATCH causal link(s) cannot enter Bug Report V2 candidate promotion: " +
+          wrongLane.sort().join(", ") +
+          ". Keep them in audit.issueLanes.DESIGN_MISMATCH.",
+      );
+    }
+  }
+
+  return [...new Set(issues)].sort();
+}
+
 export interface PrepareSelectedMapAuditReviewInput {
   readonly audit: SelectedMapAuditRun;
   readonly basedOnAuditRevision: string;
@@ -550,11 +586,16 @@ export function prepareSelectedMapAuditReview(
       reasons: identityIssues,
     };
   }
-  const rootCauseIssues =
-    auditCandidateGroupCoverageIssues(
+  const rootCauseIssues = [
+    ...auditCandidateGroupCoverageIssues(
       input.audit.candidateGroups,
       input.candidates,
-    );
+    ),
+    ...designMismatchCandidateIssues(
+      input.audit,
+      input.candidates,
+    ),
+  ];
   if (rootCauseIssues.length > 0) {
     return {
       collection: collectConfirmedDefects(
@@ -664,11 +705,16 @@ export function buildSelectedMapAuditReport(
       },
     };
   }
-  const rootCauseIssues =
-    auditCandidateGroupCoverageIssues(
+  const rootCauseIssues = [
+    ...auditCandidateGroupCoverageIssues(
       input.audit.candidateGroups,
       input.candidates,
-    );
+    ),
+    ...designMismatchCandidateIssues(
+      input.audit,
+      input.candidates,
+    ),
+  ];
   if (rootCauseIssues.length > 0) {
     return {
       designMismatches:
