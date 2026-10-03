@@ -2,6 +2,7 @@
   import {
     BUG_REPORT_V2_LABELS,
     BUG_REPORT_WORKSPACE_DIRECTORY,
+    bugFinderCategoryLabel,
     projectBugReportPreview,
     reviewBugReportCopy,
     reviewBugReportReadiness,
@@ -359,33 +360,31 @@
           <summary>
             <div class="bug-title">
               <strong>#{index + 1} · {bug.title}</strong>
+              <span class="bug-meta">{bugFinderCategoryLabel(bug.category)}</span>
               <span class="bug-problem">{bug.problem}</span>
-              {#if bug.reproduction?.length}
-                <span class="bug-trigger">
-                  <b>Bug Trigger (In-Game)</b>
-                  <ol>
-                    {#each bug.reproduction as item}
-                      <li>{item}</li>
-                    {/each}
-                  </ol>
-                </span>
-              {/if}
-              {#if bug.suggestedFix}
-                <span class="bug-solution">
-                  <b>Solution</b>
-                  {bug.suggestedFix}
-                </span>
-              {/if}
             </div>
 
             <span class="severity {bug.severity}">{bug.severity}</span>
           </summary>
 
           <div class="bug-body">
+            {#if bug.reproduction?.length}
+              <section>
+                <h3>Tester Checklist</h3>
+                <ol>
+                  {#each bug.reproduction as item}
+                    <li>{item}</li>
+                  {/each}
+                </ol>
+              </section>
+            {/if}
             <div class="comparison">
-              <section><h3>{BUG_REPORT_V2_LABELS.expected}</h3><p>{bug.expected}</p></section>
               <section><h3>{BUG_REPORT_V2_LABELS.observed}</h3><p>{bug.observed}</p></section>
+              <section><h3>{BUG_REPORT_V2_LABELS.expected}</h3><p>{bug.expected}</p></section>
             </div>
+            {#if bug.suggestedFix}
+              <section><h3>Resolution</h3><p>{bug.suggestedFix}</p></section>
+            {/if}
             {#if bug.aiAnalysis}
               <section><h3>Technical Analysis</h3><p>{bug.aiAnalysis}</p></section>
             {/if}
@@ -421,7 +420,7 @@
   .sourcebar{display:flex;gap:9px;align-items:center;padding:8px 30px;border-bottom:1px solid #20252a;background:#0d1013;color:#7f8994;font-size:11px}.source-kind{color:#eef1f4;font-weight:700}.readiness-warning{display:grid;gap:5px;padding:12px 30px;border-bottom:1px solid #554522;background:#18150e;color:#d7c79b;font-size:11px}.readiness-warning strong{color:#f0d58b}.readiness-warning ul{margin:2px 0 0;padding-left:18px}.readiness-warning code{color:#d9d0b5}
   .mapbar{display:flex;align-items:flex-end;justify-content:space-between;padding:24px 30px;border-bottom:1px solid #20252a;background:#101317}.summary{display:grid;gap:2px;text-align:right}.summary strong{font-size:22px}.summary span{font-size:10px;text-transform:uppercase;color:#aab2bb}.meta{gap:14px}
     .controlbar{display:flex;align-items:center;gap:16px;padding:12px 30px;border-bottom:1px solid #20252a;background:#0f1215}.severity-filter{display:flex;align-items:center;gap:7px;font-size:11px;color:#7f8994}.severity-filter select{border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:7px 9px}.controlbar>input{margin-left:auto;min-width:240px;border:1px solid #2a3138;border-radius:7px;background:#0b0e11;color:#e9edf1;padding:8px 10px}
-  .workspace{max-width:1100px;padding:18px 30px 80px}.bug{border-bottom:1px solid #20262c}.bug summary{list-style:none;display:grid;grid-template-columns:1fr auto;align-items:start;gap:12px;padding:16px 4px;cursor:pointer}.bug summary::-webkit-details-marker{display:none}.bug-title{display:grid;gap:4px}.bug-title strong{line-height:1.35}.bug-problem{font-size:12px;color:#aeb6bf;line-height:1.45}.bug-trigger,.bug-solution{font-size:11px;color:#c9d0d7;line-height:1.45}.bug-trigger{display:grid;grid-template-columns:max-content 1fr;gap:8px;align-items:start;margin-top:3px}.bug-trigger b,.bug-solution b{color:#8f98ff;text-transform:uppercase;font-size:9px;letter-spacing:.08em}.bug-trigger ol{margin:0;padding-left:18px}.bug-trigger li{margin:0 0 2px}.bug-solution b{margin-right:6px}
+  .workspace{max-width:1100px;padding:18px 30px 80px}.bug{border-bottom:1px solid #20262c}.bug summary{list-style:none;display:grid;grid-template-columns:1fr auto;align-items:start;gap:12px;padding:16px 4px;cursor:pointer}.bug summary::-webkit-details-marker{display:none}.bug-title{display:grid;gap:4px}.bug-title strong{line-height:1.35}.bug-meta{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7d85ff}.bug-problem{font-size:12px;color:#aeb6bf;line-height:1.45}
   .severity{border-radius:999px;padding:3px 7px;font-size:10px;font-weight:750;text-transform:uppercase}.severity.blocker{background:#3b171c;color:#ff9da6}.severity.major{background:#382b16;color:#eec477}.severity.minor{background:#1d2931;color:#9dc5dc}
   .bug-body{display:grid;gap:18px;padding:2px 0 26px;color:#b8c0c8}.bug-body section{display:grid;gap:5px}.bug-body h3{margin:0;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#79848e}.bug-body p,.bug-body ol,.bug-body ul{margin:0}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:24px}.code-row{display:grid;grid-template-columns:minmax(180px,.7fr) 1fr;gap:14px;padding:5px 0}.code-row code{color:#aeb5ff}.empty{padding:28px 0;color:#737d87}
   @media(max-width:760px){.topbar{padding:0 15px}.actions{gap:5px}.entry-actions{align-items:stretch;flex-direction:column}.mapbar{align-items:flex-start;flex-direction:column;padding:18px 16px}.sourcebar{padding:8px 16px}.summary{text-align:left}.controlbar{align-items:stretch;flex-direction:column;padding:12px 16px}.controlbar>input{margin:0;min-width:0}.workspace{padding:12px 16px 60px}.comparison{grid-template-columns:1fr}.bug-body{padding-left:4px}.code-row{grid-template-columns:1fr}}
