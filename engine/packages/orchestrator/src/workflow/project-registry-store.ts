@@ -7,6 +7,9 @@ import {
   atomicWriteText,
 } from "../../../repair/src/index.js";
 import {
+  projectLifecycleCanTransition,
+} from "./project-lifecycle.js";
+import {
   normalizeProjectRecord,
   normalizeProjectRegistry,
   type ProjectApprovalSnapshot,
@@ -88,15 +91,56 @@ export async function upsertProjectRecord(
       item.projectId === normalized.projectId,
   );
 
-  if (
-    previous !== undefined &&
-    normalized.revision < previous.revision
-  ) {
-    throw new Error(
-      "Refusing stale project registry update for " +
-        normalized.projectId +
-        ".",
-    );
+  if (previous !== undefined) {
+    if (
+      normalized.revision < previous.revision
+    ) {
+      throw new Error(
+        "Refusing stale project registry update for " +
+          normalized.projectId +
+          ".",
+      );
+    }
+    if (
+      normalized.revision === previous.revision
+    ) {
+      if (
+        JSON.stringify(normalized) ===
+        JSON.stringify(previous)
+      ) {
+        return registry;
+      }
+      throw new Error(
+        "Refusing conflicting project registry content at the same revision for " +
+          normalized.projectId +
+          ".",
+      );
+    }
+    if (
+      normalized.revision !==
+        previous.revision + 1
+    ) {
+      throw new Error(
+        "Project registry revision must advance exactly one step for " +
+          normalized.projectId +
+          ".",
+      );
+    }
+    if (
+      normalized.status !== previous.status &&
+      !projectLifecycleCanTransition(
+        previous.status,
+        normalized.status,
+      )
+    ) {
+      throw new Error(
+        "Invalid project lifecycle transition: " +
+          previous.status +
+          " -> " +
+          normalized.status +
+          ".",
+      );
+    }
   }
 
   return saveProjectRegistry(
