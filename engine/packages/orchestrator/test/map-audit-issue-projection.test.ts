@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
+} from "../src/map-audit-issue-projection.js";
+import {
+  projectAllNeedValidationAuditIssues,
   projectSignalNeedValidationAuditIssues,
   projectClosureNeedValidationAuditIssues,
   groupNeedValidationTests,
-} from "../src/map-audit-issue-projection.js";
+} from "../src/map-audit-validation-projection.js";
 import type {
   GameplayScenarioGraph,
 } from "../src/inspection/gameplay-scenario-model.js";
@@ -124,7 +126,7 @@ const gate: GameplayDefectResolutionGate = {
 describe("map audit issue projection", () => {
   it("projects unresolved material dependencies as NEED_VALIDATION instead of hiding them", async () => {
     const module = await import(
-      "../src/map-audit-issue-projection.js"
+      "../src/map-audit-validation-projection.js"
     );
     const unresolvedGraph: GameplayScenarioGraph = {
       ...graph,
