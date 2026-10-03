@@ -26,6 +26,7 @@ Classify material statements into target hints, symptoms, suspicions, expectatio
 
 Rules:
 
+- if a target hint conflicts materially with the exact selected artifact/version, record a blocking ambiguity and resolve it before production audit;
 - preserve the user's symptom even when their suspected root cause may be wrong;
 - expand vague symptoms into a bounded set of relevant failure families;
 - use user focus to raise search priority, never to suppress other material selected-artifact surfaces;
