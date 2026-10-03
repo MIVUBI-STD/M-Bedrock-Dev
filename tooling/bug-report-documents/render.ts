@@ -392,7 +392,7 @@ function auditFindingCard(
         ]
       : []),
     ...validationRows,
-    '<div class="technical-row"><details class="technical"><summary>Audit Detail</summary><div class="technical-text">' +
+    '<div class="technical-row"><details class="technical"><summary>Technical Evidence</summary><div class="technical-text">' +
       escapeHtml(
         "Gameplay Flow: " +
           finding.gameplayFlow +
@@ -486,7 +486,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
 .audit-status-proven .severity{color:#166534}.audit-status-need-validation .severity{color:#9a6700}
 .row{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #d9dee8}.label{padding:13px 15px;background:#f8fafc;color:#3157a4;font-size:12px;font-weight:800}.value{padding:13px 16px}.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.technical-row{padding:12px 16px;background:#fcfcfd;border-top:1px solid #d9dee8}.technical summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.technical-text{margin-top:9px;white-space:pre-wrap;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#667085}
 @media(max-width:700px){.report{width:100%;margin:0;border-radius:0}.metrics{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
-@media print{body{background:#fff}.report{width:100%;margin:0;border:0}.issue-card{break-inside:avoid-page}}
+@media print{body{background:#fff}.report{width:100%;margin:0;border:0}.issue-card{break-inside:avoid-page}.technical{display:block}.technical summary{list-style:none}.technical>*{display:block!important}input[type="checkbox"]{appearance:none;width:11px;height:11px;border:1px solid #555;vertical-align:middle}}
 `;
 
   return `<!doctype html>
@@ -509,7 +509,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
     <div class="metric"><span>Need Validation</span><strong>${needValidation.length}</strong></div>
   </section>
   <section class="section">
-    <div class="note"><strong>Honesty rule:</strong> NEED VALIDATION means the issue is materially relevant but not yet fully proven. It remains visible until deciding proof confirms or disproves it. No final severity is assigned while unproven.</div>
+    <div class="note"><strong>Validation status:</strong> NEED VALIDATION identifies a material finding that still requires deciding proof. It remains listed until confirmed or disproved, and no final severity is assigned while unresolved.</div>
     <h2>PROVEN</h2>
     ${proven.length > 0 ? proven.map(auditFindingCard).join("\n") : "<p>No proven findings.</p>"}
   </section>
