@@ -97,8 +97,13 @@ export function assessSelectedMapAuditAdmission(
     });
   } else {
     for (const checkpointId of procedure.blockingCheckpointIds) {
+      const checkpoint = procedure.checkpoints.find(
+        (item) => item.id === checkpointId,
+      );
       issues.push({
-        stage: selectedMapAuditStageForCheckpoint(checkpointId),
+        stage:
+          checkpoint?.block ??
+          selectedMapAuditStageForCheckpoint(checkpointId),
         code: "PROCEDURE_BLOCKED",
         message:
           "Mandatory Audit Procedure checkpoint " +
