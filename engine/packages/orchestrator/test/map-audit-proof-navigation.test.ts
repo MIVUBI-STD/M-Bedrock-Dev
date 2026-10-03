@@ -151,11 +151,11 @@ describe("map audit proof navigation", () => {
       finding("inventory-economy"),
     );
 
-    expect(result.saturationCriteria.length).toBeGreaterThan(0);
+    expect(result.familyProofCriteria.length).toBeGreaterThan(0);
     expect(
-      result.saturationCriteria.join(" "),
+      result.familyProofCriteria.join(" "),
     ).toMatch(/idempotency|exclusion|generation/i);
-    expect(result.saturationStopRule).toMatch(
+    expect(result.proofStopRule).toMatch(
       /stop searching/i,
     );
   });
