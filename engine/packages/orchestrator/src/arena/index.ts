@@ -30,7 +30,6 @@ export * from "./arena-repeated-run-validation.js";
 export * from "./arena-replica-proof-quality.js";
 export * from "./arena-runtime-adapter-requirements.js";
 export * from "./arena-runtime-adapter-scaffold.js";
-export * from "./arena-semantic-voxel-divergence.js";
 export * from "./arena-state-isolation-analysis.js";
 export * from "./arena-stress-plan.js";
 export * from "./arena-stress-runtime-compiler.js";
