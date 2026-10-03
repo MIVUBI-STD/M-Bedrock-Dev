@@ -135,6 +135,10 @@ describe("map audit issue projection", () => {
           "world:arena-count",
           "capacity:safe-concurrency",
         ],
+        playerFacingEvidenceIds: [
+          "world:arena-count",
+        ],
+        informationMismatch: true,
         reason: "Presented arena capacity is not fully playable.",
       }],
     );
@@ -145,6 +149,16 @@ describe("map audit issue projection", () => {
           item.causalLinkId === "link:capacity",
       )?.reportIssueType,
     ).toBe("DESIGN_MISMATCH");
+    expect(
+      result.find(
+        (item) =>
+          item.causalLinkId === "link:capacity",
+      ),
+    ).toMatchObject({
+      failureDomain: "arena-multi-arena",
+      gameplayFlow: "READY_START",
+      informationMismatch: true,
+    });
 
     expect(
       result.find(
@@ -162,6 +176,16 @@ describe("map audit issue projection", () => {
           item.causalLinkId === "link:progression",
       )?.reportIssueType,
     ).toBe("BUG");
+    expect(
+      result.find(
+        (item) =>
+          item.causalLinkId === "link:progression",
+      ),
+    ).toMatchObject({
+      failureDomain: "progression-wave-objective",
+      gameplayFlow: "PROGRESSION",
+      informationMismatch: false,
+    });
 
     expect(
       result.find(
