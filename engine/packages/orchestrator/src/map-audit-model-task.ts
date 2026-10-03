@@ -80,6 +80,16 @@ export interface AuditModelTaskPacket {
       readonly string[];
     readonly suspicionHints:
       readonly string[];
+    readonly expectationHints:
+      readonly string[];
+    readonly designHints:
+      readonly string[];
+    readonly historicalHints:
+      readonly string[];
+    readonly scopeHints:
+      readonly string[];
+    readonly exclusionHints:
+      readonly string[];
     readonly testConstraints:
       readonly string[];
   };
@@ -461,6 +471,16 @@ export function deriveAuditModelTaskPackets(input: {
             [...userPressure.symptomHints],
           suspicionHints:
             [...userPressure.suspicionHints],
+          expectationHints:
+            [...userPressure.expectationHints],
+          designHints:
+            [...userPressure.designHints],
+          historicalHints:
+            [...userPressure.historicalHints],
+          scopeHints:
+            [...userPressure.scopeHints],
+          exclusionHints:
+            [...userPressure.exclusionHints],
           testConstraints:
             [...userPressure.testConstraints],
         };
