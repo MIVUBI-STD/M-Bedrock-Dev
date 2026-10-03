@@ -653,10 +653,19 @@ export function deriveGameplayWorldModel(
   if (arenaDetected) {
     runtimeSurfaces.push({
       id: "runtime:arena",
-      label: "Arena system",
+      label: "Arena presence and topology",
       kind: "runtime-domain",
-      status: "understood",
+      status:
+        arenaCount === undefined
+          ? "unknown"
+          : "understood",
       material: true,
+      ...(arenaCount === undefined
+        ? {
+            reason:
+              "Arena behavior is detected, but concrete arena topology/count is not yet grounded.",
+          }
+        : {}),
       boundaries:
         arenaCount === undefined
           ? []
@@ -953,10 +962,19 @@ export function deriveGameplayWorldModel(
   if (stateEvidence) {
     runtimeSurfaces.push({
       id: "runtime:state",
-      label: "Gameplay state authority",
+      label: "Gameplay state model",
       kind: "runtime-domain",
-      status: "understood",
+      status:
+        source.broadWrites > 0
+          ? "unknown"
+          : "understood",
       material: true,
+      ...(source.broadWrites > 0
+        ? {
+            reason:
+              "Broad state writes exist, so state ownership/authority is not fully resolved.",
+          }
+        : {}),
     });
   }
 
@@ -974,13 +992,18 @@ export function deriveGameplayWorldModel(
       label: "Chunk and residency lifecycle",
       kind: "runtime-domain",
       status:
-        source.chunkLifecycle?.entityResidencyObservability === "absent"
-          ? "unknown"
-          : "understood",
+        source.chunkLifecycle?.entityResidencyObservability === "complete"
+          ? "understood"
+          : "unknown",
       material: true,
-      ...(source.chunkLifecycle?.entityResidencyObservability === "absent"
-        ? { reason: "Chunk/entity residency is gameplay-relevant but observability is absent." }
-        : {}),
+      ...(source.chunkLifecycle?.entityResidencyObservability === "complete"
+        ? {}
+        : {
+            reason:
+              source.chunkLifecycle?.entityResidencyObservability === "partial"
+                ? "Chunk/entity residency observability is only partial; lifecycle proof remains incomplete."
+                : "Chunk/entity residency is gameplay-relevant but observability is absent.",
+          }),
     });
   }
 
