@@ -1,8 +1,8 @@
 # Real Map Audit — Attack Challenge v1.1.1
 
-Status: real-map source audit complete for this pass  
+Status: source-proven real-map audit evidence  
 Authority: selected current Drive artifact only  
-Historical regression ingestion: none  
+Historical regression ingestion: not yet approved  
 Runtime execution: not performed
 
 ## Target
@@ -13,77 +13,117 @@ Runtime execution: not performed
 - Artifact SHA-256: `95bf318070b3948f0a0d1d093bae2f7b1a3a37e4d94e94d2adfc4d80a501ccba`
 - Behavior Pack manifest version: `1.1.1`
 - Behavior Pack min engine version: `1.21.130`
+- Internal `levelname.txt`: `Attack Challenge v1.1.0` (metadata mismatch only)
 
-## Proven findings
+## Proven finding
 
-No additional source-proven gameplay defect was admitted in this pass.
+### BUG — Reconnect during combat respawn countdown bypasses the death delay
 
-This is intentional. Historical Defense/Composite defects were not copied into Attack without current-artifact proof.
+Severity: Major  
+Proof: source-proven  
+Domain: player-state / multiplayer-session / respawn
 
-## Source checks completed
+#### Issue
+
+Attack keeps combat-death respawn ownership in `CombatTracker.pendingRespawns`. A reconnecting player is initially put back into spectator/countdown state by CombatTracker, but GameManager independently restores the same locked-party player to active gameplay five ticks later without checking that pending respawn.
+
+#### Expected
+
+A reconnecting player with an active pending respawn must remain in spectator/death state until the existing respawn timer finishes.
+
+#### Observed source behavior
+
+CombatTracker handles a reconnecting player with a pending respawn:
+
+```text
+chunk-Y6V6JTGX.js:4936-4950
+_findPendingRespawn(player.id)
+→ _sendPlayerToSpectator(...)
+→ show remaining countdown
+```
+
+Death creates and retains the pending timer:
+
+```text
+chunk-Y6V6JTGX.js:4998-5060
+pendingRespawns.set(playerId, ...)
+```
+
+GameManager separately handles initial-spawn reconnects:
+
+```text
+chunk-Y6V6JTGX.js:5666-5669
+initialSpawn
+→ handlePlayerReconnection(...)
+```
+
+For an active session, five ticks later it restores gameplay unconditionally:
+
+```text
+chunk-Y6V6JTGX.js:5692-5753
+locked party member
+→ active session
+→ runTimeout(..., 5)
+→ survival mode
+→ applyPlayerLoadout(...)
+→ teleport to gameplay spawn
+```
+
+CombatTracker is initialized before GameManager:
+
+```text
+chunk-Y6V6JTGX.js:9285-9289
+CombatTracker.init()
+...
+GameManager.init()
+```
+
+So CombatTracker's correct spectator recovery is subsequently overwritten by GameManager.
+
+#### Reproduction path
+
+1. Start an Attack match.
+2. Die and enter respawn countdown.
+3. Disconnect before countdown expiry.
+4. Reconnect while `pendingRespawns` still contains the player.
+5. CombatTracker restores spectator/countdown state.
+6. Roughly five ticks later GameManager restores survival/loadout and gameplay spawn.
+7. Player returns early.
+
+#### Player-visible consequence
+
+The intended death/respawn penalty can be bypassed by reconnecting.
+
+#### Root cause
+
+Two owners act on reconnect state. CombatTracker owns pending respawn, but GameManager reconnect recovery does not defer to it.
+
+#### Repair direction
+
+If CombatTracker reports a pending respawn for the player, GameManager must not perform active-session survival/loadout/teleport recovery. Let CombatTracker remain the single owner until the pending respawn resolves.
+
+## Checked but not admitted as bugs
 
 ### Arena / ticking lifecycle
 
-Attack has a per-arena `TickingAreaManager` and `MAX_CONCURRENT_ARENAS = 2`, but final `endGame()` returns the session to idle and releases the lease directly without starting the asynchronous block-reset flow used by Defense.
+Attack has dynamic per-arena ticking leases and `MAX_CONCURRENT_ARENAS = 2`. The selected source also implements queue/lease messaging, so the cap is not a bug without a current-artifact contract requiring more simultaneous sessions.
 
-The Defense stale-reset lease-release race was therefore **not reproduced in Attack source**.
+The Defense async-reset stale-release race is not reproduced in Attack's inspected end/reset path; Attack returns the session to idle and releases the lease synchronously.
 
 ### Flag carrier death / disconnect
 
-`FlagService` explicitly handles:
+FlagService explicitly handles carrier death/respawn/disconnect and re-spawns dropped flag state. No source-proven carrier-disconnect progression defect was admitted.
 
-- player death;
-- respawn;
-- player disconnect.
+### Level advance setup timing
 
-A disconnected carrier triggers `handleCarrierDeath()`, clears carrier state, respawns the red flag, broadcasts the drop, and invokes the registered flag-drop callback.
-
-No carrier-disconnect progression defect was admitted.
-
-### Reconnect lifecycle
-
-GameManager registers initial-spawn reconnection recovery and looks up locked parties before restoring a player into a non-idle/non-countdown arena.
-
-No source-proven reconnect-loss defect was admitted in this pass.
-
-## Audit obligation — level advance setup is timer-gated rather than Promise-gated
-
-This is **not admitted as a gameplay bug yet**.
-
-On level advance:
-
-```text
-tick +10:
-void StructureLoader.setupLevel(nextLevel, ..., {spawnEntities:false})
-
-tick +90:
-startBuyPhase(nextLevel)
-```
-
-Relevant source:
-
-- `behavior_packs/BP/scripts/chunks/chunk-Y6V6JTGX.js:7990-8030`
-- `TRANSITION_FADE_IN_WAIT = 10`
-- `TRANSITION_FADE_CLEAR_WAIT = 90`
-
-`StructureLoader.setupLevel()` awaits:
-
-1. `ResetMapService.resetMap()`;
-2. each configured structure load.
-
-The normal reset config estimates ~80 reset chunks processed 5 per tick (~16 ticks), so source alone does not prove setup exceeds the 80-tick gap. Therefore the race remains a narrow validation obligation rather than a bug.
-
-### Narrow validation
-
-During an advance between levels:
-
-1. capture when `StructureLoader.setupLevel()` resolves;
-2. capture when `startBuyPhase()` begins;
-3. repeat under the actual target runtime/server load;
-4. if buy phase begins before setup completes, promote as a progression/world-state bug.
+Level advance setup remains a narrow validation obligation rather than a proven bug. Structure setup is asynchronous while transition timing is fixed; source does not prove the setup exceeds the transition window in the target runtime.
 
 ## Result
 
-Attack Challenge v1.1.1 has **0 source-proven findings** in this pass and **1 narrow runtime validation obligation**.
+Attack Challenge v1.1.1 currently has:
 
-Do not create a historical regression entry from this map unless a later proof step establishes a causal defect.
+- **1 source-proven gameplay bug**
+- **1 narrow runtime validation obligation**
+- metadata version mismatch recorded but not admitted as gameplay defect
+
+Do not ingest historical regression data until approval.
