@@ -13,6 +13,26 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — project state de-duplication final pass
+
+Source-verified on `Local`:
+
+- Project Registry no longer persists lifecycle status. `working / approved / drive-published` are derived exclusively from active approval/publication proof fingerprints.
+- `ready-for-approval` is removed as persisted state; readiness is computed on demand from project + deliverables + blockers.
+- Drive publication receipts no longer persist `PARTIAL/COMPLETE`; completion is derived from approved snapshot deliverables versus verified receipt files.
+- Project Registry no longer copies audit stage, audit revision, next action, historical regression IDs, failure-pattern IDs, or map-knowledge IDs.
+- Work Session / SelectedMapAuditRun remain the sole owners of detailed execution/audit progress.
+- `regressions.json` is the sole owner of historical incident linkage through provenance; Project Registry does not duplicate regression IDs.
+- `DriveProjectBinding` is the sole per-project Drive destination owner. `driveFolderId` is removed from project lifecycle/continuity state.
+- Approved deliverables use semantic destination roles; actual Drive folder IDs are resolved from `DriveProjectBinding` only at publish-plan time.
+- Audit historical issue ingestion now occurs only after the explicit approval decision.
+- Project Registry is written last as the durable commit marker for approval/publication workflows.
+- Persisted project JSON rejects unsupported/legacy fields so removed duplicate state cannot silently re-enter through manual edits.
+
+This section supersedes earlier same-day project-lifecycle notes that mentioned persisted `ready-for-approval`, lifecycle status fields, copied historical IDs, or receipt PARTIAL/COMPLETE state.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and real Drive publication execution remain outstanding.
+
 ## 2026-10-03 — project lifecycle implementation final hardening
 
 Source-verified on `Local`:
