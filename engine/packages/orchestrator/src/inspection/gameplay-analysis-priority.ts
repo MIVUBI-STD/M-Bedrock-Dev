@@ -14,6 +14,9 @@ import type {
 import type {
   CapabilityExposureSummary,
 } from "./capability-exposure-stage.js";
+import {
+  historicalSurfaceSearchPressure,
+} from "../map-audit-history-hints.js";
 
 function factorsForSurface(
   surfaceId: string,
@@ -140,6 +143,7 @@ const SURFACE_KNOWLEDGE_DOMAIN:
 export interface GameplayAnalysisPriority
   extends AuditRiskAssessment {
   readonly rigDemand: number;
+  readonly historyPressure: number;
 }
 
 export function deriveGameplayAnalysisPriorities(
@@ -190,10 +194,16 @@ export function deriveGameplayAnalysisPriorities(
           domain === undefined
             ? 0
             : demandByDomain.get(domain) ?? 0,
+        historyPressure:
+          historicalSurfaceSearchPressure(
+            surfaceId,
+            world,
+          ),
       };
     })
     .sort(
       (a, b) =>
+        b.historyPressure - a.historyPressure ||
         b.rigDemand - a.rigDemand ||
         b.score - a.score ||
         a.surfaceId.localeCompare(
