@@ -96,32 +96,29 @@ approvalSnapshotFingerprint = missing
 
 ## Audit continuity
 
-Selected-map audit state has one detailed owner:
+Selected-map audit progress has one detailed owner:
 
 ```text
 SelectedMapAuditRun
-→ Work Session
+→ project state/work-session.json
 ```
 
-The project registry stores only the Work Session ID/revision as a pointer. It does not copy audit stage, next action, findings, or evidence.
+Project Registry stores only `sessionId + workSessionRevision` as a continuity pointer.
 
+It does not copy `currentStage`, `auditRevision`, or `allowedNextAction`.
 ## Approval readiness
 
-Approval readiness is calculated on demand from current owners.
+Readiness is computed on demand and never persisted:
 
-Typical requirements:
+```text
+project + deliverables + blockers
+→ assessProjectApprovalReadiness()
+→ ready / exact missing requirements
+```
 
-- project is currently derived as `working`;
-- Work Session ID/revision exists;
-- canonical Bug Report reference exists when required;
-- one canonical `DriveProjectBinding` exists;
-- every deliverable has a path, fingerprint, semantic Drive destination role;
-- no supplied blocking reason.
+Generic readiness checks project-publication facts only: Work Session pointer, optional canonical Bug Report pointer, canonical Drive binding, valid deliverables/destination roles, and supplied blockers.
 
-For audit approval, `approveAuditProjectAndPersist()` additionally requires the canonical `SelectedMapAuditRun` at `COMPLETE` and exact artifact fingerprint match.
-
-No readiness field or intermediate lifecycle status is written.
-
+Audit completeness is not copied into ProjectRecord. Audit approval checks the authoritative `SelectedMapAuditRun` directly.
 ## Approval snapshot
 
 After explicit user approval, freeze the current project revision:
@@ -178,49 +175,9 @@ Historical knowledge is search pressure only. A future/current selected artifact
 
 ## Failure patterns and map knowledge
 
-Do not promote every historical incident automatically.
+`failure-patterns.json` and `map-knowledge/` remain independent reliability owners.
 
-`failure-patterns.json` is for corroborated reusable abstractions.
-`map-knowledge/` is for durable per-map engineering knowledge.
-
-Neither is copied into Project Registry.
-
-## Single Drive binding
-
-Project Drive destinations have one owner:
-
-```text
-ProjectRecord.publication.drive
-→ DriveProjectBinding
-```
-
-`workspace/drive-root.json` owns only the global root.
-
-Do not store project folder IDs separately in state or lifecycle fields.
-
-`DriveProjectBinding` may contain:
-
-- project root/map folder;
-- Development/Source folder;
-- Development/Versions folder;
-- Technical Docs folder;
-- current-world reference when known.
-
-## Deliverable destination roles
-
-Approved deliverables use semantic roles:
-
-```text
-project-root
-development-source
-development-version
-technical-docs
-```
-
-The Drive publish planner resolves the role through the single `DriveProjectBinding`.
-
-Deliverables never carry a second persistent destination folder ID.
-
+Project Registry does not store duplicate references to them. Repeated/evidence-backed abstraction is a separate reliability decision, not a project-lifecycle field.
 ## Drive publication
 
 ```text
@@ -271,19 +228,18 @@ This avoids introducing a transaction manager while preserving a clear committed
 
 ```text
 create/resume project
-→ Work Session persisted
-→ compact Project Registry pointer update
-→ work/audit
+→ Work Session
+→ compact registry pointer update
+→ perform work/audit
 → current Bug Report V2 when applicable
 → derive readiness
-→ show approval candidate
-→ explicit user approval
+→ user approves
 → immutable approval snapshot
-→ historical issue ingestion (audit only)
-→ registry approval fingerprint commit
-→ Drive publish plan
-→ verified uploads / receipt
-→ registry publication fingerprint commit when complete
+→ approved historical issue ingestion when applicable
+→ registry commit marker
+→ Drive plan from approved snapshot
+→ upload + verify approved files
+→ publication receipt
+→ derive completion
+→ registry commit marker
 ```
-
-Every durable fact has one owner. Other layers store only pointers or derived views.
