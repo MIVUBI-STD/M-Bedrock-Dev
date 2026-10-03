@@ -32,6 +32,16 @@ This checklist is a publication review only. The executable checkpoint owner is 
 - [ ] Gameplay Model Closure OPEN or PARTIAL blocks production continuation.
 - [ ] Gameplay Scenario Closure is CLOSED or PARTIAL only for irreducible Minecraft runtime proof.
 
+## Issue taxonomy
+
+- [ ] Every reportable issue has one canonical `gameplayFlow`.
+- [ ] Every reportable issue has one primary `failureDomain`.
+- [ ] Cross-system involvement is retained in `contributingDomains[]`.
+- [ ] `category` is not used as a second audit taxonomy.
+- [ ] Severity is based on player/game impact, not the domain name.
+- [ ] Wave/progression issues caused by chunk/entity systems retain progression as primary while preserving chunk/entity contributing domains.
+- [ ] UI/information contradictions use `ui-feedback-information` and are classified BUG vs DESIGN_MISMATCH from the actual contract mismatch, not from UI presence alone.
+
 ## Report type separation
 
 - [ ] Every confirmed issue is classified as exactly one of `BUG` or `DESIGN_MISMATCH`.
