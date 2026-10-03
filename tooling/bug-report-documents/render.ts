@@ -877,7 +877,7 @@ function renderCompleteMapAuditHtml(
 body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sans-serif}
 .report{width:min(1060px,calc(100% - 28px));margin:24px auto;background:#fff;border:1px solid #d9dee8;border-radius:14px;overflow:hidden}
 .hero{padding:28px 32px;background:#172b4d;color:#fff}.hero h1{margin:0 0 6px}.hero p{margin:0;opacity:.8}
-.metrics{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #d9dee8}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #d9dee8}
 .metric{padding:16px 20px;border-right:1px solid #d9dee8}.metric:last-child{border-right:0}.metric span{display:block;color:#667085;font-size:11px;font-weight:700;text-transform:uppercase}.metric strong{font-size:18px}
 .section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}.control-summary{border-bottom:1px solid #d9dee8;background:#fbfcfe}.control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.control-grid div{padding:12px 14px;border:1px solid #d9dee8;border-radius:8px;background:#fff}.control-grid span{display:block;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.control-grid strong{display:block;margin-top:3px;font-size:13px}.audit-context{padding-top:16px;padding-bottom:16px;border-bottom:1px solid #d9dee8}.audit-context>details>summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.audit-context-body{margin-top:12px;border:1px solid #d9dee8;border-radius:8px;overflow:hidden}.grounding{color:#667085;font-size:11px;text-transform:uppercase}.obligations{border-top:1px solid #d9dee8;background:#fbfcfe}.obligation-card{margin:0 0 10px;border:1px solid #d9dee8;border-radius:8px;background:#fff;overflow:hidden}.obligation-card>details>summary{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;cursor:pointer}.obligation-card>details>summary span{color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.obligation-body{border-top:1px solid #d9dee8}
 .issue-card{margin:0 0 18px;border:1px solid #d9dee8;border-radius:10px;overflow:hidden}.issue-head{display:grid;grid-template-columns:36px 130px 1fr;align-items:center;background:#f8fafc;border-bottom:1px solid #d9dee8}.issue-number,.severity{padding:10px 12px;font-size:12px;font-weight:800}.issue-title{padding:10px 14px 10px 0}.issue-title h2{margin:0;font-size:16px}.meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;color:#667085;font-size:10px;font-weight:700;text-transform:uppercase}
@@ -905,6 +905,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
     <div class="metric"><span>Total Findings</span><strong>${findings.length}</strong></div>
     <div class="metric"><span>Proven</span><strong>${proven.length}</strong></div>
     <div class="metric"><span>Need Validation</span><strong>${needValidation.length}</strong></div>
+    <div class="metric"><span>Audit Obligations</span><strong>${(audit.auditObligations ?? []).length}</strong></div>
   </section>
   ${auditControlSummary(audit)}
   ${auditContextSummary(audit)}
