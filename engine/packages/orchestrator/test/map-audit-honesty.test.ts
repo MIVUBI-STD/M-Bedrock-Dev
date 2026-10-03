@@ -124,6 +124,8 @@ describe("map audit honesty gate", () => {
       gameplayClosure: closure,
       negativeSpace: [],
       temporalRisks: [],
+      discoveryChallenges: [],
+      sharedResourceSignals: [],
       visibleIssues: [visibleRuntimeFinding()],
     });
 
@@ -140,6 +142,8 @@ describe("map audit honesty gate", () => {
       gameplayClosure: closure,
       negativeSpace: [],
       temporalRisks: [],
+      discoveryChallenges: [],
+      sharedResourceSignals: [],
       visibleIssues: [],
     });
 
