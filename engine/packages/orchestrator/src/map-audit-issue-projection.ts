@@ -51,6 +51,7 @@ export interface NeedValidationAuditIssueProjection
   readonly validationReason: string;
   readonly missingProof: string;
   readonly validationTest: string;
+  readonly proofNavigation?: import("./map-audit-proof-navigation.js").AuditProofNavigation;
   /**
    * Stable consolidation key. Multiple unresolved findings with the same key
    * should be exercised by one targeted test rather than repeated manually.
