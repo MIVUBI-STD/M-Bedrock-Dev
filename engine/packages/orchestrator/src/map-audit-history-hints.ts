@@ -395,3 +395,83 @@ export function historicalSearchPressure(
     0,
   );
 }
+
+export function historicalSurfaceSearchPressure(
+  surfaceId: string,
+  world: GameplayWorldModel,
+): number {
+  let pressure = 0;
+
+  if (
+    surfaceId === "runtime:chunks" &&
+    world.entities.definitions > 0 &&
+    (
+      world.chunks.tickingAreaAcquires === 0 ||
+      world.chunks.capacityUncheckedLeases > 0 ||
+      world.chunks.readinessUnverifiedLeases > 0
+    )
+  ) {
+    pressure += 3;
+  }
+
+  if (
+    (
+      surfaceId === "runtime:arena-isolation" ||
+      surfaceId === "runtime:arena-cleanup" ||
+      surfaceId === "runtime:arena"
+    ) &&
+    world.arenas.detected &&
+    (
+      world.arenas.isolation.sharedGlobal > 0 ||
+      world.arenas.globalState.unleasedArenaMutations > 0 ||
+      world.arenas.cleanup.resourceLedger.missing > 0
+    )
+  ) {
+    pressure += 3;
+  }
+
+  if (
+    surfaceId === "runtime:inventory" &&
+    (
+      world.inventory.restoreOwnership.multipleRestoreOwners > 0 ||
+      world.inventory.restoreConflicts.length > 0 ||
+      world.inventory.partialResets > 0
+    )
+  ) {
+    pressure += 3;
+  }
+
+  if (
+    surfaceId === "runtime:persistence" &&
+    (
+      (world.persistence?.appendWithoutClear ?? 0) > 0 ||
+      (world.persistence?.unknownLifetime ?? 0) > 0 ||
+      (world.persistence?.unknownScope ?? 0) > 0
+    )
+  ) {
+    pressure += 2;
+  }
+
+  if (
+    surfaceId === "runtime:structures" &&
+    (
+      world.structures.transitionResidueRisks > 0 ||
+      world.structures.transitionResidueUnresolved > 0
+    )
+  ) {
+    pressure += 2;
+  }
+
+  if (
+    surfaceId === "runtime:entities" &&
+    world.entities.definitions > 0 &&
+    (
+      world.chunks.entityRemoveObservers > 0 ||
+      world.combat.deathHandlers > 0
+    )
+  ) {
+    pressure += 1;
+  }
+
+  return pressure;
+}
