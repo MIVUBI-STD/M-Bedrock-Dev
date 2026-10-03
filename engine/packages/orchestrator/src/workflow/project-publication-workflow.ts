@@ -61,7 +61,7 @@ export async function approveAndPersistProject(input: {
     ReturnType<typeof createProjectApprovalSnapshot>;
 }> {
   if (
-    input.project.taskClass === "AUDIT" &&
+    input.project.taskClass === "DIAGNOSE" &&
     input.project.knowledge.bugReportPath !== undefined
   ) {
     throw new Error(
