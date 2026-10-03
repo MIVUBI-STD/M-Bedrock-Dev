@@ -1,4 +1,5 @@
 import type {
+  ProjectRecord,
   ProjectWorkspaceLayout,
   WorkSessionAuditBinding,
   WorkSessionCheckpoint,
@@ -7,6 +8,13 @@ import type {
 import {
   saveWorkSessionCheckpoint,
 } from "./work-session-store.js";
+import {
+  createProjectRecord,
+  updateProjectRecord,
+} from "./project-lifecycle.js";
+import {
+  upsertProjectRecord,
+} from "./project-registry-store.js";
 import type {
   SelectedMapAuditRun,
 } from "../map-audit-pipeline.js";
@@ -173,4 +181,116 @@ export async function saveSelectedMapAuditWorkSessionMirror(
     checkpoint,
   );
   return checkpoint;
+}
+
+export async function saveSelectedMapAuditProjectContinuity(input: {
+  readonly repositoryRoot: string;
+  readonly workspace: ProjectWorkspaceLayout;
+  readonly audit: SelectedMapAuditRun;
+  readonly projectId: string;
+  readonly projectName: string;
+  readonly sessionId: string;
+  readonly goal: string;
+  readonly previousSession?: WorkSessionCheckpoint;
+  readonly previousProject?: ProjectRecord;
+  readonly driveFolderId?: string;
+}): Promise<{
+  readonly session: WorkSessionCheckpoint;
+  readonly project: ProjectRecord;
+}> {
+  const session =
+    await saveSelectedMapAuditWorkSessionMirror(
+      input.workspace,
+      {
+        audit: input.audit,
+        sessionId: input.sessionId,
+        goal: input.goal,
+        ...(input.previousSession === undefined
+          ? {}
+          : {
+              previous:
+                input.previousSession,
+            }),
+      },
+    );
+
+  if (
+    input.previousProject !== undefined &&
+    input.previousProject.projectId !==
+      input.projectId
+  ) {
+    throw new Error(
+      "Previous project record belongs to a different projectId.",
+    );
+  }
+
+  const work = {
+    sessionId: session.sessionId,
+    workSessionRevision:
+      session.revision,
+    auditRevision:
+      input.audit.auditRevision,
+    currentStage:
+      input.audit.currentStage,
+    nextAction:
+      input.audit.allowedNextAction,
+  };
+
+  const artifact = {
+    artifactId:
+      input.audit.identity.artifactId,
+    artifactFingerprint:
+      input.audit.identity
+        .artifactFingerprint,
+    ...(input.audit.identity
+      .releaseVersion === undefined
+      ? {}
+      : {
+          version:
+            input.audit.identity
+              .releaseVersion,
+        }),
+  };
+
+  const project =
+    input.previousProject === undefined
+      ? createProjectRecord({
+          projectId: input.projectId,
+          projectName:
+            input.projectName,
+          taskClass: "AUDIT",
+          artifact,
+          work,
+          ...(input.driveFolderId ===
+          undefined
+            ? {}
+            : {
+                driveFolderId:
+                  input.driveFolderId,
+              }),
+        })
+      : updateProjectRecord(
+          input.previousProject,
+          {
+            artifact,
+            work,
+            ...(input.driveFolderId ===
+            undefined
+              ? {}
+              : {
+                  driveFolderId:
+                    input.driveFolderId,
+                }),
+          },
+        );
+
+  await upsertProjectRecord(
+    input.repositoryRoot,
+    project,
+  );
+
+  return {
+    session,
+    project,
+  };
 }
