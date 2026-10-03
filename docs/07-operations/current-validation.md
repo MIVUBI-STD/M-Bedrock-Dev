@@ -13,6 +13,22 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — complete prompt-fragment accounting
+
+Source-verified on `Local`:
+
+- User prompt intake now preserves explicit `fragments[]`, per-item `sourceFragmentIds[]`, and `unmappedFragmentIds[]`.
+- Validation fails if any material fragment is neither mapped nor explicitly unmapped.
+- One fragment may support multiple intent classes; normalized semantic duplicates do not multiply search pressure.
+- Unmapped fragments remain visible as `user-input-unmapped` Audit Obligations and are never silently dropped or converted directly into issues.
+- `SelectedMapAuditInput.rawUserPrompt` provides a fallback when structured translation is unavailable. `createFallbackAuditUserIntent()` preserves the complete raw prompt as an unmapped fragment so processing can continue.
+- Raw fallback does not block audit unless the interpretation later exposes a genuine blocking target/product ambiguity.
+- Map Audit HTML explicitly displays unmapped input and states that it is preserved as an Audit Obligation, not ignored and not treated as a bug.
+- Regression coverage verifies raw fallback, fragment mapping, explicit unmapped retention, semantic dedupe, and obligation preservation.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and live model prompt benchmarks remain outstanding.
+
+
 ## 2026-10-03 — prompt intake finalization
 
 Source-verified on `Local`:
