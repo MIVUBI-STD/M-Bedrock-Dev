@@ -59,6 +59,12 @@ audit <selected.mcworld>
 - report type is explicit:
   - `BUG`
   - `DESIGN_MISMATCH`;
+- canonical confirmed-issue taxonomy is now explicit:
+  - `failureDomain` = one primary gameplay failure family;
+  - `contributingDomains[]` = materially involved cross-system domains without duplicating the root cause;
+  - `gameplayFlow` = player-flow location;
+  - `informationMismatch` = player-facing information/feedback disagrees with actual capability/state;
+  - severity remains downstream review state and requires grounded player impact;
 - design mismatch causal links are prevented from entering Bug Report V2 promotion;
 - final selected-map report continuation carries the Design Mismatch lane from the same audit revision;
 - legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
