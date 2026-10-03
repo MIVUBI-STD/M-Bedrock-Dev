@@ -12,7 +12,6 @@ export type BugReportClientDocumentQualityIssueCode =
   | "missing-reproduction"
   | "missing-observed"
   | "missing-expected"
-  | "missing-work-checklist"
   | "duplicate-visible-number"
   | "duplicate-visible-title";
 
@@ -156,20 +155,6 @@ export function reviewBugReportClientDocument(
             "Client issue requires the expected result.",
         });
       }
-      if (
-        issue.workChecklist.length === 0 ||
-        issue.workChecklist.some(
-          (item) => !hasText(item),
-        )
-      ) {
-        issues.push({
-          code: "missing-work-checklist",
-          path: path + ".workChecklist",
-          message:
-            "Client issue requires a usable work checklist.",
-        });
-      }
-
       const indexItem =
         document.issueIndex[index];
       if (
