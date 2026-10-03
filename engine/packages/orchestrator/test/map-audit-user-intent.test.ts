@@ -4,11 +4,14 @@ import {
 } from "../src/map-audit-obligations.js";
 import {
   auditUserIntentAuthorityNote,
+  auditUserIntentFingerprint,
+  createAuditUserIntentConfirmation,
   createFallbackAuditUserIntent,
   deriveAuditUserIntentKnowledgeDemand,
   deriveAuditUserIntentSearchPressure,
   normalizeAuditUserIntent,
   validateAuditUserIntent,
+  validateAuditUserIntentConfirmation,
   type AuditUserIntentEnvelope,
 } from "../src/map-audit-user-intent.js";
 
@@ -433,6 +436,71 @@ describe("map audit user intent", () => {
             "user-input-unmapped",
       ),
     ).toBe(true);
+  });
+
+  it("requires explicit confirmation bound to the current normalized intent", () => {
+    const input = normalizeAuditUserIntent(
+      envelope(),
+    );
+
+    expect(
+      validateAuditUserIntentConfirmation(
+        input,
+        undefined,
+      ),
+    ).toContain(
+      "User confirmation is required before production audit.",
+    );
+
+    const confirmation =
+      createAuditUserIntentConfirmation(input);
+
+    expect(
+      confirmation.intentFingerprint,
+    ).toBe(
+      auditUserIntentFingerprint(input),
+    );
+    expect(
+      validateAuditUserIntentConfirmation(
+        input,
+        confirmation,
+      ),
+    ).toEqual([]);
+
+    const changed =
+      normalizeAuditUserIntent({
+        ...input,
+        fragments: [
+          ...input.fragments,
+          {
+            id: "f4",
+            raw: "juga cek reconnect",
+          },
+        ],
+        items: [
+          ...input.items,
+          {
+            kind: "SCOPE_REQUEST",
+            raw: "juga cek reconnect",
+            normalized:
+              "prioritize reconnect/recovery behavior",
+            sourceFragmentIds: ["f4"],
+          },
+        ],
+        priorityPlayerFlows: [
+          ...input.priorityPlayerFlows,
+          "RECOVERY",
+        ],
+      });
+
+    expect(
+      validateAuditUserIntentConfirmation(
+        changed,
+        confirmation,
+      ),
+    ).toContain(
+      "User intent confirmation is stale or belongs to a different prompt interpretation.",
+    );
   });
 
   it("states explicitly that prompt input cannot become proof", () => {
