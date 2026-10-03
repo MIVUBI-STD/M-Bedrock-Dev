@@ -130,6 +130,44 @@ describe("gameplay bug candidate evidence gate", () => {
     ]);
   });
 
+  it("retains a partially grounded pattern and targets only missing required predicates", () => {
+    const result = evaluateGameplayBugCandidateEvidence(
+      rule,
+      [
+        { predicate: "retry-occurs", state: "present", evidenceId: "e:retry" },
+        { predicate: "old-state-survives", state: "unknown" },
+        { predicate: "next-attempt-gameplay-changed", state: "present", evidenceId: "e:impact" },
+        { predicate: "contract-allows-persistence", state: "absent" },
+      ],
+      readyContract,
+    );
+
+    expect(result.disposition).toBe("candidate");
+    expect(result.supportingEvidenceIds).toEqual([
+      "e:retry",
+    ]);
+    expect(result.playerImpactEvidenceIds).toEqual([
+      "e:impact",
+    ]);
+    expect(result.missingPredicates).toEqual([
+      "old-state-survives",
+    ]);
+  });
+
+  it("does not emit a candidate when every required defect predicate is still unknown", () => {
+    const result = evaluateGameplayBugCandidateEvidence(
+      rule,
+      [
+        { predicate: "contract-allows-persistence", state: "absent" },
+      ],
+      readyContract,
+    );
+
+    expect(result.disposition).toBe(
+      "insufficient-evidence",
+    );
+  });
+
   it("does not report technical patterns without player-visible impact", () => {
     const result = evaluateGameplayBugCandidateEvidence(
       rule,
