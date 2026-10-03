@@ -240,6 +240,38 @@ Development/
 └── Versions/
 ```
 
+## Project publication gate
+
+M-Bedrock publishes project files to Drive only from an approved ProjectApprovalSnapshot.
+
+Canonical flow:
+
+```text
+working project
+→ completeness gate
+→ ready-for-approval
+→ historical issue sync when applicable
+→ immutable ProjectApprovalSnapshot
+→ approved
+→ ProjectDrivePublishPlan
+→ upload approved deliverables only
+→ fingerprint/file-id verification
+→ ProjectDrivePublishReceipt
+→ drive-published
+```
+
+Rules:
+
+1. Working/project-internal files are not uploaded merely because they exist.
+2. The Drive plan contains only deliverables frozen into the approved snapshot.
+3. An unapproved extra file is rejected by the canonical publish path.
+4. PARTIAL publication is recorded but must not mark the project as drive-published.
+5. Only a COMPLETE receipt with matching snapshot fingerprint may close publication.
+6. A material artifact/report/deliverable change invalidates approval and requires a new approval snapshot before another publication.
+7. Work Session, project registry, semantic evidence, Audit Obligations, caches, and engine control-plane state remain outside Drive.
+
+Drive is therefore approved human-facing storage, not the engine/project-state database.
+
 ## Drive root
 
 The configured Drive root stays map-centric:
