@@ -1,5 +1,7 @@
 # Runtime Knowledge Coverage Audit
 
+> **Knowledge inventory only.** Presence of runtime knowledge does not satisfy Discovery, Model, STRESS, or PROVE. Only scenario/RIG execution receipts inside the selected-map audit can close those obligations.
+
 ## Status
 
 This document is a capability inventory, **not a proof that the listed runtime behaviors are fully understood or verified**.
