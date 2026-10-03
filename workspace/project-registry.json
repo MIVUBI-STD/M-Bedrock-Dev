@@ -3,6 +3,36 @@
   "projects": [
     {
       "schemaVersion": 1,
+      "projectId": "aftershock",
+      "projectName": "Aftershock",
+      "taskClass": "DIAGNOSE",
+      "revision": 1,
+      "artifact": {
+        "artifactId": "drive:1eSlTNBhoWslPs8xUlxsK0FVEkBe3uGz1",
+        "artifactFingerprint": "sha256:b8bff14da9e71bf58f9d3b277408ec00d51d1193cee5c8eb1b3f7644584fbab9",
+        "version": "1.0.4"
+      },
+      "work": {},
+      "knowledge": {},
+      "publication": {
+        "drive": {
+          "schemaVersion": 1,
+          "projectId": "aftershock",
+          "mapFolder": {
+            "folderId": "1UlSPenQ81KPLfE_XYX_nzEMoSGikvtco",
+            "label": "Skills - Aftershock"
+          },
+          "currentWorld": {
+            "fileId": "1eSlTNBhoWslPs8xUlxsK0FVEkBe3uGz1",
+            "fileName": "Aftershock v1.0.4.mcworld",
+            "artifactFingerprint": "sha256:b8bff14da9e71bf58f9d3b277408ec00d51d1193cee5c8eb1b3f7644584fbab9",
+            "version": "1.0.4"
+          }
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
       "projectId": "attack-challenge",
       "projectName": "Attack Challenge",
       "taskClass": "DIAGNOSE",
@@ -63,6 +93,36 @@
     },
     {
       "schemaVersion": 1,
+      "projectId": "blitzbuild",
+      "projectName": "Builder's Memory / BlitzBuild",
+      "taskClass": "DIAGNOSE",
+      "revision": 1,
+      "artifact": {
+        "artifactId": "drive:1Z8HrS3UhVRj4r-WAi1wtpqs900xYy7QE",
+        "artifactFingerprint": "sha256:d3a7082af1c2e5f8ded862f801eaa3880f02beb323280648a243d31e574e5504",
+        "version": "1.0.3"
+      },
+      "work": {},
+      "knowledge": {},
+      "publication": {
+        "drive": {
+          "schemaVersion": 1,
+          "projectId": "blitzbuild",
+          "mapFolder": {
+            "folderId": "1CRSgQ5I6Bzp6vkAyNrfmDxn3L8tre8hB",
+            "label": "Build - Builder's Memory"
+          },
+          "currentWorld": {
+            "fileId": "1Z8HrS3UhVRj4r-WAi1wtpqs900xYy7QE",
+            "fileName": "BlitzBuild-v1.0.2.mcworld",
+            "artifactFingerprint": "sha256:d3a7082af1c2e5f8ded862f801eaa3880f02beb323280648a243d31e574e5504",
+            "version": "1.0.3"
+          }
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
       "projectId": "build-and-decode",
       "projectName": "Build & Decode",
       "taskClass": "DIAGNOSE",
@@ -87,6 +147,36 @@
             "fileName": "Build & Decode v1.1.0.mcworld",
             "artifactFingerprint": "sha256:d83cd5e699dfe2676a540a3cdca2b4797a34c75984cac3142488a1556cff7030",
             "version": "1.1.0"
+          }
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "projectId": "clockwork-vault",
+      "projectName": "The Clockwork Vault",
+      "taskClass": "DIAGNOSE",
+      "revision": 1,
+      "artifact": {
+        "artifactId": "drive:1bET36z9mdi3-GYEdHrbKet5QLPZpMq87",
+        "artifactFingerprint": "sha256:1802103da030b448c4a91e98eeef6f53d95235abda761b35fc0ab4b8453f7c1d",
+        "version": "1.0.1"
+      },
+      "work": {},
+      "knowledge": {},
+      "publication": {
+        "drive": {
+          "schemaVersion": 1,
+          "projectId": "clockwork-vault",
+          "mapFolder": {
+            "folderId": "1y0B3EYlsVucjwOy9h8Rt5W1xVIJCvKQK",
+            "label": "Skills - The Clockwork Vault"
+          },
+          "currentWorld": {
+            "fileId": "1bET36z9mdi3-GYEdHrbKet5QLPZpMq87",
+            "fileName": "The Clockwork Vault v1.0.1.mcworld",
+            "artifactFingerprint": "sha256:1802103da030b448c4a91e98eeef6f53d95235abda761b35fc0ab4b8453f7c1d",
+            "version": "1.0.1"
           }
         }
       }
@@ -357,6 +447,66 @@
             "fileName": "Marathon Test of Tactics v2.2.0.mcworld",
             "artifactFingerprint": "sha256:163b85be6d350fe9ea3cb1dce553c046593375f7c901392cb83a29f8c5b77482",
             "version": "2.2.0"
+          }
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "projectId": "mysteries-biomes-l1",
+      "projectName": "Mysteries of Biomes Level 1",
+      "taskClass": "DIAGNOSE",
+      "revision": 1,
+      "artifact": {
+        "artifactId": "drive:1jgOHXyLfV0qcbYYPCTPwoXrSS-NCacqQ",
+        "artifactFingerprint": "sha256:fcfde94b403a8281bf8b2fd589658e74dd4becf7d941e7b3db9b66261ace75ae",
+        "version": "1.0.4"
+      },
+      "work": {},
+      "knowledge": {},
+      "publication": {
+        "drive": {
+          "schemaVersion": 1,
+          "projectId": "mysteries-biomes-l1",
+          "mapFolder": {
+            "folderId": "1ND9YRTByGrMor0Skf24VsJZs0gUU87S5",
+            "label": "Find The Button - Mysteries of Biomes / Level 1"
+          },
+          "currentWorld": {
+            "fileId": "1jgOHXyLfV0qcbYYPCTPwoXrSS-NCacqQ",
+            "fileName": "Mysteries of Biomes v1.0.4.mcworld",
+            "artifactFingerprint": "sha256:fcfde94b403a8281bf8b2fd589658e74dd4becf7d941e7b3db9b66261ace75ae",
+            "version": "1.0.4"
+          }
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "projectId": "mysteries-biomes-l2",
+      "projectName": "Mysteries of Biomes Level 2",
+      "taskClass": "DIAGNOSE",
+      "revision": 1,
+      "artifact": {
+        "artifactId": "drive:1pk4tqSJNY9UkHeSW94PeXaQjGdSTdeIE",
+        "artifactFingerprint": "sha256:e7dba9f91b1562c84fe6ce8d3229d52ca7229f54fa2c6085c0bde636be4ad247",
+        "version": "2.1.1"
+      },
+      "work": {},
+      "knowledge": {},
+      "publication": {
+        "drive": {
+          "schemaVersion": 1,
+          "projectId": "mysteries-biomes-l2",
+          "mapFolder": {
+            "folderId": "1SJALDLunKd21UXSHVYpQ9VbYE6KWfF5R",
+            "label": "Find The Button - Mysteries of Biomes / Level 2"
+          },
+          "currentWorld": {
+            "fileId": "1pk4tqSJNY9UkHeSW94PeXaQjGdSTdeIE",
+            "fileName": "Mysteries of Biomes v2.1.1.mcworld",
+            "artifactFingerprint": "sha256:e7dba9f91b1562c84fe6ce8d3229d52ca7229f54fa2c6085c0bde636be4ad247",
+            "version": "2.1.1"
           }
         }
       }
