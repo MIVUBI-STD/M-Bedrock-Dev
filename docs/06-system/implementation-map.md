@@ -18,6 +18,7 @@ Use this before broad repository search.
 | Approved Bug Report → historical regression projection | engine/packages/orchestrator/src/workflow/project-history-sync.ts |
 | Historical regression catalog merge/persistence | engine/packages/reliability-search/src/corpus/historical-regression-catalog.ts + historical-regression-store.ts |
 | Approved snapshot → Drive publish plan | engine/packages/orchestrator/src/workflow/project-drive-publish-plan.ts |
+| Approved Drive plan → adapter execution / fingerprint verification | engine/packages/orchestrator/src/workflow/project-drive-publish-executor.ts |
 | Canonical current Bug Report V2 state | `workspace/reports/*.json` only; project workspace uses `evidence/` and `output/`, never a second report store |
 | Drive storage root + exact map/current-world pointers | engine/packages/project-model/src/project/drive-binding.ts + workspace/drive-root.json |
 | Runtime semantic attribute convention | engine/packages/project-model/src/runtime/runtime-semantic-convention.ts |
