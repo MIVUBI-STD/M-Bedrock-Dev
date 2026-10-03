@@ -47,6 +47,15 @@ interface MapAuditHtmlInput {
   readonly schemaVersion: 2;
   readonly artifactId: string;
   readonly mapVersion: string;
+  readonly control?: {
+    readonly status: "READY_FOR_REVIEW" | "BLOCKED";
+    readonly currentStage: string;
+    readonly allowedNextAction: string;
+    readonly continuationOwner: string;
+    readonly requiresNewAuditRun: boolean;
+    readonly blockingCheckpointIds: readonly string[];
+    readonly reasons: readonly string[];
+  };
   readonly evidenceScope: {
     readonly selectedArtifact: string;
   };
@@ -468,6 +477,58 @@ function auditValidationPlan(
   ].join("\n");
 }
 
+function auditControlSummary(
+  audit: MapAuditHtmlInput,
+): string {
+  const control = audit.control;
+  if (!control) return "";
+
+  const blockers =
+    control.blockingCheckpointIds.length > 0
+      ? control.blockingCheckpointIds.join(", ")
+      : "None";
+
+  const reasons =
+    control.reasons.length > 0
+      ? '<ul>' +
+        control.reasons.map(
+          (item) =>
+            '<li>' + escapeHtml(item) + '</li>',
+        ).join("") +
+        '</ul>'
+      : '<span>None</span>';
+
+  return [
+    '<section class="section control-summary">',
+    '<h2>Current Audit Action</h2>',
+    '<div class="control-grid">',
+    '<div><span>Status</span><strong>' +
+      escapeHtml(control.status) +
+      '</strong></div>',
+    '<div><span>Stage</span><strong>' +
+      escapeHtml(control.currentStage) +
+      '</strong></div>',
+    '<div><span>Next Action</span><strong>' +
+      escapeHtml(control.allowedNextAction) +
+      '</strong></div>',
+    '<div><span>Owner</span><strong>' +
+      escapeHtml(control.continuationOwner) +
+      '</strong></div>',
+    '</div>',
+    '<div class="row"><div class="label">Blocking Checkpoints</div><div class="value">' +
+      escapeHtml(blockers) +
+      '</div></div>',
+    ...(control.reasons.length > 0
+      ? [
+          '<div class="row"><div class="label">Why</div><div class="value">' +
+            reasons +
+            '</div></div>',
+        ]
+      : []),
+    '</section>',
+  ].join("\n");
+}
+
 function renderCompleteMapAuditHtml(
   audit: MapAuditHtmlInput,
 ): string {
@@ -494,11 +555,11 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
 .hero{padding:28px 32px;background:#172b4d;color:#fff}.hero h1{margin:0 0 6px}.hero p{margin:0;opacity:.8}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #d9dee8}
 .metric{padding:16px 20px;border-right:1px solid #d9dee8}.metric:last-child{border-right:0}.metric span{display:block;color:#667085;font-size:11px;font-weight:700;text-transform:uppercase}.metric strong{font-size:18px}
-.section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}
+.section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}.control-summary{border-bottom:1px solid #d9dee8;background:#fbfcfe}.control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.control-grid div{padding:12px 14px;border:1px solid #d9dee8;border-radius:8px;background:#fff}.control-grid span{display:block;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.control-grid strong{display:block;margin-top:3px;font-size:13px}
 .issue-card{margin:0 0 18px;border:1px solid #d9dee8;border-radius:10px;overflow:hidden}.issue-head{display:grid;grid-template-columns:36px 130px 1fr;align-items:center;background:#f8fafc;border-bottom:1px solid #d9dee8}.issue-number,.severity{padding:10px 12px;font-size:12px;font-weight:800}.issue-title{padding:10px 14px 10px 0}.issue-title h2{margin:0;font-size:16px}.meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;color:#667085;font-size:10px;font-weight:700;text-transform:uppercase}
 .audit-status-proven .severity{color:#166534}.audit-status-need-validation .severity{color:#9a6700}
 .row{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #d9dee8}.label{padding:13px 15px;background:#f8fafc;color:#3157a4;font-size:12px;font-weight:800}.value{padding:13px 16px}.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.technical-row{padding:12px 16px;background:#fcfcfd;border-top:1px solid #d9dee8}.technical summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.technical-text{margin-top:9px;white-space:pre-wrap;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#667085}
-@media(max-width:700px){.report{width:100%;margin:0;border-radius:0}.metrics{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+@media(max-width:700px){.report{width:100%;margin:0;border-radius:0}.metrics{grid-template-columns:1fr}.control-grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}}
 @media print{body{background:#fff}.report{width:100%;margin:0;border:0}.issue-card{break-inside:avoid-page}.technical{display:block}.technical summary{list-style:none}.technical>*{display:block!important}input[type="checkbox"]{appearance:none;width:11px;height:11px;border:1px solid #555;vertical-align:middle}}
 `;
 
@@ -521,6 +582,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
     <div class="metric"><span>Proven</span><strong>${proven.length}</strong></div>
     <div class="metric"><span>Need Validation</span><strong>${needValidation.length}</strong></div>
   </section>
+  ${auditControlSummary(audit)}
   <section class="section">
     <div class="note"><strong>Validation status:</strong> NEED VALIDATION identifies a material finding that still requires deciding proof. It remains listed until confirmed or disproved, and no final severity is assigned while unresolved.</div>
     <h2>PROVEN</h2>
