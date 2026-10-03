@@ -32,7 +32,7 @@ export interface GameplayCapabilityDeliveryAssessment {
   readonly label: string;
   readonly status: GameplayCapabilityDeliveryStatus;
   readonly failureClass?: GameplayCapabilityFailureClass;
-  readonly reportIssueType?: GameplayReportIssueType;
+  readonly issueType?: GameplayReportIssueType;
   readonly expectedCapacity?: number;
   readonly playableCapacity?: number;
   readonly technicalConstraintReasons: readonly string[];
@@ -70,7 +70,7 @@ export function assessGameplayCapabilityDelivery(
         label: input.label,
         status: "DEGRADED",
         failureClass: "DESIGN_FAILURE",
-        reportIssueType: "DESIGN_MISMATCH",
+        issueType: "DESIGN_MISMATCH",
         expectedCapacity:
           input.expectedCapacity,
         playableCapacity:
@@ -116,7 +116,7 @@ export function assessGameplayCapabilityDelivery(
       status: "MISSING",
       failureClass:
         "DESIGN_IMPLEMENTATION_MISMATCH",
-      reportIssueType: "DESIGN_MISMATCH",
+      issueType: "DESIGN_MISMATCH",
       technicalConstraintReasons,
       evidenceIds,
       playerFacingEvidenceIds,
@@ -138,7 +138,7 @@ export function assessGameplayCapabilityDelivery(
       label: input.label,
       status: "DEGRADED",
       failureClass: "IMPLEMENTATION_FAILURE",
-      reportIssueType: "BUG",
+      issueType: "BUG",
       technicalConstraintReasons,
       evidenceIds,
       playerFacingEvidenceIds,
