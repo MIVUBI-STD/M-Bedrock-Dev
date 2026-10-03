@@ -176,8 +176,9 @@ Drive publication is one-way from an approved snapshot.
 ```text
 approved ProjectApprovalSnapshot
 → ProjectDrivePublishPlan
+→ ProjectDriveUploadAdapter
 → upload approved deliverables only
-→ verify file IDs/fingerprints
+→ executor verifies returned file IDs/fingerprints
 → ProjectDrivePublishReceipt
 ```
 
