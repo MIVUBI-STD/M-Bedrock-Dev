@@ -78,12 +78,16 @@ export interface AuditUserIntentConfirmationRequest {
   readonly policy: "confirm-user-intent-before-audit";
   readonly intentFingerprint: string;
   readonly summary: {
+    readonly auditObjective: string;
+    readonly plannedChecks: readonly string[];
+    readonly proofStrategy: readonly string[];
+    readonly outputPlan: readonly string[];
     readonly targetHints: readonly string[];
-    readonly symptoms: readonly string[];
-    readonly suspicions: readonly string[];
+    readonly userFocus: readonly string[];
+    readonly reportedSymptoms: readonly string[];
+    readonly suspectedCauses: readonly string[];
     readonly expectationClaims: readonly string[];
     readonly designClaims: readonly string[];
-    readonly scopeGuidance: readonly string[];
     readonly testConstraints: readonly string[];
     readonly historicalHints: readonly string[];
     readonly unmappedInput: readonly string[];
@@ -634,6 +638,35 @@ function itemHints(
     .map((item) => item.normalized);
 }
 
+const DEFAULT_PRE_TEST_AUDIT_CHECKS = [
+  "Lock the exact selected map/version and reject stale or foreign gameplay authority.",
+  "Reconstruct the complete player journey from entry/start through gameplay, progression, terminal state, cleanup, replay, and recovery.",
+  "Discover every material gameplay surface and account for unknown, unsupported, or unowned behavior instead of silently skipping it.",
+  "Check progression/completion accounting, terminal transitions, softlocks, and second-run/replay behavior.",
+  "Check mutable state ownership, reset/cleanup, stale state, deferred work, and lifecycle symmetry.",
+  "Check multiplayer and multi-arena assignment, capacity, isolation, parallel use, cleanup, and reuse when present.",
+  "Check inventory/loadout/economy grant, consume, reset, restore, duplication, and recovery paths when present.",
+  "Check entity/combat/navigation and chunk/simulation dependencies when present.",
+  "Check persistence, disconnect/reconnect/reload, and recovery ownership when present.",
+  "Check world/structure/spatial mutations, boundaries/capacity, and off-by-one/final-state behavior when present.",
+  "Check player-facing UI/feedback against actual playable capability for design mismatch.",
+  "Search blocking counter-proof before promoting any anomaly into a gameplay issue.",
+] as const;
+
+const DEFAULT_PRE_TEST_PROOF_STRATEGY = [
+  "Selected-artifact/source evidence first.",
+  "Use bounded causal analysis instead of broad trial-and-error.",
+  "Treat risks, unknowns, and detection gaps as Audit Obligations rather than bugs.",
+  "Use runtime testing only for behavior that cannot be decided safely from static/package evidence.",
+  "Report only causal BUG / DESIGN_MISMATCH findings; preserve unresolved non-findings separately.",
+] as const;
+
+const DEFAULT_PRE_TEST_OUTPUT_PLAN = [
+  "Map Audit Output V2 as the single operator-facing audit output.",
+  "Separate PROVEN findings, confirmation-ready NEED_VALIDATION findings, and Audit Obligations.",
+  "Keep reproduction/proof guidance bounded to the exact unresolved behavior.",
+] as const;
+
 export function createAuditUserIntentConfirmationRequest(
   input: AuditUserIntentEnvelope,
 ): AuditUserIntentConfirmationRequest {
@@ -651,20 +684,28 @@ export function createAuditUserIntentConfirmationRequest(
     intentFingerprint:
       fingerprintAuditUserIntent(normalized),
     summary: {
+      auditObjective:
+        "Perform a comprehensive pre-testing selected-map audit to discover real gameplay bugs and design mismatches before manual testing, while keeping unknown/risk-only observations out of the issue list.",
+      plannedChecks:
+        [...DEFAULT_PRE_TEST_AUDIT_CHECKS],
+      proofStrategy:
+        [...DEFAULT_PRE_TEST_PROOF_STRATEGY],
+      outputPlan:
+        [...DEFAULT_PRE_TEST_OUTPUT_PLAN],
       targetHints:
         itemHints(normalized, "TARGET_HINT"),
-      symptoms:
+      userFocus: [
+        ...itemHints(normalized, "SCOPE_REQUEST"),
+        ...itemHints(normalized, "EXCLUSION_REQUEST"),
+      ],
+      reportedSymptoms:
         itemHints(normalized, "SYMPTOM_REPORT"),
-      suspicions:
+      suspectedCauses:
         itemHints(normalized, "SUSPICION"),
       expectationClaims:
         itemHints(normalized, "EXPECTATION_CLAIM"),
       designClaims:
         itemHints(normalized, "DESIGN_CLAIM"),
-      scopeGuidance: [
-        ...itemHints(normalized, "SCOPE_REQUEST"),
-        ...itemHints(normalized, "EXCLUSION_REQUEST"),
-      ],
       testConstraints:
         itemHints(normalized, "TEST_CONSTRAINT"),
       historicalHints:
