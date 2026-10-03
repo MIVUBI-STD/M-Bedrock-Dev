@@ -124,6 +124,21 @@ These controls reduce silent false negatives but do not constitute a measured fa
 - legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
 - repository verifier checks single entry, issue lanes, semantic-gap fail-closed behavior, report lanes, and legacy deprecation.
 
+### Conditional knowledge and evidence substitution
+
+Knowledge demand is now conditional on coexisting selected-artifact systems rather than only a static domain prerequisite table. Examples:
+
+- inventory + persistence expands into persistence/recovery proof;
+- inventory + economy expands into reward/economy proof;
+- arena ownership + simulation surfaces expands into multiplayer/chunk proof;
+- chunk simulation + actors expands into entity behavior plus platform constraints;
+- persistence/recovery expands into temporal ownership and, when present, arena/inventory proof;
+- combat and world-structure lifecycles expand into temporal ownership where stale ordering can matter.
+
+Proof navigation also exposes evidence-substitution candidates. These never auto-confirm a finding; they tell the resolver when a combination of selected-artifact, quantitative, platform, or cross-domain evidence can replace a broad runtime trial. Current substitution families include arena capacity arithmetic, simulation ownership, inventory competing restore writers, persistent append-without-clear, structure transition residue, and boundary arithmetic.
+
+Runtime remains last resort after applicable static/cross-domain/formal substitution routes are exhausted.
+
 ### Proof navigation / resolution knowledge
 
 Every NEED_VALIDATION finding now receives a bounded proof-navigation contract:
