@@ -62,7 +62,6 @@ export interface BugReportClientIssue {
     readonly reason: string;
   }[];
   readonly mustPreserve?: readonly string[];
-  readonly workChecklist: readonly string[];
 }
 
 export interface BugReportClientDocument {
