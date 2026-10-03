@@ -16,7 +16,9 @@
     "bugs",
     "designMismatches",
     "honesty",
-    "validationTests"
+    "validationTests",
+    "control",
+    "auditObligations"
   ],
   "properties": {
     "schemaVersion": {
@@ -59,7 +61,10 @@
         "loseCondition",
         "resetRules",
         "preserveRules",
-        "progressionRules"
+        "progressionRules",
+        "objectiveGrounding",
+        "winConditionGrounding",
+        "loseConditionGrounding"
       ],
       "properties": {
         "objective": {
@@ -91,6 +96,27 @@
           "items": {
             "type": "string"
           }
+        },
+        "objectiveGrounding": {
+          "enum": [
+            "authored",
+            "inferred",
+            "unresolved"
+          ]
+        },
+        "winConditionGrounding": {
+          "enum": [
+            "authored",
+            "inferred",
+            "unresolved"
+          ]
+        },
+        "loseConditionGrounding": {
+          "enum": [
+            "authored",
+            "inferred",
+            "unresolved"
+          ]
         }
       },
       "additionalProperties": true
@@ -135,14 +161,15 @@
     "multiArena": {
       "type": "object",
       "required": [
-        "supported",
+        "detected",
         "visibleArenaCount",
-        "concurrentArenaLimit",
+        "declaredConcurrentArenaLimit",
+        "safeConcurrentArenaLimit",
         "queueBehavior",
         "isolationRules"
       ],
       "properties": {
-        "supported": {
+        "detected": {
           "type": "boolean"
         },
         "visibleArenaCount": {
@@ -152,7 +179,14 @@
           ],
           "minimum": 0
         },
-        "concurrentArenaLimit": {
+        "declaredConcurrentArenaLimit": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "safeConcurrentArenaLimit": {
           "type": [
             "integer",
             "null"
@@ -162,9 +196,6 @@
         "queueBehavior": {
           "type": "string"
         },
-        "playerFeedback": {
-          "type": "string"
-        },
         "isolationRules": {
           "type": "array",
           "items": {
@@ -172,7 +203,7 @@
           }
         }
       },
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "coverage": {
       "type": "object",
@@ -182,7 +213,10 @@
       ],
       "properties": {
         "disposition": {
-          "const": "accounted"
+          "enum": [
+            "accounted",
+            "incomplete"
+          ]
         },
         "records": {
           "type": "array",
@@ -200,7 +234,7 @@
               },
               "status": {
                 "enum": [
-                  "checked",
+                  "understood",
                   "blocked",
                   "not-applicable"
                 ]
@@ -349,22 +383,15 @@
           },
           "proofCeiling": {
             "enum": [
-              "STATIC VERIFIED",
-              "PACKAGE VERIFIED",
-              "LOCAL GAME VERIFIED",
-              "LIVE GAME VERIFIED",
-              "UNKNOWN"
+              "PROVEN",
+              "NEEDS_DECIDING_PROOF"
             ]
           },
           "counterEvidence": {
             "enum": [
               "cleared",
-              "present",
               "unresolved"
             ]
-          },
-          "testerTriggerReady": {
-            "type": "boolean"
           },
           "failureDomain": {
             "enum": [
@@ -644,15 +671,11 @@
             "then": {
               "required": [
                 "playerImpact",
-                "counterEvidence",
-                "testerTriggerReady"
+                "counterEvidence"
               ],
               "properties": {
                 "counterEvidence": {
                   "const": "cleared"
-                },
-                "testerTriggerReady": {
-                  "const": true
                 }
               }
             }
@@ -969,22 +992,15 @@
           },
           "proofCeiling": {
             "enum": [
-              "STATIC VERIFIED",
-              "PACKAGE VERIFIED",
-              "LOCAL GAME VERIFIED",
-              "LIVE GAME VERIFIED",
-              "UNKNOWN"
+              "PROVEN",
+              "NEEDS_DECIDING_PROOF"
             ]
           },
           "counterEvidence": {
             "enum": [
               "cleared",
-              "present",
               "unresolved"
             ]
-          },
-          "testerTriggerReady": {
-            "type": "boolean"
           },
           "mismatchKind": {
             "enum": [
@@ -1276,15 +1292,11 @@
             "then": {
               "required": [
                 "playerImpact",
-                "counterEvidence",
-                "testerTriggerReady"
+                "counterEvidence"
               ],
               "properties": {
                 "counterEvidence": {
                   "const": "cleared"
-                },
-                "testerTriggerReady": {
-                  "const": true
                 }
               }
             }
@@ -1374,6 +1386,7 @@
         "status",
         "expectedVisibleResidueIds",
         "visibleNeedValidationIds",
+        "visibleObligationIds",
         "expectedProvenIds",
         "visibleProvenIds",
         "missingVisibleResidueIds",
@@ -1439,6 +1452,14 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "visibleObligationIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         }
       },
       "additionalProperties": false
@@ -1476,6 +1497,7 @@
               "replicaStatus": {
                 "enum": [
                   "EQUIVALENT",
+                  "BOUNDED_EQUIVALENCE",
                   "DIVERGENCE_REQUIRES_CLASSIFICATION",
                   "INCOMPLETE_PROOF"
                 ]
@@ -1529,6 +1551,267 @@
         }
       },
       "additionalProperties": false
+    },
+    "control": {
+      "type": "object",
+      "required": [
+        "status",
+        "currentStage",
+        "allowedNextAction",
+        "continuationOwner",
+        "requiresNewAuditRun",
+        "blockingCheckpointIds",
+        "reasons"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "READY_FOR_REVIEW",
+            "BLOCKED"
+          ]
+        },
+        "currentStage": {
+          "enum": [
+            "TARGET",
+            "DISCOVERY",
+            "UNDERSTAND",
+            "MODEL",
+            "STRESS",
+            "PROVE",
+            "REPORT",
+            "COMPLETE"
+          ]
+        },
+        "allowedNextAction": {
+          "enum": [
+            "RESOLVE_BLOCKING_STAGE",
+            "RESOLVE_DEFECTS",
+            "PREPARE_REVIEW"
+          ]
+        },
+        "continuationOwner": {
+          "enum": [
+            "ENGINE_OR_EVIDENCE",
+            "DEFECT_RESOLUTION",
+            "REVIEW"
+          ]
+        },
+        "requiresNewAuditRun": {
+          "type": "boolean"
+        },
+        "blockingCheckpointIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "userIntent": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "policy",
+        "items",
+        "priorityDomains",
+        "priorityPlayerFlows",
+        "ambiguities"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "policy": {
+          "const": "user-input-is-search-guidance-not-gameplay-authority"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "kind",
+              "raw",
+              "normalized"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "TARGET_HINT",
+                  "SYMPTOM_REPORT",
+                  "SUSPICION",
+                  "EXPECTATION_CLAIM",
+                  "DESIGN_CLAIM",
+                  "TEST_CONSTRAINT",
+                  "SCOPE_REQUEST",
+                  "OUTPUT_REQUEST",
+                  "HISTORICAL_REFERENCE",
+                  "EXCLUSION_REQUEST"
+                ]
+              },
+              "raw": {
+                "type": "string",
+                "minLength": 1
+              },
+              "normalized": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "priorityDomains": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "arena-multi-arena",
+              "inventory-economy",
+              "progression-wave-objective",
+              "chunk-simulation",
+              "player-lifecycle",
+              "entity-ai-combat",
+              "world-structure-mutation",
+              "ui-feedback-information",
+              "state-ownership",
+              "temporal-async",
+              "boundary-capacity",
+              "persistence-recovery",
+              "platform-performance"
+            ]
+          }
+        },
+        "priorityPlayerFlows": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "ENTRY_JOIN",
+              "READY_START",
+              "SETUP",
+              "ACTIVE_GAMEPLAY",
+              "PROGRESSION",
+              "TERMINAL",
+              "CLEANUP_REPLAY",
+              "RECOVERY"
+            ]
+          }
+        },
+        "ambiguities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "auditObligations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "stage",
+          "title",
+          "reason",
+          "missingProof",
+          "validationTest",
+          "validationGroupKey",
+          "subjectIds",
+          "componentIds",
+          "evidenceIds"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "enum": [
+              "knowledge-gap",
+              "scenario-coverage",
+              "graph-structure",
+              "gameplay-closure",
+              "negative-space",
+              "temporal-risk",
+              "discovery-challenge",
+              "shared-resource",
+              "compound-boundary",
+              "accumulation-growth",
+              "replica-divergence",
+              "runtime-proof",
+              "detection-gap",
+              "gameplay-translation",
+              "counterproof-search",
+              "user-reported-symptom"
+            ]
+          },
+          "stage": {
+            "enum": [
+              "DISCOVERY",
+              "UNDERSTAND",
+              "MODEL",
+              "STRESS",
+              "PROVE"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "missingProof": {
+            "type": "string",
+            "minLength": 1
+          },
+          "validationTest": {
+            "type": "string",
+            "minLength": 1
+          },
+          "validationGroupKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subjectIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "componentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": true
