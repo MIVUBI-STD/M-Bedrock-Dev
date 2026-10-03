@@ -13,6 +13,34 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — canonical project lifecycle simplification
+
+This section supersedes earlier project-lifecycle notes below. Older entries are retained only as historical implementation snapshots and are not current authority.
+
+Current source-level contract on `Local`:
+
+- Project Registry no longer persists a lifecycle `status` field.
+- Lifecycle is derived only from proof pointers:
+  - no approval fingerprint → `working`;
+  - approval snapshot fingerprint → `approved`;
+  - approval + complete publication receipt fingerprint → `drive-published`.
+- `ready-for-approval` is not a persisted state. `assessProjectApprovalReadiness()` derives readiness on demand.
+- Audit stage, audit revision, next action, blockers, and findings remain owned by `SelectedMapAuditRun` / Work Session; Project Registry stores only the Work Session ID/revision pointer.
+- Project Registry no longer stores historical regression IDs, failure-pattern IDs, or map-knowledge IDs. Historical linkage is owned only by reliability catalog provenance.
+- Project Drive destinations have one owner: `ProjectRecord.publication.drive` using `DriveProjectBinding`. No separate `driveFolderId` state remains.
+- Deliverables use semantic destination roles; the publish planner resolves folder IDs from the single Drive binding.
+- ProjectApprovalSnapshot contains only the frozen project/artifact/audit/report/deliverable facts required for approval. Legacy historical/status fields are rejected.
+- ProjectDrivePublishReceipt contains verified uploaded files only. Completion is derived from snapshot deliverables versus receipt files; no PARTIAL/COMPLETE field is stored.
+- Historical regression ingestion occurs only after explicit project approval.
+- Multi-owner approval/publication operations use commit-last semantics: detail/immutable proof first, Project Registry pointer commit last.
+- Material project changes clear approval/publication proof pointers and therefore automatically derive the project back to `working`.
+- Regression guards reject legacy persisted status fields, malformed/forged approval proofs, invalid Drive bindings, incomplete publication, and stale registry revisions.
+
+Canonical documentation: `docs/06-system/project-lifecycle.md`.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full repository verification and real Drive execution have not been run for this head.
+
+
 ## 2026-10-03 — project state de-duplication final pass
 
 Source-verified on `Local`:
