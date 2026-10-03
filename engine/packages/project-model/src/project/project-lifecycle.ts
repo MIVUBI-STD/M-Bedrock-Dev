@@ -26,9 +26,6 @@ export interface ProjectArtifactBinding {
 export interface ProjectWorkReference {
   readonly sessionId?: string;
   readonly workSessionRevision?: number;
-  readonly auditRevision?: string;
-  readonly currentStage?: string;
-  readonly nextAction?: string;
 }
 
 export interface ProjectKnowledgeReferences {
