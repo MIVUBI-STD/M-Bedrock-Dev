@@ -105,12 +105,18 @@ describe("Map Audit Output V2 projection", () => {
         schemaVersion: 1,
         policy:
           "user-input-is-search-guidance-not-gameplay-authority",
+        fragments: [{
+          id: "f1",
+          raw: "wave suka stuck",
+        }],
         items: [{
           kind: "SYMPTOM_REPORT",
           raw: "wave suka stuck",
           normalized:
             "possible progression stall",
+          sourceFragmentIds: ["f1"],
         }],
+        unmappedFragmentIds: [],
         priorityDomains: [
           "progression-wave-objective",
         ],
