@@ -97,6 +97,16 @@ import {
   type TesterDefectConfirmationInput,
 } from "./tester-report-confirmation-adapter.js";
 
+/**
+ * Evidence origin used by downstream confirmation adapters.
+ * This is NOT an alternate audit workflow lane; every candidate must originate
+ * from the canonical selected-map audit and report continuation.
+ */
+export type AuditReportEvidenceRoute =
+  | "runtime"
+  | "static"
+  | "tester";
+
 export type ConfirmedDefectDraft = Omit<
   ConfirmedDefect,
   | "semanticKey"
@@ -133,7 +143,7 @@ export interface ReportCandidateRepairContext {
 }
 
 export interface RuntimeReportCandidate {
-  readonly route: "runtime";
+  readonly route: "runtime"; // evidence origin only
   /** @deprecated Use scenarioCausalLinkIds. */
   readonly scenarioCausalLinkId?: string;
   readonly scenarioCausalLinkIds?: readonly string[];
@@ -152,7 +162,7 @@ export interface RuntimeReportCandidate {
 }
 
 export interface StaticReportCandidate {
-  readonly route: "static";
+  readonly route: "static"; // evidence origin only
   /** @deprecated Use scenarioCausalLinkIds. */
   readonly scenarioCausalLinkId?: string;
   readonly scenarioCausalLinkIds?: readonly string[];
@@ -167,7 +177,7 @@ export interface StaticReportCandidate {
 }
 
 export interface TesterReportCandidate {
-  readonly route: "tester";
+  readonly route: "tester"; // evidence origin only
   /** @deprecated Use scenarioCausalLinkIds. */
   readonly scenarioCausalLinkId?: string;
   readonly scenarioCausalLinkIds?: readonly string[];
@@ -184,6 +194,11 @@ export type AuditReportCandidate =
   | RuntimeReportCandidate
   | StaticReportCandidate
   | TesterReportCandidate;
+
+/**
+ * Candidate.route is retained for compatibility but semantically means
+ * evidenceRoute. It must never be used to branch the production audit flow.
+ */
 
 export type ReportCandidateNextEvidenceNeed =
   | IntentDiagnosticNextEvidenceNeed
