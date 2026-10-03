@@ -179,23 +179,9 @@ export function evaluateGameplayBugCandidateEvidence(
     };
   }
 
-  if (unresolvedCounterPredicates.length > 0) {
-    return {
-      ruleId: rule.id,
-      kind: rule.kind,
-      disposition: "counter-evidence-unresolved",
-      supportingEvidenceIds: [],
-      playerImpactEvidenceIds: [],
-      counterEvidenceIds: [],
-      unresolvedCounterPredicates:
-        [...new Set(unresolvedCounterPredicates)].sort(),
-      missingPredicates: [],
-      reasons: [
-        "Required counter-evidence checks are unresolved; do not promote the candidate yet.",
-      ],
-    };
-  }
-
+  // Unknown counter-evidence must not erase a materially supported candidate.
+  // Only concrete blocking counter-proof may suppress it. The unresolved
+  // predicates stay attached so downstream resolution can target them.
   const missingRequired = rule.requiredPredicates.filter(
     (predicate) => stateOf(byPredicate, predicate) === "unknown",
   );
@@ -283,22 +269,49 @@ export function evaluateGameplayBugCandidateEvidence(
         stateOf(byPredicate, predicate) === "unknown",
     );
 
+    if (impactUnknown.length === 0) {
+      return {
+        ruleId: rule.id,
+        kind: rule.kind,
+        disposition: "no-player-impact",
+        supportingEvidenceIds: [],
+        playerImpactEvidenceIds: [],
+        counterEvidenceIds: [],
+        unresolvedCounterPredicates:
+          [...new Set(unresolvedCounterPredicates)].sort(),
+        missingPredicates: [],
+        reasons: [
+          "The pattern exists but player-visible impact is proven absent.",
+        ],
+      };
+    }
+
+    const support = [
+      ...rule.requiredPredicates,
+      ...(rule.anyOfPredicates ?? []),
+    ]
+      .map((predicate) => byPredicate.get(predicate))
+      .filter(
+        (
+          item,
+        ): item is DiagnosticEvidenceObservation =>
+          item?.state === "present",
+      )
+      .map(evidenceId);
+
     return {
       ruleId: rule.id,
       kind: rule.kind,
-      disposition:
-        impactUnknown.length > 0
-          ? "insufficient-evidence"
-          : "no-player-impact",
-      supportingEvidenceIds: [],
+      disposition: "candidate",
+      supportingEvidenceIds:
+        [...new Set(support)].sort(),
       playerImpactEvidenceIds: [],
       counterEvidenceIds: [],
-      unresolvedCounterPredicates: [],
+      unresolvedCounterPredicates:
+        [...new Set(unresolvedCounterPredicates)].sort(),
       missingPredicates: [...impactUnknown].sort(),
       reasons: [
-        impactUnknown.length > 0
-          ? "Player-visible gameplay impact is not yet grounded."
-          : "The pattern exists but has no material player-visible gameplay impact.",
+        "Core defect pattern is present. Player impact remains unresolved, so retain the candidate for targeted proof instead of discarding it.",
       ],
     };
   }
@@ -325,10 +338,13 @@ export function evaluateGameplayBugCandidateEvidence(
       ...new Set(impactPresent.map(evidenceId)),
     ].sort(),
     counterEvidenceIds: [],
-    unresolvedCounterPredicates: [],
+    unresolvedCounterPredicates:
+      [...new Set(unresolvedCounterPredicates)].sort(),
     missingPredicates: [],
     reasons: [
-      "Required behavior evidence and material player impact are present, and no blocking counter-proof makes the wrong gameplay state unreachable.",
+      unresolvedCounterPredicates.length > 0
+        ? "Required behavior evidence and material player impact are present. Counter-proof checks remain unresolved, so retain the candidate for bounded downstream resolution."
+        : "Required behavior evidence and material player impact are present, and no blocking counter-proof makes the wrong gameplay state unreachable.",
     ],
   };
 }
