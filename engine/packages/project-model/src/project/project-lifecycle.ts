@@ -57,19 +57,27 @@ export interface ProjectRecord {
   readonly publication: ProjectPublicationState;
 }
 
+export const PROJECT_DELIVERABLE_KINDS = [
+  "map",
+  "bug-report",
+  "map-audit-report",
+  "guide",
+  "changelog",
+  "other",
+] as const;
+
 export type ProjectDeliverableKind =
-  | "map"
-  | "bug-report"
-  | "map-audit-report"
-  | "guide"
-  | "changelog"
-  | "other";
+  (typeof PROJECT_DELIVERABLE_KINDS)[number];
+
+export const PROJECT_DRIVE_DESTINATION_ROLES = [
+  "project-root",
+  "development-source",
+  "development-version",
+  "technical-docs",
+] as const;
 
 export type ProjectDriveDestinationRole =
-  | "project-root"
-  | "development-source"
-  | "development-version"
-  | "technical-docs";
+  (typeof PROJECT_DRIVE_DESTINATION_ROLES)[number];
 
 export interface ProjectDeliverableRef {
   readonly kind: ProjectDeliverableKind;
@@ -121,13 +129,15 @@ const PROJECT_TASK_CLASSES =
     "RESEARCH",
   ]);
 
+const DELIVERABLE_KINDS =
+  new Set<ProjectDeliverableKind>(
+    PROJECT_DELIVERABLE_KINDS,
+  );
+
 const DESTINATION_ROLES =
-  new Set<ProjectDriveDestinationRole>([
-    "project-root",
-    "development-source",
-    "development-version",
-    "technical-docs",
-  ]);
+  new Set<ProjectDriveDestinationRole>(
+    PROJECT_DRIVE_DESTINATION_ROLES,
+  );
 
 function hasOnlyKeys(
   value: Record<string, unknown>,
@@ -149,7 +159,7 @@ export function normalizeProjectDeliverable(
   if (
     input === null ||
     typeof input !== "object" ||
-    !clean(input.kind) ||
+    !DELIVERABLE_KINDS.has(input.kind) ||
     !clean(input.path) ||
     !clean(input.fingerprint) ||
     !DESTINATION_ROLES.has(input.destinationRole)
