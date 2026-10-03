@@ -308,6 +308,7 @@ export async function saveProjectDrivePublishReceipt(
       existing.files.map(
         (item) =>
           item.kind + "|" +
+          item.destinationRole + "|" +
           item.fingerprint + "|" +
           item.fileId,
       ),
@@ -316,6 +317,7 @@ export async function saveProjectDrivePublishReceipt(
       receipt.files.map(
         (item) =>
           item.kind + "|" +
+          item.destinationRole + "|" +
           item.fingerprint + "|" +
           item.fileId,
       ),
@@ -325,10 +327,7 @@ export async function saveProjectDrivePublishReceipt(
         incomingKeys.has(key)
       );
 
-    if (
-      !monotonic ||
-      existing.status === "COMPLETE"
-    ) {
+    if (!monotonic) {
       throw new Error(
         "Conflicting Drive publish receipt for the same approved snapshot.",
       );
