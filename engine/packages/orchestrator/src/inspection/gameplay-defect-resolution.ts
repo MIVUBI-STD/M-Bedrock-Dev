@@ -263,6 +263,66 @@ function overlapping(
   return right.some((item) => set.has(item));
 }
 
+function automaticCounterProofSearch(
+  graph: GameplayScenarioGraph,
+  contradicted: GameplayCausalLink,
+  scenario:
+    GameplayScenarioGraph["scenarios"][number] | undefined,
+): CounterProofSearchReceipt {
+  const requiredDimensions =
+    requiredCounterProofDimensions(
+      contradicted,
+      scenario,
+    );
+  const scopeIds = [
+    ...new Set([
+      ...contradicted.subjectIds,
+      ...contradicted.componentIds,
+    ]),
+  ].sort();
+
+  const scopedLinks = graph.causalLinks.filter(
+    (candidate) =>
+      candidate.scenarioId === contradicted.scenarioId &&
+      (
+        candidate.id === contradicted.id ||
+        overlapping(candidate.subjectIds, scopeIds) ||
+        overlapping(candidate.componentIds, scopeIds)
+      ),
+  );
+
+  const blocking = blockingCounterProofFor(
+    graph,
+    contradicted,
+  );
+
+  const evidenceIds = [
+    ...new Set([
+      ...contradicted.evidenceIds,
+      ...scopedLinks.flatMap((candidate) =>
+        candidate.evidenceIds
+      ),
+    ]),
+  ].filter(Boolean).sort();
+
+  return {
+    schemaVersion: 1,
+    policy: "bounded-counterproof-search",
+    searchedDimensions: requiredDimensions,
+    scopeIds,
+    evidenceIds,
+    // This receipt is exhaustive only within the already-closed selected-
+    // artifact scenario graph. Runtime-unknown semantics never reach this
+    // branch as a source-confirmed contradiction; they remain RUNTIME_BLOCKED
+    // or DETECTION_GAP with targeted test obligations.
+    exhaustiveWithinScope: true,
+    conclusion:
+      blocking.length > 0
+        ? "BLOCKING_PROOF_FOUND"
+        : "NO_BLOCKING_PROOF",
+  };
+}
+
 function blockingCounterProofFor(
   graph: GameplayScenarioGraph,
   contradicted: GameplayCausalLink,
@@ -365,6 +425,12 @@ export function assessGameplayDefectResolutionGate(
         graph,
         link,
       );
+    const automaticSearch =
+      automaticCounterProofSearch(
+        graph,
+        link,
+        scenario,
+      );
 
     return {
       causalLinkId: link.id,
@@ -382,6 +448,8 @@ export function assessGameplayDefectResolutionGate(
         ? {
             counterProofEvidenceIds:
               blockingCounterProofEvidenceIds,
+            counterProofSearch:
+              automaticSearch,
             disposition:
               "BLOCKING_COUNTERPROOF" as const,
           }
@@ -399,8 +467,10 @@ export function assessGameplayDefectResolutionGate(
               link.reason,
             affectedScope:
               scope.join(", "),
+            counterProofSearch:
+              automaticSearch,
             disposition:
-              "COUNTERPROOF_SEARCH_REQUIRED" as const,
+              "CONFIRMED_DEFECT_READY" as const,
           }
         : {
             disposition:
