@@ -6,6 +6,7 @@ import type {
   WorkSessionStage,
 } from "../../../project-model/src/index.js";
 import {
+  loadWorkSessionCheckpoint,
   saveWorkSessionCheckpoint,
 } from "./work-session-store.js";
 import {
@@ -13,6 +14,7 @@ import {
   updateProjectRecord,
 } from "./project-lifecycle.js";
 import {
+  loadProjectRegistry,
   upsertProjectRecord,
 } from "./project-registry-store.js";
 import type {
@@ -198,6 +200,22 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
   readonly session: WorkSessionCheckpoint;
   readonly project: ProjectRecord;
 }> {
+  const previousSession =
+    input.previousSession ??
+    await loadWorkSessionCheckpoint(
+      input.workspace,
+    );
+  const registry =
+    await loadProjectRegistry(
+      input.repositoryRoot,
+    );
+  const previousProject =
+    input.previousProject ??
+    registry.projects.find(
+      (item) =>
+        item.projectId === input.projectId,
+    );
+
   const session =
     await saveSelectedMapAuditWorkSessionMirror(
       input.workspace,
@@ -205,18 +223,18 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
         audit: input.audit,
         sessionId: input.sessionId,
         goal: input.goal,
-        ...(input.previousSession === undefined
+        ...(previousSession === undefined
           ? {}
           : {
               previous:
-                input.previousSession,
+                previousSession,
             }),
       },
     );
 
   if (
-    input.previousProject !== undefined &&
-    input.previousProject.projectId !==
+    previousProject !== undefined &&
+    previousProject.projectId !==
       input.projectId
   ) {
     throw new Error(
@@ -253,7 +271,7 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
   };
 
   const project =
-    input.previousProject === undefined
+    previousProject === undefined
       ? createProjectRecord({
           projectId: input.projectId,
           projectName:
@@ -270,7 +288,7 @@ export async function saveSelectedMapAuditProjectContinuity(input: {
               }),
         })
       : updateProjectRecord(
-          input.previousProject,
+          previousProject,
           {
             artifact,
             work,
