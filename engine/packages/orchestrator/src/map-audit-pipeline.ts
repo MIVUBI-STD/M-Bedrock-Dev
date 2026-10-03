@@ -852,6 +852,7 @@ export interface BuildSelectedMapAuditReportResult
     readonly NeedValidationAuditIssueProjection[];
   readonly validationTests:
     readonly AuditValidationTestGroup[];
+  readonly fullMapReplica?: FullMapReplicaReceipt;
 }
 
 /**
@@ -878,6 +879,12 @@ export function buildSelectedMapAuditReport(
       ),
       validationTests:
         input.audit.validationTests,
+      ...(input.audit.fullMapReplica === undefined
+        ? {}
+        : {
+            fullMapReplica:
+              input.audit.fullMapReplica,
+          }),
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -913,6 +920,12 @@ export function buildSelectedMapAuditReport(
       ),
       validationTests:
         input.audit.validationTests,
+      ...(input.audit.fullMapReplica === undefined
+        ? {}
+        : {
+            fullMapReplica:
+              input.audit.fullMapReplica,
+          }),
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -950,6 +963,12 @@ export function buildSelectedMapAuditReport(
       ),
       validationTests:
         input.audit.validationTests,
+      ...(input.audit.fullMapReplica === undefined
+        ? {}
+        : {
+            fullMapReplica:
+              input.audit.fullMapReplica,
+          }),
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -1010,5 +1029,11 @@ export function buildSelectedMapAuditReport(
     ),
     validationTests:
       input.audit.validationTests,
+    ...(input.audit.fullMapReplica === undefined
+      ? {}
+      : {
+          fullMapReplica:
+            input.audit.fullMapReplica,
+        }),
   };
 }
