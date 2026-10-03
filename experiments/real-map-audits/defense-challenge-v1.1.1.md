@@ -316,88 +316,11 @@ Wave completion only waits for the first owner.
 Expose retry-pending count/generation from EntityLoader to WaveScheduler/CombatTracker, or make a spawn group remain pending until every requested entity is either successfully spawned or explicitly resolved as a terminal spawn failure. Do not infer clearance from live-entity count while retries are outstanding.
 
 
-## Proven finding 2
+## Audit obligation — Shop command-delivery transaction is not atomic
 
-### BUG — Speed Potion purchase can consume coins without delivering the item
+The Speed Potion path consumes coins before `runCommandAsync("give @s potion 1 14")` confirms delivery. The catch path does not refund coins.
 
-Severity: Major  
-Proof: source-proven  
-Domain: score-reward / inventory / shop transaction
-
-#### Issue
-
-The Speed Potion shop path commits currency before confirming that the command-based item delivery succeeded. If the command fails, the player permanently loses coins and receives no potion.
-
-#### Expected
-
-A purchase must be atomic: either both currency deduction and item delivery succeed, or neither is committed.
-
-#### Observed source behavior
-
-The Speed Potion is the only configured shop item delivered through a command:
-
-```text
-behavior_packs/BP/scripts/chunks/chunk-ZDK4WOHG.js:70-78
-typeId: "minecraft:potion"
-price: 12
-giveCommand: "give @s potion 1 14"
-displayName: "Speed Potion"
-```
-
-The generic purchase path checks the balance, then consumes coins before attempting delivery:
-
-```text
-behavior_packs/BP/scripts/chunks/chunk-ZDK4WOHG.js:1751-1763
-getPlayerCoins()
-→ consumeCoins(player, itemDef.price)
-→ purchase is already financially committed
-```
-
-For command-based items, delivery happens afterwards:
-
-```text
-behavior_packs/BP/scripts/chunks/chunk-ZDK4WOHG.js:1772-1779
-await player.runCommandAsync(itemDef.giveCommand)
-catch
-→ log error
-→ "Failed to give item. Contact an admin."
-```
-
-The catch path does not restore the consumed coins. The function also continues to the normal purchased-success message after the failed command.
-
-#### Reproduction path
-
-1. Enter a shop with at least 12 coins.
-2. Select the Speed Potion.
-3. Cause the configured `give @s potion 1 14` delivery command to fail (for example through a command/runtime compatibility failure).
-4. Observe that 12 coins were already removed.
-5. No refund is performed and no potion is delivered.
-
-#### Player-visible consequence
-
-The player pays for an item they do not receive. Purchase telemetry is also emitted before delivery, so reporting can record a successful purchase even when delivery fails.
-
-#### Root cause
-
-The transaction order is:
-
-```text
-validate balance
-→ consume currency
-→ emit purchase telemetry
-→ attempt delivery
-```
-
-instead of committing payment only after delivery succeeds or rolling payment back on delivery failure.
-
-#### Repair direction
-
-Keep one shop transaction owner. Either:
-
-- verify/deliver first and consume currency only after confirmed delivery; or
-- reserve/consume coins and explicitly refund if delivery fails.
-
-Telemetry should be emitted only after the transaction has committed successfully.
+This is **not admitted as a current gameplay bug** because the selected command is valid in current Bedrock semantics and this source pass has not established a normal selected-artifact trigger that makes that command fail. Keep it as transaction-hardening / failure-path validation only.
 
 ## Checked but not admitted as bugs
 
