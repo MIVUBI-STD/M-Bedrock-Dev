@@ -105,16 +105,6 @@ function mapAuditHtmlInputIssues(
       );
     }
     if (
-      finding.status === "PROVEN" &&
-      finding.severity === undefined
-    ) {
-      issues.push(
-        "PROVEN finding requires final severity: " +
-          finding.id +
-          ".",
-      );
-    }
-    if (
       finding.status === "NEED_VALIDATION" &&
       (
         !finding.validationReason?.trim() ||
