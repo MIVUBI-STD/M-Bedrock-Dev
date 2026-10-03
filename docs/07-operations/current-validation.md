@@ -13,6 +13,22 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — pre-audit confirmation workflow integration
+
+Source-verified on `Local`:
+
+- Pre-Audit confirmation is now part of the canonical operator workflow before `TARGET`.
+- It is explicitly a communication prerequisite, not a new audit stage, state machine, report status, or second authority.
+- The confirmation is plan-first for pre-testing: audit objective, planned checks, proof strategy, user focus/constraints, and expected output are shown before work starts.
+- Known symptoms/suspected causes are optional and are shown only when the user supplied them.
+- The executable confirmation request is owned by `map-audit-user-intent.ts`; production execution still begins only through `runSelectedMapAudit()`.
+- Confirmation is fingerprint-bound to the normalized user intent and becomes stale after any material interpretation/plan change.
+- Master workflow, mandatory procedure, README, AGENTS, map-audit skill, implementation map, and Next Action now describe the same boundary.
+- The canonical audit stage order remains unchanged: `TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT`.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full repository verification and real conversational pre-audit benchmark execution remain outstanding.
+
+
 ## 2026-10-03 — pre-testing confirmation semantics
 
 Source-verified on `Local`:
