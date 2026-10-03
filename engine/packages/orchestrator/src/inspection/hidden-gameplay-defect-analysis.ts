@@ -6,12 +6,14 @@ import {
   type MechanicCompletenessResult,
 } from "../../../gameplay-intent/src/index.js";
 import {
+  assessGameplayCapabilityDelivery,
   buildGameplayAuditScenarioPreset,
   detectGameplayDegradation,
   findDesignConsistencyAnomalies,
   findNegativeSpace,
   prioritizeTemporalInteraction,
   type DesignConsistencyAnomaly,
+  type GameplayCapabilityDeliveryAssessment,
   type GameplayDegradationSignal,
   type GameplayAuditScenarioPreset,
   type NegativeSpaceSignal,
@@ -59,6 +61,8 @@ export interface HiddenGameplayDefectAnalysis {
     readonly DesignConsistencyAnomaly[];
   readonly degradations:
     readonly GameplayDegradationSignal[];
+  readonly capabilityDelivery:
+    readonly GameplayCapabilityDeliveryAssessment[];
   readonly auditScenarioPreset: GameplayAuditScenarioPreset;
   readonly scenarioAudit: {
     readonly graph: GameplayScenarioGraph;
@@ -72,6 +76,9 @@ export interface HiddenGameplayDefectAnalysis {
     readonly highTemporalRisks: number;
     readonly designAnomalies: number;
     readonly silentDegradations: number;
+    readonly designFailures: number;
+    readonly designImplementationMismatches: number;
+    readonly implementationFailures: number;
     readonly mandatoryAuditScenarios: number;
     readonly orphanGameplayComponents: number;
     readonly unresolvedCausalLinks: number;
@@ -412,6 +419,93 @@ function consistencyFromWorld(
   );
 }
 
+function capabilityDeliveryFromModel(
+  intent: GameplayIntentModel,
+  world: GameplayWorldModel,
+  mechanicCompleteness:
+    readonly MechanicCompletenessResult[],
+): readonly GameplayCapabilityDeliveryAssessment[] {
+  const assessments:
+    GameplayCapabilityDeliveryAssessment[] = [];
+
+  if (
+    world.arenas.detected &&
+    world.arenas.count !== undefined &&
+    world.arenas.safeConcurrentArenas !== undefined &&
+    world.arenas.safeConcurrentArenas !== null
+  ) {
+    assessments.push(
+      assessGameplayCapabilityDelivery({
+        subjectId: "runtime:arena-capacity",
+        label: "Playable concurrent arena capacity",
+        playerVisible: true,
+        designed: true,
+        implementationPresent: true,
+        expectedCapacity:
+          world.arenas.count,
+        playableCapacity:
+          world.arenas.safeConcurrentArenas,
+        evidenceIds: [
+          "world:arena-count",
+          "capacity:safe-concurrency",
+        ],
+      }),
+    );
+  }
+
+  for (const completeness of mechanicCompleteness) {
+    const node = intent.nodes.find(
+      (item) =>
+        item.id === completeness.mechanicId,
+    );
+    if (!node) continue;
+    const evidence = evidenceForNode(
+      intent,
+      node.evidenceIds,
+    );
+    const designed =
+      node.status === "authored" ||
+      evidence.some(
+        (item) =>
+          item.scope === "selected-artifact" &&
+          item.origin !== "source-code",
+      );
+    const implementationPresent =
+      evidence.some(
+        (item) =>
+          item.scope === "selected-artifact" &&
+          (
+            item.origin === "source-code" ||
+            item.origin === "command" ||
+            item.origin === "scoreboard" ||
+            item.origin === "tag"
+          ),
+      );
+    const playerVisible =
+      !completeness.missingStages.includes(
+        "player-visible",
+      );
+
+    assessments.push(
+      assessGameplayCapabilityDelivery({
+        subjectId: node.id,
+        label: node.label,
+        playerVisible,
+        designed,
+        implementationPresent,
+        behaviorComplete:
+          completeness.complete,
+        evidenceIds:
+          completeness.evidenceIds,
+      }),
+    );
+  }
+
+  return assessments.sort((a, b) =>
+    a.subjectId.localeCompare(b.subjectId)
+  );
+}
+
 function degradationFromWorld(
   world: GameplayWorldModel,
 ): readonly GameplayDegradationSignal[] {
@@ -497,6 +591,12 @@ export function analyzeHiddenGameplayDefects(
     consistencyFromWorld(input.world);
   const degradations =
     degradationFromWorld(input.world);
+  const capabilityDelivery =
+    capabilityDeliveryFromModel(
+      input.intent,
+      input.world,
+      mechanicCompleteness,
+    );
   const auditScenarioPreset =
     auditScenarioPresetFromModel(input);
   const scenarioGraph =
@@ -523,6 +623,7 @@ export function analyzeHiddenGameplayDefects(
     temporalRisks,
     designConsistency,
     degradations,
+    capabilityDelivery,
     auditScenarioPreset,
     scenarioAudit: {
       graph: scenarioGraph,
@@ -551,6 +652,24 @@ export function analyzeHiddenGameplayDefects(
         designConsistency.length,
       silentDegradations:
         degradations.length,
+      designFailures:
+        capabilityDelivery.filter(
+          (item) =>
+            item.failureClass ===
+            "DESIGN_FAILURE",
+        ).length,
+      designImplementationMismatches:
+        capabilityDelivery.filter(
+          (item) =>
+            item.failureClass ===
+            "DESIGN_IMPLEMENTATION_MISMATCH",
+        ).length,
+      implementationFailures:
+        capabilityDelivery.filter(
+          (item) =>
+            item.failureClass ===
+            "IMPLEMENTATION_FAILURE",
+        ).length,
       mandatoryAuditScenarios:
         auditScenarioPreset.scenarios.length,
       orphanGameplayComponents:
@@ -584,6 +703,14 @@ export function refreshHiddenGameplayDefectsForWorld(
     consistencyFromWorld(world);
   const degradations =
     degradationFromWorld(world);
+  const capabilityDelivery =
+    intent === undefined
+      ? existing.capabilityDelivery
+      : capabilityDeliveryFromModel(
+          intent,
+          world,
+          existing.mechanicCompleteness,
+        );
   const auditScenarioPreset =
     buildGameplayAuditScenarioPreset({
       arenaCount: world.arenas.count,
@@ -632,6 +759,7 @@ export function refreshHiddenGameplayDefectsForWorld(
     ...existing,
     designConsistency,
     degradations,
+    capabilityDelivery,
     auditScenarioPreset,
     scenarioAudit:
       intent === undefined
@@ -647,6 +775,24 @@ export function refreshHiddenGameplayDefectsForWorld(
         designConsistency.length,
       silentDegradations:
         degradations.length,
+      designFailures:
+        capabilityDelivery.filter(
+          (item) =>
+            item.failureClass ===
+            "DESIGN_FAILURE",
+        ).length,
+      designImplementationMismatches:
+        capabilityDelivery.filter(
+          (item) =>
+            item.failureClass ===
+            "DESIGN_IMPLEMENTATION_MISMATCH",
+        ).length,
+      implementationFailures:
+        capabilityDelivery.filter(
+          (item) =>
+            item.failureClass ===
+            "IMPLEMENTATION_FAILURE",
+        ).length,
       mandatoryAuditScenarios:
         auditScenarioPreset.scenarios.length,
       orphanGameplayComponents:
