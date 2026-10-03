@@ -5,6 +5,7 @@ import {
 import {
   auditUserIntentAuthorityNote,
   auditUserIntentFingerprint,
+  createAuditUserIntentConfirmationRequest,
   createAuditUserIntentConfirmation,
   createFallbackAuditUserIntent,
   deriveAuditUserIntentKnowledgeDemand,
@@ -437,6 +438,53 @@ describe("map audit user intent", () => {
             "user-input-unmapped",
       ),
     ).toBe(true);
+  });
+
+  it("builds a complete pre-test plan even when the user reports no symptom", () => {
+    const input: AuditUserIntentEnvelope = {
+      schemaVersion: 1,
+      policy:
+        "user-input-is-search-guidance-not-gameplay-authority",
+      fragments: [{
+        id: "f1",
+        raw: "cek map ini sebelum testing",
+      }],
+      items: [{
+        kind: "SCOPE_REQUEST",
+        raw: "cek map ini sebelum testing",
+        normalized:
+          "perform comprehensive pre-testing gameplay audit",
+        sourceFragmentIds: ["f1"],
+      }],
+      unmappedFragmentIds: [],
+      priorityDomains: [],
+      priorityPlayerFlows: [],
+      ambiguities: [],
+      blockingAmbiguities: [],
+    };
+
+    expect(validateAuditUserIntent(input))
+      .toEqual([]);
+
+    const request =
+      createAuditUserIntentConfirmationRequest(
+        input,
+      );
+
+    expect(request.summary.reportedSymptoms)
+      .toEqual([]);
+    expect(request.summary.suspectedCauses)
+      .toEqual([]);
+    expect(request.summary.auditObjective)
+      .toContain("comprehensive pre-testing");
+    expect(request.summary.plannedChecks.length)
+      .toBeGreaterThan(8);
+    expect(request.summary.proofStrategy)
+      .toContain(
+        "Selected-artifact/source evidence first.",
+      );
+    expect(request.summary.outputPlan.length)
+      .toBeGreaterThan(0);
   });
 
   it("requires explicit confirmation bound to the current normalized intent", () => {
