@@ -17,72 +17,77 @@ Runtime execution: not performed
 
 ## Proven findings
 
-No source-proven gameplay defect was admitted in this pass.
+**0 source-proven gameplay defects admitted in this pass.**
 
-Historical bugs were not copied into this artifact without fresh proof.
+## Historical issue re-checks
 
-## Important checks
+### keepInventory / player death state
 
-### Spawn accounting no longer auto-advances failed spawns
-
-Current `spawnWave()` increments `waveSpawnProgress` only after `spawnZombie()` succeeds.
-
-`spawnZombie()` first verifies the target chunk is loaded. If not loaded, it returns without spawning. The caller then retries that individual spawn after 20 ticks.
-
-This means a failed/unloaded spawn is not silently counted as completed and does not directly create the old premature-wave/auto-win path.
-
-### Runtime ticking coverage
-
-Current gameplay creates one explicit runtime ticking area:
+Current world setup explicitly applies:
 
 ```text
-defense_fnazv_bridge_<arena>
-→ centered on the Bridge route
-→ circle radius 2
+keepInventory = true
 ```
 
-Wave definitions still use three spawn routes:
+and owns world rules through the current setup service. The old keep-inventory mismatch is not reproduced.
 
-- Cave;
-- Windmill;
-- Bridge.
+### Duplicate armor / upgrade purchase
 
-No second `tickingarea add` owner exists in the selected script for Cave/Windmill.
+Current upgrade purchase reconciles persisted scoreboard level against the player's actual owned gear and refuses a purchase when the same or higher tier is already owned:
 
-Because `spawnZombie()` checks chunk availability and retries rather than falsely advancing, this is **not admitted as a source-proven bug**. Actual Cave/Windmill residency depends on target runtime simulation/chunk state and player positions.
+```text
+getActualUpgradeLevel(...)
+max(savedLevel, actualLevel)
+→ if owned >= target tier
+→ reject "already own this gear tier or a higher one"
+```
 
-## Audit obligation — verify Cave/Windmill chunk residency
+Payment/application failures refund coins and roll upgrade state back.
 
-Narrow runtime validation:
+The historical duplicate-armor purchase issue is not reproduced.
 
-1. Start a normal defense run with players staying at the intended defense position.
-2. Exercise waves that spawn from Cave and Windmill.
-3. Capture whether both target spawn chunks remain loaded without a player approaching them.
-4. Confirm every configured spawn eventually succeeds without requiring manual player movement.
-5. If either route remains unloaded and retries indefinitely, promote as a Blocker wave-progression/chunk-readiness bug.
+### Enchantment purchase without effect
 
-### Why this remains an obligation
+Current enchant purchase:
 
-The source proves:
+1. rejects already-owned level;
+2. consumes coins;
+3. persists requested enchant level;
+4. applies upgrades;
+5. verifies the player actually has the enchant level;
+6. rolls back scoreboard state and refunds coins on failure.
 
-- only Bridge is explicitly kept ticking;
-- Cave/Windmill spawns require their chunks to be loaded;
-- failed spawns retry indefinitely rather than being counted.
+The old "coins consumed but enchant not applied" issue is not reproduced.
 
-The source does **not** prove the actual target runtime simulation distance/residency for Cave/Windmill, so calling it a current gameplay bug would exceed the proof ceiling.
+### Spawn failure / wave softlock
 
-### Reconnect/loadout
+Current wave-spawn recovery retries failed spawns. The current source also contains explicit recovery and safe-session termination paths rather than silently advancing invalid progression.
 
-A rejoined tagged arena player is reconciled into the current game state. During a running match the code restores Survival mode, spawnpoint, arena position when needed, and triggers the kit grant if `player_kit < 1`.
+No current source proof was found for the old unloaded-spawn auto-win / wave-softlock behavior.
 
-No source-proven reconnect-loadout-loss defect was admitted.
+### Bridge/path recovery
 
-### Entity route recovery
+The current artifact creates an arena-specific bridge ticking area and has route-scoped stuck-zombie recovery. Recovery can restore missing canonical path nodes and refuses unsafe long-distance teleport recovery.
 
-Current source includes route-specific stuck detection/recovery, canonical path restoration checks, chunk-loaded guards, and bounded safety teleport. Historical navigation problems therefore require fresh current-runtime proof rather than automatic carry-over.
+Historical bridge/pathing problems therefore require fresh runtime proof and are not copied into this version.
+
+### Reconnect
+
+A player carrying the current arena session tag is reconciled on player spawn. Active-session recovery restores gameplay mode/input/loadout/arena position, while countdown state remains spectator.
+
+No source-proven reconnect loadout-loss defect was admitted.
+
+## Audit obligations — not bugs
+
+- Entity navigation remains runtime-sensitive; the static recovery logic does not prove every route succeeds under the target runtime.
+- Chunk/ticking behavior should be runtime-validated if real gameplay still shows missed spawns or route stalls.
 
 ## Result
 
-Five Nights at Z Village Level 1 v1.1.0: **0 source-proven findings** and **1 narrow chunk-residency Audit Obligation**.
+Five Nights at Z Village Level 1 v1.1.0:
 
-No historical regression entry should be created without later runtime/current-artifact proof.
+- **0 source-proven gameplay bugs**
+- historical shop/inventory/spawn/path issues are not reproduced by current source
+- runtime-sensitive entity/navigation behavior remains validation work only
+
+Do not create historical regression entries for this map from this pass.
