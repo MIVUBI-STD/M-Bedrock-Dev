@@ -8,6 +8,8 @@ import {
 } from "../../../repair/src/index.js";
 import {
   projectLifecycleCanTransition,
+  validateDrivePublishReceipt,
+  validateProjectApprovalSnapshot,
 } from "./project-lifecycle.js";
 import {
   normalizeProjectRecord,
@@ -195,6 +197,16 @@ export async function saveProjectApprovalSnapshot(
   workspace: ProjectWorkspaceLayout,
   snapshot: ProjectApprovalSnapshot,
 ): Promise<void> {
+  const issues =
+    validateProjectApprovalSnapshot(
+      snapshot,
+    );
+  if (issues.length > 0) {
+    throw new Error(
+      issues.join("; "),
+    );
+  }
+
   const path = approvalPath(
     workspace,
     snapshot.snapshotFingerprint,
@@ -230,18 +242,42 @@ export async function loadProjectApprovalSnapshot(
   workspace: ProjectWorkspaceLayout,
   snapshotFingerprint: string,
 ): Promise<ProjectApprovalSnapshot | undefined> {
-  return await readJsonIfExists(
-    approvalPath(
-      workspace,
-      snapshotFingerprint,
-    ),
-  ) as ProjectApprovalSnapshot | undefined;
+  const snapshot =
+    await readJsonIfExists(
+      approvalPath(
+        workspace,
+        snapshotFingerprint,
+      ),
+    ) as ProjectApprovalSnapshot | undefined;
+  if (snapshot === undefined) {
+    return undefined;
+  }
+  const issues =
+    validateProjectApprovalSnapshot(
+      snapshot,
+    );
+  if (issues.length > 0) {
+    throw new Error(
+      issues.join("; "),
+    );
+  }
+  return snapshot;
 }
 
 export async function saveProjectDrivePublishReceipt(
   workspace: ProjectWorkspaceLayout,
   receipt: ProjectDrivePublishReceipt,
 ): Promise<void> {
+  const issues =
+    validateDrivePublishReceipt(
+      receipt,
+    );
+  if (issues.length > 0) {
+    throw new Error(
+      issues.join("; "),
+    );
+  }
+
   const path = driveReceiptPath(
     workspace,
     receipt.snapshotFingerprint,
@@ -304,10 +340,24 @@ export async function loadProjectDrivePublishReceipt(
   workspace: ProjectWorkspaceLayout,
   snapshotFingerprint: string,
 ): Promise<ProjectDrivePublishReceipt | undefined> {
-  return await readJsonIfExists(
-    driveReceiptPath(
-      workspace,
-      snapshotFingerprint,
-    ),
-  ) as ProjectDrivePublishReceipt | undefined;
+  const receipt =
+    await readJsonIfExists(
+      driveReceiptPath(
+        workspace,
+        snapshotFingerprint,
+      ),
+    ) as ProjectDrivePublishReceipt | undefined;
+  if (receipt === undefined) {
+    return undefined;
+  }
+  const issues =
+    validateDrivePublishReceipt(
+      receipt,
+    );
+  if (issues.length > 0) {
+    throw new Error(
+      issues.join("; "),
+    );
+  }
+  return receipt;
 }
