@@ -453,6 +453,10 @@ function semanticDomains(
     }
   }
 
+  expandConditionalKnowledgeDomains(
+    domains,
+    world,
+  );
   return domains;
 }
 
