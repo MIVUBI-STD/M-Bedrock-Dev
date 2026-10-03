@@ -76,7 +76,7 @@ engine/reliability/   repository-owned reliability catalogs/history data
 engine/runtime/       bounded runtime proof harness content
 docs/          canonical product/system/operations docs
 tooling/       repository-owned developer/build control plane
-workspace/     local artifact continuity + Map Game Design + tracked report handoff
+workspace/     project working/saved continuity + Map Game Design + tracked report handoff
 experiments/   bounded research only
 ```
 
