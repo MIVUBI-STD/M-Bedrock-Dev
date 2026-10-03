@@ -13,7 +13,8 @@
     "stateTransitions",
     "multiArena",
     "coverage",
-    "bugs"
+    "bugs",
+    "designMismatches"
   ],
   "properties": {
     "schemaVersion": {
@@ -521,10 +522,15 @@
           "if": {
             "properties": {
               "status": {
-                "enum": ["CLOSED", "PARTIAL"]
+                "enum": [
+                  "CLOSED",
+                  "PARTIAL"
+                ]
               }
             },
-            "required": ["status"]
+            "required": [
+              "status"
+            ]
           },
           "then": {
             "properties": {
@@ -541,7 +547,9 @@
                 "const": "OPEN"
               }
             },
-            "required": ["status"]
+            "required": [
+              "status"
+            ]
           },
           "then": {
             "anyOf": [
@@ -558,7 +566,9 @@
                     "const": false
                   }
                 },
-                "required": ["stateModelComplete"]
+                "required": [
+                  "stateModelComplete"
+                ]
               },
               {
                 "properties": {
@@ -566,13 +576,179 @@
                     "const": false
                   }
                 },
-                "required": ["boundariesExtracted"]
+                "required": [
+                  "boundariesExtracted"
+                ]
               }
             ]
           }
         }
       ],
       "additionalProperties": true
+    },
+    "designMismatches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "category",
+          "gameplayFlow",
+          "issue",
+          "reproduceSteps",
+          "expected",
+          "actual",
+          "proofCeiling"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "Confirmed",
+              "Needs Validation",
+              "Ambiguous",
+              "Detection Gap"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "gameplayFlow": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "enum": [
+              "Blocker",
+              "Major",
+              "Minor"
+            ]
+          },
+          "issue": {
+            "type": "string",
+            "minLength": 1
+          },
+          "playerImpact": {
+            "type": "string"
+          },
+          "reproduceSteps": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "expected": {
+            "type": "string",
+            "minLength": 1
+          },
+          "actual": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "proofCeiling": {
+            "enum": [
+              "STATIC VERIFIED",
+              "PACKAGE VERIFIED",
+              "LOCAL GAME VERIFIED",
+              "LIVE GAME VERIFIED",
+              "UNKNOWN"
+            ]
+          },
+          "counterEvidence": {
+            "enum": [
+              "cleared",
+              "present",
+              "unresolved"
+            ]
+          },
+          "testerTriggerReady": {
+            "type": "boolean"
+          },
+          "mismatchKind": {
+            "enum": [
+              "capacity",
+              "capability",
+              "design-implementation",
+              "player-expectation"
+            ]
+          },
+          "technicalConstraint": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "Confirmed"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "severity",
+                "playerImpact",
+                "counterEvidence",
+                "testerTriggerReady"
+              ],
+              "properties": {
+                "counterEvidence": {
+                  "const": "cleared"
+                },
+                "testerTriggerReady": {
+                  "const": true
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "Needs Validation",
+                    "Ambiguous",
+                    "Detection Gap"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "severity"
+                ]
+              }
+            }
+          }
+        ],
+        "additionalProperties": true
+      }
     }
   },
   "additionalProperties": true
