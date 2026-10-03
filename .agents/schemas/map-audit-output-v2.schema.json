@@ -1444,6 +1444,94 @@
         }
       },
       "additionalProperties": false
+    },
+    "fullMapReplica": {
+      "type": "object",
+      "required": [
+        "policy",
+        "replicaBaseline",
+        "replicaResults",
+        "materialDeltaIds",
+        "incompleteReplicaIds",
+        "canReuseBaselineProof"
+      ],
+      "properties": {
+        "policy": {
+          "const": "full-map-baseline-delta"
+        },
+        "replicaBaseline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replicaResults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "arenaId",
+              "replicaStatus",
+              "materialDeltaIds",
+              "evidenceIds",
+              "reason"
+            ],
+            "properties": {
+              "arenaId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "replicaStatus": {
+                "enum": [
+                  "EQUIVALENT",
+                  "EXPECTED_VARIANT",
+                  "MATERIAL_DIVERGENCE",
+                  "INCOMPLETE_PROOF"
+                ]
+              },
+              "materialDeltaIds": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "evidenceIds": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "materialDeltaIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "incompleteReplicaIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "canReuseBaselineProof": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true
