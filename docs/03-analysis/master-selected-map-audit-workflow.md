@@ -836,25 +836,22 @@ A clean happy path is never sufficient.
 
 # Operator summary
 
-1. Translate the user request without inventing symptoms
-2. Show the Pre-Audit Plan: what will be checked, proof strategy, and output
-3. Obtain one explicit confirmation
-4. Select/lock the exact map
-5. Discover everything
-3. Challenge what discovery missed
-4. Reconstruct player journey
-5. Build state / ownership / progression model
-6. Build shared-resource reverse index
-7. Normalize full map / arena replicas from world DB
-8. Reconcile world vs source/config
-9. Reuse equivalent baseline proof; classify replica divergence before routing any gameplay-material consequence
-10. Stress lifecycle / boundaries / cross-system interactions
-11. Navigate every issue toward proof
-12. Search counter-proof
-13. Stop at proof saturation
-14. Use runtime only for irreducible residue
-15. Run honesty gate
-16. Publish causal BUG / DESIGN_MISMATCH findings with PROVEN / NEED_VALIDATION, plus separate Audit Obligations for unresolved non-finding work
+1. Translate the user request without inventing symptoms.
+2. Build the Pre-Audit Plan: objective, what will be checked, proof strategy, user focus/constraints, and output.
+3. Show the plan in chat and obtain one explicit confirmation.
+4. Lock the exact selected map/version.
+5. Discover every material gameplay surface.
+6. Challenge what discovery missed.
+7. Reconstruct the complete player journey.
+8. Build state, ownership, progression, and recovery models.
+9. Build the shared-resource reverse index.
+10. Normalize repeated map/arena replicas and classify divergence.
+11. Reconcile world/topology evidence with source/config evidence.
+12. Stress lifecycle, boundaries, concurrency, replay, and cross-system interactions.
+13. Resolve contradictions, search blocking counter-proof, and stop at proof saturation.
+14. Use runtime only for irreducible behavior.
+15. Run the honesty/non-suppression gate.
+16. Publish causal BUG / DESIGN_MISMATCH findings and separate Audit Obligations for unresolved non-findings.
 
 ---
 
