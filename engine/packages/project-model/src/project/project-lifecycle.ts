@@ -308,24 +308,7 @@ export function normalizeProjectRecord(
               input.work
                 .workSessionRevision,
           }),
-      ...(input.work.auditRevision?.trim()
-        ? {
-            auditRevision:
-              input.work.auditRevision.trim(),
-          }
-        : {}),
-      ...(input.work.currentStage?.trim()
-        ? {
-            currentStage:
-              input.work.currentStage.trim(),
-          }
-        : {}),
-      ...(input.work.nextAction?.trim()
-        ? {
-            nextAction:
-              input.work.nextAction.trim(),
-          }
-        : {}),
+
     },
     knowledge: {
       ...(input.knowledge.bugReportPath?.trim()
