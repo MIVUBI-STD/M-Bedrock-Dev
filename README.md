@@ -24,6 +24,26 @@ Artifact
 → evidence report
 ```
 
+## Selected-map gameplay audit
+
+Production gameplay audit has one operator entry and one ordered authority chain:
+
+```text
+audit <selected.mcworld>
+→ runSelectedMapAudit()
+→ TARGET
+→ DISCOVERY
+→ UNDERSTAND
+→ MODEL
+→ STRESS
+→ PROVE
+→ REPORT
+→ issueLanes.BUG
+   issueLanes.DESIGN_MISMATCH
+```
+
+Low-level analyzers, specialist audit documents, Work Session projections, and Bug Report tooling are subordinate. They may provide evidence or presentation, but they cannot authorize stage completion independently.
+
 ## Repository map
 
 ```text
