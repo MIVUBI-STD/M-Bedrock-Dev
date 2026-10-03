@@ -141,6 +141,35 @@ export function normalizeProjectRecord(
   if (input.schemaVersion !== 1) {
     throw new Error("Unsupported project record schemaVersion.");
   }
+  if (
+    input.artifact === null ||
+    typeof input.artifact !== "object" ||
+    input.work === null ||
+    typeof input.work !== "object" ||
+    input.knowledge === null ||
+    typeof input.knowledge !== "object" ||
+    input.publication === null ||
+    typeof input.publication !== "object"
+  ) {
+    throw new Error(
+      "Project record artifact/work/knowledge/publication must be objects.",
+    );
+  }
+  if (
+    !Array.isArray(
+      input.knowledge.historicalRegressionIds,
+    ) ||
+    !Array.isArray(
+      input.knowledge.failurePatternIds,
+    ) ||
+    !Array.isArray(
+      input.knowledge.mapKnowledgeIds,
+    )
+  ) {
+    throw new Error(
+      "Project knowledge reference collections must be arrays.",
+    );
+  }
   if (!PROJECT_STATUSES.has(input.status)) {
     throw new Error(
       "Unsupported project lifecycle status.",
