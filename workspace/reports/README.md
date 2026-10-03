@@ -1,13 +1,14 @@
 # Bug Reports
 
-This directory is the GitHub-persisted canonical state workspace for completed/current audit handoff.
+This directory is the GitHub-persisted canonical state workspace for the **approved Bug Report V2 ledger only**. It is not the complete Map Audit Report or the authority for unresolved audit findings.
 
 Each new report represents one audited map/version set and must be tester-facing, handoff-ready, and canonical Bug Report V2. Active recording is current-version-first: do not create historical reports solely to fill missing coverage.
 
 Canonical flow:
 
 ```text
-AUDIT
+MAP AUDIT REPORT
+→ approved PROVEN BUG subset
 → PROPOSED BUG SET
 → CHAT REVIEW
 → APPROVED BUG SET
