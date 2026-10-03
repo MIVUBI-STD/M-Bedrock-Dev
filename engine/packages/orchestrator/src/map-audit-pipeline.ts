@@ -55,7 +55,7 @@ import {
   type SelectedMapAuditIdentity,
 } from "./map-audit-identity.js";
 import {
-  projectNeedValidationAuditIssues,
+  projectAllNeedValidationAuditIssues,
   projectReadyAuditIssues,
   type AuditIssueProjection,
   type ReadyAuditIssueProjection,
@@ -174,7 +174,7 @@ function deriveSelectedMapAuditControl(input: {
       )
     : [];
   const needValidationIssues =
-    projectNeedValidationAuditIssues(
+    projectAllNeedValidationAuditIssues(
       input.scenario.graph,
       input.scenario.defectResolution,
       input.capabilityDelivery,
