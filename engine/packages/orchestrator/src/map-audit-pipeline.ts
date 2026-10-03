@@ -685,6 +685,14 @@ export async function runSelectedMapAudit(
   if (userIntent !== undefined) {
     const issues =
       validateAuditUserIntent(userIntent);
+    if (
+      userIntent.blockingAmbiguities.length > 0
+    ) {
+      issues.push(
+        "Blocking user-input ambiguity must be resolved before production audit: " +
+          userIntent.blockingAmbiguities.join(" | "),
+      );
+    }
     if (issues.length > 0) {
       throw new Error(
         "Invalid non-authoritative user audit intent: " +
