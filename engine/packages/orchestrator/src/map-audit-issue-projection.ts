@@ -2,6 +2,9 @@ import type {
   GameplayScenarioGraph,
 } from "./inspection/gameplay-scenario-model.js";
 import type {
+  GameplayModelClosureResult,
+} from "../../gameplay-intent/src/index.js";
+import type {
   GameplayDefectResolutionGate,
 } from "./inspection/gameplay-defect-resolution.js";
 import {
@@ -788,6 +791,234 @@ export function projectSignalNeedValidationAuditIssues(
     ...negative,
     ...temporal,
   ]);
+}
+
+export function projectClosureNeedValidationAuditIssues(
+  closure: GameplayModelClosureResult,
+): readonly NeedValidationAuditIssueProjection[] {
+  const findings: NeedValidationAuditIssueProjection[] = [];
+
+  for (const surface of closure.surfaces) {
+    if (
+      !surface.material ||
+      (
+        surface.status !== "unknown" &&
+        surface.status !== "blocked"
+      )
+    ) {
+      continue;
+    }
+
+    const isBoundary =
+      surface.id.includes("capacity") ||
+      (surface.boundaries?.length ?? 0) > 0;
+    const flow: GameplayIssueFlowStage =
+      isBoundary
+        ? "READY_START"
+        : surface.kind === "lifecycle"
+          ? "RECOVERY"
+          : surface.kind === "outcome"
+            ? "TERMINAL"
+            : surface.kind === "objective" ||
+                surface.kind === "phase"
+              ? "PROGRESSION"
+              : "ACTIVE_GAMEPLAY";
+    const failureDomain: GameplayIssueFailureDomain =
+      surface.id.includes("arena")
+        ? "arena-multi-arena"
+        : surface.id.includes("inventory")
+          ? "inventory-economy"
+          : surface.id.includes("chunk")
+            ? "chunk-simulation"
+            : surface.id.includes("persist")
+              ? "persistence-recovery"
+              : isBoundary
+                ? "boundary-capacity"
+                : "state-ownership";
+
+    findings.push({
+      status: "NEED_VALIDATION",
+      issueType: "BUG",
+      failureDomain,
+      contributingDomains: [failureDomain],
+      gameplayFlow: flow,
+      informationMismatch: false,
+      playerFacingEvidenceIds: [],
+      causalLinkId:
+        "closure-surface:" + surface.id,
+      scenarioId:
+        "closure:" + surface.id,
+      gameplayStage: flow,
+      scenarioLabel: surface.label,
+      gameplayTrigger:
+        "Exercise the gameplay path that depends on " +
+        surface.label +
+        ".",
+      gameplayConsequence:
+        "A material gameplay surface remains unresolved, so defects inside this surface cannot yet be excluded.",
+      expectedOutcome:
+        "Material gameplay surface is understood well enough to prove or disprove its required behavior.",
+      actualOutcome:
+        surface.reason ??
+        "Material gameplay surface remains unresolved.",
+      affectedScope: surface.id,
+      subjectIds: [surface.id],
+      componentIds: [],
+      evidenceIds: [
+        ...new Set(
+          surface.evidenceIds ?? [],
+        ),
+      ].sort(),
+      validationReason:
+        "Gameplay Model Closure marks this material surface as " +
+        surface.status +
+        ".",
+      missingProof:
+        "Decisive selected-artifact evidence for " +
+        surface.label +
+        ".",
+      validationTest:
+        "Exercise " +
+        surface.label +
+        " through its normal and failure/recovery path and verify the unresolved behavior described by the closure reason.",
+      validationGroupKey:
+        "closure-surface:" + surface.id,
+    });
+  }
+
+  for (const id of closure.unaccountedSurfaceIds) {
+    findings.push({
+      status: "NEED_VALIDATION",
+      issueType: "BUG",
+      failureDomain: "state-ownership",
+      contributingDomains: [
+        "state-ownership",
+      ],
+      gameplayFlow: "ACTIVE_GAMEPLAY",
+      informationMismatch: false,
+      playerFacingEvidenceIds: [],
+      causalLinkId:
+        "unaccounted-surface:" + id,
+      scenarioId:
+        "unaccounted:" + id,
+      gameplayStage: "ACTIVE_GAMEPLAY",
+      scenarioLabel: "unaccounted-gameplay-surface",
+      gameplayTrigger:
+        "Locate and exercise the discovered gameplay surface " +
+        id +
+        ".",
+      gameplayConsequence:
+        "A discovered gameplay surface is absent from the closed gameplay model, so any defect in it could be missed entirely.",
+      expectedOutcome:
+        "Every discovered material surface has an explicit semantic owner and audit disposition.",
+      actualOutcome:
+        "The discovered surface is not accounted in Gameplay Model Closure.",
+      affectedScope: id,
+      subjectIds: [id],
+      componentIds: [],
+      evidenceIds: [],
+      validationReason:
+        "Discovered gameplay surface is unaccounted.",
+      missingProof:
+        "Semantic ownership, gameplay purpose, dependencies, and proof path for " +
+        id +
+        ".",
+      validationTest:
+        "Trace " +
+        id +
+        " from player trigger to state mutation and exit, then verify its success/failure behavior.",
+      validationGroupKey:
+        "unaccounted-surface:" + id,
+    });
+  }
+
+  if (!closure.stateModelComplete) {
+    findings.push({
+      status: "NEED_VALIDATION",
+      issueType: "BUG",
+      failureDomain: "state-ownership",
+      contributingDomains: [
+        "state-ownership",
+      ],
+      gameplayFlow: "ACTIVE_GAMEPLAY",
+      informationMismatch: false,
+      playerFacingEvidenceIds: [],
+      causalLinkId:
+        "closure-gap:state-model",
+      scenarioId:
+        "closure:state-model",
+      gameplayStage: "ACTIVE_GAMEPLAY",
+      scenarioLabel: "state-model-closure",
+      gameplayTrigger:
+        "Exercise major gameplay state transitions across success, failure, retry, cleanup, and recovery.",
+      gameplayConsequence:
+        "Incomplete state modeling can hide stale-state, ownership, reset, and progression defects.",
+      expectedOutcome:
+        "All material states have create/read/write/clear ownership and lifecycle semantics.",
+      actualOutcome:
+        "Gameplay Model Closure reports stateModelComplete=false.",
+      affectedScope: "gameplay-state-model",
+      subjectIds: [],
+      componentIds: [],
+      evidenceIds: [],
+      validationReason:
+        "Major gameplay state/transition model is incomplete.",
+      missingProof:
+        "Complete state ownership and lifecycle coverage.",
+      validationTest:
+        "Trace every major state transition through success, failure, retry, cleanup, reconnect, and second-run paths; fail any transition with unowned or uncleared material state.",
+      validationGroupKey:
+        "closure:state-model",
+    });
+  }
+
+  if (!closure.boundariesExtracted) {
+    findings.push({
+      status: "NEED_VALIDATION",
+      issueType: "BUG",
+      failureDomain: "boundary-capacity",
+      contributingDomains: [
+        "boundary-capacity",
+      ],
+      gameplayFlow: "READY_START",
+      informationMismatch: false,
+      playerFacingEvidenceIds: [],
+      causalLinkId:
+        "closure-gap:boundaries",
+      scenarioId:
+        "closure:boundaries",
+      gameplayStage: "READY_START",
+      scenarioLabel: "boundary-closure",
+      gameplayTrigger:
+        "Exercise material gameplay limits at first/minimum, maximum, and maximum+1 where applicable.",
+      gameplayConsequence:
+        "Unknown boundaries can hide capacity, final-wave, retry-limit, threshold, and off-by-one defects.",
+      expectedOutcome:
+        "Every material numeric/discrete gameplay limit has explicit below/at/above semantics.",
+      actualOutcome:
+        "Gameplay Model Closure reports boundariesExtracted=false.",
+      affectedScope: "gameplay-boundaries",
+      subjectIds: [],
+      componentIds: [],
+      evidenceIds: [],
+      validationReason:
+        "Material gameplay boundaries are not fully extracted.",
+      missingProof:
+        "Complete boundary registry and edge-case behavior.",
+      validationTest:
+        "Test each unresolved material boundary at N-1, N, and N+1 (or first/final equivalents) and verify the expected transition.",
+      validationGroupKey:
+        "closure:boundaries",
+    });
+  }
+
+  const byId = new Map<string, NeedValidationAuditIssueProjection>();
+  for (const item of findings) {
+    if (!byId.has(item.causalLinkId)) {
+      byId.set(item.causalLinkId, item);
+    }
+  }
+  return sortIssues([...byId.values()]);
 }
 
 export interface AuditValidationTestGroup {
