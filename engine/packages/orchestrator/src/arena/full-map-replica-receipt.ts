@@ -1,5 +1,6 @@
 export type FullMapReplicaStatus =
   | "EQUIVALENT"
+  | "BOUNDED_EQUIVALENCE"
   | "DIVERGENCE_REQUIRES_CLASSIFICATION"
   | "INCOMPLETE_PROOF";
 
@@ -54,7 +55,9 @@ export function buildFullMapReplicaReceipt(input: {
           ? "INCOMPLETE_PROOF"
           : diverged
             ? "DIVERGENCE_REQUIRES_CLASSIFICATION"
-            : "EQUIVALENT";
+            : replica.proofStatus === "bounded-proof"
+              ? "BOUNDED_EQUIVALENCE"
+              : "EQUIVALENT";
 
       return {
         replicaId: replica.replicaId,
@@ -71,10 +74,12 @@ export function buildFullMapReplicaReceipt(input: {
         ],
         reason:
           replicaStatus === "EQUIVALENT"
-            ? "Replica proof is sufficient and no material divergence is present."
-            : replicaStatus === "DIVERGENCE_REQUIRES_CLASSIFICATION"
-              ? "Replica contains one or more world/topology differences. These differences must continue to semantic/causal classification before they may be called gameplay-material or safely ignored."
-              : "Replica proof is incomplete and baseline safety cannot be inherited.",
+            ? "Complete replica proof found no material divergence within the compared proof surface."
+            : replicaStatus === "BOUNDED_EQUIVALENCE"
+              ? "Bounded replica proof found no divergence within its covered scope. This does not claim full-map equivalence outside that scope."
+              : replicaStatus === "DIVERGENCE_REQUIRES_CLASSIFICATION"
+                ? "Replica contains one or more world/topology differences. These differences must continue to semantic/causal classification before they may be called gameplay-material or safely ignored."
+                : "Replica proof is incomplete and baseline safety cannot be inherited.",
       };
     });
 
@@ -105,7 +110,10 @@ export function buildFullMapReplicaReceipt(input: {
     replicaDivergenceIds,
     incompleteReplicaIds,
     baselineReusableForAllReplicas:
-      incompleteReplicaIds.length === 0 &&
-      replicaDivergenceIds.length === 0,
+      replicaResults.length > 0 &&
+      replicaResults.every(
+        (item) =>
+          item.replicaStatus === "EQUIVALENT",
+      ),
   };
 }
