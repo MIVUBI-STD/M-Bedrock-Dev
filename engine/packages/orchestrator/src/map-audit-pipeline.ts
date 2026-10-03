@@ -530,21 +530,17 @@ async function inspectSelectedMapToDemandFixedPoint(
   };
 }
 
-/**
- * Canonical and only supported starting point for a production selected-map audit.
- * Demand is reconciled monotonically until final RIG requirements are covered.
- */
-export async function runSelectedMapAudit(
-  input: SelectedMapAuditInput,
-): Promise<SelectedMapAuditRun> {
-  const { inspection, reconciliation } =
-    await inspectSelectedMapToDemandFixedPoint(input);
-
+function assembleSelectedMapAuditRun(
+  inspection: InspectArtifactResult,
+  reconciliation: AuditDemandReconciliation,
+): SelectedMapAuditRun {
   const identity =
     deriveSelectedMapAuditIdentity(inspection);
-  const procedure = inspection.mandatoryAuditProcedure;
-  const scenario =
-    inspection.hiddenGameplayDefects.scenarioAudit;
+  const procedure =
+    inspection.mandatoryAuditProcedure;
+  const hidden =
+    inspection.hiddenGameplayDefects;
+  const scenario = hidden.scenarioAudit;
   const admission = assessSelectedMapAuditAdmission({
     mandatoryAuditProcedure: procedure,
   });
@@ -560,30 +556,23 @@ export async function runSelectedMapAudit(
     procedure,
     scenario,
     capabilityDelivery:
-      inspection.hiddenGameplayDefects
-        .capabilityDelivery,
+      hidden.capabilityDelivery,
     negativeSpace:
-      inspection.hiddenGameplayDefects
-        .negativeSpace,
+      hidden.negativeSpace,
     temporalRisks:
-      inspection.hiddenGameplayDefects
-        .temporalRisks,
+      hidden.temporalRisks,
     gameplayClosure:
       inspection.gameplayWorld.gameplayClosure,
     gameplayWorld:
       inspection.gameplayWorld,
     discoveryChallenges:
-      inspection.hiddenGameplayDefects
-        .discoveryChallenges,
+      hidden.discoveryChallenges,
     sharedResourceSignals:
-      inspection.hiddenGameplayDefects
-        .sharedResourceOwnership.signals,
+      hidden.sharedResourceOwnership.signals,
     compoundBoundaries:
-      inspection.hiddenGameplayDefects
-        .compoundBoundaries,
+      hidden.compoundBoundaries,
     accumulationGrowth:
-      inspection.hiddenGameplayDefects
-        .accumulationGrowth,
+      hidden.accumulationGrowth,
   });
   const needValidationFindings = [
     ...control.issueLanes.BUG,
@@ -617,6 +606,7 @@ export async function runSelectedMapAudit(
               control.fullMapReplica,
           }),
     });
+
   return {
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
@@ -630,6 +620,22 @@ export async function runSelectedMapAudit(
     mapAuditReport,
     ...control,
   };
+}
+
+/**
+ * Canonical and only supported starting point for a production selected-map audit.
+ * Demand is reconciled monotonically until final RIG requirements are covered.
+ */
+export async function runSelectedMapAudit(
+  input: SelectedMapAuditInput,
+): Promise<SelectedMapAuditRun> {
+  const { inspection, reconciliation } =
+    await inspectSelectedMapToDemandFixedPoint(input);
+
+  return assembleSelectedMapAuditRun(
+    inspection,
+    reconciliation,
+  );
 }
 
 export interface ResolveSelectedMapAuditInput {
@@ -681,90 +687,10 @@ export function resolveSelectedMapAudit(
     hiddenGameplayDefects: hidden,
     mandatoryAuditProcedure,
   };
-  const identity =
-    deriveSelectedMapAuditIdentity(updatedInspection);
-  const scenario = hidden.scenarioAudit;
-  const admission = assessSelectedMapAuditAdmission({
-    mandatoryAuditProcedure,
-  });
-
-  const auditRevision = deriveSelectedMapAuditRevision({
-    identity,
-    admission,
-    procedure: mandatoryAuditProcedure,
-    graph: scenario.graph,
-    defectResolution: scenario.defectResolution,
-  });
-  const control = deriveSelectedMapAuditControl({
-    admission,
-    procedure: mandatoryAuditProcedure,
-    scenario,
-    capabilityDelivery:
-      hidden.capabilityDelivery,
-    negativeSpace:
-      hidden.negativeSpace,
-    temporalRisks:
-      hidden.temporalRisks,
-    gameplayClosure:
-      updatedInspection.gameplayWorld.gameplayClosure,
-    gameplayWorld:
-      updatedInspection.gameplayWorld,
-    discoveryChallenges:
-      hidden.discoveryChallenges,
-    sharedResourceSignals:
-      hidden.sharedResourceOwnership.signals,
-    compoundBoundaries:
-      hidden.compoundBoundaries,
-    accumulationGrowth:
-      hidden.accumulationGrowth,
-  });
-  const needValidationFindings = [
-    ...control.issueLanes.BUG,
-    ...control.issueLanes.DESIGN_MISMATCH,
-  ].filter(
-    (item): item is NeedValidationAuditIssueProjection =>
-      item.status === "NEED_VALIDATION",
+  return assembleSelectedMapAuditRun(
+    updatedInspection,
+    input.audit.demandReconciliation,
   );
-  const modelTaskPackets = deriveAuditModelTaskPackets({
-    admission,
-    procedure: mandatoryAuditProcedure,
-    graph: scenario.graph,
-    defectResolution: scenario.defectResolution,
-    intent: updatedInspection.gameplayIntent.model,
-    auditRevision,
-    world: updatedInspection.gameplayWorld,
-    needValidationFindings,
-  });
-
-  const mapAuditReport =
-    projectMapAuditOutputV2({
-      inspection: updatedInspection,
-      identity,
-      issueLanes: control.issueLanes,
-      validationTests:
-        control.validationTests,
-      honesty: control.honesty,
-      ...(control.fullMapReplica === undefined
-        ? {}
-        : {
-            fullMapReplica:
-              control.fullMapReplica,
-          }),
-    });
-  return {
-    schemaVersion: 1,
-    policy: "selected-map-audit-single-entry",
-    inspection: updatedInspection,
-    identity,
-    auditRevision,
-    demandReconciliation:
-      input.audit.demandReconciliation,
-    admission,
-    stageOrder: SELECTED_MAP_AUDIT_STAGE_ORDER,
-    modelTaskPackets,
-    mapAuditReport,
-    ...control,
-  };
 }
 
 function designMismatchCandidateIssues(
