@@ -102,7 +102,7 @@ It must not:
 Drive stores map artifacts and optional published human-facing bug-report snapshots.
 
 A published HTML snapshot is:
-- derived from canonical JSON;
+- derived from the authoritative source for its scope: `SelectedMapAuditRun.mapAuditReport` for Map Audit Report, or canonical Bug Report V2 JSON for the approved bug ledger;
 - a communication snapshot;
 - allowed to contain presentation-only tester/work checkboxes;
 - not editable canonical state;
