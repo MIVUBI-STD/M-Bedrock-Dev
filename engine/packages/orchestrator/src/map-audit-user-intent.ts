@@ -107,7 +107,6 @@ export function normalizeAuditUserIntent(
     if (!raw || !normalized) return [];
     const key =
       item.kind + "|" +
-      raw.toLowerCase() + "|" +
       normalized.toLowerCase();
     if (seen.has(key)) return [];
     seen.add(key);
