@@ -261,8 +261,16 @@ world DB / topology
 → compare voxel / block-entity / native proof when available
 → reconcile world DB vs source/config
 → classify replica proof
+→ build FullMapReplicaReceipt
 → classify delta
 ~~~
+
+Canonical full-map naming:
+
+- `replicaBaseline`
+- `replicaResults[]`
+- `replicaStatus`
+- `materialDeltaIds[]`
 
 Replica result:
 
@@ -679,6 +687,10 @@ A clean happy path is never sufficient.
 16. Publish BUG / DESIGN_MISMATCH with PROVEN / NEED_VALIDATION
 
 ---
+
+# Naming
+
+Use `map-audit-naming-contract.md` for canonical public terms. Do not introduce alternate public status or field names.
 
 # Specialist owners
 
