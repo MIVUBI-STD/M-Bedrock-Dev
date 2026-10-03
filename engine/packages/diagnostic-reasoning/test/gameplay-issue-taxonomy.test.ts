@@ -19,6 +19,9 @@ describe("gameplay issue taxonomy", () => {
       }),
     ).toEqual({
       failureDomain: "arena-multi-arena",
+      contributingDomains: [
+        "arena-multi-arena",
+      ],
       gameplayFlow: "READY_START",
     });
   });
@@ -34,6 +37,10 @@ describe("gameplay issue taxonomy", () => {
     ).toEqual({
       failureDomain:
         "progression-wave-objective",
+      contributingDomains: [
+        "entity-ai-combat",
+        "progression-wave-objective",
+      ],
       gameplayFlow: "PROGRESSION",
     });
   });
@@ -51,6 +58,9 @@ describe("gameplay issue taxonomy", () => {
       }),
     ).toEqual({
       failureDomain: "inventory-economy",
+      contributingDomains: [
+        "inventory-economy",
+      ],
       gameplayFlow: "ACTIVE_GAMEPLAY",
     });
   });
@@ -65,6 +75,9 @@ describe("gameplay issue taxonomy", () => {
     ).toEqual({
       failureDomain:
         "ui-feedback-information",
+      contributingDomains: [
+        "ui-feedback-information",
+      ],
       gameplayFlow: "READY_START",
     });
   });
