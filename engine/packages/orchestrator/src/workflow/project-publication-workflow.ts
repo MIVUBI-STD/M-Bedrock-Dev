@@ -8,6 +8,13 @@ import type {
   ProjectWorkspaceLayout,
 } from "../../../project-model/src/index.js";
 import {
+  buildProjectDrivePublishPlan,
+} from "./project-drive-publish-plan.js";
+import {
+  executeProjectDrivePublishPlan,
+  type ProjectDriveUploadAdapter,
+} from "./project-drive-publish-executor.js";
+import {
   applyDrivePublishReceipt,
   approveProject,
   createDrivePublishReceipt,
@@ -148,6 +155,49 @@ export async function approveAuditProjectAndPersist(input: {
     snapshot,
     historicalRegressionIds:
       history.historicalRegressionIds,
+  };
+}
+
+export async function executeAndPersistApprovedDrivePublication(input: {
+  readonly repositoryRoot: string;
+  readonly workspace: ProjectWorkspaceLayout;
+  readonly project: ProjectRecord;
+  readonly snapshot:
+    ReturnType<typeof createProjectApprovalSnapshot>;
+  readonly adapter: ProjectDriveUploadAdapter;
+}): Promise<{
+  readonly project: ProjectRecord;
+  readonly receipt: ProjectDrivePublishReceipt;
+  readonly failed:
+    Awaited<
+      ReturnType<
+        typeof executeProjectDrivePublishPlan
+      >
+    >["failed"];
+}> {
+  const plan =
+    buildProjectDrivePublishPlan({
+      project: input.project,
+      snapshot: input.snapshot,
+    });
+  const execution =
+    await executeProjectDrivePublishPlan(
+      plan,
+      input.adapter,
+    );
+  const recorded =
+    await recordAndPersistDrivePublication({
+      repositoryRoot:
+        input.repositoryRoot,
+      workspace: input.workspace,
+      project: input.project,
+      snapshot: input.snapshot,
+      files: execution.files,
+    });
+
+  return {
+    ...recorded,
+    failed: execution.failed,
   };
 }
 
