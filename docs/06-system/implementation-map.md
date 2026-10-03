@@ -68,6 +68,7 @@ Use this before broad repository search.
 | Mandatory audit procedure machine-readable projection / closure | engine/packages/orchestrator/src/inspection/mandatory-audit-procedure.ts |
 | Rich state/ownership/progression audit projections | engine/packages/orchestrator/src/inspection/mandatory-audit-support.ts |
 | Production selected-map audit single entry + canonical continuations | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact proof → ordered audit → resolveSelectedMapAudit when needed → internal SelectedMapAuditRun) |
+| User prompt intake / non-authoritative search guidance | docs/03-analysis/user-input-translation-contract.md + .agents/skills/m-bedrock-map-bug-audit/SKILL.md |
 | Sole operator-facing selected-map audit output | engine/packages/orchestrator/src/map-audit-output-v2.ts (SelectedMapAuditRun internal authority → Map Audit Output V2) |
 | Opaque production reporting authority / raw collector bypass guard | engine/packages/orchestrator/src/map-audit-authority.ts + reporting/report-defect-collector.ts |
 | Ordered production audit admission / first blocking stage (reads Mandatory Audit Procedure checkpoints only) | engine/packages/orchestrator/src/map-audit-admission.ts |
