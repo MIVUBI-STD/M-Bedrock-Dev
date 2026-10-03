@@ -308,6 +308,17 @@ export function normalizeProjectRecord(
     );
   }
 
+  if (
+    input.publication.drive !== undefined &&
+    normalizeDriveProjectBinding(
+      input.publication.drive,
+    ).projectId !== clean(input.projectId)
+  ) {
+    throw new Error(
+      "Drive binding projectId mismatch.",
+    );
+  }
+
   return {
     schemaVersion: 1,
     projectId: clean(input.projectId),
