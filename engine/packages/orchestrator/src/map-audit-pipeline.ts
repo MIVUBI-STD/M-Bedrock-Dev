@@ -519,8 +519,9 @@ function designMismatchCandidateIssues(
   candidates: readonly AuditReportCandidate[],
 ): readonly string[] {
   const designMismatchLinks = new Set(
-    audit.issueLanes.DESIGN_MISMATCH.map(
-      (item) => item.causalLinkId,
+    audit.issueLanes.DESIGN_MISMATCH
+      .filter((item) => item.status === "PROVEN")
+      .map((item) => item.causalLinkId),
     ),
   );
   const issues: string[] = [];
