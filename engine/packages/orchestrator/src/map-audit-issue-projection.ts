@@ -4,12 +4,12 @@ import type {
 import type {
   GameplayDefectResolutionGate,
 } from "./inspection/gameplay-defect-resolution.js";
-import type {
-  GameplayCapabilityDeliveryAssessment,
-  GameplayReportIssueType,
-  GameplayIssueFailureDomain,
-  GameplayIssueFlowStage,
+import {
   classifyGameplayIssue,
+  type GameplayCapabilityDeliveryAssessment,
+  type GameplayReportIssueType,
+  type GameplayIssueFailureDomain,
+  type GameplayIssueFlowStage,
 } from "../../diagnostic-reasoning/src/index.js";
 
 export interface ReadyAuditIssueProjection {
