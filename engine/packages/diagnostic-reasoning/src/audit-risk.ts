@@ -13,17 +13,31 @@ export type AuditRiskFactor =
   | "external-runtime-dependency"
   | "replica-integrity";
 
+export type AuditGameplayCriticality =
+  | "low"
+  | "medium"
+  | "high"
+  | "blocker";
+
 export interface AuditRiskInput {
   readonly surfaceId: string;
   readonly factors:
     readonly AuditRiskFactor[];
   readonly unresolved?: boolean;
+  /**
+   * Gameplay impact if this surface fails. This is intentionally separate
+   * from technical complexity so a simple completion/terminal dependency
+   * can never be deprioritized merely because it has few risk factors.
+   */
+  readonly criticality?: AuditGameplayCriticality;
 }
 
 export interface AuditRiskAssessment {
   readonly surfaceId: string;
   readonly factors:
     readonly AuditRiskFactor[];
+  readonly technicalRiskScore: number;
+  readonly criticality: AuditGameplayCriticality;
   readonly score: number;
   readonly priority:
     | "low"
@@ -52,19 +66,36 @@ const WEIGHTS:
     "replica-integrity": 2,
   };
 
+const CRITICALITY_FLOOR:
+  Readonly<Record<AuditGameplayCriticality, number>> = {
+    low: 0,
+    medium: 3,
+    high: 6,
+    blocker: 8,
+  };
+
 export function assessAuditRisk(
   input: AuditRiskInput,
 ): AuditRiskAssessment {
   const factors = [
     ...new Set(input.factors),
   ].sort();
-  const score =
+  const technicalRiskScore =
     factors.reduce(
       (sum, factor) =>
         sum + WEIGHTS[factor],
       0,
     ) +
     (input.unresolved ? 2 : 0);
+  const criticality = input.criticality ?? "low";
+
+  // Risk depth must never fall below gameplay criticality. This prevents
+  // low-complexity but progression-blocking mechanics from receiving only
+  // shallow/static proof.
+  const score = Math.max(
+    technicalRiskScore,
+    CRITICALITY_FLOOR[criticality],
+  );
 
   const priority =
     score >= 6
@@ -76,6 +107,8 @@ export function assessAuditRisk(
   return {
     surfaceId: input.surfaceId,
     factors,
+    technicalRiskScore,
+    criticality,
     score,
     priority,
     proofDepth:
