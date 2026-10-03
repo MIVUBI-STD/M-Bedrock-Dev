@@ -48,16 +48,24 @@ const FAILURE_DOMAINS =
     GAMEPLAY_ISSUE_FAILURE_DOMAINS,
   );
 
+export interface AuditUserInputFragment {
+  readonly id: string;
+  readonly raw: string;
+}
+
 export interface AuditUserIntentItem {
   readonly kind: AuditUserInputClass;
   readonly raw: string;
   readonly normalized: string;
+  readonly sourceFragmentIds: readonly string[];
 }
 
 export interface AuditUserIntentEnvelope {
   readonly schemaVersion: 1;
   readonly policy: "user-input-is-search-guidance-not-gameplay-authority";
+  readonly fragments: readonly AuditUserInputFragment[];
   readonly items: readonly AuditUserIntentItem[];
+  readonly unmappedFragmentIds: readonly string[];
   readonly priorityDomains: readonly GameplayIssueFailureDomain[];
   readonly priorityPlayerFlows: readonly GameplayIssueFlowStage[];
   readonly ambiguities: readonly string[];
@@ -96,6 +104,29 @@ function unique(
 export function normalizeAuditUserIntent(
   input: AuditUserIntentEnvelope,
 ): AuditUserIntentEnvelope {
+  const fragments = (
+    Array.isArray(input.fragments)
+      ? input.fragments
+      : []
+  ).flatMap((fragment) => {
+    if (
+      fragment === null ||
+      typeof fragment !== "object" ||
+      typeof fragment.id !== "string" ||
+      typeof fragment.raw !== "string"
+    ) {
+      return [];
+    }
+    const id = clean(fragment.id);
+    const raw = clean(fragment.raw);
+    return id && raw
+      ? [{ id, raw }]
+      : [];
+  });
+  const fragmentIds = new Set(
+    fragments.map((fragment) => fragment.id),
+  );
+
   const seen = new Set<string>();
   const items = (
     Array.isArray(input.items)
@@ -123,6 +154,16 @@ export function normalizeAuditUserIntent(
       kind: item.kind,
       raw,
       normalized,
+      sourceFragmentIds:
+        [...new Set(
+          (
+            Array.isArray(item.sourceFragmentIds)
+              ? item.sourceFragmentIds
+              : []
+          )
+            .map(clean)
+            .filter((id) => fragmentIds.has(id)),
+        )].sort(),
     }];
   });
 
@@ -145,7 +186,18 @@ export function normalizeAuditUserIntent(
     schemaVersion: 1,
     policy:
       "user-input-is-search-guidance-not-gameplay-authority",
+    fragments,
     items,
+    unmappedFragmentIds:
+      [...new Set(
+        (
+          Array.isArray(input.unmappedFragmentIds)
+            ? input.unmappedFragmentIds
+            : []
+        )
+          .map(clean)
+          .filter((id) => fragmentIds.has(id)),
+      )].sort(),
     priorityDomains:
       [...new Set(priorityDomains)].sort(),
     priorityPlayerFlows:
@@ -193,9 +245,19 @@ export function validateAuditUserIntent(
     );
   }
 
+  if (!Array.isArray(input.fragments)) {
+    issues.push(
+      "User audit intent fragments must be an array.",
+    );
+  }
   if (!Array.isArray(input.items)) {
     issues.push(
       "User audit intent items must be an array.",
+    );
+  }
+  if (!Array.isArray(input.unmappedFragmentIds)) {
+    issues.push(
+      "User audit intent unmappedFragmentIds must be an array.",
     );
   }
   if (!Array.isArray(input.priorityDomains)) {
@@ -217,6 +279,53 @@ export function validateAuditUserIntent(
     issues.push(
       "User audit intent blockingAmbiguities must be an array.",
     );
+  }
+
+  const fragments =
+    Array.isArray(input.fragments)
+      ? input.fragments
+      : [];
+  const fragmentIds = new Set<string>();
+  for (const [index, fragment] of fragments.entries()) {
+    if (
+      fragment === null ||
+      typeof fragment !== "object"
+    ) {
+      issues.push(
+        "User audit intent fragment " +
+        index +
+        " must be an object.",
+      );
+      continue;
+    }
+    if (
+      typeof fragment.id !== "string" ||
+      !clean(fragment.id)
+    ) {
+      issues.push(
+        "User audit intent fragment " +
+        index +
+        " has empty/invalid id.",
+      );
+    } else if (fragmentIds.has(clean(fragment.id))) {
+      issues.push(
+        "User audit intent contains duplicate fragment id: " +
+        clean(fragment.id) +
+        ".",
+      );
+    } else {
+      fragmentIds.add(clean(fragment.id));
+    }
+    if (
+      typeof fragment.raw !== "string" ||
+      !clean(fragment.raw)
+    ) {
+      issues.push(
+        "User audit intent fragment " +
+        index +
+        " has empty/invalid raw text.",
+      );
+    }
   }
 
   const items =
@@ -263,6 +372,28 @@ export function validateAuditUserIntent(
         index +
         " has empty/invalid normalized text.",
       );
+    }
+    if (!Array.isArray(item.sourceFragmentIds)) {
+      issues.push(
+        "User audit intent item " +
+        index +
+        " sourceFragmentIds must be an array.",
+      );
+    } else {
+      for (const id of item.sourceFragmentIds) {
+        if (
+          typeof id !== "string" ||
+          !fragmentIds.has(clean(id))
+        ) {
+          issues.push(
+            "User audit intent item " +
+            index +
+            " references unknown fragment id: " +
+            String(id) +
+            ".",
+          );
+        }
+      }
     }
   }
 
@@ -324,6 +455,53 @@ export function validateAuditUserIntent(
     issues.push(
       "User audit intent blockingAmbiguities must contain only non-empty text.",
     );
+  }
+
+  const unmappedFragmentIds =
+    Array.isArray(input.unmappedFragmentIds)
+      ? input.unmappedFragmentIds
+      : [];
+  const mappedFragmentIds = new Set(
+    items.flatMap((item) =>
+      item !== null &&
+      typeof item === "object" &&
+      Array.isArray(item.sourceFragmentIds)
+        ? item.sourceFragmentIds
+            .filter(
+              (id): id is string =>
+                typeof id === "string",
+            )
+            .map(clean)
+        : [],
+    ),
+  );
+  const unmappedSet = new Set<string>();
+  for (const id of unmappedFragmentIds) {
+    if (
+      typeof id !== "string" ||
+      !fragmentIds.has(clean(id))
+    ) {
+      issues.push(
+        "User audit intent unmappedFragmentIds references unknown fragment id: " +
+        String(id) +
+        ".",
+      );
+      continue;
+    }
+    unmappedSet.add(clean(id));
+  }
+
+  for (const id of fragmentIds) {
+    if (
+      !mappedFragmentIds.has(id) &&
+      !unmappedSet.has(id)
+    ) {
+      issues.push(
+        "User audit intent fragment is unaccounted: " +
+        id +
+        ". Every material prompt fragment must be mapped or explicitly unmapped.",
+      );
+    }
   }
 
   const hasSymptom = items.some(
