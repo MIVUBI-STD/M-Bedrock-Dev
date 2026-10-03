@@ -1,5 +1,7 @@
 # Audit Execution Flow
 
+> **Player-flow projection only.** Ordered audit authority remains TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT in the Mandatory Gameplay Audit Procedure. This document explains how checks are arranged around the player's journey; it does not own stage transitions.
+
 ## Core rule
 
 Audit follows the player's game flow first. Technical domains are evidence providers inside that flow, not parallel checklists.
