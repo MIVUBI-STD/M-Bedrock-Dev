@@ -53,6 +53,23 @@ world/topology proof
 
 Region-role proof already excludes authored mutable/ignored areas from normal voxel proof where those roles are grounded. Mixed/unknown differences are not automatically called material; they remain classification residue.
 
+### Replica proof ownership cleanup
+
+The unused `arena-semantic-voxel-divergence` layer was removed. It had no production consumer and duplicated semantic masking already owned by arena region classification / proof-eligible volume selection.
+
+Canonical ownership is now:
+
+```text
+region classification
+→ proof-eligible volumes
+→ voxel/block-entity/native proof
+→ replica proof quality
+→ FullMapReplicaReceipt
+→ semantic/causal classification for unresolved divergence
+```
+
+Do not reintroduce a parallel semantic voxel classifier unless real-map evidence proves the existing owner cannot express the required distinction.
+
 ### Full-map receipt integration
 
 `SelectedMapAuditRun` now exposes `fullMapReplica` when per-replica world/topology proof exists.
