@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  deriveAuditObligations,
+} from "../src/map-audit-obligations.js";
+import {
   auditUserIntentAuthorityNote,
   deriveAuditUserIntentSearchPressure,
   normalizeAuditUserIntent,
@@ -134,6 +137,95 @@ describe("map audit user intent", () => {
     ).toContain(
       "User-reported symptoms require at least one bounded priority domain/player-flow interpretation or an explicit ambiguity record.",
     );
+  });
+
+  it("keeps an unexplained user symptom visible as a non-bug obligation", () => {
+    const userIntent: AuditUserIntentEnvelope = {
+      schemaVersion: 1,
+      policy:
+        "user-input-is-search-guidance-not-gameplay-authority",
+      items: [{
+        kind: "SYMPTOM_REPORT",
+        raw: "barang kadang ilang",
+        normalized:
+          "possible inventory item loss",
+      }],
+      priorityDomains: [
+        "inventory-economy",
+      ],
+      priorityPlayerFlows: [
+        "ACTIVE_GAMEPLAY",
+      ],
+      ambiguities: [],
+    };
+
+    const obligations =
+      deriveAuditObligations({
+        graph: {
+          schemaVersion: 1,
+          policy: "scenario-driven-causal-audit",
+          scenarios: [],
+          components: [],
+          causalLinks: [],
+          knowledgeRequirements: [],
+          knowledgeReceipts: [],
+          requiredInspectionGraph: {
+            policy: "required-inspection-graph",
+            nodes: [],
+            receipts: [],
+          },
+        } as any,
+        defectResolution: {
+          status: "READY_FOR_PROPOSED_BUG_SET",
+          contradictedCausalLinkIds: [],
+          resolutions: [],
+          confirmedDefectReadyIds: [],
+          blockingCounterProofIds: [],
+          runtimeProofRequiredIds: [],
+          detectionGapIds: [],
+          gameplayTranslationRequiredIds: [],
+          counterProofSearchRequiredIds: [],
+          issues: [],
+        } as any,
+        gameplayWorld: {
+          surfaceDiscovery: {
+            surfaceIds: [],
+          },
+          arenas: {
+            detected: false,
+          },
+          platformKnowledge: {
+            claims: [],
+          },
+        } as any,
+        userIntent,
+        gameplayClosure: {
+          status: "CLOSED",
+          surfaces: [],
+          unaccountedSurfaceIds: [],
+          blockingSurfaceIds: [],
+          unknownSurfaceIds: [],
+          stateModelComplete: true,
+          boundariesExtracted: true,
+          reasons: [],
+        } as any,
+        negativeSpace: [],
+        temporalRisks: [],
+        discoveryChallenges: [],
+        sharedResourceSignals: [],
+        compoundBoundaries: [],
+        accumulationGrowth: [],
+      });
+
+    expect(
+      obligations.some(
+        (item) =>
+          item.id ===
+            "user-symptom-uncovered-domain:inventory-economy" &&
+          item.source ===
+            "user-reported-symptom",
+      ),
+    ).toBe(true);
   });
 
   it("states explicitly that prompt input cannot become proof", () => {
