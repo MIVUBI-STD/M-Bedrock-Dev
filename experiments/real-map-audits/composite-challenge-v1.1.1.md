@@ -56,6 +56,38 @@ Player-visible consequence: stale/unintended inventory can cross the fresh-sessi
 
 Repair direction: make the fresh-session inventory reset a per-player session invariant and reconcile it on reconnect before preparation/gameplay continuation.
 
+## Proven finding 3
+
+### BUG — Arena becomes reusable while asynchronous world reset is still running
+
+Severity: Blocker
+
+Composite resets the arena map over multiple ticks, but `resetGame()` does not await that reset. It immediately unlocks/clears parties and saves the session back to `idle`. Start validation checks party membership/readiness only and has no reset-in-progress guard.
+
+Source evidence:
+
+- `chunk-2GRFUQFH.js:7881+` — `ResetMapService.resetMap()` returns a Promise and splits the reset region into chunks.
+- `chunk-2GRFUQFH.js:7951+` — `processChunksOverTime()` processes only `chunksPerTick` then schedules itself with `system.run()`, so reset materially spans later ticks.
+- `chunk-2GRFUQFH.js:16014+` — `resetGame()` calls `resetArenaPlacedBlocks()` without awaiting completion.
+- `chunk-2GRFUQFH.js:16027+` — `resetArenaPlacedBlocks()` explicitly discards the Promise with `void ResetMapService.resetMap(...)`.
+- The same reset path then saves the arena's default session with `status: "idle"`.
+- `chunk-2GRFUQFH.js:13756+` / `21770+` — `validateStart()` checks party size/readiness only; it does not consult `ResetMapService.resetStateByArena` / `resettingArenaIds`.
+- Repository-wide search shows those reset-lock collections are internal to ResetMapService and are not used by game start admission.
+
+Reproduction:
+1. Run an arena and alter reset-managed blocks.
+2. Trigger reset/end so `ResetMapService.resetMap()` starts.
+3. Before the chunked reset finishes, make the arena party ready again.
+4. Start/auto-start the same arena.
+5. The session can enter countdown/preload while reset chunks are still mutating the arena.
+6. Observe new-session world state being changed underneath setup/gameplay.
+
+Player-visible consequence: new sessions can begin on a partially reset arena, producing missing/restored blocks at the wrong time, inconsistent build state, structure overlap, pathing changes, or non-deterministic gameplay.
+
+Root cause: arena lifecycle publishes `idle` before reset completion, while the reset lock is not part of start admission.
+
+Repair direction: keep the arena unavailable until the existing reset Promise settles, or make the existing reset lock part of canonical start admission. Do not add a second reset-state owner.
+
 ## Next action
 
-Continue one final current-source pass for independently proven Composite defects, then close this map for the real-test batch before moving to the next current Drive artifact.
+Composite v1.1.1 source pass is complete enough to close for this batch with three independently source-proven findings. Keep them in non-canonical audit evidence until explicit approval.
