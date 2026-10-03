@@ -71,6 +71,13 @@ export interface AuditModelTaskPacket {
     readonly purpose: string;
     readonly evidencePreference: string;
   }[];
+  readonly evidenceSubstitutions?: readonly {
+    readonly id: string;
+    readonly replaces: string;
+    readonly requiredEvidence: readonly string[];
+    readonly applicableBecause: readonly string[];
+    readonly decisionRule: string;
+  }[];
   readonly allowedOutputs: readonly string[];
   readonly forbiddenActions: readonly string[];
   readonly stopCondition: string;
@@ -391,11 +398,15 @@ export function deriveAuditModelTaskPackets(input: {
           navigationRoute: [
             ...navigation.route,
           ],
+          evidenceSubstitutions: [
+            ...navigation.evidenceSubstitutions,
+          ],
           allowedOutputs: [
             "new selected-artifact proof",
             "cross-domain corroboration",
             "blocking counter-proof",
             "formal contradiction proof",
+            "evidence substitution that removes runtime need",
             "PROVEN-ready causal resolution",
             "narrow runtime proof request only after earlier routes are exhausted",
           ],
