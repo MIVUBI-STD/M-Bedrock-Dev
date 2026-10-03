@@ -829,12 +829,6 @@ export function prepareSelectedMapAuditReview(
     ...(input.groupResolutions === undefined
       ? {}
       : { groupResolutions: input.groupResolutions }),
-    gameplayDiscoveryClosure:
-      inspection.gameplayDiscoveryClosure,
-    gameplayClosure:
-      inspection.gameplayWorld.gameplayClosure,
-    gameplayScenarioClosure:
-      scenario.closure,
     gameplayDefectResolution:
       scenario.defectResolution,
     mandatoryAuditProcedure:
@@ -1019,12 +1013,6 @@ export function buildSelectedMapAuditReport(
     ...(input.groupResolutions === undefined
       ? {}
       : { groupResolutions: input.groupResolutions }),
-    gameplayDiscoveryClosure:
-      inspection.gameplayDiscoveryClosure,
-    gameplayClosure:
-      inspection.gameplayWorld.gameplayClosure,
-    gameplayScenarioClosure:
-      scenario.closure,
     gameplayDefectResolution:
       scenario.defectResolution,
     mandatoryAuditProcedure:
