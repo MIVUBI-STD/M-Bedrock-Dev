@@ -98,6 +98,8 @@ export function assessGameplayCapabilityDelivery(
         input.playableCapacity,
       technicalConstraintReasons,
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch: false,
       reason:
         "Playable capacity meets the capability presented by the game.",
     };
@@ -158,6 +160,8 @@ export function assessGameplayCapabilityDelivery(
       status: "DELIVERED",
       technicalConstraintReasons,
       evidenceIds,
+      playerFacingEvidenceIds,
+      informationMismatch: false,
       reason:
         "The player-visible capability has a complete gameplay delivery chain.",
     };
