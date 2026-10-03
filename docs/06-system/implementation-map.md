@@ -76,7 +76,8 @@ Use this before broad repository search.
 | Canonical continuation ownership / rerun-vs-resolve-vs-review contract | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRun.continuation) |
 | Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |
 | Production runtime-target boundary / reject caller map-design contracts | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRuntimeTarget) |
-| Deterministic confirmed resolution → PROVEN / NEED_VALIDATION issue projection | engine/packages/orchestrator/src/map-audit-issue-projection.ts + map-audit-validation-projection.ts |
+| Deterministic confirmed resolution → PROVEN / confirmation-ready NEED_VALIDATION issue projection | engine/packages/orchestrator/src/map-audit-issue-projection.ts + map-audit-validation-projection.ts |
+| Unresolved audit/model/proof residue that is not yet a gameplay issue | engine/packages/orchestrator/src/map-audit-obligations.ts (`auditObligations[]`) |
 | Deterministic pre-report AI candidate grouping + coverage enforcement | engine/packages/orchestrator/src/map-audit-candidate-grouping.ts |
 | Canonical confirmed-defect root-cause grouping | engine/packages/bug-report/src/grouping.ts (broken invariant + repair unit + primary failure) |
 | Bounded counter-proof search receipt / confirmed-defect admission | engine/packages/orchestrator/src/inspection/gameplay-defect-resolution.ts |
