@@ -265,6 +265,20 @@ Examples:
 
 Do not brute-force every possible system pair.
 
+## 3.5 Capability delivery crosscheck
+
+For every player-facing feature/capacity, compare:
+
+```text
+what the game presents
+vs
+what implementation provides
+vs
+what is actually playable
+```
+
+Design failures and design–implementation mismatches must enter the same causal PROVE path as implementation bugs. They are not informational warnings.
+
 ## 4. Static-first proof
 
 For every material flow stage:
