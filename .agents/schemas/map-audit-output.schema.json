@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "M-Bedrock Map Audit Output",
+  "title": "DEPRECATED — M-Bedrock Map Audit Output V1",
   "type": "object",
   "required": [
     "schemaVersion",
@@ -303,5 +303,7 @@
       "additionalProperties": false
     }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "$comment": "Compatibility-only legacy schema. Production selected-map audit uses map-audit-output-v2.schema.json through runSelectedMapAudit(); this schema cannot authorize audit completion.",
+  "x-status": "deprecated-non-production"
 }
