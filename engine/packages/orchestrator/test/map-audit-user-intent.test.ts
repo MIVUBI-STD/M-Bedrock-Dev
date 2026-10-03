@@ -4,6 +4,7 @@ import {
 } from "../src/map-audit-obligations.js";
 import {
   auditUserIntentAuthorityNote,
+  createFallbackAuditUserIntent,
   deriveAuditUserIntentKnowledgeDemand,
   deriveAuditUserIntentSearchPressure,
   normalizeAuditUserIntent,
@@ -323,6 +324,25 @@ describe("map audit user intent", () => {
             "user-reported-symptom",
       ),
     ).toBe(true);
+  });
+
+  it("turns raw imperfect prompt into preserved fallback intake", () => {
+    const fallback =
+      createFallbackAuditUserIntent(
+        "pokoknya kadang aneh pas akhir, cek ya",
+      );
+
+    expect(validateAuditUserIntent(fallback))
+      .toEqual([]);
+    expect(fallback.fragments).toEqual([{
+      id: "prompt:1",
+      raw: "pokoknya kadang aneh pas akhir, cek ya",
+    }]);
+    expect(fallback.items).toEqual([]);
+    expect(fallback.unmappedFragmentIds)
+      .toEqual(["prompt:1"]);
+    expect(fallback.ambiguities.length)
+      .toBeGreaterThan(0);
   });
 
   it("preserves unmapped prompt fragments instead of dropping them", () => {
