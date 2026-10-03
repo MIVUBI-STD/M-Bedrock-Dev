@@ -91,6 +91,10 @@ const DISCOVERY_PATH =
   "engine/packages/orchestrator/src/inspection/gameplay-discovery-closure.ts";
 const REPORT_SCHEMA_PATH =
   ".agents/schemas/map-audit-output-v2.schema.json";
+const LEGACY_REPORT_SCHEMA_PATH =
+  ".agents/schemas/map-audit-output.schema.json";
+const ISSUE_PROJECTION_PATH =
+  "engine/packages/orchestrator/src/map-audit-issue-projection.ts";
 const PROCEDURE_DOC_PATH =
   "docs/03-analysis/mandatory-audit-procedure.md";
 
@@ -214,6 +218,12 @@ requireText(PIPELINE_PATH, [
   "DESIGN_MISMATCH:",
 ]);
 
+requireText(ISSUE_PROJECTION_PATH, [
+  "reportIssueType",
+  "DESIGN_MISMATCH",
+  "BUG",
+]);
+
 requireText(DISCOVERY_PATH, [
   "semanticUnderstandingGaps",
   "semanticUnderstandingGapPaths",
@@ -246,6 +256,19 @@ if (!reportSchema.properties?.designMismatches) {
       " must define the DESIGN_MISMATCH report lane as properties.designMismatches.",
   );
 }
+const legacyReportSchema = JSON.parse(
+  readFileSync(LEGACY_REPORT_SCHEMA_PATH, "utf8"),
+);
+if (
+  legacyReportSchema["x-status"] !==
+  "deprecated-non-production"
+) {
+  issues.push(
+    LEGACY_REPORT_SCHEMA_PATH +
+      " must remain explicitly deprecated and non-production.",
+  );
+}
+
 if (
   !Array.isArray(reportSchema.required) ||
   !reportSchema.required.includes("bugs") ||
