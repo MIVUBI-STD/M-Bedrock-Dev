@@ -145,6 +145,43 @@ Entity spawns use bounded retries and wave clearance is reconciled against live 
 
 The file/manifest is v1.1.1 while `levelname.txt` still says `Daigon Defense v1.1.0`. This is recorded as metadata mismatch only, not gameplay defect.
 
+## Audit obligation — Speed Potion purchase delivery is non-atomic
+
+This is **not admitted as a gameplay bug yet** because the selected source proves the failure consequence but does not prove that the configured command fails on the target runtime.
+
+Current source:
+
+```text
+Shop item:
+giveCommand = "give @s potion 1 14"
+price = 12
+```
+
+Purchase ordering:
+
+```text
+consumeCoins()
+→ notify purchase
+→ runCommandAsync(giveCommand)
+→ on command error: show failure message only
+→ no refund
+→ generic "Purchased ..." success message still executes
+```
+
+Relevant source:
+
+- `behavior_packs/BP/scripts/chunks/chunk-ZDK4WOHG.js:69-77`
+- `behavior_packs/BP/scripts/chunks/chunk-ZDK4WOHG.js:1750-1799`
+
+Narrow validation:
+
+1. Enter an active shop phase with at least 12 coins.
+2. Buy **Speed Potion**.
+3. Verify whether `give @s potion 1 14` succeeds on the actual target runtime.
+4. If command delivery fails, confirm that 12 coins were consumed and the later success message is still shown.
+
+If runtime confirms command failure, promote as a Major economy transaction bug. Until then it remains an Audit Obligation.
+
 ## Next action
 
-Continue selected-artifact analysis for additional independently proven defects before promoting this audit into the canonical approved Bug Report V2 / historical regression catalog.
+Defense v1.1.1 source pass is complete for this real-test round. Keep the proven reset/lease race pending approval and the Speed Potion transaction as a narrow runtime obligation. Do not ingest either into historical reliability knowledge until the approval boundary is crossed.
