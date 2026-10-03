@@ -13,6 +13,33 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-04 — first real-map Drive batch
+
+The current Google Drive map set has completed an individual selected-artifact **source first pass**.
+
+Scope:
+
+- 22 current concrete map artifacts registered in `workspace/project-registry.json`;
+- exact Drive file ID + artifact SHA-256 + selected artifact version retained per target;
+- selected current artifact used as gameplay authority;
+- older Drive documents/versions used only as search pressure where relevant;
+- zero-finding results retained instead of manufacturing findings;
+- no current findings promoted into `engine/reliability/catalogs/regressions.json` before explicit approval.
+
+Current PROVEN source findings:
+
+1. Defense Challenge v1.1.1 — **Blocker BUG** — asynchronous reset/reuse can let old cleanup release the ticking-area lease of a new run.
+2. Attack Challenge v1.1.1 — **Major BUG** — reconnect during pending respawn can bypass death delay because GameManager overwrites CombatTracker recovery.
+3. Build & Decode v1.1.0 — **Minor DESIGN_MISMATCH** — production imports a non-admin debug-stick coordinate picker reachable by Creative builders.
+4. The Gauntlet v1.0.1 — **Major BUG** — Level 9 all-player finish filters disconnected required members and can complete without them.
+
+The other 18 selected artifacts have **0 source-proven findings in this first pass**. Their evidence files record important false-positive suppression and runtime-only obligations.
+
+Navigation index: `experiments/real-map-audits/README.md`.
+
+Proof ceiling: **SELECTED-ARTIFACT STATIC / SOURCE REVIEW**. No real Minecraft runtime execution is implied by this batch. Runtime-only obligations remain unproven until targeted testing.
+
+
 ## 2026-10-03 — pre-real-test source readiness
 
 Current `Local` head has completed the source-level finalization pass for project/workspace publication flow.
