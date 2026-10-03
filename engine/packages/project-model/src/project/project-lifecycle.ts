@@ -1,3 +1,8 @@
+import {
+  normalizeDriveProjectBinding,
+  type DriveProjectBinding,
+} from "./drive-binding.js";
+
 export type ProjectLifecycleStatus =
   | "working"
   | "approved"
@@ -32,7 +37,11 @@ export interface ProjectKnowledgeReferences {
 }
 
 export interface ProjectPublicationState {
-  readonly drive?: import("./drive-binding.js").DriveProjectBinding;
+  /**
+   * Single project-level Drive binding authority.
+   * Do not duplicate folder ids elsewhere in project state.
+   */
+  readonly drive?: DriveProjectBinding;
   readonly approvalSnapshotFingerprint?: string;
   readonly drivePublishReceiptFingerprint?: string;
 }
@@ -50,16 +59,25 @@ export interface ProjectRecord {
   readonly publication: ProjectPublicationState;
 }
 
+export type ProjectDeliverableKind =
+  | "map"
+  | "bug-report"
+  | "map-audit-report"
+  | "guide"
+  | "changelog"
+  | "other";
+
+export type ProjectDriveDestinationRole =
+  | "project-root"
+  | "development-source"
+  | "development-version"
+  | "technical-docs";
+
 export interface ProjectDeliverableRef {
-  readonly kind:
-    | "map"
-    | "bug-report"
-    | "map-audit-report"
-    | "guide"
-    | "changelog"
-    | "other";
+  readonly kind: ProjectDeliverableKind;
   readonly path: string;
   readonly fingerprint: string;
+  readonly destinationRole: ProjectDriveDestinationRole;
 }
 
 export interface ProjectApprovalSnapshot {
@@ -70,12 +88,12 @@ export interface ProjectApprovalSnapshot {
   readonly auditRevision?: string;
   readonly bugReportPath?: string;
   readonly deliverables: readonly ProjectDeliverableRef[];
-  readonly historicalRegressionIds: readonly string[];
   readonly snapshotFingerprint: string;
 }
 
 export interface DrivePublishedFile {
-  readonly kind: ProjectDeliverableRef["kind"];
+  readonly kind: ProjectDeliverableKind;
+  readonly destinationRole: ProjectDriveDestinationRole;
   readonly fileId: string;
   readonly fileName: string;
   readonly fingerprint: string;
@@ -113,6 +131,14 @@ const PROJECT_TASK_CLASSES =
     "RESEARCH",
   ]);
 
+const DESTINATION_ROLES =
+  new Set<ProjectDriveDestinationRole>([
+    "project-root",
+    "development-source",
+    "development-version",
+    "technical-docs",
+  ]);
+
 function clean(value: string): string {
   return value.trim();
 }
@@ -121,6 +147,29 @@ function unique(values: readonly string[]): string[] {
   return [...new Set(
     values.map(clean).filter(Boolean),
   )].sort();
+}
+
+export function normalizeProjectDeliverable(
+  input: ProjectDeliverableRef,
+): ProjectDeliverableRef {
+  if (
+    input === null ||
+    typeof input !== "object" ||
+    !clean(input.kind) ||
+    !clean(input.path) ||
+    !clean(input.fingerprint) ||
+    !DESTINATION_ROLES.has(input.destinationRole)
+  ) {
+    throw new Error(
+      "Project deliverable requires kind/path/fingerprint and a supported destinationRole.",
+    );
+  }
+  return {
+    kind: input.kind,
+    path: clean(input.path),
+    fingerprint: clean(input.fingerprint),
+    destinationRole: input.destinationRole,
+  };
 }
 
 export function normalizeProjectRecord(
@@ -135,7 +184,9 @@ export function normalizeProjectRecord(
     );
   }
   if (input.schemaVersion !== 1) {
-    throw new Error("Unsupported project record schemaVersion.");
+    throw new Error(
+      "Unsupported project record schemaVersion.",
+    );
   }
   if (
     input.artifact === null ||
@@ -180,13 +231,20 @@ export function normalizeProjectRecord(
       "Project record requires non-empty project/artifact identity.",
     );
   }
-  if (!Number.isInteger(input.revision) || input.revision < 1) {
-    throw new Error("Project revision must be an integer >= 1.");
+  if (
+    !Number.isInteger(input.revision) ||
+    input.revision < 1
+  ) {
+    throw new Error(
+      "Project revision must be an integer >= 1.",
+    );
   }
   if (
     input.work.workSessionRevision !== undefined &&
     (
-      !Number.isInteger(input.work.workSessionRevision) ||
+      !Number.isInteger(
+        input.work.workSessionRevision,
+      ) ||
       input.work.workSessionRevision < 1
     )
   ) {
@@ -217,43 +275,78 @@ export function normalizeProjectRecord(
   }
 
   return {
-    ...input,
+    schemaVersion: 1,
     projectId: clean(input.projectId),
     projectName: clean(input.projectName),
+    taskClass: input.taskClass,
+    status: input.status,
+    revision: input.revision,
     artifact: {
-      artifactId: clean(input.artifact.artifactId),
+      artifactId:
+        clean(input.artifact.artifactId),
       artifactFingerprint:
-        clean(input.artifact.artifactFingerprint),
+        clean(
+          input.artifact
+            .artifactFingerprint,
+        ),
       ...(input.artifact.version?.trim()
-        ? { version: input.artifact.version.trim() }
+        ? {
+            version:
+              input.artifact.version.trim(),
+          }
         : {}),
     },
     work: {
       ...(input.work.sessionId?.trim()
-        ? { sessionId: input.work.sessionId.trim() }
+        ? {
+            sessionId:
+              input.work.sessionId.trim(),
+          }
         : {}),
-      ...(input.work.workSessionRevision === undefined
+      ...(input.work.workSessionRevision ===
+      undefined
         ? {}
-        : { workSessionRevision: input.work.workSessionRevision }),
+        : {
+            workSessionRevision:
+              input.work
+                .workSessionRevision,
+          }),
       ...(input.work.auditRevision?.trim()
-        ? { auditRevision: input.work.auditRevision.trim() }
+        ? {
+            auditRevision:
+              input.work.auditRevision.trim(),
+          }
         : {}),
       ...(input.work.currentStage?.trim()
-        ? { currentStage: input.work.currentStage.trim() }
+        ? {
+            currentStage:
+              input.work.currentStage.trim(),
+          }
         : {}),
       ...(input.work.nextAction?.trim()
-        ? { nextAction: input.work.nextAction.trim() }
+        ? {
+            nextAction:
+              input.work.nextAction.trim(),
+          }
         : {}),
     },
     knowledge: {
       ...(input.knowledge.bugReportPath?.trim()
-        ? { bugReportPath: input.knowledge.bugReportPath.trim() }
+        ? {
+            bugReportPath:
+              input.knowledge
+                .bugReportPath.trim(),
+          }
         : {}),
       historicalRegressionIds:
-        unique(input.knowledge.historicalRegressionIds),
+        unique(
+          input.knowledge
+            .historicalRegressionIds,
+        ),
     },
     publication: {
-      ...(input.publication.drive === undefined
+      ...(input.publication.drive ===
+      undefined
         ? {}
         : {
             drive:
@@ -261,16 +354,24 @@ export function normalizeProjectRecord(
                 input.publication.drive,
               ),
           }),
-      ...(input.publication.approvalSnapshotFingerprint?.trim()
+      ...(input.publication
+        .approvalSnapshotFingerprint
+        ?.trim()
         ? {
             approvalSnapshotFingerprint:
-              input.publication.approvalSnapshotFingerprint.trim(),
+              input.publication
+                .approvalSnapshotFingerprint
+                .trim(),
           }
         : {}),
-      ...(input.publication.drivePublishReceiptFingerprint?.trim()
+      ...(input.publication
+        .drivePublishReceiptFingerprint
+        ?.trim()
         ? {
             drivePublishReceiptFingerprint:
-              input.publication.drivePublishReceiptFingerprint.trim(),
+              input.publication
+                .drivePublishReceiptFingerprint
+                .trim(),
           }
         : {}),
     },
@@ -289,28 +390,40 @@ export function normalizeProjectRegistry(
     );
   }
   if (input.schemaVersion !== 1) {
-    throw new Error("Unsupported project registry schemaVersion.");
+    throw new Error(
+      "Unsupported project registry schemaVersion.",
+    );
   }
   if (!Array.isArray(input.projects)) {
     throw new Error(
       "Project registry projects must be an array.",
     );
   }
-  const byId = new Map<string, ProjectRecord>();
+
+  const byId =
+    new Map<string, ProjectRecord>();
   for (const project of input.projects) {
-    const normalized = normalizeProjectRecord(project);
+    const normalized =
+      normalizeProjectRecord(project);
     if (byId.has(normalized.projectId)) {
       throw new Error(
         "Project registry contains duplicate projectId: " +
           normalized.projectId,
       );
     }
-    byId.set(normalized.projectId, normalized);
+    byId.set(
+      normalized.projectId,
+      normalized,
+    );
   }
+
   return {
     schemaVersion: 1,
-    projects: [...byId.values()].sort((a, b) =>
-      a.projectId.localeCompare(b.projectId)
+    projects: [...byId.values()].sort(
+      (a, b) =>
+        a.projectId.localeCompare(
+          b.projectId,
+        ),
     ),
   };
 }
