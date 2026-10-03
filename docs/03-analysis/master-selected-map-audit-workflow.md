@@ -639,6 +639,12 @@ Each visible finding is only:
 
 ## Presentation
 
+Operator timing rule:
+- `currentStage`, `allowedNextAction`, continuation owner, and blocking checkpoint IDs must surface in the Map Audit Report because they determine what the operator does next;
+- proof-navigation guidance must surface on NEED_VALIDATION findings, but may remain collapsed;
+- game-design / multi-arena / gameplay-closure / honesty / replica context may remain collapsed as Audit Context;
+- `modelTaskPackets`, raw `executionTrace`, and Work Session persistence are internal control-plane data and must not be duplicated into human-facing HTML unless a proven user need appears.
+
 Chat:
 - concise issue list only.
 
