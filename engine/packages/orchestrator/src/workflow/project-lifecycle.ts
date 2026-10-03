@@ -253,6 +253,44 @@ export function assessProjectApprovalReadiness(input: {
   };
 }
 
+function canonicalDeliverables(
+  deliverables:
+    readonly ProjectDeliverableRef[],
+): ProjectDeliverableRef[] {
+  const normalized =
+    deliverables.map((item) =>
+      normalizeProjectDeliverable(
+        item,
+      ),
+    );
+
+  const seen = new Set<string>();
+  for (const item of normalized) {
+    const key =
+      item.destinationRole +
+      "|" +
+      item.kind +
+      "|" +
+      item.path;
+    if (seen.has(key)) {
+      throw new Error(
+        "Project approval contains duplicate deliverable: " +
+          key,
+      );
+    }
+    seen.add(key);
+  }
+
+  return normalized.sort(
+    (a, b) =>
+      a.destinationRole.localeCompare(
+        b.destinationRole,
+      ) ||
+      a.kind.localeCompare(b.kind) ||
+      a.path.localeCompare(b.path),
+  );
+}
+
 function approvalPayload(input: {
   readonly project: ProjectRecord;
   readonly deliverables:
@@ -286,19 +324,8 @@ function approvalPayload(input: {
         }
       : {}),
     deliverables:
-      input.deliverables
-      .map((item) =>
-        normalizeProjectDeliverable(
-          item,
-        )
-      )
-      .sort(
-        (a, b) =>
-          a.destinationRole.localeCompare(
-            b.destinationRole,
-          ) ||
-          a.kind.localeCompare(b.kind) ||
-          a.path.localeCompare(b.path),
+      canonicalDeliverables(
+        input.deliverables,
       ),
   };
 }
@@ -348,34 +375,46 @@ export function validateProjectApprovalSnapshot(
     ];
   }
 
+  let deliverables:
+    ProjectDeliverableRef[];
+  try {
+    deliverables =
+      canonicalDeliverables(
+        snapshot.deliverables,
+      );
+  } catch (error) {
+    return [
+      error instanceof Error
+        ? error.message
+        : "Project approval deliverables are invalid.",
+    ];
+  }
+
   const payload: Omit<
     ProjectApprovalSnapshot,
     "snapshotFingerprint"
   > = {
     schemaVersion:
       snapshot.schemaVersion,
-    projectId: snapshot.projectId,
+    projectId:
+      snapshot.projectId.trim(),
     projectRevision:
       snapshot.projectRevision,
     artifactFingerprint:
-      snapshot.artifactFingerprint,
-    ...(snapshot.auditRevision ===
-    undefined
-      ? {}
-      : {
+      snapshot.artifactFingerprint.trim(),
+    ...(snapshot.auditRevision?.trim()
+      ? {
           auditRevision:
-            snapshot.auditRevision,
-        }),
-    ...(snapshot.bugReportPath ===
-    undefined
-      ? {}
-      : {
+            snapshot.auditRevision.trim(),
+        }
+      : {}),
+    ...(snapshot.bugReportPath?.trim()
+      ? {
           bugReportPath:
-            snapshot.bugReportPath,
-        }),
-    deliverables: [
-      ...snapshot.deliverables,
-    ],
+            snapshot.bugReportPath.trim(),
+        }
+      : {}),
+    deliverables,
   };
 
   return snapshot.snapshotFingerprint ===
