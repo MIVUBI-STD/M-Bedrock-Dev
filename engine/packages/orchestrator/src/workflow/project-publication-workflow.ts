@@ -2,6 +2,9 @@ import type {
   BugReportV2,
 } from "../../../bug-report/src/index.js";
 import type {
+  SelectedMapAuditRun,
+} from "../map-audit-pipeline.js";
+import type {
   ProjectDeliverableRef,
   ProjectDrivePublishReceipt,
   ProjectRecord,
@@ -37,7 +40,6 @@ export async function approveAndPersistProject(input: {
   readonly deliverables: readonly ProjectDeliverableRef[];
   readonly blockingReasons?: readonly string[];
   readonly requireBugReport?: boolean;
-  readonly requireAuditComplete?: boolean;
 }): Promise<{
   readonly project: ProjectRecord;
   readonly snapshot:
@@ -60,8 +62,6 @@ export async function approveAndPersistProject(input: {
         input.blockingReasons,
       requireBugReport:
         input.requireBugReport,
-      requireAuditComplete:
-        input.requireAuditComplete,
     });
   const approved =
     approveProject(
@@ -91,6 +91,7 @@ export async function approveAuditProjectAndPersist(input: {
   readonly deliverables: readonly ProjectDeliverableRef[];
   readonly report: BugReportV2;
   readonly reportPath: string;
+  readonly audit: SelectedMapAuditRun;
   readonly blockingReasons?: readonly string[];
 }): Promise<{
   readonly project: ProjectRecord;
@@ -108,6 +109,22 @@ export async function approveAuditProjectAndPersist(input: {
     );
   }
 
+  if (
+    input.audit.currentStage !== "COMPLETE"
+  ) {
+    throw new Error(
+      "Audit project approval requires SelectedMapAuditRun currentStage COMPLETE.",
+    );
+  }
+  if (
+    input.audit.identity.artifactFingerprint !==
+      input.project.artifact.artifactFingerprint
+  ) {
+    throw new Error(
+      "Audit project approval artifact fingerprint does not match the current project.",
+    );
+  }
+
   const snapshot =
     createProjectApprovalSnapshot({
       project: input.project,
@@ -115,7 +132,8 @@ export async function approveAuditProjectAndPersist(input: {
       blockingReasons:
         input.blockingReasons,
       requireBugReport: true,
-      requireAuditComplete: true,
+      auditRevision:
+        input.audit.auditRevision,
     });
   const approved =
     approveProject(
