@@ -215,6 +215,17 @@ honesty
 fullMapReplica
 ```
 
+The human-facing selected-map report is complete only when it preserves every material finding from both issue lanes:
+
+```text
+findings.BUG[]
+findings.DESIGN_MISMATCH[]
+proven[]
+needValidation[]
+```
+
+`NEED_VALIDATION` items must remain visible until they are either promoted to `PROVEN` by sufficient proof or independently disproved. They must never disappear merely because they are not yet approved bugs.
+
 `fullMapReplica` uses only:
 
 ```text
