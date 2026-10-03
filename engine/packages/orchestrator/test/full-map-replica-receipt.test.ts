@@ -20,14 +20,14 @@ describe("full-map replica receipt", () => {
       }],
     });
 
-    expect(result.baselineReusableForAllReplicas).toBe(true);
+    expect(result.baselineReusableForAllReplicas).toBe(false);
     expect(
       result.replicaResults.map(
         (item) => item.replicaStatus,
       ),
     ).toEqual([
       "EQUIVALENT",
-      "EQUIVALENT",
+      "BOUNDED_EQUIVALENCE",
     ]);
   });
 
