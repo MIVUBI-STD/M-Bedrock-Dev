@@ -34,7 +34,7 @@ export function reviewBugReportReadiness(
         code: "missing-bug-trigger",
         path: base + ".reproduction",
         message:
-          "Tester-facing bugs require a clear Bug Trigger (In-Game) path.",
+          "Tester-facing bugs require a clear How to Reproduce path.",
       });
     }
 
