@@ -15,6 +15,8 @@ import {
 export interface ReadyAuditIssueProjection {
   readonly reportIssueType: GameplayReportIssueType;
   readonly failureDomain: GameplayIssueFailureDomain;
+  readonly contributingDomains:
+    readonly GameplayIssueFailureDomain[];
   readonly gameplayFlow: GameplayIssueFlowStage;
   readonly informationMismatch: boolean;
   readonly playerFacingEvidenceIds: readonly string[];
@@ -173,6 +175,8 @@ export function projectReadyAuditIssues(
         ),
         failureDomain:
           classification.failureDomain,
+        contributingDomains:
+          classification.contributingDomains,
         gameplayFlow:
           classification.gameplayFlow,
         informationMismatch,
