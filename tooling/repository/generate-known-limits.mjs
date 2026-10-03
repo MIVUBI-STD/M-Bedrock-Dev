@@ -8,11 +8,11 @@ const limits = [];
 for (const capability of truth.taskCapabilities ?? []) {
   if (capability.runtimeOnly) {
     limits.push({ subject: capability.id, state: "runtime-required", reason: "Capability requires local/live Minecraft execution context." });
-  } else if (capability.status !== "owner-tested") {
+  } else if (capability.status !== "owner-has-tests") {
     limits.push({
       subject: capability.id,
       state: capability.status === "implementation-present" ? "weak-coverage" : "insufficient-data",
-      reason: capability.status === "implementation-present" ? "Implementation exists without owner-level test presence." : "Capability is declared without detected implementation.",
+      reason: capability.status === "implementation-present" ? "Implementation exists without detected owner-level test presence." : "Capability is declared without detected implementation.",
     });
   }
 }
