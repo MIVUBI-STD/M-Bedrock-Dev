@@ -132,6 +132,10 @@ describe("map audit user intent", () => {
     expect(issues).toContain(
       "User audit intent priorityPlayerFlows must be an array.",
     );
+
+    expect(() =>
+      normalizeAuditUserIntent(malformed)
+    ).not.toThrow();
   });
 
   it("rejects unsupported runtime values instead of trusting loose JSON", () => {
