@@ -20,6 +20,7 @@ export interface GameplaySurfaceDiscoveryInput {
   readonly uiFormEvidence?: boolean;
   readonly environmentEvidence?: boolean;
   readonly asyncCommandTransactionEvidence?: boolean;
+  readonly dynamicCommandEvidence?: boolean;
 }
 
 export interface GameplaySurfaceDiscoveryResult {
@@ -91,6 +92,9 @@ export function discoverGameplaySurfaces(
   }
   if (input.asyncCommandTransactionEvidence) {
     runtime.add("runtime:async-command-transaction");
+  }
+  if (input.dynamicCommandEvidence) {
+    runtime.add("runtime:dynamic-command");
   }
 
   const runtimeSurfaceIds = [...runtime].sort();
