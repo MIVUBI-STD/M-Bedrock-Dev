@@ -77,20 +77,22 @@ Use for limited player-visible defects that do not materially affect core gamepl
 Map header
 Map Version | Tested Version | Open Issues | Severity
 
-Tester Checklist
-Fixed | # | Severity | Category | Bug
+Bug 01 row
+Fixed checkbox | Severity | Category | Bug title | See details
 
-Bug 01
+Expanded Bug 01
 Issue
 How to Reproduce
-Result (Observed + Expected)
-Resolution / Technical Detail, when available
+Observed
+Expected
+Resolution, when available
+Technical Detail, when available
 
-Bug 02
+Bug 02 row
 ...
 ```
 
-The top Tester Checklist is the retest surface: one bug equals one checkbox. Checking a bug means the tester has verified that bug as fixed in that HTML copy. It does not mutate canonical bug state. Reproduction steps remain instructional text and are never checkbox state.
+Each bug row is its own retest surface: one bug equals one Fixed checkbox. Details are collapsed by default and can be expanded with See details. Checking a bug means the tester has verified that bug as fixed in that HTML copy; it does not mutate canonical bug state. Reproduction steps remain instructional text and are never checkbox state.
 
 Each input report represents one map. One generated HTML therefore corresponds to one map and forms a natural printable page/report unit.
 
