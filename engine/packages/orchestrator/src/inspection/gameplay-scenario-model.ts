@@ -113,6 +113,14 @@ export interface GameplayRuntimeProofRequest {
   readonly evidenceIds: readonly string[];
 }
 
+export interface GameplayDetectionGapTestRequest {
+  readonly causalLinkId: string;
+  readonly scenarioId: string;
+  readonly gapReason: string;
+  readonly narrowTestQuestion: string;
+  readonly evidenceIds: readonly string[];
+}
+
 export interface GameplayScenarioClosure {
   readonly status: GameplayScenarioClosureStatus;
   readonly orphanComponentIds: readonly string[];
@@ -121,6 +129,7 @@ export interface GameplayScenarioClosure {
   readonly runtimeBlockedCausalLinkIds: readonly string[];
   readonly runtimeProofRequests: readonly GameplayRuntimeProofRequest[];
   readonly detectionGapCausalLinkIds: readonly string[];
+  readonly detectionGapTestRequests: readonly GameplayDetectionGapTestRequest[];
   readonly missingRequiredKnowledgeIds: readonly string[];
   readonly capabilityGapKnowledgeIds: readonly string[];
   readonly prerequisiteBlockedKnowledgeIds: readonly string[];
