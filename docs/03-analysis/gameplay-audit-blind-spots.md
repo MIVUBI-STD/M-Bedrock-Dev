@@ -1,5 +1,7 @@
 # Gameplay Audit Blind-Spot Contract
 
+> **Supporting audit knowledge only.** These blind spots are obligations consumed by the canonical procedure. They do not form a second workflow or a separate completion checklist.
+
 ## Purpose
 
 Prevent gameplay bugs from escaping audit because the happy path or core logic appears correct.
