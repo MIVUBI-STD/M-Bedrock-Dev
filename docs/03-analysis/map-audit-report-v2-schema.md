@@ -178,10 +178,11 @@ Playable Capability
 
 ## Status
 
-- Confirmed — contradiction proven from selected artifact.
-- Needs Validation — plausible issue requiring additional proof.
-- Ambiguous — conflicting or insufficiently grounded gameplay intent.
-- Detection Gap — audit capability cannot safely evaluate the surface.
+Production `bugs[]` and `designMismatches[]` are confirmation-only:
+
+- Confirmed — contradiction proven from the selected artifact and bounded counter-proof search found no blocking proof.
+
+Unresolved work is not serialized as a pseudo-issue. It remains in the audit proof/test queue as a narrow runtime proof request, targeted Detection Gap test, or unresolved intent/evidence obligation until it resolves to Confirmed or is disproven.
 
 
 ## Gameplay Model Closure
