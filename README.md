@@ -70,29 +70,36 @@ workspace/project-registry.json    tracked current project summary
 workspace/reports/                 canonical current Bug Report V2
 ```
 
-Project publication lifecycle:
+Project lifecycle is derived from proof pointers rather than stored as a second status field:
 
 ```text
-working
-→ ready-for-approval
+no approval proof
+→ working
+
+approval snapshot fingerprint
 → approved
+
+approval snapshot fingerprint
++ complete Drive publication receipt fingerprint
 → drive-published
 ```
+
+Approval readiness is computed on demand and is never persisted.
 
 For audit projects:
 
 ```text
 SelectedMapAuditRun
-→ Work Session + project registry sync
+→ Work Session + compact project registry pointer sync
 → canonical Bug Report V2 when applicable
-→ completeness gate
-→ ready-for-approval
-→ historical issue projection into reliability regressions
+→ derive approval readiness
+→ explicit user approval
 → immutable approval snapshot
-→ approved
-→ Drive publish plan
-→ verified COMPLETE receipt
-→ drive-published
+→ historical issue projection (after approval)
+→ registry approval proof commit
+→ Drive publish plan from one DriveProjectBinding
+→ verified publication receipt
+→ registry publication proof commit when complete
 ```
 
 Historical regression/failure-pattern knowledge may prioritize later audits but never proves a current defect.
@@ -107,7 +114,7 @@ docs/          canonical product, system, and operations documentation
 engine/        Bedrock analysis and repair engine
 experiments/   bounded non-authoritative research
 tooling/       repository/developer/build/verification tooling
-workspace/     project working/saved continuity + Map Game Design + tracked report handoff
+workspace/     project continuity + compact registry + tracked report handoff
 ```
 
 ### Engine map
