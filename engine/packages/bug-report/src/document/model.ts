@@ -40,7 +40,6 @@ export interface BugReportClientIssue {
   readonly severity: BugSeverity;
   readonly status: BugReportClientIssueStatus;
   readonly category: string;
-  readonly foundBy: "ai" | "tester";
   readonly title: string;
   readonly issue: string;
   readonly reproduction: readonly string[];
