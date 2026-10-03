@@ -31,6 +31,23 @@ describe("full-map replica receipt", () => {
     ]);
   });
 
+  it("does not reuse baseline globally when any replica still requires divergence classification", () => {
+    const result = buildFullMapReplicaReceipt({
+      replicaBaseline: "arena:canonical",
+      replicas: [{
+        replicaId: "arena:2",
+        proofStatus: "diverged",
+        mismatchCount: 1,
+        evidenceIds: ["e:a2"],
+      }],
+    });
+
+    expect(result.replicaResults[0]?.replicaStatus).toBe(
+      "DIVERGENCE_REQUIRES_CLASSIFICATION",
+    );
+    expect(result.baselineReusableForAllReplicas).toBe(false);
+  });
+
   it("keeps material divergence separate from incomplete proof", () => {
     const result = buildFullMapReplicaReceipt({
       replicaBaseline: "arena:canonical",
