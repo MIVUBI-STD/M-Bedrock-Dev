@@ -146,8 +146,9 @@ Measure:
 - stage at first block;
 - semantic understanding gaps;
 - required cross-system scenario activation;
-- confirmed BUG lane;
-- confirmed DESIGN_MISMATCH lane;
+- PROVEN BUG findings;
+- PROVEN DESIGN_MISMATCH findings;
+- NEED_VALIDATION findings remain visible with exact missing-proof tests;
 - runtime-only residue;
 - known-issue capture;
 - false negatives / false positives against independently frozen expectations.
