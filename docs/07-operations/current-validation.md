@@ -13,6 +13,29 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — one-source project state finalization
+
+This section supersedes earlier project-lifecycle implementation notes below.
+
+Current source contract:
+
+- Project Registry persists no lifecycle `status`; lifecycle is derived only from approval/publication proof fingerprints.
+- Approval readiness is derived on demand and never persisted.
+- Work Session is the sole detailed execution-progress owner; Project Registry stores only its ID/revision pointer.
+- Project Registry stores no historical regression/failure-pattern/map-knowledge IDs.
+- Historical linkage is owned only by reliability catalog provenance.
+- `DriveProjectBinding` is the sole per-project Drive destination owner.
+- Deliverables store semantic destination roles; folder IDs are resolved by the planner and are not persisted twice.
+- Approval snapshots reject legacy/extra state fields.
+- Drive receipts store verified files only; complete/incomplete is derived from snapshot-vs-receipt coverage.
+- Historical issue ingestion happens only after explicit approval.
+- Registry updates are commit-last for approval/publication workflows.
+- Material project changes clear publication proof pointers and therefore derive lifecycle back to `working`.
+- The canonical docs, workspace docs, Drive docs, implementation map, and regression fixtures are aligned with this proof-derived model.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full repository verifier and real Drive execution remain pending.
+
+
 ## 2026-10-03 — canonical project lifecycle simplification
 
 This section supersedes earlier project-lifecycle notes below. Older entries are retained only as historical implementation snapshots and are not current authority.
