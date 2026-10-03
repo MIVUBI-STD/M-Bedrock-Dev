@@ -32,6 +32,19 @@ export interface CounterProofSearchReceipt {
     | "BLOCKING_PROOF_FOUND";
 }
 
+export interface FamilyProofCriterionReceipt {
+  readonly id: string;
+  readonly satisfied: boolean;
+  readonly evidenceIds: readonly string[];
+}
+
+export interface FamilyProofReceipt {
+  readonly schemaVersion: 1;
+  readonly policy: "family-proof-receipt";
+  readonly failureDomain: string;
+  readonly criteria: readonly FamilyProofCriterionReceipt[];
+}
+
 export interface GameplayDefectResolution {
   readonly causalLinkId: string;
   readonly scenarioId?: string;
@@ -47,6 +60,7 @@ export interface GameplayDefectResolution {
   readonly affectedScope?: string;
   readonly counterProofEvidenceIds?: readonly string[];
   readonly counterProofSearch?: CounterProofSearchReceipt;
+  readonly familyProof?: FamilyProofReceipt;
   readonly runtimeReason?: string;
   readonly narrowRuntimeQuestion?: string;
   readonly detectionGapReason?: string;
