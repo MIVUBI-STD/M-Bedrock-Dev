@@ -46,11 +46,11 @@ Current canonical replica status names are:
 
 ```text
 EQUIVALENT
-MATERIAL_DIVERGENCE
+DIVERGENCE_REQUIRES_CLASSIFICATION
 INCOMPLETE_PROOF
 ```
 
-A MATERIAL_DIVERGENCE produces `materialDeltaIds[]` for continued causal analysis. INCOMPLETE_PROOF prevents baseline safety from being inherited.
+A DIVERGENCE_REQUIRES_CLASSIFICATION produces `replicaDivergenceIds[]` for continued causal analysis. INCOMPLETE_PROOF prevents baseline safety from being inherited.
 
 ### Naming and output contract alignment
 
@@ -70,7 +70,7 @@ Full-map replica comparison also has one consolidation projection, `FullMapRepli
 - `replicaBaseline`;
 - `replicaResults[]`;
 - `replicaStatus`;
-- `materialDeltaIds[]`.
+- `replicaDivergenceIds[]`.
 
 The receipt reuses existing topology/world-DB/voxel/block-entity proof and does not perform a second comparison or create a second audit flow.
 
