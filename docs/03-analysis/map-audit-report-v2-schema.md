@@ -54,6 +54,61 @@ Every applicable audit surface is recorded as:
 
 Unsupported or unparsed mechanics are reported as Detection Gap.
 
+## Canonical issue taxonomy
+
+Every reportable finding is described on four independent axes:
+
+```text
+Issue Type
++ Gameplay Flow
++ Failure Domain
++ Severity
+```
+
+### Issue Type
+
+- `BUG`
+- `DESIGN_MISMATCH`
+
+### Gameplay Flow
+
+- `ENTRY_JOIN`
+- `READY_START`
+- `SETUP`
+- `ACTIVE_GAMEPLAY`
+- `PROGRESSION`
+- `TERMINAL`
+- `CLEANUP_REPLAY`
+- `RECOVERY`
+
+### Failure Domain
+
+- `arena-multi-arena`
+- `inventory-economy`
+- `progression-wave-objective`
+- `chunk-simulation`
+- `player-lifecycle`
+- `entity-ai-combat`
+- `world-structure-mutation`
+- `ui-feedback-information`
+- `state-ownership`
+- `temporal-async`
+- `boundary-capacity`
+- `persistence-recovery`
+- `platform-performance`
+
+`failureDomain` is the primary reader-facing domain. `contributingDomains[]` preserves materially involved cross-system domains for the same root cause.
+
+### Severity
+
+Severity remains independent from issue type/domain and is derived from actual impact:
+
+- Blocker
+- Major
+- Minor
+
+Do not infer severity merely because an issue belongs to multi-arena, inventory, UI, or another domain.
+
 ## Issue type split
 
 Map Audit Output V2 has two distinct confirmed-issue lanes:
@@ -89,7 +144,9 @@ Every reportable issue requires:
 
 ```text
 Bug ID
-Category
+Issue Type
+Failure Domain
+Contributing Domains
 Gameplay Flow
 Status
 Issue
