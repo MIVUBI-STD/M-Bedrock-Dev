@@ -219,7 +219,7 @@ requireText(PIPELINE_PATH, [
 ]);
 
 requireText(ISSUE_PROJECTION_PATH, [
-  "reportIssueType",
+  "issueType",
   "failureDomain",
   "contributingDomains",
   "informationMismatch",
