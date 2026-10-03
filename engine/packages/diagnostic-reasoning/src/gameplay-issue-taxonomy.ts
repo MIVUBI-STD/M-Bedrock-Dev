@@ -25,8 +25,7 @@ export type GameplayIssueFlowStage =
   | "PROGRESSION"
   | "TERMINAL"
   | "CLEANUP_REPLAY"
-  | "RECOVERY"
-  | "FULL_JOURNEY";
+  | "RECOVERY";
 
 export interface GameplayIssueClassification {
   readonly failureDomain: GameplayIssueFailureDomain;
@@ -118,8 +117,11 @@ function flowStage(
     case "TERMINAL":
     case "CLEANUP_REPLAY":
     case "RECOVERY":
-    case "FULL_JOURNEY":
       return value;
+    case "FULL_JOURNEY":
+      throw new Error(
+        "FULL_JOURNEY is a composition scenario and cannot own a report issue. Attach the finding to a concrete gameplay flow stage.",
+      );
     default:
       if (/recovery|reload|reconnect/i.test(value)) {
         return "RECOVERY";
