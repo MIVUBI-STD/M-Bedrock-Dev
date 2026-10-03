@@ -216,14 +216,16 @@ honesty
 fullMapReplica
 ```
 
-The human-facing selected-map report is complete only when it preserves every material finding from both issue lanes:
+The canonical Map Audit Output V2 preserves every material finding in exactly two issue-type lanes:
 
 ```text
-findings.BUG[]
-findings.DESIGN_MISMATCH[]
-proven[]
-needValidation[]
+bugs[]
+designMismatches[]
 ```
+
+Each lane may contain both `PROVEN` and `NEED_VALIDATION`.
+
+Internal/report-build APIs may expose convenience projections such as `findings`, `proven`, or `needValidation`, but those are not additional Map Audit Output V2 authorities.
 
 `NEED_VALIDATION` items must remain visible until they are either promoted to `PROVEN` by sufficient proof or independently disproved. They must never disappear merely because they are not yet approved bugs.
 
