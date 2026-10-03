@@ -427,6 +427,19 @@ It does **not** mean every finding is PROVEN.
 
 A `NEED_VALIDATION` finding may remain in a review-ready Map Audit Report when the unresolved proof is explicitly identified and preserved. Per-finding proof completeness is expressed only by `PROVEN` versus `NEED_VALIDATION`, not by creating another audit-run status.
 
+### Report handoff authority cleanup
+
+Canonical report review/build now carries only the gate authorities it actually consumes:
+
+```text
+SelectedMapAuditAuthority
++ MandatoryAuditProcedure
++ GameplayDefectResolution
+→ approved bug candidate review/build
+```
+
+Discovery, Gameplay Model Closure, and Scenario Closure remain inputs to the Mandatory Audit Procedure and are no longer passed as parallel production report gates. Legacy collector fields remain optional/deprecated for compatibility only.
+
 ### Final report handoff integrity
 
 The canonical report handoff now preserves unresolved material work explicitly:
