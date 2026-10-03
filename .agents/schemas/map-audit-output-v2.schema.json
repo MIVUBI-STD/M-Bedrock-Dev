@@ -1624,7 +1624,8 @@
         "items",
         "priorityDomains",
         "priorityPlayerFlows",
-        "ambiguities"
+        "ambiguities",
+        "blockingAmbiguities"
       ],
       "properties": {
         "schemaVersion": {
@@ -1713,6 +1714,16 @@
             "minLength": 1
           },
           "uniqueItems": true
+        },
+        "blockingAmbiguities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "maxItems": 0,
+          "description": "Production Map Audit Output may only exist after blocking user-input ambiguity is resolved."
         }
       },
       "additionalProperties": false
