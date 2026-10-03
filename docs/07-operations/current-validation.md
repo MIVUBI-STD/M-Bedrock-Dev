@@ -25,6 +25,43 @@ audit <selected.mcworld>
    issueLanes.DESIGN_MISMATCH
 ```
 
+### Master workflow navigation
+
+Operator/AI navigation now starts from `docs/03-analysis/master-selected-map-audit-workflow.md`.
+
+It orders the complete work as:
+
+```text
+TARGET
+→ DISCOVERY
+→ Discovery Challenger
+→ UNDERSTAND
+   → Player Journey
+   → State Registry
+   → Shared-Resource Ownership
+   → Ownership Registry
+   → Progression Contract
+→ MODEL
+   → Full-map / world-DB replica normalization
+   → Actor / Entity
+   → Spatial / Simulation
+   → Multiplayer / Multi-Arena
+   → Boundary / Capability Delivery
+→ STRESS
+   → lifecycle / negative-space / higher-order / growth
+→ PROVE
+   → proof navigation
+   → historical hints
+   → evidence substitution
+   → exact counter-proof
+   → proof saturation
+→ runtime only if irreducible
+→ honesty gate
+→ REPORT
+```
+
+This is a navigation/ordering layer only. Executable closure remains owned by `mandatory-audit-procedure.ts` and `map-audit-admission.ts`; specialist documents cannot become alternate workflows.
+
 ### Single-flow ownership
 
 - `map-audit-pipeline.ts` owns production entry and continuation.
