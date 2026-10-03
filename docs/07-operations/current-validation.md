@@ -59,6 +59,15 @@ audit <selected.mcworld>
 - report type is explicit:
   - `BUG`
   - `DESIGN_MISMATCH`;
+- canonical issue taxonomy is now explicit for every confirmed issue:
+  - `issueType`;
+  - `gameplayFlow`;
+  - primary `failureDomain`;
+  - cross-system `contributingDomains[]`;
+  - `informationMismatch` when grounded player-facing information contradicts actual gameplay;
+- issue ordering follows player-flow order instead of technical causal-link order;
+- `FULL_JOURNEY` composition cannot own a report finding; issues attach to a concrete gameplay stage;
+
 - every reportable issue now carries canonical taxonomy:
   - `issueType`;
   - `gameplayFlow`;
