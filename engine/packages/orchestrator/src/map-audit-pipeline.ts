@@ -176,6 +176,8 @@ function deriveSelectedMapAuditControl(input: {
     InspectArtifactResult["hiddenGameplayDefects"]["temporalRisks"];
   readonly gameplayClosure:
     InspectArtifactResult["gameplayWorld"]["gameplayClosure"];
+  readonly gameplayWorld:
+    InspectArtifactResult["gameplayWorld"];
 }): Pick<
   SelectedMapAuditRun,
   | "executionTrace"
@@ -223,7 +225,10 @@ function deriveSelectedMapAuditControl(input: {
   ].map((item) => ({
     ...item,
     proofNavigation:
-      buildAuditProofNavigation(item),
+      buildAuditProofNavigation(
+        item,
+        input.gameplayWorld ?? undefined,
+      ),
   }));
   const allVisibleIssues: readonly AuditIssueProjection[] = [
     ...provenIssues,
@@ -463,6 +468,8 @@ export async function runSelectedMapAudit(
         .temporalRisks,
     gameplayClosure:
       inspection.gameplayWorld.gameplayClosure,
+    gameplayWorld:
+      inspection.gameplayWorld,
   });
   const needValidationFindings = [
     ...control.issueLanes.BUG,
@@ -578,6 +585,8 @@ export function resolveSelectedMapAudit(
       hidden.temporalRisks,
     gameplayClosure:
       updatedInspection.gameplayWorld.gameplayClosure,
+    gameplayWorld:
+      updatedInspection.gameplayWorld,
   });
   const needValidationFindings = [
     ...control.issueLanes.BUG,
