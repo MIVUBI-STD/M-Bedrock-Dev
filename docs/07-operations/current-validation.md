@@ -262,6 +262,10 @@ Ownership-sensitive dimensions such as `owner`, `generation`, and `cleanup` requ
 
 This intentionally trades a small amount of extra source-side reasoning for lower false-PROVEN risk; it does not broaden into generic runtime testing.
 
+### Family proof provenance
+
+`FamilyProofReceipt` evidence is now accepted only when each satisfied criterion cites evidence already grounded in the causal link/resolution/counter-proof evidence set. Arbitrary non-empty evidence IDs no longer satisfy family proof saturation.
+
 ### Proof saturation / sufficient-proof stop rule
 
 PROVEN projection now requires a minimum-sufficient-proof saturation assessment. Universal saturation checks:
