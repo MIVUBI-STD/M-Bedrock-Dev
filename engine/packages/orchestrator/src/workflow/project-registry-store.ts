@@ -14,6 +14,7 @@ import {
 import {
   normalizeProjectRecord,
   normalizeProjectRegistry,
+  projectLifecycleStatus,
   type ProjectApprovalSnapshot,
   type ProjectDrivePublishReceipt,
   type ProjectRecord,
@@ -128,18 +129,22 @@ export async function upsertProjectRecord(
           ".",
       );
     }
+    const previousStatus =
+      projectLifecycleStatus(previous);
+    const nextStatus =
+      projectLifecycleStatus(normalized);
     if (
-      normalized.status !== previous.status &&
+      nextStatus !== previousStatus &&
       !projectLifecycleCanTransition(
-        previous.status,
-        normalized.status,
+        previousStatus,
+        nextStatus,
       )
     ) {
       throw new Error(
         "Invalid project lifecycle transition: " +
-          previous.status +
+          previousStatus +
           " -> " +
-          normalized.status +
+          nextStatus +
           ".",
       );
     }
