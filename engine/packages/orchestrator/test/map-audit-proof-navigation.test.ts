@@ -146,6 +146,20 @@ describe("map audit proof navigation", () => {
     );
   });
 
+  it("provides family-specific saturation criteria and an explicit stop rule", () => {
+    const result = buildAuditProofNavigation(
+      finding("inventory-economy"),
+    );
+
+    expect(result.saturationCriteria.length).toBeGreaterThan(0);
+    expect(
+      result.saturationCriteria.join(" "),
+    ).toMatch(/idempotency|exclusion|generation/i);
+    expect(result.saturationStopRule).toMatch(
+      /stop searching/i,
+    );
+  });
+
   it("does not label unevidenced expected/actual narrative as proven claims", () => {
     const item = {
       ...finding("inventory-economy"),
