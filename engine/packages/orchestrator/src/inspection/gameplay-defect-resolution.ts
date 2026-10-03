@@ -323,26 +323,50 @@ function automaticCounterProofSearch(
   };
 }
 
+function counterProofAppliesAtCommit(
+  candidate: GameplayCausalLink,
+  contradicted: GameplayCausalLink,
+): boolean {
+  if (
+    candidate.scenarioId !== contradicted.scenarioId ||
+    candidate.status !== "PROVEN" ||
+    candidate.intentEdgeKind !== "excludes" ||
+    candidate.evidenceIds.length === 0
+  ) {
+    return false;
+  }
+
+  const exactTarget =
+    candidate.toComponentId ===
+      contradicted.toComponentId;
+  const exactDependency =
+    candidate.fromComponentId ===
+      contradicted.fromComponentId &&
+    candidate.toComponentId ===
+      contradicted.toComponentId;
+  const sameSubjectAtTarget =
+    exactTarget &&
+    overlapping(
+      candidate.subjectIds,
+      contradicted.subjectIds,
+    );
+
+  return (
+    exactDependency ||
+    sameSubjectAtTarget
+  );
+}
+
 function blockingCounterProofFor(
   graph: GameplayScenarioGraph,
   contradicted: GameplayCausalLink,
 ): readonly string[] {
   return graph.causalLinks
-    .filter(
-      (candidate) =>
-        candidate.scenarioId === contradicted.scenarioId &&
-        candidate.status === "PROVEN" &&
-        candidate.intentEdgeKind === "excludes" &&
-        (
-          overlapping(
-            candidate.subjectIds,
-            contradicted.subjectIds,
-          ) ||
-          overlapping(
-            candidate.componentIds,
-            contradicted.componentIds,
-          )
-        ),
+    .filter((candidate) =>
+      counterProofAppliesAtCommit(
+        candidate,
+        contradicted,
+      )
     )
     .flatMap((candidate) => candidate.evidenceIds)
     .filter(Boolean)
