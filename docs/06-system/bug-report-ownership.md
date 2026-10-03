@@ -26,10 +26,10 @@ Physical placement does not create ownership. A copy, preview, export, spreadshe
 | Approved bug semantics and lifecycle | `engine/packages/bug-report/` |
 | Persisted schema | `engine/schemas/bug-report/v2.schema.json` |
 | Current canonical bug-report state | `workspace/reports/*.json` |
-| Human/application presentation | `apps/bug-report-ui/` projection only |
+| Human-facing published report | derived self-contained HTML snapshot |
+| Optional application viewer | `apps/bug-report-ui/` projection only |
 | Revision history | Git history |
 | Map binary/source artifacts | Google Drive |
-| Published human-facing report | derived self-contained HTML snapshot |
 | Incoming/legacy QA material | import/reference only |
 
 ## Current-version-first policy
@@ -104,7 +104,7 @@ Drive stores map artifacts and optional published human-facing bug-report snapsh
 A published HTML snapshot is:
 - derived from the authoritative source for its scope: `SelectedMapAuditRun.mapAuditReport` for Map Audit Report, or canonical Bug Report V2 JSON for the approved bug ledger;
 - a communication snapshot;
-- allowed to contain presentation-only tester/work checkboxes;
+- allowed to contain presentation-only Fixed checkboxes for retest;
 - not editable canonical state;
 - never imported back as authoritative state.
 
