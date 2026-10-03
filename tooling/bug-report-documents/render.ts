@@ -236,8 +236,6 @@ function issueCard(issue: BugReportClientIssue): string {
     escapeHtml(issue.id) +
     '</span><span>' +
     escapeHtml(issue.category) +
-    '</span><span>' +
-    escapeHtml(issue.foundBy.toUpperCase()) +
     "</span></div>";
 
   const rows = [
