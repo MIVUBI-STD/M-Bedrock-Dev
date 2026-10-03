@@ -5,8 +5,6 @@ import type {
 export type BugReportClientDocumentQualityIssueCode =
   | "summary-count-mismatch"
   | "summary-severity-mismatch"
-  | "index-count-mismatch"
-  | "index-detail-mismatch"
   | "missing-title"
   | "missing-issue"
   | "missing-reproduction"
@@ -66,18 +64,6 @@ export function reviewBugReportClientDocument(
       path: "summary",
       message:
         "Severity summary must match the visible issue set.",
-    });
-  }
-
-  if (
-    document.issueIndex.length !==
-    document.issues.length
-  ) {
-    issues.push({
-      code: "index-count-mismatch",
-      path: "issueIndex",
-      message:
-        "Issue index must contain exactly one row for every visible issue.",
     });
   }
 
@@ -153,29 +139,6 @@ export function reviewBugReportClientDocument(
           path: path + ".expected",
           message:
             "Client issue requires the expected result.",
-        });
-      }
-      const indexItem =
-        document.issueIndex[index];
-      if (
-        !indexItem ||
-        indexItem.number !== issue.number ||
-        indexItem.id !== issue.id ||
-        indexItem.severity !==
-          issue.severity ||
-        indexItem.category !==
-          issue.category ||
-        indexItem.status !== issue.status ||
-        indexItem.title !== issue.title
-      ) {
-        issues.push({
-          code: "index-detail-mismatch",
-          path:
-            "issueIndex[" +
-            index +
-            "]",
-          message:
-            "Issue index must be a direct projection of issue detail.",
         });
       }
     },
