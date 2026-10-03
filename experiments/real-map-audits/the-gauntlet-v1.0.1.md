@@ -16,7 +16,7 @@ Runtime execution: not performed
 
 ## Proven finding
 
-### BUG — Level 9 can complete while a required party member is disconnected
+### BUG — Required-party progression gates can ignore disconnected members
 
 Severity: Major  
 Proof: source-proven  
@@ -24,81 +24,68 @@ Domain: game-flow / multiplayer-session / persistence
 
 #### Authored expectation
 
-Level 9 explicitly tells players:
-
-```text
-Wait here until all players reach the finish platform.
-```
-
-The run stores the original `playerIds` for the party and Level 9 completion is intended to wait for that party.
+The run stores the original playerIds for the locked party. Multiple cooperative progression gates are authored as all-player conditions, including Level 6/7 completion checks, repeated level-entry/transition bounds, Level 9's explicit “wait until all players reach the finish platform” condition, later level transitions, and the final Level 15 positional completion gate.
 
 #### Observed source behavior
 
-The generic position helper removes missing/offline players before checking the completion predicate:
+The shared all-player helpers first reduce the required run.playerIds to players that are currently present in playersById:
 
-```text
+~~~text
 Ge(...)
 → playerIds.filter(id => playersById.has(id))
 → every remaining online player must be inside bounds
-```
 
-`Gf()`, the Level 9 finish predicate, calls that helper directly using the run's original `playerIds`.
+Ht(...)
+→ playerIds.filter(id => playersById.has(id))
 
-During Level 9 tick:
+zo(...)
+→ Ht(...)
+→ every remaining online player must be in includedPlayerIds
 
-```text
-CP()
-→ Hp(...)
-→ Gf({ playerIds: run.playerIds, playersById: current world players, ... })
-→ if true: phase = "level_9_complete"
-```
+st(...)
+→ Ht(...)
+→ every remaining online player must be inside one of the required bounds
+~~~
 
-So a disconnected member is removed from the set that must be in the finish area.
+These helpers are not limited to Level 9. Current selected-artifact call sites use them across multiple progression boundaries:
 
-The party layer does **not** immediately terminate or pause the started run when one member disconnects. It keeps the party started during a recovery window:
+- Ge(...) is used for repeated level-entry/transition gates before and through Level 9.
+- zo(...) is used by cooperative Level 6 and Level 7 completion state.
+- Gf(...) uses Ge(...) for the Level 9 finish platform.
+- st(...) is used by later level transitions and the final Level 15 positional completion gate.
 
-```text
+The party layer does not immediately terminate or pause a started run when one required member disconnects. It preserves the started party during the configured recovery window:
+
+~~~text
 disconnectedMemberRecoveryTicks = 20 * 60 * 3
 startedPartyOfflineResetGraceTicks = 20 * 60 * 3
-```
+~~~
 
-For a started party with at least one player still online, `xd()` accumulates disconnected time and resets the party only after the 3-minute recovery threshold.
-
-Therefore, during that window:
-
-```text
-original party = A + B
-B disconnects
-party remains started
-playersById contains A only
-A enters Level 9 finish area
-Gf() evaluates only A
-→ Level 9 completes
-```
-
+Therefore a partial disconnect changes the set evaluated by all-player progression without changing the locked run.playerIds authority. While at least one member remains online, an incomplete cooperative gate can become satisfiable by only the remaining online members.
 #### Reproduction
 
-1. Start The Gauntlet with at least two players.
-2. Reach Level 9.
-3. Keep Player A online.
-4. Disconnect Player B before both players enter the finish platform.
-5. Within the 3-minute disconnected-member recovery window, move Player A into the finish area.
-6. Observe Level 9 transition to complete even though Player B never reached the finish platform.
+1. Start The Gauntlet with at least two locked party members.
+2. Reach any cooperative progression gate backed by Ge, zo, Gf, or st (Level 9 is the simplest deterministic example).
+3. Disconnect Player B before the required all-player condition is satisfied.
+4. Keep Player A online during the three-minute disconnected-member recovery window.
+5. Have Player A satisfy the remaining online-player predicate for that gate.
+6. Observe progression being allowed even though Player B did not satisfy the cooperative requirement.
 
+For Level 9 specifically, Player A can enter the finish platform while Player B is offline and the level can complete.
 #### Player-visible consequence
 
-A party can bypass a cooperative completion requirement by losing a participant temporarily. A reconnecting player may return after the run has already advanced beyond the level they never completed.
+A party can bypass multiple cooperative/all-player progression requirements by temporarily losing a participant. A reconnecting player may return after the run has advanced through a gate or level they never completed.
 
 #### Root cause
 
-Level completion resolves participation from **currently present world players**, while party/run ownership is based on the original locked `playerIds`. The two participation models diverge during disconnect recovery.
+Shared progression helpers resolve required participation from currently present world players, while party/run ownership remains based on the original locked playerIds. The two participation models diverge during disconnect recovery.
 
 #### Repair direction
 
 Keep one party-authority rule:
 
-- if Level 9 requires all locked party members, completion must require every required `run.playerIds` member to be present and in the finish area; or
-- explicitly pause Level 9 progression while any required member is disconnected.
+- for every all-player/cooperative gate, require every locked run.playerIds member to be present and satisfy that gate; or
+- explicitly pause cooperative progression while any required member is disconnected.
 
 Do not solve by creating another participant registry.
 
@@ -106,7 +93,7 @@ Do not solve by creating another participant registry.
 
 ### Full-party offline reset
 
-If all started-party members are offline, the party layer separately tracks offline grace and eventually resets the party. This does not prevent the partial-disconnect Level 9 bypass because the bug occurs while at least one member remains online.
+If all started-party members are offline, the party layer separately tracks offline grace and eventually resets the party. This does not prevent the partial-disconnect progression bypass because the bug occurs while at least one member remains online.
 
 ### Exit voting
 
