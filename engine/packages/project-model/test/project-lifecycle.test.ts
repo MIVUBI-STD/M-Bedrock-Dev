@@ -9,7 +9,7 @@ function record(): any {
     schemaVersion: 1,
     projectId: "defense-v2",
     projectName: "Defense V2",
-    taskClass: "AUDIT",
+    taskClass: "DIAGNOSE",
     status: "working",
     revision: 1,
     artifact: {
