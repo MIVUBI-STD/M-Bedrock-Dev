@@ -35,6 +35,15 @@ export function projectNeedValidationAuditIssues(
   const translationRequired = new Set(
     gate.gameplayTranslationRequiredIds,
   );
+  const runtimeResolutionRequired = new Set(
+    gate.runtimeProofRequiredIds,
+  );
+  const detectionResolutionRequired = new Set(
+    gate.detectionGapIds,
+  );
+  const counterProofResolutionRequired = new Set(
+    gate.counterProofSearchRequiredIds,
+  );
 
   return sortIssues(
     graph.causalLinks.flatMap((link) => {
@@ -51,11 +60,20 @@ export function projectNeedValidationAuditIssues(
         link.status === "DETECTION_GAP";
       const needsTranslation =
         translationRequired.has(link.id);
+      const needsRuntimeResolution =
+        runtimeResolutionRequired.has(link.id);
+      const needsDetectionResolution =
+        detectionResolutionRequired.has(link.id);
+      const needsCounterProofResolution =
+        counterProofResolutionRequired.has(link.id);
 
       if (
         !isRuntime &&
         !isGap &&
-        !needsTranslation
+        !needsTranslation &&
+        !needsRuntimeResolution &&
+        !needsDetectionResolution &&
+        !needsCounterProofResolution
       ) {
         return [];
       }
@@ -77,26 +95,40 @@ export function projectNeedValidationAuditIssues(
         issueType,
       } = context;
 
+      const suppliedResolution = gate.resolutions.find(
+        (item) => item.causalLinkId === link.id,
+      );
       const validationReason =
         needsTranslation
           ? "A source contradiction exists, but the player-facing defect contract is not complete enough for final confirmation."
-          : isRuntime
-            ? "The dependency cannot be decided safely from static/package evidence and requires one runtime observation."
-            : "The selected artifact exposes an unresolved semantic/detection gap for this gameplay dependency.";
+          : needsCounterProofResolution
+            ? "A material contradiction exists, but bounded counter-proof search is not yet complete."
+            : needsRuntimeResolution || isRuntime
+              ? suppliedResolution?.runtimeReason ??
+                "The dependency cannot be decided safely from static/package evidence and requires one runtime observation."
+              : needsDetectionResolution || isGap
+                ? suppliedResolution?.detectionGapReason ??
+                  "The selected artifact exposes an unresolved semantic/detection gap for this gameplay dependency."
+                : "Material proof remains unresolved.";
 
       const missingProof =
         needsTranslation
           ? "Complete gameplay trigger, expected/actual behavior, player consequence, and affected scope."
-          : isRuntime
-            ? "Observed runtime outcome for the unresolved dependency."
-            : "Evidence that resolves the unsupported or semantically unknown dependency.";
+          : needsCounterProofResolution
+            ? "Bounded search proving whether any reachable guard/owner/scope/generation/cleanup/exclusion prevents the wrong state."
+            : needsRuntimeResolution || isRuntime
+              ? "Observed runtime outcome for the unresolved dependency."
+              : "Evidence that resolves the unsupported or semantically unknown dependency.";
 
       const validationTest =
-        "Exercise scenario '" +
-        scenario.label +
-        "' and directly verify: " +
-        link.purpose +
-        ". Treat any observed violation as the deciding evidence for promotion to PROVEN.";
+        suppliedResolution?.narrowRuntimeQuestion ??
+        (
+          "Exercise scenario '" +
+          scenario.label +
+          "' and directly verify: " +
+          link.purpose +
+          ". Treat any observed violation as the deciding evidence for promotion to PROVEN."
+        );
 
       return [{
         status: "NEED_VALIDATION" as const,
