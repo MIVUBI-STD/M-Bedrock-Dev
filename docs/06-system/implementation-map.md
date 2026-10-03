@@ -68,13 +68,13 @@ Use this before broad repository search.
 | Rich state/ownership/progression audit projections | engine/packages/orchestrator/src/inspection/mandatory-audit-support.ts |
 | Production selected-map audit single entry + canonical continuations | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact proof → ordered audit → resolveSelectedMapAudit when needed → review → report) |
 | Opaque production reporting authority / raw collector bypass guard | engine/packages/orchestrator/src/map-audit-authority.ts + reporting/report-defect-collector.ts |
-| Ordered production audit admission / first blocking stage | engine/packages/orchestrator/src/map-audit-admission.ts |
+| Ordered production audit admission / first blocking stage (reads Mandatory Audit Procedure checkpoints only) | engine/packages/orchestrator/src/map-audit-admission.ts |
 | Typed directional gameplay-scenario component traversal / semantic stop boundaries | engine/packages/orchestrator/src/inspection/gameplay-scenario-knowledge.ts |
 | Bounded model-facing audit task packets / next-action / evidence+RIG context projection | engine/packages/orchestrator/src/map-audit-model-task.ts |
 | Canonical continuation ownership / rerun-vs-resolve-vs-review contract | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRun.continuation) |
 | Selected-artifact identity binding through review/report | engine/packages/orchestrator/src/map-audit-identity.ts |
 | Production runtime-target boundary / reject caller map-design contracts | engine/packages/orchestrator/src/map-audit-pipeline.ts (SelectedMapAuditRuntimeTarget) |
-| Deterministic CONFIRMED_DEFECT_READY → AI defect projection | engine/packages/orchestrator/src/map-audit-defect-projection.ts |
+| Deterministic confirmed resolution → PROVEN / NEED_VALIDATION issue projection | engine/packages/orchestrator/src/map-audit-issue-projection.ts + map-audit-validation-projection.ts |
 | Deterministic pre-report AI candidate grouping + coverage enforcement | engine/packages/orchestrator/src/map-audit-candidate-grouping.ts |
 | Canonical confirmed-defect root-cause grouping | engine/packages/bug-report/src/grouping.ts (broken invariant + repair unit + primary failure) |
 | Bounded counter-proof search receipt / confirmed-defect admission | engine/packages/orchestrator/src/inspection/gameplay-defect-resolution.ts |
