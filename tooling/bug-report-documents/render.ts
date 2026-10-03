@@ -218,6 +218,19 @@ function checklist(
   ].join("\n");
 }
 
+function orderedSteps(
+  items: readonly string[],
+): string {
+  return [
+    '<ol class="steps">',
+    ...items.map(
+      (item) =>
+        '  <li>' + escapeHtml(item) + '</li>',
+    ),
+    "</ol>",
+  ].join("\n");
+}
+
 function issueCard(issue: BugReportClientIssue): string {
   const metadata =
     '<div class="meta-line"><span>' +
@@ -230,29 +243,24 @@ function issueCard(issue: BugReportClientIssue): string {
     '<div class="row"><div class="label">Issue</div><div class="value">' +
       escapeHtml(issue.issue) +
       "</div></div>",
-    '<div class="row"><div class="label">Tester Checklist</div><div class="value">' +
-      checklist(issue.reproduction) +
+    '<div class="row"><div class="label">How to Reproduce</div><div class="value">' +
+      orderedSteps(issue.reproduction) +
       "</div></div>",
     '<div class="row"><div class="label">Result</div><div class="value"><strong>Observed:</strong> ' +
       escapeHtml(issue.observed) +
       '<br><strong>Expected:</strong> ' +
       escapeHtml(issue.expected) +
       "</div></div>",
+    '<div class="row retest-row"><div class="label">Tester Checklist</div><div class="value"><label class="retest-check"><input type="checkbox"> <span>Verified Fixed</span></label></div></div>',
   ];
 
   if (issue.recommendedResolution) {
     rows.push(
-      '<div class="row"><div class="label">Resolution</div><div class="value">' +
+      '<div class="technical-row"><details class="technical"><summary>Resolution</summary><div class="technical-text">' +
         escapeHtml(issue.recommendedResolution) +
-        "</div></div>",
+        "</div></details></div>",
     );
   }
-
-  rows.push(
-    '<div class="row"><div class="label">Work Checklist</div><div class="value">' +
-      checklist(issue.workChecklist, "work-checklist") +
-      "</div></div>",
-  );
 
   if (
     issue.technicalAnalysis ||
@@ -375,8 +383,8 @@ function auditFindingCard(
     "    </div>",
     "  </header>",
     '  <div class="issue-body">',
-    '<div class="row"><div class="label">Tester Checklist</div><div class="value">' +
-      checklist(finding.reproduceSteps) +
+    '<div class="row"><div class="label">How to Reproduce</div><div class="value">' +
+      orderedSteps(finding.reproduceSteps) +
       "</div></div>",
     '<div class="row"><div class="label">Observed</div><div class="value">' +
       escapeHtml(finding.actual) +
@@ -734,22 +742,7 @@ body {
 .value {
   padding:13px 16px;
 }
-.checklist,
-.work-checklist {
-  list-style:none;
-  margin:0;
-  padding:0;
-}
-.checklist li + li,
-.work-checklist li + li { margin-top:7px; }
-.checklist label,
-.work-checklist label {
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
-}
-.checklist input,
-.work-checklist input { margin-top:3px; }
+.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.checklist label{display:flex;gap:8px;align-items:flex-start}.checklist input{margin-top:3px}.steps{margin:0;padding-left:20px}.steps li+li{margin-top:5px}.retest-row .value{background:#f7fbf7}.retest-check{display:flex;align-items:center;gap:9px;font-weight:800}.retest-check input{width:16px;height:16px}
 .technical-row {
   padding:14px 16px;
   border-top:1px solid var(--line);
