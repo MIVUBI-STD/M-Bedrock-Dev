@@ -4,6 +4,9 @@ import type {
 import type {
   NeedValidationAuditIssueProjection,
 } from "./map-audit-issue-projection.js";
+import type {
+  GameplayWorldModel,
+} from "./inspection/gameplay-world-model.js";
 
 export interface AuditProofNavigationStep {
   readonly order: number;
@@ -17,12 +20,21 @@ export interface AuditProofNavigationStep {
     | "runtime";
 }
 
+export interface AuditEvidenceSubstitution {
+  readonly id: string;
+  readonly replaces: string;
+  readonly requiredEvidence: readonly string[];
+  readonly applicableBecause: readonly string[];
+  readonly decisionRule: string;
+}
+
 export interface AuditProofNavigation {
   readonly recipeId: string;
   readonly proofGoal: string;
   readonly provenClaims: readonly string[];
   readonly missingClaims: readonly string[];
   readonly route: readonly AuditProofNavigationStep[];
+  readonly evidenceSubstitutions: readonly AuditEvidenceSubstitution[];
   readonly runtimeLastResort: boolean;
 }
 
@@ -526,8 +538,198 @@ const RECIPES: Readonly<Record<GameplayIssueFailureDomain, ProofRecipe>> = {
   },
 };
 
+function substitutionCandidates(
+  finding: NeedValidationAuditIssueProjection,
+  world?: GameplayWorldModel,
+): readonly AuditEvidenceSubstitution[] {
+  if (world === undefined) return [];
+
+  const output: AuditEvidenceSubstitution[] = [];
+
+  if (
+    finding.failureDomain === "arena-multi-arena" &&
+    world.arenas.count !== undefined &&
+    world.arenas.safeConcurrentArenas !== undefined &&
+    world.arenas.safeConcurrentArenas !== null
+  ) {
+    output.push({
+      id: "substitution:arena-capacity-quantitative",
+      replaces:
+        "Broad runtime trial to discover whether visible arena capacity exceeds safe concurrent capacity.",
+      requiredEvidence: [
+        "visible arena count",
+        "safe concurrent arena count",
+        "selected-artifact/player-facing capacity presentation",
+      ],
+      applicableBecause: [
+        "visibleArenaCount=" +
+          String(world.arenas.count),
+        "safeConcurrentArenas=" +
+          String(world.arenas.safeConcurrentArenas),
+      ],
+      decisionRule:
+        "If presented/visible concurrent capacity is greater than the grounded safe playable concurrency and no grounded design communicates the lower limit, the capacity mismatch can be proven without broad runtime trial.",
+    });
+  }
+
+  if (
+    (
+      finding.failureDomain === "chunk-simulation" ||
+      finding.failureDomain === "progression-wave-objective"
+    ) &&
+    world.entities.definitions > 0 &&
+    world.platformKnowledge.profileResolved
+  ) {
+    output.push({
+      id: "substitution:simulation-ownership",
+      replaces:
+        "Generic runtime test asking whether remote actors might stop simulating.",
+      requiredEvidence: [
+        "gameplay dependency on remote actor/world logic",
+        "actor/spatial location or simulation dependency",
+        "ticking/readiness ownership or its absence",
+        "applicable selected-version platform constraint",
+      ],
+      applicableBecause: [
+        "entityDefinitions=" +
+          String(world.entities.definitions),
+        "platformProfileResolved=true",
+        "tickingAreaAcquires=" +
+          String(world.chunks.tickingAreaAcquires),
+        "readinessProbes=" +
+          String(world.chunks.readinessProbes),
+      ],
+      decisionRule:
+        "If progression requires simulation outside normal residency and selected-artifact evidence shows no sufficient residency/readiness ownership under the applicable platform constraint, prove the implementation/simulation gap statically; runtime is only needed to demonstrate the visible symptom.",
+    });
+  }
+
+  if (
+    finding.failureDomain === "inventory-economy" &&
+    (
+      world.inventory.restoreOwnership.multipleRestoreOwners > 0 ||
+      world.inventory.restoreConflicts.length > 0
+    )
+  ) {
+    output.push({
+      id: "substitution:inventory-multi-writer",
+      replaces:
+        "Broad reconnect/death trial to discover duplicate restore ownership.",
+      requiredEvidence: [
+        "two or more reachable restore/grant owners",
+        "same player/item lifecycle scope",
+        "absence of mutual exclusion/idempotency/generation guard",
+      ],
+      applicableBecause: [
+        "multipleRestoreOwners=" +
+          String(
+            world.inventory.restoreOwnership.multipleRestoreOwners,
+          ),
+        "restoreConflicts=" +
+          String(world.inventory.restoreConflicts.length),
+      ],
+      decisionRule:
+        "If competing restore/grant owners can reach the same item/player/run scope and no deterministic exclusion or idempotency guard makes double delivery unreachable, duplication/lifecycle conflict can be proven from source.",
+    });
+  }
+
+  if (
+    finding.failureDomain === "persistence-recovery" &&
+    (world.persistence?.appendWithoutClear ?? 0) > 0
+  ) {
+    output.push({
+      id: "substitution:persistence-growth-without-clear",
+      replaces:
+        "Repeated runtime sessions merely to discover stale accumulated persistent state.",
+      requiredEvidence: [
+        "append/write path",
+        "intended finite lifecycle",
+        "reachable cleanup/reset boundary",
+        "absence of clear/reset before reuse",
+      ],
+      applicableBecause: [
+        "appendWithoutClear=" +
+          String(
+            world.persistence?.appendWithoutClear ?? 0,
+          ),
+        "worldScopedAppendWithoutClear=" +
+          String(
+            world.persistence?.worldScopedAppendWithoutClear ?? 0,
+          ),
+      ],
+      decisionRule:
+        "If run/session-local state appends persistently and no reachable clear/reset exists before reuse, stale-state persistence can be proven without waiting for repeated runtime accumulation.",
+    });
+  }
+
+  if (
+    finding.failureDomain === "world-structure-mutation" &&
+    (
+      world.structures.transitionResidueRisks > 0 ||
+      world.structures.transitionResidueUnresolved > 0
+    )
+  ) {
+    output.push({
+      id: "substitution:structure-transition-residue",
+      replaces:
+        "Broad replay testing to discover leftover structure/world state.",
+      requiredEvidence: [
+        "previous structure/mutation footprint",
+        "next structure/mutation footprint",
+        "preserved cells or unresolved replacement",
+        "gameplay dependency on clean baseline",
+      ],
+      applicableBecause: [
+        "transitionResidueRisks=" +
+          String(world.structures.transitionResidueRisks),
+        "transitionResidueUnresolved=" +
+          String(
+            world.structures.transitionResidueUnresolved,
+          ),
+      ],
+      decisionRule:
+        "If a transition preserves/reuses cells that the next gameplay state requires reset and no explicit clear/replacement covers them, residue can be proven structurally.",
+    });
+  }
+
+  if (
+    finding.failureDomain === "boundary-capacity" &&
+    world.arenas.count !== undefined &&
+    (
+      world.arenas.safeConcurrentArenas !== undefined ||
+      world.arenas.declaredConcurrentArenaLimit !== undefined
+    )
+  ) {
+    output.push({
+      id: "substitution:boundary-arithmetic",
+      replaces:
+        "Trial-and-error boundary discovery in runtime.",
+      requiredEvidence: [
+        "declared/visible boundary",
+        "effective implementation limit",
+        "admission/transition rule at the boundary",
+      ],
+      applicableBecause: [
+        "arenaCount=" +
+          String(world.arenas.count),
+        "effectiveLimit=" +
+          String(
+            world.arenas.safeConcurrentArenas ??
+            world.arenas.declaredConcurrentArenaLimit ??
+            "unknown",
+          ),
+      ],
+      decisionRule:
+        "If the effective implementation limit is statically known, derive N-1/N/N+1 behavior from the admission/transition rule and reserve runtime only for engine-dependent boundary semantics.",
+    });
+  }
+
+  return output;
+}
+
 export function buildAuditProofNavigation(
   finding: NeedValidationAuditIssueProjection,
+  world?: GameplayWorldModel,
 ): AuditProofNavigation {
   const recipe = RECIPES[finding.failureDomain];
   const provenClaims = [
@@ -558,6 +760,11 @@ export function buildAuditProofNavigation(
       order: index + 1,
       ...step,
     })),
+    evidenceSubstitutions:
+      substitutionCandidates(
+        finding,
+        world,
+      ),
     runtimeLastResort: true,
   };
 }
