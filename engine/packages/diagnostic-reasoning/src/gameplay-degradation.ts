@@ -1,3 +1,154 @@
+export type GameplayCapabilityDeliveryStatus =
+  | "DELIVERED"
+  | "DEGRADED"
+  | "MISSING"
+  | "UNPROVEN";
+
+export type GameplayCapabilityFailureClass =
+  | "DESIGN_FAILURE"
+  | "DESIGN_IMPLEMENTATION_MISMATCH"
+  | "IMPLEMENTATION_FAILURE";
+
+export interface GameplayCapabilityDeliveryInput {
+  readonly subjectId: string;
+  readonly label: string;
+  readonly playerVisible: boolean;
+  readonly designed: boolean;
+  readonly implementationPresent?: boolean;
+  readonly behaviorComplete?: boolean;
+  readonly expectedCapacity?: number;
+  readonly playableCapacity?: number;
+  readonly technicalConstraintReasons?: readonly string[];
+  readonly evidenceIds?: readonly string[];
+}
+
+export interface GameplayCapabilityDeliveryAssessment {
+  readonly subjectId: string;
+  readonly label: string;
+  readonly status: GameplayCapabilityDeliveryStatus;
+  readonly failureClass?: GameplayCapabilityFailureClass;
+  readonly expectedCapacity?: number;
+  readonly playableCapacity?: number;
+  readonly technicalConstraintReasons: readonly string[];
+  readonly evidenceIds: readonly string[];
+  readonly reason: string;
+}
+
+export function assessGameplayCapabilityDelivery(
+  input: GameplayCapabilityDeliveryInput,
+): GameplayCapabilityDeliveryAssessment {
+  const evidenceIds = [
+    ...new Set(input.evidenceIds ?? []),
+  ].sort();
+  const technicalConstraintReasons = [
+    ...new Set(input.technicalConstraintReasons ?? []),
+  ].sort();
+
+  if (
+    input.expectedCapacity !== undefined &&
+    input.playableCapacity !== undefined
+  ) {
+    if (
+      input.playableCapacity <
+      input.expectedCapacity
+    ) {
+      return {
+        subjectId: input.subjectId,
+        label: input.label,
+        status: "DEGRADED",
+        failureClass: "DESIGN_FAILURE",
+        expectedCapacity:
+          input.expectedCapacity,
+        playableCapacity:
+          input.playableCapacity,
+        technicalConstraintReasons,
+        evidenceIds,
+        reason:
+          "The game presents capacity " +
+          String(input.expectedCapacity) +
+          " but only " +
+          String(input.playableCapacity) +
+          " is actually playable. Technical constraints may explain the cause, but the exposed game design does not deliver its visible capability.",
+      };
+    }
+    return {
+      subjectId: input.subjectId,
+      label: input.label,
+      status: "DELIVERED",
+      expectedCapacity:
+        input.expectedCapacity,
+      playableCapacity:
+        input.playableCapacity,
+      technicalConstraintReasons,
+      evidenceIds,
+      reason:
+        "Playable capacity meets the capability presented by the game.",
+    };
+  }
+
+  if (
+    input.designed &&
+    input.playerVisible &&
+    input.implementationPresent === false
+  ) {
+    return {
+      subjectId: input.subjectId,
+      label: input.label,
+      status: "MISSING",
+      failureClass:
+        "DESIGN_IMPLEMENTATION_MISMATCH",
+      technicalConstraintReasons,
+      evidenceIds,
+      reason:
+        "A player-visible designed capability has no implementation evidence.",
+    };
+  }
+
+  if (
+    input.designed &&
+    input.playerVisible &&
+    input.implementationPresent === true &&
+    input.behaviorComplete === false
+  ) {
+    return {
+      subjectId: input.subjectId,
+      label: input.label,
+      status: "DEGRADED",
+      failureClass: "IMPLEMENTATION_FAILURE",
+      technicalConstraintReasons,
+      evidenceIds,
+      reason:
+        "The designed capability is implemented but its required gameplay chain is incomplete.",
+    };
+  }
+
+  if (
+    input.designed &&
+    input.playerVisible &&
+    input.behaviorComplete === true
+  ) {
+    return {
+      subjectId: input.subjectId,
+      label: input.label,
+      status: "DELIVERED",
+      technicalConstraintReasons,
+      evidenceIds,
+      reason:
+        "The player-visible capability has a complete gameplay delivery chain.",
+    };
+  }
+
+  return {
+    subjectId: input.subjectId,
+    label: input.label,
+    status: "UNPROVEN",
+    technicalConstraintReasons,
+    evidenceIds,
+    reason:
+      "Capability delivery cannot be classified without enough grounded player-visible design and implementation evidence.",
+  };
+}
+
 export type GameplayDegradationKind =
   | "fallback-masks-primary-failure"
   | "capacity-reduced"
