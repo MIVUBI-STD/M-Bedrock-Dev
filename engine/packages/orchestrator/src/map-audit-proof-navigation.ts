@@ -7,6 +7,11 @@ import type {
 import type {
   GameplayWorldModel,
 } from "./inspection/gameplay-world-model.js";
+import {
+  historicalSearchHintsForFinding,
+  historicalSearchPressure,
+  type AuditHistoricalSearchHint,
+} from "./map-audit-history-hints.js";
 
 export interface AuditProofNavigationStep {
   readonly order: number;
@@ -35,6 +40,8 @@ export interface AuditProofNavigation {
   readonly missingClaims: readonly string[];
   readonly route: readonly AuditProofNavigationStep[];
   readonly evidenceSubstitutions: readonly AuditEvidenceSubstitution[];
+  readonly historicalSearchHints: readonly AuditHistoricalSearchHint[];
+  readonly historyPressure: number;
   readonly runtimeLastResort: boolean;
 }
 
@@ -727,6 +734,43 @@ function substitutionCandidates(
   return output;
 }
 
+function reprioritizeRouteWithHistoricalHints(
+  route: readonly AuditProofNavigationStep[],
+  hints: readonly AuditHistoricalSearchHint[],
+): readonly AuditProofNavigationStep[] {
+  if (hints.length === 0) {
+    return route;
+  }
+
+  const hintedDomains = new Set(
+    hints.flatMap((hint) =>
+      hint.knowledgeDomains,
+    ),
+  );
+
+  const nonRuntime = route.filter(
+    (step) => step.evidencePreference !== "runtime",
+  );
+  const runtime = route.filter(
+    (step) => step.evidencePreference === "runtime",
+  );
+
+  const ordered = [
+    ...nonRuntime.filter((step) =>
+      hintedDomains.has(step.knowledgeDomain)
+    ),
+    ...nonRuntime.filter((step) =>
+      !hintedDomains.has(step.knowledgeDomain)
+    ),
+    ...runtime,
+  ];
+
+  return ordered.map((step, index) => ({
+    ...step,
+    order: index + 1,
+  }));
+}
+
 export function buildAuditProofNavigation(
   finding: NeedValidationAuditIssueProjection,
   world?: GameplayWorldModel,
@@ -749,6 +793,20 @@ export function buildAuditProofNavigation(
       : []),
   ];
 
+  const baseRoute = recipe.route.map(
+    (step, index) => ({
+      order: index + 1,
+      ...step,
+    }),
+  );
+  const historicalSearchHints =
+    world === undefined
+      ? []
+      : historicalSearchHintsForFinding(
+          finding,
+          world,
+        );
+
   return {
     recipeId: recipe.id,
     proofGoal: recipe.goal,
@@ -756,14 +814,20 @@ export function buildAuditProofNavigation(
     missingClaims: [
       finding.missingProof,
     ],
-    route: recipe.route.map((step, index) => ({
-      order: index + 1,
-      ...step,
-    })),
+    route:
+      reprioritizeRouteWithHistoricalHints(
+        baseRoute,
+        historicalSearchHints,
+      ),
     evidenceSubstitutions:
       substitutionCandidates(
         finding,
         world,
+      ),
+    historicalSearchHints,
+    historyPressure:
+      historicalSearchPressure(
+        historicalSearchHints,
       ),
     runtimeLastResort: true,
   };
