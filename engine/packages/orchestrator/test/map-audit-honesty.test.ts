@@ -117,7 +117,7 @@ function visibleRuntimeFinding(): AuditIssueProjection {
 }
 
 describe("map audit honesty gate", () => {
-  it("passes only when every tracked unresolved residue is visible", () => {
+  it("accepts runtime-blocked residue as an audit obligation instead of a bug finding", () => {
     const result = assessAuditHonesty({
       graph,
       gate,
@@ -128,10 +128,15 @@ describe("map audit honesty gate", () => {
       sharedResourceSignals: [],
       compoundBoundaries: [],
       accumulationGrowth: [],
-      visibleIssues: [visibleRuntimeFinding()],
+      visibleIssues: [],
+      visibleObligationIds: ["link:wave"],
     });
 
     expect(result.status).toBe("PASS");
+    expect(result.visibleNeedValidationIds).toEqual([]);
+    expect(result.visibleObligationIds).toEqual([
+      "link:wave",
+    ]);
     expect(
       result.missingVisibleResidueIds,
     ).toEqual([]);
