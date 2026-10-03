@@ -118,6 +118,7 @@ describe("Map Audit Output V2 projection", () => {
           "PROGRESSION",
         ],
         ambiguities: [],
+        blockingAmbiguities: [],
       },
       validationTests: [{
         key: "scenario:1:runtime",
