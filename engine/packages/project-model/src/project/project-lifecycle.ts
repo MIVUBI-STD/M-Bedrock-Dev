@@ -33,7 +33,6 @@ export interface ProjectWorkReference {
 
 export interface ProjectKnowledgeReferences {
   readonly bugReportPath?: string;
-  readonly historicalRegressionIds: readonly string[];
 }
 
 export interface ProjectPublicationState {
@@ -143,12 +142,6 @@ function clean(value: string): string {
   return value.trim();
 }
 
-function unique(values: readonly string[]): string[] {
-  return [...new Set(
-    values.map(clean).filter(Boolean),
-  )].sort();
-}
-
 export function normalizeProjectDeliverable(
   input: ProjectDeliverableRef,
 ): ProjectDeliverableRef {
@@ -200,15 +193,6 @@ export function normalizeProjectRecord(
   ) {
     throw new Error(
       "Project record artifact/work/knowledge/publication must be objects.",
-    );
-  }
-  if (
-    !Array.isArray(
-      input.knowledge.historicalRegressionIds,
-    )
-  ) {
-    throw new Error(
-      "Project historicalRegressionIds must be an array.",
     );
   }
   if (!PROJECT_STATUSES.has(input.status)) {
@@ -338,11 +322,6 @@ export function normalizeProjectRecord(
                 .bugReportPath.trim(),
           }
         : {}),
-      historicalRegressionIds:
-        unique(
-          input.knowledge
-            .historicalRegressionIds,
-        ),
     },
     publication: {
       ...(input.publication.drive ===
