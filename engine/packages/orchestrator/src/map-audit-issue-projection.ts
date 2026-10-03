@@ -51,6 +51,11 @@ export interface NeedValidationAuditIssueProjection
   readonly validationReason: string;
   readonly missingProof: string;
   readonly validationTest: string;
+  /**
+   * Stable consolidation key. Multiple unresolved findings with the same key
+   * should be exercised by one targeted test rather than repeated manually.
+   */
+  readonly validationGroupKey: string;
 }
 
 export type AuditIssueProjection =
@@ -407,9 +412,252 @@ export function projectNeedValidationAuditIssues(
         validationReason,
         missingProof,
         validationTest,
+        validationGroupKey:
+          scenario.id +
+          ":" +
+          (
+            link.knowledgeRequirementId ??
+            classification.failureDomain
+          ),
       }];
     }),
   );
+}
+
+function syntheticNeedValidationFromKnowledge(
+  graph: GameplayScenarioGraph,
+  capabilityDelivery:
+    readonly GameplayCapabilityDeliveryAssessment[],
+): readonly NeedValidationAuditIssueProjection[] {
+  const causalKnowledgeIds = new Set(
+    graph.causalLinks
+      .map((link) => link.knowledgeRequirementId)
+      .filter((id): id is string => id !== undefined),
+  );
+
+  return graph.knowledgeReceipts.flatMap((receipt) => {
+    if (
+      receipt.status === "SATISFIED" ||
+      causalKnowledgeIds.has(receipt.requirementId)
+    ) {
+      return [];
+    }
+
+    const requirement = graph.knowledgeRequirements.find(
+      (item) => item.id === receipt.requirementId,
+    );
+    const scenario = graph.scenarios.find(
+      (item) => item.id === receipt.scenarioId,
+    );
+    if (requirement === undefined || scenario === undefined) {
+      return [];
+    }
+
+    const componentIds = [...new Set([
+      ...requirement.componentIds,
+      ...receipt.componentIds,
+    ])].sort();
+    const subjectIds = [...new Set([
+      ...requirement.subjectIds,
+      ...receipt.subjectIds,
+    ])].sort();
+    const relatedDelivery = relatedCapabilityDelivery(
+      scenario.label,
+      subjectIds,
+      componentIds,
+      capabilityDelivery,
+    );
+    const classification = classifyGameplayIssue({
+      gameplayStage: scenario.gameplayStage,
+      scenarioLabel: scenario.label,
+      componentIds,
+      knowledgeDomain: requirement.domain,
+    });
+
+    const statusReason =
+      receipt.status === "CAPABILITY_GAP"
+        ? "No registered analysis capability can currently prove this required gameplay knowledge."
+        : receipt.status === "BLOCKED_BY_PREREQUISITE"
+          ? "The required gameplay proof is blocked by an unresolved prerequisite knowledge node."
+          : "The required analysis capability exists, but it did not return sufficient scenario-scoped evidence.";
+
+    return [{
+      status: "NEED_VALIDATION" as const,
+      issueType: issueTypeFor(
+        scenario.label,
+        subjectIds,
+        componentIds,
+        capabilityDelivery,
+      ),
+      failureDomain: classification.failureDomain,
+      contributingDomains:
+        classification.contributingDomains,
+      gameplayFlow: classification.gameplayFlow,
+      informationMismatch:
+        relatedDelivery.some(
+          (item) => item.informationMismatch,
+        ),
+      playerFacingEvidenceIds: [
+        ...new Set(
+          relatedDelivery.flatMap(
+            (item) => item.playerFacingEvidenceIds,
+          ),
+        ),
+      ].sort(),
+      causalLinkId:
+        "knowledge-gap:" + receipt.requirementId,
+      scenarioId: scenario.id,
+      gameplayStage: scenario.gameplayStage,
+      scenarioLabel: scenario.label,
+      gameplayTrigger: scenario.purpose,
+      gameplayConsequence:
+        "A required gameplay dependency remains materially unproven because its supporting knowledge could not be closed.",
+      expectedOutcome:
+        requirement.reason,
+      actualOutcome:
+        receipt.reason,
+      affectedScope:
+        [...new Set([
+          ...subjectIds,
+          ...componentIds,
+        ])].sort().join(", "),
+      subjectIds,
+      componentIds,
+      evidenceIds: [...new Set(receipt.evidenceIds)].sort(),
+      knowledgeRequirementId:
+        receipt.requirementId,
+      validationReason: statusReason,
+      missingProof:
+        "Scenario-scoped " +
+        requirement.domain +
+        " evidence sufficient to decide the required gameplay dependency.",
+      validationTest:
+        "Exercise scenario '" +
+        scenario.label +
+        "' and directly verify the " +
+        requirement.domain +
+        " dependency: " +
+        requirement.reason,
+      validationGroupKey:
+        scenario.id + ":" + requirement.domain,
+    }];
+  });
+}
+
+function syntheticNeedValidationFromShallowScenarios(
+  graph: GameplayScenarioGraph,
+  capabilityDelivery:
+    readonly GameplayCapabilityDeliveryAssessment[],
+): readonly NeedValidationAuditIssueProjection[] {
+  return graph.scenarios.flatMap((scenario) => {
+    if (
+      scenario.composedScenarioIds.length > 0 ||
+      scenario.componentIds.length === 0 ||
+      scenario.causalLinkIds.length > 0
+    ) {
+      return [];
+    }
+
+    const componentIds = [...new Set(scenario.componentIds)].sort();
+    const subjectIds = [...new Set(scenario.sourceSubjectIds)].sort();
+    const relatedDelivery = relatedCapabilityDelivery(
+      scenario.label,
+      subjectIds,
+      componentIds,
+      capabilityDelivery,
+    );
+    const classification = classifyGameplayIssue({
+      gameplayStage: scenario.gameplayStage,
+      scenarioLabel: scenario.label,
+      componentIds,
+    });
+
+    return [{
+      status: "NEED_VALIDATION" as const,
+      issueType: issueTypeFor(
+        scenario.label,
+        subjectIds,
+        componentIds,
+        capabilityDelivery,
+      ),
+      failureDomain: classification.failureDomain,
+      contributingDomains:
+        classification.contributingDomains,
+      gameplayFlow: classification.gameplayFlow,
+      informationMismatch:
+        relatedDelivery.some(
+          (item) => item.informationMismatch,
+        ),
+      playerFacingEvidenceIds: [
+        ...new Set(
+          relatedDelivery.flatMap(
+            (item) => item.playerFacingEvidenceIds,
+          ),
+        ),
+      ].sort(),
+      causalLinkId:
+        "shallow-scenario:" + scenario.id,
+      scenarioId: scenario.id,
+      gameplayStage: scenario.gameplayStage,
+      scenarioLabel: scenario.label,
+      gameplayTrigger: scenario.purpose,
+      gameplayConsequence:
+        "The gameplay scenario exists but has no causal proof edge, so a material failure could remain invisible to the audit.",
+      expectedOutcome:
+        "Every material leaf gameplay scenario has at least one causal dependency proof.",
+      actualOutcome:
+        "No causal proof edge was compiled for this scenario.",
+      affectedScope:
+        [...new Set([
+          ...subjectIds,
+          ...componentIds,
+        ])].sort().join(", "),
+      subjectIds,
+      componentIds,
+      evidenceIds: [],
+      validationReason:
+        "Scenario coverage is structurally too shallow to claim the behavior was actually tested.",
+      missingProof:
+        "At least one scenario-scoped causal dependency and its deciding evidence.",
+      validationTest:
+        "Run scenario '" +
+        scenario.label +
+        "' through its success and failure exit and verify that every required transition is causally accounted.",
+      validationGroupKey:
+        scenario.id + ":scenario-closure",
+    }];
+  });
+}
+
+export function projectAllNeedValidationAuditIssues(
+  graph: GameplayScenarioGraph,
+  gate: GameplayDefectResolutionGate,
+  capabilityDelivery:
+    readonly GameplayCapabilityDeliveryAssessment[] = [],
+): readonly NeedValidationAuditIssueProjection[] {
+  const items = [
+    ...projectNeedValidationAuditIssues(
+      graph,
+      gate,
+      capabilityDelivery,
+    ),
+    ...syntheticNeedValidationFromKnowledge(
+      graph,
+      capabilityDelivery,
+    ),
+    ...syntheticNeedValidationFromShallowScenarios(
+      graph,
+      capabilityDelivery,
+    ),
+  ];
+
+  const byId = new Map<string, NeedValidationAuditIssueProjection>();
+  for (const item of items) {
+    if (!byId.has(item.causalLinkId)) {
+      byId.set(item.causalLinkId, item);
+    }
+  }
+  return sortIssues([...byId.values()]);
 }
 
 export function projectAllAuditIssues(
@@ -424,7 +672,7 @@ export function projectAllAuditIssues(
       gate,
       capabilityDelivery,
     ),
-    ...projectNeedValidationAuditIssues(
+    ...projectAllNeedValidationAuditIssues(
       graph,
       gate,
       capabilityDelivery,
