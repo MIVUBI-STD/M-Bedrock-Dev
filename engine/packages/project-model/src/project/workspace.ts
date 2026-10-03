@@ -12,7 +12,7 @@ export function projectWorkspaceLayout(
   workspaceRoot: string,
   projectId: string,
 ): ProjectWorkspaceLayout {
-  const root = `${workspaceRoot}/active/${projectId}`;
+  const root = `${workspaceRoot}/projects/${projectId}`;
 
   return {
     root,
