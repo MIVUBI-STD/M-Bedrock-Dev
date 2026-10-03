@@ -84,6 +84,29 @@ function calledIdentifiers(statement) {
 }
 
 const issues = [];
+
+const PIPELINE_PATH =
+  "engine/packages/orchestrator/src/map-audit-pipeline.ts";
+const DISCOVERY_PATH =
+  "engine/packages/orchestrator/src/inspection/gameplay-discovery-closure.ts";
+const REPORT_SCHEMA_PATH =
+  ".agents/schemas/map-audit-output-v2.schema.json";
+const PROCEDURE_DOC_PATH =
+  "docs/03-analysis/mandatory-audit-procedure.md";
+
+function requireText(path, fragments) {
+  const source = readFileSync(path, "utf8");
+  for (const fragment of fragments) {
+    if (!source.includes(fragment)) {
+      issues.push(
+        path + " is missing canonical single-flow contract fragment: " +
+          fragment,
+      );
+    }
+  }
+}
+
+
 const cli = parse(CLI_PATH);
 const commandBodies = new Map();
 
@@ -180,6 +203,58 @@ for (const path of filesUnder("apps")) {
       );
     }
   }
+}
+
+
+requireText(PIPELINE_PATH, [
+  'policy: "selected-map-audit-single-entry"',
+  "runSelectedMapAudit",
+  "issueLanes",
+  "BUG:",
+  "DESIGN_MISMATCH:",
+]);
+
+requireText(DISCOVERY_PATH, [
+  "semanticUnderstandingGaps",
+  "semanticUnderstandingGapPaths",
+  "Source-accounted is not semantically understood",
+]);
+
+requireText(PROCEDURE_DOC_PATH, [
+  "TARGET",
+  "DISCOVERY",
+  "UNDERSTAND",
+  "MODEL",
+  "STRESS",
+  "PROVE",
+  "REPORT",
+  "Crosscheck rule",
+]);
+
+const reportSchema = JSON.parse(
+  readFileSync(REPORT_SCHEMA_PATH, "utf8"),
+);
+if (!reportSchema.properties?.bugs) {
+  issues.push(
+    REPORT_SCHEMA_PATH +
+      " must define the BUG report lane as properties.bugs.",
+  );
+}
+if (!reportSchema.properties?.designMismatches) {
+  issues.push(
+    REPORT_SCHEMA_PATH +
+      " must define the DESIGN_MISMATCH report lane as properties.designMismatches.",
+  );
+}
+if (
+  !Array.isArray(reportSchema.required) ||
+  !reportSchema.required.includes("bugs") ||
+  !reportSchema.required.includes("designMismatches")
+) {
+  issues.push(
+    REPORT_SCHEMA_PATH +
+      " must require both bugs and designMismatches lanes.",
+  );
 }
 
 if (issues.length > 0) {
