@@ -78,6 +78,10 @@ import {
   buildAuditProofNavigation,
 } from "./map-audit-proof-navigation.js";
 import {
+  projectMapAuditOutputV2,
+  type MapAuditOutputV2,
+} from "./map-audit-output-v2.js";
+import {
   deriveSelectedMapAuditRevision,
 } from "./map-audit-revision.js";
 import {
@@ -162,6 +166,7 @@ export interface SelectedMapAuditRun {
    * not a second blocking workflow.
    */
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
+  readonly mapAuditReport: MapAuditOutputV2;
   readonly issueLanes: {
     readonly BUG: readonly AuditIssueProjection[];
     readonly DESIGN_MISMATCH:
@@ -569,6 +574,21 @@ export async function runSelectedMapAudit(
     world: inspection.gameplayWorld,
     needValidationFindings,
   });
+  const mapAuditReport =
+    projectMapAuditOutputV2({
+      inspection,
+      identity,
+      issueLanes: control.issueLanes,
+      validationTests:
+        control.validationTests,
+      honesty: control.honesty,
+      ...(control.fullMapReplica === undefined
+        ? {}
+        : {
+            fullMapReplica:
+              control.fullMapReplica,
+          }),
+    });
   return {
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
@@ -579,6 +599,7 @@ export async function runSelectedMapAudit(
     admission,
     stageOrder: SELECTED_MAP_AUDIT_STAGE_ORDER,
     modelTaskPackets,
+    mapAuditReport,
     ...control,
   };
 }
@@ -687,6 +708,21 @@ export function resolveSelectedMapAudit(
     needValidationFindings,
   });
 
+  const mapAuditReport =
+    projectMapAuditOutputV2({
+      inspection: updatedInspection,
+      identity,
+      issueLanes: control.issueLanes,
+      validationTests:
+        control.validationTests,
+      honesty: control.honesty,
+      ...(control.fullMapReplica === undefined
+        ? {}
+        : {
+            fullMapReplica:
+              control.fullMapReplica,
+          }),
+    });
   return {
     schemaVersion: 1,
     policy: "selected-map-audit-single-entry",
@@ -698,6 +734,7 @@ export function resolveSelectedMapAudit(
     admission,
     stageOrder: SELECTED_MAP_AUDIT_STAGE_ORDER,
     modelTaskPackets,
+    mapAuditReport,
     ...control,
   };
 }
