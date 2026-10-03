@@ -270,11 +270,14 @@ function deriveSelectedMapAuditControl(input: {
     input.gameplayWorld.arenas.replicaProof.length === 0
       ? undefined
       : buildFullMapReplicaReceipt({
-          replicaBaseline: "arena:canonical",
+          replicaBaseline:
+            input.gameplayWorld.arenas
+              .replicaBaselineId ??
+            "replica:baseline-unresolved",
           replicas:
             input.gameplayWorld.arenas.replicaProof.map(
               (item) => ({
-                arenaId: item.arenaId,
+                replicaId: item.arenaId,
                 proofStatus: item.status,
                 mismatchCount:
                   item.mismatchCount,
