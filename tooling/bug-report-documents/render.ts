@@ -853,8 +853,20 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const source = await readFile(args.input, "utf8");
   const raw = JSON.parse(source) as unknown;
+  const mapAuditCandidate =
+    raw !== null &&
+    typeof raw === "object" &&
+    "mapAuditReport" in
+      (raw as Record<string, unknown>)
+      ? (
+          raw as {
+            readonly mapAuditReport?: unknown;
+          }
+        ).mapAuditReport
+      : raw;
 
-  if (isMapAuditHtmlInput(raw)) {
+  if (isMapAuditHtmlInput(mapAuditCandidate)) {
+    const raw = mapAuditCandidate;
     const auditIssues =
       mapAuditHtmlInputIssues(raw);
     if (auditIssues.length > 0) {
