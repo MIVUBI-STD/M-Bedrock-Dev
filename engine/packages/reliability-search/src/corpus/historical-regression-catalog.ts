@@ -1,30 +1,25 @@
-import type {
-  BugFinderCategory,
-  BugReportV2,
-} from "../../../bug-report/src/index.js";
-
 export interface HistoricalRegressionProvenance {
-  readonly source: "Canonical Bug Report V2";
-  readonly reportPath: string;
-  readonly map: string;
-  readonly mapVersion: string;
-  readonly bugId: string;
-  readonly artifactFingerprint: string;
+  readonly source: string;
+  readonly reportPath?: string;
+  readonly map?: string;
+  readonly mapVersion?: string;
+  readonly bugId?: string;
+  readonly artifactFingerprint?: string;
+  readonly [key: string]: unknown;
 }
 
 export interface HistoricalRegressionRecord {
   readonly id: string;
   readonly title: string;
   readonly domain: string;
-  readonly discoveredBy:
-    | "approved-ai"
-    | "approved-tester";
-  readonly provenance: HistoricalRegressionProvenance;
-  readonly triggerTags: readonly string[];
-  readonly capabilityTags: readonly string[];
+  readonly discoveredBy: string;
+  readonly provenance?: HistoricalRegressionProvenance;
+  readonly triggerTags?: readonly string[];
+  readonly capabilityTags?: readonly string[];
   readonly reproduction?: readonly string[];
   readonly expected: string;
   readonly observed: string;
+  readonly [key: string]: unknown;
 }
 
 export interface HistoricalRegressionCatalogEntry {
@@ -39,34 +34,6 @@ export interface HistoricalRegressionCatalog {
     readonly HistoricalRegressionCatalogEntry[];
 }
 
-const DOMAIN_BY_CATEGORY:
-  Readonly<Record<BugFinderCategory, string>> = {
-    "game-flow": "gameplay",
-    "player-state": "state",
-    "multiplayer-session": "multiplayer",
-    "world-interaction": "world",
-    "entity-behavior": "entities",
-    "combat": "combat",
-    "score-reward": "economy",
-    "ui-feedback": "ui",
-    "performance-stability": "stability",
-    "compatibility": "compatibility",
-  };
-
-const CAPABILITIES_BY_CATEGORY:
-  Readonly<Record<BugFinderCategory, readonly string[]>> = {
-    "game-flow": ["gameplay-state", "progression"],
-    "player-state": ["state", "persistence"],
-    "multiplayer-session": ["multiplayer", "arena-lifecycle"],
-    "world-interaction": ["world-mutation", "spatial"],
-    "entity-behavior": ["entity-ai", "navigation"],
-    "combat": ["combat", "entity-ai"],
-    "score-reward": ["economy", "reward"],
-    "ui-feedback": ["ui-state", "gameplay-state"],
-    "performance-stability": ["runtime-stability", "chunks"],
-    "compatibility": ["compatibility", "platform"],
-  };
-
 function slug(value: string): string {
   const clean = value
     .trim()
@@ -74,14 +41,6 @@ function slug(value: string): string {
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
   return clean || "unknown";
-}
-
-function unique(values: readonly string[]): string[] {
-  return [...new Set(
-    values
-      .map((value) => value.trim())
-      .filter(Boolean),
-  )].sort();
 }
 
 export function historicalRegressionId(input: {
@@ -97,59 +56,6 @@ export function historicalRegressionId(input: {
     "_" +
     slug(input.bugId)
   );
-}
-
-export function projectApprovedBugReportToHistoricalRegressions(
-  input: {
-    readonly report: BugReportV2;
-    readonly reportPath: string;
-    readonly artifactFingerprint: string;
-  },
-): readonly HistoricalRegressionRecord[] {
-  return input.report.bugs.map((bug) => ({
-    id: historicalRegressionId({
-      mapName: input.report.map.name,
-      mapVersion: input.report.map.mapVersion,
-      bugId: bug.id,
-    }),
-    title: bug.title,
-    domain:
-      DOMAIN_BY_CATEGORY[bug.category],
-    discoveredBy:
-      bug.foundBy === "tester"
-        ? "approved-tester" as const
-        : "approved-ai" as const,
-    provenance: {
-      source: "Canonical Bug Report V2" as const,
-      reportPath: input.reportPath,
-      map: input.report.map.name,
-      mapVersion:
-        input.report.map.mapVersion,
-      bugId: bug.id,
-      artifactFingerprint:
-        input.artifactFingerprint,
-    },
-    triggerTags: unique([
-      "gameplay",
-      bug.category,
-      bug.severity,
-      ...(bug.mustPreserve ?? []),
-    ]),
-    capabilityTags: [
-      ...CAPABILITIES_BY_CATEGORY[
-        bug.category
-      ],
-    ],
-    ...(bug.reproduction?.length
-      ? {
-          reproduction: [
-            ...bug.reproduction,
-          ],
-        }
-      : {}),
-    expected: bug.expected,
-    observed: bug.observed,
-  }));
 }
 
 function sameMeaning(
@@ -186,6 +92,8 @@ function sameMeaning(
   if (
     provenance !== undefined &&
     provenance.source ===
+      "Canonical Bug Report V2" &&
+    right.provenance?.source ===
       "Canonical Bug Report V2"
   ) {
     return (
@@ -198,7 +106,7 @@ function sameMeaning(
     );
   }
 
-  // Legacy catalog entries may not carry the new provenance fields.
+  // Legacy entries may not carry the newer provenance fields.
   // Preserve them when the stable id/known Expected/Observed do not conflict.
   return true;
 }
