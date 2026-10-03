@@ -20,6 +20,9 @@ describe("gameplay capability delivery", () => {
         "world:arena-count",
         "capacity:safe-concurrency",
       ],
+      playerFacingEvidenceIds: [
+        "world:arena-count",
+      ],
     });
 
     expect(result.status).toBe("DEGRADED");
@@ -31,6 +34,10 @@ describe("gameplay capability delivery", () => {
     );
     expect(result.expectedCapacity).toBe(6);
     expect(result.playableCapacity).toBe(2);
+    expect(result.informationMismatch).toBe(true);
+    expect(result.playerFacingEvidenceIds).toEqual([
+      "world:arena-count",
+    ]);
     expect(result.reason).toMatch(
       /does not deliver/i,
     );
@@ -44,6 +51,9 @@ describe("gameplay capability delivery", () => {
       designed: true,
       implementationPresent: false,
       evidenceIds: ["dialogue:shop-upgrade"],
+      playerFacingEvidenceIds: [
+        "dialogue:shop-upgrade",
+      ],
     });
 
     expect(result.status).toBe("MISSING");
@@ -53,6 +63,7 @@ describe("gameplay capability delivery", () => {
     expect(result.reportIssueType).toBe(
       "DESIGN_MISMATCH",
     );
+    expect(result.informationMismatch).toBe(true);
   });
 
   it("classifies incomplete implemented behavior as implementation failure", () => {
