@@ -13,7 +13,7 @@ workspace/
 
 There is no `local/`, `active/`, or `saved/` lifecycle tree.
 
-Project lifecycle status belongs in project state/metadata. A project does not move folders merely because it becomes approved, saved, resumed, or published.
+Project lifecycle is derived from approval/publication proof references. It is not stored as a parallel status field, and a project never moves folders because of lifecycle changes.
 
 ## Project workspace
 
@@ -53,19 +53,21 @@ This avoids two report stores with competing authority.
 
 ## Project registry
 
-`workspace/project-registry.json` is the tracked answer to:
+`workspace/project-registry.json` is a compact tracked index.
 
-- what project is currently being worked on;
-- which artifact/version/fingerprint it is bound to;
-- current Work Session ID/revision;
-- canonical Bug Report reference;
-- one DriveProjectBinding;
-- approval/publication proof fingerprints.
+It stores project identity, artifact binding, Work Session pointer, canonical Bug Report pointer, one `DriveProjectBinding`, and active approval/publication proof fingerprints.
 
-Lifecycle status/readiness are derived views. Audit stage/next action stay in Work Session. Historical issue linkage stays in the reliability catalog.
+It does not copy audit stage/revision/next-action, historical issue IDs, issue narratives, or lifecycle/readiness/completion status.
 
-It is intentionally compact. Detailed evidence stays inside the ignored project workspace.
+Derived lifecycle:
 
+```text
+no approval proof      → working
+approval proof         → approved
+approval + publication → drive-published
+```
+
+Detailed evidence and execution state stay inside the ignored project workspace.
 ## Canonical report state
 
 `workspace/reports/` stores only repository-tracked canonical Bug Report V2 current state for audited map versions.
@@ -100,22 +102,15 @@ Internal Work Session, caches, audit control state, or engine metadata are not c
 
 ## Continuity rule
 
-A project always keeps one identity:
+A project always keeps one identity/path:
 
 ```text
 workspace/projects/<project-id>/
 ```
 
-Lifecycle is derived from proof pointers instead of a persisted status field:
+Work Session owns detailed execution progress. Project Registry stores only the Work Session ID/revision pointer.
 
-```text
-no approval proof → working
-approval proof → approved
-approval + complete publication proof → drive-published
-```
-
-Approval readiness is computed on demand. Detailed execution progress remains owned by Work Session / selected-map audit state.
-
+Approval readiness, lifecycle status, and Drive completion are derived views, never parallel stored state.
 ## Gameplay Contract rule
 
 Gameplay Contract is derived for the current scope from evidence inside the selected map version.
