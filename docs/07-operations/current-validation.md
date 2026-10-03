@@ -13,6 +13,26 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — prompt intake finalization
+
+Source-verified on `Local`:
+
+- `AuditUserIntentEnvelope` is the single executable owner for translated user prompt context.
+- User prompt interpretation is explicitly non-authoritative and does not enter gameplay `auditRevision`.
+- Priority domains seed only additive first-pass analysis demand through existing analysis-planner knowledge domains; artifact/RIG demand remains authoritative and may only grow the union.
+- Symptoms, suspicions, expectation/design claims, historical hints, scope/exclusion hints, and test constraints remain separately preserved in bounded model-task context.
+- Semantically equivalent wording is deduplicated by normalized meaning, so repeated phrasing does not inflate search pressure.
+- Material user symptoms that cannot be reconciled with discovered gameplay remain visible as non-bug Audit Obligations.
+- Normal ambiguities are retained for bounded multi-hypothesis search; target/outcome ambiguities that block correctness use `blockingAmbiguities[]` and fail closed before production audit.
+- Loose/malformed envelope JSON is validated defensively before normalization; the exported normalizer is also defensive against malformed arrays/items.
+- Target hints cannot relabel the exact selected artifact. Material target conflicts must be resolved before audit.
+- Map Audit Output V2 and HTML preserve the normalized interpretation transparently as guidance only.
+- Regression tests cover semantic dedupe, additive knowledge demand, malformed input, unsupported enums, ambiguity separation, dropped symptom interpretation, unexplained symptom obligations, and output preservation.
+- Rough-language benchmark cases cover progression stalls, guessed ticking-area causes, inventory loss/duplication, multi-arena crossing, broad completion failure, design claims, ambiguous reset behavior, multiple-writer false positives, and target-version conflicts.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. This prompt-intake stage is architecture-complete enough to freeze, but local typecheck/full repository verification and model-based prompt benchmark execution have not yet been run.
+
+
 ## 2026-10-03 — user prompt intake hardening
 
 Source-verified on `Local`:
