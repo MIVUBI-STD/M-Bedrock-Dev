@@ -178,11 +178,14 @@ Playable Capability
 
 ## Status
 
-Production `bugs[]` and `designMismatches[]` are confirmation-only:
+Every material finding uses exactly one of two public statuses:
 
-- Confirmed — contradiction proven from the selected artifact and bounded counter-proof search found no blocking proof.
+- `PROVEN` — contradiction is sufficiently proven from selected-artifact evidence and blocking counter-proof is cleared. Final Blocker / Major / Minor severity is allowed.
+- `NEED_VALIDATION` — the finding remains materially plausible but one specific proof obligation is unresolved. It must include a concise validation reason, the exact missing proof, and one narrow validation test. Final severity is not allowed yet.
 
-Unresolved work is not serialized as a pseudo-issue. It remains in the audit proof/test queue as a narrow runtime proof request, targeted Detection Gap test, or unresolved intent/evidence obligation until it resolves to Confirmed or is disproven.
+BUG versus DESIGN_MISMATCH remains an independent `issueType`; status does not replace issue type.
+
+Internal states such as runtime proof required, Detection Gap, insufficient evidence, or ambiguous intent are mapped into the NEED_VALIDATION reason rather than exposed as extra public categories.
 
 
 ## Gameplay Model Closure
