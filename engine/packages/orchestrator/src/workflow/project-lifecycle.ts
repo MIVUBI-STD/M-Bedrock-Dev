@@ -381,6 +381,16 @@ export function createDrivePublishReceipt(input: {
   readonly files:
     readonly ProjectDrivePublishReceipt["files"][number][];
 }): ProjectDrivePublishReceipt {
+  const snapshotIssues =
+    validateProjectApprovalSnapshot(
+      input.snapshot,
+    );
+  if (snapshotIssues.length > 0) {
+    throw new Error(
+      snapshotIssues.join("; "),
+    );
+  }
+
   if (input.project.status !== "approved") {
     throw new Error(
       "Drive publication requires an approved project.",
