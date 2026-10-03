@@ -575,6 +575,7 @@ export interface GameplayWorldModelSource {
     uiForm: boolean;
     environment: boolean;
     asyncCommandTransaction: boolean;
+    dynamicCommand: boolean;
   };
 }
 
@@ -1036,6 +1037,18 @@ export function deriveGameplayWorldModel(
         "Gameplay-significant runCommandAsync mutation is present, but generic success/failure/await/rollback semantics are not fully proven before dependent gameplay state commits.",
     });
   }
+  if (source.unsupportedSurfaceSignals?.dynamicCommand) {
+    runtimeSurfaces.push({
+      id: "runtime:dynamic-command",
+      label: "Dynamic command semantics",
+      kind: "runtime-domain",
+      status: "unknown",
+      material: true,
+      reason:
+        "A gameplay command is constructed dynamically. Its concrete effects cannot be exhaustively derived from literal command analysis, so the affected behavior remains a Detection Gap.",
+    });
+  }
+
 
   const intentSurfaces =
     buildIntentClosureSurfaces(source.intent);
@@ -1103,6 +1116,9 @@ export function deriveGameplayWorldModel(
     asyncCommandTransactionEvidence:
       source.unsupportedSurfaceSignals
         ?.asyncCommandTransaction,
+    dynamicCommandEvidence:
+      source.unsupportedSurfaceSignals
+        ?.dynamicCommand,
   });
 
   const gameplayClosure =
