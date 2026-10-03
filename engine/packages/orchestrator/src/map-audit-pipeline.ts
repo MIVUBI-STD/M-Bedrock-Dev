@@ -55,7 +55,9 @@ import {
   type SelectedMapAuditIdentity,
 } from "./map-audit-identity.js";
 import {
+  projectNeedValidationAuditIssues,
   projectReadyAuditIssues,
+  type AuditIssueProjection,
   type ReadyAuditIssueProjection,
 } from "./map-audit-issue-projection.js";
 import {
@@ -131,9 +133,9 @@ export interface SelectedMapAuditRun {
   };
   readonly modelTaskPackets: readonly AuditModelTaskPacket[];
   readonly issueLanes: {
-    readonly BUG: readonly ReadyAuditIssueProjection[];
+    readonly BUG: readonly AuditIssueProjection[];
     readonly DESIGN_MISMATCH:
-      readonly ReadyAuditIssueProjection[];
+      readonly AuditIssueProjection[];
   };
   readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
   readonly blockingCheckpointIds: readonly string[];
@@ -164,18 +166,28 @@ function deriveSelectedMapAuditControl(input: {
     input.admission.firstBlockingStage === undefined ||
     input.admission.firstBlockingStage === "PROVE" ||
     input.admission.firstBlockingStage === "REPORT";
-  const allReadyIssues = proveAuthorized
+  const provenIssues = proveAuthorized
     ? projectReadyAuditIssues(
         input.scenario.graph,
         input.scenario.defectResolution,
         input.capabilityDelivery,
       )
     : [];
+  const needValidationIssues =
+    projectNeedValidationAuditIssues(
+      input.scenario.graph,
+      input.scenario.defectResolution,
+      input.capabilityDelivery,
+    );
+  const allVisibleIssues: readonly AuditIssueProjection[] = [
+    ...provenIssues,
+    ...needValidationIssues,
+  ];
   const issueLanes = {
-    BUG: allReadyIssues.filter(
+    BUG: allVisibleIssues.filter(
       (item) => item.issueType === "BUG",
     ),
-    DESIGN_MISMATCH: allReadyIssues.filter(
+    DESIGN_MISMATCH: allVisibleIssues.filter(
       (item) =>
         item.issueType === "DESIGN_MISMATCH",
     ),
@@ -183,7 +195,10 @@ function deriveSelectedMapAuditControl(input: {
   const candidateGroups = proveAuthorized
     ? groupReadyAuditIssuesForCandidateCoverage(
         input.scenario.graph,
-        issueLanes.BUG,
+        issueLanes.BUG.filter(
+          (item): item is ReadyAuditIssueProjection =>
+            item.status === "PROVEN",
+        ),
       )
     : [];
   const executionTrace = deriveAuditExecutionTrace({
@@ -647,7 +662,7 @@ export interface BuildSelectedMapAuditReportInput
 export interface BuildSelectedMapAuditReportResult
   extends BuildBugReportFromAuditResult {
   readonly designMismatches:
-    readonly ReadyAuditIssueProjection[];
+    readonly AuditIssueProjection[];
 }
 
 /**
