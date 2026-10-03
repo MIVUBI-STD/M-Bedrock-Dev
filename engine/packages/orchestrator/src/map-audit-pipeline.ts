@@ -86,6 +86,10 @@ import {
   issueSelectedMapAuditAuthority,
 } from "./map-audit-authority.js";
 import {
+  assessAuditHonesty,
+  type AuditHonestyAssessment,
+} from "./map-audit-honesty.js";
+import {
   auditCandidateGroupCoverageIssues,
   groupReadyAuditIssuesForCandidateCoverage,
   type ReadyAuditCandidateGroup,
@@ -150,6 +154,7 @@ export interface SelectedMapAuditRun {
   };
   readonly candidateGroups: readonly ReadyAuditCandidateGroup[];
   readonly validationTests: readonly AuditValidationTestGroup[];
+  readonly honesty: AuditHonestyAssessment;
   readonly blockingCheckpointIds: readonly string[];
   readonly reasons: readonly string[];
 }
@@ -177,6 +182,7 @@ function deriveSelectedMapAuditControl(input: {
   | "issueLanes"
   | "candidateGroups"
   | "validationTests"
+  | "honesty"
   | "status"
   | "blockingCheckpointIds"
   | "reasons"
@@ -218,6 +224,14 @@ function deriveSelectedMapAuditControl(input: {
     ...signalValidationIssues,
     ...closureValidationIssues,
   ]);
+  const honesty = assessAuditHonesty({
+    graph: input.scenario.graph,
+    gate: input.scenario.defectResolution,
+    gameplayClosure: input.gameplayClosure,
+    negativeSpace: input.negativeSpace,
+    temporalRisks: input.temporalRisks,
+    visibleIssues: allVisibleIssues,
+  });
   const issueLanes = {
     BUG: allVisibleIssues.filter(
       (item) => item.issueType === "BUG",
@@ -281,16 +295,26 @@ function deriveSelectedMapAuditControl(input: {
     issueLanes,
     candidateGroups,
     validationTests,
+    honesty,
     status:
-      input.admission.status === "READY"
+      input.admission.status === "READY" &&
+      honesty.status === "PASS"
         ? "READY_FOR_REVIEW"
         : "BLOCKED",
     blockingCheckpointIds: [
       ...input.procedure.blockingCheckpointIds,
     ],
-    reasons: input.admission.issues.map((issue) =>
-      "[" + issue.stage + "] " + issue.message
-    ),
+    reasons: [
+      ...input.admission.issues.map((issue) =>
+        "[" + issue.stage + "] " + issue.message
+      ),
+      ...(honesty.status === "PASS"
+        ? []
+        : honesty.reasons.map(
+            (reason) =>
+              "[HONESTY] " + reason,
+          )),
+    ],
   };
 }
 
