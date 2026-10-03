@@ -1,5 +1,7 @@
 # Cross-System Interaction Audit Matrix
 
+> **Supporting STRESS contract only.** Cross-system checks are activated by the canonical Mandatory Gameplay Audit Procedure and C9. This document never creates an independent checklist/status authority.
+
 ## Purpose
 
 Many serious gameplay bugs occur at the boundary between two individually-correct systems. This matrix prevents audits from reviewing domains only in isolation.
