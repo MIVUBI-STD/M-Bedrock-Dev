@@ -218,18 +218,6 @@ function checklist(
   ].join("\n");
 }
 
-function technicalBlock(
-  value: string,
-): string {
-  return (
-    '<details class="technical">' +
-    '<summary>Technical Analysis</summary>' +
-    '<div class="technical-text">' +
-    escapeHtml(value) +
-    "</div></details>"
-  );
-}
-
 function issueCard(issue: BugReportClientIssue): string {
   const metadata =
     '<div class="meta-line"><span>' +
@@ -274,7 +262,9 @@ function issueCard(issue: BugReportClientIssue): string {
     const technicalParts: string[] = [];
     if (issue.technicalAnalysis) {
       technicalParts.push(
-        technicalBlock(issue.technicalAnalysis),
+        '<div class="technical-text">' +
+          escapeHtml(issue.technicalAnalysis) +
+          '</div>',
       );
     }
     if (issue.relevantCode?.length) {
@@ -302,9 +292,9 @@ function issueCard(issue: BugReportClientIssue): string {
       );
     }
     rows.push(
-      '<div class="technical-row">' +
+      '<div class="technical-row"><details class="technical"><summary>Technical Detail</summary>' +
       technicalParts.join("") +
-      '</div>',
+      '</details></div>',
     );
   }
 
@@ -385,10 +375,10 @@ function auditFindingCard(
     "    </div>",
     "  </header>",
     '  <div class="issue-body">',
-    '<div class="row"><div class="label">Reproduce / Check</div><div class="value">' +
+    '<div class="row"><div class="label">Tester Checklist</div><div class="value">' +
       checklist(finding.reproduceSteps) +
       "</div></div>",
-    '<div class="row"><div class="label">Actual</div><div class="value">' +
+    '<div class="row"><div class="label">Observed</div><div class="value">' +
       escapeHtml(finding.actual) +
       "</div></div>",
     '<div class="row"><div class="label">Expected</div><div class="value">' +
