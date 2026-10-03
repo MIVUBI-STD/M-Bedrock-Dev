@@ -43,6 +43,22 @@ describe("report classification producers", () => {
       .toBe("runtime-compatibility");
   });
 
+  it("does not convert raw replica/voxel divergence into a report failure before semantic classification", () => {
+    const result =
+      derivePrimaryFailureSignalsFromDiagnostics([
+        {
+          id: "diag:replica",
+          code: "ARENA_VOXEL_DIVERGENCE",
+          severity: "critical",
+          message: "Replica differs physically.",
+        },
+      ]);
+
+    expect(result.signals).toEqual([]);
+    expect(result.unmappedFindingIds)
+      .toEqual(["diag:replica"]);
+  });
+
   it("does not infer primary failure for ambiguous diagnostics", () => {
     const result =
       derivePrimaryFailureSignalsFromDiagnostics([
