@@ -15,8 +15,8 @@ This checklist is a publication review only. The executable checkpoint owner is 
 - [ ] UNDERSTAND block is closed, including A7 Gameplay Model Closure.
 - [ ] MODEL block is closed for every applicable system.
 - [ ] STRESS block is closed for every applicable lifecycle/cross-system scenario.
-- [ ] PROVE block is closed: RIG, contradiction resolution, counter-proof, and root-cause consolidation are complete.
-- [ ] REPORT block preserves every material finding as PROVEN or NEED_VALIDATION; approved Bug Report V2 promotion remains limited to approved PROVEN BUG items.
+- [ ] PROVE has no blocking source-side work; non-blocking PARTIAL is allowed only for explicit irreducible runtime proof residue with targeted validation.
+- [ ] REPORT / E1 Map Audit Report Contract preserves every material finding as PROVEN or NEED_VALIDATION; approved Bug Report V2 promotion remains limited to approved PROVEN BUG items.
 
 ## Gameplay closure
 
