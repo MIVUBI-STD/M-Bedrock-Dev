@@ -122,7 +122,8 @@ runSelectedMapAudit()
 → map-audit-admission
 → RIG/scenario/analyzer evidence
 → Gameplay Defect Resolution
-→ issueLanes
+→ auditObligations[] for unresolved non-findings
+→ issueLanes for causal findings
    ├─ issueLanes.BUG
    └─ issueLanes.DESIGN_MISMATCH
 → review/report
