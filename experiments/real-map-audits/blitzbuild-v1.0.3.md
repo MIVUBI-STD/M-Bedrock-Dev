@@ -50,9 +50,11 @@ Reconnect requires matching membership, arena, session and generation plus a mat
 
 Session/membership persistence is generation-bound. Pre-game reset waits for all configured plots, and block mutation rollback stores both permutation and liquid state.
 
-## Source-hygiene obligation — not bug
+## Developer diagnostic surface — counter-proof closed
 
-`blitzbuild:status` diagnostics are registered without the normal gameplay admin gate and can emit detailed protection/water diagnostics when invoked. This pass did not prove ordinary players can invoke the required script-event command, so it remains a developer-surface hardening obligation rather than a gameplay finding.
+`blitzbuild:status` is registered without the map's own gameplay admin-tag gate, but the only selected-artifact trigger is Minecraft's `/scriptevent` command. Current Bedrock command documentation classifies `/scriptevent` as **Game Directors** permission and **Requires Cheats: Yes**; GameDirectors requires Operator Commands permission for players. Therefore an ordinary non-operator player does not have a selected-artifact invocation path.
+
+The diagnostic handler may remain developer-facing hygiene, but it is **not an unresolved gameplay validation obligation** and is not admitted as a bug.
 
 ## Result
 
