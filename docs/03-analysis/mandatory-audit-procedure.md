@@ -20,7 +20,7 @@ TARGET
 → REPORT
 ```
 
-TARGET and DISCOVERY are admission gates for block A. They are not parallel workflows. No later stage may authorize a decision while an earlier stage is blocked. Runtime evidence, review, HTML, and other projections are continuations or presentations of this same flow, never alternate audit paths.
+TARGET and DISCOVERY are first-class ordered stages. They are not aliases of UNDERSTAND and they are not parallel workflows. No later stage may authorize a decision while an earlier stage is blocked. Runtime evidence, review, HTML, and other projections are continuations or presentations of this same flow, never alternate audit paths.
 
 Supporting documents such as Gameplay Model Closure, Blind Spots, and Cross-System Interaction provide specialist knowledge. They do not replace this procedure and they do not own a parallel checklist.
 
@@ -627,6 +627,27 @@ Progression Contract per material objective/mechanic.
 
 Every required progression chain reaches a grounded player-visible transition or is explicitly unresolved.
 
+---
+
+## A7. Gameplay Model Closure
+
+### Purpose
+
+Aggregate UNDERSTAND closure after journey, state, ownership, and progression reconstruction.
+
+### Closure Rule
+
+Gameplay Model Closure is `CLOSED` only when:
+
+- the material state model is complete;
+- material boundaries are extracted;
+- no discovered material surface remains unaccounted.
+
+`OPEN` or `PARTIAL` blocks continuation through the Mandatory Audit Procedure. Admission does not re-evaluate this closure separately.
+
+### Output
+
+`GameplayModelClosure`.
 ---
 
 # B. MODEL
