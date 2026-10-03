@@ -11,7 +11,7 @@
     "registryFingerprint": "ecfcbeb2",
     "proofRegistry": "engine/reliability/catalogs/capability-proof-bindings.json",
     "proofRegistryFingerprint": "263994b8",
-    "proofInventoryFingerprint": "d2be026b"
+    "proofInventoryFingerprint": "e37c9295"
   },
   "summary": {
     "taskCapabilities": 51,
@@ -367,8 +367,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 25,
-      "testFiles": 19,
+      "sourceFiles": 26,
+      "testFiles": 20,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/diagnostic-reasoning/test/audit-coverage.test.ts",
@@ -400,8 +400,8 @@
         "LIVE_MINECRAFT"
       ],
       "runtimeOnly": false,
-      "sourceFiles": 25,
-      "testFiles": 19,
+      "sourceFiles": 26,
+      "testFiles": 20,
       "hasReadme": true,
       "proofPaths": [
         "engine/packages/diagnostic-reasoning/test/audit-coverage.test.ts",
