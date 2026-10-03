@@ -24,3 +24,5 @@ export * from "./reachability-graph.js";
 export * from "./capability-exposure.js";
 export * from "./contradiction-registry.js";
 export * from "./audit-risk.js";
+
+export * from "./gameplay-issue-taxonomy.js";
