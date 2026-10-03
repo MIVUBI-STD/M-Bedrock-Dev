@@ -1,5 +1,7 @@
 # Gameplay Model Closure Contract
 
+> **Supporting contract only.** This document defines UNDERSTAND/MODEL closure semantics inside the Mandatory Gameplay Audit Procedure. It does not own audit order, continuation, PASS, or report publication.
+
 ## Purpose
 
 Gameplay Model Closure is the **understanding gate** after Gameplay Discovery Closure.
