@@ -1,7 +1,4 @@
 import type {
-  BugReportV2,
-} from "../v2.js";
-import type {
   BugSeverity,
 } from "../vocabulary.js";
 
@@ -57,18 +54,11 @@ export interface BugReportClientIssue {
 export interface BugReportClientDocument {
   readonly schema:
     typeof BUG_REPORT_CLIENT_DOCUMENT_SCHEMA;
-  readonly documentType: "Bug Report";
   readonly title: string;
   readonly subtitle: string;
-  readonly audience: "client";
   readonly map: BugReportClientDocumentMap;
   readonly summary: BugReportClientDocumentSummary;
   readonly severityLegend:
     readonly BugReportClientSeverityLegendItem[];
   readonly issues: readonly BugReportClientIssue[];
-  readonly source: {
-    readonly schema: BugReportV2["schema"];
-    readonly issueScope: "open" | "all";
-    readonly severityScope: "blocker-major" | "all";
-  };
 }
