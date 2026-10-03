@@ -89,6 +89,21 @@ approvedBugReportV2
 
 Do not use "Bug Report" to imply unresolved material findings may be omitted from the human-facing audit report.
 
+## Evidence-route boundary
+
+Internal report candidate values `static`, `runtime`, and `tester` describe evidence origin only.
+
+Canonical interpretation:
+
+```text
+one audit flow
+→ PROVE
+→ evidence origin: static | runtime | tester
+→ one finding projection
+```
+
+They must never be presented as alternate audit lanes or alternate production entrypoints. Existing internal `route` fields are compatibility names; their semantic meaning is `evidenceRoute`.
+
 ## Rule
 
 A new name requires replacing an existing canonical term, not coexisting with it.
