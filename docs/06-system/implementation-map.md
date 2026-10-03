@@ -68,6 +68,7 @@ Use this before broad repository search.
 | Mandatory audit procedure machine-readable projection / closure | engine/packages/orchestrator/src/inspection/mandatory-audit-procedure.ts |
 | Rich state/ownership/progression audit projections | engine/packages/orchestrator/src/inspection/mandatory-audit-support.ts |
 | Production selected-map audit single entry + canonical continuations | engine/packages/orchestrator/src/map-audit-pipeline.ts (exact .mcworld → artifact proof → ordered audit → resolveSelectedMapAudit when needed → review → report) |
+| Canonical SelectedMapAuditRun → Map Audit Output V2 presentation projection | engine/packages/orchestrator/src/map-audit-output-v2.ts |
 | Opaque production reporting authority / raw collector bypass guard | engine/packages/orchestrator/src/map-audit-authority.ts + reporting/report-defect-collector.ts |
 | Ordered production audit admission / first blocking stage (reads Mandatory Audit Procedure checkpoints only) | engine/packages/orchestrator/src/map-audit-admission.ts |
 | Typed directional gameplay-scenario component traversal / semantic stop boundaries | engine/packages/orchestrator/src/inspection/gameplay-scenario-knowledge.ts |
