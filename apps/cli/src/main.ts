@@ -84,6 +84,12 @@ async function main(): Promise<void> {
     "dev-arena-audit",
     "dev-probe-plan",
     "dev-probe-replay",
+    "arena-adapter",
+    "arena-baseline",
+    "arena-corpus",
+    "arena-corpus-status",
+    "corpus-calibrate",
+    "script-usage",
   ]);
   const productionAuditCommand =
     command !== undefined &&
@@ -96,7 +102,7 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       command +
-        " is an engineering-only diagnostic/projection command. " +
+        " is an engineering/reliability-only command. " +
         "Use 'audit <map.mcworld>' for production map bug analysis. " +
         "Set MBEDROCK_ENGINEERING_TOOLS=1 only for bounded engine development.",
     );
