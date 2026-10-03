@@ -74,6 +74,12 @@ describe("gameplay world model", () => {
         knowledgePrerequisiteGaps: 0,
         staticAnalysisLimits: 1,
       },
+      unsupportedSurfaceSignals: {
+        teleport: true,
+        uiForm: true,
+        environment: true,
+        asyncCommandTransaction: true,
+      },
     });
 
     expect(result.arenas.count).toBe(3);
@@ -92,5 +98,15 @@ describe("gameplay world model", () => {
         (surface) => surface.id,
       ),
     ).toContain("runtime:arena-capacity");
+    expect(
+      result.gameplayClosure.unknownSurfaceIds,
+    ).toEqual(
+      expect.arrayContaining([
+        "runtime:teleport",
+        "runtime:ui-form",
+        "runtime:environment",
+        "runtime:async-command-transaction",
+      ]),
+    );
   });
 });
