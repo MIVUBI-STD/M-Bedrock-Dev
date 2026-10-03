@@ -20,6 +20,9 @@ import type {
 import type {
   SharedResourceOwnershipSignal,
 } from "./inspection/shared-resource-ownership.js";
+import {
+  assessReadyResolutionSaturation,
+} from "./map-audit-proof-saturation.js";
 import type {
   AccumulationGrowthSignal,
   CompoundBoundarySignal,
@@ -236,11 +239,37 @@ export function assessAuditHonesty(input: {
     ),
   ].sort();
 
+  const confirmedSaturation = new Map(
+    input.gate.resolutions
+      .filter((resolution) =>
+        input.gate.confirmedDefectReadyIds.includes(
+          resolution.causalLinkId,
+        )
+      )
+      .map((resolution) => [
+        resolution.causalLinkId,
+        assessReadyResolutionSaturation(
+          input.graph,
+          resolution,
+        ),
+      ]),
+  );
+
   const expectedProvenIds = [
-    ...new Set(
-      input.gate.confirmedDefectReadyIds,
-    ),
-  ].sort();
+    ...confirmedSaturation.entries(),
+  ]
+    .filter(([, assessment]) =>
+      assessment.saturated
+    )
+    .map(([id]) => id)
+    .sort();
+
+  for (const [id, assessment] of confirmedSaturation) {
+    if (!assessment.saturated) {
+      expectedVisibleResidueIds.push(id);
+    }
+  }
+  expectedVisibleResidueIds.sort();
   const visibleProvenIds = [
     ...new Set(
       input.visibleIssues
