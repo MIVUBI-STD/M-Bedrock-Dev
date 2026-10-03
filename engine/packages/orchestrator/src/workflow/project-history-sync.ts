@@ -25,11 +25,12 @@ export async function syncApprovedProjectIssueHistory(input: {
   readonly historicalRegressionIds: readonly string[];
 }> {
   if (
+    input.project.status !== "ready-for-approval" &&
     input.project.status !== "approved" &&
     input.project.status !== "drive-published"
   ) {
     throw new Error(
-      "Historical issue sync requires an approved project snapshot.",
+      "Historical issue sync requires a project that has passed approval readiness.",
     );
   }
   if (
