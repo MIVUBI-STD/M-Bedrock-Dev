@@ -159,21 +159,35 @@ export async function upsertProjectRecord(
   );
 }
 
+function safeFingerprint(
+  value: string,
+): string {
+  return value
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, "_");
+}
+
 function approvalPath(
   workspace: ProjectWorkspaceLayout,
+  snapshotFingerprint: string,
 ): string {
   return join(
     workspace.state,
-    "approval-snapshot.json",
+    "approvals",
+    safeFingerprint(snapshotFingerprint) +
+      ".json",
   );
 }
 
 function driveReceiptPath(
   workspace: ProjectWorkspaceLayout,
+  snapshotFingerprint: string,
 ): string {
   return join(
     workspace.state,
-    "drive-publish-receipt.json",
+    "publications",
+    safeFingerprint(snapshotFingerprint) +
+      ".json",
   );
 }
 
@@ -181,33 +195,46 @@ export async function saveProjectApprovalSnapshot(
   workspace: ProjectWorkspaceLayout,
   snapshot: ProjectApprovalSnapshot,
 ): Promise<void> {
-  await mkdir(workspace.state, {
+  const path = approvalPath(
+    workspace,
+    snapshot.snapshotFingerprint,
+  );
+  await mkdir(dirname(path), {
     recursive: true,
   });
   const existing =
     await readJsonIfExists(
-      approvalPath(workspace),
+      path,
     ) as ProjectApprovalSnapshot | undefined;
+
   if (
     existing !== undefined &&
-    existing.snapshotFingerprint !==
-      snapshot.snapshotFingerprint
+    JSON.stringify(existing) !==
+      JSON.stringify(snapshot)
   ) {
     throw new Error(
-      "Refusing to overwrite a different approved project snapshot. Create a new project revision first.",
+      "Conflicting project approval snapshot for the same fingerprint.",
     );
   }
+  if (existing !== undefined) {
+    return;
+  }
+
   await atomicWriteText(
-    approvalPath(workspace),
+    path,
     JSON.stringify(snapshot, null, 2) + "\n",
   );
 }
 
 export async function loadProjectApprovalSnapshot(
   workspace: ProjectWorkspaceLayout,
+  snapshotFingerprint: string,
 ): Promise<ProjectApprovalSnapshot | undefined> {
   return await readJsonIfExists(
-    approvalPath(workspace),
+    approvalPath(
+      workspace,
+      snapshotFingerprint,
+    ),
   ) as ProjectApprovalSnapshot | undefined;
 }
 
@@ -215,34 +242,72 @@ export async function saveProjectDrivePublishReceipt(
   workspace: ProjectWorkspaceLayout,
   receipt: ProjectDrivePublishReceipt,
 ): Promise<void> {
-  await mkdir(workspace.state, {
+  const path = driveReceiptPath(
+    workspace,
+    receipt.snapshotFingerprint,
+  );
+  await mkdir(dirname(path), {
     recursive: true,
   });
+
   const existing =
     await readJsonIfExists(
-      driveReceiptPath(workspace),
+      path,
     ) as ProjectDrivePublishReceipt | undefined;
-  if (
-    existing !== undefined &&
-    existing.snapshotFingerprint ===
-      receipt.snapshotFingerprint &&
-    existing.receiptFingerprint !==
-      receipt.receiptFingerprint
-  ) {
-    throw new Error(
-      "Conflicting Drive publish receipt for the same approved snapshot.",
+
+  if (existing !== undefined) {
+    if (
+      existing.receiptFingerprint ===
+        receipt.receiptFingerprint
+    ) {
+      return;
+    }
+
+    const existingKeys = new Set(
+      existing.files.map(
+        (item) =>
+          item.kind + "|" +
+          item.fingerprint + "|" +
+          item.fileId,
+      ),
     );
+    const incomingKeys = new Set(
+      receipt.files.map(
+        (item) =>
+          item.kind + "|" +
+          item.fingerprint + "|" +
+          item.fileId,
+      ),
+    );
+    const monotonic =
+      [...existingKeys].every((key) =>
+        incomingKeys.has(key)
+      );
+
+    if (
+      !monotonic ||
+      existing.status === "COMPLETE"
+    ) {
+      throw new Error(
+        "Conflicting Drive publish receipt for the same approved snapshot.",
+      );
+    }
   }
+
   await atomicWriteText(
-    driveReceiptPath(workspace),
+    path,
     JSON.stringify(receipt, null, 2) + "\n",
   );
 }
 
 export async function loadProjectDrivePublishReceipt(
   workspace: ProjectWorkspaceLayout,
+  snapshotFingerprint: string,
 ): Promise<ProjectDrivePublishReceipt | undefined> {
   return await readJsonIfExists(
-    driveReceiptPath(workspace),
+    driveReceiptPath(
+      workspace,
+      snapshotFingerprint,
+    ),
   ) as ProjectDrivePublishReceipt | undefined;
 }
