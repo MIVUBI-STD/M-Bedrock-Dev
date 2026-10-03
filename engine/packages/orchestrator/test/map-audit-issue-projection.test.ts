@@ -127,7 +127,7 @@ describe("map audit issue projection", () => {
         label: "Playable concurrent arena capacity",
         status: "DEGRADED",
         failureClass: "DESIGN_FAILURE",
-        reportIssueType: "DESIGN_MISMATCH",
+        issueType: "DESIGN_MISMATCH",
         expectedCapacity: 6,
         playableCapacity: 2,
         technicalConstraintReasons: [],
@@ -147,7 +147,7 @@ describe("map audit issue projection", () => {
       result.find(
         (item) =>
           item.causalLinkId === "link:capacity",
-      )?.reportIssueType,
+      )?.issueType,
     ).toBe("DESIGN_MISMATCH");
     expect(
       result.find(
@@ -177,7 +177,7 @@ describe("map audit issue projection", () => {
       result.find(
         (item) =>
           item.causalLinkId === "link:progression",
-      )?.reportIssueType,
+      )?.issueType,
     ).toBe("BUG");
     expect(
       result.find(
