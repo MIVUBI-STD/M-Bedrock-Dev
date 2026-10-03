@@ -12,8 +12,8 @@ export interface BugReportClientLayoutPlan {
  * Reader-facing layout decisions for Word/PDF.
  *
  * Default documents are table-first and intentionally compact.
- * A separate issue index is used only when the report is large
- * enough that scanning the full issue tables becomes slower.
+ * The issue index is the tester's retest checklist, so it is shown whenever
+ * at least one visible bug exists.
  */
 export function buildBugReportClientLayoutPlan(
   document: BugReportClientDocument,
@@ -21,7 +21,7 @@ export function buildBugReportClientLayoutPlan(
   const count = document.issues.length;
 
   return {
-    showIssueIndex: count >= 3,
+    showIssueIndex: count > 0,
     showSeverityLegend: count > 0,
     compactTables: count >= 4,
   };
