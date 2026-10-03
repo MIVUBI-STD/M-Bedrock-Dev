@@ -30,24 +30,20 @@ A blocker pauses this same sequence; it never creates a second workflow.
 
 This skill routes the work; it must not duplicate or weaken those checkpoint closure rules.
 
-The production audit has one canonical entry: `runSelectedMapAudit({ artifactPath })` in `map-audit-pipeline.ts`, and `artifactPath` must be the exact selected `.mcworld`. Low-level inspection/analyzer/reporting functions—including `inspectDirectory()` and `inspectArtifact()`—are engine plumbing and must not be used as alternate production entry points. Artifact-level native proof must finish before the Mandatory Audit Procedure is re-derived and allowed to close. Ordered readiness is owned only by `map-audit-admission.ts` across TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT. The first blocking stage prevents production continuation. If PROVE stops on Defect Resolution, continue through `resolveSelectedMapAudit()` with the same audit run. The audit run is also the sole owner of `currentStage`, `allowedNextAction`, bounded `modelTaskPackets`, deterministic `readyDefects`, conservative `candidateGroups`, and selected-artifact identity; do not ask the model to infer the next stage, search unrelated systems, invent AI defects outside `readyDefects`, split a deterministic candidate group into duplicate AI bugs without new causal evidence, or map one deterministic candidate group to multiple AI candidates, or supply a different map/version identity at review/report time. A model may promote a contradiction to `CONFIRMED_DEFECT_READY` only with a bounded `CounterProofSearchReceipt` proving the configured search scope was exhausted without blocking proof. Every model task/result must retain the `auditRevision`; `resolveSelectedMapAudit()`, `prepareSelectedMapAuditReview()`, and `buildSelectedMapAuditReport()` reject stale revisions. `runSelectedMapAudit()` reconciles preflight demand against final RIG requirements with one bounded union-demand rerun; review readiness requires the second pass to be stable when reconciliation was needed. Work Session must remain subordinate: its stage is a coarse projection of `SelectedMapAuditRun`, never an independent authority; workflow/map-audit-work-session.ts is the only projection/persistence owner. Eager evidence collection never implies stage completion: `executionTrace` is the authority for which ordered decisions are actually authorized. Later-stage projections stay inert before authorization; `readyDefects` and `candidateGroups` must be empty until PROVE is reached. If a generic Work Session is persisted, it must carry WorkSessionAuditBinding projected from the current SelectedMapAuditRun through map-audit-work-session; its legacy stage names are only a mirror and never audit authority. Review continues through `prepareSelectedMapAuditReview()`; final production report continues through `buildSelectedMapAuditReport()`. The original audit run is carried forward so source inventory, closures, RIG, procedure receipt, and defect-resolution gates cannot be reconstructed or omitted downstream.
+The production audit has one canonical entry: `runSelectedMapAudit({ artifactPath })` in `map-audit-pipeline.ts`, and `artifactPath` must be the exact selected `.mcworld`. Low-level inspection/analyzer/reporting functions—including `inspectDirectory()` and `inspectArtifact()`—are engine plumbing and must not be used as alternate production entry points. Artifact-level native proof must finish before the Mandatory Audit Procedure is re-derived and allowed to close. Ordered readiness is owned only by `map-audit-admission.ts` across TARGET → DISCOVERY → UNDERSTAND → MODEL → STRESS → PROVE → REPORT. The first blocking stage prevents production continuation. If PROVE stops on Defect Resolution, continue through `resolveSelectedMapAudit()` with the same audit run. The audit run is also the sole owner of `currentStage`, `allowedNextAction`, bounded `modelTaskPackets`, deterministic `readyIssues`, `readyBugs`, `readyDesignMismatches`, conservative `candidateGroups`, and selected-artifact identity; do not ask the model to infer the next stage, search unrelated systems, invent AI defects outside `readyIssues`, split a deterministic candidate group into duplicate AI bugs without new causal evidence, or map one deterministic candidate group to multiple AI candidates, or supply a different map/version identity at review/report time. A model may promote a contradiction to `CONFIRMED_DEFECT_READY` only with a bounded `CounterProofSearchReceipt` proving the configured search scope was exhausted without blocking proof. Every model task/result must retain the `auditRevision`; `resolveSelectedMapAudit()`, `prepareSelectedMapAuditReview()`, and `buildSelectedMapAuditReport()` reject stale revisions. `runSelectedMapAudit()` reconciles preflight demand against final RIG requirements with one bounded union-demand rerun; review readiness requires the second pass to be stable when reconciliation was needed. Work Session must remain subordinate: its stage is a coarse projection of `SelectedMapAuditRun`, never an independent authority; workflow/map-audit-work-session.ts is the only projection/persistence owner. Eager evidence collection never implies stage completion: `executionTrace` is the authority for which ordered decisions are actually authorized. Later-stage projections stay inert before authorization; `readyIssues` and `candidateGroups` must be empty until PROVE is reached. If a generic Work Session is persisted, it must carry WorkSessionAuditBinding projected from the current SelectedMapAuditRun through map-audit-work-session; its legacy stage names are only a mirror and never audit authority. Review continues through `prepareSelectedMapAuditReview()`; final production report continues through `buildSelectedMapAuditReport()`. The original audit run is carried forward so source inventory, closures, RIG, procedure receipt, and defect-resolution gates cannot be reconstructed or omitted downstream.
 
 The engine-owned machine-readable receipt is `inspection/mandatory-audit-procedure.ts`. Production report publication must receive this receipt. OPEN checkpoints block publication. PARTIAL checkpoints block publication unless their reason is specifically `RUNTIME_PROOF_REQUIRED`; absence of a detected feature is not sufficient for `NOT_APPLICABLE` unless Discovery Closure is complete and positive non-applicability evidence is present. Do not create a parallel manual status table.
 
 ```text
 Selected Map Version
-→ Gameplay Surface Inventory
-→ Game Design Reconstruction
-→ Gameplay Flow Mapping
-→ State Transition Mapping
-→ Reset / Preserve Rules
-→ Progression Rules
-→ Multiplayer / Multi Arena Rules
-→ Gameplay Model Closure
-→ Actual Behavior
-→ Gameplay Contradiction
-→ Bug Classification
-→ Production Bug Report V2
+→ TARGET
+→ DISCOVERY
+→ UNDERSTAND
+→ MODEL
+→ STRESS
+→ PROVE
+→ REPORT
+→ BUG | DESIGN_MISMATCH
 ```
 
 Required references:
@@ -80,6 +76,30 @@ Additional binding rules:
 - generic Work Session remains subordinate to `SelectedMapAuditRun`; its audit binding is a persistence/UI projection only;
 - eager evidence collection does not grant decision authority; `executionTrace` is authoritative for ordered stage authorization.
 - platform-constraint reasoning must use bounded applicable platform relation claims (rule/status/source/evidence) from the active runtime profile; `analysis:platform-constraints` alone is only an execution receipt, not proof of a specific Minecraft/Education rule.
+
+## One-door authority summary
+
+Do not choose among specialist documents as workflows.
+
+```text
+runSelectedMapAudit()
+→ Mandatory Audit Procedure
+→ map-audit-admission
+→ RIG/scenario/analyzer evidence
+→ Gameplay Defect Resolution
+→ readyIssues
+   ├─ readyBugs
+   └─ readyDesignMismatches
+→ review/report
+```
+
+- Discovery Closure is subordinate to DISCOVERY.
+- Gameplay Model Closure is subordinate to UNDERSTAND/MODEL.
+- Blind Spots and Cross-System documents are STRESS knowledge.
+- Scenario Closure and Counter-Proof belong to PROVE.
+- HTML/chat/JSON are REPORT projections only.
+
+No subordinate document, analyzer, legacy schema, Work Session, or UI may independently authorize PASS/completion.
 
 ## Gameplay Contract
 
