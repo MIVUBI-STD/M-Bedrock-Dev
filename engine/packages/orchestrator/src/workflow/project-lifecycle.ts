@@ -308,6 +308,20 @@ export function createProjectApprovalSnapshot(input: {
 export function validateProjectApprovalSnapshot(
   snapshot: ProjectApprovalSnapshot,
 ): readonly string[] {
+  if (
+    snapshot === null ||
+    typeof snapshot !== "object" ||
+    snapshot.schemaVersion !== 1 ||
+    !Array.isArray(snapshot.deliverables) ||
+    !Array.isArray(
+      snapshot.historicalRegressionIds,
+    )
+  ) {
+    return [
+      "Project approval snapshot is structurally invalid.",
+    ];
+  }
+
   const issues: string[] = [];
   const payload: Omit<
     ProjectApprovalSnapshot,
@@ -459,6 +473,21 @@ export function createDrivePublishReceipt(input: {
 export function validateDrivePublishReceipt(
   receipt: ProjectDrivePublishReceipt,
 ): readonly string[] {
+  if (
+    receipt === null ||
+    typeof receipt !== "object" ||
+    receipt.schemaVersion !== 1 ||
+    !Array.isArray(receipt.files) ||
+    (
+      receipt.status !== "PARTIAL" &&
+      receipt.status !== "COMPLETE"
+    )
+  ) {
+    return [
+      "Drive publish receipt is structurally invalid.",
+    ];
+  }
+
   const payload = {
     schemaVersion: receipt.schemaVersion,
     projectId: receipt.projectId,
