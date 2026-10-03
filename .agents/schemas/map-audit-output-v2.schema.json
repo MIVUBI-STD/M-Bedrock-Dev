@@ -282,12 +282,7 @@
             "minLength": 1
           },
           "status": {
-            "enum": [
-              "Confirmed",
-              "Needs Validation",
-              "Ambiguous",
-              "Detection Gap"
-            ]
+            "const": "Confirmed"
           },
           "category": {
             "type": "string",
@@ -446,29 +441,6 @@
                 "testerTriggerReady": {
                   "const": true
                 }
-              }
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "status": {
-                  "enum": [
-                    "Needs Validation",
-                    "Ambiguous",
-                    "Detection Gap"
-                  ]
-                }
-              },
-              "required": [
-                "status"
-              ]
-            },
-            "then": {
-              "not": {
-                "required": [
-                  "severity"
-                ]
               }
             }
           },
@@ -693,12 +665,7 @@
             "minLength": 1
           },
           "status": {
-            "enum": [
-              "Confirmed",
-              "Needs Validation",
-              "Ambiguous",
-              "Detection Gap"
-            ]
+            "const": "Confirmed"
           },
           "category": {
             "type": "string",
@@ -869,29 +836,6 @@
                 "testerTriggerReady": {
                   "const": true
                 }
-              }
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "status": {
-                  "enum": [
-                    "Needs Validation",
-                    "Ambiguous",
-                    "Detection Gap"
-                  ]
-                }
-              },
-              "required": [
-                "status"
-              ]
-            },
-            "then": {
-              "not": {
-                "required": [
-                  "severity"
-                ]
               }
             }
           },
