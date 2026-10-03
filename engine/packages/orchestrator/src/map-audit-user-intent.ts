@@ -100,6 +100,25 @@ export interface AuditUserIntentConfirmationReceipt {
   readonly confirmed: true;
 }
 
+export interface AuditUserIntentConfirmation {
+  readonly schemaVersion: 1;
+  readonly policy: "user-confirmed-audit-intent";
+  readonly intentFingerprint: string;
+}
+
+export interface AuditUserIntentConfirmationSummary {
+  readonly targetHints: readonly string[];
+  readonly symptoms: readonly string[];
+  readonly suspicions: readonly string[];
+  readonly expectationClaims: readonly string[];
+  readonly designClaims: readonly string[];
+  readonly scopeGuidance: readonly string[];
+  readonly testConstraints: readonly string[];
+  readonly historicalHints: readonly string[];
+  readonly ambiguities: readonly string[];
+  readonly unmappedInput: readonly string[];
+}
+
 export interface AuditUserIntentSearchPressure {
   readonly domains: Readonly<
     Partial<Record<GameplayIssueFailureDomain, number>>
@@ -889,6 +908,119 @@ export function deriveAuditUserIntentKnowledgeDemand(
       ),
     ),
   ].sort();
+}
+
+function fnv1a32(value: string): string {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+}
+
+export function auditUserIntentFingerprint(
+  input: AuditUserIntentEnvelope,
+): string {
+  const normalized = normalizeAuditUserIntent(input);
+  return "intent:v1:" + fnv1a32(
+    JSON.stringify(normalized),
+  );
+}
+
+export function createAuditUserIntentConfirmation(
+  input: AuditUserIntentEnvelope,
+): AuditUserIntentConfirmation {
+  return {
+    schemaVersion: 1,
+    policy: "user-confirmed-audit-intent",
+    intentFingerprint:
+      auditUserIntentFingerprint(input),
+  };
+}
+
+export function validateAuditUserIntentConfirmation(
+  input: AuditUserIntentEnvelope,
+  confirmation: AuditUserIntentConfirmation | undefined,
+): readonly string[] {
+  if (confirmation === undefined) {
+    return [
+      "User confirmation is required before production audit.",
+    ];
+  }
+
+  const issues: string[] = [];
+  if (confirmation.schemaVersion !== 1) {
+    issues.push(
+      "User intent confirmation schemaVersion must be 1.",
+    );
+  }
+  if (
+    confirmation.policy !==
+    "user-confirmed-audit-intent"
+  ) {
+    issues.push(
+      "User intent confirmation policy is invalid.",
+    );
+  }
+
+  const expected =
+    auditUserIntentFingerprint(input);
+  if (
+    confirmation.intentFingerprint !== expected
+  ) {
+    issues.push(
+      "User intent confirmation is stale or belongs to a different prompt interpretation.",
+    );
+  }
+
+  return issues;
+}
+
+export function summarizeAuditUserIntentForConfirmation(
+  input: AuditUserIntentEnvelope,
+): AuditUserIntentConfirmationSummary {
+  const normalized =
+    normalizeAuditUserIntent(input);
+  const byKind = (
+    kind: AuditUserInputClass,
+  ): string[] =>
+    normalized.items
+      .filter((item) => item.kind === kind)
+      .map((item) => item.normalized);
+
+  const fragmentById = new Map(
+    normalized.fragments.map(
+      (fragment) => [fragment.id, fragment.raw],
+    ),
+  );
+
+  return {
+    targetHints: byKind("TARGET_HINT"),
+    symptoms: byKind("SYMPTOM_REPORT"),
+    suspicions: byKind("SUSPICION"),
+    expectationClaims:
+      byKind("EXPECTATION_CLAIM"),
+    designClaims: byKind("DESIGN_CLAIM"),
+    scopeGuidance: [
+      ...byKind("SCOPE_REQUEST"),
+      ...byKind("EXCLUSION_REQUEST"),
+    ],
+    testConstraints:
+      byKind("TEST_CONSTRAINT"),
+    historicalHints:
+      byKind("HISTORICAL_REFERENCE"),
+    ambiguities: [
+      ...normalized.ambiguities,
+    ],
+    unmappedInput:
+      normalized.unmappedFragmentIds
+        .map((id) => fragmentById.get(id))
+        .filter(
+          (value): value is string =>
+            value !== undefined,
+        ),
+  };
 }
 
 export function auditUserIntentAuthorityNote(): string {
