@@ -9,6 +9,10 @@ export type GameplayCapabilityFailureClass =
   | "DESIGN_IMPLEMENTATION_MISMATCH"
   | "IMPLEMENTATION_FAILURE";
 
+export type GameplayReportIssueType =
+  | "BUG"
+  | "DESIGN_MISMATCH";
+
 export interface GameplayCapabilityDeliveryInput {
   readonly subjectId: string;
   readonly label: string;
@@ -27,6 +31,7 @@ export interface GameplayCapabilityDeliveryAssessment {
   readonly label: string;
   readonly status: GameplayCapabilityDeliveryStatus;
   readonly failureClass?: GameplayCapabilityFailureClass;
+  readonly reportIssueType?: GameplayReportIssueType;
   readonly expectedCapacity?: number;
   readonly playableCapacity?: number;
   readonly technicalConstraintReasons: readonly string[];
@@ -57,6 +62,7 @@ export function assessGameplayCapabilityDelivery(
         label: input.label,
         status: "DEGRADED",
         failureClass: "DESIGN_FAILURE",
+        reportIssueType: "DESIGN_MISMATCH",
         expectedCapacity:
           input.expectedCapacity,
         playableCapacity:
@@ -97,6 +103,7 @@ export function assessGameplayCapabilityDelivery(
       status: "MISSING",
       failureClass:
         "DESIGN_IMPLEMENTATION_MISMATCH",
+      reportIssueType: "DESIGN_MISMATCH",
       technicalConstraintReasons,
       evidenceIds,
       reason:
@@ -115,6 +122,7 @@ export function assessGameplayCapabilityDelivery(
       label: input.label,
       status: "DEGRADED",
       failureClass: "IMPLEMENTATION_FAILURE",
+      reportIssueType: "BUG",
       technicalConstraintReasons,
       evidenceIds,
       reason:
