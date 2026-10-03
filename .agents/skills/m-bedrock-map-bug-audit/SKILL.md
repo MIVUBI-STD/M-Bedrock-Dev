@@ -105,6 +105,17 @@ If expected behavior cannot be grounded from the selected artifact, keep it unkn
 
 Bug discovery starts only after Gameplay Model Closure is CLOSED. Gameplay Model Closure PARTIAL is not a runtime exception: it means material boundaries, blocked surfaces, or unknown gameplay semantics still exist and therefore blocks production continuation. Gameplay Scenario Closure is the only closure allowed to remain PARTIAL, and only because that state is reserved for irreducible Minecraft runtime proof.
 
+## Report issue types
+
+Every confirmed reportable issue must be assigned exactly one report issue type:
+
+- `BUG` — intended behavior/design is grounded, but implementation/runtime is broken.
+- `DESIGN_MISMATCH` — presented/authored capability does not match actual playable/deliverable capability.
+
+Do not place DESIGN_MISMATCH items in the BUG list. Present them as separate report sections while preserving the same severity and evidence discipline.
+
+Internal subtypes such as design capacity failure or design–implementation mismatch may explain root cause, but the reader-facing issue type remains `DESIGN_MISMATCH`.
+
 ## Flow-first audit projection
 
 The model must reason in player-flow order, not analyzer/domain order:
