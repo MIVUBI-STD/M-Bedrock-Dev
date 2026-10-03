@@ -509,14 +509,6 @@ export async function runSelectedMapAudit(
     inspection.hiddenGameplayDefects.scenarioAudit;
   const admission = assessSelectedMapAuditAdmission({
     mandatoryAuditProcedure: procedure,
-    gameplayDiscoveryClosure:
-      inspection.gameplayDiscoveryClosure,
-    gameplayClosure:
-      inspection.gameplayWorld.gameplayClosure,
-    gameplayScenarioClosure:
-      scenario.closure,
-    gameplayDefectResolution:
-      scenario.defectResolution,
   });
   const auditRevision = deriveSelectedMapAuditRevision({
     identity,
@@ -640,14 +632,6 @@ export function resolveSelectedMapAudit(
   const scenario = hidden.scenarioAudit;
   const admission = assessSelectedMapAuditAdmission({
     mandatoryAuditProcedure,
-    gameplayDiscoveryClosure:
-      updatedInspection.gameplayDiscoveryClosure,
-    gameplayClosure:
-      updatedInspection.gameplayWorld.gameplayClosure,
-    gameplayScenarioClosure:
-      scenario.closure,
-    gameplayDefectResolution:
-      scenario.defectResolution,
   });
 
   const auditRevision = deriveSelectedMapAuditRevision({
