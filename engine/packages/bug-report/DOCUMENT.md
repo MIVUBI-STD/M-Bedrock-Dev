@@ -94,6 +94,13 @@ Bug 02 row
 
 Each bug row is its own retest surface: one bug equals one Fixed checkbox. Details are collapsed by default and can be expanded with See details. Checking a bug means the tester has verified that bug as fixed in that HTML copy; it does not mutate canonical bug state. Reproduction steps remain instructional text and are never checkbox state.
 
+A tester should check Fixed only after:
+1. following the listed How to Reproduce path;
+2. confirming the previous Observed wrong behavior no longer occurs; and
+3. confirming the Expected result now occurs.
+
+Every visible bug detail must therefore be self-sufficient: the reader should not need source code, another document, or prior chat context to understand what is wrong and how to retest it.
+
 Each input report represents one map. One generated HTML therefore corresponds to one map and forms a natural printable page/report unit.
 
 ## HTML requirements
