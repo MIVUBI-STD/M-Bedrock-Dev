@@ -242,6 +242,35 @@ Multiple writers alone are not a gameplay issue.
 Normal mutually-exclusive or idempotent writers must resolve as normal/not-applicable.
 ```
 
+## Case 9 — Target hint conflicts with selected artifact
+
+User:
+
+```text
+cek Defense V2, yang versi terbaru
+```
+
+Selected artifact:
+
+```text
+Defense V1.mcworld
+```
+
+Required interpretation:
+
+```text
+TARGET_HINT
+- Defense V2 / latest
+
+blockingAmbiguities
+- user target hint conflicts with selected Defense V1 artifact
+```
+
+Do not:
+- silently rename V1 as V2;
+- use V2 expectations against V1;
+- continue production audit until the exact target is resolved.
+
 ## Acceptance invariants
 
 For every case:
