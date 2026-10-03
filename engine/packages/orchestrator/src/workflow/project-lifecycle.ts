@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type {
+  DriveProjectBinding,
   ProjectApprovalSnapshot,
   ProjectDeliverableRef,
   ProjectDrivePublishReceipt,
@@ -23,7 +24,9 @@ function hash(value: unknown): string {
 
 function unique(values: readonly string[]): string[] {
   return [...new Set(
-    values.map((value) => value.trim()).filter(Boolean),
+    values
+      .map((value) => value.trim())
+      .filter(Boolean),
   )].sort();
 }
 
@@ -33,7 +36,7 @@ export function createProjectRecord(input: {
   readonly taskClass: ProjectRecord["taskClass"];
   readonly artifact: ProjectRecord["artifact"];
   readonly work?: ProjectRecord["work"];
-  readonly driveFolderId?: string;
+  readonly drive?: DriveProjectBinding;
 }): ProjectRecord {
   return {
     schemaVersion: 1,
@@ -48,15 +51,11 @@ export function createProjectRecord(input: {
     work: {
       ...(input.work ?? {}),
     },
-    knowledge: {
-      historicalRegressionIds: [],
-      failurePatternIds: [],
-      mapKnowledgeIds: [],
-    },
+    knowledge: {},
     publication: {
-      ...(input.driveFolderId?.trim()
-        ? { driveFolderId: input.driveFolderId.trim() }
-        : {}),
+      ...(input.drive === undefined
+        ? {}
+        : { drive: input.drive }),
     },
   };
 }
@@ -67,10 +66,7 @@ export function updateProjectRecord(
     readonly artifact?: ProjectRecord["artifact"];
     readonly work?: ProjectRecord["work"];
     readonly bugReportPath?: string;
-    readonly historicalRegressionIds?: readonly string[];
-    readonly failurePatternIds?: readonly string[];
-    readonly mapKnowledgeIds?: readonly string[];
-    readonly driveFolderId?: string;
+    readonly drive?: DriveProjectBinding;
   },
 ): ProjectRecord {
   const artifact =
@@ -78,65 +74,37 @@ export function updateProjectRecord(
   const work = {
     ...(update.work ?? current.work),
   };
+  const knowledge = {
+    ...(update.bugReportPath?.trim()
+      ? {
+          bugReportPath:
+            update.bugReportPath.trim(),
+        }
+      : current.knowledge.bugReportPath ===
+        undefined
+        ? {}
+        : {
+            bugReportPath:
+              current.knowledge
+                .bugReportPath,
+          }),
+  };
+  const nextDrive =
+    update.drive ??
+    current.publication.drive;
 
   const materiallyChanged =
     artifact.artifactFingerprint !==
-      current.artifact.artifactFingerprint ||
+      current.artifact
+        .artifactFingerprint ||
     JSON.stringify(work) !==
       JSON.stringify(current.work) ||
-    (
-      update.bugReportPath !== undefined &&
-      update.bugReportPath.trim() !==
-        (current.knowledge.bugReportPath ?? "")
-    );
-
-  const knowledge = {
-    ...(update.bugReportPath?.trim()
-      ? { bugReportPath: update.bugReportPath.trim() }
-      : current.knowledge.bugReportPath === undefined
-        ? {}
-        : { bugReportPath: current.knowledge.bugReportPath }),
-    historicalRegressionIds: unique(
-      update.historicalRegressionIds ??
-        current.knowledge.historicalRegressionIds,
-    ),
-    failurePatternIds: unique(
-      update.failurePatternIds ??
-        current.knowledge.failurePatternIds,
-    ),
-    mapKnowledgeIds: unique(
-      update.mapKnowledgeIds ??
-        current.knowledge.mapKnowledgeIds,
-    ),
-  };
-
-  const publication = {
-    ...(update.driveFolderId?.trim()
-      ? { driveFolderId: update.driveFolderId.trim() }
-      : current.publication.driveFolderId === undefined
-        ? {}
-        : { driveFolderId: current.publication.driveFolderId }),
-    ...(materiallyChanged
-      ? {}
-      : {
-          ...(current.publication
-            .approvalSnapshotFingerprint === undefined
-            ? {}
-            : {
-                approvalSnapshotFingerprint:
-                  current.publication
-                    .approvalSnapshotFingerprint,
-              }),
-          ...(current.publication
-            .drivePublishReceiptFingerprint === undefined
-            ? {}
-            : {
-                drivePublishReceiptFingerprint:
-                  current.publication
-                    .drivePublishReceiptFingerprint,
-              }),
-        }),
-  };
+    JSON.stringify(knowledge) !==
+      JSON.stringify(current.knowledge) ||
+    JSON.stringify(nextDrive ?? null) !==
+      JSON.stringify(
+        current.publication.drive ?? null,
+      );
 
   const candidate: ProjectRecord = {
     ...current,
@@ -144,14 +112,41 @@ export function updateProjectRecord(
       materiallyChanged &&
       (
         current.status === "approved" ||
-        current.status === "drive-published"
+        current.status ===
+          "drive-published"
       )
         ? "working"
         : current.status,
     artifact,
     work,
     knowledge,
-    publication,
+    publication: {
+      ...(nextDrive === undefined
+        ? {}
+        : { drive: nextDrive }),
+      ...(materiallyChanged
+        ? {}
+        : {
+            ...(current.publication
+              .approvalSnapshotFingerprint ===
+            undefined
+              ? {}
+              : {
+                  approvalSnapshotFingerprint:
+                    current.publication
+                      .approvalSnapshotFingerprint,
+                }),
+            ...(current.publication
+              .drivePublishReceiptFingerprint ===
+            undefined
+              ? {}
+              : {
+                  drivePublishReceiptFingerprint:
+                    current.publication
+                      .drivePublishReceiptFingerprint,
+                }),
+          }),
+    },
   };
 
   if (
@@ -166,21 +161,30 @@ export function updateProjectRecord(
     revision: current.revision + 1,
   };
 }
+
 export function assessProjectApprovalReadiness(input: {
   readonly project: ProjectRecord;
-  readonly deliverables: readonly ProjectDeliverableRef[];
-  readonly blockingReasons?: readonly string[];
+  readonly deliverables:
+    readonly ProjectDeliverableRef[];
+  readonly blockingReasons?:
+    readonly string[];
   readonly requireBugReport?: boolean;
   readonly requireAuditComplete?: boolean;
 }): ProjectApprovalReadiness {
   const missing: string[] = [];
   const project = input.project;
 
+  if (project.status !== "working") {
+    missing.push(
+      "project must be working before a new approval snapshot",
+    );
+  }
   if (!project.work.sessionId?.trim()) {
     missing.push("work session");
   }
   if (
-    project.work.workSessionRevision === undefined ||
+    project.work.workSessionRevision ===
+      undefined ||
     project.work.workSessionRevision < 1
   ) {
     missing.push("work session revision");
@@ -189,34 +193,66 @@ export function assessProjectApprovalReadiness(input: {
     input.requireAuditComplete &&
     project.work.currentStage !== "COMPLETE"
   ) {
-    missing.push("completed selected-map audit");
+    missing.push(
+      "completed selected-map audit",
+    );
   }
   if (
     input.requireBugReport &&
-    !project.knowledge.bugReportPath?.trim()
+    !project.knowledge
+      .bugReportPath?.trim()
   ) {
-    missing.push("canonical Bug Report V2 reference");
+    missing.push(
+      "canonical Bug Report V2 reference",
+    );
   }
-  if (!project.publication.driveFolderId?.trim()) {
-    missing.push("Drive project folder binding");
+  if (
+    project.publication.drive === undefined
+  ) {
+    missing.push(
+      "Drive project binding",
+    );
+  } else if (
+    project.publication.drive.projectId !==
+      project.projectId
+  ) {
+    missing.push(
+      "Drive project binding for this projectId",
+    );
   }
   if (input.deliverables.length === 0) {
     missing.push("approved deliverables");
   }
   for (const deliverable of input.deliverables) {
-    if (
-      !deliverable.path.trim() ||
-      !deliverable.fingerprint.trim()
-    ) {
+    try {
+      if (
+        !deliverable.path.trim() ||
+        !deliverable.fingerprint.trim()
+      ) {
+        missing.push(
+          "complete deliverable identity: " +
+            deliverable.kind,
+        );
+      }
+    } catch {
       missing.push(
-        "complete deliverable identity: " +
-          deliverable.kind,
+        "valid deliverable: " +
+          String(
+            (deliverable as {
+              kind?: unknown;
+            }).kind ?? "unknown",
+          ),
       );
     }
   }
-  for (const reason of input.blockingReasons ?? []) {
+  for (
+    const reason of
+      input.blockingReasons ?? []
+  ) {
     if (reason.trim()) {
-      missing.push("blocker: " + reason.trim());
+      missing.push(
+        "blocker: " + reason.trim(),
+      );
     }
   }
 
@@ -226,82 +262,81 @@ export function assessProjectApprovalReadiness(input: {
   };
 }
 
-export function prepareProjectForApproval(input: {
+function approvalPayload(input: {
   readonly project: ProjectRecord;
-  readonly deliverables: readonly ProjectDeliverableRef[];
-  readonly blockingReasons?: readonly string[];
-  readonly requireBugReport?: boolean;
-  readonly requireAuditComplete?: boolean;
-}): {
-  readonly project: ProjectRecord;
-  readonly readiness: ProjectApprovalReadiness;
-} {
+  readonly deliverables:
+    readonly ProjectDeliverableRef[];
+}): Omit<
+  ProjectApprovalSnapshot,
+  "snapshotFingerprint"
+> {
+  return {
+    schemaVersion: 1,
+    projectId: input.project.projectId,
+    projectRevision:
+      input.project.revision,
+    artifactFingerprint:
+      input.project.artifact
+        .artifactFingerprint,
+    ...(input.project.work.auditRevision
+      ?.trim()
+      ? {
+          auditRevision:
+            input.project.work
+              .auditRevision.trim(),
+        }
+      : {}),
+    ...(input.project.knowledge
+      .bugReportPath?.trim()
+      ? {
+          bugReportPath:
+            input.project.knowledge
+              .bugReportPath.trim(),
+        }
+      : {}),
+    deliverables: [
+      ...input.deliverables,
+    ]
+      .map((item) => ({ ...item }))
+      .sort(
+        (a, b) =>
+          a.destinationRole.localeCompare(
+            b.destinationRole,
+          ) ||
+          a.kind.localeCompare(b.kind) ||
+          a.path.localeCompare(b.path),
+      ),
+  };
+}
+
+export function createProjectApprovalSnapshot(
+  input: {
+    readonly project: ProjectRecord;
+    readonly deliverables:
+      readonly ProjectDeliverableRef[];
+    readonly blockingReasons?:
+      readonly string[];
+    readonly requireBugReport?: boolean;
+    readonly requireAuditComplete?: boolean;
+  },
+): ProjectApprovalSnapshot {
   const readiness =
-    assessProjectApprovalReadiness(input);
+    assessProjectApprovalReadiness(
+      input,
+    );
   if (!readiness.ready) {
     throw new Error(
       "Project is not ready for approval: " +
         readiness.missing.join("; "),
     );
   }
-  return {
-    project: {
-      ...input.project,
-      status: "ready-for-approval",
-      revision:
-        input.project.revision + 1,
-    },
-    readiness,
-  };
-}
 
-function approvalPayload(input: {
-  readonly project: ProjectRecord;
-  readonly deliverables: readonly ProjectDeliverableRef[];
-}): Omit<ProjectApprovalSnapshot, "snapshotFingerprint"> {
-  return {
-    schemaVersion: 1,
-    projectId: input.project.projectId,
-    projectRevision: input.project.revision,
-    artifactFingerprint:
-      input.project.artifact.artifactFingerprint,
-    ...(input.project.work.auditRevision?.trim()
-      ? {
-          auditRevision:
-            input.project.work.auditRevision.trim(),
-        }
-      : {}),
-    ...(input.project.knowledge.bugReportPath?.trim()
-      ? {
-          bugReportPath:
-            input.project.knowledge.bugReportPath.trim(),
-        }
-      : {}),
-    deliverables: [...input.deliverables]
-      .map((item) => ({ ...item }))
-      .sort((a, b) =>
-        a.kind.localeCompare(b.kind) ||
-        a.path.localeCompare(b.path)
-      ),
-    historicalRegressionIds: [
-      ...input.project.knowledge.historicalRegressionIds,
-    ].sort(),
-  };
-}
-
-export function createProjectApprovalSnapshot(input: {
-  readonly project: ProjectRecord;
-  readonly deliverables: readonly ProjectDeliverableRef[];
-}): ProjectApprovalSnapshot {
-  if (input.project.status !== "ready-for-approval") {
-    throw new Error(
-      "Project must be ready-for-approval before snapshot approval.",
-    );
-  }
-  const payload = approvalPayload(input);
+  const payload =
+    approvalPayload(input);
   return {
     ...payload,
-    snapshotFingerprint: hash(payload),
+    snapshotFingerprint:
+      hash(payload),
   };
 }
 
@@ -312,46 +347,49 @@ export function validateProjectApprovalSnapshot(
     snapshot === null ||
     typeof snapshot !== "object" ||
     snapshot.schemaVersion !== 1 ||
-    !Array.isArray(snapshot.deliverables) ||
-    !Array.isArray(
-      snapshot.historicalRegressionIds,
-    )
+    !Array.isArray(snapshot.deliverables)
   ) {
     return [
       "Project approval snapshot is structurally invalid.",
     ];
   }
 
-  const issues: string[] = [];
   const payload: Omit<
     ProjectApprovalSnapshot,
     "snapshotFingerprint"
   > = {
-    schemaVersion: snapshot.schemaVersion,
+    schemaVersion:
+      snapshot.schemaVersion,
     projectId: snapshot.projectId,
-    projectRevision: snapshot.projectRevision,
+    projectRevision:
+      snapshot.projectRevision,
     artifactFingerprint:
       snapshot.artifactFingerprint,
-    ...(snapshot.auditRevision === undefined
+    ...(snapshot.auditRevision ===
+    undefined
       ? {}
-      : { auditRevision: snapshot.auditRevision }),
-    ...(snapshot.bugReportPath === undefined
+      : {
+          auditRevision:
+            snapshot.auditRevision,
+        }),
+    ...(snapshot.bugReportPath ===
+    undefined
       ? {}
-      : { bugReportPath: snapshot.bugReportPath }),
-    deliverables: [...snapshot.deliverables],
-    historicalRegressionIds: [
-      ...snapshot.historicalRegressionIds,
+      : {
+          bugReportPath:
+            snapshot.bugReportPath,
+        }),
+    deliverables: [
+      ...snapshot.deliverables,
     ],
   };
-  if (
-    snapshot.snapshotFingerprint !==
+
+  return snapshot.snapshotFingerprint ===
     hash(payload)
-  ) {
-    issues.push(
-      "Project approval snapshot fingerprint is invalid.",
-    );
-  }
-  return issues;
+    ? []
+    : [
+        "Project approval snapshot fingerprint is invalid.",
+      ];
 }
 
 export function approveProject(
@@ -368,15 +406,20 @@ export function approveProject(
     );
   }
   if (
-    snapshot.projectId !== current.projectId ||
-    snapshot.projectRevision !== current.revision ||
+    current.status !== "working" ||
+    snapshot.projectId !==
+      current.projectId ||
+    snapshot.projectRevision !==
+      current.revision ||
     snapshot.artifactFingerprint !==
-      current.artifact.artifactFingerprint
+      current.artifact
+        .artifactFingerprint
   ) {
     throw new Error(
-      "Approval snapshot is stale or belongs to another project revision.",
+      "Approval snapshot is stale or belongs to another working project revision.",
     );
   }
+
   return {
     ...current,
     status: "approved",
@@ -389,12 +432,17 @@ export function approveProject(
   };
 }
 
-export function createDrivePublishReceipt(input: {
-  readonly project: ProjectRecord;
-  readonly snapshot: ProjectApprovalSnapshot;
-  readonly files:
-    readonly ProjectDrivePublishReceipt["files"][number][];
-}): ProjectDrivePublishReceipt {
+export function createDrivePublishReceipt(
+  input: {
+    readonly project: ProjectRecord;
+    readonly snapshot:
+      ProjectApprovalSnapshot;
+    readonly files:
+      readonly ProjectDrivePublishReceipt[
+        "files"
+      ][number][];
+  },
+): ProjectDrivePublishReceipt {
   const snapshotIssues =
     validateProjectApprovalSnapshot(
       input.snapshot,
@@ -404,8 +452,9 @@ export function createDrivePublishReceipt(input: {
       snapshotIssues.join("; "),
     );
   }
-
-  if (input.project.status !== "approved") {
+  if (
+    input.project.status !== "approved"
+  ) {
     throw new Error(
       "Drive publication requires an approved project.",
     );
@@ -413,7 +462,8 @@ export function createDrivePublishReceipt(input: {
   if (
     input.project.publication
       .approvalSnapshotFingerprint !==
-      input.snapshot.snapshotFingerprint
+      input.snapshot
+        .snapshotFingerprint
   ) {
     throw new Error(
       "Drive publication snapshot does not match the approved project snapshot.",
@@ -423,7 +473,11 @@ export function createDrivePublishReceipt(input: {
   const expected = new Map(
     input.snapshot.deliverables.map(
       (item) => [
-        item.kind + "|" + item.fingerprint,
+        item.kind +
+          "|" +
+          item.destinationRole +
+          "|" +
+          item.fingerprint,
         item,
       ],
     ),
@@ -431,42 +485,59 @@ export function createDrivePublishReceipt(input: {
   const publishedKeys = new Set(
     input.files.map(
       (item) =>
-        item.kind + "|" + item.fingerprint,
+        item.kind +
+        "|" +
+        item.destinationRole +
+        "|" +
+        item.fingerprint,
     ),
   );
   const unexpected = [
     ...publishedKeys,
-  ].filter((key) => !expected.has(key));
+  ].filter(
+    (key) => !expected.has(key),
+  );
   if (unexpected.length > 0) {
     throw new Error(
       "Drive publication includes file(s) outside the approved snapshot: " +
         unexpected.sort().join(", "),
     );
   }
+
   const status =
-    [...expected.keys()].every((key) =>
-      publishedKeys.has(key)
+    [...expected.keys()].every(
+      (key) =>
+        publishedKeys.has(key),
     )
       ? "COMPLETE" as const
       : "PARTIAL" as const;
 
   const payload = {
     schemaVersion: 1 as const,
-    projectId: input.project.projectId,
+    projectId:
+      input.project.projectId,
     snapshotFingerprint:
-      input.snapshot.snapshotFingerprint,
+      input.snapshot
+        .snapshotFingerprint,
     status,
     files: [...input.files]
-      .map((item) => ({ ...item }))
-      .sort((a, b) =>
-        a.kind.localeCompare(b.kind) ||
-        a.fileId.localeCompare(b.fileId)
+      .map((item) => ({
+        ...item,
+      }))
+      .sort(
+        (a, b) =>
+          a.destinationRole.localeCompare(
+            b.destinationRole,
+          ) ||
+          a.kind.localeCompare(b.kind) ||
+          a.fileId.localeCompare(b.fileId),
       ),
   };
 
   return {
     ...payload,
-    receiptFingerprint: hash(payload),
+    receiptFingerprint:
+      hash(payload),
   };
 }
 
@@ -489,13 +560,15 @@ export function validateDrivePublishReceipt(
   }
 
   const payload = {
-    schemaVersion: receipt.schemaVersion,
+    schemaVersion:
+      receipt.schemaVersion,
     projectId: receipt.projectId,
     snapshotFingerprint:
       receipt.snapshotFingerprint,
     status: receipt.status,
     files: [...receipt.files],
   };
+
   return receipt.receiptFingerprint ===
     hash(payload)
     ? []
@@ -509,7 +582,9 @@ export function applyDrivePublishReceipt(
   receipt: ProjectDrivePublishReceipt,
 ): ProjectRecord {
   const receiptIssues =
-    validateDrivePublishReceipt(receipt);
+    validateDrivePublishReceipt(
+      receipt,
+    );
   if (receiptIssues.length > 0) {
     throw new Error(
       receiptIssues.join("; "),
@@ -517,9 +592,11 @@ export function applyDrivePublishReceipt(
   }
   if (
     current.status !== "approved" ||
-    receipt.projectId !== current.projectId ||
+    receipt.projectId !==
+      current.projectId ||
     receipt.snapshotFingerprint !==
-      current.publication.approvalSnapshotFingerprint
+      current.publication
+        .approvalSnapshotFingerprint
   ) {
     throw new Error(
       "Drive receipt does not match the current approved project snapshot.",
@@ -548,15 +625,19 @@ export function projectLifecycleCanTransition(
   to: ProjectLifecycleStatus,
 ): boolean {
   return (
-    (from === "working" &&
-      to === "ready-for-approval") ||
-    (from === "ready-for-approval" &&
-      to === "approved") ||
-    (from === "approved" &&
-      to === "drive-published") ||
     (
-      (from === "approved" ||
-        from === "drive-published") &&
+      from === "working" &&
+      to === "approved"
+    ) ||
+    (
+      from === "approved" &&
+      to === "drive-published"
+    ) ||
+    (
+      (
+        from === "approved" ||
+        from === "drive-published"
+      ) &&
       to === "working"
     )
   );
