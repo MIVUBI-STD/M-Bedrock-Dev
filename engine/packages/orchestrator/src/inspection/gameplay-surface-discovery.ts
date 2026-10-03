@@ -16,6 +16,10 @@ export interface GameplaySurfaceDiscoveryInput {
   readonly structureEvidence: boolean;
   readonly entityEvidence: boolean;
   readonly boundaryEvidence?: boolean;
+  readonly teleportEvidence?: boolean;
+  readonly uiFormEvidence?: boolean;
+  readonly environmentEvidence?: boolean;
+  readonly asyncCommandTransactionEvidence?: boolean;
 }
 
 export interface GameplaySurfaceDiscoveryResult {
@@ -75,6 +79,18 @@ export function discoverGameplaySurfaces(
   }
   if (input.boundaryEvidence) {
     runtime.add("runtime:boundaries");
+  }
+  if (input.teleportEvidence) {
+    runtime.add("runtime:teleport");
+  }
+  if (input.uiFormEvidence) {
+    runtime.add("runtime:ui-form");
+  }
+  if (input.environmentEvidence) {
+    runtime.add("runtime:environment");
+  }
+  if (input.asyncCommandTransactionEvidence) {
+    runtime.add("runtime:async-command-transaction");
   }
 
   const runtimeSurfaceIds = [...runtime].sort();
