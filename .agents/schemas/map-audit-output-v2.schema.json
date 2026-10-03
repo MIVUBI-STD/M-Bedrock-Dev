@@ -282,7 +282,10 @@
             "minLength": 1
           },
           "status": {
-            "const": "Confirmed"
+            "enum": [
+              "PROVEN",
+              "NEED_VALIDATION"
+            ]
           },
           "category": {
             "type": "string",
@@ -413,6 +416,18 @@
                 "platform-performance"
               ]
             }
+          },
+          "validationReason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "missingProof": {
+            "type": "string",
+            "minLength": 1
+          },
+          "validationTest": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "allOf": [
@@ -420,7 +435,7 @@
             "if": {
               "properties": {
                 "status": {
-                  "const": "Confirmed"
+                  "const": "PROVEN"
                 }
               },
               "required": [
@@ -441,6 +456,30 @@
                 "testerTriggerReady": {
                   "const": true
                 }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "NEED_VALIDATION"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "validationReason",
+                "missingProof",
+                "validationTest"
+              ],
+              "not": {
+                "required": [
+                  "severity"
+                ]
               }
             }
           },
@@ -665,7 +704,10 @@
             "minLength": 1
           },
           "status": {
-            "const": "Confirmed"
+            "enum": [
+              "PROVEN",
+              "NEED_VALIDATION"
+            ]
           },
           "category": {
             "type": "string",
@@ -808,6 +850,18 @@
                 "platform-performance"
               ]
             }
+          },
+          "validationReason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "missingProof": {
+            "type": "string",
+            "minLength": 1
+          },
+          "validationTest": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "allOf": [
@@ -815,7 +869,7 @@
             "if": {
               "properties": {
                 "status": {
-                  "const": "Confirmed"
+                  "const": "PROVEN"
                 }
               },
               "required": [
@@ -836,6 +890,30 @@
                 "testerTriggerReady": {
                   "const": true
                 }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "NEED_VALIDATION"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "validationReason",
+                "missingProof",
+                "validationTest"
+              ],
+              "not": {
+                "required": [
+                  "severity"
+                ]
               }
             }
           },
