@@ -12,37 +12,71 @@
     "provenance"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "id": { "type": "string", "minLength": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
     "lane": {
-      "enum": ["calibration", "acceptance", "regression"]
+      "enum": [
+        "calibration",
+        "acceptance",
+        "regression"
+      ]
     },
     "artifact": {
       "type": "object",
-      "required": ["label", "sha256"],
+      "required": [
+        "label",
+        "sha256"
+      ],
       "properties": {
-        "label": { "type": "string", "minLength": 1 },
-        "file": { "type": "string", "minLength": 1 },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1
+        },
         "sha256": {
           "type": "string",
           "pattern": "^[a-fA-F0-9]{64}$"
         },
-        "mapVersion": { "type": "string", "minLength": 1 }
+        "mapVersion": {
+          "type": "string",
+          "minLength": 1
+        }
       },
       "additionalProperties": false
     },
     "target": {
       "type": "object",
-      "required": ["edition", "minecraftVersion"],
+      "required": [
+        "edition",
+        "minecraftVersion"
+      ],
       "properties": {
-        "edition": { "enum": ["bedrock", "education"] },
-        "minecraftVersion": { "type": "string", "minLength": 1 }
+        "edition": {
+          "enum": [
+            "bedrock",
+            "education"
+          ]
+        },
+        "minecraftVersion": {
+          "type": "string",
+          "minLength": 1
+        }
       },
       "additionalProperties": false
     },
     "expected": {
       "type": "object",
-      "required": ["disposition"],
+      "required": [
+        "disposition"
+      ],
       "properties": {
         "disposition": {
           "enum": [
@@ -53,21 +87,66 @@
             "runtime-proof-required"
           ]
         },
-        "domain": { "type": "string", "minLength": 1 },
-        "findingKey": { "type": "string", "minLength": 1 },
-        "severity": { "enum": ["blocker", "major", "minor"] },
-        "proofCeiling": { "type": "string", "minLength": 1 }
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "findingKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "blocker",
+            "major",
+            "minor"
+          ]
+        },
+        "proofCeiling": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issueType": {
+          "enum": [
+            "BUG",
+            "DESIGN_MISMATCH"
+          ]
+        },
+        "publicStatus": {
+          "enum": [
+            "PROVEN",
+            "NEED_VALIDATION"
+          ]
+        },
+        "validationAllowed": {
+          "type": "boolean",
+          "description": "True only when the frozen expectation explicitly permits NEED_VALIDATION because the deciding proof is irreducibly unavailable at the configured evidence ceiling."
+        }
       },
       "additionalProperties": true
     },
     "provenance": {
       "type": "object",
-      "required": ["frozenBeforeRun", "source"],
+      "required": [
+        "frozenBeforeRun",
+        "source"
+      ],
       "properties": {
-        "frozenBeforeRun": { "const": true },
-        "source": { "type": "string", "minLength": 1 },
-        "approvedBy": { "type": "string", "minLength": 1 },
-        "approvedAt": { "type": "string", "format": "date-time" }
+        "frozenBeforeRun": {
+          "const": true
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approvedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approvedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       },
       "additionalProperties": true
     }
