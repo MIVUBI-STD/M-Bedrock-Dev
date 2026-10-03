@@ -643,7 +643,6 @@
             },
             "then": {
               "required": [
-                "severity",
                 "playerImpact",
                 "counterEvidence",
                 "testerTriggerReady"
@@ -1276,7 +1275,6 @@
             },
             "then": {
               "required": [
-                "severity",
                 "playerImpact",
                 "counterEvidence",
                 "testerTriggerReady"
