@@ -248,6 +248,20 @@ Still irreducible or only partially statically solvable:
 
 Those cases must remain explicit runtime/design-contract residue rather than being guessed.
 
+### Counter-proof dimension hardening
+
+Automatic graph search now closes only the locally decidable counter-proof dimensions:
+
+```text
+guard
+scope
+exclusion
+```
+
+Ownership-sensitive dimensions such as `owner`, `generation`, and `cleanup` require explicit dimension-scoped receipts with scope and evidence. If those remain unresolved, the finding enters `COUNTERPROOF_SEARCH_REQUIRED` and receives a bounded PROVE continuation instead of being auto-confirmed.
+
+This intentionally trades a small amount of extra source-side reasoning for lower false-PROVEN risk; it does not broaden into generic runtime testing.
+
 ### Proof saturation / sufficient-proof stop rule
 
 PROVEN projection now requires a minimum-sufficient-proof saturation assessment. Universal saturation checks:
