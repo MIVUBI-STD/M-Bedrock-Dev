@@ -56,18 +56,10 @@ export function deriveBugReportWorkChecklist(
 ): readonly string[] {
   const items: string[] = [];
 
-  if (bug.suggestedFix?.trim()) {
-    items.push(
-      "Implement the approved resolution: " +
-        bug.suggestedFix.trim(),
-    );
-  } else {
-    items.push(
-      "Implement the smallest fix that removes the observed defect while preserving the expected gameplay contract.",
-    );
-  }
-
   items.push(
+    bug.suggestedFix?.trim()
+      ? "Apply the approved Resolution."
+      : "Implement the smallest fix that removes the observed defect while preserving the expected gameplay contract.",
     "Retest using every Tester Checklist step and confirm the observed wrong result no longer occurs.",
     "Confirm the Expected result is reached on the same trigger path.",
   );
