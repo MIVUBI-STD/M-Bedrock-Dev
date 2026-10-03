@@ -50,10 +50,6 @@ import {
   type SharedResourceOwnershipSignal,
 } from "./shared-resource-ownership.js";
 import {
-  challengeGameplayStress,
-  type GameplayStressChallengeSignal,
-} from "./gameplay-stress-challenger.js";
-import {
   analyzeAccumulationGrowth,
   analyzeCompoundBoundaries,
   type AccumulationGrowthSignal,
@@ -720,6 +716,8 @@ export function analyzeHiddenGameplayDefects(
     sharedResourceOwnership,
     compoundBoundaries,
     accumulationGrowth,
+    compoundBoundaries,
+    accumulationGrowth,
     designConsistency,
     degradations,
     capabilityDelivery,
@@ -755,6 +753,10 @@ export function analyzeHiddenGameplayDefects(
         sharedResourceOwnership.records.filter(
           (item) => item.highOrderInteraction,
         ).length,
+      compoundBoundarySignals:
+        compoundBoundaries.length,
+      accumulationGrowthSignals:
+        accumulationGrowth.length,
       compoundBoundarySignals:
         compoundBoundaries.length,
       accumulationGrowthSignals:
@@ -810,6 +812,10 @@ export function refreshHiddenGameplayDefectsForWorld(
   intent?: GameplayIntentModel,
   defectResolutions?: readonly GameplayDefectResolution[],
 ): HiddenGameplayDefectAnalysis {
+  const compoundBoundaries =
+    analyzeCompoundBoundaries(world);
+  const accumulationGrowth =
+    analyzeAccumulationGrowth(world);
   const designConsistency =
     consistencyFromWorld(world);
   const degradations =
