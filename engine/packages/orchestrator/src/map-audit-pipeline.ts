@@ -183,7 +183,7 @@ function deriveSelectedMapAuditControl(input: {
   const candidateGroups = proveAuthorized
     ? groupReadyAuditIssuesForCandidateCoverage(
         input.scenario.graph,
-        allReadyIssues,
+        issueLanes.BUG,
       )
     : [];
   const executionTrace = deriveAuditExecutionTrace({
@@ -603,19 +603,27 @@ export interface BuildSelectedMapAuditReportInput
   readonly repairBy: BugReportV2RepairBy;
 }
 
+export interface BuildSelectedMapAuditReportResult
+  extends BuildBugReportFromAuditResult {
+  readonly designMismatches:
+    readonly ReadyAuditIssueProjection[];
+}
+
 /**
  * Canonical production-report continuation. It cannot be called without the
  * original SelectedMapAuditRun and therefore cannot bypass procedure closure.
  */
 export function buildSelectedMapAuditReport(
   input: BuildSelectedMapAuditReportInput,
-): BuildBugReportFromAuditResult {
+): BuildSelectedMapAuditReportResult {
   const inspection = input.audit.inspection;
   if (
     input.basedOnAuditRevision !==
     input.audit.auditRevision
   ) {
     return {
+      designMismatches:
+        input.audit.issueLanes.DESIGN_MISMATCH,
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -640,6 +648,8 @@ export function buildSelectedMapAuditReport(
     );
   if (identityIssues.length > 0) {
     return {
+      designMismatches:
+        input.audit.issueLanes.DESIGN_MISMATCH,
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -661,6 +671,8 @@ export function buildSelectedMapAuditReport(
     );
   if (rootCauseIssues.length > 0) {
     return {
+      designMismatches:
+        input.audit.issueLanes.DESIGN_MISMATCH,
       collection: collectConfirmedDefects(
         input.candidates,
         input.engineeringAnalyses ??
@@ -682,7 +694,8 @@ export function buildSelectedMapAuditReport(
       artifactFingerprint:
         input.audit.identity.artifactFingerprint,
     });
-  return buildBugReportFromAuditCandidates({
+  const bugReport =
+    buildBugReportFromAuditCandidates({
     map: input.map,
     auditAuthority,
     repairBy: input.repairBy,
@@ -706,4 +719,10 @@ export function buildSelectedMapAuditReport(
     mandatoryAuditProcedure:
       inspection.mandatoryAuditProcedure,
   });
+
+  return {
+    ...bugReport,
+    designMismatches:
+      input.audit.issueLanes.DESIGN_MISMATCH,
+  };
 }
