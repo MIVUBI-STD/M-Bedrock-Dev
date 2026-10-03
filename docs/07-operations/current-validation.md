@@ -13,6 +13,23 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — user prompt confirmation checkpoint
+
+Source-verified on `Local`:
+
+- Production selected-map audit initiated from user wording now requires one explicit chat confirmation after prompt interpretation and before `runSelectedMapAudit()`.
+- `summarizeAuditUserIntentForConfirmation()` provides a compact human-facing view of target hints, symptoms, suspicions, expectation/design claims, scope guidance, constraints, historical hints, ambiguity, and unmapped input.
+- `AuditUserIntentConfirmation` is bound to a deterministic fingerprint of the normalized intent.
+- Missing confirmation blocks production audit.
+- Any material change to normalized intent makes the old confirmation stale and blocks audit until the revised interpretation is confirmed again.
+- Confirmation validates communication accuracy only; it does not establish gameplay truth or proof.
+- Raw imperfect prompts may still proceed through fallback/unmapped obligations once the user confirms the interpretation/fallback summary.
+- The skill and AGENTS contract require one compact confirmation round, not repetitive approvals.
+- Regression coverage verifies missing-confirmation rejection, valid confirmation, and stale-confirmation rejection after intent changes.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. Local typecheck/full verifier and live conversational prompt benchmarks remain outstanding.
+
+
 ## 2026-10-03 — complete prompt-fragment accounting
 
 Source-verified on `Local`:
