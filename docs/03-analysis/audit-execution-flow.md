@@ -248,6 +248,28 @@ Typical contradictions:
 - stale owner remains after disconnect;
 - retry duplicates reward/progression state.
 
+## 2.5 Full-map replica normalization
+
+For maps with repeated arenas/regions, MODEL inserts a replica-normalization step before deep per-scenario proof:
+
+```text
+World DB / topology
+→ repeated-region detection
+→ relative-coordinate normalization
+→ canonical baseline
+→ semantic delta extraction
+→ world ↔ source/config reconciliation
+```
+
+The audit then follows player flow only for:
+
+- the baseline behavior;
+- material replica deltas;
+- unresolved replica proof;
+- cross-arena ownership/capacity behavior.
+
+This prevents duplicated work while preserving arena-specific defects. A baseline PASS never suppresses a diverged or unproven replica.
+
 ## 3. Cross-system checks
 
 Cross-system reasoning is attached to the flow stage where the systems meet.
