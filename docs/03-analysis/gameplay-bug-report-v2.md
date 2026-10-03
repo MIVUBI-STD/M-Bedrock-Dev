@@ -2,9 +2,27 @@
 
 ## Purpose
 
-Canonical persisted bug-report contract for approved confirmed Minecraft map defects. It is a downstream communication/repair state, not the full audit model.
+Canonical persisted BUG report contract for approved confirmed Minecraft map implementation/runtime defects. It is a downstream communication/repair state, not the full audit model.
 
 This file owns canonical Bug Report V2 semantics. Rendering details belong in `templates/bug-report-v2-html-layout.md`. Persisted Bug Report V2 validation belongs in `engine/schemas/bug-report/`. Map Audit Output validation remains separately owned by `.agents/schemas/map-audit-output-v2.schema.json`.
+
+## Scope boundary: BUG vs DESIGN_MISMATCH
+
+This artifact stores **BUG** items only.
+
+`BUG` means the intended design/behavior is grounded, but implementation/runtime breaks it.
+
+`DESIGN_MISMATCH` means the capability/design presented by the map is itself inconsistent with the actually playable/deliverable capability. DESIGN_MISMATCH belongs to the separate Map Audit Output section and must not be serialized into `bugs[]`.
+
+Example:
+
+```text
+6 arenas presented
+2 concurrently playable
+→ DESIGN_MISMATCH
+```
+
+A technical platform limit may explain the mismatch but does not turn it into a BUG and does not erase it.
 
 ## Document order
 
