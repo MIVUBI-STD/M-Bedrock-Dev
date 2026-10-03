@@ -15,7 +15,7 @@ function baseProject() {
   return createProjectRecord({
     projectId: "defense-v2",
     projectName: "Defense V2",
-    taskClass: "AUDIT",
+    taskClass: "DIAGNOSE",
     artifact: {
       artifactId: "map:defense-v2",
       artifactFingerprint: "sha256:map",
