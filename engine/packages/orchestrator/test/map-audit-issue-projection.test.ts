@@ -103,6 +103,31 @@ const gate: GameplayDefectResolutionGate = {
       expectedOutcome: "All visible arena capacity is playable.",
       actualOutcome: "Only two arenas can run concurrently.",
       affectedScope: "multi-arena capacity",
+      familyProof: {
+        schemaVersion: 1,
+        policy: "family-proof-receipt",
+        failureDomain: "arena-multi-arena",
+        criteria: [
+          {
+            id: "arena-contract-grounded",
+            satisfied: true,
+            evidenceIds: ["world:arena-count"],
+          },
+          {
+            id: "concurrent-violation-reachable",
+            satisfied: true,
+            evidenceIds: ["capacity:safe-concurrency"],
+          },
+          {
+            id: "arena-counterproof-exhausted",
+            satisfied: true,
+            evidenceIds: [
+              "world:arena-count",
+              "capacity:safe-concurrency",
+            ],
+          },
+        ],
+      },
       counterProofSearch: {
         schemaVersion: 1,
         policy: "bounded-counterproof-search",
@@ -133,6 +158,28 @@ const gate: GameplayDefectResolutionGate = {
       expectedOutcome: "Progress only after required spawn lifecycle completes.",
       actualOutcome: "Progression advances without required spawn.",
       affectedScope: "wave progression",
+      familyProof: {
+        schemaVersion: 1,
+        policy: "family-proof-receipt",
+        failureDomain: "progression-wave-objective",
+        criteria: [
+          {
+            id: "completion-dependency-grounded",
+            satisfied: true,
+            evidenceIds: ["source:wave"],
+          },
+          {
+            id: "failing-path-reachable",
+            satisfied: true,
+            evidenceIds: ["source:wave"],
+          },
+          {
+            id: "reconciliation-exhausted",
+            satisfied: true,
+            evidenceIds: ["source:wave"],
+          },
+        ],
+      },
       counterProofSearch: {
         schemaVersion: 1,
         policy: "bounded-counterproof-search",
@@ -398,6 +445,47 @@ describe("map audit issue projection", () => {
     expect(result.every(
       (item) => item.status === "NEED_VALIDATION",
     )).toBe(true);
+  });
+
+  it("keeps confirmation NEED_VALIDATION until family proof receipt is complete", () => {
+    const withoutFamilyProof: GameplayDefectResolutionGate = {
+      ...gate,
+      resolutions: [{
+        ...gate.resolutions[1]!,
+        familyProof: undefined,
+      }],
+      confirmedDefectReadyIds: [
+        "link:progression",
+      ],
+    };
+
+    const proven = projectReadyAuditIssues(
+      graph,
+      withoutFamilyProof,
+    );
+    const unresolved =
+      projectAllNeedValidationAuditIssues(
+        graph,
+        withoutFamilyProof,
+      );
+
+    expect(proven).toEqual([]);
+    expect(
+      unresolved.find(
+        (item) =>
+          item.causalLinkId ===
+          "link:progression",
+      ),
+    ).toMatchObject({
+      status: "NEED_VALIDATION",
+    });
+    expect(
+      unresolved.find(
+        (item) =>
+          item.causalLinkId ===
+          "link:progression",
+      )?.missingProof,
+    ).toMatch(/completion-dependency-grounded/i);
   });
 
   it("refuses PROVEN projection when minimum proof saturation is incomplete", () => {
