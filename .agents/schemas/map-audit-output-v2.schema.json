@@ -1478,7 +1478,6 @@
               "replicaStatus": {
                 "enum": [
                   "EQUIVALENT",
-                  "EXPECTED_VARIANT",
                   "MATERIAL_DIVERGENCE",
                   "INCOMPLETE_PROOF"
                 ]
