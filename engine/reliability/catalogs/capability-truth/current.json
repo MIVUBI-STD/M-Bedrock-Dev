@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generatedFrom": {
     "generatorPath": "tooling/repository/generate-capability-truth.mjs",
-    "generatorFingerprint": "d07b7df4",
+    "generatorFingerprint": "3ae4d641",
     "taskRegistry": "engine/packages/task-graph/src/builtin-capabilities.ts",
     "analysisRegistries": [
       "engine/packages/analysis-planner/src/domain-capabilities.ts",
@@ -15,19 +15,19 @@
   },
   "summary": {
     "taskCapabilities": 51,
-    "ownerTested": 51,
     "implementationPresent": 0,
     "declaredOnly": 0,
     "runtimeOnly": 4,
     "proofBound": 51,
     "proofUnbound": 0,
-    "analysisCapabilities": 31
+    "analysisCapabilities": 31,
+    "ownerHasTests": 51
   },
   "taskCapabilities": [
     {
       "id": "behavior.arena",
       "owner": "packages/behavior-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -55,12 +55,12 @@
           "engine/packages/behavior-model/test/capability-contracts.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "behavior.chunks",
       "owner": "packages/behavior-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -88,12 +88,12 @@
           "engine/packages/behavior-model/test/capability-contracts.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "behavior.combat",
       "owner": "packages/behavior-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -121,12 +121,12 @@
           "engine/packages/behavior-model/test/combat-lifecycle.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "behavior.core",
       "owner": "packages/behavior-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -154,12 +154,12 @@
           "engine/packages/behavior-model/test/behavior-model.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "behavior.economy",
       "owner": "packages/behavior-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -187,12 +187,12 @@
           "engine/packages/behavior-model/test/reward-lifecycle.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "behavior.entity-ai",
       "owner": "packages/behavior-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -220,12 +220,12 @@
           "engine/packages/behavior-model/test/capability-contracts.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "behavior.inventory",
       "owner": "packages/behavior-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -253,12 +253,12 @@
           "engine/packages/behavior-model/test/capability-contracts.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "behavior.spatial",
       "owner": "packages/behavior-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -286,12 +286,12 @@
           "engine/packages/behavior-model/test/capability-contracts.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "context.compile",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -319,12 +319,12 @@
           "engine/packages/orchestrator/test/workflow/context-compiler.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "context.dataflow-slice",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -352,12 +352,12 @@
           "engine/packages/orchestrator/test/inspection/script-dataflow-context-capability.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "diagnosis.calibration",
       "owner": "packages/diagnostic-reasoning",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -385,12 +385,12 @@
           "engine/packages/diagnostic-reasoning/test/calibration.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "diagnosis.declarative-rules",
       "owner": "packages/diagnostic-reasoning",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -418,12 +418,12 @@
           "engine/packages/diagnostic-reasoning/test/declarative-rules.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "domain.arena-lifecycle",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -451,12 +451,12 @@
           "engine/packages/orchestrator/test/arena/arena-lifecycle-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "domain.chunks",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -484,12 +484,12 @@
           "engine/packages/orchestrator/test/inspection/chunk-lifecycle-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "domain.combat",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -517,12 +517,12 @@
           "engine/packages/orchestrator/test/inspection/combat-lifecycle-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "domain.economy",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -550,12 +550,12 @@
           "engine/packages/orchestrator/test/inspection/economy-contract-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "domain.entity-ai",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -583,12 +583,12 @@
           "engine/packages/orchestrator/test/inspection/entity-ai-stack-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "domain.inventory",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -616,12 +616,12 @@
           "engine/packages/orchestrator/test/inspection/inventory-lifecycle-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "domain.persistence",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -649,12 +649,12 @@
           "engine/packages/orchestrator/test/inspection/persistence-source-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "domain.spatial-authority",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -682,12 +682,12 @@
           "engine/packages/orchestrator/test/inspection/spatial-authority-analysis.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "foundation.dataflow",
       "owner": "packages/dataflow",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -711,12 +711,12 @@
           "engine/packages/dataflow/test/dataflow.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "knowledge.freshness",
       "owner": "packages/knowledge",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -744,12 +744,12 @@
           "engine/packages/knowledge/test/freshness.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "projection.workflow",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -777,12 +777,12 @@
           "engine/packages/orchestrator/test/inspection/map-engineering-workflow.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "projection.world-model",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -810,12 +810,12 @@
           "engine/packages/orchestrator/test/inspection/gameplay-world-model.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "reliability.behavior-patterns",
       "owner": "packages/reliability-search",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -843,12 +843,12 @@
           "engine/packages/reliability-search/test/behavioral-pattern-library.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "reliability.coverage-quality",
       "owner": "packages/reliability-search",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -876,12 +876,12 @@
           "engine/packages/reliability-search/test/coverage-quality-dashboard.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "reliability.metamorphic",
       "owner": "packages/reliability-search",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -909,12 +909,12 @@
           "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "reliability.parser-robustness",
       "owner": "packages/reliability-search",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -942,12 +942,12 @@
           "engine/packages/reliability-search/test/metamorphic-robustness.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "repair.routing",
       "owner": "packages/orchestrator",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -975,12 +975,12 @@
           "engine/packages/orchestrator/test/repair/repair-strategy-selection.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "runtime.chunks",
       "owner": "packages/runtime-lab",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": false,
       "cost": "very-expensive",
       "contexts": [
@@ -1006,12 +1006,12 @@
           "engine/packages/orchestrator/test/inspection/chunk-readiness-runtime-classification.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "runtime.cross-version-differential-executor",
       "owner": "packages/runtime-lab",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": false,
       "cost": "very-expensive",
       "contexts": [
@@ -1038,12 +1038,12 @@
         ],
         "note": "Binds fail-closed orchestration behavior only; live cross-version proof still requires LOCAL/LIVE Minecraft hosts."
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "runtime.cross-version-differential-plan",
       "owner": "packages/runtime-lab",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1071,12 +1071,12 @@
           "engine/packages/runtime-lab/test/cross-version-differential-plan.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "runtime.entity-ai",
       "owner": "packages/runtime-lab",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": false,
       "cost": "very-expensive",
       "contexts": [
@@ -1102,12 +1102,12 @@
           "engine/packages/orchestrator/test/inspection/entity-navigation-runtime-classification.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "runtime.persistence",
       "owner": "packages/runtime-lab",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": false,
       "cost": "expensive",
       "contexts": [
@@ -1133,12 +1133,12 @@
           "engine/packages/orchestrator/test/diagnosis/runtime-persistence-diagnostic-bindings.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "runtime.record-replay-contract",
       "owner": "packages/reliability",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1166,12 +1166,12 @@
           "engine/packages/reliability/test/runtime-session-replay.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "runtime.semantic-convention",
       "owner": "packages/project-model",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1199,12 +1199,12 @@
           "engine/packages/project-model/test/runtime-semantic-convention.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.entities.ai",
       "owner": "analyzers/entities",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1232,12 +1232,12 @@
           "engine/analyzers/entities/test/ai-stack.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.entities.core",
       "owner": "analyzers/entities",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -1265,12 +1265,12 @@
           "engine/analyzers/entities/test/entity.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.entities.economy",
       "owner": "analyzers/entities",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1298,12 +1298,12 @@
           "engine/analyzers/entities/test/loot.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.arena",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1331,12 +1331,12 @@
           "engine/analyzers/scripts/test/domains/arena/arena-authority-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.chunks",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1364,12 +1364,12 @@
           "engine/analyzers/scripts/test/domains/chunk/chunk-lifecycle-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.combat",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1397,12 +1397,12 @@
           "engine/analyzers/scripts/test/domains/combat/combat-lifecycle-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.core",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -1430,12 +1430,12 @@
           "engine/analyzers/scripts/test/parser/parse.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.dataflow",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "moderate",
       "contexts": [
@@ -1463,12 +1463,12 @@
           "engine/analyzers/scripts/test/flow/dataflow-capability.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.economy",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1496,12 +1496,12 @@
           "engine/analyzers/scripts/test/domains/economy/economy-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.inventory",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1529,12 +1529,12 @@
           "engine/analyzers/scripts/test/domains/inventory/inventory-lifecycle-evidence.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.persistence",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1562,12 +1562,12 @@
           "engine/analyzers/scripts/test/domains/persistence/persistent-data-lifecycle.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.recovery",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1595,12 +1595,12 @@
           "engine/analyzers/scripts/test/source-recovery.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.semantic-flow",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1628,12 +1628,12 @@
           "engine/analyzers/scripts/test/semantic-flow-bindings.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.semantic-flow-witness",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1661,12 +1661,12 @@
           "engine/analyzers/scripts/test/semantic-flow-witness.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     },
     {
       "id": "source.scripts.source-map",
       "owner": "analyzers/scripts",
-      "status": "owner-tested",
+      "status": "owner-has-tests",
       "deterministic": true,
       "cost": "cheap",
       "contexts": [
@@ -1694,7 +1694,7 @@
           "engine/analyzers/scripts/test/source-map-binding.test.ts"
         ]
       },
-      "proofSemantics": "Capability-specific proof binding exists; this does not imply execution in the current session."
+      "proofSemantics": "Capability-specific proof binding exists. This means proof paths are registered, not that the capability executed or passed in the current session."
     }
   ],
   "analysisCapabilities": [
