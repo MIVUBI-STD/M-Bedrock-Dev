@@ -1,5 +1,7 @@
 # Audit Finalization Checklist
 
+> Run only after the sequence in `master-selected-map-audit-workflow.md`. This checklist is publication review, not an alternate audit path.
+
 ## Purpose
 
 Final review before a gameplay bug report is considered ready.
