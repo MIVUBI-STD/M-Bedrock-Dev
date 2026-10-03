@@ -103,6 +103,26 @@ const gate: GameplayDefectResolutionGate = {
       expectedOutcome: "All visible arena capacity is playable.",
       actualOutcome: "Only two arenas can run concurrently.",
       affectedScope: "multi-arena capacity",
+      counterProofSearch: {
+        schemaVersion: 1,
+        policy: "bounded-counterproof-search",
+        searchedDimensions: [
+          "guard",
+          "scope",
+          "exclusion",
+          "owner",
+        ],
+        scopeIds: [
+          "runtime:arena",
+          "policy:arena",
+        ],
+        evidenceIds: [
+          "world:arena-count",
+          "capacity:safe-concurrency",
+        ],
+        exhaustiveWithinScope: true,
+        conclusion: "NO_BLOCKING_PROOF",
+      },
     },
     {
       causalLinkId: "link:progression",
@@ -113,6 +133,24 @@ const gate: GameplayDefectResolutionGate = {
       expectedOutcome: "Progress only after required spawn lifecycle completes.",
       actualOutcome: "Progression advances without required spawn.",
       affectedScope: "wave progression",
+      counterProofSearch: {
+        schemaVersion: 1,
+        policy: "bounded-counterproof-search",
+        searchedDimensions: [
+          "guard",
+          "scope",
+          "exclusion",
+        ],
+        scopeIds: [
+          "runtime:entities",
+          "objective:wave",
+        ],
+        evidenceIds: [
+          "source:wave",
+        ],
+        exhaustiveWithinScope: true,
+        conclusion: "NO_BLOCKING_PROOF",
+      },
     },
   ],
   confirmedDefectReadyIds: [
@@ -360,6 +398,34 @@ describe("map audit issue projection", () => {
     expect(result.every(
       (item) => item.status === "NEED_VALIDATION",
     )).toBe(true);
+  });
+
+  it("refuses PROVEN projection when minimum proof saturation is incomplete", () => {
+    const unsaturatedGate: GameplayDefectResolutionGate = {
+      ...gate,
+      resolutions: [{
+        causalLinkId: "link:progression",
+        scenarioId: "scenario:progression",
+        disposition: "CONFIRMED_DEFECT_READY",
+        gameplayTrigger: "Fail a required wave spawn.",
+        gameplayConsequence: "Wave progression becomes incorrect.",
+        expectedOutcome:
+          "Progress only after required spawn lifecycle completes.",
+        actualOutcome:
+          "Progression advances without required spawn.",
+        affectedScope: "wave progression",
+      }],
+      confirmedDefectReadyIds: [
+        "link:progression",
+      ],
+    };
+
+    const result = projectReadyAuditIssues(
+      graph,
+      unsaturatedGate,
+    );
+
+    expect(result).toEqual([]);
   });
 
   it("separates design mismatch from implementation bug in one projection", () => {
