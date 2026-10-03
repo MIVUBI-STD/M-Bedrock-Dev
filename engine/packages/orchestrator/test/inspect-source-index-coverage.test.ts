@@ -407,6 +407,7 @@ describe("inspection source index coverage", () => {
         indexedFiles: 1,
         parseFailures: [],
         unsupportedRelevantFiles: [],
+        semanticUnderstandingGaps: [],
         complete: true,
       });
     } finally {
