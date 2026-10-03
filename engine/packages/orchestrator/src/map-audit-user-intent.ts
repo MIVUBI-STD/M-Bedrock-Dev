@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type {
   AnalysisKnowledgeDomain,
 } from "../../analysis-planner/src/index.js";
@@ -70,6 +71,33 @@ export interface AuditUserIntentEnvelope {
   readonly priorityPlayerFlows: readonly GameplayIssueFlowStage[];
   readonly ambiguities: readonly string[];
   readonly blockingAmbiguities: readonly string[];
+}
+
+export interface AuditUserIntentConfirmationRequest {
+  readonly schemaVersion: 1;
+  readonly policy: "confirm-user-intent-before-audit";
+  readonly intentFingerprint: string;
+  readonly summary: {
+    readonly targetHints: readonly string[];
+    readonly symptoms: readonly string[];
+    readonly suspicions: readonly string[];
+    readonly expectationClaims: readonly string[];
+    readonly designClaims: readonly string[];
+    readonly scopeGuidance: readonly string[];
+    readonly testConstraints: readonly string[];
+    readonly historicalHints: readonly string[];
+    readonly unmappedInput: readonly string[];
+    readonly ambiguities: readonly string[];
+    readonly priorityDomains: readonly GameplayIssueFailureDomain[];
+    readonly priorityPlayerFlows: readonly GameplayIssueFlowStage[];
+  };
+}
+
+export interface AuditUserIntentConfirmationReceipt {
+  readonly schemaVersion: 1;
+  readonly policy: "user-confirmed-audit-intent";
+  readonly intentFingerprint: string;
+  readonly confirmed: true;
 }
 
 export interface AuditUserIntentSearchPressure {
@@ -560,6 +588,163 @@ function bump<T extends string>(
   amount: number,
 ): void {
   target[key] = (target[key] ?? 0) + amount;
+}
+
+function canonicalIntentPayload(
+  input: AuditUserIntentEnvelope,
+): string {
+  const normalized =
+    normalizeAuditUserIntent(input);
+
+  return JSON.stringify({
+    schemaVersion: normalized.schemaVersion,
+    policy: normalized.policy,
+    fragments: normalized.fragments,
+    items: normalized.items,
+    unmappedFragmentIds:
+      normalized.unmappedFragmentIds,
+    priorityDomains:
+      normalized.priorityDomains,
+    priorityPlayerFlows:
+      normalized.priorityPlayerFlows,
+    ambiguities:
+      normalized.ambiguities,
+    blockingAmbiguities:
+      normalized.blockingAmbiguities,
+  });
+}
+
+export function fingerprintAuditUserIntent(
+  input: AuditUserIntentEnvelope,
+): string {
+  return (
+    "sha256:" +
+    createHash("sha256")
+      .update(canonicalIntentPayload(input))
+      .digest("hex")
+  );
+}
+
+function itemHints(
+  input: AuditUserIntentEnvelope,
+  kind: AuditUserInputClass,
+): string[] {
+  return normalizeAuditUserIntent(input).items
+    .filter((item) => item.kind === kind)
+    .map((item) => item.normalized);
+}
+
+export function createAuditUserIntentConfirmationRequest(
+  input: AuditUserIntentEnvelope,
+): AuditUserIntentConfirmationRequest {
+  const normalized =
+    normalizeAuditUserIntent(input);
+  const fragments = new Map(
+    normalized.fragments.map(
+      (fragment) => [fragment.id, fragment.raw],
+    ),
+  );
+
+  return {
+    schemaVersion: 1,
+    policy: "confirm-user-intent-before-audit",
+    intentFingerprint:
+      fingerprintAuditUserIntent(normalized),
+    summary: {
+      targetHints:
+        itemHints(normalized, "TARGET_HINT"),
+      symptoms:
+        itemHints(normalized, "SYMPTOM_REPORT"),
+      suspicions:
+        itemHints(normalized, "SUSPICION"),
+      expectationClaims:
+        itemHints(normalized, "EXPECTATION_CLAIM"),
+      designClaims:
+        itemHints(normalized, "DESIGN_CLAIM"),
+      scopeGuidance: [
+        ...itemHints(normalized, "SCOPE_REQUEST"),
+        ...itemHints(normalized, "EXCLUSION_REQUEST"),
+      ],
+      testConstraints:
+        itemHints(normalized, "TEST_CONSTRAINT"),
+      historicalHints:
+        itemHints(normalized, "HISTORICAL_REFERENCE"),
+      unmappedInput:
+        normalized.unmappedFragmentIds.flatMap(
+          (id) => {
+            const raw = fragments.get(id);
+            return raw === undefined ? [] : [raw];
+          },
+        ),
+      ambiguities:
+        [...normalized.ambiguities],
+      priorityDomains:
+        [...normalized.priorityDomains],
+      priorityPlayerFlows:
+        [...normalized.priorityPlayerFlows],
+    },
+  };
+}
+
+export function confirmAuditUserIntent(
+  input: AuditUserIntentEnvelope,
+  confirmed: true,
+): AuditUserIntentConfirmationReceipt {
+  if (confirmed !== true) {
+    throw new Error(
+      "User intent confirmation requires explicit true confirmation.",
+    );
+  }
+
+  return {
+    schemaVersion: 1,
+    policy: "user-confirmed-audit-intent",
+    intentFingerprint:
+      fingerprintAuditUserIntent(input),
+    confirmed: true,
+  };
+}
+
+export function validateAuditUserIntentConfirmation(
+  input: AuditUserIntentEnvelope,
+  receipt:
+    AuditUserIntentConfirmationReceipt | undefined,
+): readonly string[] {
+  if (receipt === undefined) {
+    return [
+      "User audit intent must be confirmed in chat before production audit.",
+    ];
+  }
+
+  const issues: string[] = [];
+  if (receipt.schemaVersion !== 1) {
+    issues.push(
+      "User audit intent confirmation schemaVersion must be 1.",
+    );
+  }
+  if (
+    receipt.policy !==
+    "user-confirmed-audit-intent"
+  ) {
+    issues.push(
+      "User audit intent confirmation policy is invalid.",
+    );
+  }
+  if (receipt.confirmed !== true) {
+    issues.push(
+      "User audit intent confirmation must be explicit.",
+    );
+  }
+
+  const expected =
+    fingerprintAuditUserIntent(input);
+  if (receipt.intentFingerprint !== expected) {
+    issues.push(
+      "User audit intent changed after confirmation; show the updated interpretation in chat and confirm again.",
+    );
+  }
+
+  return issues;
 }
 
 export function deriveAuditUserIntentSearchPressure(
