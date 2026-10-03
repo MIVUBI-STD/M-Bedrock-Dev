@@ -1,3 +1,6 @@
+import type {
+  AnalysisKnowledgeDomain,
+} from "../../analysis-planner/src/index.js";
 import {
   GAMEPLAY_ISSUE_FAILURE_DOMAINS,
   type GameplayIssueFailureDomain,
@@ -280,6 +283,89 @@ export function deriveAuditUserIntentSearchPressure(
     testConstraints:
       unique(hints("TEST_CONSTRAINT")),
   };
+}
+
+const KNOWLEDGE_BY_PRIORITY_DOMAIN:
+  Readonly<Record<
+    GameplayIssueFailureDomain,
+    readonly AnalysisKnowledgeDomain[]
+  >> = {
+    "arena-multi-arena": [
+      "arena-lifecycle",
+      "multiplayer-interleaving",
+      "state-flow",
+    ],
+    "inventory-economy": [
+      "inventory-state",
+      "economy-reward",
+      "persistence-recovery",
+    ],
+    "progression-wave-objective": [
+      "state-flow",
+      "entity-behavior",
+      "chunk-simulation",
+    ],
+    "chunk-simulation": [
+      "chunk-simulation",
+      "platform-constraints",
+    ],
+    "player-lifecycle": [
+      "state-flow",
+      "persistence-recovery",
+      "temporal-ownership",
+    ],
+    "entity-ai-combat": [
+      "entity-behavior",
+      "combat-lifecycle",
+      "chunk-simulation",
+    ],
+    "world-structure-mutation": [
+      "world-structure",
+      "spatial-authority",
+      "temporal-ownership",
+    ],
+    "ui-feedback-information": [
+      "state-flow",
+    ],
+    "state-ownership": [
+      "state-flow",
+      "temporal-ownership",
+    ],
+    "temporal-async": [
+      "temporal-ownership",
+      "state-flow",
+    ],
+    "boundary-capacity": [
+      "multiplayer-interleaving",
+      "platform-constraints",
+      "state-flow",
+    ],
+    "persistence-recovery": [
+      "persistence-recovery",
+      "state-flow",
+      "temporal-ownership",
+    ],
+    "platform-performance": [
+      "platform-constraints",
+      "chunk-simulation",
+    ],
+  };
+
+export function deriveAuditUserIntentKnowledgeDemand(
+  input: AuditUserIntentEnvelope | undefined,
+): readonly AnalysisKnowledgeDomain[] {
+  if (input === undefined) return [];
+
+  const normalized =
+    normalizeAuditUserIntent(input);
+  return [
+    ...new Set(
+      normalized.priorityDomains.flatMap(
+        (domain) =>
+          KNOWLEDGE_BY_PRIORITY_DOMAIN[domain],
+      ),
+    ),
+  ].sort();
 }
 
 export function auditUserIntentAuthorityNote(): string {
