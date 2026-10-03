@@ -89,8 +89,20 @@ export interface MapAuditOutputV2 {
   };
   readonly gameDesign: {
     readonly objective: string;
+    readonly objectiveGrounding:
+      | "authored"
+      | "inferred"
+      | "unresolved";
     readonly winCondition: string;
+    readonly winConditionGrounding:
+      | "authored"
+      | "inferred"
+      | "unresolved";
     readonly loseCondition: string;
+    readonly loseConditionGrounding:
+      | "authored"
+      | "inferred"
+      | "unresolved";
     readonly resetRules: readonly string[];
     readonly preserveRules: readonly string[];
     readonly progressionRules: readonly string[];
@@ -207,7 +219,12 @@ function edgeStatement(
 function outcomeFor(
   model: GameplayIntentModel,
   kind: "wins-by" | "loses-by",
-): string | undefined {
+): {
+  readonly text: string;
+  readonly grounding:
+    | "authored"
+    | "inferred";
+} | undefined {
   const nodes = new Map(
     model.nodes.map((node) => [node.id, node]),
   );
@@ -216,10 +233,23 @@ function outcomeFor(
       item.kind === kind &&
       item.status !== "hypothesis"
     )
-    .sort((a, b) => a.id.localeCompare(b.id))[0];
+    .sort((a, b) => {
+      const rank = (value: GameplayIntentEdge["status"]) =>
+        value === "authored"
+          ? 0
+          : 1;
+      return rank(a.status) - rank(b.status) ||
+        a.id.localeCompare(b.id);
+    })[0];
   return edge === undefined
     ? undefined
-    : edgeStatement(edge, nodes);
+    : {
+        text: edgeStatement(edge, nodes),
+        grounding:
+          edge.status === "authored"
+            ? "authored"
+            : "inferred",
+      };
 }
 
 function projectFinding(
@@ -304,14 +334,26 @@ export function projectMapAuditOutputV2(input: {
   const nodes = new Map(
     model.nodes.map((node) => [node.id, node]),
   );
+  const objectiveNode =
+    preferredNode(model, "objective");
   const objective =
-    nodeText(preferredNode(model, "objective")) ??
+    nodeText(objectiveNode) ??
     "Unresolved from selected artifact.";
+  const objectiveGrounding =
+    objectiveNode === undefined
+      ? "unresolved" as const
+      : objectiveNode.status === "authored"
+        ? "authored" as const
+        : "inferred" as const;
+  const win =
+    outcomeFor(model, "wins-by");
+  const lose =
+    outcomeFor(model, "loses-by");
   const winCondition =
-    outcomeFor(model, "wins-by") ??
+    win?.text ??
     "Unresolved from selected artifact.";
   const loseCondition =
-    outcomeFor(model, "loses-by") ??
+    lose?.text ??
     "Unresolved from selected artifact.";
 
   const resetRules = model.edges
@@ -406,8 +448,13 @@ export function projectMapAuditOutputV2(input: {
     },
     gameDesign: {
       objective,
+      objectiveGrounding,
       winCondition,
+      winConditionGrounding:
+        win?.grounding ?? "unresolved",
       loseCondition,
+      loseConditionGrounding:
+        lose?.grounding ?? "unresolved",
       resetRules,
       preserveRules,
       progressionRules,
