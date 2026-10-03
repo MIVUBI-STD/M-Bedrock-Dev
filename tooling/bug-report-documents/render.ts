@@ -133,6 +133,19 @@ interface MapAuditHtmlInput {
     readonly incompleteReplicaIds: readonly string[];
     readonly baselineReusableForAllReplicas: boolean;
   };
+  readonly auditObligations?: readonly {
+    readonly id: string;
+    readonly source: string;
+    readonly stage: string;
+    readonly title: string;
+    readonly reason: string;
+    readonly missingProof: string;
+    readonly validationTest: string;
+    readonly validationGroupKey: string;
+    readonly subjectIds: readonly string[];
+    readonly componentIds: readonly string[];
+    readonly evidenceIds: readonly string[];
+  }[];
   readonly bugs: readonly MapAuditHtmlFinding[];
   readonly designMismatches: readonly MapAuditHtmlFinding[];
   readonly validationTests?: readonly {
