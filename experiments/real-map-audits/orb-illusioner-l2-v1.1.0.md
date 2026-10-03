@@ -89,6 +89,72 @@ The transaction omitted derivation of the target material (for example from Swor
 Derive and validate the target material before currency mutation. Keep the existing UpgradeManager as the single owner and make the purchase atomic: validate target/delivery first, then consume coins and apply/persist the upgrade, or refund on any post-consumption failure.
 
 
+## Proven finding 2
+
+### BUG — Active-game reload recovery aborts the arena because barricade validation references an undefined variable
+
+Severity: Major  
+Proof: source-proven  
+Domain: persistence / reload recovery / arena lifecycle
+
+#### Issue
+
+When an active Offense game is restored after world/script reload, the manager schedules barricade-state validation after 40 ticks. That validation iterates `selectedBarricades`, but the identifier exists only as a parameter of a different method and is not declared in `validateBarricadeStates()`.
+
+#### Expected
+
+An active persisted game should resume and reconcile the configured barricades for each stage without terminating the arena.
+
+#### Observed source behavior
+
+Resume path:
+
+~~~text
+tryResumeGame()
+→ offense_game_running is true
+→ restart HUD and area-check loops
+→ schedule tryResumeGame:1 after 40 ticks
+~~~
+
+The registered resume job calls:
+
+~~~text
+tryResumeGame:1
+→ validateBarricadeStates()
+~~~
+
+Inside that method:
+
+~~~text
+for each stage
+→ for (const barricadeData of selectedBarricades || stage.barricades)
+~~~
+
+`selectedBarricades` is not declared in this method or enclosing module scope. The selected artifact's original source also produces a TS2304 unknown-identifier diagnostic for this exact runtime reference.
+
+The arena scheduler catches the resulting ReferenceError. Only stale native-entity errors may be skipped; arbitrary logic errors are classified as `recover_arena` and rethrown. The main active-arena tick loop catches that error and calls `recover(id, error)`, which disposes the active context, resets the arena, and sends current members back to lobby with the internal-error recovery message.
+
+#### Reproduction path
+
+1. Start Orb of the Illusioner Level 2 and reach an active Offense game state.
+2. Reload/restart the world or script runtime while persisted `offense_game_running` remains true.
+3. Allow the restored arena to initialize.
+4. After the scheduled 40-tick resume delay, `validateBarricadeStates()` runs.
+5. The undeclared `selectedBarricades` reference throws.
+6. The active arena enters `recover_arena`, is disposed/reset, and players are returned to lobby.
+
+#### Player-visible consequence
+
+A valid active game cannot survive the authored reload/resume path; recovery itself terminates the session instead of resuming it.
+
+#### Root cause
+
+The resume-only barricade reconciliation path references a local parameter name from `spawnBarricades()` that does not exist in `validateBarricadeStates()`.
+
+#### Repair direction
+
+Iterate the stage's configured barricades directly (or pass an explicit selected set through the existing owner if selection is genuinely required). Keep the current arena recovery owner; fix the invalid resume callback rather than adding a second recovery path.
+
 ## Important false-positive check — temporary coordinate picker
 
 The production bundle contains `temperory-tools` coordinate-picker code that reacts to `minecraft:stick` and explicitly says no admin tag is required.
@@ -117,6 +183,6 @@ Current administrative commands inspected in the main orchestration path require
 
 ## Result
 
-Orb of the Illusioner Level 2 v1.1.0: **1 source-proven Major BUG**.
+Orb of the Illusioner Level 2 v1.1.0: **2 source-proven Major BUGs**.
 
 Do not create historical regression entries from this pass.
