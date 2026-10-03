@@ -143,6 +143,22 @@ Separate platform risk from map bugs, but audit when version/API behavior can vi
 
 Do not classify compatibility concern as a gameplay defect without selected-version evidence.
 
+## Coverage challenger
+
+Before finalization, challenge the audit output independently from the discovery result. The purpose is not to create a second workflow; it is to falsify the assumption that discovered coverage is sufficient.
+
+Ask:
+
+- Which material surface has no scenario that can make it fail?
+- Which acquired resource has no release/reset/terminal accounting?
+- Which progression tracker has no zero/final/transition test?
+- Which multiplayer feature was tested only with two players/arenas even though a larger selected-map boundary exists?
+- Which unsupported semantic surface became a Detection Gap without a concrete tester action?
+- Which runtime-sensitive behavior was accepted from static evidence even though tick ordering, unload, concurrency, or engine execution can change the outcome?
+- Which high-impact completion/terminal mechanic received shallow proof only because its implementation is technically simple?
+
+A clean answer requires either evidence or an explicit targeted test obligation. Silence is not coverage.
+
 ## Gameplay capability delivery
 
 Every player-visible or authored capability must be crosschecked as:
