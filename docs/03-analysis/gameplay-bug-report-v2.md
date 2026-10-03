@@ -8,6 +8,30 @@ The human-facing Complete Bug Report is the Map Audit Report and must show all m
 
 This file owns canonical Bug Report V2 semantics. Rendering details belong in `templates/bug-report-v2-html-layout.md`. Persisted Bug Report V2 validation belongs in `engine/schemas/bug-report/`. Map Audit Output validation remains separately owned by `.agents/schemas/map-audit-output-v2.schema.json`.
 
+## Reporting hierarchy
+
+The complete human-facing audit report is the **Complete Map Audit** projection. It must preserve every material finding from the same audit revision:
+
+```text
+Complete Map Audit
+├─ PROVEN BUG
+├─ PROVEN DESIGN_MISMATCH
+├─ NEED_VALIDATION BUG
+└─ NEED_VALIDATION DESIGN_MISMATCH
+```
+
+The engine must attempt bounded proof promotion before leaving a finding unresolved. If deciding evidence is still unavailable, the finding remains visible as `NEED_VALIDATION` with its exact missing proof and targeted validation action.
+
+Bug Report V2 is narrower:
+
+```text
+Complete Map Audit
+→ approved PROVEN BUG items only
+→ Bug Report V2
+```
+
+Therefore Bug Report V2 is an approved defect ledger, not the complete audit finding surface. Absence from Bug Report V2 must never be interpreted as evidence that no unresolved material finding exists.
+
 ## Scope boundary: BUG vs DESIGN_MISMATCH
 
 This artifact stores **BUG** items only.
