@@ -59,6 +59,13 @@ audit <selected.mcworld>
 - report type is explicit:
   - `BUG`
   - `DESIGN_MISMATCH`;
+- every reportable issue now carries canonical taxonomy:
+  - `issueType`;
+  - `gameplayFlow`;
+  - primary `failureDomain`;
+  - cross-system `contributingDomains[]`;
+  - severity only at confirmed report classification, derived from impact;
+- issue projection is ordered by player flow first, then failure domain;
 - canonical confirmed-issue taxonomy is now explicit:
   - `failureDomain` = one primary gameplay failure family;
   - `contributingDomains[]` = materially involved cross-system domains without duplicating the root cause;
