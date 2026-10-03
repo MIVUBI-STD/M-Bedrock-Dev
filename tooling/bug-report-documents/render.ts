@@ -301,7 +301,9 @@ function issueCard(issue: BugReportClientIssue): string {
 
   return [
     '<article class="bug-row severity-' + issue.severity + '">',
-    '  <div class="bug-check"><label><input type="checkbox" aria-label="Verified fixed: ' +
+    '  <div class="bug-check"><label><input type="checkbox"' +
+      (issue.status === "fixed" ? " checked" : "") +
+      ' aria-label="Verified fixed: ' +
       escapeHtml(issue.title) +
       '"><span>Fixed</span></label></div>',
     '  <details class="bug-details">',
