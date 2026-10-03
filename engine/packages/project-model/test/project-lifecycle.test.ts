@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   normalizeProjectRecord,
   normalizeProjectRegistry,
+  projectLifecycleStatus,
 } from "../src/project/project-lifecycle.js";
 
 function record(): any {
@@ -10,7 +11,6 @@ function record(): any {
     projectId: "defense-v2",
     projectName: "Defense V2",
     taskClass: "DIAGNOSE",
-    status: "working",
     revision: 1,
     artifact: {
       artifactId: "map:defense-v2",
@@ -24,26 +24,65 @@ function record(): any {
 }
 
 describe("project lifecycle contracts", () => {
-  it("rejects invalid tracked lifecycle state", () => {
-    expect(() =>
-      normalizeProjectRecord({
-        ...record(),
-        status: "ready-for-approval",
-      })
-    ).toThrow(
-      "Unsupported project lifecycle status.",
-    );
-  });
-
-  it("requires approval proof for approved state", () => {
+  it("rejects legacy persisted lifecycle status", () => {
     expect(() =>
       normalizeProjectRecord({
         ...record(),
         status: "approved",
       })
     ).toThrow(
-      "Approved project state requires approvalSnapshotFingerprint.",
+      "Project record contains unsupported or legacy fields.",
     );
+  });
+
+  it("requires approval proof before publication proof", () => {
+    expect(() =>
+      normalizeProjectRecord({
+        ...record(),
+        publication: {
+          drivePublishReceiptFingerprint:
+            "sha256:publish",
+        },
+      })
+    ).toThrow(
+      "Drive publication proof requires approvalSnapshotFingerprint.",
+    );
+  });
+
+  it("derives lifecycle from proof fingerprints", () => {
+    expect(
+      projectLifecycleStatus(
+        normalizeProjectRecord(
+          record(),
+        ),
+      ),
+    ).toBe("working");
+
+    expect(
+      projectLifecycleStatus(
+        normalizeProjectRecord({
+          ...record(),
+          publication: {
+            approvalSnapshotFingerprint:
+              "sha256:approval",
+          },
+        }),
+      ),
+    ).toBe("approved");
+
+    expect(
+      projectLifecycleStatus(
+        normalizeProjectRecord({
+          ...record(),
+          publication: {
+            approvalSnapshotFingerprint:
+              "sha256:approval",
+            drivePublishReceiptFingerprint:
+              "sha256:publish",
+          },
+        }),
+      ),
+    ).toBe("drive-published");
   });
 
   it("rejects duplicate project ids in registry", () => {
