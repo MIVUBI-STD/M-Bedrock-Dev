@@ -381,6 +381,51 @@ export function deriveMandatoryAuditProcedureReceipt(input: {
   ));
 
   checkpoint.push(receipt(
+    "A7",
+    "UNDERSTAND",
+    "Gameplay Model Closure",
+    world.gameplayClosure.status,
+    world.gameplayClosure.status === "CLOSED"
+      ? "Gameplay model closure is CLOSED."
+      : "Gameplay model closure remains " +
+        world.gameplayClosure.status +
+        "; unresolved material semantics cannot be bypassed.",
+    world.gameplayClosure.surfaces.flatMap(
+      (surface) => surface.evidenceIds,
+    ),
+    ["GameplayModelClosure"],
+    {
+      obligations: [
+        obligation(
+          "gameplay-model-state-complete",
+          true,
+          world.gameplayClosure.stateModelComplete,
+          "Gameplay model closure requires a complete material state model.",
+          world.gameplayClosure.surfaces.flatMap(
+            (surface) => surface.evidenceIds,
+          ),
+        ),
+        obligation(
+          "gameplay-model-boundaries-extracted",
+          true,
+          world.gameplayClosure.boundariesExtracted,
+          "Gameplay model closure requires material boundaries to be extracted.",
+          world.gameplayClosure.surfaces.flatMap(
+            (surface) => surface.boundaries,
+          ),
+        ),
+        obligation(
+          "gameplay-model-surfaces-accounted",
+          true,
+          world.gameplayClosure.unaccountedSurfaceIds.length === 0,
+          "Gameplay model closure requires every discovered material surface to be accounted.",
+          world.gameplayClosure.unaccountedSurfaceIds,
+        ),
+      ],
+    },
+  ));
+
+  checkpoint.push(receipt(
     "B1",
     "MODEL",
     "Actor / Entity Contract",
