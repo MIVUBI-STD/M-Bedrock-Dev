@@ -2,125 +2,152 @@
 
 ## Single source of truth
 
-For gameplay audit, **one selected map version is the only current source of truth**.
+For gameplay audit, one exact selected `.mcworld` is the only current gameplay authority.
 
-```text
-explicit selected .mcworld
-or single current root .mcworld
-→ Selected Map Version
-```
+Historical QA, old map versions, Development/Source, changelogs, and external documents may support comparison/calibration only. They never silently define current Expected Behavior.
 
-Older versions, Development/Source, old QA/Bug Reports, Technical Docs, changelogs, other maps, and external documents are archive/reference only.
-
-## Canonical flow
-
-```text
-Selected Map Version
-→ Multi-source Gameplay Surface Inventory
-→ Gameplay Discovery Closure
-→ Gameplay Contract + State / Boundary Reconstruction
-→ Gameplay Model Closure
-→ Risk-directed Analysis
-→ Actual Behavior
-→ Contradiction + Early Counter-Evidence
-→ Exact-work Deduplication / Corroboration
-→ Confirmed Defect
-→ Proposed Bug Set
-→ Chat Approval
-→ Approved Bug
-→ Production Report
-→ Repair Contract
-→ Authorized Repair
-→ Verify Defect + Preserve Gameplay
-```
-
-## Terms
-
-| Term | Meaning |
-|---|---|
-| Selected Map Version | exact current artifact being audited; sole current gameplay truth |
-| Gameplay Contract | scoped expected behavior derived only from that artifact |
-| Actual Behavior | what that same artifact can/do actually perform |
-| Confirmed Defect | proven contradiction inside that same version |
-| Approved Bug | confirmed defect explicitly approved for report/repair |
-| Repair Contract | Must Change + Must Preserve |
-| Authorized Repair | Approved Bug/design change + Repair Contract + current proof |
-
-## Audit rule
-
-Expected Behavior and Actual Behavior must come from the **same selected map version**.
-
-If the artifact does not contain enough evidence to determine intended behavior for a mechanic, keep it `UNKNOWN / BLOCKED`. Do not read older versions or external documents to fill the gap.
-
-Historical material may be consulted only when the user explicitly asks for comparison/history. It never silently changes the current audit truth.
-
-Surface accounting is bounded: it proves that discovered mechanics were not silently skipped, not that every possible mechanic in the map was discovered.
-
-## Repair rule
-
-Bug repair starts only from an Approved Bug.
-
-```text
-Approved Bug
-+ Repair Contract
-  - Must Change
-  - Must Preserve
-→ mutation
-→ defect verification
-→ preservation verification
-```
-
-A repair is incomplete if the symptom disappears but intended gameplay in the selected version is damaged.
-
-## Usage scenarios
-
-### Audit only
+## One production audit flow
 
 ```text
 Selected .mcworld
-→ inspect
-→ Discovery Closure
-→ Gameplay Model Closure
-→ diagnose
-→ Proposed Bug Set
+→ runSelectedMapAudit()
+→ TARGET
+→ DISCOVERY
+→ UNDERSTAND
+→ MODEL
+→ STRESS
+→ PROVE
+→ REPORT
+```
+
+There is no parallel manual audit path.
+
+The engine authority chain is:
+
+```text
+map-audit-pipeline
+→ Mandatory Audit Procedure
+→ ordered admission
+→ scenario/RIG evidence
+→ contradiction resolution
+→ confirmed issue projection
+→ BUG | DESIGN_MISMATCH
+→ report/review
+```
+
+### Stage meaning
+
+| Stage | Must answer before continuing |
+|---|---|
+| TARGET | Which exact artifact/version is current truth? |
+| DISCOVERY | Are all gameplay-sensitive sources accounted and semantically owned? |
+| UNDERSTAND | Is the player journey, state, ownership, progression and intent understood? |
+| MODEL | Are material actors, spatial rules, multiplayer, boundaries and capability delivery modeled? |
+| STRESS | Have recovery, concurrency, terminal, cleanup, second-run and required cross-system scenarios been challenged? |
+| PROVE | Does each contradiction survive scoped counter-proof, or become runtime residue/detection gap? |
+| REPORT | Is each confirmed root cause classified exactly once as `BUG` or `DESIGN_MISMATCH`? |
+
+A blocked stage stops this same sequence. It does not create another workflow.
+
+## Player-flow execution
+
+Within those stages, checks follow the game:
+
+```text
+ENTRY / JOIN
+→ READY / START
+→ SETUP
+→ ACTIVE GAMEPLAY
+→ PROGRESSION
+→ TERMINAL
+→ CLEANUP / REPLAY
+→ RECOVERY
+```
+
+Domain analyzers are evidence providers attached to the relevant player-flow stage.
+
+## Issue types
+
+### BUG
+
+Use when intended behavior is grounded but implementation/runtime breaks it.
+
+```text
+expected gameplay contract
+→ implementation/runtime contradiction
+→ BUG
+```
+
+### DESIGN_MISMATCH
+
+Use when the capability presented/authored by the game is materially different from actual playable/deliverable capability.
+
+```text
+presented capability
+≠ playable capability
+→ DESIGN_MISMATCH
+```
+
+A platform constraint, queue, fallback, or performance safeguard may explain root cause but does not erase the mismatch.
+
+One root cause belongs to exactly one report lane.
+
+## Fail-closed rule
+
+The system must never translate uncertainty into PASS.
+
+```text
+source accounted but semantics missing
+→ Detection Gap
+
+semantic model incomplete
+→ block UNDERSTAND/MODEL
+
+cross-system scenario missing
+→ block STRESS
+
+counter-proof incomplete
+→ block PROVE
+
+irreducible Minecraft behavior
+→ one narrow Runtime Proof request
+```
+
+“No issue found” is meaningful only when the ordered gates close.
+
+## Audit-only use
+
+```text
+Selected .mcworld
+→ runSelectedMapAudit()
+→ resolve blocking stages / defect resolution
+→ readyBugs + readyDesignMismatches
 → STOP
 ```
 
-Use when the goal is to find/classify issues only.
-
-### Audit + report
+## Audit + report
 
 ```text
-Audit only
-→ review/approve proposed bugs
-→ Bug Report V2
-→ chat preview / HTML client report
-→ STOP
+closed audit
+→ review confirmed root causes
+→ BUG section
+→ DESIGN_MISMATCH section
+→ production Map Audit report
 ```
 
-Do not publish a comprehensive report while Discovery Closure or Gameplay Model Closure is OPEN.
+Bug Report V2 remains the persisted approved `BUG` lane. DESIGN_MISMATCH remains a separate Map Audit output lane.
 
-### Approved repair
+## Repair
+
+Repairs start from an approved issue, not from raw analyzer findings.
 
 ```text
-Approved Bug
-→ Must Change + Must Preserve
-→ authorized repair
+Approved BUG or approved design change
++ Must Change
++ Must Preserve
+→ mutation
 → targeted verification
-→ regression/preservation verification
-→ updated report state
+→ preservation verification
 ```
 
-Do not use repair reasoning to decide whether a candidate is a bug.
-
-### New map version
-
-Treat the new selected artifact as a new current gameplay truth. Rebuild discovery, intent, closure, and contradiction evidence. Prior results may inform calibration but do not become current gameplay authority.
-
-### Runtime-only validation
-
-Static/package analysis records the unresolved claim and exact verification scenario. Escalate only that residue to LOCAL_MINECRAFT/LIVE_MINECRAFT.
-
-### Detection Gap
-
-Record the unsupported surface as Detection Gap and hand it to Detection Development. Do not silently add map-specific production rules inside the active audit.
+A new map version restarts TARGET and Discovery. Prior findings are regression/calibration evidence only.
