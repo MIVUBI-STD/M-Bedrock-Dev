@@ -124,6 +124,20 @@ These controls reduce silent false negatives but do not constitute a measured fa
 - legacy Map Audit Output V1 schema is explicitly deprecated/non-production;
 - repository verifier checks single entry, issue lanes, semantic-gap fail-closed behavior, report lanes, and legacy deprecation.
 
+### Proof navigation / resolution knowledge
+
+Every NEED_VALIDATION finding now receives a bounded proof-navigation contract:
+
+- `recipeId` — generic failure-family proof recipe, never map-name specific;
+- `proofGoal` — the exact fact needed to decide the finding;
+- `provenClaims[]` — evidence-grounded claims only;
+- `missingClaims[]` — unresolved proof obligations;
+- ordered `route[]` — selected-artifact proof first, then cross-domain/formal proof when applicable, runtime last.
+
+Initial recipes cover progression dead-end, arena concurrency/isolation, inventory/economy lifecycle, stale async mutation, chunk residency, persistence/recovery, state ownership, entity/combat lifecycle, world mutation, boundary/capacity, player lifecycle, UI/information, and platform-performance impact.
+
+Model task packets can now use `PROOF_NAVIGATION` to resolve a specific NEED_VALIDATION finding toward PROVEN and explicitly forbid skipping to runtime while an earlier applicable proof route remains unexhausted.
+
 ### Honesty / non-suppression gate
 
 The selected-map audit now computes an explicit `no-hidden-material-finding` assessment. It independently derives the material unresolved residue set from the scenario graph, RIG knowledge receipts, Gameplay Model Closure, negative-space signals, temporal risks, and defect-resolution state, then compares that set against visible NEED_VALIDATION findings.
