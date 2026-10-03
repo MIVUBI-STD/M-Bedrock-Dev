@@ -41,7 +41,6 @@ export type GameplayBugCandidateEvidenceDisposition =
   | "contract-missing"
   | "contract-blocked"
   | "suppressed-by-counter-evidence"
-  | "counter-evidence-unresolved"
   | "no-player-impact"
   | "insufficient-evidence"
   | "not-matched";
@@ -187,6 +186,52 @@ export function evaluateGameplayBugCandidateEvidence(
   );
 
   if (missingRequired.length > 0) {
+    const presentRequired = rule.requiredPredicates
+      .map((predicate) => byPredicate.get(predicate))
+      .filter(
+        (
+          item,
+        ): item is DiagnosticEvidenceObservation =>
+          item?.state === "present",
+      );
+    const presentImpact = rule.playerImpactPredicates
+      .map((predicate) => byPredicate.get(predicate))
+      .filter(
+        (
+          item,
+        ): item is DiagnosticEvidenceObservation =>
+          item?.state === "present",
+      );
+
+    if (
+      presentRequired.length > 0 ||
+      presentImpact.length > 0
+    ) {
+      return {
+        ruleId: rule.id,
+        kind: rule.kind,
+        disposition: "candidate",
+        supportingEvidenceIds: [
+          ...new Set(
+            presentRequired.map(evidenceId),
+          ),
+        ].sort(),
+        playerImpactEvidenceIds: [
+          ...new Set(
+            presentImpact.map(evidenceId),
+          ),
+        ].sort(),
+        counterEvidenceIds: [],
+        unresolvedCounterPredicates:
+          [...new Set(unresolvedCounterPredicates)].sort(),
+        missingPredicates:
+          [...missingRequired].sort(),
+        reasons: [
+          "Part of the material defect pattern is already grounded. Retain the candidate and target only the missing predicates instead of discarding it as generic insufficient evidence.",
+        ],
+      };
+    }
+
     return {
       ruleId: rule.id,
       kind: rule.kind,
@@ -194,10 +239,11 @@ export function evaluateGameplayBugCandidateEvidence(
       supportingEvidenceIds: [],
       playerImpactEvidenceIds: [],
       counterEvidenceIds: [],
-      unresolvedCounterPredicates: [],
+      unresolvedCounterPredicates:
+        [...new Set(unresolvedCounterPredicates)].sort(),
       missingPredicates: [...missingRequired].sort(),
       reasons: [
-        "One or more required candidate predicates are unknown.",
+        "No material part of the required defect pattern is grounded yet; keep this as evidence work rather than emitting a low-signal candidate.",
       ],
     };
   }
