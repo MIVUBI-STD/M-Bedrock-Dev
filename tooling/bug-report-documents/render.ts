@@ -557,8 +557,6 @@ function renderHtml(
       ? '<section class="empty">No gameplay-blocking or materially disruptive open issues are recorded.</section>'
       : document.issues.map(issueCard).join("\n\n");
 
-  const issueIndex = "";
-
   const severityLegend =
     layout.showSeverityLegend
       ? [
@@ -908,7 +906,6 @@ th {
     <p>${escapeHtml(document.summary.statement)}</p>
     <p class="retest-note"><strong>Retest:</strong> open a bug, follow How to Reproduce, compare Observed vs Expected, then check Fixed only when the wrong behavior no longer occurs and the Expected result is confirmed.</p>
   </section>
-  ${issueIndex}
   ${severityLegend}
   <section class="issues">
 ${cards}
