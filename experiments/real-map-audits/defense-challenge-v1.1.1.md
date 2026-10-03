@@ -478,6 +478,13 @@ Narrow validation:
 
 If runtime confirms command failure, promote as a Major economy transaction bug. Until then it remains an Audit Obligation.
 
+### Historical regression checks that are not current findings
+
+- **keepInventory**: current `level.dat` stores `keepinventory = 1`. The earlier disabled-keepInventory defect is therefore not reproduced by the selected v1.1.1 artifact.
+- **Oversized single ticking region**: current arena config divides simulation into three regions (`north`, `mid`, `south`) instead of one whole-arena region. This source pass did not reproduce the earlier whole-arena ticking-area design problem.
+- **Enchant purchase with no target/effect**: current enchant purchase checks for a valid target before coin consumption, then persists the level and reapplies enchantments. The older simple “coins deducted with no target” path is not reproduced by this source.
+- **Duplicate same-tier enchant purchase**: enchant UI/handler rejects purchases at configured max level. No current source proof was found for the historical same-tier repeat-purchase issue.
+
 ## Next action
 
 Defense v1.1.1 source pass is complete for this real-test round. Keep the proven reset/lease race pending approval and the Speed Potion transaction as a narrow runtime obligation. Do not ingest either into historical reliability knowledge until the approval boundary is crossed.
