@@ -200,8 +200,11 @@ describe("map audit issue projection", () => {
       result.find(
         (item) =>
           item.causalLinkId === "link:capacity",
-      )?.issueType,
-    ).toBe("DESIGN_MISMATCH");
+      ),
+    ).toMatchObject({
+      status: "PROVEN",
+      issueType: "DESIGN_MISMATCH",
+    });
     expect(
       result.find(
         (item) =>
@@ -230,8 +233,11 @@ describe("map audit issue projection", () => {
       result.find(
         (item) =>
           item.causalLinkId === "link:progression",
-      )?.issueType,
-    ).toBe("BUG");
+      ),
+    ).toMatchObject({
+      status: "PROVEN",
+      issueType: "BUG",
+    });
     expect(
       result.find(
         (item) =>
