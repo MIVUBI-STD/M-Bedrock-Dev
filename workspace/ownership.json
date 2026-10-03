@@ -1,6 +1,12 @@
 {
   "schemaVersion": 1,
   "groups": {
+    "projects": {
+      "purpose": "Ignored project working continuity. Project lifecycle status belongs in project state, not folder names.",
+      "entries": [
+        "projects"
+      ]
+    },
     "handoff": {
       "purpose": "Tracked canonical audit/report handoff.",
       "entries": [
@@ -11,13 +17,6 @@
       "purpose": "Tracked pointer to the user-managed Drive map/source storage root.",
       "entries": [
         "drive-root.json"
-      ]
-    },
-    "projects": {
-      "purpose": "Ignored project working and saved continuity.",
-      "entries": [
-        "active",
-        "saved"
       ]
     }
   }
