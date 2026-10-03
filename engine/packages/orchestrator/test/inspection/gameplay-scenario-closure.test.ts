@@ -122,6 +122,72 @@ describe("gameplay scenario closure", () => {
     );
   });
 
+  it("emits one targeted tester obligation for each detection gap", () => {
+    const result = assessGameplayScenarioClosure({
+      ...baseGraph(),
+      scenarios: [{
+        id: "scenario:inventory",
+        label: "inventory-reconnect",
+        gameplayStage: "RECOVERY",
+        purpose: "Recover inventory after reconnect.",
+        sourceSubjectIds: ["mechanic:inventory"],
+        componentIds: [
+          "component:inventory",
+          "component:reconnect",
+        ],
+        causalLinkIds: ["link:inventory-gap"],
+        playerCounts: [1],
+        requiredKnowledgeIds: [],
+        composedScenarioIds: [],
+      }],
+      components: [{
+        id: "component:inventory",
+        label: "Inventory",
+        kind: "mechanic",
+        technicalRole: "inventory mutation",
+        gameplayPurpose: "Restore the correct loadout.",
+        evidenceIds: ["evidence:inventory"],
+        usedByScenarioIds: ["scenario:inventory"],
+        orphan: false,
+      }, {
+        id: "component:reconnect",
+        label: "Reconnect",
+        kind: "lifecycle",
+        technicalRole: "player recovery",
+        gameplayPurpose: "Return the player to a valid state.",
+        evidenceIds: ["evidence:reconnect"],
+        usedByScenarioIds: ["scenario:inventory"],
+        orphan: false,
+      }],
+      causalLinks: [{
+        id: "link:inventory-gap",
+        scenarioId: "scenario:inventory",
+        fromComponentId: "component:reconnect",
+        toComponentId: "component:inventory",
+        purpose:
+          "Reconnect restores exactly one valid loadout",
+        evidenceIds: ["evidence:inventory"],
+        subjectIds: ["mechanic:inventory"],
+        componentIds: [
+          "component:inventory",
+          "component:reconnect",
+        ],
+        status: "DETECTION_GAP",
+        reason:
+          "Dynamic inventory mutation cannot be resolved statically.",
+      }],
+    });
+
+    expect(result.status).toBe("OPEN");
+    expect(result.detectionGapCausalLinkIds).toEqual([
+      "link:inventory-gap",
+    ]);
+    expect(result.detectionGapTestRequests).toHaveLength(1);
+    expect(
+      result.detectionGapTestRequests[0]?.narrowTestQuestion,
+    ).toContain("Reconnect restores exactly one valid loadout");
+  });
+
   it("does not treat a composition-only scenario as shallow", () => {
     const result = assessGameplayScenarioClosure({
       ...baseGraph(),
