@@ -29,9 +29,10 @@ Artifact
 Production gameplay audit has one operator entry and one ordered authority chain:
 
 ```text
-raw user prompt
+raw user request
 → AuditUserIntentEnvelope (search guidance only)
-→ chat interpretation confirmation
+→ Pre-Audit Plan: what will be done / checked / proven / reported
+→ chat confirmation
 → AuditUserIntentConfirmation
 → audit <selected.mcworld>
 → runSelectedMapAudit()
@@ -52,6 +53,8 @@ Production output rule: `SelectedMapAuditRun` is internal control-plane authorit
 Detection honesty rule: risks, detection gaps, model gaps, unresolved runtime dependencies, incomplete counter-proof, and unclassified replica differences remain `Audit Obligation` work. They do not enter `BUG | DESIGN_MISMATCH` until selected-artifact causal analysis establishes a player-visible contradiction.
 
 Prompt-intake rule: user symptoms, suspicions, expectations, design claims, historical examples, and scope requests may only add bounded search pressure. They never replace selected-artifact authority, never suppress canonical audit coverage, and never directly create a report finding.
+
+Pre-testing confirmation rule: the user does not need to know symptoms. Before production work, show one compact Pre-Audit Plan describing the audit objective, systems/checks, proof strategy, requested focus, and expected output. Start the audit only after the user confirms that plan.
 
 Operator work order: `docs/03-analysis/master-selected-map-audit-workflow.md`.
 
