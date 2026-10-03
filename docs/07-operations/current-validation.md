@@ -34,6 +34,20 @@ audit <selected.mcworld>
 - Specialist docs are supporting contracts, not alternate workflows.
 - Work Session/UI/HTML/JSON are projections only.
 
+### False-negative control hardening
+
+The current source now also enforces:
+
+- gameplay criticality is separate from technical complexity, so simple but progression/terminal-critical surfaces cannot be downgraded to shallow proof solely because they have few risk factors;
+- multi-arena stress uses selected-map concurrency boundaries instead of assuming that a two-arena pass generalizes to the maximum;
+- every `RUNTIME_BLOCKED` causal link emits one narrow runtime proof request;
+- every `DETECTION_GAP` causal link emits one targeted tester obligation;
+- coverage presence is explicitly distinct from coverage adequacy;
+- publication may fail closed while investigation continues collecting unrelated high-confidence findings; an early blocker must not silently erase later required tests;
+- inverse/negative-space lifecycle pairs are mandatory challenge targets (acquire/release, spawn/account, grant/reset, schedule/cancel-or-revalidate, and equivalent pairs).
+
+These controls reduce silent false negatives but do not constitute a measured false-negative guarantee until the real-map benchmark target below is executed.
+
 ### Fail-closed hardening now present
 
 - one production CLI command: `audit`;
