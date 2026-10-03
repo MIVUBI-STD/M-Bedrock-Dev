@@ -90,7 +90,6 @@ describe("project publication lifecycle", () => {
       assessProjectApprovalReadiness({
         project,
         deliverables,
-        requireAuditComplete: true,
         requireBugReport: true,
       });
 
@@ -142,7 +141,6 @@ describe("project publication lifecycle", () => {
       createProjectApprovalSnapshot({
         project,
         deliverables,
-        requireAuditComplete: true,
         requireBugReport: true,
       });
 
@@ -166,7 +164,6 @@ describe("project publication lifecycle", () => {
       createProjectApprovalSnapshot({
         project,
         deliverables,
-        requireAuditComplete: true,
         requireBugReport: true,
       });
 
