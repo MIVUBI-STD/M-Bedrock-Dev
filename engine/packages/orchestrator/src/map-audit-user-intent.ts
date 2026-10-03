@@ -85,9 +85,11 @@ function clean(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
 
-function unique(values: readonly string[]): string[] {
+function unique(
+  values: readonly string[] | undefined,
+): string[] {
   return [...new Set(
-    values.map(clean).filter(Boolean),
+    (values ?? []).map(clean).filter(Boolean),
   )].sort((a, b) => a.localeCompare(b));
 }
 
@@ -95,7 +97,11 @@ export function normalizeAuditUserIntent(
   input: AuditUserIntentEnvelope,
 ): AuditUserIntentEnvelope {
   const seen = new Set<string>();
-  const items = input.items.flatMap((item) => {
+  const items = (
+    Array.isArray(input.items)
+      ? input.items
+      : []
+  ).flatMap((item) => {
     const raw = clean(item.raw);
     const normalized = clean(item.normalized);
     if (!raw || !normalized) return [];
@@ -118,12 +124,29 @@ export function normalizeAuditUserIntent(
       "user-input-is-search-guidance-not-gameplay-authority",
     items,
     priorityDomains:
-      [...new Set(input.priorityDomains)].sort(),
+      [...new Set(
+        Array.isArray(input.priorityDomains)
+          ? input.priorityDomains
+          : [],
+      )].sort(),
     priorityPlayerFlows:
-      [...new Set(input.priorityPlayerFlows)].sort(),
-    ambiguities: unique(input.ambiguities),
+      [...new Set(
+        Array.isArray(input.priorityPlayerFlows)
+          ? input.priorityPlayerFlows
+          : [],
+      )].sort(),
+    ambiguities:
+      unique(
+        Array.isArray(input.ambiguities)
+          ? input.ambiguities
+          : [],
+      ),
     blockingAmbiguities:
-      unique(input.blockingAmbiguities),
+      unique(
+        Array.isArray(input.blockingAmbiguities)
+          ? input.blockingAmbiguities
+          : [],
+      ),
   };
 }
 
@@ -131,6 +154,15 @@ export function validateAuditUserIntent(
   input: AuditUserIntentEnvelope,
 ): readonly string[] {
   const issues: string[] = [];
+
+  if (
+    input === null ||
+    typeof input !== "object"
+  ) {
+    return [
+      "User audit intent must be an object.",
+    ];
+  }
 
   if (input.schemaVersion !== 1) {
     issues.push(
@@ -146,7 +178,48 @@ export function validateAuditUserIntent(
     );
   }
 
-  for (const [index, item] of input.items.entries()) {
+  if (!Array.isArray(input.items)) {
+    issues.push(
+      "User audit intent items must be an array.",
+    );
+  }
+  if (!Array.isArray(input.priorityDomains)) {
+    issues.push(
+      "User audit intent priorityDomains must be an array.",
+    );
+  }
+  if (!Array.isArray(input.priorityPlayerFlows)) {
+    issues.push(
+      "User audit intent priorityPlayerFlows must be an array.",
+    );
+  }
+  if (!Array.isArray(input.ambiguities)) {
+    issues.push(
+      "User audit intent ambiguities must be an array.",
+    );
+  }
+  if (!Array.isArray(input.blockingAmbiguities)) {
+    issues.push(
+      "User audit intent blockingAmbiguities must be an array.",
+    );
+  }
+
+  const items =
+    Array.isArray(input.items)
+      ? input.items
+      : [];
+  for (const [index, item] of items.entries()) {
+    if (
+      item === null ||
+      typeof item !== "object"
+    ) {
+      issues.push(
+        "User audit intent item " +
+        index +
+        " must be an object.",
+      );
+      continue;
+    }
     if (!USER_INPUT_CLASSES.has(item.kind)) {
       issues.push(
         "User audit intent item " +
@@ -156,23 +229,33 @@ export function validateAuditUserIntent(
         ".",
       );
     }
-    if (!clean(item.raw)) {
+    if (
+      typeof item.raw !== "string" ||
+      !clean(item.raw)
+    ) {
       issues.push(
         "User audit intent item " +
         index +
-        " has empty raw text.",
+        " has empty/invalid raw text.",
       );
     }
-    if (!clean(item.normalized)) {
+    if (
+      typeof item.normalized !== "string" ||
+      !clean(item.normalized)
+    ) {
       issues.push(
         "User audit intent item " +
         index +
-        " has empty normalized text.",
+        " has empty/invalid normalized text.",
       );
     }
   }
 
-  for (const domain of input.priorityDomains) {
+  const priorityDomains =
+    Array.isArray(input.priorityDomains)
+      ? input.priorityDomains
+      : [];
+  for (const domain of priorityDomains) {
     if (!FAILURE_DOMAINS.has(domain)) {
       issues.push(
         "User audit intent has unsupported priority domain: " +
@@ -182,7 +265,11 @@ export function validateAuditUserIntent(
     }
   }
 
-  for (const flow of input.priorityPlayerFlows) {
+  const priorityPlayerFlows =
+    Array.isArray(input.priorityPlayerFlows)
+      ? input.priorityPlayerFlows
+      : [];
+  for (const flow of priorityPlayerFlows) {
     if (!PLAYER_FLOWS.has(flow)) {
       issues.push(
         "User audit intent has unsupported priority player flow: " +
@@ -192,18 +279,31 @@ export function validateAuditUserIntent(
     }
   }
 
+  const ambiguities =
+    Array.isArray(input.ambiguities)
+      ? input.ambiguities
+      : [];
   if (
-    input.ambiguities.some(
-      (item) => !clean(item),
+    ambiguities.some(
+      (item) =>
+        typeof item !== "string" ||
+        !clean(item),
     )
   ) {
     issues.push(
       "User audit intent ambiguities must contain only non-empty text.",
     );
   }
+
+  const blockingAmbiguities =
+    Array.isArray(input.blockingAmbiguities)
+      ? input.blockingAmbiguities
+      : [];
   if (
-    input.blockingAmbiguities.some(
-      (item) => !clean(item),
+    blockingAmbiguities.some(
+      (item) =>
+        typeof item !== "string" ||
+        !clean(item),
     )
   ) {
     issues.push(
@@ -211,15 +311,18 @@ export function validateAuditUserIntent(
     );
   }
 
-  const hasSymptom = input.items.some(
-    (item) => item.kind === "SYMPTOM_REPORT",
+  const hasSymptom = items.some(
+    (item) =>
+      item !== null &&
+      typeof item === "object" &&
+      item.kind === "SYMPTOM_REPORT",
   );
   if (
     hasSymptom &&
-    input.priorityDomains.length === 0 &&
-    input.priorityPlayerFlows.length === 0 &&
-    input.ambiguities.length === 0 &&
-    input.blockingAmbiguities.length === 0
+    priorityDomains.length === 0 &&
+    priorityPlayerFlows.length === 0 &&
+    ambiguities.length === 0 &&
+    blockingAmbiguities.length === 0
   ) {
     issues.push(
       "User-reported symptoms require at least one bounded priority domain/player-flow interpretation or an explicit ambiguity record.",
@@ -228,7 +331,6 @@ export function validateAuditUserIntent(
 
   return issues;
 }
-
 function bump<T extends string>(
   target: Partial<Record<T, number>>,
   key: T,
