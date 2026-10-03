@@ -26,6 +26,9 @@ Classify material statements into target hints, symptoms, suspicions, expectatio
 
 Rules:
 
+- preserve every material raw prompt fragment; each fragment must be mapped to one or more intent items or explicitly retained as unmapped input;
+- if structured translation is unavailable, preserve the raw prompt through `createFallbackAuditUserIntent()`; never discard it;
+- unmapped prompt fragments become non-bug Audit Obligations and must not be guessed into findings;
 - if a target hint conflicts materially with the exact selected artifact/version, record a blocking ambiguity and resolve it before production audit;
 - preserve the user's symptom even when their suspected root cause may be wrong;
 - expand vague symptoms into a bounded set of relevant failure families;
