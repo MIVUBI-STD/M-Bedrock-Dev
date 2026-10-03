@@ -593,6 +593,8 @@ function assembleSelectedMapAuditRun(
     auditRevision,
     world: inspection.gameplayWorld,
     needValidationFindings,
+    auditObligations:
+      control.auditObligations,
   });
   const mapAuditReport =
     projectMapAuditOutputV2({
