@@ -220,7 +220,12 @@ export async function recordAndPersistDrivePublication(input: {
     receipt,
   );
 
-  if (receipt.status !== "COMPLETE") {
+  if (
+    !drivePublicationIsComplete(
+      input.snapshot,
+      receipt,
+    )
+  ) {
     return {
       project: input.project,
       receipt,
@@ -230,6 +235,7 @@ export async function recordAndPersistDrivePublication(input: {
   const published =
     applyDrivePublishReceipt(
       input.project,
+      input.snapshot,
       receipt,
     );
   await upsertProjectRecord(
