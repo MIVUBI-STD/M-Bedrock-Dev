@@ -267,6 +267,7 @@
           "status",
           "category",
           "gameplayFlow",
+          "failureDomain",
           "issue",
           "reproduceSteps",
           "expected",
@@ -352,6 +353,23 @@
           },
           "testerTriggerReady": {
             "type": "boolean"
+          },
+          "failureDomain": {
+            "enum": [
+              "arena-multi-arena",
+              "inventory-economy",
+              "progression-wave-objective",
+              "chunk-simulation",
+              "player-lifecycle",
+              "entity-ai-combat",
+              "world-structure-mutation",
+              "ui-feedback-information",
+              "state-ownership",
+              "temporal-async",
+              "boundary-capacity",
+              "persistence-recovery",
+              "platform-performance"
+            ]
           }
         },
         "allOf": [
@@ -595,6 +613,7 @@
           "status",
           "category",
           "gameplayFlow",
+          "failureDomain",
           "issue",
           "reproduceSteps",
           "expected",
@@ -692,6 +711,23 @@
           "technicalConstraint": {
             "type": "string",
             "minLength": 1
+          },
+          "failureDomain": {
+            "enum": [
+              "arena-multi-arena",
+              "inventory-economy",
+              "progression-wave-objective",
+              "chunk-simulation",
+              "player-lifecycle",
+              "entity-ai-combat",
+              "world-structure-mutation",
+              "ui-feedback-information",
+              "state-ownership",
+              "temporal-async",
+              "boundary-capacity",
+              "persistence-recovery",
+              "platform-performance"
+            ]
           }
         },
         "allOf": [
