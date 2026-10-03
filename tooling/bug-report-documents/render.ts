@@ -91,8 +91,20 @@ interface MapAuditHtmlInput {
   };
   readonly gameDesign?: {
     readonly objective: string;
+    readonly objectiveGrounding:
+      | "authored"
+      | "inferred"
+      | "unresolved";
     readonly winCondition: string;
+    readonly winConditionGrounding:
+      | "authored"
+      | "inferred"
+      | "unresolved";
     readonly loseCondition: string;
+    readonly loseConditionGrounding:
+      | "authored"
+      | "inferred"
+      | "unresolved";
   };
   readonly multiArena?: {
     readonly detected: boolean;
@@ -675,10 +687,19 @@ function auditContextSummary(
       '<div class="row"><div class="label">Game Design</div><div class="value">' +
         '<strong>Objective:</strong> ' +
         escapeHtml(design.objective) +
+        ' <span class="grounding">[' +
+        escapeHtml(design.objectiveGrounding) +
+        ']</span>' +
         '<br><strong>Win:</strong> ' +
         escapeHtml(design.winCondition) +
+        ' <span class="grounding">[' +
+        escapeHtml(design.winConditionGrounding) +
+        ']</span>' +
         '<br><strong>Lose:</strong> ' +
         escapeHtml(design.loseCondition) +
+        ' <span class="grounding">[' +
+        escapeHtml(design.loseConditionGrounding) +
+        ']</span>' +
         '</div></div>',
     );
   }
@@ -737,9 +758,10 @@ function auditContextSummary(
 
   if (honesty) {
     rows.push(
-      '<div class="row"><div class="label">Honesty Gate</div><div class="value">' +
+      '<div class="row"><div class="label">Finding Visibility Gate</div><div class="value">' +
         '<strong>Status:</strong> ' +
         escapeHtml(honesty.status) +
+        '<br><span class="proof-pref">PASS means all tracked material residue is visibly represented; it does not claim the audit is infallible.</span>' +
         '<br><strong>Missing Residue:</strong> ' +
         escapeHtml(
           String(honesty.missingVisibleResidueIds.length),
@@ -811,7 +833,7 @@ body{margin:0;background:#eef1f5;color:#172033;font:15px/1.45 Arial,Helvetica,sa
 .hero{padding:28px 32px;background:#172b4d;color:#fff}.hero h1{margin:0 0 6px}.hero p{margin:0;opacity:.8}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #d9dee8}
 .metric{padding:16px 20px;border-right:1px solid #d9dee8}.metric:last-child{border-right:0}.metric span{display:block;color:#667085;font-size:11px;font-weight:700;text-transform:uppercase}.metric strong{font-size:18px}
-.section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}.control-summary{border-bottom:1px solid #d9dee8;background:#fbfcfe}.control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.control-grid div{padding:12px 14px;border:1px solid #d9dee8;border-radius:8px;background:#fff}.control-grid span{display:block;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.control-grid strong{display:block;margin-top:3px;font-size:13px}.audit-context{padding-top:16px;padding-bottom:16px;border-bottom:1px solid #d9dee8}.audit-context>details>summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.audit-context-body{margin-top:12px;border:1px solid #d9dee8;border-radius:8px;overflow:hidden}
+.section{padding:24px}.section h2{margin:0 0 14px}.note{padding:14px 18px;background:#fff8e6;border:1px solid #eed28a;border-radius:8px;margin-bottom:18px}.control-summary{border-bottom:1px solid #d9dee8;background:#fbfcfe}.control-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.control-grid div{padding:12px 14px;border:1px solid #d9dee8;border-radius:8px;background:#fff}.control-grid span{display:block;color:#667085;font-size:10px;font-weight:800;text-transform:uppercase}.control-grid strong{display:block;margin-top:3px;font-size:13px}.audit-context{padding-top:16px;padding-bottom:16px;border-bottom:1px solid #d9dee8}.audit-context>details>summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.audit-context-body{margin-top:12px;border:1px solid #d9dee8;border-radius:8px;overflow:hidden}.grounding{color:#667085;font-size:11px;text-transform:uppercase}
 .issue-card{margin:0 0 18px;border:1px solid #d9dee8;border-radius:10px;overflow:hidden}.issue-head{display:grid;grid-template-columns:36px 130px 1fr;align-items:center;background:#f8fafc;border-bottom:1px solid #d9dee8}.issue-number,.severity{padding:10px 12px;font-size:12px;font-weight:800}.issue-title{padding:10px 14px 10px 0}.issue-title h2{margin:0;font-size:16px}.meta-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;color:#667085;font-size:10px;font-weight:700;text-transform:uppercase}
 .audit-status-proven .severity{color:#166534}.audit-status-need-validation .severity{color:#9a6700}
 .row{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #d9dee8}.label{padding:13px 15px;background:#f8fafc;color:#3157a4;font-size:12px;font-weight:800}.value{padding:13px 16px}.checklist{list-style:none;margin:0;padding:0}.checklist li+li{margin-top:7px}.technical-row{padding:12px 16px;background:#fcfcfd;border-top:1px solid #d9dee8}.technical summary{cursor:pointer;color:#3157a4;font-size:12px;font-weight:800}.technical-text{margin-top:9px;white-space:pre-wrap;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#667085}.proof-goal p{margin:5px 0 0}.proof-guide ol,.proof-guide ul{margin:6px 0 0;padding-left:20px}.proof-pref{color:#667085;font-size:11px}.proof-note{margin-top:12px;padding:9px 11px;background:#fff8e6;border-radius:6px;color:#765d16;font-size:12px}
