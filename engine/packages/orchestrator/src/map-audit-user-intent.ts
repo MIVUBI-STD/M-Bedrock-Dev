@@ -191,6 +191,20 @@ export function validateAuditUserIntent(
     );
   }
 
+  const hasSymptom = input.items.some(
+    (item) => item.kind === "SYMPTOM_REPORT",
+  );
+  if (
+    hasSymptom &&
+    input.priorityDomains.length === 0 &&
+    input.priorityPlayerFlows.length === 0 &&
+    input.ambiguities.length === 0
+  ) {
+    issues.push(
+      "User-reported symptoms require at least one bounded priority domain/player-flow interpretation or an explicit ambiguity record.",
+    );
+  }
+
   return issues;
 }
 
