@@ -403,6 +403,33 @@ export async function saveWorkSessionCheckpoint(
     );
   }
 
+  if (existing !== undefined) {
+    if (parsed.revision < existing.revision) {
+      throw new Error(
+        "Refusing stale work-session revision.",
+      );
+    }
+    if (parsed.revision === existing.revision) {
+      if (
+        JSON.stringify(parsed) ===
+        JSON.stringify(existing)
+      ) {
+        return;
+      }
+      throw new Error(
+        "Refusing conflicting work-session content at the same revision.",
+      );
+    }
+    if (
+      parsed.revision !==
+      existing.revision + 1
+    ) {
+      throw new Error(
+        "Work-session revision must advance exactly one step.",
+      );
+    }
+  }
+
   const serialized =
     JSON.stringify(
       parsed,
@@ -410,13 +437,6 @@ export async function saveWorkSessionCheckpoint(
       2,
     ) + "\n";
 
-  if (
-    existing !== undefined &&
-    JSON.stringify(existing) ===
-      JSON.stringify(parsed)
-  ) {
-    return;
-  }
 
   await mkdir(
     workspace.state,
