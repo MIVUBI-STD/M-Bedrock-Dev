@@ -210,6 +210,61 @@ Every symptom/suspicion/claim should retain the user's original meaning and a no
 
 Do not invent missing detail.
 
+## Chat confirmation checkpoint
+
+After translation and before production audit, present one compact confirmation summary in chat.
+
+The confirmation must clearly separate:
+
+```text
+Target / version
+Reported symptoms
+Suspected causes
+Expectation / design claims
+Priority scope
+Test constraints
+Ambiguities
+Unmapped input
+```
+
+Use plain language. Do not expose internal taxonomy unless it improves clarity.
+
+Required behavior:
+
+```text
+raw prompt
+→ fragment accounting
+→ normalized intent
+→ confirmation summary
+→ explicit user confirm/correct
+→ AuditUserIntentConfirmation
+→ production audit
+```
+
+A confirmation is bound to the normalized intent fingerprint. If the user corrects, adds, removes, or materially changes the interpretation, regenerate the normalized intent and request confirmation again. Never reuse stale confirmation.
+
+The confirmation step is not a second gameplay authority. It confirms only that the system understood the user's request correctly.
+
+If the user confirms while some input remains unmapped, the unmapped fragments continue as Audit Obligations. Confirmation does not turn them into facts or findings.
+
+Do not require multiple approval rounds. One confirmation checkpoint is enough unless the interpretation changes afterward.
+
+Recommended chat shape:
+
+```text
+Saya pahami:
+- Target: ...
+- Gejala yang dilaporkan: ...
+- Dugaan penyebab: ...
+- Fokus pengecekan: ...
+- Cara kerja: static-first, runtime hanya bila perlu
+- Belum jelas: ...
+
+Saya akan tetap mengecek gameplay material lain yang ditemukan map dan tidak akan menganggap dugaan di atas sebagai bug tanpa bukti.
+
+Apakah interpretasi ini sudah benar?
+```
+
 ## Target-hint reconciliation
 
 `TARGET_HINT` may help identify which artifact/version the user means, but once production audit receives an exact `.mcworld`, that artifact identity is authoritative.
