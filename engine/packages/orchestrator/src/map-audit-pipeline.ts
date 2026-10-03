@@ -274,6 +274,9 @@ function deriveSelectedMapAuditControl(input: {
       graph: input.scenario.graph,
       defectResolution:
         input.scenario.defectResolution,
+      gameplayWorld:
+        input.gameplayWorld,
+      userIntent,
       gameplayClosure: input.gameplayClosure,
       negativeSpace:
         stageAuthorized("STRESS")
