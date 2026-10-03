@@ -63,6 +63,10 @@ export type AuditIssueProjection =
   | ReadyAuditIssueProjection
   | NeedValidationAuditIssueProjection;
 
+import {
+  assessReadyResolutionSaturation,
+} from "./map-audit-proof-saturation.js";
+
 export function relatedCapabilityDelivery(
   scenarioLabel: string,
   subjectIds: readonly string[],
@@ -225,6 +229,10 @@ export function projectReadyAuditIssues(
     gate.resolutions
       .filter((resolution) =>
         ready.has(resolution.causalLinkId) &&
+        assessReadyResolutionSaturation(
+          graph,
+          resolution,
+        ).saturated &&
         nonEmpty(resolution.scenarioId) &&
         nonEmpty(resolution.gameplayTrigger) &&
         nonEmpty(resolution.gameplayConsequence) &&
