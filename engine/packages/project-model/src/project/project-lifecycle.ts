@@ -225,6 +225,42 @@ export function normalizeProjectRecord(
       "Project record artifact/work/knowledge/publication must be objects.",
     );
   }
+
+  if (
+    !hasOnlyKeys(
+      input.artifact as unknown as Record<string, unknown>,
+      [
+        "artifactId",
+        "artifactFingerprint",
+        "version",
+      ],
+    ) ||
+    !hasOnlyKeys(
+      input.work as unknown as Record<string, unknown>,
+      [
+        "sessionId",
+        "workSessionRevision",
+      ],
+    ) ||
+    !hasOnlyKeys(
+      input.knowledge as unknown as Record<string, unknown>,
+      [
+        "bugReportPath",
+      ],
+    ) ||
+    !hasOnlyKeys(
+      input.publication as unknown as Record<string, unknown>,
+      [
+        "drive",
+        "approvalSnapshotFingerprint",
+        "drivePublishReceiptFingerprint",
+      ],
+    )
+  ) {
+    throw new Error(
+      "Project record contains duplicate/legacy nested state fields.",
+    );
+  }
   if (!PROJECT_TASK_CLASSES.has(input.taskClass)) {
     throw new Error(
       "Unsupported project task class.",
