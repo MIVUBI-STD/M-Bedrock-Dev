@@ -57,11 +57,12 @@ This avoids two report stores with competing authority.
 
 - what project is currently being worked on;
 - which artifact/version/fingerprint it is bound to;
-- current project lifecycle status;
-- current Work Session/audit revision and next action;
+- current Work Session ID/revision;
 - canonical Bug Report reference;
-- historical issue knowledge references;
-- Drive binding and publication fingerprints.
+- one DriveProjectBinding;
+- approval/publication proof fingerprints.
+
+Lifecycle status/readiness are derived views. Audit stage/next action stay in Work Session. Historical issue linkage stays in the reliability catalog.
 
 It is intentionally compact. Detailed evidence stays inside the ignored project workspace.
 
@@ -93,11 +94,7 @@ Tracked root pointer:
 workspace/drive-root.json
 ```
 
-Per-project exact Drive folder/current-world pointers belong in project state under:
-
-```text
-workspace/projects/<project-id>/state/
-```
+Per-project Drive folder/current-world binding has one owner: `workspace/project-registry.json` through `ProjectRecord.publication.drive`. Project state must not keep a second Drive folder binding.
 
 Internal Work Session, caches, audit control state, or engine metadata are not copied to Drive.
 
@@ -109,16 +106,15 @@ A project always keeps one identity:
 workspace/projects/<project-id>/
 ```
 
-Its lifecycle changes in state metadata instead of changing directory:
+Lifecycle is derived from proof pointers instead of a persisted status field:
 
 ```text
-working
-→ ready-for-approval
-→ approved
-→ drive-published
+no approval proof → working
+approval proof → approved
+approval + complete publication proof → drive-published
 ```
 
-Detailed execution progress remains owned by Work Session / selected-map audit state. Project publication lifecycle must not duplicate those stage machines.
+Approval readiness is computed on demand. Detailed execution progress remains owned by Work Session / selected-map audit state.
 
 ## Gameplay Contract rule
 
