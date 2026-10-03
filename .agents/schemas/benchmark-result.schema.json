@@ -158,10 +158,6 @@
               "type": "integer",
               "minimum": 0
             },
-            "expectedVariant": {
-              "type": "integer",
-              "minimum": 0
-            },
             "materialDivergence": {
               "type": "integer",
               "minimum": 0
