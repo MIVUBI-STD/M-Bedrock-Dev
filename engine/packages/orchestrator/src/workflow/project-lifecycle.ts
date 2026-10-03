@@ -6,6 +6,8 @@ import type {
   ProjectDrivePublishReceipt,
   ProjectLifecycleStatus,
   ProjectRecord,
+  normalizeProjectDeliverable,
+  projectLifecycleStatus,
 } from "../../../project-model/src/index.js";
 
 export interface ProjectApprovalReadiness {
@@ -43,7 +45,6 @@ export function createProjectRecord(input: {
     projectId: input.projectId.trim(),
     projectName: input.projectName.trim(),
     taskClass: input.taskClass,
-    status: "working",
     revision: 1,
     artifact: {
       ...input.artifact,
@@ -108,15 +109,6 @@ export function updateProjectRecord(
 
   const candidate: ProjectRecord = {
     ...current,
-    status:
-      materiallyChanged &&
-      (
-        current.status === "approved" ||
-        current.status ===
-          "drive-published"
-      )
-        ? "working"
-        : current.status,
     artifact,
     work,
     knowledge,
@@ -174,7 +166,10 @@ export function assessProjectApprovalReadiness(input: {
   const missing: string[] = [];
   const project = input.project;
 
-  if (project.status !== "working") {
+  if (
+    projectLifecycleStatus(project) !==
+      "working"
+  ) {
     missing.push(
       "project must be working before a new approval snapshot",
     );
@@ -225,15 +220,9 @@ export function assessProjectApprovalReadiness(input: {
   }
   for (const deliverable of input.deliverables) {
     try {
-      if (
-        !deliverable.path.trim() ||
-        !deliverable.fingerprint.trim()
-      ) {
-        missing.push(
-          "complete deliverable identity: " +
-            deliverable.kind,
-        );
-      }
+      normalizeProjectDeliverable(
+        deliverable,
+      );
     } catch {
       missing.push(
         "valid deliverable: " +
@@ -294,10 +283,13 @@ function approvalPayload(input: {
               .bugReportPath.trim(),
         }
       : {}),
-    deliverables: [
-      ...input.deliverables,
-    ]
-      .map((item) => ({ ...item }))
+    deliverables:
+      input.deliverables
+      .map((item) =>
+        normalizeProjectDeliverable(
+          item,
+        )
+      )
       .sort(
         (a, b) =>
           a.destinationRole.localeCompare(
@@ -406,7 +398,8 @@ export function approveProject(
     );
   }
   if (
-    current.status !== "working" ||
+    projectLifecycleStatus(current) !==
+      "working" ||
     snapshot.projectId !==
       current.projectId ||
     snapshot.projectRevision !==
@@ -422,7 +415,6 @@ export function approveProject(
 
   return {
     ...current,
-    status: "approved",
     revision: current.revision + 1,
     publication: {
       ...current.publication,
@@ -453,7 +445,9 @@ export function createDrivePublishReceipt(
     );
   }
   if (
-    input.project.status !== "approved"
+    projectLifecycleStatus(
+      input.project,
+    ) !== "approved"
   ) {
     throw new Error(
       "Drive publication requires an approved project.",
@@ -504,14 +498,6 @@ export function createDrivePublishReceipt(
     );
   }
 
-  const status =
-    [...expected.keys()].every(
-      (key) =>
-        publishedKeys.has(key),
-    )
-      ? "COMPLETE" as const
-      : "PARTIAL" as const;
-
   const payload = {
     schemaVersion: 1 as const,
     projectId:
@@ -519,7 +505,6 @@ export function createDrivePublishReceipt(
     snapshotFingerprint:
       input.snapshot
         .snapshotFingerprint,
-    status,
     files: [...input.files]
       .map((item) => ({
         ...item,
@@ -548,11 +533,7 @@ export function validateDrivePublishReceipt(
     receipt === null ||
     typeof receipt !== "object" ||
     receipt.schemaVersion !== 1 ||
-    !Array.isArray(receipt.files) ||
-    (
-      receipt.status !== "PARTIAL" &&
-      receipt.status !== "COMPLETE"
-    )
+    !Array.isArray(receipt.files)
   ) {
     return [
       "Drive publish receipt is structurally invalid.",
@@ -565,7 +546,6 @@ export function validateDrivePublishReceipt(
     projectId: receipt.projectId,
     snapshotFingerprint:
       receipt.snapshotFingerprint,
-    status: receipt.status,
     files: [...receipt.files],
   };
 
@@ -577,8 +557,41 @@ export function validateDrivePublishReceipt(
       ];
 }
 
+export function drivePublicationIsComplete(
+  snapshot: ProjectApprovalSnapshot,
+  receipt: ProjectDrivePublishReceipt,
+): boolean {
+  const expected = new Set(
+    snapshot.deliverables.map(
+      (item) =>
+        item.kind +
+        "|" +
+        item.destinationRole +
+        "|" +
+        item.fingerprint,
+    ),
+  );
+  const published = new Set(
+    receipt.files.map(
+      (item) =>
+        item.kind +
+        "|" +
+        item.destinationRole +
+        "|" +
+        item.fingerprint,
+    ),
+  );
+  return (
+    expected.size === published.size &&
+    [...expected].every(
+      (key) => published.has(key),
+    )
+  );
+}
+
 export function applyDrivePublishReceipt(
   current: ProjectRecord,
+  snapshot: ProjectApprovalSnapshot,
   receipt: ProjectDrivePublishReceipt,
 ): ProjectRecord {
   const receiptIssues =
@@ -591,7 +604,8 @@ export function applyDrivePublishReceipt(
     );
   }
   if (
-    current.status !== "approved" ||
+    projectLifecycleStatus(current) !==
+      "approved" ||
     receipt.projectId !==
       current.projectId ||
     receipt.snapshotFingerprint !==
@@ -602,15 +616,19 @@ export function applyDrivePublishReceipt(
       "Drive receipt does not match the current approved project snapshot.",
     );
   }
-  if (receipt.status !== "COMPLETE") {
+  if (
+    !drivePublicationIsComplete(
+      snapshot,
+      receipt,
+    )
+  ) {
     throw new Error(
-      "Partial Drive publication cannot mark project drive-published.",
+      "Incomplete Drive publication cannot mark project drive-published.",
     );
   }
 
   return {
     ...current,
-    status: "drive-published",
     revision: current.revision + 1,
     publication: {
       ...current.publication,
