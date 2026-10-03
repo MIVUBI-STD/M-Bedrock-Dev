@@ -1,4 +1,7 @@
 import type {
+  BugReportV2,
+} from "../../../bug-report/src/index.js";
+import type {
   ProjectDeliverableRef,
   ProjectDrivePublishReceipt,
   ProjectRecord,
@@ -11,6 +14,9 @@ import {
   createProjectApprovalSnapshot,
   prepareProjectForApproval,
 } from "./project-lifecycle.js";
+import {
+  syncApprovedProjectIssueHistory,
+} from "./project-history-sync.js";
 import {
   saveProjectApprovalSnapshot,
   saveProjectDrivePublishReceipt,
@@ -77,6 +83,62 @@ export async function approveAndPersistProject(input: {
   return {
     project: approved,
     snapshot,
+  };
+}
+
+export async function approveAuditProjectAndPersist(input: {
+  readonly repositoryRoot: string;
+  readonly workspace: ProjectWorkspaceLayout;
+  readonly project: ProjectRecord;
+  readonly deliverables: readonly ProjectDeliverableRef[];
+  readonly report: BugReportV2;
+  readonly reportPath: string;
+}): Promise<{
+  readonly project: ProjectRecord;
+  readonly snapshot:
+    ReturnType<typeof createProjectApprovalSnapshot>;
+  readonly historicalRegressionIds:
+    readonly string[];
+}> {
+  if (input.project.status !== "ready-for-approval") {
+    throw new Error(
+      "Audit project must be ready-for-approval before historical sync and approval.",
+    );
+  }
+
+  const history =
+    await syncApprovedProjectIssueHistory({
+      repositoryRoot: input.repositoryRoot,
+      project: input.project,
+      report: input.report,
+      reportPath: input.reportPath,
+    });
+
+  const snapshot =
+    createProjectApprovalSnapshot({
+      project: history.project,
+      deliverables: input.deliverables,
+    });
+  const approved =
+    approveProject(
+      history.project,
+      snapshot,
+    );
+
+  await saveProjectApprovalSnapshot(
+    input.workspace,
+    snapshot,
+  );
+  await upsertProjectRecord(
+    input.repositoryRoot,
+    approved,
+  );
+
+  return {
+    project: approved,
+    snapshot,
+    historicalRegressionIds:
+      history.historicalRegressionIds,
   };
 }
 
