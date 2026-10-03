@@ -417,8 +417,7 @@
                 "persistence-recovery",
                 "platform-performance"
               ]
-            },
-            "description": "All material gameplay domains participating in the same root-cause issue. failureDomain remains the primary reader-facing domain."
+            }
           }
         },
         "allOf": [
@@ -841,8 +840,7 @@
                 "persistence-recovery",
                 "platform-performance"
               ]
-            },
-            "description": "All material gameplay domains participating in the same root-cause issue. failureDomain remains the primary reader-facing domain."
+            }
           }
         },
         "allOf": [
