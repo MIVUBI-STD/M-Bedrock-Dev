@@ -46,7 +46,6 @@ Current canonical replica status names are:
 
 ```text
 EQUIVALENT
-EXPECTED_VARIANT
 MATERIAL_DIVERGENCE
 INCOMPLETE_PROOF
 ```
