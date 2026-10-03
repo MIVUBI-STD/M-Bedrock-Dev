@@ -15,6 +15,12 @@ const ENGINEERING_COMMANDS = new Set([
   "dev-arena-audit",
   "dev-probe-plan",
   "dev-probe-replay",
+  "arena-adapter",
+  "arena-baseline",
+  "arena-corpus",
+  "arena-corpus-status",
+  "corpus-calibrate",
+  "script-usage",
 ]);
 
 function filesUnder(root) {
