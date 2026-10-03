@@ -51,7 +51,7 @@ function status(
   return bug.fixed ? "fixed" : "open";
 }
 
-function workChecklist(
+export function deriveBugReportWorkChecklist(
   bug: BugReportV2Bug,
 ): readonly string[] {
   const items: string[] = [];
@@ -121,7 +121,7 @@ function projectIssue(
           mustPreserve:
             bug.mustPreserve,
         }),
-    workChecklist: workChecklist(bug),
+    workChecklist: deriveBugReportWorkChecklist(bug),
   };
 }
 
