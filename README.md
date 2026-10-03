@@ -44,6 +44,10 @@ audit <selected.mcworld>
 
 Low-level analyzers, specialist audit documents, Work Session projections, and Bug Report tooling are subordinate. They may provide evidence or presentation, but they cannot authorize stage completion independently.
 
+Operator work order: `docs/03-analysis/master-selected-map-audit-workflow.md`.
+
+Executable checkpoint authority: `docs/03-analysis/mandatory-audit-procedure.md`.
+
 ## Repository map
 
 ```text
