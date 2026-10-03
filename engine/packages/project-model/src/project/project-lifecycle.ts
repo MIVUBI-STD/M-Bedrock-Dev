@@ -1,6 +1,5 @@
 export type ProjectLifecycleStatus =
   | "working"
-  | "ready-for-approval"
   | "approved"
   | "drive-published";
 
@@ -30,12 +29,10 @@ export interface ProjectWorkReference {
 export interface ProjectKnowledgeReferences {
   readonly bugReportPath?: string;
   readonly historicalRegressionIds: readonly string[];
-  readonly failurePatternIds: readonly string[];
-  readonly mapKnowledgeIds: readonly string[];
 }
 
 export interface ProjectPublicationState {
-  readonly driveFolderId?: string;
+  readonly drive?: import("./drive-binding.js").DriveProjectBinding;
   readonly approvalSnapshotFingerprint?: string;
   readonly drivePublishReceiptFingerprint?: string;
 }
@@ -101,7 +98,6 @@ export interface ProjectRegistry {
 const PROJECT_STATUSES =
   new Set<ProjectLifecycleStatus>([
     "working",
-    "ready-for-approval",
     "approved",
     "drive-published",
   ]);
@@ -158,16 +154,10 @@ export function normalizeProjectRecord(
   if (
     !Array.isArray(
       input.knowledge.historicalRegressionIds,
-    ) ||
-    !Array.isArray(
-      input.knowledge.failurePatternIds,
-    ) ||
-    !Array.isArray(
-      input.knowledge.mapKnowledgeIds,
     )
   ) {
     throw new Error(
-      "Project knowledge reference collections must be arrays.",
+      "Project historicalRegressionIds must be an array.",
     );
   }
   if (!PROJECT_STATUSES.has(input.status)) {
@@ -261,15 +251,16 @@ export function normalizeProjectRecord(
         : {}),
       historicalRegressionIds:
         unique(input.knowledge.historicalRegressionIds),
-      failurePatternIds:
-        unique(input.knowledge.failurePatternIds),
-      mapKnowledgeIds:
-        unique(input.knowledge.mapKnowledgeIds),
     },
     publication: {
-      ...(input.publication.driveFolderId?.trim()
-        ? { driveFolderId: input.publication.driveFolderId.trim() }
-        : {}),
+      ...(input.publication.drive === undefined
+        ? {}
+        : {
+            drive:
+              normalizeDriveProjectBinding(
+                input.publication.drive,
+              ),
+          }),
       ...(input.publication.approvalSnapshotFingerprint?.trim()
         ? {
             approvalSnapshotFingerprint:
