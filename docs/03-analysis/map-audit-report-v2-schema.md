@@ -2,7 +2,9 @@
 
 ## Purpose
 
-Defines the production audit model after Game Design First analysis.
+Defines the **Complete Bug Report / Map Audit Report** used by humans after selected-map analysis. This is the honest report surface and must preserve every material finding, whether `PROVEN` or `NEED_VALIDATION`.
+
+The report engine must first try to resolve NEED_VALIDATION toward PROVEN using the bounded proof route. If deciding proof remains unavailable, the finding stays visible as NEED_VALIDATION; it must never be dropped merely because it is not yet proven.
 
 ## Required audit model
 
@@ -218,11 +220,32 @@ fullMapReplica
 ```text
 replicaBaseline
 replicaResults[]
+replicaId
 replicaStatus
-materialDeltaIds[]
+replicaDivergenceIds[]
 incompleteReplicaIds[]
-canReuseBaselineProof
+baselineReusableForAllReplicas
 ```
+
+## Human-facing report completeness
+
+The Complete Bug Report must render all material findings:
+
+```text
+PROVEN BUG
+PROVEN DESIGN_MISMATCH
+NEED_VALIDATION BUG
+NEED_VALIDATION DESIGN_MISMATCH
+```
+
+Rules:
+
+- try to promote NEED_VALIDATION through source/cross-domain/formal/counter-proof routes first;
+- keep unresolved findings visible when proof is still missing;
+- show `validationReason`, `missingProof`, and `validationTest` for NEED_VALIDATION;
+- do not assign final Blocker/Major/Minor severity to NEED_VALIDATION;
+- do not convert NEED_VALIDATION into PROVEN merely to make the report look complete;
+- do not omit a material finding from the human-facing report because it is not eligible for the approved bug ledger.
 
 ## Status
 
