@@ -126,6 +126,14 @@ Review the audit in the same order the player experiences the game:
 - [ ] Expected and Actual behavior are clear.
 - [ ] Proof ceiling is recorded.
 
+## Honesty / non-suppression
+
+- [ ] Every material unresolved residue has a visible NEED_VALIDATION finding.
+- [ ] Every CONFIRMED_DEFECT_READY causal link has a visible PROVEN finding.
+- [ ] Unknown/blocked material surfaces, unaccounted surfaces, incomplete state/boundary closure, unresolved knowledge receipts, runtime/detection gaps, orphan components, shallow scenarios, negative-space signals, and high temporal risks are crosschecked against visible findings.
+- [ ] The audit honesty gate reports PASS; any missing visible residue blocks READY_FOR_REVIEW.
+- [ ] Only concrete blocking counter-proof may remove a material candidate from the visible finding set.
+
 ## Report output
 
 - [ ] Proposed Bug Set review resolved: approved / rejected / needs-discussion.
