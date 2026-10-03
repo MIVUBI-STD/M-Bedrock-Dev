@@ -658,7 +658,7 @@ body {
   border-bottom:1px solid var(--line);
   background:var(--soft);
 }
-.summary p { margin:0; }.retest-note{margin-top:8px!important;color:var(--muted);font-size:12px;line-height:1.5}
+.summary p { margin:0; }.severity-line{margin-top:6px!important;color:var(--muted);font-size:12px}.retest-note{margin-top:8px!important;color:var(--muted);font-size:12px;line-height:1.5}
 .issues {
   padding:18px 24px 28px;
 }
@@ -899,10 +899,11 @@ th {
     <div class="metric"><span>Map Version</span><strong>${escapeHtml(document.map.mapVersion)}</strong></div>
     <div class="metric"><span>Tested Version</span><strong>${escapeHtml(document.map.testedVersion)}</strong></div>
     <div class="metric"><span>Open Issues</span><strong>${document.summary.openIssues}</strong></div>
-    <div class="metric"><span>Severity</span><strong>${escapeHtml(severitySummary || "—")}</strong></div>
+    <div class="metric"><span>Fixed Issues</span><strong>${document.summary.fixedIssues}</strong></div>
   </section>
   <section class="summary">
     <p>${escapeHtml(document.summary.statement)}</p>
+    <p class="severity-line"><strong>Priority:</strong> ${escapeHtml(severitySummary || "—")}</p>
     <p class="retest-note"><strong>Retest:</strong> open a bug, follow How to Reproduce, compare Observed vs Expected, then check Fixed only when the wrong behavior no longer occurs and the Expected result is confirmed.</p>
   </section>
   ${severityLegend}
