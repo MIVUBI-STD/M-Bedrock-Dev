@@ -393,6 +393,21 @@ Static, runtime, and tester report candidates are now explicitly treated as evid
 
 The existing internal `route` property remains for compatibility, but its semantic meaning is `evidenceRoute`. No production entry, checkpoint authority, or report authority branches on it.
 
+### Map Audit Output V2 bridge
+
+`SelectedMapAuditRun` now carries a canonical `mapAuditReport` projection produced by `map-audit-output-v2.ts`.
+
+```text
+audit <selected.mcworld>
+→ SelectedMapAuditRun
+→ mapAuditReport (Map Audit Output V2)
+→ HTML renderer / human presentation
+```
+
+The projection performs no second analysis. It serializes the current audit identity, grounded gameplay model, complete BUG/DESIGN_MISMATCH finding lanes, validation tests, honesty receipt, and full-map receipt.
+
+Map Audit severity is optional until grounded impact classification exists. Approved Bug Report V2 continues to require final severity.
+
 ### Map Audit Report honesty
 
 The human-facing report is now the complete Map Audit report, not the approved bug ledger alone.
