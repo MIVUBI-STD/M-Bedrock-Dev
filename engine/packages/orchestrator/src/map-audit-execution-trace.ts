@@ -45,12 +45,24 @@ export function deriveAuditExecutionTrace(input: {
 
   const stages = SELECTED_MAP_AUDIT_STAGE_ORDER.map((stage, index) => {
     const checkpointIds = input.procedure.checkpoints
-      .filter((item) => selectedMapAuditStageForCheckpoint(item.id) === stage)
+      .filter((item) => item.block === stage)
       .map((item) => item.id)
       .sort();
+    const checkpointById = new Map(
+      input.procedure.checkpoints.map((item) => [
+        item.id,
+        item,
+      ]),
+    );
     const blockingCheckpointIds =
       input.procedure.blockingCheckpointIds
-        .filter((id) => selectedMapAuditStageForCheckpoint(id) === stage)
+        .filter((id) => {
+          const checkpoint = checkpointById.get(id);
+          return (
+            checkpoint?.block ??
+            selectedMapAuditStageForCheckpoint(id)
+          ) === stage;
+        })
         .sort();
 
     if (first === undefined) {
