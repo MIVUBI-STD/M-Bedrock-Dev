@@ -13,6 +13,21 @@ Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. These latest changes have not ye
 
 # Current Validation
 
+## 2026-10-03 — workflow efficiency cleanup
+
+Source-verified on `Local`:
+
+- Removed the trivial `document/layout.ts` layer; the HTML renderer now owns its single live presentation decision directly.
+- Removed unused client-projection metadata and stale report vocabulary.
+- Fixed a malformed literal-escape import in `bug-report/src/preview.ts`.
+- Removed dead preview helper functions that had no rendering consumer.
+- Unified retest wording on `How to Reproduce`.
+- `runSelectedMapAudit()` and `resolveSelectedMapAudit()` now share one internal `assembleSelectedMapAuditRun()` path for identity, admission, revision, control, model packets, and Map Audit Output projection.
+- This reduces duplicated audit-finalization logic without adding a new public owner, manager, route, or state machine.
+
+Proof ceiling: **STATIC / SOURCE REVIEW ONLY**. The current `Local` head still requires local `typecheck`, repository verification, source-hygiene audit, and tests before package-level readiness can be claimed.
+
+
 Snapshot date: 2026-10-03  
 Branch: `Local`
 
