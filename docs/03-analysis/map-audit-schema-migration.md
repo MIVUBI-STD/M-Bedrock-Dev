@@ -1,66 +1,28 @@
 # Map Audit Schema Migration
 
-## Purpose
+> Historical migration note only. This file is not a production workflow, report authority, or current schema definition.
 
-Extend map audit output from bug candidates only into a complete gameplay audit model.
+## Current authority
 
-## Required top-level context
+Use:
 
-```text
-world
-→ gameDesign
-→ gameplayFlow
-→ stateTransitions
-→ multiArena
-→ bugs
-```
+- [Master Selected-Map Audit Workflow](./master-selected-map-audit-workflow.md) for execution order;
+- [Map Audit Report V2 Schema](./map-audit-report-v2-schema.md) for the human-facing audit contract;
+- [Map Audit Naming Contract](./map-audit-naming-contract.md) for canonical field/status names;
+- `.agents/schemas/map-audit-output-v2.schema.json` for structural validation.
 
-## Compatibility Rule
+## Historical purpose
 
-Existing candidate fields remain valid. New gameplay context fields provide the reasoning layer before bug classification.
+This migration introduced the transition from bug-candidate-only output toward a gameplay-aware audit model with:
 
-## Game Design
+- game design context;
+- player-flow stages;
+- state transitions;
+- multi-arena context;
+- explicit BUG / DESIGN_MISMATCH findings.
 
-Must describe:
+Those concepts are now owned by the current V2 contract above.
 
-- objective
-- win condition
-- lose condition
-- reset rules
-- preserve rules
-- progression rules
+## Rule
 
-## Gameplay Flow
-
-Must represent the player journey:
-
-```text
-Lobby
-→ Arena
-→ Preparation
-→ Combat
-→ Progression
-→ Victory/Defeat
-→ Cleanup
-```
-
-## State Transitions
-
-Must identify valid and invalid transitions:
-
-```text
-Current State
-→ Action/Event
-→ Expected State
-```
-
-## Multi Arena
-
-When applicable, describe isolation boundaries:
-
-- session
-- player
-- wave
-- enemy
-- score
-- cleanup
+Do not copy field lists, status vocabulary, or workflow order from this historical note into current code. Git history owns superseded migration detail.
