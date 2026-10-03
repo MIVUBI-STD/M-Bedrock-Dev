@@ -70,12 +70,13 @@ export function groupReadyAuditIssuesForCandidateCoverage(
             (item) => item.id === link.knowledgeRequirementId,
           );
     const technicalOwnerId = link.fromComponentId;
-    // Evidence sets differ across scenarios even when one technical cause is
-    // responsible. Candidate grouping must follow the deterministic technical
-    // contradiction, not incidental evidence identity.
+    // Evidence sets and human-readable reasons may differ across scenarios
+    // even when one technical cause is responsible. Group on stable structural
+    // ownership/failure semantics; prose is presentation, never identity.
     const technicalCauseSignature = hash([
-      link.reason,
+      technicalOwnerId,
       link.intentEdgeKind ?? "runtime-domain",
+      defect.failureDomain,
     ]);
     const key = [
       defect.issueType,
