@@ -141,6 +141,10 @@ discovery / gameplay model / scenario / defect-resolution evidence
 `map-audit-admission.ts` no longer re-evaluates Discovery Closure, Gameplay Model Closure, Scenario Closure, or Defect Resolution in parallel. Gameplay Model Closure is represented explicitly by checkpoint `A7`.
 
 This removes duplicate gate logic while preserving fail-closed behavior.
+### Evidence-route naming
+
+Static, runtime, and tester inputs are evidence provenance only. The canonical term is `evidenceRoute`; the legacy field `route` remains only as a compatibility alias inside report-candidate plumbing. These values must never be interpreted as alternate audit workflows.
+
 ### Single-flow ownership
 
 - `map-audit-pipeline.ts` owns production entry and continuation.
@@ -385,6 +389,21 @@ The human-facing selected-map report now preserves the full material finding set
 The engine still attempts to promote NEED_VALIDATION findings through proof navigation. If sufficient proof cannot be obtained, the finding remains explicitly unresolved rather than being removed.
 
 Persisted Bug Report V2 remains a narrower approved-bug ledger containing approved PROVEN BUG items only.
+
+### Complete human-facing report honesty
+
+The selected-map report surface now preserves the complete material finding set:
+
+```text
+findings.BUG[]
+findings.DESIGN_MISMATCH[]
+proven[]
+needValidation[]
+```
+
+The engine must continue attempting to resolve NEED_VALIDATION through proof navigation. If sufficient proof is obtained, the finding is promoted to PROVEN. If proof remains unavailable, the report keeps the finding visible as NEED_VALIDATION with its exact missing proof and validation test.
+
+Persisted Bug Report V2 is intentionally narrower and remains the approved PROVEN BUG ledger only.
 
 ### Final report handoff integrity
 
