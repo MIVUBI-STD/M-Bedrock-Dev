@@ -57,6 +57,7 @@ interface MapAuditHtmlInput {
     readonly key: string;
     readonly findingIds: readonly string[];
     readonly test: string;
+    readonly missingProof?: readonly string[];
     readonly assertions?: readonly {
       readonly findingId: string;
       readonly test: string;
@@ -361,12 +362,6 @@ function auditFindingCard(
                 "Exact deciding proof is not yet available.",
             ) +
             "</div></div>",
-          '<div class="row"><div class="label">Validation Test</div><div class="value">' +
-            escapeHtml(
-              finding.validationTest ??
-                "Resolve the stated proof obligation before promotion.",
-            ) +
-            "</div></div>",
         ]
       : [];
 
@@ -455,6 +450,13 @@ function auditValidationPlan(
           '</strong><br>' +
           escapeHtml(group.test) +
           '</div></div>',
+        ...(group.missingProof?.length
+          ? [
+              '<div class="row"><div class="label">Missing Proof</div><div class="value">' +
+                checklist(group.missingProof) +
+                '</div></div>',
+            ]
+          : []),
         '<div class="row"><div class="label">Exact Assertions</div><div class="value">' +
           assertions +
           '</div></div>',
