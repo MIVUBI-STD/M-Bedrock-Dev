@@ -94,7 +94,7 @@ export function buildProjectDrivePublishPlan(
     ) !== "approved"
   ) {
     throw new Error(
-      "Drive publish plan requires project status approved.",
+      "Drive publish plan requires derived lifecycle state approved.",
     );
   }
   if (
