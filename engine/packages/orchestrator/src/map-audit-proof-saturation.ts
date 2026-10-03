@@ -22,80 +22,85 @@ export interface AuditProofSaturationAssessment {
   readonly failureDomain: GameplayIssueFailureDomain;
   readonly universalCriteria:
     readonly AuditProofSaturationCriterion[];
-  readonly familyCriteria: readonly string[];
+  readonly familyCriteria: readonly AuditProofSaturationCriterion[];
   readonly saturated: boolean;
   readonly missingUniversalCriteriaIds: readonly string[];
+  readonly missingFamilyCriteriaIds: readonly string[];
   readonly stopRule: string;
 }
 
-const FAMILY_CRITERIA:
-  Readonly<Record<GameplayIssueFailureDomain, readonly string[]>> = {
-    "progression-wave-objective": [
-      "Completion dependency is grounded.",
-      "The failing/incorrect mutation or missing accounting path is reachable.",
-      "No alternate reconciliation path repairs progression before player impact.",
-    ],
-    "arena-multi-arena": [
-      "Arena ownership/capacity contract is grounded.",
-      "The violating shared/global/capacity path is reachable under concurrent use.",
-      "Isolation/admission/cleanup counter-proof is exhausted.",
-    ],
-    "inventory-economy": [
-      "Item/currency identity and player/run scope are grounded.",
-      "Competing grant/restore/consume path reachability is grounded.",
-      "Mutual exclusion/idempotency/generation counter-proof is exhausted.",
-    ],
-    "temporal-async": [
-      "Deferred work and eventual mutation are grounded.",
-      "Owner/session/arena/phase can change before commit.",
-      "Commit-time cancellation/generation revalidation is absent or contradicted.",
-    ],
-    "chunk-simulation": [
-      "Gameplay-critical simulation dependency is grounded.",
-      "Simulation ownership/readiness requirement is grounded.",
-      "Applicable platform/resource constraint and missing/insufficient ownership are grounded.",
-    ],
-    "persistence-recovery": [
-      "Persisted state identity, scope, and intended lifetime are grounded.",
-      "Recovery/reset path is reachable.",
-      "Missing/stale/duplicate restore outcome follows from the grounded lifecycle.",
-    ],
-    "state-ownership": [
-      "Material state owner and writers are grounded.",
-      "Conflicting/missing reset or exit path is reachable.",
-      "No guard/ownership rule makes the wrong state unreachable.",
-    ],
-    "entity-ai-combat": [
-      "Actor/combat lifecycle contract is grounded.",
-      "Failing spawn/navigation/hurt/death/revive path is reachable.",
-      "Player-visible gameplay dependency on that actor/lifecycle is grounded.",
-    ],
-    "world-structure-mutation": [
-      "World/structure mutation contract and target scope are grounded.",
-      "Incorrect ordering/residue/leakage path is reachable.",
-      "Required cleanup/replacement/spatial containment is absent or contradicted.",
-    ],
-    "boundary-capacity": [
-      "The intended/visible boundary is grounded.",
-      "The effective implementation/platform limit is grounded.",
-      "Below/at/above-boundary behavior yields a deterministic contradiction.",
-    ],
-    "player-lifecycle": [
-      "Lifecycle transition and owning player/session state are grounded.",
-      "The invalid join/leave/death/reconnect/recovery path is reachable.",
-      "A valid recovery/reset alternative does not block the wrong state.",
-    ],
-    "ui-feedback-information": [
-      "Player-facing information is grounded.",
-      "Actual gameplay state/capability is independently grounded.",
-      "The mismatch is reachable in the same player-facing condition.",
-    ],
-    "platform-performance": [
-      "Exact selected-version platform constraint is grounded.",
-      "A required gameplay dependency is affected by that constraint.",
-      "The resulting player-visible degradation/limit is deterministically derived.",
-    ],
-  };
+const FAMILY_CRITERIA: Readonly<
+  Record<
+    GameplayIssueFailureDomain,
+    readonly { readonly id: string; readonly description: string }[]
+  >
+> = {
+  "progression-wave-objective": [
+    { id: "completion-dependency-grounded", description: "Completion dependency is grounded." },
+    { id: "failing-path-reachable", description: "The failing/incorrect mutation or missing accounting path is reachable." },
+    { id: "reconciliation-exhausted", description: "No alternate reconciliation path repairs progression before player impact." },
+  ],
+  "arena-multi-arena": [
+    { id: "arena-contract-grounded", description: "Arena ownership/capacity contract is grounded." },
+    { id: "concurrent-violation-reachable", description: "The violating shared/global/capacity path is reachable under concurrent use." },
+    { id: "arena-counterproof-exhausted", description: "Isolation/admission/cleanup counter-proof is exhausted." },
+  ],
+  "inventory-economy": [
+    { id: "item-scope-grounded", description: "Item/currency identity and player/run scope are grounded." },
+    { id: "competing-writer-reachable", description: "Competing grant/restore/consume path reachability is grounded." },
+    { id: "idempotency-exclusion-exhausted", description: "Mutual exclusion/idempotency/generation counter-proof is exhausted." },
+  ],
+  "temporal-async": [
+    { id: "deferred-work-grounded", description: "Deferred work and eventual mutation are grounded." },
+    { id: "owner-change-reachable", description: "Owner/session/arena/phase can change before commit." },
+    { id: "commit-revalidation-missing", description: "Commit-time cancellation/generation revalidation is absent or contradicted." },
+  ],
+  "chunk-simulation": [
+    { id: "simulation-dependency-grounded", description: "Gameplay-critical simulation dependency is grounded." },
+    { id: "residency-requirement-grounded", description: "Simulation ownership/readiness requirement is grounded." },
+    { id: "platform-constraint-bound", description: "Applicable platform/resource constraint and missing/insufficient ownership are grounded." },
+  ],
+  "persistence-recovery": [
+    { id: "persisted-scope-grounded", description: "Persisted state identity, scope, and intended lifetime are grounded." },
+    { id: "recovery-path-reachable", description: "Recovery/reset path is reachable." },
+    { id: "restore-outcome-derived", description: "Missing/stale/duplicate restore outcome follows from the grounded lifecycle." },
+  ],
+  "state-ownership": [
+    { id: "state-owner-grounded", description: "Material state owner and writers are grounded." },
+    { id: "conflict-path-reachable", description: "Conflicting/missing reset or exit path is reachable." },
+    { id: "ownership-counterproof-exhausted", description: "No guard/ownership rule makes the wrong state unreachable." },
+  ],
+  "entity-ai-combat": [
+    { id: "actor-contract-grounded", description: "Actor/combat lifecycle contract is grounded." },
+    { id: "actor-failure-reachable", description: "Failing spawn/navigation/hurt/death/revive path is reachable." },
+    { id: "actor-player-impact-grounded", description: "Player-visible gameplay dependency on that actor/lifecycle is grounded." },
+  ],
+  "world-structure-mutation": [
+    { id: "mutation-contract-grounded", description: "World/structure mutation contract and target scope are grounded." },
+    { id: "mutation-failure-reachable", description: "Incorrect ordering/residue/leakage path is reachable." },
+    { id: "cleanup-containment-missing", description: "Required cleanup/replacement/spatial containment is absent or contradicted." },
+  ],
+  "boundary-capacity": [
+    { id: "boundary-grounded", description: "The intended/visible boundary is grounded." },
+    { id: "effective-limit-grounded", description: "The effective implementation/platform limit is grounded." },
+    { id: "boundary-contradiction-derived", description: "Below/at/above-boundary behavior yields a deterministic contradiction." },
+  ],
+  "player-lifecycle": [
+    { id: "lifecycle-owner-grounded", description: "Lifecycle transition and owning player/session state are grounded." },
+    { id: "invalid-transition-reachable", description: "The invalid join/leave/death/reconnect/recovery path is reachable." },
+    { id: "recovery-counterproof-exhausted", description: "A valid recovery/reset alternative does not block the wrong state." },
+  ],
+  "ui-feedback-information": [
+    { id: "presented-information-grounded", description: "Player-facing information is grounded." },
+    { id: "actual-state-grounded", description: "Actual gameplay state/capability is independently grounded." },
+    { id: "same-condition-mismatch-reachable", description: "The mismatch is reachable in the same player-facing condition." },
+  ],
+  "platform-performance": [
+    { id: "platform-constraint-grounded", description: "Exact selected-version platform constraint is grounded." },
+    { id: "gameplay-dependency-affected", description: "A required gameplay dependency is affected by that constraint." },
+    { id: "player-degradation-derived", description: "The resulting player-visible degradation/limit is deterministically derived." },
+  ],
+};
 
 function nonEmpty(value: string | undefined): boolean {
   return typeof value === "string" && value.trim().length > 0;
@@ -104,7 +109,7 @@ function nonEmpty(value: string | undefined): boolean {
 export function proofSaturationFamilyCriteria(
   domain: GameplayIssueFailureDomain,
 ): readonly string[] {
-  return [...FAMILY_CRITERIA[domain]];
+  return FAMILY_CRITERIA[domain].map((item) => item.description);
 }
 
 export function assessReadyResolutionSaturation(
@@ -214,8 +219,42 @@ export function assessReadyResolutionSaturation(
       },
     ];
 
+  const familyReceipt =
+    resolution.familyProof;
+  const familyReceiptById = new Map(
+    (familyReceipt?.criteria ?? []).map((item) => [
+      item.id,
+      item,
+    ]),
+  );
+  const familyCriteria =
+    FAMILY_CRITERIA[
+      classification.failureDomain
+    ].map((criterion) => {
+      const receipt =
+        familyReceipt?.failureDomain ===
+          classification.failureDomain
+          ? familyReceiptById.get(criterion.id)
+          : undefined;
+      return {
+        id: criterion.id,
+        description: criterion.description,
+        satisfied:
+          receipt?.satisfied === true &&
+          receipt.evidenceIds.length > 0,
+        evidenceIds: [
+          ...(receipt?.evidenceIds ?? []),
+        ],
+      };
+    });
+
   const missingUniversalCriteriaIds =
     universalCriteria
+      .filter((item) => !item.satisfied)
+      .map((item) => item.id)
+      .sort();
+  const missingFamilyCriteriaIds =
+    familyCriteria
       .filter((item) => !item.satisfied)
       .map((item) => item.id)
       .sort();
@@ -226,16 +265,16 @@ export function assessReadyResolutionSaturation(
     failureDomain:
       classification.failureDomain,
     universalCriteria,
-    familyCriteria:
-      FAMILY_CRITERIA[
-        classification.failureDomain
-      ],
+    familyCriteria,
     saturated:
-      missingUniversalCriteriaIds.length === 0,
+      missingUniversalCriteriaIds.length === 0 &&
+      missingFamilyCriteriaIds.length === 0,
     missingUniversalCriteriaIds,
+    missingFamilyCriteriaIds,
     stopRule:
-      missingUniversalCriteriaIds.length === 0
-        ? "Minimum universal proof is saturated. Do not request broader validation or runtime manifestation unless a family-specific claim is explicitly still unresolved."
-        : "Continue only on the missing proof criteria. Do not broaden search into already-satisfied dimensions.",
+      missingUniversalCriteriaIds.length === 0 &&
+      missingFamilyCriteriaIds.length === 0
+        ? "Universal and family-specific proof are saturated. Stop searching; runtime manifestation is unnecessary unless a separate irreducible runtime claim exists."
+        : "Continue only on missing universal/family proof criteria. Do not broaden search into already-satisfied dimensions.",
   };
 }
