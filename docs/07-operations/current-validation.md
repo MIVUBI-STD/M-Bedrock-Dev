@@ -25,6 +25,28 @@ audit <selected.mcworld>
    issueLanes.DESIGN_MISMATCH
 ```
 
+### Naming and output contract alignment
+
+Public naming is now governed by `docs/03-analysis/map-audit-naming-contract.md`.
+
+Map Audit Output V2 now includes the current unresolved-proof and honesty contracts instead of lagging behind source semantics:
+
+- `validationGroupKey`;
+- `proofNavigation`;
+- `validationTests`;
+- `honesty`;
+- `historyPressure`;
+- `saturationCriteria`.
+
+Full-map replica comparison also has one consolidation projection, `FullMapReplicaReceipt`, using:
+
+- `replicaBaseline`;
+- `replicaResults[]`;
+- `replicaStatus`;
+- `materialDeltaIds[]`.
+
+The receipt reuses existing topology/world-DB/voxel/block-entity proof and does not perform a second comparison or create a second audit flow.
+
 ### Master workflow navigation
 
 Operator/AI navigation now starts from `docs/03-analysis/master-selected-map-audit-workflow.md`.
