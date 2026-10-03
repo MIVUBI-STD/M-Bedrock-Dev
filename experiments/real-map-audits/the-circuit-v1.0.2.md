@@ -1,8 +1,8 @@
 # Real Map Audit — The Circuit v1.0.2
 
-Status: real-map source audit complete for this pass  
+Status: selected-artifact source audit evidence  
 Authority: selected current Drive artifact only  
-Historical regression ingestion: none  
+Historical regression ingestion: not applicable; no current finding approved  
 Runtime execution: not performed
 
 ## Target
@@ -11,64 +11,66 @@ Runtime execution: not performed
 - Drive file: `The Circuit v1.0.2.mcworld`
 - Drive file ID: `1oH2nPJJzgg5SRgORMYV_wzMkiSK9GRGS`
 - Artifact SHA-256: `19e2eb038b0b01fe756715c725df7e39d74e8cf2de8c45705d1897ea3ffb6151`
-- Drive filename version: `1.0.2`
-- Behavior/Resource Pack manifest version: `1.0.1`
-- Internal `levelname.txt`: `The Circuit v1.0.0`
+- File version label: `1.0.2`
+- Behavior/Resource Pack manifest version: `1.0.1` (metadata/version mismatch only; not admitted as gameplay bug)
+- min engine version: `1.21.130`
 
-The version differences above are metadata mismatches only and are not admitted as gameplay defects.
+## Current source-proven findings
 
-## Proven findings
+None admitted in this bounded source pass.
 
-No source-proven gameplay defect was admitted in this pass.
+## High-risk areas checked
 
-## Important false-positive check — arena ticking areas
+### Capture Run historical gate blocker
 
-`createArena()` contains:
+Historical regression `reg_capture_run_gate_blocked` was used only as search pressure.
 
-```text
-tickingAreas: []
-```
+Current v1.0.2 source explicitly calls `FortifyBuildService.ensureGateOpen(arenaId)` before Capture Run preparation and documents that Fortify restores the shared gate to spruce wood while Capture Run requires the route open.
 
-and therefore the bootstrap static `getArenaTickingAreas()` list is empty.
+The historical gate-block root cause is therefore not reproduced by current source.
 
-This initially looks like a severe missing-ticking-area defect, but the current artifact also contains the actual gameplay owner: `PathwayLoader`.
+### Arena count
 
-For every active gameplay transition:
+Current selected artifact authors five Circuit arenas:
 
 ```text
-SessionStartService
-→ PathwayLoader.activateGameplay(gameplayId, [arenaId])
-→ ensureArena(...)
-→ await _activateTickingArea(...)
-→ initialize pathway markers
-→ prepare/start gameplay
+createArena(1)
+createArena(2)
+createArena(3)
+createArena(4)
+createArena(5)
 ```
 
-Relevant paths include:
+Selected source/world string search found no `arena_6` authoring. Older six-arena layouts are not current-artifact authority, so no mismatch is admitted.
 
-- player session start;
-- independent gameplay handoff;
-- active gameplay resume after reload.
+### Pathway / ticking-area ownership
 
-`_activateTickingArea()` removes the prior gameplay-specific area, derives gameplay pathway bounds, executes `tickingarea add ... true`, and only then resolves.
+Circuit dynamically derives gameplay-specific pathway ticking bounds, creates a named `circuit_path_<arena>` ticking area, removes stale area with the same name before create, and removes it on arena deactivation.
 
-Therefore the static empty `arena.tickingAreas` field is **not** sufficient evidence of missing arena ticking support in this version.
+Current source therefore does not reproduce the missing-arena-ticking-area defect seen in Composite.
 
-## Reconnect / persistence check
+### Independent player starts
 
-Circuit persists player→arena assignment and per-arena gameplay state including stage, remaining ticks, phase, attempts, kills/deaths, kit-trial state, and round timing.
+Current `SessionStartService` intentionally allocates a free arena independently per ready player. It has no all-ready barrier and current source explicitly documents this as the intended flow.
 
-The lobby party itself is deliberately kept unlocked for independent arena admission, so an offline player may be removed from party membership. The reconnect path does not depend on that party membership: SessionStartService restores from the persisted run/assignment, while each round service restores its detailed gameplay state.
+### Capture Run reset/build flow
 
-No reconnect-reset defect was admitted from this source pass.
+Capture Run loads the tier structure, clears all authored build features, reapplies only active tier features, ensures flags/defenders, and waits until preparation is valid before entering RUN.
+
+No source-proven current blocker was established in this pass.
+
+## Audit obligation / runtime checks
+
+These remain runtime-sensitive rather than current bugs:
+
+- verify Capture Run flag/entity behavior when far from the player's current loaded chunks;
+- exercise reconnect during every gameplay-specific round because each round owns detailed restore state separately;
+- validate pathway marker spawn/retry under Education Edition chunk timing.
+
+They are not admitted as bugs without current causal proof.
 
 ## Result
 
-The Circuit v1.0.2: **0 source-proven gameplay findings** in this pass.
+The Circuit v1.0.2 is recorded as **0 current source-proven gameplay findings** in this pass.
 
-This result is intentionally retained because it validates an important engine behavior: a suspicious static configuration must not be promoted when another current-artifact owner supplies the missing capability.
-
-Additional current-artifact checks in this pass:
-- the historical Capture Run shared-gate blocker is not reproduced because CaptureRun.prepare() explicitly reopens the shared gate before the run;
-- Loadout Trial entities are registered with the shared path-obstruction service, so the older “entities cannot break route obstruction” symptom is not copied into this version;
-- developer skip commands require persisted developer permission and are not exposed as a normal player progression path.
+The metadata mismatch between the file label (v1.0.2) and BP/RP manifest version (v1.0.1) should be cleaned separately if package-version identity is important, but it is not treated as a gameplay defect.
