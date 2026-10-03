@@ -27,6 +27,7 @@ describe("gameplay surface discovery", () => {
       uiFormEvidence: true,
       environmentEvidence: true,
       asyncCommandTransactionEvidence: true,
+      dynamicCommandEvidence: true,
     });
 
     expect(result.surfaceIds).toEqual(
@@ -49,6 +50,7 @@ describe("gameplay surface discovery", () => {
         "runtime:ui-form",
         "runtime:environment",
         "runtime:async-command-transaction",
+        "runtime:dynamic-command",
       ]),
     );
   });
