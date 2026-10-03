@@ -68,7 +68,7 @@ docs/          canonical product, system, and operations documentation
 engine/        Bedrock analysis and repair engine
 experiments/   bounded non-authoritative research
 tooling/       repository/developer/build/verification tooling
-workspace/     local project continuity + Map Game Design + tracked report handoff
+workspace/     project working/saved continuity + Map Game Design + tracked report handoff
 ```
 
 ### Engine map
