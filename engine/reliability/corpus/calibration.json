@@ -120,6 +120,40 @@
         "artifactFingerprint": "missing",
         "frozenExpectation": "missing"
       }
+    },
+    {
+      "id": "counterproof-exact-target-known-good",
+      "status": "candidate",
+      "sourceRef": "engine/packages/orchestrator/test/inspection/gameplay-defect-resolution-crosscheck.test.ts",
+      "evidenceRole": "negative",
+      "provenance": {
+        "source": "Reduced source regression",
+        "scope": "Exact-target exclusion guard",
+        "observation": "A PROVEN exclusion on the exact contradicted dependency prevents the wrong state and must suppress the defect candidate."
+      },
+      "expectedDisposition": "designed-behavior",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
+    },
+    {
+      "id": "topology-repaired-translation-known-good",
+      "status": "candidate",
+      "sourceRef": "engine/analyzers/topology/test/regression-flow.test.ts",
+      "evidenceRole": "negative",
+      "provenance": {
+        "source": "Reduced topology regression",
+        "scope": "Repaired translated arena command",
+        "observation": "A canonical +300 translation matches the expected arena offset and must not be reported as a topology outlier."
+      },
+      "expectedDisposition": "designed-behavior",
+      "readiness": {
+        "minimizedFixture": "present",
+        "artifactFingerprint": "missing",
+        "frozenExpectation": "missing"
+      }
     }
   ],
   "policy": {
